@@ -12,6 +12,17 @@ import { useTemplateEditorPan } from "./useTemplateEditorPan";
 
 export type { DragItem, DragStateInfo, ResizeHandle, ResizeStateInfo, UseTemplateEditorInteractionsOptions };
 
+/** Pointer travel (screen px) before a press becomes a drag/resize; below it the press is a plain click. */
+const DRAG_THRESHOLD_PX = 3;
+
+function exceedsDragThreshold(state: { startX: number; startY: number; hasMoved?: boolean }, event: PointerEvent): boolean {
+  return (
+    state.hasMoved === true ||
+    Math.abs(event.clientX - state.startX) >= DRAG_THRESHOLD_PX ||
+    Math.abs(event.clientY - state.startY) >= DRAG_THRESHOLD_PX
+  );
+}
+
 export function useTemplateEditorInteractions<TPayload = Record<string, unknown>>({
   canvasScale,
   size,
@@ -39,6 +50,7 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
 
     const currentDrag = dragState.current;
     if (currentDrag) {
+      if (!exceedsDragThreshold(currentDrag, event)) return;
       currentDrag.hasMoved = true;
       const deltaX = (event.clientX - currentDrag.startX) / canvasScale;
       const deltaY = (event.clientY - currentDrag.startY) / canvasScale;
@@ -87,6 +99,7 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
 
     const currentResize = resizeState.current;
     if (currentResize) {
+      if (!exceedsDragThreshold(currentResize, event)) return;
       currentResize.hasMoved = true;
       const deltaX = (event.clientX - currentResize.startX) / canvasScale;
       const deltaY = (event.clientY - currentResize.startY) / canvasScale;

@@ -1,9 +1,10 @@
-import type { DocumentTemplate } from "@mms/shared";
-import { readObjectLocal } from "@/lib/db";
+import type { BrandingSettings, DocumentTemplate } from "@mms/shared";
+import { createDocumentTemplateStore } from "@/lib/documentTemplatePersistence";
 import type { PaymentVoucherModel } from "@/tenant/features/accounting/components/paymentVoucherModel";
 
 /** Settings singleton for the accounting voucher layout. Includes "template" so title-case is skipped. */
 export const ACCOUNTING_VOUCHER_TEMPLATE_KEY = "accounting_voucher_template";
+export const ACCOUNTING_VOUCHER_TEMPLATE_CHANGED_EVENT = "mms:accounting-voucher-template-changed";
 
 export interface VoucherLine {
   account: string;
@@ -45,10 +46,19 @@ export interface VoucherPrintPayload {
 
 export type VoucherTemplate = DocumentTemplate<VoucherPrintPayload>;
 
+export const voucherTemplateDocumentStore = createDocumentTemplateStore<VoucherPrintPayload>({
+  key: ACCOUNTING_VOUCHER_TEMPLATE_KEY,
+  changedEvent: ACCOUNTING_VOUCHER_TEMPLATE_CHANGED_EVENT,
+  documentName: "voucher",
+});
+
 export function loadVoucherTemplate(fallback: VoucherTemplate): VoucherTemplate {
-  const saved = readObjectLocal<VoucherTemplate>(ACCOUNTING_VOUCHER_TEMPLATE_KEY);
-  if (!saved || typeof saved.pageSize !== "string" || !Array.isArray(saved.elements)) return fallback;
-  return saved;
+  return voucherTemplateDocumentStore.load(fallback);
+}
+
+/** Institution contact strip printed under the voucher heading. */
+export function voucherContactLine(branding: Pick<BrandingSettings, "addressLine1" | "city" | "phone">): string {
+  return [branding.addressLine1, branding.city, branding.phone].filter(Boolean).join(" · ");
 }
 
 export function voucherTableLines(

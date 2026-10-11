@@ -45,6 +45,7 @@ export {
   indexLookups,
   type IndexedFieldLookups,
   INVOICE_TEMPLATE_CHANGED_EVENT,
+  invoiceTemplateDocumentStore,
   type InvoiceTemplateFieldKey,
 } from "./invoiceTemplatePersistence.js";
 export {

@@ -222,4 +222,25 @@ describe("TemplateEditor keyboard interactions", () => {
     // itself must be reachable or the page cannot be scrolled by keyboard.
     expect(canvasRegion().getAttribute("tabindex")).toBe("0");
   });
+
+  it("given a click with slight pointer jitter, should select the element without nudging it or dirtying the template", async () => {
+    // Arrange
+    await mountEditor();
+    const element = elementByLabel("Invoice Title (static)");
+    const leftBefore = element.style.left;
+    const press = { bubbles: true, cancelable: true, button: 0, clientX: 50, clientY: 30 };
+
+    // Act
+    await act(async () => {
+      element.dispatchEvent(new MouseEvent("mousedown", press));
+      window.dispatchEvent(new PointerEvent("pointermove", { ...press, clientX: 52, clientY: 31 }));
+      window.dispatchEvent(new PointerEvent("pointerup", press));
+    });
+
+    // Assert
+    expect(element.getAttribute("aria-pressed")).toBe("true");
+    expect(inspectorShowsEmptyState()).toBe(false);
+    expect(element.style.left).toBe(leftBefore);
+    expect(container.textContent).not.toContain("templateEditor.dirtyNotice");
+  });
 });
