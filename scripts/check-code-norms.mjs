@@ -48,14 +48,14 @@ const ROOT = process.cwd();
  * filesOverHardLimit: raised 53 → 80 on 2026-10-11. Adopting Prettier (ADR-009)
  * expanded 28 files that had been compressed under the ceiling with dense
  * one-liners (e.g. invoiceTemplatePresets.ts 174→863, contactFieldSeed.ts
- * 89→634). The increase is a one-time formatting normalization; the follow-up
- * decomposition PR splits those files and ratchets this value back down.
+ * 89→634). That was a one-time formatting normalization; the decomposition work
+ * ratchets it back down (currently 78 — the ERD domain modules were split).
  */
 const BASELINE = {
   anyAnnotations: 0,
   hexColourFiles: 26,
   arbitraryColourExpressions: 0,
-  filesOverHardLimit: 80,
+  filesOverHardLimit: 78,
 };
 
 /**
