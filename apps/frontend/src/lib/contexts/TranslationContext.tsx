@@ -6,11 +6,11 @@ import {
   translateAppParams,
   getLanguageDirection,
   isRtlLanguage,
-  applyDocumentLanguage,
   type AppTranslationKey,
   type TranslationArgs,
   type AppLanguageCode,
 } from '@mms/shared';
+import { applyDocumentLanguage } from '@/lib/documentLanguage';
 import { ensureLocaleFontsLoaded } from '@/lib/localeFonts';
 import { reportClientError } from '@/lib/clientErrorReporting';
 import {

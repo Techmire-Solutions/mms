@@ -1,7 +1,4 @@
-import {
-  LOCAL_DEV_APP_DOMAIN,
-  resolveAppDomain,
-} from './tenantHostUtils.js';
+import { LOCAL_DEV_APP_DOMAIN } from './tenantSubdomainUtils.js';
 
 export interface TenantUrlOptions {
   appDomain?: string;
@@ -17,13 +14,7 @@ function normalizePort(port?: string | number | null): string {
 }
 
 function appDomainForUrlOptions(options: TenantUrlOptions): string {
-  if (options.appDomain) {
-    return options.appDomain;
-  }
-  if (typeof window !== "undefined") {
-    return resolveAppDomain(window.location.hostname);
-  }
-  return LOCAL_DEV_APP_DOMAIN;
+  return options.appDomain || LOCAL_DEV_APP_DOMAIN;
 }
 
 /**
@@ -34,15 +25,8 @@ export function buildTenantOrigin(
   options: TenantUrlOptions = {}
 ): string {
   const appDomain = appDomainForUrlOptions(options);
-  const protocol =
-    options.protocol ??
-    (typeof window !== "undefined" ? window.location.protocol : "https:");
-  const port =
-    options.port !== undefined
-      ? options.port
-      : typeof window !== "undefined" && appDomain === "localhost"
-        ? window.location.port
-        : null;
+  const protocol = options.protocol ?? "https:";
+  const port = options.port !== undefined ? options.port : null;
 
   const host =
     appDomain === "localhost"
@@ -70,15 +54,8 @@ export function buildApexUrl(
   options: TenantUrlOptions = {}
 ): string {
   const appDomain = appDomainForUrlOptions(options);
-  const protocol =
-    options.protocol ??
-    (typeof window !== "undefined" ? window.location.protocol : "https:");
-  const port =
-    options.port !== undefined
-      ? options.port
-      : typeof window !== "undefined" && appDomain === "localhost"
-        ? window.location.port
-        : null;
+  const protocol = options.protocol ?? "https:";
+  const port = options.port !== undefined ? options.port : null;
 
   return `${protocol}//${appDomain}${normalizePort(port)}${path.startsWith("/") ? path : `/${path}`}`;
 }

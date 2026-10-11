@@ -14,7 +14,7 @@ export interface AccountingDashboardProps {
 
 /**
  * Accounting Dashboard — P&L StatCards prefer server `/metrics`; charts use journal collections.
- * Decoupled into presentational modules and custom view hook per ADR-001 & ADR-002 (<200 LOC).
+ * Decoupled into presentational modules and custom view hook per ADR-001 & ADR-002 (≤300 LOC).
  */
 export function AccountingDashboard({
   accounts,

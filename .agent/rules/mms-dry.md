@@ -29,7 +29,7 @@ description: DRY guidelines, duplication thresholds, extraction patterns, and @m
   2. Logic crosses feature or frontend <-> backend boundaries.
   3. Logic exceeds 15 lines of duplicate implementation.
   4. Dimension, toast width, or z-index appears >= 3 times (promote to `index.css` `@theme`).
-- **File Sizing Decomp:** When single files exceed 200 lines (`mms-structure-naming.md` §3), decompose by concern within the feature folder without modifying barrel exports.
+- **File Sizing Decomp:** When single files exceed the 300-line cap (`mms-structure-naming.md` §3), decompose by concern within the feature folder without modifying barrel exports.
 
 ## 3. Monorepo Layer Boundaries
 - **`@mms/shared`:** Pure validation schemas, types, constants, default configs, and formatters. Named exports only; subpath imports banned. Zero React, DOM, Fastify, or DB dependencies.

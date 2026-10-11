@@ -46,7 +46,7 @@ paths:
 ## 8. New Hooks Checklist
 - Pass `signal` to `apiFetch`; set `enabled: isAuthenticated` (or `isPlatformAuthenticated`).
 - Zero ad-hoc polling loops (use WebSockets or documented `refetchInterval`).
-- Enforce strict 200-line hard cap per hook file.
+- Enforce the 300-line hard cap per hook file (prefer ≤220).
 
 ## 9. Workflow & Output Speed Rules
 - **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.

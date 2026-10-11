@@ -1,6 +1,5 @@
 import {
   BRANDING_THEME_VARIABLES,
-  applyDocumentLanguage,
   brandingPrimaryToThemeColor,
   buildBrandingCssVariables,
   normalizeAppLanguage,
@@ -10,6 +9,7 @@ import {
   type BrandingThemeMode,
   type GlobalSettings,
 } from '@mms/shared';
+import { applyDocumentLanguage } from '@/lib/documentLanguage';
 import { ensureLocaleFontsLoaded } from '@/lib/localeFonts';
 
 function resolveThemeMode(settings: GlobalSettings): BrandingThemeMode {

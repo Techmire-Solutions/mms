@@ -42,7 +42,7 @@ mms/
 |---|---|
 | `contacts/` | Canonical person/contact registry |
 | `students/` | Student module — enrollment linking, field guards |
-| `teachers/` | Teacher module |
+| `faculty/` | Faculty (teachers) module |
 | `sessions/` | Class sessions |
 | `enrollments/` | Session ↔ student enrollments |
 | `attendance/` | Attendance records |
@@ -64,7 +64,7 @@ mms/
 
 | Directory | Purpose |
 |---|---|
-| `tenant/features/` | 17 feature modules (students, teachers, sessions, finance, …) |
+| `tenant/features/` | 20 feature modules (students, faculty, sessions, finance, …) |
 | `tenant/hooks/collections/` | TanStack Query facades per resource |
 | `platform/` | Platform apex (super-admin, tenant management) |
 | `components/ui/` | Shared design-system primitives |

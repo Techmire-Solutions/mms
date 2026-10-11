@@ -21,6 +21,8 @@
     "check:db-projections": "node scripts/check-db-projections.mjs",
     "check:code-norms": "node scripts/check-code-norms.mjs",
     "check:work-directory": "node scripts/check-work-directory.mjs",
+    "check:shared-purity": "bash .agent/skills/mms-shared-package/scripts/check-shared-exports.sh",
+    "check:faculty-domain": "node scripts/check-faculty-domain.mjs",
     "check:secrets": "node scripts/check-staged-secrets.mjs",
     "sync:skills-index": "node scripts/sync-skill-index.mjs",
     "ci:local": "bash scripts/ci/local-ci.sh",

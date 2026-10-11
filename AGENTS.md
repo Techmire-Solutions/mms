@@ -57,7 +57,7 @@ Start here in Antigravity: **skill `antigravity-workspace`**.
 ## Plan first, task list, then execute — applies to every request
 
 On receiving any request, systematically plan before modifying code:
-1. **Discover & Plan**: Inspect the codebase, locate relevant files/abstractions, clarify requirements, and identify boundaries (tenant isolation, 200 LOC cap, strict TS).
+1. **Discover & Plan**: Inspect the codebase, locate relevant files/abstractions, clarify requirements, and identify boundaries (tenant isolation, 300 LOC cap, strict TS).
 2. **Actionable Task List**: Formulate an explicit, ordered task checklist (`- [ ]`) decomposing the work into discrete, verifiable phases.
 3. **Iterative Execution & Verification**: Execute task-by-task against the checklist, update progress (`- [x]`), apply surgical changes, and verify (typecheck/lint/test) after each phase before declaring completion. Never guess APIs or modify code without prior discovery.
 

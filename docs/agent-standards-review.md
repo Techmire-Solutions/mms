@@ -10,6 +10,8 @@
 
 ## 0. Status: APPLIED (2026-09-15)
 
+> **Historical snapshot (2026-09-15).** Counts and defect rows below reflect that date. The skill inventory has since grown to **39** (verified live by `node scripts/verify-rules-integrity.mjs`). Treat this section as a point-in-time record, not live state.
+
 This review was executed, not just written. Current state:
 
 | Area | Result |
@@ -26,13 +28,13 @@ This review was executed, not just written. Current state:
 **Deliberately not done**
 
 - The four discovered defects below are *application* defects, not standards defects: they are reported and recorded in the debt register rather than fixed here (an RLS migration and a shared-package refactor each deserve their own reviewed change).
-- `.cursor/hooks/_common.py` is still a 0-byte leftover; `mms-agent-universal.mdc` forbids deleting files without confirmation, so it was left in place deliberately. Note the same pattern was fixed for `.cursor/hooks.json`, which is now a valid hook manifest.
+- `.cursor/hooks/_common.py` (0-byte leftover) was **removed on 2026-10-11** once the deletion guard in `mms-agent-universal.mdc` was satisfied with explicit confirmation. The same pattern was fixed for `.cursor/hooks.json`, which is now a valid hook manifest.
 - The `mms-messaging` skill overlaps its rule on a handful of lines, but its content is operational (paths, workflow, checklist) rather than restated norms, so it was kept; the row-for-row BiDi table duplication *was* removed.
 
 ### Defects discovered while applying (not agent-standards issues — surfaced by the new checks)
 
 1. **Tenant RLS coverage gap — CLOSED.** The original sweep found **27 tenant tables** with no `ENABLE ROW LEVEL SECURITY` anywhere in the migration set, so their `tenant_isolation_policy` was inert (`FORCE` alone does not enable policies). The same-day correction in the Open Gaps Register (`mms-migration-status.mdc`) cut this to **17 real tables + 1 false positive**: 9 of the 27 were covered by the dynamic `DO`-block in `0093_finance_accounting_complete.sql` that the checker could not then parse, and `custom_tabs` had already been dropped by `0043_drop_custom_fields_and_tabs.sql`. The dedicated fix pass shipped as migration `0116_force_rls_missing_tenant_tables.sql` on **2026-09-18** (journal idx 116): per-table `ENABLE` + `FORCE` + `tenant_isolation_policy` for the 15 `FORCE`-only tables from `0082_new_modules.sql` plus `audit_trail_events` / `audit_verification_runs` from `0102_modern_audit_trail.sql`. The register row remains the live record; `bash .agent/skills/mms-schema-migrate/scripts/check-migrations.sh` still exits non-zero on this class — it now parses dynamic DO-block DDL and (Pass 1b) excludes dropped tables.
-2. **`@mms/shared` is not environment-pure**: 9 source files touch `window`/`document`/`localStorage` (`tenantUrlUtils.ts`, `utils.test.ts`, `moneyFormatUtils.ts`, `sessionPolicy.ts`, `settingsDateProvider.ts`, `tenantStorage.ts`, `backupEnvelopeUtils.ts`, `languageUtils.ts`, `imageOptimizationUtils.ts`), and `tenantUrlUtils.ts:24` dereferences `window.location.hostname` unguarded — it would throw on the Node backend. The widened `check-shared-exports.sh` now detects all of it.
+2. **`@mms/shared` is not environment-pure — CLOSED (2026-10-11).** At this review, 9 source files touched `window`/`document`/`localStorage` (`tenantUrlUtils.ts`, `utils.test.ts`, `moneyFormatUtils.ts`, `sessionPolicy.ts`, `settingsDateProvider.ts`, `tenantStorage.ts`, `backupEnvelopeUtils.ts`, `languageUtils.ts`, `imageOptimizationUtils.ts`), and `tenantUrlUtils.ts:24` dereferenced `window.location.hostname` unguarded. Now fixed: the browser-only helpers moved to `apps/frontend` (`lib/imageOptimization.ts`, `lib/documentLanguage.ts`), runtime reads are injected (`registerSettingsProvider`, `registerFinanceCurrencyProvider`), `tenantUrlUtils` no longer touches `window`, and `check-shared-exports.sh` runs in CI as `pnpm run check:shared-purity`.
 3. **`prettier` is configured but not installed** (`.prettierrc.json` + `.prettierignore`, no dependency, no CI step), so the format hook falls back to `eslint --fix` and formatting is unenforced.
 4. `apps/backend/src/app.ts` sets `keepAliveTimeout` but never `headersTimeout`, so the 502-prevention pair described in `mms-ops-infrastructure.md` is only half-applied.
 
@@ -260,7 +262,7 @@ While in there: `sync-rules.sh:38` rewrites `.mdc` → `.md` **context-blind**, 
 
 | Surface | State | Recommendation |
 |---|---|---|
-| `.cursor/hooks.json` | **0 bytes** (and `.cursor/hooks/_common.py` 0 bytes) | Either implement (`{"version": 1, "hooks": {...}}` is the required schema) or delete — an empty file is a broken config, not a placeholder |
+| `.cursor/hooks.json` + `.cursor/hooks/_common.py` | **0 bytes** (both) — **resolved**: `hooks.json` is now a valid manifest; `_common.py` deleted 2026-10-11 | Empty files are broken config, not placeholders |
 | `.claude/settings.json` | committed with `"allow": [], "deny": []` | Commit a real team baseline: `deny` rules apply immediately (unlike `allow`, which waits for workspace trust) — e.g. deny `Read(./.env*)`, `Bash(git push *)`, `Bash(rm -rf *)` |
 | `.claude/settings.local.json` | 88 personal `allow` entries, 0 `deny`, no hooks (gitignored) | Symptom of permission fatigue — replace repeated one-off allows with hooks and a small deny list |
 | `.claude/commands/` | absent | 7 skills reference `/feature-module` and `/code-review` as slash commands (47 such references) but the commands exist in **no** tool. Expose the 6 `.agent/workflows/*.md` as command/skill entrypoints, or change the references to file paths |

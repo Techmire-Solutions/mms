@@ -1,12 +1,11 @@
 import {
   IMAGE_UPLOAD_MAX_INPUT_BYTES,
   IMAGE_UPLOAD_PRESETS,
-  canvasToOptimizedBlob,
   imageExtensionForMime,
-  prepareImageForUpload,
   type ImageUploadPurpose,
   type ImageUploadResponse,
 } from '@mms/shared';
+import { canvasToOptimizedBlob, prepareImageForUpload } from '@/lib/imageOptimization';
 import { apiJson, resolveApiUrl } from '@/lib/apiClient';
 
 function assertImageFile(file: File): void {

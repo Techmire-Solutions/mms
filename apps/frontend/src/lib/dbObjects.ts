@@ -1,11 +1,14 @@
 import {
   type BrandingSettings,
+  type FinanceSettings,
   type GlobalSettings,
   type PublicBranding,
   DEFAULT_BRANDING_SETTINGS,
+  DEFAULT_FINANCE_SETTINGS,
   DEFAULT_GLOBAL_SETTINGS,
   mergeBrandingSettings,
   mergeGlobalSettings,
+  registerFinanceCurrencyProvider,
   registerSettingsProvider,
 } from '@mms/shared';
 import {
@@ -64,6 +67,10 @@ registerSettingsProvider(() => {
     language: settings.language,
   };
 });
+
+registerFinanceCurrencyProvider(() => (
+  getObject<FinanceSettings>('finance_settings', DEFAULT_FINANCE_SETTINGS).currency
+));
 
 /** Persists merged global settings and dispatches `local-database-update`. */
 export function saveGlobalSettings(globalSettings: GlobalSettings): void {
