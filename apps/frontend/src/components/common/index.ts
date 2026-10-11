@@ -7,3 +7,4 @@ export * from "./AppShell";
 export * from "./work";
 export * from "./entityDescriptorFromFieldConfig";
 export * from "./useStaticEntityDescriptor";
+export * from "./data-table";

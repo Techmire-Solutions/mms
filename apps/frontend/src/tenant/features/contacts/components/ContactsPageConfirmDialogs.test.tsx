@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ContactsPageConfirmDialogs } from "./ContactsPageConfirmDialogs";
 
-vi.mock("@/components/ui/ModuleSoftDeleteConfirmDialogs", () => ({
-  ModuleSoftDeleteConfirmDialogs: ({ singleDeleteTitle, bulkDeleteTitle, bulkRestoreTitle }: {
+vi.mock("@/components/ui/ModuleTrashConfirmDialogs", () => ({
+  ModuleTrashConfirmDialogs: ({ singleDeleteTitle, bulkDeleteTitle, bulkRestoreTitle }: {
     singleDeleteTitle: string;
     bulkDeleteTitle: string;
     bulkRestoreTitle: string;

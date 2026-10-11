@@ -7,7 +7,7 @@ import { formatMoney, formatDate } from "@mms/shared";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SearchBar } from "@/components/ui/SearchBar";
-import { SimplePagination } from "@/components/ui/SimplePagination";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
 import {
   Table,
@@ -178,9 +178,11 @@ export function OverdueObligationsWidgetList({
           <p className="text-xs font-bold text-success/90 uppercase tracking-wider m-0">
             {remindedIds.size > 0 && t("dashboard.widgets.remindersSent", { count: remindedIds.size })}
           </p>
-          <SimplePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
+          <ListPagination
+            variant="compact"
+            page={currentPage}
+            total={totalPages}
+            limit={1}
             onPageChange={onPageChange}
           />
         </div>

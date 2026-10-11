@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
-interface CopyBtnProps {
+export interface CopyButtonProps {
   text: string;
   className?: string;
   variant?: "ghost" | "outline" | "default";
@@ -20,19 +20,21 @@ interface CopyBtnProps {
   labelCopied?: string;
 }
 
+export type CopyBtnProps = CopyButtonProps;
+
 /**
  * Reusable copy-to-clipboard control with feedback icon + optional toast.
  * Icon-only by default (hover-reveal); pass `label`/`labelCopied` for a visible
  * labeled action button (e.g. "Copy JSON" / "Copied").
  */
-export const CopyBtn = (function CopyBtn({
+export function CopyButton({
   text,
   className,
   variant,
   showToast = false,
   label,
   labelCopied,
-}: CopyBtnProps): React.JSX.Element {
+}: CopyButtonProps): React.JSX.Element {
   const { t } = useTranslation();
   const [copied, setCopied] = useState<boolean>(false);
 
@@ -85,4 +87,7 @@ export const CopyBtn = (function CopyBtn({
       {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
     </Button>
   );
-});
+}
+
+/** Backward-compatibility alias */
+export const CopyBtn = CopyButton;

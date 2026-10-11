@@ -1,7 +1,7 @@
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CopyBtn } from "@/components/ui/CopyBtn";
+import { CopyButton } from "@/components/ui/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
@@ -84,7 +84,7 @@ export function CollectionRowItem({
       {value && (
         <div className="flex max-w-3/5 flex-shrink-0 flex-wrap items-center justify-end gap-1">
           {copyable && (
-            <CopyBtn
+            <CopyButton
               text={value}
               showToast
               className={cn(

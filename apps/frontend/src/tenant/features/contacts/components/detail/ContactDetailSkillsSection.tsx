@@ -4,7 +4,7 @@ import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import { CopyBtn } from "@/components/ui/CopyBtn";
+import { CopyButton } from "@/components/ui/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
@@ -100,7 +100,7 @@ export function ContactDetailSkillsSection({
 
             {copyText ? (
               <div className="flex flex-shrink-0 items-center">
-                <CopyBtn
+                <CopyButton
                   text={copyText}
                   showToast
                   className={cn(

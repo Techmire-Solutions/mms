@@ -1,5 +1,6 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TableSkeleton, type TableSkeletonProps } from "@/components/ui/table/TableSkeleton";
 import { cn } from "@/lib/utils";
 
 /**
@@ -70,35 +71,11 @@ export const StatsSkeleton = (function StatsSkeleton({ count = 4 }: StatsSkeleto
   );
 });
 
-interface TableSkeletonProps {
-  rows?: number;
-  cols?: number;
-}
-
 /**
- * A skeleton loader for data tables.
+ * @deprecated Import `TableSkeleton` from `@/components/ui/table` directly.
+ * Re-exported here as a non-breaking compatibility bridge.
  */
-export const TableSkeleton = (function TableSkeleton({ rows = 5, cols = 5 }: TableSkeletonProps): React.ReactElement {
-  return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden" role="status" aria-live="polite" aria-busy="true">
-      <div className="px-4 py-3 border-b border-border bg-muted/40 flex gap-4">
-        {Array.from({ length: cols }).map((_, i) => (
-          <Skeleton key={i} className="h-3 rounded w-24" />
-        ))}
-      </div>
-      <div className="divide-y divide-border/50">
-        {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="px-4 py-3.5 flex gap-4 items-center">
-            <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
-            {Array.from({ length: cols - 1 }).map((_, j) => (
-              <Skeleton key={j} className="h-3.5 rounded flex-1 max-w-36" />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-});
+export { TableSkeleton, type TableSkeletonProps };
 
 /**
  * Skeleton loader for data visualization charts to prevent Cumulative Layout Shift.

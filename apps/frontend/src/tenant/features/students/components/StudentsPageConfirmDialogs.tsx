@@ -1,4 +1,4 @@
-import { ModuleSoftDeleteConfirmDialogs } from "@/components/ui/ModuleSoftDeleteConfirmDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { StudentsDeleteTarget } from "@/tenant/features/students/hooks/useStudentsPageOverlayState";
 
@@ -31,7 +31,7 @@ export function StudentsPageConfirmDialogs({
   const { t } = useTranslation();
 
   return (
-    <ModuleSoftDeleteConfirmDialogs
+    <ModuleTrashConfirmDialogs
       pendingDeleteOpen={deleteTarget !== null}
       onPendingDeleteOpenChange={onDeleteTargetOpenChange}
       bulkDeleteOpen={bulkDeleteOpen}

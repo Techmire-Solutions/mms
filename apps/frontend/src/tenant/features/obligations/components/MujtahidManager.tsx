@@ -7,7 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { NameFormModal } from "@/tenant/features/obligations/components/MujtahidNameFormModal";
+import { MujtahidNameFormModal } from "@/tenant/features/obligations/components/MujtahidNameFormModal";
 import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
 import { cn } from "@/lib/utils";
 import type {
@@ -128,7 +128,7 @@ export function MujtahidManager({ mujtahids, reps, onChangeMujtahids, onChangeRe
       </section>
 
       {modal && (modal.mode === "add" || modal.mode === "edit") ? (
-        <NameFormModal
+        <MujtahidNameFormModal
           title={modal.mode === "add" ? t("obligations.mujtahids.addTitle") : t("obligations.mujtahids.editTitle")}
           label={t("obligations.mujtahids.nameLabel")}
           initial={modal.data}
@@ -137,7 +137,7 @@ export function MujtahidManager({ mujtahids, reps, onChangeMujtahids, onChangeRe
         />
       ) : null}
       {modal && (modal.mode === "add-rep" || modal.mode === "edit-rep") ? (
-        <NameFormModal
+        <MujtahidNameFormModal
           title={modal.mode === "add-rep" ? t("obligations.mujtahids.repAddTitle") : t("obligations.mujtahids.repEditTitle")}
           label={t("obligations.mujtahids.repNameLabel")}
           initial={modal.data}

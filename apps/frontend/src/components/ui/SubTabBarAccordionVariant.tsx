@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SubTab } from "@/components/ui/SubTabBar";
-import { SubTabBadge } from "@/components/ui/SubTabBarBadge";
+import { SubTabBarBadge } from "@/components/ui/SubTabBarBadge";
 
 export interface SubTabBarVariantProps<K extends string> {
   tabs: readonly SubTab<K>[];
@@ -52,7 +52,7 @@ function SubTabBarDesktopPillList<K extends string>({
               />
             )}
             <span>{t.label}</span>
-            {t.badge !== undefined && <SubTabBadge badge={t.badge} active={active} />}
+            {t.badge !== undefined && <SubTabBarBadge badge={t.badge} active={active} />}
           </button>
         );
       })}

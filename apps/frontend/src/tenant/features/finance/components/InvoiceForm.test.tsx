@@ -37,6 +37,10 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
   useStudentsContractList: () => ({ data: undefined }),
 }));
 
+vi.mock("@/tenant/hooks/collections/faculty", () => ({
+  useFacultyContractList: () => ({ data: undefined }),
+}));
+
 vi.mock("@/components/ui/DatePicker", () => ({
   DatePicker: ({
     id,

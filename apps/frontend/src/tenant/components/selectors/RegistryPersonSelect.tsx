@@ -10,21 +10,37 @@ const PERSON_SELECT_PAGE_SIZE = 50;
 export interface RegistryPersonSelectProps {
   kind: 'student' | 'faculty';
   value: string;
-  onChange: (id: string) => void;
+  onChange: (id: string, name?: string) => void;
+  onPick?: (id: string, name: string) => void;
   label: string;
   required?: boolean;
   excludeIds?: string[];
   id?: string;
+  name?: string;
+  searchLabel?: string;
+  searchPlaceholder?: string;
+  placeholder?: string;
+}
+
+interface PersonItem {
+  id: string | number;
+  name?: string | null;
+  employeeId?: string | null;
 }
 
 export function RegistryPersonSelect({
   kind,
   value,
   onChange,
+  onPick,
   label,
   required = false,
   excludeIds = [],
   id,
+  name,
+  searchLabel,
+  searchPlaceholder,
+  placeholder: customPlaceholder,
 }: RegistryPersonSelectProps): React.JSX.Element {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
@@ -48,50 +64,68 @@ export function RegistryPersonSelect({
   const facultyPage = facultyQuery.data;
   const activeQuery = studentsEnabled ? studentQuery : facultyQuery;
 
-  const options = (() => {
-    const rows: readonly { id: string | number; name?: string | null }[] = kind === 'student'
-      ? (studentPage?.body?.students ?? [])
-      : (facultyPage?.body?.faculty ?? []);
-    const excluded = new Set(excludeIds.map(String));
-    return rows
-      .filter((row: { id: string | number; name?: string | null }) => !excluded.has(String(row.id)))
-      .toSorted((a: { id: string | number; name?: string | null }, b: { id: string | number; name?: string | null }) => (a.name ?? '').localeCompare(b.name ?? ''));
-  })();
+  const rows: readonly PersonItem[] = studentsEnabled
+    ? (studentPage?.body?.students ?? [])
+    : (facultyPage?.body?.faculty ?? []);
 
-  const hasMore = kind === 'student'
+  const hasMore = studentsEnabled
     ? Boolean(studentPage?.body?.hasMore)
     : Boolean(facultyPage?.body?.hasMore);
 
-  const valueInOptions = options.some((row) => String(row.id) === value);
-
-  const placeholder = kind === 'student'
+  const defaultPlaceholder = studentsEnabled
     ? t('registryPerson.selectStudent')
     : t('registryPerson.selectFaculty');
 
+  const options = (() => {
+    const excluded = new Set(excludeIds.map(String));
+    return rows
+      .filter((row) => !excluded.has(String(row.id)))
+      .toSorted((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+  })();
+
+  const valueInOptions = options.some((row) => String(row.id) === value);
   const fallbackId = React.useId();
   const sanitizedId = fallbackId.replace(/:/g, '');
   const selectId = id || `person-select-${sanitizedId}`;
+
   const selectOptions = (() => {
-    const list = options.map((row) => ({
-      value: String(row.id),
-      label: row.name ?? String(row.id),
-    }));
+    const list = options.map((row) => {
+      const personName = row.name ?? String(row.id);
+      const optLabel = row.employeeId ? `${personName} (${row.employeeId})` : personName;
+      return { value: String(row.id), label: optLabel };
+    });
     if (value && !valueInOptions) {
       list.unshift({ value, label: value });
     }
     return list;
   })();
 
+  const handleChange = (pickedId: string) => {
+    const selected = options.find((row) => String(row.id) === pickedId);
+    const selectedName = selected?.name ? String(selected.name) : '';
+    onChange(pickedId, selectedName);
+    onPick?.(pickedId, selectedName);
+  };
+
   return (
     <SearchableSelectField
-      id={selectId} label={label} required={required}
-      search={search} onSearchChange={setSearch}
-      searchLabel={t('registryPerson.searchPlaceholder')}
-      searchPlaceholder={t('registryPerson.searchPlaceholder')}
-      loadingLabel={t('common.loading')} isLoading={activeQuery.isFetching}
+      id={selectId}
+      name={name ?? selectId}
+      label={label}
+      required={required}
+      search={search}
+      onSearchChange={setSearch}
+      searchLabel={searchLabel ?? t('registryPerson.searchPlaceholder')}
+      searchPlaceholder={searchPlaceholder ?? t('registryPerson.searchPlaceholder')}
+      loadingLabel={t('common.loading')}
+      isLoading={activeQuery.isFetching}
       error={activeQuery.isError ? t('errors.state.generic') : undefined}
-      onRetry={() => { void activeQuery.refetch(); }} retryLabel={t('common.retry')}
-      value={value} onChange={onChange} options={selectOptions} placeholder={placeholder}
+      onRetry={() => { void activeQuery.refetch(); }}
+      retryLabel={t('common.retry')}
+      value={value}
+      onChange={handleChange}
+      options={selectOptions}
+      placeholder={customPlaceholder ?? defaultPlaceholder}
       hint={hasMore ? t('registryPerson.refineSearch') : undefined}
     />
   );

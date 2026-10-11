@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Download, Plus, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ModuleEntityIoToolbarProps {
@@ -43,19 +43,19 @@ export function ModuleEntityIoToolbar({
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
       {showExport ? (
-        <ActionButton variant="ghost" icon={Download} onClick={onExport}>
+        <Button variant="ghost" icon={Download} onClick={onExport}>
           {exportLabel ?? t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
       {showImport ? (
-        <ActionButton variant="ghost" icon={Upload} onClick={onImport}>
+        <Button variant="ghost" icon={Upload} onClick={onImport}>
           {importLabel ?? t("common.import")}
-        </ActionButton>
+        </Button>
       ) : null}
       {showAdd ? (
-        <ActionButton variant="primary" icon={AddIcon} onClick={onAdd}>
+        <Button variant="primary" icon={AddIcon} onClick={onAdd}>
           {addLabel}
-        </ActionButton>
+        </Button>
       ) : null}
     </div>
   );

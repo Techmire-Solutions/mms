@@ -1,6 +1,6 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
-import SafeResponsiveContainer from "@/components/ui/SafeResponsiveContainer";
+import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
 import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
 import { cn } from "@/lib/utils";
 

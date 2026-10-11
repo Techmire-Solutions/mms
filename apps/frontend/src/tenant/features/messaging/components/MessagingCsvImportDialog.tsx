@@ -3,9 +3,7 @@ import {
   messagingTransferSchema,
   type MessagingTransferEntity,
 } from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface MessagingCsvImportDialogProps {
   open: boolean;
@@ -19,24 +17,14 @@ export function MessagingCsvImportDialog({
   onClose,
   canWrite,
 }: MessagingCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<MessagingTransferEntity>({
-    apiPath: "/api/messaging/import",
-    schema: messagingTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<MessagingTransferEntity>
+    <StandardModuleCsvImportDialog<MessagingTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.messaging")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/messaging/import"
+      schema={messagingTransferSchema}
+      navKey="nav.messaging"
     />
   );
 }

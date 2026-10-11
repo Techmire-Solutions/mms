@@ -11,7 +11,11 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        primary:
+          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
         destructive:
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        danger:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
           "border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground",
@@ -34,6 +38,7 @@ const buttonVariants = cva(
       },
       size: {
         default: "min-h-11 h-11 px-4 py-2",
+        md: "min-h-11 h-11 px-4 py-2",
         sm: "min-h-11 h-11 rounded-xl px-3 text-xs",
         lg: "min-h-11 h-12 rounded-xl px-8 text-base",
         icon: "min-h-11 min-w-11 h-11 w-11",
@@ -51,23 +56,61 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  loading?: boolean
+  icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }> | null
   ref?: React.Ref<HTMLButtonElement>
 }
 
 /**
  * Standard touch-first button component enforcing 44x44px minimum target bounds.
  */
-function Button({ className, variant, size, asChild = false, title, "aria-label": ariaLabel, ref, ...props }: ButtonProps) {
-  const Comp = asChild ? Slot : "button"
+function Button({
+  className,
+  variant,
+  size,
+  asChild = false,
+  title,
+  "aria-label": ariaLabel,
+  loading = false,
+  disabled = false,
+  icon: Icon = null,
+  children,
+  ref,
+  ...props
+}: ButtonProps) {
   const resolvedAriaLabel = ariaLabel || (typeof title === "string" ? title : undefined);
+
+  if (asChild) {
+    return (
+      <Slot
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        title={title}
+        aria-label={resolvedAriaLabel}
+        {...props}
+      >
+        {children}
+      </Slot>
+    )
+  }
+
   return (
-    <Comp
+    <button
       className={cn(buttonVariants({ variant, size, className }))}
       ref={ref}
       title={title}
+      disabled={disabled || loading}
       aria-label={resolvedAriaLabel}
+      aria-busy={loading ? "true" : undefined}
       {...props}
-    />
+    >
+      {loading ? (
+        <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin shrink-0" aria-hidden="true" />
+      ) : Icon ? (
+        <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+      ) : null}
+      {children}
+    </button>
   )
 }
 Button.displayName = "Button"

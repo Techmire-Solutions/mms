@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ModuleStandardTrashDialogs } from "./ModuleStandardTrashDialogs";
+import { ModuleTrashConfirmDialogs } from "./ModuleTrashConfirmDialogs";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -17,7 +17,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-describe("ModuleStandardTrashDialogs", () => {
+describe("ModuleTrashConfirmDialogs", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -41,7 +41,7 @@ describe("ModuleStandardTrashDialogs", () => {
 
     await act(async () => {
       root.render(
-        <ModuleStandardTrashDialogs
+        <ModuleTrashConfirmDialogs
           pendingTrashId="item-123"
           onPendingTrashIdChange={onPendingTrashIdChange}
           confirmBulkOpen={false}
@@ -61,7 +61,7 @@ describe("ModuleStandardTrashDialogs", () => {
   it("renders bulk restore confirm dialog when showDeleted is true", async () => {
     await act(async () => {
       root.render(
-        <ModuleStandardTrashDialogs
+        <ModuleTrashConfirmDialogs
           pendingTrashId={null}
           onPendingTrashIdChange={vi.fn()}
           confirmBulkOpen={true}
@@ -77,5 +77,22 @@ describe("ModuleStandardTrashDialogs", () => {
 
     expect(document.body.textContent).toContain("examinations.trash.restore");
     expect(document.body.textContent).toContain("examinations.trash.bulkRestoreConfirm:4");
+  });
+
+  it("renders trio mode single delete dialog", async () => {
+    await act(async () => {
+      root.render(
+        <ModuleTrashConfirmDialogs
+          pendingDeleteOpen={true}
+          onPendingDeleteOpenChange={vi.fn()}
+          singleDeleteTitle="Delete Student"
+          singleDeleteDescription="Are you sure you want to delete this student?"
+          onConfirmSingleDelete={vi.fn()}
+        />,
+      );
+    });
+
+    expect(document.body.textContent).toContain("Delete Student");
+    expect(document.body.textContent).toContain("Are you sure you want to delete this student?");
   });
 });

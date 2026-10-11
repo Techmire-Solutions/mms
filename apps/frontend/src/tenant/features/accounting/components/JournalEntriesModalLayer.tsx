@@ -1,6 +1,6 @@
 import React from "react";
 import { AnimatePresence } from "framer-motion";
-import { ModuleStandardTrashDialogs } from "@/components/ui/ModuleStandardTrashDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
 import { isManuallyReversibleJournalSource, type JournalReversalRequest } from "@mms/shared";
 import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
 import { JournalEntryDetail } from "@/tenant/features/accounting/components/JournalEntryDetail";
@@ -109,7 +109,7 @@ export function JournalEntriesModalLayer({
         })()}
       </AnimatePresence>
 
-      <ModuleStandardTrashDialogs
+      <ModuleTrashConfirmDialogs
         pendingTrashId={pendingTrashId}
         onPendingTrashIdChange={onPendingTrashIdChange}
         confirmBulkOpen={confirmBulkOpen}

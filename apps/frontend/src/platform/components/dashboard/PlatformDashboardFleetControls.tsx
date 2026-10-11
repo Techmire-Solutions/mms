@@ -2,7 +2,7 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LeadingIconInput } from '@/components/ui/LeadingIconInput';
-import { SegmentedPillFilter } from '@/components/ui/SegmentedPillFilter';
+import { CompactSegmentedControl } from '@/components/ui/CompactSegmentedControl';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { DateRangeFilterBar } from '@/components/ui/DateRangeFilterBar';
@@ -51,8 +51,7 @@ export function PlatformDashboardFleetControls({
           aria-label={t('platform.fleetSearchPlaceholder')}
           className="min-w-[12rem] flex-1"
         />
-        <SegmentedPillFilter
-          size="sm"
+        <CompactSegmentedControl
           value={status}
           onChange={onStatusChange}
           options={[

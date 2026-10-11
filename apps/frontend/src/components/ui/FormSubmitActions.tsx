@@ -1,4 +1,3 @@
-import { ActionButton } from '@/components/ui/ActionButton';
 import { Button } from '@/components/ui/button';
 
 interface FormSubmitActionsProps {
@@ -12,13 +11,23 @@ interface FormSubmitActionsProps {
 export function FormSubmitActions({ submitLabel, pending, disabled = false, variant = 'primary', cancel }: FormSubmitActionsProps): React.JSX.Element {
   return (
     <div className="flex flex-wrap gap-2 pt-2">
-      <ActionButton type="submit" variant={variant} loading={pending} disabled={disabled}
-        className="w-full sm:w-auto min-h-11">
+      <Button
+        type="submit"
+        variant={variant === 'secondary' ? 'outline' : 'primary'}
+        loading={pending}
+        disabled={disabled}
+        className="w-full sm:w-auto min-h-11"
+      >
         {submitLabel}
-      </ActionButton>
+      </Button>
       {cancel ? (
-        <Button type="button" variant="ghost" onClick={cancel.onClick} disabled={pending}
-          className="w-full sm:w-auto min-h-11">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={cancel.onClick}
+          disabled={pending}
+          className="w-full sm:w-auto min-h-11"
+        >
           {cancel.label}
         </Button>
       ) : null}

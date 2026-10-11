@@ -3,9 +3,7 @@ import {
   enrollmentsTransferSchema,
   type EnrollmentTransferEntity,
 } from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface EnrollmentsCsvImportDialogProps {
   open: boolean;
@@ -19,24 +17,14 @@ export function EnrollmentsCsvImportDialog({
   onClose,
   canWrite,
 }: EnrollmentsCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<EnrollmentTransferEntity>({
-    apiPath: "/api/enrollments/import",
-    schema: enrollmentsTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<EnrollmentTransferEntity>
+    <StandardModuleCsvImportDialog<EnrollmentTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.enrollments")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/enrollments/import"
+      schema={enrollmentsTransferSchema}
+      navKey="nav.enrollments"
     />
   );
 }

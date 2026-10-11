@@ -3,7 +3,7 @@ import { Code2 } from 'lucide-react';
 import { formatDate } from '@mms/shared';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '@/components/ui/Modal';
-import { CopyBtn } from '@/components/ui/CopyBtn';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { SubTabBar } from '@/components/ui/SubTabBar';
 import type { PlatformActivityLogItem } from '@/platform/hooks/usePlatformActivityLogs';
 
@@ -44,7 +44,7 @@ export function ActivityLogInspectModal({ log, onClose }: ActivityLogInspectModa
             value={activeTab}
             onChange={(k) => setActiveTab(k as 'full' | 'payload')}
           />
-          <CopyBtn
+          <CopyButton
             text={copyText}
             label={activeTab === 'payload' ? t('platform.logs.copyPayload') : t('platform.logs.copyJson')}
             labelCopied={t('platform.logs.copied')}

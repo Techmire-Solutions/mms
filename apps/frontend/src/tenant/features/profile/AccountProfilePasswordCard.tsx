@@ -2,7 +2,7 @@ import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
 import { FormSubmitActions } from '@/components/ui/FormSubmitActions';
 import { useId } from "react";
 import { Lock } from "lucide-react";
-import PasswordInput from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardTitleBar } from "@/components/ui/CardTitleBar";

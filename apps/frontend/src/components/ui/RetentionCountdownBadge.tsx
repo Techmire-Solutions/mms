@@ -1,6 +1,8 @@
 import React from "react";
 import { formatEntityStamp } from "@/lib/formatEntityStamp";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 /** Calculates remaining days before hard-purge based on deletedAt stamp and manifest retention policy or purgeAfter timestamp. */
 export function calculateRemainingRetentionDays(
@@ -51,26 +53,28 @@ export function RetentionCountdownBadge({
 
   if (remaining === null) {
     return (
-      <span
-        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground ${className}`}
+      <Badge
+        as="span"
+        tone="muted"
+        size="sm"
+        className={className}
       >
         {t("common.archivedIndefinitely")}
-      </span>
+      </Badge>
     );
   }
 
   const isWarning = remaining <= 7;
 
   return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-        isWarning
-          ? "bg-destructive/10 text-destructive border border-destructive/20 font-semibold"
-          : "bg-muted text-muted-foreground"
-      } ${className}`}
+    <Badge
+      as="span"
+      tone={isWarning ? "destructive" : "muted"}
+      size="sm"
+      className={cn(isWarning && "font-semibold", className)}
     >
       {isWarning ? "⚠️ " : ""}
       {remaining === 1 ? t("common.purgesInOneDay") : t("common.purgesInDays", { count: remaining })}
-    </span>
+    </Badge>
   );
 }

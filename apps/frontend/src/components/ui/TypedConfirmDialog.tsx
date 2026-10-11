@@ -1,8 +1,8 @@
 import React, { useId } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import PasswordInput from '@/components/ui/PasswordInput';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Field, FieldErrorMessage } from '@/components/ui/FormField';
 import {
   AlertDialog,
@@ -162,10 +162,10 @@ export function TypedConfirmDialog({
           <AlertDialogCancel disabled={pending} className="min-h-11 rounded-xl font-bold">
             {t('common.cancel')}
           </AlertDialogCancel>
-          <ActionButton
+          <Button
             type="submit"
             form={formId}
-            variant={confirmVariant === 'destructive' ? 'danger' : 'primary'}
+            variant={confirmVariant}
             disabled={!canConfirm}
             loading={pending}
             onClick={(event) => {
@@ -176,7 +176,7 @@ export function TypedConfirmDialog({
             }}
           >
             {confirmButtonLabel}
-          </ActionButton>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

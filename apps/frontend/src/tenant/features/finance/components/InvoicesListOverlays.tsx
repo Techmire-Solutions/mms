@@ -1,5 +1,5 @@
 import React from "react";
-import { ModuleStandardTrashDialogs } from "@/components/ui/ModuleStandardTrashDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { MessagingTarget } from "@/hooks/useMessageComposerState";
 
@@ -47,7 +47,7 @@ export function InvoicesListOverlays({
           />
         </React.Suspense>
       )}
-      <ModuleStandardTrashDialogs
+      <ModuleTrashConfirmDialogs
         pendingTrashId={pendingDeleteId}
         onPendingTrashIdChange={onPendingDeleteIdChange}
         confirmBulkOpen={confirmBulkOpen}

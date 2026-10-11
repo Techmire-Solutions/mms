@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
 import { type AppTranslationKey } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { ModuleStandardTrashDialogs } from "@/components/ui/ModuleStandardTrashDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
 import { PaymentsListContent, PAYMENT_TRACKER_COLUMN_KEYS } from "@/tenant/features/finance/components/PaymentsListContent";
 import { PaymentMethodSummary, PaymentSelectionBar } from "@/tenant/features/finance/components/PaymentsListFilters";
 import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
@@ -120,7 +120,7 @@ export function PaymentsList({
         onRequestDelete={setPendingDeleteId}
         onRestore={onRestore}
       />
-      <ModuleStandardTrashDialogs
+      <ModuleTrashConfirmDialogs
         pendingTrashId={pendingDeleteId}
         onPendingTrashIdChange={setPendingDeleteId}
         confirmBulkOpen={confirmBulkOpen}

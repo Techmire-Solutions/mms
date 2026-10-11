@@ -99,3 +99,6 @@ export const MessagingWorkBulkActionBar = (function MessagingWorkBulkActionBar({
     />
   );
 });
+
+export const MessagingBulkActionBar = MessagingWorkBulkActionBar;
+export type MessagingBulkActionBarProps = MessagingWorkBulkActionBarProps;

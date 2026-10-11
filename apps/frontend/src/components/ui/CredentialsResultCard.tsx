@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { CopyBtn } from '@/components/ui/CopyBtn';
+import { CopyButton } from '@/components/ui/CopyButton';
 
 interface CredentialsResultCardProps {
   title: string;
@@ -33,7 +33,7 @@ export function CredentialsResultCard({ title, fields, passwordLabel, password, 
                 {password}
               </code>
             </div>
-            <CopyBtn text={copyText} label={copyLabel} className="min-h-11 h-11 px-3 text-xs" showToast />
+            <CopyButton text={copyText} label={copyLabel} className="min-h-11 h-11 px-3 text-xs" showToast />
           </div>
         </div>
       </div>

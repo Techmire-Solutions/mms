@@ -1,4 +1,4 @@
-import { ModuleSoftDeleteConfirmDialogs } from '@/components/ui/ModuleSoftDeleteConfirmDialogs';
+import { ModuleTrashConfirmDialogs } from '@/components/ui/ModuleTrashConfirmDialogs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export interface EnrollmentsListConfirmDialogsProps {
@@ -32,7 +32,7 @@ export function EnrollmentsListConfirmDialogs({
   const { t } = useTranslation();
 
   return (
-    <ModuleSoftDeleteConfirmDialogs
+    <ModuleTrashConfirmDialogs
       pendingDeleteOpen={pendingDeleteId != null}
       onPendingDeleteOpenChange={(open) => {
         if (!open) onPendingDeleteChange(null);

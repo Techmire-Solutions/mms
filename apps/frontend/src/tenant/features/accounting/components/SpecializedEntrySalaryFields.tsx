@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SpecializedEntryStaffPicker } from "@/tenant/features/accounting/components/SpecializedEntryStaffPicker";
+import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { SpecializedEntrySalaryAccountFields } from "./SpecializedEntrySalaryAccountFields";
 
 export function SpecializedEntrySalaryFields({
@@ -39,7 +39,19 @@ export function SpecializedEntrySalaryFields({
         name="staffId"
         render={({ field }) => (
           <FormItem>
-            <SpecializedEntryStaffPicker staffId={field.value || ""} onPick={(id) => field.onChange(id)} />
+            <div className="sm:col-span-2 space-y-2">
+              <RegistryPersonSelect
+                kind="faculty"
+                id="specialized-entry-staff-pick"
+                name="specializedEntryStaffPick"
+                label={t("accounting.journal.specializedEntry.salary.staff")}
+                searchLabel={t("accounting.journal.specializedEntry.salary.staff")}
+                searchPlaceholder={t("accounting.journal.specializedEntry.salary.staffSearch")}
+                value={field.value || ""}
+                onChange={(id) => field.onChange(id)}
+                onPick={(id) => field.onChange(id)}
+              />
+            </div>
             <TranslatedFormMessage messageKey={form.formState.errors.staffId?.message} />
           </FormItem>
         )}

@@ -4,7 +4,7 @@ import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import { CopyBtn } from "@/components/ui/CopyBtn";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 export interface ContactDetailBankDetailsSectionProps {
@@ -53,7 +53,7 @@ export function ContactDetailBankDetailsSection({
                 ) : null}
               </div>
 
-              {copySummary ? <CopyBtn text={copySummary} showToast /> : null}
+              {copySummary ? <CopyButton text={copySummary} showToast /> : null}
             </div>
 
             {/* Account Number / IBAN */}

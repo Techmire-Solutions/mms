@@ -39,5 +39,3 @@ export function ChannelBadge({
     </Badge>
   );
 }
-
-export default ChannelBadge;

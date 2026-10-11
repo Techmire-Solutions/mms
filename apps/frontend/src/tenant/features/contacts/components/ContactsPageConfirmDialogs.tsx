@@ -1,5 +1,5 @@
 import type React from "react";
-import { ModuleSoftDeleteConfirmDialogs } from "@/components/ui/ModuleSoftDeleteConfirmDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ContactsPageConfirmDialogsProps {
@@ -31,7 +31,7 @@ export function ContactsPageConfirmDialogs({
   const { t } = useTranslation();
 
   return (
-    <ModuleSoftDeleteConfirmDialogs
+    <ModuleTrashConfirmDialogs
       pendingDeleteOpen={deleteTarget !== null}
       onPendingDeleteOpenChange={onDeleteTargetOpenChange}
       bulkDeleteOpen={bulkDeleteOpen}

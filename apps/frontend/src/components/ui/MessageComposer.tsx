@@ -27,7 +27,7 @@ export interface MessageComposerProps {
   renderRecipientPicker?: (props: RecipientPickerSlotProps) => React.ReactNode;
 }
 
-export default function MessageComposer(props: MessageComposerProps): React.JSX.Element {
+export function MessageComposer(props: MessageComposerProps): React.JSX.Element {
   const { t } = useTranslation();
   const model = useMessageComposerModel(props);
   const { step, dispatch, isEmail, isSms, isBulk, Icon } = model;
@@ -147,3 +147,5 @@ export default function MessageComposer(props: MessageComposerProps): React.JSX.
     </FormModal>
   );
 }
+
+export default MessageComposer;
