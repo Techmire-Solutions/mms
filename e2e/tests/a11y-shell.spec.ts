@@ -1,17 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { assertNoSeriousA11yViolations } from '../helpers/a11y.js';
 import { auditOverlay } from '../helpers/a11yOverlay.js';
-import { loginTenant } from '../helpers/moduleTiers.js';
 import {
   RESPONSIVE_VIEWPORTS,
   forceRtl,
   waitForAppShellReady,
   waitForToastsToClear,
 } from '../helpers/responsive.js';
-import {
-  bootstrapAuthenticatedTenant,
-  ensureE2ePlatformAdmin,
-} from '../helpers/tenantBootstrap.js';
+import { bootstrapAuthenticatedTenantViaApi } from '../helpers/tenantApiBootstrap.js';
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 process.env.JWT_SECRET =
@@ -56,8 +52,7 @@ async function bootstrapTenant(page: Page, tag: string): Promise<string> {
   const tenantOrigin = `http://${subdomain}.localhost:5173`;
   const adminEmail = `admin@${subdomain}.com`;
   const platformEmail = `platform-a11y-${tag}-${Date.now()}@test.com`;
-  ensureE2ePlatformAdmin(platformEmail, platformPassword);
-  await bootstrapAuthenticatedTenant(page, {
+  await bootstrapAuthenticatedTenantViaApi(page, {
     subdomain,
     tenantOrigin,
     adminEmail,
@@ -66,7 +61,6 @@ async function bootstrapTenant(page: Page, tag: string): Promise<string> {
     platformEmail,
     platformPassword,
   });
-  await loginTenant(page, tenantOrigin, adminEmail, permanentPassword);
   return tenantOrigin;
 }
 

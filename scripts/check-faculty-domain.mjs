@@ -27,7 +27,9 @@ function shouldSkipFile(file) {
 }
 
 for (const root of roots) {
-  for await (const file of glob(`${root}/**/*.{ts,tsx,js,mjs,sql}`)) {
+  for await (const match of glob(`${root}/**/*.{ts,tsx,js,mjs,sql}`)) {
+    // glob yields OS separators; the skip rules match POSIX paths.
+    const file = match.replaceAll('\\', '/');
     if (shouldSkipFile(file)) continue;
     const source = await readFile(file, 'utf8');
     for (const [needle, label] of forbidden) {
