@@ -14,8 +14,9 @@ updates:
       timezone: "Etc/UTC"
     open-pull-requests-limit: 5
     rebase-strategy: "auto"
+    # Dependabot appends the scope itself: "chore(deps): bump …".
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
@@ -25,6 +26,11 @@ updates:
         patterns:
           - "*"
 
+  # One entry for the whole pnpm workspace. From "/" Dependabot reads
+  # pnpm-workspace.yaml and updates every package (apps/*, packages/shared,
+  # e2e) together with the single pnpm-lock.yaml. Per-directory entries
+  # edited package.json without the lockfile, so their PRs failed
+  # `pnpm install --frozen-lockfile` and duplicated the root PRs.
   - package-ecosystem: "npm"
     directory: "/"
     target-branch: "main"
@@ -39,11 +45,13 @@ updates:
       timezone: "Etc/UTC"
     open-pull-requests-limit: 5
     rebase-strategy: "auto"
+    # Dependabot appends the scope itself: "chore(deps): …" / "chore(deps-dev): …".
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
+    # Majors held back for a dedicated upgrade PR (mms-dependencies §2).
     ignore:
       - dependency-name: "xlsx"
       - dependency-name: "ts-deepmerge"
@@ -51,100 +59,18 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "react-dom"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "fastify"
+      - dependency-name: "react-router-dom"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "vite"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "drizzle-orm"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@tanstack/react-query"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "zod"
-        update-types: ["version-update:semver-major"]
-    groups:
-      dev-dependencies:
-        dependency-type: "development"
-        patterns:
-          - "*"
-      minor-and-patch:
-        update-types:
-          - "minor"
-          - "patch"
-
-  - package-ecosystem: "npm"
-    directory: "/apps/backend"
-    target-branch: "main"
-    # Let new releases age before adopting them (supply-chain hygiene);
-    # security updates are not delayed by cooldown.
-    cooldown:
-      default-days: 7
-    schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "03:00"
-      timezone: "Etc/UTC"
-    open-pull-requests-limit: 5
-    rebase-strategy: "auto"
-    commit-message:
-      prefix: "chore(deps-backend)"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "backend"
-    ignore:
-      - dependency-name: "xlsx"
-      - dependency-name: "ts-deepmerge"
       - dependency-name: "fastify"
         update-types: ["version-update:semver-major"]
       - dependency-name: "pino"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "drizzle-orm"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "zod"
-        update-types: ["version-update:semver-major"]
-    groups:
-      dev-dependencies:
-        dependency-type: "development"
-        patterns:
-          - "*"
-      minor-and-patch:
-        update-types:
-          - "minor"
-          - "patch"
-
-  - package-ecosystem: "npm"
-    directory: "/apps/frontend"
-    target-branch: "main"
-    # Let new releases age before adopting them (supply-chain hygiene);
-    # security updates are not delayed by cooldown.
-    cooldown:
-      default-days: 7
-    schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "03:00"
-      timezone: "Etc/UTC"
-    open-pull-requests-limit: 5
-    rebase-strategy: "auto"
-    commit-message:
-      prefix: "chore(deps-frontend)"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "frontend"
-    ignore:
-      - dependency-name: "xlsx"
-      - dependency-name: "ts-deepmerge"
-      - dependency-name: "react"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "react-dom"
-        update-types: ["version-update:semver-major"]
       - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "drizzle-orm"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@tanstack/react-query"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "react-router-dom"
-        update-types: ["version-update:semver-major"]
       - dependency-name: "zod"
         update-types: ["version-update:semver-major"]
     groups:
@@ -156,61 +82,3 @@ updates:
         update-types:
           - "minor"
           - "patch"
-
-  - package-ecosystem: "npm"
-    directory: "/packages/shared"
-    target-branch: "main"
-    # Let new releases age before adopting them (supply-chain hygiene);
-    # security updates are not delayed by cooldown.
-    cooldown:
-      default-days: 7
-    schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "03:00"
-      timezone: "Etc/UTC"
-    open-pull-requests-limit: 5
-    rebase-strategy: "auto"
-    commit-message:
-      prefix: "chore(deps-shared)"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "shared"
-    ignore:
-      - dependency-name: "xlsx"
-      - dependency-name: "ts-deepmerge"
-      - dependency-name: "zod"
-        update-types: ["version-update:semver-major"]
-    groups:
-      minor-and-patch:
-        update-types:
-          - "minor"
-          - "patch"
-
-  - package-ecosystem: "npm"
-    directory: "/e2e"
-    target-branch: "main"
-    # Let new releases age before adopting them (supply-chain hygiene);
-    # security updates are not delayed by cooldown.
-    cooldown:
-      default-days: 7
-    schedule:
-      interval: "weekly"
-      day: "sunday"
-      time: "03:00"
-      timezone: "Etc/UTC"
-    open-pull-requests-limit: 5
-    rebase-strategy: "auto"
-    commit-message:
-      prefix: "chore(deps-e2e)"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "e2e"
-    groups:
-      minor-and-patch:
-        update-types:
-          - "minor"
-          - "patch"
-
