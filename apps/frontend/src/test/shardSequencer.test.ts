@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SHARD_TIMINGS_FILE, pickShard, timingKey, type WeightedFile } from "./shardSequencer";
@@ -45,6 +45,34 @@ describe("pickShard", () => {
 
     // Assert
     expect(reversed).toEqual(forward);
+  });
+});
+
+// Keys must match `timingKey()` on CI or every file falls back to the median
+// weight. Deleted or renamed tests may leave a few stale keys (they only
+// unbalance the split), so presence is checked as a share, not per key.
+describe("shard-timings.json", () => {
+  it("given the recorded keys, should all be POSIX paths relative to the frontend root", () => {
+    // Arrange
+    const keys = Object.keys(recorded);
+
+    // Act
+    const nonRelative = keys.filter((key) => !key.startsWith("src/") || key.includes("\\"));
+
+    // Assert
+    expect(nonRelative).toEqual([]);
+  });
+
+  it("given the recorded keys, should mostly name test files that exist", () => {
+    // Arrange
+    const frontendRoot = path.resolve(import.meta.dirname, "../..");
+    const keys = Object.keys(recorded);
+
+    // Act
+    const present = keys.filter((key) => existsSync(path.join(frontendRoot, key))).length;
+
+    // Assert
+    expect(present / keys.length).toBeGreaterThanOrEqual(0.9);
   });
 });
 
