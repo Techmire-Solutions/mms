@@ -10,7 +10,7 @@ import { usePlatformWorkspaceMetrics } from '@/platform/hooks/usePlatformWorkspa
 import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
 import { usePlatformWorkspaceDescriptor } from '@/platform/hooks/usePlatformWorkspaceDescriptor';
 import { useDescriptorColumnLayout } from '@/hooks/useDescriptorColumnLayout';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ModuleWorkListStateShell } from '@/components/ui/ModuleWorkListStateShell';
 import { PlatformWorkspaceDialogs } from '@/platform/components/workspace/PlatformWorkspaceDialogs';
@@ -127,12 +127,12 @@ export default function PlatformWorkspaceList(): React.JSX.Element {
               title={isFiltered ? t('platform.noSearchResults') : t('apex.noMadrasasYet')}
               action={
                 isFiltered ? (
-                  <ActionButton
-                    variant="secondary"
+                  <Button
+                    variant="outline"
                     onClick={handleClearFilters}
                   >
                     {t('common.clearFilters')}
-                  </ActionButton>
+                  </Button>
                 ) : undefined
               }
             />

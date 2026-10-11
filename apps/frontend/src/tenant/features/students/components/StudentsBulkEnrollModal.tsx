@@ -6,6 +6,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useSessions, useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import type { StudentsBulkEnrollBody } from "@mms/shared";
 import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
 import { StudentsBulkEnrollSessionList } from "@/tenant/features/students/components/StudentsBulkEnrollSessionList";
 
 export interface StudentsBulkEnrollModalProps {
@@ -91,8 +92,9 @@ export function StudentsBulkEnrollModal({
           <span className="text-xs font-semibold text-foreground" id="bulk-enroll-mode-label">
             {t("students.bulkEnrollMode")}
           </span>
-          <div
-            role="radiogroup"
+          <RadioGroup
+            value={mode}
+            onValueChange={(val) => setMode(val as "add" | "replace" | "remove")}
             aria-labelledby="bulk-enroll-mode-label"
             className="grid grid-cols-1 sm:grid-cols-3 gap-2"
           >
@@ -105,34 +107,26 @@ export function StudentsBulkEnrollModal({
             ).map((opt) => {
               const isSelected = mode === opt.id;
               return (
-                <button
+                <label
                   key={opt.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  onClick={() => setMode(opt.id)}
+                  htmlFor={`bulk-mode-${opt.id}`}
                   className={cn(
-                    "flex items-start gap-2 p-3 text-start rounded-xl border text-xs transition-colors min-h-11 cursor-pointer",
+                    "flex items-center gap-2 p-3 rounded-xl border text-xs transition-colors min-h-11 cursor-pointer",
                     isSelected
                       ? "border-primary bg-primary/10 text-foreground font-medium ring-1 ring-primary"
                       : "border-border/60 hover:bg-muted/50 text-muted-foreground",
                   )}
                 >
-                  <div
-                    className={cn(
-                      "w-4 h-4 rounded-full border flex items-center justify-center mt-0.5 shrink-0",
-                      isSelected
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-muted-foreground/40",
-                    )}
-                  >
-                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-background" />}
-                  </div>
+                  <RadioGroupItem
+                    id={`bulk-mode-${opt.id}`}
+                    value={opt.id}
+                    className="h-5 w-5 min-h-5 min-w-5"
+                  />
                   <span className="leading-tight">{opt.label}</span>
-                </button>
+                </label>
               );
             })}
-          </div>
+          </RadioGroup>
         </div>
 
         <StudentsBulkEnrollSessionList

@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import type { StandardMessagingRecipient } from "@mms/shared";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { SegmentedPillFilter } from "@/components/ui/SegmentedPillFilter";
+import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MessageComposerRecipientsList } from "./MessageComposerRecipientsList";
 import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";
@@ -91,7 +91,7 @@ export function MessageComposerRecipients({
             <SectionLabel weight="bold" tracking="wider" className="block">
               {t("messaging.confirmRecipients")} ({totalCount})
             </SectionLabel>
-            <SegmentedPillFilter
+            <CompactSegmentedControl
               options={[
                 { value: "all", label: `${t("messaging.filter.all")} (${validatedRecipients.length})` },
                 { value: "eligible", label: `${t("messaging.filter.eligible")} (${eligibleRecipients.length})` },
@@ -101,7 +101,6 @@ export function MessageComposerRecipients({
               ]}
               value={recipientTab}
               onChange={(value) => onRecipientTabChange(value as RecipientTab)}
-              size="sm"
             />
           </div>
         )}

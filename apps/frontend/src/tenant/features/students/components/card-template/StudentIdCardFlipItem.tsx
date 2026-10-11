@@ -1,5 +1,6 @@
 import React from "react";
 import { RotateCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Student } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { StudentCardTemplate } from "../../lib/studentCardTemplateTypes";
@@ -88,17 +89,20 @@ export function StudentIdCardFlipItem({
       </div>
 
       {/* Quick flip badge */}
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         onClick={(e) => {
           e.stopPropagation();
           onToggleFlip();
         }}
-        className="absolute top-2 end-2 p-1 rounded-md bg-background/80 hover:bg-background border border-border/80 shadow-2xs text-muted-foreground hover:text-foreground opacity-75 hover:opacity-100 transition-all print:hidden"
+        className="absolute top-2 end-2 bg-background/80 hover:bg-background border border-border/80 shadow-2xs text-muted-foreground hover:text-foreground opacity-75 hover:opacity-100 transition-all print:hidden"
         title={t("students.idCard.flipCard")}
-      >
-        <RotateCw className="w-3.5 h-3.5" />
-      </button>
+        aria-label={t("students.idCard.flipCard")}
+        icon={RotateCw}
+      />
+
     </div>
   );
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { Download } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SubTabBar } from '@/components/ui/SubTabBar';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { WorkTaskToolbar } from '@/components/common/work';
 import type { AdminRoleFilter } from '@/platform/pages/PlatformAdminsList';
 import { toColumnCustomizer, type DataTableColumnLayout } from '@/components/common/data-table';
@@ -62,15 +62,15 @@ export function PlatformAdminsToolbar({
       }}
       columnCustomizer={toColumnCustomizer(columnLayout)}
       primaryAction={
-        <ActionButton
-          variant="secondary"
+        <Button
+          variant="outline"
           icon={Download}
           onClick={onExportCsv}
           disabled={shownCount === 0}
           title={t('platform.exportAdminsCsv')}
         >
           {t('platform.exportAdminsCsv')}
-        </ActionButton>
+        </Button>
       }
     >
       <SubTabBar

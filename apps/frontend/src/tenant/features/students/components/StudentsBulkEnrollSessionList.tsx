@@ -1,6 +1,7 @@
 import React from "react";
-import { Loader2, Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface SessionItem {
@@ -34,15 +35,17 @@ export function StudentsBulkEnrollSessionList({
           {t("students.bulkEnrollSelectSessions")}
         </span>
         {sessions.length > 1 && (
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="sm"
             onClick={onSelectAll}
-            className="text-xs text-primary hover:underline font-medium cursor-pointer"
+            className="text-xs text-primary hover:underline font-medium p-0 h-auto min-h-0"
           >
             {selectedSessionIds.length === sessions.length
               ? t("common.deselect")
               : t("students.table.selectAll")}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -58,22 +61,24 @@ export function StudentsBulkEnrollSessionList({
       ) : (
         <div className="max-h-56 overflow-y-auto space-y-1.5 pe-1 border border-border/40 rounded-xl p-2 bg-muted/20">
           {sessions.map((session) => {
-            const isChecked = selectedSessionSet.has(String(session.id));
+            const sessionId = String(session.id);
+            const isChecked = selectedSessionSet.has(sessionId);
             return (
-              <button
+              <Button
                 key={session.id}
                 type="button"
+                variant="ghost"
                 role="checkbox"
                 aria-checked={isChecked}
-                onClick={() => onToggleSession(String(session.id))}
+                onClick={() => onToggleSession(sessionId)}
                 className={cn(
-                  "w-full flex items-center justify-between p-2.5 rounded-lg text-xs text-start transition-colors min-h-11 cursor-pointer",
+                  "w-full flex items-center justify-between p-2.5 rounded-lg text-xs text-start transition-colors min-h-11 h-auto cursor-pointer font-normal",
                   isChecked
-                    ? "bg-primary/15 text-foreground font-semibold"
+                    ? "bg-primary/15 text-foreground font-semibold hover:bg-primary/20"
                     : "hover:bg-muted text-muted-foreground",
                 )}
               >
-                <div className="min-w-0">
+                <div className="min-w-0 text-start">
                   <p className="truncate font-medium text-foreground">
                     {session.name}
                   </p>
@@ -83,16 +88,18 @@ export function StudentsBulkEnrollSessionList({
                     </p>
                   )}
                 </div>
-                <div
-                  className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ms-2 ${
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded border ms-2",
                     isChecked
                       ? "border-primary bg-primary text-primary-foreground"
-                      : "border-muted-foreground/30 bg-background"
-                  }`}
+                      : "border-muted-foreground/30 bg-background",
+                  )}
                 >
-                  {isChecked && <Check className="w-3.5 h-3.5" />}
-                </div>
-              </button>
+                  {isChecked && <Check className="h-3.5 w-3.5" />}
+                </span>
+              </Button>
             );
           })}
         </div>

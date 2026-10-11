@@ -67,7 +67,7 @@ export interface BadgeProps
   dot?: boolean;
   /** Whether the indicator dot pulses. */
   pulse?: boolean;
-  /** Optional remove/dismiss callback rendering an X button. */
+  /** Optional remove/dismiss callback rendering an X button (44px hit area). */
   onRemove?: () => void;
   /** Accessible label for the remove button. Defaults to "Remove". */
   removeAriaLabel?: string;
@@ -130,7 +130,7 @@ const Badge = React.forwardRef<HTMLElement, BadgeProps>(function Badge(
             e.stopPropagation();
             onRemove();
           }}
-          className="ms-0.5 -me-1 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full hover:bg-foreground/15 transition-colors"
+          className="relative ms-0.5 -me-1 inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-foreground/15 transition-colors before:absolute before:-inset-3 before:content-['']"
           aria-label={removeAriaLabel}
         >
           <X className="h-2.5 w-2.5" aria-hidden="true" />

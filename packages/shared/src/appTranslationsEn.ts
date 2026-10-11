@@ -7439,6 +7439,7 @@ export const APP_TRANSLATIONS_EN = {
   "students.cardTemplate.presetStandard": "Standard Card (Horizontal)",
   "students.cardTemplate.side.back": "Back Side",
   "students.cardTemplate.side.front": "Front Side",
+  "students.cardTemplate.sideGroup": "Card Side",
   "students.cardTemplate.title": "Student ID Card Template",
   "students.jobs.exportLabelServer": "Exporting students on server…",
   "students.list.actionEmail": "Send Email",

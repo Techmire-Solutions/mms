@@ -14,7 +14,7 @@ import { useTranslation } from "@/hooks/useTranslation";
  * Displays a compact indicator of the current background server sync status.
  * Hidden when idle. Shows a spinner when syncing and a red badge with tooltip on error.
  */
-export default function SyncStatusBadge(): React.JSX.Element | null {
+export function SyncStatusBadge(): React.JSX.Element | null {
   const { t } = useTranslation();
   const [status, setStatus] = useState<SyncStatus>(getSyncStatus);
 
@@ -65,3 +65,5 @@ export default function SyncStatusBadge(): React.JSX.Element | null {
     </TooltipProvider>
   );
 }
+
+export default SyncStatusBadge;

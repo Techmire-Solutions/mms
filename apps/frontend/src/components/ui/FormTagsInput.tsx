@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -58,17 +57,11 @@ export function TagsInput({ selected = [], predefined = [], onChange, id, name }
             <Badge
               key={tag}
               tone="primary"
-              className="gap-1.5 px-2.5 py-1 text-xs rounded-md font-medium"
+              className="px-2.5 py-1 text-xs rounded-md font-medium"
+              onRemove={() => remove(tag)}
+              removeAriaLabel={t("contacts.form.removeTag", { tag })}
             >
-              <span>{tag}</span>
-              <button
-                type="button"
-                onClick={() => remove(tag)}
-                className="inline-flex min-h-11 min-w-11 items-center justify-center -me-1 rounded-md hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
-                aria-label={t("contacts.form.removeTag", { tag })}
-              >
-                <X className="w-3 h-3" aria-hidden="true" />
-              </button>
+              {tag}
             </Badge>
           ))}
         </div>

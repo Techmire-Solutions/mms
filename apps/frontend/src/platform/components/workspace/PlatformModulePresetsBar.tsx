@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles, School, BookOpen, GraduationCap } from 'lucide-react';
 import { SYSTEM_MODULES } from '@mms/shared';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export interface PlatformModulePresetsBarProps {
@@ -22,17 +22,17 @@ export function PlatformModulePresetsBar({
         <span>{t('onboarding.presetsLabel')}</span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <ActionButton
-          variant="secondary"
+        <Button
+          variant="outline"
           size="sm"
           icon={School}
           disabled={disabled}
           onClick={() => onApplyPreset(SYSTEM_MODULES.map((m) => m.id))}
         >
           {t('onboarding.presetFull')}
-        </ActionButton>
-        <ActionButton
-          variant="secondary"
+        </Button>
+        <Button
+          variant="outline"
           size="sm"
           icon={BookOpen}
           disabled={disabled}
@@ -41,9 +41,9 @@ export function PlatformModulePresetsBar({
           }
         >
           {t('onboarding.presetHifz')}
-        </ActionButton>
-        <ActionButton
-          variant="secondary"
+        </Button>
+        <Button
+          variant="outline"
           size="sm"
           icon={GraduationCap}
           disabled={disabled}
@@ -52,7 +52,7 @@ export function PlatformModulePresetsBar({
           }
         >
           {t('onboarding.presetWeekend')}
-        </ActionButton>
+        </Button>
       </div>
     </div>
   );

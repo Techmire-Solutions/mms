@@ -1,6 +1,6 @@
 import { BookOpen, Plus } from "lucide-react";
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
 import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
@@ -143,9 +143,9 @@ export function SessionsList({
             title={showDeleted ? t("sessions.empty.trashTitle") : t("sessions.empty.title")}
             description={showDeleted ? t("sessions.empty.trashSubtitle") : t("sessions.empty.subtitle")}
             action={!showDeleted && canWrite ? (
-              <ActionButton variant="primary" icon={Plus} onClick={onCreateSession}>
+              <Button variant="primary" icon={Plus} onClick={onCreateSession}>
                 {t("sessions.action.new")}
-              </ActionButton>
+              </Button>
             ) : undefined}
           />
         ) : viewMode === "table" ? (

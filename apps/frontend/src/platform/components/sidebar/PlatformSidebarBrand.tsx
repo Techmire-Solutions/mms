@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShieldAlert, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '@/hooks/useTranslation';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/lib/config/routes';
 
 export interface PlatformSidebarBrandProps {
@@ -61,7 +61,7 @@ export function PlatformSidebarBrand({
       </Link>
 
       {isMobile && (
-        <ActionButton
+        <Button
           type="button"
           variant="ghost"
           size="sm"

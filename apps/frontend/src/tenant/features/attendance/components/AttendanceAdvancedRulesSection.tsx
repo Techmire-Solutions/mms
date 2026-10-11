@@ -1,6 +1,6 @@
 import React from "react";
 import { Scan } from "lucide-react";
-import { SegmentedPillFilter } from "@/components/ui/SegmentedPillFilter";
+import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
 import { Badge } from "@/components/ui/badge";
 import { SEMANTIC_BADGE } from "@/lib/semanticTone";
 import { cn } from "@/lib/utils";
@@ -60,8 +60,7 @@ export function AttendanceAdvancedRulesSection({
               {t("attendance.settings.defaultLayoutDesc")}
             </p>
           </div>
-          <SegmentedPillFilter
-            size="sm"
+          <CompactSegmentedControl
             value={((settingsDraft.defaultViewLayout as string | undefined) || "list") as "list" | "cards"}
             onChange={(value) => upd("defaultViewLayout", value)}
             options={[

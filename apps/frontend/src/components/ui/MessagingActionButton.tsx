@@ -1,5 +1,6 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MESSAGING_ICON_BTN } from "@/components/ui/messagingActionStyles";
 import { cn } from "@/lib/utils";
@@ -29,8 +30,10 @@ export function MessagingActionButton({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon"
             onClick={(e) => {
               e.stopPropagation();
               onClick();
@@ -38,12 +41,12 @@ export function MessagingActionButton({
             className={cn(
               MESSAGING_ICON_BTN,
               toneClass,
-              "inline-flex items-center justify-center select-none",
+              "inline-flex items-center justify-center select-none shadow-none",
             )}
             aria-label={effectiveAria}
           >
             <Icon aria-hidden="true" className="h-4 w-4" />
-          </button>
+          </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" sideOffset={4} className="text-xs">
           {label}

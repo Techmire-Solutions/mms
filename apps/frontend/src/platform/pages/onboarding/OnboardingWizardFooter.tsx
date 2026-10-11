@@ -1,6 +1,6 @@
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { WarningCallout } from "@/components/ui/WarningCallout";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/config/routes";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -60,7 +60,7 @@ export function OnboardingWizardFooter({
       ) : null}
 
       <div className="mt-7 flex items-center justify-between gap-3 border-t border-border/50 pt-5">
-        <ActionButton
+        <Button
           type="button"
           variant="ghost"
           size="md"
@@ -70,9 +70,9 @@ export function OnboardingWizardFooter({
         >
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden />
           {t("onboarding.back")}
-        </ActionButton>
+        </Button>
 
-        <ActionButton
+        <Button
           type={form ? "submit" : "button"}
           form={form}
           variant="primary"
@@ -92,7 +92,7 @@ export function OnboardingWizardFooter({
               <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </>
           )}
-        </ActionButton>
+        </Button>
       </div>
     </>
   );

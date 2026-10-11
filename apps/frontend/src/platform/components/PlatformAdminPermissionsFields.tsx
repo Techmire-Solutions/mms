@@ -2,7 +2,7 @@ import React from 'react';
 import { Shield, Sparkles, CheckCheck, XCircle } from 'lucide-react';
 import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, FULL_PLATFORM_ADMIN_PERMISSIONS, type PlatformAdminPermissions } from '@mms/shared';
 import { PLATFORM_PERMISSION_CONFIG } from '@/platform/lib/platformPermissionConfig';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { PlatformPermissionCheckboxItem } from '@/platform/components/admin/PlatformPermissionCheckboxItem';
 
@@ -40,27 +40,27 @@ export function PlatformAdminPermissionsFields({
       </legend>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
         <div className="flex flex-wrap items-center gap-1.5">
-          <ActionButton
+          <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             size="sm"
             icon={CheckCheck}
             disabled={disabled}
             onClick={() => setAll(true)}
           >
             {t('common.selectAll')}
-          </ActionButton>
-          <ActionButton
+          </Button>
+          <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             size="sm"
             icon={Sparkles}
             disabled={disabled}
             onClick={setOperations}
           >
             {t('platform.permWorkspaces')}
-          </ActionButton>
-          <ActionButton
+          </Button>
+          <Button
             type="button"
             variant="ghost"
             size="sm"
@@ -70,7 +70,7 @@ export function PlatformAdminPermissionsFields({
             className="text-muted-foreground hover:text-foreground"
           >
             {t('common.deselect')}
-          </ActionButton>
+          </Button>
         </div>
       </div>
 

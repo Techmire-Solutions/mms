@@ -7421,6 +7421,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "students.cardTemplate.presetStandard": "معیاری کارڈ (افقی)",
   "students.cardTemplate.side.back": "پچھلی جانب",
   "students.cardTemplate.side.front": "اگلی جانب",
+  "students.cardTemplate.sideGroup": "کارڈ کی جانب",
   "students.cardTemplate.title": "طالب علم شناختی کارڈ ٹیمپلیٹ",
   "students.jobs.exportLabelServer": "سرور پر طلبہ ایکسپورٹ ہو رہے ہیں…",
   "students.list.actionEmail": "ایمیل بھیجیں",

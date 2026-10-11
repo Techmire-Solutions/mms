@@ -1,7 +1,6 @@
 import React from 'react';
 import { Blocks, ExternalLink, KeyRound, Trash2, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ActionButton } from '@/components/ui/ActionButton';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -58,7 +57,7 @@ export function WorkspaceRowActions({
         </a>
       </Button>
 
-      <ActionButton
+      <Button
         variant="ghost"
         size="sm"
         disabled={busy}
@@ -70,7 +69,7 @@ export function WorkspaceRowActions({
       />
 
       {onOpenCreateAdmin ? (
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           disabled={busy}
@@ -83,7 +82,7 @@ export function WorkspaceRowActions({
       ) : null}
 
       {onOpenResetPassword ? (
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           disabled={busy}
@@ -96,7 +95,7 @@ export function WorkspaceRowActions({
       ) : null}
 
       {onOpenDelete ? (
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           disabled={busy || deletePending}

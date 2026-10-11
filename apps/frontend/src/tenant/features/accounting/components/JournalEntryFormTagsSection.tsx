@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Sparkles, Tag, X } from "lucide-react";
+import { Plus, Sparkles, Tag } from "lucide-react";
 import type { JournalTemplate } from "@mms/shared";
 import { JOURNAL_TAGS } from '@/lib/data/accountingData';
 import { SectionCard } from "@/components/ui/SectionCard";
@@ -87,18 +87,13 @@ export function JournalEntryFormTagsSection({
           {customTags.map((tag) => (
             <Badge
               key={tag}
-              variant="secondary"
-              className="inline-flex items-center gap-1 min-h-11 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/25"
+              tone="primary"
+              pill
+              onRemove={() => toggleTag(tag)}
+              removeAriaLabel={t("contacts.form.removeTag", { tag })}
+              className="min-h-11 px-3 py-1 text-xs font-semibold"
             >
-              <span>{tag}</span>
-              <button
-                type="button"
-                onClick={() => toggleTag(tag)}
-                aria-label={t("contacts.form.removeTag", { tag })}
-                className="hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded p-0.5"
-              >
-                <X className="w-3.5 h-3.5" aria-hidden="true" />
-              </button>
+              {tag}
             </Badge>
           ))}
         </div>

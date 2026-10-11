@@ -7432,6 +7432,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "students.cardTemplate.presetStandard": "کارت استاندارد (افقی)",
   "students.cardTemplate.side.back": "پشت کارت",
   "students.cardTemplate.side.front": "روی کارت",
+  "students.cardTemplate.sideGroup": "سمت کارت",
   "students.cardTemplate.title": "الگوی کارت شناسایی دانش‌آموز",
   "students.jobs.exportLabelServer": "در حال صدور دانش‌آموزان روی سرور…",
   "students.list.actionEmail": "ارسال ایمیل",

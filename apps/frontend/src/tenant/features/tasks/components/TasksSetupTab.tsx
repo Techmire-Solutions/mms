@@ -7,6 +7,7 @@ import {
 } from '@mms/shared';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTaskSettings, useUpdateTaskSettings } from '@/tenant/hooks/collections/tasks';
 import { notify } from '@/lib/notify';
@@ -61,20 +62,22 @@ export function TasksSetupTab({
           </p>
         </div>
 
-        <div className="space-y-3">
+        <RadioGroup
+          value={settings.delegationScope}
+          onValueChange={(val) => setSettings({ ...settings, delegationScope: val as DelegationScope })}
+          disabled={!canEditSetup || isLoading}
+          className="space-y-3"
+        >
           {(['descendants', 'direct_reports'] as const).map((scope) => (
             <label
               key={scope}
+              htmlFor={`scope-${scope}`}
               className="flex items-start gap-3 p-3 rounded-md border border-border bg-background cursor-pointer hover:bg-muted/30 transition-colors"
             >
-              <input
-                type="radio"
-                name="delegationScope"
+              <RadioGroupItem
+                id={`scope-${scope}`}
                 value={scope}
-                checked={settings.delegationScope === scope}
-                onChange={() => setSettings({ ...settings, delegationScope: scope as DelegationScope })}
-                disabled={!canEditSetup || isLoading}
-                className="mt-1 text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                className="mt-0.5"
               />
               <div>
                 <div className="text-sm font-medium text-foreground">
@@ -88,7 +91,7 @@ export function TasksSetupTab({
               </div>
             </label>
           ))}
-        </div>
+        </RadioGroup>
 
         <div className="border-t border-border pt-4 space-y-4">
           <div className="flex items-center justify-between gap-3">

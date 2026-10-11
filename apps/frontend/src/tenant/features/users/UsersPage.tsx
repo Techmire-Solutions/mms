@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { UserCog, Download, Mail, Plus, Upload } from 'lucide-react';
 import { ModulePageShell } from '@/components/ui/ModulePageShell';
 import { ResponsiveAccordionTabs } from '@/components/ui/ResponsiveAccordionTabs';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { UsersModalLayer } from '@/tenant/features/users/components/UsersModalLayer';
 import { UsersCsvImportDialog } from '@/tenant/features/users/components/UsersCsvImportDialog';
 import { UsersWorkTier } from '@/tenant/features/users/components/UsersWorkTier';
@@ -42,37 +42,37 @@ export default function UsersPage(): React.JSX.Element {
         controller.effectiveTab === 'work' && controller.effectiveSubTab === 'users' ? (
           <div className="flex items-center gap-2">
             {controller.canExport ? (
-              <ActionButton
+              <Button
                 variant="ghost"
                 icon={Download}
                 onClick={() => { void controller.handleExportCSV(); }}
               >
                 {controller.t('users.exportCsv')}
-              </ActionButton>
+              </Button>
             ) : null}
             {controller.canWrite && !controller.showDeleted ? (
               <>
-                <ActionButton
-                  variant="secondary"
+                <Button
+                  variant="outline"
                   icon={Upload}
                   onClick={() => setImportOpen(true)}
                 >
                   {controller.t('common.import')}
-                </ActionButton>
-                <ActionButton
-                  variant="secondary"
+                </Button>
+                <Button
+                  variant="outline"
                   icon={Mail}
                   onClick={controller.onInviteUser}
                 >
                   {controller.t('users.invite')}
-                </ActionButton>
-                <ActionButton
+                </Button>
+                <Button
                   variant="primary"
                   icon={Plus}
                   onClick={controller.onAddUser}
                 >
                   {controller.t('users.add')}
-                </ActionButton>
+                </Button>
               </>
             ) : null}
           </div>

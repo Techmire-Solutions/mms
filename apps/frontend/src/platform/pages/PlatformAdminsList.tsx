@@ -5,7 +5,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
 import { DETAIL_SECTION_TITLE } from '@/components/ui/formStyles';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { ModuleWorkListStateShell } from '@/components/ui/ModuleWorkListStateShell';
 import { exportPlatformAdminsCsv } from '@/platform/components/admin/exportPlatformAdminsCsv';
 import { PlatformAdminsToolbar } from '@/platform/components/admin/PlatformAdminsToolbar';
@@ -148,9 +148,9 @@ export function PlatformAdminsList({
               title={hasActiveFilters ? t('platform.noMatchingAdmins') : t('platform.noAdmins')}
               action={
                 hasActiveFilters ? (
-                  <ActionButton variant="secondary" onClick={handleClearFilters}>
+                  <Button variant="outline" onClick={handleClearFilters}>
                     {t('common.clearFilters')}
-                  </ActionButton>
+                  </Button>
                 ) : undefined
               }
             />

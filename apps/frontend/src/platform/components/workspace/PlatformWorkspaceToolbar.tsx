@@ -2,7 +2,7 @@ import React from 'react';
 import { Globe, Ban, Download, RefreshCw } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SubTabBar } from '@/components/ui/SubTabBar';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { WorkTaskToolbar } from '@/components/common/work';
 import { PlatformWorkspaceSortMenu } from '@/platform/components/PlatformWorkspaceSortMenu';
 import type { WorkspaceSortDirection, WorkspaceSortField } from '@/platform/components/platformWorkspaceListData';
@@ -94,8 +94,8 @@ export function PlatformWorkspaceToolbar({
       }
       primaryAction={
         <div className="flex items-center gap-2">
-          <ActionButton
-            variant="secondary"
+          <Button
+            variant="outline"
             size="sm"
             icon={RefreshCw}
             loading={isSearching}
@@ -104,15 +104,15 @@ export function PlatformWorkspaceToolbar({
             title={t('common.refresh')}
             aria-label={t('common.refresh')}
           />
-          <ActionButton
-            variant="secondary"
+          <Button
+            variant="outline"
             icon={Download}
             onClick={onExportCsv}
             disabled={shownCount === 0}
             title={t('platform.exportWorkspacesCsv')}
           >
             {t('platform.exportWorkspacesCsv')}
-          </ActionButton>
+          </Button>
         </div>
       }
     >

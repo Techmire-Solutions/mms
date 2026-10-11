@@ -65,7 +65,7 @@ export function SetupIncompleteCallout({ branding, isAdmin }: SetupIncompleteCal
           <Button
             variant="outline"
             size="sm"
-            className="mt-3 h-8 gap-1.5 rounded-lg border-warning/40 bg-background px-3 text-xs font-bold text-warning hover:bg-warning/15 transition-colors"
+            className="mt-3 gap-1.5 rounded-lg border-warning/40 bg-background px-3 text-xs font-bold text-warning hover:bg-warning/15 transition-colors"
             onClick={() => navigate('/settings', { state: { section: 'branding' } })}
           >
             {t('dashboard.setupCallout.cta')}
@@ -74,14 +74,16 @@ export function SetupIncompleteCallout({ branding, isAdmin }: SetupIncompleteCal
         </div>
 
         {/* Dismiss */}
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           aria-label={t('common.dismiss')}
           onClick={handleDismiss}
-          className="flex-shrink-0 rounded-lg p-1 text-muted-foreground hover:bg-warning/15 hover:text-foreground transition-colors cursor-pointer"
+          className="flex-shrink-0 text-muted-foreground hover:bg-warning/15 hover:text-foreground"
         >
           <X className="h-4 w-4" aria-hidden />
-        </button>
+        </Button>
       </motion.div>
     </AnimatePresence>
   );

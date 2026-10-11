@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/ui/FormSelect";
 import { Field } from "@/components/ui/FormPrimitives";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  SEQUENCE_DELIMITER_PRESETS,
-  type SequenceYearFormat,
-} from "@mms/shared";
+import { SEQUENCE_DELIMITER_PRESETS, type SequenceYearFormat } from "@mms/shared";
 
 const DELIMITER_LABEL_KEYS = {
   "": "common.sequenceNumbering.delimiterNone",
@@ -174,21 +172,21 @@ export function SequenceNumberingParametersGrid({
             const symbol = DELIMITER_SYMBOLS[preset.value] ?? preset.label;
             const selected = delimiter === preset.value;
             return (
-              <button
+              <Button
                 key={preset.label}
                 type="button"
+                variant={selected ? "default" : "outline"}
+                size="icon"
                 onClick={() => onChangeDelimiter(preset.value)}
                 aria-pressed={selected}
                 aria-label={label}
                 className={cn(
-                  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border font-mono text-sm transition-colors cursor-pointer",
-                  selected
-                    ? "border-primary bg-primary font-semibold text-primary-foreground"
-                    : "border-border/60 bg-muted/40 text-muted-foreground hover:bg-muted",
+                  "font-mono text-sm",
+                  !selected && "border-border/60 bg-muted/40 text-muted-foreground hover:bg-muted",
                 )}
               >
                 {symbol}
-              </button>
+              </Button>
             );
           })}
         </div>

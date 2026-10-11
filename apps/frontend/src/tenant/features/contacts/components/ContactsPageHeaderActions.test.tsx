@@ -3,33 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ContactsPageHeaderActions } from "./ContactsPageHeaderActions";
 
-vi.mock("@/components/ui/ActionButton", () => ({
-  ActionButton: ({
-    children,
-    icon: Icon,
-    loading,
-    disabled,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    icon?: React.ComponentType | null;
-    loading?: boolean;
-    disabled?: boolean;
-    onClick?: () => void;
-  }) => (
-    <button
-      type="button"
-      data-testid="action-button"
-      data-loading={String(Boolean(loading))}
-      disabled={Boolean(loading) || Boolean(disabled)}
-      onClick={onClick}
-    >
-      {Icon ? <Icon /> : null}
-      {children}
-    </button>
-  ),
-}));
-
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -85,7 +58,7 @@ describe("ContactsPageHeaderActions Component", () => {
   it("marks the export CTA busy and disabled while a server export is in flight", () => {
     const html = render({ isExporting: true });
 
-    expect(html).toContain('data-loading="true"');
+    expect(html).toContain('aria-busy="true"');
     expect(html).toContain("disabled");
   });
 });

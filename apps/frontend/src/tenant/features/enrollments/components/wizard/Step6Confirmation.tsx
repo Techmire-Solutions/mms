@@ -7,6 +7,7 @@ import { type CalculatedFee } from '@/lib/data/enrollmentData';
 import { useFinanceCurrency } from '@/hooks/useCurrency';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Field } from '@/components/ui/FormField';
+import { Textarea } from '@/components/ui/textarea';
 import { Step6ConfirmationRow, Step6ConfirmationSection } from '@/tenant/features/enrollments/components/wizard/step6ConfirmationLayout';
 
 
@@ -83,10 +84,10 @@ export function Step6Confirmation({
       </div>
 
       <Field id="enrollment-notes" label={t('enrollments.detail.notes')}>
-        <textarea
+        <Textarea
           id="enrollment-notes"
           name="notes"
-          className="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-20"
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
           placeholder={t('enrollments.detail.notesPlaceholder')}

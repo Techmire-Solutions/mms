@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, LogOut, ShieldAlert } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { UserAvatar } from '@/components/ui/UserAvatar';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { cn } from '@/lib/utils';
 import { ROUTES } from '@/lib/config/routes';
@@ -63,7 +63,7 @@ export function PlatformSidebarFooter({
       )}
 
       <div className="flex items-center gap-1">
-        <ActionButton
+        <Button
           type="button"
           variant="ghost"
           icon={LogOut}
@@ -76,10 +76,10 @@ export function PlatformSidebarFooter({
           aria-label={t('platform.signOut')}
         >
           {(isMobile || !collapsed) && <span className="text-xs font-medium truncate">{t('platform.signOut')}</span>}
-        </ActionButton>
+        </Button>
 
         {!isMobile && (
-          <ActionButton
+          <Button
             type="button"
             variant="ghost"
             icon={collapsed ? ChevronRight : ChevronLeft}
