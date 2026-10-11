@@ -19,8 +19,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
-    t: (key: string, params?: Record<string, string>) =>
-      params ? `${key}:${params.status}` : key,
+    t: (key: string, params?: Record<string, string>) => (params ? `${key}:${params.status}` : key),
   }),
 }));
 
@@ -93,12 +92,14 @@ describe("useEnrollmentsPageActions", () => {
 
   it("persists a payment status change and refreshes the open detail", () => {
     const onViewingChange = vi.fn();
-    const { result, unmount } = renderTestHook(() => useEnrollmentsPageActions({
-      enrollments: [enrollment],
-      viewing: enrollment,
-      onViewingChange,
-      onActiveSubTabChange: vi.fn(),
-    }));
+    const { result, unmount } = renderTestHook(() =>
+      useEnrollmentsPageActions({
+        enrollments: [enrollment],
+        viewing: enrollment,
+        onViewingChange,
+        onActiveSubTabChange: vi.fn(),
+      }),
+    );
 
     act(() => result.current?.handlePaymentStatusChange("enr-1", "paid"));
 

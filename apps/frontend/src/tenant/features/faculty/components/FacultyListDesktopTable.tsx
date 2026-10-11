@@ -101,7 +101,10 @@ export function FacultyListDesktopTable(props: FacultyListDesktopTableProps): Re
                   </p>
                 ) : null}
                 {showDeleted && member.deletionReason ? (
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2" title={member.deletionReason}>
+                  <p
+                    className="text-xs text-muted-foreground mt-0.5 line-clamp-2"
+                    title={member.deletionReason}
+                  >
                     {t("faculty.deletionReasonLabel")}: {member.deletionReason}
                   </p>
                 ) : null}
@@ -114,9 +117,7 @@ export function FacultyListDesktopTable(props: FacultyListDesktopTableProps): Re
           t,
           statusConfig,
           customFieldsById,
-          emptyFallback: (
-            <span className="text-sm text-muted-foreground">{emptyDash}</span>
-          ),
+          emptyFallback: <span className="text-sm text-muted-foreground">{emptyDash}</span>,
         });
       },
     }));
@@ -189,4 +190,3 @@ export function FacultyListDesktopTable(props: FacultyListDesktopTableProps): Re
     </>
   );
 }
-

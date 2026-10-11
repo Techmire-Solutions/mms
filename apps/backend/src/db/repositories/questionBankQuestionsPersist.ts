@@ -1,14 +1,14 @@
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type QuestionBankQuestion } from '@mms/shared';
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type QuestionBankQuestion } from "@mms/shared";
 import {
   questions,
   questionCategories,
   questionOptions,
   questionTags,
   questionCitations,
-} from '../schema.js';
-import { withTenant, type TenantTransaction } from '../tenant-context.js';
-import { syncQuestionChildren } from './questionBankQuestionsSync.js';
+} from "../schema.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { syncQuestionChildren } from "./questionBankQuestionsSync.js";
 
 type Transaction = TenantTransaction;
 
@@ -18,7 +18,7 @@ function toQuestionInsert(record: QuestionBankQuestion, subdomain: string) {
     workspaceSubdomain: subdomain,
     type: record.type,
     difficulty: record.difficulty,
-    questionLanguage: record.questionLanguage ?? 'en',
+    questionLanguage: record.questionLanguage ?? "en",
     text: record.text,
     answer: record.answer,
     marks: record.marks ?? 1,
@@ -40,7 +40,7 @@ export async function saveQuestion(tenant: string, record: QuestionBankQuestion)
         set: {
           type: record.type,
           difficulty: record.difficulty,
-          questionLanguage: record.questionLanguage ?? 'en',
+          questionLanguage: record.questionLanguage ?? "en",
           text: record.text,
           answer: record.answer,
           marks: record.marks ?? 1,
@@ -205,7 +205,9 @@ export async function replaceQuestionsForWorkspace(
 
     if (uniqueRecords.length === 0) return;
 
-    await tx.insert(questions).values(uniqueRecords.map((record) => toQuestionInsert(record, subdomain)));
+    await tx
+      .insert(questions)
+      .values(uniqueRecords.map((record) => toQuestionInsert(record, subdomain)));
 
     await insertQuestionChildrenTx(tx, subdomain, uniqueRecords);
   });

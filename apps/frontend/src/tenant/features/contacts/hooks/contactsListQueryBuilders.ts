@@ -1,8 +1,4 @@
-import {
-  CONTACTS_MODULE_MANIFEST,
-  type ContactsQuickFilter,
-  type Contact,
-} from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST, type ContactsQuickFilter, type Contact } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import {
   CONTACTS_API,
@@ -90,7 +86,10 @@ export function sameContactsListFilters(
 }
 
 /** Single SQL page — preferred for report visualizer (no unbounded walk). */
-export async function fetchContactById(contactId: string, _signal?: AbortSignal): Promise<Contact | undefined> {
+export async function fetchContactById(
+  contactId: string,
+  _signal?: AbortSignal,
+): Promise<Contact | undefined> {
   const response = await apiContract.contacts.get({ params: { id: contactId } });
   if (response.status !== 200) throw new Error("Failed to fetch contact");
   const body = response.body as { contact?: Contact } | undefined;

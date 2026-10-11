@@ -8,9 +8,7 @@ import { FacultyList } from "@/tenant/features/faculty/components/FacultyList";
 import { FacultyBulkActionBar } from "@/tenant/features/faculty/components/FacultyBulkActionBar";
 import { FacultyListFilters } from "@/tenant/features/faculty/components/FacultyListFilters";
 import { useFacultyWorkTierActions } from "@/tenant/features/faculty/hooks/useFacultyWorkTierActions";
-import type {
-  FacultyWorkTierProps,
-} from "@/tenant/features/faculty/components/facultyWorkTierProps";
+import type { FacultyWorkTierProps } from "@/tenant/features/faculty/components/facultyWorkTierProps";
 
 export type { FacultyWorkTierProps };
 
@@ -174,4 +172,3 @@ export function FacultyWorkTier(props: FacultyWorkTierProps): React.JSX.Element 
     </ErrorBoundary>
   );
 }
-

@@ -18,4 +18,3 @@ export function ModulePageShell(props: ModulePageShellProps): React.JSX.Element 
 
 export { ModuleScaffoldSkeleton };
 export type { ModuleScaffoldProps, ModuleScaffoldSkeletonProps };
-

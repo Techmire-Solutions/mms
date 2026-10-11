@@ -102,7 +102,6 @@ export function StudentIdCardFlipItem({
         aria-label={t("students.idCard.flipCard")}
         icon={RotateCw}
       />
-
     </div>
   );
 }

@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  getFlatFieldsConfig,
-  mergeTabbedFields,
-} from "./moduleFieldConfigUtils.js";
+import { getFlatFieldsConfig, mergeTabbedFields } from "./moduleFieldConfigUtils.js";
 
 describe("moduleFieldConfigUtils", () => {
   it("returns defaults unchanged when no override is provided", () => {
@@ -20,12 +17,14 @@ describe("moduleFieldConfigUtils", () => {
       },
     };
 
-    expect(mergeTabbedFields(defaults, {
-      basic: [{ key: "email" }],
-      setup: {
-        status: { enabled: false, required: true },
-      },
-    })).toEqual({
+    expect(
+      mergeTabbedFields(defaults, {
+        basic: [{ key: "email" }],
+        setup: {
+          status: { enabled: false, required: true },
+        },
+      }),
+    ).toEqual({
       basic: [{ key: "email" }],
       setup: {
         status: { enabled: false, required: true },
@@ -35,25 +34,25 @@ describe("moduleFieldConfigUtils", () => {
   });
 
   it("flattens array-based field definitions", () => {
-    expect(getFlatFieldsConfig({
-      basic: [
-        { key: "name", enabled: false, required: true },
-        { key: "email" },
-        null,
-      ],
-    })).toEqual({
+    expect(
+      getFlatFieldsConfig({
+        basic: [{ key: "name", enabled: false, required: true }, { key: "email" }, null],
+      }),
+    ).toEqual({
       name: { enabled: false, required: true },
       email: { enabled: true, required: false },
     });
   });
 
   it("flattens map-based field configuration and preserves truthy required values", () => {
-    expect(getFlatFieldsConfig({
-      basic: {
-        name: { enabled: false, required: "yes" },
-        email: {},
-      },
-    })).toEqual({
+    expect(
+      getFlatFieldsConfig({
+        basic: {
+          name: { enabled: false, required: "yes" },
+          email: {},
+        },
+      }),
+    ).toEqual({
       name: { enabled: false, required: true },
       email: { enabled: true, required: false },
     });

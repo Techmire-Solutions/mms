@@ -15,12 +15,14 @@ export interface AccountingSettingsProps {
   onSaveFiscalYears: (
     fiscalYears: FiscalYear[] | ((prev: FiscalYear[]) => FiscalYear[]),
   ) => void | Promise<void>;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const AccountingSettings = (function AccountingSettings({
+export const AccountingSettings = function AccountingSettings({
   accounts,
   fiscalYears,
   onSaveFiscalYears,
@@ -61,9 +63,7 @@ export const AccountingSettings = (function AccountingSettings({
     onPrefsDirtyChange?.(isPrefsDirty);
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
-  const unsavedWarning = isPrefsDirty
-    ? t("accounting.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isPrefsDirty ? t("accounting.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -129,6 +129,6 @@ export const AccountingSettings = (function AccountingSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default AccountingSettings;

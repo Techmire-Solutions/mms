@@ -18,7 +18,9 @@ export function EnrollmentsListContent(props: EnrollmentListContentProps): React
           variant="dashed"
           icon={Search}
           title={showDeleted ? t("enrollments.empty.trashTitle") : t("enrollments.empty.title")}
-          description={showDeleted ? t("enrollments.empty.trashSubtitle") : t("enrollments.empty.description")}
+          description={
+            showDeleted ? t("enrollments.empty.trashSubtitle") : t("enrollments.empty.description")
+          }
           compact
         />
       ) : props.viewMode === "cards" ? (

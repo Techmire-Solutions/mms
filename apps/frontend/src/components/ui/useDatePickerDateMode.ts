@@ -41,7 +41,12 @@ export function useDatePickerDateMode({
   setYearPageStart,
 }: DatePickerDateModeDeps) {
   const dateValue = React.useMemo(
-    () => (typeof value === "string" ? parseFlexibleIsoDate(value) : value instanceof Date ? value : undefined),
+    () =>
+      typeof value === "string"
+        ? parseFlexibleIsoDate(value)
+        : value instanceof Date
+          ? value
+          : undefined,
     [value],
   );
 

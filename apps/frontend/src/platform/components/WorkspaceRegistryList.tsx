@@ -56,12 +56,7 @@ export default function WorkspaceRegistryList({
   const items = workspaces ?? [];
 
   if (items.length === 0) {
-    return (
-      <EmptyState
-        title={t(emptyMessageKey)}
-        compact
-      />
-    );
+    return <EmptyState title={t(emptyMessageKey)} compact />;
   }
 
   return (
@@ -96,7 +91,7 @@ export default function WorkspaceRegistryList({
   );
 }
 
-const RegistryWorkspaceRow = (function RegistryWorkspaceRow({
+const RegistryWorkspaceRow = function RegistryWorkspaceRow({
   workspace,
   appDomain,
   destinationPath,
@@ -162,4 +157,4 @@ const RegistryWorkspaceRow = (function RegistryWorkspaceRow({
       </a>
     </motion.li>
   );
-});
+};

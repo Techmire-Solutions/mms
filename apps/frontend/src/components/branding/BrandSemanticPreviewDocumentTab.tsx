@@ -13,14 +13,14 @@ export function BrandSemanticPreviewDocumentTab({
   return (
     <div className="flex justify-center p-6 bg-muted/15">
       {/* Student ID Badge Mockup */}
-      <div
-        className="w-full max-w-xs overflow-hidden rounded-2xl border border-border/80 bg-card shadow-lg transition-shadow hover:shadow-xl"
-      >
+      <div className="w-full max-w-xs overflow-hidden rounded-2xl border border-border/80 bg-card shadow-lg transition-shadow hover:shadow-xl">
         <div
           className="px-5 py-3.5 text-center text-white"
           style={{ backgroundColor: activeOnPrimaryBg }}
         >
-          <p className="text-3xs uppercase tracking-widest font-extrabold opacity-90">{t("theme.previewStudentCardTitle")}</p>
+          <p className="text-3xs uppercase tracking-widest font-extrabold opacity-90">
+            {t("theme.previewStudentCardTitle")}
+          </p>
           <p className="text-sm font-bold mt-0.5 tracking-tight">Madrasa Noor-ul-Quran</p>
         </div>
         <div className="p-4 flex items-center gap-4">
@@ -33,7 +33,9 @@ export function BrandSemanticPreviewDocumentTab({
           <div className="space-y-1 min-w-0">
             <p className="text-sm font-bold text-foreground truncate">Zayd Al-Mansoor</p>
             <p className="text-xs text-muted-foreground">{t("theme.previewStudentCardRole")}</p>
-            <p className="font-mono text-2xs text-muted-foreground">{t("theme.previewStudentCardId")}</p>
+            <p className="font-mono text-2xs text-muted-foreground">
+              {t("theme.previewStudentCardId")}
+            </p>
             <span
               className="inline-block mt-1 px-2 py-0.5 rounded-md text-3xs font-bold uppercase tracking-wider shadow-2xs"
               style={{

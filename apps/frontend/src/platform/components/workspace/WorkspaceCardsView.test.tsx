@@ -32,7 +32,7 @@ describe("WorkspaceListCards Component", () => {
         onToggleEmailVerification={vi.fn()}
         onOpenModules={vi.fn()}
         onOpenDelete={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("al-huda");

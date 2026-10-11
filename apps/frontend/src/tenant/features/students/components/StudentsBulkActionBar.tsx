@@ -23,7 +23,10 @@ export interface StudentsBulkActionBarProps {
   onSms: (targets: Student[]) => void;
   onEmail: (targets: Student[]) => void;
   onBulkStatusChange?: (status: string) => void;
-  onBulkEnroll?: (payload: { sessionIds: string[]; mode: StudentsBulkEnrollBody["mode"] }) => Promise<void> | void;
+  onBulkEnroll?: (payload: {
+    sessionIds: string[];
+    mode: StudentsBulkEnrollBody["mode"];
+  }) => Promise<void> | void;
   isBulkEnrollPending?: boolean;
   onBulkPrintIdCards?: () => void;
   onBulkExport?: () => void;

@@ -67,7 +67,11 @@ export function SessionTimeoutModal({
         </div>
       }
     >
-      <p className="text-center text-sm font-medium text-foreground" role="status" aria-live="polite">
+      <p
+        className="text-center text-sm font-medium text-foreground"
+        role="status"
+        aria-live="polite"
+      >
         {t("session.timeoutCountdown", { seconds: String(seconds) })}
       </p>
     </Modal>

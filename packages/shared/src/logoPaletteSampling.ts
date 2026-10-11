@@ -1,4 +1,4 @@
-import { hexToHslColor } from './brandingTheme.js';
+import { hexToHslColor } from "./brandingTheme.js";
 
 /** Options for {@link extractDominantSwatchesFromRgba}. */
 export interface LogoPaletteSamplingOptions {
@@ -28,7 +28,7 @@ const DEFAULT_SAMPLING: Required<LogoPaletteSamplingOptions> = {
   minChromaSaturation: 8,
   minLightness: 8,
   maxLightness: 92,
-  flattenOnto: '#ffffff',
+  flattenOnto: "#ffffff",
   centerWeight: 0.35,
   minSwatchDistance: 42,
 };
@@ -47,12 +47,12 @@ interface ColorBucket {
 }
 
 function parseHexRgb(hex: string): Rgb | null {
-  let raw = hex.trim().replace(/^#/, '');
+  let raw = hex.trim().replace(/^#/, "");
   if (raw.length === 3) {
     raw = raw
-      .split('')
+      .split("")
       .map((ch) => ch + ch)
-      .join('');
+      .join("");
   }
   if (!/^[0-9a-fA-F]{6}$/.test(raw)) return null;
   return {
@@ -66,7 +66,7 @@ function rgbToHex(r: number, g: number, b: number): string {
   const channel = (value: number) =>
     Math.max(0, Math.min(255, Math.round(value)))
       .toString(16)
-      .padStart(2, '0');
+      .padStart(2, "0");
   return `#${channel(r)}${channel(g)}${channel(b)}`;
 }
 
@@ -98,7 +98,12 @@ function chromaWeight(r: number, g: number, b: number): number {
   return saturationFactor * (0.7 + midLightness * 0.3);
 }
 
-function isSampleNeutral(r: number, g: number, b: number, samplingOptions: Required<LogoPaletteSamplingOptions>): boolean {
+function isSampleNeutral(
+  r: number,
+  g: number,
+  b: number,
+  samplingOptions: Required<LogoPaletteSamplingOptions>,
+): boolean {
   const hsl = hexToHslColor(rgbToHex(r, g, b));
   if (!hsl) return true;
   if (hsl.s < samplingOptions.minChromaSaturation) return true;
@@ -147,7 +152,13 @@ export function extractDominantWeightedSwatchesFromRgba(
       const alpha = rgbaPixels[pixelOffset + 3];
       if (alpha < samplingOptions.minAlpha) continue;
 
-      const flat = flattenPixel(rgbaPixels[pixelOffset], rgbaPixels[pixelOffset + 1], rgbaPixels[pixelOffset + 2], alpha, background);
+      const flat = flattenPixel(
+        rgbaPixels[pixelOffset],
+        rgbaPixels[pixelOffset + 1],
+        rgbaPixels[pixelOffset + 2],
+        alpha,
+        background,
+      );
       if (isSampleNeutral(flat.r, flat.g, flat.b, samplingOptions)) continue;
 
       const qr = quantizeChannel(flat.r, samplingOptions.quantizeBits);
@@ -156,7 +167,8 @@ export function extractDominantWeightedSwatchesFromRgba(
       const key = `${qr}|${qg}|${qb}`;
 
       const pixelWeight =
-        centerPixelWeight(xPosition, yPosition, width, height, samplingOptions.centerWeight) * chromaWeight(flat.r, flat.g, flat.b);
+        centerPixelWeight(xPosition, yPosition, width, height, samplingOptions.centerWeight) *
+        chromaWeight(flat.r, flat.g, flat.b);
 
       const existing = buckets.get(key);
       if (existing) {
@@ -192,7 +204,9 @@ export function extractDominantWeightedSwatchesFromRgba(
 
   for (const entry of ranked) {
     if (dominant.length >= samplingOptions.maxSwatches) break;
-    const tooClose = picked.some((rgb) => rgbDistance(rgb, entry.rgb) < samplingOptions.minSwatchDistance);
+    const tooClose = picked.some(
+      (rgb) => rgbDistance(rgb, entry.rgb) < samplingOptions.minSwatchDistance,
+    );
     if (tooClose) continue;
     picked.push(entry.rgb);
     dominant.push({ hex: entry.hex, weight: entry.weight, percentage: 0 });
@@ -217,5 +231,7 @@ export function extractDominantSwatchesFromRgba(
   height: number,
   options?: LogoPaletteSamplingOptions,
 ): string[] {
-  return extractDominantWeightedSwatchesFromRgba(rgbaPixels, width, height, options).map((s) => s.hex);
+  return extractDominantWeightedSwatchesFromRgba(rgbaPixels, width, height, options).map(
+    (s) => s.hex,
+  );
 }

@@ -37,23 +37,32 @@ export default function ContactEditModal({
     onClose();
   }, [open, canWrite, onClose, t]);
 
-  const handleSave = useCallback(async (contactPayload: Contact): Promise<void> => {
-    if (!canWrite) {
-      throw new Error(t("contacts.form.writeDenied"));
-    }
-    const response = await updateContact.mutateAsync({
-      id: String(contactPayload.id),
-      contact: contactPayload,
-    });
-    onSaved?.(response.contact);
-  }, [canWrite, onSaved, t, updateContact]);
+  const handleSave = useCallback(
+    async (contactPayload: Contact): Promise<void> => {
+      if (!canWrite) {
+        throw new Error(t("contacts.form.writeDenied"));
+      }
+      const response = await updateContact.mutateAsync({
+        id: String(contactPayload.id),
+        contact: contactPayload,
+      });
+      onSaved?.(response.contact);
+    },
+    [canWrite, onSaved, t, updateContact],
+  );
 
   if (!open || !canWrite || !contact?.id) return null;
 
   const branding = getScopedBrandingSettings();
 
   return (
-    <Suspense fallback={<span role="status" className="sr-only">{t("common.loading")}</span>}>
+    <Suspense
+      fallback={
+        <span role="status" className="sr-only">
+          {t("common.loading")}
+        </span>
+      }
+    >
       <ContactForm
         key={`edit-${contact.id}`}
         open

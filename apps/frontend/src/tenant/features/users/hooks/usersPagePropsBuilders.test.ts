@@ -1,27 +1,27 @@
-import { describe, expect, it, vi } from 'vitest';
-import { buildUsersWorkTierProps } from './usersPageWorkTierProps';
-import { buildUsersModalLayerProps } from './usersPageModalLayerProps';
-import { normalizeWorkspaceUser } from '@mms/shared';
+import { describe, expect, it, vi } from "vitest";
+import { buildUsersWorkTierProps } from "./usersPageWorkTierProps";
+import { buildUsersModalLayerProps } from "./usersPageModalLayerProps";
+import { normalizeWorkspaceUser } from "@mms/shared";
 
-describe('usersPagePropsBuilders', () => {
-  it('builds UsersWorkTierProps object from domain slices', () => {
+describe("usersPagePropsBuilders", () => {
+  it("builds UsersWorkTierProps object from domain slices", () => {
     const mockUser = normalizeWorkspaceUser({
-      id: 'u1',
-      name: 'User One',
-      email: 'u1@test.com',
-      role: 'admin',
+      id: "u1",
+      name: "User One",
+      email: "u1@test.com",
+      role: "admin",
     });
 
     const mockFilters: any = {
       listPage: 1,
       setListPage: vi.fn(),
-      search: '',
+      search: "",
       setSearch: vi.fn(),
-      roleFilter: 'all',
+      roleFilter: "all",
       setRoleFilter: vi.fn(),
-      statusFilter: 'all',
+      statusFilter: "all",
       setStatusFilter: vi.fn(),
-      selectedIds: ['u1'],
+      selectedIds: ["u1"],
       setSelectedIds: vi.fn(),
       showDeleted: false,
       setShowDeleted: vi.fn(),
@@ -49,8 +49,8 @@ describe('usersPagePropsBuilders', () => {
     };
 
     const workTierProps = buildUsersWorkTierProps({
-      tabs: [{ id: 'users', label: 'Users' }],
-      activeSubTab: 'users',
+      tabs: [{ id: "users", label: "Users" }],
+      activeSubTab: "users",
       users: [mockUser],
       logs: [],
       filters: mockFilters,
@@ -75,13 +75,13 @@ describe('usersPagePropsBuilders', () => {
       onMessageUsers: vi.fn(),
     });
 
-    expect(workTierProps.tabs).toEqual([{ id: 'users', label: 'Users' }]);
+    expect(workTierProps.tabs).toEqual([{ id: "users", label: "Users" }]);
     expect(workTierProps.users).toHaveLength(1);
-    expect(workTierProps.selectedIds).toEqual(['u1']);
+    expect(workTierProps.selectedIds).toEqual(["u1"]);
     expect(workTierProps.isLogsLoading).toBe(true);
   });
 
-  it('builds UsersModalLayerProps object from domain slices', () => {
+  it("builds UsersModalLayerProps object from domain slices", () => {
     const mockActions: any = {
       handleSaveEdit: vi.fn(),
       handleResetPassword: vi.fn(),

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { BookOpen } from 'lucide-react';
-import { FormModal } from '@/components/ui/FormModal';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
+import React, { useState, useEffect } from "react";
+import { BookOpen } from "lucide-react";
+import { FormModal } from "@/components/ui/FormModal";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
 import {
   getLanguageDirection,
   normalizeAppLanguage,
@@ -13,9 +13,9 @@ import {
   type QuestionDifficulty,
   type QuestionBankQuestion as Question,
   type QuestionSourceBook,
-} from '@mms/shared';
-import { mapZodFormErrors } from '@/lib/forms/mapZodFormErrors';
-import { useQuestionBankConfig } from '@/tenant/features/question-bank/hooks/useQuestionBankConfig';
+} from "@mms/shared";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import { QuestionFormClassificationSection } from "@/tenant/features/question-bank/components/QuestionFormClassificationSection";
 import { QuestionFormContentSection } from "@/tenant/features/question-bank/components/QuestionFormContentSection";
 import { QuestionFormFooterSummary } from "@/tenant/features/question-bank/components/QuestionFormFooterSummary";
@@ -31,7 +31,8 @@ export function QuestionForm({
   onSave,
 }: QuestionFormProps): React.JSX.Element {
   const { t, language } = useTranslation();
-  const { settings, categories, sourceBooks, updateSettingsAsync } = useQuestionBankConfig(questions);
+  const { settings, categories, sourceBooks, updateSettingsAsync } =
+    useQuestionBankConfig(questions);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -39,12 +40,12 @@ export function QuestionForm({
     const defaultLang = normalizeAppLanguage(language);
     return {
       categoryIds: question?.categoryIds ?? [],
-      type: question?.type ?? 'mcq',
-      difficulty: (question?.difficulty as QuestionDifficulty) ?? 'easy',
+      type: question?.type ?? "mcq",
+      difficulty: (question?.difficulty as QuestionDifficulty) ?? "easy",
       questionLanguage: (question?.questionLanguage as AppLanguageCode) ?? defaultLang,
-      text: question?.text ?? '',
-      options: question?.options ? [...question.options] : ['', '', '', ''],
-      answer: question?.answer ?? '',
+      text: question?.text ?? "",
+      options: question?.options ? [...question.options] : ["", "", "", ""],
+      answer: question?.answer ?? "",
       sourceCitations: question?.sourceCitations ? [...question.sourceCitations] : [],
     };
   });
@@ -55,12 +56,12 @@ export function QuestionForm({
     const defaultLang = normalizeAppLanguage(language);
     setQuestionDraft({
       categoryIds: question?.categoryIds ?? [],
-      type: question?.type ?? 'mcq',
-      difficulty: (question?.difficulty as QuestionDifficulty) ?? 'easy',
+      type: question?.type ?? "mcq",
+      difficulty: (question?.difficulty as QuestionDifficulty) ?? "easy",
       questionLanguage: (question?.questionLanguage as AppLanguageCode) ?? defaultLang,
-      text: question?.text ?? '',
-      options: question?.options ? [...question.options] : ['', '', '', ''],
-      answer: question?.answer ?? '',
+      text: question?.text ?? "",
+      options: question?.options ? [...question.options] : ["", "", "", ""],
+      answer: question?.answer ?? "",
       sourceCitations: question?.sourceCitations ? [...question.sourceCitations] : [],
     });
     setErrors({});
@@ -85,9 +86,7 @@ export function QuestionForm({
   // Inline category/source-book creation in the question form persists to the
   // typed Question Bank preferences (`PUT /api/question-bank/config/preferences`)
   // — never the legacy `question_bank_settings` document-store object.
-  const handleCreateCategory = async (
-    created: QuestionCategory,
-  ): Promise<QuestionCategory[]> => {
+  const handleCreateCategory = async (created: QuestionCategory): Promise<QuestionCategory[]> => {
     const next = [...(settings.categories ?? []), created];
     await updateSettingsAsync({ ...settings, categories: next });
     return next;
@@ -97,7 +96,9 @@ export function QuestionForm({
     const current = settings.sourceBooks ?? [];
     const index = current.findIndex((entry) => entry.id === book.id);
     const next =
-      index >= 0 ? current.map((entry) => (entry.id === book.id ? book : entry)) : [...current, book];
+      index >= 0
+        ? current.map((entry) => (entry.id === book.id ? book : entry))
+        : [...current, book];
     await updateSettingsAsync({ ...settings, sourceBooks: next });
   };
 
@@ -115,17 +116,19 @@ export function QuestionForm({
     const parsed = questionBankQuestionWriteSchema.safeParse(candidate);
     if (!parsed.success) {
       setErrors(mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)));
-      notify.error(t('questionBank.validationFailed'));
+      notify.error(t("questionBank.validationFailed"));
       return;
     }
 
     setSaving(true);
     try {
       await onSave(parsed.data as Question);
-      notify.success(question ? t('questionBank.updated') : t('questionBank.saved'));
+      notify.success(question ? t("questionBank.updated") : t("questionBank.saved"));
       onClose();
     } catch (err: unknown) {
-      notify.error(t('questionBank.saveFailed'), { description: err instanceof Error ? err.message : String(err) });
+      notify.error(t("questionBank.saveFailed"), {
+        description: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setSaving(false);
     }
@@ -137,13 +140,13 @@ export function QuestionForm({
     <FormModal
       open={open}
       onClose={onClose}
-      title={question ? t('questionBank.editQuestion') : t('questionBank.addQuestion')}
-      subtitle={t('questionBank.form.subtitle')}
+      title={question ? t("questionBank.editQuestion") : t("questionBank.addQuestion")}
+      subtitle={t("questionBank.form.subtitle")}
       icon={BookOpen}
       lang={language}
       dir={getLanguageDirection(language)}
-      cancelLabel={t('questionBank.cancel')}
-      saveLabel={t('questionBank.saveQuestion')}
+      cancelLabel={t("questionBank.cancel")}
+      saveLabel={t("questionBank.saveQuestion")}
       onSave={handleSave}
       saving={saving}
       saveDisabled={!questionDraft.text?.trim() || questionDraft.categoryIds.length === 0}
@@ -171,7 +174,11 @@ export function QuestionForm({
           />
         </div>
         <div className="relative z-sticky">
-          <QuestionFormContentSection questionDraft={questionDraft} errors={errors} updateDraft={updateDraft} />
+          <QuestionFormContentSection
+            questionDraft={questionDraft}
+            errors={errors}
+            updateDraft={updateDraft}
+          />
         </div>
         <div className="relative z-elevated">
           <QuestionFormSourcesSection

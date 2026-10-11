@@ -3,20 +3,20 @@
  * `workspaces` using AES-256-GCM (`encryptSecretAtRest`). Idempotent — already
  * encrypted envelopes are left unchanged.
  */
-import { eq } from 'drizzle-orm';
-import type { LlmConfig } from '@mms/shared';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
+import { eq } from "drizzle-orm";
+import type { LlmConfig } from "@mms/shared";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
 import {
   encryptLlmApiKey,
   encryptLlmConfigs,
   workspaceLlmSecretsNeedEncryption,
-} from '../repositories/workspaceLlmSecrets.js';
-import { invalidateWorkspaceCache } from '../../services/workspaceService.js';
+} from "../repositories/workspaceLlmSecrets.js";
+import { invalidateWorkspaceCache } from "../../services/workspaceService.js";
 
 export async function runMigration090(): Promise<void> {
-  console.log('Encrypting plaintext workspace LLM secrets at rest...');
+  console.log("Encrypting plaintext workspace LLM secrets at rest...");
   const db = getDb();
   const workspaces = await db
     .select({

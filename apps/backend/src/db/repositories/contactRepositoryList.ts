@@ -1,10 +1,10 @@
-import { sql, type SQL } from 'drizzle-orm';
-import { dedupeTrimmedIds, type ContactsListPageResult, type ContactsListQuery } from '@mms/shared';
-import { contacts, students, faculty, facultyEmployments, tenantUsers } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { hydrateContactsList, hydrateContactsSummaryList } from './contactRepositoryCore.js';
-import { buildListConditions, buildOrderBy } from './contactRepositoryListFilter.js';
+import { sql, type SQL } from "drizzle-orm";
+import { dedupeTrimmedIds, type ContactsListPageResult, type ContactsListQuery } from "@mms/shared";
+import { contacts, students, faculty, facultyEmployments, tenantUsers } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { hydrateContactsList, hydrateContactsSummaryList } from "./contactRepositoryCore.js";
+import { buildListConditions, buildOrderBy } from "./contactRepositoryListFilter.js";
 
 export const FACULTY_USER_ROLES_SQL = sql`('faculty', 'teacher', 'assistant_teacher')`;
 
@@ -73,9 +73,7 @@ export async function listContactsPage(
   const subdomain = tenant.trim().toLowerCase();
   const excludeIds = dedupeTrimmedIds(query.excludeIds ?? []);
   const includeIds =
-    query.includeIds === undefined
-      ? undefined
-      : dedupeTrimmedIds(query.includeIds);
+    query.includeIds === undefined ? undefined : dedupeTrimmedIds(query.includeIds);
 
   if (includeIds && includeIds.length === 0) {
     const page = Math.max(1, query.page ?? 1);

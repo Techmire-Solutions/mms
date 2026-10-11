@@ -4,7 +4,10 @@ import { ModuleWorkToolbar } from "@/components/ui/ModuleWorkToolbar";
 import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { SessionStatus, SessionType } from "@/tenant/features/sessions/components/sessionPageTypes";
+import type {
+  SessionStatus,
+  SessionType,
+} from "@/tenant/features/sessions/components/sessionPageTypes";
 import { SESSIONS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/sessions/hooks/useSessionsKeyboardShortcuts";
 import { SessionsFiltersMenuButton } from "@/tenant/features/sessions/components/SessionsFiltersMenuButton";
 

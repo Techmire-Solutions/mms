@@ -6,12 +6,14 @@ import { renderSolarDobMetadata, renderLunarDobMetadata } from "./contactMetadat
 describe("contactMetadataDates helpers", () => {
   it("renders solar DOB metadata", () => {
     const html = renderToStaticMarkup(
-      <>{renderSolarDobMetadata({
-        dob: "2000-01-01",
-        showDetailedSolarAge: true,
-        language: "en",
-        emptyNode: "-",
-      })}</>,
+      <>
+        {renderSolarDobMetadata({
+          dob: "2000-01-01",
+          showDetailedSolarAge: true,
+          language: "en",
+          emptyNode: "-",
+        })}
+      </>,
     );
 
     expect(html).toContain("2000");
@@ -19,13 +21,15 @@ describe("contactMetadataDates helpers", () => {
 
   it("renders lunar DOB metadata when enabled", () => {
     const html = renderToStaticMarkup(
-      <>{renderLunarDobMetadata({
-        dob: "2000-01-01",
-        showLunarDob: true,
-        showDetailedLunarAge: true,
-        language: "en",
-        emptyNode: "-",
-      })}</>,
+      <>
+        {renderLunarDobMetadata({
+          dob: "2000-01-01",
+          showLunarDob: true,
+          showDetailedLunarAge: true,
+          language: "en",
+          emptyNode: "-",
+        })}
+      </>,
     );
 
     expect(html).toContain("font-mono");

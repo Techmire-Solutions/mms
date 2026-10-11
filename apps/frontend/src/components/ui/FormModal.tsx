@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Modal, type ModalProps } from '@/components/ui/Modal';
-import { ConfirmAlertDialog } from '@/components/ui/ConfirmAlertDialog';
-import { useFormModalLayout } from '@/components/ui/useFormModalLayout';
-import type { SubTab } from '@/components/ui/SubTabBar';
+import React, { useState } from "react";
+import { Modal, type ModalProps } from "@/components/ui/Modal";
+import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { useFormModalLayout } from "@/components/ui/useFormModalLayout";
+import type { SubTab } from "@/components/ui/SubTabBar";
 
 export type { SubTab as FormModalTab };
 
@@ -31,7 +31,7 @@ export function FormModal<K extends string = string>({
   title,
   subtitle,
   icon,
-  size = 'lg',
+  size = "lg",
   panelClassName: panelClassNameProp,
   tall = false,
   progress,
@@ -89,14 +89,9 @@ export function FormModal<K extends string = string>({
     onClose();
   };
 
-  const {
-    panelClassName,
-    effectiveSize,
-    resolvedHeaderExtra,
-    headerActions,
-  } = useFormModalLayout({
+  const { panelClassName, effectiveSize, resolvedHeaderExtra, headerActions } = useFormModalLayout({
     open,
-    size: size as 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl',
+    size: size as "sm" | "md" | "lg" | "xl" | "2xl" | "3xl",
     tall,
     progress,
     progressLabel,
@@ -145,7 +140,7 @@ export function FormModal<K extends string = string>({
           open={discardOpen}
           onOpenChange={setDiscardOpen}
           title={discardUnsavedTitle}
-          description={discardUnsavedDescription ?? ''}
+          description={discardUnsavedDescription ?? ""}
           confirmLabel={discardConfirmLabel}
           cancelLabel={discardCancelLabel}
           destructive

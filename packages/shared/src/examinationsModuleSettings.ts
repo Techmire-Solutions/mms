@@ -57,7 +57,17 @@ export const DEFAULT_EXAMINATIONS_SETTINGS: ExaminationsSettings = {
   fields: {
     basic: INITIAL_EXAMINATIONS_FIELD_SEED.basic.map((f) => ({ ...f })),
   },
-  fieldOrder: ["name", "subject", "status", "totalMarks", "passingMarks", "duration", "date", "classIds", "description"],
+  fieldOrder: [
+    "name",
+    "subject",
+    "status",
+    "totalMarks",
+    "passingMarks",
+    "duration",
+    "date",
+    "classIds",
+    "description",
+  ],
 };
 
 export const DEFAULT_EXAMINATIONS_FIELD_DEFS: ModuleFieldDef[] = [

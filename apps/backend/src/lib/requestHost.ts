@@ -1,7 +1,7 @@
 function isInternalHost(host: string): boolean {
   if (!host) return true;
-  if (host === 'localhost' || host.endsWith('.localhost')) return true;
-  if (host === '127.0.0.1' || host.startsWith('127.')) return true;
+  if (host === "localhost" || host.endsWith(".localhost")) return true;
+  if (host === "127.0.0.1" || host.startsWith("127.")) return true;
   // Any dotted-numeric Host is treated as internal so we fall back to
   // X-Forwarded-Host. This is safe because TRUST_PROXY is restricted to known
   // proxy IPs/CIDRs (serverConfig rejects TRUST_PROXY=true), so a public-IP Host
@@ -11,18 +11,21 @@ function isInternalHost(host: string): boolean {
 
 export function headerHost(value: unknown): string {
   const raw = Array.isArray(value) ? value[0] : value;
-  return String(raw ?? '')
-    .split(':')[0]
+  return String(raw ?? "")
+    .split(":")[0]
     .toLowerCase();
 }
 
 /** Prefer Host from ProxyPreserveHost; use X-Forwarded-Host only for dev/internal proxies. */
-export function requestHostname(request: { hostname: string; headers: Record<string, unknown> }): string {
+export function requestHostname(request: {
+  hostname: string;
+  headers: Record<string, unknown>;
+}): string {
   const fromHost = headerHost(request.headers.host);
   if (!isInternalHost(fromHost)) {
     return fromHost;
   }
-  const fromForwarded = headerHost(request.headers['x-forwarded-host']);
+  const fromForwarded = headerHost(request.headers["x-forwarded-host"]);
   if (fromForwarded) {
     return fromForwarded;
   }
@@ -31,7 +34,7 @@ export function requestHostname(request: { hostname: string; headers: Record<str
 
 function headerValue(value: unknown): string | undefined {
   const raw = Array.isArray(value) ? value[0] : value;
-  const trimmed = typeof raw === 'string' ? raw.trim() : '';
+  const trimmed = typeof raw === "string" ? raw.trim() : "";
   return trimmed || undefined;
 }
 
@@ -41,7 +44,9 @@ function headerValue(value: unknown): string | undefined {
  * header on mutation requests, so it is safe to trust here. Falls back to the Referer's
  * origin, then `undefined` if neither is present.
  */
-export function resolveRequestOrigin(request: { headers: Record<string, unknown> }): string | undefined {
+export function resolveRequestOrigin(request: {
+  headers: Record<string, unknown>;
+}): string | undefined {
   const origin = headerValue(request.headers.origin);
   if (origin) return origin;
 

@@ -1,13 +1,13 @@
-import React, { Suspense } from 'react';
-import { Users, BarChart3, Settings } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { SubTabBar, type SubTab } from '@/components/ui/SubTabBar';
-import { CardSkeleton } from '@/components/ui/LoadingState';
-import { PlatformUsersWorkTier } from '@/platform/components/users/PlatformUsersWorkTier';
-import { PlatformUsersReportsTier } from '@/platform/components/users/PlatformUsersReportsTier';
-import { PlatformUsersSetupTier } from '@/platform/components/users/PlatformUsersSetupTier';
+import React, { Suspense } from "react";
+import { Users, BarChart3, Settings } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { SubTabBar, type SubTab } from "@/components/ui/SubTabBar";
+import { CardSkeleton } from "@/components/ui/LoadingState";
+import { PlatformUsersWorkTier } from "@/platform/components/users/PlatformUsersWorkTier";
+import { PlatformUsersReportsTier } from "@/platform/components/users/PlatformUsersReportsTier";
+import { PlatformUsersSetupTier } from "@/platform/components/users/PlatformUsersSetupTier";
 
-export type PlatformUsersSubTab = 'work' | 'reports' | 'setup';
+export type PlatformUsersSubTab = "work" | "reports" | "setup";
 
 export interface PlatformUsersTierProps {
   activeSubTab?: PlatformUsersSubTab;
@@ -26,7 +26,7 @@ function UsersFallback(): React.JSX.Element {
  * 3. Setup — Permissions matrix
  */
 export function PlatformUsersTier({
-  activeSubTab = 'work',
+  activeSubTab = "work",
   onSubTabChange,
   showSubTabBar = true,
 }: PlatformUsersTierProps): React.JSX.Element {
@@ -34,18 +34,18 @@ export function PlatformUsersTier({
 
   const subTabs: readonly SubTab<PlatformUsersSubTab>[] = [
     {
-      key: 'work',
-      label: t('module.work'),
+      key: "work",
+      label: t("module.work"),
       icon: Users,
     },
     {
-      key: 'reports',
-      label: t('module.reports'),
+      key: "reports",
+      label: t("module.reports"),
       icon: BarChart3,
     },
     {
-      key: 'setup',
-      label: t('module.setup'),
+      key: "setup",
+      label: t("module.setup"),
       icon: Settings,
     },
   ];
@@ -63,9 +63,9 @@ export function PlatformUsersTier({
       ) : null}
 
       <Suspense fallback={<UsersFallback />}>
-        {activeSubTab === 'work' && <PlatformUsersWorkTier />}
-        {activeSubTab === 'reports' && <PlatformUsersReportsTier />}
-        {activeSubTab === 'setup' && <PlatformUsersSetupTier />}
+        {activeSubTab === "work" && <PlatformUsersWorkTier />}
+        {activeSubTab === "reports" && <PlatformUsersReportsTier />}
+        {activeSubTab === "setup" && <PlatformUsersSetupTier />}
       </Suspense>
     </div>
   );

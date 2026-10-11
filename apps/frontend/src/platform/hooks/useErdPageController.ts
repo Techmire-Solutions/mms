@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   ERD_DOMAINS,
   filterErdDomainByTable,
@@ -11,12 +11,12 @@ import {
   type ErdDomain,
   type ErdDomainId,
   type PlatformErdResponse,
-} from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
-import { PLATFORM_QUERY_KEYS } from '@/platform/lib/platformQueryKeys';
+} from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
+import { PLATFORM_QUERY_KEYS } from "@/platform/lib/platformQueryKeys";
 
-const DEFAULT_DOMAIN: ErdDomainId = 'accounting';
-const ALL_TABLES = '';
+const DEFAULT_DOMAIN: ErdDomainId = "accounting";
+const ALL_TABLES = "";
 
 export interface ErdDomainOption {
   value: ErdDomainId;
@@ -40,7 +40,7 @@ export function useErdPageController(): {
 
   const { data: dynamicData, isLoading } = useQuery<PlatformErdResponse>({
     queryKey: PLATFORM_QUERY_KEYS.erd,
-    queryFn: () => apiJson<PlatformErdResponse>('/api/platform/schema/erd'),
+    queryFn: () => apiJson<PlatformErdResponse>("/api/platform/schema/erd"),
     staleTime: 60_000,
     retry: 1,
   });
@@ -59,15 +59,17 @@ export function useErdPageController(): {
     }));
   }, [domains]);
 
-  const rawDomain = searchParams.get('domain') ?? DEFAULT_DOMAIN;
-  const domainId = (domains.some((d) => d.id === rawDomain) ? rawDomain : DEFAULT_DOMAIN) as ErdDomainId;
+  const rawDomain = searchParams.get("domain") ?? DEFAULT_DOMAIN;
+  const domainId = (
+    domains.some((d) => d.id === rawDomain) ? rawDomain : DEFAULT_DOMAIN
+  ) as ErdDomainId;
 
   const domain = useMemo(() => {
     return domains.find((d) => d.id === domainId) ?? getErdDomain(domainId);
   }, [domains, domainId]);
 
   const tableNames = useMemo(() => listErdTableNames(domain.tables), [domain.tables]);
-  const requestedTable = searchParams.get('table') ?? ALL_TABLES;
+  const requestedTable = searchParams.get("table") ?? ALL_TABLES;
   const focusTable = tableNames.includes(requestedTable) ? requestedTable : ALL_TABLES;
   const visible = useMemo(() => {
     return focusTable ? filterErdDomainByTable(domain, focusTable) : domain;
@@ -75,11 +77,11 @@ export function useErdPageController(): {
 
   const replaceParams = (nextDomain: ErdDomainId, nextTable: string): void => {
     const next = new URLSearchParams(searchParams);
-    next.set('domain', nextDomain);
+    next.set("domain", nextDomain);
     if (nextTable) {
-      next.set('table', nextTable);
+      next.set("table", nextTable);
     } else {
-      next.delete('table');
+      next.delete("table");
     }
     setSearchParams(next, { replace: true });
   };
@@ -107,4 +109,3 @@ export const ERD_DOMAIN_OPTIONS = ERD_DOMAINS.map((item) => ({
   value: item.id,
   labelKey: item.labelKey,
 }));
-

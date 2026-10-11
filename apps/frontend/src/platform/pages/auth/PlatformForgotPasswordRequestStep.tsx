@@ -13,7 +13,9 @@ interface PlatformForgotPasswordRequestStepProps {
   controller: PlatformForgotPasswordController;
 }
 
-export function PlatformForgotPasswordRequestStep({ controller }: PlatformForgotPasswordRequestStepProps): React.JSX.Element {
+export function PlatformForgotPasswordRequestStep({
+  controller,
+}: PlatformForgotPasswordRequestStepProps): React.JSX.Element {
   const {
     t,
     emailFieldId,
@@ -29,7 +31,12 @@ export function PlatformForgotPasswordRequestStep({ controller }: PlatformForgot
 
   return (
     <PlatformAuthLayout title={t("platform.forgotTitle")} subtitle={t("platform.forgotSubtitle")}>
-      <form onSubmit={(event) => void handleRequest(event)} className="space-y-4" noValidate aria-busy={loading}>
+      <form
+        onSubmit={(event) => void handleRequest(event)}
+        className="space-y-4"
+        noValidate
+        aria-busy={loading}
+      >
         {error ? <AuthStatusBanner message={error} /> : null}
 
         <fieldset disabled={loading} className="m-0 min-w-0 space-y-4 border-0 p-0">

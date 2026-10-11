@@ -1,7 +1,4 @@
-export const getMessagingChannelAccentBarClass = (
-  isSelected: boolean,
-  channel: string,
-): string => {
+export const getMessagingChannelAccentBarClass = (isSelected: boolean, channel: string): string => {
   if (isSelected) return "bg-primary/70 group-hover:bg-primary";
   if (channel === "whatsapp") return "bg-success/50 group-hover:bg-success";
   if (channel === "sms") return "bg-info/50 group-hover:bg-info";

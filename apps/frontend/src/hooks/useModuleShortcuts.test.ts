@@ -19,5 +19,3 @@ describe("useModuleShortcuts", () => {
     expect(typeof TestShortcutComponent).toBe("function");
   });
 });
-
-

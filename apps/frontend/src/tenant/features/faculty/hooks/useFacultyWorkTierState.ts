@@ -59,12 +59,7 @@ export function useFacultyWorkTierState({
   t,
 }: UseFacultyWorkTierStateInput) {
   const exportColumns = useMemo(
-    () =>
-      resolveFacultyExportColumns(
-        columnLayout.columnRegistry,
-        columnLayout.isColumnVisible,
-        t,
-      ),
+    () => resolveFacultyExportColumns(columnLayout.columnRegistry, columnLayout.isColumnVisible, t),
     [columnLayout.columnRegistry, columnLayout.isColumnVisible, t],
   );
 
@@ -111,7 +106,8 @@ export function useFacultyWorkTierState({
 
   const workFaculty = (workPageQuery.data?.body?.faculty ?? []) as FacultyMember[];
   const shownCount = workPageQuery.data?.body?.total ?? workFaculty.length;
-  const isWorkError = workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
+  const isWorkError =
+    workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
   const workPageData = workPageQuery.data?.status === 200 ? workPageQuery.data.body : undefined;
 
   return {

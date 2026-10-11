@@ -4,12 +4,9 @@ import {
   WORKSPACES_COLLECTION,
   type Workspace,
   type Contact,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
-import { bulkSaveContacts } from '../repositories/contactRepository.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
+import { bulkSaveContacts } from "../repositories/contactRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -33,7 +30,7 @@ export async function runMigration020(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const contactsKey = `${tenantCollectionKey(subdomain, '')}contacts`;
+    const contactsKey = `${tenantCollectionKey(subdomain, "")}contacts`;
     const legacyContacts = await getCollectionByStorageName(contactsKey);
     if (!Array.isArray(legacyContacts) || legacyContacts.length === 0) continue;
 
@@ -46,6 +43,6 @@ export async function runMigration020(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 020] No legacy contacts to import.');
+    console.log("[Migration 020] No legacy contacts to import.");
   }
 }

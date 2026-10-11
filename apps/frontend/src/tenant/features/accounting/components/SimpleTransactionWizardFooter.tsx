@@ -65,7 +65,9 @@ export function SimpleTransactionWizardFooter({
               }}
               disabled={!canProceed || isSubmitting}
             >
-              {submittingStatus === "draft" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+              {submittingStatus === "draft" && (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              )}
               {t("accounting.journal.dashboard.wizard.saveDraft")}
             </Button>
             <Button

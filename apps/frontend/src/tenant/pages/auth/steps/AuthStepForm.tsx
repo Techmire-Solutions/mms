@@ -7,11 +7,7 @@ export interface AuthStepFormProps {
 }
 
 /** Local form wrapper — owns the shared className/noValidate/aria-busy so each view step is DRY. */
-export function AuthStepForm({
-  onSubmit,
-  busy,
-  children,
-}: AuthStepFormProps): React.JSX.Element {
+export function AuthStepForm({ onSubmit, busy, children }: AuthStepFormProps): React.JSX.Element {
   return (
     <form
       onSubmit={(event) => onSubmit(event)}

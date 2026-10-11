@@ -1,7 +1,7 @@
-import type { LucideIcon } from 'lucide-react';
-import type { AppTranslationKey } from '@mms/shared';
+import type { LucideIcon } from "lucide-react";
+import type { AppTranslationKey } from "@mms/shared";
 
-export type ClassDetailTabId = 'general' | 'fees' | 'schedule' | 'budget' | 'scholarship';
+export type ClassDetailTabId = "general" | "fees" | "schedule" | "budget" | "scholarship";
 
 export interface ClassDetailTabItem {
   id: ClassDetailTabId;

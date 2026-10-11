@@ -39,7 +39,7 @@ export interface ContactLinkActionProps {
 /**
  * Reusable link / website action component with ExternalLink and Copy buttons.
  */
-export const ContactLinkAction = (function ContactLinkAction({
+export const ContactLinkAction = function ContactLinkAction({
   href,
   text,
   label,
@@ -61,7 +61,9 @@ export const ContactLinkAction = (function ContactLinkAction({
   const effectiveUrl =
     cleanHref.startsWith("http://") || cleanHref.startsWith("https://")
       ? cleanHref
-      : cleanHref ? `https://${cleanHref}` : null;
+      : cleanHref
+        ? `https://${cleanHref}`
+        : null;
 
   const linkLabel = labels?.link || "Open Link";
   const copyLabel = labels?.copy || "Copy";
@@ -129,9 +131,7 @@ export const ContactLinkAction = (function ContactLinkAction({
       title={displayText}
     >
       {displayText}
-      {label ? (
-        <span className="ms-1.5 text-xs font-normal">({label})</span>
-      ) : null}
+      {label ? <span className="ms-1.5 text-xs font-normal">({label})</span> : null}
     </span>
   );
 
@@ -155,4 +155,4 @@ export const ContactLinkAction = (function ContactLinkAction({
       </div>
     </TooltipProvider>
   );
-});
+};

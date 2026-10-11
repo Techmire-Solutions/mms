@@ -1,5 +1,8 @@
 import React, { lazy, Suspense, useState } from "react";
-import type { HasanatFacultyBarItem, HasanatPieItem } from "@/components/ui/reports/hasanatReportSectionTypes";
+import type {
+  HasanatFacultyBarItem,
+  HasanatPieItem,
+} from "@/components/ui/reports/hasanatReportSectionTypes";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import {
   useHasanatDistributions,
@@ -15,20 +18,29 @@ import { getDenominationPoints } from "@mms/shared";
 import { HasanatDistributionTable } from "@/components/ui/reports/HasanatDistributionTable";
 
 const HasanatReportCharts = lazy(() =>
-  import("@/components/ui/reports/HasanatReportCharts").then((mod) => ({ default: mod.HasanatReportCharts })),
+  import("@/components/ui/reports/HasanatReportCharts").then((mod) => ({
+    default: mod.HasanatReportCharts,
+  })),
 );
 import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
-import type { HasanatReportProps, HasanatReportItem, HasanatByFacultyItem } from '@/components/ui/reports/hasanatReportTypes';
-export type { HasanatReportItem, HasanatByFacultyItem } from '@/components/ui/reports/hasanatReportTypes';
+import type {
+  HasanatReportProps,
+  HasanatReportItem,
+  HasanatByFacultyItem,
+} from "@/components/ui/reports/hasanatReportTypes";
+export type {
+  HasanatReportItem,
+  HasanatByFacultyItem,
+} from "@/components/ui/reports/hasanatReportTypes";
 
 /**
  * Renders the Hasanat rewards and points distribution reports,
  * including faculty distribution bar charts, redemption pie charts,
  * and a filterable distribution table.
  */
-const HasanatReport = (function HasanatReport({ filters }: HasanatReportProps): React.JSX.Element {
+const HasanatReport = function HasanatReport({ filters }: HasanatReportProps): React.JSX.Element {
   const { t } = useTranslation();
   const [selectedFaculty, setSelectedFaculty] = useState<string | null>(null);
   const palette = useBrandPalette();
@@ -45,13 +57,18 @@ const HasanatReport = (function HasanatReport({ filters }: HasanatReportProps): 
     const facultyMap: Record<string, HasanatByFacultyItem> = {};
 
     distributions.forEach((distributionRecord) => {
-      const points = getDenominationPoints(distributionRecord.denominationId, distributionRecord.denominationName, denominations);
+      const points = getDenominationPoints(
+        distributionRecord.denominationId,
+        distributionRecord.denominationName,
+        denominations,
+      );
 
       const totalPoints = points * distributionRecord.quantity;
       const isRedeemed = distributionRecord.status === "redeemed";
 
       if (distributionRecord.recipientType === "student") {
-        const studentKey = distributionRecord.recipientStudentId || distributionRecord.recipientName || "";
+        const studentKey =
+          distributionRecord.recipientStudentId || distributionRecord.recipientName || "";
         if (studentKey) {
           const studentName = distributionRecord.recipientName || studentKey;
           if (!studentMap[studentKey]) {
@@ -91,7 +108,9 @@ const HasanatReport = (function HasanatReport({ filters }: HasanatReportProps): 
   const distribution = (() => {
     let filteredDistribution = distributionData;
     if (filters.class !== "all") {
-      filteredDistribution = filteredDistribution.filter((hasanatItem) => hasanatItem.class === filters.class);
+      filteredDistribution = filteredDistribution.filter(
+        (hasanatItem) => hasanatItem.class === filters.class,
+      );
     }
     if (filters.student) {
       filteredDistribution = filteredDistribution.filter((hasanatItem) =>
@@ -99,12 +118,17 @@ const HasanatReport = (function HasanatReport({ filters }: HasanatReportProps): 
       );
     }
     if (selectedFaculty) {
-      filteredDistribution = filteredDistribution.filter((hasanatItem) => hasanatItem.faculty === selectedFaculty);
+      filteredDistribution = filteredDistribution.filter(
+        (hasanatItem) => hasanatItem.faculty === selectedFaculty,
+      );
     }
     return filteredDistribution;
   })() as HasanatReportItem[];
 
-  const totalRedeemed = distribution.reduce((total, hasanatItem) => total + hasanatItem.redeemed, 0);
+  const totalRedeemed = distribution.reduce(
+    (total, hasanatItem) => total + hasanatItem.redeemed,
+    0,
+  );
   const totalBalance = distribution.reduce((total, hasanatItem) => total + hasanatItem.balance, 0);
 
   const facultyChartData = (() => {
@@ -171,6 +195,6 @@ const HasanatReport = (function HasanatReport({ filters }: HasanatReportProps): 
       <PinnedWidgets category="hasanat" />
     </div>
   );
-});
+};
 
 export default HasanatReport;

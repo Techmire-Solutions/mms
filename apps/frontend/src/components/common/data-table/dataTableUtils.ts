@@ -13,9 +13,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function defaultSearchValue(row: unknown, columnId: string): DataTableSearchValue {
   if (!isRecord(row)) return undefined;
   const value = row[columnId];
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean")
+    return value;
   if (Array.isArray(value)) {
-    return value.filter((item): item is string | number => typeof item === "string" || typeof item === "number");
+    return value.filter(
+      (item): item is string | number => typeof item === "string" || typeof item === "number",
+    );
   }
   return undefined;
 }
@@ -102,7 +105,11 @@ export function filterDataTableRows<TData>(
     if (!matchesFilters(row, filters, selection)) return false;
     if (terms.length === 0) return true;
     const haystack = visibleColumns
-      .map((column) => toSearchText(column.searchValue ? column.searchValue(row) : defaultSearchValue(row, column.id)))
+      .map((column) =>
+        toSearchText(
+          column.searchValue ? column.searchValue(row) : defaultSearchValue(row, column.id),
+        ),
+      )
       .join(" ")
       .toLocaleLowerCase();
     return terms.every((term) => matchesSearchPattern(haystack, term));

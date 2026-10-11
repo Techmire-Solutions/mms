@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { QueryClient } from '@tanstack/react-query';
-import type { PlatformWorkspaceRow } from '@mms/shared';
+import { describe, expect, it } from "vitest";
+import { QueryClient } from "@tanstack/react-query";
+import type { PlatformWorkspaceRow } from "@mms/shared";
 import {
   PLATFORM_WORKSPACES_QUERY_KEY,
   usePlatformWorkspaces,
@@ -11,35 +11,35 @@ import {
   useUpdateWorkspaceModules,
   useResetWorkspaceAdminPassword,
   useCreateWorkspaceAdmin,
-} from './usePlatformWorkspaces';
+} from "./usePlatformWorkspaces";
 
-describe('usePlatformWorkspaces', () => {
-  it('exports valid hook definitions and constants', () => {
-    expect(PLATFORM_WORKSPACES_QUERY_KEY).toEqual(['platform', 'workspaces']);
-    expect(typeof usePlatformWorkspaces).toBe('function');
-    expect(typeof useSetWorkspaceEnabled).toBe('function');
-    expect(typeof useSetWorkspaceEmailVerification).toBe('function');
-    expect(typeof useDeleteWorkspace).toBe('function');
-    expect(typeof useWorkspaceModules).toBe('function');
-    expect(typeof useUpdateWorkspaceModules).toBe('function');
-    expect(typeof useResetWorkspaceAdminPassword).toBe('function');
-    expect(typeof useCreateWorkspaceAdmin).toBe('function');
+describe("usePlatformWorkspaces", () => {
+  it("exports valid hook definitions and constants", () => {
+    expect(PLATFORM_WORKSPACES_QUERY_KEY).toEqual(["platform", "workspaces"]);
+    expect(typeof usePlatformWorkspaces).toBe("function");
+    expect(typeof useSetWorkspaceEnabled).toBe("function");
+    expect(typeof useSetWorkspaceEmailVerification).toBe("function");
+    expect(typeof useDeleteWorkspace).toBe("function");
+    expect(typeof useWorkspaceModules).toBe("function");
+    expect(typeof useUpdateWorkspaceModules).toBe("function");
+    expect(typeof useResetWorkspaceAdminPassword).toBe("function");
+    expect(typeof useCreateWorkspaceAdmin).toBe("function");
   });
 
-  it('safely updates ts-rest query cache objects without throwing TypeError on old.map', () => {
+  it("safely updates ts-rest query cache objects without throwing TypeError on old.map", () => {
     const queryClient = new QueryClient();
     const mockWorkspace1: PlatformWorkspaceRow = {
-      subdomain: 'madrasa-1',
-      madrasaName: 'Madrasa One',
+      subdomain: "madrasa-1",
+      madrasaName: "Madrasa One",
       enabled: true,
-      createdAt: '2026-01-01',
+      createdAt: "2026-01-01",
       requireEmailVerification: true,
     };
     const mockWorkspace2: PlatformWorkspaceRow = {
-      subdomain: 'madrasa-2',
-      madrasaName: 'Madrasa Two',
+      subdomain: "madrasa-2",
+      madrasaName: "Madrasa Two",
       enabled: true,
-      createdAt: '2026-01-02',
+      createdAt: "2026-01-02",
       requireEmailVerification: false,
     };
 
@@ -59,7 +59,7 @@ describe('usePlatformWorkspaces', () => {
           body: {
             ...old.body,
             workspaces: old.body.workspaces.map((w: PlatformWorkspaceRow) =>
-              w.subdomain === 'madrasa-1' ? { ...w, enabled: false } : w,
+              w.subdomain === "madrasa-1" ? { ...w, enabled: false } : w,
             ),
           },
         };
@@ -80,7 +80,7 @@ describe('usePlatformWorkspaces', () => {
           body: {
             ...old.body,
             workspaces: old.body.workspaces.map((w: PlatformWorkspaceRow) =>
-              w.subdomain === 'madrasa-1' ? { ...w, requireEmailVerification: false } : w,
+              w.subdomain === "madrasa-1" ? { ...w, requireEmailVerification: false } : w,
             ),
           },
         };
@@ -93,13 +93,13 @@ describe('usePlatformWorkspaces', () => {
     expect(updatedCached.body.workspaces[1].requireEmailVerification).toBe(false);
   });
 
-  it('safely handles direct array cache structures and empty cache', () => {
+  it("safely handles direct array cache structures and empty cache", () => {
     const queryClient = new QueryClient();
     const mockWorkspace: PlatformWorkspaceRow = {
-      subdomain: 'madrasa-direct',
-      madrasaName: 'Direct Madrasa',
+      subdomain: "madrasa-direct",
+      madrasaName: "Direct Madrasa",
       enabled: true,
-      createdAt: '2026-01-01',
+      createdAt: "2026-01-01",
       requireEmailVerification: true,
     };
 
@@ -109,7 +109,7 @@ describe('usePlatformWorkspaces', () => {
       if (!old) return old;
       if (Array.isArray(old)) {
         return old.map((w: PlatformWorkspaceRow) =>
-          w.subdomain === 'madrasa-direct' ? { ...w, enabled: false } : w,
+          w.subdomain === "madrasa-direct" ? { ...w, enabled: false } : w,
         );
       }
       return old;
@@ -127,4 +127,3 @@ describe('usePlatformWorkspaces', () => {
     expect(queryClient.getQueryData(PLATFORM_WORKSPACES_QUERY_KEY)).toBeNull();
   });
 });
-

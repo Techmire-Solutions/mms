@@ -1,4 +1,4 @@
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
 
 /** Field-level visibility by viewer role (Setup stores role strings on `permissions[]`). */
 export function canViewContactField(viewerRole: string, field: FieldDefinition): boolean {

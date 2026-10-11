@@ -1,11 +1,11 @@
-import type { ObligationsRepository } from '../repository/obligationsRepository.js';
-import { obligationsRepository } from '../repository/obligationsRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
+import type { ObligationsRepository } from "../repository/obligationsRepository.js";
+import { obligationsRepository } from "../repository/obligationsRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import {
   defineTenantBulkCollectionService,
   upsertWithBroadcast,
-} from '../../services/tenantBulkService.js';
+} from "../../services/tenantBulkService.js";
 import {
   dedupeTrimmedIds,
   type ObligationType,
@@ -24,7 +24,7 @@ import {
   obligationDistributionListSchema,
   obligationCollectionListSchema,
   obligationCollectionRecordSchema,
-} from '@mms/shared';
+} from "@mms/shared";
 
 const EMPTY_OBLIGATIONS_METRICS: ObligationsCommandMetricsSnapshot = {
   total: 0,
@@ -43,27 +43,39 @@ const EMPTY_OBLIGATIONS_METRICS: ObligationsCommandMetricsSnapshot = {
  */
 export function createObligationsUseCases(repo: ObligationsRepository = obligationsRepository) {
   const obligationTypeService = defineTenantBulkCollectionService<ObligationType>(
-    { listByWorkspace: repo.listObligationTypesByWorkspace, replaceForWorkspace: repo.replaceObligationTypesForWorkspace },
+    {
+      listByWorkspace: repo.listObligationTypesByWorkspace,
+      replaceForWorkspace: repo.replaceObligationTypesForWorkspace,
+    },
     obligationTypeListSchema,
-    'obligation_types',
+    "obligation_types",
   );
 
   const mujtahidService = defineTenantBulkCollectionService<Mujtahid>(
-    { listByWorkspace: repo.listMujtahidsByWorkspace, replaceForWorkspace: repo.replaceMujtahidsForWorkspace },
+    {
+      listByWorkspace: repo.listMujtahidsByWorkspace,
+      replaceForWorkspace: repo.replaceMujtahidsForWorkspace,
+    },
     mujtahidListSchema,
-    'mujtahids',
+    "mujtahids",
   );
 
   const mujtahidRepService = defineTenantBulkCollectionService<MujtahidRep>(
-    { listByWorkspace: repo.listMujtahidRepsByWorkspace, replaceForWorkspace: repo.replaceMujtahidRepsForWorkspace },
+    {
+      listByWorkspace: repo.listMujtahidRepsByWorkspace,
+      replaceForWorkspace: repo.replaceMujtahidRepsForWorkspace,
+    },
     mujtahidRepListSchema,
-    'mujtahid_reps',
+    "mujtahid_reps",
   );
 
   const wakalaTypeService = defineTenantBulkCollectionService<WakalaType>(
-    { listByWorkspace: repo.listWakalaTypesByWorkspace, replaceForWorkspace: repo.replaceWakalaTypesForWorkspace },
+    {
+      listByWorkspace: repo.listWakalaTypesByWorkspace,
+      replaceForWorkspace: repo.replaceWakalaTypesForWorkspace,
+    },
     wakalaTypeListSchema,
-    'wakala_types',
+    "wakala_types",
   );
 
   const distributionService = defineTenantBulkCollectionService<ObligationDistribution>(
@@ -72,7 +84,7 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
       replaceForWorkspace: repo.replaceObligationDistributionsForWorkspace,
     },
     obligationDistributionListSchema,
-    'obligation_distributions',
+    "obligation_distributions",
   );
 
   const collectionBulkService = defineTenantBulkCollectionService<ObligationCollection>(
@@ -81,7 +93,7 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
       replaceForWorkspace: repo.replaceObligationCollectionsForWorkspace,
     },
     obligationCollectionListSchema,
-    'obligation_collections',
+    "obligation_collections",
   );
 
   const collectionCrud = createGenericRelationalService<ObligationCollection>({
@@ -93,8 +105,8 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
       bulkRestore: repo.bulkRestoreObligationCollections,
     },
     schema: obligationCollectionRecordSchema,
-    websocketCollection: 'obligation_collections',
-    idPrefix: 'oc',
+    websocketCollection: "obligation_collections",
+    idPrefix: "oc",
   });
 
   return {
@@ -206,7 +218,10 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
     replaceObligationCollections: collectionBulkService.replace,
 
     loadObligationCollections: collectionCrud.loadAll,
-    loadObligationCollectionById: async (id: string, includeDeleted = false): Promise<ObligationCollection | null> => {
+    loadObligationCollectionById: async (
+      id: string,
+      includeDeleted = false,
+    ): Promise<ObligationCollection | null> => {
       const tenant = getRequestTenant();
       const cleanId = id?.trim();
       if (!tenant || !cleanId) return null;
@@ -216,7 +231,10 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
       if (includeDeleted && !col.deletedAt) return null;
       return col;
     },
-    loadObligationCollectionsByIds: async (ids: string[], includeDeleted = false): Promise<ObligationCollection[]> => {
+    loadObligationCollectionsByIds: async (
+      ids: string[],
+      includeDeleted = false,
+    ): Promise<ObligationCollection[]> => {
       const tenant = getRequestTenant();
       if (!tenant) return [];
       const cleanIds = dedupeTrimmedIds(ids);
@@ -233,26 +251,36 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
     updateObligationCollectionById: collectionCrud.updateById,
 
     upsertObligationTypes: (types: ObligationType[]) =>
-      upsertWithBroadcast(obligationTypeListSchema, types, repo.bulkSaveObligationTypes, 'obligation_types'),
+      upsertWithBroadcast(
+        obligationTypeListSchema,
+        types,
+        repo.bulkSaveObligationTypes,
+        "obligation_types",
+      ),
     upsertMujtahids: (records: Mujtahid[]) =>
-      upsertWithBroadcast(mujtahidListSchema, records, repo.bulkSaveMujtahids, 'mujtahids'),
+      upsertWithBroadcast(mujtahidListSchema, records, repo.bulkSaveMujtahids, "mujtahids"),
     upsertMujtahidReps: (records: MujtahidRep[]) =>
-      upsertWithBroadcast(mujtahidRepListSchema, records, repo.bulkSaveMujtahidReps, 'mujtahid_reps'),
+      upsertWithBroadcast(
+        mujtahidRepListSchema,
+        records,
+        repo.bulkSaveMujtahidReps,
+        "mujtahid_reps",
+      ),
     upsertWakalaTypes: (records: WakalaType[]) =>
-      upsertWithBroadcast(wakalaTypeListSchema, records, repo.bulkSaveWakalaTypes, 'wakala_types'),
+      upsertWithBroadcast(wakalaTypeListSchema, records, repo.bulkSaveWakalaTypes, "wakala_types"),
     upsertObligationDistributions: (records: ObligationDistribution[]) =>
       upsertWithBroadcast(
         obligationDistributionListSchema,
         records,
         repo.bulkSaveObligationDistributions,
-        'obligation_distributions',
+        "obligation_distributions",
       ),
     upsertObligationCollections: (records: ObligationCollection[]) =>
       upsertWithBroadcast(
         obligationCollectionListSchema,
         records,
         repo.bulkSaveObligationCollections,
-        'obligation_collections',
+        "obligation_collections",
       ),
 
     deleteObligationCollectionById: collectionCrud.deleteById,

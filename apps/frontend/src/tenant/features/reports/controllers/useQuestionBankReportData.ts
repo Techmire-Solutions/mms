@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { getQuestionCategoryIds } from '@mms/shared';
+import { useMemo } from "react";
+import { getQuestionCategoryIds } from "@mms/shared";
 import {
   useQuestionBankQuestions,
   useQuestionBankQuestionsCollection,
@@ -9,9 +9,9 @@ import {
   useQuestionBankResultsCollection,
   useQuestionBankReportAggregates,
   useQuestionBankConfig,
-} from '@/tenant/hooks/collections/questionBank';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+} from "@/tenant/hooks/collections/questionBank";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
 
 export interface QuestionBankReportFilters {
   status?: string;
@@ -43,7 +43,7 @@ export function useQuestionBankReportData(filters?: QuestionBankReportFilters) {
   const questions = useMemo(() => {
     if (!filters) return rawQuestions;
     let filtered = rawQuestions;
-    if (filters.status && filters.status !== 'all') {
+    if (filters.status && filters.status !== "all") {
       filtered = filtered.filter((q) => q.difficulty === filters.status);
     }
     return filtered;
@@ -78,10 +78,10 @@ export function useQuestionBankReportData(filters?: QuestionBankReportFilters) {
 
   const exportColumns = useMemo<ExportColumn[]>(
     () => [
-      { key: 'type', header: t('common.type') },
-      { key: 'name', header: t('common.label') },
-      { key: 'questions', header: t('questionBank.questions') },
-      { key: 'tests', header: t('questionBank.report.generatedTests') },
+      { key: "type", header: t("common.type") },
+      { key: "name", header: t("common.label") },
+      { key: "questions", header: t("questionBank.questions") },
+      { key: "tests", header: t("questionBank.report.generatedTests") },
     ],
     [t],
   );
@@ -89,26 +89,23 @@ export function useQuestionBankReportData(filters?: QuestionBankReportFilters) {
   const summaryRows = useMemo<QuestionBankSummaryRow[]>(
     () => [
       ...difficultyData.map((item) => ({
-        type: t('questionBank.columns.difficulty'),
+        type: t("questionBank.columns.difficulty"),
         name: item.name,
         questions: item.questions,
         tests: item.tests,
       })),
       ...categoryData.map((item) => ({
-        type: t('questionBank.category'),
+        type: t("questionBank.category"),
         name: item.name,
         questions: item.questions,
-        tests: '—',
+        tests: "—",
       })),
     ],
     [categoryData, difficultyData, t],
   );
 
   const isError =
-    questionsQuery.isError ||
-    testsQuery.isError ||
-    resultsQuery.isError ||
-    aggregatesQuery.isError;
+    questionsQuery.isError || testsQuery.isError || resultsQuery.isError || aggregatesQuery.isError;
 
   const refetchAll = () => {
     void questionsQuery.refetch();

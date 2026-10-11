@@ -8,19 +8,18 @@ import StudentsListContent from "@/tenant/features/students/components/StudentsL
 import type { StudentsListContentProps } from "@/tenant/features/students/components/StudentsListContent";
 import type { useStudentColumnLayout } from "@/tenant/features/students/hooks/useStudentColumnLayout";
 
-export interface StudentsListProps
-  extends Omit<
-    StudentsListContentProps,
-    | "students"
-    | "viewMode"
-    | "isColumnVisible"
-    | "columnRegistry"
-    | "getColumnWidth"
-    | "onColumnResize"
-    | "hasActiveFilters"
-    | "onClearFilters"
-    | "onShowActive"
-  > {
+export interface StudentsListProps extends Omit<
+  StudentsListContentProps,
+  | "students"
+  | "viewMode"
+  | "isColumnVisible"
+  | "columnRegistry"
+  | "getColumnWidth"
+  | "onColumnResize"
+  | "hasActiveFilters"
+  | "onClearFilters"
+  | "onShowActive"
+> {
   isWorkPageLoading: boolean;
   isWorkPageError: boolean;
   isWorkPageFetching: boolean;

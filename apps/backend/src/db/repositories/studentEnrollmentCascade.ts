@@ -1,6 +1,6 @@
-import { and, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
-import { enrollments } from '../schema.js';
-import type { DbClient } from '../dbConnection.js';
+import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { enrollments } from "../schema.js";
+import type { DbClient } from "../dbConnection.js";
 
 /**
  * Soft-deletes active enrollments for the given students and marks them as
@@ -22,7 +22,7 @@ export async function cascadeSoftDeleteEnrollmentsForStudents(
       deletedBy: deletedBy || null,
       deletionReason: deletionReason
         ? `Cascade: parent student deleted (${deletionReason})`
-        : 'Cascade: parent student deleted',
+        : "Cascade: parent student deleted",
       deletedWithCascade: true,
       updatedAt: deletedAt,
     })

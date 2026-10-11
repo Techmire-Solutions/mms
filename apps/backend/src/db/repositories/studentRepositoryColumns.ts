@@ -1,5 +1,5 @@
-import { sql } from 'drizzle-orm';
-import { students } from '../schema.js';
+import { sql } from "drizzle-orm";
+import { students } from "../schema.js";
 
 /**
  * Canonical column projection for `students` SELECT queries.
@@ -51,5 +51,5 @@ export const STUDENT_COLUMNS = {
  */
 export const STUDENT_COLUMNS_LIST = {
   ...STUDENT_COLUMNS,
-  notes: sql<string | null>`NULL`.as('notes'),
+  notes: sql<string | null>`NULL`.as("notes"),
 } as const;

@@ -1,19 +1,16 @@
-import type { FieldDefinition, TabDefinition } from './contactFieldSchemaTypes.js';
-import { normalizeContactFormTabId } from './contactEmergencyTabMigration.js';
+import type { FieldDefinition, TabDefinition } from "./contactFieldSchemaTypes.js";
+import { normalizeContactFormTabId } from "./contactEmergencyTabMigration.js";
 import {
   DEFAULT_FORM_TABS,
   omitContactLegacyCustomFormTabUnlessUsed,
-} from './contactTabRegistry.js';
+} from "./contactTabRegistry.js";
 
 function normalizeFormTab(tab: TabDefinition): TabDefinition {
   const key = normalizeContactFormTabId(tab.key);
   return {
     ...tab,
     key,
-    label:
-      tab.key === 'emergency' || tab.label === 'Emergency'
-        ? 'Relationship'
-        : tab.label,
+    label: tab.key === "emergency" || tab.label === "Emergency" ? "Relationship" : tab.label,
   };
 }
 

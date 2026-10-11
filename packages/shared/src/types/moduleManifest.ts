@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Zod schema defining the soft-delete configuration block for module manifests (mms-module-architecture.md §6).

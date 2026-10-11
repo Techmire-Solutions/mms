@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  canonicalizeField,
-  canonicalizeFieldsMap,
-} from "./canonicalizeFields";
+import { canonicalizeField, canonicalizeFieldsMap } from "./canonicalizeFields";
 
 describe("canonicalizeFields", () => {
   it("normalizes absolute field order to relative index within each form tab", () => {

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
@@ -44,11 +44,12 @@ export function EnrollmentReports({
     { key: "revenue", header: t("enrollments.columns.finalFee") },
   ])() as ExportColumn[];
 
-  const exportRows = (() => bySession.map((sessionStats) => ({
-    session: sessionStats.name,
-    count: sessionStats.count,
-    revenue: formatCurrency(sessionStats.revenue),
-  })))();
+  const exportRows = (() =>
+    bySession.map((sessionStats) => ({
+      session: sessionStats.name,
+      count: sessionStats.count,
+      revenue: formatCurrency(sessionStats.revenue),
+    })))();
 
   return (
     <section className="space-y-6" aria-label={t("enrollments.reports.aria")}>
@@ -82,7 +83,7 @@ export function EnrollmentReports({
       >
         {viewMode === "table" ? (
           <WorkBatchTable
-            data={bySession.map(s => ({ ...s, id: `${s.sessionId}:${s.name}` }))}
+            data={bySession.map((s) => ({ ...s, id: `${s.sessionId}:${s.name}` }))}
             columns={[
               {
                 id: "session",
@@ -127,12 +128,16 @@ export function EnrollmentReports({
                   role="listitem"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{sessionStats.name}</p>
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {sessionStats.name}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {t("enrollments.reports.enrollmentCount", { count: sessionStats.count })}
                     </p>
                   </div>
-                  <p className="shrink-0 text-sm font-bold text-primary">{formatCurrency(sessionStats.revenue)}</p>
+                  <p className="shrink-0 text-sm font-bold text-primary">
+                    {formatCurrency(sessionStats.revenue)}
+                  </p>
                 </div>
               ))
             )}

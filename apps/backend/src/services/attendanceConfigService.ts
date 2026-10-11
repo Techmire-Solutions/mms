@@ -6,13 +6,13 @@ import {
   type FieldDefinition,
   type AttendanceSettings,
   type TabDefinition,
-} from '@mms/shared';
-import { createModuleFieldConfigService } from '../lib/createModuleFieldConfigService.js';
+} from "@mms/shared";
+import { createModuleFieldConfigService } from "../lib/createModuleFieldConfigService.js";
 import {
   getAttendanceFieldConfig,
   setAttendanceFieldConfig,
-} from '../db/repositories/attendanceFieldConfigRepository.js';
-import { getAttendanceModulePreferences } from '../db/repositories/attendanceModulePreferencesRepository.js';
+} from "../db/repositories/attendanceFieldConfigRepository.js";
+import { getAttendanceModulePreferences } from "../db/repositories/attendanceModulePreferencesRepository.js";
 
 const attendanceFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -21,7 +21,7 @@ const attendanceFieldConfig = createModuleFieldConfigService<
   Record<string, FieldDefinition[]> | undefined,
   ReturnType<typeof stripAttendanceFieldConfigForPersist>
 >({
-  broadcastKey: 'attendance',
+  broadcastKey: "attendance",
   getByWorkspace: getAttendanceFieldConfig,
   upsert: setAttendanceFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -32,7 +32,7 @@ const attendanceFieldConfig = createModuleFieldConfigService<
     );
   },
   stripForPersist: stripAttendanceFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload attendance field config after save',
+  reloadFailedMessage: "Failed to reload attendance field config after save",
 });
 
 export const getAttendanceFieldConfigService = attendanceFieldConfig.load;

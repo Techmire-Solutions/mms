@@ -1,14 +1,14 @@
 /**
  * Phase 7: Contract-driven query/mutation hooks for the Enrollments module.
  */
-import { apiContract, tsrClient } from '@/lib/api';
-import { queryOptions, useQueryClient } from '@tanstack/react-query';
-import { ENROLLMENTS_QUERY_KEY } from '@/tenant/features/enrollments/hooks/useEnrollmentsApi';
-import { invalidateEnrollmentsQueries } from '@/tenant/features/enrollments/hooks/invalidateEnrollmentsQueries';
+import { apiContract, tsrClient } from "@/lib/api";
+import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { ENROLLMENTS_QUERY_KEY } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
+import { invalidateEnrollmentsQueries } from "@/tenant/features/enrollments/hooks/invalidateEnrollmentsQueries";
 
 export function enrollmentsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
-    queryKey: [...ENROLLMENTS_QUERY_KEY, 'contract', query] as const,
+    queryKey: [...ENROLLMENTS_QUERY_KEY, "contract", query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.enrollments.list({
         query: query as Record<string, string>,
@@ -16,7 +16,7 @@ export function enrollmentsListQueryOptions(query: Record<string, unknown> = {})
         fetchOptions: { signal },
       });
       if (response.status !== 200) {
-        throw new Error('Failed to fetch enrollments');
+        throw new Error("Failed to fetch enrollments");
       }
       return response.body;
     },
@@ -28,7 +28,7 @@ export function enrollmentsListQueryOptions(query: Record<string, unknown> = {})
 export function useEnrollmentsContractList(query: Record<string, unknown>, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.list.useQuery({
-    queryKey: [...ENROLLMENTS_QUERY_KEY, 'contract', query],
+    queryKey: [...ENROLLMENTS_QUERY_KEY, "contract", query],
     queryData: { query },
     staleTime: 15_000,
     enabled,
@@ -38,7 +38,7 @@ export function useEnrollmentsContractList(query: Record<string, unknown>, enabl
 export function useEnrollmentsContractGet(id: string, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.get.useQuery({
-    queryKey: [...ENROLLMENTS_QUERY_KEY, 'detail', id],
+    queryKey: [...ENROLLMENTS_QUERY_KEY, "detail", id],
     queryData: { params: { id } },
     enabled,
     staleTime: 30_000,
@@ -48,29 +48,39 @@ export function useEnrollmentsContractGet(id: string, enabled = true) {
 export function useEnrollmentsContractCreate() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.enrollments.create.useMutation({ onSuccess: () => invalidateEnrollmentsQueries(queryClient) });
+  return tsrClient.enrollments.create.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
 }
 
 export function useEnrollmentsContractUpdate() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.enrollments.update.useMutation({ onSuccess: () => invalidateEnrollmentsQueries(queryClient) });
+  return tsrClient.enrollments.update.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
 }
 
 export function useEnrollmentsContractDelete() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.enrollments.delete.useMutation({ onSuccess: () => invalidateEnrollmentsQueries(queryClient) });
+  return tsrClient.enrollments.delete.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
 }
 
 export function useEnrollmentsContractBulkDelete() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.enrollments.bulkDelete.useMutation({ onSuccess: () => invalidateEnrollmentsQueries(queryClient) });
+  return tsrClient.enrollments.bulkDelete.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
 }
 
 export function useEnrollmentsContractBulkRestore() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.enrollments.bulkRestore.useMutation({ onSuccess: () => invalidateEnrollmentsQueries(queryClient) });
+  return tsrClient.enrollments.bulkRestore.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
 }

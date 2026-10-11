@@ -73,7 +73,9 @@ export function useFacultyManagementState(
     try {
       const selectedMember = allFaculty.find((f) => String(f.id) === String(facultyId));
       const resolvedName = selectedMember
-        ? formatFacultyDisplayName(selectedMember) || editingFaculty?.facultyName || "Faculty Member"
+        ? formatFacultyDisplayName(selectedMember) ||
+          editingFaculty?.facultyName ||
+          "Faculty Member"
         : editingFaculty?.facultyName || "Faculty Member";
 
       const finalRole = role === "Custom" ? customRole.trim() || "Instructor" : role;

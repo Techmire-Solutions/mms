@@ -4,14 +4,9 @@ import {
   WORKSPACES_COLLECTION,
   type Workspace,
   type ActivityLog,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
-import {
-  replaceActivityLogsForWorkspace,
-} from '../repositories/logsRepository.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
+import { replaceActivityLogsForWorkspace } from "../repositories/logsRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -35,7 +30,7 @@ export async function runMigration033(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
 
     // 1. User Activity Logs
     const legacyActivityLogs = await getCollectionByStorageName(`${prefix}user_activity_logs`);
@@ -49,6 +44,6 @@ export async function runMigration033(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 033] No legacy activity logs to import.');
+    console.log("[Migration 033] No legacy activity logs to import.");
   }
 }

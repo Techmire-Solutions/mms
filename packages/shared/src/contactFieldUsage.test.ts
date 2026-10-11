@@ -1,18 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   CONTACT_FIELD_USAGE_BATCH_MAX,
   contactFieldUsageBatchBodySchema,
   contactFieldUsageParamsSchema,
-} from './contactFieldUsage.js';
+} from "./contactFieldUsage.js";
 
-describe('contactFieldUsage schemas', () => {
-  it('parses a valid batch body', () => {
-    expect(
-      contactFieldUsageBatchBodySchema.parse({ fieldKeys: ['customNotes', 'city'] }),
-    ).toEqual({ fieldKeys: ['customNotes', 'city'] });
+describe("contactFieldUsage schemas", () => {
+  it("parses a valid batch body", () => {
+    expect(contactFieldUsageBatchBodySchema.parse({ fieldKeys: ["customNotes", "city"] })).toEqual({
+      fieldKeys: ["customNotes", "city"],
+    });
   });
 
-  it('rejects empty and oversized batches', () => {
+  it("rejects empty and oversized batches", () => {
     expect(() => contactFieldUsageBatchBodySchema.parse({ fieldKeys: [] })).toThrow();
     expect(() =>
       contactFieldUsageBatchBodySchema.parse({
@@ -21,9 +21,9 @@ describe('contactFieldUsage schemas', () => {
     ).toThrow();
   });
 
-  it('parses single-key path params', () => {
-    expect(contactFieldUsageParamsSchema.parse({ fieldKey: 'customNotes' })).toEqual({
-      fieldKey: 'customNotes',
+  it("parses single-key path params", () => {
+    expect(contactFieldUsageParamsSchema.parse({ fieldKey: "customNotes" })).toEqual({
+      fieldKey: "customNotes",
     });
   });
 });

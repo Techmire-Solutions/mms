@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
-import { useFacultyLinkedContactIds, useFacultyNextEmployeeId } from "@/tenant/features/faculty/hooks/useFaculty";
+import {
+  useFacultyLinkedContactIds,
+  useFacultyNextEmployeeId,
+} from "@/tenant/features/faculty/hooks/useFaculty";
 import {
   type FacultyMember,
   type FacultySettings,
@@ -36,7 +39,9 @@ export function useFacultyDraftState({
   const [baselineSnapshot, setBaselineSnapshot] = useState(() =>
     facultyDraftSnapshot(getInitialFacultyDraft({ faculty, defaultSpecialization })),
   );
-  const [userAccountDraft, setUserAccountDraft] = useState<FacultyUserAccountDraft>(DEFAULT_USER_ACCOUNT_DRAFT);
+  const [userAccountDraft, setUserAccountDraft] = useState<FacultyUserAccountDraft>(
+    DEFAULT_USER_ACCOUNT_DRAFT,
+  );
 
   useEffect(() => {
     const nextDraft = getInitialFacultyDraft({ faculty, defaultSpecialization });
@@ -50,8 +55,7 @@ export function useFacultyDraftState({
   }, []);
 
   const isDirty =
-    facultyDraftSnapshot(facultyDraft) !== baselineSnapshot
-    || userAccountDraft.enabled;
+    facultyDraftSnapshot(facultyDraft) !== baselineSnapshot || userAccountDraft.enabled;
 
   const { data: linkedContact } = useContactById(
     facultyDraft.contactId ? String(facultyDraft.contactId) : undefined,
@@ -121,4 +125,3 @@ export function useFacultyDraftState({
     handleRegenerateEmployeeId,
   };
 }
-

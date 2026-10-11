@@ -1,9 +1,9 @@
-import type { User } from '@mms/shared';
+import type { User } from "@mms/shared";
 import {
   CONTACTS_MODULE_MANIFEST,
   MESSAGING_MODULE_MANIFEST,
   roleHasPermission,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /** Contacts REST — aligned with `@mms/shared` permission matrix. */
 export function canReadContacts(user: User): boolean {

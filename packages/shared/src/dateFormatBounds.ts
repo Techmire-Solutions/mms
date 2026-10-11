@@ -1,8 +1,8 @@
 /** Formats a local Date object as a `YYYY-MM-DD` storage string. */
 export function formatDateToIso(date: Date): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -16,10 +16,10 @@ export function todayISO(): string {
  * Returns `undefined` when the string is missing or not a valid calendar day.
  */
 export function parseIsoDate(isoStr?: string | null): Date | undefined {
-  if (!isoStr || typeof isoStr !== 'string') return undefined;
+  if (!isoStr || typeof isoStr !== "string") return undefined;
   const dateOnly = isoStr.trim().split(/[T\s]/)[0];
   if (!dateOnly) return undefined;
-  const [year, month, day] = dateOnly.split('-').map(Number);
+  const [year, month, day] = dateOnly.split("-").map(Number);
   if (year == null || month == null || day == null || isNaN(year) || isNaN(month) || isNaN(day)) {
     return undefined;
   }
@@ -35,10 +35,10 @@ export function parseIsoDate(isoStr?: string | null): Date | undefined {
  * Returns `undefined` when missing or not a valid date/month/year.
  */
 export function parseFlexibleIsoDate(isoStr?: string | null): Date | undefined {
-  if (!isoStr || typeof isoStr !== 'string') return undefined;
+  if (!isoStr || typeof isoStr !== "string") return undefined;
   const dateOnly = isoStr.trim().split(/[T\s]/)[0];
   if (!dateOnly) return undefined;
-  const parts = dateOnly.split('-').map(Number);
+  const parts = dateOnly.split("-").map(Number);
   if (parts.length === 1) {
     const year = parts[0];
     if (year != null && !isNaN(year) && year >= 1000 && year <= 9999) {
@@ -46,7 +46,16 @@ export function parseFlexibleIsoDate(isoStr?: string | null): Date | undefined {
     }
   } else if (parts.length === 2) {
     const [year, month] = parts;
-    if (year != null && month != null && !isNaN(year) && !isNaN(month) && year >= 1000 && year <= 9999 && month >= 1 && month <= 12) {
+    if (
+      year != null &&
+      month != null &&
+      !isNaN(year) &&
+      !isNaN(month) &&
+      year >= 1000 &&
+      year <= 9999 &&
+      month >= 1 &&
+      month <= 12
+    ) {
       return new Date(year, month - 1, 1);
     }
   } else if (parts.length === 3) {
@@ -57,10 +66,10 @@ export function parseFlexibleIsoDate(isoStr?: string | null): Date | undefined {
 
 /** Returns the year portion of a `YYYY-MM-DD` (or ISO datetime) string, or `undefined` if invalid. */
 export function parseIsoYear(isoStr?: string | null): number | undefined {
-  if (!isoStr || typeof isoStr !== 'string') return undefined;
+  if (!isoStr || typeof isoStr !== "string") return undefined;
   const dateOnly = isoStr.trim().split(/[T\s]/)[0];
   if (!dateOnly) return undefined;
-  const [year] = dateOnly.split('-').map(Number);
+  const [year] = dateOnly.split("-").map(Number);
   return year == null || isNaN(year) ? undefined : year;
 }
 
@@ -69,8 +78,8 @@ export function parseIsoYear(isoStr?: string | null): number | undefined {
  * into a 4-digit number. Returns `undefined` when missing or invalid.
  */
 export function parseYearValue(value?: string | number | Date | null): number | undefined {
-  if (value == null || value === '') return undefined;
-  if (typeof value === 'number') {
+  if (value == null || value === "") return undefined;
+  if (typeof value === "number") {
     return Number.isInteger(value) && value >= 1000 && value <= 9999 ? value : undefined;
   }
   if (value instanceof Date) {
@@ -78,7 +87,7 @@ export function parseYearValue(value?: string | number | Date | null): number | 
     const y = value.getFullYear();
     return Number.isInteger(y) && y >= 1000 && y <= 9999 ? y : undefined;
   }
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const trimmed = value.trim();
     if (!trimmed) return undefined;
     if (/^\d{4}$/.test(trimmed)) {
@@ -137,7 +146,11 @@ export function resolveYearPickerBounds(
  * True when `date` is on/after optional ISO `min` and on/before optional ISO `max`
  * (normalized local-calendar day comparisons via {@link parseFlexibleIsoDate}).
  */
-export function isDateWithinIsoBounds(date: Date, minIso?: string | null, maxIso?: string | null): boolean {
+export function isDateWithinIsoBounds(
+  date: Date,
+  minIso?: string | null,
+  maxIso?: string | null,
+): boolean {
   const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const minDate = parseFlexibleIsoDate(minIso);
   if (minDate && target < minDate) return false;

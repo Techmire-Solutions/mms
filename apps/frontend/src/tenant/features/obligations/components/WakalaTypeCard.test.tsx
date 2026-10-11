@@ -32,7 +32,7 @@ describe("WakalaTypeCard Component", () => {
         onEditDistribution={vi.fn()}
         onDeleteDistribution={vi.fn()}
         onAddDistribution={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Khums Sehm-e-Imam");

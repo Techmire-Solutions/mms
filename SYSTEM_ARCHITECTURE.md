@@ -20,14 +20,14 @@ mms/
 
 ### Layer Constraints & Responsibilities
 
-| Layer | Path | Responsibilities & Boundaries |
-|-------|------|-------------------------------|
-| **Shared Contracts (SSOT)** | `packages/shared/` | Strict Zod 4 DTOs, TypeScript interfaces, module manifests, pure math/formatting utils. **Zero** DOM, React, Fastify, or SQL dependencies. |
-| **Frontend UI Primitives** | `apps/frontend/src/components/ui/` | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports. |
-| **Frontend Shared Lib** | `apps/frontend/src/lib/` | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting. |
+| Layer                        | Path                                          | Responsibilities & Boundaries                                                                                                                    |
+| ---------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Shared Contracts (SSOT)**  | `packages/shared/`                            | Strict Zod 4 DTOs, TypeScript interfaces, module manifests, pure math/formatting utils. **Zero** DOM, React, Fastify, or SQL dependencies.       |
+| **Frontend UI Primitives**   | `apps/frontend/src/components/ui/`            | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports.                                        |
+| **Frontend Shared Lib**      | `apps/frontend/src/lib/`                      | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting.                                                  |
 | **Frontend Tenant Features** | `apps/frontend/src/tenant/features/{module}/` | Module pages, presentation sub-components, custom hooks. Cross-feature imports are forbidden; communication occurs via facades or `@mms/shared`. |
-| **Backend API Routes** | `apps/backend/src/routes/` | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots. |
-| **Backend Clean Domain** | `apps/backend/src/{module}/` | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters). |
+| **Backend API Routes**       | `apps/backend/src/routes/`                    | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots.                                                   |
+| **Backend Clean Domain**     | `apps/backend/src/{module}/`                  | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters).                                    |
 
 ---
 
@@ -36,6 +36,7 @@ mms/
 MMS enforces end-to-end contract type safety through `@ts-rest` contracts and Fastify REST endpoints backed by Zod schemas in `@mms/shared`.
 
 ### Core API Namespaces
+
 - **Tenant Auth & Session:** `/api/auth/*` — Session cookies, password login, OTP verification, 2FA, tenant switching.
 - **Tenant Domain Modules:**
   - `/api/students/*` — Student directory, admissions, enrollments, guardianship.
@@ -114,6 +115,7 @@ To prevent critical system disruptions, the following infrastructure zones requi
 ## 7. Automated Verification & Quality Gates
 
 All contributions and agent executions must pass the four-tier verification gate:
+
 1. `pnpm typecheck` — Strict TypeScript checking across all workspaces.
 2. `pnpm test` / `vitest run` — Unit, component, and API integration suites.
 3. `node scripts/check-code-norms.mjs` — Zero new `any` annotations, zero raw hex colors, and file size constraints.

@@ -1,10 +1,16 @@
-import { relations } from 'drizzle-orm';
-import { workspaces } from '../platform.js';
-import { contacts, tenantUsers } from '../contacts.js';
-import { faculty, facultyDesignations, facultyDesignationRoles,
-  facultyDepartments, facultyAssignments, facultyEmployments,
-  facultyEmployDesignations } from '../faculty.js';
-import { hasanatDistributions } from '../hasanat.js';
+import { relations } from "drizzle-orm";
+import { workspaces } from "../platform.js";
+import { contacts, tenantUsers } from "../contacts.js";
+import {
+  faculty,
+  facultyDesignations,
+  facultyDesignationRoles,
+  facultyDepartments,
+  facultyAssignments,
+  facultyEmployments,
+  facultyEmployDesignations,
+} from "../faculty.js";
+import { hasanatDistributions } from "../hasanat.js";
 
 export const facultyDesignationsRelations = relations(facultyDesignations, ({ one, many }) => ({
   workspace: one(workspaces, {
@@ -18,9 +24,9 @@ export const facultyDesignationsRelations = relations(facultyDesignations, ({ on
   parent: one(facultyDesignations, {
     fields: [facultyDesignations.workspaceSubdomain, facultyDesignations.parentDesignationId],
     references: [facultyDesignations.workspaceSubdomain, facultyDesignations.id],
-    relationName: 'designation_hierarchy',
+    relationName: "designation_hierarchy",
   }),
-  children: many(facultyDesignations, { relationName: 'designation_hierarchy' }),
+  children: many(facultyDesignations, { relationName: "designation_hierarchy" }),
   roles: many(facultyDesignationRoles),
   facultyAssignments: many(facultyAssignments),
   employDesignations: many(facultyEmployDesignations),
@@ -63,20 +69,29 @@ export const facultyEmploymentsRelations = relations(facultyEmployments, ({ one,
   employDesignations: many(facultyEmployDesignations),
 }));
 
-export const facultyEmployDesignationsRelations = relations(facultyEmployDesignations, ({ one }) => ({
-  workspace: one(workspaces, {
-    fields: [facultyEmployDesignations.workspaceSubdomain],
-    references: [workspaces.subdomain],
+export const facultyEmployDesignationsRelations = relations(
+  facultyEmployDesignations,
+  ({ one }) => ({
+    workspace: one(workspaces, {
+      fields: [facultyEmployDesignations.workspaceSubdomain],
+      references: [workspaces.subdomain],
+    }),
+    employment: one(facultyEmployments, {
+      fields: [
+        facultyEmployDesignations.workspaceSubdomain,
+        facultyEmployDesignations.employmentId,
+      ],
+      references: [facultyEmployments.workspaceSubdomain, facultyEmployments.id],
+    }),
+    designation: one(facultyDesignations, {
+      fields: [
+        facultyEmployDesignations.workspaceSubdomain,
+        facultyEmployDesignations.designationId,
+      ],
+      references: [facultyDesignations.workspaceSubdomain, facultyDesignations.id],
+    }),
   }),
-  employment: one(facultyEmployments, {
-    fields: [facultyEmployDesignations.workspaceSubdomain, facultyEmployDesignations.employmentId],
-    references: [facultyEmployments.workspaceSubdomain, facultyEmployments.id],
-  }),
-  designation: one(facultyDesignations, {
-    fields: [facultyEmployDesignations.workspaceSubdomain, facultyEmployDesignations.designationId],
-    references: [facultyDesignations.workspaceSubdomain, facultyDesignations.id],
-  }),
-}));
+);
 
 export const facultyDepartmentsRelations = relations(facultyDepartments, ({ one, many }) => ({
   workspace: one(workspaces, {
@@ -86,10 +101,10 @@ export const facultyDepartmentsRelations = relations(facultyDepartments, ({ one,
   parent: one(facultyDepartments, {
     fields: [facultyDepartments.workspaceSubdomain, facultyDepartments.parentId],
     references: [facultyDepartments.workspaceSubdomain, facultyDepartments.id],
-    relationName: 'dept_hierarchy',
+    relationName: "dept_hierarchy",
   }),
   children: many(facultyDepartments, {
-    relationName: 'dept_hierarchy',
+    relationName: "dept_hierarchy",
   }),
   designations: many(facultyDesignations),
   assignments: many(facultyAssignments),

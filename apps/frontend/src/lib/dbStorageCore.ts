@@ -19,9 +19,9 @@ export function scopedStorageKey(key: string): string {
 // ─── Sync Status ─────────────────────────────────────────────────────────────
 
 /** Possible states of the background server synchronization. */
-export type SyncStatus = 'idle' | 'syncing' | 'error';
+export type SyncStatus = "idle" | "syncing" | "error";
 
-let _syncStatus: SyncStatus = 'idle';
+let _syncStatus: SyncStatus = "idle";
 
 /**
  * Returns the current background sync status.
@@ -34,10 +34,10 @@ export function getSyncStatus(): SyncStatus {
 
 export function setSyncStatus(status: SyncStatus): void {
   _syncStatus = status;
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     // Defer so saveObject during render (e.g. widget seed load) cannot update SyncStatusBadge mid-render.
     queueMicrotask(() => {
-      window.dispatchEvent(new CustomEvent('sync-status-change', { detail: status }));
+      window.dispatchEvent(new CustomEvent("sync-status-change", { detail: status }));
     });
   }
 }
@@ -66,10 +66,10 @@ export async function syncToServer(
   url: string,
   body: unknown,
   method: string = "POST",
-  options?: { signal?: AbortSignal }
+  options?: { signal?: AbortSignal },
 ): Promise<ServerSyncResult> {
   try {
-    setSyncStatus('syncing');
+    setSyncStatus("syncing");
     const response = await apiFetch(url, {
       method,
       headers: getHeaders(),
@@ -78,18 +78,20 @@ export async function syncToServer(
     });
     if (!response.ok) {
       const isAuthFailure = response.status === 401 || response.status === 403;
-      const expectedPreAuth =
-        response.status === 401 && localStorage.getItem('mms_user') === null;
+      const expectedPreAuth = response.status === 401 && localStorage.getItem("mms_user") === null;
       if (!expectedPreAuth && !isAuthFailure) {
-        reportClientWarn(new Error(`Sync to server failed for ${url} (status: ${response.status})`), { context: 'db.syncToServer', url, status: response.status });
+        reportClientWarn(
+          new Error(`Sync to server failed for ${url} (status: ${response.status})`),
+          { context: "db.syncToServer", url, status: response.status },
+        );
       }
-      setSyncStatus(expectedPreAuth || isAuthFailure ? 'idle' : 'error');
+      setSyncStatus(expectedPreAuth || isAuthFailure ? "idle" : "error");
       let errorKey: string | undefined;
       try {
         const payload = (await response.json()) as { message?: unknown; error?: unknown };
-        if (typeof payload.message === 'string' && payload.message.trim().length > 0) {
+        if (typeof payload.message === "string" && payload.message.trim().length > 0) {
           errorKey = payload.message;
-        } else if (typeof payload.error === 'string' && payload.error.trim().length > 0) {
+        } else if (typeof payload.error === "string" && payload.error.trim().length > 0) {
           errorKey = payload.error;
         }
       } catch {
@@ -97,15 +99,15 @@ export async function syncToServer(
       }
       return { ok: false, status: response.status, errorKey };
     }
-    setSyncStatus('idle');
+    setSyncStatus("idle");
     return { ok: true };
   } catch (error) {
-    if ((error as { name?: string })?.name === 'AbortError') {
-      setSyncStatus('idle');
+    if ((error as { name?: string })?.name === "AbortError") {
+      setSyncStatus("idle");
       return { ok: false };
     }
-    reportClientError(error, { context: 'db.syncToServer', url });
-    setSyncStatus('error');
+    reportClientError(error, { context: "db.syncToServer", url });
+    setSyncStatus("error");
     return { ok: false };
   }
 }
@@ -128,7 +130,7 @@ export function safeSetItem(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch (err) {
-    reportClientWarn(err, { context: 'db.safeSetItem', key });
+    reportClientWarn(err, { context: "db.safeSetItem", key });
   }
 }
 
@@ -156,10 +158,9 @@ export function clearAllClientStorage(): void {
     localStorage.clear();
     sessionStorage.clear();
   } catch (err) {
-    reportClientWarn(err, { context: 'db.clearClientStorage' });
+    reportClientWarn(err, { context: "db.clearClientStorage" });
   }
 }
-
 
 /**
  * Writes a server snapshot into the scoped localStorage cache.

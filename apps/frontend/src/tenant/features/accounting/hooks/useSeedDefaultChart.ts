@@ -15,7 +15,8 @@ export interface SeedDefaultChartResult {
 export function useSeedDefaultChart() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiJson<SeedDefaultChartResult>("/api/accounting/accounts/seed-default", { method: "POST" }),
+    mutationFn: () =>
+      apiJson<SeedDefaultChartResult>("/api/accounting/accounts/seed-default", { method: "POST" }),
     onSettled: () => {
       invalidateAccountingQueries(queryClient);
       void queryClient.invalidateQueries({ queryKey: ACCOUNTING_POSTING_RULES_QUERY_KEY });

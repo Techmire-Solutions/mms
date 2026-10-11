@@ -1,9 +1,6 @@
-import type { FieldDefinition } from './contactTypes.js';
-import {
-  SESSIONS_TAB_REGISTRY,
-  INITIAL_SESSIONS_FIELD_SEED,
-} from './moduleFieldSetupAcademic.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
+import type { FieldDefinition } from "./contactTypes.js";
+import { SESSIONS_TAB_REGISTRY, INITIAL_SESSIONS_FIELD_SEED } from "./moduleFieldSetupAcademic.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
 
 /** Deep clone {@link INITIAL_SESSIONS_FIELD_SEED} for default and Setup states. */
 export function cloneSessionFieldSeed(): Record<string, FieldDefinition[]> {
@@ -21,7 +18,7 @@ export function isSessionSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Info tab). */
 export function isSessionLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -31,7 +28,7 @@ export function isSessionLockedEnabledTab(tabKey: string): boolean {
 export function resolveSessionsFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneSessionFieldSeed();
   }
   const entries = Object.entries(fields);

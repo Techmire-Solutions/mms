@@ -1,9 +1,9 @@
-import type { SmsIntegrationConfig } from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
+import type { SmsIntegrationConfig } from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
 
 export async function fetchSmsIntegration(): Promise<SmsIntegrationConfig | null> {
   try {
-    return await apiJson<SmsIntegrationConfig>('/api/sms/integration');
+    return await apiJson<SmsIntegrationConfig>("/api/sms/integration");
   } catch {
     return null;
   }
@@ -32,15 +32,15 @@ function toSmsIntegrationWriteBody(payload: SaveSmsIntegrationInput) {
 export async function saveSmsIntegration(
   payload: SaveSmsIntegrationInput,
 ): Promise<SmsIntegrationConfig> {
-  return apiJson<SmsIntegrationConfig>('/api/sms/integration', {
-    method: 'PUT',
+  return apiJson<SmsIntegrationConfig>("/api/sms/integration", {
+    method: "PUT",
     body: JSON.stringify(toSmsIntegrationWriteBody(payload)),
   });
 }
 
 export async function testSmsIntegration(testPhone: string): Promise<SmsIntegrationConfig> {
-  const response = await apiJson<{ config: SmsIntegrationConfig }>('/api/sms/integration/test', {
-    method: 'POST',
+  const response = await apiJson<{ config: SmsIntegrationConfig }>("/api/sms/integration/test", {
+    method: "POST",
     body: JSON.stringify({ testPhone }),
   });
   return response.config;

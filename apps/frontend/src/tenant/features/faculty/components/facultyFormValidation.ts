@@ -87,9 +87,7 @@ export function validateFacultyDraft(
   return errors.length > 0 ? errors : null;
 }
 
-export function facultyValidationErrorsByField(
-  errors: ValidationError[],
-): Record<string, string> {
+export function facultyValidationErrorsByField(errors: ValidationError[]): Record<string, string> {
   const byField: Record<string, string> = {};
   for (const error of errors) {
     if (!byField[error.fieldId]) {
@@ -98,4 +96,3 @@ export function facultyValidationErrorsByField(
   }
   return byField;
 }
-

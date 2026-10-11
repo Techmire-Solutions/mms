@@ -1,5 +1,5 @@
-import React from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
+import React from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export interface CustomizeItemRowProps {
   id: string;
@@ -45,7 +45,10 @@ export function CustomizeItemRow({
       </div>
 
       {actions && (
-        <div className="flex items-center gap-1.5 shrink-0" onClick={(event) => event.stopPropagation()}>
+        <div
+          className="flex items-center gap-1.5 shrink-0"
+          onClick={(event) => event.stopPropagation()}
+        >
           {actions}
         </div>
       )}

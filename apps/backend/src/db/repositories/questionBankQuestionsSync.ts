@@ -1,14 +1,14 @@
-import { and, eq, inArray } from 'drizzle-orm';
-import { type QuestionBankQuestion } from '@mms/shared';
+import { and, eq, inArray } from "drizzle-orm";
+import { type QuestionBankQuestion } from "@mms/shared";
 import {
   type questions,
   questionCategories,
   questionOptions,
   questionTags,
   questionCitations,
-} from '../schema.js';
-import { type TenantTransaction } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+} from "../schema.js";
+import { type TenantTransaction } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type QuestionRow = typeof questions.$inferSelect;
 type Transaction = TenantTransaction;
@@ -24,9 +24,9 @@ export function questionRowToRecord(
   const question: QuestionBankQuestion = {
     id: row.id,
     categoryIds: categories,
-    type: row.type as QuestionBankQuestion['type'],
-    difficulty: row.difficulty as QuestionBankQuestion['difficulty'],
-    questionLanguage: row.questionLanguage as QuestionBankQuestion['questionLanguage'],
+    type: row.type as QuestionBankQuestion["type"],
+    difficulty: row.difficulty as QuestionBankQuestion["difficulty"],
+    questionLanguage: row.questionLanguage as QuestionBankQuestion["questionLanguage"],
     text: row.text,
     options,
     answer: row.answer,
@@ -68,10 +68,7 @@ export async function syncQuestionChildren(
     tx
       .delete(questionTags)
       .where(
-        and(
-          eq(questionTags.workspaceSubdomain, subdomain),
-          eq(questionTags.questionId, record.id),
-        ),
+        and(eq(questionTags.workspaceSubdomain, subdomain), eq(questionTags.questionId, record.id)),
       ),
     tx
       .delete(questionCitations)
@@ -170,10 +167,7 @@ export async function hydrateQuestionRecords(
       })
       .from(questionTags)
       .where(
-        and(
-          eq(questionTags.workspaceSubdomain, subdomain),
-          inArray(questionTags.questionId, qIds),
-        ),
+        and(eq(questionTags.workspaceSubdomain, subdomain), inArray(questionTags.questionId, qIds)),
       ),
     tx
       .select({
@@ -215,7 +209,7 @@ export async function hydrateQuestionRecords(
   for (const ci of allCits) {
     let parsed: Record<string, unknown> = {};
     try {
-      parsed = JSON.parse(ci.citation || '{}');
+      parsed = JSON.parse(ci.citation || "{}");
     } catch {
       // ignore
     }
@@ -237,4 +231,3 @@ export async function hydrateQuestionRecords(
     );
   });
 }
-

@@ -1,34 +1,32 @@
-import { describe, expect, it } from 'vitest';
-import {
-  contactsWidgetToWorkDrillDown,
-} from './contactsWidgetWorkDrillDown';
+import { describe, expect, it } from "vitest";
+import { contactsWidgetToWorkDrillDown } from "./contactsWidgetWorkDrillDown";
 
-describe('contactsWidgetToWorkDrillDown', () => {
-  it('returns null for non-contacts collections', () => {
-    expect(contactsWidgetToWorkDrillDown({ collection: 'students' })).toBeNull();
+describe("contactsWidgetToWorkDrillDown", () => {
+  it("returns null for non-contacts collections", () => {
+    expect(contactsWidgetToWorkDrillDown({ collection: "students" })).toBeNull();
   });
 
-  it('maps gender filter to Work gender', () => {
+  it("maps gender filter to Work gender", () => {
     expect(
       contactsWidgetToWorkDrillDown({
-        collection: 'contacts',
-        filterField: 'gender',
-        filterValue: 'male',
+        collection: "contacts",
+        filterField: "gender",
+        filterValue: "male",
       }),
-    ).toEqual({ gender: 'male' });
+    ).toEqual({ gender: "male" });
   });
 
-  it('maps whatsappStatus to quickFilter whatsapp', () => {
+  it("maps whatsappStatus to quickFilter whatsapp", () => {
     expect(
       contactsWidgetToWorkDrillDown({
-        collection: 'contacts',
-        filterField: 'whatsappStatus',
-        filterValue: 'REGISTERED',
+        collection: "contacts",
+        filterField: "whatsappStatus",
+        filterValue: "REGISTERED",
       }),
-    ).toEqual({ quickFilter: 'whatsapp' });
+    ).toEqual({ quickFilter: "whatsapp" });
   });
 
-  it('returns empty drill-down for unfiltered contacts widgets', () => {
-    expect(contactsWidgetToWorkDrillDown({ collection: 'contacts' })).toEqual({});
+  it("returns empty drill-down for unfiltered contacts widgets", () => {
+    expect(contactsWidgetToWorkDrillDown({ collection: "contacts" })).toEqual({});
   });
 });

@@ -16,12 +16,12 @@ import { useEnrollmentsPageState } from "@/tenant/features/enrollments/hooks/use
 const EnrollmentsReportsTier = lazy(() =>
   import("@/tenant/features/enrollments/components/EnrollmentsReportsTier").then((m) => ({
     default: m.EnrollmentsReportsTier,
-  }))
+  })),
 );
 const EnrollmentsSetupTier = lazy(() =>
   import("@/tenant/features/enrollments/components/EnrollmentsSetupTier").then((m) => ({
     default: m.EnrollmentsSetupTier,
-  }))
+  })),
 );
 
 /**
@@ -31,22 +31,53 @@ export default function EnrollmentsPage() {
   const pageState = useEnrollmentsPageState();
   const [importOpen, setImportOpen] = useState(false);
   const {
-    t, SUB_TABS, TABS, tab, setTab, activeSubTab, setActiveSubTab,
-    canWriteEnrollments, canDelete, canExport, canSelectEnrollments,
-    directoryFilters, enrollments, filteredCount, isWorkPageError,
-    refetchWorkPage, setViewing, setShowWizard, setPendingDeleteId,
-    setConfirmBulkDeleteOpen, setConfirmBulkRestoreOpen,
-    columnLayout, selection, exportActions, pageActions,
+    t,
+    SUB_TABS,
+    TABS,
+    tab,
+    setTab,
+    activeSubTab,
+    setActiveSubTab,
+    canWriteEnrollments,
+    canDelete,
+    canExport,
+    canSelectEnrollments,
+    directoryFilters,
+    enrollments,
+    filteredCount,
+    isWorkPageError,
+    refetchWorkPage,
+    setViewing,
+    setShowWizard,
+    setPendingDeleteId,
+    setConfirmBulkDeleteOpen,
+    setConfirmBulkRestoreOpen,
+    columnLayout,
+    selection,
+    exportActions,
+    pageActions,
   } = pageState;
 
   const {
-    listPage, setListPage, showDeleted, setShowDeleted,
-    search, setSearch, statusFilter, setStatusFilter, sessionFilter, setSessionFilter,
+    listPage,
+    setListPage,
+    showDeleted,
+    setShowDeleted,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    sessionFilter,
+    setSessionFilter,
   } = directoryFilters;
 
   const {
-    selectedIds, allVisibleSelected, someVisibleSelected,
-    toggleSelectAll, toggleSelectedEnrollment, clearSelection,
+    selectedIds,
+    allVisibleSelected,
+    someVisibleSelected,
+    toggleSelectAll,
+    toggleSelectedEnrollment,
+    clearSelection,
   } = selection;
 
   const { handleExportCSV, handleBulkExport } = exportActions;
@@ -73,9 +104,7 @@ export default function EnrollmentsPage() {
           }}
         />
       }
-      metricsStrip={
-        <EnrollmentsCommandMetrics total={filteredCount} shown={filteredCount} />
-      }
+      metricsStrip={<EnrollmentsCommandMetrics total={filteredCount} shown={filteredCount} />}
     >
       <ResponsiveAccordionTabs
         tabs={TABS}
@@ -99,56 +128,60 @@ export default function EnrollmentsPage() {
             {tab === "work" && (
               <div className="space-y-5">
                 <EnrollmentsWorkTier
-                activeSubTab={activeSubTab}
-                subTabs={SUB_TABS}
-                enrollments={enrollments}
-                total={filteredCount}
-                page={listPage}
-                pageSize={ENROLLMENTS_MODULE_MANIFEST.defaultPageSize}
-                search={search}
-                statusFilter={statusFilter}
-                sessionFilter={sessionFilter}
-                canWrite={canWriteEnrollments}
-                canDelete={canDelete}
-                canExport={canExport}
-                canSelectEnrollments={canSelectEnrollments}
-                showDeleted={showDeleted}
-                selectedIds={selectedIds}
-                allVisibleSelected={allVisibleSelected}
-                someVisibleSelected={someVisibleSelected}
-                isWorkListError={isWorkPageError}
-                loadFailedTitle={t("enrollments.loadFailed")}
-                onSubTabChange={setActiveSubTab}
-                onRetry={() => void refetchWorkPage()}
-                onShowDeletedChange={setShowDeleted}
-                onSearchChange={setSearch}
-                onStatusFilterChange={setStatusFilter}
-                onSessionFilterChange={setSessionFilter}
-                onClearFilters={() => { setStatusFilter("all"); setSessionFilter("all"); setSearch(""); }}
-                onPageChange={setListPage}
-                onView={setViewing}
-                onCancel={handleCancel}
-                onDeleteRequest={setPendingDeleteId}
-                onRestore={handleRestore}
-                onToggleSelectAll={toggleSelectAll}
-                onToggleSelectedEnrollment={toggleSelectedEnrollment}
-                onClearSelection={clearSelection}
-                onRequestBulkDelete={() => setConfirmBulkDeleteOpen(true)}
-                onRequestBulkRestore={() => setConfirmBulkRestoreOpen(true)}
-                onRequestBulkCancel={() => handleBulkCancel(selectedIds)}
-                onBulkExport={() => void handleBulkExport()}
-                columnProps={{
-                  isColumnVisible: columnLayout.isColumnVisible,
-                  getColumnWidth: columnLayout.getColumnWidth,
-                  onColumnResize: columnLayout.setColumnWidth,
-                  columnCustomizer: {
-                    columnRegistry: columnLayout.columnRegistry,
-                    updateUserColumnLayout: columnLayout.updateUserColumnLayout,
-                    onResetLayout: columnLayout.resetColumnLayout,
-                    labels: columnLayout.customizerLabels,
-                  },
-                }}
-              />
+                  activeSubTab={activeSubTab}
+                  subTabs={SUB_TABS}
+                  enrollments={enrollments}
+                  total={filteredCount}
+                  page={listPage}
+                  pageSize={ENROLLMENTS_MODULE_MANIFEST.defaultPageSize}
+                  search={search}
+                  statusFilter={statusFilter}
+                  sessionFilter={sessionFilter}
+                  canWrite={canWriteEnrollments}
+                  canDelete={canDelete}
+                  canExport={canExport}
+                  canSelectEnrollments={canSelectEnrollments}
+                  showDeleted={showDeleted}
+                  selectedIds={selectedIds}
+                  allVisibleSelected={allVisibleSelected}
+                  someVisibleSelected={someVisibleSelected}
+                  isWorkListError={isWorkPageError}
+                  loadFailedTitle={t("enrollments.loadFailed")}
+                  onSubTabChange={setActiveSubTab}
+                  onRetry={() => void refetchWorkPage()}
+                  onShowDeletedChange={setShowDeleted}
+                  onSearchChange={setSearch}
+                  onStatusFilterChange={setStatusFilter}
+                  onSessionFilterChange={setSessionFilter}
+                  onClearFilters={() => {
+                    setStatusFilter("all");
+                    setSessionFilter("all");
+                    setSearch("");
+                  }}
+                  onPageChange={setListPage}
+                  onView={setViewing}
+                  onCancel={handleCancel}
+                  onDeleteRequest={setPendingDeleteId}
+                  onRestore={handleRestore}
+                  onToggleSelectAll={toggleSelectAll}
+                  onToggleSelectedEnrollment={toggleSelectedEnrollment}
+                  onClearSelection={clearSelection}
+                  onRequestBulkDelete={() => setConfirmBulkDeleteOpen(true)}
+                  onRequestBulkRestore={() => setConfirmBulkRestoreOpen(true)}
+                  onRequestBulkCancel={() => handleBulkCancel(selectedIds)}
+                  onBulkExport={() => void handleBulkExport()}
+                  columnProps={{
+                    isColumnVisible: columnLayout.isColumnVisible,
+                    getColumnWidth: columnLayout.getColumnWidth,
+                    onColumnResize: columnLayout.setColumnWidth,
+                    columnCustomizer: {
+                      columnRegistry: columnLayout.columnRegistry,
+                      updateUserColumnLayout: columnLayout.updateUserColumnLayout,
+                      onResetLayout: columnLayout.resetColumnLayout,
+                      labels: columnLayout.customizerLabels,
+                    },
+                  }}
+                />
               </div>
             )}
 

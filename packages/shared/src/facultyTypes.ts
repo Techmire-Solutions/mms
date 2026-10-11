@@ -17,14 +17,20 @@ export {
   type FacultyProfileStatus,
   type FacultyCatalogStatus,
   type FacultyStatusRoles,
-} from './facultyStatusTypes.js';
+} from "./facultyStatusTypes.js";
 
-import type { FacultyEmployDesignationWriteRow } from './facultyEmployDesignationTypes.js';
-import type { FacultyEmploymentStatus, FacultyProfileStatus } from './facultyStatusTypes.js';
+import type { FacultyEmployDesignationWriteRow } from "./facultyEmployDesignationTypes.js";
+import type { FacultyEmploymentStatus, FacultyProfileStatus } from "./facultyStatusTypes.js";
 
 /** Teaching specialization options for madrasa faculty. */
 export const FACULTY_SPECIALIZATION_VALUES = [
-  'Hifz', 'Qaidah', 'Tajweed', 'Islamic Studies', 'Arabic', 'General', 'Other',
+  "Hifz",
+  "Qaidah",
+  "Tajweed",
+  "Islamic Studies",
+  "Arabic",
+  "General",
+  "Other",
 ] as const;
 export type FacultySpecialization = (typeof FACULTY_SPECIALIZATION_VALUES)[number];
 
@@ -39,8 +45,12 @@ export function resolveFacultySpecializations(
 
 /** Academic / institutional designations for faculty members. */
 export const FACULTY_DESIGNATION_VALUES = [
-  'Instructor', 'Senior Instructor', 'Assistant Instructor',
-  'Head of Department', 'Qari', 'Administrator',
+  "Instructor",
+  "Senior Instructor",
+  "Assistant Instructor",
+  "Head of Department",
+  "Qari",
+  "Administrator",
 ] as const;
 export type FacultyDesignation = (typeof FACULTY_DESIGNATION_VALUES)[number];
 
@@ -48,19 +58,23 @@ export type FacultyDesignation = (typeof FACULTY_DESIGNATION_VALUES)[number];
 export function resolveFacultyDesignations(
   designations?: readonly string[] | null,
 ): readonly string[] {
-  return designations && designations.length > 0
-    ? designations
-    : FACULTY_DESIGNATION_VALUES;
+  return designations && designations.length > 0 ? designations : FACULTY_DESIGNATION_VALUES;
 }
 
 /** Default specialization when unset (must remain in {@link FACULTY_SPECIALIZATION_VALUES}). */
 export const DEFAULT_FACULTY_SPECIALIZATION: FacultySpecialization =
-  FACULTY_SPECIALIZATION_VALUES.find((value) => value === 'General')
-  ?? FACULTY_SPECIALIZATION_VALUES[0];
+  FACULTY_SPECIALIZATION_VALUES.find((value) => value === "General") ??
+  FACULTY_SPECIALIZATION_VALUES[0];
 
 /** Academic and administrative departments for madrasa faculty. */
 export const FACULTY_DEPARTMENT_VALUES = [
-  'Hifz', 'Nazira', 'Tajweed', 'Islamic Studies', 'Arabic', 'Academics', 'Administration',
+  "Hifz",
+  "Nazira",
+  "Tajweed",
+  "Islamic Studies",
+  "Arabic",
+  "Academics",
+  "Administration",
 ] as const;
 export type FacultyDepartment = (typeof FACULTY_DEPARTMENT_VALUES)[number];
 
@@ -68,9 +82,7 @@ export type FacultyDepartment = (typeof FACULTY_DEPARTMENT_VALUES)[number];
 export function resolveFacultyDepartments(
   departments?: readonly string[] | null,
 ): readonly string[] {
-  return departments && departments.length > 0
-    ? departments
-    : FACULTY_DEPARTMENT_VALUES;
+  return departments && departments.length > 0 ? departments : FACULTY_DEPARTMENT_VALUES;
 }
 
 /** Hierarchy presets for delegation authority (lower number = higher authority). */
@@ -81,16 +93,16 @@ export interface FacultyHierarchyPreset {
 
 /** Rank presets aligned with i18n scale 1 (highest) … 10 (Lecturer/Staff). */
 export const FACULTY_HIERARCHY_RANK_PRESETS: readonly FacultyHierarchyPreset[] = [
-  { rank: 1, label: 'Dean / Principal' },
-  { rank: 2, label: 'Head of Department (HoD)' },
-  { rank: 3, label: 'Senior Faculty / Professor' },
-  { rank: 4, label: 'Associate Professor' },
-  { rank: 5, label: 'Assistant Professor' },
-  { rank: 6, label: 'Senior Lecturer' },
-  { rank: 7, label: 'Lecturer / Instructor' },
-  { rank: 8, label: 'Junior Lecturer' },
-  { rank: 9, label: 'Teaching Assistant' },
-  { rank: 10, label: 'Lecturer / Staff' },
+  { rank: 1, label: "Dean / Principal" },
+  { rank: 2, label: "Head of Department (HoD)" },
+  { rank: 3, label: "Senior Faculty / Professor" },
+  { rank: 4, label: "Associate Professor" },
+  { rank: 5, label: "Assistant Professor" },
+  { rank: 6, label: "Senior Lecturer" },
+  { rank: 7, label: "Lecturer / Instructor" },
+  { rank: 8, label: "Junior Lecturer" },
+  { rank: 9, label: "Teaching Assistant" },
+  { rank: 10, label: "Lecturer / Staff" },
 ] as const;
 
 /** Default when no designation rank is projected from primary faculty_assignments. */
@@ -147,7 +159,7 @@ export interface FacultyMember {
   employeeId?: string;
   phone?: string;
   email?: string;
-  gender?: 'male' | 'female';
+  gender?: "male" | "female";
   avatar?: string | null;
   specialization?: string;
   department?: string;
@@ -200,9 +212,11 @@ export function isFacultyDeleted(facultyMember: { deletedAt?: string | null }): 
 }
 
 /** Active directory rows — excludes soft-deleted records from Work by default. */
-export function filterActiveFaculty<T extends { deletedAt?: string | null }>(facultyList: T[]): T[] {
+export function filterActiveFaculty<T extends { deletedAt?: string | null }>(
+  facultyList: T[],
+): T[] {
   return facultyList.filter((facultyMember) => !isFacultyDeleted(facultyMember));
 }
 
 /** Default RBAC workspace user role assigned when provisioning a login for faculty. */
-export const DEFAULT_FACULTY_USER_ROLE = 'staff' as const;
+export const DEFAULT_FACULTY_USER_ROLE = "staff" as const;

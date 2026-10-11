@@ -5,10 +5,8 @@
  * Google sync stable while binding the exported helpers to the composition
  * root's wrapped instance methods.
  */
-import { contactUseCases } from '../contacts/use-cases/contactUseCases.js';
+import { contactUseCases } from "../contacts/use-cases/contactUseCases.js";
 
 export const { assertContactUniqueFields } = contactUseCases;
 
-export {
-  ContactUniqueFieldError,
-} from '../contacts/use-cases/contactValidationUseCases.js';
+export { ContactUniqueFieldError } from "../contacts/use-cases/contactValidationUseCases.js";

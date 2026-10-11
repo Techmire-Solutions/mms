@@ -1,4 +1,4 @@
-import { enrollmentsUseCases } from '../enrollments/use-cases/enrollmentsUseCases.js';
+import { enrollmentsUseCases } from "../enrollments/use-cases/enrollmentsUseCases.js";
 
 /**
  * Thin re-export of the enrollments use-cases facade.

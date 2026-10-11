@@ -67,10 +67,7 @@ export function GoogleContactsSetupForm({
           placeholder={t("contacts.sync.clientSecretPlaceholder")}
         />
       </Field>
-      <FieldErrorMessage
-        message={error || undefined}
-        className={FORM_ERROR_BOX}
-      />
+      <FieldErrorMessage message={error || undefined} className={FORM_ERROR_BOX} />
       <div className="flex gap-2">
         <Button
           type="button"

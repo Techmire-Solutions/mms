@@ -113,4 +113,3 @@ export const COLUMN_FIELD_MAPPING: Record<string, { tabId: string; fieldId: stri
   createdBy: { tabId: "basic", fieldId: "firstName" },
   updatedBy: { tabId: "basic", fieldId: "firstName" },
 };
-

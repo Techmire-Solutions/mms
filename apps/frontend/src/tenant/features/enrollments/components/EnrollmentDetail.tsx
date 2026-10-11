@@ -1,9 +1,9 @@
 import React from "react";
 import { User } from "lucide-react";
-import { Drawer } from '@/components/ui/Drawer';
-import { type Enrollment } from '@/lib/data/enrollmentData';
+import { Drawer } from "@/components/ui/Drawer";
+import { type Enrollment } from "@/lib/data/enrollmentData";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/semanticTone";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -21,7 +21,7 @@ export interface EnrollmentDetailProps {
   onRestore?: (id: string) => void;
 }
 
-export const EnrollmentDetail = (function EnrollmentDetail({
+export const EnrollmentDetail = function EnrollmentDetail({
   enrollment,
   onClose,
   onStatusChange,
@@ -31,7 +31,9 @@ export const EnrollmentDetail = (function EnrollmentDetail({
   onRestore,
 }: EnrollmentDetailProps): React.JSX.Element | null {
   const { t } = useTranslation();
-  const { data: resolvedStudents = [] } = useStudentsByIds(enrollment ? [enrollment.studentId] : []);
+  const { data: resolvedStudents = [] } = useStudentsByIds(
+    enrollment ? [enrollment.studentId] : [],
+  );
   const { formatCurrency } = useFinanceCurrency();
   const student = resolvedStudents[0];
 
@@ -54,9 +56,7 @@ export const EnrollmentDetail = (function EnrollmentDetail({
 
   const headerExtraNode = (
     <div className="flex flex-col gap-2 mt-1">
-      {enrollment.deletedAt && (
-        <EnrollmentArchivedBanner enrollment={enrollment} />
-      )}
+      {enrollment.deletedAt && <EnrollmentArchivedBanner enrollment={enrollment} />}
       <div className="flex items-center gap-2">
         <StatusBadge status={enrollment.status} config={statusConfig} />
         {enrollment.paymentStatus && (
@@ -102,4 +102,4 @@ export const EnrollmentDetail = (function EnrollmentDetail({
       />
     </Drawer>
   );
-});
+};

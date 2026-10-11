@@ -19,48 +19,48 @@ import {
   type ContactLookupCountryCode,
   type ContactLookupKind,
   type ContactLookupsMap,
-} from '@mms/shared';
-import { createModuleStringListLookupsService } from '../../lib/createModuleStringListLookupsService.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { slugifyLookupLabel } from '../../lib/slugifyLookupLabel.js';
+} from "@mms/shared";
+import { createModuleStringListLookupsService } from "../../lib/createModuleStringListLookupsService.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { slugifyLookupLabel } from "../../lib/slugifyLookupLabel.js";
 import {
   listContactLookupsByKind,
   listContactLookupsByWorkspace,
   replaceContactLookupsForKind,
-} from '../../db/repositories/contactLookupsRepository.js';
-import { broadcastCollection } from '../../lib/livePush.js';
+} from "../../db/repositories/contactLookupsRepository.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 
-type ContactStringLookupKind = Exclude<ContactLookupKind, 'countryCodes'>;
+type ContactStringLookupKind = Exclude<ContactLookupKind, "countryCodes">;
 
 const CONTACT_STRING_LOOKUP_KINDS = CONTACT_LOOKUP_KINDS.filter(
-  (kind): kind is ContactStringLookupKind => kind !== 'countryCodes',
+  (kind): kind is ContactStringLookupKind => kind !== "countryCodes",
 );
 
 function defaultStringItems(kind: ContactStringLookupKind): string[] {
   switch (kind) {
-    case 'genders':
+    case "genders":
       return [...GENDERS];
-    case 'socialPlatforms':
+    case "socialPlatforms":
       return [...SOCIAL_PLATFORMS];
-    case 'relationships':
+    case "relationships":
       return [...RELATIONSHIPS];
-    case 'phoneLabels':
+    case "phoneLabels":
       return [...DEFAULT_PHONE_LABELS];
-    case 'emailLabels':
+    case "emailLabels":
       return [...DEFAULT_EMAIL_LABELS];
-    case 'addressLabels':
+    case "addressLabels":
       return [...DEFAULT_ADDRESS_LABELS];
-    case 'educationDegrees':
+    case "educationDegrees":
       return [...DEFAULT_EDUCATION_DEGREE_LABELS];
-    case 'employmentTypes':
+    case "employmentTypes":
       return [...DEFAULT_EMPLOYMENT_TYPE_LABELS];
-    case 'skillCategories':
+    case "skillCategories":
       return [...DEFAULT_SKILL_CATEGORY_LABELS];
-    case 'skillProficiencies':
+    case "skillProficiencies":
       return [...DEFAULT_SKILL_PROFICIENCY_LABELS];
-    case 'bankNames':
+    case "bankNames":
       return [...DEFAULT_BANK_NAMES];
-    case 'tags':
+    case "tags":
       return [...DEFAULT_TAG_LABELS];
     default: {
       const _exhaustive: never = kind;
@@ -75,18 +75,18 @@ function defaultCountryItems(): ContactLookupCountryCode[] {
 
 function emptyStringLookupsMap(): Record<ContactStringLookupKind, string[]> {
   return {
-    genders: defaultStringItems('genders'),
-    socialPlatforms: defaultStringItems('socialPlatforms'),
-    relationships: defaultStringItems('relationships'),
-    phoneLabels: defaultStringItems('phoneLabels'),
-    emailLabels: defaultStringItems('emailLabels'),
-    addressLabels: defaultStringItems('addressLabels'),
-    educationDegrees: defaultStringItems('educationDegrees'),
-    employmentTypes: defaultStringItems('employmentTypes'),
-    skillCategories: defaultStringItems('skillCategories'),
-    skillProficiencies: defaultStringItems('skillProficiencies'),
-    bankNames: defaultStringItems('bankNames'),
-    tags: defaultStringItems('tags'),
+    genders: defaultStringItems("genders"),
+    socialPlatforms: defaultStringItems("socialPlatforms"),
+    relationships: defaultStringItems("relationships"),
+    phoneLabels: defaultStringItems("phoneLabels"),
+    emailLabels: defaultStringItems("emailLabels"),
+    addressLabels: defaultStringItems("addressLabels"),
+    educationDegrees: defaultStringItems("educationDegrees"),
+    employmentTypes: defaultStringItems("employmentTypes"),
+    skillCategories: defaultStringItems("skillCategories"),
+    skillProficiencies: defaultStringItems("skillProficiencies"),
+    bankNames: defaultStringItems("bankNames"),
+    tags: defaultStringItems("tags"),
   };
 }
 
@@ -95,8 +95,7 @@ function rowsToCountryItems(
 ): ContactLookupCountryCode[] {
   const items: ContactLookupCountryCode[] = [];
   for (const row of rows) {
-    const code =
-      row.meta && typeof row.meta.code === 'string' ? row.meta.code.trim() : '';
+    const code = row.meta && typeof row.meta.code === "string" ? row.meta.code.trim() : "";
     if (row.label && code) items.push({ country: row.label, code });
   }
   return items;
@@ -112,19 +111,15 @@ const stringListLookups = createModuleStringListLookupsService<
   listByWorkspace: listContactLookupsByWorkspace,
   listByKind: listContactLookupsByKind,
   replaceForKind: replaceContactLookupsForKind,
-  broadcastKey: 'contacts',
+  broadcastKey: "contacts",
 });
 
-async function loadCountryCodes(
-  tenant = getRequestTenant(),
-): Promise<ContactLookupCountryCode[]> {
+async function loadCountryCodes(tenant = getRequestTenant()): Promise<ContactLookupCountryCode[]> {
   if (!tenant) return defaultCountryItems();
-  const rows = await listContactLookupsByKind(tenant, 'countryCodes');
+  const rows = await listContactLookupsByKind(tenant, "countryCodes");
   if (!rows || rows.length === 0) return defaultCountryItems();
   const countries = rowsToCountryItems(rows);
-  return needsContactCountryCodesCurate(countries)
-    ? curatedContactCountryCodes()
-    : countries;
+  return needsContactCountryCodesCurate(countries) ? curatedContactCountryCodes() : countries;
 }
 
 export async function loadContactLookupsMap(
@@ -141,7 +136,7 @@ export async function loadContactLookupKind(
   kind: ContactLookupKind,
   tenant = getRequestTenant(),
 ): Promise<string[] | ContactLookupCountryCode[]> {
-  if (kind === 'countryCodes') return loadCountryCodes(tenant);
+  if (kind === "countryCodes") return loadCountryCodes(tenant);
   return stringListLookups.loadKind(kind, tenant);
 }
 
@@ -150,13 +145,15 @@ export async function replaceContactLookupKind(
   items: string[] | ContactLookupCountryCode[],
   tenant = getRequestTenant(),
 ): Promise<string[] | ContactLookupCountryCode[]> {
-  if (!tenant) throw new Error('Tenant context required');
+  if (!tenant) throw new Error("Tenant context required");
 
   if (isContactLookupCountryKind(kind)) {
-    const countries = (items as ContactLookupCountryCode[]).map((entry) => ({
-      country: entry.country.trim(),
-      code: entry.code.trim(),
-    })).filter((entry) => entry.country && entry.code);
+    const countries = (items as ContactLookupCountryCode[])
+      .map((entry) => ({
+        country: entry.country.trim(),
+        code: entry.code.trim(),
+      }))
+      .filter((entry) => entry.country && entry.code);
     const curated = needsContactCountryCodesCurate(countries)
       ? curatedContactCountryCodes()
       : countries;
@@ -171,7 +168,7 @@ export async function replaceContactLookupKind(
         sortOrder: index,
       })),
     );
-    await broadcastCollection('contacts');
+    await broadcastCollection("contacts");
     return curated;
   }
 

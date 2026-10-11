@@ -5,16 +5,16 @@ import {
   hexToHslColor,
   hslColorToToken,
   tone,
-} from './brandingColorUtils.js';
+} from "./brandingColorUtils.js";
 import {
   brandingSurfaces,
   darkModePrimaryUi,
   darkModeSecondaryUi,
   ensureAccessibleFillSurface,
   foregroundForSurface,
-} from './brandingCssContrast.js';
-import { buildSemanticStatusTokens } from './brandingCssSemanticTokens.js';
-import { buildBrandingSurfaceTokens } from './brandingCssSurfaceTokens.js';
+} from "./brandingCssContrast.js";
+import { buildSemanticStatusTokens } from "./brandingCssSemanticTokens.js";
+import { buildBrandingSurfaceTokens } from "./brandingCssSurfaceTokens.js";
 
 /**
  * Derives the full set of shadcn/Tailwind CSS variables from brand primary and secondary colours.
@@ -33,12 +33,12 @@ export function buildBrandingCssVariables(
   const surfaces = brandingSurfaces(mode, primaryBase.h);
 
   const primaryUi = ensureAccessibleFillSurface(
-    mode === 'dark' ? darkModePrimaryUi(primaryBase) : primaryBase,
+    mode === "dark" ? darkModePrimaryUi(primaryBase) : primaryBase,
     mode,
     [surfaces.card, surfaces.background],
   );
   const secondaryUi = ensureAccessibleFillSurface(
-    mode === 'dark' ? darkModeSecondaryUi(secondaryBase) : secondaryBase,
+    mode === "dark" ? darkModeSecondaryUi(secondaryBase) : secondaryBase,
     mode,
     [surfaces.card, surfaces.background],
   );
@@ -52,21 +52,21 @@ export function buildBrandingCssVariables(
   const semanticTokens = buildSemanticStatusTokens(mode, primaryBase.h);
   const surfaceTokens = buildBrandingSurfaceTokens(mode, primaryBase.h, secondaryBase.h);
   const brandTokens = {
-    '--primary': primaryToken,
-    '--primary-foreground': foregroundForSurface(primaryUi),
-    '--secondary': secondaryToken,
-    '--secondary-foreground': foregroundForSurface(secondaryUi),
-    '--accent': secondaryToken,
-    '--accent-foreground': foregroundForSurface(secondaryUi),
-    '--ring': primaryToken,
-    '--chart-1': primaryToken,
-    '--chart-2': secondaryToken,
-    '--chart-3': hslColorToToken(chart3),
-    '--chart-4': hslColorToToken(chart4),
-    '--chart-5': hslColorToToken(chart5),
-    '--sidebar-primary': secondaryToken,
-    '--sidebar-primary-foreground': foregroundForSurface(secondaryUi),
-    '--sidebar-ring': secondaryToken,
+    "--primary": primaryToken,
+    "--primary-foreground": foregroundForSurface(primaryUi),
+    "--secondary": secondaryToken,
+    "--secondary-foreground": foregroundForSurface(secondaryUi),
+    "--accent": secondaryToken,
+    "--accent-foreground": foregroundForSurface(secondaryUi),
+    "--ring": primaryToken,
+    "--chart-1": primaryToken,
+    "--chart-2": secondaryToken,
+    "--chart-3": hslColorToToken(chart3),
+    "--chart-4": hslColorToToken(chart4),
+    "--chart-5": hslColorToToken(chart5),
+    "--sidebar-primary": secondaryToken,
+    "--sidebar-primary-foreground": foregroundForSurface(secondaryUi),
+    "--sidebar-ring": secondaryToken,
   };
 
   return {
@@ -78,43 +78,43 @@ export function buildBrandingCssVariables(
 
 /** CSS custom properties owned by the branding theme injector. */
 export const BRANDING_THEME_VARIABLES = [
-  '--primary',
-  '--primary-foreground',
-  '--secondary',
-  '--secondary-foreground',
-  '--accent',
-  '--accent-foreground',
-  '--ring',
-  '--chart-1',
-  '--chart-2',
-  '--chart-3',
-  '--chart-4',
-  '--chart-5',
-  '--background',
-  '--foreground',
-  '--card',
-  '--card-foreground',
-  '--popover',
-  '--popover-foreground',
-  '--muted',
-  '--muted-foreground',
-  '--destructive',
-  '--destructive-foreground',
-  '--success',
-  '--success-foreground',
-  '--warning',
-  '--warning-foreground',
-  '--info',
-  '--info-foreground',
-  '--border',
-  '--input',
-  '--sidebar-background',
-  '--sidebar-foreground',
-  '--sidebar-primary',
-  '--sidebar-primary-foreground',
-  '--sidebar-accent',
-  '--sidebar-accent-foreground',
-  '--sidebar-border',
-  '--sidebar-ring',
-  '--sidebar-muted-foreground',
+  "--primary",
+  "--primary-foreground",
+  "--secondary",
+  "--secondary-foreground",
+  "--accent",
+  "--accent-foreground",
+  "--ring",
+  "--chart-1",
+  "--chart-2",
+  "--chart-3",
+  "--chart-4",
+  "--chart-5",
+  "--background",
+  "--foreground",
+  "--card",
+  "--card-foreground",
+  "--popover",
+  "--popover-foreground",
+  "--muted",
+  "--muted-foreground",
+  "--destructive",
+  "--destructive-foreground",
+  "--success",
+  "--success-foreground",
+  "--warning",
+  "--warning-foreground",
+  "--info",
+  "--info-foreground",
+  "--border",
+  "--input",
+  "--sidebar-background",
+  "--sidebar-foreground",
+  "--sidebar-primary",
+  "--sidebar-primary-foreground",
+  "--sidebar-accent",
+  "--sidebar-accent-foreground",
+  "--sidebar-border",
+  "--sidebar-ring",
+  "--sidebar-muted-foreground",
 ] as const;

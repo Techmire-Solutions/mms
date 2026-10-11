@@ -3,10 +3,10 @@ export type {
   SoftDeleteRouteErrorMapper,
   SoftDeletableBulkRoutesOptions,
   SoftDeletableBulkTrashRoutesOptions,
-} from './crudBulkRouteHelpers.js';
+} from "./crudBulkRouteHelpers.js";
 export {
   registerBulkRoutes,
   registerIncludableBulkRoutes,
   registerSoftDeletableBulkTrashRoutes,
   registerSoftDeletableBulkRoutes,
-} from './crudBulkRouteFactories.js';
+} from "./crudBulkRouteFactories.js";

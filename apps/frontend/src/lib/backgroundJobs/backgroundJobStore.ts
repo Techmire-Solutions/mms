@@ -1,15 +1,15 @@
-import type { BackgroundJobRecord } from '@mms/shared';
+import type { BackgroundJobRecord } from "@mms/shared";
 import {
   clearFinishedBackgroundJobsRemote,
   dismissBackgroundJobRemote,
   upsertBackgroundJobRemote,
-} from '@/lib/backgroundJobs/backgroundJobApi';
+} from "@/lib/backgroundJobs/backgroundJobApi";
 
-const STORAGE_KEY = 'mms_background_jobs_v2';
+const STORAGE_KEY = "mms_background_jobs_v2";
 const MAX_JOBS_PER_MODULE = 20;
-export const BACKGROUND_JOBS_EVENT = 'mms-background-jobs-changed';
+export const BACKGROUND_JOBS_EVENT = "mms-background-jobs-changed";
 
-export type BackgroundJobStatus = BackgroundJobRecord['status'];
+export type BackgroundJobStatus = BackgroundJobRecord["status"];
 export type BackgroundJob = BackgroundJobRecord;
 
 type JobStore = Record<string, BackgroundJob[]>;
@@ -29,8 +29,6 @@ function writeStore(store: JobStore): void {
   window.dispatchEvent(new CustomEvent(BACKGROUND_JOBS_EVENT));
 }
 
-
-
 function syncRemote(job: BackgroundJob): void {
   void upsertBackgroundJobRemote(job).catch(() => {});
 }
@@ -41,7 +39,7 @@ export function mergeServerBackgroundJobs(serverJobs: BackgroundJob[]): Backgrou
   for (const job of serverJobs) byId.set(job.id, job);
   for (const job of local) {
     const existing = byId.get(job.id);
-    if (!existing || (job.status === 'running' && existing.status === 'running')) {
+    if (!existing || (job.status === "running" && existing.status === "running")) {
       byId.set(job.id, job);
     }
   }
@@ -79,7 +77,7 @@ export function startBackgroundJob(
     id,
     moduleId,
     kind,
-    status: 'running',
+    status: "running",
     label,
     progress: total != null ? { current: 0, total } : undefined,
     createdAt: new Date().toISOString(),
@@ -93,11 +91,11 @@ export function startBackgroundJob(
 }
 
 export function completeBackgroundJob(id: string): void {
-  patchJob(id, { status: 'completed', completedAt: new Date().toISOString() });
+  patchJob(id, { status: "completed", completedAt: new Date().toISOString() });
 }
 
 export function failBackgroundJob(id: string, error: string): void {
-  patchJob(id, { status: 'failed', error, completedAt: new Date().toISOString() });
+  patchJob(id, { status: "failed", error, completedAt: new Date().toISOString() });
 }
 
 function patchJob(id: string, patch: Partial<BackgroundJob>): void {
@@ -137,7 +135,7 @@ export function dismissBackgroundJob(id: string): void {
 export function clearFinishedBackgroundJobs(): void {
   const store = readStore();
   for (const moduleId of Object.keys(store)) {
-    store[moduleId] = (store[moduleId] ?? []).filter((job) => job.status === 'running');
+    store[moduleId] = (store[moduleId] ?? []).filter((job) => job.status === "running");
   }
   writeStore(store);
   void clearFinishedBackgroundJobsRemote().catch(() => {});

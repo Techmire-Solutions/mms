@@ -10,8 +10,16 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
-  DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-    <button data-testid="dropdown-menu-item" onClick={onClick}>{children}</button>
+  DropdownMenuItem: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
+    <button data-testid="dropdown-menu-item" onClick={onClick}>
+      {children}
+    </button>
   ),
 }));
 

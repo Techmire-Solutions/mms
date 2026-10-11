@@ -25,7 +25,13 @@ export type PaperBuilderTab = "details" | "saved" | "sections" | "questions" | "
 /**
  * Manual paper builder for examination papers.
  */
-export function PaperBuilder({ questions, tests, activeTab, showHeader = true, onSaveTest }: PaperBuilderProps): React.ReactElement {
+export function PaperBuilder({
+  questions,
+  tests,
+  activeTab,
+  showHeader = true,
+  onSaveTest,
+}: PaperBuilderProps): React.ReactElement {
   const { t } = useTranslation();
   const qbConfig = useQuestionBankConfig(questions);
   const printRef = useRef<HTMLDivElement>(null);
@@ -57,7 +63,8 @@ export function PaperBuilder({ questions, tests, activeTab, showHeader = true, o
     updateSection,
   } = usePaperBuilderState({
     defaultDuration: qbConfig.defaultTestDuration,
-    defaultSectionTitle: (sectionNumber) => t("questionBank.defaultSectionTitle", { n: sectionNumber }),
+    defaultSectionTitle: (sectionNumber) =>
+      t("questionBank.defaultSectionTitle", { n: sectionNumber }),
     questions,
   });
 
@@ -84,7 +91,10 @@ export function PaperBuilder({ questions, tests, activeTab, showHeader = true, o
   });
 
   return (
-    <article className="space-y-3 sm:space-y-4" aria-labelledby={showHeader ? "paper-generator-title" : undefined}>
+    <article
+      className="space-y-3 sm:space-y-4"
+      aria-labelledby={showHeader ? "paper-generator-title" : undefined}
+    >
       {showHeader || saved ? (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           {showHeader && (
@@ -92,7 +102,9 @@ export function PaperBuilder({ questions, tests, activeTab, showHeader = true, o
               <h2 id="paper-generator-title" className="m-0 text-base font-bold text-foreground">
                 {t("questionBank.generatorTitle")}
               </h2>
-              <p className="m-0 text-sm text-muted-foreground">{t("questionBank.manualPaperGeneratorSubtitle")}</p>
+              <p className="m-0 text-sm text-muted-foreground">
+                {t("questionBank.manualPaperGeneratorSubtitle")}
+              </p>
             </div>
           )}
           {saved && (

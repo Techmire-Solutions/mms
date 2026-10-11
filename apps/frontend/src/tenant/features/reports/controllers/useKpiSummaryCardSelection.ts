@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import type { CustomCard } from '@/lib/reports/reportMetadata';
+import { useEffect, useRef, useState } from "react";
+import type { CustomCard } from "@/lib/reports/reportMetadata";
 import {
   loadPreviousCustomCardIds,
   loadSelectedCardIdsForCategory,
   syncNewCustomCardSelections,
   syncSelectedCardIdsWithAvailable,
-} from '@/tenant/features/reports/controllers/kpiSummaryCardSelection';
-import type { CategorizedKPIItem } from '@/components/ui/reports/kpiSummaryTypes';
+} from "@/tenant/features/reports/controllers/kpiSummaryCardSelection";
+import type { CategorizedKPIItem } from "@/components/ui/reports/kpiSummaryTypes";
 
 export function useKpiSummaryCardSelection(
   category: string,
@@ -14,9 +14,15 @@ export function useKpiSummaryCardSelection(
   possibleCards: CategorizedKPIItem[],
   customCards: CustomCard[],
 ) {
-  const [selectedCardIds, setSelectedCardIds] = useState<string[]>(() => loadSelectedCardIdsForCategory(category, role));
+  const [selectedCardIds, setSelectedCardIds] = useState<string[]>(() =>
+    loadSelectedCardIdsForCategory(category, role),
+  );
 
-  const availableCardIdsKey = (() => possibleCards.filter((card) => card.isAvailable).map((card) => card.id).join('\u0000'))();
+  const availableCardIdsKey = (() =>
+    possibleCards
+      .filter((card) => card.isAvailable)
+      .map((card) => card.id)
+      .join("\u0000"))();
 
   useEffect(() => {
     syncSelectedCardIdsWithAvailable(

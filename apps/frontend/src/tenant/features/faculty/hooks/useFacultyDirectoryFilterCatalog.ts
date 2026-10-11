@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import type { FacultyMember } from '@mms/shared';
-import { useFacultyDepartments } from '@/tenant/features/faculty/hooks/useFacultyDepartments';
-import { useFacultyDesignations } from '@/tenant/features/faculty/hooks/useFacultyDesignations';
-import { useFacultyContractList } from '@/tenant/features/faculty/hooks/useFacultyTsrHooks';
+import { useMemo } from "react";
+import type { FacultyMember } from "@mms/shared";
+import { useFacultyDepartments } from "@/tenant/features/faculty/hooks/useFacultyDepartments";
+import { useFacultyDesignations } from "@/tenant/features/faculty/hooks/useFacultyDesignations";
+import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrHooks";
 
 /** Max page size accepted by faculty list API — used for supervisor filter roster. */
 const SUPERVISOR_LOOKUP_LIMIT = 100;
@@ -15,9 +15,9 @@ export function useFacultyDirectoryFilterCatalog(enabled: boolean) {
     {
       page: 1,
       limit: SUPERVISOR_LOOKUP_LIMIT,
-      sortField: 'name',
-      sortDir: 'asc',
-      status: 'active',
+      sortField: "name",
+      sortDir: "asc",
+      status: "active",
     },
     enabled,
   );

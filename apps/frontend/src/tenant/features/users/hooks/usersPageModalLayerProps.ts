@@ -1,7 +1,7 @@
-import type { SystemUser } from '@mms/shared';
-import type { MessagingTarget } from '@/hooks/useMessageComposerState';
-import type { UsersModalLayerProps } from '@/tenant/features/users/components/UsersModalLayer';
-import type { useUsersPageActions } from '@/tenant/features/users/hooks/useUsersPageActions';
+import type { SystemUser } from "@mms/shared";
+import type { MessagingTarget } from "@/hooks/useMessageComposerState";
+import type { UsersModalLayerProps } from "@/tenant/features/users/components/UsersModalLayer";
+import type { useUsersPageActions } from "@/tenant/features/users/hooks/useUsersPageActions";
 
 export interface BuildUsersModalLayerSource {
   viewing: SystemUser | null;
@@ -26,7 +26,9 @@ export interface BuildUsersModalLayerSource {
 /**
  * Assembles standard Modal Layer props from controller domain slices.
  */
-export function buildUsersModalLayerProps(source: BuildUsersModalLayerSource): UsersModalLayerProps {
+export function buildUsersModalLayerProps(
+  source: BuildUsersModalLayerSource,
+): UsersModalLayerProps {
   const { actions } = source;
 
   return {
@@ -48,7 +50,9 @@ export function buildUsersModalLayerProps(source: BuildUsersModalLayerSource): U
     onResetPassword: actions.handleResetPassword,
     onAddUser: actions.handleAddUser,
     onInvite: actions.handleInvite,
-    onRestoreUser: (id) => { void actions.handleRestoreUser(id); },
+    onRestoreUser: (id) => {
+      void actions.handleRestoreUser(id);
+    },
     onEditFromDetail: (user) => {
       source.setViewing(null);
       source.handleOpenEdit(user);

@@ -1,9 +1,4 @@
-import {
-  Award,
-  Download,
-  Upload,
-  UserPlus,
-} from "lucide-react";
+import { Award, Download, Upload, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

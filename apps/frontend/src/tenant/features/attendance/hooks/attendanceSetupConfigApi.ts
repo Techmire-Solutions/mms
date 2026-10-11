@@ -12,7 +12,9 @@ const api = createModuleSetupConfigApi<AttendanceModulePreferences>({
     const res = await apiContract.attendance.updatePreferences({ body: prefs });
     return (res.body as { preferences: AttendanceModulePreferences }).preferences;
   },
-  normalizePrefs: normalizeAttendanceModulePreferences as (prefs: unknown) => AttendanceModulePreferences,
+  normalizePrefs: normalizeAttendanceModulePreferences as (
+    prefs: unknown,
+  ) => AttendanceModulePreferences,
 });
 
 export const setAttendancePreferencesMemory = api.setPreferencesMemory;

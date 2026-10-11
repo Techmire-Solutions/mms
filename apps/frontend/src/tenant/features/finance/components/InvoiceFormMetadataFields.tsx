@@ -24,12 +24,7 @@ export function InvoiceFormMetadataFields({
 }: InvoiceFormMetadataFieldsProps): React.JSX.Element {
   return (
     <>
-      <Field
-        id="invoice-class"
-        label={t("finance.form.class")}
-        required
-        error={errors.class}
-      >
+      <Field id="invoice-class" label={t("finance.form.class")} required error={errors.class}>
         <div className="relative flex items-center group/input">
           <School className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
           <Input
@@ -43,12 +38,7 @@ export function InvoiceFormMetadataFields({
         </div>
       </Field>
 
-      <Field
-        id="invoice-session"
-        label={t("finance.form.session")}
-        required
-        error={errors.session}
-      >
+      <Field id="invoice-session" label={t("finance.form.session")} required error={errors.session}>
         <div className="relative flex items-center group/input">
           <Calendar className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
           <Input
@@ -99,10 +89,7 @@ export function InvoiceFormMetadataFields({
         />
       </Field>
 
-      <Field
-        id="invoice-discount-type"
-        label={t("finance.form.discountType")}
-      >
+      <Field id="invoice-discount-type" label={t("finance.form.discountType")}>
         <FormSelect
           id="invoice-discount-type"
           name="discountType"

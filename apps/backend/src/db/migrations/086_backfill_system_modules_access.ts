@@ -1,9 +1,9 @@
-import { eq } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
-import { invalidateWorkspaceCache } from '../../services/workspaceService.js';
-import { SYSTEM_MODULES } from '@mms/shared';
+import { eq } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
+import { invalidateWorkspaceCache } from "../../services/workspaceService.js";
+import { SYSTEM_MODULES } from "@mms/shared";
 
 /**
  * Migration 086: Backfills all canonical SYSTEM_MODULES (including `hasanat`) into `grantedModules`

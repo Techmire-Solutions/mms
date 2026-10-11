@@ -42,9 +42,13 @@ export function useDistributionsTableColumns({
           const denomination = getDistributionDenomination(denomsById, distribution.denominationId);
           return (
             <div className="flex items-center gap-2">
-              <span className="text-base" aria-hidden="true">{denomination?.icon || "⭐"}</span>
+              <span className="text-base" aria-hidden="true">
+                {denomination?.icon || "⭐"}
+              </span>
               <div>
-                <p className="text-sm font-semibold text-foreground m-0">{distribution.denominationName}</p>
+                <p className="text-sm font-semibold text-foreground m-0">
+                  {distribution.denominationName}
+                </p>
                 {denomination && (
                   <p className="text-xs font-bold m-0" style={{ color: denomination.color }}>
                     {t("hasanat.form.pointsShort", { points: denomination.points })}
@@ -63,7 +67,9 @@ export function useDistributionsTableColumns({
         label: t("hasanat.columns.distribution.recipient"),
         noWrap: true,
         render: (distribution) => (
-          <span className="text-sm font-semibold text-foreground">{distribution.recipientName}</span>
+          <span className="text-sm font-semibold text-foreground">
+            {distribution.recipientName}
+          </span>
         ),
       });
     }
@@ -104,7 +110,9 @@ export function useDistributionsTableColumns({
         id: "quantity",
         label: t("hasanat.columns.distribution.quantity"),
         noWrap: true,
-        render: (distribution) => <span className="text-sm font-bold text-foreground">{distribution.quantity}</span>,
+        render: (distribution) => (
+          <span className="text-sm font-bold text-foreground">{distribution.quantity}</span>
+        ),
       });
     }
 
@@ -114,7 +122,9 @@ export function useDistributionsTableColumns({
         label: t("hasanat.columns.distribution.reason"),
         truncate: true,
         cellClassName: "max-w-cell-sm",
-        render: (distribution) => <p className="text-sm text-muted-foreground m-0">{distribution.reason}</p>,
+        render: (distribution) => (
+          <p className="text-sm text-muted-foreground m-0">{distribution.reason}</p>
+        ),
       });
     }
 
@@ -142,7 +152,9 @@ export function useDistributionsTableColumns({
       cols.push({
         id: "status",
         label: t("hasanat.columns.distribution.status"),
-        render: (distribution) => <StatusBadge status={distribution.status} config={statusConfig} size="sm" />,
+        render: (distribution) => (
+          <StatusBadge status={distribution.status} config={statusConfig} size="sm" />
+        ),
       });
     }
 

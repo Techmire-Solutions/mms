@@ -1,7 +1,7 @@
-import type React from 'react';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ModuleTierMotion } from '@/components/ui/ModuleTierMotion';
-import { KPISummary, ModuleReports } from '@/tenant/components/moduleReports';
+import type React from "react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { KPISummary, ModuleReports } from "@/tenant/components/moduleReports";
 
 export interface MessagingReportsTierProps {
   canWrite?: boolean;
@@ -19,4 +19,3 @@ export function MessagingReportsTier({
     </ModuleTierMotion>
   );
 }
-

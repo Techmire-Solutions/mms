@@ -1,7 +1,4 @@
-import {
-  ensureAccentButtonContrast,
-  type BrandingPresetAccessibility,
-} from './brandingTheme.js';
+import { ensureAccentButtonContrast, type BrandingPresetAccessibility } from "./brandingTheme.js";
 
 export interface LogoColorProportion {
   hex: string;
@@ -32,12 +29,12 @@ export interface DeriveBrandColorsFromPaletteOptions {
 
 /** Normalizes a hex colour to lowercase `#rrggbb`, or `null` when invalid. */
 export function normalizeBrandHex(hex: string): string | null {
-  let raw = hex.trim().replace(/^#/, '');
+  let raw = hex.trim().replace(/^#/, "");
   if (raw.length === 3) {
     raw = raw
-      .split('')
+      .split("")
       .map((ch) => ch + ch)
-      .join('');
+      .join("");
   }
   if (!/^[0-9a-fA-F]{6}$/.test(raw)) return null;
   return `#${raw.toLowerCase()}`;

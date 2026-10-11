@@ -1,15 +1,23 @@
 /**
  * Phase 7: Contract-driven query/mutation hooks for the Contacts module.
  */
-import { apiContract, tsrClient } from '@/lib/api';
-import { infiniteQueryOptions, queryOptions, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import type { ContactsListPageResult } from '@mms/shared';
-import { CONTACTS_QUERY_KEY, CONTACTS_REPORT_ANALYTICS_QUERY_KEY } from '@/tenant/features/contacts/hooks/contactsQueryKeys';
-import { invalidateContactsQueries } from '@/tenant/features/contacts/hooks/invalidateContactsQueries';
+import { apiContract, tsrClient } from "@/lib/api";
+import {
+  infiniteQueryOptions,
+  queryOptions,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import type { ContactsListPageResult } from "@mms/shared";
+import {
+  CONTACTS_QUERY_KEY,
+  CONTACTS_REPORT_ANALYTICS_QUERY_KEY,
+} from "@/tenant/features/contacts/hooks/contactsQueryKeys";
+import { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/invalidateContactsQueries";
 
 export function contactsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
-    queryKey: [...CONTACTS_QUERY_KEY, 'contract-list', query] as const,
+    queryKey: [...CONTACTS_QUERY_KEY, "contract-list", query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.contacts.list({
         query: query as Record<string, string>,
@@ -17,7 +25,7 @@ export function contactsListQueryOptions(query: Record<string, unknown> = {}) {
         fetchOptions: { signal },
       });
       if (response.status !== 200) {
-        throw new Error('Failed to fetch contacts');
+        throw new Error("Failed to fetch contacts");
       }
       return response.body;
     },
@@ -28,7 +36,7 @@ export function contactsListQueryOptions(query: Record<string, unknown> = {}) {
 
 export function contactsInfiniteQueryOptions(query: Record<string, unknown> = {}) {
   return infiniteQueryOptions({
-    queryKey: [...CONTACTS_QUERY_KEY, 'contract-infinite-list', query] as const,
+    queryKey: [...CONTACTS_QUERY_KEY, "contract-infinite-list", query] as const,
     queryFn: async ({ pageParam, signal }) => {
       const effectiveQuery = {
         ...query,
@@ -40,7 +48,7 @@ export function contactsInfiniteQueryOptions(query: Record<string, unknown> = {}
         fetchOptions: { signal },
       });
       if (response.status !== 200) {
-        throw new Error('Failed to fetch contacts');
+        throw new Error("Failed to fetch contacts");
       }
       return response.body as ContactsListPageResult;
     },
@@ -60,7 +68,7 @@ export function useContactsInfiniteList(query: Record<string, unknown> = {}, ena
 export function useContactsContractList(query: Record<string, unknown>, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.list.useQuery({
-    queryKey: [...CONTACTS_QUERY_KEY, 'contract-list', query],
+    queryKey: [...CONTACTS_QUERY_KEY, "contract-list", query],
     queryData: { query: query as Record<string, unknown> },
     placeholderData: (prev: unknown) => prev,
     staleTime: 15_000,
@@ -71,14 +79,17 @@ export function useContactsContractList(query: Record<string, unknown>, enabled 
 export function useContactsContractGet(id: string, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.get.useQuery({
-    queryKey: [...CONTACTS_QUERY_KEY, 'detail', id],
+    queryKey: [...CONTACTS_QUERY_KEY, "detail", id],
     queryData: { params: { id } },
     enabled,
     staleTime: 30_000,
   });
 }
 
-export function useContactsContractReportAnalytics(query: { years?: number[]; lang?: string }, enabled = true) {
+export function useContactsContractReportAnalytics(
+  query: { years?: number[]; lang?: string },
+  enabled = true,
+) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.reportAnalytics.useQuery({
     queryKey: [...CONTACTS_REPORT_ANALYTICS_QUERY_KEY, query],
@@ -91,37 +102,49 @@ export function useContactsContractReportAnalytics(query: { years?: number[]; la
 export function useContactsContractCreate() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.contacts.create.useMutation({ onSuccess: () => invalidateContactsQueries(queryClient) });
+  return tsrClient.contacts.create.useMutation({
+    onSuccess: () => invalidateContactsQueries(queryClient),
+  });
 }
 
 export function useContactsContractUpdate() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.contacts.update.useMutation({ onSuccess: () => invalidateContactsQueries(queryClient) });
+  return tsrClient.contacts.update.useMutation({
+    onSuccess: () => invalidateContactsQueries(queryClient),
+  });
 }
 
 export function useContactsContractDelete() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.contacts.delete.useMutation({ onSuccess: () => invalidateContactsQueries(queryClient) });
+  return tsrClient.contacts.delete.useMutation({
+    onSuccess: () => invalidateContactsQueries(queryClient),
+  });
 }
 
 export function useContactsContractRestore() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.contacts.restore.useMutation({ onSuccess: () => invalidateContactsQueries(queryClient) });
+  return tsrClient.contacts.restore.useMutation({
+    onSuccess: () => invalidateContactsQueries(queryClient),
+  });
 }
 
 export function useContactsContractBulkDelete() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.contacts.bulkDelete.useMutation({ onSuccess: () => invalidateContactsQueries(queryClient) });
+  return tsrClient.contacts.bulkDelete.useMutation({
+    onSuccess: () => invalidateContactsQueries(queryClient),
+  });
 }
 
 export function useContactsContractBulkRestore() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return tsrClient.contacts.bulkRestore.useMutation({ onSuccess: () => invalidateContactsQueries(queryClient) });
+  return tsrClient.contacts.bulkRestore.useMutation({
+    onSuccess: () => invalidateContactsQueries(queryClient),
+  });
 }
 
 export function useContactsContractLogExportAudit() {
@@ -137,7 +160,7 @@ export function useContactsContractLogSetupAudit() {
 export function useContactsContractFieldConfig(enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.getFieldConfig.useQuery({
-    queryKey: ['contacts', 'field-config', 'contract'],
+    queryKey: ["contacts", "field-config", "contract"],
     queryData: {},
     staleTime: 30_000,
     enabled,
@@ -148,6 +171,6 @@ export function useContactsContractUpdateFieldConfig() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.updateFieldConfig.useMutation({
-    onSuccess: () => invalidateContactsQueries(queryClient)
+    onSuccess: () => invalidateContactsQueries(queryClient),
   });
 }

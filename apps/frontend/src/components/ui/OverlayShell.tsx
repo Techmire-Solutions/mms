@@ -30,9 +30,7 @@ export interface OverlayShellProps<T extends HTMLElement = HTMLElement> {
   priority?: boolean;
   containerClassName?: string;
   backdropClassName?: string;
-  children:
-    | React.ReactNode
-    | ((context: OverlayContextValue<T>) => React.ReactNode);
+  children: React.ReactNode | ((context: OverlayContextValue<T>) => React.ReactNode);
 }
 
 /**

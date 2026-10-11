@@ -1,9 +1,9 @@
-import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { ReportChartCard } from './ReportChartCard';
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ReportChartCard } from "./ReportChartCard";
 
-vi.mock('@/components/ui/SafeResponsiveContainer', () => ({
+vi.mock("@/components/ui/SafeResponsiveContainer", () => ({
   SafeResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   ),
@@ -12,8 +12,8 @@ vi.mock('@/components/ui/SafeResponsiveContainer', () => ({
   ),
 }));
 
-describe('ReportChartCard Component', () => {
-  it('renders title, subtitle, and children content', () => {
+describe("ReportChartCard Component", () => {
+  it("renders title, subtitle, and children content", () => {
     const html = renderToStaticMarkup(
       <ReportChartCard
         title="Test Chart Title"
@@ -21,24 +21,21 @@ describe('ReportChartCard Component', () => {
         accentColor="primary"
       >
         <div data-testid="child-chart">Chart Content</div>
-      </ReportChartCard>
+      </ReportChartCard>,
     );
 
-    expect(html).toContain('Test Chart Title');
-    expect(html).toContain('Test Chart Subtitle');
-    expect(html).toContain('Chart Content');
+    expect(html).toContain("Test Chart Title");
+    expect(html).toContain("Test Chart Subtitle");
+    expect(html).toContain("Chart Content");
   });
 
-  it('renders actions slot when provided', () => {
+  it("renders actions slot when provided", () => {
     const html = renderToStaticMarkup(
-      <ReportChartCard
-        title="Title with Actions"
-        actions={<button type="button">Export</button>}
-      >
+      <ReportChartCard title="Title with Actions" actions={<button type="button">Export</button>}>
         <div>Content</div>
-      </ReportChartCard>
+      </ReportChartCard>,
     );
 
-    expect(html).toContain('Export');
+    expect(html).toContain("Export");
   });
 });

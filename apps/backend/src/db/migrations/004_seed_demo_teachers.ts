@@ -5,7 +5,7 @@ import {
   tenantCollectionKey,
   tenantObjectKey,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,
@@ -13,10 +13,10 @@ import {
   listObjectStorageKeys,
   saveCollection,
   saveObject,
-} from '../database.js';
+} from "../database.js";
 
-const TEACHERS_COLLECTION = 'teachers';
-const TEACHERS_SETTINGS_KEY = 'teachers_settings';
+const TEACHERS_COLLECTION = "teachers";
+const TEACHERS_SETTINGS_KEY = "teachers_settings";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -49,7 +49,7 @@ export async function runMigration004(): Promise<void> {
     const legacyTeachers = await getCollectionByStorageName(TEACHERS_COLLECTION);
     if (!Array.isArray(legacyTeachers) || legacyTeachers.length === 0) {
       await saveCollection(TEACHERS_COLLECTION, []);
-      console.log('[Migration 004] Seeded empty teachers collection (legacy storage)');
+      console.log("[Migration 004] Seeded empty teachers collection (legacy storage)");
       changed = true;
     }
 
@@ -60,7 +60,7 @@ export async function runMigration004(): Promise<void> {
     }
 
     if (changed) {
-      console.log('[Migration 004] Teachers migration completed.');
+      console.log("[Migration 004] Teachers migration completed.");
     }
     return;
   }
@@ -83,6 +83,6 @@ export async function runMigration004(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 004] Teacher storage migration completed.');
+    console.log("[Migration 004] Teacher storage migration completed.");
   }
 }

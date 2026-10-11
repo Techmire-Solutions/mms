@@ -1,7 +1,4 @@
-import {
-  resolveFacultyStatusRoles,
-  FACULTY_STATUS_VALUES,
-} from './facultyTypes.js';
+import { resolveFacultyStatusRoles, FACULTY_STATUS_VALUES } from "./facultyTypes.js";
 
 /** Default rolling window for "new records" command-centre metrics (globle1 §2.1). */
 export const MODULE_METRICS_DEFAULT_PERIOD_DAYS = 30;
@@ -57,7 +54,11 @@ type JoinDateRecord = StatusRecord & {
   joinDate?: string;
   createdAt?: string;
 };
-type WorkspaceUserMetricRecord = StatusRecord & { role?: string; twoFactorEnabled?: boolean; activeSessions?: number };
+type WorkspaceUserMetricRecord = StatusRecord & {
+  role?: string;
+  twoFactorEnabled?: boolean;
+  activeSessions?: number;
+};
 
 export function countRecordsWithStatus<T>(
   records: T[],
@@ -99,13 +100,16 @@ export function computeStudentsCommandMetrics(
   cutoff.setDate(cutoff.getDate() - periodDays);
   const cutoffTime = cutoff.getTime();
 
-  let active = 0, inactive = 0, suspended = 0, newThisPeriod = 0;
+  let active = 0,
+    inactive = 0,
+    suspended = 0,
+    newThisPeriod = 0;
 
   for (let i = 0; i < students.length; i++) {
     const s = students[i];
-    if (s.status === 'active') active++;
-    else if (s.status === 'inactive') inactive++;
-    else if (s.status === 'suspended') suspended++;
+    if (s.status === "active") active++;
+    else if (s.status === "inactive") inactive++;
+    else if (s.status === "suspended") suspended++;
 
     const raw = s.registeredDate ?? s.createdAt;
     if (raw) {
@@ -133,14 +137,21 @@ export function computeFacultyCommandMetrics(
   faculty: JoinDateRecord[],
   periodDays: number = MODULE_METRICS_DEFAULT_PERIOD_DAYS,
 ): FacultyCommandMetricsSnapshot {
-  const { active: activeStatus, inactive: inactiveStatus, onLeave: onLeaveStatus } =
-    resolveFacultyStatusRoles();
+  const {
+    active: activeStatus,
+    inactive: inactiveStatus,
+    onLeave: onLeaveStatus,
+  } = resolveFacultyStatusRoles();
   const knownStatuses = new Set<string>(FACULTY_STATUS_VALUES);
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - periodDays);
   const cutoffTime = cutoff.getTime();
 
-  let active = 0, inactive = 0, onLeave = 0, other = 0, newThisPeriod = 0;
+  let active = 0,
+    inactive = 0,
+    onLeave = 0,
+    other = 0,
+    newThisPeriod = 0;
 
   for (let i = 0; i < faculty.length; i++) {
     const member = faculty[i];
@@ -149,7 +160,7 @@ export function computeFacultyCommandMetrics(
     else if (status === inactiveStatus) inactive++;
     else if (status === onLeaveStatus) onLeave++;
 
-    const trimmed = String(status ?? '').trim();
+    const trimmed = String(status ?? "").trim();
     if (trimmed.length > 0 && !knownStatuses.has(trimmed)) {
       other++;
     }
@@ -178,14 +189,18 @@ export const computeFacultyCommandMetricsSnapshot = computeFacultyCommandMetrics
 export function computeUsersCommandMetrics(
   users: WorkspaceUserMetricRecord[],
 ): UsersCommandMetricsSnapshot {
-  let active = 0, suspended = 0, admins = 0, twoFaEnabled = 0, activeSessions = 0;
+  let active = 0,
+    suspended = 0,
+    admins = 0,
+    twoFaEnabled = 0,
+    activeSessions = 0;
 
   for (let i = 0; i < users.length; i++) {
     const user = users[i];
-    if (user.status === 'active') active++;
-    else if (user.status === 'suspended') suspended++;
+    if (user.status === "active") active++;
+    else if (user.status === "suspended") suspended++;
 
-    if (user.role === 'admin') admins++;
+    if (user.role === "admin") admins++;
     if (user.twoFactorEnabled) twoFaEnabled++;
     if (user.activeSessions) activeSessions += user.activeSessions;
   }

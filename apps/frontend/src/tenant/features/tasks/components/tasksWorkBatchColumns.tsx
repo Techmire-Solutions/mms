@@ -3,23 +3,19 @@
  * @description WorkBatchTable column definitions for Tasks Work directory.
  */
 
-import { User as UserIcon } from 'lucide-react';
-import {
-  type TaskRecord,
-  type TaskStatus,
-  type AppTranslationKey,
-} from '@mms/shared';
-import type { WorkBatchTableColumn } from '@/components/common/work/WorkBatchTable';
-import { TableCellLink } from '@/components/ui/TableCellLink';
-import { TaskPriorityBadge, TaskStatusBadge } from './TaskBadges';
+import { User as UserIcon } from "lucide-react";
+import { type TaskRecord, type TaskStatus, type AppTranslationKey } from "@mms/shared";
+import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
+import { TableCellLink } from "@/components/ui/TableCellLink";
+import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
 
 export const TASK_NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
-  todo: 'in_progress',
-  in_progress: 'in_review',
-  in_review: 'completed',
-  blocked: 'in_progress',
-  completed: 'todo',
-  cancelled: 'todo',
+  todo: "in_progress",
+  in_progress: "in_review",
+  in_review: "completed",
+  blocked: "in_progress",
+  completed: "todo",
+  cancelled: "todo",
 };
 
 export function buildTasksWorkBatchColumns(
@@ -37,23 +33,19 @@ export function buildTasksWorkBatchColumns(
 
   const columns: WorkBatchTableColumn<TaskRecord>[] = [
     {
-      id: 'title',
-      label: t('tasks.title'),
-      width: widthOf?.('title'),
+      id: "title",
+      label: t("tasks.title"),
+      width: widthOf?.("title"),
       render: (task) => (
-        <TableCellLink
-          tap
-          className="text-start font-medium"
-          onClick={() => onView(task)}
-        >
+        <TableCellLink tap className="text-start font-medium" onClick={() => onView(task)}>
           {task.title}
         </TableCellLink>
       ),
     },
     {
-      id: 'description',
-      label: t('tasks.description'),
-      width: widthOf?.('description') ?? 220,
+      id: "description",
+      label: t("tasks.description"),
+      width: widthOf?.("description") ?? 220,
       render: (task) =>
         task.description ? (
           <div className="text-xs text-muted-foreground line-clamp-2">{task.description}</div>
@@ -62,16 +54,16 @@ export function buildTasksWorkBatchColumns(
         ),
     },
     {
-      id: 'priority',
-      label: t('tasks.priority'),
-      width: widthOf?.('priority') ?? 120,
+      id: "priority",
+      label: t("tasks.priority"),
+      width: widthOf?.("priority") ?? 120,
       noWrap: true,
       render: (task) => <TaskPriorityBadge priority={task.priority} />,
     },
     {
-      id: 'status',
-      label: t('tasks.status'),
-      width: widthOf?.('status') ?? 140,
+      id: "status",
+      label: t("tasks.status"),
+      width: widthOf?.("status") ?? 140,
       noWrap: true,
       render: (task) => (
         <TaskStatusBadge
@@ -81,41 +73,37 @@ export function buildTasksWorkBatchColumns(
       ),
     },
     {
-      id: 'assignees',
-      label: t('tasks.assignees'),
-      width: widthOf?.('assignees'),
+      id: "assignees",
+      label: t("tasks.assignees"),
+      width: widthOf?.("assignees"),
       truncate: true,
       render: (task) =>
         task.assignees?.length ? (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <UserIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
             <span className="truncate">
-              {task.assignees
-                .map((a) => a.facultyName || t('tasks.assigneeFallback'))
-                .join(', ')}
+              {task.assignees.map((a) => a.facultyName || t("tasks.assigneeFallback")).join(", ")}
             </span>
           </div>
         ) : (
-          <span className="text-muted-foreground/60 text-xs">{t('tasks.noAssignees')}</span>
+          <span className="text-muted-foreground/60 text-xs">{t("tasks.noAssignees")}</span>
         ),
     },
     {
-      id: 'dueAt',
-      label: t('tasks.dueAt'),
-      width: widthOf?.('dueAt') ?? 120,
+      id: "dueAt",
+      label: t("tasks.dueAt"),
+      width: widthOf?.("dueAt") ?? 120,
       noWrap: true,
       render: (task) => {
         if (!task.dueAt) return <span className="text-muted-foreground/60 text-xs">—</span>;
         const isOverdue =
-          task.status !== 'completed' &&
-          task.status !== 'cancelled' &&
+          task.status !== "completed" &&
+          task.status !== "cancelled" &&
           new Date(task.dueAt) < new Date();
         return (
           <span
             className={
-              isOverdue
-                ? 'text-destructive font-medium text-xs'
-                : 'text-muted-foreground text-xs'
+              isOverdue ? "text-destructive font-medium text-xs" : "text-muted-foreground text-xs"
             }
           >
             {new Date(task.dueAt).toLocaleDateString()}
@@ -125,5 +113,5 @@ export function buildTasksWorkBatchColumns(
     },
   ];
 
-  return columns.filter((column) => column.id === 'title' || isVisible(column.id));
+  return columns.filter((column) => column.id === "title" || isVisible(column.id));
 }

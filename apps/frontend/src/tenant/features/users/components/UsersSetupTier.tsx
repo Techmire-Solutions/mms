@@ -10,18 +10,16 @@ import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
 import { useUsersSetupPanelState } from "@/tenant/features/users/hooks/useUsersSetupPanelState";
 
-const RolesPermissions = lazy(
-  () =>
-    import("@/tenant/features/users/components/RolesPermissions").then((m) => ({
-      default: m.RolesPermissions,
-    })),
+const RolesPermissions = lazy(() =>
+  import("@/tenant/features/users/components/RolesPermissions").then((m) => ({
+    default: m.RolesPermissions,
+  })),
 );
 
-const UsersSettingsPanel = lazy(
-  () =>
-    import("@/tenant/features/users/components/UsersSettingsPanel").then((m) => ({
-      default: m.UsersSettingsPanel,
-    })),
+const UsersSettingsPanel = lazy(() =>
+  import("@/tenant/features/users/components/UsersSettingsPanel").then((m) => ({
+    default: m.UsersSettingsPanel,
+  })),
 );
 
 export interface UsersSetupTab {
@@ -41,7 +39,7 @@ function discardConfirmKey(leavingTab: string): AppTranslationKey {
   return "users.setup.discardUnsavedPreferencesConfirm";
 }
 
-export const UsersSetupTier = (function UsersSetupTier({
+export const UsersSetupTier = function UsersSetupTier({
   tabs,
   activeTab,
   canEditSetup,
@@ -52,13 +50,13 @@ export const UsersSetupTier = (function UsersSetupTier({
   const permissionsDirtyRef = useRef(false);
   const discardPermissionsRef = useRef<() => void>(() => {});
 
-  const handlePermissionsDirtyChange = ((dirty: boolean) => {
+  const handlePermissionsDirtyChange = (dirty: boolean) => {
     permissionsDirtyRef.current = dirty;
-  });
+  };
 
-  const handleRegisterPermissionsDiscard = ((discard: () => void) => {
+  const handleRegisterPermissionsDiscard = (discard: () => void) => {
     discardPermissionsRef.current = discard;
-  });
+  };
 
   const subTabs = useModuleSetupSubTabs({
     initialKey: activeTab || "permissions",
@@ -128,6 +126,6 @@ export const UsersSetupTier = (function UsersSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default UsersSetupTier;

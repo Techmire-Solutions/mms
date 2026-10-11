@@ -1,15 +1,15 @@
-import type { PlatformSettings, PlatformSettingsUpdateInput } from '@mms/shared';
-import { DEFAULT_PLATFORM_SETTINGS } from '@mms/shared';
+import type { PlatformSettings, PlatformSettingsUpdateInput } from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
 import {
   findPlatformSettingsRow,
   insertPlatformSettingsDefaultRow,
   upsertPlatformSettingsRow,
-} from '../../db/repositories/platformSettingsRepository.js';
-import { logger } from '../../lib/logger.js';
-import { redisGet, redisSet } from '../../lib/redis.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
+} from "../../db/repositories/platformSettingsRepository.js";
+import { logger } from "../../lib/logger.js";
+import { redisGet, redisSet } from "../../lib/redis.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
-export const REDIS_PLATFORM_SETTINGS_KEY = 'platform:settings:global';
+export const REDIS_PLATFORM_SETTINGS_KEY = "platform:settings:global";
 
 let cachedPlatformSettings: PlatformSettings = { ...DEFAULT_PLATFORM_SETTINGS };
 
@@ -33,9 +33,9 @@ export async function initPlatformSettings(): Promise<PlatformSettings> {
     if (existing) {
       cachedPlatformSettings = existing;
     } else {
-      const defaultSyncTls = process.env.MMS_SYNC_TLS_ON_CREATE !== 'false';
-      const defaultTlsExtraSans = process.env.MMS_TLS_EXTRA_SANS?.trim() || '';
-      const defaultCertbotEmail = process.env.MMS_CERTBOT_EMAIL?.trim() || '';
+      const defaultSyncTls = process.env.MMS_SYNC_TLS_ON_CREATE !== "false";
+      const defaultTlsExtraSans = process.env.MMS_TLS_EXTRA_SANS?.trim() || "";
+      const defaultCertbotEmail = process.env.MMS_CERTBOT_EMAIL?.trim() || "";
 
       const inserted = await insertPlatformSettingsDefaultRow({
         syncTlsOnCreate: defaultSyncTls,
@@ -54,7 +54,10 @@ export async function initPlatformSettings(): Promise<PlatformSettings> {
       // Non-fatal
     }
   } catch (error) {
-    logger.warn({ err: error }, 'Failed to initialize platform settings from database; using defaults');
+    logger.warn(
+      { err: error },
+      "Failed to initialize platform settings from database; using defaults",
+    );
   }
 
   return cachedPlatformSettings;
@@ -83,9 +86,9 @@ export async function updatePlatformSettings(
     // Non-fatal
   }
   await invalidateMultiTierCache({
-    tenantId: 'platform',
-    domain: 'settings',
-    key: 'global',
+    tenantId: "platform",
+    domain: "settings",
+    key: "global",
   });
   return { ...cachedPlatformSettings };
 }

@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  type ContactPreferences,
-} from "@mms/shared";
+import { type ContactPreferences } from "@mms/shared";
 import type { CountryCodeEntry } from "@/lib/contacts/countryCodeOptions";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useContactsPreferencesSave } from "@/tenant/features/contacts/hooks/useContactsPreferencesSave";
@@ -22,7 +20,8 @@ export function useContactsSetupPanelState() {
 
   const isPrefsDraftDirty = (() => JSON.stringify(prefs) !== JSON.stringify(contextPrefs))();
 
-  const isCountryCodesDirty = (() => JSON.stringify(countryCodesDraft) !== JSON.stringify(countryCodes))();
+  const isCountryCodesDirty = (() =>
+    JSON.stringify(countryCodesDraft) !== JSON.stringify(countryCodes))();
 
   const isPreferencesDirty = isPrefsDraftDirty || isCountryCodesDirty;
 
@@ -36,15 +35,18 @@ export function useContactsSetupPanelState() {
     setCountryCodesDraft(countryCodes);
   }, [countryCodes, isPreferencesDirty]);
 
-  const updatePreference = (<K extends keyof ContactPreferences>(key: K, value: ContactPreferences[K]): void => {
-      setPrefs((currentPreferences) => ({ ...currentPreferences, [key]: value }));
-      setSaved(false);
-    });
+  const updatePreference = <K extends keyof ContactPreferences>(
+    key: K,
+    value: ContactPreferences[K],
+  ): void => {
+    setPrefs((currentPreferences) => ({ ...currentPreferences, [key]: value }));
+    setSaved(false);
+  };
 
-  const updateCountryCodesDraft = ((next: CountryCodeEntry[]) => {
-      setCountryCodesDraft(next);
-      setSaved(false);
-    });
+  const updateCountryCodesDraft = (next: CountryCodeEntry[]) => {
+    setCountryCodesDraft(next);
+    setSaved(false);
+  };
 
   const { isSaving, handleSave } = useContactsPreferencesSave({
     contextPrefs,

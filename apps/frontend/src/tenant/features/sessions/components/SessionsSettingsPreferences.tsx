@@ -63,11 +63,23 @@ export function SessionsSettingsPreferences({
             name="sessionStart"
             value={settingsDraft.sessionStart}
             onChange={(value) => upd("sessionStart", value)}
-            options={["january", "february", "march", "april", "may", "june",
-              "july", "august", "september", "october", "november", "december"].map((month, idx) => ({
-                value: month,
-                label: formatMonthName(new Date(2000, idx, 1)),
-              }))}
+            options={[
+              "january",
+              "february",
+              "march",
+              "april",
+              "may",
+              "june",
+              "july",
+              "august",
+              "september",
+              "october",
+              "november",
+              "december",
+            ].map((month, idx) => ({
+              value: month,
+              label: formatMonthName(new Date(2000, idx, 1)),
+            }))}
             className="w-full"
           />
         </Field>
@@ -107,8 +119,12 @@ export function SessionsSettingsPreferences({
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3">
           <div className="min-w-0">
-            <p className="m-0 text-sm font-semibold text-foreground">{t("sessions.settings.defaultViewLayout")}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t("sessions.settings.defaultViewLayoutHint")}</p>
+            <p className="m-0 text-sm font-semibold text-foreground">
+              {t("sessions.settings.defaultViewLayout")}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t("sessions.settings.defaultViewLayoutHint")}
+            </p>
           </div>
           <CompactSegmentedControl
             value={normalizeSessionsViewLayout(settingsDraft.defaultViewLayout)}

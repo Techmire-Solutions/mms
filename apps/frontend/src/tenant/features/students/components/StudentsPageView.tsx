@@ -15,9 +15,11 @@ import type { useStudentsPageController } from "@/tenant/features/students/hooks
 const StudentsReportsTier = lazy(() =>
   import("@/tenant/features/students/components/StudentsReportsTier").then((m) => ({
     default: m.StudentsReportsTier,
-  }))
+  })),
 );
-const StudentsSetupTier = lazy(() => import("@/tenant/features/students/components/StudentsSetupTier"));
+const StudentsSetupTier = lazy(
+  () => import("@/tenant/features/students/components/StudentsSetupTier"),
+);
 
 export type StudentsPageViewProps = ReturnType<typeof useStudentsPageController>;
 

@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CloudOff, Loader2 } from "lucide-react";
 import { getSyncStatus, type SyncStatus } from "@/lib/db";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 

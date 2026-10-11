@@ -1,6 +1,6 @@
-import type { AttendanceRecord } from './attendanceModuleManifest.js';
-import { LIST_PAGE_MAX_LIMIT } from './apiSchemas.js';
-import { compareByField, paginateArray } from './utils.js';
+import type { AttendanceRecord } from "./attendanceModuleManifest.js";
+import { LIST_PAGE_MAX_LIMIT } from "./apiSchemas.js";
+import { compareByField, paginateArray } from "./utils.js";
 
 /** Supported attendance list filters and pagination options. */
 export interface AttendanceListQuery {
@@ -15,7 +15,7 @@ export interface AttendanceListQuery {
   dateTo?: string;
   status?: string;
   sortField?: string;
-  sortDir?: 'asc' | 'desc' | '';
+  sortDir?: "asc" | "desc" | "";
   includeDeleted?: boolean;
 }
 
@@ -48,16 +48,22 @@ export function filterAttendanceForQuery(
     rows = rows.filter((record) => record.date === query.date);
   }
   if (query.status?.trim()) {
-    const statuses = new Set(query.status.split(',').map((s) => s.trim()).filter(Boolean));
+    const statuses = new Set(
+      query.status
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
     if (statuses.size > 0) {
       rows = rows.filter((record) => statuses.has(record.status));
     }
   }
   if (query.search?.trim()) {
     const search = query.search.trim().toLowerCase();
-    rows = rows.filter((record) =>
-      record.studentName.toLowerCase().includes(search)
-      || record.rollNo.toLowerCase().includes(search),
+    rows = rows.filter(
+      (record) =>
+        record.studentName.toLowerCase().includes(search) ||
+        record.rollNo.toLowerCase().includes(search),
     );
   }
   return rows;
@@ -71,7 +77,7 @@ export function paginateAttendance(
   let rows = filterAttendanceForQuery(records, query);
   if (query.sortField?.trim()) {
     rows = [...rows].sort((left, right) =>
-      compareByField(left, right, query.sortField!, query.sortDir === 'desc' ? 'desc' : 'asc'),
+      compareByField(left, right, query.sortField!, query.sortDir === "desc" ? "desc" : "asc"),
     );
   }
   const result = paginateArray(rows, query.page ?? 1, query.limit ?? 15, LIST_PAGE_MAX_LIMIT);

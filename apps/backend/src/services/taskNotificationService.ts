@@ -4,9 +4,9 @@
  * Delivery to SMS/WhatsApp/email is owned by messaging consumers of these events.
  */
 
-import type { TaskRecord, TaskSettings } from '@mms/shared';
-import { withTenant } from '../db/tenant-context.js';
-import { emitOutboxEvent } from './outboxEventService.js';
+import type { TaskRecord, TaskSettings } from "@mms/shared";
+import { withTenant } from "../db/tenant-context.js";
+import { emitOutboxEvent } from "./outboxEventService.js";
 
 export async function emitTaskNotificationIntents(input: {
   tenant: string;
@@ -16,9 +16,11 @@ export async function emitTaskNotificationIntents(input: {
   next: TaskRecord;
 }): Promise<void> {
   const { tenant, settings, actorUserId, previous, next } = input;
-  const assigneeIds = [...new Set(
-    (next.assignees ?? []).map((a) => a.userId).filter((id): id is string => Boolean(id)),
-  )];
+  const assigneeIds = [
+    ...new Set(
+      (next.assignees ?? []).map((a) => a.userId).filter((id): id is string => Boolean(id)),
+    ),
+  ];
   const previousAssigneeIds = new Set(
     (previous?.assignees ?? []).map((a) => a.userId).filter((id): id is string => Boolean(id)),
   );
@@ -34,27 +36,27 @@ export async function emitTaskNotificationIntents(input: {
 
   await withTenant(tenant, async (tx) => {
     if (shouldNotifyAssignment) {
-      await emitOutboxEvent(tx, 'task.assigned', {
-        entityType: 'tasks',
+      await emitOutboxEvent(tx, "task.assigned", {
+        entityType: "tasks",
         entityId: next.id,
         tenantId: tenant,
         version: Date.now(),
         recipientUserIds: newAssigneeIds,
         actorUserId,
-        reason: 'assignment',
+        reason: "assignment",
         status: next.status,
         title: next.title,
       });
     }
     if (shouldNotifyStatus && creatorId) {
-      await emitOutboxEvent(tx, 'task.status_changed', {
-        entityType: 'tasks',
+      await emitOutboxEvent(tx, "task.status_changed", {
+        entityType: "tasks",
         entityId: next.id,
         tenantId: tenant,
         version: Date.now(),
         recipientUserIds: [creatorId],
         actorUserId,
-        reason: 'status_change',
+        reason: "status_change",
         status: next.status,
         title: next.title,
       });

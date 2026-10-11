@@ -70,7 +70,12 @@ export function FormSelectSearchContent({
           className="h-11 min-w-0 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
         />
       </div>
-      <div id={listboxId} role="listbox" aria-label={ariaLabel} className="max-h-80 min-h-0 flex-1 overflow-y-auto overscroll-contain py-1">
+      <div
+        id={listboxId}
+        role="listbox"
+        aria-label={ariaLabel}
+        className="max-h-80 min-h-0 flex-1 overflow-y-auto overscroll-contain py-1"
+      >
         {filtered.map((option, index) => {
           const isSelected = option.value === value;
           return (
@@ -91,7 +96,10 @@ export function FormSelectSearchContent({
                 option.value === "" && !isSelected ? "text-muted-foreground" : undefined,
               )}
             >
-              <Check className={cn("size-3.5 shrink-0", isSelected ? "opacity-100" : "opacity-0")} aria-hidden />
+              <Check
+                className={cn("size-3.5 shrink-0", isSelected ? "opacity-100" : "opacity-0")}
+                aria-hidden
+              />
               <span className="min-w-0 flex-1 break-words">{option.label}</span>
             </div>
           );

@@ -8,11 +8,11 @@ export {
   clearContactGoogleSyncConfig,
   clearGoogleSyncTokens,
   redactGoogleSyncConfigForClient,
-} from './contactGoogleSyncConfig.js';
+} from "./contactGoogleSyncConfig.js";
 export {
   refreshGoogleAccessToken,
   exchangeGoogleContactsOAuthCode,
-} from './contactGoogleSyncOAuth.js';
+} from "./contactGoogleSyncOAuth.js";
 export {
   type GoogleConnection,
   mapGoogleConnectionToContact,
@@ -20,8 +20,5 @@ export {
   extractEmails,
   findMatchingPeer,
   hasMeaningfulChanges,
-} from './contactGoogleSyncMapping.js';
-export {
-  type GoogleContactsSyncRunResult,
-  runGoogleContactsSync,
-} from './contactGoogleSyncRun.js';
+} from "./contactGoogleSyncMapping.js";
+export { type GoogleContactsSyncRunResult, runGoogleContactsSync } from "./contactGoogleSyncRun.js";

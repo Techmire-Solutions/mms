@@ -1,6 +1,6 @@
-import type { Enrollment } from '@mms/shared';
-import { EntityArchivedBanner } from '@/components/ui/DetailDrawerArchiveChrome';
-import { useTranslation } from '@/hooks/useTranslation';
+import type { Enrollment } from "@mms/shared";
+import { EntityArchivedBanner } from "@/components/ui/DetailDrawerArchiveChrome";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface EnrollmentArchivedBannerProps {
   enrollment: Enrollment;
@@ -15,8 +15,8 @@ export function EnrollmentArchivedBanner({
     <EntityArchivedBanner
       deletedAt={enrollment.deletedAt}
       deletionReason={enrollment.deletionReason}
-      titleWithDate={(date) => t('enrollments.detail.archivedBanner', { date })}
-      reasonLabel={t('enrollments.deletionReasonLabel')}
+      titleWithDate={(date) => t("enrollments.detail.archivedBanner", { date })}
+      reasonLabel={t("enrollments.deletionReasonLabel")}
     />
   );
 }

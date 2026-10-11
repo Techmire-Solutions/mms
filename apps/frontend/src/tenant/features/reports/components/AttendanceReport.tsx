@@ -1,6 +1,9 @@
 import React, { lazy, Suspense, useState } from "react";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
-import { useAttendanceRecords, useAttendanceReportAggregates } from "@/tenant/hooks/collections/attendance";
+import {
+  useAttendanceRecords,
+  useAttendanceReportAggregates,
+} from "@/tenant/hooks/collections/attendance";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,19 +12,31 @@ import { useTranslation } from "@/hooks/useTranslation";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
 const AttendanceReportCharts = lazy(() =>
-  import("@/components/ui/reports/AttendanceReportCharts").then((m) => ({ default: m.AttendanceReportCharts })),
+  import("@/components/ui/reports/AttendanceReportCharts").then((m) => ({
+    default: m.AttendanceReportCharts,
+  })),
 );
 import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
 import { AttendanceReportTables } from "@/components/ui/reports/AttendanceReportTables";
 
-import type { AttendanceReportProps, AttendanceSummaryItem, StudentAttendanceItem } from '@/components/ui/reports/attendanceReportTypes';
+import type {
+  AttendanceReportProps,
+  AttendanceSummaryItem,
+  StudentAttendanceItem,
+} from "@/components/ui/reports/attendanceReportTypes";
 
-export type { AttendanceReportProps, AttendanceSummaryItem, StudentAttendanceItem } from "@/components/ui/reports/attendanceReportTypes";
+export type {
+  AttendanceReportProps,
+  AttendanceSummaryItem,
+  StudentAttendanceItem,
+} from "@/components/ui/reports/attendanceReportTypes";
 
 /**
  * Renders the attendance reports and metrics.
  */
-const AttendanceReport = (function AttendanceReport({ filters }: AttendanceReportProps): React.JSX.Element {
+const AttendanceReport = function AttendanceReport({
+  filters,
+}: AttendanceReportProps): React.JSX.Element {
   const { t } = useTranslation();
   const recordsQuery = useAttendanceRecords();
   const aggregatesQuery = useAttendanceReportAggregates();
@@ -37,7 +52,9 @@ const AttendanceReport = (function AttendanceReport({ filters }: AttendanceRepor
     attendanceRecords.forEach((attendanceRecord) => {
       const studentKey = attendanceRecord.studentId;
       if (!attendanceByStudent[studentKey]) {
-        const classInfo = sessionClasses.find((sessionClass) => sessionClass.id === attendanceRecord.classId);
+        const classInfo = sessionClasses.find(
+          (sessionClass) => sessionClass.id === attendanceRecord.classId,
+        );
         attendanceByStudent[studentKey] = {
           studentName: attendanceRecord.studentName,
           class: classInfo ? classInfo.name : attendanceRecord.classId,
@@ -50,7 +67,8 @@ const AttendanceReport = (function AttendanceReport({ filters }: AttendanceRepor
       }
 
       attendanceByStudent[studentKey].total++;
-      if (attendanceRecord.status === "present" || attendanceRecord.status === "excused") attendanceByStudent[studentKey].present++;
+      if (attendanceRecord.status === "present" || attendanceRecord.status === "excused")
+        attendanceByStudent[studentKey].present++;
       if (attendanceRecord.status === "absent") attendanceByStudent[studentKey].absent++;
       if (attendanceRecord.status === "late") {
         attendanceByStudent[studentKey].late++;
@@ -60,16 +78,27 @@ const AttendanceReport = (function AttendanceReport({ filters }: AttendanceRepor
 
     return Object.values(attendanceByStudent).map((studentAttendance) => ({
       ...studentAttendance,
-      rate: studentAttendance.total > 0 ? Math.round((studentAttendance.present / studentAttendance.total) * 100) : 0,
+      rate:
+        studentAttendance.total > 0
+          ? Math.round((studentAttendance.present / studentAttendance.total) * 100)
+          : 0,
     }));
   })() as StudentAttendanceItem[];
 
   const summary = (() => {
-    const classGroups: Record<string, { totalStudents: number; sumRates: number; perfect: number; below: number }> = {};
+    const classGroups: Record<
+      string,
+      { totalStudents: number; sumRates: number; perfect: number; below: number }
+    > = {};
 
     studentAttendanceRows.forEach((studentAttendance) => {
       if (!classGroups[studentAttendance.class]) {
-        classGroups[studentAttendance.class] = { totalStudents: 0, sumRates: 0, perfect: 0, below: 0 };
+        classGroups[studentAttendance.class] = {
+          totalStudents: 0,
+          sumRates: 0,
+          perfect: 0,
+          below: 0,
+        };
       }
 
       classGroups[studentAttendance.class].totalStudents++;
@@ -81,22 +110,34 @@ const AttendanceReport = (function AttendanceReport({ filters }: AttendanceRepor
     return Object.entries(classGroups).map(([className, classGroup]) => ({
       class: className,
       total: classGroup.totalStudents,
-      avgRate: classGroup.totalStudents > 0 ? Math.round(classGroup.sumRates / classGroup.totalStudents) : 0,
+      avgRate:
+        classGroup.totalStudents > 0
+          ? Math.round(classGroup.sumRates / classGroup.totalStudents)
+          : 0,
       perfectAttendance: classGroup.perfect,
       belowThreshold: classGroup.below,
     }));
   })() as AttendanceSummaryItem[];
 
-  const filteredSummary = (() => (selectedClass ? summary.filter((summaryItem) => summaryItem.class === selectedClass) : summary))();
+  const filteredSummary = (() =>
+    selectedClass
+      ? summary.filter((summaryItem) => summaryItem.class === selectedClass)
+      : summary)();
 
   const filteredStudentAttendanceRows = (() =>
-      selectedClass
-        ? studentAttendanceRows.filter((studentAttendance) => studentAttendance.class === selectedClass)
-        : studentAttendanceRows.filter((row) => {
-            const matchesClass = filters.class === "all" || sessionClasses.find((c) => c.name === row.class)?.id === filters.class;
-            const matchesStudent = !filters.student || row.studentName.toLowerCase().includes(filters.student.toLowerCase());
-            return matchesClass && matchesStudent;
-          }))();
+    selectedClass
+      ? studentAttendanceRows.filter(
+          (studentAttendance) => studentAttendance.class === selectedClass,
+        )
+      : studentAttendanceRows.filter((row) => {
+          const matchesClass =
+            filters.class === "all" ||
+            sessionClasses.find((c) => c.name === row.class)?.id === filters.class;
+          const matchesStudent =
+            !filters.student ||
+            row.studentName.toLowerCase().includes(filters.student.toLowerCase());
+          return matchesClass && matchesStudent;
+        }))();
 
   const toggleClassFilter = (className: string): void => {
     setSelectedClass((currentClass) => (currentClass === className ? null : className));
@@ -162,6 +203,6 @@ const AttendanceReport = (function AttendanceReport({ filters }: AttendanceRepor
       <PinnedWidgets category="attendance" />
     </div>
   );
-});
+};
 
 export default AttendanceReport;

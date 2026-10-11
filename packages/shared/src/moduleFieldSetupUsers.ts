@@ -10,9 +10,24 @@ export const USERS_TAB_REGISTRY: TabDefinition[] = [
 export const INITIAL_USERS_FIELD_SEED: Record<string, FieldDefinition[]> = {
   basic: [
     { key: "name", label: "Full Name", type: "text", enabled: true, order: 0, required: true },
-    { key: "email", label: "Email Address", type: "email", enabled: true, order: 1, required: true },
+    {
+      key: "email",
+      label: "Email Address",
+      type: "email",
+      enabled: true,
+      order: 1,
+      required: true,
+    },
   ],
   security: [
-    { key: "roles", label: "System Roles", type: "multiselect", options: ["admin", "teacher", "student", "guardian", "accountant"], enabled: true, order: 0, required: true },
-  ]
+    {
+      key: "roles",
+      label: "System Roles",
+      type: "multiselect",
+      options: ["admin", "teacher", "student", "guardian", "accountant"],
+      enabled: true,
+      order: 0,
+      required: true,
+    },
+  ],
 };

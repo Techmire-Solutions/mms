@@ -9,10 +9,19 @@ import {
   buildPaymentVoucherModel,
   parseSalaryVoucherRef,
 } from "@/tenant/features/accounting/components/paymentVoucherModel";
-import { PAYMENT_VOUCHER_LABEL_KEYS, buildPaymentVoucherBody } from "@/tenant/features/accounting/components/paymentVoucherHtml";
+import {
+  PAYMENT_VOUCHER_LABEL_KEYS,
+  buildPaymentVoucherBody,
+} from "@/tenant/features/accounting/components/paymentVoucherHtml";
 
 const account = (id: string, type: Account["type"], name: string): Account => ({
-  id, code: id.toUpperCase(), name, type, subtype: "", description: "", isActive: true,
+  id,
+  code: id.toUpperCase(),
+  name,
+  type,
+  subtype: "",
+  description: "",
+  isActive: true,
 });
 const accounts = [
   account("cash", "Asset", "Cash"),
@@ -30,18 +39,43 @@ const twoLines = (debitId: string, creditId: string, amount = 500) => [
 ];
 
 const entry = (overrides: Partial<JournalEntry> = {}): JournalEntry => ({
-  id: "je-1", date: "2026-09-30", ref: "JV-1", description: "", status: "posted", created_by: "",
-  tags: [], attachments: [], fiscal_year: "2026", lines: [], ...overrides,
+  id: "je-1",
+  date: "2026-09-30",
+  ref: "JV-1",
+  description: "",
+  status: "posted",
+  created_by: "",
+  tags: [],
+  attachments: [],
+  fiscal_year: "2026",
+  lines: [],
+  ...overrides,
 });
 
 const salaryLines = [
-  { id: "l1", account_id: "sal", debit: 25000, credit: 0, description: "Salary payment — staff fac-42 (2026-09)" },
-  { id: "l2", account_id: "cash", debit: 0, credit: 25000, description: "Salary payment — staff fac-42 (2026-09)" },
+  {
+    id: "l1",
+    account_id: "sal",
+    debit: 25000,
+    credit: 0,
+    description: "Salary payment — staff fac-42 (2026-09)",
+  },
+  {
+    id: "l2",
+    account_id: "cash",
+    debit: 0,
+    credit: 25000,
+    description: "Salary payment — staff fac-42 (2026-09)",
+  },
 ];
 
 describe("parseSalaryVoucherRef", () => {
   it("given a salary entry with a custom note, should read staff id and pay period from the line description", () => {
-    const salary = entry({ transaction_type: "salary", description: "September pay", lines: salaryLines });
+    const salary = entry({
+      transaction_type: "salary",
+      description: "September pay",
+      lines: salaryLines,
+    });
     expect(parseSalaryVoucherRef(salary)).toEqual({ staffId: "fac-42", payPeriod: "2026-09" });
   });
 
@@ -62,17 +96,27 @@ describe("resolveVoucherPrintKind", () => {
   });
 
   it("given a salary payment, should keep the payment voucher", () => {
-    expect(resolveVoucherPrintKind(entry({ transaction_type: "salary", lines: salaryLines }), accounts)).toBe("payment");
+    expect(
+      resolveVoucherPrintKind(entry({ transaction_type: "salary", lines: salaryLines }), accounts),
+    ).toBe("payment");
   });
 
   it("given petty cash or a bank payment, should name that voucher", () => {
-    expect(resolveVoucherPrintKind(entry({ lines: twoLines("sal", "petty") }), accounts)).toBe("petty_cash");
-    expect(resolveVoucherPrintKind(entry({ lines: twoLines("payable", "bank") }), accounts)).toBe("bank_payment");
+    expect(resolveVoucherPrintKind(entry({ lines: twoLines("sal", "petty") }), accounts)).toBe(
+      "petty_cash",
+    );
+    expect(resolveVoucherPrintKind(entry({ lines: twoLines("payable", "bank") }), accounts)).toBe(
+      "bank_payment",
+    );
   });
 
   it("given a draft or archived entry, should not print", () => {
-    expect(isVoucherPrintable(entry({ status: "draft", lines: salaryLines }), accounts)).toBe(false);
-    expect(isVoucherPrintable(entry({ deletedAt: "2026-10-01", lines: salaryLines }), accounts)).toBe(false);
+    expect(isVoucherPrintable(entry({ status: "draft", lines: salaryLines }), accounts)).toBe(
+      false,
+    );
+    expect(
+      isVoucherPrintable(entry({ deletedAt: "2026-10-01", lines: salaryLines }), accounts),
+    ).toBe(false);
   });
 
   it("given a fee receipt, a transfer, or a non-cash journal, should still print", () => {
@@ -83,9 +127,18 @@ describe("resolveVoucherPrintKind", () => {
       ],
     });
     expect(resolveVoucherPrintKind(feeIn, accounts)).toBe("cash_receipt");
-    expect(resolveVoucherPrintKind(entry({ lines: twoLines("bank", "fee") }), accounts)).toBe("bank_receipt");
-    expect(resolveVoucherPrintKind(entry({ lines: twoLines("bank", "cash") }), accounts)).toBe("journal");
-    expect(resolveVoucherPrintKind(entry({ tags: ["Payroll"], lines: twoLines("capital", "fee") }), accounts)).toBe("journal");
+    expect(resolveVoucherPrintKind(entry({ lines: twoLines("bank", "fee") }), accounts)).toBe(
+      "bank_receipt",
+    );
+    expect(resolveVoucherPrintKind(entry({ lines: twoLines("bank", "cash") }), accounts)).toBe(
+      "journal",
+    );
+    expect(
+      resolveVoucherPrintKind(
+        entry({ tags: ["Payroll"], lines: twoLines("capital", "fee") }),
+        accounts,
+      ),
+    ).toBe("journal");
   });
 });
 
@@ -102,7 +155,10 @@ describe("voucherPreparerName", () => {
 
 describe("buildPaymentVoucherModel", () => {
   it("given a salary entry, should total the debits and list the paying account", () => {
-    const model = buildPaymentVoucherModel(entry({ transaction_type: "salary", lines: salaryLines }), accounts);
+    const model = buildPaymentVoucherModel(
+      entry({ transaction_type: "salary", lines: salaryLines }),
+      accounts,
+    );
     expect(model.amount).toBe(25000);
     expect(model.kind).toBe("payment");
     expect(model.particulars).toEqual([{ account: "SAL — Salaries", amount: 25000 }]);
@@ -113,13 +169,16 @@ describe("buildPaymentVoucherModel", () => {
   });
 
   it("given a salary settled partly by a deduction, should list that deduction and the net cash", () => {
-    const model = buildPaymentVoucherModel(entry({
-      lines: [
-        { id: "d", account_id: "payable", debit: 19500, credit: 0, description: "" },
-        { id: "c1", account_id: "late", debit: 0, credit: 500, description: "" },
-        { id: "c2", account_id: "cash", debit: 0, credit: 19000, description: "" },
-      ],
-    }), accounts);
+    const model = buildPaymentVoucherModel(
+      entry({
+        lines: [
+          { id: "d", account_id: "payable", debit: 19500, credit: 0, description: "" },
+          { id: "c1", account_id: "late", debit: 0, credit: 500, description: "" },
+          { id: "c2", account_id: "cash", debit: 0, credit: 19000, description: "" },
+        ],
+      }),
+      accounts,
+    );
 
     expect(model.amount).toBe(19500);
     expect(model.particulars).toEqual([{ account: "PAYABLE — Accounts Payable", amount: 19500 }]);
@@ -144,21 +203,26 @@ describe("buildPaymentVoucherModel", () => {
 
 describe("buildPaymentVoucherBody", () => {
   it("given untrusted text and no payee, should escape it and render blank receiver signature lines", () => {
-    const labels = Object.fromEntries(PAYMENT_VOUCHER_LABEL_KEYS.map((key) => [key, key])) as Record<
-      (typeof PAYMENT_VOUCHER_LABEL_KEYS)[number],
-      string
-    >;
+    const labels = Object.fromEntries(
+      PAYMENT_VOUCHER_LABEL_KEYS.map((key) => [key, key]),
+    ) as Record<(typeof PAYMENT_VOUCHER_LABEL_KEYS)[number], string>;
     const html = buildPaymentVoucherBody({
       labels,
       institution: { name: "Madrasa <script>", logoUrl: "", contactLine: "" },
       primaryColor: "#0369a1",
-      voucherNo: "JV-1", date: "30 Sep 2026", fiscalYear: "2026", narration: "Electricity & gas",
-      payee: null, payPeriod: null, paidFrom: ["Cash"],
+      voucherNo: "JV-1",
+      date: "30 Sep 2026",
+      fiscalYear: "2026",
+      narration: "Electricity & gas",
+      payee: null,
+      payPeriod: null,
+      paidFrom: ["Cash"],
       particulars: [{ account: "Utilities", amount: "Rs 1,000" }],
       deductions: [{ account: "Staff Late Deduction", amount: "Rs 500" }],
       netPaid: "Rs 500",
       journalLines: [],
-      amount: "Rs 1,000", amountInWords: "One Thousand PKR Only",
+      amount: "Rs 1,000",
+      amountInWords: "One Thousand PKR Only",
       layout: "payment",
       preparedByName: "Amina <script>",
     });
@@ -173,21 +237,29 @@ describe("buildPaymentVoucherBody", () => {
   });
 
   it("given a journal voucher, should print debit and credit columns without the receiver block", () => {
-    const labels = Object.fromEntries(PAYMENT_VOUCHER_LABEL_KEYS.map((key) => [key, key])) as Record<
-      (typeof PAYMENT_VOUCHER_LABEL_KEYS)[number],
-      string
-    >;
+    const labels = Object.fromEntries(
+      PAYMENT_VOUCHER_LABEL_KEYS.map((key) => [key, key]),
+    ) as Record<(typeof PAYMENT_VOUCHER_LABEL_KEYS)[number], string>;
     const html = buildPaymentVoucherBody({
       labels,
       institution: { name: "Madrasa", logoUrl: "", contactLine: "" },
       primaryColor: "#0369a1",
-      voucherNo: "JV-2", date: "30 Sep 2026", fiscalYear: "2026", narration: "Opening",
-      payee: null, payPeriod: null, paidFrom: [],
+      voucherNo: "JV-2",
+      date: "30 Sep 2026",
+      fiscalYear: "2026",
+      narration: "Opening",
+      payee: null,
+      payPeriod: null,
+      paidFrom: [],
       particulars: [],
       deductions: [],
       netPaid: "",
-      journalLines: [{ account: "Capital", debit: "", credit: "Rs 1,000" }, { account: "Cash", debit: "Rs 1,000", credit: "" }],
-      amount: "Rs 1,000", amountInWords: "One Thousand PKR Only",
+      journalLines: [
+        { account: "Capital", debit: "", credit: "Rs 1,000" },
+        { account: "Cash", debit: "Rs 1,000", credit: "" },
+      ],
+      amount: "Rs 1,000",
+      amountInWords: "One Thousand PKR Only",
       layout: "journal",
       preparedByName: "Amina",
     });

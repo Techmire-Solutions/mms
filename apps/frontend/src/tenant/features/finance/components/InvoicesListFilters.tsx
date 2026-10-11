@@ -82,12 +82,16 @@ export function InvoicesListFilters({
         viewMode,
         onViewModeChange,
       }}
-      columnCustomizer={columnCustomizer ? {
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      } : undefined}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
     />
   );
 }

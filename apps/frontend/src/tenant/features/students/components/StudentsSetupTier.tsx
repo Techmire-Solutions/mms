@@ -24,7 +24,7 @@ export interface StudentsSetupTierProps {
   onSubTabChange?: (tab: string) => void;
 }
 
-export const StudentsSetupTier = (function StudentsSetupTier({
+export const StudentsSetupTier = function StudentsSetupTier({
   onPrefsDirtyChange,
   activeSubTab,
   onSubTabChange,
@@ -82,7 +82,6 @@ export const StudentsSetupTier = (function StudentsSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default StudentsSetupTier;
-

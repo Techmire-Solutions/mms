@@ -18,7 +18,12 @@ export function WidgetChartHeader({
   className,
 }: WidgetChartHeaderProps): React.JSX.Element {
   return (
-    <header className={cn("flex flex-wrap items-start justify-between gap-3 mb-5 ps-1.5 select-none", className)}>
+    <header
+      className={cn(
+        "flex flex-wrap items-start justify-between gap-3 mb-5 ps-1.5 select-none",
+        className,
+      )}
+    >
       <div>
         <h3 id={headingId} className="text-sm font-bold text-foreground m-0">
           {title}

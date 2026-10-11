@@ -6,8 +6,8 @@
  * Modules pass their `ImportSpec<TRow>` and a `persist` callback; this
  * function handles progress reporting, chunking, and error collection.
  */
-import type { ImportSpec, ImportResult, ImportRowError } from '../core/importTypes.js';
-import { validateImportRows } from './validateImportRows.js';
+import type { ImportSpec, ImportResult, ImportRowError } from "../core/importTypes.js";
+import { validateImportRows } from "./validateImportRows.js";
 
 // ---------------------------------------------------------------------------
 // Context

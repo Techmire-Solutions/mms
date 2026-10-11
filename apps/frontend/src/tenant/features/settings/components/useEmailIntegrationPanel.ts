@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 import {
   DEFAULT_EMAIL_INTEGRATION,
   listEmailProviderPresets,
   type EmailIntegrationConfig,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
 import {
   fetchEmailIntegration,
   saveEmailIntegration,
   testEmailIntegration,
-} from '@/lib/emailIntegrationApi';
+} from "@/lib/emailIntegrationApi";
 
 export function useEmailIntegrationPanel() {
   const { t } = useTranslation();
@@ -19,7 +19,7 @@ export function useEmailIntegrationPanel() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [form, setForm] = useState<EmailIntegrationConfig>(DEFAULT_EMAIL_INTEGRATION);
-  const [smtpPassword, setSmtpPassword] = useState('');
+  const [smtpPassword, setSmtpPassword] = useState("");
 
   const load = useCallback(async (): Promise<void> => {
     setLoading(true);
@@ -36,7 +36,7 @@ export function useEmailIntegrationPanel() {
   }, [load]);
 
   const selectedPreset = providers.find((p) => p.id === form.providerId) ?? providers[0];
-  const isCustom = form.providerId === 'custom_smtp';
+  const isCustom = form.providerId === "custom_smtp";
 
   const setField = <K extends keyof EmailIntegrationConfig>(
     key: K,
@@ -53,10 +53,10 @@ export function useEmailIntegrationPanel() {
         smtpPassword: smtpPassword.trim() || undefined,
       });
       setForm(saved);
-      setSmtpPassword('');
-      notify.success(t('email.saveSuccess'), { description: t('email.saveSuccessDesc') });
+      setSmtpPassword("");
+      notify.success(t("email.saveSuccess"), { description: t("email.saveSuccessDesc") });
     } catch (error) {
-      notify.error(t('email.saveFailed'), {
+      notify.error(t("email.saveFailed"), {
         description: error instanceof Error ? error.message : undefined,
       });
     } finally {
@@ -70,13 +70,13 @@ export function useEmailIntegrationPanel() {
       if (smtpPassword.trim()) {
         const saved = await saveEmailIntegration({ ...form, smtpPassword: smtpPassword.trim() });
         setForm(saved);
-        setSmtpPassword('');
+        setSmtpPassword("");
       }
       const config = await testEmailIntegration();
       setForm(config);
-      notify.success(t('email.testSuccess'), { description: t('email.testSuccessDesc') });
+      notify.success(t("email.testSuccess"), { description: t("email.testSuccessDesc") });
     } catch (error) {
-      notify.error(t('email.testFailed'), {
+      notify.error(t("email.testFailed"), {
         description: error instanceof Error ? error.message : undefined,
       });
     } finally {

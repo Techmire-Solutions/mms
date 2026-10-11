@@ -1,12 +1,5 @@
-import type {
-  QuestionDifficulty,
-  QuestionLanguageCode,
-  QuestionType,
-} from './questionBankCore.js';
-import type {
-  QuestionBookCitation,
-  QuestionSourceReference,
-} from './questionBankSourceFields.js';
+import type { QuestionDifficulty, QuestionLanguageCode, QuestionType } from "./questionBankCore.js";
+import type { QuestionBookCitation, QuestionSourceReference } from "./questionBankSourceFields.js";
 
 export interface QuestionTypeRegistryEntry {
   id: QuestionType;
@@ -59,7 +52,7 @@ export interface QuestionBankTest {
   name: string;
   categoryId: string | null;
   questionIds: string[];
-  difficulty: QuestionDifficulty | 'mixed';
+  difficulty: QuestionDifficulty | "mixed";
   duration: number;
   createdAt: string;
   /** Manual paper-builder class/section label printed on the exam paper. */

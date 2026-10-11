@@ -1,23 +1,23 @@
-import type { FacultyRecord, FacultyWrite } from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import type { FacultyRepository } from '../repository/facultyRepository.js';
-import { facultyRepository } from '../repository/facultyRepositoryAdapter.js';
-import { mergeFacultyPatch, prepareFacultyRecord } from './facultyNormalizeUseCases.js';
+import type { FacultyRecord, FacultyWrite } from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import type { FacultyRepository } from "../repository/facultyRepository.js";
+import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
+import { mergeFacultyPatch, prepareFacultyRecord } from "./facultyNormalizeUseCases.js";
 import {
   generateNextFacultyEmployeeId,
   previewNextFacultyEmployeeId,
-} from './facultyEmployeeIdService.js';
+} from "./facultyEmployeeIdService.js";
 import {
   applyFacultyWriteGuards,
   defaultFacultyWriteGuards,
   handleImplicitRestore,
   type FacultyWriteGuards,
-} from './facultyWriteHelpers.js';
-import { ConflictError } from '../../lib/httpErrors.js';
+} from "./facultyWriteHelpers.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 
-export { HierarchyValidationError, HierarchyCycleError } from './facultyHierarchyValidator.js';
+export { HierarchyValidationError, HierarchyCycleError } from "./facultyHierarchyValidator.js";
 
 export interface CreateFacultyResult {
   record: FacultyRecord;
@@ -28,10 +28,10 @@ export interface CreateFacultyResult {
 /** Thrown when a create would un-delete an archived faculty member without delete permission. */
 export class FacultyPermissionError extends Error {
   readonly statusCode = 403;
-  readonly type = 'forbidden';
-  constructor(message = 'Restoring an archived faculty member requires delete permission') {
+  readonly type = "forbidden";
+  constructor(message = "Restoring an archived faculty member requires delete permission") {
     super(message);
-    this.name = 'FacultyPermissionError';
+    this.name = "FacultyPermissionError";
   }
 }
 
@@ -54,14 +54,14 @@ export async function createFaculty(
   const guards = options.guards ?? defaultFacultyWriteGuards;
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) throw new Error('Tenant context required');
+    if (!tenant) throw new Error("Tenant context required");
 
     const normalized = prepareFacultyRecord(record);
     if (await repo.findById(tenant, String(normalized.id))) {
-      throw new ConflictError('Faculty ID already exists; use the update or restore operation');
+      throw new ConflictError("Faculty ID already exists; use the update or restore operation");
     }
 
-    const providedEmployeeId = normalized.employeeId?.trim() ?? '';
+    const providedEmployeeId = normalized.employeeId?.trim() ?? "";
     if (!providedEmployeeId) {
       const generated = await generateNextFacultyEmployeeId(tenant);
       normalized.employeeId = generated.employeeId;
@@ -77,7 +77,7 @@ export async function createFaculty(
       }
     }
 
-    const contactId = normalized.contactId != null ? String(normalized.contactId).trim() : '';
+    const contactId = normalized.contactId != null ? String(normalized.contactId).trim() : "";
     const archived = contactId ? await repo.findSoftDeletedByContactId(tenant, contactId) : null;
     if (archived && options.canRestore === false) throw new FacultyPermissionError();
 
@@ -88,7 +88,12 @@ export async function createFaculty(
     });
 
     if (archived) {
-      const merged = await handleImplicitRestore(tenant, archived as FacultyRecord, guarded.record, repo.save.bind(repo));
+      const merged = await handleImplicitRestore(
+        tenant,
+        archived as FacultyRecord,
+        guarded.record,
+        repo.save.bind(repo),
+      );
       await guards.syncPrimaryAppointment(tenant, merged, guarded.departmentId);
       return { record: merged, restored: true };
     }
@@ -97,7 +102,7 @@ export async function createFaculty(
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
     return { record: guarded.record, restored: false };
   });
-  await broadcastCollection('faculty');
+  await broadcastCollection("faculty");
   return result;
 }
 
@@ -121,7 +126,7 @@ export async function updateFacultyById(
     const guarded = await applyFacultyWriteGuards(tenant, normalized, guards, {
       excludeFacultyId: id,
       designationChanged: (normalized.designationId ?? null) !== (existing.designationId ?? null),
-      contactChanged: String(normalized.contactId ?? '') !== String(existing.contactId ?? ''),
+      contactChanged: String(normalized.contactId ?? "") !== String(existing.contactId ?? ""),
     });
 
     await repo.save(tenant, guarded.record);
@@ -129,7 +134,7 @@ export async function updateFacultyById(
     return guarded.record;
   });
   if (saved) {
-    await broadcastCollection('faculty');
+    await broadcastCollection("faculty");
   }
   return saved;
 }

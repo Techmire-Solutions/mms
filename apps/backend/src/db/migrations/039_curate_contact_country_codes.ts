@@ -6,23 +6,23 @@ import {
   curatedContactCountryCodes,
   needsContactCountryCodesCurate,
   parseTenantScopedStorageKey,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,
   saveCollection,
-} from '../database.js';
+} from "../database.js";
 
 function isCountryCodesStorageName(name: string): boolean {
-  if (name === 'countryCodes') return true;
+  if (name === "countryCodes") return true;
   const parsed = parseTenantScopedStorageKey(name);
-  return parsed?.logicalKey === 'countryCodes';
+  return parsed?.logicalKey === "countryCodes";
 }
 
 function isCountryCodeEntry(value: unknown): value is { country: string; code: string } {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== "object") return false;
   const entry = value as { country?: unknown; code?: unknown };
-  return typeof entry.country === 'string' && typeof entry.code === 'string';
+  return typeof entry.country === "string" && typeof entry.code === "string";
 }
 
 export async function runMigration039(): Promise<void> {
@@ -44,7 +44,7 @@ export async function runMigration039(): Promise<void> {
   }
 
   if (updated === 0) {
-    console.log('[Migration 039] No countryCodes collections needed curation.');
+    console.log("[Migration 039] No countryCodes collections needed curation.");
   } else {
     console.log(`[Migration 039] Curated ${updated} countryCodes collection(s).`);
   }

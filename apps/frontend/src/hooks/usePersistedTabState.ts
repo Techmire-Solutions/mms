@@ -10,11 +10,12 @@ export function usePersistedTabState<T extends string>(
 ): [T, (value: T) => void] {
   const [value, setUiPref] = useUiPreference<T>(key, defaultValue);
 
-  const setPersisted = ((tabValue: T) => {
-      setUiPref(normalizeModuleTierTabId(tabValue) as T);
-    });
+  const setPersisted = (tabValue: T) => {
+    setUiPref(normalizeModuleTierTabId(tabValue) as T);
+  };
 
-  const normalizedValue = (() => (normalizeModuleTierTabId(value as string) as T) || defaultValue)();
+  const normalizedValue = (() =>
+    (normalizeModuleTierTabId(value as string) as T) || defaultValue)();
 
   return [normalizedValue, setPersisted];
 }

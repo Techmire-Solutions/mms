@@ -1,19 +1,15 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCheck, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
-import {
-  calculateSmsSegments,
-  formatDateTime,
-  personalizeMessage,
-} from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { ChannelBadge } from '@/components/ui/ChannelBadge';
-import { WORK_SURFACE_INNER } from '@/components/ui/formStyles';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { ValidatedMessagingRecipient } from './useMessageComposerDispatch';
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCheck, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { calculateSmsSegments, formatDateTime, personalizeMessage } from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { ChannelBadge } from "@/components/ui/ChannelBadge";
+import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";
 
 export interface MessageComposerLivePreviewProps {
-  channel: 'sms' | 'whatsapp' | 'email';
+  channel: "sms" | "whatsapp" | "email";
   message: string;
   subject: string;
   eligibleRecipients: ValidatedMessagingRecipient[];
@@ -33,14 +29,12 @@ export function MessageComposerLivePreview({
 }: MessageComposerLivePreviewProps): React.JSX.Element | null {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const isEmail = channel === 'email';
-  const isSms = channel === 'sms';
+  const isEmail = channel === "email";
+  const isSms = channel === "sms";
   const isBulk = eligibleRecipients.length > 1;
   const recipient = eligibleRecipients[previewIndex] || eligibleRecipients[0];
   const previewText =
-    message.trim() && recipient
-      ? personalizeMessage(message, recipient, personalizeOptions)
-      : '';
+    message.trim() && recipient ? personalizeMessage(message, recipient, personalizeOptions) : "";
   const smsStats = calculateSmsSegments(previewText);
 
   if (!previewText || !recipient) return null;
@@ -58,10 +52,10 @@ export function MessageComposerLivePreview({
         <h5 className="mb-2.5 flex min-w-0 flex-wrap items-center justify-between gap-2 text-xs font-bold text-muted-foreground">
           <span className="flex min-w-0 items-center gap-1.5 text-foreground">
             <Sparkles
-              className={`h-3.5 w-3.5 shrink-0 text-primary ${reducedMotion ? '' : 'animate-pulse'}`}
+              className={`h-3.5 w-3.5 shrink-0 text-primary ${reducedMotion ? "" : "animate-pulse"}`}
             />
             <span className="min-w-0 truncate">
-              {t('messaging.livePreview', { name: recipient.name })}
+              {t("messaging.livePreview", { name: recipient.name })}
             </span>
           </span>
           <div className="flex shrink-0 items-center gap-2">
@@ -74,7 +68,7 @@ export function MessageComposerLivePreview({
                   className="min-h-11 min-w-11"
                   disabled={previewIndex <= 0}
                   onClick={() => onPreviewIndexChange(Math.max(0, previewIndex - 1))}
-                  aria-label={t('common.previous')}
+                  aria-label={t("common.previous")}
                 >
                   <ChevronLeft className="h-3 w-3 rtl:rotate-180" />
                 </Button>
@@ -90,7 +84,7 @@ export function MessageComposerLivePreview({
                   onClick={() =>
                     onPreviewIndexChange(Math.min(eligibleRecipients.length - 1, previewIndex + 1))
                   }
-                  aria-label={t('common.next')}
+                  aria-label={t("common.next")}
                 >
                   <ChevronRight className="h-3 w-3 rtl:rotate-180" />
                 </Button>
@@ -103,13 +97,15 @@ export function MessageComposerLivePreview({
           <div className={`${WORK_SURFACE_INNER} space-y-2 p-3 text-xs`}>
             <div className="border-b border-border/50 pb-2 text-xs text-muted-foreground">
               <div>
-                <span className="me-1 font-semibold text-foreground">{t('messaging.to')}:</span>
+                <span className="me-1 font-semibold text-foreground">{t("messaging.to")}:</span>
                 {recipient.name} &lt;{recipient.email}&gt;
               </div>
               <div className="mt-0.5">
-                <span className="me-1 font-semibold text-foreground">{t('messaging.subjectLabel')}:</span>
+                <span className="me-1 font-semibold text-foreground">
+                  {t("messaging.subjectLabel")}:
+                </span>
                 {personalizeMessage(
-                  subject || t('messaging.defaultSubject'),
+                  subject || t("messaging.defaultSubject"),
                   recipient,
                   personalizeOptions,
                 )}
@@ -122,13 +118,15 @@ export function MessageComposerLivePreview({
             <div className="whitespace-pre-wrap leading-relaxed">{previewText}</div>
             <div className="flex items-center justify-between border-t border-info/10 pt-1 font-mono text-xs opacity-70">
               <span>{recipient.phone}</span>
-              <span>{t('messaging.smsSegmentBadge', { count: String(smsStats.totalSegments) })}</span>
+              <span>
+                {t("messaging.smsSegmentBadge", { count: String(smsStats.totalSegments) })}
+              </span>
             </div>
           </div>
         ) : (
           <div className="max-w-bubble-wide space-y-1.5 rounded-2xl rounded-tl-none border border-success/20 bg-success/10 p-3 text-xs text-foreground shadow-xs">
             <div className="flex items-center justify-between border-b border-success/15 pb-1 text-xs font-semibold text-success">
-              <span>{t('messaging.whatsappBroadcast')}</span>
+              <span>{t("messaging.whatsappBroadcast")}</span>
               <span>{recipient.phone}</span>
             </div>
             <div className="whitespace-pre-wrap leading-relaxed">{previewText}</div>

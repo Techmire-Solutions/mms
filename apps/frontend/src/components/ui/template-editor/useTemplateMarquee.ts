@@ -63,7 +63,11 @@ export function useTemplateMarquee({
     if (event.button !== 0 || isPreviewMode || isSpacePressed) return;
     if (!canvasRef.current) return;
     const target = event.target as HTMLElement | null;
-    if (target && target !== canvasRef.current && target.closest("[role='button'], [data-resize-handle], .group")) {
+    if (
+      target &&
+      target !== canvasRef.current &&
+      target.closest("[role='button'], [data-resize-handle], .group")
+    ) {
       return;
     }
     const rect = canvasRef.current.getBoundingClientRect();
@@ -103,7 +107,9 @@ export function useTemplateMarquee({
         .map((el) => el.id);
 
       if (onSelectElements) {
-        onSelectElements(isShiftRef.current ? Array.from(new Set([...selectedIds, ...hitIds])) : hitIds);
+        onSelectElements(
+          isShiftRef.current ? Array.from(new Set([...selectedIds, ...hitIds])) : hitIds,
+        );
       }
     } else if (current) {
       onDeselect();
@@ -121,7 +127,7 @@ export function useTemplateMarquee({
       window.removeEventListener("pointerup", handleMarqueeUp);
       window.removeEventListener("pointercancel", handleMarqueeUp);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marquee != null]);
 
   return {

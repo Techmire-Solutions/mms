@@ -1,34 +1,27 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
   "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        primary:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        danger:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        primary: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        danger: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
           "border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline min-h-0 min-w-0 h-auto p-0 font-semibold",
-        capsPrimary:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
+        capsPrimary: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
         capsOutline:
           "border border-border/60 bg-card/50 text-muted-foreground hover:text-foreground hover:bg-muted/30 shadow-none",
-        capsGhost:
-          "text-muted-foreground hover:text-foreground hover:bg-muted/30 shadow-none",
+        capsGhost: "text-muted-foreground hover:text-foreground hover:bg-muted/30 shadow-none",
         capsSuccess:
           "border border-success/30 bg-success/10 text-success hover:bg-success/15 hover:text-success shadow-none",
         capsDestructive:
@@ -49,16 +42,15 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
-)
+  },
+);
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
-  loading?: boolean
-  icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }> | null
-  ref?: React.Ref<HTMLButtonElement>
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  loading?: boolean;
+  icon?: React.ComponentType<{ className?: string; style?: React.CSSProperties }> | null;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
 /**
@@ -91,7 +83,7 @@ function Button({
       >
         {children}
       </Slot>
-    )
+    );
   }
 
   return (
@@ -105,14 +97,17 @@ function Button({
       {...props}
     >
       {loading ? (
-        <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin shrink-0" aria-hidden="true" />
+        <div
+          className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin shrink-0"
+          aria-hidden="true"
+        />
       ) : Icon ? (
         <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
       ) : null}
       {children}
     </button>
-  )
+  );
 }
-Button.displayName = "Button"
+Button.displayName = "Button";
 
-export { Button, buttonVariants }
+export { Button, buttonVariants };

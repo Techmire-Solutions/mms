@@ -28,10 +28,7 @@ export function StudentsPreferencesSection({
 }: StudentsPreferencesSectionProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const config = useMemo(
-    () => studentSettingsToSequenceConfig(settingsDraft),
-    [settingsDraft]
-  );
+  const config = useMemo(() => studentSettingsToSequenceConfig(settingsDraft), [settingsDraft]);
 
   const handleChange = useCallback(
     (next: SequenceNumberingConfig) => {
@@ -53,7 +50,7 @@ export function StudentsPreferencesSection({
             : "";
       upd("grNumberTemplate", `${prefixPart}{seq}${yearPart}`);
     },
-    [upd]
+    [upd],
   );
 
   return (

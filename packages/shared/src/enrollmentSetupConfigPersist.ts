@@ -1,14 +1,14 @@
-import type { TabDefinition } from './contactTypes.js';
+import type { TabDefinition } from "./contactTypes.js";
 import {
   DEFAULT_ENROLLMENTS_SETTINGS,
   type EnrollmentsSettings,
-} from './enrollmentsModuleSettings.js';
-import { ENROLLMENTS_TAB_REGISTRY } from './moduleFieldSetupAcademic.js';
-import { resolveEnrollmentFieldsMap } from './enrollmentSetupConfigFields.js';
+} from "./enrollmentsModuleSettings.js";
+import { ENROLLMENTS_TAB_REGISTRY } from "./moduleFieldSetupAcademic.js";
+import { resolveEnrollmentFieldsMap } from "./enrollmentSetupConfigFields.js";
 import {
   normalizeEnrollmentModulePreferences,
   type EnrollmentModulePreferences,
-} from './enrollmentSetupConfigPreferences.js';
+} from "./enrollmentSetupConfigPreferences.js";
 
 /** Field-config slice persisted on `enrollment_field_configs` (never formTabs / module prefs). */
 export function stripEnrollmentFieldConfigForPersist(
@@ -33,7 +33,7 @@ export function stripEnrollmentFieldConfigForPersist(
 /** Normalize EnrollmentsSettings from typed REST or legacy document blobs. */
 export function normalizeEnrollmentsSettings(config: unknown): EnrollmentsSettings {
   const defaults = { ...DEFAULT_ENROLLMENTS_SETTINGS, formTabs: [...ENROLLMENTS_TAB_REGISTRY] };
-  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
     return { ...defaults };
   }
   const raw = config as Record<string, unknown>;
@@ -43,14 +43,10 @@ export function normalizeEnrollmentsSettings(config: unknown): EnrollmentsSettin
     ...(raw as Partial<EnrollmentsSettings>),
     ...prefs,
     customFields: Array.isArray(raw.customFields)
-      ? (raw.customFields as EnrollmentsSettings['customFields'])
+      ? (raw.customFields as EnrollmentsSettings["customFields"])
       : defaults.customFields,
-    fieldOrder: Array.isArray(raw.fieldOrder)
-      ? (raw.fieldOrder as string[])
-      : defaults.fieldOrder,
-    formTabs: Array.isArray(raw.formTabs)
-      ? (raw.formTabs as TabDefinition[])
-      : defaults.formTabs,
+    fieldOrder: Array.isArray(raw.fieldOrder) ? (raw.fieldOrder as string[]) : defaults.fieldOrder,
+    formTabs: Array.isArray(raw.formTabs) ? (raw.formTabs as TabDefinition[]) : defaults.formTabs,
     enabledTabs: Array.isArray(raw.enabledTabs)
       ? (raw.enabledTabs as string[])
       : (raw.enabledTabs as string[] | undefined),
@@ -58,7 +54,7 @@ export function normalizeEnrollmentsSettings(config: unknown): EnrollmentsSettin
       ? (raw.requiredTabs as string[])
       : (raw.requiredTabs as string[] | undefined),
     fields: resolveEnrollmentFieldsMap(
-      raw.fields && typeof raw.fields === 'object' && !Array.isArray(raw.fields)
+      raw.fields && typeof raw.fields === "object" && !Array.isArray(raw.fields)
         ? (raw.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -87,7 +83,7 @@ export function composeEnrollmentsSettings(
     preferences as Partial<EnrollmentModulePreferences> | null,
   );
   return normalizeEnrollmentsSettings({
-    ...(fieldConfig && typeof fieldConfig === 'object' && !Array.isArray(fieldConfig)
+    ...(fieldConfig && typeof fieldConfig === "object" && !Array.isArray(fieldConfig)
       ? (fieldConfig as Record<string, unknown>)
       : {}),
     ...prefs,
@@ -101,7 +97,7 @@ export function composeEnrollmentsSettings(
 export function mergeEnrollmentsFormTabsFromApi(
   documentFormTabs: TabDefinition[] | undefined,
   apiTabs: TabDefinition[],
-  _fields?: Record<string, import('./contactTypes.js').FieldDefinition[]> | undefined,
+  _fields?: Record<string, import("./contactTypes.js").FieldDefinition[]> | undefined,
 ): TabDefinition[] {
   const documentOrDefault =
     documentFormTabs && documentFormTabs.length > 0

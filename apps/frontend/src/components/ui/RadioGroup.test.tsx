@@ -9,7 +9,7 @@ describe("RadioGroup", () => {
       <RadioGroup value="opt1" name="test-group">
         <RadioGroupItem id="opt1" value="opt1" aria-label="Option 1" />
         <RadioGroupItem id="opt2" value="opt2" aria-label="Option 2" />
-      </RadioGroup>
+      </RadioGroup>,
     );
 
     expect(html).toContain('role="radiogroup"');

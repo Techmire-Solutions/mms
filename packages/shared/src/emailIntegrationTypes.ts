@@ -1,22 +1,22 @@
-import type { AppTranslationKey } from './appTranslations.js';
-import { SMS_INTEGRATION_OBJECT_KEY, SMS_INTEGRATION_SECRETS_KEY } from './smsIntegrationTypes.js';
+import type { AppTranslationKey } from "./appTranslations.js";
+import { SMS_INTEGRATION_OBJECT_KEY, SMS_INTEGRATION_SECRETS_KEY } from "./smsIntegrationTypes.js";
 
 /** Logical object keys for email integration storage. */
-export const EMAIL_INTEGRATION_OBJECT_KEY = 'email_integration' as const;
+export const EMAIL_INTEGRATION_OBJECT_KEY = "email_integration" as const;
 
 /** Backend-only — never synced to the browser. */
-export const EMAIL_INTEGRATION_SECRETS_KEY = 'email_integration_secrets' as const;
+export const EMAIL_INTEGRATION_SECRETS_KEY = "email_integration_secrets" as const;
 
 /** Per-user export download handles — ephemeral, not restorable. */
-export const USER_EXPORT_ARTIFACTS_OBJECT_KEY = 'user_export_artifacts' as const;
+export const USER_EXPORT_ARTIFACTS_OBJECT_KEY = "user_export_artifacts" as const;
 
 /** Dedup-scan cache — ephemeral, not restorable. */
-export const CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY = 'contacts_duplicate_scan_cache' as const;
+export const CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY = "contacts_duplicate_scan_cache" as const;
 
 /** Google Contacts OAuth tokens/secrets — legacy objects key only.
  * Runtime storage is `contact_google_sync_credentials` (FORCE RLS).
  * Kept in SERVER_ONLY_OBJECT_KEYS so old backups still strip this object. */
-export const CONTACT_GOOGLE_SYNC_BY_USER_OBJECT_KEY = 'contact_google_sync_by_user' as const;
+export const CONTACT_GOOGLE_SYNC_BY_USER_OBJECT_KEY = "contact_google_sync_by_user" as const;
 
 /**
  * Object keys withheld from backup export and browser object reads.
@@ -58,34 +58,31 @@ export function isServerOnlyObjectKey(key: string): boolean {
  * revoked modules. Unlike `SERVER_ONLY_OBJECT_KEYS` it is NOT withheld from the
  * browser if a legacy objects row still exists.
  */
-export const BACKUP_EXCLUDED_OBJECT_KEYS: readonly string[] = [
-  'platform_settings',
-] as const;
+export const BACKUP_EXCLUDED_OBJECT_KEYS: readonly string[] = ["platform_settings"] as const;
 
 export function isBackupExcludedObjectKey(key: string): boolean {
   return BACKUP_EXCLUDED_OBJECT_KEYS.includes(key);
 }
 
 const EMAIL_PROVIDERS = [
-  'gmail',
-  'microsoft365',
-  'outlook',
-  'yahoo',
-  'icloud',
-  'zoho',
-  'custom_smtp',
+  "gmail",
+  "microsoft365",
+  "outlook",
+  "yahoo",
+  "icloud",
+  "zoho",
+  "custom_smtp",
 ] as const;
 
-export type EmailProviderId = typeof EMAIL_PROVIDERS[number];
+export type EmailProviderId = (typeof EMAIL_PROVIDERS)[number];
 
 const EMAIL_PROVIDERS_SET = new Set<string>(EMAIL_PROVIDERS);
 
 export function isEmailProviderId(value: unknown): value is EmailProviderId {
-  return typeof value === 'string' && EMAIL_PROVIDERS_SET.has(value);
+  return typeof value === "string" && EMAIL_PROVIDERS_SET.has(value);
 }
 
-
-export type EmailConnectionType = 'smtp' | 'oauth';
+export type EmailConnectionType = "smtp" | "oauth";
 
 export interface EmailProviderPreset {
   id: EmailProviderId;
@@ -124,10 +121,10 @@ export interface EmailIntegrationSecrets {
 }
 
 export const DEFAULT_EMAIL_INTEGRATION: EmailIntegrationConfig = {
-  providerId: 'gmail',
-  fromAddress: '',
-  fromName: 'Madrasa Management System',
-  smtpUsername: '',
+  providerId: "gmail",
+  fromAddress: "",
+  fromName: "Madrasa Management System",
+  smtpUsername: "",
   connected: false,
   hasCredentials: false,
 };
@@ -139,11 +136,9 @@ export function mergeEmailIntegrationConfig(
   return {
     ...DEFAULT_EMAIL_INTEGRATION,
     ...partial,
-    providerId: isEmailProviderId(providerId)
-      ? providerId
-      : DEFAULT_EMAIL_INTEGRATION.providerId,
+    providerId: isEmailProviderId(providerId) ? providerId : DEFAULT_EMAIL_INTEGRATION.providerId,
     fromName: partial?.fromName?.trim() || DEFAULT_EMAIL_INTEGRATION.fromName,
-    fromAddress: partial?.fromAddress?.trim() ?? '',
-    smtpUsername: partial?.smtpUsername?.trim() ?? '',
+    fromAddress: partial?.fromAddress?.trim() ?? "",
+    smtpUsername: partial?.smtpUsername?.trim() ?? "",
   };
 }

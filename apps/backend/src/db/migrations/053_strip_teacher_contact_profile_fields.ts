@@ -3,8 +3,8 @@
  * Contacts remain SSOT for name, phone, email, gender, dob, city, first/last name.
  * Idempotent: only updates rows that still contain any of the keys.
  */
-import { sql } from 'drizzle-orm';
-import { withGlobalTenant } from '../tenant-context.js';
+import { sql } from "drizzle-orm";
+import { withGlobalTenant } from "../tenant-context.js";
 
 export async function runMigration053(): Promise<void> {
   await withGlobalTenant(async (tx) => {
@@ -13,12 +13,12 @@ export async function runMigration053(): Promise<void> {
       WHERE table_schema = 'public' AND table_name = 'teachers' AND column_name = 'custom_data'
     `)) as unknown;
     const hasCustomData =
-      typeof colCheck === 'object' && colCheck !== null && 'rowCount' in colCheck
+      typeof colCheck === "object" && colCheck !== null && "rowCount" in colCheck
         ? Number((colCheck as { rowCount?: number }).rowCount ?? 0) > 0
         : Array.isArray(colCheck) && (colCheck as unknown[]).length > 0;
 
     if (!hasCustomData) {
-      console.log('[Migration 053] No teacher custom_data column to strip.');
+      console.log("[Migration 053] No teacher custom_data column to strip.");
       return;
     }
 
@@ -36,7 +36,7 @@ export async function runMigration053(): Promise<void> {
     `);
 
     const rowCount =
-      typeof result === 'object' && result !== null && 'rowCount' in result
+      typeof result === "object" && result !== null && "rowCount" in result
         ? Number((result as { rowCount?: number }).rowCount ?? 0)
         : 0;
 
@@ -45,7 +45,7 @@ export async function runMigration053(): Promise<void> {
         `[Migration 053] Stripped contact profile dual-write keys from ${rowCount} teacher row(s).`,
       );
     } else {
-      console.log('[Migration 053] No teacher custom_data profile keys to strip.');
+      console.log("[Migration 053] No teacher custom_data profile keys to strip.");
     }
   });
 }

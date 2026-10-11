@@ -2,11 +2,11 @@
  * Display-only sibling derivation from Parent/Child graph edges.
  * Does not persist; not part of the FormSelect relationship catalog.
  */
-import type { ContactRelationship, RelationshipContact } from './contactEntityTypes.js';
-import { normalizeRelationshipTerm } from './contactRelationshipPairUtils.js';
-import { collectContactRelationshipLinks } from './studentGuardianFromContacts.js';
+import type { ContactRelationship, RelationshipContact } from "./contactEntityTypes.js";
+import { normalizeRelationshipTerm } from "./contactRelationshipPairUtils.js";
+import { collectContactRelationshipLinks } from "./studentGuardianFromContacts.js";
 
-const DERIVED_SIBLING_RELATIONSHIP_LABEL = 'Sibling';
+const DERIVED_SIBLING_RELATIONSHIP_LABEL = "Sibling";
 
 type DerivedSiblingLink = {
   contactId: string;
@@ -38,15 +38,15 @@ type ContactLike = {
 };
 
 function contactIdOf(contact: ContactLike): string {
-  return contact.id == null ? '' : String(contact.id).trim();
+  return contact.id == null ? "" : String(contact.id).trim();
 }
 
 function isParentLabel(relationship?: string): boolean {
-  return normalizeRelationshipTerm(relationship) === 'parent';
+  return normalizeRelationshipTerm(relationship) === "parent";
 }
 
 function isChildLabel(relationship?: string): boolean {
-  return normalizeRelationshipTerm(relationship) === 'child';
+  return normalizeRelationshipTerm(relationship) === "child";
 }
 
 /** Parent contact ids of `subject` via Parent links on subject or Child links on peers. */
@@ -58,7 +58,7 @@ function collectParentIdsOf(
   const parentIds = new Set<string>();
 
   for (const link of collectContactRelationshipLinks(subject)) {
-    const peerId = link.contactId == null ? '' : String(link.contactId).trim();
+    const peerId = link.contactId == null ? "" : String(link.contactId).trim();
     if (!peerId || peerId === subjectId) continue;
     if (isParentLabel(link.relationship)) parentIds.add(peerId);
   }
@@ -66,7 +66,7 @@ function collectParentIdsOf(
   for (const [peerId, peer] of contactsById) {
     if (!peerId || peerId === subjectId) continue;
     for (const link of collectContactRelationshipLinks(peer)) {
-      const linkedId = link.contactId == null ? '' : String(link.contactId).trim();
+      const linkedId = link.contactId == null ? "" : String(link.contactId).trim();
       if (linkedId === subjectId && isChildLabel(link.relationship)) {
         parentIds.add(peerId);
       }
@@ -85,7 +85,7 @@ function collectChildIdsOf(
   const parent = contactsById.get(parentId);
   if (parent) {
     for (const link of collectContactRelationshipLinks(parent)) {
-      const peerId = link.contactId == null ? '' : String(link.contactId).trim();
+      const peerId = link.contactId == null ? "" : String(link.contactId).trim();
       if (!peerId || peerId === parentId) continue;
       if (isChildLabel(link.relationship)) childIds.add(peerId);
     }
@@ -94,7 +94,7 @@ function collectChildIdsOf(
   for (const [peerId, peer] of contactsById) {
     if (!peerId || peerId === parentId) continue;
     for (const link of collectContactRelationshipLinks(peer)) {
-      const linkedId = link.contactId == null ? '' : String(link.contactId).trim();
+      const linkedId = link.contactId == null ? "" : String(link.contactId).trim();
       if (linkedId === parentId && isParentLabel(link.relationship)) {
         childIds.add(peerId);
       }
@@ -158,10 +158,10 @@ export function mergeStoredAndDerivedSiblingLinks(
   contacts: readonly ContactLike[],
 ): MergedRelationshipLink[] {
   const stored: MergedRelationshipLink[] = collectContactRelationshipLinks(subject).map((link) => {
-    const contactId = link.contactId == null ? '' : String(link.contactId).trim();
-    const name = (link.name || '').trim();
-    const phone = (link.phone || '').trim();
-    const relationship = (link.relationship || '').trim();
+    const contactId = link.contactId == null ? "" : String(link.contactId).trim();
+    const name = (link.name || "").trim();
+    const phone = (link.phone || "").trim();
+    const relationship = (link.relationship || "").trim();
     return {
       contactId,
       ...(name ? { name } : {}),
@@ -171,9 +171,7 @@ export function mergeStoredAndDerivedSiblingLinks(
     };
   });
 
-  const existingIds = new Set(
-    stored.map((link) => link.contactId).filter((id) => id.length > 0),
-  );
+  const existingIds = new Set(stored.map((link) => link.contactId).filter((id) => id.length > 0));
   const peers = contacts.length > 0 ? contacts : [subject];
   const siblings = deriveSiblingLinks(subject, peers).filter(
     (link) => !existingIds.has(link.contactId),

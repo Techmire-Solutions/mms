@@ -35,6 +35,9 @@ export function useDescriptorColumnLayout(
   moduleId: string,
   descriptor: { getTableColumns: () => TableColumnDescriptor[] },
 ) {
-  const tenantRegistry = useMemo(() => descriptorColumnsToRegistry(descriptor.getTableColumns()), [descriptor]);
+  const tenantRegistry = useMemo(
+    () => descriptorColumnsToRegistry(descriptor.getTableColumns()),
+    [descriptor],
+  );
   return useModuleColumnLayout({ moduleId, tenantRegistry });
 }

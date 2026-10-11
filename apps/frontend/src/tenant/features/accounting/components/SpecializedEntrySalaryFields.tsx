@@ -18,7 +18,9 @@ export function SpecializedEntrySalaryFields({
 }: {
   form: UseFormReturn<SalaryEntryInput>;
   accounts: Account[];
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
 }): React.JSX.Element {
   const { t } = useTranslation();
 

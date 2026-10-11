@@ -7,9 +7,7 @@ import {
   normalizeUniqueContactFieldValue,
 } from "./contactUniqueFieldValidation.js";
 
-function field(
-  partial: Partial<FieldDefinition> & { key: string },
-): FieldDefinition {
+function field(partial: Partial<FieldDefinition> & { key: string }): FieldDefinition {
   return {
     label: partial.key,
     type: "text",
@@ -25,25 +23,22 @@ function field(
 const fields = {
   phones: [
     field({ key: "label" }),
-    field({ key: "number", unique: true, label: "Phone Number", labelKey: "contacts.fields.phoneNumber" }),
+    field({
+      key: "number",
+      unique: true,
+      label: "Phone Number",
+      labelKey: "contacts.fields.phoneNumber",
+    }),
   ],
-  emails: [
-    field({ key: "address", unique: true, type: "email", label: "Email Address" }),
-  ],
-  basic: [
-    field({ key: "cnic", unique: true, label: "CNIC" }),
-    field({ key: "firstName" }),
-  ],
+  emails: [field({ key: "address", unique: true, type: "email", label: "Email Address" })],
+  basic: [field({ key: "cnic", unique: true, label: "CNIC" }), field({ key: "firstName" })],
 };
 
 describe("listUniqueContactFieldRefs", () => {
   it("returns only enabled unique fields", () => {
     const refs = listUniqueContactFieldRefs({
       ...fields,
-      basic: [
-        ...fields.basic,
-        field({ key: "hiddenUnique", unique: true, enabled: false }),
-      ],
+      basic: [...fields.basic, field({ key: "hiddenUnique", unique: true, enabled: false })],
     });
     expect(refs.map((ref) => `${ref.tabId}.${ref.fieldKey}`).sort()).toEqual([
       "basic.cnic",
@@ -69,9 +64,7 @@ describe("normalizeUniqueContactFieldValue", () => {
   });
 
   it("lowercases emails", () => {
-    expect(normalizeUniqueContactFieldValue("emails", "address", "  A@B.COM ")).toBe(
-      "a@b.com",
-    );
+    expect(normalizeUniqueContactFieldValue("emails", "address", "  A@B.COM ")).toBe("a@b.com");
   });
 
   it("normalizes cnic to digits only", () => {
@@ -206,9 +199,7 @@ describe("findContactUniqueFieldConflicts", () => {
     const errors = findContactUniqueFieldConflicts(candidate, [], fields, "en", {
       defaultPhoneCountryCode: "+92",
     });
-    expect(errors.some((error) => error.tabId === "phones" && error.index === 1)).toBe(
-      true,
-    );
+    expect(errors.some((error) => error.tabId === "phones" && error.index === 1)).toBe(true);
   });
 
   it("ignores soft-deleted peers", () => {
@@ -245,10 +236,6 @@ describe("collectUniqueContactFieldValues", () => {
       listUniqueContactFieldRefs(fields),
       { defaultPhoneCountryCode: "+92" },
     );
-    expect(values.map((value) => value.fieldKey).sort()).toEqual([
-      "address",
-      "cnic",
-      "number",
-    ]);
+    expect(values.map((value) => value.fieldKey).sort()).toEqual(["address", "cnic", "number"]);
   });
 });

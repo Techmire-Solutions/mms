@@ -1,4 +1,4 @@
-import { dehydrate, hydrate, type DehydratedState, type QueryClient } from '@tanstack/react-query';
+import { dehydrate, hydrate, type DehydratedState, type QueryClient } from "@tanstack/react-query";
 
 interface QueryPersister {
   restoreClient: () => Promise<DehydratedState | undefined>;
@@ -6,14 +6,22 @@ interface QueryPersister {
   removeClient: () => Promise<void>;
 }
 
-function canPersistQuery(query: Pick<DehydratedState['queries'][number], 'queryKey' | 'state'>): boolean {
-  return query.queryKey[0] !== 'platform'
-    && query.state.status === 'success'
-    && query.state.data !== undefined
-    && !query.queryKey.some((key) => typeof key === 'string' && key.includes('auth'));
+function canPersistQuery(
+  query: Pick<DehydratedState["queries"][number], "queryKey" | "state">,
+): boolean {
+  return (
+    query.queryKey[0] !== "platform" &&
+    query.state.status === "success" &&
+    query.state.data !== undefined &&
+    !query.queryKey.some((key) => typeof key === "string" && key.includes("auth"))
+  );
 }
 
-export function createQueryPersistenceLifecycle(client: QueryClient, persister: QueryPersister, isCurrent = () => true) {
+export function createQueryPersistenceLifecycle(
+  client: QueryClient,
+  persister: QueryPersister,
+  isCurrent = () => true,
+) {
   let generation = 0;
   let unsubscribe: (() => void) | undefined;
   let stopped = false;

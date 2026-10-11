@@ -13,5 +13,3 @@ export function UsersReportsTier(): React.JSX.Element {
     </ModuleTierMotion>
   );
 }
-
-

@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   withTenant,
   withTenantRead,
   withGlobalTenant,
   type WithTenantOptions,
-} from '../db/tenant-context.js';
+} from "../db/tenant-context.js";
 
 /**
  * The runtime guard is unreachable through the typed API by design — a nullable
@@ -28,45 +28,45 @@ const withTenantLooselyTyped = withTenant as unknown as (
  * so a caller binding an unset request property fails loudly instead of
  * silently running without row-level security.
  */
-describe('withTenant fail-closed guard', () => {
-  it('rejects an empty tenant instead of bypassing RLS', async () => {
-    await expect(withTenantLooselyTyped(null, async () => 'ran')).rejects.toThrow(
+describe("withTenant fail-closed guard", () => {
+  it("rejects an empty tenant instead of bypassing RLS", async () => {
+    await expect(withTenantLooselyTyped(null, async () => "ran")).rejects.toThrow(
       /refusing to run with RLS bypassed/,
     );
-    await expect(withTenantLooselyTyped(undefined, async () => 'ran')).rejects.toThrow(
+    await expect(withTenantLooselyTyped(undefined, async () => "ran")).rejects.toThrow(
       /refusing to run with RLS bypassed/,
     );
-    await expect(withTenantLooselyTyped('', async () => 'ran')).rejects.toThrow(
+    await expect(withTenantLooselyTyped("", async () => "ran")).rejects.toThrow(
       /refusing to run with RLS bypassed/,
     );
   });
 
   it('rejects the literal strings "undefined"/"null" as tenant ids', async () => {
-    await expect(withTenantLooselyTyped('undefined', async () => 'ran')).rejects.toThrow(
+    await expect(withTenantLooselyTyped("undefined", async () => "ran")).rejects.toThrow(
       /literal string/,
     );
-    await expect(withTenantLooselyTyped('null', async () => 'ran')).rejects.toThrow(
+    await expect(withTenantLooselyTyped("null", async () => "ran")).rejects.toThrow(
       /literal string/,
     );
   });
 
-  it('points the caller at the explicit global escape hatch', async () => {
-    await expect(withTenantLooselyTyped(null, async () => 'ran')).rejects.toThrow(
+  it("points the caller at the explicit global escape hatch", async () => {
+    await expect(withTenantLooselyTyped(null, async () => "ran")).rejects.toThrow(
       /allowGlobal: true/,
     );
   });
 
-  it('rejects an empty tenant even when readOnly is requested', async () => {
-    await expect(withTenantLooselyTyped(null, async () => 'ran', { readOnly: true })).rejects.toThrow(
-      /refusing to run with RLS bypassed/,
-    );
+  it("rejects an empty tenant even when readOnly is requested", async () => {
+    await expect(
+      withTenantLooselyTyped(null, async () => "ran", { readOnly: true }),
+    ).rejects.toThrow(/refusing to run with RLS bypassed/);
   });
 
-  it('allows global work through the explicit helper', async () => {
+  it("allows global work through the explicit helper", async () => {
     // The guard must not reject an intentional global call. In the test
     // environment there is no pool, so `withTenant` falls back to running the
     // callback directly (see tenant-context.ts) rather than bypassing RLS.
-    await expect(withGlobalTenant(async () => 'ran')).resolves.toBe('ran');
+    await expect(withGlobalTenant(async () => "ran")).resolves.toBe("ran");
   });
 });
 
@@ -88,21 +88,21 @@ declare const aTenant: string;
 
 export function __compileTimeAssertions(): void {
   // @ts-expect-error — a nullable tenant MUST pass an explicit `allowGlobal`.
-  void withTenant(maybeTenant, async () => 'ok');
+  void withTenant(maybeTenant, async () => "ok");
 
   // @ts-expect-error — `allowGlobal` must be actually present, not omitted.
-  void withTenant(maybeTenant, async () => 'ok', { readOnly: true });
+  void withTenant(maybeTenant, async () => "ok", { readOnly: true });
 
   // @ts-expect-error — same rule for the read-replica wrapper.
-  void withTenantRead(maybeTenant, async () => 'ok');
+  void withTenantRead(maybeTenant, async () => "ok");
 
   // @ts-expect-error — and the global helper takes no tenant at all.
-  void withGlobalTenant(aTenant, async () => 'ok');
+  void withGlobalTenant(aTenant, async () => "ok");
 
   // These must compile: a known-present tenant needs no opt-in.
-  void withTenant(aTenant, async () => 'ok');
-  void withTenant(aTenant, async () => 'ok', { readOnly: true });
+  void withTenant(aTenant, async () => "ok");
+  void withTenant(aTenant, async () => "ok", { readOnly: true });
   // A nullable tenant compiles once the opt-in is explicit.
-  void withTenant(maybeTenant, async () => 'ok', { allowGlobal: true });
-  void withTenant(maybeTenant, async () => 'ok', { allowGlobal: !maybeTenant });
+  void withTenant(maybeTenant, async () => "ok", { allowGlobal: true });
+  void withTenant(maybeTenant, async () => "ok", { allowGlobal: !maybeTenant });
 }

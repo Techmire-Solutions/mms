@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react';
-import type { Faculty, FacultySortField } from '@mms/shared';
-import { getDirectoryPageSelection } from '@/lib/directorySelection';
-import { useFacultyStatusConfig } from '@/tenant/features/faculty/hooks/useFacultyStatusConfig';
+import { useCallback, useMemo } from "react";
+import type { Faculty, FacultySortField } from "@mms/shared";
+import { getDirectoryPageSelection } from "@/lib/directorySelection";
+import { useFacultyStatusConfig } from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
 
 export interface UseFacultyListStateOptions {
   faculty: Faculty[];
@@ -10,9 +10,9 @@ export interface UseFacultyListStateOptions {
   onSelectOne: (id: string) => void;
   onSelectAll: (pageIds: string[]) => void;
   controlledSortField?: FacultySortField;
-  controlledSortDir?: 'asc' | 'desc';
+  controlledSortDir?: "asc" | "desc";
   /** Server SQL sort (Work list SSOT) — required; client re-sort removed. */
-  onSortChange: (field: FacultySortField, dir: 'asc' | 'desc') => void;
+  onSortChange: (field: FacultySortField, dir: "asc" | "desc") => void;
   isColumnVisible?: (columnId: string) => boolean;
 }
 
@@ -22,8 +22,8 @@ export function useFacultyListState({
   selectedIds,
   onSelectOne,
   onSelectAll,
-  controlledSortField = 'name',
-  controlledSortDir = 'asc',
+  controlledSortField = "name",
+  controlledSortDir = "asc",
   onSortChange,
   isColumnVisible,
 }: UseFacultyListStateOptions) {
@@ -36,7 +36,7 @@ export function useFacultyListState({
 
   const handleSort = useCallback(
     (field: FacultySortField) => {
-      const resolvedDir = sortField === field && sortDir === 'asc' ? 'desc' : 'asc';
+      const resolvedDir = sortField === field && sortDir === "asc" ? "desc" : "asc";
       onSortChange(field, resolvedDir);
     },
     [sortField, sortDir, onSortChange],

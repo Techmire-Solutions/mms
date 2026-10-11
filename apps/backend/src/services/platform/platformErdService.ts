@@ -1,13 +1,8 @@
-import { getTableConfig, PgTable } from 'drizzle-orm/pg-core';
-import { is } from 'drizzle-orm';
-import type {
-  ErdDomain,
-  ErdRelationship,
-  ErdTable,
-  PlatformErdResponse,
-} from '@mms/shared';
-import { DOMAIN_REGISTRY } from './platformErdDomains.js';
-import { introspectPgTable } from './platformErdIntrospect.js';
+import { getTableConfig, PgTable } from "drizzle-orm/pg-core";
+import { is } from "drizzle-orm";
+import type { ErdDomain, ErdRelationship, ErdTable, PlatformErdResponse } from "@mms/shared";
+import { DOMAIN_REGISTRY } from "./platformErdDomains.js";
+import { introspectPgTable } from "./platformErdIntrospect.js";
 
 let cachedResponse: PlatformErdResponse | null = null;
 
@@ -57,7 +52,7 @@ export function getIntrospectedErdDomains(): PlatformErdResponse {
     for (const tableName of domainTables.keys()) {
       const rels = allRelationshipsByFromTable.get(tableName) || [];
       for (const rel of rels) {
-        if (rel.fromColumn === 'workspace_subdomain' && config.id !== 'platform') {
+        if (rel.fromColumn === "workspace_subdomain" && config.id !== "platform") {
           continue;
         }
 

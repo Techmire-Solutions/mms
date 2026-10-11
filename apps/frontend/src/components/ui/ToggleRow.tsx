@@ -22,11 +22,7 @@ export function ToggleRow({
         <p className="text-sm font-semibold text-foreground">{label}</p>
         {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </div>
-      <Switch
-        checked={value}
-        onCheckedChange={onChange}
-        aria-label={ariaLabel || label}
-      />
+      <Switch checked={value} onCheckedChange={onChange} aria-label={ariaLabel || label} />
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import type { ReportCollection } from '@/lib/reports/reportMetadata';
-import type { CustomWidget } from '@/lib/reports/pinnedWidgetTypes';
-import { widgetMatchesDashboardRole, type DashboardRole } from '@/lib/dashboardRole';
-import { isSeededDashboardWidget, DASHBOARD_WIDGET_REGISTRY } from '@/lib/dashboardWidgets';
-import type { DashboardTrendMetric, DashboardMetricTrends, Permission } from '@mms/shared';
+import type { ReportCollection } from "@/lib/reports/reportMetadata";
+import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import { widgetMatchesDashboardRole, type DashboardRole } from "@/lib/dashboardRole";
+import { isSeededDashboardWidget, DASHBOARD_WIDGET_REGISTRY } from "@/lib/dashboardWidgets";
+import type { DashboardTrendMetric, DashboardMetricTrends, Permission } from "@mms/shared";
 import {
   DASHBOARD_COLLECTION_MODULE_ID,
   DASHBOARD_ACCOUNTING_WIDGET_IDS,
@@ -10,7 +10,7 @@ import {
   isDashboardWidgetPermitted,
   isDashboardWidgetModuleEnabled,
   isDashboardWidgetAllowed,
-} from './dashboardWidgetPermissions';
+} from "./dashboardWidgetPermissions";
 
 export type { DashboardTrendMetric };
 export {
@@ -22,17 +22,17 @@ export {
   isDashboardWidgetAllowed,
 };
 
-const REVENUE_WIDGET_TYPES = new Set(['revenue-expenses']);
+const REVENUE_WIDGET_TYPES = new Set(["revenue-expenses"]);
 
 export const TREND_METRIC_KEY_MAP: Record<DashboardTrendMetric, keyof DashboardMetricTrends> = {
-  attendance: 'attendanceTrend',
-  fees: 'feesTrend',
-  outstanding: 'outstandingTrend',
-  hasanat: 'hasanatTrend',
-  sessions: 'sessionsTrend',
-  contacts: 'contactTrend',
-  students: 'studentTrend',
-  faculty: 'facultyTrend',
+  attendance: "attendanceTrend",
+  fees: "feesTrend",
+  outstanding: "outstandingTrend",
+  hasanat: "hasanatTrend",
+  sessions: "sessionsTrend",
+  contacts: "contactTrend",
+  students: "studentTrend",
+  faculty: "facultyTrend",
 };
 
 /** Filters custom widgets to active card-type widgets matching the dashboard role. */
@@ -41,37 +41,37 @@ export function filterDashboardCardWidgets(
   dashboardRole: DashboardRole,
 ): CustomWidget[] {
   return widgets.filter(
-    (widget) => widget.widgetType === 'card' && widgetMatchesDashboardRole(widget.role, dashboardRole),
+    (widget) =>
+      widget.widgetType === "card" && widgetMatchesDashboardRole(widget.role, dashboardRole),
   );
 }
 
 /** Explicit trend source for seeded metric cards — sourced from
  *  `DASHBOARD_WIDGET_REGISTRY` (see `dashboardWidgets.ts`). Custom cards
  *  fall back to id heuristics below. */
-export function resolveDashboardTrendMetric(
-  widgetId: string,
-): DashboardTrendMetric | undefined {
+export function resolveDashboardTrendMetric(widgetId: string): DashboardTrendMetric | undefined {
   const mapped = DASHBOARD_WIDGET_REGISTRY[widgetId]?.trendMetric;
   if (mapped) return mapped;
 
   // Custom (non-seeded) cards: best-effort id heuristics.
   const id = widgetId.toLowerCase();
-  if (id.includes('attendance') || id.includes('rate')) return 'attendance';
-  if (id.includes('fees') || id.includes('revenue') || id.includes('income')) return 'fees';
-  if (id.includes('outstanding') || id.includes('debt') || id.includes('overdue')) return 'outstanding';
-  if (id.includes('hasanat') || id.includes('points')) return 'hasanat';
-  if (id.includes('sessions') || id.includes('classes')) return 'sessions';
+  if (id.includes("attendance") || id.includes("rate")) return "attendance";
+  if (id.includes("fees") || id.includes("revenue") || id.includes("income")) return "fees";
+  if (id.includes("outstanding") || id.includes("debt") || id.includes("overdue"))
+    return "outstanding";
+  if (id.includes("hasanat") || id.includes("points")) return "hasanat";
+  if (id.includes("sessions") || id.includes("classes")) return "sessions";
   return undefined;
 }
 
 /** Predicate checking if a widget is active (pinned or role-scoped metric card) on the dashboard layout. */
 export function isWidgetActiveForDashboard(
-  widget: Pick<CustomWidget, 'role' | 'widgetType' | 'isPinnedToDashboard'>,
+  widget: Pick<CustomWidget, "role" | "widgetType" | "isPinnedToDashboard">,
   dashboardRole: DashboardRole,
 ): boolean {
   return (
     Boolean(widget.isPinnedToDashboard) ||
-    (widget.widgetType === 'card' && widgetMatchesDashboardRole(widget.role, dashboardRole))
+    (widget.widgetType === "card" && widgetMatchesDashboardRole(widget.role, dashboardRole))
   );
 }
 
@@ -82,7 +82,8 @@ export function filterDashboardWidgetsByCollection(
   dashboardRole: DashboardRole,
 ): CustomWidget[] {
   return widgets.filter(
-    (widget) => widget.collection === collection && isWidgetActiveForDashboard(widget, dashboardRole),
+    (widget) =>
+      widget.collection === collection && isWidgetActiveForDashboard(widget, dashboardRole),
   );
 }
 
@@ -114,7 +115,7 @@ export function getRequiredDashboardCollections(
     }
 
     if (isPinnedWidget && widget.widgetType && REVENUE_WIDGET_TYPES.has(widget.widgetType)) {
-      required.add('finance_invoices');
+      required.add("finance_invoices");
     }
   }
 
@@ -138,7 +139,7 @@ export function getPinnedDashboardWidgetCount(
   can?: (permission: Permission) => boolean,
 ): number {
   return widgets.filter((widget) => {
-    if (!widget.isPinnedToDashboard || widget.widgetType === 'card') return false;
+    if (!widget.isPinnedToDashboard || widget.widgetType === "card") return false;
     if (enabledModules && !isDashboardWidgetModuleEnabled(widget, enabledModules)) return false;
     if (can && !isDashboardWidgetPermitted(widget, can)) return false;
     return true;

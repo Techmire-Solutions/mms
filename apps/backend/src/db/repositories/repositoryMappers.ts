@@ -1,4 +1,4 @@
-import type { SerializedEntityAuditFields, SoftDeleteFields } from '@mms/shared';
+import type { SerializedEntityAuditFields, SoftDeleteFields } from "@mms/shared";
 
 /**
  * Standard audit columns selected from Drizzle tables containing
@@ -60,9 +60,9 @@ export function nullsToUndefined<T extends Record<string, unknown>>(row: T): Nul
  */
 export function parseNumericColumn(val: string | number | null | undefined): number | undefined {
   if (val == null) return undefined;
-  if (typeof val === 'number') return Number.isFinite(val) ? val : undefined;
+  if (typeof val === "number") return Number.isFinite(val) ? val : undefined;
   const trimmed = val.trim();
-  if (trimmed === '') return undefined;
+  if (trimmed === "") return undefined;
   const num = Number(trimmed);
   return Number.isFinite(num) ? num : undefined;
 }
@@ -111,7 +111,3 @@ export function mapAuditToInsert(contract: ContractAuditInput): DrizzleAuditInse
   }
   return result;
 }
-
-
-
-

@@ -1,48 +1,48 @@
-import type { FastifyPluginAsync } from 'fastify';
-import { type User } from '@mms/shared';
-import { facultyUseCases } from '../../../faculty/use-cases/facultyUseCases.js';
+import type { FastifyPluginAsync } from "fastify";
+import { type User } from "@mms/shared";
+import { facultyUseCases } from "../../../faculty/use-cases/facultyUseCases.js";
 import {
   registerMetricsRoute,
   registerCountRoute,
   registerWidgetAggregatesRoute,
   registerResolveRoute,
   registerLinkedContactIdsRoute,
-} from '../../../lib/crudRouter.js';
-import { sanitizeFacultyForUser } from './facultyRouteHelpers.js';
+} from "../../../lib/crudRouter.js";
+import { sanitizeFacultyForUser } from "./facultyRouteHelpers.js";
 
 /** Count, metrics, resolve, widget aggregates, and inline restore routes. */
 export const facultyAggregateRoutes: FastifyPluginAsync = async (sub) => {
   registerCountRoute(sub, {
-    collection: 'faculty',
+    collection: "faculty",
     loadCountFn: () => facultyUseCases.countFaculty(),
-    errorMessagePrefix: 'faculty',
+    errorMessagePrefix: "faculty",
   });
 
   registerMetricsRoute(sub, {
-    collection: 'faculty',
+    collection: "faculty",
     loadMetricsFn: () => facultyUseCases.loadFacultyCommandMetrics(),
-    errorMessagePrefix: 'faculty',
+    errorMessagePrefix: "faculty",
   });
 
   registerWidgetAggregatesRoute(sub, {
-    collection: 'faculty',
+    collection: "faculty",
     loadAggregatesFn: (queries) => facultyUseCases.loadFacultyWidgetAggregates(queries),
-    errorMessagePrefix: 'faculty',
+    errorMessagePrefix: "faculty",
   });
 
   registerResolveRoute(sub, {
-    collection: 'faculty',
+    collection: "faculty",
     loadByIdsFn: async (ids, request) => {
       const faculty = await facultyUseCases.loadFacultyByIds(ids);
       return sanitizeFacultyForUser(faculty, request.user as User);
     },
-    responseKey: 'faculty',
-    errorMessagePrefix: 'faculty',
+    responseKey: "faculty",
+    errorMessagePrefix: "faculty",
   });
 
   registerLinkedContactIdsRoute(sub, {
-    collection: 'faculty',
+    collection: "faculty",
     loadLinkedContactIdsFn: (excludeId) => facultyUseCases.loadFacultyLinkedContactIds(excludeId),
-    errorMessagePrefix: 'faculty',
+    errorMessagePrefix: "faculty",
   });
 };

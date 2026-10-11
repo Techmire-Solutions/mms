@@ -1,11 +1,11 @@
-import { eq } from 'drizzle-orm';
-import { withTenant, withTenantRead, withGlobalTenant } from '../tenant-context.js';
-import { questionBankModulePreferences } from '../schema.js';
-import type { QuestionBankModulePreferences } from '@mms/shared';
+import { eq } from "drizzle-orm";
+import { withTenant, withTenantRead, withGlobalTenant } from "../tenant-context.js";
+import { questionBankModulePreferences } from "../schema.js";
+import type { QuestionBankModulePreferences } from "@mms/shared";
 
 export async function replaceQuestionBankModulePreferencesForWorkspace(
   workspaceSubdomain: string,
-  preferences: Partial<QuestionBankModulePreferences>
+  preferences: Partial<QuestionBankModulePreferences>,
 ): Promise<void> {
   await withTenant(workspaceSubdomain, async (tx) => {
     await tx
@@ -17,7 +17,7 @@ export async function replaceQuestionBankModulePreferencesForWorkspace(
       })
       .onConflictDoUpdate({
         target: [questionBankModulePreferences.workspaceSubdomain],
-        set: { 
+        set: {
           preferences: preferences as never,
           updatedAt: new Date(),
         },
@@ -26,7 +26,7 @@ export async function replaceQuestionBankModulePreferencesForWorkspace(
 }
 
 export async function getQuestionBankModulePreferencesForWorkspace(
-  workspaceSubdomain: string
+  workspaceSubdomain: string,
 ): Promise<Partial<QuestionBankModulePreferences> | null> {
   return await withTenantRead(workspaceSubdomain, async (tx) => {
     const [row] = await tx

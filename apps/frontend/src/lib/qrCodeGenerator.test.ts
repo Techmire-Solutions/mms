@@ -50,7 +50,7 @@ describe("qrCodeGenerator", () => {
       expect(uri.startsWith("data:image/svg+xml;utf8,")).toBe(true);
       const decodedSvg = decodeURIComponent(uri.replace("data:image/svg+xml;utf8,", ""));
       expect(decodedSvg).toContain("<svg");
-      expect(decodedSvg).toContain("viewBox=\"0 0 29 29\"");
+      expect(decodedSvg).toContain('viewBox="0 0 29 29"');
       expect(decodedSvg).toContain("<rect");
       expect(decodedSvg).toContain("</svg>");
     });

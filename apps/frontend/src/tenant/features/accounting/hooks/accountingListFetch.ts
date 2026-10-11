@@ -1,13 +1,13 @@
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import type {
   Account,
   AccountingEntriesListPageResult,
   AccountingListQuery,
   JournalEntry,
-} from '@mms/shared';
-import { ACCOUNTING_MODULE_MANIFEST, LIST_PAGE_MAX_LIMIT } from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
-import { useAuth } from '@/lib/contexts/AuthContext';
+} from "@mms/shared";
+import { ACCOUNTING_MODULE_MANIFEST, LIST_PAGE_MAX_LIMIT } from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 /**
  * Hard bound on the sequential paging loop used by the whole-ledger aggregates.
@@ -30,15 +30,15 @@ export function buildAccountingEntriesPageParams(query: AccountingListQuery): UR
     page: String(query.page ?? 1),
     limit: String(Math.min(query.limit ?? LIST_PAGE_MAX_LIMIT, LIST_PAGE_MAX_LIMIT)),
   });
-  if (query.search) params.set('search', query.search);
-  if (query.status) params.set('status', query.status);
-  if (query.tag) params.set('tag', query.tag);
-  if (query.dateFrom) params.set('dateFrom', query.dateFrom);
-  if (query.dateTo) params.set('dateTo', query.dateTo);
-  if (query.accountId) params.set('accountId', query.accountId);
-  if (query.sortField) params.set('sortField', query.sortField);
-  if (query.sortDir) params.set('sortDir', query.sortDir);
-  if (query.includeDeleted) params.set('includeDeleted', 'true');
+  if (query.search) params.set("search", query.search);
+  if (query.status) params.set("status", query.status);
+  if (query.tag) params.set("tag", query.tag);
+  if (query.dateFrom) params.set("dateFrom", query.dateFrom);
+  if (query.dateTo) params.set("dateTo", query.dateTo);
+  if (query.accountId) params.set("accountId", query.accountId);
+  if (query.sortField) params.set("sortField", query.sortField);
+  if (query.sortDir) params.set("sortDir", query.sortDir);
+  if (query.includeDeleted) params.set("includeDeleted", "true");
   return params;
 }
 
@@ -71,16 +71,23 @@ export async function fetchAccountingEntriesPage(
  * here would create an import cycle, and an identical prefix is what keeps the
  * existing post-write invalidation refreshing this page.
  */
-const ACCOUNTING_ENTRIES_LIST_QUERY_KEY = [ACCOUNTING_MODULE_MANIFEST.moduleId, 'entries', 'list'] as const;
+const ACCOUNTING_ENTRIES_LIST_QUERY_KEY = [
+  ACCOUNTING_MODULE_MANIFEST.moduleId,
+  "entries",
+  "list",
+] as const;
 
 /** Server-driven page of the Journal list: filters, order and page live in the query. */
-export function useAccountingEntriesPage(query: AccountingListQuery, options?: { enabled?: boolean }) {
+export function useAccountingEntriesPage(
+  query: AccountingListQuery,
+  options?: { enabled?: boolean },
+) {
   const { isAuthenticated } = useAuth();
   const enabled = (options?.enabled ?? true) && isAuthenticated;
   const params = buildAccountingEntriesPageParams(query).toString();
 
   return useQuery({
-    queryKey: [...ACCOUNTING_ENTRIES_LIST_QUERY_KEY, 'page', params],
+    queryKey: [...ACCOUNTING_ENTRIES_LIST_QUERY_KEY, "page", params],
     queryFn: ({ signal }): Promise<AccountingEntriesListPageResult> =>
       fetchAccountingEntriesPage(query, signal),
     enabled,
@@ -124,12 +131,12 @@ export async function fetchAllAccountingEntries(
 
 /** Paged-through fetch of the whole chart of accounts, in a stable code order. */
 export async function fetchAllAccountingAccounts(
-  options: { includeDeleted?: boolean; sortField?: string; sortDir?: 'asc' | 'desc' } = {},
+  options: { includeDeleted?: boolean; sortField?: string; sortDir?: "asc" | "desc" } = {},
   signal?: AbortSignal,
 ): Promise<Account[]> {
   const includeDeleted = options.includeDeleted ?? false;
-  const sortField = options.sortField ?? 'code';
-  const sortDir = options.sortDir ?? 'asc';
+  const sortField = options.sortField ?? "code";
+  const sortDir = options.sortDir ?? "asc";
   const collected: Account[] = [];
   for (let page = 1; page <= MAX_AGGREGATE_PAGES; page += 1) {
     const params = new URLSearchParams({
@@ -138,7 +145,7 @@ export async function fetchAllAccountingAccounts(
       sortField,
       sortDir,
     });
-    if (includeDeleted) params.set('includeDeleted', 'true');
+    if (includeDeleted) params.set("includeDeleted", "true");
 
     const body = await apiJson<{ accounts?: Account[]; hasMore?: boolean }>(
       `${ACCOUNTING_MODULE_MANIFEST.restBasePath}/accounts?${params.toString()}`,

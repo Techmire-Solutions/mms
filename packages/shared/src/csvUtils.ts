@@ -14,7 +14,7 @@ const NEGATIVE_NUMERIC_STRING = /^-(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/;
  */
 export function escapeCsvCell(value: unknown): string {
   if (value === null || value === undefined) return '""';
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return `"${String(value)}"`;
   }
   const raw = typeof value === "string" ? value : String(value);
@@ -52,15 +52,15 @@ export function buildTenantExportFilename(
   tenantName: string | null | undefined,
   baseFilename: string,
 ): string {
-  const cleanBase = (typeof baseFilename === 'string' ? baseFilename : '').trim() || 'export.csv';
-  if (!tenantName || typeof tenantName !== 'string' || !tenantName.trim()) return cleanBase;
+  const cleanBase = (typeof baseFilename === "string" ? baseFilename : "").trim() || "export.csv";
+  if (!tenantName || typeof tenantName !== "string" || !tenantName.trim()) return cleanBase;
 
   const cleanTenant = tenantName
     .trim()
-    .replace(/[/\\?%*:|"<>]/g, '')
-    .replace(/\s+/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '');
+    .replace(/[/\\?%*:|"<>]/g, "")
+    .replace(/\s+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
 
   if (!cleanTenant) return cleanBase;
 

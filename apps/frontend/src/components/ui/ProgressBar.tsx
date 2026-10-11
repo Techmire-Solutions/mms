@@ -23,7 +23,7 @@ export interface ProgressBarProps extends HTMLAttributes<HTMLDivElement> {
   transition?: Transition;
   /** Track overrides (e.g. `w-16`, `bg-border`, `shadow-inner`). */
   trackClassName?: string;
-  'data-testid'?: string;
+  "data-testid"?: string;
 }
 
 /**
@@ -59,7 +59,7 @@ export function ProgressBar({
    * Handled here, in the SSOT component, so callers keep their intent ("this bar
    * is decorative") without each having to remember the ARIA rule.
    */
-  const isDecorative = props['aria-hidden'] === true || props['aria-hidden'] === 'true';
+  const isDecorative = props["aria-hidden"] === true || props["aria-hidden"] === "true";
 
   // Single source of the visual chrome, shared by both branches below.
   const bar = (

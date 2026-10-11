@@ -19,18 +19,28 @@ export type OriginalPeriodStatus = "open" | "closed" | "unconfigured";
  * helpers the server re-checks at execution time, so the dialog can only
  * pre-empt a refusal, never permit what the API would reject.
  */
-export function useJournalReverseDialogState(entry: JournalEntry, fiscalYears: readonly FiscalYear[]) {
+export function useJournalReverseDialogState(
+  entry: JournalEntry,
+  fiscalYears: readonly FiscalYear[],
+) {
   const today = todayISO();
-  const [date, setDate] = useState(() => defaultJournalReversalDate(entry.date, today, fiscalYears));
+  const [date, setDate] = useState(() =>
+    defaultJournalReversalDate(entry.date, today, fiscalYears),
+  );
   const [reason, setReason] = useState("");
   const [remarks, setRemarks] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const originalYear = findFiscalYearForDate(fiscalYears, entry.date);
   const originalPeriod: OriginalPeriodStatus = originalYear
-    ? isFiscalYearClosed(originalYear) ? "closed" : "open"
-    : fiscalYears.length > 0 ? "closed" : "unconfigured";
-  const originalDateAllowed = validateJournalReversalDate(entry.date, entry.date, fiscalYears) === null;
+    ? isFiscalYearClosed(originalYear)
+      ? "closed"
+      : "open"
+    : fiscalYears.length > 0
+      ? "closed"
+      : "unconfigured";
+  const originalDateAllowed =
+    validateJournalReversalDate(entry.date, entry.date, fiscalYears) === null;
   const todayAllowed = validateJournalReversalDate(entry.date, today, fiscalYears) === null;
   const dateIssue: JournalReversalDateIssue | null = date
     ? validateJournalReversalDate(entry.date, date, fiscalYears)

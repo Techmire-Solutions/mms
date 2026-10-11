@@ -1,10 +1,7 @@
 import type React from "react";
 import { Tag } from "lucide-react";
 import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
-import {
-  DetailSectionCard,
-  type DetailSectionCardProps,
-} from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard, type DetailSectionCardProps } from "@/components/ui/DetailSectionCard";
 import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
 import { ICON_MAP } from "./contactDetailStyles";
 

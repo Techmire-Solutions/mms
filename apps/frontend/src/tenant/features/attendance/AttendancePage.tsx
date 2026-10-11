@@ -1,46 +1,48 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { UserCheck } from 'lucide-react';
-import { ModulePageShell } from '@/components/ui/ModulePageShell';
-import { ResponsiveAccordionTabs } from '@/components/ui/ResponsiveAccordionTabs';
-import { AttendanceCommandMetrics } from '@/tenant/features/attendance/components/AttendanceCommandMetrics';
-import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
-import { attendanceTransferSchema } from '@mms/shared';
-import { useGenericModuleExport } from '@/lib/backgroundJobs/useGenericModuleExport';
-import { AttendanceWorkTier } from '@/tenant/features/attendance/components/AttendanceWorkTier';
-import { AttendanceCsvImportDialog } from '@/tenant/features/attendance/components/AttendanceCsvImportDialog';
-import { AttendancePageHeaderActions } from '@/tenant/features/attendance/components/AttendancePageHeaderActions';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { useAttendancePageController } from '@/tenant/features/attendance/hooks/useAttendancePageController';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { UserCheck } from "lucide-react";
+import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { AttendanceCommandMetrics } from "@/tenant/features/attendance/components/AttendanceCommandMetrics";
+import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
+import { attendanceTransferSchema } from "@mms/shared";
+import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
+import { AttendanceWorkTier } from "@/tenant/features/attendance/components/AttendanceWorkTier";
+import { AttendanceCsvImportDialog } from "@/tenant/features/attendance/components/AttendanceCsvImportDialog";
+import { AttendancePageHeaderActions } from "@/tenant/features/attendance/components/AttendancePageHeaderActions";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { useAttendancePageController } from "@/tenant/features/attendance/hooks/useAttendancePageController";
 
 const AttendanceReportsTier = React.lazy(() =>
-  import('@/tenant/features/attendance/components/AttendanceReportsTier').then((m) => ({
+  import("@/tenant/features/attendance/components/AttendanceReportsTier").then((m) => ({
     default: m.AttendanceReportsTier,
-  }))
+  })),
 );
 const AttendanceSetupTier = React.lazy(() =>
-  import('@/tenant/features/attendance/components/AttendanceSetupTier').then((m) => ({
+  import("@/tenant/features/attendance/components/AttendanceSetupTier").then((m) => ({
     default: m.AttendanceSetupTier,
-  }))
+  })),
 );
 
-const MessageComposer = React.lazy(() => import('@/tenant/components/messaging/TenantMessageComposer'));
+const MessageComposer = React.lazy(
+  () => import("@/tenant/components/messaging/TenantMessageComposer"),
+);
 
 export default function Attendance() {
   const c = useAttendancePageController();
   const [importOpen, setImportOpen] = React.useState(false);
   const { handleExport, isExporting } = useGenericModuleExport({
-    path: '/api/attendance/export/csv',
-    filename: 'attendance.csv',
-    auditPath: '/api/attendance/export-audit',
+    path: "/api/attendance/export/csv",
+    filename: "attendance.csv",
+    auditPath: "/api/attendance/export-audit",
     columns: attendanceTransferSchema.exportColumns,
     canExport: c.canWriteAttendance,
   });
 
   const renderContent = () => {
     if (!c.effectiveTab) return null;
-    if (c.effectiveTab === 'setup') {
+    if (c.effectiveTab === "setup") {
       return (
         <React.Suspense fallback={<RouteStatusFallback />}>
           <AttendanceSetupTier />
@@ -48,7 +50,7 @@ export default function Attendance() {
       );
     }
 
-    if (c.effectiveTab === 'reports') {
+    if (c.effectiveTab === "reports") {
       return (
         <React.Suspense fallback={<RouteStatusFallback />}>
           <AttendanceReportsTier
@@ -72,12 +74,20 @@ export default function Attendance() {
           operationsTabs={c.visibleOperationsTabs}
           showDeleted={c.showDeleted}
           canDeleteAttendance={c.canDeleteAttendance}
-          showRoleBanner={!c.can('users.manage')}
-          roleLabel={c.t('attendance.roleBanner.label', { role: c.role })}
-          teacherRoleText={c.can('attendance.write') && !c.can('finance.write') && c.t('attendance.roleBanner.teacher')}
-          accountantRoleText={c.can('finance.write') && !c.can('attendance.write') && c.t('attendance.roleBanner.accountant')}
-          showActiveLabel={c.t('attendance.showActive')}
-          showDeletedLabel={c.t('attendance.showDeleted')}
+          showRoleBanner={!c.can("users.manage")}
+          roleLabel={c.t("attendance.roleBanner.label", { role: c.role })}
+          teacherRoleText={
+            c.can("attendance.write") &&
+            !c.can("finance.write") &&
+            c.t("attendance.roleBanner.teacher")
+          }
+          accountantRoleText={
+            c.can("finance.write") &&
+            !c.can("attendance.write") &&
+            c.t("attendance.roleBanner.accountant")
+          }
+          showActiveLabel={c.t("attendance.showActive")}
+          showDeletedLabel={c.t("attendance.showDeleted")}
           onFiltersChange={c.setFilters}
           onOpsTabChange={c.setActiveOpsTab}
           onShowDeletedToggle={() => c.setShowDeleted((current) => !current)}
@@ -107,11 +117,11 @@ export default function Attendance() {
 
   return (
     <ModulePageShell
-      seoTitle={`MMS - ${c.t('nav.attendance')}`}
-      seoDescription={c.t('page.attendance.subtitle')}
+      seoTitle={`MMS - ${c.t("nav.attendance")}`}
+      seoDescription={c.t("page.attendance.subtitle")}
       headerIcon={UserCheck}
-      headerTitle={c.t('nav.attendance')}
-      headerSubtitle={c.t('page.attendance.subtitle')}
+      headerTitle={c.t("nav.attendance")}
+      headerSubtitle={c.t("page.attendance.subtitle")}
       headerActions={
         <AttendancePageHeaderActions
           canWrite={c.canWriteAttendance}
@@ -119,8 +129,8 @@ export default function Attendance() {
           showDeleted={c.showDeleted}
           isExporting={isExporting}
           onMarkAttendance={() => {
-            c.setActiveTab('work');
-            c.setActiveOpsTab('mark');
+            c.setActiveTab("work");
+            c.setActiveOpsTab("mark");
           }}
           onImport={() => setImportOpen(true)}
           onExport={handleExport}
@@ -143,7 +153,7 @@ export default function Attendance() {
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={c.effectiveTab + '-' + c.effectiveOpsTab + '-' + c.role}
+            key={c.effectiveTab + "-" + c.effectiveOpsTab + "-" + c.role}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
@@ -152,13 +162,15 @@ export default function Attendance() {
             <ErrorBoundary>
               {c.attendanceCollectionQuery.isError ? (
                 <ErrorState
-                  title={c.t('attendance.toast.loadFailed')}
-                  description={c.t('attendance.loadFailedHint')}
+                  title={c.t("attendance.toast.loadFailed")}
+                  description={c.t("attendance.loadFailedHint")}
                   onRetry={() => {
                     void c.attendanceCollectionQuery.refetch();
                   }}
                 />
-              ) : renderContent()}
+              ) : (
+                renderContent()
+              )}
             </ErrorBoundary>
           </motion.div>
         </AnimatePresence>

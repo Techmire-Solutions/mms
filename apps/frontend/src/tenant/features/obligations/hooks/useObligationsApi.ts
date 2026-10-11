@@ -1,13 +1,18 @@
 import type {
-  ObligationType, Mujtahid, MujtahidRep, WakalaType,
-  ObligationDistribution, ObligationCollection,
-  ObligationsCommandMetricsSnapshot, ObligationsReportQuery,
-} from '@mms/shared';
-import { OBLIGATIONS_MODULE_MANIFEST } from '@mms/shared';
-import { serverMetricsQueryOptions, useServerMetrics } from '@/hooks/useServerMetrics';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { NotifiedMutationError } from '@/lib/notifiedMutationError';
-import { tsrClient } from '@/lib/api';
+  ObligationType,
+  Mujtahid,
+  MujtahidRep,
+  WakalaType,
+  ObligationDistribution,
+  ObligationCollection,
+  ObligationsCommandMetricsSnapshot,
+  ObligationsReportQuery,
+} from "@mms/shared";
+import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { NotifiedMutationError } from "@/lib/notifiedMutationError";
+import { tsrClient } from "@/lib/api";
 
 export function obligationsCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<ObligationsCommandMetricsSnapshot>({
@@ -24,14 +29,19 @@ import {
   OBLIGATIONS_COLLECTIONS_QUERY_KEY,
   OBLIGATIONS_METRICS_QUERY_KEY,
   OBLIGATIONS_REPORT_AGGREGATES_QUERY_KEY,
-} from '@/tenant/features/obligations/hooks/obligationsQueryKeys';
+} from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
 
 export {
-  OBLIGATIONS_TYPES_QUERY_KEY, OBLIGATIONS_MUJTAHIDS_QUERY_KEY, OBLIGATIONS_REPS_QUERY_KEY,
-  OBLIGATIONS_WAKALA_QUERY_KEY, OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY, OBLIGATIONS_COLLECTIONS_QUERY_KEY,
-  OBLIGATIONS_METRICS_QUERY_KEY, OBLIGATIONS_REPORT_AGGREGATES_QUERY_KEY,
+  OBLIGATIONS_TYPES_QUERY_KEY,
+  OBLIGATIONS_MUJTAHIDS_QUERY_KEY,
+  OBLIGATIONS_REPS_QUERY_KEY,
+  OBLIGATIONS_WAKALA_QUERY_KEY,
+  OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY,
+  OBLIGATIONS_COLLECTIONS_QUERY_KEY,
+  OBLIGATIONS_METRICS_QUERY_KEY,
+  OBLIGATIONS_REPORT_AGGREGATES_QUERY_KEY,
 };
-export { useObligationsMutations } from '@/tenant/features/obligations/hooks/useObligationsMutations';
+export { useObligationsMutations } from "@/tenant/features/obligations/hooks/useObligationsMutations";
 
 /** @deprecated Prefer NotifiedMutationError — kept for form catch compatibility. */
 export class NotifiedObligationsMutationError extends NotifiedMutationError {}
@@ -131,7 +141,9 @@ export function useObligationsDistributions(options?: { enabled?: boolean }) {
   });
 }
 
-export function useObligationsDistributionsCollection(options?: { enabled?: boolean }): ObligationDistribution[] {
+export function useObligationsDistributionsCollection(options?: {
+  enabled?: boolean;
+}): ObligationDistribution[] {
   const query = useObligationsDistributions(options);
   if (!query.data || query.data.status !== 200) return [];
   const body: unknown = query.data.body;
@@ -141,14 +153,17 @@ export function useObligationsDistributionsCollection(options?: { enabled?: bool
     : [];
 }
 
-export function useObligationsCollections(options?: { enabled?: boolean; includeDeleted?: boolean }) {
+export function useObligationsCollections(options?: {
+  enabled?: boolean;
+  includeDeleted?: boolean;
+}) {
   const { isAuthenticated } = useAuth();
   const includeDeleted = options?.includeDeleted ?? false;
   const enabled = options?.enabled ?? true;
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listCollections.useQuery({
     queryKey: [...OBLIGATIONS_COLLECTIONS_QUERY_KEY, { includeDeleted }],
-    queryData: { query: { includeDeleted: includeDeleted ? 'true' : undefined } },
+    queryData: { query: { includeDeleted: includeDeleted ? "true" : undefined } },
     staleTime: 30_000,
   });
 }

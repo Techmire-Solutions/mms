@@ -32,11 +32,16 @@ function markEmployeeIdMigrationDone(): void {
 export function useEmployeeIdMigration(activeTab: string, canEditSetup: boolean): void {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const [needsMigrationScan, setNeedsMigrationScan] = useState(() => !employeeIdMigrationAlreadyDone());
+  const [needsMigrationScan, setNeedsMigrationScan] = useState(
+    () => !employeeIdMigrationAlreadyDone(),
+  );
   const migrationAppliedRef = useRef(false);
 
   const { mutate } = useMutation({
-    mutationFn: () => apiContract.faculty.migrateEmployeeIds({ body: {} }).then((res) => ({ updated: (res.body as { updated?: number } | null)?.updated ?? 0 })),
+    mutationFn: () =>
+      apiContract.faculty
+        .migrateEmployeeIds({ body: {} })
+        .then((res) => ({ updated: (res.body as { updated?: number } | null)?.updated ?? 0 })),
     onSuccess: (result: { updated: number }) => {
       invalidateFacultyQueries(queryClient);
       markEmployeeIdMigrationDone();

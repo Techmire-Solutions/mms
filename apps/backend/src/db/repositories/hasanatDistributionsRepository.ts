@@ -1,9 +1,9 @@
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Distribution, type RepositoryListOptions } from '@mms/shared';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
-import { hasanatDistributions } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Distribution, type RepositoryListOptions } from "@mms/shared";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
+import { hasanatDistributions } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type DistRow = typeof hasanatDistributions.$inferSelect;
 export function distributionRowToRecord(row: DistRow): Distribution {
@@ -12,13 +12,13 @@ export function distributionRowToRecord(row: DistRow): Distribution {
     batchId: row.batchId,
     denominationId: row.denominationId,
     denominationName: row.denominationName,
-    recipientType: row.recipientType as Distribution['recipientType'],
-    recipientName: row.recipientName ?? '',
+    recipientType: row.recipientType as Distribution["recipientType"],
+    recipientName: row.recipientName ?? "",
     recipientClass: row.recipientClass,
     quantity: row.quantity,
     reason: row.reason,
     issuedDate: row.issuedDate,
-    status: row.status as Distribution['status'],
+    status: row.status as Distribution["status"],
     ...mapAuditTimestamps(row),
   };
 
@@ -39,9 +39,13 @@ export async function listDistributionsByWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 1000, 1), 10000);
   const offset = Math.max(options?.offset ?? 0, 0);
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
-    const conditions = buildTenantSoftDeleteConditions(hasanatDistributions, subdomain, deletedFilter);
+    const conditions = buildTenantSoftDeleteConditions(
+      hasanatDistributions,
+      subdomain,
+      deletedFilter,
+    );
     const rows = await tx
       .select({
         id: hasanatDistributions.id,
@@ -77,7 +81,10 @@ export async function listDistributionsByWorkspace(
   });
 }
 
-export async function findDistributionById(tenant: string, id: string): Promise<Distribution | null> {
+export async function findDistributionById(
+  tenant: string,
+  id: string,
+): Promise<Distribution | null> {
   const trimmedId = id?.trim();
   if (!trimmedId) return null;
   const subdomain = tenant.trim().toLowerCase();
@@ -125,14 +132,14 @@ export async function findDistributionById(tenant: string, id: string): Promise<
 export async function findDistributionsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<Distribution[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(hasanatDistributions.deletedAt)
       : isAll
@@ -190,18 +197,18 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
         workspaceSubdomain: subdomain,
         batchId: record.batchId,
         denominationId: record.denominationId,
-        denominationName: record.denominationName ?? '',
-        recipientType: record.recipientType ?? 'student',
+        denominationName: record.denominationName ?? "",
+        recipientType: record.recipientType ?? "student",
         recipientStudentId: record.recipientStudentId ?? null,
         recipientFacultyId: record.recipientFacultyId ?? null,
-        recipientName: record.recipientName ?? '',
-        recipientClass: record.recipientClass ?? '',
+        recipientName: record.recipientName ?? "",
+        recipientClass: record.recipientClass ?? "",
         quantity: record.quantity ?? 1,
-        reason: record.reason ?? '',
+        reason: record.reason ?? "",
         issuedDate: record.issuedDate,
         issuedByUserId: record.issuedByUserId ?? null,
         issuedBy: record.issuedBy ?? null,
-        status: record.status ?? 'active',
+        status: record.status ?? "active",
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
         deletionReason: record.deletionReason ?? null,
@@ -212,18 +219,18 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
         set: {
           batchId: record.batchId,
           denominationId: record.denominationId,
-          denominationName: record.denominationName ?? '',
-          recipientType: record.recipientType ?? 'student',
+          denominationName: record.denominationName ?? "",
+          recipientType: record.recipientType ?? "student",
           recipientStudentId: record.recipientStudentId ?? null,
           recipientFacultyId: record.recipientFacultyId ?? null,
-          recipientName: record.recipientName ?? '',
-          recipientClass: record.recipientClass ?? '',
+          recipientName: record.recipientName ?? "",
+          recipientClass: record.recipientClass ?? "",
           quantity: record.quantity ?? 1,
-          reason: record.reason ?? '',
+          reason: record.reason ?? "",
           issuedDate: record.issuedDate,
           issuedByUserId: record.issuedByUserId ?? null,
           issuedBy: record.issuedBy ?? null,
-          status: record.status ?? 'active',
+          status: record.status ?? "active",
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
           deletionReason: record.deletionReason ?? null,
@@ -233,12 +240,15 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
   });
 }
 
-export async function bulkSaveDistributions(tenant: string, records: Distribution[]): Promise<void> {
+export async function bulkSaveDistributions(
+  tenant: string,
+  records: Distribution[],
+): Promise<void> {
   if (records.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Distribution>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -253,18 +263,18 @@ export async function bulkSaveDistributions(tenant: string, records: Distributio
           workspaceSubdomain: subdomain,
           batchId: r.batchId,
           denominationId: r.denominationId,
-          denominationName: r.denominationName ?? '',
-          recipientType: r.recipientType ?? 'student',
+          denominationName: r.denominationName ?? "",
+          recipientType: r.recipientType ?? "student",
           recipientStudentId: r.recipientStudentId ?? null,
           recipientFacultyId: r.recipientFacultyId ?? null,
-          recipientName: r.recipientName ?? '',
-          recipientClass: r.recipientClass ?? '',
+          recipientName: r.recipientName ?? "",
+          recipientClass: r.recipientClass ?? "",
           quantity: r.quantity ?? 1,
-          reason: r.reason ?? '',
+          reason: r.reason ?? "",
           issuedDate: r.issuedDate,
           issuedByUserId: r.issuedByUserId ?? null,
           issuedBy: r.issuedBy ?? null,
-          status: r.status ?? 'active',
+          status: r.status ?? "active",
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
@@ -297,17 +307,22 @@ export async function bulkSaveDistributions(tenant: string, records: Distributio
   });
 }
 
-export async function replaceDistributionsForWorkspace(tenant: string, records: Distribution[]): Promise<void> {
+export async function replaceDistributionsForWorkspace(
+  tenant: string,
+  records: Distribution[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Distribution>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(hasanatDistributions).where(eq(hasanatDistributions.workspaceSubdomain, subdomain));
+    await tx
+      .delete(hasanatDistributions)
+      .where(eq(hasanatDistributions.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
       await tx.insert(hasanatDistributions).values(
         uniqueRecords.map((r) => ({
@@ -315,18 +330,18 @@ export async function replaceDistributionsForWorkspace(tenant: string, records: 
           workspaceSubdomain: subdomain,
           batchId: r.batchId,
           denominationId: r.denominationId,
-          denominationName: r.denominationName ?? '',
-          recipientType: r.recipientType ?? 'student',
+          denominationName: r.denominationName ?? "",
+          recipientType: r.recipientType ?? "student",
           recipientStudentId: r.recipientStudentId ?? null,
           recipientFacultyId: r.recipientFacultyId ?? null,
-          recipientName: r.recipientName ?? '',
-          recipientClass: r.recipientClass ?? '',
+          recipientName: r.recipientName ?? "",
+          recipientClass: r.recipientClass ?? "",
           quantity: r.quantity ?? 1,
-          reason: r.reason ?? '',
+          reason: r.reason ?? "",
           issuedDate: r.issuedDate,
           issuedByUserId: r.issuedByUserId ?? null,
           issuedBy: r.issuedBy ?? null,
-          status: r.status ?? 'active',
+          status: r.status ?? "active",
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,

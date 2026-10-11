@@ -3,7 +3,10 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkCardAction, type UseWorkCardActionReturn } from "@/hooks/useWorkCardAction";
 import { EntityCard } from "@/components/ui/EntityCard";
-import { EntityCardInfoPills, type EntityCardInfoPillsProps } from "@/components/ui/EntityCardInfoPills";
+import {
+  EntityCardInfoPills,
+  type EntityCardInfoPillsProps,
+} from "@/components/ui/EntityCardInfoPills";
 import { EntityCardMetadata } from "@/components/ui/EntityCardMetadata";
 import { EntityCardFooterActions } from "@/components/ui/EntityCardFooterActions";
 import type { EntityDescriptor } from "@/types/entityRegistry";
@@ -129,8 +132,7 @@ export function DirectoryCard<
   const action = actionState ?? defaultActionState;
   const defaultViewLabel = viewLabel ?? t("contacts.actionViewShort");
   const displayName = header?.displayName ?? "";
-  const effectiveViewAriaLabel =
-    viewAriaLabel ?? `${defaultViewLabel} - ${displayName}`;
+  const effectiveViewAriaLabel = viewAriaLabel ?? `${defaultViewLabel} - ${displayName}`;
 
   return (
     <EntityCard
@@ -141,32 +143,28 @@ export function DirectoryCard<
       {...action.cardProps}
       onClick={onCardClick}
     >
-      {headerSlot ?? (header ? (
-        <EntityCard.Header
-          id={entity.id}
-          displayName={header.displayName}
-          avatar={header.avatar}
-          gender={header.gender}
-          isSelected={action.isSelected}
-          showSelect={header.showSelect ?? canSelect}
-          onSelect={action.onSelect}
-          selectAriaLabel={header.displayName}
-          onView={onView ? action.onView : undefined}
-          viewAriaLabel={effectiveViewAriaLabel}
-          subtitle={header.subtitle}
-          reducedMotion={effectiveReducedMotion}
-        />
-      ) : null)}
+      {headerSlot ??
+        (header ? (
+          <EntityCard.Header
+            id={entity.id}
+            displayName={header.displayName}
+            avatar={header.avatar}
+            gender={header.gender}
+            isSelected={action.isSelected}
+            showSelect={header.showSelect ?? canSelect}
+            onSelect={action.onSelect}
+            selectAriaLabel={header.displayName}
+            onView={onView ? action.onView : undefined}
+            viewAriaLabel={effectiveViewAriaLabel}
+            subtitle={header.subtitle}
+            reducedMotion={effectiveReducedMotion}
+          />
+        ) : null)}
 
-      {infoPills ? (
-        <EntityCardInfoPills
-          displayName={displayName}
-          {...infoPills}
-        />
-      ) : null}
+      {infoPills ? <EntityCardInfoPills displayName={displayName} {...infoPills} /> : null}
 
-      {metadataSlot ?? (
-        descriptor || columns ? (
+      {metadataSlot ??
+        (descriptor || columns ? (
           <EntityCardMetadata
             descriptor={descriptor}
             entity={entity}
@@ -176,8 +174,7 @@ export function DirectoryCard<
             labelFor={labelFor}
             renderValue={renderValue}
           />
-        ) : null
-      )}
+        ) : null)}
 
       {banner}
       {children}

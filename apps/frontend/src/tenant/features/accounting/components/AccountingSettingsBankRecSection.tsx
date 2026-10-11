@@ -93,8 +93,14 @@ export function AccountingSettingsBankRecSection({
   };
 
   return (
-    <SectionCard title={t("accounting.settings.secBankRec")} icon={Landmark} className={SETUP_SECTION_CARD_CLASS}>
-      <p className="m-0 mb-3 text-xs text-muted-foreground">{t("accounting.settings.bankRec.hint")}</p>
+    <SectionCard
+      title={t("accounting.settings.secBankRec")}
+      icon={Landmark}
+      className={SETUP_SECTION_CARD_CLASS}
+    >
+      <p className="m-0 mb-3 text-xs text-muted-foreground">
+        {t("accounting.settings.bankRec.hint")}
+      </p>
       <Field id="bank-rec-account" label={t("accounting.settings.bankRec.account")}>
         <FormSelect
           id="bank-rec-account"
@@ -107,8 +113,20 @@ export function AccountingSettingsBankRecSection({
         />
       </Field>
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <DatePicker id="bank-period-start" name="periodStart" value={periodStart} onChange={setPeriodStart} aria-label={t("common.startDate")} />
-        <DatePicker id="bank-period-end" name="periodEnd" value={periodEnd} onChange={setPeriodEnd} aria-label={t("common.endDate")} />
+        <DatePicker
+          id="bank-period-start"
+          name="periodStart"
+          value={periodStart}
+          onChange={setPeriodStart}
+          aria-label={t("common.startDate")}
+        />
+        <DatePicker
+          id="bank-period-end"
+          name="periodEnd"
+          value={periodEnd}
+          onChange={setPeriodEnd}
+          aria-label={t("common.endDate")}
+        />
       </div>
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field
@@ -147,8 +165,21 @@ export function AccountingSettingsBankRecSection({
         </Field>
       </div>
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <DatePicker id="bank-line-date" name="lineDate" value={lineDate} onChange={setLineDate} aria-label={t("accounting.columns.journal.date")} />
-        <Input id="bank-line-desc" name="lineDesc" className={FORM_INPUT} value={lineDesc} onChange={(event) => setLineDesc(event.target.value)} aria-label={t("accounting.settings.bankRec.lineDesc")} />
+        <DatePicker
+          id="bank-line-date"
+          name="lineDate"
+          value={lineDate}
+          onChange={setLineDate}
+          aria-label={t("accounting.columns.journal.date")}
+        />
+        <Input
+          id="bank-line-desc"
+          name="lineDesc"
+          className={FORM_INPUT}
+          value={lineDesc}
+          onChange={(event) => setLineDesc(event.target.value)}
+          aria-label={t("accounting.settings.bankRec.lineDesc")}
+        />
         <Input
           id="bank-line-amount"
           name="lineAmount"
@@ -163,7 +194,14 @@ export function AccountingSettingsBankRecSection({
         />
       </div>
       <FieldErrorMessage message={amountErrors.lineAmount} className="mt-2" />
-      <Button type="button" className="mt-3 min-h-11" onClick={async () => { await handleSave(); }} disabled={!accountId || save.isPending}>
+      <Button
+        type="button"
+        className="mt-3 min-h-11"
+        onClick={async () => {
+          await handleSave();
+        }}
+        disabled={!accountId || save.isPending}
+      >
         {t("accounting.settings.bankRec.add")}
       </Button>
       <p className="m-0 mt-3 text-xs text-muted-foreground">

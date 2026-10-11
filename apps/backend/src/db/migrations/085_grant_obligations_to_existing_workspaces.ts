@@ -1,8 +1,8 @@
-import { eq } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
-import { invalidateWorkspaceCache } from '../../services/workspaceService.js';
+import { eq } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
+import { invalidateWorkspaceCache } from "../../services/workspaceService.js";
 
 /**
  * Migration 085: Backfills `obligations: true` into `grantedModules` and `enabledModules`
@@ -23,12 +23,12 @@ export async function runMigration085(): Promise<void> {
         ? { ...(ws.enabledModules as Record<string, boolean>) }
         : null;
 
-      if (granted && !Object.prototype.hasOwnProperty.call(granted, 'obligations')) {
+      if (granted && !Object.prototype.hasOwnProperty.call(granted, "obligations")) {
         granted.obligations = true;
         needsUpdate = true;
       }
 
-      if (enabled && !Object.prototype.hasOwnProperty.call(enabled, 'obligations')) {
+      if (enabled && !Object.prototype.hasOwnProperty.call(enabled, "obligations")) {
         enabled.obligations = true;
         needsUpdate = true;
       }
@@ -48,5 +48,7 @@ export async function runMigration085(): Promise<void> {
     }
   });
 
-  console.log(`[Migration 085] Backfilled obligations module access for ${updatedCount} workspace(s).`);
+  console.log(
+    `[Migration 085] Backfilled obligations module access for ${updatedCount} workspace(s).`,
+  );
 }

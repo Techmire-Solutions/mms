@@ -1,9 +1,9 @@
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useState, type RefObject } from "react";
 import {
   computeAxisFontSize,
   computeLegendFontSize,
   computeTickGap,
-} from '@/components/ui/reports/dynamicChartVisualizerPin';
+} from "@/components/ui/reports/dynamicChartVisualizerPin";
 
 export function useDynamicChartVisualizerContainer(chartRef: RefObject<HTMLDivElement | null>) {
   const [containerWidth, setContainerWidth] = useState(600);

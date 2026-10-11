@@ -1,13 +1,18 @@
-import type { WorkspaceUser, ActivityLog, UsersCommandMetricsSnapshot, SystemUser } from '@mms/shared';
-import { USERS_MODULE_MANIFEST, normalizeWorkspaceUser } from '@mms/shared';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { serverMetricsQueryOptions, useServerMetrics } from '@/hooks/useServerMetrics';
+import type {
+  WorkspaceUser,
+  ActivityLog,
+  UsersCommandMetricsSnapshot,
+  SystemUser,
+} from "@mms/shared";
+import { USERS_MODULE_MANIFEST, normalizeWorkspaceUser } from "@mms/shared";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import {
   ACTIVITY_LOGS_QUERY_KEY,
   USERS_LIST_QUERY_KEY,
   USERS_METRICS_QUERY_KEY,
-} from './usersQueryKeys';
-import { tsrClient } from '@/lib/api';
+} from "./usersQueryKeys";
+import { tsrClient } from "@/lib/api";
 
 export { USERS_LIST_QUERY_KEY, USERS_METRICS_QUERY_KEY, ACTIVITY_LOGS_QUERY_KEY };
 
@@ -26,15 +31,15 @@ export function useUsersByIds(
   options?: { enabled?: boolean },
 ) {
   const { isAuthenticated } = useAuth();
-  const normalizedIds = Array.from(new Set(
-    ids.map((id) => String(id ?? '').trim()).filter(Boolean),
-  )).sort();
-  const idsKey = normalizedIds.join(',');
+  const normalizedIds = Array.from(
+    new Set(ids.map((id) => String(id ?? "").trim()).filter(Boolean)),
+  ).sort();
+  const idsKey = normalizedIds.join(",");
   const enabled = options?.enabled ?? true;
 
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.users.list.useQuery({
-    queryKey: [...USERS_LIST_QUERY_KEY, 'resolve', idsKey] as const,
+    queryKey: [...USERS_LIST_QUERY_KEY, "resolve", idsKey] as const,
     queryData: {
       query: {
         ids: idsKey,
@@ -49,7 +54,7 @@ export function useUsersByIds(
   const responseData: unknown = query.data?.status === 200 ? query.data.body : undefined;
   const users = Array.isArray(responseData)
     ? responseData
-    : (responseData as { users?: unknown[] } | null)?.users ?? [];
+    : ((responseData as { users?: unknown[] } | null)?.users ?? []);
   return {
     ...query,
     data: users.map((user) =>
@@ -67,7 +72,7 @@ export function useUsersMetrics(options?: { enabled?: boolean }) {
 }
 
 export function extractActivityLogs(queryData: unknown): ActivityLog[] {
-  if (!queryData || typeof queryData !== 'object') return [];
+  if (!queryData || typeof queryData !== "object") return [];
   const status = (queryData as { status?: number }).status;
   if (status !== undefined && status !== 200) return [];
   const body: unknown = (queryData as { body?: unknown }).body ?? queryData;

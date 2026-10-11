@@ -1,4 +1,4 @@
-import { createColumnRegistry, type ModuleColumnRegistryEntry } from './moduleColumnCore.js';
+import { createColumnRegistry, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
 
 export interface ExaminationExamWorkColumnLabels {
   name: string;
@@ -18,15 +18,15 @@ export function buildExaminationExamWorkColumnRegistry(
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
     [
-      'name',
-      'subject',
-      'date',
-      'duration',
-      'status',
-      'totalMarks',
-      'passingMarks',
-      'classes',
-      'description',
+      "name",
+      "subject",
+      "date",
+      "duration",
+      "status",
+      "totalMarks",
+      "passingMarks",
+      "classes",
+      "description",
     ],
     labels,
   );
@@ -47,7 +47,7 @@ export function buildExaminationResultsWorkColumnRegistry(
   labels: ExaminationResultsWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['rank', 'student', 'classRoll', 'marks', 'percentage', 'grade', 'passFail'],
+    ["rank", "student", "classRoll", "marks", "percentage", "grade", "passFail"],
     labels,
   );
 }
@@ -66,7 +66,7 @@ export function buildQuestionBankWorkColumnRegistry(
   labels: QuestionBankWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['text', 'category', 'language', 'type', 'difficulty', 'source'],
+    ["text", "category", "language", "type", "difficulty", "source"],
     labels,
   );
 }

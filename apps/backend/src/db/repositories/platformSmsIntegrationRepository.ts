@@ -1,11 +1,11 @@
-import { eq } from 'drizzle-orm';
-import { activeDb } from '../dbConnection.js';
-import * as schema from '../schema.js';
-import { type PlatformSmsIntegrationRow } from '../schema/platform.js';
-import type { SmsIntegrationConfig, SmsIntegrationSecrets } from '@mms/shared';
-import { DEFAULT_SMS_INTEGRATION } from '@mms/shared';
+import { eq } from "drizzle-orm";
+import { activeDb } from "../dbConnection.js";
+import * as schema from "../schema.js";
+import { type PlatformSmsIntegrationRow } from "../schema/platform.js";
+import type { SmsIntegrationConfig, SmsIntegrationSecrets } from "@mms/shared";
+import { DEFAULT_SMS_INTEGRATION } from "@mms/shared";
 
-const SINGLETON_ID = 'global';
+const SINGLETON_ID = "global";
 
 export async function getPlatformSmsIntegrationRow(): Promise<PlatformSmsIntegrationRow | null> {
   const rows = await activeDb()
@@ -29,7 +29,9 @@ export async function getPlatformSmsIntegrationRow(): Promise<PlatformSmsIntegra
   return rows[0] ?? null;
 }
 
-export async function upsertPlatformSmsIntegrationConfigRow(config: SmsIntegrationConfig): Promise<void> {
+export async function upsertPlatformSmsIntegrationConfigRow(
+  config: SmsIntegrationConfig,
+): Promise<void> {
   await activeDb()
     .insert(schema.platformSmsIntegrations)
     .values({
@@ -62,7 +64,9 @@ export async function upsertPlatformSmsIntegrationConfigRow(config: SmsIntegrati
     });
 }
 
-export async function upsertPlatformSmsIntegrationSecretsRow(secrets: SmsIntegrationSecrets): Promise<void> {
+export async function upsertPlatformSmsIntegrationSecretsRow(
+  secrets: SmsIntegrationSecrets,
+): Promise<void> {
   await activeDb()
     .insert(schema.platformSmsIntegrations)
     .values({

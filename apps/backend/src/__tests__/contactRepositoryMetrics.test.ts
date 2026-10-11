@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { FieldConfig } from '@mms/shared';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { FieldConfig } from "@mms/shared";
 
 const mockWithTenantTransaction = vi.fn();
 
-vi.mock('../db/tenant-context.js', () => ({
+vi.mock("../db/tenant-context.js", () => ({
   withTenant: (...args: unknown[]) => mockWithTenantTransaction(...args),
   // Read paths now go through withTenantRead (read replica + read-only tx).
   withTenantRead: (...args: unknown[]) => mockWithTenantTransaction(...args),
@@ -13,7 +13,7 @@ import {
   aggregateContactsCommandMetrics,
   aggregateContactsMonthlyCreatedCounts,
   aggregateContactsReportAnalytics,
-} from '../db/repositories/contactRepositoryMetrics.js';
+} from "../db/repositories/contactRepositoryMetrics.js";
 
 /** Chainable fake tx for the metrics queries (select → from → where terminal, plus groupBy for the monthly counts query). */
 function createChainableTx(rowsQueue: unknown[][]) {
@@ -28,7 +28,7 @@ function createChainableTx(rowsQueue: unknown[][]) {
   return { tx };
 }
 
-function runWithTx(tx: ReturnType<typeof createChainableTx>['tx']) {
+function runWithTx(tx: ReturnType<typeof createChainableTx>["tx"]) {
   mockWithTenantTransaction.mockImplementation(
     async (_tenant: unknown, fn: (inner: typeof tx) => Promise<unknown>) => fn(tx),
   );
@@ -41,19 +41,19 @@ const EMPTY_FIELD_CONFIG: FieldConfig = {
   fields: {},
 };
 
-describe('contactRepositoryMetrics (SQL)', () => {
+describe("contactRepositoryMetrics (SQL)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('aggregateContactsCommandMetrics', () => {
-    it('maps the SQL aggregate row into the snapshot', async () => {
+  describe("aggregateContactsCommandMetrics", () => {
+    it("maps the SQL aggregate row into the snapshot", async () => {
       const { tx } = createChainableTx([
         [{ total: 42, newThisPeriod: 5, whatsappCount: 30, incompleteCount: 3 }],
       ]);
       runWithTx(tx);
 
-      const result = await aggregateContactsCommandMetrics('Demo', EMPTY_FIELD_CONFIG, {
+      const result = await aggregateContactsCommandMetrics("Demo", EMPTY_FIELD_CONFIG, {
         periodDays: 7,
       });
 
@@ -66,32 +66,32 @@ describe('contactRepositoryMetrics (SQL)', () => {
       });
     });
 
-    it('threads the duplicate-pair count option through', async () => {
+    it("threads the duplicate-pair count option through", async () => {
       const { tx } = createChainableTx([
         [{ total: 1, newThisPeriod: 0, whatsappCount: 0, incompleteCount: 0 }],
       ]);
       runWithTx(tx);
 
-      const result = await aggregateContactsCommandMetrics('Demo', EMPTY_FIELD_CONFIG, {
+      const result = await aggregateContactsCommandMetrics("Demo", EMPTY_FIELD_CONFIG, {
         duplicatePairCount: 4,
       });
 
       expect(result.duplicatePairCount).toBe(4);
     });
 
-    it('handles a missing aggregate row as zeroed metrics', async () => {
+    it("handles a missing aggregate row as zeroed metrics", async () => {
       const { tx } = createChainableTx([[]]);
       runWithTx(tx);
 
-      const result = await aggregateContactsCommandMetrics('Demo', EMPTY_FIELD_CONFIG);
+      const result = await aggregateContactsCommandMetrics("Demo", EMPTY_FIELD_CONFIG);
 
       expect(result.total).toBe(0);
       expect(result.newThisPeriod).toBe(0);
     });
   });
 
-  describe('aggregateContactsReportAnalytics', () => {
-    it('maps totals and computes rates', async () => {
+  describe("aggregateContactsReportAnalytics", () => {
+    it("maps totals and computes rates", async () => {
       const { tx } = createChainableTx([
         [
           {
@@ -108,7 +108,7 @@ describe('contactRepositoryMetrics (SQL)', () => {
       ]);
       runWithTx(tx);
 
-      const result = await aggregateContactsReportAnalytics('Demo');
+      const result = await aggregateContactsReportAnalytics("Demo");
 
       expect(result.total).toBe(100);
       expect(result.whatsappCount).toBe(25);
@@ -122,7 +122,7 @@ describe('contactRepositoryMetrics (SQL)', () => {
       expect(result.growthPriorSignups30d).toBe(0);
     });
 
-    it('runs the growth query when signup dates exist', async () => {
+    it("runs the growth query when signup dates exist", async () => {
       const { tx } = createChainableTx([
         [
           {
@@ -132,7 +132,7 @@ describe('contactRepositoryMetrics (SQL)', () => {
             newLast30Days: 0,
             newPrior30Days: 0,
             newThisPeriod: 0,
-            maxCreatedAt: '2026-07-01T00:00:00.000Z',
+            maxCreatedAt: "2026-07-01T00:00:00.000Z",
             signupCount: 12,
           },
         ],
@@ -140,7 +140,7 @@ describe('contactRepositoryMetrics (SQL)', () => {
       ]);
       runWithTx(tx);
 
-      const result = await aggregateContactsReportAnalytics('Demo');
+      const result = await aggregateContactsReportAnalytics("Demo");
 
       expect(result.hasSignupDates).toBe(true);
       expect(result.growthRecentSignups30d).toBe(4);
@@ -149,25 +149,25 @@ describe('contactRepositoryMetrics (SQL)', () => {
     });
   });
 
-  describe('aggregateContactsMonthlyCreatedCounts', () => {
-    it('returns an empty array when no years are requested', async () => {
+  describe("aggregateContactsMonthlyCreatedCounts", () => {
+    it("returns an empty array when no years are requested", async () => {
       const { tx } = createChainableTx([]);
       runWithTx(tx);
 
-      await expect(aggregateContactsMonthlyCreatedCounts('Demo', [])).resolves.toEqual([]);
+      await expect(aggregateContactsMonthlyCreatedCounts("Demo", [])).resolves.toEqual([]);
       expect(tx.select).not.toHaveBeenCalled();
     });
 
-    it('maps per-year SQL month rows onto the label window', async () => {
+    it("maps per-year SQL month rows onto the label window", async () => {
       const { tx } = createChainableTx([
         [
-          { year: 2026, month: '01', count: 2 },
-          { year: 2026, month: '03', count: 4 },
+          { year: 2026, month: "01", count: 2 },
+          { year: 2026, month: "03", count: 4 },
         ],
       ]);
       runWithTx(tx);
 
-      const result = await aggregateContactsMonthlyCreatedCounts('Demo', [2026], 3, 'en');
+      const result = await aggregateContactsMonthlyCreatedCounts("Demo", [2026], 3, "en");
 
       expect(result).toHaveLength(1);
       expect(result[0]?.year).toBe(2026);

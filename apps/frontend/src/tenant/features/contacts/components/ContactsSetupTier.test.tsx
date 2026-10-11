@@ -34,11 +34,7 @@ vi.mock("@/lib/setup/useModuleSetupSubTabs", () => ({
 describe("ContactsSetupTier Component", () => {
   it("renders setup tier sub tabs and preferences container", () => {
     const html = renderToStaticMarkup(
-      <ContactsSetupTier
-        onImport={vi.fn()}
-        canWrite={true}
-        canEditSetup={true}
-      />,
+      <ContactsSetupTier onImport={vi.fn()} canWrite={true} canEditSetup={true} />,
     );
 
     expect(html).toContain("sub-tab-bar");

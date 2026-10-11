@@ -1,4 +1,4 @@
-import type { IndustryType } from './industryTypes.js';
+import type { IndustryType } from "./industryTypes.js";
 
 /** Workspace / tenant record created during onboarding. */
 export interface Workspace {
@@ -15,7 +15,7 @@ export interface Workspace {
 }
 
 /** Returns true when the workspace accepts tenant traffic (missing `enabled` = active). */
-export function isWorkspaceEnabled(workspace: Pick<Workspace, 'enabled'>): boolean {
+export function isWorkspaceEnabled(workspace: Pick<Workspace, "enabled">): boolean {
   return workspace.enabled !== false;
 }
 

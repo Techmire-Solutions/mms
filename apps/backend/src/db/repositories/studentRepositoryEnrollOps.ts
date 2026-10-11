@@ -1,6 +1,6 @@
-import { and, eq, inArray, notInArray } from 'drizzle-orm';
-import { students, studentEnrolledSessions } from '../schema.js';
-import { withTenant, type AppDb } from '../tenant-context.js';
+import { and, eq, inArray, notInArray } from "drizzle-orm";
+import { students, studentEnrolledSessions } from "../schema.js";
+import { withTenant, type AppDb } from "../tenant-context.js";
 
 /**
  * Bulk enrollment operations for students into sessions.
@@ -14,13 +14,13 @@ export async function bulkEnrollStudentsTx(
   subdomain: string,
   studentIds: string[],
   sessionIds: string[],
-  mode: 'add' | 'replace' | 'remove' = 'add',
+  mode: "add" | "replace" | "remove" = "add",
 ): Promise<{ succeeded: number; failed: number }> {
   if (studentIds.length === 0 || sessionIds.length === 0) {
     return { succeeded: 0, failed: 0 };
   }
 
-  if (mode === 'remove') {
+  if (mode === "remove") {
     await tx
       .delete(studentEnrolledSessions)
       .where(
@@ -30,7 +30,7 @@ export async function bulkEnrollStudentsTx(
           inArray(studentEnrolledSessions.sessionId, sessionIds),
         ),
       );
-  } else if (mode === 'replace') {
+  } else if (mode === "replace") {
     // Delete enrollments that are no longer present
     await tx
       .delete(studentEnrolledSessions)
@@ -93,12 +93,7 @@ export async function bulkEnrollStudentsTx(
   await tx
     .update(students)
     .set({ updatedAt: new Date() })
-    .where(
-      and(
-        eq(students.workspaceSubdomain, subdomain),
-        inArray(students.id, studentIds),
-      ),
-    );
+    .where(and(eq(students.workspaceSubdomain, subdomain), inArray(students.id, studentIds)));
 
   return { succeeded: studentIds.length, failed: 0 };
 }
@@ -107,7 +102,7 @@ export async function bulkEnrollStudents(
   tenant: string,
   studentIds: string[],
   sessionIds: string[],
-  mode: 'add' | 'replace' | 'remove' = 'add',
+  mode: "add" | "replace" | "remove" = "add",
 ): Promise<{ succeeded: number; failed: number }> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {

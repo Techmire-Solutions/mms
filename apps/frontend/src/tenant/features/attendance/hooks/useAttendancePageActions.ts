@@ -17,33 +17,38 @@ export function useAttendancePageActions() {
   } = useAttendanceMutations();
   const { messagingTarget, openComposer, closeComposer } = useMessageComposerState();
 
-  const handleMessageAttendance = (channel: "sms" | "whatsapp" | "email", attRecords: AttendanceRecord[]) => {
+  const handleMessageAttendance = (
+    channel: "sms" | "whatsapp" | "email",
+    attRecords: AttendanceRecord[],
+  ) => {
     openComposer(
       channel,
       attRecords.map((record) =>
         toMessagingRecipient({
           id: record.studentId || record.id,
           name: record.studentName || t("attendance.messaging.student"),
-          phone: typeof (record as { phone?: string }).phone === "string"
-            ? (record as { phone?: string }).phone
-            : "",
-          email: typeof (record as { email?: string }).email === "string"
-            ? (record as { email?: string }).email
-            : "",
+          phone:
+            typeof (record as { phone?: string }).phone === "string"
+              ? (record as { phone?: string }).phone
+              : "",
+          email:
+            typeof (record as { email?: string }).email === "string"
+              ? (record as { email?: string }).email
+              : "",
         }),
       ),
     );
   };
 
-  const persistRecords = (async (recordsForClassDate: AttendanceRecord[]) => {
+  const persistRecords = async (recordsForClassDate: AttendanceRecord[]) => {
     await bulkUpsert.mutateAsync({ body: { records: recordsForClassDate } });
-  });
+  };
 
-  const handleUpdateRecord = (async (record: AttendanceRecord) => {
+  const handleUpdateRecord = async (record: AttendanceRecord) => {
     await updateRecord.mutateAsync({ params: { id: record.id }, body: record });
-  });
+  };
 
-  const handleDeleteRecord = (async (id: string) => {
+  const handleDeleteRecord = async (id: string) => {
     try {
       await deleteRecord.mutateAsync({ params: { id } });
       notify.success(t("attendance.toast.archived"));
@@ -52,9 +57,9 @@ export function useAttendancePageActions() {
         description: error instanceof Error ? error.message : String(error),
       });
     }
-  });
+  };
 
-  const handleRestoreRecord = (async (id: string) => {
+  const handleRestoreRecord = async (id: string) => {
     try {
       await restoreRecord.mutateAsync({ params: { id }, body: {} });
       notify.success(t("attendance.toast.restored"));
@@ -63,9 +68,9 @@ export function useAttendancePageActions() {
         description: error instanceof Error ? error.message : String(error),
       });
     }
-  });
+  };
 
-  const handleBulkDeleteRecords = (async (ids: string[]) => {
+  const handleBulkDeleteRecords = async (ids: string[]) => {
     try {
       const result = await bulkDeleteRecords.mutateAsync({ body: { ids } });
       const body = (result.body ?? result) as { succeeded?: number };
@@ -80,9 +85,9 @@ export function useAttendancePageActions() {
         description: error instanceof Error ? error.message : String(error),
       });
     }
-  });
+  };
 
-  const handleBulkRestoreRecords = (async (ids: string[]) => {
+  const handleBulkRestoreRecords = async (ids: string[]) => {
     try {
       const result = await bulkRestoreRecords.mutateAsync({ body: { ids } });
       const body = (result.body ?? result) as { succeeded?: number };
@@ -97,7 +102,7 @@ export function useAttendancePageActions() {
         description: error instanceof Error ? error.message : String(error),
       });
     }
-  });
+  };
 
   return {
     messagingTarget,

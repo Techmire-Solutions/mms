@@ -39,7 +39,9 @@ function ContactsSavedReportUserPicker({
 
   return (
     <div className="space-y-1.5">
-      <Label htmlFor="saved-report-user-search">{t("contacts.savedReports.usersPickerLabel")}</Label>
+      <Label htmlFor="saved-report-user-search">
+        {t("contacts.savedReports.usersPickerLabel")}
+      </Label>
       <SearchBar
         id="saved-report-user-search"
         name="savedReportUserSearch"
@@ -54,9 +56,18 @@ function ContactsSavedReportUserPicker({
           options.map((user) => {
             const checkboxId = `saved-report-user-${user.id}`;
             return (
-              <div key={user.id} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted/50">
-                <Checkbox id={checkboxId} checked={valueSet.has(String(user.id))} onCheckedChange={() => toggle(String(user.id))} />
-                <label htmlFor={checkboxId} className="truncate cursor-pointer flex-1">{user.name || user.email}</label>
+              <div
+                key={user.id}
+                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted/50"
+              >
+                <Checkbox
+                  id={checkboxId}
+                  checked={valueSet.has(String(user.id))}
+                  onCheckedChange={() => toggle(String(user.id))}
+                />
+                <label htmlFor={checkboxId} className="truncate cursor-pointer flex-1">
+                  {user.name || user.email}
+                </label>
               </div>
             );
           })
@@ -166,7 +177,10 @@ export function ContactsSavedReportsEditor({
           />
         </Field>
         {shareScope === "users" && (
-          <ContactsSavedReportUserPicker value={sharedWithUserIds} onChange={onSharedWithUserIdsChange} />
+          <ContactsSavedReportUserPicker
+            value={sharedWithUserIds}
+            onChange={onSharedWithUserIdsChange}
+          />
         )}
       </form>
     </FormModal>

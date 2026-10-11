@@ -2,14 +2,25 @@ import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { LegendChip } from "@/components/ui/LegendChip";
 import { motion } from "framer-motion";
 import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, Tooltip,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
 } from "recharts";
 import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
-import type { AttendanceStatus } from '@/lib/data/attendanceData';
+import type { AttendanceStatus } from "@/lib/data/attendanceData";
 import { attendanceStatusLabel } from "@/lib/attendanceStatusUi";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { ClassStatEntry, StudentRateEntry } from "@/tenant/features/attendance/components/useAttendanceAnalyticsModel";
+import type {
+  ClassStatEntry,
+  StudentRateEntry,
+} from "@/tenant/features/attendance/components/useAttendanceAnalyticsModel";
 
 export interface AttendanceAnalyticsChartPanelsProps {
   t: TranslationFunction;
@@ -49,8 +60,18 @@ export function AttendanceAnalyticsChartPanels({
             <XAxis dataKey="name" tick={chartAxisTick(11)} />
             <YAxis domain={[0, 100]} tick={chartAxisTick(11)} unit="%" />
             <Tooltip formatter={(value) => `${value}%`} />
-            <Bar dataKey="rate" name={t("attendance.analytics.attendanceLabel")} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}
-              label={{ position: "top", fontSize: 10, fill: "hsl(var(--muted-foreground))", formatter: (value) => value !== undefined && value !== null ? `${value}%` : "" }} />
+            <Bar
+              dataKey="rate"
+              name={t("attendance.analytics.attendanceLabel")}
+              fill="hsl(var(--primary))"
+              radius={[4, 4, 0, 0]}
+              label={{
+                position: "top",
+                fontSize: 10,
+                fill: "hsl(var(--muted-foreground))",
+                formatter: (value) => (value !== undefined && value !== null ? `${value}%` : ""),
+              }}
+            />
           </BarChart>
         </ReportChartCard>
       </motion.div>
@@ -76,7 +97,15 @@ export function AttendanceAnalyticsChartPanels({
             <XAxis dataKey="month" tick={chartAxisTick(11)} />
             <YAxis domain={[0, 100]} tick={chartAxisTick(11)} unit="%" />
             <Tooltip formatter={(value) => `${value}%`} />
-            <Area type="monotone" dataKey="rate" name={t("attendance.analytics.attendancePercentLabel")} stroke="hsl(var(--primary))" fill="url(#att-grad)" strokeWidth={2} dot={{ r: 3 }} />
+            <Area
+              type="monotone"
+              dataKey="rate"
+              name={t("attendance.analytics.attendancePercentLabel")}
+              stroke="hsl(var(--primary))"
+              fill="url(#att-grad)"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+            />
           </AreaChart>
         </ReportChartCard>
       </motion.div>
@@ -95,9 +124,13 @@ export function AttendanceAnalyticsChartPanels({
             <XAxis type="number" domain={[0, 100]} tick={chartAxisTick(10)} unit="%" />
             <YAxis dataKey="name" type="category" tick={chartAxisTick(10)} width={80} />
             <Tooltip formatter={(value) => `${value}%`} />
-            <Bar dataKey="rate" name={t("attendance.analytics.rateLabel")} radius={[0, 4, 4, 0]}
+            <Bar
+              dataKey="rate"
+              name={t("attendance.analytics.rateLabel")}
+              radius={[0, 4, 4, 0]}
               fill="hsl(var(--primary))"
-              background={{ fill: "hsl(var(--muted))", radius: 4 }} />
+              background={{ fill: "hsl(var(--muted))", radius: 4 }}
+            />
           </BarChart>
         </ReportChartCard>
       </motion.div>
@@ -127,8 +160,18 @@ export function AttendanceAnalyticsChartPanels({
           }
         >
           <PieChart>
-            <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={2} dataKey="value">
-              {pieData.map((entry, index) => <Cell key={entry.name} fill={colors[index % colors.length]} />)}
+            <Pie
+              data={pieData}
+              cx="50%"
+              cy="50%"
+              innerRadius={45}
+              outerRadius={70}
+              paddingAngle={2}
+              dataKey="value"
+            >
+              {pieData.map((entry, index) => (
+                <Cell key={entry.name} fill={colors[index % colors.length]} />
+              ))}
             </Pie>
             <Tooltip />
           </PieChart>
@@ -137,4 +180,3 @@ export function AttendanceAnalyticsChartPanels({
     </div>
   );
 }
-

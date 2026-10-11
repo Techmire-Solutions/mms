@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import type { FacultyDesignationDefinition } from '@mms/shared';
-import { ConfirmAlertDialog } from '@/components/ui/ConfirmAlertDialog';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { ModuleTierMotion } from '@/components/ui/ModuleTierMotion';
-import { useFacultyDepartments } from '../hooks/useFacultyDepartments';
-import { useFacultyDesignationsController } from '../hooks/useFacultyDesignationsController';
-import { FacultyDesignationsTable } from './FacultyDesignationsTable';
-import { FacultyDesignationFormModal } from './FacultyDesignationFormModal';
+import React, { useState } from "react";
+import type { FacultyDesignationDefinition } from "@mms/shared";
+import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { useFacultyDepartments } from "../hooks/useFacultyDepartments";
+import { useFacultyDesignationsController } from "../hooks/useFacultyDesignationsController";
+import { FacultyDesignationsTable } from "./FacultyDesignationsTable";
+import { FacultyDesignationFormModal } from "./FacultyDesignationFormModal";
 
 /** Designations work surface — same directory chrome as Faculties (toolbar + table/cards). */
 export function FacultyDesignationsSetupSection({
@@ -20,8 +20,11 @@ export function FacultyDesignationsSetupSection({
   const { data: departments = [] } = useFacultyDepartments();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingDesignation, setEditingDesignation] = useState<FacultyDesignationDefinition | null>(null);
-  const [designationToDelete, setDesignationToDelete] = useState<FacultyDesignationDefinition | null>(null);
+  const [editingDesignation, setEditingDesignation] = useState<FacultyDesignationDefinition | null>(
+    null,
+  );
+  const [designationToDelete, setDesignationToDelete] =
+    useState<FacultyDesignationDefinition | null>(null);
 
   const handleStartEdit = (designation: FacultyDesignationDefinition) => {
     if (!canWrite) return;
@@ -46,8 +49,8 @@ export function FacultyDesignationsSetupSection({
       <ModuleTierMotion tier="work-designations" className="space-y-5">
         {query.isError ? (
           <ErrorState
-            title={t('faculty.designations.loadFailed')}
-            description={t('faculty.loadFailedHint')}
+            title={t("faculty.designations.loadFailed")}
+            description={t("faculty.loadFailedHint")}
             onRetry={() => void query.refetch()}
           />
         ) : (
@@ -80,14 +83,16 @@ export function FacultyDesignationsSetupSection({
         <ConfirmAlertDialog
           open={Boolean(designationToDelete)}
           onOpenChange={(open) => !open && setDesignationToDelete(null)}
-          title={t('faculty.designations.deleteDesignation')}
+          title={t("faculty.designations.deleteDesignation")}
           description={
             designationToDelete
-              ? t('faculty.designations.deleteDesignationConfirm', { name: designationToDelete.name })
-              : ''
+              ? t("faculty.designations.deleteDesignationConfirm", {
+                  name: designationToDelete.name,
+                })
+              : ""
           }
-          confirmLabel={t('common.delete')}
-          cancelLabel={t('common.cancel')}
+          confirmLabel={t("common.delete")}
+          cancelLabel={t("common.cancel")}
           destructive
           onConfirm={handleConfirmDelete}
         />

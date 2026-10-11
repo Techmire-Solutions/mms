@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+import { z } from "zod";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 
 /** PUT /api/enrollments/field-config — field registry JSON without formTabs SSOT. */
 const enrollmentFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
@@ -11,7 +11,7 @@ const enrollmentFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchem
   .strict();
 
 export const enrollmentFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, enrollmentFieldConfigPutBodyBaseSchema);
 

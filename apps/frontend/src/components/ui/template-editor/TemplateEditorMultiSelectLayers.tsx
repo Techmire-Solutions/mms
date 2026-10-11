@@ -1,8 +1,8 @@
-import React from 'react';
-import { ArrowDownToLine, ArrowUpToLine, Layers } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { TemplateEditorSection } from './TemplateEditorSection';
+import React from "react";
+import { ArrowDownToLine, ArrowUpToLine, Layers } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { TemplateEditorSection } from "./TemplateEditorSection";
 
 export interface TemplateEditorMultiSelectLayersProps {
   isOpen: boolean;
@@ -28,7 +28,11 @@ export function TemplateEditorMultiSelectLayers({
       t={t}
       panelClassName="space-y-1.5"
     >
-      <div role="group" aria-label={t("templateEditor.layerOrdering")} className="grid grid-cols-2 gap-1.5">
+      <div
+        role="group"
+        aria-label={t("templateEditor.layerOrdering")}
+        className="grid grid-cols-2 gap-1.5"
+      >
         <Button
           type="button"
           variant="outline"

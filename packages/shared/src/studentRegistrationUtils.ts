@@ -1,9 +1,9 @@
-import type { StudentsSettings } from './settingsTypes.js';
-import { formatTemplateSequence } from './sequenceNumberingUtils.js';
+import type { StudentsSettings } from "./settingsTypes.js";
+import { formatTemplateSequence } from "./sequenceNumberingUtils.js";
 
 export type StudentGrNumberSettings = Pick<
   StudentsSettings,
-  'grNumberTemplate' | 'grNumberDigits' | 'grNumberRestartAnnually'
+  "grNumberTemplate" | "grNumberDigits" | "grNumberRestartAnnually"
 >;
 
 export type StudentDuplicateCheckInput = {
@@ -15,7 +15,7 @@ export type StudentDuplicateCheckInput = {
   grNumber?: string;
 };
 
-export type StudentDuplicateReason = 'contact' | 'email' | 'nameDob' | 'grNumber';
+export type StudentDuplicateReason = "contact" | "email" | "nameDob" | "grNumber";
 
 type StudentRow = {
   id?: string | number;
@@ -33,7 +33,7 @@ export function computeNextGrNumber(
   settings: StudentGrNumberSettings,
   regDate: string,
 ): string {
-  const template = settings.grNumberTemplate || '{seq}-{year}';
+  const template = settings.grNumberTemplate || "{seq}-{year}";
   const digits = settings.grNumberDigits || 4;
   const restartAnnually = settings.grNumberRestartAnnually !== false;
   const year = regDate ? new Date(regDate).getFullYear() : new Date().getFullYear();
@@ -43,7 +43,7 @@ export function computeNextGrNumber(
     const yearStr = String(year);
     let count = 0;
     for (const s of students) {
-      const sDate = s.registeredDate || '';
+      const sDate = s.registeredDate || "";
       if (sDate.startsWith(yearStr) || (s.grNumber && String(s.grNumber).includes(yearStr))) {
         count++;
       }
@@ -55,7 +55,6 @@ export function computeNextGrNumber(
 
   return formatTemplateSequence(template, nextSeq, digits, regDate);
 }
-
 
 /** Client-side duplicate guard before save (server authoritative on POST). */
 export function findStudentRegistrationConflict(
@@ -75,21 +74,21 @@ export function findStudentRegistrationConflict(
       row.contactId != null &&
       String(input.contactId) === String(row.contactId)
     ) {
-      return 'contact';
+      return "contact";
     }
 
     if (email && row.email && email === row.email.trim().toLowerCase()) {
-      return 'email';
+      return "email";
     }
 
     const grNumber = input.grNumber?.trim().toLowerCase();
     if (grNumber && row.grNumber && grNumber === String(row.grNumber).trim().toLowerCase()) {
-      return 'grNumber';
+      return "grNumber";
     }
 
     if (name && dob && row.name && row.dob) {
       if (name === row.name.trim().toLowerCase() && dob === row.dob) {
-        return 'nameDob';
+        return "nameDob";
       }
     }
   }
@@ -105,7 +104,7 @@ export function collectStudentLinkedContactIds(
   return students
     .filter((row) => !exclude || String(row.id) !== exclude)
     .map((row) => row.contactId)
-    .filter((id): id is string | number => id != null && id !== '');
+    .filter((id): id is string | number => id != null && id !== "");
 }
 
 type StudentGrBackfillRow = StudentRow & { grNumber?: string; registeredDate?: string };
@@ -121,7 +120,7 @@ export function backfillMissingStudentGrNumbers<T extends StudentGrBackfillRow>(
 ): T[] {
   const working = students.map((row) => ({ ...row }));
   const updated: T[] = [];
-  const template = settings.grNumberTemplate || '{seq}-{year}';
+  const template = settings.grNumberTemplate || "{seq}-{year}";
   const digits = settings.grNumberDigits || 4;
   const restartAnnually = settings.grNumberRestartAnnually !== false;
   const targetYears = new Set<string>();
@@ -154,8 +153,8 @@ export function backfillMissingStudentGrNumbers<T extends StudentGrBackfillRow>(
     }
 
     if (restartAnnually) {
-      const rowDate = studentRecord.registeredDate || '';
-      const rowGr = studentRecord.grNumber ? String(studentRecord.grNumber) : '';
+      const rowDate = studentRecord.registeredDate || "";
+      const rowGr = studentRecord.grNumber ? String(studentRecord.grNumber) : "";
       for (const y of targetYears) {
         if (rowDate.startsWith(y) || (rowGr && rowGr.includes(y))) {
           yearCounts.set(y, (yearCounts.get(y) ?? 0) + 1);

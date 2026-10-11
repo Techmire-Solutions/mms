@@ -1,15 +1,15 @@
-import React from 'react';
-import { ACCOUNT_TYPES, type Account, type AccountType } from '@/lib/data/accountingData';
-import type { AppTranslationKey } from '@mms/shared';
-import { Input } from '@/components/ui/input';
-import { FormSelect } from '@/components/ui/FormSelect';
-import { Field } from '@/components/ui/FormPrimitives';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { useAccountingConfig } from '@/hooks/useStandardModuleConfig';
+import React from "react";
+import { ACCOUNT_TYPES, type Account, type AccountType } from "@/lib/data/accountingData";
+import type { AppTranslationKey } from "@mms/shared";
+import { Input } from "@/components/ui/input";
+import { FormSelect } from "@/components/ui/FormSelect";
+import { Field } from "@/components/ui/FormPrimitives";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
 
 export interface AccountModalFieldsProps {
-  orderedFields: ReturnType<typeof useAccountingConfig>['orderedFields'];
-  fields: ReturnType<typeof useAccountingConfig>['fields'];
+  orderedFields: ReturnType<typeof useAccountingConfig>["orderedFields"];
+  fields: ReturnType<typeof useAccountingConfig>["fields"];
   isFieldEnabled: (id: string) => boolean;
   form: Partial<Account>;
   errors: Record<string, string>;
@@ -36,28 +36,40 @@ export function AccountModalFields({
         const isEnabled = isFieldEnabled(field.id);
         if (!isEnabled) return null;
 
-        if (field.id === 'code') {
+        if (field.id === "code") {
           return (
-            <Field key="code" id="account-code" label={t('accounting.coa.fields.code')} required error={errors.code}>
+            <Field
+              key="code"
+              id="account-code"
+              label={t("accounting.coa.fields.code")}
+              required
+              error={errors.code}
+            >
               <Input
                 id="account-code"
                 name="code"
-                value={form.code || ''}
-                onChange={(event) => updateField('code', event.target.value)}
-                placeholder={t('accounting.coa.fields.codePlaceholder')}
+                value={form.code || ""}
+                onChange={(event) => updateField("code", event.target.value)}
+                placeholder={t("accounting.coa.fields.codePlaceholder")}
                 required
               />
             </Field>
           );
         }
 
-        if (field.id === 'type') {
+        if (field.id === "type") {
           return (
-            <Field key="type" id="account-type" label={t('accounting.coa.fields.type')} required error={errors.type}>
+            <Field
+              key="type"
+              id="account-type"
+              label={t("accounting.coa.fields.type")}
+              required
+              error={errors.type}
+            >
               <FormSelect
                 id="account-type"
                 name="type"
-                value={form.type || 'Asset'}
+                value={form.type || "Asset"}
                 onChange={(val) => onTypeChange(val as AccountType)}
                 options={ACCOUNT_TYPES.map((accType) => ({
                   value: accType,
@@ -68,16 +80,21 @@ export function AccountModalFields({
           );
         }
 
-        if (field.id === 'name') {
+        if (field.id === "name") {
           return (
             <div key="name" className="sm:col-span-2">
-              <Field id="account-name" label={t('accounting.coa.fields.name')} required error={errors.name}>
+              <Field
+                id="account-name"
+                label={t("accounting.coa.fields.name")}
+                required
+                error={errors.name}
+              >
                 <Input
                   id="account-name"
                   name="name"
-                  value={form.name || ''}
-                  onChange={(event) => updateField('name', event.target.value)}
-                  placeholder={t('accounting.coa.fields.namePlaceholder')}
+                  value={form.name || ""}
+                  onChange={(event) => updateField("name", event.target.value)}
+                  placeholder={t("accounting.coa.fields.namePlaceholder")}
                   required
                 />
               </Field>
@@ -85,35 +102,45 @@ export function AccountModalFields({
           );
         }
 
-        if (field.id === 'subtype') {
+        if (field.id === "subtype") {
           const isRequired = !!fields[field.id]?.required;
           return (
             <div key="subtype" className="sm:col-span-2">
-              <Field id="account-subtype" label={t('accounting.coa.fields.subtype')} required={isRequired} error={errors.subtype}>
+              <Field
+                id="account-subtype"
+                label={t("accounting.coa.fields.subtype")}
+                required={isRequired}
+                error={errors.subtype}
+              >
                 <FormSelect
                   id="account-subtype"
                   name="subtype"
-                  value={form.subtype || ''}
-                  onChange={(val) => updateField('subtype', val)}
+                  value={form.subtype || ""}
+                  onChange={(val) => updateField("subtype", val)}
                   options={subtypes}
-                  placeholder={t('accounting.journal.form.none')}
+                  placeholder={t("accounting.journal.form.none")}
                 />
               </Field>
             </div>
           );
         }
 
-        if (field.id === 'description') {
+        if (field.id === "description") {
           const isRequired = !!fields[field.id]?.required;
           return (
             <div key="description" className="sm:col-span-2">
-              <Field id="account-description" label={t('accounting.coa.fields.description')} required={isRequired} error={errors.description}>
+              <Field
+                id="account-description"
+                label={t("accounting.coa.fields.description")}
+                required={isRequired}
+                error={errors.description}
+              >
                 <Input
                   id="account-description"
                   name="description"
-                  value={form.description || ''}
-                  onChange={(event) => updateField('description', event.target.value)}
-                  placeholder={t('accounting.coa.fields.descriptionPlaceholder')}
+                  value={form.description || ""}
+                  onChange={(event) => updateField("description", event.target.value)}
+                  placeholder={t("accounting.coa.fields.descriptionPlaceholder")}
                   required={isRequired}
                 />
               </Field>

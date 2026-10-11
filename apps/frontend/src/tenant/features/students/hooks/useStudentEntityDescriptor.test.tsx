@@ -78,10 +78,7 @@ describe("useStudentEntityDescriptor", () => {
     const { getResult, cleanup } = renderHookWrapper();
     const fields = getResult().fields;
     for (const field of fields) {
-      expect(
-        field.labelKey,
-        `Field "${field.key}" is missing labelKey`,
-      ).toBeTruthy();
+      expect(field.labelKey, `Field "${field.key}" is missing labelKey`).toBeTruthy();
     }
     cleanup();
   });

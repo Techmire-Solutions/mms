@@ -1,8 +1,14 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export const MESSAGE_CATEGORIES = ['general', 'academic', 'financial', 'attendance', 'emergency'] as const;
+export const MESSAGE_CATEGORIES = [
+  "general",
+  "academic",
+  "financial",
+  "attendance",
+  "emergency",
+] as const;
 
-export const MESSAGE_CHANNELS = ['all', 'sms', 'whatsapp', 'email'] as const;
+export const MESSAGE_CHANNELS = ["all", "sms", "whatsapp", "email"] as const;
 
 export const MESSAGE_CATEGORY_OPTIONS = MESSAGE_CATEGORIES.map((cat) => ({
   value: cat,

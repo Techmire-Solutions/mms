@@ -35,11 +35,7 @@ const mockReport: GenericSavedReport = {
 describe("SavedReportCard", () => {
   it("renders report title, category, last run date, and creator", () => {
     const html = renderToStaticMarkup(
-      <SavedReportCard
-        report={mockReport}
-        onRun={vi.fn()}
-        onDelete={vi.fn()}
-      />
+      <SavedReportCard report={mockReport} onRun={vi.fn()} onDelete={vi.fn()} />,
     );
 
     expect(html).toContain("Monthly Attendance Summary");
@@ -53,12 +49,7 @@ describe("SavedReportCard", () => {
   });
 
   it("omits run button when onRun is not provided", () => {
-    const html = renderToStaticMarkup(
-      <SavedReportCard
-        report={mockReport}
-        onDelete={vi.fn()}
-      />
-    );
+    const html = renderToStaticMarkup(<SavedReportCard report={mockReport} onDelete={vi.fn()} />);
 
     expect(html).not.toContain("reports.saved.run");
     expect(html).toContain("reports.saved.delete");

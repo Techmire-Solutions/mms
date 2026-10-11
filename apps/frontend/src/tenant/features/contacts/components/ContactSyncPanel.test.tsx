@@ -19,9 +19,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 
 describe("ContactSyncPanel Component", () => {
   it("renders info callout and both Google and Apple sync panels", () => {
-    const html = renderToStaticMarkup(
-      <ContactSyncPanel onImport={vi.fn()} canWrite={true} />,
-    );
+    const html = renderToStaticMarkup(<ContactSyncPanel onImport={vi.fn()} canWrite={true} />);
 
     expect(html).toContain("contacts.sync.title");
     expect(html).toContain("Google Contacts Sync");

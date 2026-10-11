@@ -1,4 +1,4 @@
-import { and, sql } from 'drizzle-orm';
+import { and, sql } from "drizzle-orm";
 import {
   CONTACT_METRICS_DEFAULT_PERIOD_DAYS,
   formatContactsMonthLabels,
@@ -6,18 +6,14 @@ import {
   type ContactsMonthlyYearCounts,
   type ContactsReportAnalyticsSnapshot,
   type FieldConfig,
-} from '@mms/shared';
-import { contacts } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import {
-  hasEmailSql,
-  hasPhoneSql,
-  hasWhatsAppSql,
-} from './contactRepositorySql.js';
+} from "@mms/shared";
+import { contacts } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { hasEmailSql, hasPhoneSql, hasWhatsAppSql } from "./contactRepositorySql.js";
 import {
   activeWorkspaceWhere,
   buildProfileIncompleteSql,
-} from './contactRepositoryAggregateHelpers.js';
+} from "./contactRepositoryAggregateHelpers.js";
 
 export async function aggregateContactsCommandMetrics(
   tenant: string,
@@ -131,7 +127,7 @@ export async function aggregateContactsMonthlyCreatedCounts(
   tenant: string,
   years: number[],
   monthCount = 6,
-  language = 'en',
+  language = "en",
 ): Promise<ContactsMonthlyYearCounts[]> {
   if (years.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
@@ -177,7 +173,7 @@ export async function aggregateContactsMonthlyCreatedCounts(
       return {
         year,
         months: Array.from({ length: monthCount }, (_, monthIndex) => {
-          const monthStr = String(monthIndex + 1).padStart(2, '0');
+          const monthStr = String(monthIndex + 1).padStart(2, "0");
           return {
             month: monthLabels[monthIndex] ?? monthStr,
             count: byMonth.get(monthStr) ?? 0,

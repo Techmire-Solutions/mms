@@ -1,7 +1,7 @@
-import { loadBackendEnv } from '../config/loadEnv.js';
-import { initDb, closeDatabase, getPool } from '../db/database.js';
-import { deleteWorkspace, invalidateWorkspaceCache } from '../services/workspaceService.js';
-import { syncPlatformSuperUserToTenants } from '../services/platform/platformSuperUserTenantSyncService.js';
+import { loadBackendEnv } from "../config/loadEnv.js";
+import { initDb, closeDatabase, getPool } from "../db/database.js";
+import { deleteWorkspace, invalidateWorkspaceCache } from "../services/workspaceService.js";
+import { syncPlatformSuperUserToTenants } from "../services/platform/platformSuperUserTenantSyncService.js";
 
 loadBackendEnv();
 
@@ -11,11 +11,13 @@ async function run(): Promise<void> {
 
   // Find all workspaces except 'dq' (Dar Ul Quran)
   const res = await pool.query(
-    "SELECT subdomain, madrasa_name FROM workspaces WHERE subdomain != 'dq' AND madrasa_name NOT ILIKE '%dar ul quran%'"
+    "SELECT subdomain, madrasa_name FROM workspaces WHERE subdomain != 'dq' AND madrasa_name NOT ILIKE '%dar ul quran%'",
   );
 
   const targets = res.rows;
-  console.log(`Found ${targets.length} tenant workspace(s) to remove. Preserving 'dq' (Dar Ul Quran)...`);
+  console.log(
+    `Found ${targets.length} tenant workspace(s) to remove. Preserving 'dq' (Dar Ul Quran)...`,
+  );
 
   let count = 0;
   for (const target of targets) {
@@ -33,23 +35,23 @@ async function run(): Promise<void> {
 
   // Clean up test platform admins so only the super_user remains
   const cleanAdmins = await pool.query(
-    "DELETE FROM platform_users WHERE role != 'super_user' AND email != 'syedaalin@gmail.com'"
+    "DELETE FROM platform_users WHERE role != 'super_user' AND email != 'syedaalin@gmail.com'",
   );
   console.log(`Cleaned up ${cleanAdmins.rowCount} test platform admin account(s).`);
 
   // Clean up stale synced test admin records from tenant_users in dq
   const client = await pool.connect();
   try {
-    await client.query('BEGIN;');
+    await client.query("BEGIN;");
     await client.query("SELECT set_config('app.allow_hard_purge', 'true', true);");
     await client.query("SELECT set_config('app.rls_bypass', 'on', true);");
     const cleanTenantUsers = await client.query(
-      "DELETE FROM tenant_users WHERE workspace_subdomain = 'dq' AND login_email != 'syedaalin@gmail.com'"
+      "DELETE FROM tenant_users WHERE workspace_subdomain = 'dq' AND login_email != 'syedaalin@gmail.com'",
     );
-    await client.query('COMMIT;');
+    await client.query("COMMIT;");
     console.log(`Cleaned up ${cleanTenantUsers.rowCount} stale synced user(s) from dq tenant.`);
   } catch (e) {
-    await client.query('ROLLBACK;');
+    await client.query("ROLLBACK;");
     throw e;
   } finally {
     client.release();
@@ -60,14 +62,14 @@ async function run(): Promise<void> {
   console.log(`Synchronized platform super-user to ${synced} workspace(s).`);
 
   // Verify remaining workspaces
-  const remaining = await pool.query('SELECT id, subdomain, madrasa_name, enabled FROM workspaces');
-  console.log('Remaining workspace(s):', remaining.rows);
+  const remaining = await pool.query("SELECT id, subdomain, madrasa_name, enabled FROM workspaces");
+  console.log("Remaining workspace(s):", remaining.rows);
 
   await closeDatabase();
   process.exit(0);
 }
 
 run().catch((err) => {
-  console.error('Failed to clean workspaces:', err);
+  console.error("Failed to clean workspaces:", err);
   process.exit(1);
 });

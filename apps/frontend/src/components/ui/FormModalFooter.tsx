@@ -1,7 +1,7 @@
-import React from 'react';
-import { CheckCircle2, Loader2, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { CheckCircle2, Loader2, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export interface FormModalFooterProps {
   footerStart?: React.ReactNode;
@@ -16,7 +16,7 @@ export interface FormModalFooterProps {
   form?: string;
 }
 
-export const FormModalFooter = (function FormModalFooter({
+export const FormModalFooter = function FormModalFooter({
   footerStart,
   cancelLabel,
   saveLabel,
@@ -31,8 +31,8 @@ export const FormModalFooter = (function FormModalFooter({
   return (
     <div
       className={cn(
-        'flex w-full flex-col items-stretch gap-2.5 sm:flex-row sm:items-center',
-        footerStart ? 'justify-between' : 'justify-end',
+        "flex w-full flex-col items-stretch gap-2.5 sm:flex-row sm:items-center",
+        footerStart ? "justify-between" : "justify-end",
       )}
     >
       {footerStart ? <div className="min-w-0 sm:flex-1">{footerStart}</div> : null}
@@ -41,11 +41,15 @@ export const FormModalFooter = (function FormModalFooter({
           {cancelLabel}
         </Button>
         <Button
-          type={form ? 'submit' : 'button'}
+          type={form ? "submit" : "button"}
           form={form}
-          onClick={form ? undefined : () => {
-            void onSave?.();
-          }}
+          onClick={
+            form
+              ? undefined
+              : () => {
+                  void onSave?.();
+                }
+          }
           disabled={saving || saveDisabled || saved}
           className="min-w-filter-sm"
         >
@@ -69,5 +73,4 @@ export const FormModalFooter = (function FormModalFooter({
       </div>
     </div>
   );
-});
-
+};

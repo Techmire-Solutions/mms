@@ -83,11 +83,7 @@ describe("useModuleCsvImportActions", () => {
       root.render(<HookTester />);
     });
 
-    const file = new File(
-      ['Name,Age\n"Sara",22\n"Zayd",24'],
-      "test.csv",
-      { type: "text/csv" },
-    );
+    const file = new File(['Name,Age\n"Sara",22\n"Zayd",24'], "test.csv", { type: "text/csv" });
 
     await act(async () => {
       await hookResult.handleFileSelect(file);
@@ -104,11 +100,7 @@ describe("useModuleCsvImportActions", () => {
       root.render(<HookTester />);
     });
 
-    const file = new File(
-      ['WrongHeader,Age\n"Val",22'],
-      "test.csv",
-      { type: "text/csv" },
-    );
+    const file = new File(['WrongHeader,Age\n"Val",22'], "test.csv", { type: "text/csv" });
 
     await act(async () => {
       await hookResult.handleFileSelect(file);
@@ -122,9 +114,8 @@ describe("useModuleCsvImportActions", () => {
     const { contactsTransferSchema } = await import("@mms/shared");
     const { triggerFileDownload } = await import("@/lib/download");
 
-    let schemaHookResult: ReturnType<typeof useModuleCsvImportActions> = undefined as unknown as ReturnType<
-      typeof useModuleCsvImportActions
-    >;
+    let schemaHookResult: ReturnType<typeof useModuleCsvImportActions> =
+      undefined as unknown as ReturnType<typeof useModuleCsvImportActions>;
 
     function SchemaHookTester() {
       schemaHookResult = useModuleCsvImportActions({
@@ -142,10 +133,7 @@ describe("useModuleCsvImportActions", () => {
       schemaHookResult.handleDownloadTemplate();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "contacts.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "contacts.csv");
 
     const contactCsv = new File(
       ['Full Name,Phone Number,Is Syed\n"Ammar Yasir",+923001234567,Yes'],

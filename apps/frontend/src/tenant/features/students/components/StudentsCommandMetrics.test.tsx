@@ -46,4 +46,3 @@ describe("StudentsCommandMetrics Component", () => {
     expect(html).toContain("10");
   });
 });
-

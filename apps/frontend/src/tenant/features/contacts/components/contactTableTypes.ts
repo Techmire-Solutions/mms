@@ -13,4 +13,3 @@ export function columnWidthStyle(width: number | undefined): React.CSSProperties
   if (typeof width !== "number" || width <= 0) return undefined;
   return { width, minWidth: width, maxWidth: width };
 }
-

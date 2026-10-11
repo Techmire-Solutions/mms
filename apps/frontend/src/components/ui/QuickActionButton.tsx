@@ -12,7 +12,7 @@ export interface QuickActionButtonProps {
   ariaLabel?: string;
 }
 
-export const QuickActionButton = (function QuickActionButton({
+export const QuickActionButton = function QuickActionButton({
   label,
   icon: Icon,
   onClick,
@@ -24,11 +24,7 @@ export const QuickActionButton = (function QuickActionButton({
   const baseClasses = `flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all ${className}`;
   if (href && !disabled) {
     return (
-      <a
-        href={href}
-        aria-label={ariaLabel || label}
-        className={baseClasses}
-      >
+      <a href={href} aria-label={ariaLabel || label} className={baseClasses}>
         <Icon className="w-5 h-5" />
         <span className="text-xs font-bold">{label}</span>
       </a>
@@ -48,5 +44,4 @@ export const QuickActionButton = (function QuickActionButton({
       <span className="text-xs font-bold">{label}</span>
     </Button>
   );
-});
-
+};

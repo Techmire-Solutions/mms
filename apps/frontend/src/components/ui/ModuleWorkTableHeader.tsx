@@ -22,7 +22,7 @@ export interface ModuleWorkTableHeaderProps<
     truncate?: boolean;
     align?: TableCellAlign;
     variant?: TableCellVariant;
-  }
+  },
 > {
   columns: TCol[];
   sortField?: string;
@@ -30,17 +30,17 @@ export interface ModuleWorkTableHeaderProps<
   onSort?: (field: string) => void;
   getColumnWidth: (key: string) => number | undefined;
   setColumnWidth: (key: string, width: number) => void;
-  
+
   selection?: {
     allSelected: boolean;
     someSelected: boolean;
     onSelectAll: () => void;
     ariaLabel: string;
   };
-  
+
   actionsLabel?: string;
   actionsClassName?: string;
-  
+
   // Optional name property to make it sticky beside the checkbox.
   // Defaults to "name" as the identifier for the sticky column if any.
   stickyColumnId?: string;
@@ -57,7 +57,7 @@ export function ModuleWorkTableHeader<
     truncate?: boolean;
     align?: TableCellAlign;
     variant?: TableCellVariant;
-  }
+  },
 >({
   columns,
   sortField,
@@ -89,18 +89,24 @@ export function ModuleWorkTableHeader<
             />
           </TableHead>
         )}
-        
+
         {columns.map((col) => {
           const sortKey = col.sortField || col.id;
-          
+
           // If there is a selection column, the sticky column needs to start at offset 12 (48px).
           // Otherwise, it starts at 0.
           let stickyClass = "";
           if (col.id === stickyColumnId) {
             if (selection) {
-              stickyClass = cn("sticky start-12 z-sticky border-e border-border/30", WORK_STICKY_HEAD);
+              stickyClass = cn(
+                "sticky start-12 z-sticky border-e border-border/30",
+                WORK_STICKY_HEAD,
+              );
             } else {
-              stickyClass = cn("sticky start-0 z-sticky border-e border-border/30", WORK_STICKY_HEAD);
+              stickyClass = cn(
+                "sticky start-0 z-sticky border-e border-border/30",
+                WORK_STICKY_HEAD,
+              );
             }
           }
 
@@ -126,7 +132,7 @@ export function ModuleWorkTableHeader<
             </ModuleTableHeaderCell>
           );
         })}
-        
+
         {actionsLabel && (
           <TableHead noWrap className={cn("px-4 py-3 h-auto", actionsClassName)}>
             <span>{actionsLabel}</span>

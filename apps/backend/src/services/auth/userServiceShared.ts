@@ -3,13 +3,13 @@ import {
   type ContactLike,
   type StoredTenantUser,
   type User,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
 import {
   listTenantUsersByWorkspace,
   type TenantUserRow,
-} from '../../db/repositories/tenantUserRepository.js';
-import { loadContactsByIds } from '../contactService.js';
+} from "../../db/repositories/tenantUserRepository.js";
+import { loadContactsByIds } from "../contactService.js";
 
 /** Auth-capable user with credentials resolved for login and session. */
 export interface StoredUser {
@@ -35,7 +35,7 @@ export type IncomingUser = PersistedUser & { temporaryPassword?: string };
 export function requireTenantSubdomain(): string {
   const tenant = getRequestTenant();
   if (!tenant) {
-    throw new Error('Tenant context is required for workspace user operations');
+    throw new Error("Tenant context is required for workspace user operations");
   }
   return tenant.trim().toLowerCase();
 }
@@ -45,7 +45,7 @@ export async function getContactsForUsers(users: PersistedUser[]): Promise<Conta
     ...new Set(
       users
         .map((user) => user.contactId)
-        .filter((id): id is string | number => id != null && id !== '')
+        .filter((id): id is string | number => id != null && id !== "")
         .map(String),
     ),
   ];
@@ -54,7 +54,9 @@ export async function getContactsForUsers(users: PersistedUser[]): Promise<Conta
   return raw as ContactLike[];
 }
 
-export async function getRawUsers(options?: { includeDeleted?: boolean }): Promise<PersistedUser[]> {
+export async function getRawUsers(options?: {
+  includeDeleted?: boolean;
+}): Promise<PersistedUser[]> {
   const subdomain = requireTenantSubdomain();
   const fromTable = await listTenantUsersByWorkspace(subdomain, {
     includeDeleted: options?.includeDeleted === true,
@@ -63,30 +65,28 @@ export async function getRawUsers(options?: { includeDeleted?: boolean }): Promi
 }
 
 export function hydratedEmail(user: PersistedUser): string {
-  return typeof user.email === 'string' ? user.email : '';
+  return typeof user.email === "string" ? user.email : "";
 }
 
 export function asAuthUser(user: PersistedUser): StoredUser | null {
   if (user.deletedAt) return null;
   const loginEmail = resolveTenantLoginEmail(user, hydratedEmail(user));
   const workspaceSubdomain =
-    typeof user.workspaceSubdomain === 'string' ? user.workspaceSubdomain.trim() : '';
-  const passwordHash = typeof user.passwordHash === 'string' ? user.passwordHash : '';
+    typeof user.workspaceSubdomain === "string" ? user.workspaceSubdomain.trim() : "";
+  const passwordHash = typeof user.passwordHash === "string" ? user.passwordHash : "";
   if (!loginEmail || !workspaceSubdomain || !passwordHash) return null;
 
   return {
     id: user.id,
     email: loginEmail,
     loginEmail,
-    name: typeof user.name === 'string' ? user.name : '',
-    role: typeof user.role === 'string' ? user.role : 'assistant_teacher',
+    name: typeof user.name === "string" ? user.name : "",
+    role: typeof user.role === "string" ? user.role : "assistant_teacher",
     workspaceSubdomain,
     passwordHash,
-    createdAt:
-      typeof user.createdAt === 'string' ? user.createdAt : new Date().toISOString(),
+    createdAt: typeof user.createdAt === "string" ? user.createdAt : new Date().toISOString(),
     contactId: user.contactId,
-    emailVerifiedAt:
-      typeof user.emailVerifiedAt === 'string' ? user.emailVerifiedAt : undefined,
+    emailVerifiedAt: typeof user.emailVerifiedAt === "string" ? user.emailVerifiedAt : undefined,
     mustChangePassword: user.mustChangePassword === true,
   };
 }

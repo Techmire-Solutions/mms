@@ -9,26 +9,18 @@ export interface StudentsSetupPanelProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const StudentsSetupPanel = (function StudentsSetupPanel({
+export const StudentsSetupPanel = function StudentsSetupPanel({
   onPrefsDirtyChange,
 }: StudentsSetupPanelProps): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    upd,
-    saved,
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useStudentsSetupPanelState();
+  const { settingsDraft, upd, saved, saving, isPrefsDirty, handleSave } =
+    useStudentsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
-  const unsavedWarning = isPrefsDirty
-    ? t("students.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isPrefsDirty ? t("students.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -51,5 +43,5 @@ export const StudentsSetupPanel = (function StudentsSetupPanel({
       />
     </ModuleSetupContent>
   );
-});
+};
 export default StudentsSetupPanel;

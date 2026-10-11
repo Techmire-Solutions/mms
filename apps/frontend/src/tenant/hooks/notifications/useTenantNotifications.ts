@@ -21,7 +21,10 @@ export function useTenantNotifications() {
   const { formatCurrency } = useFinanceCurrency();
   const { data: preferences } = useDashboardPreferencesQuery();
   const dashboardRole = resolveDashboardRole(can);
-  const { financeMetrics, attendanceMetrics, studentMetricsInactive } = useDashboardData([], dashboardRole);
+  const { financeMetrics, attendanceMetrics, studentMetricsInactive } = useDashboardData(
+    [],
+    dashboardRole,
+  );
   const { isRead, markRead, markAllRead } = useNotificationReadState();
 
   const items = buildDashboardNotifications(
@@ -30,9 +33,7 @@ export function useTenantNotifications() {
       outstandingInvoiceCount: financeMetrics?.outstanding ?? 0,
       outstandingBalance: financeMetrics?.outstandingBalance ?? 0,
       attendanceRate:
-        attendanceMetrics?.selectedDatePresentRate
-        ?? attendanceMetrics?.overallPresentRate
-        ?? null,
+        attendanceMetrics?.selectedDatePresentRate ?? attendanceMetrics?.overallPresentRate ?? null,
       inactiveStudents: studentMetricsInactive,
     },
     t,
@@ -44,7 +45,10 @@ export function useTenantNotifications() {
     },
   );
 
-  const notifications: TenantNotification[] = items.map((item) => ({ ...item, read: isRead(item) }));
+  const notifications: TenantNotification[] = items.map((item) => ({
+    ...item,
+    read: isRead(item),
+  }));
   const unreadCount = notifications.filter((item) => !item.read).length;
 
   return {

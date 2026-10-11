@@ -1,15 +1,15 @@
-import React from 'react';
-import { describe, expect, it } from 'vitest';
+import React from "react";
+import { describe, expect, it } from "vitest";
 import {
   useDashboardPreferencesQuery,
   useDashboardWidgetsQuery,
   useDashboardPreferencesMutation,
   useDashboardWidgetsMutation,
   useDashboardWidgetDeleteMutation,
-} from './useDashboardSetupConfig';
+} from "./useDashboardSetupConfig";
 
-describe('useDashboardSetupConfig exports', () => {
-  it('instantiates hook exports correctly in a React element context', () => {
+describe("useDashboardSetupConfig exports", () => {
+  it("instantiates hook exports correctly in a React element context", () => {
     function TestSetupConfigComponent() {
       const prefsQuery = useDashboardPreferencesQuery();
       const widgetsQuery = useDashboardWidgetsQuery();
@@ -18,7 +18,8 @@ describe('useDashboardSetupConfig exports', () => {
       const delMut = useDashboardWidgetDeleteMutation();
       return (
         <div>
-          {prefsQuery.status}-{widgetsQuery.status}-{prefsMut.status}-{widgetsMut.status}-{delMut.status}
+          {prefsQuery.status}-{widgetsQuery.status}-{prefsMut.status}-{widgetsMut.status}-
+          {delMut.status}
         </div>
       );
     }

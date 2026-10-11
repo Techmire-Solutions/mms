@@ -49,7 +49,8 @@ export function useFacultyWorkPanelProps({
   canDelete,
   canExport,
 }: UseFacultyWorkPanelPropsInput) {
-  const { workPageQuery, workFaculty, workPageData, useServerWork, handleBulkExport } = workTierState;
+  const { workPageQuery, workFaculty, workPageData, useServerWork, handleBulkExport } =
+    workTierState;
 
   return useFacultyPageTabPanelProps(effectiveTab, {
     search: filters.search,
@@ -86,7 +87,9 @@ export function useFacultyWorkPanelProps({
       isLoading: workPageQuery.isLoading,
       isError: workTierState.isWorkError,
       isFetching: workPageQuery.isFetching,
-      refetch: () => { void workPageQuery.refetch(); },
+      refetch: () => {
+        void workPageQuery.refetch();
+      },
     },
     useServerWork,
     selectedIds: filters.selectedIds,
@@ -109,12 +112,16 @@ export function useFacultyWorkPanelProps({
     setFilterReportingFacultyId: filters.setFilterReportingFacultyId,
     toggleViewingDeleted: () => filters.setShowDeleted((previous: boolean) => !previous),
     clearFilters: filters.clearFilters,
-    onRetry: () => { void workPageQuery.refetch(); },
+    onRetry: () => {
+      void workPageQuery.refetch();
+    },
     openEditForm: formState.openEdit,
     handleRestore: pageActions.handleRestore,
     handleBulkStatusChange: filters.showDeleted ? undefined : pageActions.handleBulkStatusChange,
     bulkStatusPending: mutations.bulkUpdateFacultyStatus.isPending,
-    handleBulkSpecializationChange: filters.showDeleted ? undefined : pageActions.handleBulkSpecializationChange,
+    handleBulkSpecializationChange: filters.showDeleted
+      ? undefined
+      : pageActions.handleBulkSpecializationChange,
     bulkSpecializationPending: pageActions.isBulkSpecializationPending,
     handleWhatsApp: filters.showDeleted ? undefined : pageActions.handleWhatsApp,
     handleSms: filters.showDeleted ? undefined : pageActions.handleSms,

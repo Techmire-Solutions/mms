@@ -61,13 +61,15 @@ describe("contactMetadataCollections helpers", () => {
 
   it("renders relationship items", () => {
     const html = renderToStaticMarkup(
-      <>{renderRelationshipMetadata({
-        contact: mockContact,
-        contactsMap: new Map(),
-        emptyNode: <span>-</span>,
-        renderJoinedList: (items) => items.join(", "),
-        t: t as never,
-      })}</>,
+      <>
+        {renderRelationshipMetadata({
+          contact: mockContact,
+          contactsMap: new Map(),
+          emptyNode: <span>-</span>,
+          renderJoinedList: (items) => items.join(", "),
+          t: t as never,
+        })}
+      </>,
     );
     expect(html).toContain("-");
   });

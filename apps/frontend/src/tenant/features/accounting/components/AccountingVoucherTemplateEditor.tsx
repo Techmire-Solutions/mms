@@ -30,8 +30,18 @@ export function AccountingVoucherTemplateEditor({
 
   const presets = useMemo<DocumentTemplatePreset<VoucherPrintPayload>[]>(
     () => [
-      { key: "a6", label: t("accounting.voucherTemplate.presetA6"), description: t("accounting.voucherTemplate.presetA6Description"), template: a6 },
-      { key: "a5", label: t("accounting.voucherTemplate.presetA5"), description: t("accounting.voucherTemplate.presetA5Description"), template: buildVoucherTemplate("A5", copy) },
+      {
+        key: "a6",
+        label: t("accounting.voucherTemplate.presetA6"),
+        description: t("accounting.voucherTemplate.presetA6Description"),
+        template: a6,
+      },
+      {
+        key: "a5",
+        label: t("accounting.voucherTemplate.presetA5"),
+        description: t("accounting.voucherTemplate.presetA5Description"),
+        template: buildVoucherTemplate("A5", copy),
+      },
     ],
     [a6, copy, t],
   );

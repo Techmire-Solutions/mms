@@ -1,15 +1,15 @@
-import React from 'react';
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useQuestionBankConfig } from '@/tenant/features/question-bank/hooks/useQuestionBankConfig';
-import { useQuestionBankFilters } from '@/tenant/features/question-bank/hooks/useQuestionBankFilters';
-import type { QuestionBankQuestion as Question } from '@mms/shared';
-import type { ModuleColumnCustomizerProps } from '@/components/ui/ModuleColumnCustomizer';
-import { QuestionBankTrashDialogs } from '@/tenant/features/question-bank/components/QuestionBankTrashDialogs';
-import { QuestionsListFilters } from '@/tenant/features/question-bank/components/QuestionsListFilters';
-import { QuestionBankBulkActionBar } from '@/tenant/features/question-bank/components/QuestionBankBulkActionBar';
-import { useQuestionBankWorkController } from '@/tenant/features/question-bank/hooks/useQuestionBankWorkController';
-import { QuestionBankListContent } from '@/tenant/features/question-bank/components/QuestionBankListContent';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
+import { useQuestionBankFilters } from "@/tenant/features/question-bank/hooks/useQuestionBankFilters";
+import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import { QuestionBankTrashDialogs } from "@/tenant/features/question-bank/components/QuestionBankTrashDialogs";
+import { QuestionsListFilters } from "@/tenant/features/question-bank/components/QuestionsListFilters";
+import { QuestionBankBulkActionBar } from "@/tenant/features/question-bank/components/QuestionBankBulkActionBar";
+import { useQuestionBankWorkController } from "@/tenant/features/question-bank/hooks/useQuestionBankWorkController";
+import { QuestionBankListContent } from "@/tenant/features/question-bank/components/QuestionBankListContent";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface QuestionBankProps {
   questions: Question[];
@@ -177,5 +177,3 @@ export function QuestionBank({
     </div>
   );
 }
-
-

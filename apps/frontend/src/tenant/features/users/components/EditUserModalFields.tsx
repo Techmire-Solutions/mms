@@ -1,26 +1,21 @@
-import React from 'react';
-import type { UseFormReturn } from 'react-hook-form';
+import React from "react";
+import type { UseFormReturn } from "react-hook-form";
 import {
   USER_STATUS_VALUES,
   type EditWorkspaceUserInput,
   type SystemUser,
   type WorkspaceRole,
   type ModuleCustomField,
-} from '@mms/shared';
-import { WarningCallout } from '@/components/ui/WarningCallout';
-import { Button } from '@/components/ui/button';
-import { FormSelect } from '@/components/ui/FormSelect';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import ContactPicker from '@/components/contactLink/ContactPicker';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from '@/components/ui/form';
-import { TranslatedFormMessage } from '@/lib/forms/TranslatedFormMessage';
-import { useTranslation } from '@/hooks/useTranslation';
+} from "@mms/shared";
+import { WarningCallout } from "@/components/ui/WarningCallout";
+import { Button } from "@/components/ui/button";
+import { FormSelect } from "@/components/ui/FormSelect";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import ContactPicker from "@/components/contactLink/ContactPicker";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface EditUserModalFieldsProps {
   form: UseFormReturn<EditWorkspaceUserInput & Record<string, unknown>>;
@@ -42,7 +37,7 @@ export function EditUserModalFields({
   assignableRoles,
   customFields,
   onSubmit,
-  formId = 'edit-user-form',
+  formId = "edit-user-form",
 }: EditUserModalFieldsProps): React.JSX.Element {
   const { t } = useTranslation();
   const roleDisabled = !canManageThisUser || roleLockedByFaculty;
@@ -50,8 +45,12 @@ export function EditUserModalFields({
   return (
     <form id={formId} noValidate className="space-y-4" onSubmit={onSubmit}>
       {!canManageThisUser && (
-        <WarningCallout tone="destructive" density="compact" role="alert"
-          description={t('users.errors.cannotModifySuperAdmin')} />
+        <WarningCallout
+          tone="destructive"
+          density="compact"
+          role="alert"
+          description={t("users.errors.cannotModifySuperAdmin")}
+        />
       )}
       <FormField
         control={form.control}
@@ -59,20 +58,20 @@ export function EditUserModalFields({
         render={({ field }) => (
           <FormItem>
             <ContactPicker
-              label={t('users.fieldContact')}
+              label={t("users.fieldContact")}
               value={field.value || null}
-              onChange={(id) => field.onChange(id ?? '')}
-              searchPlaceholder={t('users.contactSearch')}
-              emptyTitle={t('users.contactEmptyTitle')}
-              emptyHint={t('users.contactEmptyHint')}
+              onChange={(id) => field.onChange(id ?? "")}
+              searchPlaceholder={t("users.contactSearch")}
+              emptyTitle={t("users.contactEmptyTitle")}
+              emptyHint={t("users.contactEmptyHint")}
             />
             <TranslatedFormMessage messageKey={form.formState.errors.contactId?.message} />
             {user.loginEmail ? (
               <p className="mt-2 text-xs text-muted-foreground">
-                {t('users.fieldLoginEmail')}: {user.loginEmail}
+                {t("users.fieldLoginEmail")}: {user.loginEmail}
               </p>
             ) : null}
-            <p className="mt-1 text-xs text-muted-foreground">{t('users.loginEmailNote')}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("users.loginEmailNote")}</p>
           </FormItem>
         )}
       />
@@ -81,11 +80,15 @@ export function EditUserModalFields({
         name="role"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('users.fieldRole')}</FormLabel>
+            <FormLabel>{t("users.fieldRole")}</FormLabel>
             {roleLockedByFaculty ? (
-              <p className="mt-1 text-xs text-muted-foreground">{t('users.roleLockedByFaculty')}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("users.roleLockedByFaculty")}</p>
             ) : null}
-            <div role="group" aria-label={t('users.fieldRole')} className="mt-1.5 flex flex-wrap gap-2">
+            <div
+              role="group"
+              aria-label={t("users.fieldRole")}
+              className="mt-1.5 flex flex-wrap gap-2"
+            >
               {assignableRoles.map((workspaceRole) => (
                 <Button
                   key={workspaceRole.id}
@@ -93,7 +96,7 @@ export function EditUserModalFields({
                   size="sm"
                   disabled={roleDisabled}
                   aria-pressed={field.value === workspaceRole.id}
-                  variant={field.value === workspaceRole.id ? 'default' : 'outline'}
+                  variant={field.value === workspaceRole.id ? "default" : "outline"}
                   onClick={() => field.onChange(workspaceRole.id)}
                   className="min-h-11"
                 >
@@ -110,7 +113,7 @@ export function EditUserModalFields({
         name="status"
         render={({ field }) => (
           <FormItem>
-            <FormLabel htmlFor="edit-user-status">{t('users.fieldStatus')}</FormLabel>
+            <FormLabel htmlFor="edit-user-status">{t("users.fieldStatus")}</FormLabel>
             <FormControl>
               <FormSelect
                 id="edit-user-status"
@@ -139,15 +142,18 @@ export function EditUserModalFields({
                 onCheckedChange={field.onChange}
               />
             </FormControl>
-            <FormLabel htmlFor={field.name} className="cursor-pointer text-xs font-medium text-foreground">
-              {t('users.field2fa')}
+            <FormLabel
+              htmlFor={field.name}
+              className="cursor-pointer text-xs font-medium text-foreground"
+            >
+              {t("users.field2fa")}
             </FormLabel>
           </FormItem>
         )}
       />
       {customFields.length > 0 && (
         <div className="space-y-3 pt-2 border-t border-border/50">
-          <p className="text-xs font-bold text-foreground">{t('customFields.title')}</p>
+          <p className="text-xs font-bold text-foreground">{t("customFields.title")}</p>
           {customFields.map((cf) => (
             <FormField
               key={cf.id}
@@ -160,12 +166,14 @@ export function EditUserModalFields({
                     <Input
                       id={`custom-field-${cf.id}`}
                       name={field.name}
-                      value={String(field.value ?? '')}
+                      value={String(field.value ?? "")}
                       onChange={field.onChange}
                       placeholder={cf.placeholder || cf.label}
                     />
                   </FormControl>
-                  <TranslatedFormMessage messageKey={form.formState.errors[cf.id]?.message as string} />
+                  <TranslatedFormMessage
+                    messageKey={form.formState.errors[cf.id]?.message as string}
+                  />
                 </FormItem>
               )}
             />

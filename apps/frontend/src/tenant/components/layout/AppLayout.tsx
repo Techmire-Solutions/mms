@@ -10,7 +10,7 @@ import TopBar from "@/tenant/components/layout/TopBar";
 import TopBarActions from "@/tenant/components/layout/TopBarActions";
 import MobileSidebar from "@/tenant/components/layout/MobileSidebar";
 const CommandPalette = React.lazy(() =>
-  import("@/components/ui/CommandPalette").then((m) => ({ default: m.CommandPalette }))
+  import("@/components/ui/CommandPalette").then((m) => ({ default: m.CommandPalette })),
 );
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { getInitials } from "@mms/shared";
@@ -18,7 +18,7 @@ import { useSessionTimeout } from "@/tenant/hooks/useSessionTimeout";
 import { LOGO_IMAGE } from "@/lib/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalShortcut } from "@/hooks/useGlobalShortcut";
-import { useNavigationState } from '@/hooks/useNavigationState';
+import { useNavigationState } from "@/hooks/useNavigationState";
 import { useInitializeUiState } from "@/tenant/hooks/useInitializeUiState";
 import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
 import { canShowRoute } from "@/lib/config/routeAccess";
@@ -29,9 +29,15 @@ import { canShowRoute } from "@/lib/config/routeAccess";
  */
 export default function AppLayout(): React.JSX.Element {
   const {
-    collapsed: sidebarCollapsed, toggleCollapsed, mobileOpen,
-    openMobileSidebar, closeMobileSidebar, commandPaletteOpen,
-    openCommandPalette, closeCommandPalette, toggleCommandPalette,
+    collapsed: sidebarCollapsed,
+    toggleCollapsed,
+    mobileOpen,
+    openMobileSidebar,
+    closeMobileSidebar,
+    commandPaletteOpen,
+    openCommandPalette,
+    closeCommandPalette,
+    toggleCommandPalette,
   } = useNavigationState();
   const branding = useBranding();
   const { evaluate } = useModuleAccess();
@@ -53,20 +59,10 @@ export default function AppLayout(): React.JSX.Element {
 
   return (
     <AppShell
-      sidebar={
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          onToggle={toggleCollapsed}
-        />
-      }
-      mobileSidebar={
-        <MobileSidebar open={mobileOpen} onClose={closeMobileSidebar} />
-      }
+      sidebar={<Sidebar collapsed={sidebarCollapsed} onToggle={toggleCollapsed} />}
+      mobileSidebar={<MobileSidebar open={mobileOpen} onClose={closeMobileSidebar} />}
       topBar={
-        <TopBar
-          sidebarCollapsed={sidebarCollapsed}
-          onOpenCommandPalette={openCommandPalette}
-        />
+        <TopBar sidebarCollapsed={sidebarCollapsed} onOpenCommandPalette={openCommandPalette} />
       }
       mobileHeader={
         <div className="flex h-14 w-full items-center gap-3 border-b border-border bg-card/80 px-4 backdrop-blur-md">
@@ -110,13 +106,22 @@ export default function AppLayout(): React.JSX.Element {
       commandPalette={
         commandPaletteOpen ? (
           <Suspense fallback={null}>
-            <CommandPalette open={commandPaletteOpen} onClose={closeCommandPalette} isPathVisible={isCommandPathVisible} />
+            <CommandPalette
+              open={commandPaletteOpen}
+              onClose={closeCommandPalette}
+              isPathVisible={isCommandPathVisible}
+            />
           </Suspense>
         ) : null
       }
       extraModals={sessionTimeoutModal}
       sidebarCollapsed={sidebarCollapsed}
-      footer={<AppFooter text={branding.footerText || undefined} name={branding.madrasaName || undefined} />}
+      footer={
+        <AppFooter
+          text={branding.footerText || undefined}
+          name={branding.madrasaName || undefined}
+        />
+      }
     >
       <Suspense fallback={<ModuleScaffoldSkeleton />}>
         <Outlet />
@@ -124,4 +129,3 @@ export default function AppLayout(): React.JSX.Element {
     </AppShell>
   );
 }
-

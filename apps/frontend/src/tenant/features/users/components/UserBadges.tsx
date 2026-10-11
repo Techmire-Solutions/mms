@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   activityActionMeta,
   resolveWorkspaceRole,
@@ -6,19 +6,19 @@ import {
   workspaceRoleLabel,
   type ActivityAction,
   type UserStatus,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useWorkspaceRoles } from '@/tenant/hooks/useWorkspaceRoles';
-import { Badge, type BadgeTone } from '@/components/ui/badge';
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { SEMANTIC_BADGE } from '@/lib/semanticTone';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/semanticTone";
 
 const VARIANT_TO_TONE: Record<string, BadgeTone> = {
-  primary: 'primary',
-  muted: 'muted',
-  warning: 'warning',
-  success: 'success',
-  destructive: 'destructive',
+  primary: "primary",
+  muted: "muted",
+  warning: "warning",
+  success: "success",
+  destructive: "destructive",
 };
 
 const STATUS_CLS: Record<string, string> = {
@@ -35,7 +35,7 @@ export function UserRoleBadge({ roleId }: { roleId: string }): React.JSX.Element
     return <span className="text-xs text-muted-foreground">{roleId}</span>;
   }
   return (
-    <Badge as="span" tone={VARIANT_TO_TONE[role.badgeVariant] ?? 'muted'} size="sm">
+    <Badge as="span" tone={VARIANT_TO_TONE[role.badgeVariant] ?? "muted"} size="sm">
       {workspaceRoleLabel(role, t)}
     </Badge>
   );
@@ -45,9 +45,9 @@ export function UserStatusBadge({ status }: { status: UserStatus }): React.JSX.E
   const { t } = useTranslation();
   const meta = userStatusMeta(status);
   const config: Record<string, StatusBadgeConfigItem> = {
-    active: { label: t('users.status.active'), cls: STATUS_CLS.active },
-    inactive: { label: t('users.status.inactive'), cls: STATUS_CLS.inactive },
-    suspended: { label: t('users.status.suspended'), cls: STATUS_CLS.suspended },
+    active: { label: t("users.status.active"), cls: STATUS_CLS.active },
+    inactive: { label: t("users.status.inactive"), cls: STATUS_CLS.inactive },
+    suspended: { label: t("users.status.suspended"), cls: STATUS_CLS.suspended },
   };
   if (!meta) {
     return <StatusBadge status={status} config={config} size="sm" />;
@@ -75,7 +75,7 @@ export function ActivityActionBadge({ action }: { action: ActivityAction }): Rea
     );
   }
   return (
-    <Badge as="span" tone={VARIANT_TO_TONE[meta.badgeVariant] ?? 'muted'} size="sm">
+    <Badge as="span" tone={VARIANT_TO_TONE[meta.badgeVariant] ?? "muted"} size="sm">
       {t(meta.labelKey)}
     </Badge>
   );

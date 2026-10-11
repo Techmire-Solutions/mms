@@ -24,23 +24,26 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/components/ui/FormModal", () => ({
-  FormModal: ({ open, title, children }: {
+  FormModal: ({
+    open,
+    title,
+    children,
+  }: {
     open: boolean;
     title: string;
     children: React.ReactNode;
-  }) => (open ? (
-    <div data-testid="form-modal">
-      <h2>{title}</h2>
-      <div>{children}</div>
-    </div>
-  ) : null),
+  }) =>
+    open ? (
+      <div data-testid="form-modal">
+        <h2>{title}</h2>
+        <div>{children}</div>
+      </div>
+    ) : null,
 }));
 
 describe("ContactsSyncConflictPanel Component", () => {
   it("renders conflict modal with empty notice when there are no conflicts", () => {
-    const html = renderToStaticMarkup(
-      <ContactsSyncConflictPanel open={true} onClose={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<ContactsSyncConflictPanel open={true} onClose={vi.fn()} />);
 
     expect(html).toContain("contacts.sync.conflictReviewTitle");
     expect(html).toContain("contacts.sync.conflictReviewEmpty");

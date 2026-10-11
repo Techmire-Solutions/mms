@@ -85,10 +85,7 @@ describe("InvoiceTemplateEditor", () => {
     } as unknown as Parameters<typeof InvoiceTemplateEditor>[0]["collection"];
 
     const html = renderToStaticMarkup(
-      <InvoiceTemplateEditor
-        collection={mockCollection}
-        onClose={vi.fn()}
-      />
+      <InvoiceTemplateEditor collection={mockCollection} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("REC-LIVE-9999");
@@ -110,10 +107,7 @@ describe("InvoiceTemplateEditor", () => {
     } as unknown as Parameters<typeof InvoiceTemplateEditor>[0]["collection"];
 
     const html = renderToStaticMarkup(
-      <InvoiceTemplateEditor
-        collection={nullableCollection}
-        onClose={vi.fn()}
-      />
+      <InvoiceTemplateEditor collection={nullableCollection} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("REC-NULL-0001");
@@ -122,10 +116,7 @@ describe("InvoiceTemplateEditor", () => {
 
   it("renders embedded mode with region accessibility landmark when fullscreen is false", () => {
     const html = renderToStaticMarkup(
-      <InvoiceTemplateEditor
-        fullscreen={false}
-        onClose={vi.fn()}
-      />
+      <InvoiceTemplateEditor fullscreen={false} onClose={vi.fn()} />,
     );
 
     expect(html).toContain('role="region"');
@@ -141,10 +132,7 @@ describe("InvoiceTemplateEditor", () => {
 
   it("renders modal dialog landmark when fullscreen is true", () => {
     const html = renderToStaticMarkup(
-      <InvoiceTemplateEditor
-        fullscreen={true}
-        onClose={vi.fn()}
-      />
+      <InvoiceTemplateEditor fullscreen={true} onClose={vi.fn()} />,
     );
 
     expect(html).toContain('role="dialog"');

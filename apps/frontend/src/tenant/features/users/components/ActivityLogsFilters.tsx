@@ -1,17 +1,17 @@
-import React from 'react';
-import { ACTIVITY_ACTION_VALUES, type SystemUser } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { DateRangeFilterBar } from '@/components/ui/DateRangeFilterBar';
-import { WorkTaskToolbar } from '@/components/common/work';
-import { toColumnCustomizer, type DataTableColumnLayout } from '@/components/common/data-table';
+import React from "react";
+import { ACTIVITY_ACTION_VALUES, type SystemUser } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { WorkTaskToolbar } from "@/components/common/work";
+import { toColumnCustomizer, type DataTableColumnLayout } from "@/components/common/data-table";
 import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from '@/components/ui/ModuleFiltersMenuButton';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { Button } from '@/components/ui/button';
-import { calculateReportDateRange } from '@/lib/reports/reportDateUtils';
+} from "@/components/ui/ModuleFiltersMenuButton";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { Button } from "@/components/ui/button";
+import { calculateReportDateRange } from "@/lib/reports/reportDateUtils";
 
 export interface ActivityLogsFiltersProps {
   search: string;
@@ -49,61 +49,74 @@ export function ActivityLogsFilters({
   const { t } = useTranslation();
 
   const userOptions = (() => [
-    { value: 'all', label: t('users.activityAllUsers') },
+    { value: "all", label: t("users.activityAllUsers") },
     ...users.map((user) => ({ value: user.id, label: user.name })),
   ])();
 
   const actionOptions = (() => [
-    { value: 'all', label: t('users.activityAllActions') },
+    { value: "all", label: t("users.activityAllActions") },
     ...ACTIVITY_ACTION_VALUES.map((activityAction) => ({
       value: activityAction,
-      label: t(`users.action.${activityAction === 'login_failed' ? 'loginFailed' : activityAction === 'role_change' ? 'roleChange' : activityAction}`),
+      label: t(
+        `users.action.${activityAction === "login_failed" ? "loginFailed" : activityAction === "role_change" ? "roleChange" : activityAction}`,
+      ),
     })),
   ])();
 
   const applyPreset = (days?: number) => {
-    const preset = days === undefined ? 'none' : days === 0 ? 'today' : days === 7 ? '7d' : days === 30 ? '30d' : 'none';
+    const preset =
+      days === undefined
+        ? "none"
+        : days === 0
+          ? "today"
+          : days === 7
+            ? "7d"
+            : days === 30
+              ? "30d"
+              : "none";
     const range = calculateReportDateRange(preset);
     onDateFromChange(range.from);
     onDateToChange(range.to);
   };
 
   const activeFilterCount =
-    Number(userFilter !== 'all') + Number(actionFilter !== 'all') + Number(Boolean(dateFrom || dateTo));
+    Number(userFilter !== "all") +
+    Number(actionFilter !== "all") +
+    Number(Boolean(dateFrom || dateTo));
   const clearFilters = () => {
-    onSearchChange('');
-    onUserFilterChange('all');
-    onActionFilterChange('all');
-    onDateFromChange('');
-    onDateToChange('');
+    onSearchChange("");
+    onUserFilterChange("all");
+    onActionFilterChange("all");
+    onDateFromChange("");
+    onDateToChange("");
   };
 
   return (
     <WorkTaskToolbar
-      regionLabel={t('users.activity')}
+      regionLabel={t("users.activity")}
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('users.activitySearch')}
+      searchPlaceholder={t("users.activitySearch")}
       searchId="users-activity-search"
       hasActiveFilters={activeFilterCount > 0 || search.length > 0}
       onClearFilters={clearFilters}
-      clearFiltersLabel={t('common.clearFilters')}
+      clearFiltersLabel={t("common.clearFilters")}
       filterButton={
         <ModuleFilterDropdown
-          label={t('common.filters')}
+          label={t("common.filters")}
           activeCount={activeFilterCount}
-          clearLabel={t('common.clearFilters')}
+          clearLabel={t("common.clearFilters")}
           onClear={clearFilters}
         >
           <ModuleFilterRadioGroup
-            label={t('users.activityFilterUser')}
+            label={t("users.activityFilterUser")}
             value={userFilter}
             onValueChange={onUserFilterChange}
             options={userOptions}
           />
           <ModuleFilterDivider />
           <ModuleFilterRadioGroup
-            label={t('users.activityFilterAction')}
+            label={t("users.activityFilterAction")}
             value={actionFilter}
             onValueChange={onActionFilterChange}
             options={actionOptions}
@@ -116,12 +129,12 @@ export function ActivityLogsFilters({
       <div className="flex items-center gap-1">
         <Button
           type="button"
-          variant={!dateFrom && !dateTo ? 'secondary' : 'ghost'}
+          variant={!dateFrom && !dateTo ? "secondary" : "ghost"}
           size="sm"
           className="h-8 px-2 text-xs"
           onClick={() => applyPreset(undefined)}
         >
-          {t('common.none')}
+          {t("common.none")}
         </Button>
         <Button
           type="button"
@@ -130,7 +143,7 @@ export function ActivityLogsFilters({
           className="h-8 px-2 text-xs"
           onClick={() => applyPreset(0)}
         >
-          {t('datePicker.today')}
+          {t("datePicker.today")}
         </Button>
         <Button
           type="button"
@@ -139,7 +152,7 @@ export function ActivityLogsFilters({
           className="h-8 px-2 text-xs"
           onClick={() => applyPreset(7)}
         >
-          {t('messaging.datePreset7d')}
+          {t("messaging.datePreset7d")}
         </Button>
         <Button
           type="button"
@@ -148,7 +161,7 @@ export function ActivityLogsFilters({
           className="h-8 px-2 text-xs"
           onClick={() => applyPreset(30)}
         >
-          {t('messaging.datePreset30d')}
+          {t("messaging.datePreset30d")}
         </Button>
       </div>
       <DateRangeFilterBar

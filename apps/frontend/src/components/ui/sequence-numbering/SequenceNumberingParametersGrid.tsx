@@ -108,8 +108,7 @@ export function SequenceNumberingParametersGrid({
           value={prefix}
           onChange={(event) => onChangePrefix(event.target.value.toUpperCase())}
           placeholder={
-            prefixPlaceholder ??
-            t("common.sequenceNumbering.prefixPlaceholder", { example: "ID" })
+            prefixPlaceholder ?? t("common.sequenceNumbering.prefixPlaceholder", { example: "ID" })
           }
         />
       </Field>
@@ -167,7 +166,8 @@ export function SequenceNumberingParametersGrid({
           aria-label={t("common.sequenceNumbering.delimiter")}
         >
           {SEQUENCE_DELIMITER_PRESETS.map((preset) => {
-            const labelKey = DELIMITER_LABEL_KEYS[preset.value as keyof typeof DELIMITER_LABEL_KEYS];
+            const labelKey =
+              DELIMITER_LABEL_KEYS[preset.value as keyof typeof DELIMITER_LABEL_KEYS];
             const label = labelKey ? t(labelKey) : preset.label;
             const symbol = DELIMITER_SYMBOLS[preset.value] ?? preset.label;
             const selected = delimiter === preset.value;

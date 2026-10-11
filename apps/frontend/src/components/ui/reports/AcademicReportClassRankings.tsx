@@ -12,7 +12,7 @@ interface AcademicReportClassRankingsProps {
   onToggleClassFilter: (className: string) => void;
 }
 
-export const AcademicReportClassRankings = (function AcademicReportClassRankings({
+export const AcademicReportClassRankings = function AcademicReportClassRankings({
   classRankings,
   onToggleClassFilter,
 }: AcademicReportClassRankingsProps): React.JSX.Element {
@@ -20,7 +20,9 @@ export const AcademicReportClassRankings = (function AcademicReportClassRankings
 
   return (
     <>
-      <p className="text-sm font-semibold text-foreground">{t("examinations.report.classRankings")}</p>
+      <p className="text-sm font-semibold text-foreground">
+        {t("examinations.report.classRankings")}
+      </p>
       {classRankings.length === 0 ? (
         <EmptyState icon={Trophy} title={t("examinations.report.noClassRankingData")} compact />
       ) : (
@@ -40,13 +42,17 @@ export const AcademicReportClassRankings = (function AcademicReportClassRankings
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {t("examinations.report.topStudentLabel")}: <span className="font-semibold text-foreground">{classRanking.topStudent}</span> ({classRanking.topMarks}%)
+                {t("examinations.report.topStudentLabel")}:{" "}
+                <span className="font-semibold text-foreground">{classRanking.topStudent}</span> (
+                {classRanking.topMarks}%)
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {t("examinations.report.classAvg")}: <span className="font-semibold">{classRanking.averageMarks}%</span>
+                {t("examinations.report.classAvg")}:{" "}
+                <span className="font-semibold">{classRanking.averageMarks}%</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                {t("examinations.report.passRate")}: <span className="font-semibold text-success">{classRanking.passRate}%</span>
+                {t("examinations.report.passRate")}:{" "}
+                <span className="font-semibold text-success">{classRanking.passRate}%</span>
               </p>
             </Card>
           ))}
@@ -54,4 +60,4 @@ export const AcademicReportClassRankings = (function AcademicReportClassRankings
       )}
     </>
   );
-});
+};

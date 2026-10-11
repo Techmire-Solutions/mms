@@ -5,11 +5,12 @@
  */
 type ZodGlobalScope = { __zod_globalConfig?: { jitless?: boolean } };
 
-const target: ZodGlobalScope = typeof globalThis !== 'undefined'
-  ? (globalThis as ZodGlobalScope)
-  : typeof window !== 'undefined'
-    ? (window as ZodGlobalScope)
-    : {};
+const target: ZodGlobalScope =
+  typeof globalThis !== "undefined"
+    ? (globalThis as ZodGlobalScope)
+    : typeof window !== "undefined"
+      ? (window as ZodGlobalScope)
+      : {};
 
 target.__zod_globalConfig = Object.assign(target.__zod_globalConfig ?? {}, { jitless: true });
 

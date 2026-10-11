@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import {
-  toggleIdInSelection,
-  togglePageIdsInSelection,
-} from "@/lib/directorySelection";
-import {
-  isStudentsQuickFilter,
-  type StudentsQuickFilter,
-} from "@mms/shared";
+import { toggleIdInSelection, togglePageIdsInSelection } from "@/lib/directorySelection";
+import { isStudentsQuickFilter, type StudentsQuickFilter } from "@mms/shared";
 import {
   STUDENTS_WORK_DRILLDOWN_EVENT,
   consumeStudentsWorkDrillDown,
@@ -105,14 +99,17 @@ export function useStudentsDirectoryFilters({
     (studentSearch.trim() ? 1 : 0) +
     (quickFilter !== "all" ? 1 : 0);
 
-  const handleServerSort = useCallback((field: StudentsListContentSortField) => {
-    if (sortField === field) {
-      setSortDir((currentDir) => (currentDir === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortDir("asc");
-    }
-  }, [sortField]);
+  const handleServerSort = useCallback(
+    (field: StudentsListContentSortField) => {
+      if (sortField === field) {
+        setSortDir((currentDir) => (currentDir === "asc" ? "desc" : "asc"));
+      } else {
+        setSortField(field);
+        setSortDir("asc");
+      }
+    },
+    [sortField],
+  );
 
   const handleSelectOne = useCallback((id: string) => {
     setSelectedIds((current) => toggleIdInSelection(current, id));

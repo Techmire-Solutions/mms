@@ -6,7 +6,13 @@ import { LegendChip } from "@/components/ui/LegendChip";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { useFinanceInvoicesPaginated } from "@/tenant/hooks/collections/finance";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatMonthYear, formatMonthName, getCollectedAmountForMonth, getOutstandingAmountForMonth, FINANCE_MODULE_MANIFEST } from "@mms/shared";
+import {
+  formatMonthYear,
+  formatMonthName,
+  getCollectedAmountForMonth,
+  getOutstandingAmountForMonth,
+  FINANCE_MODULE_MANIFEST,
+} from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { percentChange } from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";
 
@@ -20,7 +26,9 @@ import { percentChange } from "@/tenant/features/dashboard/hooks/dashboardMetric
  */
 export default function FeeCollectionSummary({ title }: { title?: string }) {
   const { t } = useTranslation();
-  const invoices = useFinanceInvoicesPaginated({ page: 1, limit: FINANCE_MODULE_MANIFEST.maxPageSize }).data?.invoices ?? [];
+  const invoices =
+    useFinanceInvoicesPaginated({ page: 1, limit: FINANCE_MODULE_MANIFEST.maxPageSize }).data
+      ?.invoices ?? [];
   const { formatCurrency } = useFinanceCurrency();
 
   const {
@@ -48,11 +56,23 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
 
     const target = collected + outstanding;
     const colPct = target > 0 ? Math.round((collected / target) * 100) : 0;
-    const outPct = target > 0 ? (100 - colPct) : 0;
+    const outPct = target > 0 ? 100 - colPct : 0;
 
     const bDown = [
-      { label: t("finance.report.collected"),   value: collected, total: target, color: "bg-success", pct: colPct },
-      { label: t("finance.report.outstanding"), value: outstanding,  total: target, color: "bg-destructive",     pct: outPct },
+      {
+        label: t("finance.report.collected"),
+        value: collected,
+        total: target,
+        color: "bg-success",
+        pct: colPct,
+      },
+      {
+        label: t("finance.report.outstanding"),
+        value: outstanding,
+        total: target,
+        color: "bg-destructive",
+        pct: outPct,
+      },
     ];
 
     // Group by Class for current month
@@ -63,7 +83,7 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
       if (!dateStr) return;
       const invYear = Number(dateStr.slice(0, 4));
       const invMonth = Number(dateStr.slice(5, 7)) - 1;
-      
+
       if (invYear === currentYear && invMonth === currentMonth) {
         const className = inv.class || t("common.other");
         if (!map[className]) {
@@ -105,15 +125,22 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
         subtitle={displayDate}
         actions={
           <div className="text-end shrink-0">
-            <p className="text-base font-black text-foreground m-0 tabular-nums">{formatCurrency(totalCollected)}</p>
-            <div className={`flex items-center gap-1 justify-end mt-0.5 ${isPositiveTrend ? "text-success" : "text-destructive"}`}>
+            <p className="text-base font-black text-foreground m-0 tabular-nums">
+              {formatCurrency(totalCollected)}
+            </p>
+            <div
+              className={`flex items-center gap-1 justify-end mt-0.5 ${isPositiveTrend ? "text-success" : "text-destructive"}`}
+            >
               {isPositiveTrend ? (
                 <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
               ) : (
                 <TrendingDown className="w-3.5 h-3.5" aria-hidden="true" />
               )}
               <span className="text-xs font-bold">
-                {t("dashboard.widgets.comparisonTrend", { value: displayTrendPct, month: comparisonMonthName })}
+                {t("dashboard.widgets.comparisonTrend", {
+                  value: displayTrendPct,
+                  month: comparisonMonthName,
+                })}
               </span>
             </div>
           </div>
@@ -122,13 +149,25 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
 
       <section className="p-5 space-y-4">
         {/* Stacked progress bar */}
-        <div className="h-3 rounded-full overflow-hidden bg-muted flex mb-4.5 shadow-inner" aria-hidden="true">
-          <div className="bg-success h-full transition-all duration-700 ease-out" style={{ width: `${collectedPct}%` }} />
-          <div className="bg-destructive h-full transition-all duration-700 ease-out" style={{ width: `${outstandingPct}%` }} />
+        <div
+          className="h-3 rounded-full overflow-hidden bg-muted flex mb-4.5 shadow-inner"
+          aria-hidden="true"
+        >
+          <div
+            className="bg-success h-full transition-all duration-700 ease-out"
+            style={{ width: `${collectedPct}%` }}
+          />
+          <div
+            className="bg-destructive h-full transition-all duration-700 ease-out"
+            style={{ width: `${outstandingPct}%` }}
+          />
         </div>
         <div
           className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 select-none"
-          aria-label={t("dashboard.widgets.feeSplitAria", { collected: collectedPct, outstanding: outstandingPct })}
+          aria-label={t("dashboard.widgets.feeSplitAria", {
+            collected: collectedPct,
+            outstanding: outstandingPct,
+          })}
         >
           {breakdown.map((b) => (
             <LegendChip
@@ -144,11 +183,16 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
         {/* By-class breakdown */}
         <div className="space-y-4">
           {byClass.map((classSummary) => {
-            const pct = classSummary.target > 0 ? Math.round((classSummary.collected / classSummary.target) * 100) : 0;
+            const pct =
+              classSummary.target > 0
+                ? Math.round((classSummary.collected / classSummary.target) * 100)
+                : 0;
             return (
               <article key={classSummary.name} className="space-y-1.5">
                 <header className="flex min-w-0 items-center justify-between gap-2">
-                  <span className="min-w-0 truncate text-sm text-foreground font-semibold">{classSummary.name}</span>
+                  <span className="min-w-0 truncate text-sm text-foreground font-semibold">
+                    {classSummary.name}
+                  </span>
                   <span className="shrink-0 text-xs text-muted-foreground font-medium tabular-nums">
                     {formatCurrency(classSummary.collected)} / {formatCurrency(classSummary.target)}
                   </span>
@@ -159,7 +203,10 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
                   fillClassName={`${
                     pct >= 90 ? "bg-success" : pct >= 70 ? "bg-warning" : "bg-destructive"
                   } duration-700 ease-out`}
-                  aria-label={t("dashboard.widgets.classCollectionAria", { name: classSummary.name, pct })}
+                  aria-label={t("dashboard.widgets.classCollectionAria", {
+                    name: classSummary.name,
+                    pct,
+                  })}
                 />
               </article>
             );

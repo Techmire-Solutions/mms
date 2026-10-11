@@ -1,20 +1,20 @@
-import type { FacultySettings } from './facultyModuleSettings.js';
-import { DEFAULT_FACULTY_SETTINGS } from './facultyModuleSettings.js';
-import { formatDeterministicSequence, formatTemplateSequence } from './sequenceNumberingUtils.js';
+import type { FacultySettings } from "./facultyModuleSettings.js";
+import { DEFAULT_FACULTY_SETTINGS } from "./facultyModuleSettings.js";
+import { formatDeterministicSequence, formatTemplateSequence } from "./sequenceNumberingUtils.js";
 
 export type FacultyEmployeeIdSettings = Pick<
   FacultySettings,
-  | 'idPrefix'
-  | 'idTemplate'
-  | 'idDigits'
-  | 'idStartSeq'
-  | 'idRestartAnnually'
-  | 'employeeIdPrefix'
-  | 'employeeIdYearFormat'
-  | 'employeeIdSequenceDigits'
-  | 'employeeIdDelimiter'
-  | 'employeeIdLastYear'
-  | 'employeeIdCurrentSequence'
+  | "idPrefix"
+  | "idTemplate"
+  | "idDigits"
+  | "idStartSeq"
+  | "idRestartAnnually"
+  | "employeeIdPrefix"
+  | "employeeIdYearFormat"
+  | "employeeIdSequenceDigits"
+  | "employeeIdDelimiter"
+  | "employeeIdLastYear"
+  | "employeeIdCurrentSequence"
 >;
 
 /** Format deterministic employee ID matching {PREFIX}{DELIMITER}{YEAR}{DELIMITER}{SEQUENCE}. */
@@ -22,7 +22,7 @@ export function formatDeterministicFacultyEmployeeId(
   seq: number,
   options: {
     prefix?: string;
-    yearFormat?: 'YYYY' | 'YY';
+    yearFormat?: "YYYY" | "YY";
     sequenceDigits?: number;
     delimiter?: string;
   } = {},
@@ -31,10 +31,10 @@ export function formatDeterministicFacultyEmployeeId(
   return formatDeterministicSequence(
     seq,
     {
-      prefix: options.prefix?.trim() || 'FAC',
-      yearFormat: options.yearFormat === 'YY' ? 'YY' : 'YYYY',
+      prefix: options.prefix?.trim() || "FAC",
+      yearFormat: options.yearFormat === "YY" ? "YY" : "YYYY",
       sequenceDigits: options.sequenceDigits,
-      delimiter: options.delimiter ?? '',
+      delimiter: options.delimiter ?? "",
     },
     dateInput,
   );
@@ -54,9 +54,7 @@ export function formatFacultyEmployeeId(
     settings.idPrefix?.trim() ||
     DEFAULT_FACULTY_SETTINGS.idPrefix;
   let template =
-    settings.idTemplate?.trim() ||
-    DEFAULT_FACULTY_SETTINGS.idTemplate ||
-    '{PREFIX}-{SEQ}';
+    settings.idTemplate?.trim() || DEFAULT_FACULTY_SETTINGS.idTemplate || "{PREFIX}-{SEQ}";
   const digits = Math.max(
     1,
     Math.min(8, Number(settings.employeeIdSequenceDigits ?? settings.idDigits) || 4),
@@ -92,7 +90,7 @@ export type FacultyDuplicateCheckInput = {
   employeeId?: string;
 };
 
-export type FacultyDuplicateReason = 'contact' | 'employeeId';
+export type FacultyDuplicateReason = "contact" | "employeeId";
 
 type FacultyRow = {
   id?: string | number;
@@ -118,7 +116,7 @@ export function findFacultyRegistrationConflict(
       row.contactId != null &&
       String(input.contactId) === String(row.contactId)
     ) {
-      return 'contact';
+      return "contact";
     }
 
     if (
@@ -126,7 +124,7 @@ export function findFacultyRegistrationConflict(
       row.employeeId &&
       employeeId === String(row.employeeId).trim().toLowerCase()
     ) {
-      return 'employeeId';
+      return "employeeId";
     }
   }
 

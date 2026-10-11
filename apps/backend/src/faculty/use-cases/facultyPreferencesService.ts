@@ -2,20 +2,17 @@ import {
   buildSequenceFormulaTemplate,
   normalizeFacultyModulePreferences,
   type FacultyModulePreferences,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getFacultyModulePreferencesByWorkspace,
   upsertFacultyModulePreferences,
-} from '../../db/repositories/facultyModulePreferencesRepository.js';
-import { createModulePreferencesService } from '../../lib/createModulePreferencesService.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import {
-  getFacultySetupConfig,
-  updateFacultySetupConfig,
-} from './facultyEmployeeIdService.js';
+} from "../../db/repositories/facultyModulePreferencesRepository.js";
+import { createModulePreferencesService } from "../../lib/createModulePreferencesService.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { getFacultySetupConfig, updateFacultySetupConfig } from "./facultyEmployeeIdService.js";
 
 const service = createModulePreferencesService<FacultyModulePreferences>({
-  broadcastKey: 'faculty',
+  broadcastKey: "faculty",
   getByWorkspace: getFacultyModulePreferencesByWorkspace,
   upsert: upsertFacultyModulePreferences,
   normalize: normalizeFacultyModulePreferences,
@@ -28,7 +25,7 @@ export const loadFacultyModulePreferences = async (): Promise<FacultyModulePrefe
   if (tenant) {
     try {
       const config = await getFacultySetupConfig(tenant);
-      const yearFormat = config.yearFormat === 'YY' ? 'YY' : 'YYYY';
+      const yearFormat = config.yearFormat === "YY" ? "YY" : "YYYY";
       return {
         ...prefs,
         idPrefix: config.prefix,

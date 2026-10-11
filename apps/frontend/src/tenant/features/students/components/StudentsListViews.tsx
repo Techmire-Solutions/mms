@@ -1,4 +1,3 @@
-
 import { StudentsListCards } from "@/tenant/features/students/components/StudentsListCards";
 import { StudentsListDesktopTable } from "@/tenant/features/students/components/StudentsListDesktopTable";
 import type { StudentsListViewsProps } from "@/tenant/features/students/components/studentsListTypes";

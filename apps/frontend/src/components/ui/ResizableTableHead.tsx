@@ -1,17 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/useTranslation';
-import { clampModuleColumnWidth } from '@mms/shared';
-import { measureColumnAutoFitWidth } from '@/components/ui/measureColumnAutoFitWidth';
+import React, { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
+import { clampModuleColumnWidth } from "@mms/shared";
+import { measureColumnAutoFitWidth } from "@/components/ui/measureColumnAutoFitWidth";
 import {
   getTableCellAlignClass,
   getTableCellWrapClass,
   type TableCellAlign,
   type TableCellVariant,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 
-export interface ResizableTableHeadProps
-  extends Omit<React.ThHTMLAttributes<HTMLTableCellElement>, 'children' | 'align'> {
+export interface ResizableTableHeadProps extends Omit<
+  React.ThHTMLAttributes<HTMLTableCellElement>,
+  "children" | "align"
+> {
   columnKey: string;
   width?: number;
   onResize?: (columnKey: string, width: number) => void;
@@ -65,15 +67,12 @@ export function ResizableTableHead({
     event.stopPropagation();
 
     const startX = event.clientX;
-    const startWidth =
-      resolvedWidth ??
-      thRef.current?.getBoundingClientRect().width ??
-      minWidth;
+    const startWidth = resolvedWidth ?? thRef.current?.getBoundingClientRect().width ?? minWidth;
     resizingRef.current = true;
     setDraftWidth(startWidth);
 
     const previousUserSelect = document.body.style.userSelect;
-    document.body.style.userSelect = 'none';
+    document.body.style.userSelect = "none";
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       if (!resizingRef.current) return;
@@ -89,8 +88,8 @@ export function ResizableTableHead({
       if (!resizingRef.current) return;
       resizingRef.current = false;
       document.body.style.userSelect = previousUserSelect;
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
       cleanupResizeRef.current = null;
     };
 
@@ -106,8 +105,8 @@ export function ResizableTableHead({
     };
 
     cleanupResizeRef.current = cleanup;
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
   };
 
   const handleDoubleClick = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -125,14 +124,14 @@ export function ResizableTableHead({
       scope="col"
       role="columnheader"
       className={cn(
-        'relative',
+        "relative",
         getTableCellAlignClass(align, variant),
         getTableCellWrapClass(noWrap, truncate),
         className,
       )}
       style={{
         ...style,
-        ...(typeof resolvedWidth === 'number'
+        ...(typeof resolvedWidth === "number"
           ? { width: resolvedWidth, minWidth: resolvedWidth, maxWidth: resolvedWidth }
           : undefined),
       }}
@@ -143,8 +142,8 @@ export function ResizableTableHead({
         <span
           role="separator"
           aria-orientation="vertical"
-          aria-label={t('table.resizeColumn')}
-          title={t('table.resizeColumn')}
+          aria-label={t("table.resizeColumn")}
+          title={t("table.resizeColumn")}
           onPointerDown={handlePointerDown}
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={handleDoubleClick}

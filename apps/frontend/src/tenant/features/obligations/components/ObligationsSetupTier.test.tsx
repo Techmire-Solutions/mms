@@ -47,7 +47,9 @@ vi.mock("@/components/ui/SubTabBar", () => ({
 
 vi.mock("./ObligationTypeManager", () => ({
   default: () => <div data-testid="obligation-type-manager">Obligation Type Manager</div>,
-  ObligationTypeManager: () => <div data-testid="obligation-type-manager">Obligation Type Manager</div>,
+  ObligationTypeManager: () => (
+    <div data-testid="obligation-type-manager">Obligation Type Manager</div>
+  ),
 }));
 
 vi.mock("./MujtahidManager", () => ({
@@ -71,7 +73,11 @@ vi.mock("@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor"
       Invoice Template Editor
     </div>
   ),
-  InvoiceTemplateEditor: (props: { obligationTypes?: unknown[]; mujtahids?: unknown[]; reps?: unknown[] }) => (
+  InvoiceTemplateEditor: (props: {
+    obligationTypes?: unknown[];
+    mujtahids?: unknown[];
+    reps?: unknown[];
+  }) => (
     <div
       data-testid="invoice-template-editor"
       data-types-count={props.obligationTypes?.length ?? 0}
@@ -84,8 +90,12 @@ vi.mock("@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor"
 }));
 
 vi.mock("@/tenant/features/obligations/components/ObligationsReceiptNumberingSection", () => ({
-  default: () => <div data-testid="obligations-receipt-numbering-section">Receipt Numbering Section</div>,
-  ObligationsReceiptNumberingSection: () => <div data-testid="obligations-receipt-numbering-section">Receipt Numbering Section</div>,
+  default: () => (
+    <div data-testid="obligations-receipt-numbering-section">Receipt Numbering Section</div>
+  ),
+  ObligationsReceiptNumberingSection: () => (
+    <div data-testid="obligations-receipt-numbering-section">Receipt Numbering Section</div>
+  ),
 }));
 
 describe("ObligationsSetupTier Component", () => {

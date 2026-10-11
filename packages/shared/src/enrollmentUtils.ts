@@ -6,9 +6,9 @@ export {
   filterActiveEntities,
   isEnrollmentDeleted,
   filterActiveEnrollments,
-} from './enrollmentSoftDelete.js';
+} from "./enrollmentSoftDelete.js";
 
-import { stripEnrollmentClientSoftDeleteFields } from './enrollmentSoftDelete.js';
+import { stripEnrollmentClientSoftDeleteFields } from "./enrollmentSoftDelete.js";
 
 /** Normalize an enrollment row before persist (strips client soft-delete keys). */
 export function normalizeStoredEnrollment<T extends Record<string, unknown>>(record: T): T {

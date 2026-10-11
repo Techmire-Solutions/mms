@@ -1,7 +1,7 @@
-import React from 'react';
-import { ModuleRowActionsMenu } from '@/components/ui/ModuleRowActionsMenu';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { Exam } from '@mms/shared';
+import React from "react";
+import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { Exam } from "@mms/shared";
 
 export interface ExaminationsRowActionsProps {
   exam: Exam;
@@ -31,10 +31,10 @@ export function ExaminationsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t('examinations.table.actions')}
-      editLabel={t('common.edit')}
-      deleteLabel={t('common.delete')}
-      restoreLabel={t('examinations.trash.restore')}
+      triggerLabel={t("examinations.table.actions")}
+      editLabel={t("common.edit")}
+      deleteLabel={t("common.delete")}
+      restoreLabel={t("examinations.trash.restore")}
       archived={showDeleted}
       canWrite={canWrite}
       canDelete={canDelete}

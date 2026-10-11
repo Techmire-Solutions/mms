@@ -1,4 +1,4 @@
-export type { TenantUserRow } from './tenantUserRepositoryHydrate.js';
+export type { TenantUserRow } from "./tenantUserRepositoryHydrate.js";
 export {
   rowToTenantUser,
   listTenantUsersByIds,
@@ -9,7 +9,7 @@ export {
   findTenantUserRowById,
   findTenantUserRowByContactId,
   findTenantUserRowByIdGlobal,
-} from './tenantUserRepositoryHydrate.js';
+} from "./tenantUserRepositoryHydrate.js";
 export {
   replaceTenantUsersForWorkspace,
   upsertTenantUserRow,
@@ -20,4 +20,4 @@ export {
   verifyTenantUserEmailRowGlobal,
   resetTenantUserPasswordRow,
   activateInvitedTenantUserRow,
-} from './tenantUserRepositoryPersist.js';
+} from "./tenantUserRepositoryPersist.js";

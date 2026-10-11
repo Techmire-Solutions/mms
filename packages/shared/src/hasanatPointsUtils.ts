@@ -6,9 +6,7 @@ export function getDenominationPoints(
 ): number {
   if (!denominationId) return 0;
 
-  const configured = denominations?.find(
-    (denomination) => denomination.id === denominationId,
-  );
+  const configured = denominations?.find((denomination) => denomination.id === denominationId);
   if (configured) return configured.points;
 
   const legacyPoints: Record<string, number> = {

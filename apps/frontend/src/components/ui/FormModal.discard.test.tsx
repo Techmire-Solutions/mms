@@ -27,13 +27,8 @@ vi.mock("@/components/ui/Modal", () => ({
 }));
 
 vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
-  ConfirmAlertDialog: ({
-    open,
-    title,
-  }: {
-    open: boolean;
-    title: string;
-  }) => (open ? <div data-testid="discard-dialog">{title}</div> : null),
+  ConfirmAlertDialog: ({ open, title }: { open: boolean; title: string }) =>
+    open ? <div data-testid="discard-dialog">{title}</div> : null,
 }));
 
 vi.mock("@/components/ui/useFormModalLayout", () => ({
@@ -53,7 +48,7 @@ describe("FormModal dirty discard", () => {
       </FormModal>,
     );
     expect(html).toContain("Edit");
-    expect(html).not.toContain("data-testid=\"discard-dialog\"");
+    expect(html).not.toContain('data-testid="discard-dialog"');
   });
 
   it("keeps discard dialog closed until close is requested while dirty", () => {

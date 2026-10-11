@@ -1,9 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  formatDate,
-  primaryResponsibleAdultDisplayName,
-  type Student,
-} from "@mms/shared";
+import { formatDate, primaryResponsibleAdultDisplayName, type Student } from "@mms/shared";
 import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
@@ -37,7 +33,11 @@ export function renderStudentWorkColumnValue(
   switch (columnKey) {
     case "dob": {
       if (!student.dob) return emptyFallback;
-      return renderStudentDobCell({ studentRow: student, emptyDash: t("students.table.emptyDash"), t });
+      return renderStudentDobCell({
+        studentRow: student,
+        emptyDash: t("students.table.emptyDash"),
+        t,
+      });
     }
     case "parents": {
       const parentName = primaryResponsibleAdultDisplayName(student);

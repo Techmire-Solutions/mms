@@ -36,11 +36,17 @@ export interface DragResizeRefs<TPayload = Record<string, unknown>> {
   canvasViewportRef?: RefObject<HTMLElement | null>;
 }
 
-export interface UseTemplateEditorInteractionsOptions<TPayload = Record<string, unknown>> extends DragResizeRefs<TPayload> {
+export interface UseTemplateEditorInteractionsOptions<
+  TPayload = Record<string, unknown>,
+> extends DragResizeRefs<TPayload> {
   canvasScale: number;
   size: PageSizeInfo;
   templateElements: TemplateElement<keyof TPayload & string>[];
-  updateElements: (updateFn: (templateElements: TemplateElement<keyof TPayload & string>[]) => TemplateElement<keyof TPayload & string>[]) => void;
+  updateElements: (
+    updateFn: (
+      templateElements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
+  ) => void;
   setHistory: Dispatch<SetStateAction<DocumentTemplate<TPayload>[]>>;
   setFuture: Dispatch<SetStateAction<DocumentTemplate<TPayload>[]>>;
 }

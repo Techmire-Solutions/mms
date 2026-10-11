@@ -53,7 +53,13 @@ vi.mock("@/tenant/features/attendance/hooks/useAttendancePageController", () => 
 }));
 
 vi.mock("@/components/ui/ModulePageShell", () => ({
-  ModulePageShell: ({ children, headerTitle }: { children: React.ReactNode; headerTitle: string }) => (
+  ModulePageShell: ({
+    children,
+    headerTitle,
+  }: {
+    children: React.ReactNode;
+    headerTitle: string;
+  }) => (
     <div data-testid="page-shell">
       <h1>{headerTitle}</h1>
       {children}

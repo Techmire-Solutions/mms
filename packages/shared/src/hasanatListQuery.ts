@@ -1,4 +1,4 @@
-import type { Distribution } from './hasanatModuleManifest.js';
+import type { Distribution } from "./hasanatModuleManifest.js";
 
 /** Query accepted by the hasanat distributions list endpoint. */
 export interface HasanatListQuery {
@@ -8,7 +8,7 @@ export interface HasanatListQuery {
   /** Comma-separated distribution statuses (`active|redeemed|returned`). */
   status?: string;
   sortField?: string;
-  sortDir?: 'asc' | 'desc' | '';
+  sortDir?: "asc" | "desc" | "";
   includeDeleted?: boolean;
 }
 

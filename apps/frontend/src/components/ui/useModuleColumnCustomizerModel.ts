@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import type { ModuleColumnRegistryEntry } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { descriptorColumnsToRegistry } from '@/hooks/useDescriptorColumnLayout';
-import { getEntityDescriptor } from '@/components/common/entityRegistry';
+import React, { useState } from "react";
+import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { descriptorColumnsToRegistry } from "@/hooks/useDescriptorColumnLayout";
+import { getEntityDescriptor } from "@/components/common/entityRegistry";
 import type {
   ModuleColumnCustomizerLabels,
   ModuleColumnCustomizerProps,
-} from '@/components/ui/moduleColumnCustomizerTypes';
+} from "@/components/ui/moduleColumnCustomizerTypes";
 
 export interface UseModuleColumnCustomizerModelOptions {
   columnRegistry?: ModuleColumnRegistryEntry[];
-  entityType?: ModuleColumnCustomizerProps['entityType'];
-  descriptor?: ModuleColumnCustomizerProps['descriptor'];
+  entityType?: ModuleColumnCustomizerProps["entityType"];
+  descriptor?: ModuleColumnCustomizerProps["descriptor"];
   updateUserColumnLayout: (columns: ModuleColumnRegistryEntry[]) => void;
   labels?: Partial<ModuleColumnCustomizerLabels>;
 }
@@ -26,9 +26,10 @@ export function useModuleColumnCustomizerModel({
   const { t } = useTranslation();
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const effectiveDescriptor = descriptor ?? (entityType ? getEntityDescriptor(entityType) : undefined);
+  const effectiveDescriptor =
+    descriptor ?? (entityType ? getEntityDescriptor(entityType) : undefined);
 
   const registry = React.useMemo(() => {
     if (columnRegistry && columnRegistry.length > 0) return columnRegistry;
@@ -39,19 +40,23 @@ export function useModuleColumnCustomizerModel({
   }, [columnRegistry, effectiveDescriptor]);
 
   const resolvedLabels: ModuleColumnCustomizerLabels = {
-    trigger: labels?.trigger ?? t('common.columns.trigger'),
-    title: labels?.title ?? t('common.columns.title'),
-    visibleAndOrder: labels?.visibleAndOrder ?? t('common.columns.visibleAndOrder'),
-    hidden: labels?.hidden ?? t('common.columns.hidden'),
-    fixed: labels?.fixed ?? t('common.columns.fixed'),
-    hideColumn: labels?.hideColumn ?? ((label: string) => t('common.columns.hideColumn', { label })),
-    showColumn: labels?.showColumn ?? ((label: string) => t('common.columns.showColumn', { label })),
-    reset: labels?.reset ?? t('common.columns.reset'),
-    searchPlaceholder: labels?.searchPlaceholder ?? t('common.columns.searchPlaceholder'),
-    showAll: labels?.showAll ?? t('common.columns.showAll'),
-    hideAll: labels?.hideAll ?? t('common.columns.hideAll'),
-    visibleCount: labels?.visibleCount ?? ((visible: number, total: number) => t('common.columns.visibleCount', { visible, total })),
-    noMatches: labels?.noMatches ?? t('common.columns.noMatches'),
+    trigger: labels?.trigger ?? t("common.columns.trigger"),
+    title: labels?.title ?? t("common.columns.title"),
+    visibleAndOrder: labels?.visibleAndOrder ?? t("common.columns.visibleAndOrder"),
+    hidden: labels?.hidden ?? t("common.columns.hidden"),
+    fixed: labels?.fixed ?? t("common.columns.fixed"),
+    hideColumn:
+      labels?.hideColumn ?? ((label: string) => t("common.columns.hideColumn", { label })),
+    showColumn:
+      labels?.showColumn ?? ((label: string) => t("common.columns.showColumn", { label })),
+    reset: labels?.reset ?? t("common.columns.reset"),
+    searchPlaceholder: labels?.searchPlaceholder ?? t("common.columns.searchPlaceholder"),
+    showAll: labels?.showAll ?? t("common.columns.showAll"),
+    hideAll: labels?.hideAll ?? t("common.columns.hideAll"),
+    visibleCount:
+      labels?.visibleCount ??
+      ((visible: number, total: number) => t("common.columns.visibleCount", { visible, total })),
+    noMatches: labels?.noMatches ?? t("common.columns.noMatches"),
   };
 
   const visibleColumns = React.useMemo(
@@ -59,7 +64,10 @@ export function useModuleColumnCustomizerModel({
       [...registry]
         .filter((column) => column.enabled)
         .sort((firstColumn, secondColumn) => firstColumn.order - secondColumn.order)
-        .filter((column) => !searchQuery || column.label.toLowerCase().includes(searchQuery.toLowerCase())),
+        .filter(
+          (column) =>
+            !searchQuery || column.label.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
     [registry, searchQuery],
   );
 
@@ -67,7 +75,10 @@ export function useModuleColumnCustomizerModel({
     () =>
       [...registry]
         .filter((column) => !column.enabled)
-        .filter((column) => !searchQuery || column.label.toLowerCase().includes(searchQuery.toLowerCase())),
+        .filter(
+          (column) =>
+            !searchQuery || column.label.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
     [registry, searchQuery],
   );
 
@@ -88,7 +99,9 @@ export function useModuleColumnCustomizerModel({
   };
 
   const hideAll = (): void => {
-    const updated = registry.map((column) => (column.fixed ? column : { ...column, enabled: false }));
+    const updated = registry.map((column) =>
+      column.fixed ? column : { ...column, enabled: false },
+    );
     updateUserColumnLayout(updated);
   };
 
@@ -98,7 +111,7 @@ export function useModuleColumnCustomizerModel({
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>, columnKey: string): void => {
     setDragging(columnKey);
-    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.effectAllowed = "move";
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>, columnKey: string): void => {
@@ -140,12 +153,12 @@ export function useModuleColumnCustomizerModel({
     setDragOver(null);
   };
 
-  const moveColumn = (columnKey: string, direction: 'up' | 'down'): void => {
+  const moveColumn = (columnKey: string, direction: "up" | "down"): void => {
     const allVisible = [...registry].filter((col) => col.enabled).sort((a, b) => a.order - b.order);
     const visibleIds = allVisible.map((column) => column.key);
     const fromIdx = visibleIds.indexOf(columnKey);
     if (fromIdx === -1) return;
-    const toIdx = direction === 'up' ? fromIdx - 1 : fromIdx + 1;
+    const toIdx = direction === "up" ? fromIdx - 1 : fromIdx + 1;
     if (toIdx < 0 || toIdx >= visibleIds.length) return;
 
     const newVisibleIds = [...visibleIds];

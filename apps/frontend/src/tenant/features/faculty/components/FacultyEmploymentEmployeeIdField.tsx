@@ -48,7 +48,11 @@ export function FacultyEmploymentEmployeeIdField({
       hint={
         isExistingFaculty
           ? undefined
-          : t(autoGenerateId ? "faculty.form.employeeIdSetupHint" : "faculty.form.employeeIdManualHint")
+          : t(
+              autoGenerateId
+                ? "faculty.form.employeeIdSetupHint"
+                : "faculty.form.employeeIdManualHint",
+            )
       }
     >
       <div className="flex items-center gap-2">
@@ -75,7 +79,12 @@ export function FacultyEmploymentEmployeeIdField({
             title={t("faculty.form.regenerateId")}
             aria-label={t("faculty.form.regenerateId")}
           >
-            <RotateCw className={cn("h-4 w-4 text-muted-foreground", isFetchingNextEmployeeId && "animate-spin text-primary")} />
+            <RotateCw
+              className={cn(
+                "h-4 w-4 text-muted-foreground",
+                isFetchingNextEmployeeId && "animate-spin text-primary",
+              )}
+            />
           </Button>
         )}
       </div>

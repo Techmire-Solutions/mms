@@ -1,5 +1,5 @@
-import React from 'react';
-import { PlatformPermissionMatrix } from '@/platform/components/users/PlatformPermissionMatrix';
+import React from "react";
+import { PlatformPermissionMatrix } from "@/platform/components/users/PlatformPermissionMatrix";
 
 /**
  * Users Setup tier — permissions matrix only.

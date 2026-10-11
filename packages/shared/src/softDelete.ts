@@ -4,18 +4,18 @@
  */
 
 export const SOFT_DELETE_KEYS = [
-  'deletedAt',
-  'deletedBy',
-  'deletionReason',
-  'restoredAt',
-  'restoredBy',
-  'deletedWithCascade',
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
+  "restoredAt",
+  "restoredBy",
+  "deletedWithCascade",
 ] as const;
 
 export type SoftDeleteKey = (typeof SOFT_DELETE_KEYS)[number];
 
 /** Visibility filter for soft-delete queries (active rows, archived/deleted rows, or all rows). */
-export type SoftDeleteListFilter = 'active' | 'deleted' | 'all';
+export type SoftDeleteListFilter = "active" | "deleted" | "all";
 
 /** Metadata fields representing soft-delete state across all entity records. */
 export interface SoftDeleteFields {
@@ -47,8 +47,7 @@ export interface SerializedAuditFields {
 
 /** Complete contract audit mixin combining soft-delete and timestamp/actor metadata. */
 export interface SerializedEntityAuditFields
-  extends SerializedSoftDeleteFields,
-    SerializedAuditFields {}
+  extends SerializedSoftDeleteFields, SerializedAuditFields {}
 
 /** Soft-delete audit payload provided by caller when archiving a record. */
 export interface SoftDeleteAuditPayload {
@@ -62,24 +61,28 @@ export interface SoftRestoreAuditPayload {
 }
 
 /** Check whether a generic entity record with soft-delete metadata is archived. */
-export function isEntityDeleted<T extends { deletedAt?: unknown }>(record: T | null | undefined): boolean {
+export function isEntityDeleted<T extends { deletedAt?: unknown }>(
+  record: T | null | undefined,
+): boolean {
   if (!record) return false;
   return Boolean(record.deletedAt);
 }
 
 /** Filter active entities from a list. */
-export function filterActiveEntities<T extends { deletedAt?: unknown }>(records: readonly T[]): T[] {
+export function filterActiveEntities<T extends { deletedAt?: unknown }>(
+  records: readonly T[],
+): T[] {
   return records.filter((r) => !isEntityDeleted(r));
 }
 
 /** Reusable soft-delete column database field names mapping. */
 export const softDeleteColumnNames = {
-  deletedAt: 'deleted_at',
-  deletedBy: 'deleted_by',
-  deletionReason: 'deletion_reason',
-  restoredAt: 'restored_at',
-  restoredBy: 'restored_by',
-  deletedWithCascade: 'deleted_with_cascade',
+  deletedAt: "deleted_at",
+  deletedBy: "deleted_by",
+  deletionReason: "deletion_reason",
+  restoredAt: "restored_at",
+  restoredBy: "restored_by",
+  deletedWithCascade: "deleted_with_cascade",
 } as const;
 
 /** Reusable soft-delete column names mapping alias matching Drizzle mixin identifier. */

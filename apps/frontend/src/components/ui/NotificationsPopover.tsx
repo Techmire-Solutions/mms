@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Bell } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export interface NotificationItem {
   id: string;
@@ -42,8 +42,8 @@ export function NotificationsPopover({
   notifications,
   unreadCount = notifications.length,
   title,
-  emptyText = 'No notifications',
-  ariaLabel = 'Notifications',
+  emptyText = "No notifications",
+  ariaLabel = "Notifications",
   newBadgeLabel,
   viewAllLabel,
   onViewAll,
@@ -78,7 +78,7 @@ export function NotificationsPopover({
           size="icon"
           aria-label={ariaLabel}
           className={cn(
-            'relative min-h-11 min-w-11 h-11 w-11 rounded-xl hover:bg-muted transition-colors cursor-pointer',
+            "relative min-h-11 min-w-11 h-11 w-11 rounded-xl hover:bg-muted transition-colors cursor-pointer",
             buttonClassName,
           )}
         >
@@ -90,24 +90,38 @@ export function NotificationsPopover({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className={cn('w-popover-menu max-w-full p-0 rounded-2xl surface-overlay text-start', contentClassName)}
+        className={cn(
+          "w-popover-menu max-w-full p-0 rounded-2xl surface-overlay text-start",
+          contentClassName,
+        )}
       >
         {popoverOpen && (
           <>
             <div className="border-b border-border px-4 py-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-foreground text-balance">{title}</h3>
-                {unreadCount > 0 && (
-                  newBadgeLabel ? (
-                    <Badge tone="primary" size="sm" className="font-bold" role="status" aria-atomic="true">
+                {unreadCount > 0 &&
+                  (newBadgeLabel ? (
+                    <Badge
+                      tone="primary"
+                      size="sm"
+                      className="font-bold"
+                      role="status"
+                      aria-atomic="true"
+                    >
                       {newBadgeLabel}
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="px-1.5 py-0 text-xs" role="status" aria-atomic="true" aria-label={`${unreadCount} unread notifications`}>
+                    <Badge
+                      variant="secondary"
+                      className="px-1.5 py-0 text-xs"
+                      role="status"
+                      aria-atomic="true"
+                      aria-label={`${unreadCount} unread notifications`}
+                    >
                       {unreadCount}
                     </Badge>
-                  )
-                )}
+                  ))}
               </div>
             </div>
             {children ? (
@@ -124,24 +138,34 @@ export function NotificationsPopover({
                       variant="ghost"
                       onClick={() => handleItemClick(notification)}
                       className={cn(
-                        'w-full min-h-11 h-auto text-start justify-start border-b border-border/50 px-4 py-3 rounded-none last:border-0 hover:bg-muted/60 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset block whitespace-normal',
-                        !notification.read && 'bg-primary/5',
+                        "w-full min-h-11 h-auto text-start justify-start border-b border-border/50 px-4 py-3 rounded-none last:border-0 hover:bg-muted/60 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset block whitespace-normal",
+                        !notification.read && "bg-primary/5",
                       )}
                     >
                       <div className="flex items-start gap-3">
                         <div
                           className={cn(
-                            'mt-1.5 h-2 w-2 shrink-0 rounded-full',
-                            notification.read ? 'bg-muted-foreground/30' : notification.urgent ? 'bg-destructive animate-pulse' : 'bg-primary',
+                            "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                            notification.read
+                              ? "bg-muted-foreground/30"
+                              : notification.urgent
+                                ? "bg-destructive animate-pulse"
+                                : "bg-primary",
                           )}
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-foreground truncate">{notification.title}</p>
+                          <p className="text-sm font-bold text-foreground truncate">
+                            {notification.title}
+                          </p>
                           {notification.desc && (
-                            <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">{notification.desc}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                              {notification.desc}
+                            </p>
                           )}
                           {notification.time && (
-                            <p className="mt-1 text-2xs font-mono text-muted-foreground">{notification.time}</p>
+                            <p className="mt-1 text-2xs font-mono text-muted-foreground">
+                              {notification.time}
+                            </p>
                           )}
                         </div>
                       </div>

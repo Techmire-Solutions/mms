@@ -1,19 +1,19 @@
-name: 'Setup Production SSH'
-description: 'Writes the deploy key and a pinned known_hosts for scripts/ci/ssh-exec.sh'
+name: "Setup Production SSH"
+description: "Writes the deploy key and a pinned known_hosts for scripts/ci/ssh-exec.sh"
 
 inputs:
   private-key:
-    description: 'SSH private key for the production host'
+    description: "SSH private key for the production host"
     required: true
   known-hosts:
-    description: 'Pinned known_hosts entries for the production host — get this by running: ssh-keyscan -H <SERVER_IP> (store as SSH_KNOWN_HOSTS secret)'
+    description: "Pinned known_hosts entries for the production host — get this by running: ssh-keyscan -H <SERVER_IP> (store as SSH_KNOWN_HOSTS secret)"
     required: true
   host:
-    description: 'Production host (only used for the trust-on-first-use fallback)'
+    description: "Production host (only used for the trust-on-first-use fallback)"
     required: true
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     # Pinned known_hosts is the trust anchor; keyscan at job time is
     # trust-on-first-use and only kept as a warned fallback until it is set.

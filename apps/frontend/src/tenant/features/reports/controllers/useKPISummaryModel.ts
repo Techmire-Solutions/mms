@@ -1,21 +1,28 @@
-import { useEffect, useState } from 'react';
-import { usePermissions } from '@/tenant/hooks/usePermissions';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useFinanceCurrency } from '@/hooks/useCurrency';
-import type { CustomCard } from '@/lib/reports/reportMetadata';
-import { getDefaultKPICollection, getCategoryLabelKey } from '@/components/ui/reports/kpiSummaryFormatters';
-import { buildStandardKPICards } from '@/components/ui/reports/kpiSummaryStandardCards';
+import { useEffect, useState } from "react";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useFinanceCurrency } from "@/hooks/useCurrency";
+import type { CustomCard } from "@/lib/reports/reportMetadata";
+import {
+  getDefaultKPICollection,
+  getCategoryLabelKey,
+} from "@/components/ui/reports/kpiSummaryFormatters";
+import { buildStandardKPICards } from "@/components/ui/reports/kpiSummaryStandardCards";
 import {
   buildPossibleCards,
   createKpiCardHandlers,
   filterStandardPossibleCards,
-} from '@/tenant/features/reports/controllers/kpiSummaryCardHandlers';
-import { computePrimaryVolume } from '@/components/ui/reports/kpiSummaryPrimaryVolume';
-import { getKpiCategoryFlags } from '@/components/ui/reports/kpiSummaryCategoryFlags';
-import { useKpiSummaryDataSources } from '@/tenant/features/reports/controllers/useKpiSummaryDataSources';
-import { useKpiSummaryCustomCards } from '@/tenant/features/reports/controllers/useKpiSummaryCustomCards';
-import { useKpiSummaryCardSelection } from '@/tenant/features/reports/controllers/useKpiSummaryCardSelection';
-import type { CategorizedKPIItem, KPIItem, KPISummaryProps } from '@/components/ui/reports/kpiSummaryTypes';
+} from "@/tenant/features/reports/controllers/kpiSummaryCardHandlers";
+import { computePrimaryVolume } from "@/components/ui/reports/kpiSummaryPrimaryVolume";
+import { getKpiCategoryFlags } from "@/components/ui/reports/kpiSummaryCategoryFlags";
+import { useKpiSummaryDataSources } from "@/tenant/features/reports/controllers/useKpiSummaryDataSources";
+import { useKpiSummaryCustomCards } from "@/tenant/features/reports/controllers/useKpiSummaryCustomCards";
+import { useKpiSummaryCardSelection } from "@/tenant/features/reports/controllers/useKpiSummaryCardSelection";
+import type {
+  CategorizedKPIItem,
+  KPIItem,
+  KPISummaryProps,
+} from "@/components/ui/reports/kpiSummaryTypes";
 
 export interface KPISummaryModel {
   moduleLabel: string;
@@ -64,7 +71,8 @@ export function useKPISummaryModel({ category, role }: KPISummaryProps): KPISumm
     questionBankResults,
   } = dataSources;
 
-  const standardCards = (() => buildStandardKPICards({
+  const standardCards = (() =>
+    buildStandardKPICards({
       category,
       activeCurrencyCode: activeCurrency.code,
       contactAnalytics,
@@ -125,7 +133,8 @@ export function useKPISummaryModel({ category, role }: KPISummaryProps): KPISumm
     setIsConfigOpen,
   );
 
-  const primaryVolume = (() => computePrimaryVolume({
+  const primaryVolume = (() =>
+    computePrimaryVolume({
       category,
       studentMetrics,
       facultyMetrics,

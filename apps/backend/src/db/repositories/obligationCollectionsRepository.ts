@@ -1,6 +1,10 @@
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type ObligationCollection, type RepositoryListOptions } from '@mms/shared';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import {
+  dedupeTrimmedIds,
+  type ObligationCollection,
+  type RepositoryListOptions,
+} from "@mms/shared";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import {
   obligationCollections,
   obligationDistributions,
@@ -8,13 +12,15 @@ import {
   wakalaTypes,
   mujtahidReps,
   mujtahids,
-} from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+} from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type ObligationCollectionRow = typeof obligationCollections.$inferSelect;
 
-export function obligationCollectionRowToRecord(row: ObligationCollectionRow): ObligationCollection {
+export function obligationCollectionRowToRecord(
+  row: ObligationCollectionRow,
+): ObligationCollection {
   const collection: ObligationCollection = {
     id: row.id,
     receipt_no: row.receiptNo,
@@ -23,7 +29,7 @@ export function obligationCollectionRowToRecord(row: ObligationCollectionRow): O
     reference_id: row.referenceId ?? null,
     amount: Number(row.amount),
     currency_id: row.currencyId,
-    payment_mode: row.paymentMode as ObligationCollection['payment_mode'],
+    payment_mode: row.paymentMode as ObligationCollection["payment_mode"],
     obligation_type_id: row.obligationTypeId,
     mujtahid_representative_id: row.mujtahidRepresentativeId,
     received_by: row.receivedBy,
@@ -44,9 +50,13 @@ export async function listObligationCollectionsByWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 2000, 1), 10000);
   const offset = Math.max(options?.offset ?? 0, 0);
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
-    const conditions = buildTenantSoftDeleteConditions(obligationCollections, subdomain, deletedFilter);
+    const conditions = buildTenantSoftDeleteConditions(
+      obligationCollections,
+      subdomain,
+      deletedFilter,
+    );
     const rows = await tx
       .select({
         id: obligationCollections.id,
@@ -78,7 +88,10 @@ export async function listObligationCollectionsByWorkspace(
   });
 }
 
-export async function findObligationCollectionById(tenant: string, id: string): Promise<ObligationCollection | null> {
+export async function findObligationCollectionById(
+  tenant: string,
+  id: string,
+): Promise<ObligationCollection | null> {
   const trimmedId = id?.trim();
   if (!trimmedId) return null;
   const subdomain = tenant.trim().toLowerCase();
@@ -107,7 +120,12 @@ export async function findObligationCollectionById(tenant: string, id: string): 
         updatedAt: obligationCollections.updatedAt,
       })
       .from(obligationCollections)
-      .where(and(eq(obligationCollections.workspaceSubdomain, subdomain), eq(obligationCollections.id, trimmedId)))
+      .where(
+        and(
+          eq(obligationCollections.workspaceSubdomain, subdomain),
+          eq(obligationCollections.id, trimmedId),
+        ),
+      )
       .limit(1);
     const row = rows[0];
     return row ? obligationCollectionRowToRecord(row) : null;
@@ -117,14 +135,14 @@ export async function findObligationCollectionById(tenant: string, id: string): 
 export async function findObligationCollectionsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<ObligationCollection[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(obligationCollections.deletedAt)
       : isAll
@@ -168,7 +186,10 @@ export async function findObligationCollectionsByIds(
   });
 }
 
-export async function saveObligationCollection(tenant: string, record: ObligationCollection): Promise<void> {
+export async function saveObligationCollection(
+  tenant: string,
+  record: ObligationCollection,
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await tx
@@ -222,7 +243,7 @@ export async function bulkSaveObligationCollections(
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, ObligationCollection>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -281,13 +302,15 @@ export async function replaceObligationCollectionsForWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, ObligationCollection>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(obligationCollections).where(eq(obligationCollections.workspaceSubdomain, subdomain));
+    await tx
+      .delete(obligationCollections)
+      .where(eq(obligationCollections.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
       await tx.insert(obligationCollections).values(
         uniqueRecords.map((record) => ({
@@ -386,8 +409,12 @@ export async function bulkRestoreObligationCollections(
 export async function deleteObligationsByWorkspace(workspaceSubdomain: string): Promise<void> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(obligationCollections).where(eq(obligationCollections.workspaceSubdomain, subdomain));
-    await tx.delete(obligationDistributions).where(eq(obligationDistributions.workspaceSubdomain, subdomain));
+    await tx
+      .delete(obligationCollections)
+      .where(eq(obligationCollections.workspaceSubdomain, subdomain));
+    await tx
+      .delete(obligationDistributions)
+      .where(eq(obligationDistributions.workspaceSubdomain, subdomain));
     await tx.delete(wakalaTypes).where(eq(wakalaTypes.workspaceSubdomain, subdomain));
     await tx.delete(mujtahidReps).where(eq(mujtahidReps.workspaceSubdomain, subdomain));
     await tx.delete(mujtahids).where(eq(mujtahids.workspaceSubdomain, subdomain));

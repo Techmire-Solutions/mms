@@ -1,13 +1,13 @@
-import React, { useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, X, Trash2 } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
-import { usePlatformAiDiagnostics } from '@/platform/hooks/usePlatformAiDiagnostics';
-import { PlatformAiMessageList } from '@/platform/components/intelligence/PlatformAiMessageList';
-import { PlatformAiPromptBar } from '@/platform/components/intelligence/PlatformAiPromptBar';
-import type { PlatformAiSuggestion } from '@mms/shared';
-import { cn } from '@/lib/utils';
+import React, { useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { Sparkles, X, Trash2 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { usePlatformAiDiagnostics } from "@/platform/hooks/usePlatformAiDiagnostics";
+import { PlatformAiMessageList } from "@/platform/components/intelligence/PlatformAiMessageList";
+import { PlatformAiPromptBar } from "@/platform/components/intelligence/PlatformAiPromptBar";
+import type { PlatformAiSuggestion } from "@mms/shared";
+import { cn } from "@/lib/utils";
 
 export interface PlatformAiDrawerProps {
   isOpen: boolean;
@@ -22,23 +22,18 @@ export function PlatformAiDrawer({
 }: PlatformAiDrawerProps): React.JSX.Element | null {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const {
-    messages,
-    isAnalyzing,
-    askCopilot,
-    quickPrompts,
-    clearHistory,
-  } = usePlatformAiDiagnostics();
+  const { messages, isAnalyzing, askCopilot, quickPrompts, clearHistory } =
+    usePlatformAiDiagnostics();
 
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
   const handleSuggestionClick = useCallback(
@@ -46,8 +41,8 @@ export function PlatformAiDrawer({
       if (suggestion.target) {
         navigate(suggestion.target);
         onClose();
-      } else if (suggestion.actionType === 'refresh') {
-        askCopilot('Refresh telemetry metrics');
+      } else if (suggestion.actionType === "refresh") {
+        askCopilot("Refresh telemetry metrics");
       }
     },
     [navigate, onClose, askCopilot],
@@ -72,7 +67,7 @@ export function PlatformAiDrawer({
       {/* Drawer Container */}
       <div
         className={cn(
-          'relative z-modal flex h-full w-full sm:w-[480px] max-w-full flex-col bg-card border-s border-border shadow-2xl animate-in slide-in-from-right duration-200',
+          "relative z-modal flex h-full w-full sm:w-[480px] max-w-full flex-col bg-card border-s border-border shadow-2xl animate-in slide-in-from-right duration-200",
           className,
         )}
       >
@@ -84,11 +79,9 @@ export function PlatformAiDrawer({
             </div>
             <div>
               <h2 id="platform-copilot-title" className="text-sm font-bold text-foreground">
-                {t('platform.aiCopilotTitle')}
+                {t("platform.aiCopilotTitle")}
               </h2>
-              <p className="text-2xs text-muted-foreground">
-                {t('platform.aiCopilotSubtitle')}
-              </p>
+              <p className="text-2xs text-muted-foreground">{t("platform.aiCopilotSubtitle")}</p>
             </div>
           </div>
 
@@ -99,7 +92,7 @@ export function PlatformAiDrawer({
                 variant="ghost"
                 size="icon"
                 onClick={clearHistory}
-                aria-label={t('common.delete')}
+                aria-label={t("common.delete")}
                 className="min-h-11 min-w-11 h-11 w-11 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <Trash2 className="h-4 w-4" aria-hidden />
@@ -110,7 +103,7 @@ export function PlatformAiDrawer({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              aria-label={t('common.close')}
+              aria-label={t("common.close")}
               className="min-h-11 min-w-11 h-11 w-11 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <X className="h-5 w-5" aria-hidden />

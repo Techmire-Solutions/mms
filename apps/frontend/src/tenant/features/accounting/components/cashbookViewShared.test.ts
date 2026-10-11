@@ -15,13 +15,69 @@ const translate = (key: string) => `t:${key}`;
 
 /** A chart whose accounts were created in the UI (generated ids, no seed ids). */
 const chart: Account[] = [
-  { id: "a-uuid-cash", code: "1000", name: "Main Cash Box", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a-uuid-bank", code: "1010", name: "Meezan Current", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a-uuid-receivable", code: "1020", name: "Fees Receivable", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a-uuid-depreciation", code: "1090", name: "Accumulated Depreciation", type: "Asset", subtype: "Contra Asset", description: "", isActive: true },
-  { id: "a-uuid-income", code: "4000", name: "Tuition Income", type: "Revenue", subtype: "Operating Revenue", description: "", isActive: true },
-  { id: "a-uuid-expense", code: "5000", name: "Wages", type: "Expense", subtype: "Operating Expense", description: "", isActive: true },
-  { id: "a-uuid-capital", code: "3000", name: "Owner Capital", type: "Equity", subtype: "Owner's Equity", description: "", isActive: true },
+  {
+    id: "a-uuid-cash",
+    code: "1000",
+    name: "Main Cash Box",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a-uuid-bank",
+    code: "1010",
+    name: "Meezan Current",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a-uuid-receivable",
+    code: "1020",
+    name: "Fees Receivable",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a-uuid-depreciation",
+    code: "1090",
+    name: "Accumulated Depreciation",
+    type: "Asset",
+    subtype: "Contra Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a-uuid-income",
+    code: "4000",
+    name: "Tuition Income",
+    type: "Revenue",
+    subtype: "Operating Revenue",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a-uuid-expense",
+    code: "5000",
+    name: "Wages",
+    type: "Expense",
+    subtype: "Operating Expense",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a-uuid-capital",
+    code: "3000",
+    name: "Owner Capital",
+    type: "Equity",
+    subtype: "Owner's Equity",
+    description: "",
+    isActive: true,
+  },
 ];
 
 const CASH_IDS = resolveCashAccountIds(chart);
@@ -110,7 +166,9 @@ describe("classifyEntry with a known cash chart", () => {
       lines: [line("a-uuid-expense", 75, 0), line("a-uuid-depreciation", 0, 75)],
     });
     expect(classifyEntry(depreciation, CASH_IDS)).toBe("unclassified");
-    const rows = buildCashbookRows([depreciation], "", "all", translate, { cashAccountIds: CASH_IDS });
+    const rows = buildCashbookRows([depreciation], "", "all", translate, {
+      cashAccountIds: CASH_IDS,
+    });
     expect(rows[0]?.flowType).toBe("unclassified");
     expect(rows[0]?.flowLabel).toBe("t:accounting.cashbook.unclassified");
     expect(countCashbookRowsByType(rows).unclassified).toBe(1);
@@ -137,9 +195,21 @@ describe("cashbook totals", () => {
   it("sums money in integer cents", () => {
     const rows = buildCashbookRows(
       [
-        entry({ id: "je-a", ref: "JE-A", lines: [line("a-uuid-cash", 0.1, 0), line("a-uuid-income", 0, 0.1)] }),
-        entry({ id: "je-b", ref: "JE-B", lines: [line("a-uuid-cash", 0.2, 0), line("a-uuid-income", 0, 0.2)] }),
-        entry({ id: "je-c", ref: "JE-C", lines: [line("a-uuid-expense", 0.05, 0), line("a-uuid-cash", 0, 0.05)] }),
+        entry({
+          id: "je-a",
+          ref: "JE-A",
+          lines: [line("a-uuid-cash", 0.1, 0), line("a-uuid-income", 0, 0.1)],
+        }),
+        entry({
+          id: "je-b",
+          ref: "JE-B",
+          lines: [line("a-uuid-cash", 0.2, 0), line("a-uuid-income", 0, 0.2)],
+        }),
+        entry({
+          id: "je-c",
+          ref: "JE-C",
+          lines: [line("a-uuid-expense", 0.05, 0), line("a-uuid-cash", 0, 0.05)],
+        }),
       ],
       "",
       "all",
@@ -169,7 +239,9 @@ describe("cashbook totals", () => {
 
 describe("buildCashbookFooterCells", () => {
   it("spans text columns before the totals in default order", () => {
-    expect(buildCashbookFooterCells(["date", "type", "description", "moneyIn", "moneyOut"])).toEqual([
+    expect(
+      buildCashbookFooterCells(["date", "type", "description", "moneyIn", "moneyOut"]),
+    ).toEqual([
       { kind: "label", span: 3 },
       { kind: "moneyIn", span: 1 },
       { kind: "moneyOut", span: 1 },

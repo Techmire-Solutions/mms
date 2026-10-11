@@ -1,7 +1,7 @@
-import type { Permission } from './permissions.js';
-import { DEFAULT_SETTINGS_SUB_TABS } from './contactTypes.js';
-import { WHATSAPP_STATUS_VALUES } from './contactEntityTypes.js';
-import { z } from 'zod';
+import type { Permission } from "./permissions.js";
+import { DEFAULT_SETTINGS_SUB_TABS } from "./contactTypes.js";
+import { WHATSAPP_STATUS_VALUES } from "./contactEntityTypes.js";
+import { z } from "zod";
 import {
   activitySchema,
   attachmentSchema,
@@ -15,7 +15,7 @@ import {
   relationshipContactSchema,
   relationshipSchema,
   socialLinkSchema,
-} from './contactNestedSchemas.js';
+} from "./contactNestedSchemas.js";
 export {
   activitySchema,
   attachmentSchema,
@@ -29,13 +29,13 @@ export {
   relationshipContactSchema,
   relationshipSchema,
   socialLinkSchema,
-} from './contactNestedSchemas.js';
+} from "./contactNestedSchemas.js";
 
 export {
   collectContactWriteExtraFieldKeys,
   buildContactWriteSchema,
   contactWriteSchema,
-} from './schemas/contacts.dto.js';
+} from "./schemas/contacts.dto.js";
 
 export const contactRecordSchema = z
   .object({
@@ -83,36 +83,35 @@ export const contactListSchema = z.array(contactRecordSchema);
  * Work directory views, soft-delete policy, and Setup sub-tabs.
  */
 export const CONTACTS_MODULE_MANIFEST = {
-  moduleId: 'contacts',
-  entityType: 'Contact',
-  collectionKey: 'contacts',
-  configObjectKey: 'contact_field_config',
-  preferencesObjectKey: 'contact_preferences',
-  columnPreferencesObjectKey: 'contact_user_column_preferences',
-  restBasePath: '/api/contacts',
-  analyticsCategory: 'contacts',
-  tiers: ['work', 'reports', 'setup'] as const,
+  moduleId: "contacts",
+  entityType: "Contact",
+  collectionKey: "contacts",
+  configObjectKey: "contact_field_config",
+  preferencesObjectKey: "contact_preferences",
+  columnPreferencesObjectKey: "contact_user_column_preferences",
+  restBasePath: "/api/contacts",
+  analyticsCategory: "contacts",
+  tiers: ["work", "reports", "setup"] as const,
   permissions: {
-    read: 'contacts.read',
-    write: 'contacts.write',
-    delete: 'contacts.delete',
-    setupView: 'configuration.view',
-    setupWrite: 'settings.global.write',
-    export: 'contacts.read',
-    reports: 'contacts.read',
+    read: "contacts.read",
+    write: "contacts.write",
+    delete: "contacts.delete",
+    setupView: "configuration.view",
+    setupWrite: "settings.global.write",
+    export: "contacts.read",
+    reports: "contacts.read",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ['table', 'cards'] as const,
-    bulkActions: ['whatsapp', 'sms', 'email', 'export', 'delete'] as const,
-    integrityTools: ['duplicates'] as const,
+    directoryViews: ["table", "cards"] as const,
+    bulkActions: ["whatsapp", "sms", "email", "export", "delete"] as const,
+    integrityTools: ["duplicates"] as const,
   },
-  setupSubTabs: DEFAULT_SETTINGS_SUB_TABS
-    .slice()
+  setupSubTabs: DEFAULT_SETTINGS_SUB_TABS.slice()
     .sort((left, right) => left.order - right.order)
-    .map((tab) => tab.key) as ['preferences', 'sync'],
-  defaultExportFilename: 'contacts.csv',
-  heroFieldKeys: ['avatar', 'firstName', 'lastName', 'dob', 'gender', 'isSyed'] as const,
-  searchableFieldKeys: ['name', 'firstName', 'lastName', 'phone', 'email', 'city'] as const,
+    .map((tab) => tab.key) as ["preferences", "sync"],
+  defaultExportFilename: "contacts.csv",
+  heroFieldKeys: ["avatar", "firstName", "lastName", "dob", "gender", "isSyed"] as const,
+  searchableFieldKeys: ["name", "firstName", "lastName", "phone", "email", "city"] as const,
   softDelete: {
     workExcludesDeleted: true,
     reportsIncludeDeleted: false,

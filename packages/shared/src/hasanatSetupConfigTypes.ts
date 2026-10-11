@@ -1,13 +1,10 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import { DEFAULT_HASANAT_SETTINGS, type HasanatSettings } from './hasanatModuleSettings.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
-import {
-  HASANAT_TAB_REGISTRY,
-  INITIAL_HASANAT_FIELD_SEED,
-} from './moduleFieldSetupFinance.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { DEFAULT_HASANAT_SETTINGS, type HasanatSettings } from "./hasanatModuleSettings.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
+import { HASANAT_TAB_REGISTRY, INITIAL_HASANAT_FIELD_SEED } from "./moduleFieldSetupFinance.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
 
 /** Deep clone {@link INITIAL_HASANAT_FIELD_SEED} for default and Setup states. */
 export function cloneHasanatFieldSeed(): Record<string, FieldDefinition[]> {
@@ -30,7 +27,7 @@ export function isHasanatSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Info tab). */
 export function isHasanatLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -40,7 +37,7 @@ export function isHasanatLockedEnabledTab(tabKey: string): boolean {
 export function resolveHasanatFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneHasanatFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -93,7 +90,7 @@ const hasanatFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
   .strict();
 
 export const hasanatFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, hasanatFieldConfigPutBodyBaseSchema);
 
@@ -114,28 +111,35 @@ export interface HasanatModulePreferences {
 }
 
 /** Extracts preferences slice from a raw composed settings blob. */
-export function normalizeHasanatModulePreferences(
-  raw: unknown
-): HasanatModulePreferences {
-  if (!raw || typeof raw !== 'object') {
+export function normalizeHasanatModulePreferences(raw: unknown): HasanatModulePreferences {
+  if (!raw || typeof raw !== "object") {
     return {
       pointsPerUnit: DEFAULT_HASANAT_SETTINGS.pointsPerUnit,
       autoApprovePayouts: DEFAULT_HASANAT_SETTINGS.autoApprovePayouts,
-      defaultViewLayout: DEFAULT_HASANAT_SETTINGS.defaultViewLayout || 'list',
+      defaultViewLayout: DEFAULT_HASANAT_SETTINGS.defaultViewLayout || "list",
     };
   }
 
   const prefs = raw as Partial<HasanatModulePreferences>;
   return {
-    pointsPerUnit: typeof prefs.pointsPerUnit === 'number' ? prefs.pointsPerUnit : DEFAULT_HASANAT_SETTINGS.pointsPerUnit,
-    autoApprovePayouts: typeof prefs.autoApprovePayouts === 'boolean' ? prefs.autoApprovePayouts : DEFAULT_HASANAT_SETTINGS.autoApprovePayouts,
-    defaultViewLayout: typeof prefs.defaultViewLayout === 'string' ? prefs.defaultViewLayout : DEFAULT_HASANAT_SETTINGS.defaultViewLayout || 'list',
+    pointsPerUnit:
+      typeof prefs.pointsPerUnit === "number"
+        ? prefs.pointsPerUnit
+        : DEFAULT_HASANAT_SETTINGS.pointsPerUnit,
+    autoApprovePayouts:
+      typeof prefs.autoApprovePayouts === "boolean"
+        ? prefs.autoApprovePayouts
+        : DEFAULT_HASANAT_SETTINGS.autoApprovePayouts,
+    defaultViewLayout:
+      typeof prefs.defaultViewLayout === "string"
+        ? prefs.defaultViewLayout
+        : DEFAULT_HASANAT_SETTINGS.defaultViewLayout || "list",
   };
 }
 
 /** Extracts field-config slice from a raw composed settings blob. */
 export function normalizeHasanatSettings(raw: unknown): HasanatSettings {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw || typeof raw !== "object") {
     return { ...DEFAULT_HASANAT_SETTINGS };
   }
 
@@ -145,7 +149,7 @@ export function normalizeHasanatSettings(raw: unknown): HasanatSettings {
     autoApprovePayouts: DEFAULT_HASANAT_SETTINGS.autoApprovePayouts, // managed by preferences
     defaultViewLayout: DEFAULT_HASANAT_SETTINGS.defaultViewLayout, // managed by preferences
     fields: resolveHasanatFieldsMap(
-      safe.fields && typeof safe.fields === 'object' && !Array.isArray(safe.fields)
+      safe.fields && typeof safe.fields === "object" && !Array.isArray(safe.fields)
         ? (safe.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -161,7 +165,7 @@ export function normalizeHasanatSettings(raw: unknown): HasanatSettings {
 export function composeHasanatSettings(
   fieldConfig: HasanatSettings | null,
   prefs: HasanatModulePreferences,
-  formTabs?: TabDefinition[]
+  formTabs?: TabDefinition[],
 ): HasanatSettings {
   return {
     ...(fieldConfig ?? DEFAULT_HASANAT_SETTINGS),
@@ -173,8 +177,15 @@ export function composeHasanatSettings(
 }
 
 /** Drops preference keys before saving field-config to avoid overriding prefs layer. */
-export function stripHasanatFieldConfigForPersist(config: Partial<HasanatSettings>): Partial<HasanatSettings> {
-  const { pointsPerUnit: _p, autoApprovePayouts: _a, defaultViewLayout: _d, ...fieldConfigOnly } = config;
+export function stripHasanatFieldConfigForPersist(
+  config: Partial<HasanatSettings>,
+): Partial<HasanatSettings> {
+  const {
+    pointsPerUnit: _p,
+    autoApprovePayouts: _a,
+    defaultViewLayout: _d,
+    ...fieldConfigOnly
+  } = config;
   return fieldConfigOnly;
 }
 
@@ -182,11 +193,17 @@ export function mergeHasanatFormTabsFromApi(
   documentFormTabs: TabDefinition[] | undefined,
   apiTabs: TabDefinition[],
 ): TabDefinition[] {
-  const base = documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [...HASANAT_TAB_REGISTRY];
-  const merged = apiTabs.length === 0 ? base : [
-    ...apiTabs,
-    ...HASANAT_TAB_REGISTRY.filter((s: TabDefinition) => !apiTabs.some((a) => a.key === s.key)),
-  ];
+  const base =
+    documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [...HASANAT_TAB_REGISTRY];
+  const merged =
+    apiTabs.length === 0
+      ? base
+      : [
+          ...apiTabs,
+          ...HASANAT_TAB_REGISTRY.filter(
+            (s: TabDefinition) => !apiTabs.some((a) => a.key === s.key),
+          ),
+        ];
   const seen = new Set<string>();
   return merged.filter((tab) => {
     if (!tab?.key || seen.has(tab.key)) return false;

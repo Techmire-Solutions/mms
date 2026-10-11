@@ -61,7 +61,7 @@ export interface ContactPhoneActionProps {
   };
 }
 
-export const ContactPhoneAction = (function ContactPhoneAction({
+export const ContactPhoneAction = function ContactPhoneAction({
   phone,
   countryCode: countryCodeProp,
   phoneDisplay: phoneDisplayProp,
@@ -108,9 +108,15 @@ export const ContactPhoneAction = (function ContactPhoneAction({
     const val = t(k);
     return val && val !== k ? val : (APP_TRANSLATIONS_EN[k] ?? fallback);
   };
-  const callLabel = labels?.call ? `${labels.call}${targetName}` : `${resolveVerb("contacts.detail.call", "Call")} ${formattedPhone}${targetName}`;
-  const smsLabel = labels?.sms ? `${labels.sms}${targetName}` : `${resolveVerb("contacts.sms", "SMS")} ${formattedPhone}${targetName}`;
-  const waLabel = labels?.whatsapp ? `${labels.whatsapp}${targetName}` : `${resolveVerb("contacts.whatsapp", "WhatsApp")} ${formattedPhone}${targetName}`;
+  const callLabel = labels?.call
+    ? `${labels.call}${targetName}`
+    : `${resolveVerb("contacts.detail.call", "Call")} ${formattedPhone}${targetName}`;
+  const smsLabel = labels?.sms
+    ? `${labels.sms}${targetName}`
+    : `${resolveVerb("contacts.sms", "SMS")} ${formattedPhone}${targetName}`;
+  const waLabel = labels?.whatsapp
+    ? `${labels.whatsapp}${targetName}`
+    : `${resolveVerb("contacts.whatsapp", "WhatsApp")} ${formattedPhone}${targetName}`;
   const effectiveLabels = {
     copy: labels?.copy ?? resolveVerb("contacts.table.copy", "Copy"),
     copied: labels?.copied ?? resolveVerb("contacts.table.copied", "Copied!"),
@@ -157,7 +163,9 @@ export const ContactPhoneAction = (function ContactPhoneAction({
               aria-hidden="true"
               className="w-3.5 h-3.5 text-primary/80 flex-shrink-0 group-hover/pill:text-primary transition-colors"
             />
-            <span className="font-semibold tracking-tight truncate select-all">{formattedPhone}</span>
+            <span className="font-semibold tracking-tight truncate select-all">
+              {formattedPhone}
+            </span>
           </div>
           {actionsNode}
         </div>
@@ -196,4 +204,4 @@ export const ContactPhoneAction = (function ContactPhoneAction({
       </div>
     </TooltipProvider>
   );
-});
+};

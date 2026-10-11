@@ -59,11 +59,7 @@ export function WorkQueue<TData extends { id: string | number }>({
   }
 
   return (
-    <div
-      role="region"
-      aria-label={ariaLabel}
-      className={cn("space-y-3", containerClassName)}
-    >
+    <div role="region" aria-label={ariaLabel} className={cn("space-y-3", containerClassName)}>
       {/* Queue Header */}
       {(title || selection || headerActions) && (
         <div
@@ -76,7 +72,9 @@ export function WorkQueue<TData extends { id: string | number }>({
             {selection && (
               <div className="flex items-center gap-2">
                 <Checkbox
-                  checked={selection.allSelected ? true : selection.someSelected ? "indeterminate" : false}
+                  checked={
+                    selection.allSelected ? true : selection.someSelected ? "indeterminate" : false
+                  }
                   onCheckedChange={() => selection.onSelectAll()}
                   aria-label={selection.selectAllAriaLabel ?? "Select all queue items"}
                   className="size-4"
@@ -86,16 +84,12 @@ export function WorkQueue<TData extends { id: string | number }>({
             {title && (
               <div>
                 <h3 className="text-sm font-semibold text-foreground tracking-tight">{title}</h3>
-                {description && (
-                  <p className="text-xs text-muted-foreground">{description}</p>
-                )}
+                {description && <p className="text-xs text-muted-foreground">{description}</p>}
               </div>
             )}
           </div>
 
-          {headerActions && (
-            <div className="flex items-center gap-2 ms-auto">{headerActions}</div>
-          )}
+          {headerActions && <div className="flex items-center gap-2 ms-auto">{headerActions}</div>}
         </div>
       )}
 

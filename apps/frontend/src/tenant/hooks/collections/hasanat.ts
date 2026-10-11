@@ -22,13 +22,13 @@ export {
   useHasanatMetrics,
   useHasanatMutations,
 } from "@/tenant/features/hasanat/hooks/useHasanatApi";
-export { invalidateHasanatQueries } from '@/tenant/features/hasanat/hooks/invalidateHasanatQueries';
+export { invalidateHasanatQueries } from "@/tenant/features/hasanat/hooks/invalidateHasanatQueries";
 export {
   useComposedHasanatSettings,
   useHasanatPreferencesQuery,
   useHasanatPreferencesMutation,
   HASANAT_PREFERENCES_QUERY_KEY,
-} from '@/tenant/features/hasanat/hooks/useHasanatSetupConfig';
+} from "@/tenant/features/hasanat/hooks/useHasanatSetupConfig";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   hasanatListQueryOptions,
@@ -40,4 +40,4 @@ export {
   useHasanatContractBulkRestore,
   useHasanatContractDeleteDistribution,
   useHasanatContractRestoreDistribution,
-} from '@/tenant/features/hasanat/hooks/useHasanatTsrHooks';
+} from "@/tenant/features/hasanat/hooks/useHasanatTsrHooks";

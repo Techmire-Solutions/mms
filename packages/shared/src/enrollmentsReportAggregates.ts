@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /** Cumulative month-end enrollment headcount — `monthKey` is YYYY-MM. */
 export const enrollmentsCumulativeTrendSchema = z.object({
@@ -7,13 +7,16 @@ export const enrollmentsCumulativeTrendSchema = z.object({
 });
 
 export const enrollmentsReportStatusCountsSchema = z.object({
-  pending: z.number().int().nonnegative(), confirmed: z.number().int().nonnegative(),
-  cancelled: z.number().int().nonnegative(), completed: z.number().int().nonnegative(),
+  pending: z.number().int().nonnegative(),
+  confirmed: z.number().int().nonnegative(),
+  cancelled: z.number().int().nonnegative(),
+  completed: z.number().int().nonnegative(),
   total: z.number().int().nonnegative(),
 });
 
 export const enrollmentsReportFeesSchema = z.object({
-  due: z.number().nonnegative(), paid: z.number().nonnegative(),
+  due: z.number().nonnegative(),
+  paid: z.number().nonnegative(),
 });
 
 export const enrollmentsReportBySessionItemSchema = z.object({
@@ -54,8 +57,12 @@ export type EnrollmentsCumulativeTrend = z.infer<typeof enrollmentsCumulativeTre
 export type EnrollmentsReportStatusCounts = z.infer<typeof enrollmentsReportStatusCountsSchema>;
 export type EnrollmentsReportFees = z.infer<typeof enrollmentsReportFeesSchema>;
 export type EnrollmentsReportBySessionItem = z.infer<typeof enrollmentsReportBySessionItemSchema>;
-export type EnrollmentsReportComparisonSession = z.infer<typeof enrollmentsReportComparisonSessionSchema>;
-export type EnrollmentsReportComparisonMonth = z.infer<typeof enrollmentsReportComparisonMonthSchema>;
+export type EnrollmentsReportComparisonSession = z.infer<
+  typeof enrollmentsReportComparisonSessionSchema
+>;
+export type EnrollmentsReportComparisonMonth = z.infer<
+  typeof enrollmentsReportComparisonMonthSchema
+>;
 export type EnrollmentsReportComparison = z.infer<typeof enrollmentsReportComparisonSchema>;
 export type EnrollmentsReportAggregates = z.infer<typeof enrollmentsReportAggregatesSchema>;
 
@@ -63,7 +70,7 @@ import {
   type BaseReportComparisonQuery,
   normalizeReportComparisonQuery,
   reportComparisonQueryActive,
-} from './reportComparisonQuery.js';
+} from "./reportComparisonQuery.js";
 
 /** Optional ComparisonMode params for GET /report-aggregates. */
 export type EnrollmentsReportComparisonQuery = BaseReportComparisonQuery;
@@ -130,7 +137,7 @@ export function computeEnrollmentsCumulativeTrends(
   for (let offset = monthCount - 1; offset >= 0; offset--) {
     const cursor = new Date(now.getFullYear(), now.getMonth() - offset, 1);
     const year = cursor.getFullYear();
-    const monthNum = String(cursor.getMonth() + 1).padStart(2, '0');
+    const monthNum = String(cursor.getMonth() + 1).padStart(2, "0");
     const monthKey = `${year}-${monthNum}`;
     const cutoff = `${monthKey}-31`;
 
@@ -149,7 +156,7 @@ export function computeEnrollmentsCumulativeTrends(
  */
 export function computeEnrollmentsReportPanels(
   enrollments: readonly EnrollmentReportPanelRow[],
-): Pick<EnrollmentsReportAggregates, 'statusCounts' | 'fees' | 'bySession'> {
+): Pick<EnrollmentsReportAggregates, "statusCounts" | "fees" | "bySession"> {
   const statusCounts: EnrollmentsReportStatusCounts = {
     pending: 0,
     confirmed: 0,
@@ -162,27 +169,27 @@ export function computeEnrollmentsReportPanels(
   const sessionStatsById: Record<string, EnrollmentsReportBySessionItem> = {};
 
   for (const enrollment of enrollments) {
-    const status = String(enrollment.status || '');
-    if (status === 'pending') statusCounts.pending += 1;
-    else if (status === 'confirmed') statusCounts.confirmed += 1;
-    else if (status === 'cancelled') statusCounts.cancelled += 1;
-    else if (status === 'completed') statusCounts.completed += 1;
+    const status = String(enrollment.status || "");
+    if (status === "pending") statusCounts.pending += 1;
+    else if (status === "confirmed") statusCounts.confirmed += 1;
+    else if (status === "cancelled") statusCounts.cancelled += 1;
+    else if (status === "completed") statusCounts.completed += 1;
 
     const fee = Number(enrollment.finalFee) || 0;
-    if (status !== 'cancelled') due += fee;
-    if (enrollment.paymentStatus === 'paid') paid += fee;
+    if (status !== "cancelled") due += fee;
+    if (enrollment.paymentStatus === "paid") paid += fee;
 
-    const sessionId = enrollment.sessionId || '';
+    const sessionId = enrollment.sessionId || "";
     if (!sessionStatsById[sessionId]) {
       sessionStatsById[sessionId] = {
         sessionId,
-        name: enrollment.sessionName || '',
+        name: enrollment.sessionName || "",
         count: 0,
         revenue: 0,
       };
     }
     sessionStatsById[sessionId].count += 1;
-    if (status !== 'cancelled') {
+    if (status !== "cancelled") {
       sessionStatsById[sessionId].revenue += fee;
     }
   }

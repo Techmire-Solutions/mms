@@ -2,7 +2,7 @@ import type {
   QuestionBankQuestion,
   QuestionBankResult,
   QuestionBankTest,
-} from './questionBankEntities.js';
+} from "./questionBankEntities.js";
 
 /** New workspaces start with an empty question bank. */
 export const DEFAULT_QUESTION_BANK_QUESTIONS: QuestionBankQuestion[] = [];

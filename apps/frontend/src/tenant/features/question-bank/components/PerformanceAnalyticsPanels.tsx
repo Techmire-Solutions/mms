@@ -4,8 +4,16 @@ import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { WarningCallout } from "@/components/ui/WarningCallout";
 import { motion } from "framer-motion";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip,
-  RadarChart, PolarAngleAxis, Radar, LineChart, Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  RadarChart,
+  PolarAngleAxis,
+  Radar,
+  LineChart,
+  Line,
 } from "recharts";
 import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/ui/ChartGrid";
 import { AlertTriangle, Trophy } from "lucide-react";
@@ -43,10 +51,7 @@ export function PerformanceAnalyticsPanels({
   return (
     <div className="space-y-6">
       {weakAreas.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}>
           <WarningCallout
             title={t("questionBank.analytics.weakAreas")}
             className="items-start p-4"
@@ -59,7 +64,9 @@ export function PerformanceAnalyticsPanels({
                   className="flex items-center gap-1.5 rounded-lg border border-warning/30 bg-card px-2.5 py-1.5"
                   role="listitem"
                 >
-                  <span className="text-base" aria-hidden>{categoryResult.icon}</span>
+                  <span className="text-base" aria-hidden>
+                    {categoryResult.icon}
+                  </span>
                   <div>
                     <p className="text-sm font-bold text-warning m-0">{categoryResult.name}</p>
                     <p className="text-xs text-warning/90 m-0">
@@ -87,7 +94,13 @@ export function PerformanceAnalyticsPanels({
               formatter={(v) => [`${v}%`, t("questionBank.analytics.tooltipAvgScore")]}
               contentStyle={{ fontSize: 11, borderRadius: 8 }}
             />
-            <Line type="monotone" dataKey="avg" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--primary))" }} />
+            <Line
+              type="monotone"
+              dataKey="avg"
+              stroke="hsl(var(--primary))"
+              strokeWidth={2}
+              dot={{ r: 4, fill: "hsl(var(--primary))" }}
+            />
           </LineChart>
         </ReportChartCard>
 
@@ -97,7 +110,10 @@ export function PerformanceAnalyticsPanels({
           heightClass="h-chart-sm"
           empty={radarData.length < 3}
           emptyNode={
-            <div className="flex h-chart-sm items-center justify-center text-sm text-muted-foreground" role="status">
+            <div
+              className="flex h-chart-sm items-center justify-center text-sm text-muted-foreground"
+              role="status"
+            >
               {t("questionBank.analytics.radarInsufficient")}
             </div>
           }
@@ -105,7 +121,13 @@ export function PerformanceAnalyticsPanels({
           <RadarChart data={radarData}>
             <ChartPolarGrid />
             <PolarAngleAxis dataKey="subject" tick={chartAxisTick(9)} />
-            <Radar dataKey="accuracy" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
+            <Radar
+              dataKey="accuracy"
+              stroke="hsl(var(--primary))"
+              fill="hsl(var(--primary))"
+              fillOpacity={0.15}
+              strokeWidth={2}
+            />
             <Tooltip
               formatter={(v) => [`${v}%`, t("questionBank.analytics.tooltipAccuracy")]}
               contentStyle={{ fontSize: 11, borderRadius: 8 }}
@@ -122,7 +144,12 @@ export function PerformanceAnalyticsPanels({
         >
           <BarChart data={studentStats} layout="vertical">
             <ChartGrid horizontal={false} />
-            <XAxis type="number" domain={[0, 100]} tick={chartAxisTick(10)} tickFormatter={(v) => `${v}%`} />
+            <XAxis
+              type="number"
+              domain={[0, 100]}
+              tick={chartAxisTick(10)}
+              tickFormatter={(v) => `${v}%`}
+            />
             <YAxis type="category" dataKey="name" tick={chartAxisTick(10)} width={90} />
             <Tooltip
               formatter={(v) => [`${v}%`, t("questionBank.analytics.tooltipAvg")]}
@@ -150,41 +177,61 @@ export function PerformanceAnalyticsPanels({
         </ReportChartCard>
       </div>
 
-
-      <SectionCard accentColor="info" title={t("questionBank.analytics.categoryBreakdown")} padding={false}>
+      <SectionCard
+        accentColor="info"
+        title={t("questionBank.analytics.categoryBreakdown")}
+        padding={false}
+      >
         <div className={cn("divide-y divide-border/50", CARD_STRIPE_INSET)} role="list">
-          {catPerformance.sort((a, b) => a.accuracy - b.accuracy).map((categoryResult) => (
-            <div key={categoryResult.name} className="flex items-center gap-4 px-4 py-3" role="listitem">
-              <span className="flex-shrink-0 text-xl" aria-hidden>{categoryResult.icon}</span>
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
-                  <p className="min-w-0 truncate text-sm font-semibold text-foreground">{categoryResult.name}</p>
-                  <span className={`shrink-0 text-xs font-bold ${questionAccuracyTextClass(categoryResult.accuracy)}`}>{categoryResult.accuracy}%</span>
+          {catPerformance
+            .sort((a, b) => a.accuracy - b.accuracy)
+            .map((categoryResult) => (
+              <div
+                key={categoryResult.name}
+                className="flex items-center gap-4 px-4 py-3"
+                role="listitem"
+              >
+                <span className="flex-shrink-0 text-xl" aria-hidden>
+                  {categoryResult.icon}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex min-w-0 items-center justify-between gap-2">
+                    <p className="min-w-0 truncate text-sm font-semibold text-foreground">
+                      {categoryResult.name}
+                    </p>
+                    <span
+                      className={`shrink-0 text-xs font-bold ${questionAccuracyTextClass(categoryResult.accuracy)}`}
+                    >
+                      {categoryResult.accuracy}%
+                    </span>
+                  </div>
+                  <ProgressBar
+                    value={categoryResult.accuracy}
+                    fillClassName={questionAccuracyBarClass(categoryResult.accuracy)}
+                    trackClassName="bg-border"
+                    aria-hidden="true"
+                  />
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t("questionBank.analytics.correctRatio", {
+                      correct: categoryResult.correct,
+                      total: categoryResult.total,
+                    })}
+                  </p>
                 </div>
-                <ProgressBar
-                  value={categoryResult.accuracy}
-                  fillClassName={questionAccuracyBarClass(categoryResult.accuracy)}
-                  trackClassName="bg-border"
-                  aria-hidden="true"
-                />
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t("questionBank.analytics.correctRatio", { correct: categoryResult.correct, total: categoryResult.total })}
-                </p>
+                {categoryResult.accuracy < QUESTION_ACCURACY_WEAK_THRESHOLD && (
+                  <AlertTriangle
+                    className="h-4 w-4 flex-shrink-0 text-warning"
+                    aria-label={t("questionBank.analytics.lowPerformanceWarning")}
+                  />
+                )}
+                {categoryResult.accuracy >= QUESTION_ACCURACY_EXCELLENT_THRESHOLD && (
+                  <Trophy
+                    className="h-4 w-4 flex-shrink-0 text-warning"
+                    aria-label={t("questionBank.analytics.highPerformanceAward")}
+                  />
+                )}
               </div>
-              {categoryResult.accuracy < QUESTION_ACCURACY_WEAK_THRESHOLD && (
-                <AlertTriangle
-                  className="h-4 w-4 flex-shrink-0 text-warning"
-                  aria-label={t("questionBank.analytics.lowPerformanceWarning")}
-                />
-              )}
-              {categoryResult.accuracy >= QUESTION_ACCURACY_EXCELLENT_THRESHOLD && (
-                <Trophy
-                  className="h-4 w-4 flex-shrink-0 text-warning"
-                  aria-label={t("questionBank.analytics.highPerformanceAward")}
-                />
-              )}
-            </div>
-          ))}
+            ))}
         </div>
       </SectionCard>
 

@@ -14,7 +14,15 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
-  ConfirmAlertDialog: ({ open, title, description }: { open: boolean; title: string; description: string }) =>
+  ConfirmAlertDialog: ({
+    open,
+    title,
+    description,
+  }: {
+    open: boolean;
+    title: string;
+    description: string;
+  }) =>
     open ? (
       <div data-testid="confirm-dialog">
         <h3>{title}</h3>

@@ -1,12 +1,12 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { tsrClient } from '@/lib/api';
-import { CONTACTS_GOOGLE_SYNC_QUERY_KEY } from '@/tenant/features/contacts/hooks/contactsQueryKeys';
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { tsrClient } from "@/lib/api";
+import { CONTACTS_GOOGLE_SYNC_QUERY_KEY } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
 
 export function useContactGoogleSyncConfig(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  
+
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.getGoogleSyncConfig.useQuery({
     queryKey: CONTACTS_GOOGLE_SYNC_QUERY_KEY,
@@ -38,6 +38,6 @@ export function useContactGoogleSyncMutations() {
   });
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const runGoogleSync = tsrClient.contacts.runGoogleSync.useMutation();
-  
+
   return { saveConfig, logSyncAudit, exchangeOAuth, runGoogleSync };
 }

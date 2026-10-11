@@ -1,17 +1,14 @@
-import { z } from 'zod';
-import type { TabDefinition } from './contactTypes.js';
-import {
-  DEFAULT_FACULTY_SETTINGS,
-  type FacultySettings,
-} from './facultyModuleSettings.js';
-import { FACULTY_TAB_REGISTRY } from './moduleFieldSetupPersons.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+import { z } from "zod";
+import type { TabDefinition } from "./contactTypes.js";
+import { DEFAULT_FACULTY_SETTINGS, type FacultySettings } from "./facultyModuleSettings.js";
+import { FACULTY_TAB_REGISTRY } from "./moduleFieldSetupPersons.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 import {
   FACULTY_MODULE_PREFERENCE_KEYS,
   type FacultyModulePreferences,
   normalizeFacultyModulePreferences,
-} from './facultyPreferencesNormalization.js';
+} from "./facultyPreferencesNormalization.js";
 
 export {
   FACULTY_MODULE_PREFERENCE_KEYS,
@@ -27,7 +24,7 @@ const facultyFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
   .strict();
 
 export const facultyFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, facultyFieldConfigPutBodyBaseSchema);
 
@@ -40,7 +37,7 @@ export const facultyPreferencesPutBodySchema = z
     idStartSeq: z.number().optional(),
     idRestartAnnually: z.boolean().optional(),
     employeeIdPrefix: z.string().optional(),
-    employeeIdYearFormat: z.enum(['YYYY', 'YY']).optional(),
+    employeeIdYearFormat: z.enum(["YYYY", "YY"]).optional(),
     employeeIdSequenceDigits: z.number().int().min(2).max(8).optional(),
     employeeIdDelimiter: z.string().optional(),
     employeeIdLastYear: z.number().optional(),
@@ -56,9 +53,14 @@ export function stripFacultyFieldConfigForPersist(
   config: FacultySettings | Record<string, unknown>,
 ): Record<string, unknown> {
   const {
-    formTabs: _formTabs, idPrefix: _idPrefix, idTemplate: _idTemplate,
-    idDigits: _idDigits, idStartSeq: _idStartSeq, idRestartAnnually: _idRestartAnnually,
-    autoGenerateId: _autoGenerateId, requireContactLink: _requireContactLink,
+    formTabs: _formTabs,
+    idPrefix: _idPrefix,
+    idTemplate: _idTemplate,
+    idDigits: _idDigits,
+    idStartSeq: _idStartSeq,
+    idRestartAnnually: _idRestartAnnually,
+    autoGenerateId: _autoGenerateId,
+    requireContactLink: _requireContactLink,
     defaultSpecialization: _defaultSpecialization,
     ...rest
   } = config as FacultySettings & Record<string, unknown>;
@@ -68,7 +70,7 @@ export function stripFacultyFieldConfigForPersist(
 /** Normalize FacultySettings from typed REST or document blobs. */
 export function normalizeFacultySettings(config: unknown): FacultySettings {
   const defaults = { ...DEFAULT_FACULTY_SETTINGS, formTabs: [...FACULTY_TAB_REGISTRY] };
-  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
     return { ...defaults };
   }
   const raw = config as Record<string, unknown>;
@@ -79,15 +81,22 @@ export function normalizeFacultySettings(config: unknown): FacultySettings {
     ...prefs,
     fieldOrder: Array.isArray(raw.fieldOrder) ? (raw.fieldOrder as string[]) : defaults.fieldOrder,
     formTabs: Array.isArray(raw.formTabs) ? (raw.formTabs as TabDefinition[]) : defaults.formTabs,
-    enabledTabs: Array.isArray(raw.enabledTabs) ? (raw.enabledTabs as string[]) : (raw.enabledTabs as string[] | undefined),
-    requiredTabs: Array.isArray(raw.requiredTabs) ? (raw.requiredTabs as string[]) : (raw.requiredTabs as string[] | undefined),
+    enabledTabs: Array.isArray(raw.enabledTabs)
+      ? (raw.enabledTabs as string[])
+      : (raw.enabledTabs as string[] | undefined),
+    requiredTabs: Array.isArray(raw.requiredTabs)
+      ? (raw.requiredTabs as string[])
+      : (raw.requiredTabs as string[] | undefined),
     fields:
-      raw.fields && typeof raw.fields === 'object' && !Array.isArray(raw.fields) && Object.keys(raw.fields).length > 0
-        ? (raw.fields as FacultySettings['fields'])
+      raw.fields &&
+      typeof raw.fields === "object" &&
+      !Array.isArray(raw.fields) &&
+      Object.keys(raw.fields).length > 0
+        ? (raw.fields as FacultySettings["fields"])
         : defaults.fields,
     columnRegistry: Array.isArray(raw.columnRegistry)
-      ? (raw.columnRegistry as FacultySettings['columnRegistry'])
-      : (raw.columnRegistry as FacultySettings['columnRegistry']),
+      ? (raw.columnRegistry as FacultySettings["columnRegistry"])
+      : (raw.columnRegistry as FacultySettings["columnRegistry"]),
   };
   delete (merged as FacultySettings & { defaultViewLayout?: unknown }).defaultViewLayout;
   delete (merged as FacultySettings & { customFields?: unknown }).customFields;
@@ -116,7 +125,7 @@ export function composeFacultySettings(
     preferences as Partial<FacultyModulePreferences> | null,
   );
   return normalizeFacultySettings({
-    ...(fieldConfig && typeof fieldConfig === 'object' && !Array.isArray(fieldConfig)
+    ...(fieldConfig && typeof fieldConfig === "object" && !Array.isArray(fieldConfig)
       ? (fieldConfig as Record<string, unknown>)
       : {}),
     ...prefs,
@@ -136,7 +145,9 @@ export function mergeFacultyFormTabsFromApi(
       ? documentOrDefault
       : [
           ...apiTabs,
-          ...FACULTY_TAB_REGISTRY.filter((seedTab) => !apiTabs.some((apiTab) => apiTab.key === seedTab.key)),
+          ...FACULTY_TAB_REGISTRY.filter(
+            (seedTab) => !apiTabs.some((apiTab) => apiTab.key === seedTab.key),
+          ),
         ];
 
   const seenKeys = new Set<string>();

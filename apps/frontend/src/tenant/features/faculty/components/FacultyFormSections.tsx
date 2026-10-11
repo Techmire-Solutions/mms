@@ -7,9 +7,7 @@ export type {
   FacultyEmploymentSectionProps,
 } from "./FacultyEmploymentSection";
 
-export {
-  FacultyEmploymentSection,
-} from "./FacultyEmploymentSection";
+export { FacultyEmploymentSection } from "./FacultyEmploymentSection";
 
 export {
   FacultyContactSection,
@@ -36,4 +34,3 @@ export interface FacultyBasicSectionProps {
 export function FacultyBasicSection(_props: FacultyBasicSectionProps): React.JSX.Element | null {
   return null;
 }
-

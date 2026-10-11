@@ -27,19 +27,27 @@ export interface SyncUserAccountInput {
 
 /** Synchronize linked user account or create a new user with chosen workspace role. */
 export async function syncUserAccount(input: SyncUserAccountInput): Promise<boolean> {
-  const { userAccountDraft, linkedUser, contactId, payload, t, setErrors, onUserInvalidate } = input;
+  const { userAccountDraft, linkedUser, contactId, payload, t, setErrors, onUserInvalidate } =
+    input;
 
   if (linkedUser) {
     payload.userId = linkedUser.id;
-    if (userAccountDraft?.enabled && userAccountDraft.role && userAccountDraft.role !== linkedUser.role) {
+    if (
+      userAccountDraft?.enabled &&
+      userAccountDraft.role &&
+      userAccountDraft.role !== linkedUser.role
+    ) {
       const updateRes = await apiContract.users.update({
         params: { id: linkedUser.id },
         body: { role: userAccountDraft.role },
       });
       if (updateRes.status !== 200) {
-        const msg = typeof updateRes.body === "object" && updateRes.body !== null && "message" in updateRes.body
-          ? String((updateRes.body as { message?: unknown }).message)
-          : t("faculty.toast.saveFailed");
+        const msg =
+          typeof updateRes.body === "object" &&
+          updateRes.body !== null &&
+          "message" in updateRes.body
+            ? String((updateRes.body as { message?: unknown }).message)
+            : t("faculty.toast.saveFailed");
         setErrors({ "user.role": msg });
         notify.error(msg);
         return false;
@@ -63,9 +71,10 @@ export async function syncUserAccount(input: SyncUserAccountInput): Promise<bool
     });
 
     if (createRes.status !== 200) {
-      const msg = typeof createRes.body === "object" && createRes.body !== null && "message" in createRes.body
-        ? String((createRes.body as { message?: unknown }).message)
-        : t("faculty.toast.saveFailed");
+      const msg =
+        typeof createRes.body === "object" && createRes.body !== null && "message" in createRes.body
+          ? String((createRes.body as { message?: unknown }).message)
+          : t("faculty.toast.saveFailed");
       setErrors({ "user.create": msg });
       notify.error(msg);
       return false;
@@ -98,7 +107,9 @@ export interface ConfirmPendingFacultySaveInput {
 }
 
 /** Commit the stashed draft after the user confirms "save anyway". */
-export async function confirmPendingFacultySave(input: ConfirmPendingFacultySaveInput): Promise<void> {
+export async function confirmPendingFacultySave(
+  input: ConfirmPendingFacultySaveInput,
+): Promise<void> {
   if (!input.pendingSaveData) return;
   input.setSaving(true);
   try {

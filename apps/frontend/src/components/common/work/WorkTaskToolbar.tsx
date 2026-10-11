@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import type {
-  WorkTaskStatusOption,
-  WorkTaskToolbarProps,
-} from "./workTaskToolbarTypes";
+import type { WorkTaskStatusOption, WorkTaskToolbarProps } from "./workTaskToolbarTypes";
 
 export type { WorkTaskStatusOption, WorkTaskToolbarProps };
 

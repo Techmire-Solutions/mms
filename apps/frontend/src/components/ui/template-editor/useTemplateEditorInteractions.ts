@@ -10,12 +10,21 @@ import {
 import { computeResizedElement } from "./templateEditorResizeCalculation";
 import { useTemplateEditorPan } from "./useTemplateEditorPan";
 
-export type { DragItem, DragStateInfo, ResizeHandle, ResizeStateInfo, UseTemplateEditorInteractionsOptions };
+export type {
+  DragItem,
+  DragStateInfo,
+  ResizeHandle,
+  ResizeStateInfo,
+  UseTemplateEditorInteractionsOptions,
+};
 
 /** Pointer travel (screen px) before a press becomes a drag/resize; below it the press is a plain click. */
 const DRAG_THRESHOLD_PX = 3;
 
-function exceedsDragThreshold(state: { startX: number; startY: number; hasMoved?: boolean }, event: PointerEvent): boolean {
+function exceedsDragThreshold(
+  state: { startX: number; startY: number; hasMoved?: boolean },
+  event: PointerEvent,
+): boolean {
   return (
     state.hasMoved === true ||
     Math.abs(event.clientX - state.startX) >= DRAG_THRESHOLD_PX ||
@@ -35,13 +44,8 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
   setFuture,
 }: UseTemplateEditorInteractionsOptions<TPayload>) {
   const [activeGuides, setActiveGuides] = useState<SmartGuideLine[]>([]);
-  const {
-    isSpacePressed,
-    isPanning,
-    onPointerDownViewport,
-    handlePanMove,
-    handlePanEnd,
-  } = useTemplateEditorPan(canvasViewportRef);
+  const { isSpacePressed, isPanning, onPointerDownViewport, handlePanMove, handlePanEnd } =
+    useTemplateEditorPan(canvasViewportRef);
 
   const onPointerMove = useEffectEvent((event: PointerEvent) => {
     if (handlePanMove(event)) {
@@ -75,7 +79,7 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
           setActiveGuides(snapRes.guides);
 
           updateElements((els) =>
-            els.map((el) => (el.id === singleItem.id ? { ...el, x: snapRes.x, y: snapRes.y } : el))
+            els.map((el) => (el.id === singleItem.id ? { ...el, x: snapRes.x, y: snapRes.y } : el)),
           );
           return;
         }
@@ -92,7 +96,7 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
             x: snap(Math.min(maxX, Math.max(0, orig.origX + deltaX))),
             y: snap(Math.min(maxY, Math.max(0, orig.origY + deltaY))),
           };
-        })
+        }),
       );
       setActiveGuides([]);
     }
@@ -105,7 +109,9 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
       const deltaY = (event.clientY - currentResize.startY) / canvasScale;
 
       updateElements((els) =>
-        els.map((el) => computeResizedElement(el, currentResize, deltaX, deltaY, size, event.shiftKey))
+        els.map((el) =>
+          computeResizedElement(el, currentResize, deltaX, deltaY, size, event.shiftKey),
+        ),
       );
     }
   });

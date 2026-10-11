@@ -3,10 +3,7 @@ import {
   type SocialLink as ContactSocial,
   type RelationshipContact,
 } from "./contactTypes.js";
-import {
-  SOCIAL_SYSTEM_KEYS,
-  RELATIONSHIP_SYSTEM_KEYS,
-} from "./contactItemNormalizeKeys.js";
+import { SOCIAL_SYSTEM_KEYS, RELATIONSHIP_SYSTEM_KEYS } from "./contactItemNormalizeKeys.js";
 import {
   retainExtraKeys,
   type ContactItemNormalizeDefaults,
@@ -51,15 +48,16 @@ export function normalizeRelationshipContactItem(
     const relationship =
       String(obj.relationship || obj.relation || obj.type || defaultRelationship).trim() ||
       defaultRelationship;
-    const name = typeof obj.name === "string" && obj.name.trim().length > 0 ? obj.name.trim() : undefined;
-    const phone = typeof obj.phone === "string" && obj.phone.trim().length > 0 ? obj.phone.trim() : undefined;
+    const name =
+      typeof obj.name === "string" && obj.name.trim().length > 0 ? obj.name.trim() : undefined;
+    const phone =
+      typeof obj.phone === "string" && obj.phone.trim().length > 0 ? obj.phone.trim() : undefined;
     const inferred = typeof obj.inferred === "boolean" ? obj.inferred : undefined;
     const inferredFromContactId =
       obj.inferredFromContactId != null && String(obj.inferredFromContactId).trim().length > 0
         ? String(obj.inferredFromContactId).trim()
         : undefined;
-    const inferenceDepth =
-      typeof obj.inferenceDepth === "number" ? obj.inferenceDepth : undefined;
+    const inferenceDepth = typeof obj.inferenceDepth === "number" ? obj.inferenceDepth : undefined;
 
     return {
       ...retainExtraKeys(obj, RELATIONSHIP_SYSTEM_KEYS),

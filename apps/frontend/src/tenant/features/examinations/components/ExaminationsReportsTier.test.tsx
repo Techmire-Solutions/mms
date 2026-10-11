@@ -8,7 +8,9 @@ vi.mock("@/tenant/features/reports/components/KPISummary", () => ({
 }));
 
 vi.mock("@/tenant/features/reports/components/ModuleReports", () => ({
-  default: ({ category }: { category: string }) => <div data-testid="module-reports">{category}</div>,
+  default: ({ category }: { category: string }) => (
+    <div data-testid="module-reports">{category}</div>
+  ),
 }));
 
 describe("ExaminationsReportsTier Component", () => {

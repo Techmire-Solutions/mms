@@ -9,9 +9,7 @@ import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
 
-const FinanceSettings = lazy(
-  () => import("@/tenant/features/finance/components/FinanceSettings"),
-);
+const FinanceSettings = lazy(() => import("@/tenant/features/finance/components/FinanceSettings"));
 
 const FinanceTemplateEditor = lazy(
   () => import("@/tenant/features/finance/components/FinanceTemplateEditor"),
@@ -22,7 +20,7 @@ export interface FinanceSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const FinanceSetupTier = (function FinanceSetupTier({
+export const FinanceSetupTier = function FinanceSetupTier({
   onPrefsDirtyChange,
 }: FinanceSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -44,11 +42,7 @@ export const FinanceSetupTier = (function FinanceSetupTier({
     <ModuleTierMotion tier="setup">
       <ErrorBoundary>
         <div className="space-y-4">
-          <SubTabBar
-            tabs={tabs}
-            value={subTabs.sub}
-            onChange={subTabs.handleSubTabChange}
-          />
+          <SubTabBar tabs={tabs} value={subTabs.sub} onChange={subTabs.handleSubTabChange} />
 
           {!canEditSetup ? (
             <SetupReadOnlyMessage title={t("finance.setup.readOnly")} />
@@ -57,15 +51,13 @@ export const FinanceSetupTier = (function FinanceSetupTier({
               {subTabs.sub === "preferences" && (
                 <FinanceSettings onPrefsDirtyChange={onPrefsDirtyChange} />
               )}
-              {subTabs.sub === "templates" && (
-                <FinanceTemplateEditor />
-              )}
+              {subTabs.sub === "templates" && <FinanceTemplateEditor />}
             </Suspense>
           )}
         </div>
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default FinanceSetupTier;

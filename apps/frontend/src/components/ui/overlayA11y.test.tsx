@@ -6,7 +6,6 @@ import { FormModal } from "@/components/ui/FormModal";
 import { Drawer } from "@/components/ui/Drawer";
 
 declare global {
-   
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -122,11 +121,7 @@ describe("Overlay Primitives Accessibility (WCAG 2.2 / WAI-ARIA)", () => {
     it("renders role='dialog' with aria-modal='true' and accessible titleId", async () => {
       await act(async () => {
         root.render(
-          <Drawer
-            open={true}
-            onClose={() => {}}
-            title="Entity Detail View"
-          >
+          <Drawer open={true} onClose={() => {}} title="Entity Detail View">
             <div>Drawer Content</div>
           </Drawer>,
         );

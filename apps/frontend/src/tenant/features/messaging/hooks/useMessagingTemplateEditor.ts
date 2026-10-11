@@ -37,11 +37,15 @@ export function useMessagingTemplateEditor() {
 
   const isFormDirty =
     formOpen &&
-    (label !== baseline.label || body !== baseline.body ||
-      category !== baseline.category || channel !== baseline.channel);
+    (label !== baseline.label ||
+      body !== baseline.body ||
+      category !== baseline.category ||
+      channel !== baseline.channel);
   const saveDisabled =
-    !label.trim() || !body.trim() ||
-    findUnknownPersonalizationTokens(body).length > 0 || saveTemplate.isPending;
+    !label.trim() ||
+    !body.trim() ||
+    findUnknownPersonalizationTokens(body).length > 0 ||
+    saveTemplate.isPending;
 
   const applyFields = (next: Baseline, id: string | null): void => {
     setEditingId(id);
@@ -53,13 +57,23 @@ export function useMessagingTemplateEditor() {
     setErrors({});
   };
 
-  const resetForm = (): void => { applyFields(EMPTY, null); setFormOpen(false); };
-  const openCreate = (): void => { applyFields(EMPTY, null); setFormOpen(true); };
+  const resetForm = (): void => {
+    applyFields(EMPTY, null);
+    setFormOpen(false);
+  };
+  const openCreate = (): void => {
+    applyFields(EMPTY, null);
+    setFormOpen(true);
+  };
 
   const handleLabelChange = (value: string): void => {
     setLabel(value);
     if (!errors.label) return;
-    setErrors((prev) => { const next = { ...prev }; delete next.label; return next; });
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.label;
+      return next;
+    });
   };
 
   const syncBodyTokenErrorOnBlur = (): void => {
@@ -78,7 +92,11 @@ export function useMessagingTemplateEditor() {
   const save = async (): Promise<void> => {
     if (!user) return;
     const parsed = messageTemplateInputSchema.safeParse({
-      id: editingId ?? undefined, label: label.trim(), body: body.trim(), category, channel,
+      id: editingId ?? undefined,
+      label: label.trim(),
+      body: body.trim(),
+      category,
+      channel,
     });
     if (!parsed.success) {
       const fieldErrors = mapZodFormErrors(parsed.error, (message) => {
@@ -100,16 +118,21 @@ export function useMessagingTemplateEditor() {
       await saveTemplate.mutateAsync({ body: parsed.data });
       notify.success(t("messaging.saveTemplate"));
       resetForm();
-    } catch { /* Mutation hook reports the failure. */ }
+    } catch {
+      /* Mutation hook reports the failure. */
+    }
   };
 
   const handleEdit = (template: MessageTemplate): void => {
-    applyFields({
-      label: template.label,
-      body: template.body,
-      category: (template.category || "general") as MessageCategory,
-      channel: (template.channel || "all") as TemplateChannel,
-    }, template.id);
+    applyFields(
+      {
+        label: template.label,
+        body: template.body,
+        category: (template.category || "general") as MessageCategory,
+        channel: (template.channel || "all") as TemplateChannel,
+      },
+      template.id,
+    );
     setFormOpen(true);
   };
 
@@ -117,7 +140,9 @@ export function useMessagingTemplateEditor() {
     if (!user) return;
     const unknownTokens = findUnknownPersonalizationTokens(template.body);
     if (unknownTokens.length > 0) {
-      notify.error(t("messaging.unknownTokens", { tokens: formatUnknownTokensLabel(unknownTokens) }));
+      notify.error(
+        t("messaging.unknownTokens", { tokens: formatUnknownTokensLabel(unknownTokens) }),
+      );
       return;
     }
     try {
@@ -130,7 +155,9 @@ export function useMessagingTemplateEditor() {
         },
       });
       notify.success(t("messaging.duplicateSuccess"));
-    } catch { /* Mutation hook reports the failure. */ }
+    } catch {
+      /* Mutation hook reports the failure. */
+    }
   };
 
   const handleCopy = async (templateBody: string): Promise<void> => {
@@ -139,9 +166,26 @@ export function useMessagingTemplateEditor() {
   };
 
   return {
-    formOpen, editingId, label, body, category, setCategory, channel, setChannel, errors,
-    isFormDirty, saving: saveTemplate.isPending, saveDisabled, resetForm, openCreate,
-    handleLabelChange, handleBodyChange: setBody, syncBodyTokenErrorOnBlur, save,
-    handleEdit, handleDuplicate, handleCopy,
+    formOpen,
+    editingId,
+    label,
+    body,
+    category,
+    setCategory,
+    channel,
+    setChannel,
+    errors,
+    isFormDirty,
+    saving: saveTemplate.isPending,
+    saveDisabled,
+    resetForm,
+    openCreate,
+    handleLabelChange,
+    handleBodyChange: setBody,
+    syncBodyTokenErrorOnBlur,
+    save,
+    handleEdit,
+    handleDuplicate,
+    handleCopy,
   };
 }

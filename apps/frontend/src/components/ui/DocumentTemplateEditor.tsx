@@ -11,8 +11,10 @@ import { notify } from "@/lib/notify";
 import type { DocumentTemplateStore } from "@/lib/documentTemplatePersistence";
 import { TemplateEditor, type TemplateEditorProps } from "@/components/ui/TemplateEditor";
 
-export interface DocumentTemplateEditorProps<TPayload>
-  extends Omit<TemplateEditorProps<TPayload>, "template" | "defaultTemplate" | "onSave"> {
+export interface DocumentTemplateEditorProps<TPayload> extends Omit<
+  TemplateEditorProps<TPayload>,
+  "template" | "defaultTemplate" | "onSave"
+> {
   store: DocumentTemplateStore<TPayload>;
   /** Factory layout: the fallback when nothing valid is stored, and the editor's reset target. */
   defaultTemplate: DocumentTemplate<TPayload>;

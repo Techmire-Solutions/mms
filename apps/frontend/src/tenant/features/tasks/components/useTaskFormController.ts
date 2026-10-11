@@ -1,13 +1,8 @@
-import { useState, useEffect } from 'react';
-import {
-  type TaskRecord,
-  type TaskInsert,
-  type TaskPriority,
-  type TaskStatus,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useEligibleTaskAssignees, useTasks } from '@/tenant/hooks/collections/tasks';
-import type { SelectedAssignee } from './TaskFormAssigneePicker';
+import { useState, useEffect } from "react";
+import { type TaskRecord, type TaskInsert, type TaskPriority, type TaskStatus } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";
+import type { SelectedAssignee } from "./TaskFormAssigneePicker";
 
 export interface UseTaskFormControllerProps {
   open: boolean;
@@ -29,10 +24,10 @@ export function useTaskFormController({
   onSave,
 }: UseTaskFormControllerProps) {
   const { t } = useTranslation();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<TaskPriority>('medium');
-  const [status, setStatus] = useState<TaskStatus>('todo');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<TaskPriority>("medium");
+  const [status, setStatus] = useState<TaskStatus>("todo");
   const [startDate, setStartDate] = useState<string | null>(null);
   const [dueAt, setDueAt] = useState<string | null>(null);
   const [parentTaskId, setParentTaskId] = useState<string | null>(null);
@@ -45,28 +40,29 @@ export function useTaskFormController({
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title);
-      setDescription(initialData.description ?? '');
+      setDescription(initialData.description ?? "");
       setPriority(initialData.priority);
       setStatus(initialData.status);
       setStartDate(toDateOnly(initialData.startDate));
       setDueAt(
         initialData.dueAt
-          ? (initialData.dueAt instanceof Date
+          ? initialData.dueAt instanceof Date
             ? initialData.dueAt.toISOString()
-            : String(initialData.dueAt))
+            : String(initialData.dueAt)
           : null,
       );
       setParentTaskId(initialData.parentTaskId ?? null);
-      const current = initialData.assignees?.map((a) => ({
-        facultyId: a.facultyId,
-        name: a.facultyName || t('tasks.assigneeFallback'),
-      })) ?? [];
+      const current =
+        initialData.assignees?.map((a) => ({
+          facultyId: a.facultyId,
+          name: a.facultyName || t("tasks.assigneeFallback"),
+        })) ?? [];
       setSelectedAssignees(current);
     } else {
-      setTitle('');
-      setDescription('');
-      setPriority('medium');
-      setStatus('todo');
+      setTitle("");
+      setDescription("");
+      setPriority("medium");
+      setStatus("todo");
       setStartDate(null);
       setDueAt(null);
       setParentTaskId(null);
@@ -96,7 +92,7 @@ export function useTaskFormController({
   const handleSubmit = async () => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError(t('tasks.titleRequired'));
+      setError(t("tasks.titleRequired"));
       return;
     }
 
@@ -119,7 +115,7 @@ export function useTaskFormController({
       await onSave(payload);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('tasks.saveFailed'));
+      setError(err instanceof Error ? err.message : t("tasks.saveFailed"));
     }
   };
 

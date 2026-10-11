@@ -1,4 +1,4 @@
-import type { QuestionBankQuestion } from './questionBankEntities.js';
+import type { QuestionBankQuestion } from "./questionBankEntities.js";
 
 /** Query accepted by the question bank questions list endpoint. */
 export interface QuestionBankListQuery {
@@ -10,7 +10,7 @@ export interface QuestionBankListQuery {
   /** Comma-separated difficulties (`easy|medium|hard`). */
   difficulty?: string;
   sortField?: string;
-  sortDir?: 'asc' | 'desc' | '';
+  sortDir?: "asc" | "desc" | "";
   includeDeleted?: boolean;
 }
 

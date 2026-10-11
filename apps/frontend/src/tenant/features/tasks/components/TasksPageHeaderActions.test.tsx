@@ -37,7 +37,7 @@ describe("TasksPageHeaderActions", () => {
           onCreate={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

@@ -7,7 +7,7 @@ export interface EntityCardFooterProps {
 }
 
 /** Shared Work directory card footer: optional leading (messaging) + trailing actions. */
-export const EntityCardFooter = (function EntityCardFooter({
+export const EntityCardFooter = function EntityCardFooter({
   leading,
   trailing,
 }: EntityCardFooterProps): React.JSX.Element {
@@ -17,4 +17,4 @@ export const EntityCardFooter = (function EntityCardFooter({
       <div className="flex shrink-0 items-center gap-1.5">{trailing}</div>
     </div>
   );
-});
+};

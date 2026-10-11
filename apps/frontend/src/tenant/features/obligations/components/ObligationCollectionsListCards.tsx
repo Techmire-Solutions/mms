@@ -54,7 +54,10 @@ function ObligationCollectionCard({
   } = props;
 
   const helpers = { getContact, getRep, getMujtahid, getObligationType };
-  const { sender, obligationType, rep, mujtahid } = getObligationCollectionResolvedFields(collection, helpers);
+  const { sender, obligationType, rep, mujtahid } = getObligationCollectionResolvedFields(
+    collection,
+    helpers,
+  );
   const displayName = sender?.name || "—";
 
   return (
@@ -68,7 +71,9 @@ function ObligationCollectionCard({
       header={{
         displayName,
         subtitle: isColumnVisible("receiptNo") ? (
-          <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">{collection.receipt_no}</p>
+          <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">
+            {collection.receipt_no}
+          </p>
         ) : undefined,
       }}
       viewLabel={t("obligations.actions.viewShort")}
@@ -82,7 +87,9 @@ function ObligationCollectionCard({
           )}
           {isColumnVisible("obligationType") && (
             <EntityCardMetaTile label={t("obligations.columns.obligationType")}>
-              <Badge pill tone="primary" className="px-2 font-bold">{obligationType?.name || "—"}</Badge>
+              <Badge pill tone="primary" className="px-2 font-bold">
+                {obligationType?.name || "—"}
+              </Badge>
             </EntityCardMetaTile>
           )}
           {isColumnVisible("repMujtahid") && (
@@ -137,10 +144,19 @@ function ObligationCollectionCard({
   );
 }
 
-export function ObligationCollectionsListCards(props: ObligationCollectionListCardsProps): React.JSX.Element {
+export function ObligationCollectionsListCards(
+  props: ObligationCollectionListCardsProps,
+): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const { collections, selectedIds, canDelete, allVisibleSelected, someVisibleSelected, onToggleSelectAll } = props;
+  const {
+    collections,
+    selectedIds,
+    canDelete,
+    allVisibleSelected,
+    someVisibleSelected,
+    onToggleSelectAll,
+  } = props;
 
   const pageCountLabel = formatDirectoryPageCountLabel(collections.length, t, {
     singular: "obligations.item.collection",

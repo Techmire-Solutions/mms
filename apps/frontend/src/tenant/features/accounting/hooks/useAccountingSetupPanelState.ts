@@ -71,10 +71,7 @@ export function useAccountingSetupPanelState({
     [preferencesQuery.data],
   );
 
-  const settings = useMemo(
-    () => composeAccountingSettings(null, preferences),
-    [preferences],
-  );
+  const settings = useMemo(() => composeAccountingSettings(null, preferences), [preferences]);
 
   /**
    * TanStack's mutation object is re-created per render; the ref keeps the
@@ -88,12 +85,9 @@ export function useAccountingSetupPanelState({
     void preferencesMutationRef.current.mutate(toAccountingPreferencesPayload(next));
   }, []);
 
-  const updateSettingsAsync = useCallback(
-    async (next: AccountingSettings): Promise<void> => {
-      await preferencesMutationRef.current.mutateAsync(toAccountingPreferencesPayload(next));
-    },
-    [],
-  );
+  const updateSettingsAsync = useCallback(async (next: AccountingSettings): Promise<void> => {
+    await preferencesMutationRef.current.mutateAsync(toAccountingPreferencesPayload(next));
+  }, []);
 
   const config = useMemo(
     () => ({ settings, updateSettings, updateSettingsAsync }),
@@ -132,15 +126,18 @@ export function useAccountingSetupPanelState({
   );
 
   const decimalSeparators = (() => [
-      { label: t("accounting.settings.decimal.period"), value: "period" },
-      { label: t("accounting.settings.decimal.comma"), value: "comma" },
-    ])();
+    { label: t("accounting.settings.decimal.period"), value: "period" },
+    { label: t("accounting.settings.decimal.comma"), value: "comma" },
+  ])();
 
   const fyStatusConfig = (() => ({
-      active: { label: t("accounting.settings.fy.status.active"), cls: SEMANTIC_BADGE.successStrong },
-      closed: { label: t("accounting.settings.fy.status.closed"), cls: SEMANTIC_BADGE.muted },
-      upcoming: { label: t("accounting.settings.fy.status.upcoming"), cls: SEMANTIC_BADGE.infoStrong },
-    }))() as Record<string, StatusBadgeConfigItem>;
+    active: { label: t("accounting.settings.fy.status.active"), cls: SEMANTIC_BADGE.successStrong },
+    closed: { label: t("accounting.settings.fy.status.closed"), cls: SEMANTIC_BADGE.muted },
+    upcoming: {
+      label: t("accounting.settings.fy.status.upcoming"),
+      cls: SEMANTIC_BADGE.infoStrong,
+    },
+  }))() as Record<string, StatusBadgeConfigItem>;
 
   const currencies = DEFAULT_CURRENCIES;
   const activeCurrency = currencies.find(

@@ -1,4 +1,4 @@
-import type { EnrollmentsRepository } from './enrollmentsRepository.js';
+import type { EnrollmentsRepository } from "./enrollmentsRepository.js";
 import {
   listEnrollmentsByWorkspace,
   findEnrollmentById,
@@ -6,14 +6,14 @@ import {
   saveEnrollment,
   bulkSoftDeleteEnrollments,
   bulkRestoreEnrollments,
-} from '../../db/repositories/enrollmentRepository.js';
+} from "../../db/repositories/enrollmentRepository.js";
 import {
   listEnrollmentsPage,
   countEnrollmentsActive,
   aggregateEnrollmentsCommandMetrics,
-} from '../../db/repositories/enrollmentRepositoryList.js';
-import { aggregateEnrollmentsWidgetQueries } from '../../db/repositories/enrollmentRepositoryWidgets.js';
-import { loadEnrollmentsReportAggregatesSql } from '../../db/repositories/enrollmentRepositoryReport.js';
+} from "../../db/repositories/enrollmentRepositoryList.js";
+import { aggregateEnrollmentsWidgetQueries } from "../../db/repositories/enrollmentRepositoryWidgets.js";
+import { loadEnrollmentsReportAggregatesSql } from "../../db/repositories/enrollmentRepositoryReport.js";
 
 /**
  * Drizzle-backed adapter for {@link EnrollmentsRepository}. Delegates to the

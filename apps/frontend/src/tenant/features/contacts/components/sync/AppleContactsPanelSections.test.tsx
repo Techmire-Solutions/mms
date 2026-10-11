@@ -10,9 +10,7 @@ import {
 
 describe("AppleContactsPanelSections Components", () => {
   it("renders export guide correctly", () => {
-    const html = renderToStaticMarkup(
-      <AppleContactsExportGuide t={((k: string) => k) as any} />,
-    );
+    const html = renderToStaticMarkup(<AppleContactsExportGuide t={((k: string) => k) as any} />);
 
     expect(html).toContain("contacts.sync.appleExportTitle");
   });
@@ -45,11 +43,7 @@ describe("AppleContactsPanelSections Components", () => {
   it("renders hidden file input", () => {
     const fileRef = { current: null };
     const html = renderToStaticMarkup(
-      <AppleContactsFileInput
-        fileRef={fileRef}
-        onChange={vi.fn()}
-        t={((k: string) => k) as any}
-      />,
+      <AppleContactsFileInput fileRef={fileRef} onChange={vi.fn()} t={((k: string) => k) as any} />,
     );
 
     expect(html).toContain('type="file"');

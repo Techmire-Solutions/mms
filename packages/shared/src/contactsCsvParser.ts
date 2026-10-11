@@ -1,6 +1,6 @@
-import type { Contact } from './contactEntityTypes.js';
-import { parseCsvRows } from './csvParserCore.js';
-import { HEADER_FIELD_MAP, normalizeHeaderKey } from './contactsCsvHeaderMap.js';
+import type { Contact } from "./contactEntityTypes.js";
+import { parseCsvRows } from "./csvParserCore.js";
+import { HEADER_FIELD_MAP, normalizeHeaderKey } from "./contactsCsvHeaderMap.js";
 import {
   buildActivities,
   buildAddresses,
@@ -17,7 +17,7 @@ import {
   generateId,
   parseBool,
   type ParseContactsRowContext,
-} from './contactsCsvRowParser.js';
+} from "./contactsCsvRowParser.js";
 
 export { parseCsvRows, HEADER_FIELD_MAP };
 
@@ -36,8 +36,8 @@ function resolveFirstAndLastName(
   let lastName = lastNameRaw;
   if (!firstName && !lastName && rawName) {
     const parts = rawName.split(/\s+/);
-    firstName = parts[0] || '';
-    lastName = parts.slice(1).join(' ');
+    firstName = parts[0] || "";
+    lastName = parts.slice(1).join(" ");
   }
   return { firstName, lastName };
 }
@@ -51,7 +51,10 @@ export function parseContactsCsv(
 ): { contacts: Contact[]; errors: string[] } {
   const rows = parseCsvRows(csvText);
   if (rows.length < 2) {
-    return { contacts: [], errors: rows.length === 0 ? ['CSV file is empty'] : ['CSV file has no data rows'] };
+    return {
+      contacts: [],
+      errors: rows.length === 0 ? ["CSV file is empty"] : ["CSV file has no data rows"],
+    };
   }
 
   const headerRow = rows[0];
@@ -69,7 +72,7 @@ export function parseContactsCsv(
     const row = rows[r];
     const getVal = (key: string): string => {
       const idx = colMap.get(key);
-      return idx !== undefined && row[idx] !== undefined ? cleanCell(row[idx]) : '';
+      return idx !== undefined && row[idx] !== undefined ? cleanCell(row[idx]) : "";
     };
 
     const ctx: ParseContactsRowContext = {
@@ -80,17 +83,17 @@ export function parseContactsCsv(
     };
 
     const resolvedNames = resolveFirstAndLastName(
-      getVal('firstName'),
-      getVal('lastName'),
-      getVal('name'),
+      getVal("firstName"),
+      getVal("lastName"),
+      getVal("name"),
     );
     let { firstName } = resolvedNames;
     const { lastName } = resolvedNames;
 
     if (!firstName && !lastName) {
-      const fallbackPhone = getVal('phone_number');
-      const fallbackEmail = getVal('email_address');
-      const fallbackCnic = getVal('cnic');
+      const fallbackPhone = getVal("phone_number");
+      const fallbackEmail = getVal("email_address");
+      const fallbackCnic = getVal("cnic");
       if (fallbackPhone || fallbackEmail || fallbackCnic) {
         firstName = fallbackPhone || fallbackEmail || fallbackCnic;
       } else {
@@ -99,31 +102,31 @@ export function parseContactsCsv(
       }
     }
 
-    const explicitId = getVal('id');
-    const avatar = getVal('avatar');
-    const whatsappStatus = getVal('whatsappStatus');
-    const lastCheckedAt = getVal('lastCheckedAt');
-    const aiSummary = getVal('aiSummary');
-    const createdAt = getVal('createdAt');
-    const updatedAt = getVal('updatedAt');
-    const createdBy = getVal('createdBy');
-    const updatedBy = getVal('updatedBy');
+    const explicitId = getVal("id");
+    const avatar = getVal("avatar");
+    const whatsappStatus = getVal("whatsappStatus");
+    const lastCheckedAt = getVal("lastCheckedAt");
+    const aiSummary = getVal("aiSummary");
+    const createdAt = getVal("createdAt");
+    const updatedAt = getVal("updatedAt");
+    const createdBy = getVal("createdBy");
+    const updatedBy = getVal("updatedBy");
     const activities = buildActivities(ctx);
     const attachments = buildAttachments(ctx);
 
     const contact: Contact = {
       id: explicitId || generateId(),
-      name: [firstName, lastName].filter(Boolean).join(' '),
+      name: [firstName, lastName].filter(Boolean).join(" "),
       firstName,
       lastName,
-      gender: getVal('gender'),
-      dob: getVal('dob'),
-      cnic: getVal('cnic'),
-      isSyed: parseBool(getVal('isSyed')),
-      tag: getVal('tag'),
-      notes: getVal('notes'),
+      gender: getVal("gender"),
+      dob: getVal("dob"),
+      cnic: getVal("cnic"),
+      isSyed: parseBool(getVal("isSyed")),
+      tag: getVal("tag"),
+      notes: getVal("notes"),
       ...(avatar ? { avatar } : {}),
-      ...(whatsappStatus ? { whatsappStatus: whatsappStatus as Contact['whatsappStatus'] } : {}),
+      ...(whatsappStatus ? { whatsappStatus: whatsappStatus as Contact["whatsappStatus"] } : {}),
       ...(lastCheckedAt ? { lastCheckedAt } : {}),
       ...(aiSummary ? { aiSummary } : {}),
       phones: buildPhones(ctx),

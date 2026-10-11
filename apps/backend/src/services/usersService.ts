@@ -1,4 +1,4 @@
-import { usersUseCases } from '../users/use-cases/usersUseCases.js';
+import { usersUseCases } from "../users/use-cases/usersUseCases.js";
 
 /**
  * Thin re-export of the users use-cases facade.

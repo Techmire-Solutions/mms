@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap } from "lucide-react";
 import type { Student } from "@mms/shared";
-import { Drawer } from '@/components/ui/Drawer';
+import { Drawer } from "@/components/ui/Drawer";
 import { DrawerUpdatedStamp } from "@/components/ui/DrawerUpdatedStamp";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { StudentArchivedBanner } from "@/tenant/features/students/components/StudentArchivedBanner";
@@ -31,7 +31,7 @@ export interface StudentDetailProps {
   onViewContact?: (contactId: string | number) => void;
 }
 
-export const StudentDetail = (function StudentDetail({
+export const StudentDetail = function StudentDetail({
   student,
   onClose,
   onEdit,
@@ -176,7 +176,7 @@ export const StudentDetail = (function StudentDetail({
       />
     </Drawer>
   );
-});
+};
 
 export const StudentDrawer = StudentDetail;
 export default StudentDetail;

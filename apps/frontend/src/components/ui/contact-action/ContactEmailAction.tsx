@@ -42,7 +42,7 @@ export interface ContactEmailActionProps {
   };
 }
 
-export const ContactEmailAction = (function ContactEmailAction({
+export const ContactEmailAction = function ContactEmailAction({
   email,
   name,
   variant = "stacked",
@@ -67,7 +67,9 @@ export const ContactEmailAction = (function ContactEmailAction({
   const canCopy = showCopy && Boolean(cleanEmail);
 
   const targetName = name ? ` (${name})` : "";
-  const mailLabel = labels?.mail ? `${labels.mail}${targetName}` : `Email ${cleanEmail}${targetName}`;
+  const mailLabel = labels?.mail
+    ? `${labels.mail}${targetName}`
+    : `Email ${cleanEmail}${targetName}`;
 
   const actionsNode = (
     <div
@@ -151,4 +153,4 @@ export const ContactEmailAction = (function ContactEmailAction({
       </div>
     </TooltipProvider>
   );
-});
+};

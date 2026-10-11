@@ -26,13 +26,21 @@ const columns: DataTableColumn<Row>[] = [
   { id: "name", label: "Name", render: (r) => r.name, fixed: true },
   { id: "code", label: "Code", render: (r) => r.code },
   { id: "tags", label: "Tags", render: (r) => r.tags.join(", "), defaultHidden: true },
-  { id: "status", label: "Status", render: (r) => String(r.active), searchValue: (r) => (r.active ? "active" : "inactive") },
+  {
+    id: "status",
+    label: "Status",
+    render: (r) => String(r.active),
+    searchValue: (r) => (r.active ? "active" : "inactive"),
+  },
 ];
 
 const statusFilter: DataTableFilter<Row> = {
   id: "status",
   label: "Status",
-  options: [{ value: "active", label: "Active" }, { value: "inactive", label: "Inactive" }],
+  options: [
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+  ],
   getValue: (r) => (r.active ? "active" : "inactive"),
 };
 const tagFilter: DataTableFilter<Row> = {
@@ -46,10 +54,17 @@ describe("buildDataTableRegistry / resolveVisibleColumns", () => {
   it("honours defaultHidden, fixed, and user order", () => {
     const registry = buildDataTableRegistry(columns);
     expect(registry.map((e) => [e.key, e.enabled])).toEqual([
-      ["name", true], ["code", true], ["tags", false], ["status", true],
+      ["name", true],
+      ["code", true],
+      ["tags", false],
+      ["status", true],
     ]);
     const reordered = registry.map((e) => (e.key === "status" ? { ...e, order: -1 } : e));
-    expect(resolveVisibleColumns(columns, reordered).map((c) => c.id)).toEqual(["status", "name", "code"]);
+    expect(resolveVisibleColumns(columns, reordered).map((c) => c.id)).toEqual([
+      "status",
+      "name",
+      "code",
+    ]);
   });
 });
 
@@ -70,9 +85,14 @@ describe("filterDataTableRows", () => {
 
   it("applies facet filters with OR within a facet and AND across facets", () => {
     const filters = [statusFilter, tagFilter];
-    expect(filterDataTableRows(rows, visible, "", filters, { status: ["active"] }).map((r) => r.id)).toEqual(["1", "3"]);
     expect(
-      filterDataTableRows(rows, visible, "", filters, { status: ["active", "inactive"], tags: ["admin"] }).map((r) => r.id),
+      filterDataTableRows(rows, visible, "", filters, { status: ["active"] }).map((r) => r.id),
+    ).toEqual(["1", "3"]);
+    expect(
+      filterDataTableRows(rows, visible, "", filters, {
+        status: ["active", "inactive"],
+        tags: ["admin"],
+      }).map((r) => r.id),
     ).toEqual(["1", "2"]);
     expect(countActiveFilters({ status: ["active", "inactive"], tags: ["admin"] })).toBe(3);
   });

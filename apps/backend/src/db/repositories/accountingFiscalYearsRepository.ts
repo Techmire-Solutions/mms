@@ -1,21 +1,28 @@
-import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type FiscalYear } from '@mms/shared';
-import { accountingFiscalYears, accountingPostingPeriods } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type FiscalYear } from "@mms/shared";
+import { accountingFiscalYears, accountingPostingPeriods } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type FiscalYearRow = typeof accountingFiscalYears.$inferSelect;
 
 export interface PostingPeriodSeed {
-  id: string; fiscalYearId: string; label: string; startDate: string; endDate: string; status: 'open' | 'closed';
+  id: string;
+  fiscalYearId: string;
+  label: string;
+  startDate: string;
+  endDate: string;
+  status: "open" | "closed";
 }
 
 /** Generates calendar-month posting periods with inclusive ISO day boundaries. */
-export function generatePostingPeriods(year: Pick<FiscalYear, 'id' | 'startDate' | 'endDate' | 'status'>): PostingPeriodSeed[] {
+export function generatePostingPeriods(
+  year: Pick<FiscalYear, "id" | "startDate" | "endDate" | "status">,
+): PostingPeriodSeed[] {
   const periods: PostingPeriodSeed[] = [];
   let cursor = year.startDate;
   while (cursor <= year.endDate) {
-    const [yearPart, monthPart] = cursor.split('-').map(Number);
+    const [yearPart, monthPart] = cursor.split("-").map(Number);
     const monthEnd = new Date(Date.UTC(yearPart!, monthPart!, 0)).toISOString().slice(0, 10);
     const endDate = monthEnd < year.endDate ? monthEnd : year.endDate;
     periods.push({
@@ -24,17 +31,23 @@ export function generatePostingPeriods(year: Pick<FiscalYear, 'id' | 'startDate'
       label: cursor.slice(0, 7),
       startDate: cursor,
       endDate,
-      status: year.status === 'closed' ? 'closed' : 'open',
+      status: year.status === "closed" ? "closed" : "open",
     });
     cursor = new Date(Date.UTC(yearPart!, monthPart!, 1)).toISOString().slice(0, 10);
   }
   return periods;
 }
 
-async function syncPostingPeriods(tx: Parameters<Parameters<typeof withTenant>[1]>[0], subdomain: string, records: FiscalYear[]): Promise<void> {
+async function syncPostingPeriods(
+  tx: Parameters<Parameters<typeof withTenant>[1]>[0],
+  subdomain: string,
+  records: FiscalYear[],
+): Promise<void> {
   const periods = records.flatMap(generatePostingPeriods);
   if (periods.length === 0) return;
-  await tx.insert(accountingPostingPeriods).values(periods.map((period) => ({ ...period, workspaceSubdomain: subdomain })))
+  await tx
+    .insert(accountingPostingPeriods)
+    .values(periods.map((period) => ({ ...period, workspaceSubdomain: subdomain })))
     .onConflictDoUpdate({
       target: [accountingPostingPeriods.workspaceSubdomain, accountingPostingPeriods.id],
       set: {
@@ -53,7 +66,7 @@ export function fiscalYearRowToRecord(row: FiscalYearRow): FiscalYear {
     label: row.label,
     startDate: row.startDate,
     endDate: row.endDate,
-    status: row.status as FiscalYear['status'],
+    status: row.status as FiscalYear["status"],
     ...mapAuditTimestamps(row),
   };
 
@@ -65,12 +78,12 @@ export function fiscalYearRowToRecord(row: FiscalYearRow): FiscalYear {
 
 export async function listFiscalYearsByWorkspace(
   tenant: string,
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<FiscalYear[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(accountingFiscalYears.deletedAt)
       : isAll
@@ -132,7 +145,12 @@ export async function findFiscalYearById(tenant: string, id: string): Promise<Fi
         updatedAt: accountingFiscalYears.updatedAt,
       })
       .from(accountingFiscalYears)
-      .where(and(eq(accountingFiscalYears.workspaceSubdomain, subdomain), eq(accountingFiscalYears.id, trimmedId)))
+      .where(
+        and(
+          eq(accountingFiscalYears.workspaceSubdomain, subdomain),
+          eq(accountingFiscalYears.id, trimmedId),
+        ),
+      )
       .limit(1);
     const row = rows[0];
     return row ? fiscalYearRowToRecord(row) : null;
@@ -142,14 +160,14 @@ export async function findFiscalYearById(tenant: string, id: string): Promise<Fi
 export async function findFiscalYearsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<FiscalYear[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(accountingFiscalYears.deletedAt)
       : isAll
@@ -200,7 +218,7 @@ export async function saveFiscalYear(tenant: string, record: FiscalYear): Promis
         label: record.label,
         startDate: record.startDate,
         endDate: record.endDate,
-        status: record.status ?? 'upcoming',
+        status: record.status ?? "upcoming",
         closedAt: record.closedAt ? new Date(record.closedAt) : null,
         closedBy: record.closedBy ?? null,
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
@@ -214,7 +232,7 @@ export async function saveFiscalYear(tenant: string, record: FiscalYear): Promis
           label: record.label,
           startDate: record.startDate,
           endDate: record.endDate,
-          status: record.status ?? 'upcoming',
+          status: record.status ?? "upcoming",
           closedAt: record.closedAt ? new Date(record.closedAt) : null,
           closedBy: record.closedBy ?? null,
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
@@ -234,7 +252,7 @@ function toFiscalYearRow(r: FiscalYear, subdomain: string) {
     label: r.label,
     startDate: r.startDate,
     endDate: r.endDate,
-    status: r.status ?? 'upcoming',
+    status: r.status ?? "upcoming",
     closedAt: r.closedAt ? new Date(r.closedAt) : null,
     closedBy: r.closedBy ?? null,
     deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
@@ -247,7 +265,7 @@ function toFiscalYearRow(r: FiscalYear, subdomain: string) {
 function dedupeFiscalYears(records: FiscalYear[]): FiscalYear[] {
   const map = new Map<string, FiscalYear>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) map.set(cleanId, { ...r, id: cleanId });
   }
   return Array.from(map.values());
@@ -282,16 +300,21 @@ export async function bulkSaveFiscalYears(tenant: string, records: FiscalYear[])
   });
 }
 
-export async function replaceFiscalYearsForWorkspace(tenant: string, records: FiscalYear[]): Promise<void> {
+export async function replaceFiscalYearsForWorkspace(
+  tenant: string,
+  records: FiscalYear[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueRecords = dedupeFiscalYears(records);
 
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(accountingFiscalYears).where(eq(accountingFiscalYears.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingFiscalYears)
+      .where(eq(accountingFiscalYears.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
-      await tx.insert(accountingFiscalYears).values(
-        uniqueRecords.map((r) => toFiscalYearRow(r, subdomain)),
-      );
+      await tx
+        .insert(accountingFiscalYears)
+        .values(uniqueRecords.map((r) => toFiscalYearRow(r, subdomain)));
     }
   });
 }

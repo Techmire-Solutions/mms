@@ -1,8 +1,5 @@
-import {
-  normalizeFinanceModulePreferences,
-  type FinanceModulePreferences,
-} from '@mms/shared';
-import { createModuleSetupConfigApi } from '@/lib/query/createModuleSetupConfigApi';
+import { normalizeFinanceModulePreferences, type FinanceModulePreferences } from "@mms/shared";
+import { createModuleSetupConfigApi } from "@/lib/query/createModuleSetupConfigApi";
 
 export const financeSetupConfigApi = createModuleSetupConfigApi<FinanceModulePreferences>({
   fetchPreferencesFn: async () => {
@@ -13,7 +10,8 @@ export const financeSetupConfigApi = createModuleSetupConfigApi<FinanceModulePre
     // Implement save
     return prefs as FinanceModulePreferences;
   },
-  normalizePrefs: (prefs: unknown) => normalizeFinanceModulePreferences(prefs as Record<string, unknown>),
+  normalizePrefs: (prefs: unknown) =>
+    normalizeFinanceModulePreferences(prefs as Record<string, unknown>),
 });
 
 export const fetchFinancePreferences = financeSetupConfigApi.fetchPreferences;

@@ -2,9 +2,9 @@ import {
   DEFAULT_USERS_SETTINGS,
   normalizeUserModulePreferences,
   type UsersSettings,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { getUserModulePreferencesByWorkspace } from '../../db/repositories/userModulePreferencesRepository.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { getUserModulePreferencesByWorkspace } from "../../db/repositories/userModulePreferencesRepository.js";
 
 /**
  * Loads tenant users module settings used by auth (registration / verification policy).

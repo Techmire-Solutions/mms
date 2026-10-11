@@ -35,7 +35,6 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-
 vi.mock("@/hooks/useWorkDirectoryViewMode", () => ({
   useWorkDirectoryViewMode: () => ({
     viewMode: "table",
@@ -151,7 +150,6 @@ describe("Soft-Delete UX Architecture Integration", () => {
       expect(state[0]).toBe(false);
     });
   });
-
 
   describe("2. Toolbar Add/Create CTA visibility in trash mode", () => {
     it("renders primaryAction (Add/Create CTA) when viewingDeleted is false", () => {
@@ -373,7 +371,6 @@ describe("Soft-Delete UX Architecture Integration", () => {
     });
   });
 
-
   describe("4. Detail drawer archive banner rendering", () => {
     it("renders EntityArchivedBanner with warning callout and reason when deletedAt is present", () => {
       const html = renderToStaticMarkup(
@@ -439,20 +436,13 @@ describe("Soft-Delete UX Architecture Integration", () => {
       vi.setSystemTime(new Date("2026-03-01T12:00:00Z"));
       try {
         const warningHtml = renderToStaticMarkup(
-          <RetentionCountdownBadge
-            deletedAt="2026-02-26T12:00:00Z"
-            retentionDays={8}
-          />,
+          <RetentionCountdownBadge deletedAt="2026-02-26T12:00:00Z" retentionDays={8} />,
         );
         expect(warningHtml).toContain("⚠️ common.purgesInDays");
         expect(warningHtml).toContain("text-destructive");
 
-
         const indefiniteHtml = renderToStaticMarkup(
-          <RetentionCountdownBadge
-            deletedAt="2026-02-26T12:00:00Z"
-            retentionDays={null}
-          />,
+          <RetentionCountdownBadge deletedAt="2026-02-26T12:00:00Z" retentionDays={null} />,
         );
         expect(indefiniteHtml).toContain("common.archivedIndefinitely");
       } finally {
@@ -478,7 +468,6 @@ describe("Soft-Delete UX Architecture Integration", () => {
         vi.useRealTimers();
       }
     });
-
 
     it("renders DetailDrawerRestoreOrEditAction: edit in active mode, restore in archived mode", () => {
       const onEdit = vi.fn();
@@ -708,7 +697,6 @@ describe("Soft-Delete UX Architecture Integration", () => {
     });
   });
 
-
   describe("5. Optimistic soft-delete hook (useOptimisticSoftDelete)", () => {
     interface TestItem {
       id: string;
@@ -923,4 +911,3 @@ describe("Soft-Delete UX Architecture Integration", () => {
     });
   });
 });
-

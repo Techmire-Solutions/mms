@@ -1,6 +1,6 @@
-import { writeFileSync } from 'node:fs';
-import type { Reporter, TestModule } from 'vitest/node';
-import { SHARD_TIMINGS_FILE, timingKey } from './shardSequencer';
+import { writeFileSync } from "node:fs";
+import type { Reporter, TestModule } from "vitest/node";
+import { SHARD_TIMINGS_FILE, timingKey } from "./shardSequencer";
 
 /**
  * Writes each test file's wall cost (environment setup, import, collect and
@@ -16,7 +16,12 @@ export default class ShardTimingsReporter implements Reporter {
   onTestRunEnd(testModules: ReadonlyArray<TestModule>): void {
     const entries = testModules.map((module) => {
       const d = module.diagnostic();
-      const ms = d.environmentSetupDuration + d.prepareDuration + d.collectDuration + d.setupDuration + d.duration;
+      const ms =
+        d.environmentSetupDuration +
+        d.prepareDuration +
+        d.collectDuration +
+        d.setupDuration +
+        d.duration;
       return [timingKey(module.project.config.root, module.moduleId), Math.round(ms)] as const;
     });
     if (entries.length === 0) return;

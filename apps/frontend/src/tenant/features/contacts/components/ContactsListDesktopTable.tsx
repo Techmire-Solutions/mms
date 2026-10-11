@@ -57,7 +57,8 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
   allSelected = false,
   someSelected = false,
 }: ContactsListDesktopTableProps): React.JSX.Element {
-  const { prefs, countryCodesMap, countryCodes, getColumnWidth, setColumnWidth } = useContactConfig();
+  const { prefs, countryCodesMap, countryCodes, getColumnWidth, setColumnWidth } =
+    useContactConfig();
   const { t } = useTranslation();
 
   const contactsMap = useMemo(() => buildContactsMap(allContacts), [allContacts]);
@@ -65,8 +66,6 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
     singular: "contacts.form.contact",
     plural: "contacts.table.contacts",
   });
-
-
 
   const finalColumns = useMemo<WorkBatchTableColumn<Contact>[]>(() => {
     return columns.map((col) => ({
@@ -94,7 +93,20 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
         });
       },
     }));
-  }, [columns, getColumnWidth, prefs, countryCodesMap, countryCodes, contactsMap, allContacts, showArchived, t, onView, onWhatsApp, selected]);
+  }, [
+    columns,
+    getColumnWidth,
+    prefs,
+    countryCodesMap,
+    countryCodes,
+    contactsMap,
+    allContacts,
+    showArchived,
+    t,
+    onView,
+    onWhatsApp,
+    selected,
+  ]);
 
   return (
     <WorkBatchTable

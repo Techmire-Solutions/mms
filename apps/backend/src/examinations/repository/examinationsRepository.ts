@@ -8,7 +8,7 @@ import type {
   ExaminationsReportComparisonQuery,
   WidgetQuery,
   WidgetAggregateResult,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the examinations module (exams + results).
@@ -22,13 +22,18 @@ export interface ExaminationsRepository {
   // Exams
   listExamsByWorkspace(
     tenant: string,
-    options?: { limit?: number; offset?: number; deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: {
+      limit?: number;
+      offset?: number;
+      deleted?: "active" | "deleted" | "all";
+      includeDeleted?: boolean;
+    },
   ): Promise<Exam[]>;
   findExamById(tenant: string, id: string): Promise<Exam | null>;
   findExamsByIds(
     tenant: string,
     ids: string[],
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<Exam[]>;
   saveExam(tenant: string, record: Exam): Promise<void>;
   bulkSaveExams(tenant: string, records: Exam[]): Promise<void>;

@@ -63,13 +63,20 @@ export function PaymentFormFields({
             </div>
             {Number(paymentDraft.amount) < balance && Number(paymentDraft.amount) > 0 && (
               <p className="m-0 mt-1 text-xs text-warning">
-                {t("finance.partialPayment", { balance: formatCurrency(balance - Number(paymentDraft.amount)) })}
+                {t("finance.partialPayment", {
+                  balance: formatCurrency(balance - Number(paymentDraft.amount)),
+                })}
               </p>
             )}
           </Field>
         </div>
 
-        <Field id="payment-method-select" label={t("finance.columns.method")} required error={errors.method}>
+        <Field
+          id="payment-method-select"
+          label={t("finance.columns.method")}
+          required
+          error={errors.method}
+        >
           <FormSelect
             id="payment-method-select"
             name="method"
@@ -79,7 +86,12 @@ export function PaymentFormFields({
           />
         </Field>
 
-        <Field id="payment-date-input" label={t("finance.columns.paymentDate")} required error={errors.date}>
+        <Field
+          id="payment-date-input"
+          label={t("finance.columns.paymentDate")}
+          required
+          error={errors.date}
+        >
           <DatePicker
             id="payment-date-input"
             name="date"

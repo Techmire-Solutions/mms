@@ -48,48 +48,48 @@ export function EnrollmentsPageModals({
   return (
     <>
       <EnrollmentsModalLayer
-      viewing={viewing}
-      canWrite={canWriteEnrollments}
-      canDelete={canDelete}
-      onRestore={handleRestore}
-      showDeleted={showDeleted}
-      showWizard={showWizard}
-      pendingDeleteId={pendingDeleteId}
-      wizardTitle={t("enrollments.new")}
-      onCloseViewing={() => setViewing(null)}
-      onStatusChange={handleStatusChange}
-      onPaymentStatusChange={handlePaymentStatusChange}
-      onCloseWizard={() => setShowWizard(false)}
-      onCompleteWizard={handleComplete}
-      onPendingDeleteChange={setPendingDeleteId}
-      onConfirmDelete={(deletionReason) => {
-        if (pendingDeleteId) handleDelete(pendingDeleteId, deletionReason);
-        setPendingDeleteId(null);
-      }}
-      bulkDeleteCount={selectedIds.length}
-      bulkDeleteOpen={confirmBulkDeleteOpen}
-      onBulkDeleteOpenChange={setConfirmBulkDeleteOpen}
-      bulkRestoreOpen={confirmBulkRestoreOpen}
-      onBulkRestoreOpenChange={setConfirmBulkRestoreOpen}
-      onConfirmBulkDelete={(deletionReason) => {
-        handleBulkDelete(selectedIds, deletionReason);
-        setConfirmBulkDeleteOpen(false);
-        clearSelection();
-      }}
-      onConfirmBulkRestore={() => {
-        handleBulkRestore(selectedIds);
-        setConfirmBulkRestoreOpen(false);
-        clearSelection();
-      }}
-    />
-
-    {importOpen && onCloseImport ? (
-      <EnrollmentsCsvImportDialog
-        open={importOpen}
-        onClose={onCloseImport}
+        viewing={viewing}
         canWrite={canWriteEnrollments}
+        canDelete={canDelete}
+        onRestore={handleRestore}
+        showDeleted={showDeleted}
+        showWizard={showWizard}
+        pendingDeleteId={pendingDeleteId}
+        wizardTitle={t("enrollments.new")}
+        onCloseViewing={() => setViewing(null)}
+        onStatusChange={handleStatusChange}
+        onPaymentStatusChange={handlePaymentStatusChange}
+        onCloseWizard={() => setShowWizard(false)}
+        onCompleteWizard={handleComplete}
+        onPendingDeleteChange={setPendingDeleteId}
+        onConfirmDelete={(deletionReason) => {
+          if (pendingDeleteId) handleDelete(pendingDeleteId, deletionReason);
+          setPendingDeleteId(null);
+        }}
+        bulkDeleteCount={selectedIds.length}
+        bulkDeleteOpen={confirmBulkDeleteOpen}
+        onBulkDeleteOpenChange={setConfirmBulkDeleteOpen}
+        bulkRestoreOpen={confirmBulkRestoreOpen}
+        onBulkRestoreOpenChange={setConfirmBulkRestoreOpen}
+        onConfirmBulkDelete={(deletionReason) => {
+          handleBulkDelete(selectedIds, deletionReason);
+          setConfirmBulkDeleteOpen(false);
+          clearSelection();
+        }}
+        onConfirmBulkRestore={() => {
+          handleBulkRestore(selectedIds);
+          setConfirmBulkRestoreOpen(false);
+          clearSelection();
+        }}
       />
-    ) : null}
-  </>
+
+      {importOpen && onCloseImport ? (
+        <EnrollmentsCsvImportDialog
+          open={importOpen}
+          onClose={onCloseImport}
+          canWrite={canWriteEnrollments}
+        />
+      ) : null}
+    </>
   );
 }

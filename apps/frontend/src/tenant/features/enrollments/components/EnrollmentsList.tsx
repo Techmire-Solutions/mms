@@ -1,5 +1,5 @@
 import React from "react";
-import { type Enrollment } from '@/lib/data/enrollmentData';
+import { type Enrollment } from "@/lib/data/enrollmentData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
@@ -10,9 +10,11 @@ import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { EnrollmentsListContent } from "@/tenant/features/enrollments/components/EnrollmentsListContent";
 import { EnrollmentsListFilters } from "@/tenant/features/enrollments/components/EnrollmentsListFilters";
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 
-const MessageComposer = React.lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
+const MessageComposer = React.lazy(
+  () => import("@/tenant/components/messaging/TenantMessageComposer"),
+);
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 
@@ -89,7 +91,9 @@ export function EnrollmentsList({
   const { formatCurrency } = useFinanceCurrency();
   const { messagingTarget, openComposer, closeComposer } = useMessageComposerState();
   const sessions = useSessionsCollection();
-  const { data: students = [] } = useStudentsByIds(enrollments.map((enrollment) => enrollment.studentId));
+  const { data: students = [] } = useStudentsByIds(
+    enrollments.map((enrollment) => enrollment.studentId),
+  );
   const columnVisible = isColumnVisible ?? ALWAYS_COLUMN_VISIBLE;
 
   const statusConfig = (() => ({

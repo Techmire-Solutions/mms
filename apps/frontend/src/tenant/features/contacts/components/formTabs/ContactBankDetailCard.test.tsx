@@ -171,12 +171,7 @@ describe("ContactBankDetailCard", () => {
 
   it("falls back to sequence label when bank name field is disabled", () => {
     const html = renderToStaticMarkup(
-      <ContactBankDetailCard
-        {...baseProps}
-        idx={1}
-        showBankName={false}
-        bankDetail={baseDetail}
-      />,
+      <ContactBankDetailCard {...baseProps} idx={1} showBankName={false} bankDetail={baseDetail} />,
     );
 
     expect(html).toContain("contacts.form.bankAccountSequence:2");

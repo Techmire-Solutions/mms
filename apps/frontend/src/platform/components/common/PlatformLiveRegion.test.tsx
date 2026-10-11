@@ -1,14 +1,11 @@
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { describe, it, expect, vi } from 'vitest';
-import {
-  PlatformLiveRegionProvider,
-  usePlatformLiveAnnouncer,
-} from './PlatformLiveRegion';
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { describe, it, expect, vi } from "vitest";
+import { PlatformLiveRegionProvider, usePlatformLiveAnnouncer } from "./PlatformLiveRegion";
 
-describe('PlatformLiveRegionProvider & usePlatformLiveAnnouncer', () => {
-  it('renders dual live regions with correct ARIA roles and attributes', () => {
-    const container = document.createElement('div');
+describe("PlatformLiveRegionProvider & usePlatformLiveAnnouncer", () => {
+  it("renders dual live regions with correct ARIA roles and attributes", () => {
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -24,12 +21,12 @@ describe('PlatformLiveRegionProvider & usePlatformLiveAnnouncer', () => {
     const alertRegion = container.querySelector('[role="alert"]');
 
     expect(politeRegion).not.toBeNull();
-    expect(politeRegion?.getAttribute('aria-live')).toBe('polite');
-    expect(politeRegion?.className).toContain('sr-only');
+    expect(politeRegion?.getAttribute("aria-live")).toBe("polite");
+    expect(politeRegion?.className).toContain("sr-only");
 
     expect(alertRegion).not.toBeNull();
-    expect(alertRegion?.getAttribute('aria-live')).toBe('assertive');
-    expect(alertRegion?.className).toContain('sr-only');
+    expect(alertRegion?.getAttribute("aria-live")).toBe("assertive");
+    expect(alertRegion?.className).toContain("sr-only");
 
     act(() => {
       root.unmount();
@@ -37,9 +34,9 @@ describe('PlatformLiveRegionProvider & usePlatformLiveAnnouncer', () => {
     container.remove();
   });
 
-  it('broadcasts announcements into respective polite and assertive regions', async () => {
+  it("broadcasts announcements into respective polite and assertive regions", async () => {
     vi.useFakeTimers();
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -59,16 +56,16 @@ describe('PlatformLiveRegionProvider & usePlatformLiveAnnouncer', () => {
     });
 
     act(() => {
-      announcer.announcePolite('Telemetry refreshed');
-      announcer.announceAssertive('Database connection pool degraded');
+      announcer.announcePolite("Telemetry refreshed");
+      announcer.announceAssertive("Database connection pool degraded");
       vi.advanceTimersByTime(100);
     });
 
     const politeRegion = container.querySelector('[data-testid="platform-live-polite"]');
     const alertRegion = container.querySelector('[data-testid="platform-live-assertive"]');
 
-    expect(politeRegion?.textContent).toBe('Telemetry refreshed');
-    expect(alertRegion?.textContent).toBe('Database connection pool degraded');
+    expect(politeRegion?.textContent).toBe("Telemetry refreshed");
+    expect(alertRegion?.textContent).toBe("Database connection pool degraded");
 
     act(() => {
       root.unmount();

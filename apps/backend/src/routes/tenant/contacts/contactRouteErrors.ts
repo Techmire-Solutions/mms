@@ -1,7 +1,10 @@
-import type { FastifyReply } from 'fastify';
-import { sendDatabaseError, sendForbidden } from '../../../lib/httpErrors.js';
-import { replyValidationError } from '../../../lib/zodRequest.js';
-import { ContactPermissionError, ContactUniqueFieldError } from '../../../services/contactService.js';
+import type { FastifyReply } from "fastify";
+import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
+import { replyValidationError } from "../../../lib/zodRequest.js";
+import {
+  ContactPermissionError,
+  ContactUniqueFieldError,
+} from "../../../services/contactService.js";
 
 export interface ParsedUniqueConstraintError {
   fieldId: string;
@@ -14,29 +17,37 @@ export interface ParsedUniqueConstraintError {
  */
 export function parsePostgresUniqueError(error: unknown): ParsedUniqueConstraintError | null {
   const pgCode = (error as { code?: string })?.code;
-  if (pgCode !== '23505') return null;
+  if (pgCode !== "23505") return null;
 
-  const pgDetail = (error as { detail?: string })?.detail || '';
-  const constraintName = (error as { constraint?: string })?.constraint || '';
+  const pgDetail = (error as { detail?: string })?.detail || "";
+  const constraintName = (error as { constraint?: string })?.constraint || "";
 
-  if (constraintName.includes('cnic') || pgDetail.includes('cnic')) {
-    return { fieldId: 'cnic', tabId: 'basic', message: 'CNIC must be unique per contact' };
+  if (constraintName.includes("cnic") || pgDetail.includes("cnic")) {
+    return { fieldId: "cnic", tabId: "basic", message: "CNIC must be unique per contact" };
   }
-  if (constraintName.includes('phone') || pgDetail.includes('phone')) {
-    return { fieldId: 'number', tabId: 'phones', message: 'Phone number must be unique per contact' };
+  if (constraintName.includes("phone") || pgDetail.includes("phone")) {
+    return {
+      fieldId: "number",
+      tabId: "phones",
+      message: "Phone number must be unique per contact",
+    };
   }
-  if (constraintName.includes('email') || pgDetail.includes('email')) {
-    return { fieldId: 'address', tabId: 'emails', message: 'Email address must be unique per contact' };
+  if (constraintName.includes("email") || pgDetail.includes("email")) {
+    return {
+      fieldId: "address",
+      tabId: "emails",
+      message: "Email address must be unique per contact",
+    };
   }
 
-  return { fieldId: 'cnic', tabId: 'basic', message: 'Value must be unique per contact' };
+  return { fieldId: "cnic", tabId: "basic", message: "Value must be unique per contact" };
 }
 
 export function handleContactWriteError(
   reply: FastifyReply,
   error: unknown,
-  fallbackMessage = 'Failed to save contact record',
-): ReturnType<FastifyReply['status']> {
+  fallbackMessage = "Failed to save contact record",
+): ReturnType<FastifyReply["status"]> {
   if (error instanceof ContactPermissionError) {
     return sendForbidden(reply, error.message);
   }
@@ -58,18 +69,25 @@ export function formatContactWriteError(error: unknown, fallbackMessage: string)
   if (error instanceof ContactPermissionError) {
     return {
       status: 403 as const,
-      body: { type: 'forbidden' as const, message: error.message },
+      body: { type: "forbidden" as const, message: error.message },
     };
   }
 
   if (
     error instanceof ContactUniqueFieldError ||
-    (error && typeof error === 'object' && 'errors' in error && Array.isArray((error as { errors?: unknown[] }).errors))
+    (error &&
+      typeof error === "object" &&
+      "errors" in error &&
+      Array.isArray((error as { errors?: unknown[] }).errors))
   ) {
     const errWithErrors = error as { message: string; errors?: Record<string, unknown>[] };
     return {
       status: 400 as const,
-      body: { type: 'validation_error' as const, message: errWithErrors.message, errors: errWithErrors.errors },
+      body: {
+        type: "validation_error" as const,
+        message: errWithErrors.message,
+        errors: errWithErrors.errors,
+      },
     };
   }
 
@@ -78,26 +96,34 @@ export function formatContactWriteError(error: unknown, fallbackMessage: string)
     return {
       status: 400 as const,
       body: {
-        type: 'validation_error' as const,
+        type: "validation_error" as const,
         message: uniqueError.message,
         errors: [uniqueError],
       },
     };
   }
 
-  const errObj = error as { message?: string; statusCode?: number; errors?: Record<string, unknown>[] };
+  const errObj = error as {
+    message?: string;
+    statusCode?: number;
+    errors?: Record<string, unknown>[];
+  };
   const msg = errObj?.message || fallbackMessage;
-  const isValidation = errObj?.statusCode === 400 || /unique|conflict|already exists|validation/i.test(msg);
+  const isValidation =
+    errObj?.statusCode === 400 || /unique|conflict|already exists|validation/i.test(msg);
   if (isValidation) {
     return {
       status: 400 as const,
       body: {
-        type: 'validation_error' as const,
+        type: "validation_error" as const,
         message: msg,
         ...(Array.isArray(errObj?.errors) ? { errors: errObj.errors } : {}),
       },
     };
   }
 
-  return { status: 500 as const, body: { type: 'database_error' as const, message: fallbackMessage } };
+  return {
+    status: 500 as const,
+    body: { type: "database_error" as const, message: fallbackMessage },
+  };
 }

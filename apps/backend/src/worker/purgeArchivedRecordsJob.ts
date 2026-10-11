@@ -1,9 +1,9 @@
-import { and, eq, inArray, isNotNull, lte, sql } from 'drizzle-orm';
-import type { DbClient } from '../db/dbConnection.js';
-import { messageLogs, attendance } from '../db/schema.js';
-import { recordModernAuditEvent } from '../services/auditTrailService.js';
-import { emitOutboxEvent } from '../services/outboxEventService.js';
-import { logger } from '../lib/logger.js';
+import { and, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
+import type { DbClient } from "../db/dbConnection.js";
+import { messageLogs, attendance } from "../db/schema.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { emitOutboxEvent } from "../services/outboxEventService.js";
+import { logger } from "../lib/logger.js";
 
 const CHUNK_SIZE = 500;
 const INTER_CHUNK_PAUSE_MS = 50;
@@ -51,7 +51,7 @@ export interface PurgeExpiredOptions {
 export async function purgeExpiredArchivedRecords(
   db: DbClient,
   tenant: string,
-  dryRun = process.env.DRY_RUN === 'true',
+  dryRun = process.env.DRY_RUN === "true",
   options?: PurgeExpiredOptions,
 ): Promise<{ purgedTables: Record<string, number> }> {
   const normalizedTenant = tenant.trim().toLowerCase();
@@ -59,8 +59,8 @@ export async function purgeExpiredArchivedRecords(
   const results: Record<string, number> = {};
 
   const targets = options?.targetTables ?? [
-    { table: messageLogs, name: 'message_logs' },
-    { table: attendance, name: 'attendance' },
+    { table: messageLogs, name: "message_logs" },
+    { table: attendance, name: "attendance" },
   ];
 
   const now = new Date();
@@ -87,10 +87,13 @@ export async function purgeExpiredArchivedRecords(
         return countRes[0]?.count ?? 0;
       });
       results[name] = count;
-      if (name === 'attendance') {
-        results['attendance_records'] = count;
+      if (name === "attendance") {
+        results["attendance_records"] = count;
       }
-      logger.info({ tenant: normalizedTenant, table: name, count }, 'Purge worker dry-run count calculated');
+      logger.info(
+        { tenant: normalizedTenant, table: name, count },
+        "Purge worker dry-run count calculated",
+      );
       continue;
     }
 
@@ -112,7 +115,7 @@ export async function purgeExpiredArchivedRecords(
             ),
           )
           .limit(CHUNK_SIZE)
-          .for('update', { skipLocked: true });
+          .for("update", { skipLocked: true });
 
         if (candidates.length === 0) return 0;
 
@@ -123,11 +126,11 @@ export async function purgeExpiredArchivedRecords(
           workspaceSubdomain: normalizedTenant,
           tableName: name,
           recordId: `purge-batch-${Date.now()}`,
-          actionType: 'DELETE',
-          clientApp: 'background-purge-worker',
-          apiEndpoint: 'entity.hard_purge',
+          actionType: "DELETE",
+          clientApp: "background-purge-worker",
+          apiEndpoint: "entity.hard_purge",
           oldState: {
-            event: 'entity.hard_purge',
+            event: "entity.hard_purge",
             retentionCutoff: now.toISOString(),
             purgedCount: ids.length,
             purgedIds: ids,
@@ -136,10 +139,10 @@ export async function purgeExpiredArchivedRecords(
         });
 
         // 3b. Emit CDC outbox event for each purged entity (cache eviction / tombstoning)
-        if ('insert' in tx && typeof tx.insert === 'function') {
+        if ("insert" in tx && typeof tx.insert === "function") {
           for (const id of ids) {
             try {
-              await emitOutboxEvent(tx, 'entity.hard_purge', {
+              await emitOutboxEvent(tx, "entity.hard_purge", {
                 entityType: name,
                 entityId: id,
                 tenantId: normalizedTenant,
@@ -155,12 +158,7 @@ export async function purgeExpiredArchivedRecords(
         // 4. Physical hard delete of bounded chunk
         await tx
           .delete(table)
-          .where(
-            and(
-              eq(table.workspaceSubdomain, normalizedTenant),
-              inArray(table.id, ids),
-            ),
-          );
+          .where(and(eq(table.workspaceSubdomain, normalizedTenant), inArray(table.id, ids)));
 
         return ids.length;
       });
@@ -175,10 +173,13 @@ export async function purgeExpiredArchivedRecords(
     }
 
     results[name] = totalPurged;
-    if (name === 'attendance') {
-      results['attendance_records'] = totalPurged;
+    if (name === "attendance") {
+      results["attendance_records"] = totalPurged;
     }
-    logger.info({ tenant: normalizedTenant, table: name, totalPurged }, 'Purge worker completed table');
+    logger.info(
+      { tenant: normalizedTenant, table: name, totalPurged },
+      "Purge worker completed table",
+    );
   }
 
   return { purgedTables: results };

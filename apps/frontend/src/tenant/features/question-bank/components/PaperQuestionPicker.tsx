@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/input";
 import { FormSelect, type FormSelectOption } from "@/components/ui/FormSelect";
-import {
-  getQuestionCategoryIds,
-  type QuestionBankQuestion as Question,
-} from "@mms/shared";
-import type { DifficultyFilter, PaperSection } from "@/tenant/features/question-bank/components/paperBuilderUtils";
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+import { getQuestionCategoryIds, type QuestionBankQuestion as Question } from "@mms/shared";
+import type {
+  DifficultyFilter,
+  PaperSection,
+} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/semanticTone";
 import { CategoryColorChip } from "@/tenant/features/question-bank/components/CategoryColorChip";
 
@@ -62,9 +62,13 @@ export function PaperQuestionPicker({
   return (
     <section className={`${WORK_SURFACE} p-3 sm:p-4`}>
       <div className="mb-3">
-        <h3 className="m-0 text-sm font-bold text-foreground">{t("questionBank.addQuestionsFromBank")}</h3>
+        <h3 className="m-0 text-sm font-bold text-foreground">
+          {t("questionBank.addQuestionsFromBank")}
+        </h3>
         <p className="m-0 text-xs text-muted-foreground">
-          {activeSection ? t("questionBank.addingToSection", { title: activeSection.title }) : t("questionBank.noActiveSection")}
+          {activeSection
+            ? t("questionBank.addingToSection", { title: activeSection.title })
+            : t("questionBank.noActiveSection")}
         </p>
       </div>
 
@@ -111,7 +115,9 @@ export function PaperQuestionPicker({
             return (
               <div key={question.id} className="rounded-lg border border-border bg-muted/20 p-3">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <p className="m-0 flex-1 text-xs font-semibold leading-snug text-foreground">{question.text}</p>
+                  <p className="m-0 flex-1 text-xs font-semibold leading-snug text-foreground">
+                    {question.text}
+                  </p>
                   <Button
                     type="button"
                     onClick={() => onAddQuestion(question.id)}
@@ -127,7 +133,11 @@ export function PaperQuestionPicker({
                     const category = categoryById.get(categoryId);
                     if (!category) return null;
                     return (
-                      <CategoryColorChip key={categoryId} name={category.name} color={category.color} />
+                      <CategoryColorChip
+                        key={categoryId}
+                        name={category.name}
+                        color={category.color}
+                      />
                     );
                   })}
                   <StatusBadge status={question.difficulty} config={difficultyConfig} size="sm" />

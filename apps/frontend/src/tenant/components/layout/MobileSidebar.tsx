@@ -22,7 +22,10 @@ export interface MobileSidebarProps {
   onClose: () => void;
 }
 
-export default function MobileSidebar({ open, onClose }: MobileSidebarProps): React.JSX.Element | null {
+export default function MobileSidebar({
+  open,
+  onClose,
+}: MobileSidebarProps): React.JSX.Element | null {
   const branding = useBranding();
   const { user, logout } = useAuth();
   const { t } = useTranslation();
@@ -132,7 +135,9 @@ export default function MobileSidebar({ open, onClose }: MobileSidebarProps): Re
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-sidebar-foreground">{user?.name ?? "User"}</p>
+              <p className="truncate text-sm font-semibold text-sidebar-foreground">
+                {user?.name ?? "User"}
+              </p>
               <p className="truncate text-xs text-sidebar-muted-foreground">{user?.email ?? ""}</p>
             </div>
           </div>

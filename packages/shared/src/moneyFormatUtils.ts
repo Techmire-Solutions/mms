@@ -22,7 +22,7 @@ export const DEFAULT_CURRENCIES = [
   { id: "cur4", code: "CAD", name: "Canadian Dollar", symbol: "C$" },
   { id: "cur5", code: "SAR", name: "Saudi Riyal", symbol: "﷼" },
   { id: "cur6", code: "AED", name: "UAE Dirham", symbol: "د.إ" },
-  { id: "cur7", code: "EUR", name: "Euro", symbol: "€" }
+  { id: "cur7", code: "EUR", name: "Euro", symbol: "€" },
 ];
 
 /**
@@ -56,7 +56,7 @@ export function formatMoney(
     excludeCurrency?: boolean;
     minimumFractionDigits?: number;
     maximumFractionDigits?: number;
-  }
+  },
 ): string {
   if (amount === null || amount === undefined) return "—";
   const numeric = typeof amount === "number" ? amount : parseFloat(String(amount));
@@ -78,7 +78,9 @@ export function formatMoney(
 
   let prefix = resolvedCurrency;
   if (options?.useSymbol) {
-    const found = DEFAULT_CURRENCIES.find((c) => c.code === resolvedCurrency || c.symbol === resolvedCurrency);
+    const found = DEFAULT_CURRENCIES.find(
+      (c) => c.code === resolvedCurrency || c.symbol === resolvedCurrency,
+    );
     if (found) {
       prefix = found.symbol;
     }
@@ -95,7 +97,7 @@ export function formatMoney(
  */
 export function formatNumber(
   value: number | string | readonly (string | number)[] | null | undefined,
-  options?: Intl.NumberFormatOptions
+  options?: Intl.NumberFormatOptions,
 ): string {
   if (value === null || value === undefined) return "0";
   if (Array.isArray(value)) {
@@ -107,14 +109,29 @@ export function formatNumber(
 }
 
 const ONES = [
-  "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
-  "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
-  "Seventeen", "Eighteen", "Nineteen",
+  "",
+  "One",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nine",
+  "Ten",
+  "Eleven",
+  "Twelve",
+  "Thirteen",
+  "Fourteen",
+  "Fifteen",
+  "Sixteen",
+  "Seventeen",
+  "Eighteen",
+  "Nineteen",
 ];
 
-const TENS = [
-  "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety",
-];
+const TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
 const SCALES = ["", "Thousand", "Million", "Billion", "Trillion"];
 
@@ -143,7 +160,7 @@ function convertChunk(num: number): string {
  */
 export function formatAmountInWords(
   amount: number | string | null | undefined,
-  currency?: string
+  currency?: string,
 ): string {
   if (amount === null || amount === undefined) return "";
   const numeric = typeof amount === "number" ? amount : parseFloat(String(amount));

@@ -68,7 +68,7 @@ export function useTemplateEditorExport<TPayload = Record<string, unknown>>({
     try {
       const zohoPayload = mapToZohoInvoice(
         (sampleData || {}) as Record<string, unknown>,
-        template as DocumentTemplate
+        template as DocumentTemplate,
       );
       await onExportZoho(zohoPayload);
     } catch (err) {

@@ -24,9 +24,9 @@ export function buildDesignationDraftPatch(
     };
   }
   const departmentName =
-    designation.departmentName
-    ?? departmentEntities.find((d) => d.id === designation.departmentId)?.name
-    ?? "";
+    designation.departmentName ??
+    departmentEntities.find((d) => d.id === designation.departmentId)?.name ??
+    "";
   return {
     designationId: designation.id,
     designation: designation.name,
@@ -44,9 +44,10 @@ export function selectableDesignationOptions(
 ): FacultyDesignationDefinition[] {
   return options
     .filter((item) => isFacultyCatalogRowActive(item) || item.id === currentDesignationId)
-    .sort((a, b) =>
-      (a.departmentName ?? "").localeCompare(b.departmentName ?? "")
-      || (a.hierarchyRank ?? 99) - (b.hierarchyRank ?? 99)
-      || a.name.localeCompare(b.name),
+    .sort(
+      (a, b) =>
+        (a.departmentName ?? "").localeCompare(b.departmentName ?? "") ||
+        (a.hierarchyRank ?? 99) - (b.hierarchyRank ?? 99) ||
+        a.name.localeCompare(b.name),
     );
 }

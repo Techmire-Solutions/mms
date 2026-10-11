@@ -1,13 +1,10 @@
-import { randomBytes } from 'node:crypto';
-import type { FastifyInstance, FastifyRequest } from 'fastify';
-import helmet from '@fastify/helmet';
-import rateLimit from '@fastify/rate-limit';
-import type { ServerConfig } from '../config/serverConfig.js';
-import { GLOBAL_RATE_LIMIT, generateCompositeRateLimitKey } from '../lib/rateLimitConfig.js';
-import {
-  checkIsRateLimitRedisConnected,
-  getRateLimitRedisClient,
-} from '../lib/redis.js';
+import { randomBytes } from "node:crypto";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import helmet from "@fastify/helmet";
+import rateLimit from "@fastify/rate-limit";
+import type { ServerConfig } from "../config/serverConfig.js";
+import { GLOBAL_RATE_LIMIT, generateCompositeRateLimitKey } from "../lib/rateLimitConfig.js";
+import { checkIsRateLimitRedisConnected, getRateLimitRedisClient } from "../lib/redis.js";
 
 /**
  * Per-request CSP nonce store. The nonce is generated in `onRequest` and
@@ -39,28 +36,34 @@ function buildCspDirectives(isProd?: boolean, nonce?: string) {
   scriptSources.push("'sha256-gk4Z7QZVEdEVHj4eZeOlFNEC2ZefOM9Ohn11Fh6G3Vo='");
 
   return {
-    'default-src': ["'self'"],
-    'script-src': scriptSources,
-    'script-src-attr': ["'none'"],
-    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-    'img-src': ["'self'", 'data:', 'blob:'],
-    'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
-    'media-src': ["'self'", 'data:', 'blob:'],
-    'worker-src': ["'self'", 'blob:'],
-    'manifest-src': ["'self'"],
-    'connect-src': ["'self'", 'ws:', 'wss:', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
-    'object-src': ["'none'"],
-    'base-uri': ["'self'"],
-    'form-action': ["'self'"],
-    'frame-ancestors': ["'none'"],
-    ...(isProd ? { 'upgrade-insecure-requests': [] } : {}),
+    "default-src": ["'self'"],
+    "script-src": scriptSources,
+    "script-src-attr": ["'none'"],
+    "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+    "img-src": ["'self'", "data:", "blob:"],
+    "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
+    "media-src": ["'self'", "data:", "blob:"],
+    "worker-src": ["'self'", "blob:"],
+    "manifest-src": ["'self'"],
+    "connect-src": [
+      "'self'",
+      "ws:",
+      "wss:",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+    ],
+    "object-src": ["'none'"],
+    "base-uri": ["'self'"],
+    "form-action": ["'self'"],
+    "frame-ancestors": ["'none'"],
+    ...(isProd ? { "upgrade-insecure-requests": [] } : {}),
   };
 }
 
 function serializeCsp(directives: Record<string, string[]>): string {
   return Object.entries(directives)
-    .map(([key, values]) => (values.length ? `${key} ${values.join(' ')}` : key))
-    .join('; ');
+    .map(([key, values]) => (values.length ? `${key} ${values.join(" ")}` : key))
+    .join("; ");
 }
 
 /** Adds a `nonce` attribute to inline `<script>` tags (those without a `src`). */
@@ -78,12 +81,12 @@ function injectNonce(html: string, nonce: string): string {
  * are exempt so that client asset loading never fails with HTTP 429.
  */
 export function isRateLimitExempt(rawUrl: string): boolean {
-  const path = (rawUrl.split('?')[0] ?? '').toLowerCase().replace(/\/+/g, '/');
-  if (path === '/health' || path === '/ready' || path === '/metrics') {
+  const path = (rawUrl.split("?")[0] ?? "").toLowerCase().replace(/\/+/g, "/");
+  if (path === "/health" || path === "/ready" || path === "/metrics") {
     return true;
   }
   // All backend REST APIs are mounted under /api — non-API requests are client SPA & static assets
-  if (!path.startsWith('/api')) {
+  if (!path.startsWith("/api")) {
     return true;
   }
   return false;
@@ -93,7 +96,7 @@ export async function registerSecurityPlugins(
   app: FastifyInstance,
   config?: ServerConfig,
 ): Promise<void> {
-  const isProd = config?.isProd ?? process.env.NODE_ENV === 'production';
+  const isProd = config?.isProd ?? process.env.NODE_ENV === "production";
 
   await app.register(helmet, {
     // CSP is set per-request in `onSend` so we can embed a per-request nonce.
@@ -107,43 +110,43 @@ export async function registerSecurityPlugins(
         }
       : false,
     // Prevents cross-origin window object tampering while allowing OAuth popups
-    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
     // Restricts embedding to same-site (supports tenant subdomains on same root domain)
-    crossOriginResourcePolicy: { policy: 'same-site' },
+    crossOriginResourcePolicy: { policy: "same-site" },
     // Strict referrer policy
-    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   });
 
-  app.addHook('onRequest', async (request) => {
-    nonceStore.set(request, randomBytes(16).toString('base64'));
+  app.addHook("onRequest", async (request) => {
+    nonceStore.set(request, randomBytes(16).toString("base64"));
   });
 
-  app.addHook('onSend', async (request, reply, payload) => {
-    const nonce = nonceStore.get(request) ?? randomBytes(16).toString('base64');
-    reply.header('content-security-policy', serializeCsp(buildCspDirectives(isProd, nonce)));
+  app.addHook("onSend", async (request, reply, payload) => {
+    const nonce = nonceStore.get(request) ?? randomBytes(16).toString("base64");
+    reply.header("content-security-policy", serializeCsp(buildCspDirectives(isProd, nonce)));
 
-    const contentType = String(reply.getHeader('content-type') ?? '');
-    if (!contentType.includes('text/html')) {
+    const contentType = String(reply.getHeader("content-type") ?? "");
+    if (!contentType.includes("text/html")) {
       return payload;
     }
 
-    const encoding = String(reply.getHeader('content-encoding') ?? '');
-    if (encoding && encoding !== 'identity') {
+    const encoding = String(reply.getHeader("content-encoding") ?? "");
+    if (encoding && encoding !== "identity") {
       return payload;
     }
 
-    if (typeof payload === 'string') {
+    if (typeof payload === "string") {
       return injectNonce(payload, nonce);
     }
     if (Buffer.isBuffer(payload)) {
-      return injectNonce(payload.toString('utf8'), nonce);
+      return injectNonce(payload.toString("utf8"), nonce);
     }
-    if (payload && typeof (payload as { on?: unknown }).on === 'function') {
+    if (payload && typeof (payload as { on?: unknown }).on === "function") {
       const chunks: Buffer[] = [];
       for await (const chunk of payload as AsyncIterable<Buffer | string>) {
         chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
       }
-      return injectNonce(Buffer.concat(chunks).toString('utf8'), nonce);
+      return injectNonce(Buffer.concat(chunks).toString("utf8"), nonce);
     }
     return payload;
   });
@@ -156,13 +159,13 @@ export async function registerSecurityPlugins(
   // ceiling once more than one backend process serves traffic, so it is an
   // explicit opt-in — set RATE_LIMIT_REDIS_STORE=true when scaling out.
   const redisStoreRequested =
-    process.env.RATE_LIMIT_REDIS_STORE === 'true' || (isProd && Boolean(process.env.REDIS_URL));
+    process.env.RATE_LIMIT_REDIS_STORE === "true" || (isProd && Boolean(process.env.REDIS_URL));
   const redisClient = redisStoreRequested ? getRateLimitRedisClient() : null;
 
   if (redisStoreRequested && (!redisClient || !checkIsRateLimitRedisConnected())) {
     app.log.warn(
-      'Redis rate-limit store requested but Redis is unavailable — falling back to the ' +
-        'in-process rate-limit store (limits are per-process until Redis recovers).',
+      "Redis rate-limit store requested but Redis is unavailable — falling back to the " +
+        "in-process rate-limit store (limits are per-process until Redis recovers).",
     );
   }
 
@@ -176,15 +179,15 @@ export async function registerSecurityPlugins(
     allowList: (request) => isRateLimitExempt(request.url),
     ...(redisClient && checkIsRateLimitRedisConnected() ? { redis: redisClient } : {}),
     addHeadersOnExceeding: {
-      'x-ratelimit-limit': true,
-      'x-ratelimit-remaining': true,
-      'x-ratelimit-reset': true,
+      "x-ratelimit-limit": true,
+      "x-ratelimit-remaining": true,
+      "x-ratelimit-reset": true,
     },
     addHeaders: {
-      'x-ratelimit-limit': true,
-      'x-ratelimit-remaining': true,
-      'x-ratelimit-reset': true,
-      'retry-after': true,
+      "x-ratelimit-limit": true,
+      "x-ratelimit-remaining": true,
+      "x-ratelimit-reset": true,
+      "retry-after": true,
     },
   });
 }

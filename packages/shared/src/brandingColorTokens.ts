@@ -4,11 +4,11 @@ import {
   hslColorToHex,
   tone,
   type HslColor,
-} from './brandingColorConvert.js';
+} from "./brandingColorConvert.js";
 
 /** Tailwind HSL token → CSS `hsl()` colour. */
 export function brandingTokenToCss(token: string): string {
-  return `hsl(${token.replace(/ /g, ', ')})`;
+  return `hsl(${token.replace(/ /g, ", ")})`;
 }
 
 function parseHslToken(token: string): HslColor | null {
@@ -18,7 +18,7 @@ function parseHslToken(token: string): HslColor | null {
 }
 
 /** Tailwind HSL token → `#rrggbb` (for Recharts / canvas APIs). */
-export function brandingTokenToHex(token: string, fallback = '#047857'): string {
+export function brandingTokenToHex(token: string, fallback = "#047857"): string {
   const parsed = parseHslToken(token);
   return parsed ? hslColorToHex(parsed) : fallback;
 }

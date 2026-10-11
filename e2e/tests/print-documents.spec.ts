@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-process.env.NODE_ENV = process.env.NODE_ENV || 'test';
+process.env.NODE_ENV = process.env.NODE_ENV || "test";
 
 /**
  * What actually prints.
@@ -32,10 +32,10 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'test';
  * NOT tagged `@local-only`: CI `grepInvert`s that tag, and a guard CI skips is not a
  * guard.
  */
-test.describe('printable documents', () => {
-  test('printable content survives print media', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+test.describe("printable documents", () => {
+  test("printable content survives print media", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
 
     /**
      * Inject the probe rather than hunting for a real element.
@@ -50,50 +50,50 @@ test.describe('printable documents', () => {
      */
     await page.evaluate(() => {
       const make = (classes: string, id: string) => {
-        const el = document.createElement('div');
+        const el = document.createElement("div");
         el.id = id;
         el.className = classes;
         el.textContent = id;
         document.body.appendChild(el);
         return el;
       };
-      make('shadow-sm p-2', 'print-probe-shadow-sm');
-      make('shadow-xl p-2', 'print-probe-shadow-xl');
+      make("shadow-sm p-2", "print-probe-shadow-sm");
+      make("shadow-xl p-2", "print-probe-shadow-xl");
       // Control: this one MUST be hidden for print, proving print media applied.
-      make('print:hidden p-2', 'print-probe-control');
+      make("print:hidden p-2", "print-probe-control");
     });
 
     const displayOf = (id: string) =>
       page.evaluate((elementId) => {
         const el = document.getElementById(elementId);
-        if (!el) return 'missing';
+        if (!el) return "missing";
         return getComputedStyle(el).display;
       }, id);
 
     // --- on screen ------------------------------------------------------------
-    expect(await displayOf('print-probe-shadow-sm')).not.toBe('none');
-    expect(await displayOf('print-probe-shadow-xl')).not.toBe('none');
-    expect(await displayOf('print-probe-control')).not.toBe('none');
+    expect(await displayOf("print-probe-shadow-sm")).not.toBe("none");
+    expect(await displayOf("print-probe-shadow-xl")).not.toBe("none");
+    expect(await displayOf("print-probe-control")).not.toBe("none");
 
     // --- print media ----------------------------------------------------------
-    await page.emulateMedia({ media: 'print' });
+    await page.emulateMedia({ media: "print" });
 
     // Control first: if print rules did not apply, everything below is meaningless.
     expect(
-      await displayOf('print-probe-control'),
-      'print media is not being applied — a print:hidden probe is still displayed, so this test would pass vacuously',
-    ).toBe('none');
+      await displayOf("print-probe-control"),
+      "print media is not being applied — a print:hidden probe is still displayed, so this test would pass vacuously",
+    ).toBe("none");
 
     expect(
-      await displayOf('print-probe-shadow-sm'),
-      '.shadow-sm is hidden under print media — a blanket print rule is hiding printable content again, which is the blank-ID-card bug',
-    ).not.toBe('none');
+      await displayOf("print-probe-shadow-sm"),
+      ".shadow-sm is hidden under print media — a blanket print rule is hiding printable content again, which is the blank-ID-card bug",
+    ).not.toBe("none");
 
     expect(
-      await displayOf('print-probe-shadow-xl'),
-      '.shadow-xl is hidden under print media — a blanket print rule is hiding printable content again',
-    ).not.toBe('none');
+      await displayOf("print-probe-shadow-xl"),
+      ".shadow-xl is hidden under print media — a blanket print rule is hiding printable content again",
+    ).not.toBe("none");
 
-    await page.emulateMedia({ media: 'screen' });
+    await page.emulateMedia({ media: "screen" });
   });
 });

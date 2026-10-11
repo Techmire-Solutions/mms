@@ -13,7 +13,7 @@ export class DataTransferError extends Error {
     public readonly code: string,
   ) {
     super(message);
-    this.name = 'DataTransferError';
+    this.name = "DataTransferError";
   }
 }
 
@@ -23,8 +23,8 @@ export class DataTransferError extends Error {
  */
 export class ExportLimitError extends DataTransferError {
   constructor(message: string) {
-    super(message, 'EXPORT_LIMIT_EXCEEDED');
-    this.name = 'ExportLimitError';
+    super(message, "EXPORT_LIMIT_EXCEEDED");
+    this.name = "ExportLimitError";
   }
 }
 
@@ -40,15 +40,15 @@ export class ImportValidationError extends DataTransferError {
     message: string,
     public readonly rowErrors: ReadonlyArray<{ row: number; reason: string }>,
   ) {
-    super(message, 'IMPORT_VALIDATION_FAILED');
-    this.name = 'ImportValidationError';
+    super(message, "IMPORT_VALIDATION_FAILED");
+    this.name = "ImportValidationError";
   }
 }
 
 /** Thrown when a requested export format has no registered serialiser. */
 export class UnknownFormatError extends DataTransferError {
   constructor(format: string) {
-    super(`No serialiser registered for export format "${format}"`, 'UNKNOWN_EXPORT_FORMAT');
-    this.name = 'UnknownFormatError';
+    super(`No serialiser registered for export format "${format}"`, "UNKNOWN_EXPORT_FORMAT");
+    this.name = "UnknownFormatError";
   }
 }

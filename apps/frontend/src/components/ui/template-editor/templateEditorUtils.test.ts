@@ -296,10 +296,13 @@ describe("templateEditorUtils", () => {
     });
 
     it("resolves nested dotted paths in structured data", () => {
-      const result = interpolateTemplateTokens("Student: {{ student.profile.fullName }}, Due: {{ invoice.total }}", {
-        student: { profile: { fullName: "Ali Khan" } },
-        invoice: { total: 0 },
-      });
+      const result = interpolateTemplateTokens(
+        "Student: {{ student.profile.fullName }}, Due: {{ invoice.total }}",
+        {
+          student: { profile: { fullName: "Ali Khan" } },
+          invoice: { total: 0 },
+        },
+      );
       expect(result).toBe("Student: Ali Khan, Due: 0");
     });
 

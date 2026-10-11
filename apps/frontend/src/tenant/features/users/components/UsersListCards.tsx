@@ -72,7 +72,11 @@ function UserCard({
       onView={onView}
       onEdit={onEdit}
       reducedMotion={reducedMotion}
-      accentClassName={user.role === 'admin' ? 'bg-primary/80 group-hover:bg-primary' : 'bg-primary/50 group-hover:bg-primary'}
+      accentClassName={
+        user.role === "admin"
+          ? "bg-primary/80 group-hover:bg-primary"
+          : "bg-primary/50 group-hover:bg-primary"
+      }
       header={{
         displayName,
         subtitle:
@@ -170,4 +174,3 @@ export function UsersListCards({
     />
   );
 }
-

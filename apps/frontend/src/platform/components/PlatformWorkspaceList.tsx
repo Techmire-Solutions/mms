@@ -1,29 +1,27 @@
-import React from 'react';
-import { Globe } from 'lucide-react';
-import { getAppDomain } from '@/lib/config/tenantConfig';
-import { useTranslation } from '@/hooks/useTranslation';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import {
-  usePlatformWorkspaces,
-} from '@/platform/hooks/usePlatformWorkspaces';
-import { usePlatformWorkspaceMetrics } from '@/platform/hooks/usePlatformWorkspaceMetrics';
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { usePlatformWorkspaceDescriptor } from '@/platform/hooks/usePlatformWorkspaceDescriptor';
-import { useDescriptorColumnLayout } from '@/hooks/useDescriptorColumnLayout';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { ModuleWorkListStateShell } from '@/components/ui/ModuleWorkListStateShell';
-import { PlatformWorkspaceDialogs } from '@/platform/components/workspace/PlatformWorkspaceDialogs';
-import { PlatformWorkspaceToolbar } from '@/platform/components/workspace/PlatformWorkspaceToolbar';
-import { usePlatformWorkspaceUrlState } from '@/platform/components/workspace/usePlatformWorkspaceUrlState';
-import { downloadWorkspacesCsv } from '@/platform/components/platformWorkspaceListData';
-import { PlatformWorkspaceDirectoryView } from '@/platform/components/workspace/PlatformWorkspaceDirectoryView';
-import { useWorkspaceDeleteState } from '@/platform/components/workspace/useWorkspaceDeleteState';
-import { usePlatformWorkspaceModalState } from '@/platform/components/workspace/usePlatformWorkspaceModalState';
-import { usePlatformWorkspaceSelection } from '@/platform/components/workspace/usePlatformWorkspaceSelection';
-import { PlatformWorkspaceBulkDock } from '@/platform/components/workspace/PlatformWorkspaceBulkDock';
-import { usePlatformWorkspaceListActions } from '@/platform/components/workspace/usePlatformWorkspaceListActions';
-import { usePlatformDensity } from '@/platform/hooks/usePlatformDensity';
+import React from "react";
+import { Globe } from "lucide-react";
+import { getAppDomain } from "@/lib/config/tenantConfig";
+import { useTranslation } from "@/hooks/useTranslation";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";
+import { usePlatformWorkspaceMetrics } from "@/platform/hooks/usePlatformWorkspaceMetrics";
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { usePlatformWorkspaceDescriptor } from "@/platform/hooks/usePlatformWorkspaceDescriptor";
+import { useDescriptorColumnLayout } from "@/hooks/useDescriptorColumnLayout";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { PlatformWorkspaceDialogs } from "@/platform/components/workspace/PlatformWorkspaceDialogs";
+import { PlatformWorkspaceToolbar } from "@/platform/components/workspace/PlatformWorkspaceToolbar";
+import { usePlatformWorkspaceUrlState } from "@/platform/components/workspace/usePlatformWorkspaceUrlState";
+import { downloadWorkspacesCsv } from "@/platform/components/platformWorkspaceListData";
+import { PlatformWorkspaceDirectoryView } from "@/platform/components/workspace/PlatformWorkspaceDirectoryView";
+import { useWorkspaceDeleteState } from "@/platform/components/workspace/useWorkspaceDeleteState";
+import { usePlatformWorkspaceModalState } from "@/platform/components/workspace/usePlatformWorkspaceModalState";
+import { usePlatformWorkspaceSelection } from "@/platform/components/workspace/usePlatformWorkspaceSelection";
+import { PlatformWorkspaceBulkDock } from "@/platform/components/workspace/PlatformWorkspaceBulkDock";
+import { usePlatformWorkspaceListActions } from "@/platform/components/workspace/usePlatformWorkspaceListActions";
+import { usePlatformDensity } from "@/platform/hooks/usePlatformDensity";
 
 /**
  * Workspace list with enable/disable, modules, break-glass admin tools, and super-user delete.
@@ -34,11 +32,21 @@ export default function PlatformWorkspaceList(): React.JSX.Element {
   const appDomain = getAppDomain();
 
   const {
-    search, statusFilter, sortField, sortDirection, page, pageSize,
-    setSearch, setStatusFilter, toggleSort, setPage, isFiltered, handleClearFilters,
+    search,
+    statusFilter,
+    sortField,
+    sortDirection,
+    page,
+    pageSize,
+    setSearch,
+    setStatusFilter,
+    toggleSort,
+    setPage,
+    isFiltered,
+    handleClearFilters,
   } = usePlatformWorkspaceUrlState();
 
-  const sortFieldApi = sortField === 'name' ? 'name' as const : sortField;
+  const sortFieldApi = sortField === "name" ? ("name" as const) : sortField;
 
   const {
     data: workspaces,
@@ -59,7 +67,7 @@ export default function PlatformWorkspaceList(): React.JSX.Element {
   const { data: metrics } = usePlatformWorkspaceMetrics();
 
   const descriptor = usePlatformWorkspaceDescriptor();
-  const columnLayout = useDescriptorColumnLayout('platform.workspaces', descriptor);
+  const columnLayout = useDescriptorColumnLayout("platform.workspaces", descriptor);
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const { density, setDensity } = usePlatformDensity();
   const deleteState = useWorkspaceDeleteState();
@@ -104,8 +112,8 @@ export default function PlatformWorkspaceList(): React.JSX.Element {
         isLoading={isLoading}
         isFetching={isFetching}
         onRetry={() => void refetch()}
-        errorTitle={t('platform.loadFailed')}
-        errorHint={t('platform.loadFailedHint')}
+        errorTitle={t("platform.loadFailed")}
+        errorHint={t("platform.loadFailedHint")}
         viewMode={viewMode}
         skeletonColumnCount={5}
         useServerWork
@@ -118,20 +126,17 @@ export default function PlatformWorkspaceList(): React.JSX.Element {
         onPageChange={setPage}
         i18nNamespace="platform"
         showPagination={filteredTotal > pageSize}
-        loadingLabel={t('common.loading')}
+        loadingLabel={t("common.loading")}
       >
         {filteredTotal === 0 ? (
           <div className="bg-card border border-border/40 rounded-xl p-6">
             <EmptyState
               icon={Globe}
-              title={isFiltered ? t('platform.noSearchResults') : t('apex.noMadrasasYet')}
+              title={isFiltered ? t("platform.noSearchResults") : t("apex.noMadrasasYet")}
               action={
                 isFiltered ? (
-                  <Button
-                    variant="outline"
-                    onClick={handleClearFilters}
-                  >
-                    {t('common.clearFilters')}
+                  <Button variant="outline" onClick={handleClearFilters}>
+                    {t("common.clearFilters")}
                   </Button>
                 ) : undefined
               }

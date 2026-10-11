@@ -3,7 +3,11 @@ import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 
-export function RevenueChartTooltip({ active = false, payload = [], label = "" }: Partial<TooltipContentProps>) {
+export function RevenueChartTooltip({
+  active = false,
+  payload = [],
+  label = "",
+}: Partial<TooltipContentProps>) {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
   return (

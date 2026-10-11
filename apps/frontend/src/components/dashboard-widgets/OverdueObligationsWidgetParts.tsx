@@ -72,7 +72,11 @@ export function OverdueRemindButton({
       size="caps"
       onClick={() => onRemind(overdueStudent)}
       disabled={reminded || !hasPhone}
-      aria-label={reminded ? t("dashboard.widgets.reminderSentTo", { name: overdueStudent.name }) : t("dashboard.widgets.sendReminderTo", { name: overdueStudent.name })}
+      aria-label={
+        reminded
+          ? t("dashboard.widgets.reminderSentTo", { name: overdueStudent.name })
+          : t("dashboard.widgets.sendReminderTo", { name: overdueStudent.name })
+      }
       className={className}
     >
       <Bell className="w-2.5 h-2.5" aria-hidden="true" />

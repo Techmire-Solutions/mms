@@ -1,9 +1,9 @@
-import { attendanceModulePreferences } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { attendanceModulePreferences } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: attendanceModulePreferences,
-  jsonColumn: 'preferences',
+  jsonColumn: "preferences",
 });
 
 export const getAttendanceModulePreferences = repo.getByWorkspace;

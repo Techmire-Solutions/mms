@@ -86,7 +86,8 @@ describe("facultyFormSavePayload", () => {
   });
 
   describe("validateUserDraftRequirements", () => {
-    const mockT: TranslationFunction = ((key: string, ..._rest: unknown[]) => key) as unknown as TranslationFunction;
+    const mockT: TranslationFunction = ((key: string, ..._rest: unknown[]) =>
+      key) as unknown as TranslationFunction;
 
     const baseInput: FacultySaveFlowInput = {
       facultyDraft: {},
@@ -145,7 +146,12 @@ describe("facultyFormSavePayload", () => {
       const result = validateUserDraftRequirements({
         ...baseInput,
         setErrors,
-        userAccountDraft: { enabled: true, setupMethod: "password", role: "staff", password: "short" },
+        userAccountDraft: {
+          enabled: true,
+          setupMethod: "password",
+          role: "staff",
+          password: "short",
+        },
         linkedContact: { id: "cnt-1", emails: [{ address: "test@example.com" }] } as any,
       });
 
@@ -158,7 +164,12 @@ describe("facultyFormSavePayload", () => {
     it("passes when valid email, role, and password are provided", () => {
       const result = validateUserDraftRequirements({
         ...baseInput,
-        userAccountDraft: { enabled: true, setupMethod: "password", role: "staff", password: "securepassword123" },
+        userAccountDraft: {
+          enabled: true,
+          setupMethod: "password",
+          role: "staff",
+          password: "securepassword123",
+        },
         linkedContact: { id: "cnt-1", emails: [{ address: "test@example.com" }] } as any,
       });
 

@@ -2,25 +2,25 @@
  * @file createModuleExportService.ts
  * @description Generic module export service factory with multi-format support (CSV/JSON/XLSX).
  */
-import type { ExportFormat } from '@mms/shared';
-import { buildTenantExportFilename, buildExportGrid } from '@mms/shared';
+import type { ExportFormat } from "@mms/shared";
+import { buildTenantExportFilename, buildExportGrid } from "@mms/shared";
 import {
   buildCsvExportFromGenerator,
   generateCsvStreamChunks,
   streamCsvExportFromGenerator,
-} from './csvExportStreamFactory.js';
-import { getSerializer } from './exportSerializerResolver.js';
-import { getRequestTenant } from './tenantContext.js';
-import { xlsxSerializer } from './xlsxExportSerializer.js';
+} from "./csvExportStreamFactory.js";
+import { getSerializer } from "./exportSerializerResolver.js";
+import { getRequestTenant } from "./tenantContext.js";
+import { xlsxSerializer } from "./xlsxExportSerializer.js";
 import {
   normalizeExportColumns,
   type CreateModuleExportServiceOptions,
   type ModuleCsvExportColumn,
   type ModuleExportOptions,
   type ModuleExportResult,
-} from './createModuleExportServiceTypes.js';
+} from "./createModuleExportServiceTypes.js";
 
-export * from './createModuleExportServiceTypes.js';
+export * from "./createModuleExportServiceTypes.js";
 
 function resolveFilename(rawFilename: string, ext: string): string {
   const base = rawFilename.endsWith(ext) ? rawFilename : `${rawFilename}${ext}`;
@@ -41,7 +41,7 @@ export function createModuleExportService<
     const includeIds = normalized.includeIds?.map(String).filter(Boolean);
     const prepared = await options.prepareExport(exportOptions);
     const rawFilename = exportOptions.filename?.trim() || options.manifest.defaultExportFilename;
-    const filename = resolveFilename(rawFilename, '.csv');
+    const filename = resolveFilename(rawFilename, ".csv");
     const chunkSize = Math.max(1, exportOptions.chunkSize ?? options.manifest.exportChunkSize);
 
     return yield* generateCsvStreamChunks({
@@ -50,17 +50,13 @@ export function createModuleExportService<
       columns: prepared.columns,
       includeIds,
       loadByIds: options.loadByIds,
-      loadPage: async (page, limit, afterId) =>
-        options.loadPage(normalized, page, limit, afterId),
+      loadPage: async (page, limit, afterId) => options.loadPage(normalized, page, limit, afterId),
       yieldDataChunks: (rows, cols, size) =>
         options.yieldDataChunks(rows as TRow[], cols as TCol[], size, prepared.context),
     });
   }
 
-  function streamExport(
-    query: TQuery,
-    exportOptions: ModuleExportOptions & { columns?: TCol[] },
-  ) {
+  function streamExport(query: TQuery, exportOptions: ModuleExportOptions & { columns?: TCol[] }) {
     return streamCsvExportFromGenerator(generateStreamChunks(query, exportOptions));
   }
 
@@ -97,11 +93,11 @@ export function createModuleExportService<
     query: TQuery,
     exportOptions: ModuleExportOptions & { columns?: TCol[] },
   ): Promise<ModuleExportResult> {
-    const format: ExportFormat = exportOptions.format ?? 'csv';
+    const format: ExportFormat = exportOptions.format ?? "csv";
 
-    if (format === 'csv') {
+    if (format === "csv") {
       const rawFilename = exportOptions.filename?.trim() || options.manifest.defaultExportFilename;
-      const filename = resolveFilename(rawFilename, '.csv');
+      const filename = resolveFilename(rawFilename, ".csv");
       const result = await buildCsvExportFromGenerator(
         generateStreamChunks(query, exportOptions),
         filename,
@@ -111,8 +107,8 @@ export function createModuleExportService<
         csv: result.csv,
         filename: result.filename,
         count: result.count,
-        format: 'csv',
-        contentType: 'text/csv; charset=utf-8',
+        format: "csv",
+        contentType: "text/csv; charset=utf-8",
       };
     }
 
@@ -128,14 +124,14 @@ export function createModuleExportService<
     const filename = resolveFilename(rawFilename, serializer.fileExtension);
     const grid = buildExportGrid(allRows, exportColumns, options.extractCell);
 
-    if (format === 'xlsx') {
+    if (format === "xlsx") {
       const buf = await xlsxSerializer.serializeBufferAsync(grid);
       return {
-        content: buf.toString('base64'),
-        csv: '',
+        content: buf.toString("base64"),
+        csv: "",
         filename,
         count: allRows.length,
-        format: 'xlsx',
+        format: "xlsx",
         contentType: serializer.contentType,
       };
     }
@@ -143,7 +139,7 @@ export function createModuleExportService<
     const content = serializer.serialize(grid);
     return {
       content,
-      csv: '',
+      csv: "",
       filename,
       count: allRows.length,
       format,

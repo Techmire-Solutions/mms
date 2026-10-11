@@ -48,10 +48,7 @@ function absoluteMs(minutes?: number): number | null {
 }
 
 /** Warning lead time, never exceeding half the idle window. */
-function warnFor(
-  idleMs: number,
-  configuredSeconds?: number,
-): number {
+function warnFor(idleMs: number, configuredSeconds?: number): number {
   if (configuredSeconds && Number.isFinite(configuredSeconds) && configuredSeconds > 0) {
     return Math.min(Math.round(configuredSeconds) * 1000, Math.floor(idleMs / 2));
   }
@@ -69,9 +66,16 @@ export function resolveTenantSessionPolicy(
   absoluteMinutes?: number,
 ): SessionTimeoutPolicy {
   const idleMs =
-    clampMinutes(sessionTimeoutMinutes, DEFAULT_TENANT_SESSION_IDLE_MINUTES, MAX_SESSION_IDLE_MINUTES) *
-    60_000;
-  return { idleMs, warnBeforeMs: warnFor(idleMs, warnBeforeSeconds), absoluteMs: absoluteMs(absoluteMinutes) };
+    clampMinutes(
+      sessionTimeoutMinutes,
+      DEFAULT_TENANT_SESSION_IDLE_MINUTES,
+      MAX_SESSION_IDLE_MINUTES,
+    ) * 60_000;
+  return {
+    idleMs,
+    warnBeforeMs: warnFor(idleMs, warnBeforeSeconds),
+    absoluteMs: absoluteMs(absoluteMinutes),
+  };
 }
 
 /**
@@ -85,6 +89,11 @@ export function resolvePlatformSessionPolicy(
   absoluteMinutes?: number,
 ): SessionTimeoutPolicy {
   const idleMs =
-    clampMinutes(idleMinutes, PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES, MAX_SESSION_IDLE_MINUTES) * 60_000;
-  return { idleMs, warnBeforeMs: warnFor(idleMs, warnBeforeSeconds), absoluteMs: absoluteMs(absoluteMinutes) };
+    clampMinutes(idleMinutes, PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES, MAX_SESSION_IDLE_MINUTES) *
+    60_000;
+  return {
+    idleMs,
+    warnBeforeMs: warnFor(idleMs, warnBeforeSeconds),
+    absoluteMs: absoluteMs(absoluteMinutes),
+  };
 }

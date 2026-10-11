@@ -16,7 +16,7 @@ export interface SessionsSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const SessionsSetupTier = (function SessionsSetupTier({
+export const SessionsSetupTier = function SessionsSetupTier({
   onPrefsDirtyChange,
 }: SessionsSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -37,6 +37,6 @@ export const SessionsSetupTier = (function SessionsSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default SessionsSetupTier;

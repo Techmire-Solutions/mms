@@ -1,13 +1,16 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import { DEFAULT_ATTENDANCE_SETTINGS, type AttendanceSettings } from './attendanceModuleSettings.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import {
+  DEFAULT_ATTENDANCE_SETTINGS,
+  type AttendanceSettings,
+} from "./attendanceModuleSettings.js";
 import {
   ATTENDANCE_TAB_REGISTRY,
   INITIAL_ATTENDANCE_FIELD_SEED,
-} from './moduleFieldSetupAcademic.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+} from "./moduleFieldSetupAcademic.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 
 /** Deep clone {@link INITIAL_ATTENDANCE_FIELD_SEED} for default and Setup states. */
 export function cloneAttendanceFieldSeed(): Record<string, FieldDefinition[]> {
@@ -30,7 +33,7 @@ export function isAttendanceSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Setup tab). */
 export function isAttendanceLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -40,7 +43,7 @@ export function isAttendanceLockedEnabledTab(tabKey: string): boolean {
 export function resolveAttendanceFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneAttendanceFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -93,7 +96,7 @@ const attendanceFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchem
   .strict();
 
 export const attendanceFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, attendanceFieldConfigPutBodyBaseSchema);
 
@@ -140,10 +143,8 @@ export interface AttendanceModulePreferences {
 }
 
 /** Extracts preferences slice from a raw composed settings blob. */
-export function normalizeAttendanceModulePreferences(
-  raw: unknown
-): AttendanceModulePreferences {
-  if (!raw || typeof raw !== 'object') {
+export function normalizeAttendanceModulePreferences(raw: unknown): AttendanceModulePreferences {
+  if (!raw || typeof raw !== "object") {
     return {
       workingDays: DEFAULT_ATTENDANCE_SETTINGS.workingDays,
       cutoffTime: DEFAULT_ATTENDANCE_SETTINGS.cutoffTime,
@@ -160,34 +161,81 @@ export function normalizeAttendanceModulePreferences(
       allowManualOverride: DEFAULT_ATTENDANCE_SETTINGS.allowManualOverride,
       offlineEnabled: DEFAULT_ATTENDANCE_SETTINGS.offlineEnabled,
       geoTagging: DEFAULT_ATTENDANCE_SETTINGS.geoTagging,
-      defaultViewLayout: DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout || 'list',
+      defaultViewLayout: DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout || "list",
     };
   }
 
   const prefs = raw as Partial<AttendanceModulePreferences>;
   return {
-    workingDays: Array.isArray(prefs.workingDays) ? prefs.workingDays : DEFAULT_ATTENDANCE_SETTINGS.workingDays,
-    cutoffTime: typeof prefs.cutoffTime === 'string' ? prefs.cutoffTime : DEFAULT_ATTENDANCE_SETTINGS.cutoffTime,
-    lateThresholdMins: typeof prefs.lateThresholdMins === 'number' ? prefs.lateThresholdMins : DEFAULT_ATTENDANCE_SETTINGS.lateThresholdMins,
-    autoAbsentAfterMins: typeof prefs.autoAbsentAfterMins === 'number' ? prefs.autoAbsentAfterMins : DEFAULT_ATTENDANCE_SETTINGS.autoAbsentAfterMins,
-    qrEnabled: typeof prefs.qrEnabled === 'boolean' ? prefs.qrEnabled : DEFAULT_ATTENDANCE_SETTINGS.qrEnabled,
-    lowAttendanceThreshold: typeof prefs.lowAttendanceThreshold === 'number' ? prefs.lowAttendanceThreshold : DEFAULT_ATTENDANCE_SETTINGS.lowAttendanceThreshold,
-    notifyParents: typeof prefs.notifyParents === 'boolean' ? prefs.notifyParents : DEFAULT_ATTENDANCE_SETTINGS.notifyParents,
-    requireNoteForAbsent: typeof prefs.requireNoteForAbsent === 'boolean' ? prefs.requireNoteForAbsent : DEFAULT_ATTENDANCE_SETTINGS.requireNoteForAbsent,
-    lockAfterSubmit: typeof prefs.lockAfterSubmit === 'boolean' ? prefs.lockAfterSubmit : DEFAULT_ATTENDANCE_SETTINGS.lockAfterSubmit,
-    trackHalfDay: typeof prefs.trackHalfDay === 'boolean' ? prefs.trackHalfDay : DEFAULT_ATTENDANCE_SETTINGS.trackHalfDay,
-    weeklyReport: typeof prefs.weeklyReport === 'boolean' ? prefs.weeklyReport : DEFAULT_ATTENDANCE_SETTINGS.weeklyReport,
-    attendanceAlerts: typeof prefs.attendanceAlerts === 'boolean' ? prefs.attendanceAlerts : DEFAULT_ATTENDANCE_SETTINGS.attendanceAlerts,
-    allowManualOverride: typeof prefs.allowManualOverride === 'boolean' ? prefs.allowManualOverride : DEFAULT_ATTENDANCE_SETTINGS.allowManualOverride,
-    offlineEnabled: typeof prefs.offlineEnabled === 'boolean' ? prefs.offlineEnabled : DEFAULT_ATTENDANCE_SETTINGS.offlineEnabled,
-    geoTagging: typeof prefs.geoTagging === 'boolean' ? prefs.geoTagging : DEFAULT_ATTENDANCE_SETTINGS.geoTagging,
-    defaultViewLayout: typeof prefs.defaultViewLayout === 'string' ? prefs.defaultViewLayout : DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout || 'list',
+    workingDays: Array.isArray(prefs.workingDays)
+      ? prefs.workingDays
+      : DEFAULT_ATTENDANCE_SETTINGS.workingDays,
+    cutoffTime:
+      typeof prefs.cutoffTime === "string"
+        ? prefs.cutoffTime
+        : DEFAULT_ATTENDANCE_SETTINGS.cutoffTime,
+    lateThresholdMins:
+      typeof prefs.lateThresholdMins === "number"
+        ? prefs.lateThresholdMins
+        : DEFAULT_ATTENDANCE_SETTINGS.lateThresholdMins,
+    autoAbsentAfterMins:
+      typeof prefs.autoAbsentAfterMins === "number"
+        ? prefs.autoAbsentAfterMins
+        : DEFAULT_ATTENDANCE_SETTINGS.autoAbsentAfterMins,
+    qrEnabled:
+      typeof prefs.qrEnabled === "boolean"
+        ? prefs.qrEnabled
+        : DEFAULT_ATTENDANCE_SETTINGS.qrEnabled,
+    lowAttendanceThreshold:
+      typeof prefs.lowAttendanceThreshold === "number"
+        ? prefs.lowAttendanceThreshold
+        : DEFAULT_ATTENDANCE_SETTINGS.lowAttendanceThreshold,
+    notifyParents:
+      typeof prefs.notifyParents === "boolean"
+        ? prefs.notifyParents
+        : DEFAULT_ATTENDANCE_SETTINGS.notifyParents,
+    requireNoteForAbsent:
+      typeof prefs.requireNoteForAbsent === "boolean"
+        ? prefs.requireNoteForAbsent
+        : DEFAULT_ATTENDANCE_SETTINGS.requireNoteForAbsent,
+    lockAfterSubmit:
+      typeof prefs.lockAfterSubmit === "boolean"
+        ? prefs.lockAfterSubmit
+        : DEFAULT_ATTENDANCE_SETTINGS.lockAfterSubmit,
+    trackHalfDay:
+      typeof prefs.trackHalfDay === "boolean"
+        ? prefs.trackHalfDay
+        : DEFAULT_ATTENDANCE_SETTINGS.trackHalfDay,
+    weeklyReport:
+      typeof prefs.weeklyReport === "boolean"
+        ? prefs.weeklyReport
+        : DEFAULT_ATTENDANCE_SETTINGS.weeklyReport,
+    attendanceAlerts:
+      typeof prefs.attendanceAlerts === "boolean"
+        ? prefs.attendanceAlerts
+        : DEFAULT_ATTENDANCE_SETTINGS.attendanceAlerts,
+    allowManualOverride:
+      typeof prefs.allowManualOverride === "boolean"
+        ? prefs.allowManualOverride
+        : DEFAULT_ATTENDANCE_SETTINGS.allowManualOverride,
+    offlineEnabled:
+      typeof prefs.offlineEnabled === "boolean"
+        ? prefs.offlineEnabled
+        : DEFAULT_ATTENDANCE_SETTINGS.offlineEnabled,
+    geoTagging:
+      typeof prefs.geoTagging === "boolean"
+        ? prefs.geoTagging
+        : DEFAULT_ATTENDANCE_SETTINGS.geoTagging,
+    defaultViewLayout:
+      typeof prefs.defaultViewLayout === "string"
+        ? prefs.defaultViewLayout
+        : DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout || "list",
   };
 }
 
 /** Extracts field-config slice from a raw composed settings blob. */
 export function normalizeAttendanceSettings(raw: unknown): AttendanceSettings {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw || typeof raw !== "object") {
     return { ...DEFAULT_ATTENDANCE_SETTINGS };
   }
 
@@ -210,7 +258,7 @@ export function normalizeAttendanceSettings(raw: unknown): AttendanceSettings {
     geoTagging: DEFAULT_ATTENDANCE_SETTINGS.geoTagging, // managed by preferences
     defaultViewLayout: DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout, // managed by preferences
     fields: resolveAttendanceFieldsMap(
-      safe.fields && typeof safe.fields === 'object' && !Array.isArray(safe.fields)
+      safe.fields && typeof safe.fields === "object" && !Array.isArray(safe.fields)
         ? (safe.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -226,7 +274,7 @@ export function normalizeAttendanceSettings(raw: unknown): AttendanceSettings {
 export function composeAttendanceSettings(
   fieldConfig: AttendanceSettings | null,
   prefs: AttendanceModulePreferences,
-  formTabs?: TabDefinition[]
+  formTabs?: TabDefinition[],
 ): AttendanceSettings {
   return {
     ...(fieldConfig ?? DEFAULT_ATTENDANCE_SETTINGS),
@@ -252,10 +300,10 @@ export function composeAttendanceSettings(
 
 /** Drops preference keys before saving field-config to avoid overriding prefs layer. */
 export function stripAttendanceFieldConfigForPersist(
-  config: Partial<AttendanceSettings>
+  config: Partial<AttendanceSettings>,
 ): Partial<AttendanceSettings> {
   // `name: _name` aliases: the bound locals exist only to omit preference keys from the rest object.
-  const { 
+  const {
     workingDays: _workingDays,
     cutoffTime: _cutoffTime,
     lateThresholdMins: _lateThresholdMins,
@@ -272,7 +320,7 @@ export function stripAttendanceFieldConfigForPersist(
     offlineEnabled: _offlineEnabled,
     geoTagging: _geoTagging,
     defaultViewLayout: _defaultViewLayout,
-    ...fieldConfigOnly 
+    ...fieldConfigOnly
   } = config;
   return fieldConfigOnly;
 }
@@ -282,12 +330,7 @@ export function mergeAttendanceFormTabsFromApi(
   apiTabs: TabDefinition[],
 ): TabDefinition[] {
   const documentOrDefault = documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [];
-  const merged =
-    apiTabs.length === 0
-      ? documentOrDefault
-      : [
-          ...apiTabs,
-        ];
+  const merged = apiTabs.length === 0 ? documentOrDefault : [...apiTabs];
   const seenKeys = new Set<string>();
   return merged.filter((tab) => {
     if (!tab?.key || seenKeys.has(tab.key)) return false;

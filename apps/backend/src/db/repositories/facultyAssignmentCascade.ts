@@ -1,7 +1,7 @@
-import { and, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
-import { facultyAssignments } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
-import { lockFacultyHierarchy } from './facultyAssignmentValidation.js';
+import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { facultyAssignments } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
+import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 
 /**
  * Soft-delete live appointments when faculty is archived.
@@ -18,7 +18,7 @@ export async function cascadeSoftDeleteFacultyAssignments(
   const now = new Date();
   const reason = deletionReason
     ? `Cascade: parent faculty deleted (${deletionReason})`
-    : 'Cascade: parent faculty deleted';
+    : "Cascade: parent faculty deleted";
 
   return withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);

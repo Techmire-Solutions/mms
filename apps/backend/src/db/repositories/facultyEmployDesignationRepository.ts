@@ -2,27 +2,27 @@
  * @file facultyEmployDesignationRepository.ts
  * @description Upsert Employ Designation tenure rows (HR designation tenure SSOT).
  */
-import { and, eq, isNull } from 'drizzle-orm';
-import { randomUUID } from 'node:crypto';
+import { and, eq, isNull } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 import {
   DEFAULT_FACULTY_PROFILE_STATUS,
   isFacultyProfileStatus,
   type FacultyMember,
-} from '@mms/shared';
-import { facultyEmployDesignations } from '../schema.js';
-import type { AppDb } from '../tenant-context.js';
-import { auditEmploymentEntityUpdate } from './facultyEmploymentEntityAudit.js';
+} from "@mms/shared";
+import { facultyEmployDesignations } from "../schema.js";
+import type { AppDb } from "../tenant-context.js";
+import { auditEmploymentEntityUpdate } from "./facultyEmploymentEntityAudit.js";
 
 export {
   cascadeSoftDeleteFacultyEmployDesignations,
   cascadeRestoreFacultyEmployDesignations,
-} from './facultyEmployDesignationCascade.js';
+} from "./facultyEmployDesignationCascade.js";
 
 function isoToday(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function resolveEmployDesignationStatus(member: FacultyMember): 'active' | 'inactive' {
+function resolveEmployDesignationStatus(member: FacultyMember): "active" | "inactive" {
   const raw = member.employDesignationStatus ?? member.profileStatus;
   return isFacultyProfileStatus(raw) ? raw : DEFAULT_FACULTY_PROFILE_STATUS;
 }
@@ -34,24 +34,26 @@ export async function upsertFacultyEmployDesignationTx(
   employmentId: string,
   facultyMember: FacultyMember,
 ): Promise<string | null> {
-  const designationId = typeof facultyMember.designationId === 'string'
-    ? facultyMember.designationId.trim()
-    : '';
+  const designationId =
+    typeof facultyMember.designationId === "string" ? facultyMember.designationId.trim() : "";
   if (!designationId || !employmentId) return null;
 
-  const hint = typeof facultyMember.employDesignationId === 'string'
-    ? facultyMember.employDesignationId.trim()
-    : '';
+  const hint =
+    typeof facultyMember.employDesignationId === "string"
+      ? facultyMember.employDesignationId.trim()
+      : "";
   let existingId: string | null = null;
   if (hint) {
     const byId = await tx
       .select({ id: facultyEmployDesignations.id })
       .from(facultyEmployDesignations)
-      .where(and(
-        eq(facultyEmployDesignations.workspaceSubdomain, subdomain),
-        eq(facultyEmployDesignations.id, hint),
-        isNull(facultyEmployDesignations.deletedAt),
-      ))
+      .where(
+        and(
+          eq(facultyEmployDesignations.workspaceSubdomain, subdomain),
+          eq(facultyEmployDesignations.id, hint),
+          isNull(facultyEmployDesignations.deletedAt),
+        ),
+      )
       .limit(1);
     existingId = byId[0]?.id ?? null;
   }
@@ -59,28 +61,29 @@ export async function upsertFacultyEmployDesignationTx(
     const byEmploymentDesignation = await tx
       .select({ id: facultyEmployDesignations.id })
       .from(facultyEmployDesignations)
-      .where(and(
-        eq(facultyEmployDesignations.workspaceSubdomain, subdomain),
-        eq(facultyEmployDesignations.employmentId, employmentId),
-        eq(facultyEmployDesignations.designationId, designationId),
-        isNull(facultyEmployDesignations.deletedAt),
-        eq(facultyEmployDesignations.status, 'active'),
-        isNull(facultyEmployDesignations.endDate),
-      ))
+      .where(
+        and(
+          eq(facultyEmployDesignations.workspaceSubdomain, subdomain),
+          eq(facultyEmployDesignations.employmentId, employmentId),
+          eq(facultyEmployDesignations.designationId, designationId),
+          isNull(facultyEmployDesignations.deletedAt),
+          eq(facultyEmployDesignations.status, "active"),
+          isNull(facultyEmployDesignations.endDate),
+        ),
+      )
       .limit(1);
     existingId = byEmploymentDesignation[0]?.id ?? null;
   }
 
   const id = existingId || `faced-${randomUUID()}`;
-  const startDate = typeof facultyMember.designationStartDate === 'string'
-    && facultyMember.designationStartDate
-    ? facultyMember.designationStartDate
-    : isoToday();
-  const endDate = typeof facultyMember.designationEndDate === 'string'
-    ? facultyMember.designationEndDate
-    : null;
+  const startDate =
+    typeof facultyMember.designationStartDate === "string" && facultyMember.designationStartDate
+      ? facultyMember.designationStartDate
+      : isoToday();
+  const endDate =
+    typeof facultyMember.designationEndDate === "string" ? facultyMember.designationEndDate : null;
   const status = resolveEmployDesignationStatus(facultyMember);
-  const updatedBy = typeof facultyMember.updatedBy === 'string' ? facultyMember.updatedBy : null;
+  const updatedBy = typeof facultyMember.updatedBy === "string" ? facultyMember.updatedBy : null;
   const values = {
     id,
     workspaceSubdomain: subdomain,
@@ -89,7 +92,7 @@ export async function upsertFacultyEmployDesignationTx(
     startDate,
     endDate,
     status,
-    createdBy: typeof facultyMember.createdBy === 'string' ? facultyMember.createdBy : null,
+    createdBy: typeof facultyMember.createdBy === "string" ? facultyMember.createdBy : null,
     updatedBy,
     updatedAt: new Date(),
     createdAt: new Date(),
@@ -108,8 +111,13 @@ export async function upsertFacultyEmployDesignationTx(
       target: [facultyEmployDesignations.workspaceSubdomain, facultyEmployDesignations.id],
       set: setFields,
     });
-  await auditEmploymentEntityUpdate(tx, subdomain, 'faculty_employ_designations', id, updatedBy, {
-    id, employmentId, designationId, startDate, endDate, status,
+  await auditEmploymentEntityUpdate(tx, subdomain, "faculty_employ_designations", id, updatedBy, {
+    id,
+    employmentId,
+    designationId,
+    startDate,
+    endDate,
+    status,
   });
   return id;
 }

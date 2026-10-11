@@ -7,23 +7,12 @@ import { useUsersSetupSaveActions } from "@/tenant/features/users/hooks/useUsers
 /** Shared Users Setup editor + dirty/save for Preferences (survives tab switches). */
 export function useUsersSetupPanelState() {
   const config = useUsersConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    saveSettingsAsync,
-    discardDrafts,
-  } = useModuleSettingsEditor<UsersSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync, discardDrafts } =
+    useModuleSettingsEditor<UsersSettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useUsersSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useUsersSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,

@@ -1,23 +1,26 @@
-import type { Permission } from '@mms/shared';
-import type { Dispatch, SetStateAction } from 'react';
-import { saveObject } from '@/lib/db';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { CustomCard } from '@/lib/reports/reportMetadata';
+import type { Permission } from "@mms/shared";
+import type { Dispatch, SetStateAction } from "react";
+import { saveObject } from "@/lib/db";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { CustomCard } from "@/lib/reports/reportMetadata";
 import {
   KPI_ROLE_ATTENDANCE_ONLY_IDS,
   KPI_ROLE_FINANCE_ONLY_IDS,
   KPI_TITLE_KEYS,
-} from '@/components/ui/reports/kpiSummaryConfig';
+} from "@/components/ui/reports/kpiSummaryConfig";
 import {
   buildAggregateCustomCard,
   getDefaultCardConfig,
-} from '@/components/ui/reports/kpiSummaryFormatters';
-import { getKpiCategoryFlags } from '@/components/ui/reports/kpiSummaryCategoryFlags';
-import type { AggregateCardValue, CategorizedKPIItem, KPIItem } from '@/components/ui/reports/kpiSummaryTypes';
+} from "@/components/ui/reports/kpiSummaryFormatters";
+import { getKpiCategoryFlags } from "@/components/ui/reports/kpiSummaryCategoryFlags";
+import type {
+  AggregateCardValue,
+  CategorizedKPIItem,
+  KPIItem,
+} from "@/components/ui/reports/kpiSummaryTypes";
 
 const KPI_ROLE_ATTENDANCE_ONLY_SET = new Set(KPI_ROLE_ATTENDANCE_ONLY_IDS);
 const KPI_ROLE_FINANCE_ONLY_SET = new Set(KPI_ROLE_FINANCE_ONLY_IDS);
-
 
 export function filterStandardPossibleCards(
   standardCards: CategorizedKPIItem[],
@@ -26,12 +29,14 @@ export function filterStandardPossibleCards(
 ): CategorizedKPIItem[] {
   const { isFacultyCategory } = getKpiCategoryFlags(category);
   return standardCards.filter((card) => {
-    const matchesCategory = card.categories.includes(category) || (isFacultyCategory && card.categories.includes('faculty'));
+    const matchesCategory =
+      card.categories.includes(category) ||
+      (isFacultyCategory && card.categories.includes("faculty"));
     if (!matchesCategory) return false;
-    if (can('attendance.write') && !can('finance.write')) {
+    if (can("attendance.write") && !can("finance.write")) {
       return KPI_ROLE_ATTENDANCE_ONLY_SET.has(card.id);
     }
-    if (can('finance.write') && !can('attendance.write')) {
+    if (can("finance.write") && !can("attendance.write")) {
       return KPI_ROLE_FINANCE_ONLY_SET.has(card.id);
     }
     return true;
@@ -76,22 +81,28 @@ export function createKpiCardHandlers(
   const handleToggleCard = (cardId: string) => {
     setSelectedCardIds((previousCardIds) => {
       const s = new Set(previousCardIds);
-      if (s.has(cardId)) { s.delete(cardId); } else { s.add(cardId); }
+      if (s.has(cardId)) {
+        s.delete(cardId);
+      } else {
+        s.add(cardId);
+      }
       const nextCardIds = [...s];
-      saveObject(`kpi_config_${category}_${role || 'all'}`, nextCardIds);
+      saveObject(`kpi_config_${category}_${role || "all"}`, nextCardIds);
       return nextCardIds;
     });
   };
 
   const handleDeleteCustomCard = (cardId: string) => {
     const nextCustomCards = customCards.filter((card) => card.id !== cardId);
-    const nextSelectedCardIds = selectedCardIds.filter((selectedCardId) => selectedCardId !== cardId);
+    const nextSelectedCardIds = selectedCardIds.filter(
+      (selectedCardId) => selectedCardId !== cardId,
+    );
     setCustomCards(nextCustomCards);
     setSelectedCardIds(nextSelectedCardIds);
     saveObject(`kpi_custom_cards_${category}`, nextCustomCards);
-    saveObject(`kpi_config_${category}_${role || 'all'}`, nextSelectedCardIds);
+    saveObject(`kpi_config_${category}_${role || "all"}`, nextSelectedCardIds);
     if (editingCardConfig?.id === cardId) setEditingCardConfig(null);
-    window.dispatchEvent(new Event('local-database-update'));
+    window.dispatchEvent(new Event("local-database-update"));
   };
 
   const handleEditCard = (card: KPIItem) => {
@@ -101,13 +112,13 @@ export function createKpiCardHandlers(
       id: `edit-default-${card.id}-${Date.now()}`,
     };
     setEditingCardConfig(cardConfig);
-    document.getElementById(`config-panel-${category}`)?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(`config-panel-${category}`)?.scrollIntoView({ behavior: "smooth" });
   };
 
   const openCustomCardBuilder = () => {
     setIsConfigOpen(true);
     window.setTimeout(() => {
-      document.getElementById(`config-panel-${category}`)?.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById(`config-panel-${category}`)?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 

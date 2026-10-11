@@ -4,13 +4,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
 import { TableCellLink } from "@/components/ui/TableCellLink";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
@@ -72,17 +66,33 @@ export function AttendanceSummaryTable({
               {summaryRow.class}
             </TableCellLink>
             <StatGrid>
-              <StatRow className="min-w-0" label={t("attendance.report.colTotalStudents")} value={summaryRow.total} />
-              <StatRow className="min-w-0" label={t("attendance.report.colAvgRate")} value={rateBar(summaryRow.avgRate)} />
+              <StatRow
+                className="min-w-0"
+                label={t("attendance.report.colTotalStudents")}
+                value={summaryRow.total}
+              />
+              <StatRow
+                className="min-w-0"
+                label={t("attendance.report.colAvgRate")}
+                value={rateBar(summaryRow.avgRate)}
+              />
               <StatRow
                 className="min-w-0"
                 label={t("attendance.report.colPerfectAttendance")}
-                value={<Badge pill tone="success">{summaryRow.perfectAttendance}</Badge>}
+                value={
+                  <Badge pill tone="success">
+                    {summaryRow.perfectAttendance}
+                  </Badge>
+                }
               />
               <StatRow
                 className="min-w-0"
                 label={t("attendance.report.colBelowThreshold")}
-                value={<Badge pill tone="destructive">{summaryRow.belowThreshold}</Badge>}
+                value={
+                  <Badge pill tone="destructive">
+                    {summaryRow.belowThreshold}
+                  </Badge>
+                }
               />
             </StatGrid>
           </article>
@@ -93,11 +103,33 @@ export function AttendanceSummaryTable({
           <caption className="sr-only">{t("attendance.report.summaryTitle")}</caption>
           <TableHeader>
             <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
-              <ModuleTableHeaderCell columnKey="class" className="px-3 py-2.5">{t("attendance.report.colClass")}</ModuleTableHeaderCell>
-              <ModuleTableHeaderCell columnKey="totalStudents" variant="number" className="px-3 py-2.5">{t("attendance.report.colTotalStudents")}</ModuleTableHeaderCell>
-              <ModuleTableHeaderCell columnKey="avgRate" className="px-3 py-2.5">{t("attendance.report.colAvgRate")}</ModuleTableHeaderCell>
-              <ModuleTableHeaderCell columnKey="perfectAttendance" variant="badge" className="px-3 py-2.5">{t("attendance.report.colPerfectAttendance")}</ModuleTableHeaderCell>
-              <ModuleTableHeaderCell columnKey="belowThreshold" variant="badge" className="px-3 py-2.5">{t("attendance.report.colBelowThreshold")}</ModuleTableHeaderCell>
+              <ModuleTableHeaderCell columnKey="class" className="px-3 py-2.5">
+                {t("attendance.report.colClass")}
+              </ModuleTableHeaderCell>
+              <ModuleTableHeaderCell
+                columnKey="totalStudents"
+                variant="number"
+                className="px-3 py-2.5"
+              >
+                {t("attendance.report.colTotalStudents")}
+              </ModuleTableHeaderCell>
+              <ModuleTableHeaderCell columnKey="avgRate" className="px-3 py-2.5">
+                {t("attendance.report.colAvgRate")}
+              </ModuleTableHeaderCell>
+              <ModuleTableHeaderCell
+                columnKey="perfectAttendance"
+                variant="badge"
+                className="px-3 py-2.5"
+              >
+                {t("attendance.report.colPerfectAttendance")}
+              </ModuleTableHeaderCell>
+              <ModuleTableHeaderCell
+                columnKey="belowThreshold"
+                variant="badge"
+                className="px-3 py-2.5"
+              >
+                {t("attendance.report.colBelowThreshold")}
+              </ModuleTableHeaderCell>
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-border/50">
@@ -108,13 +140,19 @@ export function AttendanceSummaryTable({
                     {summaryRow.class}
                   </TableCellLink>
                 </TableCell>
-                <TableCell variant="number" noWrap className="px-3 py-2.5 text-muted-foreground">{summaryRow.total}</TableCell>
+                <TableCell variant="number" noWrap className="px-3 py-2.5 text-muted-foreground">
+                  {summaryRow.total}
+                </TableCell>
                 <TableCell className="px-3 py-2.5 w-36">{rateBar(summaryRow.avgRate)}</TableCell>
                 <TableCell variant="badge" noWrap className="px-3 py-2.5">
-                  <Badge pill tone="success">{summaryRow.perfectAttendance}</Badge>
+                  <Badge pill tone="success">
+                    {summaryRow.perfectAttendance}
+                  </Badge>
                 </TableCell>
                 <TableCell variant="badge" noWrap className="px-3 py-2.5">
-                  <Badge pill tone="destructive">{summaryRow.belowThreshold}</Badge>
+                  <Badge pill tone="destructive">
+                    {summaryRow.belowThreshold}
+                  </Badge>
                 </TableCell>
               </TableRow>
             ))}

@@ -43,7 +43,5 @@ export function FinancialDebitCreditFooterRow({
   children: ReactNode;
   className?: string;
 }): React.JSX.Element {
-  return (
-    <TableRow className={cn("hover:bg-transparent", className)}>{children}</TableRow>
-  );
+  return <TableRow className={cn("hover:bg-transparent", className)}>{children}</TableRow>;
 }

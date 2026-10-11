@@ -48,10 +48,7 @@ export {
   invoiceTemplateDocumentStore,
   type InvoiceTemplateFieldKey,
 } from "./invoiceTemplatePersistence.js";
-export {
-  getAvailablePresets,
-  type InvoiceTemplatePreset,
-} from "./invoiceTemplatePresets.js";
+export { getAvailablePresets, type InvoiceTemplatePreset } from "./invoiceTemplatePresets.js";
 export { generateQrSvgUri, generateQrMatrix } from "./qrCodeGenerator.js";
 
 export interface UseInvoiceTemplateReturn {
@@ -140,7 +137,7 @@ export function useInvoiceTemplate(): UseInvoiceTemplateReturn {
   const template = useSyncExternalStore(
     subscribeTemplate,
     getTemplateSnapshot,
-    getDefaultTemplateSnapshot
+    getDefaultTemplateSnapshot,
   );
 
   const handleSave = useCallback((tmpl: InvoiceTemplate) => {
@@ -154,15 +151,18 @@ export function useInvoiceTemplate(): UseInvoiceTemplateReturn {
     return restored;
   }, []);
 
-  const handleApplyPreset = useCallback((presetKey: string): InvoiceTemplate | null => {
-    const presets = getAvailablePresets();
-    const found = presets.find((p) => p.key === presetKey);
-    if (found) {
-      handleSave(found.template);
-      return found.template;
-    }
-    return null;
-  }, [handleSave]);
+  const handleApplyPreset = useCallback(
+    (presetKey: string): InvoiceTemplate | null => {
+      const presets = getAvailablePresets();
+      const found = presets.find((p) => p.key === presetKey);
+      if (found) {
+        handleSave(found.template);
+        return found.template;
+      }
+      return null;
+    },
+    [handleSave],
+  );
 
   return {
     template,
@@ -171,5 +171,3 @@ export function useInvoiceTemplate(): UseInvoiceTemplateReturn {
     applyPreset: handleApplyPreset,
   };
 }
-
-

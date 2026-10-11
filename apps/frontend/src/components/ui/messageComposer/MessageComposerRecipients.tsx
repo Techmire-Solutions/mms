@@ -93,10 +93,21 @@ export function MessageComposerRecipients({
             </SectionLabel>
             <CompactSegmentedControl
               options={[
-                { value: "all", label: `${t("messaging.filter.all")} (${validatedRecipients.length})` },
-                { value: "eligible", label: `${t("messaging.filter.eligible")} (${eligibleRecipients.length})` },
+                {
+                  value: "all",
+                  label: `${t("messaging.filter.all")} (${validatedRecipients.length})`,
+                },
+                {
+                  value: "eligible",
+                  label: `${t("messaging.filter.eligible")} (${eligibleRecipients.length})`,
+                },
                 ...(skippedRecipients.length
-                  ? [{ value: "skipped", label: `${t("messaging.filter.skipped")} (${skippedRecipients.length})` }]
+                  ? [
+                      {
+                        value: "skipped",
+                        label: `${t("messaging.filter.skipped")} (${skippedRecipients.length})`,
+                      },
+                    ]
                   : []),
               ]}
               value={recipientTab}
@@ -105,15 +116,15 @@ export function MessageComposerRecipients({
           </div>
         )}
 
-        {renderRecipientPicker ? (
-          renderRecipientPicker({
-            kind: isEmail ? "email" : "phone",
-            existingIds,
-            disabled,
-            onAdd,
-            onRemove,
-          })
-        ) : null}
+        {renderRecipientPicker
+          ? renderRecipientPicker({
+              kind: isEmail ? "email" : "phone",
+              existingIds,
+              disabled,
+              onAdd,
+              onRemove,
+            })
+          : null}
 
         {!isPickStep && (
           <>

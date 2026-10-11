@@ -1,21 +1,12 @@
 import type { AppTranslationKey } from "./appTranslations.js";
-import {
-  normalizeDateFormat,
-  type DateFormatId,
-} from "./dateFormatUtils.js";
+import { normalizeDateFormat, type DateFormatId } from "./dateFormatUtils.js";
 import {
   normalizePasswordPolicy,
   normalizeSessionTimeout,
   normalizeThemeMode,
 } from "./globalSettingsUtils.js";
-import {
-  normalizeAppLanguage,
-  type AppLanguageCode,
-} from "./languageUtils.js";
-import {
-  type LlmConfig,
-  type LlmProviderType,
-} from "./llmSettingsTypes.js";
+import { normalizeAppLanguage, type AppLanguageCode } from "./languageUtils.js";
+import { type LlmConfig, type LlmProviderType } from "./llmSettingsTypes.js";
 import { normalizeTimezone } from "./timezoneUtils.js";
 
 export type { AppLanguageCode };
@@ -55,7 +46,6 @@ export interface GlobalSettings {
   llmConfigs: LlmConfig[];
 }
 
-
 /** Definition for an application module. */
 export interface ModuleDefinition {
   id: string;
@@ -68,27 +58,128 @@ export interface ModuleDefinition {
 
 /** All toggleable modules — ids align with sidebar `moduleId` in navConfig. */
 export const SYSTEM_MODULES: ModuleDefinition[] = [
-  { id: "dashboard",   label: "Dashboard",      description: "Central overview and analytics",        icon: "LayoutDashboard", category: "core",     required: true },
-  { id: "contacts",    label: "Contacts",       description: "Comprehensive CRM directory",         icon: "Users",           category: "core",     required: true },
-  { id: "messaging",   label: "Messaging",      description: "SMS, WhatsApp and announcements",     icon: "MessageSquare",   category: "core",     required: true },
-  { id: "tasks",       label: "Tasks",          description: "Task delegation and tracking",         icon: "CheckSquare",     category: "core" },
-  { id: "students",    label: "Students",       description: "Student directory and records",       icon: "GraduationCap",   category: "academic", required: true },
-  { id: "faculty",     label: "Faculty",        description: "Faculty directory and assignments",   icon: "School",          category: "academic" },
-  { id: "sessions",    label: "Sessions",       description: "Classes, schedules and timetables",   icon: "Calendar",        category: "academic" },
-  { id: "attendance",  label: "Attendance",     description: "Tracking and reporting",              icon: "UserCheck",       category: "academic" },
-  { id: "enrollment",  label: "Enrollments",    description: "Student enrollment into sessions",    icon: "ClipboardList",   category: "academic" },
-  { id: "hasanat",     label: "Hasanat Cards",  description: "Incentive and reward points",         icon: "Star",            category: "academic" },
-  { id: "examination", label: "Examinations",   description: "Testing and grading systems",         icon: "FileText",        category: "academic" },
-  { id: "questionBank", label: "Question Bank", description: "Question repository and test papers", icon: "Library",         category: "academic" },
-  { id: "finance",     label: "Finance",        description: "Invoicing and fee management",        icon: "DollarSign",      category: "finance" },
-  { id: "accounting",  label: "Accounting",     description: "General ledger and reports",          icon: "TrendingUp",      category: "finance" },
-  { id: "obligations", label: "Obligations",    description: "Religious obligations and funds",    icon: "Scale",           category: "finance" },
-  { id: "users",       label: "Users",          description: "Role-based permissions and access",   icon: "UserCog",         category: "admin",    required: true },
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    description: "Central overview and analytics",
+    icon: "LayoutDashboard",
+    category: "core",
+    required: true,
+  },
+  {
+    id: "contacts",
+    label: "Contacts",
+    description: "Comprehensive CRM directory",
+    icon: "Users",
+    category: "core",
+    required: true,
+  },
+  {
+    id: "messaging",
+    label: "Messaging",
+    description: "SMS, WhatsApp and announcements",
+    icon: "MessageSquare",
+    category: "core",
+    required: true,
+  },
+  {
+    id: "tasks",
+    label: "Tasks",
+    description: "Task delegation and tracking",
+    icon: "CheckSquare",
+    category: "core",
+  },
+  {
+    id: "students",
+    label: "Students",
+    description: "Student directory and records",
+    icon: "GraduationCap",
+    category: "academic",
+    required: true,
+  },
+  {
+    id: "faculty",
+    label: "Faculty",
+    description: "Faculty directory and assignments",
+    icon: "School",
+    category: "academic",
+  },
+  {
+    id: "sessions",
+    label: "Sessions",
+    description: "Classes, schedules and timetables",
+    icon: "Calendar",
+    category: "academic",
+  },
+  {
+    id: "attendance",
+    label: "Attendance",
+    description: "Tracking and reporting",
+    icon: "UserCheck",
+    category: "academic",
+  },
+  {
+    id: "enrollment",
+    label: "Enrollments",
+    description: "Student enrollment into sessions",
+    icon: "ClipboardList",
+    category: "academic",
+  },
+  {
+    id: "hasanat",
+    label: "Hasanat Cards",
+    description: "Incentive and reward points",
+    icon: "Star",
+    category: "academic",
+  },
+  {
+    id: "examination",
+    label: "Examinations",
+    description: "Testing and grading systems",
+    icon: "FileText",
+    category: "academic",
+  },
+  {
+    id: "questionBank",
+    label: "Question Bank",
+    description: "Question repository and test papers",
+    icon: "Library",
+    category: "academic",
+  },
+  {
+    id: "finance",
+    label: "Finance",
+    description: "Invoicing and fee management",
+    icon: "DollarSign",
+    category: "finance",
+  },
+  {
+    id: "accounting",
+    label: "Accounting",
+    description: "General ledger and reports",
+    icon: "TrendingUp",
+    category: "finance",
+  },
+  {
+    id: "obligations",
+    label: "Obligations",
+    description: "Religious obligations and funds",
+    icon: "Scale",
+    category: "finance",
+  },
+  {
+    id: "users",
+    label: "Users",
+    description: "Role-based permissions and access",
+    icon: "UserCog",
+    category: "admin",
+    required: true,
+  },
 ];
 
 /** Lookup map for module definitions by id. */
 export const SYSTEM_MODULES_BY_ID: Record<string, ModuleDefinition> = Object.fromEntries(
-  SYSTEM_MODULES.map((m) => [m.id, m])
+  SYSTEM_MODULES.map((m) => [m.id, m]),
 );
 
 /** Standalone module entry in the system-modules settings nav. */
@@ -121,7 +212,15 @@ export const SYSTEM_MODULE_NAV: SystemModuleNavEntry[] = [
     type: "group",
     labelKey: "nav.academics",
     icon: "BookOpen",
-    moduleIds: ["students", "sessions", "attendance", "enrollment", "hasanat", "examination", "questionBank"],
+    moduleIds: [
+      "students",
+      "sessions",
+      "attendance",
+      "enrollment",
+      "hasanat",
+      "examination",
+      "questionBank",
+    ],
   },
   { type: "module", moduleId: "finance" },
   { type: "module", moduleId: "accounting" },
@@ -173,7 +272,7 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
  * Merges module visibility flags with defaults; required modules always stay enabled.
  */
 export function normalizeEnabledModules(
-  partial?: Record<string, boolean> | null
+  partial?: Record<string, boolean> | null,
 ): Record<string, boolean> {
   const incoming = { ...(partial ?? {}) };
 
@@ -198,22 +297,17 @@ function coerceBoolean(value: unknown, fallback: boolean): boolean {
 /**
  * Deep-merges stored global settings with defaults (including `enabledModules` keys).
  */
-export function mergeGlobalSettings(
-  partial?: Partial<GlobalSettings> | null
-): GlobalSettings {
+export function mergeGlobalSettings(partial?: Partial<GlobalSettings> | null): GlobalSettings {
   const sessionTimeout = normalizeSessionTimeout(
-    partial?.sessionTimeout ?? DEFAULT_GLOBAL_SETTINGS.sessionTimeout
+    partial?.sessionTimeout ?? DEFAULT_GLOBAL_SETTINGS.sessionTimeout,
   );
   const passwordPolicy = normalizePasswordPolicy(
-    partial?.passwordPolicy ?? DEFAULT_GLOBAL_SETTINGS.passwordPolicy
+    partial?.passwordPolicy ?? DEFAULT_GLOBAL_SETTINGS.passwordPolicy,
   );
-  const timezone = normalizeTimezone(
-    partial?.timezone,
-    DEFAULT_GLOBAL_SETTINGS.timezone
-  );
+  const timezone = normalizeTimezone(partial?.timezone, DEFAULT_GLOBAL_SETTINGS.timezone);
   const dateFormat = normalizeDateFormat(
     partial?.dateFormat,
-    DEFAULT_GLOBAL_SETTINGS.dateFormat as DateFormatId
+    DEFAULT_GLOBAL_SETTINGS.dateFormat as DateFormatId,
   );
   const theme = normalizeThemeMode(partial?.theme ?? DEFAULT_GLOBAL_SETTINGS.theme);
 
@@ -226,11 +320,11 @@ export function mergeGlobalSettings(
     theme,
     emailNotifications: coerceBoolean(
       partial?.emailNotifications,
-      DEFAULT_GLOBAL_SETTINGS.emailNotifications
+      DEFAULT_GLOBAL_SETTINGS.emailNotifications,
     ),
     smsNotifications: coerceBoolean(
       partial?.smsNotifications,
-      DEFAULT_GLOBAL_SETTINGS.smsNotifications
+      DEFAULT_GLOBAL_SETTINGS.smsNotifications,
     ),
     twoFactor: coerceBoolean(partial?.twoFactor, DEFAULT_GLOBAL_SETTINGS.twoFactor),
     sessionTimeout,
@@ -238,6 +332,8 @@ export function mergeGlobalSettings(
     enabledModules: normalizeEnabledModules(partial?.enabledModules),
     llmProvider: partial?.llmProvider ?? DEFAULT_GLOBAL_SETTINGS.llmProvider,
     llmApiKey: partial?.llmApiKey ?? DEFAULT_GLOBAL_SETTINGS.llmApiKey,
-    llmConfigs: Array.isArray(partial?.llmConfigs) ? partial.llmConfigs : DEFAULT_GLOBAL_SETTINGS.llmConfigs,
+    llmConfigs: Array.isArray(partial?.llmConfigs)
+      ? partial.llmConfigs
+      : DEFAULT_GLOBAL_SETTINGS.llmConfigs,
   };
 }

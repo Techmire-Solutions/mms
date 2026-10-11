@@ -13,18 +13,12 @@ export interface ExaminationsSettingsProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const ExaminationsSettings = (function ExaminationsSettings({
+export const ExaminationsSettings = function ExaminationsSettings({
   onPrefsDirtyChange,
 }: ExaminationsSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useExaminationsSetupPanelState();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useExaminationsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
@@ -42,10 +36,7 @@ export const ExaminationsSettings = (function ExaminationsSettings({
         title={t("examinations.settings.titlePreferences")}
         className={SETUP_SECTION_CARD_CLASS}
       >
-        <ExaminationsPreferencesSection
-          settingsDraft={settingsDraft}
-          upd={upd}
-        />
+        <ExaminationsPreferencesSection settingsDraft={settingsDraft} upd={upd} />
         <ModuleSetupSaveFooter
           dirty={isPrefsDirty}
           saving={saving}
@@ -69,6 +60,6 @@ export const ExaminationsSettings = (function ExaminationsSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default ExaminationsSettings;

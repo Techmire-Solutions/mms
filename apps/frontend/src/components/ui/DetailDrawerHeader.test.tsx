@@ -35,7 +35,7 @@ describe("DetailDrawerHeader", () => {
           onClose={handleClose}
           isDesktop={true}
           onPointerDragStart={handleDragStart}
-        />
+        />,
       );
     });
 
@@ -44,7 +44,9 @@ describe("DetailDrawerHeader", () => {
     expect(container.textContent).toContain("Active");
     expect(container.textContent).toContain("Print");
 
-    const closeButton = container.querySelector('button[aria-label="Close"]') ?? container.querySelector('button[aria-label]');
+    const closeButton =
+      container.querySelector('button[aria-label="Close"]') ??
+      container.querySelector("button[aria-label]");
     expect(closeButton).not.toBeNull();
     if (closeButton) {
       await act(async () => {

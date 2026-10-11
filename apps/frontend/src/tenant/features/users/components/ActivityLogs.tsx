@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
-import {
-  type ActivityLog,
-  type SystemUser,
-  type WorkspaceUser,
-} from '@mms/shared';
-import { useLocalPagination } from '@/hooks/useLocalPagination';
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import type { DataTableColumnLayout } from '@/components/common/data-table';
-import { ActivityLogsFilters } from '@/tenant/features/users/components/ActivityLogsFilters';
-import { ActivityLogsList } from '@/tenant/features/users/components/ActivityLogsList';
+import React, { useState } from "react";
+import { type ActivityLog, type SystemUser, type WorkspaceUser } from "@mms/shared";
+import { useLocalPagination } from "@/hooks/useLocalPagination";
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import type { DataTableColumnLayout } from "@/components/common/data-table";
+import { ActivityLogsFilters } from "@/tenant/features/users/components/ActivityLogsFilters";
+import { ActivityLogsList } from "@/tenant/features/users/components/ActivityLogsList";
 
 const PAGE_SIZE = 15;
 
@@ -18,15 +14,11 @@ export interface ActivityLogsProps {
   columnLayout?: DataTableColumnLayout;
 }
 
-export function ActivityLogs({
-  logs,
-  users,
-  columnLayout,
-}: ActivityLogsProps): React.JSX.Element {
-  const [userFilter, setUser] = useState('all');
-  const [actionFilter, setAct] = useState('all');
-  const [dateFrom, setFrom] = useState('');
-  const [dateTo, setTo] = useState('');
+export function ActivityLogs({ logs, users, columnLayout }: ActivityLogsProps): React.JSX.Element {
+  const [userFilter, setUser] = useState("all");
+  const [actionFilter, setAct] = useState("all");
+  const [dateFrom, setFrom] = useState("");
+  const [dateTo, setTo] = useState("");
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
 
   const userNamesById = new Map<string, string>();
@@ -39,8 +31,8 @@ export function ActivityLogs({
 
   const baseFilteredLogs = (() => {
     return logs.filter((log) => {
-      if (userFilter !== 'all' && log.userId !== userFilter) return false;
-      if (actionFilter !== 'all' && log.action !== actionFilter) return false;
+      if (userFilter !== "all" && log.userId !== userFilter) return false;
+      if (actionFilter !== "all" && log.action !== actionFilter) return false;
       if (dateFrom && log.ts < dateFrom) return false;
       if (dateTo && log.ts > `${dateTo}T23:59:59`) return false;
       return true;

@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
 const Devtools = React.lazy(() =>
-  import('@tanstack/react-query-devtools').then((mod) => ({
+  import("@tanstack/react-query-devtools").then((mod) => ({
     default: mod.ReactQueryDevtools,
   })),
 );

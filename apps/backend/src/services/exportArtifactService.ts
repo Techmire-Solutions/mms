@@ -1,6 +1,6 @@
-import { USER_EXPORT_ARTIFACTS_OBJECT_KEY } from '@mms/shared';
-import { fetchObject, persistObject } from './dbSyncService.js';
-import { deleteStorageObject } from '../config/storage.js';
+import { USER_EXPORT_ARTIFACTS_OBJECT_KEY } from "@mms/shared";
+import { fetchObject, persistObject } from "./dbSyncService.js";
+import { deleteStorageObject } from "../config/storage.js";
 
 const STORAGE_KEY = USER_EXPORT_ARTIFACTS_OBJECT_KEY;
 const ARTIFACT_TTL_MS = 24 * 60 * 60 * 1000;
@@ -14,7 +14,7 @@ interface ExportArtifact {
   /** Legacy inline content (buffered doc-store artifact). */
   content?: string;
   /** Streaming artifact stored in blob storage (S3 or local). */
-  storageType?: 's3' | 'local';
+  storageType?: "s3" | "local";
   key?: string;
   contentType?: string;
 }
@@ -22,7 +22,7 @@ interface ExportArtifact {
 export interface ExportArtifactResult {
   filename: string;
   content?: string;
-  storageType?: 's3' | 'local';
+  storageType?: "s3" | "local";
   key?: string;
   contentType?: string;
 }
@@ -31,7 +31,7 @@ type UserArtifactMap = Record<string, Record<string, ExportArtifact>>;
 
 async function loadUserArtifactMap(): Promise<UserArtifactMap> {
   const raw = await fetchObject(STORAGE_KEY);
-  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
     return raw as UserArtifactMap;
   }
   return {};
@@ -44,7 +44,7 @@ async function saveUserArtifactMap(artifactsByUser: UserArtifactMap): Promise<vo
 async function pruneAllExpired(allArtifacts: UserArtifactMap): Promise<UserArtifactMap> {
   const now = Date.now();
   const cleaned: UserArtifactMap = {};
-  const droppedBlobs: Array<{ key: string; storageType: 's3' | 'local' }> = [];
+  const droppedBlobs: Array<{ key: string; storageType: "s3" | "local" }> = [];
   for (const [user, artifacts] of Object.entries(allArtifacts)) {
     const entries = Object.entries(artifacts);
     const activeEntries = entries
@@ -75,7 +75,7 @@ export async function saveExportArtifact(
   content: string,
   filename: string,
 ): Promise<void> {
-  if (Buffer.byteLength(content, 'utf8') > MAX_ARTIFACT_BYTES) {
+  if (Buffer.byteLength(content, "utf8") > MAX_ARTIFACT_BYTES) {
     throw new Error(
       `Export artifact exceeds maximum of ${MAX_ARTIFACT_BYTES} bytes and cannot be stored.`,
     );
@@ -118,7 +118,7 @@ export async function saveStreamedExportArtifact(
   jobId: string,
   info: {
     key: string;
-    storageType: 's3' | 'local';
+    storageType: "s3" | "local";
     filename: string;
     contentType?: string;
   },

@@ -1,8 +1,8 @@
-import { hasWhatsApp, toMessagingRecipient, type Student } from '@mms/shared';
-import { PersonMessagingRowActionsExtras } from '@/components/ui/PersonMessagingRowActionsExtras';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ModuleRowActionsMenu } from '@/components/ui/ModuleRowActionsMenu';
-import type { StudentsListContentMessagingRecipient } from '@/tenant/features/students/components/studentsListTypes';
+import { hasWhatsApp, toMessagingRecipient, type Student } from "@mms/shared";
+import { PersonMessagingRowActionsExtras } from "@/components/ui/PersonMessagingRowActionsExtras";
+import { useTranslation } from "@/hooks/useTranslation";
+import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
+import type { StudentsListContentMessagingRecipient } from "@/tenant/features/students/components/studentsListTypes";
 
 export interface StudentsRowActionsProps {
   student: Student;
@@ -21,7 +21,7 @@ export interface StudentsRowActionsProps {
   onDelete: (id: string, deletionReason?: string) => void;
   onRestore?: (id: string) => void;
   onOpenComposer?: (
-    mode: 'whatsapp' | 'sms' | 'email',
+    mode: "whatsapp" | "sms" | "email",
     recipients: StudentsListContentMessagingRecipient[],
   ) => void;
 }
@@ -51,11 +51,11 @@ export function StudentsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t('students.list.actionsAria')}
-      viewLabel={t('students.list.viewProfile')}
-      editLabel={t('students.list.editStudent')}
-      deleteLabel={t('students.list.remove')}
-      restoreLabel={t('students.restore')}
+      triggerLabel={t("students.list.actionsAria")}
+      viewLabel={t("students.list.viewProfile")}
+      editLabel={t("students.list.editStudent")}
+      deleteLabel={t("students.list.remove")}
+      restoreLabel={t("students.restore")}
       archived={viewingDeleted}
       canWrite={canWrite}
       canDelete={canDelete}
@@ -73,13 +73,13 @@ export function StudentsRowActions({
           email={student.email?.trim() || null}
           hasWhatsApp={hasWhatsApp(student)}
           hideMessagingItems={!includeMessaging || !onOpenComposer}
-          onWhatsApp={() => onOpenComposer?.('whatsapp', [toMessagingRecipient(student)])}
-          onSms={() => onOpenComposer?.('sms', [toMessagingRecipient(student)])}
-          onEmail={() => onOpenComposer?.('email', [toMessagingRecipient(student)])}
+          onWhatsApp={() => onOpenComposer?.("whatsapp", [toMessagingRecipient(student)])}
+          onSms={() => onOpenComposer?.("sms", [toMessagingRecipient(student)])}
+          onEmail={() => onOpenComposer?.("email", [toMessagingRecipient(student)])}
           labels={{
-            whatsapp: t('students.list.actionWhatsApp'),
-            sms: t('students.list.actionSms'),
-            email: t('students.list.actionEmail'),
+            whatsapp: t("students.list.actionWhatsApp"),
+            sms: t("students.list.actionSms"),
+            email: t("students.list.actionEmail"),
           }}
         />
       }

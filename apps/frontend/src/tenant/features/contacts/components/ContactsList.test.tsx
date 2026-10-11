@@ -56,13 +56,13 @@ describe("ContactsList Component", () => {
   it("renders table view when viewMode is table", () => {
     const html = renderToStaticMarkup(<ContactsList {...baseProps} />);
 
-    expect(html).toContain("data-testid=\"contacts-table-mock\"");
+    expect(html).toContain('data-testid="contacts-table-mock"');
   });
 
   it("renders cards view when viewMode is cards", () => {
     const html = renderToStaticMarkup(<ContactsList {...baseProps} viewMode="cards" />);
 
-    expect(html).toContain("data-testid=\"contacts-cards-mock\"");
+    expect(html).toContain('data-testid="contacts-cards-mock"');
   });
 
   it("renders empty state when workContacts is empty", () => {

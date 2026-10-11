@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { generateClientEntityId } from "@mms/shared";
-import type {
-  ModalState,
-  Mujtahid,
-  MujtahidRep,
-} from "./mujtahidManagerTypes";
+import type { ModalState, Mujtahid, MujtahidRep } from "./mujtahidManagerTypes";
 
 export interface UseMujtahidManagerCrudProps {
   mujtahids: Mujtahid[];
@@ -25,7 +21,10 @@ export function useMujtahidManagerCrud({
 
   const handleSaveMujtahid = async (form: Partial<Mujtahid>) => {
     if (modal?.mode === "add") {
-      await onChangeMujtahids([...mujtahids, { ...form, id: generateClientEntityId("m") } as Mujtahid]);
+      await onChangeMujtahids([
+        ...mujtahids,
+        { ...form, id: generateClientEntityId("m") } as Mujtahid,
+      ]);
     } else if (modal?.mode === "edit") {
       await onChangeMujtahids(
         mujtahids.map((mujtahid) => (mujtahid.id === form.id ? (form as Mujtahid) : mujtahid)),

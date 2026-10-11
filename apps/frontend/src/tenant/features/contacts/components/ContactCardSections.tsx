@@ -1,10 +1,7 @@
 import React from "react";
 import type { Contact, ContactPreferences } from "@mms/shared";
 import { EntityCardInfoPills } from "@/components/ui/EntityCardInfoPills";
-import {
-  resolveAllContactPhones,
-  resolveAllContactEmails,
-} from "@/lib/contacts/contactI18n";
+import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 
 export {
   ContactCardMetadataGrid,
@@ -49,7 +46,9 @@ export function ContactCardInfoPills({
     if (contact) {
       return resolveAllContactPhones(contact, prefs, countryCodesMap, countryCodes);
     }
-    return phone ? [{ phone, countryCode: countryCode || "", phoneDisplay: phoneDisplay || phone }] : [];
+    return phone
+      ? [{ phone, countryCode: countryCode || "", phoneDisplay: phoneDisplay || phone }]
+      : [];
   })();
 
   const allEmails = (() => {

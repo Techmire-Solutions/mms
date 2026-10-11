@@ -2,8 +2,8 @@
  * @file createModuleExportServiceTypes.ts
  * @description Types for the generic module export service factory.
  */
-import type { ExportFormat, ExportColumn } from '@mms/shared';
-import { isSystemMetadataKey } from '@mms/shared';
+import type { ExportFormat, ExportColumn } from "@mms/shared";
+import { isSystemMetadataKey } from "@mms/shared";
 
 export type ModuleCsvExportColumn = { id?: string; label: string };
 
@@ -12,8 +12,8 @@ export type ModuleCsvExportManifestBits = {
   exportChunkSize: number;
 };
 
-export type ModuleExportQueryInput<TQuery> = Omit<TQuery, 'includeDeleted'> & {
-  includeDeleted?: boolean | 'true' | 'false' | string;
+export type ModuleExportQueryInput<TQuery> = Omit<TQuery, "includeDeleted"> & {
+  includeDeleted?: boolean | "true" | "false" | string;
   includeIds?: Array<string | number>;
 };
 
@@ -51,9 +51,7 @@ export type CreateModuleExportServiceOptions<
   ) => TQuery & { includeIds?: Array<string | number> };
   prepareExport: (
     options: ModuleExportOptions & { columns?: TCol[] },
-  ) =>
-    | { columns: TCol[]; context: TContext }
-    | Promise<{ columns: TCol[]; context: TContext }>;
+  ) => { columns: TCol[]; context: TContext } | Promise<{ columns: TCol[]; context: TContext }>;
   loadByIds: (ids: string[]) => Promise<TRow[]>;
   loadPage: (
     query: TQuery & { includeIds?: Array<string | number> },
@@ -77,7 +75,7 @@ export function normalizeExportColumns<TCol extends ModuleCsvExportColumn>(
   columns: TCol[],
 ): ExportColumn[] {
   return columns
-    .filter((col) => !isSystemMetadataKey(col.id ?? '') && !isSystemMetadataKey(col.label))
+    .filter((col) => !isSystemMetadataKey(col.id ?? "") && !isSystemMetadataKey(col.label))
     .map((col) => ({
       id: col.id ?? col.label,
       label: col.label,

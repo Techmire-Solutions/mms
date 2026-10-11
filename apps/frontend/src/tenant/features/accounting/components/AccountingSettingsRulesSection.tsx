@@ -113,8 +113,13 @@ export function AccountingSettingsRulesSection({
               placeholder={t("accounting.journal.form.none")}
               options={accounts
                 .filter((account) => account.type === "Equity" && account.isActive !== false)
-                .sort((firstAccount, secondAccount) => firstAccount.code.localeCompare(secondAccount.code))
-                .map((account) => ({ value: account.id, label: `${account.code} – ${account.name}` }))}
+                .sort((firstAccount, secondAccount) =>
+                  firstAccount.code.localeCompare(secondAccount.code),
+                )
+                .map((account) => ({
+                  value: account.id,
+                  label: `${account.code} – ${account.name}`,
+                }))}
             />
           </Field>
         </div>

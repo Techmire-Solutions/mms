@@ -9,7 +9,7 @@ import {
   useFacultyContractBulkSpecialization,
   useFacultyContractLogExportAudit,
   useFacultyContractLogSetupAudit,
-} from '@/tenant/features/faculty/hooks/useFacultyTsrHooks';
+} from "@/tenant/features/faculty/hooks/useFacultyTsrHooks";
 
 /** Server mutations for Faculty records (create, update, delete, bulk delete, bulk status, bulk specialization). */
 export function useFacultyMutations() {
@@ -35,13 +35,14 @@ export function useFacultyMutations() {
     bulkUpdateFacultySpecialization: bulkSpecializationMutation.mutateAsync,
     isBulkSpecializationPending: bulkSpecializationMutation.isPending,
     logExportAudit: {
-      mutateAsync: (payload: { count: number; scope: 'all' | 'filtered' | 'selection' }) => logExportAuditMutation.mutateAsync({ body: payload }),
+      mutateAsync: (payload: { count: number; scope: "all" | "filtered" | "selection" }) =>
+        logExportAuditMutation.mutateAsync({ body: payload }),
       isPending: logExportAuditMutation.isPending,
     },
     logSetupAudit: {
-      mutateAsync: (payload: { area: 'fields' | 'preferences'; summary: string }) => logSetupAuditMutation.mutateAsync({ body: payload }),
+      mutateAsync: (payload: { area: "fields" | "preferences"; summary: string }) =>
+        logSetupAuditMutation.mutateAsync({ body: payload }),
       isPending: logSetupAuditMutation.isPending,
     },
   };
 }
-

@@ -1,12 +1,12 @@
-import type { Permission } from './permissions.js';
-import { z } from 'zod';
+import type { Permission } from "./permissions.js";
+import { z } from "zod";
 
 export const obligationTypeRecordSchema = z
   .object({
     id: z.string(),
     name: z.string().min(1),
     quantity_based: z.boolean(),
-    designated_for: z.enum(['Syed', 'Non-Syed', 'Both', 'None']),
+    designated_for: z.enum(["Syed", "Non-Syed", "Both", "None"]),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -20,7 +20,7 @@ export const obligationTypeInsertSchema = z
     id: z.string().optional(),
     name: z.string().min(1),
     quantity_based: z.boolean().default(false),
-    designated_for: z.enum(['Syed', 'Non-Syed', 'Both', 'None']).default('Both'),
+    designated_for: z.enum(["Syed", "Non-Syed", "Both", "None"]).default("Both"),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -115,7 +115,7 @@ export const obligationDistributionRecordSchema = z
     name: z.string().min(1),
     percentage: z.number().min(0).max(100),
     wakala_type_id: z.string(),
-    type: z.enum(['Liability', 'Income']),
+    type: z.enum(["Liability", "Income"]),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -130,7 +130,7 @@ export const obligationDistributionInsertSchema = z
     name: z.string().min(1),
     percentage: z.number().min(0).max(100),
     wakala_type_id: z.string().min(1),
-    type: z.enum(['Liability', 'Income']),
+    type: z.enum(["Liability", "Income"]),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -149,7 +149,7 @@ export const obligationCollectionRecordSchema = z
     reference_id: z.string().nullable().optional(),
     amount: z.number().min(0),
     currency_id: z.string(),
-    payment_mode: z.enum(['Cash', 'Online']),
+    payment_mode: z.enum(["Cash", "Online"]),
     obligation_type_id: z.string(),
     mujtahid_representative_id: z.string(),
     received_by: z.string(),
@@ -176,7 +176,7 @@ export const obligationCollectionInsertSchema = z
     reference_id: z.string().nullable().optional(),
     amount: z.number().min(0),
     currency_id: z.string().min(1),
-    payment_mode: z.enum(['Cash', 'Online']),
+    payment_mode: z.enum(["Cash", "Online"]),
     obligation_type_id: z.string().min(1),
     mujtahid_representative_id: z.string().min(1),
     received_by: z.string().min(1),
@@ -193,24 +193,26 @@ export function isObligationCollectionDeleted(collection: { deletedAt?: string |
   return Boolean(collection.deletedAt);
 }
 
-export function filterActiveObligationCollections<T extends { deletedAt?: string | null }>(collections: T[]): T[] {
+export function filterActiveObligationCollections<T extends { deletedAt?: string | null }>(
+  collections: T[],
+): T[] {
   return collections.filter((c) => !isObligationCollectionDeleted(c));
 }
 
 /** Tenant-scoped object key for the obligations invoice template. */
-export const INVOICE_TEMPLATE_OBJECT_KEY = 'mms_invoice_template';
+export const INVOICE_TEMPLATE_OBJECT_KEY = "mms_invoice_template";
 
 /** Obligations module manifest — aligns with globle1 universal module architecture. */
 export const OBLIGATIONS_MODULE_MANIFEST = {
-  moduleId: 'obligations',
-  entityType: 'ObligationCollection',
-  collectionKey: 'obligation_collections',
-  settingsObjectKey: 'obligations_settings',
-  columnPreferencesObjectKey: 'obligations_user_column_preferences',
-  restBasePath: '/api/obligations',
-  analyticsCategory: 'obligations',
-  tiers: ['work', 'reports', 'setup'] as const,
-  setupSubTabs: ['wakala', 'numbering', 'invoice_template'] as const,
+  moduleId: "obligations",
+  entityType: "ObligationCollection",
+  collectionKey: "obligation_collections",
+  settingsObjectKey: "obligations_settings",
+  columnPreferencesObjectKey: "obligations_user_column_preferences",
+  restBasePath: "/api/obligations",
+  analyticsCategory: "obligations",
+  tiers: ["work", "reports", "setup"] as const,
+  setupSubTabs: ["wakala", "numbering", "invoice_template"] as const,
   softDelete: {
     workExcludesDeleted: true,
     reportsIncludeDeleted: false,
@@ -219,17 +221,17 @@ export const OBLIGATIONS_MODULE_MANIFEST = {
     retentionDays: null,
   },
   permissions: {
-    read: 'obligations.read',
-    write: 'obligations.write',
-    delete: 'obligations.delete',
-    setupView: 'configuration.view',
-    setupWrite: 'settings.global.write',
-    export: 'obligations.read',
-    reports: 'obligations.read',
+    read: "obligations.read",
+    write: "obligations.write",
+    delete: "obligations.delete",
+    setupView: "configuration.view",
+    setupWrite: "settings.global.write",
+    export: "obligations.read",
+    reports: "obligations.read",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ['summary', 'collections'] as const,
-    bulkActions: ['delete'] as const,
+    directoryViews: ["summary", "collections"] as const,
+    bulkActions: ["delete"] as const,
   },
   defaultPageSize: 12,
   maxPageSize: 100,

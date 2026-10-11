@@ -1,19 +1,19 @@
-import React from 'react';
-import { Menu } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
-import { useTranslation } from '@/hooks/useTranslation';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import { usePlatformSidebar } from '@/platform/lib/PlatformSidebarContext';
-import { usePlatformHealth } from '@/platform/hooks/usePlatformHealth';
-import { usePlatformBreadcrumb } from '@/platform/lib/PlatformBreadcrumbContext';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { ROUTES, isNavPathActive } from '@/lib/config/routes';
-import { PLATFORM_NAV_ITEMS } from '@/platform/lib/platformNav';
-import { PlatformHeaderBrand } from '@/platform/components/header/PlatformHeaderBrand';
-import { PlatformHeaderUserNav } from '@/platform/components/header/PlatformHeaderUserNav';
-import { PlatformWorkspaceSwitcher } from '@/platform/components/header/PlatformWorkspaceSwitcher';
+import React from "react";
+import { Menu } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "@/hooks/useTranslation";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
+import { usePlatformHealth } from "@/platform/hooks/usePlatformHealth";
+import { usePlatformBreadcrumb } from "@/platform/lib/PlatformBreadcrumbContext";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { ROUTES, isNavPathActive } from "@/lib/config/routes";
+import { PLATFORM_NAV_ITEMS } from "@/platform/lib/platformNav";
+import { PlatformHeaderBrand } from "@/platform/components/header/PlatformHeaderBrand";
+import { PlatformHeaderUserNav } from "@/platform/components/header/PlatformHeaderUserNav";
+import { PlatformWorkspaceSwitcher } from "@/platform/components/header/PlatformWorkspaceSwitcher";
 
 export interface PlatformPageShellHeaderProps {
   onOpenSearch?: () => void;
@@ -22,7 +22,7 @@ export interface PlatformPageShellHeaderProps {
   aiOpen?: boolean;
 }
 
-type HealthStatus = 'operational' | 'degraded' | 'unknown';
+type HealthStatus = "operational" | "degraded" | "unknown";
 
 export function PlatformPageShellHeader({
   onOpenSearch,
@@ -37,7 +37,7 @@ export function PlatformPageShellHeader({
   const { openMobileSidebar } = usePlatformSidebar();
   const { status: rawStatus } = usePlatformHealth();
   const { extraSegments } = usePlatformBreadcrumb();
-  const status = (rawStatus as HealthStatus | undefined) ?? 'unknown';
+  const status = (rawStatus as HealthStatus | undefined) ?? "unknown";
 
   if (!isPlatformAuthenticated) return null;
 
@@ -46,11 +46,11 @@ export function PlatformPageShellHeader({
   );
 
   const healthLabel =
-    status === 'operational'
-      ? t('platform.statusOperational')
-      : status === 'degraded'
-        ? t('platform.statusDegraded')
-        : t('platform.statusUnknown');
+    status === "operational"
+      ? t("platform.statusOperational")
+      : status === "degraded"
+        ? t("platform.statusDegraded")
+        : t("platform.statusUnknown");
 
   const navSegment =
     activeNavItem && activeNavItem.path !== ROUTES.platformDashboard
@@ -63,7 +63,7 @@ export function PlatformPageShellHeader({
       : [];
 
   const breadcrumbItems = [
-    { label: t('platform.consoleTitle'), href: ROUTES.platformDashboard },
+    { label: t("platform.consoleTitle"), href: ROUTES.platformDashboard },
     ...navSegment,
     ...extraSegments,
   ];
@@ -80,7 +80,7 @@ export function PlatformPageShellHeader({
               e.stopPropagation();
               openMobileSidebar();
             }}
-            aria-label={t('nav.openMenu')}
+            aria-label={t("nav.openMenu")}
             className="lg:hidden flex min-h-11 min-w-11 h-11 w-11 shrink-0 items-center justify-center rounded-xl text-foreground hover:bg-muted cursor-pointer"
           >
             <Menu className="h-5 w-5" />
@@ -91,7 +91,7 @@ export function PlatformPageShellHeader({
           </div>
 
           <Breadcrumb
-            ariaLabel={t('common.breadcrumb')}
+            ariaLabel={t("common.breadcrumb")}
             className="hidden lg:flex min-w-0"
             items={breadcrumbItems}
           />
@@ -101,15 +101,17 @@ export function PlatformPageShellHeader({
           <Link
             to={ROUTES.platformSystem}
             className="hidden sm:inline-flex cursor-pointer shrink-0"
-            title={t('platform.systemMaintenance')}
-            aria-label={`${t('platform.systemMaintenance')}: ${healthLabel}`}
+            title={t("platform.systemMaintenance")}
+            aria-label={`${t("platform.systemMaintenance")}: ${healthLabel}`}
           >
             <Badge
               as="span"
-              tone={status === 'operational' ? 'success' : status === 'degraded' ? 'warning' : 'muted'}
+              tone={
+                status === "operational" ? "success" : status === "degraded" ? "warning" : "muted"
+              }
               pill
               dot
-              pulse={status !== 'unknown'}
+              pulse={status !== "unknown"}
               size="sm"
               className="hover:opacity-85 transition-opacity cursor-pointer"
             >

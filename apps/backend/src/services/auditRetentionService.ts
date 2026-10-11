@@ -1,12 +1,9 @@
-import { and, eq, lte, sql } from 'drizzle-orm';
-import {
-  AUDIT_RETENTION_FLOORS,
-  type AuditRetentionRegime,
-} from '@mms/shared';
-import { activeDb } from '../db/dbConnection.js';
-import { cryptoShreddingKeys } from '../db/schema/auditTrail.js';
-import { logger } from '../lib/logger.js';
-import type { DbOrTransaction } from './auditTrailService.js';
+import { and, eq, lte, sql } from "drizzle-orm";
+import { AUDIT_RETENTION_FLOORS, type AuditRetentionRegime } from "@mms/shared";
+import { activeDb } from "../db/dbConnection.js";
+import { cryptoShreddingKeys } from "../db/schema/auditTrail.js";
+import { logger } from "../lib/logger.js";
+import type { DbOrTransaction } from "./auditTrailService.js";
 
 export interface RetentionPolicyEvaluation {
   regime: AuditRetentionRegime;
@@ -31,7 +28,7 @@ export async function evaluateAuditRetentionPolicy(
   // was created: a key created years ago but shredded yesterday must still be
   // held for the full retention floor.
   const eligibleWhere = and(
-    eq(cryptoShreddingKeys.status, 'SHREDDED'),
+    eq(cryptoShreddingKeys.status, "SHREDDED"),
     lte(cryptoShreddingKeys.destroyedAt, cutoffDate),
   );
 
@@ -103,18 +100,19 @@ export async function purgeExpiredCryptoShreddingKeys(
     .delete(cryptoShreddingKeys)
     .where(
       and(
-        eq(cryptoShreddingKeys.status, 'SHREDDED'),
+        eq(cryptoShreddingKeys.status, "SHREDDED"),
         lte(cryptoShreddingKeys.destroyedAt, evaluation.cutoffDate),
       ),
     );
 
-  const count = typeof result === 'object' && result !== null && 'rowCount' in result
-    ? Number((result as { rowCount?: number }).rowCount ?? 0)
-    : 0;
+  const count =
+    typeof result === "object" && result !== null && "rowCount" in result
+      ? Number((result as { rowCount?: number }).rowCount ?? 0)
+      : 0;
 
   logger.info(
     { regime: options.regime, purgedCount: count, cutoffDate: evaluation.cutoffDate },
-    'Policy-driven retention purge completed for shredded crypto keys',
+    "Policy-driven retention purge completed for shredded crypto keys",
   );
 
   return {

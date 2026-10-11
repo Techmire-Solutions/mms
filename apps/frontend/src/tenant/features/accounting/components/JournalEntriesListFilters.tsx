@@ -63,24 +63,33 @@ export function JournalEntriesListFilters({
   const activeFilterCount = (statusFilter !== "all" ? 1 : 0) + (tagFilter !== "all" ? 1 : 0);
   const chips = [
     ...(statusFilter !== "all"
-      ? [{
-          key: `status:${statusFilter}`,
-          label: t(`accounting.journal.status.${statusFilter}` as AppTranslationKey),
-          onRemove: () => onStatusFilterChange("all"),
-        }]
+      ? [
+          {
+            key: `status:${statusFilter}`,
+            label: t(`accounting.journal.status.${statusFilter}` as AppTranslationKey),
+            onRemove: () => onStatusFilterChange("all"),
+          },
+        ]
       : []),
     ...(tagFilter !== "all"
-      ? [{
-          key: `tag:${tagFilter}`,
-          label: getJournalTagLabel(tagFilter, t),
-          onRemove: () => onTagFilterChange("all"),
-        }]
+      ? [
+          {
+            key: `tag:${tagFilter}`,
+            label: getJournalTagLabel(tagFilter, t),
+            onRemove: () => onTagFilterChange("all"),
+          },
+        ]
       : []),
   ];
 
   return (
     <>
-      <SubTabBar tabs={modeTabs} value={mode} onChange={onModeChange} panelIdPrefix="journal-mode-advanced" />
+      <SubTabBar
+        tabs={modeTabs}
+        value={mode}
+        onChange={onModeChange}
+        panelIdPrefix="journal-mode-advanced"
+      />
       <WorkTaskToolbar
         regionLabel={t("nav.accounting")}
         search={search}
@@ -122,17 +131,24 @@ export function JournalEntriesListFilters({
           viewMode,
           onViewModeChange,
         }}
-        columnCustomizer={columnCustomizer ? {
-          registry: columnCustomizer.columnRegistry,
-          onUpdate: columnCustomizer.updateUserColumnLayout,
-          onReset: columnCustomizer.onResetLayout,
-          labels: columnCustomizer.labels,
-        } : undefined}
+        columnCustomizer={
+          columnCustomizer
+            ? {
+                registry: columnCustomizer.columnRegistry,
+                onUpdate: columnCustomizer.updateUserColumnLayout,
+                onReset: columnCustomizer.onResetLayout,
+                labels: columnCustomizer.labels,
+              }
+            : undefined
+        }
         filterChips={
-          <FilterChips chips={chips} onClearAll={() => {
-            onStatusFilterChange("all");
-            onTagFilterChange("all");
-          }} />
+          <FilterChips
+            chips={chips}
+            onClearAll={() => {
+              onStatusFilterChange("all");
+              onTagFilterChange("all");
+            }}
+          />
         }
       >
         <Button
@@ -146,14 +162,17 @@ export function JournalEntriesListFilters({
         >
           {t("accounting.journal.dashboard.dateRange")}
         </Button>
-        {!showDeleted ? <Button
-          type="button"
-          variant="outline"
-          onClick={onExportCsv}
-          className="flex min-h-11 items-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground"
-        >
-          <Download className="w-3.5 h-3.5" aria-hidden="true" /> {t("accounting.journal.exportCurrentPage")}
-        </Button> : null}
+        {!showDeleted ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onExportCsv}
+            className="flex min-h-11 items-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground"
+          >
+            <Download className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+            {t("accounting.journal.exportCurrentPage")}
+          </Button>
+        ) : null}
       </WorkTaskToolbar>
     </>
   );

@@ -13,6 +13,8 @@
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",
     "lint": "turbo run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test:e2e": "pnpm --filter e2e-tests exec playwright test",
     "check:i18n": "pnpm --filter mms-backend exec tsx ../../scripts/i18n/check-translations.ts",
     "verify:rules": "node scripts/verify-rules-integrity.mjs",
@@ -30,6 +32,8 @@
     "prepare": "node -e \"try{require('node:child_process').execSync('git config core.hooksPath .githooks',{stdio:'ignore'})}catch{}\""
   },
   "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
     "turbo": "^2.11.7",
     "typescript": "~7.0.2",
     "typescript-v6": "npm:typescript@~6.0.3"

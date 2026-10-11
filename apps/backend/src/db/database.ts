@@ -15,11 +15,11 @@ import {
   type DatabasePoolRole,
   type DbClient,
   type PoolMetrics,
-} from './dbConnection.js';
-import { getDb, setDb } from './dbClient.js';
+} from "./dbConnection.js";
+import { getDb, setDb } from "./dbClient.js";
 
 export interface DatabaseHealth {
-  status: 'healthy' | 'unhealthy';
+  status: "healthy" | "unhealthy";
   pool: PoolMetrics | null;
 }
 
@@ -27,7 +27,7 @@ export async function getDatabaseHealth(): Promise<DatabaseHealth> {
   const isConnected = await pingDatabase();
   const poolMetrics = getPoolMetrics();
   return {
-    status: isConnected ? 'healthy' : 'unhealthy',
+    status: isConnected ? "healthy" : "unhealthy",
     pool: poolMetrics,
   };
 }
@@ -71,9 +71,6 @@ export {
   saveCollection,
   saveObject,
   type SaveCollectionOptions,
-} from './documentStore.js';
-export { initDb, resetDbInitStateForTesting, seedDatabase } from './dbInit.js';
-export {
-  purgeTenantDataBySubdomain,
-  resetTenantData,
-} from './dbPurge.js';
+} from "./documentStore.js";
+export { initDb, resetDbInitStateForTesting, seedDatabase } from "./dbInit.js";
+export { purgeTenantDataBySubdomain, resetTenantData } from "./dbPurge.js";

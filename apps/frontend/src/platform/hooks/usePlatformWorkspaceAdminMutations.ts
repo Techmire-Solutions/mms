@@ -1,11 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiContract } from '@/lib/api';
-import { ApiError } from '@/lib/apiClient';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 
-export const PLATFORM_WORKSPACES_QUERY_KEY = ['platform', 'workspaces'] as const;
+export const PLATFORM_WORKSPACES_QUERY_KEY = ["platform", "workspaces"] as const;
 
 export function useResetWorkspaceAdminPassword() {
   const queryClient = useQueryClient();
@@ -25,18 +25,25 @@ export function useResetWorkspaceAdminPassword() {
         const errorBody = res.body as { message?: string; type?: string } | undefined;
         throw new ApiError(
           res.status,
-          errorBody?.message || t('platform.loadFailed'),
+          errorBody?.message || t("platform.loadFailed"),
           errorBody?.type,
         );
       }
-      return res.body as { success: true; subdomain: string; adminEmail: string; newPassword: string };
+      return res.body as {
+        success: true;
+        subdomain: string;
+        adminEmail: string;
+        newPassword: string;
+      };
     },
     onSuccess: (res) => {
-      notify.success(t('platform.resetPasswordSuccess'), { description: `${res.adminEmail} (${res.subdomain})` });
+      notify.success(t("platform.resetPasswordSuccess"), {
+        description: `${res.adminEmail} (${res.subdomain})`,
+      });
       void queryClient.invalidateQueries({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
     },
     onError: (error) => {
-      notify.error(getPlatformErrorMessage(error, t, undefined, 'platform.loadFailed'));
+      notify.error(getPlatformErrorMessage(error, t, undefined, "platform.loadFailed"));
     },
   });
 }
@@ -59,7 +66,7 @@ export function useCreateWorkspaceAdmin() {
         const errorBody = res.body as { message?: string; type?: string } | undefined;
         throw new ApiError(
           res.status,
-          errorBody?.message || t('platform.loadFailed'),
+          errorBody?.message || t("platform.loadFailed"),
           errorBody?.type,
         );
       }
@@ -72,11 +79,13 @@ export function useCreateWorkspaceAdmin() {
       };
     },
     onSuccess: (res) => {
-      notify.success(t('platform.adminCreatedSuccess'), { description: `${res.name} <${res.adminEmail}>` });
+      notify.success(t("platform.adminCreatedSuccess"), {
+        description: `${res.name} <${res.adminEmail}>`,
+      });
       void queryClient.invalidateQueries({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
     },
     onError: (error) => {
-      notify.error(getPlatformErrorMessage(error, t, undefined, 'platform.loadFailed'));
+      notify.error(getPlatformErrorMessage(error, t, undefined, "platform.loadFailed"));
     },
   });
 }

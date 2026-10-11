@@ -1,4 +1,4 @@
-import { toTitleCase } from './titleCaseStringUtils.js';
+import { toTitleCase } from "./titleCaseStringUtils.js";
 
 const SYSTEM_EXCLUDED_KEYS = new Set([
   "id",
@@ -103,7 +103,9 @@ export function applyTitleCaseRecursive(data: unknown, key?: string): unknown {
       trimmed.startsWith("https://") ||
       trimmed.startsWith("data:") ||
       /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ||
-      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(trimmed) ||
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+        trimmed,
+      ) ||
       (/^[a-fA-F0-9]+$/.test(trimmed) && trimmed.length > 20) ||
       (/^[\d\s+\-()]+$/.test(trimmed) && trimmed.replace(/[\s+\-()]/g, "").length >= 7)
     ) {
@@ -178,33 +180,50 @@ export function applyTitleCaseToContact<T extends Record<string, unknown>>(conta
   if (Array.isArray(result.addresses)) {
     result.addresses = result.addresses.map((address: Record<string, unknown>) => ({
       ...address,
-      line1: typeof address.line1 === "string" ? (toTitleCase(address.line1) as string) : address.line1,
+      line1:
+        typeof address.line1 === "string" ? (toTitleCase(address.line1) as string) : address.line1,
       city: typeof address.city === "string" ? (toTitleCase(address.city) as string) : address.city,
-      state: typeof address.state === "string" ? (toTitleCase(address.state) as string) : address.state,
-      country: typeof address.country === "string" ? (toTitleCase(address.country) as string) : address.country,
-      label: typeof address.label === "string" ? (toTitleCase(address.label) as string) : address.label,
+      state:
+        typeof address.state === "string" ? (toTitleCase(address.state) as string) : address.state,
+      country:
+        typeof address.country === "string"
+          ? (toTitleCase(address.country) as string)
+          : address.country,
+      label:
+        typeof address.label === "string" ? (toTitleCase(address.label) as string) : address.label,
     }));
   }
 
   if (Array.isArray(result.socials)) {
     result.socials = result.socials.map((social: Record<string, unknown>) => ({
       ...social,
-      platform: typeof social.platform === "string" ? (toTitleCase(social.platform) as string) : social.platform,
+      platform:
+        typeof social.platform === "string"
+          ? (toTitleCase(social.platform) as string)
+          : social.platform,
     }));
   }
 
   if (Array.isArray(result.relationshipContacts)) {
-    result.relationshipContacts = result.relationshipContacts.map((link: Record<string, unknown>) => ({
-      ...link,
-      name: typeof link.name === "string" ? (toTitleCase(link.name) as string) : link.name,
-      relationship: typeof link.relationship === "string" ? (toTitleCase(link.relationship) as string) : link.relationship,
-    }));
+    result.relationshipContacts = result.relationshipContacts.map(
+      (link: Record<string, unknown>) => ({
+        ...link,
+        name: typeof link.name === "string" ? (toTitleCase(link.name) as string) : link.name,
+        relationship:
+          typeof link.relationship === "string"
+            ? (toTitleCase(link.relationship) as string)
+            : link.relationship,
+      }),
+    );
   }
 
   if (Array.isArray(result.relationships)) {
     result.relationships = result.relationships.map((relationship: Record<string, unknown>) => ({
       ...relationship,
-      relationship: typeof relationship.relationship === "string" ? (toTitleCase(relationship.relationship) as string) : relationship.relationship,
+      relationship:
+        typeof relationship.relationship === "string"
+          ? (toTitleCase(relationship.relationship) as string)
+          : relationship.relationship,
     }));
   }
 

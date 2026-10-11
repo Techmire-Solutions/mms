@@ -1,19 +1,16 @@
-import React from 'react';
-import { WidgetCard } from '@/components/ui/WidgetCard';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
-import { ROUTES } from '@/lib/config/routes';
-import { getQuickActionsForRole } from '@/lib/dashboardQuickActions';
-import {
-  getQuickActionGlowClass,
-  getQuickActionIconClasses,
-} from '@/lib/dashboardWidgetColors';
-import type { DashboardRole } from '@/lib/dashboardRole';
-import { useModuleAccess } from '@/tenant/hooks/useModuleAccess';
-import { useTranslation } from '@/hooks/useTranslation';
-import { usePermissions } from '@/tenant/hooks/usePermissions';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
+import React from "react";
+import { WidgetCard } from "@/components/ui/WidgetCard";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
+import { ROUTES } from "@/lib/config/routes";
+import { getQuickActionsForRole } from "@/lib/dashboardQuickActions";
+import { getQuickActionGlowClass, getQuickActionIconClasses } from "@/lib/dashboardWidgetColors";
+import type { DashboardRole } from "@/lib/dashboardRole";
+import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
+import { useTranslation } from "@/hooks/useTranslation";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface QuickActionsPanelProps {
   dashboardRole: DashboardRole;
@@ -22,27 +19,32 @@ interface QuickActionsPanelProps {
 /**
  * Role-specific quick actions filtered by enabled modules and write permissions.
  */
-export function QuickActionsPanel({ dashboardRole }: QuickActionsPanelProps): React.JSX.Element | null {
-
+export function QuickActionsPanel({
+  dashboardRole,
+}: QuickActionsPanelProps): React.JSX.Element | null {
   const { evaluate } = useModuleAccess();
   const { t } = useTranslation();
   const { can } = usePermissions();
   const reducedMotion = useReducedMotion();
 
   const actions = (() =>
-      getQuickActionsForRole(dashboardRole).filter(
-        (quickAction) =>
-          evaluate(quickAction.moduleId, 'availability').allowed && can(quickAction.permission),
-      ))();
+    getQuickActionsForRole(dashboardRole).filter(
+      (quickAction) =>
+        evaluate(quickAction.moduleId, "availability").allowed && can(quickAction.permission),
+    ))();
 
   if (actions.length === 0) return null;
 
   return (
-    <WidgetCard ariaLabelledby="quick-actions-panel-heading" accentColor="primary" className="p-5 px-6 pb-6">
+    <WidgetCard
+      ariaLabelledby="quick-actions-panel-heading"
+      accentColor="primary"
+      className="p-5 px-6 pb-6"
+    >
       <div className="flex items-center gap-2.5 pb-1.5 border-b border-border/40 mb-4.5 select-none">
         <Sparkles className="w-4 h-4 text-primary/70 group-hover:text-primary transition-colors" />
         <h3 id="quick-actions-panel-heading" className="text-sm font-bold text-foreground m-0">
-          {t('action.quickActions')}
+          {t("action.quickActions")}
         </h3>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -58,7 +60,7 @@ export function QuickActionsPanel({ dashboardRole }: QuickActionsPanelProps): Re
               transition={
                 reducedMotion
                   ? { duration: 0 }
-                  : { delay: actionIndex * 0.05, duration: 0.3, ease: 'easeOut' }
+                  : { delay: actionIndex * 0.05, duration: 0.3, ease: "easeOut" }
               }
             >
               <Link
@@ -95,4 +97,3 @@ export function QuickActionsPanel({ dashboardRole }: QuickActionsPanelProps): Re
 }
 
 export default QuickActionsPanel;
-

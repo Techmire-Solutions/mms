@@ -22,9 +22,7 @@ const mockCards: CategorizedKPIItem[] = [
 
 describe("KPICardsGrid Component", () => {
   it("renders KPI cards with labels, values, trends, and custom button", () => {
-    const html = renderToStaticMarkup(
-      <KPICardsGrid cards={mockCards} onAddCustom={vi.fn()} />
-    );
+    const html = renderToStaticMarkup(<KPICardsGrid cards={mockCards} onAddCustom={vi.fn()} />);
 
     expect(html).toContain("Total Students");
     expect(html).toContain("1,240");

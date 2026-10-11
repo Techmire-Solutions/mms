@@ -29,7 +29,9 @@ export function MarkAttendanceFieldControl({
     return (
       <StatusToggle
         value={row.status}
-        onChange={(value) => onFieldChange(row.studentId, "status", value as AttendanceRecord["status"])}
+        onChange={(value) =>
+          onFieldChange(row.studentId, "status", value as AttendanceRecord["status"])
+        }
       />
     );
   }
@@ -38,7 +40,9 @@ export function MarkAttendanceFieldControl({
     const value = field.id === "timeIn" ? row.timeIn : row.timeOut;
     return (
       <>
-        <label htmlFor={inputId} className="sr-only">{field.label}</label>
+        <label htmlFor={inputId} className="sr-only">
+          {field.label}
+        </label>
         <TimePicker
           id={inputId}
           name={field.id}
@@ -54,7 +58,9 @@ export function MarkAttendanceFieldControl({
   if (field.id === "notes") {
     return (
       <>
-        <label htmlFor={inputId} className="sr-only">{field.label}</label>
+        <label htmlFor={inputId} className="sr-only">
+          {field.label}
+        </label>
         <Input
           id={inputId}
           name={field.id}
@@ -69,7 +75,8 @@ export function MarkAttendanceFieldControl({
   }
 
   const rawValue = row[field.id];
-  const stringValue = typeof rawValue === "string" || typeof rawValue === "number" ? String(rawValue) : "";
+  const stringValue =
+    typeof rawValue === "string" || typeof rawValue === "number" ? String(rawValue) : "";
 
   if (field.type === "select") {
     return (
@@ -88,7 +95,9 @@ export function MarkAttendanceFieldControl({
   if (field.type === "boolean") {
     return (
       <div className="flex min-h-11 min-w-11 items-center justify-center">
-        <label htmlFor={inputId} className="sr-only">{field.label}</label>
+        <label htmlFor={inputId} className="sr-only">
+          {field.label}
+        </label>
         <Checkbox
           id={inputId}
           name={field.id}
@@ -103,7 +112,9 @@ export function MarkAttendanceFieldControl({
   if (field.type === "date") {
     return (
       <>
-        <label htmlFor={inputId} className="sr-only">{field.label}</label>
+        <label htmlFor={inputId} className="sr-only">
+          {field.label}
+        </label>
         <DatePicker
           id={inputId}
           name={field.id}
@@ -118,7 +129,9 @@ export function MarkAttendanceFieldControl({
 
   return (
     <>
-      <label htmlFor={inputId} className="sr-only">{field.label}</label>
+      <label htmlFor={inputId} className="sr-only">
+        {field.label}
+      </label>
       <Input
         id={inputId}
         name={field.id}

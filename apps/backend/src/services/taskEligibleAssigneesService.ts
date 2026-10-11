@@ -2,7 +2,7 @@ import {
   findEligibleTaskRecipientRows,
   type TaskDelegationOptions,
   type TaskRecipientRow,
-} from '../db/repositories/taskRecipientRepository.js';
+} from "../db/repositories/taskRecipientRepository.js";
 
 export type EligibleTaskAssignee = TaskRecipientRow;
 

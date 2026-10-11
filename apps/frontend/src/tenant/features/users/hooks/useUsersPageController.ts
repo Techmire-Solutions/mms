@@ -1,27 +1,27 @@
-import { useTranslation } from '@/hooks/useTranslation';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
+import { useTranslation } from "@/hooks/useTranslation";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   canAccessRolesAndPermissions,
   normalizeWorkspaceUser,
   USERS_MODULE_MANIFEST,
   type SystemUser,
-} from '@mms/shared';
-import { useUsersMutations } from '@/tenant/features/users/hooks/useUsersApi';
-import { useUsersActivityLogs } from './useUsersActivityLogs';
-import { useUsersPaginated } from '@/tenant/features/users/hooks/useUsersListQueries';
-import { useUsersDirectoryFilters } from '@/tenant/features/users/hooks/useUsersDirectoryFilters';
-import { useUsersKeyboardShortcuts } from '@/tenant/features/users/hooks/useUsersKeyboardShortcuts';
-import { useUsersPageActions } from '@/tenant/features/users/hooks/useUsersPageActions';
-import { useUserColumnLayout } from '@/tenant/features/users/hooks/useUserColumnLayout';
-import { useUserActivityColumnLayout } from '@/tenant/features/users/hooks/useUserActivityColumnLayout';
+} from "@mms/shared";
+import { useUsersMutations } from "@/tenant/features/users/hooks/useUsersApi";
+import { useUsersActivityLogs } from "./useUsersActivityLogs";
+import { useUsersPaginated } from "@/tenant/features/users/hooks/useUsersListQueries";
+import { useUsersDirectoryFilters } from "@/tenant/features/users/hooks/useUsersDirectoryFilters";
+import { useUsersKeyboardShortcuts } from "@/tenant/features/users/hooks/useUsersKeyboardShortcuts";
+import { useUsersPageActions } from "@/tenant/features/users/hooks/useUsersPageActions";
+import { useUserColumnLayout } from "@/tenant/features/users/hooks/useUserColumnLayout";
+import { useUserActivityColumnLayout } from "@/tenant/features/users/hooks/useUserActivityColumnLayout";
 import {
   defaultUsersExportColumns,
   useUsersExportActions,
-} from '@/tenant/features/users/hooks/useUsersExportActions';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { buildUsersWorkTierProps } from '@/tenant/features/users/hooks/usersPageWorkTierProps';
-import { useUsersModalLayer } from './useUsersModalLayer';
-import { useUsersTabState } from './useUsersTabState';
+} from "@/tenant/features/users/hooks/useUsersExportActions";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { buildUsersWorkTierProps } from "@/tenant/features/users/hooks/usersPageWorkTierProps";
+import { useUsersModalLayer } from "./useUsersModalLayer";
+import { useUsersTabState } from "./useUsersTabState";
 
 export function useUsersPageController() {
   const { t } = useTranslation();
@@ -37,15 +37,8 @@ export function useUsersPageController() {
   const canAccessRoles = canAccessRolesAndPermissions(authUser?.role);
 
   const filters = useUsersDirectoryFilters();
-  const {
-    listPage,
-    showDeleted,
-    search,
-    debouncedSearch,
-    roleFilter,
-    statusFilter,
-    selectedIds,
-  } = filters;
+  const { listPage, showDeleted, search, debouncedSearch, roleFilter, statusFilter, selectedIds } =
+    filters;
 
   const {
     USERS_CONFIG_TABS,
@@ -68,16 +61,17 @@ export function useUsersPageController() {
     t,
   });
 
-  const { logs, activityUsers, logsLoadFailed, isLogsLoading, refetchLogs } =
-    useUsersActivityLogs({ enabled: activeTab === 'work' && activeSubTab === 'activity' });
+  const { logs, activityUsers, logsLoadFailed, isLogsLoading, refetchLogs } = useUsersActivityLogs({
+    enabled: activeTab === "work" && activeSubTab === "activity",
+  });
 
-  const useServerWork = activeTab === 'work' && activeSubTab === 'users';
+  const useServerWork = activeTab === "work" && activeSubTab === "users";
   const workPageQuery = useUsersPaginated({
     page: listPage,
     limit: USERS_MODULE_MANIFEST.defaultPageSize,
     search: debouncedSearch,
     role: roleFilter,
-    status: statusFilter !== 'all' ? statusFilter : undefined,
+    status: statusFilter !== "all" ? statusFilter : undefined,
     includeDeleted: showDeleted,
     enabled: useServerWork,
   });
@@ -104,7 +98,7 @@ export function useUsersPageController() {
     logExportAudit,
   });
 
-  const actorId = authUser?.id ?? 'system';
+  const actorId = authUser?.id ?? "system";
   const actions = useUsersPageActions({ actorId, t });
 
   const {
@@ -127,7 +121,7 @@ export function useUsersPageController() {
   });
 
   useUsersKeyboardShortcuts({
-    enabled: effectiveTab === 'work' && effectiveSubTab === 'users',
+    enabled: effectiveTab === "work" && effectiveSubTab === "users",
     selectedCount: selectedIds.length,
     hasActiveFilters: filters.hasActiveFilters,
     clearFilters: filters.clearFilters,

@@ -55,7 +55,12 @@ export function getVerticalBadgeTemplate(
         y: 48,
         w: 80,
         h: 90,
-        style: { borderWidth: 1, borderColor: "rgb(203, 213, 225)", borderRadius: 8, backgroundColor: "rgb(248, 250, 252)" },
+        style: {
+          borderWidth: 1,
+          borderColor: "rgb(203, 213, 225)",
+          borderRadius: 8,
+          backgroundColor: "rgb(248, 250, 252)",
+        },
       },
       {
         id: "badge_name",

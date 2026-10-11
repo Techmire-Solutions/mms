@@ -1,6 +1,6 @@
-import type { JSX } from 'react';
-import { TableCell } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
+import type { JSX } from "react";
+import { TableCell } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 /**
  * Semantic colour variants for monetary table cells.
@@ -9,13 +9,13 @@ import { cn } from '@/lib/utils';
  * - `negative`: destructive red     (overdue, negative balance)
  * - `neutral` : default foreground  (total rows, balance fields)
  */
-export type MoneyVariant = 'debit' | 'credit' | 'negative' | 'neutral';
+export type MoneyVariant = "debit" | "credit" | "negative" | "neutral";
 
 const VARIANT_CLASS: Record<MoneyVariant, string> = {
-  debit: 'text-info',
-  credit: 'text-success',
-  negative: 'text-destructive',
-  neutral: 'text-foreground',
+  debit: "text-info",
+  credit: "text-success",
+  negative: "text-destructive",
+  neutral: "text-foreground",
 };
 
 export interface MoneyTableCellProps {
@@ -44,7 +44,7 @@ export interface MoneyTableCellProps {
  */
 export function MoneyTableCell({
   value,
-  variant = 'neutral',
+  variant = "neutral",
   isFooter = false,
   noWrap = true,
   className,
@@ -53,12 +53,7 @@ export function MoneyTableCell({
     <TableCell
       variant="currency"
       noWrap={noWrap}
-      className={cn(
-        'table-amount-cell',
-        VARIANT_CLASS[variant],
-        isFooter && 'text-xs',
-        className,
-      )}
+      className={cn("table-amount-cell", VARIANT_CLASS[variant], isFooter && "text-xs", className)}
     >
       {value}
     </TableCell>

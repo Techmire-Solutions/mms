@@ -1,9 +1,9 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import type { AppTranslationKey } from '@mms/shared';
+import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { AppTranslationKey } from "@mms/shared";
 
 export interface ListPaginationProps {
   page: number;
@@ -12,7 +12,7 @@ export interface ListPaginationProps {
   hasMore?: boolean;
   onPageChange: (page: number) => void;
   i18nNamespace?: string; // e.g. 'students', 'contacts', 'faculty', 'enrollments', 'attendance'
-  variant?: 'range' | 'summary' | 'compact'; // 'range' | 'summary' | 'compact'
+  variant?: "range" | "summary" | "compact"; // 'range' | 'summary' | 'compact'
   className?: string;
 }
 
@@ -22,12 +22,12 @@ export function ListPagination({
   limit = 50,
   hasMore = false,
   onPageChange,
-  i18nNamespace = 'common',
-  variant = 'range',
+  i18nNamespace = "common",
+  variant = "range",
   className,
 }: ListPaginationProps): React.JSX.Element | null {
   const { t } = useTranslation();
-  
+
   const parsedPage = Number(page);
   const safePage = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : Math.floor(parsedPage);
 
@@ -38,11 +38,11 @@ export function ListPagination({
   const safeLimit = Number.isNaN(parsedLimit) || parsedLimit <= 0 ? 50 : Math.floor(parsedLimit);
 
   const totalPages = Math.max(1, Math.ceil(safeTotal / safeLimit));
-  
+
   const from = safeTotal === 0 ? 0 : (safePage - 1) * safeLimit + 1;
   const to = Math.min(safePage * safeLimit, safeTotal);
 
-  if (variant === 'compact') {
+  if (variant === "compact") {
     if (totalPages <= 1) return null;
     return (
       <div className={cn("flex items-center gap-1.5", className)}>
@@ -73,17 +73,20 @@ export function ListPagination({
     );
   }
 
-  if (variant === 'summary') {
+  if (variant === "summary") {
     const summaryKey = `${i18nNamespace}.pagination.summary` as AppTranslationKey;
     const labelKey = `${i18nNamespace}.pagination.label` as AppTranslationKey;
     const prevKey = `${i18nNamespace}.pagination.previous` as AppTranslationKey;
     const nextKey = `${i18nNamespace}.pagination.next` as AppTranslationKey;
 
-    const navLabel = i18nNamespace === 'enrollments' ? t(labelKey) : undefined;
+    const navLabel = i18nNamespace === "enrollments" ? t(labelKey) : undefined;
 
     return (
-      <div 
-        className={cn("flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground py-2", className)}
+      <div
+        className={cn(
+          "flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground py-2",
+          className,
+        )}
         role="navigation"
         aria-label={navLabel}
       >
@@ -127,14 +130,15 @@ export function ListPagination({
   const actualHasMore = hasMore || safePage < totalPages;
 
   return (
-    <div 
-      className={cn("flex flex-wrap items-center justify-between gap-3 px-1 py-2 text-sm", className)}
+    <div
+      className={cn(
+        "flex flex-wrap items-center justify-between gap-3 px-1 py-2 text-sm",
+        className,
+      )}
       role="navigation"
       aria-label={t(`${i18nNamespace}.pagination.label` as AppTranslationKey) ?? "Pagination"}
     >
-      <p className="text-muted-foreground text-xs">
-        {t(rangeKey, { from, to, total: safeTotal })}
-      </p>
+      <p className="text-muted-foreground text-xs">{t(rangeKey, { from, to, total: safeTotal })}</p>
       {safeTotal > safeLimit && (
         <div className="flex flex-wrap items-center gap-1">
           <Button

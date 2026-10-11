@@ -75,9 +75,7 @@ export function CloseFiscalYearModal({
         // reported as a failed close.
       }
     } catch (error) {
-      setCloseError(
-        accountingErrorMessage(error) ?? t("accounting.settings.fy.closeFailed"),
-      );
+      setCloseError(accountingErrorMessage(error) ?? t("accounting.settings.fy.closeFailed"));
     } finally {
       setClosing(false);
     }
@@ -117,9 +115,7 @@ export function CloseFiscalYearModal({
           id="fy-close-retained-earnings"
           label={t("accounting.settings.fields.retainedEarningsAccount")}
           hint={t("accounting.settings.fy.closeAccountHint")}
-          error={
-            closeAccountId ? undefined : t("accounting.settings.fy.closeAccountRequired")
-          }
+          error={closeAccountId ? undefined : t("accounting.settings.fy.closeAccountRequired")}
         >
           <FormSelect
             id="fy-close-retained-earnings"

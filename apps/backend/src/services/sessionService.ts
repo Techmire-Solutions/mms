@@ -1,4 +1,4 @@
-import { sessionsUseCases } from '../sessions/use-cases/sessionsUseCases.js';
+import { sessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
 
 /**
  * Thin re-export of the sessions use-cases facade.

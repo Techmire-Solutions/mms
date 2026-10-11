@@ -110,4 +110,3 @@ describe("SequenceNumberingCard Component", () => {
     expect(html).toContain('aria-pressed="true"');
   });
 });
-

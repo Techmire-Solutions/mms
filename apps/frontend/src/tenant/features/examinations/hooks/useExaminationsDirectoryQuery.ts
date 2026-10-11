@@ -37,7 +37,8 @@ export function useExaminationsDirectoryQuery({
   const pageExams = (examsPageQuery.data?.body?.exams ?? []) as Exam[];
   const serverTotal = examsPageQuery.data?.body?.total ?? 0;
   const serverPage = examsPageQuery.data?.body?.page ?? listPage;
-  const serverLimit = examsPageQuery.data?.body?.limit ?? EXAMINATIONS_MODULE_MANIFEST.defaultPageSize;
+  const serverLimit =
+    examsPageQuery.data?.body?.limit ?? EXAMINATIONS_MODULE_MANIFEST.defaultPageSize;
   const serverHasMore = examsPageQuery.data?.body?.hasMore ?? false;
 
   useEffect(() => {

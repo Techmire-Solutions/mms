@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getGrade } from '@mms/shared';
+import { getGrade } from "@mms/shared";
 import {
   useExaminationsExams,
   useExaminationsExamsCollection,
@@ -11,7 +11,11 @@ import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { uniqueRegistryIds } from "@/lib/registryResolve";
 import { useTranslation } from "@/hooks/useTranslation";
 
-import type { AcademicReportProps, AcademicResultItem, ClassRankingItem } from '@/components/ui/reports/academicReportTypes';
+import type {
+  AcademicReportProps,
+  AcademicResultItem,
+  ClassRankingItem,
+} from "@/components/ui/reports/academicReportTypes";
 
 export function useAcademicReportController({ filters }: AcademicReportProps) {
   const { t } = useTranslation();
@@ -24,14 +28,18 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
 
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
-  const studentIds = (() => uniqueRegistryIds(examResults.map((examResult) => examResult.studentId)))();
+  const studentIds = (() =>
+    uniqueRegistryIds(examResults.map((examResult) => examResult.studentId)))();
   const { data: students = [] } = useStudentsByIds(studentIds);
 
   const academicResultsData = (() => {
     let academicResults: AcademicResultItem[] = [];
     const examsById = new Map(exams.map((exam) => [exam.id, exam]));
     const studentsById = new Map(
-      students.map((student: { id?: string | number; name?: string }) => [String(student.id), student]),
+      students.map((student: { id?: string | number; name?: string }) => [
+        String(student.id),
+        student,
+      ]),
     );
 
     examResults.forEach((examResult) => {
@@ -57,7 +65,9 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
     });
 
     if (filters.class !== "all") {
-      academicResults = academicResults.filter((academicResult) => academicResult.class === filters.class);
+      academicResults = academicResults.filter(
+        (academicResult) => academicResult.class === filters.class,
+      );
     }
     if (filters.student) {
       academicResults = academicResults.filter((academicResult) =>
@@ -68,30 +78,41 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
   })() as AcademicResultItem[];
 
   const classRankings = (() => {
-    const resultsByClass: Record<string, { class: string; studentName: string; marks: number }[]> = {};
+    const resultsByClass: Record<string, { class: string; studentName: string; marks: number }[]> =
+      {};
     const examsById = new Map(exams.map((exam) => [exam.id, exam]));
     const studentsById = new Map(
-      students.map((student: { id?: string | number; name?: string }) => [String(student.id), student]),
+      students.map((student: { id?: string | number; name?: string }) => [
+        String(student.id),
+        student,
+      ]),
     );
-    const rankingSourceResults = examResults.map((examResult) => {
-      const exam = examsById.get(examResult.examId);
-      const student = studentsById.get(String(examResult.studentId));
-      if (!exam || !student) return null;
-      return {
-        class: exam.name,
-        studentName: student.name || "",
-        marks: Math.round((examResult.marksObtained / exam.totalMarks) * 100),
-      };
-    }).filter(Boolean) as { class: string; studentName: string; marks: number }[];
+    const rankingSourceResults = examResults
+      .map((examResult) => {
+        const exam = examsById.get(examResult.examId);
+        const student = studentsById.get(String(examResult.studentId));
+        if (!exam || !student) return null;
+        return {
+          class: exam.name,
+          studentName: student.name || "",
+          marks: Math.round((examResult.marksObtained / exam.totalMarks) * 100),
+        };
+      })
+      .filter(Boolean) as { class: string; studentName: string; marks: number }[];
 
     rankingSourceResults.forEach((rankingSourceResult) => {
-      if (!resultsByClass[rankingSourceResult.class]) resultsByClass[rankingSourceResult.class] = [];
+      if (!resultsByClass[rankingSourceResult.class])
+        resultsByClass[rankingSourceResult.class] = [];
       resultsByClass[rankingSourceResult.class].push(rankingSourceResult);
     });
 
     let classRankingItems = Object.entries(resultsByClass).map(([className, classResults]) => {
-      const sortedClassResults = [...classResults].sort((firstResult, secondResult) => secondResult.marks - firstResult.marks);
-      const averageMarks = Math.round(classResults.reduce((sum, classResult) => sum + classResult.marks, 0) / classResults.length);
+      const sortedClassResults = [...classResults].sort(
+        (firstResult, secondResult) => secondResult.marks - firstResult.marks,
+      );
+      const averageMarks = Math.round(
+        classResults.reduce((sum, classResult) => sum + classResult.marks, 0) / classResults.length,
+      );
       const passingCount = classResults.filter((classResult) => classResult.marks >= 50).length;
       return {
         class: className,
@@ -103,7 +124,9 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
     });
 
     if (filters.class !== "all") {
-      classRankingItems = classRankingItems.filter((classRankingItem) => classRankingItem.class === filters.class);
+      classRankingItems = classRankingItems.filter(
+        (classRankingItem) => classRankingItem.class === filters.class,
+      );
     }
     return classRankingItems;
   })() as ClassRankingItem[];
@@ -111,15 +134,22 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
   const filteredAcademicResultsData = (() => {
     let filteredAcademicResults = academicResultsData;
     if (selectedClass) {
-      filteredAcademicResults = filteredAcademicResults.filter((academicResult) => academicResult.class === selectedClass);
+      filteredAcademicResults = filteredAcademicResults.filter(
+        (academicResult) => academicResult.class === selectedClass,
+      );
     }
     if (selectedStudent) {
-      filteredAcademicResults = filteredAcademicResults.filter((academicResult) => academicResult.studentName === selectedStudent);
+      filteredAcademicResults = filteredAcademicResults.filter(
+        (academicResult) => academicResult.studentName === selectedStudent,
+      );
     }
     return filteredAcademicResults;
   })();
 
-  const filteredClassRankings = (() => (selectedClass ? classRankings.filter((classRanking) => classRanking.class === selectedClass) : classRankings))();
+  const filteredClassRankings = (() =>
+    selectedClass
+      ? classRankings.filter((classRanking) => classRanking.class === selectedClass)
+      : classRankings)();
 
   const toggleClassFilter = (className: string): void => {
     setSelectedClass((currentClass) => (currentClass === className ? null : className));
@@ -129,5 +159,18 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
     setSelectedStudent((currentStudent) => (currentStudent === studentName ? null : studentName));
   };
 
-  return { t, examsQuery, resultsQuery, aggregatesQuery, selectedStudent, selectedClass, setSelectedStudent, setSelectedClass, filteredAcademicResultsData, filteredClassRankings, toggleClassFilter, toggleStudentFilter };
+  return {
+    t,
+    examsQuery,
+    resultsQuery,
+    aggregatesQuery,
+    selectedStudent,
+    selectedClass,
+    setSelectedStudent,
+    setSelectedClass,
+    filteredAcademicResultsData,
+    filteredClassRankings,
+    toggleClassFilter,
+    toggleStudentFilter,
+  };
 }

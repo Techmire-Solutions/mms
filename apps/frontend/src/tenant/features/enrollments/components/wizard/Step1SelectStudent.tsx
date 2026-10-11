@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { User, Calendar } from "lucide-react";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { STUDENTS_MODULE_MANIFEST } from "@mms/shared";
-import { calcAge, type Student } from '@/lib/data/studentsData';
-import { type Session } from '@/lib/data/sessionsData';
+import { calcAge, type Student } from "@/lib/data/studentsData";
+import { type Session } from "@/lib/data/sessionsData";
 import { WIZARD_SELECTION_DOT } from "@/lib/semanticTone";
 import { useStudentsByIds, useStudentsContractList } from "@/tenant/hooks/collections/students";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -23,7 +23,11 @@ export interface Step1SelectStudentProps {
 /**
  * Step 1 component for selecting a student to enroll.
  */
-export function Step1SelectStudent({ value, onChange, sessions = [] }: Step1SelectStudentProps): React.JSX.Element {
+export function Step1SelectStudent({
+  value,
+  onChange,
+  sessions = [],
+}: Step1SelectStudentProps): React.JSX.Element {
   const { t } = useTranslation();
   const [search, setSearch] = useState<string>("");
   const statusBadgeConfig = (() => studentStatusBadgeConfig(t))();
@@ -50,19 +54,25 @@ export function Step1SelectStudent({ value, onChange, sessions = [] }: Step1Sele
     if (value && !rows.some((student) => String(student.id) === String(value.id))) {
       return [value, ...rows];
     }
-    if (resolvedSelected.length > 0 && !rows.some((student) => String(student.id) === String(resolvedSelected[0].id))) {
+    if (
+      resolvedSelected.length > 0 &&
+      !rows.some((student) => String(student.id) === String(resolvedSelected[0].id))
+    ) {
       return [resolvedSelected[0], ...rows];
     }
     return rows;
   })();
 
-  const sessionName = (sessionId: string): string => sessions.find((session) => session.id === sessionId)?.name || sessionId;
+  const sessionName = (sessionId: string): string =>
+    sessions.find((session) => session.id === sessionId)?.name || sessionId;
   const hasMore = Boolean(studentPage?.body?.hasMore);
 
   return (
     <section className="space-y-4" aria-labelledby="step1-title">
       <div>
-        <h3 id="step1-title" className="text-base font-bold text-foreground">{t("enrollments.wizard.step1Title")}</h3>
+        <h3 id="step1-title" className="text-base font-bold text-foreground">
+          {t("enrollments.wizard.step1Title")}
+        </h3>
         <p className="text-sm text-muted-foreground mt-0.5">{t("enrollments.wizard.step1Desc")}</p>
       </div>
 
@@ -75,7 +85,11 @@ export function Step1SelectStudent({ value, onChange, sessions = [] }: Step1Sele
         className="w-full"
       />
 
-      <div className="space-y-2 max-h-80 overflow-y-auto pe-1" role="radiogroup" aria-label={t("enrollments.wizard.step1StudentsAria")}>
+      <div
+        className="space-y-2 max-h-80 overflow-y-auto pe-1"
+        role="radiogroup"
+        aria-label={t("enrollments.wizard.step1StudentsAria")}
+      >
         {!isFetching && students.length === 0 && (
           <EmptyState title={t("enrollments.wizard.noStudents")} compact icon={null} />
         )}
@@ -90,7 +104,9 @@ export function Step1SelectStudent({ value, onChange, sessions = [] }: Step1Sele
               onClick={() => onChange(student)}
               variant="outline"
               className={`w-full text-start flex items-start gap-3 p-4 rounded-xl border-2 transition-all h-auto justify-start hover:bg-transparent ${
-                selected ? "border-primary bg-primary/5 hover:bg-primary/5 text-foreground hover:text-foreground" : "border-border bg-card hover:border-primary/40 hover:bg-muted/30 text-foreground hover:text-foreground"
+                selected
+                  ? "border-primary bg-primary/5 hover:bg-primary/5 text-foreground hover:text-foreground"
+                  : "border-border bg-card hover:border-primary/40 hover:bg-muted/30 text-foreground hover:text-foreground"
               }`}
             >
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -105,11 +121,21 @@ export function Step1SelectStudent({ value, onChange, sessions = [] }: Step1Sele
                     </span>
                   )}
                   <StatusBadge status={student.gender || "male"} config={genderConfig} size="sm" />
-                  <StatusBadge status={student.status || "active"} size="sm" config={statusBadgeConfig} />
+                  <StatusBadge
+                    status={student.status || "active"}
+                    size="sm"
+                    config={statusBadgeConfig}
+                  />
                 </div>
                 <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
-                  <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" aria-hidden="true" /> {t("enrollments.wizard.step1Age", { age: age ?? "?" })}</span>
-                  <span>{t("students.columns.parents")}: {student.fatherName || student.guardianName || "—"}</span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+                    {t("enrollments.wizard.step1Age", { age: age ?? "?" })}
+                  </span>
+                  <span>
+                    {t("students.columns.parents")}:{" "}
+                    {student.fatherName || student.guardianName || "—"}
+                  </span>
                   {student.city && <span>{student.city}</span>}
                 </div>
                 {student.enrolledSessions && student.enrolledSessions.length > 0 && (

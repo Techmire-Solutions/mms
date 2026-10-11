@@ -1,12 +1,12 @@
-import type { QueryClient } from '@tanstack/react-query';
+import type { QueryClient } from "@tanstack/react-query";
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
   ACCOUNTING_ENTRIES_QUERY_KEY,
   ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
   ACCOUNTING_METRICS_QUERY_KEY,
   ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
-} from '@/tenant/features/accounting/hooks/useAccountingApi';
-import { VOUCHER_NUMBERING_QUERY_KEY } from '@/tenant/features/accounting/hooks/useVoucherNumbering';
+} from "@/tenant/features/accounting/hooks/useAccountingApi";
+import { VOUCHER_NUMBERING_QUERY_KEY } from "@/tenant/features/accounting/hooks/useVoucherNumbering";
 
 /**
  * Invalidate every Accounting Query key a ledger write can affect (mutations +

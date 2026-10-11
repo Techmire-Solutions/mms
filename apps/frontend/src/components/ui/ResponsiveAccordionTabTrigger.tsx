@@ -52,12 +52,7 @@ export function TabTrigger({
 
   if (tab.href) {
     return (
-      <Link
-        to={tab.href}
-        aria-expanded={active}
-        aria-controls={panelId}
-        className={className}
-      >
+      <Link to={tab.href} aria-expanded={active} aria-controls={panelId} className={className}>
         {body}
       </Link>
     );

@@ -4,10 +4,7 @@ import {
   ResponsiveAccordionTabs,
   type AccordionTabItem,
 } from "@/components/ui/ResponsiveAccordionTabs";
-import {
-  AppPageShell,
-  type AppPageShellProps,
-} from "@/components/common/AppPageShell";
+import { AppPageShell, type AppPageShellProps } from "@/components/common/AppPageShell";
 import {
   AppPageShellSkeleton,
   type AppPageShellSkeletonProps,

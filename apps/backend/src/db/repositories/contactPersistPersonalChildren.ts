@@ -1,7 +1,7 @@
-import { and, eq } from 'drizzle-orm';
-import { dedupeTrimmedIds, getContactTags, type Contact } from '@mms/shared';
-import { contactTags, contactPhones, contactEmails, contactAddresses } from '../schema.js';
-import { type TenantTransaction } from '../tenant-context.js';
+import { and, eq } from "drizzle-orm";
+import { dedupeTrimmedIds, getContactTags, type Contact } from "@mms/shared";
+import { contactTags, contactPhones, contactEmails, contactAddresses } from "../schema.js";
+import { type TenantTransaction } from "../tenant-context.js";
 
 type Transaction = TenantTransaction;
 
@@ -13,7 +13,9 @@ export async function syncContactPersonalChildrenTx(
 ): Promise<void> {
   await tx
     .delete(contactPhones)
-    .where(and(eq(contactPhones.workspaceSubdomain, subdomain), eq(contactPhones.contactId, contactId)));
+    .where(
+      and(eq(contactPhones.workspaceSubdomain, subdomain), eq(contactPhones.contactId, contactId)),
+    );
   if (contact.phones && contact.phones.length > 0) {
     await tx.insert(contactPhones).values(
       contact.phones.map((p, idx) => ({
@@ -21,7 +23,7 @@ export async function syncContactPersonalChildrenTx(
         workspaceSubdomain: subdomain,
         contactId,
         number: p.number,
-        label: p.label || 'Main',
+        label: p.label || "Main",
         countryCode: p.countryCode ?? null,
         isPrimary: p.isPrimary ?? idx === 0,
         whatsappStatus: p.whatsappStatus ?? null,
@@ -32,7 +34,9 @@ export async function syncContactPersonalChildrenTx(
 
   await tx
     .delete(contactTags)
-    .where(and(eq(contactTags.workspaceSubdomain, subdomain), eq(contactTags.contactId, contactId)));
+    .where(
+      and(eq(contactTags.workspaceSubdomain, subdomain), eq(contactTags.contactId, contactId)),
+    );
   const tagsToSave = getContactTags(contact);
   if (tagsToSave.length > 0) {
     const validTags = dedupeTrimmedIds(tagsToSave);
@@ -50,7 +54,9 @@ export async function syncContactPersonalChildrenTx(
 
   await tx
     .delete(contactEmails)
-    .where(and(eq(contactEmails.workspaceSubdomain, subdomain), eq(contactEmails.contactId, contactId)));
+    .where(
+      and(eq(contactEmails.workspaceSubdomain, subdomain), eq(contactEmails.contactId, contactId)),
+    );
   if (contact.emails && contact.emails.length > 0) {
     await tx.insert(contactEmails).values(
       contact.emails.map((e, idx) => ({
@@ -58,7 +64,7 @@ export async function syncContactPersonalChildrenTx(
         workspaceSubdomain: subdomain,
         contactId,
         address: e.address,
-        label: e.label || 'Primary',
+        label: e.label || "Primary",
         isPrimary: e.isPrimary ?? idx === 0,
         isVerified: e.isVerified ?? false,
         sortOrder: idx,
@@ -68,7 +74,12 @@ export async function syncContactPersonalChildrenTx(
 
   await tx
     .delete(contactAddresses)
-    .where(and(eq(contactAddresses.workspaceSubdomain, subdomain), eq(contactAddresses.contactId, contactId)));
+    .where(
+      and(
+        eq(contactAddresses.workspaceSubdomain, subdomain),
+        eq(contactAddresses.contactId, contactId),
+      ),
+    );
   if (contact.addresses && contact.addresses.length > 0) {
     await tx.insert(contactAddresses).values(
       contact.addresses.map((a, idx) => ({
@@ -99,7 +110,7 @@ export async function bulkInsertContactPersonalChildrenTx(
       workspaceSubdomain: subdomain,
       contactId,
       number: p.number,
-      label: p.label || 'Main',
+      label: p.label || "Main",
       countryCode: p.countryCode ?? null,
       isPrimary: p.isPrimary ?? idx === 0,
       whatsappStatus: p.whatsappStatus ?? null,
@@ -136,7 +147,7 @@ export async function bulkInsertContactPersonalChildrenTx(
       workspaceSubdomain: subdomain,
       contactId,
       address: e.address,
-      label: e.label || 'Primary',
+      label: e.label || "Primary",
       isPrimary: e.isPrimary ?? idx === 0,
       isVerified: e.isVerified ?? false,
       sortOrder: idx,

@@ -5,13 +5,13 @@ import {
   stripHasanatFieldConfigForPersist,
   type HasanatSettings,
   type TabDefinition,
-} from '@mms/shared';
-import { createModuleFieldConfigService } from '../lib/createModuleFieldConfigService.js';
+} from "@mms/shared";
+import { createModuleFieldConfigService } from "../lib/createModuleFieldConfigService.js";
 import {
   getHasanatFieldConfig,
   setHasanatFieldConfig,
-} from '../db/repositories/hasanatFieldConfigRepository.js';
-import { getHasanatModulePreferences } from '../db/repositories/hasanatModulePreferencesRepository.js';
+} from "../db/repositories/hasanatFieldConfigRepository.js";
+import { getHasanatModulePreferences } from "../db/repositories/hasanatModulePreferencesRepository.js";
 
 const hasanatFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -20,7 +20,7 @@ const hasanatFieldConfig = createModuleFieldConfigService<
   unknown,
   Partial<HasanatSettings>
 >({
-  broadcastKey: 'hasanat',
+  broadcastKey: "hasanat",
   getByWorkspace: getHasanatFieldConfig,
   upsert: setHasanatFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -30,7 +30,7 @@ const hasanatFieldConfig = createModuleFieldConfigService<
     return composeHasanatSettings(normalizedConfig, normalizedPrefs);
   },
   stripForPersist: stripHasanatFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload hasanat field config after save',
+  reloadFailedMessage: "Failed to reload hasanat field config after save",
 });
 
 export const getHasanatFieldConfigService = hasanatFieldConfig.load;
@@ -40,4 +40,3 @@ export async function updateHasanatFieldConfigService(
 ): Promise<HasanatSettings> {
   return hasanatFieldConfig.save(normalizeHasanatSettings(config));
 }
-

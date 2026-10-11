@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import {
   getPreparedTenantUserById,
   getPreparedContactById,
@@ -9,14 +9,14 @@ import {
   preparedContactColumns,
   preparedStudentColumns,
   preparedSessionColumns,
-} from '../db/preparedStatements.js';
+} from "../db/preparedStatements.js";
 
-describe('preparedStatements', () => {
+describe("preparedStatements", () => {
   beforeEach(() => {
     resetPreparedStatements();
   });
 
-  it('exports valid column mappings for prepared statements', () => {
+  it("exports valid column mappings for prepared statements", () => {
     expect(preparedTenantUserColumns.id).toBeDefined();
     expect(preparedTenantUserColumns.workspaceSubdomain).toBeDefined();
     expect(preparedContactColumns.id).toBeDefined();
@@ -27,8 +27,8 @@ describe('preparedStatements', () => {
     expect(preparedSessionColumns.workspaceSubdomain).toBeDefined();
   });
 
-  it('compiles prepared statements on mock client for all 4 entities', () => {
-    const mockExecute = vi.fn().mockResolvedValue([{ id: 'test-1' }]);
+  it("compiles prepared statements on mock client for all 4 entities", () => {
+    const mockExecute = vi.fn().mockResolvedValue([{ id: "test-1" }]);
     const mockPrepare = vi.fn().mockReturnValue({ execute: mockExecute });
     const mockLimit = vi.fn().mockReturnValue({ prepare: mockPrepare });
     const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
@@ -37,25 +37,27 @@ describe('preparedStatements', () => {
     const mockClient = { select: mockSelect };
 
     const userStmt = getPreparedTenantUserById(mockClient);
-    expect(mockPrepare).toHaveBeenCalledWith('prepared_find_tenant_user_by_id');
+    expect(mockPrepare).toHaveBeenCalledWith("prepared_find_tenant_user_by_id");
     expect(userStmt).toBeDefined();
 
     const contactStmt = getPreparedContactById(mockClient);
-    expect(mockPrepare).toHaveBeenCalledWith('prepared_find_contact_by_id');
+    expect(mockPrepare).toHaveBeenCalledWith("prepared_find_contact_by_id");
     expect(contactStmt).toBeDefined();
 
     const studentStmt = getPreparedStudentById(mockClient);
-    expect(mockPrepare).toHaveBeenCalledWith('prepared_find_student_by_id');
+    expect(mockPrepare).toHaveBeenCalledWith("prepared_find_student_by_id");
     expect(studentStmt).toBeDefined();
 
     const sessionStmt = getPreparedSessionById(mockClient);
-    expect(mockPrepare).toHaveBeenCalledWith('prepared_find_session_by_id');
+    expect(mockPrepare).toHaveBeenCalledWith("prepared_find_session_by_id");
     expect(sessionStmt).toBeDefined();
   });
 
-  it('throws descriptive error when client does not support select or prepare', () => {
-    expect(() => getPreparedTenantUserById({})).toThrow('Client does not support select');
-    expect(() => getPreparedTenantUserById({ select: 'invalid' })).toThrow('Client select is not a function');
+  it("throws descriptive error when client does not support select or prepare", () => {
+    expect(() => getPreparedTenantUserById({})).toThrow("Client does not support select");
+    expect(() => getPreparedTenantUserById({ select: "invalid" })).toThrow(
+      "Client select is not a function",
+    );
 
     const clientWithoutPrepare = {
       select: () => ({
@@ -66,10 +68,12 @@ describe('preparedStatements', () => {
         }),
       }),
     };
-    expect(() => getPreparedTenantUserById(clientWithoutPrepare)).toThrow('Client does not support prepare');
+    expect(() => getPreparedTenantUserById(clientWithoutPrepare)).toThrow(
+      "Client does not support prepare",
+    );
   });
 
-  it('resetPreparedStatements successfully resets in-memory cache', () => {
+  it("resetPreparedStatements successfully resets in-memory cache", () => {
     resetPreparedStatements();
     expect(true).toBe(true);
   });

@@ -49,7 +49,10 @@ export function BrandSemanticPreview({
     activeOnPrimaryBg: brandingTokenToHex(activeTokens["--primary"] ?? "", primaryColor),
     activeOnPrimaryFg: brandingTokenToHex(activeTokens["--primary-foreground"] ?? "", "#ffffff"),
     activeOnSecondaryBg: brandingTokenToHex(activeTokens["--secondary"] ?? "", secondaryColor),
-    activeOnSecondaryFg: brandingTokenToHex(activeTokens["--secondary-foreground"] ?? "", "#ffffff"),
+    activeOnSecondaryFg: brandingTokenToHex(
+      activeTokens["--secondary-foreground"] ?? "",
+      "#ffffff",
+    ),
     activeTokens,
     chartPalette: resolveBrandingChartPaletteHex(primaryColor, secondaryColor, localMode),
   }))();
@@ -81,4 +84,3 @@ export function BrandSemanticPreview({
     </div>
   );
 }
-

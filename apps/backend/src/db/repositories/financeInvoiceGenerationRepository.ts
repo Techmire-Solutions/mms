@@ -1,9 +1,9 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
-import type { EnrollmentBillingSource } from '@mms/shared';
-import { enrollments, financeInvoices } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import type { EnrollmentBillingSource } from "@mms/shared";
+import { enrollments, financeInvoices } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
-const BILLABLE_STATUSES = ['pending', 'confirmed'] as const;
+const BILLABLE_STATUSES = ["pending", "confirmed"] as const;
 const PAGE_SIZE = 100;
 
 export interface BillableEnrollmentQuery {
@@ -119,7 +119,9 @@ export async function listEnrollmentInvoiceMarks(
         ),
       );
     return rows
-      .filter((row): row is { enrollmentId: string; billingPeriod: string | null } => Boolean(row.enrollmentId))
+      .filter((row): row is { enrollmentId: string; billingPeriod: string | null } =>
+        Boolean(row.enrollmentId),
+      )
       .map((row) => ({ enrollmentId: row.enrollmentId, billingPeriod: row.billingPeriod }));
   });
 }

@@ -1,13 +1,13 @@
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Invoice, type RepositoryListOptions } from '@mms/shared';
-import { financeInvoiceLines, financeInvoices, financePayments } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
-import { ValidationError } from '../../lib/httpErrors.js';
-import { invoiceWriteValues } from './financeInvoiceValues.js';
-import { invoiceLineRowToRecord, replaceInvoiceLines } from './financeBillingRepository.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Invoice, type RepositoryListOptions } from "@mms/shared";
+import { financeInvoiceLines, financeInvoices, financePayments } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
+import { ValidationError } from "../../lib/httpErrors.js";
+import { invoiceWriteValues } from "./financeInvoiceValues.js";
+import { invoiceLineRowToRecord, replaceInvoiceLines } from "./financeBillingRepository.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
 type InvoiceRow = typeof financeInvoices.$inferSelect;
 
@@ -23,7 +23,7 @@ export function invoiceRowToRecord(row: InvoiceRow): Invoice {
     discountValue: Number(row.discountValue ?? 0),
     discountAmt: Number(row.discountAmt ?? 0),
     finalAmt: Number(row.finalAmt ?? 0),
-    status: row.status as Invoice['status'],
+    status: row.status as Invoice["status"],
     dueDate: row.dueDate,
     paidDate: row.paidDate,
     method: row.method,
@@ -53,7 +53,7 @@ export async function listInvoicesByWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
   const offset = Math.max(options?.offset ?? 0, 0);
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     const conditions = buildTenantSoftDeleteConditions(financeInvoices, subdomain, deletedFilter);
     const rows = await tx
@@ -142,7 +142,9 @@ export async function findInvoiceById(tenant: string, id: string): Promise<Invoi
         updatedAt: financeInvoices.updatedAt,
       })
       .from(financeInvoices)
-      .where(and(eq(financeInvoices.workspaceSubdomain, subdomain), eq(financeInvoices.id, trimmedId)))
+      .where(
+        and(eq(financeInvoices.workspaceSubdomain, subdomain), eq(financeInvoices.id, trimmedId)),
+      )
       .limit(1);
     const row = rows[0];
     if (!row) return null;
@@ -160,7 +162,10 @@ export async function findInvoiceById(tenant: string, id: string): Promise<Invoi
       })
       .from(financeInvoiceLines)
       .where(
-        and(eq(financeInvoiceLines.workspaceSubdomain, subdomain), eq(financeInvoiceLines.invoiceId, trimmedId)),
+        and(
+          eq(financeInvoiceLines.workspaceSubdomain, subdomain),
+          eq(financeInvoiceLines.invoiceId, trimmedId),
+        ),
       );
     return { ...invoiceRowToRecord(row), lines: lineRows.map(invoiceLineRowToRecord) };
   });
@@ -267,7 +272,11 @@ export async function saveInvoice(tenant: string, record: Invoice): Promise<void
   if (record.lines) {
     await replaceInvoiceLines(tenant, record.id, record.lines);
   }
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'finance', key: String(record.id) });
+  await invalidateMultiTierCache({
+    tenantId: subdomain,
+    domain: "finance",
+    key: String(record.id),
+  });
 }
 
 export async function bulkSaveInvoices(tenant: string, records: Invoice[]): Promise<void> {
@@ -275,7 +284,7 @@ export async function bulkSaveInvoices(tenant: string, records: Invoice[]): Prom
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Invoice>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -284,9 +293,7 @@ export async function bulkSaveInvoices(tenant: string, records: Invoice[]): Prom
   await withTenant(subdomain, async (tx) => {
     await tx
       .insert(financeInvoices)
-      .values(
-        uniqueRecords.map((r) => invoiceWriteValues(subdomain, r)),
-      )
+      .values(uniqueRecords.map((r) => invoiceWriteValues(subdomain, r)))
       .onConflictDoUpdate({
         target: [financeInvoices.workspaceSubdomain, financeInvoices.id],
         set: {
@@ -320,14 +327,17 @@ export async function bulkSaveInvoices(tenant: string, records: Invoice[]): Prom
         },
       });
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'finance' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "finance" });
 }
 
-export async function replaceInvoicesForWorkspace(tenant: string, records: Invoice[]): Promise<void> {
+export async function replaceInvoicesForWorkspace(
+  tenant: string,
+  records: Invoice[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Invoice>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -335,10 +345,12 @@ export async function replaceInvoicesForWorkspace(tenant: string, records: Invoi
   await withTenant(subdomain, async (tx) => {
     await tx.delete(financeInvoices).where(eq(financeInvoices.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
-      await tx.insert(financeInvoices).values(uniqueRecords.map((r) => invoiceWriteValues(subdomain, r)));
+      await tx
+        .insert(financeInvoices)
+        .values(uniqueRecords.map((r) => invoiceWriteValues(subdomain, r)));
     }
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'finance' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "finance" });
 }
 
 export async function deleteInvoice(tenant: string, id: string): Promise<void> {
@@ -348,7 +360,7 @@ export async function deleteInvoice(tenant: string, id: string): Promise<void> {
       .delete(financeInvoices)
       .where(and(eq(financeInvoices.workspaceSubdomain, subdomain), eq(financeInvoices.id, id)));
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'finance', key: id });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "finance", key: id });
 }
 
 export async function bulkSoftDeleteInvoices(
@@ -398,7 +410,7 @@ export async function bulkSoftDeleteInvoices(
       failed: uniqueIds.length - updated.length,
     };
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'finance' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "finance" });
   return res;
 }
 
@@ -434,7 +446,6 @@ export async function bulkRestoreInvoices(
       failed: uniqueIds.length - updated.length,
     };
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'finance' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "finance" });
   return res;
 }
-

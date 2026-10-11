@@ -11,7 +11,7 @@ import { FinanceBulkActionBar } from "@/tenant/features/finance/components/Finan
 import { InvoicesListContent } from "@/tenant/features/finance/components/InvoicesListContent";
 import { InvoicesListFilters } from "@/tenant/features/finance/components/InvoicesListFilters";
 import { getInvoiceVisibleWorkColumns } from "@/tenant/features/finance/components/invoiceListVisibleColumns";
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 
@@ -86,17 +86,20 @@ export function InvoicesList({
 
   const normalizedSearch = search.toLowerCase();
   const filtered = invoices.filter((invoice) => {
-    const matchSearch = !normalizedSearch
-      || invoice.studentName.toLowerCase().includes(normalizedSearch)
-      || invoice.id.toLowerCase().includes(normalizedSearch)
-      || invoice.session.toLowerCase().includes(normalizedSearch);
+    const matchSearch =
+      !normalizedSearch ||
+      invoice.studentName.toLowerCase().includes(normalizedSearch) ||
+      invoice.id.toLowerCase().includes(normalizedSearch) ||
+      invoice.session.toLowerCase().includes(normalizedSearch);
     const matchStatus = filterStatus.length === 0 || filterStatus.includes(invoice.status);
     return matchSearch && matchStatus;
   });
 
   const selectedSet = new Set(selectedIds);
-  const allVisibleSelected = filtered.length > 0 && filtered.every((inv) => selectedSet.has(inv.id));
-  const someVisibleSelected = selectedSet.size > 0 && filtered.some((inv) => selectedSet.has(inv.id));
+  const allVisibleSelected =
+    filtered.length > 0 && filtered.every((inv) => selectedSet.has(inv.id));
+  const someVisibleSelected =
+    selectedSet.size > 0 && filtered.some((inv) => selectedSet.has(inv.id));
 
   const statusConfig = (() => ({
     paid: { label: t("finance.invoiceStatus.paid"), cls: SEMANTIC_BADGE.success },
@@ -107,13 +110,14 @@ export function InvoicesList({
   }))() as Record<string, StatusBadgeConfigItem>;
 
   const visibleColCount =
-    getInvoiceVisibleWorkColumns(columnRegistry, columnVisible).length
-    + (canDelete ? 1 : 0)
-    + 1;
+    getInvoiceVisibleWorkColumns(columnRegistry, columnVisible).length + (canDelete ? 1 : 0) + 1;
 
-  const toggleStatus = (status: string) => setFilterStatus((currentStatuses) => currentStatuses.includes(status)
-    ? currentStatuses.filter((selectedStatus) => selectedStatus !== status)
-    : [...currentStatuses, status]);
+  const toggleStatus = (status: string) =>
+    setFilterStatus((currentStatuses) =>
+      currentStatuses.includes(status)
+        ? currentStatuses.filter((selectedStatus) => selectedStatus !== status)
+        : [...currentStatuses, status],
+    );
 
   return (
     <section aria-label={t("finance.invoices")} className="space-y-4">
@@ -139,7 +143,9 @@ export function InvoicesList({
           onRequestBulkDelete={() => setConfirmBulkOpen(true)}
           onRequestBulkRestore={() => setConfirmBulkOpen(true)}
           onClearSelection={onClearSelection ?? (() => {})}
-          onBulkStatusChange={onBulkStatusChange ? (status) => onBulkStatusChange(selectedIds, status) : undefined}
+          onBulkStatusChange={
+            onBulkStatusChange ? (status) => onBulkStatusChange(selectedIds, status) : undefined
+          }
           onBulkPrintReceipts={
             onBulkPrintReceipts
               ? () => {
@@ -171,7 +177,12 @@ export function InvoicesList({
         formatCurrency={formatCurrency}
         getColumnWidth={getColumnWidth}
         onColumnResize={onColumnResize}
-        onToggleSelectAll={(checked) => onToggleSelectAll?.(checked, filtered.map((inv) => inv.id))}
+        onToggleSelectAll={(checked) =>
+          onToggleSelectAll?.(
+            checked,
+            filtered.map((inv) => inv.id),
+          )
+        }
         onToggleSelectedInvoice={(id, checked) => onToggleSelectedInvoice?.(id, checked)}
         onView={onView}
         onRecord={onRecord}

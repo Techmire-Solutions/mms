@@ -1,16 +1,16 @@
-import type { Permission } from './permissions.js';
-import { z } from 'zod';
-import { JOURNAL_SOURCE_TYPES, moneyAmountSchema } from './accountingLedgerInvariants.js';
-import { isoDateSchema } from './isoDateSchema.js';
+import type { Permission } from "./permissions.js";
+import { z } from "zod";
+import { JOURNAL_SOURCE_TYPES, moneyAmountSchema } from "./accountingLedgerInvariants.js";
+import { isoDateSchema } from "./isoDateSchema.js";
 
 export const accountRecordSchema = z
   .object({
     id: z.string(),
-    code: z.string().trim().min(1, 'accounting.coa.validation.codeRequired'),
-    name: z.string().trim().min(1, 'accounting.coa.validation.nameRequired'),
-    type: z.enum(['Asset', 'Liability', 'Equity', 'Revenue', 'Expense']),
-    subtype: z.string().default(''),
-    description: z.string().default(''),
+    code: z.string().trim().min(1, "accounting.coa.validation.codeRequired"),
+    name: z.string().trim().min(1, "accounting.coa.validation.nameRequired"),
+    type: z.enum(["Asset", "Liability", "Equity", "Revenue", "Expense"]),
+    subtype: z.string().default(""),
+    description: z.string().default(""),
     isActive: z.boolean().default(true),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
@@ -28,11 +28,11 @@ export const accountRecordSchema = z
 export const accountRecordInsertSchema = z
   .object({
     id: z.string().optional(),
-    code: z.string().trim().min(1, 'accounting.coa.validation.codeRequired'),
-    name: z.string().trim().min(1, 'accounting.coa.validation.nameRequired'),
-    type: z.enum(['Asset', 'Liability', 'Equity', 'Revenue', 'Expense']),
-    subtype: z.string().optional().default(''),
-    description: z.string().optional().default(''),
+    code: z.string().trim().min(1, "accounting.coa.validation.codeRequired"),
+    name: z.string().trim().min(1, "accounting.coa.validation.nameRequired"),
+    type: z.enum(["Asset", "Liability", "Equity", "Revenue", "Expense"]),
+    subtype: z.string().optional().default(""),
+    description: z.string().optional().default(""),
     isActive: z.boolean().optional().default(true),
     createdBy: z.string().nullable().optional(),
     updatedBy: z.string().nullable().optional(),
@@ -52,7 +52,7 @@ export const journalLineRecordSchema = z
     account_id: z.string(),
     debit: moneyAmountSchema.default(0),
     credit: moneyAmountSchema.default(0),
-    description: z.string().default(''),
+    description: z.string().default(""),
   })
   .strict();
 
@@ -62,15 +62,15 @@ export const journalEntryRecordSchema = z
   .object({
     id: z.string(),
     date: z.string(),
-    ref: z.string().default(''),
-    description: z.string().default(''),
-    status: z.enum(['posted', 'draft']).default('posted'),
-    created_by: z.string().default(''),
+    ref: z.string().default(""),
+    description: z.string().default(""),
+    status: z.enum(["posted", "draft"]).default("posted"),
+    created_by: z.string().default(""),
     createdBy: z.string().nullable().optional(),
     updatedBy: z.string().nullable().optional(),
     tags: z.array(z.string()).default([]),
     attachments: z.array(z.string()).default([]),
-    fiscal_year: z.string().default(''),
+    fiscal_year: z.string().default(""),
     fiscal_year_id: z.string().optional(),
     source_type: z.enum(JOURNAL_SOURCE_TYPES).optional(),
     source_id: z.string().optional(),
@@ -93,15 +93,15 @@ export const journalEntryRecordInsertSchema = z
   .object({
     id: z.string().optional(),
     date: isoDateSchema,
-    ref: z.string().optional().default(''),
-    description: z.string().optional().default(''),
-    status: z.enum(['posted', 'draft']).optional().default('posted'),
-    created_by: z.string().optional().default(''),
+    ref: z.string().optional().default(""),
+    description: z.string().optional().default(""),
+    status: z.enum(["posted", "draft"]).optional().default("posted"),
+    created_by: z.string().optional().default(""),
     createdBy: z.string().nullable().optional(),
     updatedBy: z.string().nullable().optional(),
     tags: z.array(z.string()).optional().default([]),
     attachments: z.array(z.string()).optional().default([]),
-    fiscal_year: z.string().optional().default(''),
+    fiscal_year: z.string().optional().default(""),
     fiscal_year_id: z.string().optional(),
     source_type: z.enum(JOURNAL_SOURCE_TYPES).optional(),
     source_id: z.string().optional(),
@@ -125,7 +125,7 @@ export const fiscalYearRecordSchema = z
     label: z.string(),
     startDate: isoDateSchema,
     endDate: isoDateSchema,
-    status: z.enum(['active', 'closed', 'upcoming']).default('upcoming'),
+    status: z.enum(["active", "closed", "upcoming"]).default("upcoming"),
     closedAt: z.string().nullable().optional(),
     closedBy: z.string().nullable().optional(),
     deletedAt: z.string().nullable().optional(),
@@ -137,29 +137,34 @@ export const fiscalYearRecordSchema = z
     updatedBy: z.string().nullable().optional(),
   })
   .strict()
-  .refine((year) => year.startDate <= year.endDate, { path: ['endDate'], message: 'End date must be on or after start date' });
+  .refine((year) => year.startDate <= year.endDate, {
+    path: ["endDate"],
+    message: "End date must be on or after start date",
+  });
 
 const fiscalYearRecordInsertBaseSchema = z
   .object({
     id: z.string().optional(),
-    label: z.string().min(1, 'Label is required'),
+    label: z.string().min(1, "Label is required"),
     startDate: isoDateSchema,
     endDate: isoDateSchema,
-    status: z.enum(['active', 'closed', 'upcoming']).optional().default('upcoming'),
+    status: z.enum(["active", "closed", "upcoming"]).optional().default("upcoming"),
     createdBy: z.string().nullable().optional(),
     updatedBy: z.string().nullable().optional(),
   })
   .strict();
 
-export const fiscalYearRecordInsertSchema = fiscalYearRecordInsertBaseSchema
-  .refine((year) => year.startDate <= year.endDate, { path: ['endDate'], message: 'End date must be on or after start date' });
+export const fiscalYearRecordInsertSchema = fiscalYearRecordInsertBaseSchema.refine(
+  (year) => year.startDate <= year.endDate,
+  { path: ["endDate"], message: "End date must be on or after start date" },
+);
 
 export const fiscalYearRecordUpdateSchema = fiscalYearRecordInsertBaseSchema
   .partial()
   .strict()
   .refine((year) => !year.startDate || !year.endDate || year.startDate <= year.endDate, {
-    path: ['endDate'],
-    message: 'End date must be on or after start date',
+    path: ["endDate"],
+    message: "End date must be on or after start date",
   });
 
 export type FiscalYear = z.infer<typeof fiscalYearRecordSchema>;
@@ -169,18 +174,18 @@ export const fiscalYearListSchema = z.array(fiscalYearRecordSchema);
 
 /** Accounting module manifest — aligns with globle1 universal module architecture. */
 export const ACCOUNTING_MODULE_MANIFEST = {
-  moduleId: 'accounting',
-  entityType: 'JournalEntry',
-  collectionKey: 'accounting_entries',
-  accountCollectionKey: 'accounting_accounts',
-  fiscalYearCollectionKey: 'accounting_fiscal_years',
-  settingsObjectKey: 'accounting_settings',
-  journalColumnPreferencesObjectKey: 'accounting_journal_user_column_preferences',
-  accountColumnPreferencesObjectKey: 'accounting_account_user_column_preferences',
-  restBasePath: '/api/accounting',
-  analyticsCategory: 'accounting',
-  tiers: ['work', 'reports', 'setup'] as const,
-  setupSubTabs: ['preferences', 'templates'] as const,
+  moduleId: "accounting",
+  entityType: "JournalEntry",
+  collectionKey: "accounting_entries",
+  accountCollectionKey: "accounting_accounts",
+  fiscalYearCollectionKey: "accounting_fiscal_years",
+  settingsObjectKey: "accounting_settings",
+  journalColumnPreferencesObjectKey: "accounting_journal_user_column_preferences",
+  accountColumnPreferencesObjectKey: "accounting_account_user_column_preferences",
+  restBasePath: "/api/accounting",
+  analyticsCategory: "accounting",
+  tiers: ["work", "reports", "setup"] as const,
+  setupSubTabs: ["preferences", "templates"] as const,
   softDelete: {
     workExcludesDeleted: true,
     reportsIncludeDeleted: false,
@@ -189,17 +194,17 @@ export const ACCOUNTING_MODULE_MANIFEST = {
     retentionDays: null,
   },
   permissions: {
-    read: 'accounting.read',
-    write: 'accounting.write',
-    delete: 'accounting.delete',
-    setupView: 'configuration.view',
-    setupWrite: 'settings.global.write',
-    export: 'accounting.read',
-    reports: 'accounting.read',
+    read: "accounting.read",
+    write: "accounting.write",
+    delete: "accounting.delete",
+    setupView: "configuration.view",
+    setupWrite: "settings.global.write",
+    export: "accounting.read",
+    reports: "accounting.read",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ['overview', 'journal', 'ledger', 'trial', 'coa'] as const,
-    bulkActions: ['delete'] as const,
+    directoryViews: ["overview", "journal", "ledger", "trial", "coa"] as const,
+    bulkActions: ["delete"] as const,
   },
   defaultPageSize: 15,
   maxPageSize: 100,
@@ -219,7 +224,9 @@ export function isJournalEntryDeleted(entry: { deletedAt?: string | null }): boo
   return Boolean(entry.deletedAt);
 }
 
-export function filterActiveJournalEntries<T extends { deletedAt?: string | null }>(entries: T[]): T[] {
+export function filterActiveJournalEntries<T extends { deletedAt?: string | null }>(
+  entries: T[],
+): T[] {
   return entries.filter((entry) => !isJournalEntryDeleted(entry));
 }
 

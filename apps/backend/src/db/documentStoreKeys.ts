@@ -3,8 +3,8 @@ import {
   WORKSPACES_COLLECTION,
   tenantCollectionKey,
   tenantObjectKey,
-} from '@mms/shared';
-import { getRequestTenant } from '../lib/tenantContext.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../lib/tenantContext.js";
 
 export function resolveCollectionStorageName(name: string): string {
   const tenant = getRequestTenant();
@@ -20,7 +20,12 @@ export function resolveObjectStorageKey(key: string): string {
 
 export function getQueryRows<T>(result: unknown): T[] {
   if (Array.isArray(result)) return result as T[];
-  if (result && typeof result === 'object' && 'rows' in result && Array.isArray((result as { rows: unknown }).rows)) {
+  if (
+    result &&
+    typeof result === "object" &&
+    "rows" in result &&
+    Array.isArray((result as { rows: unknown }).rows)
+  ) {
     return (result as { rows: T[] }).rows;
   }
   return [];

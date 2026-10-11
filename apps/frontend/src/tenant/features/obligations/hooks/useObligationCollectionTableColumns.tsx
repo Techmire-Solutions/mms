@@ -104,7 +104,9 @@ export function useObligationCollectionTableColumns(
           return (
             <>
               <span>{rep?.name || "—"}</span>
-              {mujtahid && <span className="text-xs block text-muted-foreground">{mujtahid.name}</span>}
+              {mujtahid && (
+                <span className="text-xs block text-muted-foreground">{mujtahid.name}</span>
+              )}
             </>
           );
         },
@@ -149,9 +151,11 @@ export function useObligationCollectionTableColumns(
         noWrap: true,
         cellClassName: "text-xs text-muted-foreground",
         render: (collection) =>
-          OBLIGATION_COLLECTION_CURRENCIES.find((currency) => currency.id === collection.currency_id)?.code
-          || collection.currency_id
-          || "—",
+          OBLIGATION_COLLECTION_CURRENCIES.find(
+            (currency) => currency.id === collection.currency_id,
+          )?.code ||
+          collection.currency_id ||
+          "—",
       });
     }
 

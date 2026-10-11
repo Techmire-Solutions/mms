@@ -52,7 +52,16 @@ export const DEFAULT_SESSIONS_SETTINGS: SessionsSettings = {
     basic: INITIAL_SESSIONS_FIELD_SEED.basic.map((f) => ({ ...f })),
     financial: INITIAL_SESSIONS_FIELD_SEED.financial.map((f) => ({ ...f })),
   },
-  fieldOrder: ["name", "type", "status", "startDate", "endDate", "baseFee", "currency", "description"],
+  fieldOrder: [
+    "name",
+    "type",
+    "status",
+    "startDate",
+    "endDate",
+    "baseFee",
+    "currency",
+    "description",
+  ],
 };
 
 export const DEFAULT_SESSIONS_FIELD_DEFS: ModuleFieldDef[] = [

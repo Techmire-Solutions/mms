@@ -7,7 +7,7 @@ import {
   hslColorToToken,
   meetsWcagAaTextContrast,
   tone,
-} from './brandingColorUtils.js';
+} from "./brandingColorUtils.js";
 
 function withAbsoluteLightness(color: HslColor, targetLightness: number): HslColor {
   return { ...color, l: clamp(targetLightness, 0, 100) };
@@ -37,7 +37,7 @@ export function brandingSurfaces(
   mode: BrandingThemeMode,
   surfaceHue: number,
 ): { card: HslColor; background: HslColor } {
-  return mode === 'light'
+  return mode === "light"
     ? { card: { h: 0, s: 0, l: 100 }, background: { h: surfaceHue, s: 20, l: 98 } }
     : { card: { h: surfaceHue, s: 20, l: 8 }, background: { h: surfaceHue, s: 20, l: 5 } };
 }
@@ -48,14 +48,14 @@ function tintHex(tintHex: string, baseHex: string, alpha: number): string {
   const rgb = [0, 1, 2].map((i) =>
     Math.round(channel(tintHex, i) * alpha + channel(baseHex, i) * (1 - alpha)),
   );
-  return `#${rgb.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+  return `#${rgb.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
 /** Best contrast the token can achieve as a fill, using whichever text polarity wins. */
 function fillRoleRatio(color: HslColor): number {
   const hex = hslColorToHex(color);
   return Math.max(
-    getContrastRatio('#ffffff', hex) ?? 0,
+    getContrastRatio("#ffffff", hex) ?? 0,
     getContrastRatio(hslColorToHex({ h: color.h, s: 30, l: 12 }), hex) ?? 0,
   );
 }
@@ -92,7 +92,7 @@ function fitTokenToAllRoles(
   mode: BrandingThemeMode,
   surfaces: HslColor[],
 ): HslColor {
-  const step = mode === 'light' ? -2 : 2;
+  const step = mode === "light" ? -2 : 2;
   let best = color;
   let bestScore = -Infinity;
 
@@ -146,7 +146,7 @@ export function darkModeSecondaryUi(secondary: HslColor): HslColor {
  */
 export function ensureAccessibleFillSurface(
   color: HslColor,
-  mode: BrandingThemeMode = 'light',
+  mode: BrandingThemeMode = "light",
   surfaces?: readonly HslColor[],
 ): HslColor {
   const resolved = surfaces
@@ -203,15 +203,15 @@ export function ascendingLightness(from: number, to: number): number[] {
 /** Chooses an accessible foreground token for a coloured surface. */
 export function foregroundForSurface(surface: HslColor): string {
   const surfaceHex = hslColorToHex(surface);
-  const whiteRatio = getContrastRatio('#ffffff', surfaceHex) ?? 0;
+  const whiteRatio = getContrastRatio("#ffffff", surfaceHex) ?? 0;
   const darkText = hslColorToHex(tone(surface, { s: -15, l: -42 }));
   const darkRatio = getContrastRatio(darkText, surfaceHex) ?? 0;
   const whiteOk = meetsWcagAaTextContrast(whiteRatio);
   const darkOk = meetsWcagAaTextContrast(darkRatio);
 
-  if (whiteOk && (!darkOk || whiteRatio >= darkRatio)) return '0 0% 100%';
+  if (whiteOk && (!darkOk || whiteRatio >= darkRatio)) return "0 0% 100%";
   if (darkOk) return `${surface.h} 30% 12%`;
-  return whiteRatio >= darkRatio ? '0 0% 100%' : `${surface.h} 30% 12%`;
+  return whiteRatio >= darkRatio ? "0 0% 100%" : `${surface.h} 30% 12%`;
 }
 
 /**
@@ -223,7 +223,7 @@ export function foregroundForSurface(surface: HslColor): string {
  */
 export function ensureAccessibleSemanticPair(
   base: HslColor,
-  mode: BrandingThemeMode = 'light',
+  mode: BrandingThemeMode = "light",
   surfaces?: readonly HslColor[],
 ): { fill: string; foreground: string } {
   const resolved = surfaces

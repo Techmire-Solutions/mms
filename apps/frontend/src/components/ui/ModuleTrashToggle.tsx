@@ -1,12 +1,12 @@
-import React from 'react';
-import { Archive } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { Archive } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   WORK_TOOLBAR_TRIGGER,
   WORK_TOOLBAR_TRIGGER_ACTIVE,
   WORK_TOOLBAR_TRIGGER_IDLE,
-} from '@/components/ui/formStyles';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/formStyles";
+import { cn } from "@/lib/utils";
 
 export interface ModuleTrashToggleProps {
   showDeleted?: boolean;
@@ -24,7 +24,7 @@ export interface ModuleTrashToggleProps {
 /**
  * Work-tier trash/archive toggle used across soft-delete modules.
  */
-export const ModuleTrashToggle = (function ModuleTrashToggle({
+export const ModuleTrashToggle = function ModuleTrashToggle({
   showDeleted,
   viewingDeleted,
   onToggle,
@@ -60,5 +60,4 @@ export const ModuleTrashToggle = (function ModuleTrashToggle({
       {label}
     </Button>
   );
-});
-
+};

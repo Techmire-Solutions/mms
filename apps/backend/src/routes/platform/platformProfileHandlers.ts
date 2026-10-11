@@ -1,28 +1,22 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type {
   PlatformAuthenticatedRequest,
   PlatformOptionalAuthRequest,
-} from '../../middleware/authenticatePlatform.js';
-import { issuePlatformSession } from '../../services/platform/platformAuthService.js';
-import {
-  platformSessionScope,
-  touchSession,
-} from '../../services/sessionClockService.js';
-import { platformSessionPolicy } from '../../services/sessionPolicyService.js';
+} from "../../middleware/authenticatePlatform.js";
+import { issuePlatformSession } from "../../services/platform/platformAuthService.js";
+import { platformSessionScope, touchSession } from "../../services/sessionClockService.js";
+import { platformSessionPolicy } from "../../services/sessionPolicyService.js";
 import {
   toPublicPlatformUser,
   getPlatformUserProfile,
   getStoredPlatformUserById,
   changePlatformUserPassword as updatePlatformUserPassword,
   updatePlatformUserProfile,
-} from '../../services/platform/platformUserService.js';
-import {
-  platformChangePasswordBodySchema,
-  platformProfilePatchBodySchema,
-} from '@mms/shared';
-import { parseRequest, replyValidationError } from '../../lib/zodRequest.js';
-import { insertPlatformActivityLog } from '../../db/repositories/platformActivityLogsRepository.js';
-import { clearPlatformAccessCookie } from '../../services/platform/platformCookieService.js';
+} from "../../services/platform/platformUserService.js";
+import { platformChangePasswordBodySchema, platformProfilePatchBodySchema } from "@mms/shared";
+import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
+import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
+import { clearPlatformAccessCookie } from "../../services/platform/platformCookieService.js";
 
 export async function handlePlatformMe(
   request: FastifyRequest,
@@ -98,8 +92,8 @@ export async function handlePlatformChangePassword(
   await insertPlatformActivityLog({
     userId: platformUser.id,
     userEmail: platformUser.email,
-    action: 'change_password',
-    targetResource: 'platform_user',
+    action: "change_password",
+    targetResource: "platform_user",
     targetId: platformUser.id,
     ipAddress: request.ip,
   });

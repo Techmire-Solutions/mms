@@ -1,10 +1,10 @@
-import type { WorkspaceTableViewProps } from './WorkspaceTableView';
-import React from 'react';
-import { PlatformWorkspaceVirtualTable } from '@/platform/components/workspace/PlatformWorkspaceVirtualTable';
-import { WorkspaceListCards } from '@/platform/components/workspace/WorkspaceListCards';
+import type { WorkspaceTableViewProps } from "./WorkspaceTableView";
+import React from "react";
+import { PlatformWorkspaceVirtualTable } from "@/platform/components/workspace/PlatformWorkspaceVirtualTable";
+import { WorkspaceListCards } from "@/platform/components/workspace/WorkspaceListCards";
 
 export interface PlatformWorkspaceDirectoryViewProps extends WorkspaceTableViewProps {
-  viewMode: 'table' | 'cards';
+  viewMode: "table" | "cards";
 }
 
 export function PlatformWorkspaceDirectoryView({
@@ -31,7 +31,7 @@ export function PlatformWorkspaceDirectoryView({
   onToggleSelect,
   onToggleSelectAll,
 }: PlatformWorkspaceDirectoryViewProps): React.JSX.Element {
-  if (viewMode === 'table') {
+  if (viewMode === "table") {
     return (
       <PlatformWorkspaceVirtualTable
         workspaces={workspaces}

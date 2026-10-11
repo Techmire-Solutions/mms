@@ -67,9 +67,7 @@ function InvoiceCard({
       accentClassName={getInvoiceAccentClass(invoice.status)}
       header={{
         displayName: invoice.studentName,
-        subtitle: (
-          <p className="font-mono text-xs text-muted-foreground truncate">{invoice.id}</p>
-        ),
+        subtitle: <p className="font-mono text-xs text-muted-foreground truncate">{invoice.id}</p>,
       }}
       viewLabel={t("finance.table.viewProfile")}
       viewAriaLabel={`${t("finance.table.viewProfile")} - ${invoice.studentName}`}
@@ -107,7 +105,14 @@ function InvoiceCard({
 export function InvoicesListCards(props: InvoicesListCardsProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const { invoices, selectedIds, canSelectInvoices, allVisibleSelected, someVisibleSelected, onToggleSelectAll } = props;
+  const {
+    invoices,
+    selectedIds,
+    canSelectInvoices,
+    allVisibleSelected,
+    someVisibleSelected,
+    onToggleSelectAll,
+  } = props;
 
   const pageCountLabel = formatDirectoryPageCountLabel(invoices.length, t, {
     singular: "finance.item.invoice",
@@ -126,7 +131,12 @@ export function InvoicesListCards(props: InvoicesListCardsProps): React.JSX.Elem
       selectedCountLabel={t("finance.trash.selected", { count: selectedIds.length })}
       checkboxIdPrefix="finance-invoices"
       renderItem={(invoice) => (
-        <InvoiceCard key={invoice.id} invoice={invoice} props={props} reducedMotion={reducedMotion} />
+        <InvoiceCard
+          key={invoice.id}
+          invoice={invoice}
+          props={props}
+          reducedMotion={reducedMotion}
+        />
       )}
     />
   );

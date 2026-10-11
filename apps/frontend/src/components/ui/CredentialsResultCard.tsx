@@ -1,5 +1,5 @@
-import { Check } from 'lucide-react';
-import { CopyButton } from '@/components/ui/CopyButton';
+import { Check } from "lucide-react";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 interface CredentialsResultCardProps {
   title: string;
@@ -11,7 +11,15 @@ interface CredentialsResultCardProps {
   hint: string;
 }
 
-export function CredentialsResultCard({ title, fields, passwordLabel, password, copyText, copyLabel, hint }: CredentialsResultCardProps): React.JSX.Element {
+export function CredentialsResultCard({
+  title,
+  fields,
+  passwordLabel,
+  password,
+  copyText,
+  copyLabel,
+  hint,
+}: CredentialsResultCardProps): React.JSX.Element {
   return (
     <div className="space-y-4 py-2 text-start">
       <div className="rounded-xl border border-success/30 bg-success/10 p-4 space-y-3">
@@ -22,7 +30,7 @@ export function CredentialsResultCard({ title, fields, passwordLabel, password, 
         <div className="space-y-2 text-xs text-foreground">
           {fields.map(({ label, value }) => (
             <div key={label} className="break-words">
-              <span className="text-muted-foreground">{label}</span>{' '}
+              <span className="text-muted-foreground">{label}</span>{" "}
               <span className="font-semibold text-foreground">{value}</span>
             </div>
           ))}
@@ -33,7 +41,12 @@ export function CredentialsResultCard({ title, fields, passwordLabel, password, 
                 {password}
               </code>
             </div>
-            <CopyButton text={copyText} label={copyLabel} className="min-h-11 h-11 px-3 text-xs" showToast />
+            <CopyButton
+              text={copyText}
+              label={copyLabel}
+              className="min-h-11 h-11 px-3 text-xs"
+              showToast
+            />
           </div>
         </div>
       </div>

@@ -121,9 +121,9 @@ export function buildWidgetSavePayload(
     switchLabelOff,
     icon: widgetType === "card" ? builderIcon : undefined,
     subTextType: widgetType === "card" ? subTextType : undefined,
-    fixedSubText: (widgetType === "card" && subTextType === "fixed") ? fixedSubText : undefined,
+    fixedSubText: widgetType === "card" && subTextType === "fixed" ? fixedSubText : undefined,
     trend: widgetType === "card" ? trend : undefined,
     trendType: widgetType === "card" ? trendType : undefined,
-    role: (widgetType === "card" && mode === "dashboard") ? builderRole : undefined,
+    role: widgetType === "card" && mode === "dashboard" ? builderRole : undefined,
   };
 }

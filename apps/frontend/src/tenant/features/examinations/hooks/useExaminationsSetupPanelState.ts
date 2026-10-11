@@ -18,22 +18,12 @@ export interface UseExaminationsSetupPanelStateReturn {
 /** Examinations Setup panel state — encapsulates config, editor draft, dirty check, and save actions. */
 export function useExaminationsSetupPanelState(): UseExaminationsSetupPanelStateReturn {
   const config = useExaminationConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    saveSettingsAsync,
-  } = useModuleSettingsEditor<ExaminationsSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync } =
+    useModuleSettingsEditor<ExaminationsSettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useExaminationsSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useExaminationsSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,

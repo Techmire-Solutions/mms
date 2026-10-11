@@ -1,8 +1,5 @@
 import type { CustomWidget } from "./pinnedWidgetTypes";
-import {
-  DASHBOARD_WIDGETS_KEY,
-  normalizeDashboardWidgets,
-} from "@mms/shared";
+import { DASHBOARD_WIDGETS_KEY, normalizeDashboardWidgets } from "@mms/shared";
 import { getObject, saveObject } from "@/lib/db";
 import { getDefaultCustomWidgets, withDefaultI18nKeys } from "./widgetDefaultSeeds.js";
 import { reportClientError } from "@/lib/clientErrorReporting";
@@ -68,9 +65,7 @@ export function getOrInitializeCustomWidgets(): CustomWidget[] {
     const normalized = normalizeDashboardWidgets(saved) as CustomWidget[];
     const parsed = normalized.map((widget) => {
       const defaultWidget = defaultsById.get(widget.id);
-      const repaired = defaultWidget
-        ? restoreSeededWidgetBehavior(widget, defaultWidget)
-        : widget;
+      const repaired = defaultWidget ? restoreSeededWidgetBehavior(widget, defaultWidget) : widget;
       return withDefaultI18nKeys(repaired);
     });
     const existingIds = new Set(parsed.map((widget) => widget.id));
@@ -100,17 +95,16 @@ export function getOrInitializeCustomWidgets(): CustomWidget[] {
             hasChanges = true;
           }
           if (defaultWidget.fixedSubTextKey && !merged[widgetIndex].fixedSubTextKey) {
-            merged[widgetIndex] = { ...merged[widgetIndex], fixedSubTextKey: defaultWidget.fixedSubTextKey };
+            merged[widgetIndex] = {
+              ...merged[widgetIndex],
+              fixedSubTextKey: defaultWidget.fixedSubTextKey,
+            };
             hasChanges = true;
           }
-          if (
-            defaultWidget.widgetType === "card" &&
-            merged[widgetIndex].isPinnedToDashboard
-          ) {
+          if (defaultWidget.widgetType === "card" && merged[widgetIndex].isPinnedToDashboard) {
             merged[widgetIndex] = { ...merged[widgetIndex], isPinnedToDashboard: false };
             hasChanges = true;
           }
-
         }
       }
     }
@@ -119,7 +113,7 @@ export function getOrInitializeCustomWidgets(): CustomWidget[] {
     }
     return merged;
   } catch (error) {
-    reportClientError(error, { context: 'reports.loadCustomWidgets' });
+    reportClientError(error, { context: "reports.loadCustomWidgets" });
     return [];
   }
 }

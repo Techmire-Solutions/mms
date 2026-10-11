@@ -1,13 +1,10 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { isInstitutionSetupComplete } from '@mms/shared';
-import { apiContract } from '@/lib/api';
-import { ApiError } from '@/lib/apiClient';
-import { getScopedBrandingSettings } from '@/lib/settingsPreviewStore';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { isInstitutionSetupComplete } from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
+import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 
-export const INSTITUTION_SETUP_STATUS_QUERY_KEY = [
-  'auth',
-  'institution-setup-status',
-] as const;
+export const INSTITUTION_SETUP_STATUS_QUERY_KEY = ["auth", "institution-setup-status"] as const;
 
 export async function fetchInstitutionSetupStatus(signal?: AbortSignal): Promise<boolean> {
   const response = await apiContract.auth.institutionSetupStatus({

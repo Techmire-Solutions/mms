@@ -50,13 +50,14 @@ Start here in Antigravity: **skill `antigravity-workspace`**.
 
 ## Always-on rules (all tools)
 
-| Antigravity | Cursor |
-|-------------|--------|
+| Antigravity         | Cursor               |
+| ------------------- | -------------------- |
 | `rules/mms-core.md` | `rules/mms-core.mdc` |
 
 ## Plan first, task list, then execute — applies to every request
 
 On receiving any request, systematically plan before modifying code:
+
 1. **Discover & Plan**: Inspect the codebase, locate relevant files/abstractions, clarify requirements, and identify boundaries (tenant isolation, 300 LOC cap, strict TS).
 2. **Actionable Task List**: Formulate an explicit, ordered task checklist (`- [ ]`) decomposing the work into discrete, verifiable phases.
 3. **Iterative Execution & Verification**: Execute task-by-task against the checklist, update progress (`- [x]`), apply surgical changes, and verify (typecheck/lint/test) after each phase before declaring completion. Never guess APIs or modify code without prior discovery.
@@ -79,47 +80,47 @@ Owners: norm `mms-auth-security` §3 (**Module Access Gates**) · policy `@mms/s
 
 ## Skills (39)
 
-| Skill | Purpose |
-|-------|---------|
-| `antigravity-workspace` | Where rules/skills live; sync policy |
-| `mms-dev-setup` | Install, run, env verify |
-| `mms-agent-standards` | Authoring/verifying rules, skills, commands, hooks |
-| `mms-dependency-upgrade` | Catalogs, Dependabot, audits, React Compiler |
-| `mms-vuln-response` | Triage and respond to a dependency advisory |
-| `mms-frontend` | React app shell, apiClient, Query vs localStorage, FE tests |
-| `mms-query-factories` | TanStack Query factories / optimistic policy |
-| `mms-module-page` | Three-tier module pages + gold-standard parity (§7) |
-| `mms-module-work` | Work tier — metrics, directory, drawer, trash |
-| `mms-module-setup` | Setup tier — Preferences, sub-tabs, setup audit |
-| `mms-background-jobs` | Queued exports/imports, progress, artifacts |
-| `mms-queue-ops` | Diagnose stuck/failed BullMQ jobs; replay safely |
-| `mms-form-architecture` | Static FormModal, shared Zod, uploads |
-| `mms-fields-registry` | Fields & tabs, field guards |
-| `mms-data-sync` | db.ts & API sync |
-| `mms-backup-restore` | Encrypted backup / wipe-restore |
-| `mms-schema-migrate` | Forward-only Drizzle DDL, lock-safe indexes |
-| `mms-db-performance` | Query/index/autovacuum triage |
-| `mms-linux-compatibility` | Linux/Ubuntu VPS compatibility |
-| `mms-shared-package` | `@mms/shared` purity and exports |
-| `mms-soft-delete` | Soft-Delete System, 3-tier indexing, restore, outbox CDC, hard-purge |
-| `mms-backend-api` | Fastify backend |
-| `mms-backend-security` | Tenant isolation, RBAC, cookies, CSRF |
-| `mms-audit-trail` | Audit trail, RFC 8785 canonical JSON, sharded hash chains, partitions |
-| `mms-finance-accounting` | Invoices, payments, double-entry ledger |
-| `mms-reports-export` | Analytics & export |
-| `mms-messaging` | SMS/WhatsApp campaigns |
-| `mms-migration-fixes` | Open debt priorities P1–P7 |
-| `mms-testing-e2e` | Vitest, Playwright E2E & axe smoke |
-| `mms-code-review` | Change-set review before merge |
-| `mms-a11y-smoke` | axe + shell a11y verification |
-| `mms-error-triage` | Sentry issue → traceparent → audit row |
-| `mms-incident-response` | Diagnose → rollback → verify a bad deploy |
-| `mms-ops-deploy` | Hetzner deploy, Apache isolation, PORT 5002 |
-| `mms-release-versioning` | Version bumps, changelog, milestone bookkeeping |
-| `mms-settings-i18n` | Settings + i18n (en/ar/ur/fa) |
-| `mms-i18n-completeness` | Key parity across en/ar/ur/fa |
-| `mms-ui-ux-design` | Design tokens, BiDi / RTL layout, Master Module Scaffold |
-| `ui-ux-pro-max` | Design intelligence (styles, palettes, typography, UX, charts) |
+| Skill                     | Purpose                                                               |
+| ------------------------- | --------------------------------------------------------------------- |
+| `antigravity-workspace`   | Where rules/skills live; sync policy                                  |
+| `mms-dev-setup`           | Install, run, env verify                                              |
+| `mms-agent-standards`     | Authoring/verifying rules, skills, commands, hooks                    |
+| `mms-dependency-upgrade`  | Catalogs, Dependabot, audits, React Compiler                          |
+| `mms-vuln-response`       | Triage and respond to a dependency advisory                           |
+| `mms-frontend`            | React app shell, apiClient, Query vs localStorage, FE tests           |
+| `mms-query-factories`     | TanStack Query factories / optimistic policy                          |
+| `mms-module-page`         | Three-tier module pages + gold-standard parity (§7)                   |
+| `mms-module-work`         | Work tier — metrics, directory, drawer, trash                         |
+| `mms-module-setup`        | Setup tier — Preferences, sub-tabs, setup audit                       |
+| `mms-background-jobs`     | Queued exports/imports, progress, artifacts                           |
+| `mms-queue-ops`           | Diagnose stuck/failed BullMQ jobs; replay safely                      |
+| `mms-form-architecture`   | Static FormModal, shared Zod, uploads                                 |
+| `mms-fields-registry`     | Fields & tabs, field guards                                           |
+| `mms-data-sync`           | db.ts & API sync                                                      |
+| `mms-backup-restore`      | Encrypted backup / wipe-restore                                       |
+| `mms-schema-migrate`      | Forward-only Drizzle DDL, lock-safe indexes                           |
+| `mms-db-performance`      | Query/index/autovacuum triage                                         |
+| `mms-linux-compatibility` | Linux/Ubuntu VPS compatibility                                        |
+| `mms-shared-package`      | `@mms/shared` purity and exports                                      |
+| `mms-soft-delete`         | Soft-Delete System, 3-tier indexing, restore, outbox CDC, hard-purge  |
+| `mms-backend-api`         | Fastify backend                                                       |
+| `mms-backend-security`    | Tenant isolation, RBAC, cookies, CSRF                                 |
+| `mms-audit-trail`         | Audit trail, RFC 8785 canonical JSON, sharded hash chains, partitions |
+| `mms-finance-accounting`  | Invoices, payments, double-entry ledger                               |
+| `mms-reports-export`      | Analytics & export                                                    |
+| `mms-messaging`           | SMS/WhatsApp campaigns                                                |
+| `mms-migration-fixes`     | Open debt priorities P1–P7                                            |
+| `mms-testing-e2e`         | Vitest, Playwright E2E & axe smoke                                    |
+| `mms-code-review`         | Change-set review before merge                                        |
+| `mms-a11y-smoke`          | axe + shell a11y verification                                         |
+| `mms-error-triage`        | Sentry issue → traceparent → audit row                                |
+| `mms-incident-response`   | Diagnose → rollback → verify a bad deploy                             |
+| `mms-ops-deploy`          | Hetzner deploy, Apache isolation, PORT 5002                           |
+| `mms-release-versioning`  | Version bumps, changelog, milestone bookkeeping                       |
+| `mms-settings-i18n`       | Settings + i18n (en/ar/ur/fa)                                         |
+| `mms-i18n-completeness`   | Key parity across en/ar/ur/fa                                         |
+| `mms-ui-ux-design`        | Design tokens, BiDi / RTL layout, Master Module Scaffold              |
+| `ui-ux-pro-max`           | Design intelligence (styles, palettes, typography, UX, charts)        |
 
 Index: [.agent/skills/README.md](.agent/skills/README.md)
 
@@ -131,20 +132,20 @@ Index: [.agent/skills/README.md](.agent/skills/README.md)
 
 **Canonical sources — edit these, never the mirrors:**
 
-| Artifact | Canonical | Generated mirrors |
-|---|---|---|
-| Rules | `.cursor/rules/*.mdc` | `.agent/rules/*.md`, `.claude/rules/*.md` |
-| Skills | `.agent/skills/*/SKILL.md` (+ `scripts/`, `references/`, `examples/`) | `.cursor/skills/`, `.claude/skills/` |
-| Workflows | `.agent/workflows/*.md` | `.claude/docs/workflows/` (commands read the canonical path) |
-| Docs (this file) | `AGENTS.md` | `CLAUDE.md` imports it |
+| Artifact         | Canonical                                                             | Generated mirrors                                            |
+| ---------------- | --------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Rules            | `.cursor/rules/*.mdc`                                                 | `.agent/rules/*.md`, `.claude/rules/*.md`                    |
+| Skills           | `.agent/skills/*/SKILL.md` (+ `scripts/`, `references/`, `examples/`) | `.cursor/skills/`, `.claude/skills/`                         |
+| Workflows        | `.agent/workflows/*.md`                                               | `.claude/docs/workflows/` (commands read the canonical path) |
+| Docs (this file) | `AGENTS.md`                                                           | `CLAUDE.md` imports it                                       |
 
 Rule **bodies** are byte-identical across the three rule trees; only frontmatter differs:
 
-| Tool | Frontmatter |
-|------|-------------|
-| Cursor | `globs` + `alwaysApply` |
+| Tool        | Frontmatter                            |
+| ----------- | -------------------------------------- |
+| Cursor      | `globs` + `alwaysApply`                |
 | Antigravity | `trigger: always_on \| model_decision` |
-| Claude Code | `paths:` (scoped) or none (always-on) |
+| Claude Code | `paths:` (scoped) or none (always-on)  |
 
 Cross-references use `.mdc` in Cursor and `.md` in Antigravity/Claude — the sync script rewrites only rule-name references, never `.cursor/...` paths.
 

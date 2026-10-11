@@ -9,7 +9,7 @@ import type {
   ObligationDistribution,
 } from "@/lib/data/obligationsData";
 import { formatDate } from "@mms/shared";
-import { Drawer } from '@/components/ui/Drawer';
+import { Drawer } from "@/components/ui/Drawer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,7 +85,9 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
       title={t("obligations.detail.title")}
       icon={Receipt}
       className="max-w-2xl"
-      headerExtra={isArchived ? <DetailDrawerArchivedBanner deletedAt={collection.deletedAt} /> : undefined}
+      headerExtra={
+        isArchived ? <DetailDrawerArchivedBanner deletedAt={collection.deletedAt} /> : undefined
+      }
       headerActions={
         onRestore ? (
           <DetailDrawerRestoreOrEditAction
@@ -110,7 +112,9 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
             <p className="text-xs font-semibold text-muted-foreground uppercase m-0">
               {t("obligations.columns.receivedDate")}
             </p>
-            <p className="text-sm font-semibold text-foreground m-0">{formatDate(collection.received_date)}</p>
+            <p className="text-sm font-semibold text-foreground m-0">
+              {formatDate(collection.received_date)}
+            </p>
           </div>
         </Card>
 
@@ -139,7 +143,8 @@ export const ObligationCollectionDetail = function ObligationCollectionDetail({
         <footer className="flex flex-wrap items-center justify-between gap-2">
           {!isArchived && (
             <Button type="button" onClick={() => setShowPrint(true)} className="gap-2">
-              <Printer className="w-4 h-4" aria-hidden="true" /> {t("obligations.actions.printShort")}
+              <Printer className="w-4 h-4" aria-hidden="true" />{" "}
+              {t("obligations.actions.printShort")}
             </Button>
           )}
           <Button type="button" onClick={onClose} variant="outline">

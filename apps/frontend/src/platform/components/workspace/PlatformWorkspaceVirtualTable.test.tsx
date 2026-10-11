@@ -1,10 +1,10 @@
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { describe, it, expect, vi } from 'vitest';
-import type { PlatformWorkspaceRow } from '@mms/shared';
-import { PlatformWorkspaceVirtualTable } from './PlatformWorkspaceVirtualTable';
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { describe, it, expect, vi } from "vitest";
+import type { PlatformWorkspaceRow } from "@mms/shared";
+import { PlatformWorkspaceVirtualTable } from "./PlatformWorkspaceVirtualTable";
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -12,26 +12,26 @@ vi.mock('@/hooks/useTranslation', () => ({
 
 const mockDescriptor = {
   getTableColumns: () => [
-    { id: 'madrasaName', label: 'Madrasa Name' },
-    { id: 'enabled', label: 'Status' },
-    { id: 'createdAt', label: 'Created' },
+    { id: "madrasaName", label: "Madrasa Name" },
+    { id: "enabled", label: "Status" },
+    { id: "createdAt", label: "Created" },
   ],
   getField: (id: string) => ({ id, label: id }),
-} as unknown as Parameters<typeof PlatformWorkspaceVirtualTable>[0]['descriptor'];
+} as unknown as Parameters<typeof PlatformWorkspaceVirtualTable>[0]["descriptor"];
 
 const mockWorkspaces: PlatformWorkspaceRow[] = [
   {
-    subdomain: 'demo',
-    madrasaName: 'Demo Madrasa',
+    subdomain: "demo",
+    madrasaName: "Demo Madrasa",
     enabled: true,
     requireEmailVerification: true,
-    createdAt: '2026-01-01T00:00:00Z',
+    createdAt: "2026-01-01T00:00:00Z",
   },
 ];
 
-describe('PlatformWorkspaceVirtualTable', () => {
-  it('renders virtual table with given workspaces and density', () => {
-    const container = document.createElement('div');
+describe("PlatformWorkspaceVirtualTable", () => {
+  it("renders virtual table with given workspaces and density", () => {
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -55,7 +55,7 @@ describe('PlatformWorkspaceVirtualTable', () => {
       );
     });
 
-    expect(container.textContent).toContain('Demo Madrasa');
+    expect(container.textContent).toContain("Demo Madrasa");
 
     act(() => {
       root.unmount();

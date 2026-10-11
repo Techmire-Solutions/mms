@@ -3,7 +3,7 @@ import {
   normalizeIdLinkedName,
   resolveEntityName,
   type NamedEntity,
-} from './contactLinkPolicy.js';
+} from "./contactLinkPolicy.js";
 
 export interface SessionClassLike extends Record<string, unknown> {
   id?: string;
@@ -19,7 +19,7 @@ export function normalizeSessionClasses(classes: SessionClassLike[]): SessionCla
   if (!classes || !Array.isArray(classes)) return [];
   return classes.map((cls) => {
     if (!cls || typeof cls !== "object") return cls;
-    return normalizeIdLinkedName(cls, 'facultyId', 'facultyName');
+    return normalizeIdLinkedName(cls, "facultyId", "facultyName");
   });
 }
 
@@ -28,9 +28,12 @@ export function hydrateSessionClasses(
   faculty: NamedEntity[] | Map<string, NamedEntity>,
 ): SessionClassLike[] {
   if (!classes || !Array.isArray(classes)) return [];
-  const lookup = faculty instanceof Map
-    ? faculty
-    : (faculty.length > 8 ? createNamedEntityLookupMap(faculty) : faculty);
+  const lookup =
+    faculty instanceof Map
+      ? faculty
+      : faculty.length > 8
+        ? createNamedEntityLookupMap(faculty)
+        : faculty;
   let hasChanges = false;
   const mapped = classes.map((cls) => {
     if (!cls || typeof cls !== "object") return cls;
@@ -60,9 +63,12 @@ export function hydrateSessionsCollection(
   faculty: NamedEntity[] | Map<string, NamedEntity>,
 ): SessionLike[] {
   if (!sessions || !Array.isArray(sessions)) return [];
-  const lookup = faculty instanceof Map
-    ? faculty
-    : (faculty.length > 8 ? createNamedEntityLookupMap(faculty) : faculty);
+  const lookup =
+    faculty instanceof Map
+      ? faculty
+      : faculty.length > 8
+        ? createNamedEntityLookupMap(faculty)
+        : faculty;
   return sessions.map((session) => {
     if (!session || typeof session !== "object") return session;
     if (!Array.isArray(session.classes)) return session;

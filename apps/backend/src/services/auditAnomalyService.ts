@@ -1,11 +1,8 @@
-import { and, desc, eq, gte } from 'drizzle-orm';
-import type {
-  AuditAnomalyReport,
-  AuditAnomalyItem,
-} from '@mms/shared';
-import { activeDb } from '../db/dbConnection.js';
-import { auditTrailEvents } from '../db/schema/auditTrail.js';
-import type { DbOrTransaction } from './auditTrailService.js';
+import { and, desc, eq, gte } from "drizzle-orm";
+import type { AuditAnomalyReport, AuditAnomalyItem } from "@mms/shared";
+import { activeDb } from "../db/dbConnection.js";
+import { auditTrailEvents } from "../db/schema/auditTrail.js";
+import type { DbOrTransaction } from "./auditTrailService.js";
 
 export interface DetectAnomaliesOptions {
   windowHours?: number;
@@ -65,7 +62,10 @@ export async function detectAuditAnomalies(
     }
 
     const hour = event.transactionTimestamp.getUTCHours();
-    if ((hour < 5 || hour > 22) && (event.actionType === 'DELETE' || event.actionType === 'REDACT')) {
+    if (
+      (hour < 5 || hour > 22) &&
+      (event.actionType === "DELETE" || event.actionType === "REDACT")
+    ) {
       afterHoursDestructiveCount++;
     }
   }
@@ -74,8 +74,8 @@ export async function detectAuditAnomalies(
   for (const [userId, count] of userCounts.entries()) {
     if (count > 100) {
       anomalies.push({
-        type: 'VOLUME_SPIKE',
-        severity: count > 300 ? 'CRITICAL' : 'HIGH',
+        type: "VOLUME_SPIKE",
+        severity: count > 300 ? "CRITICAL" : "HIGH",
         description: `Unusual write volume detected: User "${userId}" generated ${count} audit events in a ${windowHours}h window.`,
         userId,
         count,
@@ -88,8 +88,8 @@ export async function detectAuditAnomalies(
   for (const [userId, ips] of userIps.entries()) {
     if (ips.size >= 3) {
       anomalies.push({
-        type: 'MULTI_IP_ACCESS',
-        severity: 'MEDIUM',
+        type: "MULTI_IP_ACCESS",
+        severity: "MEDIUM",
         description: `Geographically implausible access: User "${userId}" accessed workspace from ${ips.size} disparate IP addresses.`,
         userId,
         count: ips.size,
@@ -101,8 +101,8 @@ export async function detectAuditAnomalies(
   // 3. Destructive operations executed after standard business hours
   if (afterHoursDestructiveCount > 0) {
     anomalies.push({
-      type: 'AFTER_HOURS_ACTIVITY',
-      severity: 'HIGH',
+      type: "AFTER_HOURS_ACTIVITY",
+      severity: "HIGH",
       description: `Detected ${afterHoursDestructiveCount} destructive or redaction events executed outside standard operating hours (22:00 - 05:00 UTC).`,
       count: afterHoursDestructiveCount,
       detectedAt: new Date().toISOString(),

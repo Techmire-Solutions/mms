@@ -30,11 +30,11 @@ export function createFormModalTabs(options: {
   ): FormModalTabItem[] {
     const source = resolveSource
       ? resolveSource(formTabs, fields)
-      : (formTabs && formTabs.length > 0 ? formTabs : []);
+      : formTabs && formTabs.length > 0
+        ? formTabs
+        : [];
 
-    const sorted = source
-      .slice()
-      .sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
+    const sorted = source.slice().sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
 
     return sorted
       .filter((tab) => isTabEnabled(tab, enabledTabIds))

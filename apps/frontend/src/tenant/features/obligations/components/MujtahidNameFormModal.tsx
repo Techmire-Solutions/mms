@@ -3,7 +3,10 @@ import { FormModal } from "@/components/ui/FormModal";
 import { Field } from "@/components/ui/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
-import type { Mujtahid, MujtahidRep } from "@/tenant/features/obligations/components/mujtahidManagerTypes";
+import type {
+  Mujtahid,
+  MujtahidRep,
+} from "@/tenant/features/obligations/components/mujtahidManagerTypes";
 
 export interface MujtahidNameFormModalProps {
   title: string;
@@ -15,7 +18,13 @@ export interface MujtahidNameFormModalProps {
 
 export type NameFormModalProps = MujtahidNameFormModalProps;
 
-export function MujtahidNameFormModal({ initial, onSave, onClose, label, title }: MujtahidNameFormModalProps) {
+export function MujtahidNameFormModal({
+  initial,
+  onSave,
+  onClose,
+  label,
+  title,
+}: MujtahidNameFormModalProps) {
   const { t } = useTranslation();
   const [form, setForm] = useState({ ...initial });
   const [error, setError] = useState("");

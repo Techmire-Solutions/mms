@@ -1,7 +1,7 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { apiJson } from '@/lib/apiClient';
-import { SUMMARY_STALE_TIME } from '@/lib/queryClient';
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { apiJson } from "@/lib/apiClient";
+import { SUMMARY_STALE_TIME } from "@/lib/queryClient";
 
 export interface ServerMetricsOptions {
   moduleId: string;
@@ -15,13 +15,13 @@ export function serverMetricsQueryOptions<T>({
   extraParam,
 }: ServerMetricsOptions) {
   const queryKey = extraParam
-    ? ([moduleId, 'metrics', extraParam] as const)
-    : ([moduleId, 'metrics'] as const);
+    ? ([moduleId, "metrics", extraParam] as const)
+    : ([moduleId, "metrics"] as const);
 
   return queryOptions({
     queryKey,
     queryFn: async ({ signal }) => {
-      const queryString = extraParam ? `?date=${encodeURIComponent(extraParam)}` : '';
+      const queryString = extraParam ? `?date=${encodeURIComponent(extraParam)}` : "";
       const response = await apiJson<{ metrics: T }>(`${apiPath}/metrics${queryString}`, {
         signal,
       });

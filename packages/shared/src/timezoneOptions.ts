@@ -6,18 +6,18 @@ import {
   getTimezoneOffsetMinutes,
   getTimezoneRegion,
   type TimezoneOption,
-} from './timezoneCore.js';
+} from "./timezoneCore.js";
 
 const optionCache = new Map<string, readonly TimezoneOption[]>();
 
 function buildSearchKeywords(id: string, region: string): string {
-  return [id, region, formatCityName(id)].join(' ').toLowerCase();
+  return [id, region, formatCityName(id)].join(" ").toLowerCase();
 }
 
 /**
  * Builds sorted timezone options grouped by region (cached per locale).
  */
-export function getTimezoneOptions(locale = 'en'): readonly TimezoneOption[] {
+export function getTimezoneOptions(locale = "en"): readonly TimezoneOption[] {
   const cached = optionCache.get(locale);
   if (cached) return cached;
 
@@ -42,7 +42,8 @@ export function getTimezoneOptions(locale = 'en'): readonly TimezoneOption[] {
   options.sort((leftOption, rightOption) => {
     const regionDelta = regionRank(leftOption.region) - regionRank(rightOption.region);
     if (regionDelta !== 0) return regionDelta;
-    if (leftOption.offsetMinutes !== rightOption.offsetMinutes) return leftOption.offsetMinutes - rightOption.offsetMinutes;
+    if (leftOption.offsetMinutes !== rightOption.offsetMinutes)
+      return leftOption.offsetMinutes - rightOption.offsetMinutes;
     return leftOption.label.localeCompare(rightOption.label, locale);
   });
 

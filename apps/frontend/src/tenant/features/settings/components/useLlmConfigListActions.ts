@@ -1,12 +1,12 @@
-import { useState, type Dispatch, type SetStateAction } from 'react';
-import { apiContract } from '@/lib/api';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { LlmConfig, LlmTestResult } from '@mms/shared';
-import type { LlmHealthStatus } from './llmSettingsControllerTypes';
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { apiContract } from "@/lib/api";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { LlmConfig, LlmTestResult } from "@mms/shared";
+import type { LlmHealthStatus } from "./llmSettingsControllerTypes";
 
 interface UseLlmConfigListActionsOptions {
   configs: LlmConfig[];
-  upd: (key: 'llmConfigs', value: LlmConfig[]) => void;
+  upd: (key: "llmConfigs", value: LlmConfig[]) => void;
   setHealthStatuses: Dispatch<SetStateAction<Record<string, LlmHealthStatus>>>;
 }
 
@@ -18,16 +18,19 @@ export function useLlmConfigListActions({
   const { t } = useTranslation();
   const [testingId, setTestingId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<LlmTestResult | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleDeleteConfig = (configId: string) => {
     const updatedConfigs = configs.filter((config) => config.id !== configId);
 
-    if (configs.find((config) => config.id === configId)?.isDefaultText && updatedConfigs.length > 0) {
+    if (
+      configs.find((config) => config.id === configId)?.isDefaultText &&
+      updatedConfigs.length > 0
+    ) {
       updatedConfigs[0] = { ...updatedConfigs[0], isDefaultText: true };
     }
 
-    upd('llmConfigs', updatedConfigs);
+    upd("llmConfigs", updatedConfigs);
     if (testResult?.configId === configId) {
       setTestResult(null);
     }
@@ -38,15 +41,15 @@ export function useLlmConfigListActions({
     setTestResult(null);
 
     try {
-      setHealthStatuses((prev) => ({ ...prev, [configId]: 'testing' }));
+      setHealthStatuses((prev) => ({ ...prev, [configId]: "testing" }));
 
       const res = await apiContract.ai.test({
-        body: { prompt: 'Write a short greeting for a school portal.', configId },
+        body: { prompt: "Write a short greeting for a school portal.", configId },
       });
       const status = res.status;
       const body = res.body as LlmTestResult;
       if (status !== 200) {
-        throw new Error(body.message || 'Failed to test connection');
+        throw new Error(body.message || "Failed to test connection");
       }
       setTestResult({
         configId,
@@ -55,14 +58,15 @@ export function useLlmConfigListActions({
         message: body.message,
         metrics: body.metrics,
       });
-      setHealthStatuses((prev) => ({ ...prev, [configId]: body.success ? 'verified' : 'failed' }));
+      setHealthStatuses((prev) => ({ ...prev, [configId]: body.success ? "verified" : "failed" }));
     } catch (err: unknown) {
       setTestResult({
         configId,
         success: false,
-        message: (err instanceof Error ? err.message : undefined) || t('settings.llmTestRequestFailed'),
+        message:
+          (err instanceof Error ? err.message : undefined) || t("settings.llmTestRequestFailed"),
       });
-      setHealthStatuses((prev) => ({ ...prev, [configId]: 'failed' }));
+      setHealthStatuses((prev) => ({ ...prev, [configId]: "failed" }));
     } finally {
       setTestingId(null);
     }

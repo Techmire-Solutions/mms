@@ -26,36 +26,37 @@ export function useAccountingPageShortcuts({
   });
   const clearJournalSelectionRef = useRef<() => void>(() => {});
 
-  const handleShortcutStateChange = useCallback((state: {
-    mode: "simple" | "advanced";
-    selectedCount: number;
-    clearSelection: () => void;
-  }) => {
-    clearJournalSelectionRef.current = state.clearSelection;
-    setJournalShortcutState((current) =>
-      current.mode === state.mode && current.selectedCount === state.selectedCount
-        ? current
-        : { mode: state.mode, selectedCount: state.selectedCount },
-    );
-  }, []);
+  const handleShortcutStateChange = useCallback(
+    (state: { mode: "simple" | "advanced"; selectedCount: number; clearSelection: () => void }) => {
+      clearJournalSelectionRef.current = state.clearSelection;
+      setJournalShortcutState((current) =>
+        current.mode === state.mode && current.selectedCount === state.selectedCount
+          ? current
+          : { mode: state.mode, selectedCount: state.selectedCount },
+      );
+    },
+    [],
+  );
 
-  const hasActiveJournalFilters = journalList.filters.search.trim().length > 0
-    || journalList.filters.statusFilter !== "all"
-    || journalList.filters.tagFilter !== "all"
-    || Boolean(journalList.filters.dateFrom || journalList.filters.dateTo);
+  const hasActiveJournalFilters =
+    journalList.filters.search.trim().length > 0 ||
+    journalList.filters.statusFilter !== "all" ||
+    journalList.filters.tagFilter !== "all" ||
+    Boolean(journalList.filters.dateFrom || journalList.filters.dateTo);
 
   useModuleShortcuts({
     searchInputId: ACCOUNTING_WORK_SEARCH_INPUT_ID,
     searchEnabled: journalShortcutState.mode === "advanced",
     selectedCount: journalShortcutState.selectedCount,
     hasActiveFilters: hasActiveJournalFilters,
-    clearFilters: () => journalList.patchFilters({
-      search: "",
-      statusFilter: "all",
-      tagFilter: "all",
-      dateFrom: "",
-      dateTo: "",
-    }),
+    clearFilters: () =>
+      journalList.patchFilters({
+        search: "",
+        statusFilter: "all",
+        tagFilter: "all",
+        dateFrom: "",
+        dateTo: "",
+      }),
     clearSelection: () => clearJournalSelectionRef.current(),
     canWrite,
     showDeleted,

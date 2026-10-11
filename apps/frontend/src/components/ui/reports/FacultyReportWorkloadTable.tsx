@@ -1,13 +1,7 @@
 import React from "react";
 import { TableCellLink } from "@/components/ui/TableCellLink";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
@@ -23,7 +17,7 @@ interface FacultyReportWorkloadTableProps {
   onToggleFacultyFilter: (faculty: string) => void;
 }
 
-export const FacultyReportWorkloadTable = (function FacultyReportWorkloadTable({
+export const FacultyReportWorkloadTable = function FacultyReportWorkloadTable({
   t,
   rows,
   selectedFaculty,
@@ -56,7 +50,12 @@ export const FacultyReportWorkloadTable = (function FacultyReportWorkloadTable({
             key={faculty.faculty}
             className={`${WORK_SURFACE_INNER} space-y-3 p-3 ${selectedFaculty === faculty.faculty ? "ring-1 ring-primary/20" : ""}`}
           >
-            <TableCellLink tap toggle selected={selectedFaculty === faculty.faculty} onClick={() => onToggleFacultyFilter(faculty.faculty)}>
+            <TableCellLink
+              tap
+              toggle
+              selected={selectedFaculty === faculty.faculty}
+              onClick={() => onToggleFacultyFilter(faculty.faculty)}
+            >
               {faculty.faculty}
             </TableCellLink>
             <StatGrid>
@@ -73,7 +72,11 @@ export const FacultyReportWorkloadTable = (function FacultyReportWorkloadTable({
                   />
                 }
               />
-              <StatRow className="min-w-0" label={t("faculty.report.colSessions")} value={faculty.sessions} />
+              <StatRow
+                className="min-w-0"
+                label={t("faculty.report.colSessions")}
+                value={faculty.sessions}
+              />
               <StatRow
                 className="min-w-0"
                 label={t("faculty.report.colStudents")}
@@ -92,10 +95,25 @@ export const FacultyReportWorkloadTable = (function FacultyReportWorkloadTable({
               {[
                 { key: "faculty", label: t("faculty.report.colFaculty"), variant: "text" as const },
                 { key: "classes", label: t("faculty.report.colClasses"), variant: "text" as const },
-                { key: "sessions", label: t("faculty.report.colSessions"), variant: "number" as const },
-                { key: "students", label: t("faculty.report.colStudents"), variant: "number" as const },
+                {
+                  key: "sessions",
+                  label: t("faculty.report.colSessions"),
+                  variant: "number" as const,
+                },
+                {
+                  key: "students",
+                  label: t("faculty.report.colStudents"),
+                  variant: "number" as const,
+                },
               ].map((header) => (
-                <ModuleTableHeaderCell key={header.key} columnKey={header.key} variant={header.variant} className="px-3 py-2.5">{header.label}</ModuleTableHeaderCell>
+                <ModuleTableHeaderCell
+                  key={header.key}
+                  columnKey={header.key}
+                  variant={header.variant}
+                  className="px-3 py-2.5"
+                >
+                  {header.label}
+                </ModuleTableHeaderCell>
               ))}
             </TableRow>
           </TableHeader>
@@ -124,8 +142,16 @@ export const FacultyReportWorkloadTable = (function FacultyReportWorkloadTable({
                     labelClassName="text-foreground"
                   />
                 </TableCell>
-                <TableCell variant="number" noWrap className="px-3 py-2.5 text-muted-foreground">{faculty.sessions}</TableCell>
-                <TableCell variant="number" noWrap className="px-3 py-2.5 font-semibold text-foreground">{faculty.totalStudents}</TableCell>
+                <TableCell variant="number" noWrap className="px-3 py-2.5 text-muted-foreground">
+                  {faculty.sessions}
+                </TableCell>
+                <TableCell
+                  variant="number"
+                  noWrap
+                  className="px-3 py-2.5 font-semibold text-foreground"
+                >
+                  {faculty.totalStudents}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -133,4 +159,4 @@ export const FacultyReportWorkloadTable = (function FacultyReportWorkloadTable({
       </div>
     </ReportDataGridContainer>
   );
-});
+};

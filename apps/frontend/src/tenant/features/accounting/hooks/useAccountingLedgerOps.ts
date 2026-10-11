@@ -22,12 +22,13 @@ export {
   type MoneySeparator,
 } from "@/tenant/features/accounting/hooks/accountingMoneyParsers";
 
-
 export function useAccountingPostingRules(enabled = true) {
   return useQuery({
     queryKey: RULES_KEY,
     queryFn: async ({ signal }) => {
-      const body = await apiJson<{ rules: PostingRules }>("/api/accounting/posting-rules", { signal });
+      const body = await apiJson<{ rules: PostingRules }>("/api/accounting/posting-rules", {
+        signal,
+      });
       return body.rules;
     },
     enabled,
@@ -79,9 +80,7 @@ export function useCloseFiscalYear() {
       apiJson<{ fiscalYear: FiscalYear }>(`/api/accounting/fiscal-years/${id}/close`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          retainedEarningsAccountId ? { retainedEarningsAccountId } : {},
-        ),
+        body: JSON.stringify(retainedEarningsAccountId ? { retainedEarningsAccountId } : {}),
       }),
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
@@ -145,9 +144,12 @@ export function usePostOpeningBalances() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (fiscalYearId: string) =>
-      apiJson<{ success: boolean; posted: boolean }>(`/api/accounting/opening-balances/${fiscalYearId}/post`, {
-        method: "POST",
-      }),
+      apiJson<{ success: boolean; posted: boolean }>(
+        `/api/accounting/opening-balances/${fiscalYearId}/post`,
+        {
+          method: "POST",
+        },
+      ),
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
 }
@@ -156,7 +158,10 @@ export function useBankStatements(enabled = true) {
   return useQuery({
     queryKey: BANK_KEY,
     queryFn: async ({ signal }) => {
-      const body = await apiJson<{ statements: BankStatement[] }>("/api/accounting/bank-statements", { signal });
+      const body = await apiJson<{ statements: BankStatement[] }>(
+        "/api/accounting/bank-statements",
+        { signal },
+      );
       return body.statements;
     },
     enabled,

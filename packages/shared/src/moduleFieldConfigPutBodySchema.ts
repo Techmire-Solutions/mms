@@ -1,1 +1,1 @@
-export * from './schemas/moduleFieldConfig.dto.js';
+export * from "./schemas/moduleFieldConfig.dto.js";

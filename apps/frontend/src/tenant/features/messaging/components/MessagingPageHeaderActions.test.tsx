@@ -37,7 +37,7 @@ describe("MessagingPageHeaderActions", () => {
           onStartCampaign={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

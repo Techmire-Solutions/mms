@@ -53,9 +53,11 @@ export function AccountingFiscalYearModal({
   const validate = () => {
     const validationErrors: Record<string, string> = {};
     if (!form.label?.trim()) validationErrors.label = t("accounting.settings.fy.validation.label");
-    if (!form.startDate) validationErrors.startDate = t("accounting.settings.fy.validation.startDate");
+    if (!form.startDate)
+      validationErrors.startDate = t("accounting.settings.fy.validation.startDate");
     if (!form.endDate) validationErrors.endDate = t("accounting.settings.fy.validation.endDate");
-    if (form.startDate && form.endDate && form.startDate >= form.endDate) validationErrors.endDate = t("accounting.settings.fy.validation.endAfterStart");
+    if (form.startDate && form.endDate && form.startDate >= form.endDate)
+      validationErrors.endDate = t("accounting.settings.fy.validation.endAfterStart");
     return validationErrors;
   };
 
@@ -177,9 +179,11 @@ export function AccountingFiscalYearModal({
           <FormSelect
             id="financial-year-status"
             name="status"
-            value={isClosed ? "closed" : (form.status || "upcoming")}
+            value={isClosed ? "closed" : form.status || "upcoming"}
             disabled={isClosed}
-            onChange={(statusValue) => updateFormField("status", statusValue as FiscalYear["status"] | "upcoming")}
+            onChange={(statusValue) =>
+              updateFormField("status", statusValue as FiscalYear["status"] | "upcoming")
+            }
             options={
               isClosed
                 ? [{ value: "closed", label: t("accounting.settings.fy.status.closed") }]

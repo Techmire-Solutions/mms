@@ -1,10 +1,10 @@
-import React from 'react';
-import { Search } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
-import { OVERLAY_BACKDROP } from '@/components/ui/formStyles';
+import React from "react";
+import { Search } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { OVERLAY_BACKDROP } from "@/components/ui/formStyles";
 
 export interface CommandPaletteModalProps {
   open: boolean;
@@ -55,7 +55,7 @@ export function CommandPaletteModal({
       <div
         data-overlay-backdrop
         className={cn(
-          'fixed inset-0 z-modal flex items-start justify-center pt-16 px-4',
+          "fixed inset-0 z-modal flex items-start justify-center pt-16 px-4",
           OVERLAY_BACKDROP,
           className,
         )}
@@ -70,14 +70,17 @@ export function CommandPaletteModal({
           exit={reducedMotion ? undefined : { opacity: 0, scale: 0.96, y: -8 }}
           transition={{ duration: 0.15 }}
           className={cn(
-            'relative w-full max-w-xl overflow-hidden rounded-xl surface-overlay',
+            "relative w-full max-w-xl overflow-hidden rounded-xl surface-overlay",
             dialogClassName,
           )}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Search Bar Header */}
           <div className="flex items-center gap-3 border-b border-border/60 px-4 py-3">
-            <Search className="h-5 w-5 shrink-0 text-muted-foreground pointer-events-none" aria-hidden="true" />
+            <Search
+              className="h-5 w-5 shrink-0 text-muted-foreground pointer-events-none"
+              aria-hidden="true"
+            />
             <Input
               type="text"
               autoFocus
@@ -112,14 +115,23 @@ export function CommandPaletteModal({
             <div className="border-t border-border/50 px-4 py-2 bg-muted/30 flex items-center justify-between text-3xs text-muted-foreground font-medium select-none">
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                  <kbd className="rounded border border-border bg-background px-1 py-0.2 font-mono text-2xs">↑</kbd>
-                  <kbd className="rounded border border-border bg-background px-1 py-0.2 font-mono text-2xs">↓</kbd>
+                  <kbd className="rounded border border-border bg-background px-1 py-0.2 font-mono text-2xs">
+                    ↑
+                  </kbd>
+                  <kbd className="rounded border border-border bg-background px-1 py-0.2 font-mono text-2xs">
+                    ↓
+                  </kbd>
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="rounded border border-border bg-background px-1 py-0.2 font-mono text-2xs">↵</kbd>
+                  <kbd className="rounded border border-border bg-background px-1 py-0.2 font-mono text-2xs">
+                    ↵
+                  </kbd>
                 </span>
               </div>
-              {footerTrailing ?? (footerTitle ? <span className="hidden sm:inline font-semibold">{footerTitle}</span> : null)}
+              {footerTrailing ??
+                (footerTitle ? (
+                  <span className="hidden sm:inline font-semibold">{footerTitle}</span>
+                ) : null)}
             </div>
           ) : null}
         </motion.div>

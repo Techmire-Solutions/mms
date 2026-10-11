@@ -1,30 +1,29 @@
-import { useCallback, useState, useEffect } from 'react';
-import { useModuleShortcuts } from '@/hooks/useModuleShortcuts';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useDirectoryTrashState } from '@/hooks/useDirectoryTrashState';
-import { useFilteredModuleTierTabs } from '@/tenant/hooks/useModuleTierTabs';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
-import { usePersistedTabState } from '@/hooks/usePersistedTabState';
-import { useWorkSelection } from '@/hooks/useWorkSelection';
-import { useQuestionBankConfig } from '@/tenant/features/question-bank/hooks/useQuestionBankConfig';
-import { ClipboardList, FileText } from 'lucide-react';
+import { useCallback, useState, useEffect } from "react";
+import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
+import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
+import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
+import { ClipboardList, FileText } from "lucide-react";
 import {
   QUESTION_BANK_MODULE_MANIFEST,
   resolveModuleTierTab,
   type QuestionBankQuestion,
   type QuestionBankTest,
-} from '@mms/shared';
-import { useQuestionBankColumnLayout } from '@/tenant/features/question-bank/hooks/useQuestionBankColumnLayout';
+} from "@mms/shared";
+import { useQuestionBankColumnLayout } from "@/tenant/features/question-bank/hooks/useQuestionBankColumnLayout";
 import {
   useQuestionBankQuestions,
   useQuestionBankQuestionsCollection,
   useQuestionBankTestsCollection,
   useQuestionBankResultsCollection,
   useQuestionBankMutations,
-} from '@/tenant/features/question-bank/hooks/useQuestionBankApi';
-import { useQuestionBankTrashActions } from '@/tenant/features/question-bank/hooks/useQuestionBankTrashActions';
-import { useQuestionBankModalState } from './useQuestionBankModalState';
-
+} from "@/tenant/features/question-bank/hooks/useQuestionBankApi";
+import { useQuestionBankTrashActions } from "@/tenant/features/question-bank/hooks/useQuestionBankTrashActions";
+import { useQuestionBankModalState } from "./useQuestionBankModalState";
 
 export function useQuestionBankPageController() {
   const { t } = useTranslation();
@@ -46,11 +45,19 @@ export function useQuestionBankPageController() {
   const questionBankResults = useQuestionBankResultsCollection();
   const questionBankConfig = useQuestionBankConfig(questions);
   const OPS_SUB_TABS = (() => [
-      { id: 'questions', label: t('questionBank.questions'), icon: ClipboardList },
-      ...(canWrite && !showDeleted ? [{ id: 'generate', label: t('questionBank.generator'), icon: FileText }] : []),
-    ])();
-  const [activeTab, setActiveTab] = usePersistedTabState<string>('question_bank_active_tab', 'work');
-  const [activeSubTab, setActiveSubTab] = usePersistedTabState<string>('question_bank_ops_subtab', 'questions');
+    { id: "questions", label: t("questionBank.questions"), icon: ClipboardList },
+    ...(canWrite && !showDeleted
+      ? [{ id: "generate", label: t("questionBank.generator"), icon: FileText }]
+      : []),
+  ])();
+  const [activeTab, setActiveTab] = usePersistedTabState<string>(
+    "question_bank_active_tab",
+    "work",
+  );
+  const [activeSubTab, setActiveSubTab] = usePersistedTabState<string>(
+    "question_bank_ops_subtab",
+    "questions",
+  );
   const modalState = useQuestionBankModalState();
   const [filteredCount, setFilteredCount] = useState(0);
   const columnLayout = useQuestionBankColumnLayout();
@@ -101,7 +108,7 @@ export function useQuestionBankPageController() {
 
   const setQuestions = useCallback(
     async (updater: typeof questions | ((prev: typeof questions) => typeof questions)) => {
-      const nextQuestions = typeof updater === 'function' ? updater(questions) : updater;
+      const nextQuestions = typeof updater === "function" ? updater(questions) : updater;
       await replaceQuestions.mutateAsync(nextQuestions);
     },
     [questions, replaceQuestions],
@@ -114,19 +121,21 @@ export function useQuestionBankPageController() {
     const existingQuestion = questions.find((questionItem) => questionItem.id === question.id);
     await setQuestions(
       existingQuestion
-        ? questions.map((questionItem) => (questionItem.id === question.id ? question : questionItem))
+        ? questions.map((questionItem) =>
+            questionItem.id === question.id ? question : questionItem,
+          )
         : [...questions, question],
     );
     modalState.closeQuestionModal();
   };
 
-  const handleSaveTest = (async (test: QuestionBankTest) => {
+  const handleSaveTest = async (test: QuestionBankTest) => {
     await replaceTests.mutateAsync(
       tests.some((paper) => paper.id === test.id)
         ? tests.map((paper) => (paper.id === test.id ? test : paper))
         : [...tests, test],
     );
-  });
+  };
 
   const effectiveTab = resolveModuleTierTab(
     activeTab,
@@ -134,16 +143,16 @@ export function useQuestionBankPageController() {
   );
   const effectiveSubTab = OPS_SUB_TABS.find((tab) => tab.id === activeSubTab)
     ? activeSubTab
-    : 'questions';
+    : "questions";
   const listLoadFailed = questionsResult.isError;
 
   useEffect(() => {
-    if (effectiveTab === 'work' && effectiveSubTab === 'questions') return;
+    if (effectiveTab === "work" && effectiveSubTab === "questions") return;
     setFilteredCount(questions.length);
   }, [effectiveTab, effectiveSubTab, questions.length]);
 
   useModuleShortcuts({
-    searchInputId: 'question-bank-search-input',
+    searchInputId: "question-bank-search-input",
     selectedCount: questionSelection.selectedIds.length,
     hasActiveFilters: false,
     clearFilters: () => {},
@@ -151,7 +160,7 @@ export function useQuestionBankPageController() {
     canWrite,
     showDeleted,
     onCreate: openAddQuestion,
-    enabled: canWrite && !showDeleted && effectiveTab === 'work' && effectiveSubTab === 'questions',
+    enabled: canWrite && !showDeleted && effectiveTab === "work" && effectiveSubTab === "questions",
   });
 
   return {
@@ -187,6 +196,8 @@ export function useQuestionBankPageController() {
     handleBulkRestore,
     handleSaveTest,
     setQuestions,
-    refetchQuestions: () => { void questionsResult.refetch(); },
+    refetchQuestions: () => {
+      void questionsResult.refetch();
+    },
   };
 }

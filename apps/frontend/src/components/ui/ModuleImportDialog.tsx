@@ -82,7 +82,10 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
         </div>
 
         {missingHeaders.length > 0 && (
-          <div role="alert" className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-xs text-destructive space-y-1">
+          <div
+            role="alert"
+            className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-xs text-destructive space-y-1"
+          >
             <div className="font-semibold flex items-center gap-1.5">
               <AlertCircle className="w-4 h-4" />
               Missing required columns
@@ -92,13 +95,18 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
         )}
 
         {rowErrors.length > 0 && (
-          <div role="alert" className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-700 dark:text-amber-400 max-h-32 overflow-y-auto space-y-1">
+          <div
+            role="alert"
+            className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-700 dark:text-amber-400 max-h-32 overflow-y-auto space-y-1"
+          >
             <div className="font-semibold flex items-center gap-1.5">
               <AlertCircle className="w-4 h-4" />
               Formatting warnings ({rowErrors.length})
             </div>
             {rowErrors.slice(0, 5).map((err, idx) => (
-              <p key={idx}>Row {err.row}: {err.error}</p>
+              <p key={idx}>
+                Row {err.row}: {err.error}
+              </p>
             ))}
             {rowErrors.length > 5 && <p>...and {rowErrors.length - 5} more issues.</p>}
           </div>
@@ -128,15 +136,20 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Importing...</span>
-                  {progress && <span>{progress.current} / {progress.total}</span>}
+                  {progress && (
+                    <span>
+                      {progress.current} / {progress.total}
+                    </span>
+                  )}
                 </div>
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-primary h-2 transition-all duration-300"
                     style={{
-                      width: progress && progress.total > 0
-                        ? `${Math.min(100, Math.round((progress.current / progress.total) * 100))}%`
-                        : "100%",
+                      width:
+                        progress && progress.total > 0
+                          ? `${Math.min(100, Math.round((progress.current / progress.total) * 100))}%`
+                          : "100%",
                     }}
                   />
                 </div>

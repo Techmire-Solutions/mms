@@ -1,7 +1,24 @@
 /** Title-case helpers for free-text fields and contact records. */
 
 const LOWERCASE_WORDS = new Set([
-  "a", "an", "the", "and", "but", "or", "for", "nor", "on", "at", "to", "by", "in", "of", "up", "as", "so", "yet"
+  "a",
+  "an",
+  "the",
+  "and",
+  "but",
+  "or",
+  "for",
+  "nor",
+  "on",
+  "at",
+  "to",
+  "by",
+  "in",
+  "of",
+  "up",
+  "as",
+  "so",
+  "yet",
 ]);
 
 /**

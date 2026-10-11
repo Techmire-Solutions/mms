@@ -4,7 +4,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { EnrollmentsModalLayer } from "./EnrollmentsModalLayer";
 
 vi.mock("@/components/ui/FormModal", () => ({
-  FormModal: ({ open, title, children }: { open: boolean; title: string; children: React.ReactNode }) =>
+  FormModal: ({
+    open,
+    title,
+    children,
+  }: {
+    open: boolean;
+    title: string;
+    children: React.ReactNode;
+  }) =>
     open ? (
       <div data-testid="form-modal">
         <h2>{title}</h2>

@@ -57,7 +57,9 @@ export function loadVoucherTemplate(fallback: VoucherTemplate): VoucherTemplate 
 }
 
 /** Institution contact strip printed under the voucher heading. */
-export function voucherContactLine(branding: Pick<BrandingSettings, "addressLine1" | "city" | "phone">): string {
+export function voucherContactLine(
+  branding: Pick<BrandingSettings, "addressLine1" | "city" | "phone">,
+): string {
   return [branding.addressLine1, branding.city, branding.phone].filter(Boolean).join(" · ");
 }
 

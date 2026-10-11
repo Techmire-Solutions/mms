@@ -3,29 +3,29 @@
  * @description Pure utility functions for workspace users, roles, statuses, and permissions.
  */
 
-import type { AppTranslationKey } from './appTranslations.js';
+import type { AppTranslationKey } from "./appTranslations.js";
 import type {
   ActivityAction,
   UserStatus,
   WorkspaceRole,
   WorkspaceUser,
-} from './userEntityTypes.js';
+} from "./userEntityTypes.js";
 import {
   ACTIVITY_ACTION_MAP,
   DEFAULT_WORKSPACE_ROLES,
   DEFAULT_WORKSPACE_ROLES_MAP,
   getRbacModuleDef,
   USER_STATUS_MAP,
-} from './userRbacRegistry.js';
-import { excludeFacultyManagedRoles, isFacultyManagedRoleId } from './userRolePrivilege.js';
+} from "./userRbacRegistry.js";
+import { excludeFacultyManagedRoles, isFacultyManagedRoleId } from "./userRolePrivilege.js";
 
 /** Computes uppercase 1-2 letter initials from a user's display name or email. */
-export function computeUserInitials(name?: string | null, fallback = 'U'): string {
+export function computeUserInitials(name?: string | null, fallback = "U"): string {
   if (!name || !name.trim()) return fallback;
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return fallback;
   if (parts.length === 1) return (parts[0]?.slice(0, 2) || fallback).toUpperCase();
-  return ((parts[0]?.[0] || '') + (parts[parts.length - 1]?.[0] || '')).toUpperCase() || fallback;
+  return ((parts[0]?.[0] || "") + (parts[parts.length - 1]?.[0] || "")).toUpperCase() || fallback;
 }
 
 /**
@@ -36,50 +36,49 @@ export function normalizeWorkspaceUser(
 ): WorkspaceUser {
   const data = raw || {};
   const role =
-    typeof data.role === 'string' && data.role.trim()
+    typeof data.role === "string" && data.role.trim()
       ? data.role.trim()
       : Array.isArray(data.roles) && data.roles[0]
         ? data.roles[0]
-        : 'teacher';
+        : "teacher";
 
   const email =
-    (typeof data.email === 'string' && data.email.trim()) ||
-    (typeof data.loginEmail === 'string' && data.loginEmail.trim()) ||
-    '';
-  const name =
-    (typeof data.name === 'string' && data.name.trim()) || email || 'User';
+    (typeof data.email === "string" && data.email.trim()) ||
+    (typeof data.loginEmail === "string" && data.loginEmail.trim()) ||
+    "";
+  const name = (typeof data.name === "string" && data.name.trim()) || email || "User";
   const initials =
-    (typeof data.avatarInitials === 'string' && data.avatarInitials.trim()) ||
+    (typeof data.avatarInitials === "string" && data.avatarInitials.trim()) ||
     computeUserInitials(name);
 
-  const created = data.createdDate ?? data.createdAt ?? '';
+  const created = data.createdDate ?? data.createdAt ?? "";
 
   return {
-    id: data.id ?? '',
+    id: data.id ?? "",
     contactId: data.contactId,
     name,
     email,
-    loginEmail: typeof data.loginEmail === 'string' ? data.loginEmail : undefined,
+    loginEmail: typeof data.loginEmail === "string" ? data.loginEmail : undefined,
     mustChangePassword: data.mustChangePassword === true,
-    phone: data.phone ?? '',
+    phone: data.phone ?? "",
     role,
-    status: data.status ?? 'active',
+    status: data.status ?? "active",
     roleSource:
-      data.roleSource === 'faculty_designations' || isFacultyManagedRoleId(role)
-        ? 'faculty_designations'
-        : data.roleSource === 'manual'
-          ? 'manual'
+      data.roleSource === "faculty_designations" || isFacultyManagedRoleId(role)
+        ? "faculty_designations"
+        : data.roleSource === "manual"
+          ? "manual"
           : undefined,
     twoFactorEnabled: data.twoFactorEnabled ?? false,
-    lastLogin: data.lastLogin ?? '',
-    createdDate: created.includes('T') ? created.split('T')[0] : created,
+    lastLogin: data.lastLogin ?? "",
+    createdDate: created.includes("T") ? created.split("T")[0] : created,
     failedLoginAttempts: data.failedLoginAttempts ?? 0,
     activeSessions: data.activeSessions ?? 0,
     avatarInitials: initials,
     deletedAt: data.deletedAt ?? null,
     deletedBy: data.deletedBy ?? null,
     emailVerifiedAt:
-      typeof data.emailVerifiedAt === 'string'
+      typeof data.emailVerifiedAt === "string"
         ? data.emailVerifiedAt
         : data.emailVerifiedAt
           ? String(data.emailVerifiedAt)
@@ -138,33 +137,34 @@ export function resolveRoleDisplayName(
 }
 
 /** Resolves translated label for an RBAC module. */
-export function rbacModuleLabel(
-  moduleId: string,
-  t: (key: AppTranslationKey) => string,
-): string {
+export function rbacModuleLabel(moduleId: string, t: (key: AppTranslationKey) => string): string {
   const mod = getRbacModuleDef(moduleId);
   return mod ? t(mod.labelKey) : moduleId;
 }
 
 /** Metadata lookup for user statuses. */
-export function userStatusMeta(status: UserStatus): (typeof USER_STATUS_MAP)[UserStatus] | undefined {
+export function userStatusMeta(
+  status: UserStatus,
+): (typeof USER_STATUS_MAP)[UserStatus] | undefined {
   return USER_STATUS_MAP[status];
 }
 
 /** Metadata lookup for user activity actions. */
-export function activityActionMeta(action: ActivityAction): (typeof ACTIVITY_ACTION_MAP)[ActivityAction] | undefined {
+export function activityActionMeta(
+  action: ActivityAction,
+): (typeof ACTIVITY_ACTION_MAP)[ActivityAction] | undefined {
   return ACTIVITY_ACTION_MAP[action];
 }
 
 /** Whether the given role ID corresponds to Super Admin. */
 export function isSuperAdminRole(role: string | undefined): boolean {
-  const normalized = (role ?? '').trim().toLowerCase();
-  return normalized === 'super_admin' || normalized === 'super_user';
+  const normalized = (role ?? "").trim().toLowerCase();
+  return normalized === "super_admin" || normalized === "super_user";
 }
 
 /** Whether the given role ID corresponds to standard Admin. */
 export function isAdminRole(role: string | undefined): boolean {
-  return (role ?? '').trim().toLowerCase() === 'admin';
+  return (role ?? "").trim().toLowerCase() === "admin";
 }
 
 /**
@@ -172,8 +172,8 @@ export function isAdminRole(role: string | undefined): boolean {
  * Strictly restricted to Super Admin and Admin. All other roles return false.
  */
 export function canAccessRolesAndPermissions(actorRole: string | undefined): boolean {
-  const normalized = (actorRole ?? '').trim().toLowerCase();
-  return normalized === 'super_admin' || normalized === 'super_user' || normalized === 'admin';
+  const normalized = (actorRole ?? "").trim().toLowerCase();
+  return normalized === "super_admin" || normalized === "super_user" || normalized === "admin";
 }
 
 /**
@@ -189,7 +189,7 @@ export function canManageRole(
   if (!canAccessRolesAndPermissions(actorRole)) return false;
   if (isSuperAdminRole(actorRole)) return true;
 
-  const targetId = typeof targetRoleOrId === 'string' ? targetRoleOrId : targetRoleOrId?.id;
+  const targetId = typeof targetRoleOrId === "string" ? targetRoleOrId : targetRoleOrId?.id;
   if (isSuperAdminRole(targetId)) return false;
 
   return true;
@@ -242,4 +242,3 @@ export function filterAssignableRoles(
   if (isSuperAdminRole(actorRole)) return [...visible];
   return visible.filter((r) => !isSuperAdminRole(r.id));
 }
-

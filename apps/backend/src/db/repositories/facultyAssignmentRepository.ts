@@ -1,10 +1,8 @@
-import { facultyAssignmentSchema } from '@mms/shared';
-import { and, eq, isNull, gte, lte, or } from 'drizzle-orm';
-import { facultyAssignments } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import type {
-  FacultyAssignmentRow,
-} from '../schema/facultyAssignmentTables.js';
+import { facultyAssignmentSchema } from "@mms/shared";
+import { and, eq, isNull, gte, lte, or } from "drizzle-orm";
+import { facultyAssignments } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import type { FacultyAssignmentRow } from "../schema/facultyAssignmentTables.js";
 
 export {
   type AssignmentTreeNode,
@@ -12,7 +10,7 @@ export {
   findFacultyManagerChain,
   findAssignmentSubordinateTree,
   checkAssignmentCycleSafe,
-} from './facultyAssignmentHierarchyRepository.js';
+} from "./facultyAssignmentHierarchyRepository.js";
 
 const FACULTY_ASSIGNMENT_COLUMNS = {
   id: facultyAssignments.id,
@@ -48,7 +46,13 @@ export async function findFacultyAssignmentById(
     const rows = await tx
       .select(FACULTY_ASSIGNMENT_COLUMNS)
       .from(facultyAssignments)
-      .where(and(eq(facultyAssignments.workspaceSubdomain, subdomain), eq(facultyAssignments.id, id), isNull(facultyAssignments.deletedAt)))
+      .where(
+        and(
+          eq(facultyAssignments.workspaceSubdomain, subdomain),
+          eq(facultyAssignments.id, id),
+          isNull(facultyAssignments.deletedAt),
+        ),
+      )
       .limit(1);
     return rows[0] ?? null;
   });
@@ -105,4 +109,8 @@ export async function findPrimaryFacultyAssignment(
   });
 }
 
-export { saveFacultyAssignment, closeAssignment, softDeleteFacultyAssignment } from './facultyAssignmentWriteRepository.js';
+export {
+  saveFacultyAssignment,
+  closeAssignment,
+  softDeleteFacultyAssignment,
+} from "./facultyAssignmentWriteRepository.js";

@@ -1,7 +1,5 @@
 import type { Faculty } from "@mms/shared";
-import type {
-  FacultyPageOverlaysProps,
-} from "@/tenant/features/faculty/hooks/facultyPageOverlaysTypes";
+import type { FacultyPageOverlaysProps } from "@/tenant/features/faculty/hooks/facultyPageOverlaysTypes";
 import type { useFacultyPageFormState } from "@/tenant/features/faculty/hooks/useFacultyPageFormState";
 import type { useFacultyPageOverlayState } from "@/tenant/features/faculty/hooks/useFacultyPageOverlayState";
 import type { useFacultyPageActions } from "@/tenant/features/faculty/hooks/useFacultyPageActions";
@@ -26,10 +24,7 @@ export function useFacultyPageOverlayProps({
   overlays: WorkOverlays;
   workActions: Pick<
     WorkActions,
-    | "handleRestore"
-    | "handleDelete"
-    | "handleBulkDelete"
-    | "handleBulkRestore"
+    "handleRestore" | "handleDelete" | "handleBulkDelete" | "handleBulkRestore"
   > & {
     handleSaveFaculty?: WorkActions["handleSaveFaculty"];
   };
@@ -107,4 +102,3 @@ export function useFacultyPageOverlayProps({
     onCloseImport: () => overlays.setImportEntity(null),
   };
 }
-

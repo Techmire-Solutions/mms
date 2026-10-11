@@ -72,11 +72,7 @@ vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
 describe("ContactForm Component", () => {
   it("renders create contact form modal", () => {
     const html = renderToStaticMarkup(
-      <ContactForm
-        open={true}
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <ContactForm open={true} onClose={vi.fn()} onSave={vi.fn()} />,
     );
 
     expect(html).toContain("contacts.form.addTitle");

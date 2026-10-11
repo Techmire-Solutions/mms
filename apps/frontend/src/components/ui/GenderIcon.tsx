@@ -1,8 +1,8 @@
-import type { LucideProps } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { getGenderIcon, getGenderIconClass } from '@/lib/genderUi';
+import type { LucideProps } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
 
-export interface GenderIconProps extends Omit<LucideProps, 'ref'> {
+export interface GenderIconProps extends Omit<LucideProps, "ref"> {
   gender?: string | null;
 }
 
@@ -12,11 +12,5 @@ export interface GenderIconProps extends Omit<LucideProps, 'ref'> {
  */
 export function GenderIcon({ gender, className, ...props }: GenderIconProps): React.JSX.Element {
   const Icon = getGenderIcon(gender);
-  return (
-    <Icon
-      className={cn(getGenderIconClass(gender), className)}
-      aria-hidden
-      {...props}
-    />
-  );
+  return <Icon className={cn(getGenderIconClass(gender), className)} aria-hidden {...props} />;
 }

@@ -1,15 +1,15 @@
 import {
   normalizeAccountingModulePreferences,
   type AccountingModulePreferences,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getAccountingModulePreferences,
   setAccountingModulePreferences,
-} from '../db/repositories/accountingModulePreferencesRepository.js';
-import { createModulePreferencesService } from '../lib/createModulePreferencesService.js';
+} from "../db/repositories/accountingModulePreferencesRepository.js";
+import { createModulePreferencesService } from "../lib/createModulePreferencesService.js";
 
 const service = createModulePreferencesService<AccountingModulePreferences>({
-  broadcastKey: 'accounting',
+  broadcastKey: "accounting",
   getByWorkspace: getAccountingModulePreferences,
   upsert: setAccountingModulePreferences,
   normalize: normalizeAccountingModulePreferences,

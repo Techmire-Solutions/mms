@@ -7,8 +7,8 @@ import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 
-const FacultySettings = lazy(
-  () => import("@/tenant/features/faculty/components/FacultySettings").then((m) => ({
+const FacultySettings = lazy(() =>
+  import("@/tenant/features/faculty/components/FacultySettings").then((m) => ({
     default: m.FacultySettings,
   })),
 );

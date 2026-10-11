@@ -3,7 +3,7 @@ import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
 import { PersonMessagingRowActionsExtras } from "@/components/ui/PersonMessagingRowActionsExtras";
 import { resolveFacultyPrimaryChannels } from "@/lib/faculty/facultyPrimaryChannels";
 import { facultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
-import { hasWhatsApp, type Faculty } from '@mms/shared';
+import { hasWhatsApp, type Faculty } from "@mms/shared";
 
 export interface FacultyListRowActionsProps {
   faculty?: Faculty;
@@ -95,4 +95,3 @@ export function FacultyListRowActions(props: FacultyListRowActionsProps): React.
     />
   );
 }
-

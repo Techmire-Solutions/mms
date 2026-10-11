@@ -2,8 +2,8 @@ export type {
   StandardModuleId,
   StandardModuleSettingsMap,
   StandardModuleConfigExtraMap,
-} from './standardModuleConfigRegistry';
-export { STANDARD_MODULES_CONFIG_REGISTRY } from './standardModuleConfigRegistry';
+} from "./standardModuleConfigRegistry";
+export { STANDARD_MODULES_CONFIG_REGISTRY } from "./standardModuleConfigRegistry";
 
 export {
   useFacultyConfig,
@@ -11,7 +11,7 @@ export {
   useSessionConfig,
   useEnrollmentConfig,
   useExaminationConfig,
-} from './standardModuleConfigsAcademic';
+} from "./standardModuleConfigsAcademic";
 
 export {
   useUsersConfig,
@@ -19,4 +19,4 @@ export {
   useFinanceConfig,
   useAccountingConfig,
   useAttendanceConfig,
-} from './standardModuleConfigsOperations';
+} from "./standardModuleConfigsOperations";

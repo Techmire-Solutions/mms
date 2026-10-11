@@ -54,7 +54,10 @@ const tpl: InvoiceTemplate = {
       id: "el_table",
       type: "table",
       label: "Line Items",
-      x: 10, y: 40, w: 300, h: 120,
+      x: 10,
+      y: 40,
+      w: 300,
+      h: 120,
       columns: [
         { id: "c1", header: "Description", field: "description", width: 180, align: "left" },
         { id: "c2", header: "Amount", field: "amount", width: 100, align: "right" },
@@ -65,9 +68,21 @@ const tpl: InvoiceTemplate = {
       id: "el_long",
       type: "static",
       label: "A very long caption that cannot fit in this narrow box",
-      x: 10, y: 170, w: 80, h: 14,
+      x: 10,
+      y: 170,
+      w: 80,
+      h: 14,
     },
-    { id: "el_field", type: "field", label: "Receipt No", field: "receipt_no", x: 10, y: 190, w: 120, h: 16 },
+    {
+      id: "el_field",
+      type: "field",
+      label: "Receipt No",
+      field: "receipt_no",
+      x: 10,
+      y: 190,
+      w: 120,
+      h: 16,
+    },
     { id: "el_qr", type: "qrcode", label: "Scan to verify", x: 10, y: 210, w: 60, h: 60 },
   ],
 };
@@ -87,14 +102,14 @@ function canvasHtml(elementId: string): string {
       onMouseDownResize={vi.fn()}
       onDeleteElement={vi.fn()}
       t={mockT}
-    />
+    />,
   );
 }
 
 /** The printed page, with a real record. */
 function printHtml(): string {
   return renderToStaticMarkup(
-    <InvoicePrintPreview template={tpl} collection={collection} showBoundary={false} />
+    <InvoicePrintPreview template={tpl} collection={collection} showBoundary={false} />,
   );
 }
 
@@ -146,13 +161,13 @@ describe("template rendering parity (canvas vs print)", () => {
         onMouseDownResize={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
     expect(canvasEmpty).toContain("{receipt_no}");
 
     // With no record at all, print shows the placeholder instead of the binding.
     const printNoData = renderToStaticMarkup(
-      <InvoicePrintPreview template={tpl} collection={null} showBoundary={false} />
+      <InvoicePrintPreview template={tpl} collection={null} showBoundary={false} />,
     );
     expect(printNoData).not.toContain("{receipt_no}");
   });

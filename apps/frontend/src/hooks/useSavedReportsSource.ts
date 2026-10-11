@@ -1,18 +1,18 @@
-import { useEffect } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   GenericSavedReport,
   GenericSavedReportCategory,
   GenericSavedReportCreateInput,
-} from '@mms/shared';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { apiContract } from '@/lib/api';
-import { getCollection, saveCollectionCacheOnly } from '@/lib/db';
+} from "@mms/shared";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { apiContract } from "@/lib/api";
+import { getCollection, saveCollectionCacheOnly } from "@/lib/db";
 import {
   LEGACY_SAVED_REPORTS_COLLECTION_KEY,
   planLegacySavedReportsMigration,
   removeMigratedLocalReports,
-} from '@/lib/reports/legacySavedReportsMigration';
+} from "@/lib/reports/legacySavedReportsMigration";
 
 export interface SavedReportsSource<TReport, TCreateInput> {
   reports: TReport[];
@@ -26,7 +26,7 @@ export interface SavedReportsSource<TReport, TCreateInput> {
 
 /** Tuple query key factory scoped by generic saved-report category. */
 export function genericSavedReportsQueryKey(category: GenericSavedReportCategory) {
-  return ['saved-reports', category] as const;
+  return ["saved-reports", category] as const;
 }
 
 const legacyMigrationInFlight = new Map<GenericSavedReportCategory, Promise<void>>();
@@ -74,7 +74,7 @@ export function useGenericSavedReportsSource(
       if (res.status === 201) {
         return res.body;
       }
-      throw new Error('Failed to create saved report');
+      throw new Error("Failed to create saved report");
     },
     onSuccess: invalidateCategory,
   });
@@ -89,7 +89,7 @@ export function useGenericSavedReportsSource(
       if (res.status === 200) {
         return res.body;
       }
-      throw new Error('Failed to delete saved report');
+      throw new Error("Failed to delete saved report");
     },
     onSuccess: invalidateCategory,
   });
@@ -104,7 +104,7 @@ export function useGenericSavedReportsSource(
       if (res.status === 200) {
         return res.body;
       }
-      throw new Error('Failed to run saved report');
+      throw new Error("Failed to run saved report");
     },
     onSuccess: invalidateCategory,
   });

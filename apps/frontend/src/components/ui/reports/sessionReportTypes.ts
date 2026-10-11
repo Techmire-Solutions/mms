@@ -1,8 +1,5 @@
 import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import type {
-  SessionsReportCapacityItem,
-  SessionsReportTodaySession,
-} from "@mms/shared";
+import type { SessionsReportCapacityItem, SessionsReportTodaySession } from "@mms/shared";
 
 export type SessionCapacityItem = SessionsReportCapacityItem;
 export type CapacityChartItem = CapacityBarDatum;
@@ -40,4 +37,3 @@ export interface SessionReportTableProps {
   onToggleSessionFilter: (sessionName: string) => void;
   onToggleClassFilter: (className: string) => void;
 }
-

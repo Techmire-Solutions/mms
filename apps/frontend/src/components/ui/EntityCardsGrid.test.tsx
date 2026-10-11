@@ -13,7 +13,7 @@ describe("EntityCardsGrid Component", () => {
       <EntityCardsGrid className="custom-test-grid">
         <div data-testid="card-1">Card 1</div>
         <div data-testid="card-2">Card 2</div>
-      </EntityCardsGrid>
+      </EntityCardsGrid>,
     );
 
     expect(html).toContain("grid");
@@ -25,15 +25,9 @@ describe("EntityCardsGrid Component", () => {
   });
 
   it("handles high-volume mock children cleanly without layout degradation", () => {
-    const cards = Array.from({ length: 100 }, (_, i) => (
-      <div key={`card-${i}`}>Record #{i}</div>
-    ));
+    const cards = Array.from({ length: 100 }, (_, i) => <div key={`card-${i}`}>Record #{i}</div>);
 
-    const html = renderToStaticMarkup(
-      <EntityCardsGrid>
-        {cards}
-      </EntityCardsGrid>
-    );
+    const html = renderToStaticMarkup(<EntityCardsGrid>{cards}</EntityCardsGrid>);
 
     expect(html).toContain("Record #0");
     expect(html).toContain("Record #99");
@@ -77,7 +71,7 @@ describe("EntityCardsGrid — virtualization behaviour", () => {
           </div>
         )}
         selectedIds={[]}
-      />
+      />,
     );
 
     // The virtual scroll container wrapper must be present
@@ -110,7 +104,7 @@ describe("EntityCardsGrid — virtualization behaviour", () => {
           </div>
         )}
         selectedIds={[]}
-      />
+      />,
     );
 
     // Non-virtualized path — no absolute positioning wrapper
@@ -133,7 +127,7 @@ describe("EntityCardsGrid — virtualization behaviour", () => {
         selectedIds={[]}
         onSelectAll={vi.fn()}
         selectAllLabel="Select All Items"
-      />
+      />,
     );
 
     expect(html).toContain("Select All Items");
@@ -153,7 +147,7 @@ describe("EntityCardsGrid Component", () => {
             {item.name}
           </div>
         )}
-      />
+      />,
     );
 
     expect(html).toContain("Item 0");
@@ -173,7 +167,7 @@ describe("EntityCardsGrid Component", () => {
             {item.name}
           </div>
         )}
-      />
+      />,
     );
 
     expect(html).toContain("max-h-drawer");
@@ -181,7 +175,10 @@ describe("EntityCardsGrid Component", () => {
 
   it("renders select-all bar when onSelectAll is provided and items exist", () => {
     const onSelectAll = vi.fn();
-    const items = [{ id: "1", name: "Alpha" }, { id: "2", name: "Beta" }];
+    const items = [
+      { id: "1", name: "Alpha" },
+      { id: "2", name: "Beta" },
+    ];
 
     const html = renderToStaticMarkup(
       <EntityCardsGrid
@@ -194,7 +191,7 @@ describe("EntityCardsGrid Component", () => {
         deselectAllLabel="Deselect"
         checkboxIdPrefix="test-cards"
         renderItem={(item) => <div key={item.id}>{item.name}</div>}
-      />
+      />,
     );
 
     expect(html).toContain("1 selected");

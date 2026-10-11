@@ -13,11 +13,7 @@ import { TemplateEditorSection } from "./TemplateEditorSection";
 import { TemplateEditorTypographyStyleButtons } from "./TemplateEditorTypographyStyleButtons";
 import { TemplateEditorTypographySwatches } from "./TemplateEditorTypographySwatches";
 import { TemplateEditorFontSizeColorControls } from "./TemplateEditorFontSizeColorControls";
-import {
-  FONT_OPTIONS,
-  SWATCHES,
-  resolveTypographyStates,
-} from "./templateEditorTypographyUtils";
+import { FONT_OPTIONS, SWATCHES, resolveTypographyStates } from "./templateEditorTypographyUtils";
 import { PRINT_EMERALD, PRINT_EMERALD_DEEP } from "@/lib/printTemplateStyles";
 
 export { FONT_OPTIONS, SWATCHES };
@@ -60,7 +56,10 @@ export function TemplateEditorTypographySection({
 
   const swatches = [
     { label: t("templateEditor.swatchBrandPrimary"), color: primaryColor || PRINT_EMERALD },
-    { label: t("templateEditor.swatchBrandSecondary"), color: secondaryColor || PRINT_EMERALD_DEEP },
+    {
+      label: t("templateEditor.swatchBrandSecondary"),
+      color: secondaryColor || PRINT_EMERALD_DEEP,
+    },
     ...SWATCHES.map((s) => ({ label: t(s.labelKey), color: s.color })),
   ];
 
@@ -74,7 +73,10 @@ export function TemplateEditorTypographySection({
       panelClassName="space-y-3"
     >
       <div className="space-y-1">
-        <label htmlFor={fontFamilyId} className="text-xs font-bold uppercase text-muted-foreground tracking-wide">
+        <label
+          htmlFor={fontFamilyId}
+          className="text-xs font-bold uppercase text-muted-foreground tracking-wide"
+        >
           {t("templateEditor.fontFamily")}
         </label>
         <FormSelect
@@ -116,7 +118,10 @@ export function TemplateEditorTypographySection({
             }
             className="cursor-pointer"
           />
-          <label htmlFor={rtlToggleId} className="cursor-pointer text-xs font-medium text-foreground">
+          <label
+            htmlFor={rtlToggleId}
+            className="cursor-pointer text-xs font-medium text-foreground"
+          >
             {t("templateEditor.rtl")}
           </label>
         </div>

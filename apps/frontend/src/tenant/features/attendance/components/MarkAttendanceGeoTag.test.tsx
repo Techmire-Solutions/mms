@@ -11,9 +11,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 
 describe("MarkAttendanceGeoTag Component", () => {
   it("renders tag button when geo is null", () => {
-    const html = renderToStaticMarkup(
-      <MarkAttendanceGeoTag geo={null} onRequest={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<MarkAttendanceGeoTag geo={null} onRequest={vi.fn()} />);
 
     expect(html).toContain("attendance.mark.tagLocation");
   });

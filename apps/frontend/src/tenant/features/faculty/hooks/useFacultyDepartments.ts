@@ -1,21 +1,21 @@
-import { useContext } from 'react';
+import { useContext } from "react";
 import {
   QueryClient,
   QueryClientContext,
   queryOptions,
   useMutation,
   useQuery,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 import {
   facultyDepartmentSchema,
   type FacultyDepartmentEntity,
   type FacultyDepartmentWrite,
-} from '@mms/shared';
-import { apiContract } from '@/lib/api';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FACULTY_QUERY_KEY } from './facultyQueryKeys';
+} from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { useTranslation } from "@/hooks/useTranslation";
+import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
 
-export const FACULTY_DEPARTMENTS_QUERY_KEY = [...FACULTY_QUERY_KEY, 'departments'] as const;
+export const FACULTY_DEPARTMENTS_QUERY_KEY = [...FACULTY_QUERY_KEY, "departments"] as const;
 
 const fallbackQueryClient = new QueryClient();
 
@@ -53,8 +53,8 @@ export function useFacultyDepartments(options: { includeDeleted?: boolean } = {}
   return useQuery(
     facultyDepartmentsQueryOptions({
       includeDeleted: options.includeDeleted,
-      loadFailed: t('faculty.errors.loadDepartments'),
-      invalidResponse: t('faculty.errors.invalidDepartmentsResponse'),
+      loadFailed: t("faculty.errors.loadDepartments"),
+      invalidResponse: t("faculty.errors.invalidDepartmentsResponse"),
     }),
   );
 }
@@ -73,17 +73,16 @@ export function useSaveFacultyDepartment(customClient?: QueryClient) {
         });
         if (response.status !== 200) {
           const message =
-            typeof response.body === 'object' && response.body && 'message' in response.body
+            typeof response.body === "object" && response.body && "message" in response.body
               ? String(response.body.message)
-              : t('faculty.errors.saveDepartment');
+              : t("faculty.errors.saveDepartment");
           throw new Error(message);
         }
         return facultyDepartmentSchema.parse(
           (response.body as { department?: unknown }).department,
         );
       },
-      onSuccess: () =>
-        client.invalidateQueries({ queryKey: FACULTY_DEPARTMENTS_QUERY_KEY }),
+      onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DEPARTMENTS_QUERY_KEY }),
     },
     client,
   );
@@ -103,14 +102,13 @@ export function useDeleteFacultyDepartment(customClient?: QueryClient) {
         });
         if (response.status !== 200) {
           const message =
-            typeof response.body === 'object' && response.body && 'message' in response.body
+            typeof response.body === "object" && response.body && "message" in response.body
               ? String(response.body.message)
-              : t('faculty.errors.deleteDepartment');
+              : t("faculty.errors.deleteDepartment");
           throw new Error(message);
         }
       },
-      onSuccess: () =>
-        client.invalidateQueries({ queryKey: FACULTY_DEPARTMENTS_QUERY_KEY }),
+      onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DEPARTMENTS_QUERY_KEY }),
     },
     client,
   );
@@ -130,17 +128,16 @@ export function useRestoreFacultyDepartment(customClient?: QueryClient) {
         });
         if (response.status !== 200) {
           const message =
-            typeof response.body === 'object' && response.body && 'message' in response.body
+            typeof response.body === "object" && response.body && "message" in response.body
               ? String(response.body.message)
-              : t('faculty.errors.restoreDepartment');
+              : t("faculty.errors.restoreDepartment");
           throw new Error(message);
         }
         return facultyDepartmentSchema.parse(
           (response.body as { department?: unknown }).department,
         );
       },
-      onSuccess: () =>
-        client.invalidateQueries({ queryKey: FACULTY_DEPARTMENTS_QUERY_KEY }),
+      onSuccess: () => client.invalidateQueries({ queryKey: FACULTY_DEPARTMENTS_QUERY_KEY }),
     },
     client,
   );

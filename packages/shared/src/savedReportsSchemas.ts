@@ -1,7 +1,10 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export * from './schemas/savedReports.dto.js';
-import { CONTACTS_SAVED_REPORT_CATEGORY, genericSavedReportCategorySchema } from './schemas/savedReports.dto.js';
+export * from "./schemas/savedReports.dto.js";
+import {
+  CONTACTS_SAVED_REPORT_CATEGORY,
+  genericSavedReportCategorySchema,
+} from "./schemas/savedReports.dto.js";
 
 /** Validates a persisted generic saved-report preset returned by the API. */
 export const genericSavedReportSchema = z.object({
@@ -28,4 +31,4 @@ export const genericSavedReportIdParamsSchema = z.object({
   id: z.string().min(1),
 });
 
-export * from './schemas/savedReports.dto.js';
+export * from "./schemas/savedReports.dto.js";

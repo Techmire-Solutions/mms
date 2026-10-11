@@ -20,7 +20,11 @@ export function renderInvoiceWorkColumnValue(
 
   switch (columnKey) {
     case "invoice":
-      return <span className="text-xs font-mono font-semibold text-muted-foreground">{invoice.invoiceNumber ?? invoice.id}</span>;
+      return (
+        <span className="text-xs font-mono font-semibold text-muted-foreground">
+          {invoice.invoiceNumber ?? invoice.id}
+        </span>
+      );
     case "student":
       return <span className="text-sm font-semibold text-foreground">{invoice.studentName}</span>;
     case "sessionClass":
@@ -35,7 +39,9 @@ export function renderInvoiceWorkColumnValue(
     case "discount":
       return invoice.discountAmt > 0 ? (
         <div>
-          <span className="text-sm font-medium text-warning">-{formatCurrency(invoice.discountAmt)}</span>
+          <span className="text-sm font-medium text-warning">
+            -{formatCurrency(invoice.discountAmt)}
+          </span>
           <p className="m-0 text-xs text-muted-foreground">{invoice.discountType}</p>
         </div>
       ) : (
@@ -44,9 +50,13 @@ export function renderInvoiceWorkColumnValue(
     case "final":
       return (
         <>
-          <span className="text-sm font-bold text-foreground">{formatCurrency(invoice.finalAmt)}</span>
+          <span className="text-sm font-bold text-foreground">
+            {formatCurrency(invoice.finalAmt)}
+          </span>
           {invoice.paidAmt !== undefined && invoice.status === "partial" && (
-            <p className="m-0 text-xs text-info">{t("finance.paidAmount", { amount: formatCurrency(invoice.paidAmt) })}</p>
+            <p className="m-0 text-xs text-info">
+              {t("finance.paidAmount", { amount: formatCurrency(invoice.paidAmt) })}
+            </p>
           )}
         </>
       );
@@ -54,7 +64,9 @@ export function renderInvoiceWorkColumnValue(
       return <StatusBadge status={invoice.status} config={statusConfig} size="sm" />;
     case "dueDate":
       return (
-        <span className={`text-sm ${invoice.status === "overdue" ? "font-semibold text-destructive" : "text-muted-foreground"}`}>
+        <span
+          className={`text-sm ${invoice.status === "overdue" ? "font-semibold text-destructive" : "text-muted-foreground"}`}
+        >
           {formatDate(invoice.dueDate)}
         </span>
       );

@@ -1,5 +1,5 @@
-import { isSystemMetadataKey } from '@mms/shared';
-import { runCsvDownloadJob } from '@/lib/backgroundJobs/runCsvDownloadJob';
+import { isSystemMetadataKey } from "@mms/shared";
+import { runCsvDownloadJob } from "@/lib/backgroundJobs/runCsvDownloadJob";
 
 export interface GridExportColumn {
   header: string;
@@ -31,7 +31,7 @@ export function runGridCsvExportJob(options: {
     const row = options.rows[i];
     const rowCells = new Array<unknown>(colCount);
     for (let j = 0; j < colCount; j++) {
-      rowCells[j] = row[keys[j]] ?? '';
+      rowCells[j] = row[keys[j]] ?? "";
     }
     csvRows[i] = rowCells;
   }
@@ -39,7 +39,7 @@ export function runGridCsvExportJob(options: {
   runCsvDownloadJob({
     moduleId: options.moduleId,
     label: options.label,
-    filename: options.filename.endsWith('.csv') ? options.filename : `${options.filename}.csv`,
+    filename: options.filename.endsWith(".csv") ? options.filename : `${options.filename}.csv`,
     rows: [header, ...csvRows],
   });
 }

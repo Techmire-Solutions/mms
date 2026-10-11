@@ -13,7 +13,7 @@ describe("DraggableField Component", () => {
         onMoveDown={vi.fn()}
         isFirst={false}
         isLast={false}
-      />
+      />,
     );
 
     expect(html).toContain("Full Name");
@@ -31,7 +31,7 @@ describe("DraggableField Component", () => {
         onMoveDown={vi.fn()}
         isFirst={true}
         isLast={true}
-      />
+      />,
     );
 
     expect(html).toContain("disabled");

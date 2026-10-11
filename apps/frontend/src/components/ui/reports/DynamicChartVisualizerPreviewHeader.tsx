@@ -63,7 +63,9 @@ export function VisualizerPreviewHeader({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-4">
       <div className="space-y-1">
-        <h3 className="text-base font-black text-foreground tracking-tight leading-none">{title}</h3>
+        <h3 className="text-base font-black text-foreground tracking-tight leading-none">
+          {title}
+        </h3>
         <p className="text-xs text-muted-foreground font-black uppercase tracking-widest">
           {t("reports.visualizer.sourceSubtitle", {
             source: getCollectionLabel(collectionKey, activeMeta.name, t),
@@ -87,12 +89,7 @@ export function VisualizerPreviewHeader({
         )}
 
         {onClose && (
-          <Button
-            type="button"
-            variant="capsOutline"
-            size="caps"
-            onClick={onClose}
-          >
+          <Button type="button" variant="capsOutline" size="caps" onClick={onClose}>
             {t("reports.visualizer.cancel")}
           </Button>
         )}
@@ -106,7 +103,9 @@ export function VisualizerPreviewHeader({
             className={isPinned ? "shadow-md shadow-success/5" : undefined}
           >
             {isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
-            {isPinned ? t("reports.visualizer.pinnedToHome") : t("reports.visualizer.pinToDashboard")}
+            {isPinned
+              ? t("reports.visualizer.pinnedToHome")
+              : t("reports.visualizer.pinToDashboard")}
           </Button>
         )}
 

@@ -1,6 +1,6 @@
-import { formatDeterministicSequence } from './sequenceNumberingUtils.js';
-import { obligationsSettingsToSequenceConfig } from './sequenceNumberingAdapters.js';
-import type { ObligationsSettings } from './obligationsModuleSettings.js';
+import { formatDeterministicSequence } from "./sequenceNumberingUtils.js";
+import { obligationsSettingsToSequenceConfig } from "./sequenceNumberingAdapters.js";
+import type { ObligationsSettings } from "./obligationsModuleSettings.js";
 
 export interface ObligationCollectionReceiptRecord {
   receipt_no?: string | null;
@@ -24,7 +24,7 @@ export function computeNextObligationReceiptNo(
 ): string {
   const config = obligationsSettingsToSequenceConfig(settings);
   if (!config.autoGenerate) {
-    return '';
+    return "";
   }
 
   const numbers = existingCollections

@@ -1,12 +1,16 @@
-import { z } from 'zod';
-import { findFiscalYearForDate, isFiscalYearClosed, type FiscalYearRange } from './accountingLedgerInvariants.js';
-import { isoDateSchema, isValidIsoDate } from './isoDateSchema.js';
+import { z } from "zod";
+import {
+  findFiscalYearForDate,
+  isFiscalYearClosed,
+  type FiscalYearRange,
+} from "./accountingLedgerInvariants.js";
+import { isoDateSchema, isValidIsoDate } from "./isoDateSchema.js";
 
 /** Body of `POST /api/accounting/entries/:id/reverse`. */
 export const journalReversalRequestSchema = z
   .object({
     date: isoDateSchema,
-    reason: z.string().trim().min(1, 'accounting.journal.reverse.reasonRequired').max(500),
+    reason: z.string().trim().min(1, "accounting.journal.reverse.reasonRequired").max(500),
     remarks: z.string().trim().max(1000).optional(),
   })
   .strict();
@@ -20,18 +24,15 @@ export type JournalReversalRequest = z.infer<typeof journalReversalRequestSchema
  * Finance reverse the same figure a second time; a year-end closing entry is
  * irreversible by design.
  */
-export const NON_REVERSIBLE_JOURNAL_SOURCES = ['invoice', 'payment', 'closing'] as const;
+export const NON_REVERSIBLE_JOURNAL_SOURCES = ["invoice", "payment", "closing"] as const;
 
 /** True when a journal of this source type may be reversed through the Reverse Entry action. */
 export function isManuallyReversibleJournalSource(sourceType: string | null | undefined): boolean {
-  return !(NON_REVERSIBLE_JOURNAL_SOURCES as readonly string[]).includes(sourceType ?? '');
+  return !(NON_REVERSIBLE_JOURNAL_SOURCES as readonly string[]).includes(sourceType ?? "");
 }
 
 export type JournalReversalDateIssue =
-  | 'invalid_date'
-  | 'before_original'
-  | 'closed_period'
-  | 'outside_fiscal_years';
+  "invalid_date" | "before_original" | "closed_period" | "outside_fiscal_years";
 
 /**
  * True when `date` may not receive postings: it falls in a closed fiscal year,
@@ -50,11 +51,11 @@ export function validateJournalReversalDate(
   date: string,
   years: readonly FiscalYearRange[],
 ): JournalReversalDateIssue | null {
-  if (!isValidIsoDate(date)) return 'invalid_date';
-  if (date < originalDate) return 'before_original';
+  if (!isValidIsoDate(date)) return "invalid_date";
+  if (date < originalDate) return "before_original";
   const containing = findFiscalYearForDate(years, date);
-  if (isFiscalYearClosed(containing)) return 'closed_period';
-  if (!containing && years.length > 0) return 'outside_fiscal_years';
+  if (isFiscalYearClosed(containing)) return "closed_period";
+  if (!containing && years.length > 0) return "outside_fiscal_years";
   return null;
 }
 
@@ -72,7 +73,7 @@ export function defaultJournalReversalDate(
 ): string {
   if (validateJournalReversalDate(originalDate, originalDate, years) === null) return originalDate;
   if (validateJournalReversalDate(originalDate, today, years) === null) return today;
-  return '';
+  return "";
 }
 
 /**

@@ -1,14 +1,14 @@
-import type React from 'react';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { EmptyState } from '@/components/ui/EmptyState';
+import type React from "react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { formatDirectoryPageCountLabel } from '@/lib/formatDirectoryPageCountLabel';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { AttendanceRecord, AttendanceStatus } from '@/lib/data/attendanceData';
+import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";
 import {
   AttendanceCard,
   type AttendanceCardProps,
-} from '@/tenant/features/attendance/components/AttendanceCard';
+} from "@/tenant/features/attendance/components/AttendanceCard";
 
 export { AttendanceCard, type AttendanceCardProps };
 
@@ -49,15 +49,15 @@ export function AttendanceListCards({
 }: AttendanceRecordsMobileListProps): React.JSX.Element {
   const reducedMotion = useReducedMotion();
   const pageCountLabel = formatDirectoryPageCountLabel(paginatedRecords.length, t, {
-    singular: 'attendance.item.record',
-    plural: 'attendance.item.records',
+    singular: "attendance.item.record",
+    plural: "attendance.item.records",
   });
 
   if (paginatedRecords.length === 0) {
     return (
       <EmptyState
-        title={t('attendance.empty.records')}
-        description={t('attendance.empty.recordsHint')}
+        title={t("attendance.empty.records")}
+        description={t("attendance.empty.recordsHint")}
         compact
       />
     );
@@ -71,9 +71,9 @@ export function AttendanceListCards({
         onSelectAll={canDelete ? () => onToggleSelectAll(!allVisibleSelected) : undefined}
         allSelected={allVisibleSelected}
         someSelected={someVisibleSelected}
-        selectAllLabel={t('attendance.trash.selectAll')}
-        deselectAllLabel={t('common.deselect')}
-        selectedCountLabel={t('attendance.trash.selected', { count: selectedIds.length })}
+        selectAllLabel={t("attendance.trash.selectAll")}
+        deselectAllLabel={t("common.deselect")}
+        selectedCountLabel={t("attendance.trash.selected", { count: selectedIds.length })}
         pageCountLabel={pageCountLabel}
         checkboxIdPrefix="attendance-select-cards"
         renderItem={(attendanceRecord) => (

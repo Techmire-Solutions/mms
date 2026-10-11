@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldAlert, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
-import { ROUTES } from '@/lib/config/routes';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { ShieldAlert, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformSidebarBrandProps {
   isMobile?: boolean;
@@ -45,15 +45,15 @@ export function PlatformSidebarBrand({
           {(isMobile || !collapsed) && (
             <motion.div
               initial={reducedMotion ? false : { opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
+              animate={{ opacity: 1, width: "auto" }}
               exit={reducedMotion ? undefined : { opacity: 0, width: 0 }}
               className="overflow-hidden whitespace-nowrap flex flex-col text-start"
             >
               <span className="text-sidebar-foreground font-semibold text-sm tracking-wide leading-tight">
-                {t('entry.productName')}
+                {t("entry.productName")}
               </span>
               <span className="text-2xs font-mono text-sidebar-muted-foreground uppercase tracking-wider leading-tight mt-0.5">
-                {t('platform.consoleTitle')}
+                {t("platform.consoleTitle")}
               </span>
             </motion.div>
           )}
@@ -68,7 +68,7 @@ export function PlatformSidebarBrand({
           icon={X}
           onClick={onCloseMobile}
           className="min-w-11 text-sidebar-muted-foreground hover:text-sidebar-foreground shrink-0 rounded-lg"
-          aria-label={t('nav.closeSidebar')}
+          aria-label={t("nav.closeSidebar")}
         />
       )}
     </div>

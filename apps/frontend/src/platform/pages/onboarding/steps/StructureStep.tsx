@@ -16,9 +16,7 @@ interface StructureStepProps {
   onChange: Dispatch<SetStateAction<OnboardingData>>;
 }
 
-export default function StructureStep({
-  data,
-}: StructureStepProps): React.JSX.Element {
+export default function StructureStep({ data }: StructureStepProps): React.JSX.Element {
   const { t } = useTranslation();
   const roles = getRecommendedRolesForIndustry(data.industryType);
 

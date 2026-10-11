@@ -21,11 +21,7 @@ describe("PersonDetailHeroCard Component", () => {
 
   it("renders meta row when children are provided", () => {
     const html = renderToStaticMarkup(
-      <PersonDetailHeroCard
-        id="usr-2"
-        displayName="Ali Raza"
-        gender="male"
-      >
+      <PersonDetailHeroCard id="usr-2" displayName="Ali Raza" gender="male">
         <span id="badge-active">Active</span>
         <span id="badge-gr">GR-100</span>
       </PersonDetailHeroCard>,
@@ -53,11 +49,7 @@ describe("PersonDetailHeroCard Component", () => {
 
   it("omits CARD_STRIPE_INSET when accentColor={false}", () => {
     const html = renderToStaticMarkup(
-      <PersonDetailHeroCard
-        id="usr-4"
-        displayName="Plain User"
-        accentColor={false}
-      />,
+      <PersonDetailHeroCard id="usr-4" displayName="Plain User" accentColor={false} />,
     );
 
     expect(html).not.toContain("ps-5");

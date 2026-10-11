@@ -9,8 +9,15 @@
  * at all**, so a table designed in the editor printed as the literal word "Table".
  */
 import React from "react";
-import { getPageDimensions, resolveField, type InvoiceTemplate, type TemplateElement, type FieldLookupInfo, AVAILABLE_FIELDS } from "@/lib/invoiceTemplateStore";
-import { type ObligationCollection } from '@/lib/data/obligationsData';
+import {
+  getPageDimensions,
+  resolveField,
+  type InvoiceTemplate,
+  type TemplateElement,
+  type FieldLookupInfo,
+  AVAILABLE_FIELDS,
+} from "@/lib/invoiceTemplateStore";
+import { type ObligationCollection } from "@/lib/data/obligationsData";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPrintBrandingTokens } from "@/lib/printBrandingTokens";
@@ -40,11 +47,7 @@ function buildFieldData(
   const record: Record<string, unknown> = { ...collection };
   const data: Record<string, unknown> = {};
   for (const item of AVAILABLE_FIELDS) {
-    const value = resolveField(
-      item.field,
-      record,
-      lookups as FieldLookupInfo,
-    );
+    const value = resolveField(item.field, record, lookups as FieldLookupInfo);
     if (value !== undefined && value !== null && value !== "") {
       data[item.field] = value;
     }
@@ -86,7 +89,11 @@ export function InvoicePrintPreview({
   const renderElement = (templateElement: TemplateElement) => {
     const isSelected = selectedId === templateElement.id;
     const elementStyle = templateElement.style || {};
-    const geometry = resolveElementGeometry(templateElement, appDir, data?.[String(templateElement.field ?? "")] as string | undefined);
+    const geometry = resolveElementGeometry(
+      templateElement,
+      appDir,
+      data?.[String(templateElement.field ?? "")] as string | undefined,
+    );
 
     return (
       <div
@@ -94,7 +101,7 @@ export function InvoicePrintPreview({
         dir={geometry.direction}
         role={onSelect ? "button" : undefined}
         tabIndex={onSelect ? 0 : undefined}
-        aria-label={onSelect ? (templateElement.label || t("templateEditor.element")) : undefined}
+        aria-label={onSelect ? templateElement.label || t("templateEditor.element") : undefined}
         onClick={
           onSelect
             ? (event: React.MouseEvent) => {
@@ -132,7 +139,8 @@ export function InvoicePrintPreview({
           border: elementStyle.borderWidth
             ? `${elementStyle.borderWidth}px solid ${elementStyle.borderColor || printTokens.border}`
             : "none",
-          borderRadius: elementStyle.borderRadius != null ? `${elementStyle.borderRadius}px` : undefined,
+          borderRadius:
+            elementStyle.borderRadius != null ? `${elementStyle.borderRadius}px` : undefined,
           /*
            * Text is allowed to overflow its box on paper rather than being clipped with
            * an ellipsis — a printed receipt must not silently drop half a value.

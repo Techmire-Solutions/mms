@@ -24,38 +24,38 @@
  * `devCode`, `twoFactorCode`).
  */
 const SENSITIVE_KEYS = [
-  'password',
-  'passwordHash',
-  'newPassword',
-  'currentPassword',
-  'initialPassword',
-  'temporaryPassword',
-  'confirmPassword',
-  'passwordConfirmation',
-  'token',
-  'tokenHash',
-  'accessToken',
-  'refreshToken',
-  'idToken',
-  'resetToken',
-  'verificationToken',
-  'secret',
-  'clientSecret',
-  'jwtSecret',
-  'apiKey',
-  'api_key',
-  'privateKey',
-  'authorization',
-  'cookie',
-  'set-cookie',
-  'csrf',
-  'csrfToken',
-  'otp',
-  'otpCode',
-  'twoFactorCode',
-  'verificationCode',
-  'devCode',
-  'credentials',
+  "password",
+  "passwordHash",
+  "newPassword",
+  "currentPassword",
+  "initialPassword",
+  "temporaryPassword",
+  "confirmPassword",
+  "passwordConfirmation",
+  "token",
+  "tokenHash",
+  "accessToken",
+  "refreshToken",
+  "idToken",
+  "resetToken",
+  "verificationToken",
+  "secret",
+  "clientSecret",
+  "jwtSecret",
+  "apiKey",
+  "api_key",
+  "privateKey",
+  "authorization",
+  "cookie",
+  "set-cookie",
+  "csrf",
+  "csrfToken",
+  "otp",
+  "otpCode",
+  "twoFactorCode",
+  "verificationCode",
+  "devCode",
+  "credentials",
 ] as const;
 
 /**
@@ -75,15 +75,20 @@ function buildRedactPaths(): string[] {
     paths.push(`*.*.${key}`);
   }
   // Header locations that pino's serializer sees verbatim.
-  paths.push('req.headers.authorization', 'req.headers.cookie', 'headers.authorization', 'headers.cookie');
-  paths.push('res.headers["set-cookie"]', 'res.headers.set-cookie');
+  paths.push(
+    "req.headers.authorization",
+    "req.headers.cookie",
+    "headers.authorization",
+    "headers.cookie",
+  );
+  paths.push('res.headers["set-cookie"]', "res.headers.set-cookie");
   return paths;
 }
 
 export const LOG_REDACT_PATHS: string[] = buildRedactPaths();
 
 /** Marker written in place of a redacted value. */
-export const LOG_REDACT_CENSOR = '[Redacted]';
+export const LOG_REDACT_CENSOR = "[Redacted]";
 
 /** Pass straight into a pino / Fastify logger `redact` option. */
 export const LOG_REDACTION_OPTIONS = {

@@ -1,17 +1,17 @@
-import { useState, useCallback, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
-import { apiJson } from '@/lib/apiClient';
+import { useState, useCallback, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import { apiJson } from "@/lib/apiClient";
 import type {
   PlatformAiQueryRequest,
   PlatformAiQueryResponse,
   PlatformAiSuggestion,
   PlatformAiContext,
-} from '@mms/shared';
-import { ROUTES } from '@/lib/config/routes';
+} from "@mms/shared";
+import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformChatMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   suggestions?: PlatformAiSuggestion[];
   latencyMs?: number;
@@ -35,30 +35,30 @@ export function usePlatformAiDiagnostics(): {
     const path = location.pathname;
     if (path.includes(ROUTES.platformSystem)) {
       return [
-        'Explain connection pool saturation',
-        'Analyze database round-trip latency',
-        'Inspect Node.js memory footprint',
+        "Explain connection pool saturation",
+        "Analyze database round-trip latency",
+        "Inspect Node.js memory footprint",
       ];
     }
     if (path.includes(ROUTES.platformWorkspaces)) {
       return [
-        'Identify inactive workspaces',
-        'Analyze workspace growth rate',
-        'Check tenant RLS isolation status',
+        "Identify inactive workspaces",
+        "Analyze workspace growth rate",
+        "Check tenant RLS isolation status",
       ];
     }
     if (path.includes(ROUTES.platformActivityLogs)) {
       return [
-        'Highlight recent security events',
-        'Summarize administrative actions',
-        'Explain recent system audit entries',
+        "Highlight recent security events",
+        "Summarize administrative actions",
+        "Explain recent system audit entries",
       ];
     }
     return [
-      'Explain database pool metrics',
-      'Summarize active workspaces',
-      'Check BullMQ queue health',
-      'Inspect platform audit log',
+      "Explain database pool metrics",
+      "Summarize active workspaces",
+      "Check BullMQ queue health",
+      "Inspect platform audit log",
     ];
   }, [location.pathname]);
 
@@ -77,7 +77,7 @@ export function usePlatformAiDiagnostics(): {
 
       const userMsg: PlatformChatMessage = {
         id: userMsgId,
-        role: 'user',
+        role: "user",
         content: trimmed,
         timestamp: Date.now(),
       };
@@ -95,18 +95,15 @@ export function usePlatformAiDiagnostics(): {
       };
 
       try {
-        const response = await apiJson<PlatformAiQueryResponse>(
-          '/api/platform/ai/query',
-          {
-            method: 'POST',
-            body: JSON.stringify(requestPayload),
-            headers: { 'Content-Type': 'application/json' },
-          },
-        );
+        const response = await apiJson<PlatformAiQueryResponse>("/api/platform/ai/query", {
+          method: "POST",
+          body: JSON.stringify(requestPayload),
+          headers: { "Content-Type": "application/json" },
+        });
 
         const assistantMsg: PlatformChatMessage = {
           id: assistantMsgId,
-          role: 'assistant',
+          role: "assistant",
           content: response.analysis,
           suggestions: response.suggestions,
           latencyMs: response.latencyMs,
@@ -115,7 +112,7 @@ export function usePlatformAiDiagnostics(): {
 
         setMessages((prev) => [...prev, assistantMsg]);
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Telemetry request failed');
+        setError(err instanceof Error ? err.message : "Telemetry request failed");
       } finally {
         setIsAnalyzing(false);
       }

@@ -1,14 +1,11 @@
-import type { TabDefinition } from './contactTypes.js';
-import {
-  DEFAULT_SESSIONS_SETTINGS,
-  type SessionsSettings,
-} from './sessionsModuleSettings.js';
-import { SESSIONS_TAB_REGISTRY } from './moduleFieldSetupAcademic.js';
-import { resolveSessionsFieldsMap } from './sessionSetupConfigFields.js';
+import type { TabDefinition } from "./contactTypes.js";
+import { DEFAULT_SESSIONS_SETTINGS, type SessionsSettings } from "./sessionsModuleSettings.js";
+import { SESSIONS_TAB_REGISTRY } from "./moduleFieldSetupAcademic.js";
+import { resolveSessionsFieldsMap } from "./sessionSetupConfigFields.js";
 import {
   normalizeSessionModulePreferences,
   type SessionModulePreferences,
-} from './sessionSetupConfigPreferences.js';
+} from "./sessionSetupConfigPreferences.js";
 
 /** Field-config slice persisted on `session_field_configs` (never formTabs / module prefs). */
 export function stripSessionFieldConfigForPersist(
@@ -34,7 +31,7 @@ export function stripSessionFieldConfigForPersist(
 /** Normalize SessionsSettings from typed REST or legacy document blobs. */
 export function normalizeSessionsSettings(config: unknown): SessionsSettings {
   const defaults = { ...DEFAULT_SESSIONS_SETTINGS, formTabs: [...SESSIONS_TAB_REGISTRY] };
-  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
     return { ...defaults };
   }
   const raw = config as Record<string, unknown>;
@@ -44,14 +41,10 @@ export function normalizeSessionsSettings(config: unknown): SessionsSettings {
     ...(raw as Partial<SessionsSettings>),
     ...prefs,
     customFields: Array.isArray(raw.customFields)
-      ? (raw.customFields as SessionsSettings['customFields'])
+      ? (raw.customFields as SessionsSettings["customFields"])
       : defaults.customFields,
-    fieldOrder: Array.isArray(raw.fieldOrder)
-      ? (raw.fieldOrder as string[])
-      : defaults.fieldOrder,
-    formTabs: Array.isArray(raw.formTabs)
-      ? (raw.formTabs as TabDefinition[])
-      : defaults.formTabs,
+    fieldOrder: Array.isArray(raw.fieldOrder) ? (raw.fieldOrder as string[]) : defaults.fieldOrder,
+    formTabs: Array.isArray(raw.formTabs) ? (raw.formTabs as TabDefinition[]) : defaults.formTabs,
     enabledTabs: Array.isArray(raw.enabledTabs)
       ? (raw.enabledTabs as string[])
       : (raw.enabledTabs as string[] | undefined),
@@ -59,7 +52,7 @@ export function normalizeSessionsSettings(config: unknown): SessionsSettings {
       ? (raw.requiredTabs as string[])
       : (raw.requiredTabs as string[] | undefined),
     fields: resolveSessionsFieldsMap(
-      raw.fields && typeof raw.fields === 'object' && !Array.isArray(raw.fields)
+      raw.fields && typeof raw.fields === "object" && !Array.isArray(raw.fields)
         ? (raw.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -88,7 +81,7 @@ export function composeSessionsSettings(
     preferences as Partial<SessionModulePreferences> | null,
   );
   return normalizeSessionsSettings({
-    ...(fieldConfig && typeof fieldConfig === 'object' && !Array.isArray(fieldConfig)
+    ...(fieldConfig && typeof fieldConfig === "object" && !Array.isArray(fieldConfig)
       ? (fieldConfig as Record<string, unknown>)
       : {}),
     ...prefs,
@@ -102,12 +95,10 @@ export function composeSessionsSettings(
 export function mergeSessionsFormTabsFromApi(
   documentFormTabs: TabDefinition[] | undefined,
   apiTabs: TabDefinition[],
-  _fields?: Record<string, import('./contactTypes.js').FieldDefinition[]> | undefined,
+  _fields?: Record<string, import("./contactTypes.js").FieldDefinition[]> | undefined,
 ): TabDefinition[] {
   const documentOrDefault =
-    documentFormTabs && documentFormTabs.length > 0
-      ? documentFormTabs
-      : [...SESSIONS_TAB_REGISTRY];
+    documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [...SESSIONS_TAB_REGISTRY];
 
   const merged =
     apiTabs.length === 0

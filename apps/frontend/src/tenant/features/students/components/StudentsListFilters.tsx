@@ -77,13 +77,18 @@ export function StudentsListFilters({
           const field = toStudentsListContentSortField(col.key);
           return field ? { field, label: col.label } : null;
         })
-        .filter((option): option is { field: StudentsListContentSortField; label: string } => option !== null),
+        .filter(
+          (option): option is { field: StudentsListContentSortField; label: string } =>
+            option !== null,
+        ),
     [columnLayout.columnRegistry, columnLayout.isColumnVisible],
   );
 
   return (
     <WorkTaskToolbar
-      shownCountLabel={shownCount != null ? t("students.shownCount", { count: shownCount }) : undefined}
+      shownCountLabel={
+        shownCount != null ? t("students.shownCount", { count: shownCount }) : undefined
+      }
       regionLabel={t("students.filters")}
       search={studentSearch}
       onSearchChange={onSearchChange}
@@ -112,13 +117,17 @@ export function StudentsListFilters({
           onClearFilters={onClearFilters}
         />
       }
-      trashToggle={canDelete ? {
-        canViewDeleted: canDelete,
-        viewingDeleted,
-        onToggle: onToggleDeleted,
-        activeLabel: t("students.showActive"),
-        deletedLabel: t("students.showDeleted"),
-      } : undefined}
+      trashToggle={
+        canDelete
+          ? {
+              canViewDeleted: canDelete,
+              viewingDeleted,
+              onToggle: onToggleDeleted,
+              activeLabel: t("students.showActive"),
+              deletedLabel: t("students.showDeleted"),
+            }
+          : undefined
+      }
       viewModeToggle={{
         viewMode,
         onViewModeChange,

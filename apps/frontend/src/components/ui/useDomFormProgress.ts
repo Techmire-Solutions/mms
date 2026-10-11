@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import { useEffect, useRef, useState } from "react";
+import type { RefObject } from "react";
 
 export interface DomProgressResult {
   progress: number | undefined;
@@ -51,8 +51,8 @@ export function useDomFormProgress(open: boolean, active: boolean): DomProgressR
       }
 
       const targetInputs = inputs.filter((el) => {
-        const type = el.getAttribute('type');
-        if (type === 'submit' || type === 'button' || type === 'hidden') return false;
+        const type = el.getAttribute("type");
+        if (type === "submit" || type === "button" || type === "hidden") return false;
         return el.offsetParent !== null;
       });
 
@@ -71,34 +71,34 @@ export function useDomFormProgress(open: boolean, active: boolean): DomProgressR
       const requiredInputs = targetInputs.filter(
         (el) =>
           (el as HTMLInputElement).required ||
-          el.getAttribute('aria-required') === 'true' ||
-          el.classList.contains('required'),
+          el.getAttribute("aria-required") === "true" ||
+          el.classList.contains("required"),
       );
       const sourceList = requiredInputs.length > 0 ? requiredInputs : targetInputs;
 
       const filledCount = sourceList.filter((el) => {
-        if (el.tagName === 'INPUT') {
+        if (el.tagName === "INPUT") {
           const inputEl = el as HTMLInputElement;
-          if (inputEl.type === 'checkbox' || inputEl.type === 'radio') {
+          if (inputEl.type === "checkbox" || inputEl.type === "radio") {
             return inputEl.checked;
           }
-          return inputEl.value.trim() !== '';
+          return inputEl.value.trim() !== "";
         }
-        if (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
-          return (el as HTMLSelectElement | HTMLTextAreaElement).value.trim() !== '';
+        if (el.tagName === "SELECT" || el.tagName === "TEXTAREA") {
+          return (el as HTMLSelectElement | HTMLTextAreaElement).value.trim() !== "";
         }
-        if (el.getAttribute('role') === 'checkbox') {
-          return el.getAttribute('aria-checked') === 'true';
+        if (el.getAttribute("role") === "checkbox") {
+          return el.getAttribute("aria-checked") === "true";
         }
-        if (el.getAttribute('role') === 'combobox') {
-          const text = el.textContent?.trim() || '';
-          return text !== '' && !text.toLowerCase().includes('select');
+        if (el.getAttribute("role") === "combobox") {
+          const text = el.textContent?.trim() || "";
+          return text !== "" && !text.toLowerCase().includes("select");
         }
         return false;
       }).length;
       const percentage = Math.round((filledCount / sourceList.length) * 100);
       const newLabel = `${filledCount}/${sourceList.length}`;
-      
+
       if (progressRef.current !== percentage) {
         progressRef.current = percentage;
         setProgress(percentage);
@@ -108,7 +108,7 @@ export function useDomFormProgress(open: boolean, active: boolean): DomProgressR
         setLabel(newLabel);
       }
     };
-    
+
     let debounceTimer: ReturnType<typeof setTimeout>;
     const debouncedUpdateProgress = () => {
       clearTimeout(debounceTimer);
@@ -122,15 +122,20 @@ export function useDomFormProgress(open: boolean, active: boolean): DomProgressR
 
     const observer = new MutationObserver(debouncedUpdateProgress);
     // Be careful with attributes: true, it triggers on ANY attribute change in the entire tree!
-    observer.observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['value', 'checked', 'aria-checked', 'aria-required', 'class'] });
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["value", "checked", "aria-checked", "aria-required", "class"],
+    });
 
-    container.addEventListener('input', debouncedUpdateProgress);
-    container.addEventListener('change', debouncedUpdateProgress);
+    container.addEventListener("input", debouncedUpdateProgress);
+    container.addEventListener("change", debouncedUpdateProgress);
 
     return () => {
       clearTimeout(debounceTimer);
-      container.removeEventListener('input', debouncedUpdateProgress);
-      container.removeEventListener('change', debouncedUpdateProgress);
+      container.removeEventListener("input", debouncedUpdateProgress);
+      container.removeEventListener("change", debouncedUpdateProgress);
       observer.disconnect();
     };
   }, [open, active]);

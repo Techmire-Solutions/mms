@@ -1,4 +1,4 @@
-import { obligationsUseCases } from '../obligations/use-cases/obligationsUseCases.js';
+import { obligationsUseCases } from "../obligations/use-cases/obligationsUseCases.js";
 
 /**
  * Thin re-export of the obligations use-cases facade.
@@ -29,7 +29,8 @@ export const saveWakalaType = obligationsUseCases.saveWakalaType;
 export const replaceWakalaTypes = obligationsUseCases.replaceWakalaTypes;
 export const loadObligationDistributions = obligationsUseCases.loadObligationDistributions;
 export const loadObligationDistributionById = obligationsUseCases.loadObligationDistributionById;
-export const loadObligationDistributionsByIds = obligationsUseCases.loadObligationDistributionsByIds;
+export const loadObligationDistributionsByIds =
+  obligationsUseCases.loadObligationDistributionsByIds;
 export const saveObligationDistribution = obligationsUseCases.saveObligationDistribution;
 export const replaceObligationDistributions = obligationsUseCases.replaceObligationDistributions;
 export const replaceObligationCollections = obligationsUseCases.replaceObligationCollections;
@@ -47,7 +48,9 @@ export const upsertObligationDistributions = obligationsUseCases.upsertObligatio
 export const upsertObligationCollections = obligationsUseCases.upsertObligationCollections;
 export const deleteObligationCollectionById = obligationsUseCases.deleteObligationCollectionById;
 export const restoreObligationCollectionById = obligationsUseCases.restoreObligationCollectionById;
-export const bulkSoftDeleteObligationCollections = obligationsUseCases.bulkSoftDeleteObligationCollections;
-export const bulkRestoreObligationCollections = obligationsUseCases.bulkRestoreObligationCollections;
+export const bulkSoftDeleteObligationCollections =
+  obligationsUseCases.bulkSoftDeleteObligationCollections;
+export const bulkRestoreObligationCollections =
+  obligationsUseCases.bulkRestoreObligationCollections;
 export const loadObligationsCommandMetrics = obligationsUseCases.loadObligationsCommandMetrics;
 export const loadObligationsReportAggregates = obligationsUseCases.loadObligationsReportAggregates;

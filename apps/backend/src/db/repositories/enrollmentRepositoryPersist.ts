@@ -1,8 +1,8 @@
-import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Enrollment, type EnrollmentTimelineItem } from '@mms/shared';
-import { enrollments, enrollmentTimelineEvents } from '../schema.js';
-import { withTenant, type TenantTransaction } from '../tenant-context.js';
-import { mapAuditToInsert } from './repositoryMappers.js';
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Enrollment, type EnrollmentTimelineItem } from "@mms/shared";
+import { enrollments, enrollmentTimelineEvents } from "../schema.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { mapAuditToInsert } from "./repositoryMappers.js";
 
 type EnrollmentInsert = typeof enrollments.$inferInsert;
 
@@ -10,23 +10,23 @@ function recordToInsert(tenant: string, record: Enrollment): EnrollmentInsert {
   return {
     id: String(record.id),
     workspaceSubdomain: tenant.trim().toLowerCase(),
-    studentId: String(record.studentId || ''),
-    studentName: String(record.studentName || ''),
-    sessionId: String(record.sessionId || ''),
-    sessionName: String(record.sessionName || ''),
-    classId: String(record.classId || ''),
-    className: String(record.className || ''),
-    enrolledDate: String(record.enrolledDate || ''),
+    studentId: String(record.studentId || ""),
+    studentName: String(record.studentName || ""),
+    sessionId: String(record.sessionId || ""),
+    sessionName: String(record.sessionName || ""),
+    classId: String(record.classId || ""),
+    className: String(record.className || ""),
+    enrolledDate: String(record.enrolledDate || ""),
     baseFee: String(record.baseFee ?? 0),
-    discountType: String(record.discountType || 'none'),
-    discountLabel: String(record.discountLabel || ''),
+    discountType: String(record.discountType || "none"),
+    discountLabel: String(record.discountLabel || ""),
     discountPct: String(record.discountPct ?? 0),
     discountAmt: String(record.discountAmt ?? 0),
     finalFee: String(record.finalFee ?? 0),
-    status: String(record.status || 'pending'),
+    status: String(record.status || "pending"),
     invoiceId: record.invoiceId ? String(record.invoiceId) : null,
-    paymentStatus: String(record.paymentStatus || 'none'),
-    notes: String(record.notes || ''),
+    paymentStatus: String(record.paymentStatus || "none"),
+    notes: String(record.notes || ""),
     ...mapAuditToInsert(record),
   } satisfies EnrollmentInsert;
 }
@@ -58,10 +58,7 @@ async function writeTimelineEvents(
   );
 }
 
-export async function saveEnrollment(
-  tenant: string,
-  record: Enrollment,
-): Promise<void> {
+export async function saveEnrollment(tenant: string, record: Enrollment): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     const values = recordToInsert(subdomain, record);
@@ -102,10 +99,7 @@ export async function saveEnrollment(
   });
 }
 
-export async function bulkSaveEnrollments(
-  tenant: string,
-  records: Enrollment[],
-): Promise<void> {
+export async function bulkSaveEnrollments(tenant: string, records: Enrollment[]): Promise<void> {
   if (records.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
@@ -143,7 +137,6 @@ export async function bulkSaveEnrollments(
         },
       });
 
-
     await tx
       .delete(enrollmentTimelineEvents)
       .where(
@@ -179,7 +172,9 @@ export async function linkEnrollmentInvoiceIds(
     await tx.execute(sql`
       UPDATE ${enrollments}
       SET invoice_id = CASE ${sql.join(
-        links.map((link) => sql`WHEN ${enrollments.id} = ${link.enrollmentId} THEN ${link.invoiceId}`),
+        links.map(
+          (link) => sql`WHEN ${enrollments.id} = ${link.enrollmentId} THEN ${link.invoiceId}`,
+        ),
         sql` `,
       )} END,
       updated_at = now()
@@ -200,10 +195,14 @@ export async function replaceEnrollmentsForWorkspace(
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(enrollmentTimelineEvents).where(eq(enrollmentTimelineEvents.workspaceSubdomain, subdomain));
+    await tx
+      .delete(enrollmentTimelineEvents)
+      .where(eq(enrollmentTimelineEvents.workspaceSubdomain, subdomain));
     await tx.delete(enrollments).where(eq(enrollments.workspaceSubdomain, subdomain));
     if (records.length > 0) {
-      await tx.insert(enrollments).values(records.map((record) => recordToInsert(subdomain, record)));
+      await tx
+        .insert(enrollments)
+        .values(records.map((record) => recordToInsert(subdomain, record)));
       const allEvents = records.flatMap((record) =>
         (record.timeline ?? []).map((item) => ({
           workspaceSubdomain: subdomain,
@@ -292,4 +291,3 @@ export async function bulkRestoreEnrollments(
     };
   });
 }
-

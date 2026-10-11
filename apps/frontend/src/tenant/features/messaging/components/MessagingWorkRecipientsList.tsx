@@ -1,17 +1,17 @@
-import React, { type JSX, type ReactNode } from 'react';
-import { UserX } from 'lucide-react';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import type { Contact } from '@mms/shared';
-import { ModuleWorkDirectoryEmpty } from '@/components/ui/ModuleWorkDirectoryEmpty';
+import React, { type JSX, type ReactNode } from "react";
+import { UserX } from "lucide-react";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import type { Contact } from "@mms/shared";
+import { ModuleWorkDirectoryEmpty } from "@/components/ui/ModuleWorkDirectoryEmpty";
 import {
   ModuleWorkListStateShell,
   type ModuleWorkListPageData,
-} from '@/components/ui/ModuleWorkListStateShell';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { MessagingSelectedMap } from '@/tenant/features/messaging/components/messagingWorkPanelShared';
-import { MessagingWorkRecipientsCards } from './MessagingWorkRecipientsCards';
-import { MessagingWorkRecipientsTable } from './MessagingWorkRecipientsTable';
+} from "@/components/ui/ModuleWorkListStateShell";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { MessagingSelectedMap } from "@/tenant/features/messaging/components/messagingWorkPanelShared";
+import { MessagingWorkRecipientsCards } from "./MessagingWorkRecipientsCards";
+import { MessagingWorkRecipientsTable } from "./MessagingWorkRecipientsTable";
 
 export interface MessagingWorkRecipientsListProps {
   viewMode: WorkDirectoryViewMode;
@@ -63,9 +63,9 @@ export function MessagingWorkRecipientsList({
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
 
-  const showRecipientCol = isColumnVisible('recipient');
-  const showPhoneCol = isColumnVisible('phone');
-  const showEmailCol = isColumnVisible('email');
+  const showRecipientCol = isColumnVisible("recipient");
+  const showPhoneCol = isColumnVisible("phone");
+  const showEmailCol = isColumnVisible("email");
 
   return (
     <ModuleWorkListStateShell
@@ -73,8 +73,8 @@ export function MessagingWorkRecipientsList({
       isLoading={isPending && contacts.length === 0}
       isFetching={isFetching}
       onRetry={onRetry}
-      errorTitle={t('messaging.loadFailed')}
-      errorHint={t('messaging.loadFailedHint')}
+      errorTitle={t("messaging.loadFailed")}
+      errorHint={t("messaging.loadFailedHint")}
       viewMode={viewMode}
       skeletonColumnCount={4}
       useServerWork={true}
@@ -82,28 +82,28 @@ export function MessagingWorkRecipientsList({
       onPageChange={onPageChange}
       i18nNamespace="messaging"
       showPagination={contacts.length > 0}
-      loadingLabel={t('common.loading')}
+      loadingLabel={t("common.loading")}
     >
       {contacts.length === 0 ? (
         <ModuleWorkDirectoryEmpty
           icon={UserX}
           title={
             hasActiveFilters
-              ? t('contacts.noContactsMatchFilters')
-              : t('messaging.noMatchingRecipients')
+              ? t("contacts.noContactsMatchFilters")
+              : t("messaging.noMatchingRecipients")
           }
           description={
             hasActiveFilters
-              ? t('contacts.tryAdjustingFilters')
-              : t('messaging.selectRecipientsDesc')
+              ? t("contacts.tryAdjustingFilters")
+              : t("messaging.selectRecipientsDesc")
           }
           hasActiveFilters={hasActiveFilters}
           viewingDeleted={false}
           onClearFilters={onClearFilters}
-          clearFiltersLabel={t('common.clearFilters')}
+          clearFiltersLabel={t("common.clearFilters")}
           showActiveLabel=""
         />
-      ) : viewMode === 'cards' ? (
+      ) : viewMode === "cards" ? (
         <MessagingWorkRecipientsCards
           contacts={contacts}
           selectedById={selectedById}

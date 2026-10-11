@@ -27,12 +27,8 @@ export function listFacultyDetailAttributeFields(
 ): FacultyDetailFieldRow[] {
   const fields = resolveFacultyFieldsMapForColumnSync(settings.fields);
   const formTabs =
-    settings.formTabs && settings.formTabs.length > 0
-      ? settings.formTabs
-      : FACULTY_TAB_REGISTRY;
-  const tabOrderMap = Object.fromEntries(
-    formTabs.map((tab, index) => [tab.key, index]),
-  );
+    settings.formTabs && settings.formTabs.length > 0 ? settings.formTabs : FACULTY_TAB_REGISTRY;
+  const tabOrderMap = Object.fromEntries(formTabs.map((tab, index) => [tab.key, index]));
   const enabledTabIds = new Set(resolveFacultyEnabledTabIds(settings));
   const systemKeys = listFacultySystemFormFieldKeys();
 
@@ -60,6 +56,3 @@ export function listFacultyDetailAttributeFields(
     return left.order - right.order;
   });
 }
-
-
-

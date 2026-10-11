@@ -1,8 +1,8 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 /** Read-only entity shown in the contextual utility drawer. */
 export interface PlatformInspectorWorkspace {
-  kind: 'workspace';
+  kind: "workspace";
   subdomain: string;
   madrasaName: string;
   enabled: boolean;

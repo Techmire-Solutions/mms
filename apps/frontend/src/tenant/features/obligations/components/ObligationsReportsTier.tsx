@@ -13,4 +13,3 @@ export function ObligationsReportsTier(): React.JSX.Element {
     </ModuleTierMotion>
   );
 }
-

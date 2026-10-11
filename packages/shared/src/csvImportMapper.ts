@@ -18,7 +18,10 @@ export interface CsvImportMapResult<T> {
 }
 
 function normalizeHeader(value: string): string {
-  return value.trim().toLowerCase().replace(/[\s_-]+/g, '');
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
 }
 
 /**
@@ -80,7 +83,7 @@ export function mapCsvGridToObjects<T = Record<string, unknown>>(
     let hasError = false;
 
     for (const [mapping, colIdx] of fieldToCol.entries()) {
-      const rawVal = line[colIdx]?.trim() ?? '';
+      const rawVal = line[colIdx]?.trim() ?? "";
 
       if (mapping.required && rawVal.length === 0) {
         rowErrors.push({ row: r + 1, error: `Missing required field: ${mapping.header}` });

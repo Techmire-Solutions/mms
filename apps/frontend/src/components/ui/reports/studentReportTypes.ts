@@ -54,7 +54,11 @@ export function resolveStudentSessionLabels(
   const enrolledIds = Array.isArray(rawSessions) ? (rawSessions as string[]) : [];
   const enrolledIdSet = new Set(enrolledIds);
   const matchedSessions = sessions.filter((session) => enrolledIdSet.has(session.id));
-  const sessionLabel = matchedSessions.map((session) => session.name).filter(Boolean).join(", ") || "—";
+  const sessionLabel =
+    matchedSessions
+      .map((session) => session.name)
+      .filter(Boolean)
+      .join(", ") || "—";
   const classNames = new Set<string>();
   for (const session of matchedSessions) {
     for (const sessionClass of session.classes ?? []) {
@@ -65,7 +69,10 @@ export function resolveStudentSessionLabels(
   return { sessionLabel, classLabel };
 }
 
-export function mapStudentRow(student: Student | StudentRecord, sessions: Session[] = []): ReportStudent {
+export function mapStudentRow(
+  student: Student | StudentRecord,
+  sessions: Session[] = [],
+): ReportStudent {
   const age = calcAge(student.dob) ?? 0;
   const { sessionLabel, classLabel } = resolveStudentSessionLabels(student, sessions);
   const registeredDate = (student as { registeredDate?: string }).registeredDate;

@@ -22,11 +22,35 @@ import {
   isAllowedObjectKey,
 } from "../services/rbacService.js";
 
-const admin: User = { id: "1", email: "a@test.com", name: "Admin", role: "admin", workspaceSubdomain: "demo" };
-const teacher: User = { id: "2", email: "t@test.com", name: "Teacher", role: "teacher", workspaceSubdomain: "demo" };
-const accountant: User = { id: "3", email: "c@test.com", name: "Acct", role: "accountant", workspaceSubdomain: "demo" };
+const admin: User = {
+  id: "1",
+  email: "a@test.com",
+  name: "Admin",
+  role: "admin",
+  workspaceSubdomain: "demo",
+};
+const teacher: User = {
+  id: "2",
+  email: "t@test.com",
+  name: "Teacher",
+  role: "teacher",
+  workspaceSubdomain: "demo",
+};
+const accountant: User = {
+  id: "3",
+  email: "c@test.com",
+  name: "Acct",
+  role: "accountant",
+  workspaceSubdomain: "demo",
+};
 
-const viewer: User = { id: "4", email: "v@test.com", name: "Viewer", role: "viewer", workspaceSubdomain: "demo" };
+const viewer: User = {
+  id: "4",
+  email: "v@test.com",
+  name: "Viewer",
+  role: "viewer",
+  workspaceSubdomain: "demo",
+};
 
 describe("rbacService", () => {
   it("restricts users collection to admin", () => {
@@ -68,7 +92,11 @@ describe("rbacService", () => {
   });
 
   it("allows staff persistence for frontend dashboard, invoice, and student card configuration objects", () => {
-    for (const key of [DASHBOARD_PREFERENCES_KEY, INVOICE_TEMPLATE_OBJECT_KEY, STUDENT_CARD_TEMPLATE_OBJECT_KEY]) {
+    for (const key of [
+      DASHBOARD_PREFERENCES_KEY,
+      INVOICE_TEMPLATE_OBJECT_KEY,
+      STUDENT_CARD_TEMPLATE_OBJECT_KEY,
+    ]) {
       expect(canReadObject(admin, key)).toBe(true);
       expect(canWriteObject(admin, key)).toBe(true);
       expect(canReadObject(teacher, key)).toBe(true);
@@ -144,9 +172,15 @@ describe("rbacService", () => {
     expect(isAllowedObjectKey("attendance_user_column_preferences")).toBe(false);
     expect(isAllowedObjectKey("question_bank_user_column_preferences")).toBe(false);
     expect(isAllowedObjectKey("obligations_user_column_preferences")).toBe(false);
-    expect(isAllowedObjectKey(MESSAGING_MODULE_MANIFEST.recipientsColumnPreferencesObjectKey)).toBe(false);
-    expect(isAllowedObjectKey(MESSAGING_MODULE_MANIFEST.historyColumnPreferencesObjectKey)).toBe(false);
-    expect(isAllowedObjectKey(MESSAGING_MODULE_MANIFEST.templatesColumnPreferencesObjectKey)).toBe(false);
+    expect(isAllowedObjectKey(MESSAGING_MODULE_MANIFEST.recipientsColumnPreferencesObjectKey)).toBe(
+      false,
+    );
+    expect(isAllowedObjectKey(MESSAGING_MODULE_MANIFEST.historyColumnPreferencesObjectKey)).toBe(
+      false,
+    );
+    expect(isAllowedObjectKey(MESSAGING_MODULE_MANIFEST.templatesColumnPreferencesObjectKey)).toBe(
+      false,
+    );
   });
 
   it("restricts tenant reset to admin", () => {

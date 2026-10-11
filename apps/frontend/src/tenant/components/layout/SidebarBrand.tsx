@@ -22,7 +22,10 @@ export function SidebarBrand({ collapsed }: SidebarBrandProps): React.JSX.Elemen
 
   return (
     <div className="h-16 flex items-center px-5 border-b border-sidebar-border">
-      <Link to={ROUTES.home} className="flex min-h-11 min-w-11 items-center gap-3 overflow-hidden hover:opacity-90 transition-opacity">
+      <Link
+        to={ROUTES.home}
+        className="flex min-h-11 min-w-11 items-center gap-3 overflow-hidden hover:opacity-90 transition-opacity"
+      >
         {branding.logoUrl && !imgError ? (
           <img
             src={branding.logoUrl}

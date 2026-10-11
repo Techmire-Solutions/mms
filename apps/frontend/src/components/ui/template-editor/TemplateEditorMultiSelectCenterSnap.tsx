@@ -79,7 +79,11 @@ export function TemplateEditorMultiSelectCenterSnap({
           <p className="text-xs font-bold uppercase text-muted-foreground tracking-widest m-0">
             {t("templateEditor.snapToEdge")}
           </p>
-          <div role="group" aria-label={t("templateEditor.snapToEdge")} className="grid grid-cols-4 gap-1">
+          <div
+            role="group"
+            aria-label={t("templateEditor.snapToEdge")}
+            className="grid grid-cols-4 gap-1"
+          >
             <Button
               type="button"
               variant="outline"

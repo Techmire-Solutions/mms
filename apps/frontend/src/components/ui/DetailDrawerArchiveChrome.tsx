@@ -19,10 +19,7 @@ export {
   RetentionCountdownBadge,
   DetailDrawerRestoreOrEditAction,
 };
-export type {
-  RetentionCountdownBadgeProps,
-  DetailDrawerRestoreOrEditActionProps,
-};
+export type { RetentionCountdownBadgeProps, DetailDrawerRestoreOrEditActionProps };
 
 export interface DetailDrawerArchivedBannerProps {
   deletedAt: unknown;
@@ -51,7 +48,13 @@ export function DetailDrawerArchivedBanner({
   if (!stamp) return null;
 
   const formatted = formatDate(stamp);
-  let resolvedDescription = description ?? (describe ? describe(formatted) : (!title ? t("common.archivedOn", { date: formatted }) : undefined));
+  let resolvedDescription =
+    description ??
+    (describe
+      ? describe(formatted)
+      : !title
+        ? t("common.archivedOn", { date: formatted })
+        : undefined);
 
   if (retentionDays !== undefined || purgeAfter !== undefined) {
     const remaining = calculateRemainingRetentionDays(deletedAt, retentionDays, purgeAfter);
@@ -59,8 +62,10 @@ export function DetailDrawerArchivedBanner({
       remaining === null
         ? t("common.archivedIndefinitely")
         : remaining <= 7
-        ? `⚠️ ${remaining === 1 ? t("common.purgesInOneDay") : t("common.purgesInDays", { count: remaining })}`
-        : remaining === 1 ? t("common.purgesInOneDay") : t("common.purgesInDays", { count: remaining });
+          ? `⚠️ ${remaining === 1 ? t("common.purgesInOneDay") : t("common.purgesInDays", { count: remaining })}`
+          : remaining === 1
+            ? t("common.purgesInOneDay")
+            : t("common.purgesInDays", { count: remaining });
     resolvedDescription = resolvedDescription
       ? `${resolvedDescription} • ${retentionNote}`
       : retentionNote;
@@ -113,9 +118,7 @@ export function EntityArchivedBanner({
       retentionDays={retentionDays}
       purgeAfter={purgeAfter}
       title={titleWithDate(formatDate(stamp))}
-      description={
-        deletionReason ? `${reasonLabel}: ${deletionReason}` : undefined
-      }
+      description={deletionReason ? `${reasonLabel}: ${deletionReason}` : undefined}
     />
   );
 }

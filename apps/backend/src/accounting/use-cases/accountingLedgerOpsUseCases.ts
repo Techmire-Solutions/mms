@@ -10,9 +10,9 @@ import {
   type OpeningBalanceInsert,
   type PostingRules,
   type PostingRulesUpdate,
-} from '@mms/shared';
-import { requireTenant } from '../../lib/tenantContext.js';
-import { findAccountsByIds } from '../../db/repositories/accountingAccountsRepository.js';
+} from "@mms/shared";
+import { requireTenant } from "../../lib/tenantContext.js";
+import { findAccountsByIds } from "../../db/repositories/accountingAccountsRepository.js";
 import {
   getPostingRules,
   listBankStatements,
@@ -21,13 +21,13 @@ import {
   replaceOpeningBalances,
   saveBankStatement,
   savePostingRules,
-} from '../../db/repositories/accountingLedgerOpsRepository.js';
-import { closeFiscalYearForTenant } from './accountingPeriodClose.js';
-import { tryPostOpeningJournal } from '../ledgerPosting/ledgerPostingService.js';
+} from "../../db/repositories/accountingLedgerOpsRepository.js";
+import { closeFiscalYearForTenant } from "./accountingPeriodClose.js";
+import { tryPostOpeningJournal } from "../ledgerPosting/ledgerPostingService.js";
 
 async function broadcast(tenant: string, collection: string): Promise<void> {
-  const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-  broadcastTenantUpdate(tenant, 'collection', collection);
+  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  broadcastTenantUpdate(tenant, "collection", collection);
 }
 
 /**
@@ -40,21 +40,23 @@ async function broadcast(tenant: string, collection: string): Promise<void> {
  * archiving is a soft delete, so an archived account passes it.
  */
 const POSTING_RULE_ACCOUNT_TYPES = {
-  arAccountId: ['Asset'],
-  cashAccountId: ['Asset'],
-  incomeAccountId: ['Revenue'],
-  discountAccountId: ['Expense', 'Revenue'],
+  arAccountId: ["Asset"],
+  cashAccountId: ["Asset"],
+  incomeAccountId: ["Revenue"],
+  discountAccountId: ["Expense", "Revenue"],
 } as const satisfies Record<keyof PostingRulesUpdate, readonly string[]>;
 
 export async function assertPostingRuleAccountsValid(
   tenant: string,
   rules: PostingRulesUpdate,
 ): Promise<void> {
-  const configured = (Object.keys(POSTING_RULE_ACCOUNT_TYPES) as (keyof typeof POSTING_RULE_ACCOUNT_TYPES)[])
+  const configured = (
+    Object.keys(POSTING_RULE_ACCOUNT_TYPES) as (keyof typeof POSTING_RULE_ACCOUNT_TYPES)[]
+  )
     .map((field) => ({
       field,
       allowedTypes: POSTING_RULE_ACCOUNT_TYPES[field] as readonly string[],
-      accountId: (rules[field] ?? '').trim(),
+      accountId: (rules[field] ?? "").trim(),
     }))
     .filter((row) => Boolean(row.accountId));
   if (configured.length === 0) return;
@@ -81,14 +83,14 @@ export async function assertPostingRuleAccountsValid(
     }
     if (!allowedTypes.includes(account.type)) {
       problems.push(
-        `${field}: ${account.code} ${account.name} is type ${account.type}, expected ${allowedTypes.join(' or ')}`,
+        `${field}: ${account.code} ${account.name} is type ${account.type}, expected ${allowedTypes.join(" or ")}`,
       );
     }
   }
   if (problems.length > 0) {
-    throw Object.assign(new Error(`Invalid posting rules — ${problems.join('; ')}`), {
+    throw Object.assign(new Error(`Invalid posting rules — ${problems.join("; ")}`), {
       statusCode: 422,
-      type: 'validation_error',
+      type: "validation_error",
     });
   }
 }
@@ -102,7 +104,7 @@ export async function upsertPostingRules(input: PostingRulesUpdate): Promise<Pos
   const parsed = postingRulesUpdateSchema.parse(input);
   await assertPostingRuleAccountsValid(tenant, parsed);
   await savePostingRules(tenant, parsed);
-  await broadcast(tenant, 'accounting_posting_rules');
+  await broadcast(tenant, "accounting_posting_rules");
   return parsed;
 }
 
@@ -122,7 +124,7 @@ export async function upsertOpeningBalances(
     fiscalYearId,
   }));
   await replaceOpeningBalances(tenant, fiscalYearId, records);
-  await broadcast(tenant, 'accounting_opening_balances');
+  await broadcast(tenant, "accounting_opening_balances");
   return records;
 }
 
@@ -134,7 +136,7 @@ export async function postOpeningBalances(fiscalYearId: string): Promise<{ poste
   // success — previously an edited-but-already-posted set reported success while
   // the ledger kept the original figures.
   const entry = await tryPostOpeningJournal(tenant, fiscalYearId, balances);
-  await broadcast(tenant, 'accounting_entries');
+  await broadcast(tenant, "accounting_entries");
   return { posted: entry !== null };
 }
 
@@ -144,9 +146,14 @@ export async function closeFiscalYear(
   retainedEarningsAccountId?: string,
 ): Promise<FiscalYear> {
   const tenant = requireTenant();
-  const closed = await closeFiscalYearForTenant(tenant, fiscalYearId, closedBy, retainedEarningsAccountId);
-  await broadcast(tenant, 'accounting_fiscal_years');
-  await broadcast(tenant, 'accounting_entries');
+  const closed = await closeFiscalYearForTenant(
+    tenant,
+    fiscalYearId,
+    closedBy,
+    retainedEarningsAccountId,
+  );
+  await broadcast(tenant, "accounting_fiscal_years");
+  await broadcast(tenant, "accounting_entries");
   return closed;
 }
 
@@ -166,7 +173,7 @@ export async function upsertBankStatement(input: unknown): Promise<BankStatement
     })),
   });
   await saveBankStatement(tenant, record);
-  await broadcast(tenant, 'accounting_bank_statements');
+  await broadcast(tenant, "accounting_bank_statements");
   return record;
 }
 
@@ -174,5 +181,5 @@ export async function matchBankStatementLine(input: unknown): Promise<void> {
   const tenant = requireTenant();
   const parsed = bankReconciliationMatchSchema.parse(input);
   await matchBankReconciliation(tenant, parsed);
-  await broadcast(tenant, 'accounting_bank_reconciliations');
+  await broadcast(tenant, "accounting_bank_reconciliations");
 }

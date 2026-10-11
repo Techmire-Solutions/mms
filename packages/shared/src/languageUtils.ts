@@ -16,9 +16,7 @@ export const APP_LANGUAGES: readonly AppLanguageOption[] = [
   { code: "fa", label: "Persian", nativeLabel: "فارسی", direction: "rtl" },
 ] as const;
 
-const LANGUAGE_BY_CODE = new Map(
-  APP_LANGUAGES.map((lang) => [lang.code, lang] as const)
-);
+const LANGUAGE_BY_CODE = new Map(APP_LANGUAGES.map((lang) => [lang.code, lang] as const));
 
 /**
  * Resolves question-form UI language: when the selected question language differs from
@@ -104,4 +102,3 @@ export function getLanguageFontStacks(code: string): { sans: string; display: st
       };
   }
 }
-

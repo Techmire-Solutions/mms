@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 /**
  * Demo workspace fixture + getWorkspaceBySubdomain mock implementation
@@ -6,16 +6,18 @@ import { vi } from 'vitest';
  */
 export function createDemoWorkspaceMock() {
   const demoWorkspace = {
-    id: 'ws-demo',
-    subdomain: 'demo',
-    madrasaName: 'Demo Madrasa',
-    createdAt: '2026-01-01T00:00:00.000Z',
+    id: "ws-demo",
+    subdomain: "demo",
+    madrasaName: "Demo Madrasa",
+    createdAt: "2026-01-01T00:00:00.000Z",
     enabled: true,
   };
   return {
     demoWorkspace,
-    getWorkspaceBySubdomain: vi.fn().mockImplementation(async (subdomain: string) =>
-      subdomain === 'demo' ? demoWorkspace : null,
-    ),
+    getWorkspaceBySubdomain: vi
+      .fn()
+      .mockImplementation(async (subdomain: string) =>
+        subdomain === "demo" ? demoWorkspace : null,
+      ),
   };
 }

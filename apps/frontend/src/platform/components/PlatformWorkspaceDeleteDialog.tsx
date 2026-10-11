@@ -1,5 +1,5 @@
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
 import { TypedConfirmDialog } from "@/components/ui/TypedConfirmDialog";
 
 interface PlatformWorkspaceDeleteDialogProps {
@@ -35,13 +35,13 @@ export function PlatformWorkspaceDeleteDialog({
     <TypedConfirmDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={t('platform.deleteWorkspaceTitle')}
-      description={t('platform.deleteWorkspaceDesc', {
+      title={t("platform.deleteWorkspaceTitle")}
+      description={t("platform.deleteWorkspaceDesc", {
         name: workspace.madrasaName,
         subdomain: workspace.subdomain,
         domain: appDomain,
       })}
-      confirmLabel={t('platform.deleteWorkspaceConfirmSubdomain', {
+      confirmLabel={t("platform.deleteWorkspaceConfirmSubdomain", {
         subdomain: workspace.subdomain,
       })}
       expectedConfirm={workspace.subdomain}
@@ -52,10 +52,10 @@ export function PlatformWorkspaceDeleteDialog({
       onPasswordChange={onPasswordChange}
       passwordInputId={`delete-pw-${workspace.subdomain}`}
       passwordInputName="deleteWorkspacePassword"
-      passwordHint={t('platform.deleteWorkspacePasswordHint')}
+      passwordHint={t("platform.deleteWorkspacePasswordHint")}
       error={passwordError}
       pending={deletePending}
-      confirmButtonLabel={t('platform.deleteWorkspaceConfirm')}
+      confirmButtonLabel={t("platform.deleteWorkspaceConfirm")}
       confirmVariant="destructive"
       confirmMatch="caseInsensitive"
       onConfirm={onConfirm}

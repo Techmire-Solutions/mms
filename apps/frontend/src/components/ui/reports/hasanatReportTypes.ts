@@ -28,4 +28,3 @@ export interface HasanatByFacultyItem {
   totalDistributed: number;
   totalRedeemed: number;
 }
-

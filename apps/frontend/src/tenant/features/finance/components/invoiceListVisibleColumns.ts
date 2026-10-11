@@ -1,7 +1,4 @@
-import {
-  getVisibleWorkColumns,
-  type ModuleColumnRegistryEntry,
-} from "@mms/shared";
+import { getVisibleWorkColumns, type ModuleColumnRegistryEntry } from "@mms/shared";
 
 /** Card-face Work columns for Finance invoices (rendered outside the metadata grid). */
 export const INVOICE_CARD_FACE_COLUMN_IDS = new Set(["student", "invoice"]);

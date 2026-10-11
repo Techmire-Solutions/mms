@@ -40,7 +40,9 @@ export function FinanceGenerateInvoicesDialog({
       if (result.created === 0) {
         notify.info(t("finance.generate.none", { skipped: result.skipped }));
       } else {
-        notify.success(t("finance.generate.success", { count: result.created, skipped: result.skipped }));
+        notify.success(
+          t("finance.generate.success", { count: result.created, skipped: result.skipped }),
+        );
       }
       onClose();
     } catch (error) {

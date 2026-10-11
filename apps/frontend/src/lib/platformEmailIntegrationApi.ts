@@ -1,9 +1,9 @@
-import type { EmailIntegrationConfig } from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
+import type { EmailIntegrationConfig } from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
 
 export async function fetchPlatformEmailIntegration(): Promise<EmailIntegrationConfig | null> {
   try {
-    return await apiJson<EmailIntegrationConfig>('/api/platform/email/integration');
+    return await apiJson<EmailIntegrationConfig>("/api/platform/email/integration");
   } catch {
     return null;
   }
@@ -30,15 +30,18 @@ function toPlatformEmailIntegrationWriteBody(payload: SavePlatformEmailIntegrati
 export async function savePlatformEmailIntegration(
   payload: SavePlatformEmailIntegrationInput,
 ): Promise<EmailIntegrationConfig> {
-  return apiJson<EmailIntegrationConfig>('/api/platform/email/integration', {
-    method: 'PUT',
+  return apiJson<EmailIntegrationConfig>("/api/platform/email/integration", {
+    method: "PUT",
     body: JSON.stringify(toPlatformEmailIntegrationWriteBody(payload)),
   });
 }
 
 export async function testPlatformEmailIntegration(): Promise<EmailIntegrationConfig> {
-  const response = await apiJson<{ config: EmailIntegrationConfig }>('/api/platform/email/integration/test', {
-    method: 'POST',
-  });
+  const response = await apiJson<{ config: EmailIntegrationConfig }>(
+    "/api/platform/email/integration/test",
+    {
+      method: "POST",
+    },
+  );
   return response.config;
 }

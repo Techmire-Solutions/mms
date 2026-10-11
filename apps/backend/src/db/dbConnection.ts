@@ -1,14 +1,14 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
-import { sql } from 'drizzle-orm';
-import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import pg from 'pg';
-import { loadServerConfig } from '../config/serverConfig.js';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { getDb, setDb } from './dbClient.js';
-import * as schema from './schema.js';
-import { applyTenantTransactionGuards } from './tenantTransactionGuards.js';
-import { logger } from '../lib/logger.js';
-import { ServiceUnavailableError } from '../lib/httpErrors.js';
+import { AsyncLocalStorage } from "node:async_hooks";
+import { sql } from "drizzle-orm";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
+import pg from "pg";
+import { loadServerConfig } from "../config/serverConfig.js";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { getDb, setDb } from "./dbClient.js";
+import * as schema from "./schema.js";
+import { applyTenantTransactionGuards } from "./tenantTransactionGuards.js";
+import { logger } from "../lib/logger.js";
+import { ServiceUnavailableError } from "../lib/httpErrors.js";
 
 export type DbClient = NodePgDatabase<typeof schema>;
 
@@ -18,14 +18,14 @@ let readReplicaPool: pg.Pool | null = null;
 let rootDb: DbClient | null = null;
 let readReplicaDb: DbClient | null = null;
 
-export type DatabasePoolRole = 'http' | 'worker';
+export type DatabasePoolRole = "http" | "worker";
 
 export interface DatabaseConnectionOptions {
   role?: DatabasePoolRole;
   max?: number;
 }
 
-let activePoolRole: DatabasePoolRole = 'http';
+let activePoolRole: DatabasePoolRole = "http";
 let activeMaxPoolSize = 30;
 
 const tenantTxCounts = new Map<string, number>();
@@ -44,7 +44,7 @@ function decrementTenantTx(tenant: string): void {
 }
 
 function checkTenantConnectionBudget(tenant: string): void {
-  if (activePoolRole === 'http') {
+  if (activePoolRole === "http") {
     const active = tenantTxCounts.get(tenant) || 0;
     // Cap any single tenant at 40% of the HTTP pool (min 5 connections)
     const limit = Math.max(5, Math.floor(activeMaxPoolSize * 0.4));
@@ -64,10 +64,10 @@ export function initializeDatabaseConnection(options?: DatabaseConnectionOptions
   if (pool) return;
 
   const config = loadServerConfig();
-  const role = options?.role ?? (process.env.MMS_PROCESS_ROLE === 'worker' ? 'worker' : 'http');
+  const role = options?.role ?? (process.env.MMS_PROCESS_ROLE === "worker" ? "worker" : "http");
   activePoolRole = role;
 
-  const defaultMax = role === 'worker' ? 10 : Math.min(Math.max(config.pgPoolMax, 20), 30);
+  const defaultMax = role === "worker" ? 10 : Math.min(Math.max(config.pgPoolMax, 20), 30);
   const poolMax = options?.max ?? defaultMax;
   activeMaxPoolSize = poolMax;
 
@@ -85,19 +85,18 @@ export function initializeDatabaseConnection(options?: DatabaseConnectionOptions
     connectionString: config.databaseUrl,
     ...poolConfig,
   });
-  pool.on('error', (error) => {
+  pool.on("error", (error) => {
     // Idle clients can be terminated during platform DB reset; log and continue.
-    logger.error({ err: error }, 'Unexpected database pool client error');
+    logger.error({ err: error }, "Unexpected database pool client error");
   });
-  pool.on('connect', (client) => {
-    client.on('error', (err) => {
-      logger.warn({ err }, 'Unexpected error on checked-out database client');
+  pool.on("connect", (client) => {
+    client.on("error", (err) => {
+      logger.warn({ err }, "Unexpected error on checked-out database client");
     });
   });
 
   const hasDistinctReplica = Boolean(
-    config.readReplicaDatabaseUrl &&
-    config.readReplicaDatabaseUrl !== config.databaseUrl,
+    config.readReplicaDatabaseUrl && config.readReplicaDatabaseUrl !== config.databaseUrl,
   );
 
   if (hasDistinctReplica) {
@@ -105,15 +104,15 @@ export function initializeDatabaseConnection(options?: DatabaseConnectionOptions
       connectionString: config.readReplicaDatabaseUrl,
       ...poolConfig,
     });
-    readReplicaPool.on('error', (error) => {
-      logger.error({ err: error }, 'Unexpected read-replica database pool client error');
+    readReplicaPool.on("error", (error) => {
+      logger.error({ err: error }, "Unexpected read-replica database pool client error");
     });
   } else {
     readReplicaPool = pool;
   }
-  readReplicaPool.on('connect', (client) => {
-    client.on('error', (err) => {
-      logger.warn({ err }, 'Unexpected error on checked-out read-replica database client');
+  readReplicaPool.on("connect", (client) => {
+    client.on("error", (err) => {
+      logger.warn({ err }, "Unexpected error on checked-out read-replica database client");
     });
   });
 
@@ -123,12 +122,12 @@ export function initializeDatabaseConnection(options?: DatabaseConnectionOptions
 }
 
 export function getRootDb(): DbClient {
-  if (!rootDb) throw new Error('Database not initialized');
+  if (!rootDb) throw new Error("Database not initialized");
   return rootDb;
 }
 
 export function getReadReplicaDb(): DbClient {
-  if (!readReplicaDb) throw new Error('Read replica database not initialized');
+  if (!readReplicaDb) throw new Error("Read replica database not initialized");
   return readReplicaDb;
 }
 
@@ -141,7 +140,7 @@ export function hasActiveTransaction(): boolean {
 }
 
 export function getPool(): pg.Pool {
-  if (!pool) throw new Error('Database pool not initialized');
+  if (!pool) throw new Error("Database pool not initialized");
   return pool;
 }
 
@@ -226,7 +225,7 @@ export async function closeDatabase(): Promise<void> {
     if (endingReplica) promises.push(endingReplica.end());
     await Promise.all(promises);
   } catch (error) {
-    logger.error({ err: error }, 'Error closing database pool');
+    logger.error({ err: error }, "Error closing database pool");
   }
 }
 
@@ -248,10 +247,7 @@ export async function runInTransaction<T>(
  * as the active one for the duration of `cb`, so nested `runInTransaction`/
  * `activeDb` consumers reuse it instead of opening a second pool client.
  */
-export async function withActiveTransaction<T>(
-  tx: DbClient,
-  cb: () => Promise<T>,
-): Promise<T> {
+export async function withActiveTransaction<T>(tx: DbClient, cb: () => Promise<T>): Promise<T> {
   return await txStorage.run(tx, cb);
 }
 
@@ -297,8 +293,8 @@ export async function beginLongLivedTenantTransaction(
   tenantId: string | null | undefined,
   options?: { statementTimeoutMs?: number },
 ): Promise<LongLivedTenantTransaction> {
-  const resolvedTenantId = tenantId || '';
-  if (resolvedTenantId === 'undefined' || resolvedTenantId === 'null') {
+  const resolvedTenantId = tenantId || "";
+  if (resolvedTenantId === "undefined" || resolvedTenantId === "null") {
     throw new Error(
       `beginLongLivedTenantTransaction received the literal string "${resolvedTenantId}" as tenant id`,
     );
@@ -314,7 +310,7 @@ export async function beginLongLivedTenantTransaction(
 
   let began = false;
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
     began = true;
     // RLS guards + statement/idle timeouts are transaction-scoped (SET LOCAL), so
     // applying them right after BEGIN scopes them to the whole open transaction.
@@ -322,7 +318,7 @@ export async function beginLongLivedTenantTransaction(
     await applyTenantTransactionGuards(txDb, resolvedTenantId, options);
 
     let finished = false;
-    const finish = async (action: 'COMMIT' | 'ROLLBACK'): Promise<void> => {
+    const finish = async (action: "COMMIT" | "ROLLBACK"): Promise<void> => {
       if (finished) return;
       finished = true;
       if (resolvedTenantId) decrementTenantTx(resolvedTenantId);
@@ -335,13 +331,13 @@ export async function beginLongLivedTenantTransaction(
 
     return {
       tx: txDb,
-      commit: () => finish('COMMIT'),
-      rollback: () => finish('ROLLBACK'),
+      commit: () => finish("COMMIT"),
+      rollback: () => finish("ROLLBACK"),
     };
   } catch (error) {
     if (resolvedTenantId) decrementTenantTx(resolvedTenantId);
     try {
-      if (began) await client.query('ROLLBACK');
+      if (began) await client.query("ROLLBACK");
     } catch {
       // best-effort cleanup
     }
@@ -385,15 +381,18 @@ async function runTransaction<T>(
       const duration = Date.now() - startTime;
       if (duration > SLOW_QUERY_THRESHOLD_MS) {
         logger.warn(
-          { tenant: tenant || 'none', durationMs: duration, thresholdMs: SLOW_QUERY_THRESHOLD_MS },
-          'Slow DB transaction',
+          { tenant: tenant || "none", durationMs: duration, thresholdMs: SLOW_QUERY_THRESHOLD_MS },
+          "Slow DB transaction",
         );
       }
     },
   };
 
-  return await getDb().transaction(async (tx) => {
-    await applyTenantTransactionGuards(tx, tenant, options);
-    return await txStorage.run(tx, cb);
-  }, readSnapshot ? { isolationLevel: 'repeatable read' } : undefined);
+  return await getDb().transaction(
+    async (tx) => {
+      await applyTenantTransactionGuards(tx, tenant, options);
+      return await txStorage.run(tx, cb);
+    },
+    readSnapshot ? { isolationLevel: "repeatable read" } : undefined,
+  );
 }

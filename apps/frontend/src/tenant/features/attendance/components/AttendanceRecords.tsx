@@ -27,22 +27,23 @@ export function AttendanceRecords(props: AttendanceRecordsProps): React.JSX.Elem
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const state = useAttendanceRecordsState(props);
 
-  const createRowActionsRenderer = (variant: "table" | "cards") => (attendanceRecord: AttendanceRecord) => (
-    <AttendanceRecordRowActions
-      attendanceRecord={attendanceRecord}
-      editingRecord={state.editingRecord}
-      canWriteAttendance={state.canWriteAttendance}
-      canDeleteAttendance={state.canDeleteAttendance}
-      showDeleted={showDeleted}
-      variant={variant}
-      onMessage={onMessage}
-      onRestoreRecord={onRestoreRecord}
-      setEditingRecord={state.setEditingRecord}
-      setPendingDeleteId={state.setPendingDeleteId}
-      saveEditingRecord={state.saveEditingRecord}
-      t={state.t}
-    />
-  );
+  const createRowActionsRenderer =
+    (variant: "table" | "cards") => (attendanceRecord: AttendanceRecord) => (
+      <AttendanceRecordRowActions
+        attendanceRecord={attendanceRecord}
+        editingRecord={state.editingRecord}
+        canWriteAttendance={state.canWriteAttendance}
+        canDeleteAttendance={state.canDeleteAttendance}
+        showDeleted={showDeleted}
+        variant={variant}
+        onMessage={onMessage}
+        onRestoreRecord={onRestoreRecord}
+        setEditingRecord={state.setEditingRecord}
+        setPendingDeleteId={state.setPendingDeleteId}
+        saveEditingRecord={state.saveEditingRecord}
+        t={state.t}
+      />
+    );
 
   return (
     <section className="space-y-4" aria-busy={state.attendancePageQuery.isFetching}>

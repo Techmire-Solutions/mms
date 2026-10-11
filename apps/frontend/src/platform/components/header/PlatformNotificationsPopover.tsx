@@ -1,11 +1,11 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import type { PlatformWorkspaceRow } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { buildPlatformNotifications } from '@/platform/lib/buildPlatformNotifications';
-import { usePlatformNotificationAck } from '@/platform/hooks/usePlatformNotificationAck';
-import { NotificationsPopover, type NotificationItem } from '@/components/ui/NotificationsPopover';
-import { ROUTES } from '@/lib/config/routes';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import type { PlatformWorkspaceRow } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { buildPlatformNotifications } from "@/platform/lib/buildPlatformNotifications";
+import { usePlatformNotificationAck } from "@/platform/hooks/usePlatformNotificationAck";
+import { NotificationsPopover, type NotificationItem } from "@/components/ui/NotificationsPopover";
+import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformNotificationsPopoverProps {
   workspaces: PlatformWorkspaceRow[] | undefined;
@@ -38,11 +38,11 @@ export function PlatformNotificationsPopover({
     <NotificationsPopover
       notifications={notifications}
       unreadCount={unreadCount}
-      title={t('platform.notificationsTitle')}
-      emptyText={t('platform.notificationsAllCaughtUp')}
-      ariaLabel={t('platform.notificationsAria')}
-      newBadgeLabel={t('platform.notificationsNewBadge', { count: String(unreadCount) })}
-      viewAllLabel={t('platform.notificationsViewAllReports')}
+      title={t("platform.notificationsTitle")}
+      emptyText={t("platform.notificationsAllCaughtUp")}
+      ariaLabel={t("platform.notificationsAria")}
+      newBadgeLabel={t("platform.notificationsNewBadge", { count: String(unreadCount) })}
+      viewAllLabel={t("platform.notificationsViewAllReports")}
       onViewAll={() => navigate(ROUTES.platformReports)}
       onSelectNotification={handleSelect}
       onOpenChange={(open) => {

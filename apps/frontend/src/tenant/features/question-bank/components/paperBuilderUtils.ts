@@ -98,7 +98,8 @@ export function getPaperQuestionCount(sections: readonly PaperSection[]): number
 
 export function normalizePaperSections(
   sections: readonly PaperSection[],
-  defaultSectionTitle: (sectionNumber: number) => string = (sectionNumber) => `Section ${sectionNumber}`,
+  defaultSectionTitle: (sectionNumber: number) => string = (sectionNumber) =>
+    `Section ${sectionNumber}`,
 ): PaperSection[] {
   return sections
     .map((section, sectionIndex) => ({

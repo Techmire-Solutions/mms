@@ -41,8 +41,8 @@ export function ContactCardMetadataGrid({
     return null;
   }
 
-  const hasVisibleRelationshipContact = otherColumns.some((col) =>
-    isRelationshipContactColumnKey(col.id) && isColumnVisible(col.id),
+  const hasVisibleRelationshipContact = otherColumns.some(
+    (col) => isRelationshipContactColumnKey(col.id) && isColumnVisible(col.id),
   );
 
   const extraColumns =
@@ -102,4 +102,3 @@ export function ContactCardDeletedBanner({
 }: ContactCardDeletedBannerProps): React.JSX.Element | null {
   return <ContactArchivedBanner contact={contact} />;
 }
-

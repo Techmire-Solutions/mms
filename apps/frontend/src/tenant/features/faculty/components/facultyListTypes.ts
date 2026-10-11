@@ -1,9 +1,5 @@
-import type {
-  Faculty,
-  FacultySortField,
-  ModuleColumnRegistryEntry,
-} from '@mms/shared';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+import type { Faculty, FacultySortField, ModuleColumnRegistryEntry } from "@mms/shared";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 
 export type { FacultySortField };
 
@@ -33,8 +29,8 @@ export interface FacultyListProps {
   getColumnWidth?: (key: string) => number | undefined;
   onColumnResize?: (key: string, width: number) => void;
   sortField?: FacultySortField;
-  sortDir?: 'asc' | 'desc';
-  onSortChange: (field: FacultySortField, dir: 'asc' | 'desc') => void;
+  sortDir?: "asc" | "desc";
+  onSortChange: (field: FacultySortField, dir: "asc" | "desc") => void;
   onView: (faculty: Faculty) => void;
   onEdit: (faculty: Faculty) => void;
   /** Opens the page-owned single-delete confirm (page hoists confirm state). */
@@ -44,4 +40,3 @@ export interface FacultyListProps {
   onWhatsApp?: (faculty: Faculty[]) => void;
   onEmail?: (faculty: Faculty[]) => void;
 }
-

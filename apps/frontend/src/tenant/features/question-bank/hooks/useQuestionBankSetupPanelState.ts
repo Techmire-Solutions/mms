@@ -18,22 +18,12 @@ export interface UseQuestionBankSetupPanelStateReturn {
 /** Question Bank Setup panel state — encapsulates config, editor draft, dirty check, and save actions. */
 export function useQuestionBankSetupPanelState(): UseQuestionBankSetupPanelStateReturn {
   const config = useQuestionBankConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    saveSettingsAsync,
-  } = useModuleSettingsEditor<QuestionBankSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync } =
+    useModuleSettingsEditor<QuestionBankSettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useQuestionBankSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useQuestionBankSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,

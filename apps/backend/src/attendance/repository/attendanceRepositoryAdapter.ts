@@ -1,4 +1,4 @@
-import type { AttendanceRepository } from './attendanceRepository.js';
+import type { AttendanceRepository } from "./attendanceRepository.js";
 import {
   listAttendanceRecordsByWorkspace,
   findAttendanceRecordById,
@@ -8,14 +8,14 @@ import {
   replaceAttendanceRecordsForWorkspace,
   bulkSoftDeleteAttendanceRecords,
   bulkRestoreAttendanceRecords,
-} from '../../db/repositories/attendanceRepository.js';
+} from "../../db/repositories/attendanceRepository.js";
 import {
   listAttendancePage,
   countAttendanceActiveByWorkspace,
   aggregateAttendanceCommandMetrics,
-} from '../../db/repositories/attendanceRepositoryList.js';
-import { loadAttendanceReportAggregatesSql } from '../../db/repositories/attendanceRepositoryReport.js';
-import { aggregateAttendanceWidgetQueries } from '../../db/repositories/attendanceRepositoryWidgets.js';
+} from "../../db/repositories/attendanceRepositoryList.js";
+import { loadAttendanceReportAggregatesSql } from "../../db/repositories/attendanceRepositoryReport.js";
+import { aggregateAttendanceWidgetQueries } from "../../db/repositories/attendanceRepositoryWidgets.js";
 
 /**
  * Drizzle-backed adapter for {@link AttendanceRepository}. Delegates to the

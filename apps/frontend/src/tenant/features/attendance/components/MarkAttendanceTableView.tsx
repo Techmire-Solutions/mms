@@ -22,7 +22,7 @@ export function MarkAttendanceTableView({
   onFieldChange,
 }: MarkAttendanceTableViewProps): React.JSX.Element {
   const { t } = useTranslation();
-  
+
   const columns: WorkBatchTableColumn<AttendanceRow & { id: string }>[] = [
     {
       id: "rollNo",

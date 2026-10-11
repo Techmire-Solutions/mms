@@ -1,7 +1,7 @@
-import React from 'react';
-import { BookOpen } from 'lucide-react';
-import { EXAMINATIONS_MODULE_MANIFEST } from '@mms/shared';
-import { ModuleUniversalBulkActionBar } from '@/components/ui/ModuleUniversalBulkActionBar';
+import React from "react";
+import { BookOpen } from "lucide-react";
+import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
 
 export interface ExaminationsBulkActionBarProps {
   selectedCount: number;

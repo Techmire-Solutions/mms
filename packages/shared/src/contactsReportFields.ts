@@ -1,13 +1,25 @@
-import type { Contact, FieldDefinition, TabDefinition } from './contactTypes.js';
-import { INITIAL_FIELD_SEED } from './contactTypes.js';
-import { canViewContactField, canViewContactTab } from './contactFieldAccess.js';
-import { normalizeContactReportFieldId } from './contactEmergencyTabMigration.js';
-import { getPrimaryEmail, getPrimaryPhone } from './utils.js';
+import type { Contact, FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { INITIAL_FIELD_SEED } from "./contactTypes.js";
+import { canViewContactField, canViewContactTab } from "./contactFieldAccess.js";
+import { normalizeContactReportFieldId } from "./contactEmergencyTabMigration.js";
+import { getPrimaryEmail, getPrimaryPhone } from "./utils.js";
 
 const CONTACTS_REPORT_FIELD_IDS = [
-  'fullName', 'firstName', 'lastName', 'gender', 'dob', 'isSyed', 'phone',
-  'email', 'streetAddress', 'city', 'state', 'country', 'relationshipContact',
-  'lastActivity', 'notesCount',
+  "fullName",
+  "firstName",
+  "lastName",
+  "gender",
+  "dob",
+  "isSyed",
+  "phone",
+  "email",
+  "streetAddress",
+  "city",
+  "state",
+  "country",
+  "relationshipContact",
+  "lastActivity",
+  "notesCount",
 ] as const;
 
 type ContactsReportFieldId = (typeof CONTACTS_REPORT_FIELD_IDS)[number] | string;
@@ -25,7 +37,7 @@ const CONTACTS_REPORT_FIELDS: ContactsReportFieldDef[] = CONTACTS_REPORT_FIELD_I
 const REPORT_FIELD_ID_SET = new Set<string>(CONTACTS_REPORT_FIELD_IDS);
 const CONTACTS_REPORT_FIELDS_BY_ID = new Map(CONTACTS_REPORT_FIELDS.map((d) => [d.id, d]));
 
-const CUSTOM_CONTACT_REPORT_FIELD_PREFIX = 'custom:';
+const CUSTOM_CONTACT_REPORT_FIELD_PREFIX = "custom:";
 
 const PREDEFINED_FIELD_KEYS = new Set(
   Object.values(INITIAL_FIELD_SEED).flatMap((fields) => fields.map((f) => f.key)),
@@ -111,58 +123,61 @@ export function compileContactReportCellExtractor(
     return (item) => {
       const contact = item as Contact;
       const value = contact[key];
-      if (value === undefined || value === null || value === '') return '—';
-      if (typeof value === 'boolean') return value ? labels.yes : labels.no;
+      if (value === undefined || value === null || value === "") return "—";
+      if (typeof value === "boolean") return value ? labels.yes : labels.no;
       return String(value);
     };
   }
 
   const normalized = normalizeContactReportFieldId(fieldId);
   switch (normalized) {
-    case 'fullName':
+    case "fullName":
       return (item) => {
         const contact = item as Contact;
-        return String(contact.name || `${contact.firstName || ''} ${contact.lastName || ''}`).trim() || '—';
+        return (
+          String(contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`).trim() ||
+          "—"
+        );
       };
-    case 'firstName':
-      return (item) => String((item as Contact).firstName || '—');
-    case 'lastName':
-      return (item) => String((item as Contact).lastName || '—');
-    case 'isSyed':
+    case "firstName":
+      return (item) => String((item as Contact).firstName || "—");
+    case "lastName":
+      return (item) => String((item as Contact).lastName || "—");
+    case "isSyed":
       return (item) => ((item as Contact).isSyed ? labels.yes : labels.no);
-    case 'phone':
-      return (item) => getPrimaryPhone(item as Contact) || '—';
-    case 'email':
-      return (item) => getPrimaryEmail(item as Contact) || '—';
-    case 'streetAddress':
-      return (item) => (item as Contact).addresses?.[0]?.line1 || '—';
-    case 'city':
-      return (item) => (item as Contact).addresses?.[0]?.city || '—';
-    case 'state':
-      return (item) => (item as Contact).addresses?.[0]?.state || '—';
-    case 'country':
-      return (item) => (item as Contact).addresses?.[0]?.country || '—';
-    case 'relationshipContact':
+    case "phone":
+      return (item) => getPrimaryPhone(item as Contact) || "—";
+    case "email":
+      return (item) => getPrimaryEmail(item as Contact) || "—";
+    case "streetAddress":
+      return (item) => (item as Contact).addresses?.[0]?.line1 || "—";
+    case "city":
+      return (item) => (item as Contact).addresses?.[0]?.city || "—";
+    case "state":
+      return (item) => (item as Contact).addresses?.[0]?.state || "—";
+    case "country":
+      return (item) => (item as Contact).addresses?.[0]?.country || "—";
+    case "relationshipContact":
       return (item) => {
         const linked = (item as Contact).relationshipContacts;
-        return linked?.[0]?.name || linked?.[0]?.contactId || '—';
+        return linked?.[0]?.name || linked?.[0]?.contactId || "—";
       };
-    case 'lastActivity':
-      return (item) => (item as Contact).activities?.[0]?.date || '—';
-    case 'notesCount':
+    case "lastActivity":
+      return (item) => (item as Contact).activities?.[0]?.date || "—";
+    case "notesCount":
       return (item) => {
         const activities = (item as Contact).activities;
         if (!activities || activities.length === 0) return 0;
         let count = 0;
         for (let i = 0; i < activities.length; i++) {
-          if (activities[i]?.type === 'note') count++;
+          if (activities[i]?.type === "note") count++;
         }
         return count;
       };
     default:
       return (item) => {
         const value = (item as Contact)[fieldId as keyof Contact];
-        if (value === undefined || value === null) return '—';
+        if (value === undefined || value === null) return "—";
         return String(value);
       };
   }

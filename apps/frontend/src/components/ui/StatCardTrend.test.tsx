@@ -15,9 +15,7 @@ describe("StatCardTrend Component", () => {
   });
 
   it("renders trendLabel when provided", () => {
-    const html = renderToStaticMarkup(
-      <StatCardTrend trend={12} trendLabel="vs last month" />,
-    );
+    const html = renderToStaticMarkup(<StatCardTrend trend={12} trendLabel="vs last month" />);
     expect(html).toContain("12%");
     expect(html).toContain("vs last month");
   });

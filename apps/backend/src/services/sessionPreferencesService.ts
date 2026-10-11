@@ -1,15 +1,12 @@
-import {
-  normalizeSessionModulePreferences,
-  type SessionModulePreferences,
-} from '@mms/shared';
+import { normalizeSessionModulePreferences, type SessionModulePreferences } from "@mms/shared";
 import {
   getSessionModulePreferencesByWorkspace,
   upsertSessionModulePreferences,
-} from '../db/repositories/sessionModulePreferencesRepository.js';
-import { createModulePreferencesService } from '../lib/createModulePreferencesService.js';
+} from "../db/repositories/sessionModulePreferencesRepository.js";
+import { createModulePreferencesService } from "../lib/createModulePreferencesService.js";
 
 const service = createModulePreferencesService<SessionModulePreferences>({
-  broadcastKey: 'sessions',
+  broadcastKey: "sessions",
   getByWorkspace: getSessionModulePreferencesByWorkspace,
   upsert: upsertSessionModulePreferences,
   normalize: normalizeSessionModulePreferences,

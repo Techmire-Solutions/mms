@@ -1,12 +1,15 @@
 import { useEffect } from "react";
-import { type Exam, type ExamResult } from '@/lib/data/examinationData';
+import { type Exam, type ExamResult } from "@/lib/data/examinationData";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import type { Student } from "@/lib/data/studentsData";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
 import { getGrade } from "@/tenant/features/examinations/components/gradeUtils";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { RankedResult, ResultsViewStatsData } from '@/tenant/features/examinations/components/resultsViewTypes';
+import type {
+  RankedResult,
+  ResultsViewStatsData,
+} from "@/tenant/features/examinations/components/resultsViewTypes";
 
 export interface UseResultsViewDataOptions {
   exams: Exam[];
@@ -80,7 +83,12 @@ export function useResultsViewData({
         const percentage = Math.round((examResult.marksObtained / exam.totalMarks) * 100);
         return {
           ...examResult,
-          student: student ? { name: student.name || t("common.unnamedStudent"), rollNo: student.grNumber || String(student.id) } : undefined,
+          student: student
+            ? {
+                name: student.name || t("common.unnamedStudent"),
+                rollNo: student.grNumber || String(student.id),
+              }
+            : undefined,
           cls: classId ? { name: classNamesById.get(classId) || classId } : undefined,
           pct: percentage,
           grade: getGrade(percentage),

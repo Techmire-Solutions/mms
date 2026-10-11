@@ -30,9 +30,7 @@ describe("BackgroundJobsTray", () => {
       },
     ];
 
-    const markup = renderToStaticMarkup(
-      <BackgroundJobsTray jobs={jobs} activeJobs={jobs} />
-    );
+    const markup = renderToStaticMarkup(<BackgroundJobsTray jobs={jobs} activeJobs={jobs} />);
     expect(markup).toContain("backgroundJobs.trayLabel");
     expect(markup).toContain("1");
   });
@@ -68,7 +66,7 @@ describe("BackgroundJobsTray", () => {
           onRefresh={onRefresh}
           onClearFinished={onClearFinished}
           onDownload={onDownload}
-        />
+        />,
       );
     });
 
@@ -85,7 +83,7 @@ describe("BackgroundJobsTray", () => {
 
     // Click refresh
     const refreshBtn = Array.from(document.body.querySelectorAll("button")).find((b) =>
-      b.textContent?.includes("backgroundJobs.refresh")
+      b.textContent?.includes("backgroundJobs.refresh"),
     );
     await act(async () => {
       refreshBtn?.click();
@@ -108,7 +106,7 @@ describe("BackgroundJobsTray", () => {
 
     // Click clear finished
     const clearBtn = Array.from(document.body.querySelectorAll("button")).find((b) =>
-      b.textContent?.includes("backgroundJobs.clearFinished")
+      b.textContent?.includes("backgroundJobs.clearFinished"),
     );
     await act(async () => {
       clearBtn?.click();

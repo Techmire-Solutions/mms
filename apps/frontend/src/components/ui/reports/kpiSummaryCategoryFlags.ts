@@ -12,15 +12,15 @@ export interface KpiCategoryFlags {
 }
 
 export function getKpiCategoryFlags(category: string): KpiCategoryFlags {
-  const isContactsCategory = category === 'contacts';
-  const isStudentsCategory = category === 'students';
-  const isFacultyCategory = category === 'faculty';
-  const isSessionsCategory = category === 'sessions';
-  const isEnrollmentsCategory = category === 'enrollments';
-  const isObligationsCategory = category === 'obligations';
-  const isAccountingCategory = category === 'accounting';
-  const isUsersCategory = category === 'users';
-  const isMessagingCategory = category === 'messaging';
+  const isContactsCategory = category === "contacts";
+  const isStudentsCategory = category === "students";
+  const isFacultyCategory = category === "faculty";
+  const isSessionsCategory = category === "sessions";
+  const isEnrollmentsCategory = category === "enrollments";
+  const isObligationsCategory = category === "obligations";
+  const isAccountingCategory = category === "accounting";
+  const isUsersCategory = category === "users";
+  const isMessagingCategory = category === "messaging";
   const needsContactAnalytics = isContactsCategory || isStudentsCategory || isSessionsCategory;
   return {
     isContactsCategory,

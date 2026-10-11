@@ -63,9 +63,7 @@ export default function CompleteStep({ data, onChange }: CompleteStepProps): Rea
           autoComplete="current-password"
           placeholder={t("platform.confirmPlatformPasswordHint")}
           value={data.currentPassword}
-          onChange={(e) =>
-            onChange((prev) => ({ ...prev, currentPassword: e.target.value }))
-          }
+          onChange={(e) => onChange((prev) => ({ ...prev, currentPassword: e.target.value }))}
           className="h-11 text-sm"
         />
       </Field>

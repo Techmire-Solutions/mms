@@ -1,11 +1,6 @@
-import { useState } from 'react';
-import { generateClientEntityId } from '@mms/shared';
-import type {
-  Mujtahid,
-  MujtahidRep,
-  ObligationType,
-  WakalaType,
-} from '@/lib/data/obligationsData';
+import { useState } from "react";
+import { generateClientEntityId } from "@mms/shared";
+import type { Mujtahid, MujtahidRep, ObligationType, WakalaType } from "@/lib/data/obligationsData";
 
 export interface ObligationCollectionCatalogQuickCreateArgs {
   obligationTypes: ObligationType[];
@@ -38,21 +33,20 @@ export function useObligationCollectionCatalogQuickCreate({
   const [isAddObTypeOpen, setIsAddObTypeOpen] = useState(false);
   const [isAddMujtahidOpen, setIsAddMujtahidOpen] = useState(false);
   const [isAddRepOpen, setIsAddRepOpen] = useState(false);
-  const [pendingMujtahidId, setPendingMujtahidId] = useState('');
+  const [pendingMujtahidId, setPendingMujtahidId] = useState("");
 
-  const canAddType = typeof onChangeTypes === 'function';
-  const canAddRep = typeof onChangeReps === 'function'
-    && typeof onChangeMujtahids === 'function';
+  const canAddType = typeof onChangeTypes === "function";
+  const canAddRep = typeof onChangeReps === "function" && typeof onChangeMujtahids === "function";
   const isChildModalOpen = isAddObTypeOpen || isAddMujtahidOpen || isAddRepOpen;
 
   async function handleSaveObType(newType: Partial<ObligationType>): Promise<void> {
     if (!onChangeTypes) return;
-    const id = generateClientEntityId('ot');
+    const id = generateClientEntityId("ot");
     const created: ObligationType = {
       ...newType,
       id,
-      name: newType.name || '',
-      designated_for: newType.designated_for || 'Both',
+      name: newType.name || "",
+      designated_for: newType.designated_for || "Both",
       quantity_based: !!newType.quantity_based,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -64,7 +58,7 @@ export function useObligationCollectionCatalogQuickCreate({
 
   async function handleSaveMujtahid(newMujtahid: Partial<Mujtahid>): Promise<void> {
     if (!onChangeMujtahids) return;
-    const id = generateClientEntityId('m');
+    const id = generateClientEntityId("m");
     await onChangeMujtahids([...mujtahids, { ...newMujtahid, id } as Mujtahid]);
     setPendingMujtahidId(id);
     setIsAddMujtahidOpen(false);
@@ -73,13 +67,10 @@ export function useObligationCollectionCatalogQuickCreate({
 
   async function handleSaveRep(newRep: Partial<MujtahidRep>): Promise<void> {
     if (!onChangeReps || !pendingMujtahidId) return;
-    const id = generateClientEntityId('mr');
-    await onChangeReps([
-      ...reps,
-      { ...newRep, id, mujtahid_id: pendingMujtahidId } as MujtahidRep,
-    ]);
+    const id = generateClientEntityId("mr");
+    await onChangeReps([...reps, { ...newRep, id, mujtahid_id: pendingMujtahidId } as MujtahidRep]);
     if (selectedObligationTypeId && onChangeWakala) {
-      const wakalaId = generateClientEntityId('wt');
+      const wakalaId = generateClientEntityId("wt");
       await onChangeWakala([
         ...wakalaTypes,
         {
@@ -92,7 +83,7 @@ export function useObligationCollectionCatalogQuickCreate({
       ]);
     }
     onSelectRep(id);
-    setPendingMujtahidId('');
+    setPendingMujtahidId("");
     setIsAddRepOpen(false);
   }
 
@@ -105,17 +96,17 @@ export function useObligationCollectionCatalogQuickCreate({
     isAddRepOpen,
     openAddType: () => setIsAddObTypeOpen(true),
     openAddRep: () => {
-      setPendingMujtahidId('');
+      setPendingMujtahidId("");
       setIsAddMujtahidOpen(true);
     },
     closeAddObType: () => setIsAddObTypeOpen(false),
     closeAddMujtahid: () => {
       setIsAddMujtahidOpen(false);
-      setPendingMujtahidId('');
+      setPendingMujtahidId("");
     },
     closeAddRep: () => {
       setIsAddRepOpen(false);
-      setPendingMujtahidId('');
+      setPendingMujtahidId("");
     },
     handleSaveObType,
     handleSaveMujtahid,

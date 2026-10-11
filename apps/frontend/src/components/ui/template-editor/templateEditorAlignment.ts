@@ -1,4 +1,4 @@
-import { snap, type AlignmentType, type BoundingBox } from './templateEditorBasicUtils';
+import { snap, type AlignmentType, type BoundingBox } from "./templateEditorBasicUtils";
 
 export function alignElements<T extends BoundingBox & { id: string }>(
   elements: T[],
@@ -12,25 +12,25 @@ export function alignElements<T extends BoundingBox & { id: string }>(
 
   let targetVal: number;
   switch (alignType) {
-    case 'left':
+    case "left":
       targetVal = Math.min(...targets.map((el) => el.x));
       break;
-    case 'right':
+    case "right":
       targetVal = Math.max(...targets.map((el) => el.x + (el.w || 0)));
       break;
-    case 'top':
+    case "top":
       targetVal = Math.min(...targets.map((el) => el.y));
       break;
-    case 'bottom':
+    case "bottom":
       targetVal = Math.max(...targets.map((el) => el.y + (el.h || 0)));
       break;
-    case 'centerH': {
+    case "centerH": {
       const minX = Math.min(...targets.map((el) => el.x));
       const maxX = Math.max(...targets.map((el) => el.x + (el.w || 0)));
       targetVal = minX + (maxX - minX) / 2;
       break;
     }
-    case 'centerV': {
+    case "centerV": {
       const minY = Math.min(...targets.map((el) => el.y));
       const maxY = Math.max(...targets.map((el) => el.y + (el.h || 0)));
       targetVal = minY + (maxY - minY) / 2;
@@ -41,17 +41,17 @@ export function alignElements<T extends BoundingBox & { id: string }>(
   return elements.map((el) => {
     if (!idSet.has(el.id)) return el;
     switch (alignType) {
-      case 'left':
+      case "left":
         return { ...el, x: snap(Math.max(0, targetVal)) };
-      case 'right':
+      case "right":
         return { ...el, x: snap(Math.max(0, targetVal - (el.w || 0))) };
-      case 'top':
+      case "top":
         return { ...el, y: snap(Math.max(0, targetVal)) };
-      case 'bottom':
+      case "bottom":
         return { ...el, y: snap(Math.max(0, targetVal - (el.h || 0))) };
-      case 'centerH':
+      case "centerH":
         return { ...el, x: snap(Math.max(0, targetVal - (el.w || 0) / 2)) };
-      case 'centerV':
+      case "centerV":
         return { ...el, y: snap(Math.max(0, targetVal - (el.h || 0) / 2)) };
     }
   });
@@ -61,10 +61,10 @@ export function centerElementOnPage<T extends BoundingBox>(
   element: T,
   pageWidth: number,
   pageHeight: number,
-  axis: 'both' | 'h' | 'v' = 'both',
+  axis: "both" | "h" | "v" = "both",
 ): T {
-  const newX = axis === 'v' ? element.x : snap(Math.max(0, (pageWidth - element.w) / 2));
-  const newY = axis === 'h' ? element.y : snap(Math.max(0, (pageHeight - element.h) / 2));
+  const newX = axis === "v" ? element.x : snap(Math.max(0, (pageWidth - element.w) / 2));
+  const newY = axis === "h" ? element.y : snap(Math.max(0, (pageHeight - element.h) / 2));
   return {
     ...element,
     x: newX,
@@ -75,14 +75,14 @@ export function centerElementOnPage<T extends BoundingBox>(
 export function distributeElements<T extends BoundingBox & { id: string }>(
   elements: T[],
   selectedIds: string[],
-  axis: 'horizontal' | 'vertical',
+  axis: "horizontal" | "vertical",
 ): T[] {
   if (selectedIds.length < 3) return elements;
   const idSet = new Set(selectedIds);
   const targets = elements.filter((el) => idSet.has(el.id));
   if (targets.length < 3) return elements;
 
-  if (axis === 'horizontal') {
+  if (axis === "horizontal") {
     const sorted = [...targets].sort((a, b) => a.x - b.x);
     const minX = sorted[0]!.x;
     const last = sorted[sorted.length - 1]!;

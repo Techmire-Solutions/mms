@@ -7,47 +7,47 @@
  */
 
 export const SYSTEM_METADATA_KEYS: ReadonlySet<string> = new Set([
-  'id',
-  '_id',
-  'uuid',
-  'tenant',
-  '_tenant',
-  'tenantId',
-  'tenant_id',
-  'createdAt',
-  'created_at',
-  'createdDate',
-  'created_date',
-  'updatedAt',
-  'updated_at',
-  'updatedDate',
-  'updated_date',
-  'deletedAt',
-  'deleted_at',
-  'deletedDate',
-  'deleted_date',
-  'isDeleted',
-  'is_deleted',
-  'createdBy',
-  'created_by',
-  'updatedBy',
-  'updated_by',
-  'deletedBy',
-  'deleted_by',
-  'version',
-  '__v',
-  '_rev',
-  'rev',
-  'syncStatus',
-  'sync_status',
-  'shardedHash',
-  'sharded_hash',
-  'hashChain',
-  'hash_chain',
+  "id",
+  "_id",
+  "uuid",
+  "tenant",
+  "_tenant",
+  "tenantId",
+  "tenant_id",
+  "createdAt",
+  "created_at",
+  "createdDate",
+  "created_date",
+  "updatedAt",
+  "updated_at",
+  "updatedDate",
+  "updated_date",
+  "deletedAt",
+  "deleted_at",
+  "deletedDate",
+  "deleted_date",
+  "isDeleted",
+  "is_deleted",
+  "createdBy",
+  "created_by",
+  "updatedBy",
+  "updated_by",
+  "deletedBy",
+  "deleted_by",
+  "version",
+  "__v",
+  "_rev",
+  "rev",
+  "syncStatus",
+  "sync_status",
+  "shardedHash",
+  "sharded_hash",
+  "hashChain",
+  "hash_chain",
 ]);
 
 const NORMALIZED_SYSTEM_KEYS: ReadonlySet<string> = new Set(
-  Array.from(SYSTEM_METADATA_KEYS).map((k) => k.toLowerCase().replace(/[\s_-]+/g, '')),
+  Array.from(SYSTEM_METADATA_KEYS).map((k) => k.toLowerCase().replace(/[\s_-]+/g, "")),
 );
 
 /**
@@ -56,7 +56,10 @@ const NORMALIZED_SYSTEM_KEYS: ReadonlySet<string> = new Set(
 export function isSystemMetadataKey(key: string): boolean {
   if (!key) return false;
   if (SYSTEM_METADATA_KEYS.has(key)) return true;
-  const normalized = key.trim().toLowerCase().replace(/[\s_-]+/g, '');
+  const normalized = key
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
   return NORMALIZED_SYSTEM_KEYS.has(normalized);
 }
 
@@ -73,5 +76,7 @@ export function filterNonMetadataKeys<T extends { key: string }>(fields: readonl
 export function filterNonMetadataColumns<T extends { id: string; label?: string }>(
   columns: readonly T[],
 ): T[] {
-  return columns.filter((c) => !isSystemMetadataKey(c.id) && (!c.label || !isSystemMetadataKey(c.label)));
+  return columns.filter(
+    (c) => !isSystemMetadataKey(c.id) && (!c.label || !isSystemMetadataKey(c.label)),
+  );
 }

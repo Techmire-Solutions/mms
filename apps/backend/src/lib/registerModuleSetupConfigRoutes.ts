@@ -1,11 +1,11 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { ZodType, z } from 'zod';
-import type { Permission, User } from '@mms/shared';
-import { roleHasPermission } from '@mms/shared';
-import { sendDatabaseError, sendForbidden } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
-import { getRequestTenant } from './tenantContext.js';
-import { getOrSetMultiTier, invalidateMultiTierCache } from './cache/index.js';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { ZodType, z } from "zod";
+import type { Permission, User } from "@mms/shared";
+import { roleHasPermission } from "@mms/shared";
+import { sendDatabaseError, sendForbidden } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
+import { getRequestTenant } from "./tenantContext.js";
+import { getOrSetMultiTier, invalidateMultiTierCache } from "./cache/index.js";
 
 export type RegisterModuleSetupConfigRoutesOptions<
   TConfigSchema extends ZodType = ZodType,
@@ -47,12 +47,17 @@ export function registerModuleSetupConfigRoutes<
   TPrefsInput = never,
 >(
   fastify: FastifyInstance,
-  options: RegisterModuleSetupConfigRoutesOptions<TConfigSchema, TPrefsSchema, TConfig, TPrefs, TPrefsInput>,
+  options: RegisterModuleSetupConfigRoutesOptions<
+    TConfigSchema,
+    TPrefsSchema,
+    TConfig,
+    TPrefs,
+    TPrefsInput
+  >,
 ): void {
-  const canWriteSetup = (user: User) =>
-    roleHasPermission(user.role, options.setupWritePermission);
+  const canWriteSetup = (user: User) => roleHasPermission(user.role, options.setupWritePermission);
 
-  const domain = options.domain ?? options.fieldConfigAuditAction.split('.')[0] ?? 'setup';
+  const domain = options.domain ?? options.fieldConfigAuditAction.split(".")[0] ?? "setup";
 
   const handleGetFieldConfig = async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user as User;
@@ -63,7 +68,7 @@ export function registerModuleSetupConfigRoutes<
         const config = await getOrSetMultiTier(
           tenant,
           `setup:${domain}`,
-          'field-config',
+          "field-config",
           async () => options.loadFieldConfig(),
           { ttlSeconds: 600 },
         );
@@ -74,13 +79,13 @@ export function registerModuleSetupConfigRoutes<
     } catch (error: unknown) {
       return sendDatabaseError(
         reply,
-        options.loadFieldConfigError ?? 'Failed to load field config',
+        options.loadFieldConfigError ?? "Failed to load field config",
         error,
       );
     }
   };
-  fastify.get('/field-config', handleGetFieldConfig);
-  fastify.get('/config/fields', handleGetFieldConfig);
+  fastify.get("/field-config", handleGetFieldConfig);
+  fastify.get("/config/fields", handleGetFieldConfig);
 
   const handlePutFieldConfig = async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user as User;
@@ -94,7 +99,7 @@ export function registerModuleSetupConfigRoutes<
         await invalidateMultiTierCache({
           tenantId: tenant,
           domain: `setup:${domain}`,
-          key: 'field-config',
+          key: "field-config",
         });
       }
       try {
@@ -102,22 +107,22 @@ export function registerModuleSetupConfigRoutes<
           user,
           options.fieldConfigAuditAction,
           options.fieldConfigAuditSummary,
-          'field-config',
+          "field-config",
         );
       } catch (auditError) {
-        fastify.log.warn({ err: auditError }, 'Failed to record field config audit log');
+        fastify.log.warn({ err: auditError }, "Failed to record field config audit log");
       }
       return reply.send({ success: true, config: saved });
     } catch (error: unknown) {
       return sendDatabaseError(
         reply,
-        options.saveFieldConfigError ?? 'Failed to save field config',
+        options.saveFieldConfigError ?? "Failed to save field config",
         error,
       );
     }
   };
-  fastify.put('/field-config', handlePutFieldConfig);
-  fastify.put('/config/fields', handlePutFieldConfig);
+  fastify.put("/field-config", handlePutFieldConfig);
+  fastify.put("/config/fields", handlePutFieldConfig);
 
   const handleGetPreferences = async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user as User;
@@ -128,7 +133,7 @@ export function registerModuleSetupConfigRoutes<
         const preferences = await getOrSetMultiTier(
           tenant,
           `setup:${domain}`,
-          'preferences',
+          "preferences",
           async () => {
             const loaded = await options.loadPreferences();
             return loaded ?? options.normalizePreferences();
@@ -146,13 +151,13 @@ export function registerModuleSetupConfigRoutes<
     } catch (error: unknown) {
       return sendDatabaseError(
         reply,
-        options.loadPreferencesError ?? 'Failed to load preferences',
+        options.loadPreferencesError ?? "Failed to load preferences",
         error,
       );
     }
   };
-  fastify.get('/preferences', handleGetPreferences);
-  fastify.get('/config/preferences', handleGetPreferences);
+  fastify.get("/preferences", handleGetPreferences);
+  fastify.get("/config/preferences", handleGetPreferences);
 
   const handlePutPreferences = async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user as User;
@@ -168,7 +173,7 @@ export function registerModuleSetupConfigRoutes<
         await invalidateMultiTierCache({
           tenantId: tenant,
           domain: `setup:${domain}`,
-          key: 'preferences',
+          key: "preferences",
         });
       }
       try {
@@ -176,20 +181,20 @@ export function registerModuleSetupConfigRoutes<
           user,
           options.preferencesAuditAction,
           options.preferencesAuditSummary,
-          'preferences',
+          "preferences",
         );
       } catch (auditError) {
-        fastify.log.warn({ err: auditError }, 'Failed to record preferences audit log');
+        fastify.log.warn({ err: auditError }, "Failed to record preferences audit log");
       }
       return reply.send({ success: true, preferences: saved });
     } catch (error: unknown) {
       return sendDatabaseError(
         reply,
-        options.savePreferencesError ?? 'Failed to save preferences',
+        options.savePreferencesError ?? "Failed to save preferences",
         error,
       );
     }
   };
-  fastify.put('/preferences', handlePutPreferences);
-  fastify.put('/config/preferences', handlePutPreferences);
+  fastify.put("/preferences", handlePutPreferences);
+  fastify.put("/config/preferences", handlePutPreferences);
 }

@@ -1,4 +1,12 @@
-import { Edit2, MessageCircle, MessageSquare, Trash2, Users, DollarSign, Clock } from "lucide-react";
+import {
+  Edit2,
+  MessageCircle,
+  MessageSquare,
+  Trash2,
+  Users,
+  DollarSign,
+  Clock,
+} from "lucide-react";
 import type { FacultyMember } from "@mms/shared";
 
 import { Button } from "@/components/ui/button";
@@ -26,16 +34,30 @@ interface ClassCardProps {
 }
 
 /** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
-export function ClassCard({ sessionClass, faculty, onEdit, onDelete, onMessage, canWrite }: ClassCardProps) {
+export function ClassCard({
+  sessionClass,
+  faculty,
+  onEdit,
+  onDelete,
+  onMessage,
+  canWrite,
+}: ClassCardProps) {
   const { t } = useTranslation();
   const allFaculty = faculty ?? [];
   const rawCapacity = Reflect.get(sessionClass, "capacity");
-  const maxCapacity = sessionClass.maxStudents ?? (typeof rawCapacity === "number" ? rawCapacity : 30);
+  const maxCapacity =
+    sessionClass.maxStudents ?? (typeof rawCapacity === "number" ? rawCapacity : 30);
   const enrolledCount = sessionClass.enrolled ?? 0;
   const capacityPercent = Math.round((enrolledCount / Math.max(1, maxCapacity)) * 100);
-  const barColor = capacityPercent >= 100 ? "bg-destructive" : capacityPercent >= 80 ? "bg-warning" : "bg-success";
-  const facultyLabel = facultyNameById(allFaculty, resolveClassFacultyId(sessionClass)) || resolveClassFacultyName(sessionClass) || t("sessions.classes.unassigned");
-  const genderConfig: Record<string, StatusBadgeConfigItem> = genderStatusBadgeConfig(t, { includeAny: true });
+  const barColor =
+    capacityPercent >= 100 ? "bg-destructive" : capacityPercent >= 80 ? "bg-warning" : "bg-success";
+  const facultyLabel =
+    facultyNameById(allFaculty, resolveClassFacultyId(sessionClass)) ||
+    resolveClassFacultyName(sessionClass) ||
+    t("sessions.classes.unassigned");
+  const genderConfig: Record<string, StatusBadgeConfigItem> = genderStatusBadgeConfig(t, {
+    includeAny: true,
+  });
 
   const rawAgeMin = Reflect.get(sessionClass, "ageMin");
   const rawAgeMax = Reflect.get(sessionClass, "ageMax");
@@ -132,11 +154,11 @@ export function ClassCard({ sessionClass, faculty, onEdit, onDelete, onMessage, 
       <div className="mb-3 flex items-center gap-2 flex-wrap">
         <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
           <DollarSign className="h-3 w-3" />
-          {feeCount > 0 ? `${feeCount} Fees` : 'No Fees set'}
+          {feeCount > 0 ? `${feeCount} Fees` : "No Fees set"}
         </span>
         <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
           <Clock className="h-3 w-3" />
-          {(sessionClass.timetables?.[0]?.periods?.length ?? 0)} Periods
+          {sessionClass.timetables?.[0]?.periods?.length ?? 0} Periods
         </span>
         {sessionClass.scholarships && sessionClass.scholarships.length > 0 && (
           <span className="inline-flex items-center gap-1 rounded-md bg-secondary/10 text-secondary px-2 py-0.5 text-xs font-medium">
@@ -151,7 +173,9 @@ export function ClassCard({ sessionClass, faculty, onEdit, onDelete, onMessage, 
       */}
       <div>
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">{t("sessions.classes.form.capacity")}</span>
+          <span className="text-xs text-muted-foreground">
+            {t("sessions.classes.form.capacity")}
+          </span>
           <span className="text-xs font-semibold text-foreground">
             {enrolledCount}/{maxCapacity}
           </span>

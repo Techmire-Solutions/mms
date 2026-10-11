@@ -41,7 +41,7 @@ export interface ContactLocationActionProps {
 /**
  * Reusable location / address action component with Map and Copy buttons.
  */
-export const ContactLocationAction = (function ContactLocationAction({
+export const ContactLocationAction = function ContactLocationAction({
   address,
   addressDisplay,
   mapsHref,
@@ -62,7 +62,8 @@ export const ContactLocationAction = (function ContactLocationAction({
   }
 
   const effectiveMapsHref =
-    mapsHref || (cleanAddress ? `https://maps.google.com/?q=${encodeURIComponent(cleanAddress)}` : null);
+    mapsHref ||
+    (cleanAddress ? `https://maps.google.com/?q=${encodeURIComponent(cleanAddress)}` : null);
 
   const locationLabel = labels?.location || "Open in Maps";
   const copyLabel = labels?.copy || "Copy";
@@ -130,9 +131,7 @@ export const ContactLocationAction = (function ContactLocationAction({
       title={displayText}
     >
       {displayText}
-      {label ? (
-        <span className="ms-1.5 text-xs font-normal">({label})</span>
-      ) : null}
+      {label ? <span className="ms-1.5 text-xs font-normal">({label})</span> : null}
     </span>
   );
 
@@ -156,4 +155,4 @@ export const ContactLocationAction = (function ContactLocationAction({
       </div>
     </TooltipProvider>
   );
-});
+};

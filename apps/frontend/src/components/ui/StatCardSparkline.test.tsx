@@ -13,9 +13,7 @@ describe("StatCardSparkline Component", () => {
   });
 
   it("renders container with aria-hidden when valid data points are provided", () => {
-    const html = renderToStaticMarkup(
-      <StatCardSparkline data={[10, 25, 18, 30]} />,
-    );
+    const html = renderToStaticMarkup(<StatCardSparkline data={[10, 25, 18, 30]} />);
     expect(html).toContain('aria-hidden="true"');
     expect(html).toContain("w-16 h-8");
   });

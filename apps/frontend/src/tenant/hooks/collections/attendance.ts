@@ -13,14 +13,14 @@ export {
   useAttendanceReportAggregates,
   useAttendanceMutations,
   useAttendanceMetrics,
-} from '@/tenant/features/attendance/hooks/useAttendance';
-export { invalidateAttendanceQueries } from '@/tenant/features/attendance/hooks/invalidateAttendanceQueries';
+} from "@/tenant/features/attendance/hooks/useAttendance";
+export { invalidateAttendanceQueries } from "@/tenant/features/attendance/hooks/invalidateAttendanceQueries";
 export {
   useComposedAttendanceSettings,
   useAttendancePreferencesMutation,
   useAttendancePreferencesQuery,
   ATTENDANCE_PREFERENCES_QUERY_KEY,
-} from '@/tenant/features/attendance/hooks/useAttendanceSetupConfig';
+} from "@/tenant/features/attendance/hooks/useAttendanceSetupConfig";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   attendanceListQueryOptions,
@@ -31,5 +31,5 @@ export {
   useAttendanceContractBulkRestore,
   useAttendanceContractUpdate,
   useAttendanceContractDelete,
-} from '@/tenant/features/attendance/hooks/useAttendanceTsrHooks';
-export { applyAttendanceWorkDrillDown } from '@/tenant/features/attendance/hooks/attendanceWorkDrillDown';
+} from "@/tenant/features/attendance/hooks/useAttendanceTsrHooks";
+export { applyAttendanceWorkDrillDown } from "@/tenant/features/attendance/hooks/attendanceWorkDrillDown";

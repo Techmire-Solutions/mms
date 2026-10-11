@@ -36,7 +36,9 @@ export function useTableSort<T>({
   const isControlled = controlledSortKey !== undefined || controlledSortDirection !== undefined;
 
   const [internalSortKey, setInternalSortKey] = useState<string | undefined>(initialSortKey);
-  const [internalSortDirection, setInternalSortDirection] = useState<TableSortDirection | null>(initialSortDirection);
+  const [internalSortDirection, setInternalSortDirection] = useState<TableSortDirection | null>(
+    initialSortDirection,
+  );
 
   const activeSortKey = isControlled ? controlledSortKey : internalSortKey;
   const activeSortDirection = isControlled ? controlledSortDirection : internalSortDirection;

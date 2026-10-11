@@ -1,5 +1,5 @@
-import { parseCsvRows } from './csvParserCore.js';
-import { facultyTransferSchema } from './dataTransfer/schemas/facultyTransferSchema.js';
+import { parseCsvRows } from "./csvParserCore.js";
+import { facultyTransferSchema } from "./dataTransfer/schemas/facultyTransferSchema.js";
 
 export interface FacultyCsvImportRow {
   name?: string;
@@ -17,31 +17,31 @@ export interface FacultyCsvImportRow {
   notes?: string;
 }
 
-const ALIASES: Record<string, keyof FacultyCsvImportRow | 'skip'> = {
-  employeeid: 'employeeId',
-  employee_id: 'employeeId',
-  contactid: 'contactId',
-  contact_id: 'contactId',
-  specialization: 'specialization',
-  department: 'department',
-  designation: 'designation',
-  status: 'status',
-  qualification: 'qualification',
-  employmentstartdate: 'employmentStartDate',
-  employment_start_date: 'employmentStartDate',
-  startdate: 'employmentStartDate',
-  joindate: 'employmentStartDate',
-  join_date: 'employmentStartDate',
-  employmentenddate: 'employmentEndDate',
-  employment_end_date: 'employmentEndDate',
-  enddate: 'employmentEndDate',
-  name: 'name',
-  phone: 'phone',
-  email: 'email',
+const ALIASES: Record<string, keyof FacultyCsvImportRow | "skip"> = {
+  employeeid: "employeeId",
+  employee_id: "employeeId",
+  contactid: "contactId",
+  contact_id: "contactId",
+  specialization: "specialization",
+  department: "department",
+  designation: "designation",
+  status: "status",
+  qualification: "qualification",
+  employmentstartdate: "employmentStartDate",
+  employment_start_date: "employmentStartDate",
+  startdate: "employmentStartDate",
+  joindate: "employmentStartDate",
+  join_date: "employmentStartDate",
+  employmentenddate: "employmentEndDate",
+  employment_end_date: "employmentEndDate",
+  enddate: "employmentEndDate",
+  name: "name",
+  phone: "phone",
+  email: "email",
 };
 
 function normHeader(h: string): string {
-  return h.trim().toLowerCase().replace(/\s+/g, '');
+  return h.trim().toLowerCase().replace(/\s+/g, "");
 }
 
 /** Parse faculty member CSV using SSOT facultyTransferSchema with legacy fallback. */
@@ -54,7 +54,7 @@ export function parseFacultyMembersCsv(csvText: string): FacultyCsvImportRow[] {
   const grid = parseCsvRows(csvText);
   if (grid.length < 2) return [];
   const headers = grid[0].map(normHeader);
-  const indexes = headers.map((h) => ALIASES[h] ?? 'skip');
+  const indexes = headers.map((h) => ALIASES[h] ?? "skip");
   const out: FacultyCsvImportRow[] = [];
 
   for (let r = 1; r < grid.length; r += 1) {
@@ -63,8 +63,8 @@ export function parseFacultyMembersCsv(csvText: string): FacultyCsvImportRow[] {
     const row: FacultyCsvImportRow = {};
     for (let c = 0; c < indexes.length; c += 1) {
       const key = indexes[c];
-      if (key === 'skip') continue;
-      const val = (cells[c] ?? '').trim();
+      if (key === "skip") continue;
+      const val = (cells[c] ?? "").trim();
       if (val) row[key] = val;
     }
     if (!row.employeeId && !row.contactId) continue;
@@ -72,4 +72,3 @@ export function parseFacultyMembersCsv(csvText: string): FacultyCsvImportRow[] {
   }
   return out;
 }
-

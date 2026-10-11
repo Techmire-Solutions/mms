@@ -21,7 +21,9 @@ const descriptor = createEntityDescriptor<{ id: string; city: string }>({
 
 describe("EntityCardMetadata descriptor labels", () => {
   it("resolveFieldLabel prefers labelKey via t, falls back to label", () => {
-    expect(resolveFieldLabel({ label: "L", labelKey: "k.demo" }, (k: string) => `t:${k}`)).toBe("t:k.demo");
+    expect(resolveFieldLabel({ label: "L", labelKey: "k.demo" }, (k: string) => `t:${k}`)).toBe(
+      "t:k.demo",
+    );
     expect(resolveFieldLabel({ label: "L" }, (k: string) => `t:${k}`)).toBe("L");
   });
 
@@ -41,14 +43,17 @@ describe("EntityCardMetadata merge mode", () => {
         descriptor={descriptor}
         entity={{ id: "1", city: "Lahore" }}
         extraColumns={{
-          columns: [{ label: "x", id: "city" }, { label: "y", id: "notes" }],
+          columns: [
+            { label: "x", id: "city" },
+            { label: "y", id: "notes" },
+          ],
           keyFor: (col) => col.id,
           labelFor: (col) => (col.id === "notes" ? "Notes" : col.label),
           renderValue: (col) => (col.id === "notes" ? "hello notes" : null),
         }}
       />,
     );
-    expect(html).toContain("Lahore");        // descriptor tile kept
+    expect(html).toContain("Lahore"); // descriptor tile kept
     expect(html).not.toContain("Fallback City"); // legacy "city" deduped (descriptor won)
     expect(html).toContain("Notes");
     expect(html).toContain("hello notes");

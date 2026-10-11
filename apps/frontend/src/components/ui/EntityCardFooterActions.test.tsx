@@ -17,7 +17,7 @@ describe("EntityCardFooterActions", () => {
         viewLabel="View Profile"
         viewAriaLabel="View Profile - Student"
         overflowActions={<button type="button">Overflow</button>}
-      />
+      />,
     );
 
     expect(html).toContain("View Profile");
@@ -27,9 +27,7 @@ describe("EntityCardFooterActions", () => {
 
   it("renders leading slot when provided", () => {
     const html = renderToStaticMarkup(
-      <EntityCardFooterActions
-        leading={<span data-testid="leading-pill">SMS Sent</span>}
-      />
+      <EntityCardFooterActions leading={<span data-testid="leading-pill">SMS Sent</span>} />,
     );
 
     expect(html).toContain("leading-pill");
@@ -43,7 +41,7 @@ describe("EntityCardFooterActions", () => {
         viewLabel="View"
         actions={<button type="button">Print</button>}
         overflowActions={<button type="button">Menu</button>}
-      />
+      />,
     );
 
     expect(html).toContain("View");

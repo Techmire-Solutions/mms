@@ -15,26 +15,18 @@ export interface HasanatSettingsProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const HasanatSettings = (function HasanatSettings({
+export const HasanatSettings = function HasanatSettings({
   onPrefsDirtyChange,
 }: HasanatSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useHasanatSetupPanelState();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useHasanatSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
-  const unsavedWarning = isPrefsDirty
-    ? t("hasanat.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isPrefsDirty ? t("hasanat.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -90,6 +82,6 @@ export const HasanatSettings = (function HasanatSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default HasanatSettings;

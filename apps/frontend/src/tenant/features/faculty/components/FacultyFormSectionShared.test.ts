@@ -16,12 +16,12 @@ describe("FacultyFormSectionShared", () => {
     };
     const t = (key: string) => key;
 
-    expect(
-      resolveFacultyFieldLabel(fields, "employment", "specialization", t as never),
-    ).toBe("Specialization");
+    expect(resolveFacultyFieldLabel(fields, "employment", "specialization", t as never)).toBe(
+      "Specialization",
+    );
 
-    expect(
-      resolveFacultyFieldLabel(fields, "employment", "employeeId", t as never),
-    ).toBe("faculty.field.employeeId");
+    expect(resolveFacultyFieldLabel(fields, "employment", "employeeId", t as never)).toBe(
+      "faculty.field.employeeId",
+    );
   });
 });

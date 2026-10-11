@@ -1,13 +1,11 @@
-import { createModuleQueryInvalidator } from '@/lib/query/createModuleQueryInvalidator';
+import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
 import {
   FACULTY_METRICS_QUERY_KEY,
   FACULTY_QUERY_KEY,
   FACULTY_WIDGET_AGGREGATES_QUERY_KEY,
-} from '@/tenant/features/faculty/hooks/facultyQueryKeys';
-import {
-  FACULTY_PREFERENCES_QUERY_KEY,
-} from '@/tenant/features/faculty/hooks/useFacultySetupConfig';
-import { FACULTY_LOOKUPS_QUERY_KEY } from '@/tenant/features/faculty/hooks/useFacultyLookups';
+} from "@/tenant/features/faculty/hooks/facultyQueryKeys";
+import { FACULTY_PREFERENCES_QUERY_KEY } from "@/tenant/features/faculty/hooks/useFacultySetupConfig";
+import { FACULTY_LOOKUPS_QUERY_KEY } from "@/tenant/features/faculty/hooks/useFacultyLookups";
 
 /** Invalidate Faculty list/metrics/setup/lookups Query keys (mutations + live push). */
 export const invalidateFacultyQueries = createModuleQueryInvalidator({
@@ -18,4 +16,3 @@ export const invalidateFacultyQueries = createModuleQueryInvalidator({
   preferences: FACULTY_PREFERENCES_QUERY_KEY,
   lookups: FACULTY_LOOKUPS_QUERY_KEY,
 });
-

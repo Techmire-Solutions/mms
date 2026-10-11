@@ -33,11 +33,16 @@ export function useModuleAccess(): ModuleAccessState {
   const query = useQuery(moduleAccessQueryOptions(isAuthenticated));
   const { refetch } = query;
 
-  const status: ModuleAccessState["status"] = query.isError ? "error" : query.data ? "ready" : "pending";
+  const status: ModuleAccessState["status"] = query.isError
+    ? "error"
+    : query.data
+      ? "ready"
+      : "pending";
   const availability = status === "ready" ? (query.data ?? null) : null;
 
   const evaluate = useCallback<ModuleAccessEvaluator>(
-    (moduleId: string, action?: ModuleAction) => evaluateModuleAccess({ moduleId, availability, can, action }),
+    (moduleId: string, action?: ModuleAction) =>
+      evaluateModuleAccess({ moduleId, availability, can, action }),
     [availability, can],
   );
   const effectiveModules = useMemo(() => toEffectiveModuleFlags(availability), [availability]);

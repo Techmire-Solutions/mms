@@ -48,13 +48,16 @@ export function ContactAddressesTab({
   const allowAdd = resolveSubListAllowAdd([showLabel, showLine1, showCity, showState, showCountry]);
   const addresses = contactDraft.addresses || [];
 
-  const emptyAddress = useCallback((): Address => ({
-    label: resolveAddressLabel(undefined, addressLabels, t),
-    line1: "",
-    city: defaultCity,
-    state: defaultProvince,
-    country: defaultCountry,
-  }), [addressLabels, defaultCity, defaultCountry, defaultProvince, t]);
+  const emptyAddress = useCallback(
+    (): Address => ({
+      label: resolveAddressLabel(undefined, addressLabels, t),
+      line1: "",
+      city: defaultCity,
+      state: defaultProvince,
+      country: defaultCountry,
+    }),
+    [addressLabels, defaultCity, defaultCountry, defaultProvince, t],
+  );
 
   const addAddress = useCallback(() => {
     addSubListItem("addresses", emptyAddress());
@@ -64,13 +67,19 @@ export function ContactAddressesTab({
     ensureSubListItem("addresses", emptyAddress());
   }, [ensureSubListItem, emptyAddress]);
 
-  const removeAddress = useCallback((idx: number) => {
-    removeSubListItem("addresses", idx);
-  }, [removeSubListItem]);
+  const removeAddress = useCallback(
+    (idx: number) => {
+      removeSubListItem("addresses", idx);
+    },
+    [removeSubListItem],
+  );
 
-  const handleSetPrimary = useCallback((idx: number) => {
-    setPrimarySubListItem?.("addresses", idx);
-  }, [setPrimarySubListItem]);
+  const handleSetPrimary = useCallback(
+    (idx: number) => {
+      setPrimarySubListItem?.("addresses", idx);
+    },
+    [setPrimarySubListItem],
+  );
 
   const updateAddress = useCallback(
     (idx: number, patch: Partial<Address> & Record<string, unknown>) => {

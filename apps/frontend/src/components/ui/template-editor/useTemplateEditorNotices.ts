@@ -10,7 +10,9 @@ export interface UseTemplateEditorNoticesOptions {
 
 export function useTemplateEditorNotices({ t }: UseTemplateEditorNoticesOptions) {
   const [flashElementId, setFlashElementId] = useState<string | null>(null);
-  const [deletionNotice, setDeletionNotice] = useState<{ nonce: number; message: string } | null>(null);
+  const [deletionNotice, setDeletionNotice] = useState<{ nonce: number; message: string } | null>(
+    null,
+  );
 
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deletionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -37,7 +39,7 @@ export function useTemplateEditorNotices({ t }: UseTemplateEditorNoticesOptions)
       if (deletionTimerRef.current) clearTimeout(deletionTimerRef.current);
       deletionTimerRef.current = setTimeout(() => setDeletionNotice(null), DELETION_NOTICE_MS);
     },
-    [t]
+    [t],
   );
 
   return {

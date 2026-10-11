@@ -97,7 +97,9 @@ export function normalizeDashboardWidget(raw: unknown): DashboardWidgetDto | nul
   const rawOp = typeof r.operation === "string" ? r.operation.trim().toLowerCase() : "";
   const operation = (OPERATIONS as readonly string[]).includes(rawOp)
     ? (rawOp as DashboardWidgetDto["operation"])
-    : (typeof r.operation === "string" ? (r.operation.trim() as DashboardWidgetDto["operation"]) : "count");
+    : typeof r.operation === "string"
+      ? (r.operation.trim() as DashboardWidgetDto["operation"])
+      : "count";
 
   const sanitizeOptionalEnum = <T extends string>(
     val: unknown,
@@ -223,7 +225,7 @@ export function normalizeDashboardWidgets(raw: unknown): DashboardWidgetDto[] {
     }
     return widgets;
   }
-  if (typeof raw === 'object') {
+  if (typeof raw === "object") {
     const r = raw as Record<string, unknown>;
     if (Array.isArray(r.widgets)) {
       return normalizeDashboardWidgets(r.widgets);

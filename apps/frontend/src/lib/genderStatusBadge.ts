@@ -1,6 +1,6 @@
-import type { AppTranslationKey } from '@mms/shared';
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { genderBadgeClass, SEMANTIC_BADGE } from '@/lib/semanticTone';
+import type { AppTranslationKey } from "@mms/shared";
+import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { genderBadgeClass, SEMANTIC_BADGE } from "@/lib/semanticTone";
 
 type Translate = (key: AppTranslationKey) => string;
 
@@ -13,17 +13,17 @@ export function genderStatusBadgeConfig(
 ): Record<string, StatusBadgeConfigItem> {
   const config: Record<string, StatusBadgeConfigItem> = {
     male: {
-      label: t('sessions.classes.gender.male'),
-      cls: genderBadgeClass('male'),
+      label: t("sessions.classes.gender.male"),
+      cls: genderBadgeClass("male"),
     },
     female: {
-      label: t('sessions.classes.gender.female'),
-      cls: genderBadgeClass('female'),
+      label: t("sessions.classes.gender.female"),
+      cls: genderBadgeClass("female"),
     },
   };
   if (options?.includeAny) {
     config.any = {
-      label: t('sessions.classes.gender.any'),
+      label: t("sessions.classes.gender.any"),
       cls: SEMANTIC_BADGE.muted,
     };
   }

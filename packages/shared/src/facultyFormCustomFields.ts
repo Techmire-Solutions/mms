@@ -2,11 +2,11 @@
  * @file facultyFormCustomFields.ts
  * @description Helpers for Faculty form custom (non-seed) fields and field lookups.
  */
-import { INITIAL_FACULTY_FIELD_SEED } from './moduleFieldSetupPersons.js';
-import type { FieldDefinition } from './contactFieldSchemaTypes.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
-import { createFormCustomFieldHelpers } from './createFormCustomFieldHelpers.js';
-import { applyFacultyFieldProductLocks } from './facultyFormFieldMigration.js';
+import { INITIAL_FACULTY_FIELD_SEED } from "./moduleFieldSetupPersons.js";
+import type { FieldDefinition } from "./contactFieldSchemaTypes.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
+import { createFormCustomFieldHelpers } from "./createFormCustomFieldHelpers.js";
+import { applyFacultyFieldProductLocks } from "./facultyFormFieldMigration.js";
 
 const helpers = createFormCustomFieldHelpers(INITIAL_FACULTY_FIELD_SEED);
 
@@ -35,7 +35,7 @@ export function cloneFacultyFieldSeed(): Record<string, FieldDefinition[]> {
 export function resolveFacultyFieldsMapForColumnSync(
   fields: Record<string, unknown> | undefined,
 ): Readonly<Record<string, FieldDefinition[]>> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return applyFacultyFieldProductLocks(cloneFacultyFieldSeed());
   }
   const entries = Object.entries(fields);

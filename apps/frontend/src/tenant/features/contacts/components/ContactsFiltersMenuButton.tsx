@@ -69,10 +69,7 @@ export const ContactsFiltersMenuButton = React.memo(function ContactsFiltersMenu
   );
 
   return (
-    <ModuleFilterDropdown
-      label={t("contacts.filters")}
-      activeCount={activeFilterCount}
-    >
+    <ModuleFilterDropdown label={t("contacts.filters")} activeCount={activeFilterCount}>
       <ModuleFilterRadioGroup
         label={t("contacts.filters")}
         value={quickFilter}

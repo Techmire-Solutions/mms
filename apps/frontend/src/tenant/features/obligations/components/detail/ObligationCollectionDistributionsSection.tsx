@@ -37,40 +37,45 @@ export function ObligationCollectionDistributionsSection({
   const { t } = useTranslation();
   const { viewMode } = useWorkDirectoryViewMode();
 
-  const columns = useMemo(() => [
-    {
-      id: "name",
-      label: t("obligations.detail.colName"),
-      render: (row: ObligationDistribution) => (
-        <span className="font-medium text-foreground">{row.name}</span>
-      ),
-    },
-    {
-      id: "type",
-      label: t("obligations.detail.colType"),
-      render: (row: ObligationDistribution) => (
-        <StatusBadge status={row.type} config={distributionTypeConfig} size="sm" />
-      ),
-    },
-    {
-      id: "pct",
-      label: t("obligations.detail.colPct"),
-      align: "right" as const,
-      render: (row: ObligationDistribution) => (
-        <span className="text-xs font-semibold whitespace-nowrap" dir="ltr">{row.percentage}%</span>
-      ),
-    },
-    {
-      id: "amount",
-      label: t("obligations.columns.amount"),
-      align: "right" as const,
-      render: (row: ObligationDistribution) => (
-        <span className="text-xs font-semibold text-foreground whitespace-nowrap" dir="ltr">
-          {formatMoney((collection.amount * row.percentage) / 100, currency?.code)}
-        </span>
-      ),
-    },
-  ], [t, distributionTypeConfig, collection.amount, currency?.code]);
+  const columns = useMemo(
+    () => [
+      {
+        id: "name",
+        label: t("obligations.detail.colName"),
+        render: (row: ObligationDistribution) => (
+          <span className="font-medium text-foreground">{row.name}</span>
+        ),
+      },
+      {
+        id: "type",
+        label: t("obligations.detail.colType"),
+        render: (row: ObligationDistribution) => (
+          <StatusBadge status={row.type} config={distributionTypeConfig} size="sm" />
+        ),
+      },
+      {
+        id: "pct",
+        label: t("obligations.detail.colPct"),
+        align: "right" as const,
+        render: (row: ObligationDistribution) => (
+          <span className="text-xs font-semibold whitespace-nowrap" dir="ltr">
+            {row.percentage}%
+          </span>
+        ),
+      },
+      {
+        id: "amount",
+        label: t("obligations.columns.amount"),
+        align: "right" as const,
+        render: (row: ObligationDistribution) => (
+          <span className="text-xs font-semibold text-foreground whitespace-nowrap" dir="ltr">
+            {formatMoney((collection.amount * row.percentage) / 100, currency?.code)}
+          </span>
+        ),
+      },
+    ],
+    [t, distributionTypeConfig, collection.amount, currency?.code],
+  );
 
   const footerRows: WorkBatchTableFooterRow[] = useMemo(() => {
     if (dists.length === 0) return [];
@@ -80,20 +85,20 @@ export function ObligationCollectionDistributionsSection({
           {
             colSpan: 2,
             className: "table-footer-label text-foreground",
-            content: t("reports.fields.total")
+            content: t("reports.fields.total"),
           },
           {
             align: "end",
             className: "font-bold text-xs whitespace-nowrap",
-            content: <span dir="ltr">{totalPct}%</span>
+            content: <span dir="ltr">{totalPct}%</span>,
           },
           {
             align: "end",
             className: "font-bold text-foreground text-xs whitespace-nowrap",
-            content: <span dir="ltr">{formatMoney(totalAmount, currency?.code)}</span>
-          }
-        ]
-      }
+            content: <span dir="ltr">{formatMoney(totalAmount, currency?.code)}</span>,
+          },
+        ],
+      },
     ];
   }, [dists.length, totalPct, totalAmount, currency?.code, t]);
 
@@ -110,7 +115,11 @@ export function ObligationCollectionDistributionsSection({
                 <article key={distribution.id} className={`${WORK_SURFACE_INNER} space-y-2 p-3`}>
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm font-medium text-foreground m-0">{distribution.name}</p>
-                    <StatusBadge status={distribution.type} config={distributionTypeConfig} size="sm" />
+                    <StatusBadge
+                      status={distribution.type}
+                      config={distributionTypeConfig}
+                      size="sm"
+                    />
                   </div>
                   <StatGrid>
                     <StatRow
@@ -120,7 +129,10 @@ export function ObligationCollectionDistributionsSection({
                     />
                     <StatRow
                       label={t("obligations.columns.amount")}
-                      value={formatMoney((collection.amount * distribution.percentage) / 100, currency?.code)}
+                      value={formatMoney(
+                        (collection.amount * distribution.percentage) / 100,
+                        currency?.code,
+                      )}
                       ddClassName="font-mono text-xs font-semibold"
                     />
                   </StatGrid>
@@ -136,9 +148,11 @@ export function ObligationCollectionDistributionsSection({
           ) : (
             <WorkBatchTable
               columns={columns}
-              data={dists.map(d => ({ ...d, id: d.id.toString() }))}
+              data={dists.map((d) => ({ ...d, id: d.id.toString() }))}
               footerRow={footerRows[0]}
-              caption={t("obligations.detail.distributionCaption", { receipt: collection.receipt_no })}
+              caption={t("obligations.detail.distributionCaption", {
+                receipt: collection.receipt_no,
+              })}
             />
           )}
         </section>

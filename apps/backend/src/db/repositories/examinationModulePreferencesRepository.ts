@@ -1,9 +1,9 @@
-import { examinationsModulePreferences } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { examinationsModulePreferences } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: examinationsModulePreferences,
-  jsonColumn: 'preferences',
+  jsonColumn: "preferences",
 });
 
 export const getExaminationModulePreferences = repo.getByWorkspace;

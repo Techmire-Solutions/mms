@@ -1,5 +1,5 @@
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type * as schema from './schema.js';
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type * as schema from "./schema.js";
 
 let _db: NodePgDatabase<typeof schema> | null = null;
 
@@ -25,15 +25,15 @@ function applySoftDeleteGuardrailsToWith(
     if (value === true) {
       result[key] = {
         where: (relation: unknown, helpers: RelationalWhereHelpers) =>
-          relation && typeof relation === 'object' && 'deletedAt' in relation
+          relation && typeof relation === "object" && "deletedAt" in relation
             ? helpers?.isNull?.((relation as { deletedAt: unknown }).deletedAt)
             : undefined,
       };
-    } else if (typeof value === 'object' && value !== null) {
+    } else if (typeof value === "object" && value !== null) {
       const copy: RelationalConfigItem = { ...(value as Record<string, unknown>) };
       if (!copy.where) {
         copy.where = (relation: unknown, helpers: RelationalWhereHelpers) =>
-          relation && typeof relation === 'object' && 'deletedAt' in relation
+          relation && typeof relation === "object" && "deletedAt" in relation
             ? helpers?.isNull?.((relation as { deletedAt: unknown }).deletedAt)
             : undefined;
       } else {
@@ -42,13 +42,13 @@ function applySoftDeleteGuardrailsToWith(
           const userCond = origWhere(relation, helpers);
           if (
             relation &&
-            typeof relation === 'object' &&
-            'deletedAt' in relation &&
-            typeof helpers?.isNull === 'function'
+            typeof relation === "object" &&
+            "deletedAt" in relation &&
+            typeof helpers?.isNull === "function"
           ) {
             const softDeleteCond = helpers.isNull((relation as { deletedAt: unknown }).deletedAt);
             return userCond
-              ? typeof helpers.and === 'function'
+              ? typeof helpers.and === "function"
                 ? helpers.and(userCond, softDeleteCond)
                 : userCond
               : softDeleteCond;
@@ -56,7 +56,7 @@ function applySoftDeleteGuardrailsToWith(
           return userCond;
         };
       }
-      if (copy.with && typeof copy.with === 'object') {
+      if (copy.with && typeof copy.with === "object") {
         copy.with = applySoftDeleteGuardrailsToWith(copy.with as Record<string, unknown>);
       }
       result[key] = copy;
@@ -68,24 +68,24 @@ function applySoftDeleteGuardrailsToWith(
 }
 
 export function wrapDbWithRelationalGuardrails<TDb extends object>(dbInstance: TDb): TDb {
-  if (!dbInstance || typeof dbInstance !== 'object') return dbInstance;
-  const originalQuery = Reflect.get(dbInstance, 'query') as object | undefined;
-  if (!originalQuery || typeof originalQuery !== 'object') return dbInstance;
+  if (!dbInstance || typeof dbInstance !== "object") return dbInstance;
+  const originalQuery = Reflect.get(dbInstance, "query") as object | undefined;
+  if (!originalQuery || typeof originalQuery !== "object") return dbInstance;
 
   const queryProxy = new Proxy(originalQuery, {
     get(target, tableKey, receiver) {
       const tableQuery = Reflect.get(target, tableKey, receiver);
-      if (!tableQuery || typeof tableQuery !== 'object') return tableQuery;
+      if (!tableQuery || typeof tableQuery !== "object") return tableQuery;
 
       return new Proxy(tableQuery, {
         get(tableTarget, methodKey, tableReceiver) {
           const origMethod = Reflect.get(tableTarget, methodKey, tableReceiver);
-          if (typeof origMethod !== 'function') return origMethod;
-          if (methodKey !== 'findFirst' && methodKey !== 'findMany') return origMethod;
+          if (typeof origMethod !== "function") return origMethod;
+          if (methodKey !== "findFirst" && methodKey !== "findMany") return origMethod;
 
           return function (options?: Record<string, unknown>) {
             let effectiveOptions = options;
-            if (options && options.with && typeof options.with === 'object') {
+            if (options && options.with && typeof options.with === "object") {
               effectiveOptions = {
                 ...options,
                 with: applySoftDeleteGuardrailsToWith(options.with as Record<string, unknown>),
@@ -100,7 +100,7 @@ export function wrapDbWithRelationalGuardrails<TDb extends object>(dbInstance: T
 
   return new Proxy(dbInstance, {
     get(target, prop, receiver) {
-      if (prop === 'query') {
+      if (prop === "query") {
         return queryProxy;
       }
       return Reflect.get(target, prop, receiver);
@@ -114,7 +114,7 @@ export function setDb(instance: NodePgDatabase<typeof schema> | null): void {
 
 export function getDb(): NodePgDatabase<typeof schema> {
   if (!_db) {
-    throw new Error('Database not initialized');
+    throw new Error("Database not initialized");
   }
   return _db;
 }

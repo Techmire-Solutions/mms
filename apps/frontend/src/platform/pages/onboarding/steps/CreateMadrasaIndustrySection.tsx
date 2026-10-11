@@ -53,20 +53,22 @@ export function CreateMadrasaIndustrySection({
                 aria-checked={isSelected}
                 onClick={() => handleIndustryChange(ind)}
                 onKeyDown={(e) => {
-                  if (e.key === ' ' || e.key === 'Enter') {
+                  if (e.key === " " || e.key === "Enter") {
                     e.preventDefault();
                     handleIndustryChange(ind);
                   }
                 }}
                 className={`relative flex items-start gap-3 rounded-xl border p-3.5 text-start cursor-pointer transition-all ${
                   isSelected
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary shadow-xs'
-                    : 'border-border/70 bg-card hover:border-border hover:bg-accent/40'
+                    ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
+                    : "border-border/70 bg-card hover:border-border hover:bg-accent/40"
                 }`}
               >
                 <div
                   className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                    isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    isSelected
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
                   <Icon className="h-4 w-4" />

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 interface DragCoordinate {
   x: number;
@@ -29,7 +29,7 @@ export function useAvatarCropperCanvas(src: string) {
 
   useEffect(() => {
     if (!imgEl || !canvasRef.current) return;
-    const canvasContext = canvasRef.current.getContext('2d');
+    const canvasContext = canvasRef.current.getContext("2d");
     if (!canvasContext) return;
     canvasContext.clearRect(0, 0, SIZE, SIZE);
     canvasContext.save();
@@ -42,16 +42,16 @@ export function useAvatarCropperCanvas(src: string) {
     canvasContext.drawImage(imgEl, -imgEl.naturalWidth / 2, -imgEl.naturalHeight / 2);
     canvasContext.restore();
     canvasContext.save();
-    canvasContext.strokeStyle = 'rgba(255,255,255,0.9)';
+    canvasContext.strokeStyle = "rgba(255,255,255,0.9)";
     canvasContext.lineWidth = 3;
     canvasContext.beginPath();
     canvasContext.arc(RADIUS, RADIUS, RADIUS - 2, 0, Math.PI * 2);
     canvasContext.stroke();
     canvasContext.restore();
     canvasContext.save();
-    canvasContext.fillStyle = 'rgba(0,0,0,0.45)';
+    canvasContext.fillStyle = "rgba(0,0,0,0.45)";
     canvasContext.fillRect(0, 0, SIZE, SIZE);
-    canvasContext.globalCompositeOperation = 'destination-out';
+    canvasContext.globalCompositeOperation = "destination-out";
     canvasContext.beginPath();
     canvasContext.arc(RADIUS, RADIUS, RADIUS - 2, 0, Math.PI * 2);
     canvasContext.fill();
@@ -63,10 +63,10 @@ export function useAvatarCropperCanvas(src: string) {
     setDragStart({ x: event.clientX - offset.x, y: event.clientY - offset.y });
   };
 
-  const onMouseMove = ((event: React.MouseEvent<HTMLCanvasElement>): void => {
-      if (!dragging || !dragStart) return;
-      setOffset({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y });
-    });
+  const onMouseMove = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+    if (!dragging || !dragStart) return;
+    setOffset({ x: event.clientX - dragStart.x, y: event.clientY - dragStart.y });
+  };
 
   const onMouseUp = (): void => {
     setDragging(false);
@@ -78,11 +78,11 @@ export function useAvatarCropperCanvas(src: string) {
     setDragStart({ x: touch.clientX - offset.x, y: touch.clientY - offset.y });
   };
 
-  const onTouchMove = ((event: React.TouchEvent<HTMLCanvasElement>): void => {
-      if (!dragging || !dragStart) return;
-      const touch = event.touches[0];
-      setOffset({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y });
-    });
+  const onTouchMove = (event: React.TouchEvent<HTMLCanvasElement>): void => {
+    if (!dragging || !dragStart) return;
+    const touch = event.touches[0];
+    setOffset({ x: touch.clientX - dragStart.x, y: touch.clientY - dragStart.y });
+  };
 
   const resetTransform = (): void => {
     setScale(1);
@@ -101,10 +101,10 @@ export function useAvatarCropperCanvas(src: string) {
   const renderCroppedCanvas = (): HTMLCanvasElement | null => {
     if (!imgEl) return null;
     const OUT = 300;
-    const out = document.createElement('canvas');
+    const out = document.createElement("canvas");
     out.width = OUT;
     out.height = OUT;
-    const canvasContext = out.getContext('2d');
+    const canvasContext = out.getContext("2d");
     if (!canvasContext) return null;
 
     canvasContext.save();

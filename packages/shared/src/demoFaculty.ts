@@ -1,9 +1,6 @@
-import {
-  buildDemoFacultyContacts,
-  buildDemoFaculty,
-} from './demoSeedBuilders.js';
+import { buildDemoFacultyContacts, buildDemoFaculty } from "./demoSeedBuilders.js";
 
-export { DEMO_FACULTY_COUNT } from './demoSeedBuilders.js';
+export { DEMO_FACULTY_COUNT } from "./demoSeedBuilders.js";
 
 /** Faculty contact profiles (ids 1–{@link DEMO_FACULTY_COUNT}). */
 export const DEMO_FACULTY_CONTACTS = buildDemoFacultyContacts();

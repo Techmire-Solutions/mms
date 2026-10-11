@@ -53,10 +53,7 @@ export interface UseModuleServerCsvExportActionsOptions<
     idempotencyKey?: string;
   }) => Promise<BackgroundJobRecord>;
   logExportAudit: {
-    mutateAsync: (payload: {
-      count: number;
-      scope: ModuleCsvExportAuditScope;
-    }) => Promise<unknown>;
+    mutateAsync: (payload: { count: number; scope: ModuleCsvExportAuditScope }) => Promise<unknown>;
   };
   onError: (err: unknown, scope: string) => void;
   tenantName?: string;
@@ -75,10 +72,22 @@ export function useModuleServerCsvExportActions<
   TQuery = Record<string, unknown>,
 >(options: UseModuleServerCsvExportActionsOptions<TColumn, TQuery>) {
   const {
-    canExport, trashMode, selectedIds, columns, filename, label,
-    successMessage, auditScope, filteredErrorScope, selectionErrorScope,
-    hasActiveFilters = false, buildFilteredQuery, startExport,
-    logExportAudit, onError, tenantName,
+    canExport,
+    trashMode,
+    selectedIds,
+    columns,
+    filename,
+    label,
+    successMessage,
+    auditScope,
+    filteredErrorScope,
+    selectionErrorScope,
+    hasActiveFilters = false,
+    buildFilteredQuery,
+    startExport,
+    logExportAudit,
+    onError,
+    tenantName,
   } = options;
   const [isExporting, setIsExporting] = useState(false);
   const attemptRef = useRef<CsvExportAttempt | null>(null);
@@ -88,7 +97,8 @@ export function useModuleServerCsvExportActions<
     tenantName ??
     optionalTenant?.workspace?.madrasaName ??
     optionalTenant?.publicBranding?.madrasaName ??
-    optionalTenant?.subdomain ?? null;
+    optionalTenant?.subdomain ??
+    null;
   const resolvedFilename = useMemo(
     () => buildTenantExportFilename(effectiveTenantName, filename),
     [effectiveTenantName, filename],

@@ -9,12 +9,14 @@ import type {
 const PrintInvoiceModal = lazy(() =>
   import("@/tenant/features/obligations/components/invoice/PrintInvoiceModal").then((module) => ({
     default: module.PrintInvoiceModal,
-  }))
+  })),
 );
 const InvoiceTemplateEditor = lazy(() =>
-  import("@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor").then((module) => ({
-    default: module.InvoiceTemplateEditor,
-  }))
+  import("@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor").then(
+    (module) => ({
+      default: module.InvoiceTemplateEditor,
+    }),
+  ),
 );
 
 export interface ObligationInvoiceModalsProps {

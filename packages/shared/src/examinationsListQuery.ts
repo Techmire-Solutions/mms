@@ -1,4 +1,4 @@
-import type { Exam } from './examinationsModuleManifest.js';
+import type { Exam } from "./examinationsModuleManifest.js";
 
 /** Query accepted by the examinations exams list endpoint. */
 export interface ExaminationsListQuery {
@@ -8,7 +8,7 @@ export interface ExaminationsListQuery {
   /** Comma-separated exam statuses (`upcoming|ongoing|completed|scheduled|cancelled`). */
   status?: string;
   sortField?: string;
-  sortDir?: 'asc' | 'desc' | '';
+  sortDir?: "asc" | "desc" | "";
   includeDeleted?: boolean;
 }
 

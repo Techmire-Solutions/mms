@@ -1,10 +1,10 @@
 /** Employment lifecycle status (DB CHECK + Zod enum SSOT). */
 export const FACULTY_EMPLOYMENT_STATUS_VALUES = [
-  'active',
-  'on_leave',
-  'inactive',
-  'retired',
-  'terminated',
+  "active",
+  "on_leave",
+  "inactive",
+  "retired",
+  "terminated",
 ] as const;
 export type FacultyEmploymentStatus = (typeof FACULTY_EMPLOYMENT_STATUS_VALUES)[number];
 
@@ -16,23 +16,27 @@ export const FACULTY_STATUS_VALUES = FACULTY_EMPLOYMENT_STATUS_VALUES;
 export type FacultyStatus = FacultyEmploymentStatus;
 
 /** Faculty profile Active|Inactive (separate from employment lifecycle). */
-export const FACULTY_PROFILE_STATUS_VALUES = ['active', 'inactive'] as const;
+export const FACULTY_PROFILE_STATUS_VALUES = ["active", "inactive"] as const;
 export type FacultyProfileStatus = (typeof FACULTY_PROFILE_STATUS_VALUES)[number];
 
 /** Catalog lifecycle status shared by departments and designations. */
-export const FACULTY_CATALOG_STATUS_VALUES = ['active', 'inactive'] as const;
+export const FACULTY_CATALOG_STATUS_VALUES = ["active", "inactive"] as const;
 export type FacultyCatalogStatus = (typeof FACULTY_CATALOG_STATUS_VALUES)[number];
 
 /** True when `value` is a member of {@link FACULTY_EMPLOYMENT_STATUS_VALUES}. */
 export function isFacultyStatus(value: unknown): value is FacultyEmploymentStatus {
-  return typeof value === 'string'
-    && (FACULTY_EMPLOYMENT_STATUS_VALUES as readonly string[]).includes(value);
+  return (
+    typeof value === "string" &&
+    (FACULTY_EMPLOYMENT_STATUS_VALUES as readonly string[]).includes(value)
+  );
 }
 
 /** True when `value` is a member of {@link FACULTY_PROFILE_STATUS_VALUES}. */
 export function isFacultyProfileStatus(value: unknown): value is FacultyProfileStatus {
-  return typeof value === 'string'
-    && (FACULTY_PROFILE_STATUS_VALUES as readonly string[]).includes(value);
+  return (
+    typeof value === "string" &&
+    (FACULTY_PROFILE_STATUS_VALUES as readonly string[]).includes(value)
+  );
 }
 
 export type FacultyStatusRoles = {
@@ -50,13 +54,14 @@ export function resolveFacultyStatusRoles(): FacultyStatusRoles {
 }
 
 /** Statuses that count as an ended employment (no longer on staff). */
-export const FACULTY_ENDED_STATUSES: readonly FacultyEmploymentStatus[] = ['retired', 'terminated'];
+export const FACULTY_ENDED_STATUSES: readonly FacultyEmploymentStatus[] = ["retired", "terminated"];
 
 /** Default employment status when unset. */
 export const DEFAULT_FACULTY_STATUS: FacultyEmploymentStatus = FACULTY_EMPLOYMENT_STATUS_VALUES[0];
 
 /** Default profile status when unset. */
-export const DEFAULT_FACULTY_PROFILE_STATUS: FacultyProfileStatus = FACULTY_PROFILE_STATUS_VALUES[0];
+export const DEFAULT_FACULTY_PROFILE_STATUS: FacultyProfileStatus =
+  FACULTY_PROFILE_STATUS_VALUES[0];
 
 /** Prefer configured status options; fall back to the employment status list. */
 export function resolveFacultyStatuses(statuses?: readonly string[] | null): readonly string[] {

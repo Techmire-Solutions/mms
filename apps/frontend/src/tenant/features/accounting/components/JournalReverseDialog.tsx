@@ -1,6 +1,11 @@
 import { useId } from "react";
 import { CalendarDays, FileText, Hash, Lock, Wallet } from "lucide-react";
-import { formatDate, type AppTranslationKey, type FiscalYear, type JournalReversalRequest } from "@mms/shared";
+import {
+  formatDate,
+  type AppTranslationKey,
+  type FiscalYear,
+  type JournalReversalRequest,
+} from "@mms/shared";
 import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Field } from "@/components/ui/FormField";
@@ -35,7 +40,12 @@ const PERIOD_LABEL = {
  * The original entry is never deleted or edited — the server posts a new
  * linked reversing journal and records who and when.
  */
-export function JournalReverseDialog({ entry, fiscalYears, onOpenChange, onConfirm }: JournalReverseDialogProps) {
+export function JournalReverseDialog({
+  entry,
+  fiscalYears,
+  onOpenChange,
+  onConfirm,
+}: JournalReverseDialogProps) {
   const { t } = useTranslation();
   const { formatCurrency } = useAccountingCurrency();
   const { user } = useAuth();
@@ -62,13 +72,38 @@ export function JournalReverseDialog({ entry, fiscalYears, onOpenChange, onConfi
             {t("accounting.journal.reverse.originalSection")}
           </h3>
           <div className="grid gap-2 sm:grid-cols-2">
-            <DetailAttributeRow variant="inset" icon={Hash} label={t("accounting.journal.reverse.journalNumber")} value={entry.ref} />
-            <DetailAttributeRow variant="inset" icon={CalendarDays} label={t("accounting.journal.reverse.originalDate")} value={formatDate(entry.date)} />
-            <DetailAttributeRow variant="inset" icon={Wallet} label={t("accounting.journal.reverse.amount")} value={formatCurrency(totalDebit)} />
-            <DetailAttributeRow variant="inset" icon={Lock} label={t("accounting.journal.reverse.periodStatus")} value={t(PERIOD_LABEL[state.originalPeriod])} />
+            <DetailAttributeRow
+              variant="inset"
+              icon={Hash}
+              label={t("accounting.journal.reverse.journalNumber")}
+              value={entry.ref}
+            />
+            <DetailAttributeRow
+              variant="inset"
+              icon={CalendarDays}
+              label={t("accounting.journal.reverse.originalDate")}
+              value={formatDate(entry.date)}
+            />
+            <DetailAttributeRow
+              variant="inset"
+              icon={Wallet}
+              label={t("accounting.journal.reverse.amount")}
+              value={formatCurrency(totalDebit)}
+            />
+            <DetailAttributeRow
+              variant="inset"
+              icon={Lock}
+              label={t("accounting.journal.reverse.periodStatus")}
+              value={t(PERIOD_LABEL[state.originalPeriod])}
+            />
           </div>
           {entry.description ? (
-            <DetailAttributeRow variant="inset" icon={FileText} label={t("accounting.journal.reverse.description")} value={entry.description} />
+            <DetailAttributeRow
+              variant="inset"
+              icon={FileText}
+              label={t("accounting.journal.reverse.description")}
+              value={entry.description}
+            />
           ) : null}
         </section>
 
@@ -77,36 +112,73 @@ export function JournalReverseDialog({ entry, fiscalYears, onOpenChange, onConfi
             {t("accounting.journal.reverse.reversalSection")}
           </h3>
           {!state.originalDateAllowed && state.originalPeriod === "closed" ? (
-            <WarningCallout density="compact" description={t("accounting.journal.reverse.closedPeriodNotice", { date: formatDate(entry.date) })} />
+            <WarningCallout
+              density="compact"
+              description={t("accounting.journal.reverse.closedPeriodNotice", {
+                date: formatDate(entry.date),
+              })}
+            />
           ) : null}
           {!state.originalDateAllowed && !state.todayAllowed ? (
-            <WarningCallout density="compact" tone="destructive" description={t("accounting.journal.reverse.noOpenDateNotice")} />
+            <WarningCallout
+              density="compact"
+              tone="destructive"
+              description={t("accounting.journal.reverse.noOpenDateNotice")}
+            />
           ) : null}
           <Field
             id={ids.date}
             label={t("accounting.journal.alerts.reversalDateLabel")}
             required
             hint={t("accounting.journal.alerts.reversalDateHint", { date: formatDate(entry.date) })}
-            error={state.dateIssue ? t(`accounting.journal.reverse.dateIssue.${state.dateIssue}`) : undefined}
+            error={
+              state.dateIssue
+                ? t(`accounting.journal.reverse.dateIssue.${state.dateIssue}`)
+                : undefined
+            }
           >
-            <DatePicker id={ids.date} name="reversalDate" value={state.date} min={entry.date} onChange={state.setDate} required />
+            <DatePicker
+              id={ids.date}
+              name="reversalDate"
+              value={state.date}
+              min={entry.date}
+              onChange={state.setDate}
+              required
+            />
           </Field>
           {state.originalDateAllowed || state.todayAllowed ? (
             <div className="flex flex-wrap gap-2">
               {state.originalDateAllowed ? (
-                <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => state.setDate(entry.date)}>
-                  {t("accounting.journal.reverse.useOriginalDate", { date: formatDate(entry.date) })}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="min-h-11"
+                  onClick={() => state.setDate(entry.date)}
+                >
+                  {t("accounting.journal.reverse.useOriginalDate", {
+                    date: formatDate(entry.date),
+                  })}
                 </Button>
               ) : null}
               {state.todayAllowed && state.today !== entry.date ? (
-                <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => state.setDate(state.today)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="min-h-11"
+                  onClick={() => state.setDate(state.today)}
+                >
                   {t("accounting.journal.reverse.useToday")}
                 </Button>
               ) : null}
             </div>
           ) : null}
           {state.priorPeriod ? (
-            <WarningCallout density="compact" description={t("accounting.journal.reverse.priorPeriodWarning")} />
+            <WarningCallout
+              density="compact"
+              description={t("accounting.journal.reverse.priorPeriodWarning")}
+            />
           ) : null}
           <Field
             id={ids.reason}
@@ -125,9 +197,20 @@ export function JournalReverseDialog({ entry, fiscalYears, onOpenChange, onConfi
             />
           </Field>
           <Field id={ids.remarks} label={t("accounting.journal.reverse.remarksLabel")}>
-            <Textarea id={ids.remarks} rows={2} maxLength={1000} value={state.remarks} onChange={(event) => state.setRemarks(event.target.value)} />
+            <Textarea
+              id={ids.remarks}
+              rows={2}
+              maxLength={1000}
+              value={state.remarks}
+              onChange={(event) => state.setRemarks(event.target.value)}
+            />
           </Field>
-          <DetailAttributeRow variant="inset" icon={Hash} label={t("accounting.journal.reverse.reversalRef")} value={`REV-${entry.ref || entry.id}`} />
+          <DetailAttributeRow
+            variant="inset"
+            icon={Hash}
+            label={t("accounting.journal.reverse.reversalRef")}
+            value={`REV-${entry.ref || entry.id}`}
+          />
           <p className="text-xs text-muted-foreground">
             {t("accounting.journal.reverse.recordedNote", { user: user?.name ?? "—" })}
           </p>

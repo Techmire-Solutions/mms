@@ -1,9 +1,9 @@
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from "lucide-react";
 import type {
   ContactsReportAnalyticsSnapshot,
   StudentsCommandMetricsSnapshot,
   FacultyCommandMetricsSnapshot,
-} from '@mms/shared';
+} from "@mms/shared";
 
 export interface KPIItem {
   id: string;
@@ -11,8 +11,20 @@ export interface KPIItem {
   label: string;
   value: string;
   sub: string;
-  color: 'primary' | 'success' | 'info' | 'warning' | 'destructive' | 'secondary' | 'muted' | 'green' | 'blue' | 'red' | 'amber' | 'violet';
-  trend: 'up' | 'down' | 'flat';
+  color:
+    | "primary"
+    | "success"
+    | "info"
+    | "warning"
+    | "destructive"
+    | "secondary"
+    | "muted"
+    | "green"
+    | "blue"
+    | "red"
+    | "amber"
+    | "violet";
+  trend: "up" | "down" | "flat";
   velocity?: string;
   isAvailable: boolean;
 }

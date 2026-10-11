@@ -6,37 +6,35 @@ import { cn } from "@/lib/utils";
 /**
  * ToastProvider component provides the context/container for toasts.
  */
-const ToastProvider = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "pointer-events-none fixed top-0 z-toast flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:end-0 sm:top-auto sm:flex-col md:max-w-toast",
-      className
-    )}
-    {...props}
-  />
-));
+const ToastProvider = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "pointer-events-none fixed top-0 z-toast flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:end-0 sm:top-auto sm:flex-col md:max-w-toast",
+        className,
+      )}
+      {...props}
+    />
+  ),
+);
 ToastProvider.displayName = "ToastProvider";
 
 /**
  * ToastViewport component defines the area where toasts are rendered.
  */
-const ToastViewport = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "pointer-events-none fixed top-0 z-toast flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:end-0 sm:top-auto sm:flex-col md:max-w-toast",
-      className
-    )}
-    {...props}
-  />
-));
+const ToastViewport = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "pointer-events-none fixed top-0 z-toast flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:end-0 sm:top-auto sm:flex-col md:max-w-toast",
+        className,
+      )}
+      {...props}
+    />
+  ),
+);
 ToastViewport.displayName = "ToastViewport";
 
 const toastVariants = cva(
@@ -55,46 +53,37 @@ const toastVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 export interface ToastProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof toastVariants> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof toastVariants> {}
 
 /**
  * Toast component representing an individual alert notification.
  */
-const Toast = React.forwardRef<
-  HTMLDivElement,
-  ToastProps
->(({ className, variant, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={cn(toastVariants({ variant }), className)}
-      {...props}
-    />
-  );
-});
+const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
+  ({ className, variant, ...props }, ref) => {
+    return <div ref={ref} className={cn(toastVariants({ variant }), className)} {...props} />;
+  },
+);
 Toast.displayName = "Toast";
 
 /**
  * ToastAction component for actions within a toast.
  */
-const ToastAction = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
-      className
-    )}
-    {...props}
-  />
-));
+const ToastAction = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
+        className,
+      )}
+      {...props}
+    />
+  ),
+);
 ToastAction.displayName = "ToastAction";
 
 /**
@@ -108,7 +97,7 @@ const ToastClose = React.forwardRef<
     ref={ref}
     className={cn(
       "absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-current opacity-50 transition-opacity hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40",
-      className
+      className,
     )}
     toast-close=""
     {...props}
@@ -121,31 +110,21 @@ ToastClose.displayName = "ToastClose";
 /**
  * ToastTitle component displays the main header/title of a toast.
  */
-const ToastTitle = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("text-sm font-semibold", className)}
-    {...props}
-  />
-));
+const ToastTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("text-sm font-semibold", className)} {...props} />
+  ),
+);
 ToastTitle.displayName = "ToastTitle";
 
 /**
  * ToastDescription component displays the detailed description text of a toast.
  */
-const ToastDescription = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("text-sm opacity-90", className)}
-    {...props}
-  />
-));
+const ToastDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("text-sm opacity-90", className)} {...props} />
+  ),
+);
 ToastDescription.displayName = "ToastDescription";
 
 export {
@@ -156,4 +135,4 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
-}; 
+};

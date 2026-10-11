@@ -1,15 +1,15 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * How a journal entry was created — used for idempotent finance posting.
  */
 export const JOURNAL_SOURCE_TYPES = [
-  'manual',
-  'invoice',
-  'payment',
-  'closing',
-  'reversal',
-  'opening',
+  "manual",
+  "invoice",
+  "payment",
+  "closing",
+  "reversal",
+  "opening",
 ] as const;
 
 export type JournalSourceType = (typeof JOURNAL_SOURCE_TYPES)[number];
@@ -45,13 +45,13 @@ export const moneyAmountSchema = z
   .number()
   .finite()
   .nonnegative()
-  .refine(hasAtMostTwoDecimals, { message: 'accounting.validation.moneyTwoDecimals' });
+  .refine(hasAtMostTwoDecimals, { message: "accounting.validation.moneyTwoDecimals" });
 
 /** Signed money with at most two decimal places (bank statement lines). */
 export const signedMoneyAmountSchema = z
   .number()
   .finite()
-  .refine(hasAtMostTwoDecimals, { message: 'accounting.validation.moneyTwoDecimals' });
+  .refine(hasAtMostTwoDecimals, { message: "accounting.validation.moneyTwoDecimals" });
 
 /**
  * A journal line is single-sided when at most one of debit/credit is positive
@@ -86,13 +86,13 @@ export function resolveFiscalYearRef(
   years: readonly FiscalYearRef[],
   ref: string | undefined | null,
 ): FiscalYearRef | null {
-  const needle = ref?.trim() ?? '';
+  const needle = ref?.trim() ?? "";
   if (!needle) return null;
   return years.find((year) => year.id === needle || year.label === needle) ?? null;
 }
 
 export function isFiscalYearClosed(year: FiscalYearRef | null | undefined): boolean {
-  return year?.status === 'closed';
+  return year?.status === "closed";
 }
 
 /** A fiscal year that also carries the date range used for date-based resolution. */
@@ -117,7 +117,7 @@ export function findFiscalYearForDate<T extends FiscalYearRange>(
   years: readonly T[],
   date: string | undefined | null,
 ): T | null {
-  const needle = date?.trim() ?? '';
+  const needle = date?.trim() ?? "";
   if (!needle) return null;
   return years.find((year) => year.startDate <= needle && needle <= year.endDate) ?? null;
 }

@@ -23,9 +23,9 @@ import { useEnrollmentsSelection } from "@/tenant/features/enrollments/hooks/use
 export function useEnrollmentsPageState() {
   const { t } = useTranslation();
   const SUB_TABS = (() => [
-      { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
-      { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
-    ])();
+    { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
+    { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
+  ])();
   const permissions = useModulePermissions(ENROLLMENTS_MODULE_MANIFEST);
   const {
     canWrite: canWriteEnrollments,
@@ -75,7 +75,8 @@ export function useEnrollmentsPageState() {
     enabled: useServerWork,
   });
 
-  const pageData = (workPageData?.body ?? workPageData) as { enrollments?: Enrollment[]; total?: number } | undefined;
+  const pageData = (workPageData?.body ?? workPageData) as
+    { enrollments?: Enrollment[]; total?: number } | undefined;
 
   const enrollments = (() => (pageData?.enrollments ?? []) as Enrollment[])();
   const filteredCount = pageData?.total ?? enrollments.length;

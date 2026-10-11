@@ -8,17 +8,17 @@ import {
   type Account,
   type FiscalYear,
   type JournalEntry,
-} from '@mms/shared';
+} from "@mms/shared";
 
 export type AccountingLedgerHttpError = Error & {
   statusCode: number;
-  type: 'validation_error';
+  type: "validation_error";
 };
 
 function ledgerError(message: string): AccountingLedgerHttpError {
   const error = new Error(message) as AccountingLedgerHttpError;
   error.statusCode = 422;
-  error.type = 'validation_error';
+  error.type = "validation_error";
   return error;
 }
 
@@ -42,23 +42,23 @@ export function prepareJournalEntryForPersist(
 ): JournalEntry {
   // Reports filter by this string and compare it lexicographically, so shape and
   // calendar validity both matter — '2025-6-5' would sort into the wrong period.
-  if (!isValidIsoDate(entry.date ?? '')) {
-    throw ledgerError('Journal entry date must be a real calendar date in YYYY-MM-DD format');
+  if (!isValidIsoDate(entry.date ?? "")) {
+    throw ledgerError("Journal entry date must be a real calendar date in YYYY-MM-DD format");
   }
 
   const declared = resolveFiscalYearRef(fiscalYears, entry.fiscal_year_id ?? entry.fiscal_year);
   const containing = findFiscalYearForDate(fiscalYears, entry.date);
   const resolved = declared ?? containing;
 
-  if (entry.status === 'posted' && !isJournalEntryBalanced(entry.lines ?? [])) {
-    throw ledgerError('Posted journal entries must have matching debit and credit totals');
+  if (entry.status === "posted" && !isJournalEntryBalanced(entry.lines ?? [])) {
+    throw ledgerError("Posted journal entries must have matching debit and credit totals");
   }
 
   return {
     ...entry,
     fiscal_year_id: resolved?.id ?? entry.fiscal_year_id,
     fiscal_year: resolved?.label ?? entry.fiscal_year,
-    source_type: entry.source_type ?? 'manual',
+    source_type: entry.source_type ?? "manual",
   };
 }
 
@@ -85,13 +85,13 @@ export function assertJournalEntryPeriodOpen(
 ): void {
   const declared = resolveFiscalYearRef(fiscalYears, entry.fiscal_year_id ?? entry.fiscal_year);
   if (isFiscalYearClosed(declared)) {
-    throw ledgerError('Cannot mutate journal entries in a closed fiscal year');
+    throw ledgerError("Cannot mutate journal entries in a closed fiscal year");
   }
 
   const containing = findFiscalYearForDate(fiscalYears, entry.date);
   if (isFiscalYearClosed(containing)) {
     throw ledgerError(
-      `Cannot write journal entries dated inside a closed fiscal year${containing?.label ? ` (${containing.label})` : ''}`,
+      `Cannot write journal entries dated inside a closed fiscal year${containing?.label ? ` (${containing.label})` : ""}`,
     );
   }
 }
@@ -110,13 +110,17 @@ export async function assertJournalAccountsWritable(
     entries.flatMap((entry) => (entry.lines ?? []).map((line) => line.account_id)),
   );
   if (accountIds.length === 0) return;
-  const byId = new Map((await findAccountsByIds(tenant, accountIds)).map((account) => [account.id, account]));
+  const byId = new Map(
+    (await findAccountsByIds(tenant, accountIds)).map((account) => [account.id, account]),
+  );
   const blocked = accountIds.filter((id) => {
     const account = byId.get(id);
     return !account || account.isActive === false;
   });
   if (blocked.length > 0) {
-    throw ledgerError(`Journal lines reference unknown, archived or deactivated accounts: ${blocked.join(', ')}`);
+    throw ledgerError(
+      `Journal lines reference unknown, archived or deactivated accounts: ${blocked.join(", ")}`,
+    );
   }
 }
 

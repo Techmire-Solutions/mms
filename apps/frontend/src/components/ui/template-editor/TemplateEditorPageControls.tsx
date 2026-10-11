@@ -40,16 +40,12 @@ export function TemplateEditorPageControls({
 
       <Button
         type="button"
-        onClick={() =>
-          onOrientationChange(orientation === "landscape" ? "portrait" : "landscape")
-        }
+        onClick={() => onOrientationChange(orientation === "landscape" ? "portrait" : "landscape")}
         variant="ghost"
         size="sm"
         className="min-h-11 px-2 text-xs font-medium rounded hover:bg-background/80 transition-all flex items-center gap-1"
         title={
-          orientation === "landscape"
-            ? t("templateEditor.portrait")
-            : t("templateEditor.landscape")
+          orientation === "landscape" ? t("templateEditor.portrait") : t("templateEditor.landscape")
         }
       >
         {orientation === "landscape" ? (

@@ -1,11 +1,13 @@
-import { ensureSinglePrimaryFlag, type Contact, type EmailAddress, type PhoneNumber } from "@mms/shared";
+import {
+  ensureSinglePrimaryFlag,
+  type Contact,
+  type EmailAddress,
+  type PhoneNumber,
+} from "@mms/shared";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/utils";
 
-const DETAIL_COLLECTION_EMPTY_CLASS: Record<
-  "plain" | "bordered" | "borderedRelaxed",
-  string
-> = {
+const DETAIL_COLLECTION_EMPTY_CLASS: Record<"plain" | "bordered" | "borderedRelaxed", string> = {
   plain: "items-start px-3 py-3 text-start",
   bordered: "items-start rounded-xl border border-border/60 bg-muted/20 px-3 py-3 text-start",
   borderedRelaxed: "items-start rounded-xl border border-border bg-muted/20 px-4 py-6 text-start",
@@ -44,7 +46,10 @@ export function withPrimaryPhone(contact: Contact, phone: PhoneNumber): Contact 
 export function withPrimaryEmail(contact: Contact, email: EmailAddress): Contact {
   const address = String(email.address || "").trim();
   const others = (contact.emails ?? []).filter(
-    (entry) => String(entry.address || "").trim().toLowerCase() !== address.toLowerCase(),
+    (entry) =>
+      String(entry.address || "")
+        .trim()
+        .toLowerCase() !== address.toLowerCase(),
   );
   return {
     ...contact,

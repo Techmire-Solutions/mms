@@ -41,7 +41,10 @@ describe("ExaminationsWorkTier Component", () => {
   it("renders examinations list when subtab is exams", () => {
     const html = renderToStaticMarkup(
       <ExaminationsWorkTier
-        tabs={[{ id: "exams", label: "Exams" }, { id: "results", label: "Results" }]}
+        tabs={[
+          { id: "exams", label: "Exams" },
+          { id: "results", label: "Results" },
+        ]}
         activeSubTab="exams"
         showDeleted={false}
         listLoadFailed={false}
@@ -72,7 +75,10 @@ describe("ExaminationsWorkTier Component", () => {
   it("renders results view when subtab is results", () => {
     const html = renderToStaticMarkup(
       <ExaminationsWorkTier
-        tabs={[{ id: "exams", label: "Exams" }, { id: "results", label: "Results" }]}
+        tabs={[
+          { id: "exams", label: "Exams" },
+          { id: "results", label: "Results" },
+        ]}
         activeSubTab="results"
         showDeleted={false}
         listLoadFailed={false}

@@ -24,7 +24,7 @@ export interface EntityCardHeaderProps {
 }
 
 /** Shared Work directory card header: checkbox | avatar + title + subtitle. */
-export const EntityCardHeader = (function EntityCardHeader({
+export const EntityCardHeader = function EntityCardHeader({
   id,
   displayName,
   avatar,
@@ -68,11 +68,7 @@ export const EntityCardHeader = (function EntityCardHeader({
     <div className={cn("flex gap-3 items-start", className)}>
       {showSelect ? (
         <div className="flex min-h-11 min-w-11 flex-shrink-0 items-center justify-center">
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={onSelect}
-            aria-label={selectAriaLabel}
-          />
+          <Checkbox checked={isSelected} onCheckedChange={onSelect} aria-label={selectAriaLabel} />
         </div>
       ) : null}
       {onView && viewAriaLabel ? (
@@ -90,5 +86,4 @@ export const EntityCardHeader = (function EntityCardHeader({
       )}
     </div>
   );
-});
-
+};

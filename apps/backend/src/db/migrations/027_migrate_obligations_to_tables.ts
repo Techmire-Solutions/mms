@@ -9,11 +9,8 @@ import {
   type WakalaType,
   type ObligationDistribution,
   type ObligationCollection,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceObligationTypesForWorkspace,
   replaceMujtahidsForWorkspace,
@@ -21,7 +18,7 @@ import {
   replaceWakalaTypesForWorkspace,
   replaceObligationDistributionsForWorkspace,
   replaceObligationCollectionsForWorkspace,
-} from '../repositories/obligationRepository.js';
+} from "../repositories/obligationRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -45,7 +42,7 @@ export async function runMigration027(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
 
     // 1. Obligation Types
     const legacyTypes = await getCollectionByStorageName(`${prefix}obligation_types`);
@@ -78,21 +75,29 @@ export async function runMigration027(): Promise<void> {
     // 5. Obligation Distributions
     const legacyDist = await getCollectionByStorageName(`${prefix}obligation_distributions`);
     if (Array.isArray(legacyDist) && legacyDist.length > 0) {
-      await replaceObligationDistributionsForWorkspace(subdomain, legacyDist as ObligationDistribution[]);
+      await replaceObligationDistributionsForWorkspace(
+        subdomain,
+        legacyDist as ObligationDistribution[],
+      );
       changed = true;
     }
 
     // 6. Obligation Collections
     const legacyColl = await getCollectionByStorageName(`${prefix}obligation_collections`);
     if (Array.isArray(legacyColl) && legacyColl.length > 0) {
-      await replaceObligationCollectionsForWorkspace(subdomain, legacyColl as ObligationCollection[]);
+      await replaceObligationCollectionsForWorkspace(
+        subdomain,
+        legacyColl as ObligationCollection[],
+      );
       changed = true;
     }
   }
 
   if (changed) {
-    console.log('[Migration 027] Imported legacy obligations collections into new dedicated relational tables.');
+    console.log(
+      "[Migration 027] Imported legacy obligations collections into new dedicated relational tables.",
+    );
   } else {
-    console.log('[Migration 027] No legacy obligations records to import.');
+    console.log("[Migration 027] No legacy obligations records to import.");
   }
 }

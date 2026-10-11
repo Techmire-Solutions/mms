@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Sparkles, Tag } from "lucide-react";
 import type { JournalTemplate } from "@mms/shared";
-import { JOURNAL_TAGS } from '@/lib/data/accountingData';
+import { JOURNAL_TAGS } from "@/lib/data/accountingData";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,8 @@ export function JournalEntryFormTagsSection({
 }: JournalEntryFormTagsSectionProps): React.JSX.Element {
   const [customTagInput, setCustomTagInput] = useState("");
   const activeTags = form.tags || [];
-  const presetTags = templates.length > 0 ? templates.map((template) => template.name) : JOURNAL_TAGS;
+  const presetTags =
+    templates.length > 0 ? templates.map((template) => template.name) : JOURNAL_TAGS;
   const customTags = activeTags.filter((tag) => !presetTags.includes(tag));
 
   const handleAddCustomTag = () => {
@@ -55,9 +56,12 @@ export function JournalEntryFormTagsSection({
         {templates.length > 0 ? (
           <p className="m-0 text-xs text-muted-foreground">{t("accounting.templates.formHint")}</p>
         ) : (
-          canSeedTemplates && onSeedTemplates && (
+          canSeedTemplates &&
+          onSeedTemplates && (
             <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-primary/30 bg-primary/5 px-3 py-2">
-              <p className="m-0 flex-1 text-xs text-muted-foreground">{t("accounting.templates.empty")}</p>
+              <p className="m-0 flex-1 text-xs text-muted-foreground">
+                {t("accounting.templates.empty")}
+              </p>
               <Button
                 type="button"
                 variant="outline"
@@ -66,7 +70,8 @@ export function JournalEntryFormTagsSection({
                 onClick={() => void onSeedTemplates()}
                 className="min-h-11 gap-1.5 text-xs font-semibold"
               >
-                <Sparkles className="w-3.5 h-3.5" aria-hidden="true" /> {t("accounting.templates.seedAction")}
+                <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+                {t("accounting.templates.seedAction")}
               </Button>
             </div>
           )

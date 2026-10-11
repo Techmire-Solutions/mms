@@ -23,7 +23,7 @@ interface ActionIconButtonProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-export const ActionIconButton = (function ActionIconButton({
+export const ActionIconButton = function ActionIconButton({
   icon: Icon,
   label,
   tooltipText,
@@ -61,12 +61,7 @@ export const ActionIconButton = (function ActionIconButton({
         }
       }}
     >
-      <a
-        href={href}
-        target={target}
-        rel={rel}
-        aria-label={label}
-      >
+      <a href={href} target={target} rel={rel} aria-label={label}>
         {content}
       </a>
     </Button>
@@ -93,7 +88,7 @@ export const ActionIconButton = (function ActionIconButton({
       </TooltipContent>
     </Tooltip>
   );
-});
+};
 
 interface ActionCopyButtonProps {
   text: string;
@@ -103,7 +98,7 @@ interface ActionCopyButtonProps {
   className?: string;
 }
 
-export const ActionCopyButton = (function ActionCopyButton({
+export const ActionCopyButton = function ActionCopyButton({
   text,
   copyToastMessage,
   tooltipCopyText = "Copy",
@@ -136,10 +131,11 @@ export const ActionCopyButton = (function ActionCopyButton({
       tooltipText={label}
       toneClass={cn(
         MESSAGING_ICON_BTN_TONES.copy,
-        copied && "border-success/30 bg-success/5 text-success hover:text-success hover:bg-success/15 hover:border-success/40",
+        copied &&
+          "border-success/30 bg-success/5 text-success hover:text-success hover:bg-success/15 hover:border-success/40",
       )}
       onClick={handleCopy}
       className={className}
     />
   );
-});
+};

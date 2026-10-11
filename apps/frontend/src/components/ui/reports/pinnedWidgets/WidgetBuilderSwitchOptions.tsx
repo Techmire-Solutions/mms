@@ -66,13 +66,34 @@ export function WidgetBuilderSwitchOptions({
             value={switchStateKey}
             onChange={setSwitchStateKey}
             options={[
-              { value: "section_enrollmentChart", label: t("reports.widgets.builder.paramEnrollmentChart") },
-              { value: "section_revenueChart", label: t("reports.widgets.builder.paramRevenueChart") },
-              { value: "section_attendanceChart", label: t("reports.widgets.builder.paramAttendanceChart") },
-              { value: "section_hasanatChart", label: t("reports.widgets.builder.paramHasanatChart") },
-              { value: "section_sessionsTable", label: t("reports.widgets.builder.paramSessionsTable") },
-              { value: "app_setting_attendance_lock", label: t("reports.widgets.builder.paramAttendanceLock") },
-              { value: "app_setting_mute_notifications", label: t("reports.widgets.builder.paramMuteNotifications") },
+              {
+                value: "section_enrollmentChart",
+                label: t("reports.widgets.builder.paramEnrollmentChart"),
+              },
+              {
+                value: "section_revenueChart",
+                label: t("reports.widgets.builder.paramRevenueChart"),
+              },
+              {
+                value: "section_attendanceChart",
+                label: t("reports.widgets.builder.paramAttendanceChart"),
+              },
+              {
+                value: "section_hasanatChart",
+                label: t("reports.widgets.builder.paramHasanatChart"),
+              },
+              {
+                value: "section_sessionsTable",
+                label: t("reports.widgets.builder.paramSessionsTable"),
+              },
+              {
+                value: "app_setting_attendance_lock",
+                label: t("reports.widgets.builder.paramAttendanceLock"),
+              },
+              {
+                value: "app_setting_mute_notifications",
+                label: t("reports.widgets.builder.paramMuteNotifications"),
+              },
             ]}
           />
         </Field>

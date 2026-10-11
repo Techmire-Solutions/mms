@@ -56,7 +56,11 @@ export const EntityCardsSelectAllBar = React.memo(function EntityCardsSelectAllB
           {allSelected ? deselectLabel : selectLabel}
         </SectionLabel>
       </div>
-      <Badge pill tone="muted" className="font-black uppercase tracking-wider bg-muted/60 px-2.5 py-1 border-border/10">
+      <Badge
+        pill
+        tone="muted"
+        className="font-black uppercase tracking-wider bg-muted/60 px-2.5 py-1 border-border/10"
+      >
         {selectedCount > 0 ? (
           <>
             {selectedCountLabel}

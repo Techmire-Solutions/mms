@@ -1,21 +1,25 @@
-import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type ObligationDistribution } from '@mms/shared';
-import { obligationDistributions } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type ObligationDistribution } from "@mms/shared";
+import { obligationDistributions } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 type ObligationDistributionRow = typeof obligationDistributions.$inferSelect;
 
-export function obligationDistributionRowToRecord(row: ObligationDistributionRow): ObligationDistribution {
+export function obligationDistributionRowToRecord(
+  row: ObligationDistributionRow,
+): ObligationDistribution {
   return {
     id: row.id,
     name: row.name,
     percentage: Number(row.percentage),
     wakala_type_id: row.wakalaTypeId,
-    type: row.type as ObligationDistribution['type'],
+    type: row.type as ObligationDistribution["type"],
   };
 }
 
-export async function listObligationDistributionsByWorkspace(tenant: string): Promise<ObligationDistribution[]> {
+export async function listObligationDistributionsByWorkspace(
+  tenant: string,
+): Promise<ObligationDistribution[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
@@ -35,7 +39,10 @@ export async function listObligationDistributionsByWorkspace(tenant: string): Pr
   });
 }
 
-export async function findObligationDistributionById(tenant: string, id: string): Promise<ObligationDistribution | null> {
+export async function findObligationDistributionById(
+  tenant: string,
+  id: string,
+): Promise<ObligationDistribution | null> {
   const trimmedId = id?.trim();
   if (!trimmedId) return null;
   const subdomain = tenant.trim().toLowerCase();
@@ -52,14 +59,22 @@ export async function findObligationDistributionById(tenant: string, id: string)
         updatedAt: obligationDistributions.updatedAt,
       })
       .from(obligationDistributions)
-      .where(and(eq(obligationDistributions.workspaceSubdomain, subdomain), eq(obligationDistributions.id, trimmedId)))
+      .where(
+        and(
+          eq(obligationDistributions.workspaceSubdomain, subdomain),
+          eq(obligationDistributions.id, trimmedId),
+        ),
+      )
       .limit(1);
     const row = rows[0];
     return row ? obligationDistributionRowToRecord(row) : null;
   });
 }
 
-export async function findObligationDistributionsByIds(tenant: string, ids: string[]): Promise<ObligationDistribution[]> {
+export async function findObligationDistributionsByIds(
+  tenant: string,
+  ids: string[],
+): Promise<ObligationDistribution[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
@@ -76,12 +91,20 @@ export async function findObligationDistributionsByIds(tenant: string, ids: stri
         updatedAt: obligationDistributions.updatedAt,
       })
       .from(obligationDistributions)
-      .where(and(eq(obligationDistributions.workspaceSubdomain, subdomain), inArray(obligationDistributions.id, cleanIds)));
+      .where(
+        and(
+          eq(obligationDistributions.workspaceSubdomain, subdomain),
+          inArray(obligationDistributions.id, cleanIds),
+        ),
+      );
     return rows.map(obligationDistributionRowToRecord);
   });
 }
 
-export async function saveObligationDistribution(tenant: string, record: ObligationDistribution): Promise<void> {
+export async function saveObligationDistribution(
+  tenant: string,
+  record: ObligationDistribution,
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await tx
@@ -117,7 +140,7 @@ export async function bulkSaveObligationDistributions(
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, ObligationDistribution>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -158,7 +181,7 @@ export async function replaceObligationDistributionsForWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, ObligationDistribution>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -166,7 +189,9 @@ export async function replaceObligationDistributionsForWorkspace(
 
   await withTenant(subdomain, async (tx) => {
     if (keepIds.length === 0) {
-      await tx.delete(obligationDistributions).where(eq(obligationDistributions.workspaceSubdomain, subdomain));
+      await tx
+        .delete(obligationDistributions)
+        .where(eq(obligationDistributions.workspaceSubdomain, subdomain));
     } else {
       await tx
         .delete(obligationDistributions)

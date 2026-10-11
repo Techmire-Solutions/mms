@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type {
   Contact,
   MessagingRoleFilter,
@@ -6,12 +6,12 @@ import type {
   ContactsListPageResult,
   MessagingRecipientsMatchResponseDto,
   StandardMessagingRecipient,
-} from '@mms/shared';
-import { CONTACTS_MODULE_MANIFEST } from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
-import { useAuth } from '@/lib/contexts/AuthContext';
+} from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
-export const MESSAGING_RECIPIENTS_QUERY_KEY = ['messaging', 'recipients'] as const;
+export const MESSAGING_RECIPIENTS_QUERY_KEY = ["messaging", "recipients"] as const;
 
 export interface UseMessagingWorkRecipientsParams {
   roleFilter: MessagingRoleFilter;
@@ -41,15 +41,16 @@ export async function loadMatchingRecipients(params: {
   roleFilter?: MessagingRoleFilter;
   genderFilter?: MessagingGenderFilter;
   search?: string;
-  kind: 'phone' | 'email';
+  kind: "phone" | "email";
   signal?: AbortSignal;
 }): Promise<{ recipients: StandardMessagingRecipient[]; truncated: boolean }> {
-  const search = (params.search || '').trim();
+  const search = (params.search || "").trim();
   const searchParams = new URLSearchParams();
-  searchParams.set('kind', params.kind);
-  if (params.roleFilter && params.roleFilter !== 'all') searchParams.set('role', params.roleFilter);
-  if (params.genderFilter && params.genderFilter !== 'all') searchParams.set('gender', params.genderFilter);
-  if (search) searchParams.set('search', search);
+  searchParams.set("kind", params.kind);
+  if (params.roleFilter && params.roleFilter !== "all") searchParams.set("role", params.roleFilter);
+  if (params.genderFilter && params.genderFilter !== "all")
+    searchParams.set("gender", params.genderFilter);
+  if (search) searchParams.set("search", search);
 
   const data = await apiJson<MessagingRecipientsMatchResponseDto>(
     `/api/messaging/recipients/match?${searchParams.toString()}`,
@@ -80,11 +81,11 @@ export function useMessagingWorkRecipients(
     queryKey: [...MESSAGING_RECIPIENTS_QUERY_KEY, role, gender, search, page, pageSize] as const,
     queryFn: async ({ signal }) => {
       const searchParams = new URLSearchParams();
-      searchParams.set('page', String(page));
-      searchParams.set('pageSize', String(pageSize));
-      if (role !== 'all') searchParams.set('role', role);
-      if (gender !== 'all') searchParams.set('gender', gender);
-      if (search) searchParams.set('search', search);
+      searchParams.set("page", String(page));
+      searchParams.set("pageSize", String(pageSize));
+      if (role !== "all") searchParams.set("role", role);
+      if (gender !== "all") searchParams.set("gender", gender);
+      if (search) searchParams.set("search", search);
 
       return apiJson<ContactsListPageResult>(
         `/api/messaging/recipients?${searchParams.toString()}`,
@@ -99,16 +100,16 @@ export function useMessagingWorkRecipients(
   const data = query.data;
 
   return (() => ({
-      contacts: data?.contacts ?? [],
-      page: data?.page ?? page,
-      total: data?.total ?? 0,
-      limit: data?.limit ?? pageSize,
-      hasMore: Boolean(data?.hasMore),
-      isError: query.isError,
-      isPending: query.isPending,
-      isFetching: query.isFetching,
-      refetch: () => {
-        void query.refetch();
-      },
-    }))();
+    contacts: data?.contacts ?? [],
+    page: data?.page ?? page,
+    total: data?.total ?? 0,
+    limit: data?.limit ?? pageSize,
+    hasMore: Boolean(data?.hasMore),
+    isError: query.isError,
+    isPending: query.isPending,
+    isFetching: query.isFetching,
+    refetch: () => {
+      void query.refetch();
+    },
+  }))();
 }

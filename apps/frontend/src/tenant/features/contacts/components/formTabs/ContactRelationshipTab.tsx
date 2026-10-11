@@ -47,10 +47,7 @@ export function ContactRelationshipTab({
 }: ContactRelationshipTabProps): React.JSX.Element {
   const { t } = useTranslation();
   const relationshipContacts = contactDraft.relationshipContacts;
-  const links = useMemo(
-    () => relationshipContacts ?? [],
-    [relationshipContacts],
-  );
+  const links = useMemo(() => relationshipContacts ?? [], [relationshipContacts]);
   const showLinkedContact = isFieldEnabled("relationship", "contactId");
   const showRelationshipType = isFieldEnabled("relationship", "relationship");
   const allowAdd = resolveSubListAllowAdd([showLinkedContact, showRelationshipType]);
@@ -87,9 +84,7 @@ export function ContactRelationshipTab({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted-foreground">
-        {t("contacts.form.relationshipInstructions")}
-      </p>
+      <p className="text-xs text-muted-foreground">{t("contacts.form.relationshipInstructions")}</p>
       <ContactSubListShell
         isEmpty={links.length === 0}
         emptyIcon={Heart}
@@ -104,13 +99,13 @@ export function ContactRelationshipTab({
             const pickerError = getListItemError("relationship", "contactId", idx);
             const currentVal = link.relationship;
             const typeValue = currentVal || STATIC_RELATIONSHIP_OPTIONS[0];
-            const isKnown = (STATIC_RELATIONSHIP_OPTIONS as readonly string[]).includes(currentVal || "");
-            const selectOptions: FormSelectOption[] = isKnown || !currentVal
-              ? baseOptions
-              : [
-                  { value: currentVal, label: currentVal },
-                  ...baseOptions,
-                ];
+            const isKnown = (STATIC_RELATIONSHIP_OPTIONS as readonly string[]).includes(
+              currentVal || "",
+            );
+            const selectOptions: FormSelectOption[] =
+              isKnown || !currentVal
+                ? baseOptions
+                : [{ value: currentVal, label: currentVal }, ...baseOptions];
 
             return (
               <FormListFieldCard
@@ -150,7 +145,9 @@ export function ContactRelationshipTab({
                           updateSubListItem("relationshipContacts", idx, {
                             contactId: id != null ? String(id) : "",
                             name: selectedContact ? getDisplayName(selectedContact) : undefined,
-                            phone: selectedContact ? getPrimaryPhone(selectedContact) || undefined : undefined,
+                            phone: selectedContact
+                              ? getPrimaryPhone(selectedContact) || undefined
+                              : undefined,
                           });
                         }}
                         excludeIds={excludeIds(idx)}

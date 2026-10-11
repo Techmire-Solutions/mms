@@ -42,7 +42,9 @@ interface JournalEntriesSimpleModeProps {
   onOpenPrefill: (prefillType: QuickActionType | null) => void;
   onExportCsv: () => void;
   onSave: JournalEntrySave;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   onCloseSimpleModal: () => void;
   pageScopeLabel: string;
 }
@@ -80,20 +82,30 @@ export function JournalEntriesSimpleMode({
     }),
     [accounts, printVoucher],
   );
-  const specializedType = simpleModal?.prefillType && SPECIALIZED_ENTRY_TYPES.has(simpleModal.prefillType.id)
-    ? simpleModal.prefillType.id === "fee_collection"
-      ? "fee" as const
-      : "salary" as const
-    : null;
+  const specializedType =
+    simpleModal?.prefillType && SPECIALIZED_ENTRY_TYPES.has(simpleModal.prefillType.id)
+      ? simpleModal.prefillType.id === "fee_collection"
+        ? ("fee" as const)
+        : ("salary" as const)
+      : null;
 
   return (
     <section aria-label={t("accounting.journal.simpleAria")} className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-foreground m-0">{t("accounting.journal.dashboard.recordTransaction")}</h2>
-          <p className="text-xs text-muted-foreground m-0">{t("accounting.journal.dashboard.subtitleSimple")}</p>
+          <h2 className="text-base font-bold text-foreground m-0">
+            {t("accounting.journal.dashboard.recordTransaction")}
+          </h2>
+          <p className="text-xs text-muted-foreground m-0">
+            {t("accounting.journal.dashboard.subtitleSimple")}
+          </p>
         </div>
-        <SubTabBar tabs={modeTabs} value={mode} onChange={onModeChange} panelIdPrefix="journal-mode-simple" />
+        <SubTabBar
+          tabs={modeTabs}
+          value={mode}
+          onChange={onModeChange}
+          panelIdPrefix="journal-mode-simple"
+        />
       </header>
 
       <SubTabBar
@@ -104,7 +116,12 @@ export function JournalEntriesSimpleMode({
       />
 
       {tab === "cashbook" ? (
-        <CashbookView entries={entries} accounts={accounts} pageScopeLabel={pageScopeLabel} voucher={voucher} />
+        <CashbookView
+          entries={entries}
+          accounts={accounts}
+          pageScopeLabel={pageScopeLabel}
+          voucher={voucher}
+        />
       ) : (
         <JournalQuickActionsPanel
           entries={entries}
@@ -125,7 +142,7 @@ export function JournalEntriesSimpleMode({
         <SimpleTransactionWizard
           open={simpleModal !== null && specializedType === null}
           accounts={accounts}
-          entries={(allEntries && allEntries.length > 0) ? allEntries : entries}
+          entries={allEntries && allEntries.length > 0 ? allEntries : entries}
           fiscalYears={fiscalYears}
           prefillType={simpleModal?.prefillType}
           prefillAmount={simpleModal?.initialAmount}

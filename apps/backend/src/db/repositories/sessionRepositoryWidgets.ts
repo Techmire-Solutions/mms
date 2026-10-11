@@ -1,10 +1,7 @@
-import { and, eq, isNull, sql, type SQL } from 'drizzle-orm';
-import type {
-  SessionsWidgetAggregateResult,
-  SessionsWidgetQuery,
-} from '@mms/shared';
-import { sessions } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
+import type { SessionsWidgetAggregateResult, SessionsWidgetQuery } from "@mms/shared";
+import { sessions } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(sessions.workspaceSubdomain, subdomain), isNull(sessions.deletedAt))!;
@@ -12,21 +9,21 @@ function activeWorkspaceWhere(subdomain: string): SQL {
 
 function resolveSessionColumnSql(field: string): SQL {
   switch (field) {
-    case 'name':
+    case "name":
       return sql`${sessions.name}`;
-    case 'type':
+    case "type":
       return sql`${sessions.type}`;
-    case 'status':
+    case "status":
       return sql`${sessions.status}`;
-    case 'startDate':
+    case "startDate":
       return sql`${sessions.startDate}`;
-    case 'endDate':
+    case "endDate":
       return sql`${sessions.endDate}`;
-    case 'baseFee':
+    case "baseFee":
       return sql`${sessions.baseFee}`;
-    case 'currency':
+    case "currency":
       return sql`${sessions.currency}`;
-    case 'description':
+    case "description":
       return sql`${sessions.description}`;
     default:
       return sql`${sessions.status}`;
@@ -35,25 +32,25 @@ function resolveSessionColumnSql(field: string): SQL {
 
 function singleFilterSql(
   field: string | undefined,
-  operator: SessionsWidgetQuery['filterOperator'],
+  operator: SessionsWidgetQuery["filterOperator"],
   value: string | undefined,
 ): SQL | null {
   const trimmedField = field?.trim();
-  if (!trimmedField || value == null || value === '') return null;
+  if (!trimmedField || value == null || value === "") return null;
   const colSql = resolveSessionColumnSql(trimmedField);
-  const op = operator ?? 'equals';
-  if (op === 'equals') {
+  const op = operator ?? "equals";
+  if (op === "equals") {
     return sql`lower(trim(COALESCE(${colSql}, ''))) = ${value.trim().toLowerCase()}`;
   }
-  if (op === 'contains') {
+  if (op === "contains") {
     return sql`lower(COALESCE(${colSql}, '')) LIKE ${`%${value.trim().toLowerCase()}%`}`;
   }
-  if (op === 'gt') {
+  if (op === "gt") {
     const num = Number(value);
     if (!Number.isFinite(num)) return null;
     return sql`NULLIF(${colSql}, '')::numeric > ${num}`;
   }
-  if (op === 'lt') {
+  if (op === "lt") {
     const num = Number(value);
     if (!Number.isFinite(num)) return null;
     return sql`NULLIF(${colSql}, '')::numeric < ${num}`;
@@ -90,20 +87,20 @@ export async function aggregateSessionsWidgetQueries(
         const chartLimit = 8;
 
         let value = 0;
-        if (query.operation === 'count' || query.operation === 'percentage') {
+        if (query.operation === "count" || query.operation === "percentage") {
           const countRows = await tx
             .select({ count: sql<number>`count(*)::int` })
             .from(sessions)
             .where(whereClause);
           const filteredCount = Number(countRows[0]?.count ?? 0);
           value =
-            query.operation === 'percentage'
+            query.operation === "percentage"
               ? totalCount > 0
                 ? Math.round((filteredCount / totalCount) * 100)
                 : 0
               : filteredCount;
-        } else if (query.operation === 'sum' || query.operation === 'avg') {
-          const target = query.targetField?.trim() || '';
+        } else if (query.operation === "sum" || query.operation === "avg") {
+          const target = query.targetField?.trim() || "";
           if (target) {
             const colSql = resolveSessionColumnSql(target);
             const aggRows = await tx
@@ -115,20 +112,20 @@ export async function aggregateSessionsWidgetQueries(
               .where(whereClause);
             const sum = Number(aggRows[0]?.sum ?? 0);
             const count = Number(aggRows[0]?.count ?? 0);
-            value = query.operation === 'sum' ? sum : count > 0 ? Math.round(sum / count) : 0;
+            value = query.operation === "sum" ? sum : count > 0 ? Math.round(sum / count) : 0;
           }
         }
 
-        const xAxis = query.xAxisField?.trim() || 'status';
+        const xAxis = query.xAxisField?.trim() || "status";
         const colSql = resolveSessionColumnSql(xAxis);
         const groupExpr = sql<string>`COALESCE(NULLIF(trim(${colSql}), ''), 'Unknown')`;
 
         // For sum/avg with a target the count-based chart is discarded by the
         // numeric chart, so only run the count chart for the other operations.
         const target =
-          (query.operation === 'sum' || query.operation === 'avg')
-            ? (query.targetField?.trim() || '')
-            : '';
+          query.operation === "sum" || query.operation === "avg"
+            ? query.targetField?.trim() || ""
+            : "";
 
         let chartData: { name: string; value: number }[];
         if (target) {
@@ -149,7 +146,7 @@ export async function aggregateSessionsWidgetQueries(
               const count = Number(row.count ?? 0);
               return {
                 name: row.name,
-                value: query.operation === 'sum' ? sum : count > 0 ? Math.round(sum / count) : 0,
+                value: query.operation === "sum" ? sum : count > 0 ? Math.round(sum / count) : 0,
               };
             })
             .sort((a, b) => b.value - a.value)

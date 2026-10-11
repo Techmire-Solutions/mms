@@ -28,7 +28,9 @@ describe("table SSOT system", () => {
     it("resolves alignments and variants correctly", () => {
       expect(getTableCellAlignClass("end")).toBe("text-end font-mono tabular-nums");
       expect(getTableCellAlignClass(undefined, "number")).toBe("text-end font-mono tabular-nums");
-      expect(getTableCellAlignClass(undefined, "currency")).toBe("text-end font-mono tabular-nums font-semibold");
+      expect(getTableCellAlignClass(undefined, "currency")).toBe(
+        "text-end font-mono tabular-nums font-semibold",
+      );
       expect(getTableCellAlignClass("center")).toBe("text-center");
       expect(getTableCellAlignClass(undefined, "badge")).toBe("text-center");
       expect(getTableCellAlignClass(undefined, "action")).toBe("text-center");
@@ -61,7 +63,7 @@ describe("table SSOT system", () => {
               <TableCell>Ali</TableCell>
             </TableRow>
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(html).toContain('role="region"');
       expect(html).toContain('aria-label="Student directory"');
@@ -72,7 +74,7 @@ describe("table SSOT system", () => {
       expect(html).toContain('role="cell"');
     });
 
-    it("renders scope=\"col\" on every <th> for WCAG column header semantics", () => {
+    it('renders scope="col" on every <th> for WCAG column header semantics', () => {
       const html = renderToStaticMarkup(
         <Table>
           <TableHeader>
@@ -83,15 +85,19 @@ describe("table SSOT system", () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow><TableCell>–</TableCell><TableCell>–</TableCell><TableCell>–</TableCell></TableRow>
+            <TableRow>
+              <TableCell>–</TableCell>
+              <TableCell>–</TableCell>
+              <TableCell>–</TableCell>
+            </TableRow>
           </TableBody>
-        </Table>
+        </Table>,
       );
       const matches = html.match(/scope="col"/g);
       expect(matches).toHaveLength(3);
     });
 
-    it("renders row headers with scope=\"row\" and role=\"rowheader\" when asHeader is set", () => {
+    it('renders row headers with scope="row" and role="rowheader" when asHeader is set', () => {
       const html = renderToStaticMarkup(
         <Table>
           <TableBody>
@@ -100,7 +106,7 @@ describe("table SSOT system", () => {
               <TableCell>Row Data</TableCell>
             </TableRow>
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(html).toContain('role="rowheader"');
       expect(html).toContain('scope="row"');
@@ -115,7 +121,7 @@ describe("table SSOT system", () => {
               <TableCell isFocusable>Focusable cell</TableCell>
             </TableRow>
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(html).toContain('tabindex="0"');
       expect(html).toContain("focus-visible:ring-2");
@@ -132,7 +138,7 @@ describe("table SSOT system", () => {
               <TableHeadCell>Column</TableHeadCell>
             </TableRow>
           </TableHeader>
-        </Table>
+        </Table>,
       );
       expect(html).toContain('role="columnheader"');
       expect(html).toContain('scope="col"');
@@ -144,12 +150,18 @@ describe("table SSOT system", () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead sortDirection="asc" sortable>Ascending Col</TableHead>
-              <TableHead sortDirection="desc" sortable>Descending Col</TableHead>
-              <TableHead sortDirection="none" sortable>Neutral Col</TableHead>
+              <TableHead sortDirection="asc" sortable>
+                Ascending Col
+              </TableHead>
+              <TableHead sortDirection="desc" sortable>
+                Descending Col
+              </TableHead>
+              <TableHead sortDirection="none" sortable>
+                Neutral Col
+              </TableHead>
             </TableRow>
           </TableHeader>
-        </Table>
+        </Table>,
       );
       expect(html).toContain('aria-sort="ascending"');
       expect(html).toContain('aria-sort="descending"');
@@ -170,7 +182,7 @@ describe("table SSOT system", () => {
               </TableHead>
             </TableRow>
           </TableHeader>
-        </Table>
+        </Table>,
       );
       expect(html).toContain('<button type="button"');
       expect(html).toContain("Sortable Header");
@@ -188,7 +200,7 @@ describe("table SSOT system", () => {
               <TableCell variant="number">42</TableCell>
             </TableRow>
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(cellHtml).toContain("text-end");
       expect(cellHtml).toContain("font-mono");
@@ -211,7 +223,7 @@ describe("table SSOT system", () => {
               <TableCell variant="action">Edit</TableCell>
             </TableRow>
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(html).toContain("text-center");
     });
@@ -226,7 +238,7 @@ describe("table SSOT system", () => {
               <TableHead>Sticky Header</TableHead>
             </TableRow>
           </TableHeader>
-        </Table>
+        </Table>,
       );
       expect(html).toContain("sticky top-0");
       expect(html).toContain("z-10");
@@ -237,12 +249,16 @@ describe("table SSOT system", () => {
       const html = renderToStaticMarkup(
         <Table>
           <TableBody>
-            <TableRow><TableCell>Row</TableCell></TableRow>
+            <TableRow>
+              <TableCell>Row</TableCell>
+            </TableRow>
           </TableBody>
           <TableFooter sticky>
-            <TableRow><TableCell>Total</TableCell></TableRow>
+            <TableRow>
+              <TableCell>Total</TableCell>
+            </TableRow>
           </TableFooter>
-        </Table>
+        </Table>,
       );
       expect(html).toContain("sticky bottom-0");
       expect(html).toContain("z-10");
@@ -252,12 +268,16 @@ describe("table SSOT system", () => {
       const html = renderToStaticMarkup(
         <Table>
           <TableBody>
-            <TableRow><TableCell>Row</TableCell></TableRow>
+            <TableRow>
+              <TableCell>Row</TableCell>
+            </TableRow>
           </TableBody>
           <TableFooter>
-            <TableRow><TableCell>Total</TableCell></TableRow>
+            <TableRow>
+              <TableCell>Total</TableCell>
+            </TableRow>
           </TableFooter>
-        </Table>
+        </Table>,
       );
       expect(html).not.toContain("sticky bottom-0");
     });
@@ -266,9 +286,11 @@ describe("table SSOT system", () => {
       const html = renderToStaticMarkup(
         <Table containerClassName="custom-scroll-container">
           <TableBody>
-            <TableRow><TableCell>Item</TableCell></TableRow>
+            <TableRow>
+              <TableCell>Item</TableCell>
+            </TableRow>
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(html).toContain("overflow-x-auto");
       expect(html).toContain("custom-scroll-container");
@@ -286,7 +308,7 @@ describe("table SSOT system", () => {
               <TableCell truncate>Truncated long text</TableCell>
             </TableRow>
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(html).toContain("whitespace-normal break-words max-w-prose");
       expect(html).toContain("whitespace-nowrap");
@@ -302,7 +324,7 @@ describe("table SSOT system", () => {
           <TableBody>
             <TableEmpty colSpan={5} variant="zero-data" />
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(html).toContain('colSpan="5"');
       expect(html).toContain("No records found");
@@ -320,12 +342,12 @@ describe("table SSOT system", () => {
               action={<button type="button">Reset</button>}
             />
           </TableBody>
-        </Table>
+        </Table>,
       );
       expect(html).toContain('colSpan="4"');
       expect(html).toContain("No students matched");
       expect(html).toContain("lucide-search-x");
-      expect(html).toContain("<button type=\"button\">Reset</button>");
+      expect(html).toContain('<button type="button">Reset</button>');
     });
   });
 
@@ -349,9 +371,7 @@ describe("table SSOT system", () => {
     });
 
     it("applies columnWidths as inline styles on invisible header cells", () => {
-      const html = renderToStaticMarkup(
-        <TableSkeleton columns={2} columnWidths={[120, 80]} />
-      );
+      const html = renderToStaticMarkup(<TableSkeleton columns={2} columnWidths={[120, 80]} />);
       expect(html).toContain("width:120px");
       expect(html).toContain("width:80px");
     });

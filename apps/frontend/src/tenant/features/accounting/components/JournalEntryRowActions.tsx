@@ -1,9 +1,9 @@
-import type { JSX } from 'react';
-import { CheckCircle2, Printer, RotateCcw } from 'lucide-react';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { ModuleRowActionsMenu } from '@/components/ui/ModuleRowActionsMenu';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { JournalEntry } from '@/lib/data/accountingData';
+import type { JSX } from "react";
+import { CheckCircle2, Printer, RotateCcw } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { JournalEntry } from "@/lib/data/accountingData";
 
 interface JournalEntryRowActionsProps {
   entry: JournalEntry;
@@ -43,16 +43,16 @@ export function JournalEntryRowActions({
   triggerClassName,
 }: JournalEntryRowActionsProps): JSX.Element {
   const { t } = useTranslation();
-  const isDraft = entry.status === 'draft';
-  const isPosted = entry.status === 'posted';
+  const isDraft = entry.status === "draft";
+  const isPosted = entry.status === "posted";
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t('accounting.table.actions')}
-      viewLabel={t('accounting.table.view')}
-      editLabel={t('accounting.table.edit')}
-      deleteLabel={t('common.delete')}
-      restoreLabel={t('accounting.trash.restore')}
+      triggerLabel={t("accounting.table.actions")}
+      viewLabel={t("accounting.table.view")}
+      editLabel={t("accounting.table.edit")}
+      deleteLabel={t("common.delete")}
+      restoreLabel={t("accounting.trash.restore")}
       archived={showDeleted}
       canWrite={canWrite && isDraft}
       canDelete={canDelete && (isDraft || showDeleted)}
@@ -67,17 +67,19 @@ export function JournalEntryRowActions({
           <>
             {onPrintVoucher ? (
               <DropdownMenuItem onClick={() => onPrintVoucher(entry)}>
-                <Printer className="w-3.5 h-3.5 me-2" /> {t('accounting.journal.voucher.print')}
+                <Printer className="w-3.5 h-3.5 me-2" /> {t("accounting.journal.voucher.print")}
               </DropdownMenuItem>
             ) : null}
             {canWrite && isDraft ? (
               <DropdownMenuItem onClick={() => onPost(entry)}>
-                <CheckCircle2 className="w-3.5 h-3.5 me-2 text-success" /> {t('accounting.journal.actions.post')}
+                <CheckCircle2 className="w-3.5 h-3.5 me-2 text-success" />{" "}
+                {t("accounting.journal.actions.post")}
               </DropdownMenuItem>
             ) : null}
             {canWrite && isPosted ? (
               <DropdownMenuItem onClick={() => onReverse(entry)}>
-                <RotateCcw className="w-3.5 h-3.5 me-2 text-warning" /> {t('accounting.journal.actions.reverse')}
+                <RotateCcw className="w-3.5 h-3.5 me-2 text-warning" />{" "}
+                {t("accounting.journal.actions.reverse")}
               </DropdownMenuItem>
             ) : null}
           </>

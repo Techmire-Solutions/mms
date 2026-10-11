@@ -1,10 +1,10 @@
-import type { FastifyRequest } from 'fastify';
-import type { AttendanceRepository } from '../repository/attendanceRepository.js';
-import { attendanceRepository } from '../repository/attendanceRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
-import { defineTenantBulkCollectionService } from '../../services/tenantBulkService.js';
-import { broadcastCollection } from '../../services/websocketService.js';
+import type { FastifyRequest } from "fastify";
+import type { AttendanceRepository } from "../repository/attendanceRepository.js";
+import { attendanceRepository } from "../repository/attendanceRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
+import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
+import { broadcastCollection } from "../../services/websocketService.js";
 import {
   attendanceRecordSchema,
   attendanceListSchema,
@@ -17,7 +17,7 @@ import {
   type AttendanceRecordUpdate,
   type AttendanceReportAggregatesQuery,
   type AttendanceListQuery,
-} from '@mms/shared';
+} from "@mms/shared";
 
 const EMPTY_ATTENDANCE_METRICS: AttendanceCommandMetricsSnapshot = {
   total: 0,
@@ -32,10 +32,22 @@ const EMPTY_ATTENDANCE_METRICS: AttendanceCommandMetricsSnapshot = {
 };
 
 export interface AttendanceUseCasesDependencies {
-  findStudentById?: (tenant: string, id: string) => Promise<{ id: string; deletedAt?: unknown } | null>;
-  findSessionById?: (tenant: string, id: string) => Promise<{ id: string; deletedAt?: unknown } | null>;
-  findStudentsByIds?: (tenant: string, ids: string[]) => Promise<{ id: string; deletedAt?: unknown }[]>;
-  findSessionsByIds?: (tenant: string, ids: string[]) => Promise<{ id: string; deletedAt?: unknown }[]>;
+  findStudentById?: (
+    tenant: string,
+    id: string,
+  ) => Promise<{ id: string; deletedAt?: unknown } | null>;
+  findSessionById?: (
+    tenant: string,
+    id: string,
+  ) => Promise<{ id: string; deletedAt?: unknown } | null>;
+  findStudentsByIds?: (
+    tenant: string,
+    ids: string[],
+  ) => Promise<{ id: string; deletedAt?: unknown }[]>;
+  findSessionsByIds?: (
+    tenant: string,
+    ids: string[],
+  ) => Promise<{ id: string; deletedAt?: unknown }[]>;
 }
 
 /**
@@ -57,8 +69,8 @@ export function createAttendanceUseCases(
       bulkRestore: repo.bulkRestoreAttendanceRecords,
     },
     schema: attendanceRecordSchema,
-    websocketCollection: 'attendance_records',
-    idPrefix: 'att',
+    websocketCollection: "attendance_records",
+    idPrefix: "att",
   });
 
   const bulkService = defineTenantBulkCollectionService<AttendanceRecord>(
@@ -67,17 +79,17 @@ export function createAttendanceUseCases(
       replaceForWorkspace: repo.replaceAttendanceRecordsForWorkspace,
     },
     attendanceListSchema,
-    'attendance_records',
+    "attendance_records",
   );
 
   const validateActiveForeignKeys = async (tenant: string, record: Partial<AttendanceRecord>) => {
     if (record.studentId) {
       const getStudent =
         deps?.findStudentById ??
-        (await import('../../db/repositories/studentRepositoryHydrate.js')).findStudentById;
+        (await import("../../db/repositories/studentRepositoryHydrate.js")).findStudentById;
       const student = await getStudent(tenant, record.studentId);
       if (!student || student.deletedAt) {
-        const err = new Error('Referenced student is archived or does not exist');
+        const err = new Error("Referenced student is archived or does not exist");
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
@@ -85,10 +97,10 @@ export function createAttendanceUseCases(
     if (record.classId) {
       const getSession =
         deps?.findSessionById ??
-        (await import('../../db/repositories/sessionRepositoryHydrate.js')).findClassOrSessionById;
+        (await import("../../db/repositories/sessionRepositoryHydrate.js")).findClassOrSessionById;
       const session = await getSession(tenant, record.classId);
       if (!session || session.deletedAt) {
-        const err = new Error('Referenced session is archived or does not exist');
+        const err = new Error("Referenced session is archived or does not exist");
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
@@ -100,12 +112,12 @@ export function createAttendanceUseCases(
     if (studentIds.length > 0) {
       const getStudents =
         deps?.findStudentsByIds ??
-        (await import('../../db/repositories/studentRepository.js')).findStudentsByIds;
+        (await import("../../db/repositories/studentRepository.js")).findStudentsByIds;
       const students = await getStudents(tenant, studentIds);
       const activeStudentIds = new Set(students.filter((s) => !s.deletedAt).map((s) => s.id));
       for (const studentId of studentIds) {
         if (!activeStudentIds.has(studentId)) {
-          const err = new Error('Referenced student is archived or does not exist');
+          const err = new Error("Referenced student is archived or does not exist");
           (err as Error & { statusCode: number }).statusCode = 400;
           throw err;
         }
@@ -113,7 +125,7 @@ export function createAttendanceUseCases(
     }
     const sessionIds = dedupeTrimmedIds(records.map((r) => r.classId).filter(Boolean));
     if (sessionIds.length > 0) {
-      const sessionHydrate = await import('../../db/repositories/sessionRepositoryHydrate.js');
+      const sessionHydrate = await import("../../db/repositories/sessionRepositoryHydrate.js");
       const getSessions =
         deps?.findSessionsByIds ??
         sessionHydrate.findClassesOrSessionsByIds ??
@@ -122,7 +134,7 @@ export function createAttendanceUseCases(
       const activeSessionIds = new Set(sessions.filter((s) => !s.deletedAt).map((s) => s.id));
       for (const sessionId of sessionIds) {
         if (!activeSessionIds.has(sessionId)) {
-          const err = new Error('Referenced session is archived or does not exist');
+          const err = new Error("Referenced session is archived or does not exist");
           (err as Error & { statusCode: number }).statusCode = 400;
           throw err;
         }
@@ -132,9 +144,11 @@ export function createAttendanceUseCases(
 
   return {
     loadAttendanceRecords: crud.loadAll,
-    createAttendanceRecord: async (record: AttendanceRecordInsert | AttendanceRecord): Promise<AttendanceRecord> => {
+    createAttendanceRecord: async (
+      record: AttendanceRecordInsert | AttendanceRecord,
+    ): Promise<AttendanceRecord> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       await validateActiveForeignKeys(tenant, record);
       return crud.create(record as AttendanceRecord);
     },
@@ -143,7 +157,7 @@ export function createAttendanceUseCases(
       record: AttendanceRecordUpdate | Partial<AttendanceRecord>,
     ): Promise<AttendanceRecord | null> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       await validateActiveForeignKeys(tenant, record);
       return crud.updateById(id, record as AttendanceRecord);
     },
@@ -156,13 +170,15 @@ export function createAttendanceUseCases(
     replaceAttendanceRecords: bulkService.replace,
 
     /** Upserts only the supplied attendance records without removing unrelated rows. */
-    upsertAttendanceRecords: async (records: (AttendanceRecordInsert | AttendanceRecord)[]): Promise<AttendanceRecord[]> => {
+    upsertAttendanceRecords: async (
+      records: (AttendanceRecordInsert | AttendanceRecord)[],
+    ): Promise<AttendanceRecord[]> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       const parsed = attendanceListSchema.parse(records);
       await validateBatchActiveForeignKeys(tenant, parsed);
       await repo.bulkSaveAttendanceRecords(tenant, parsed);
-      await broadcastCollection('attendance_records');
+      await broadcastCollection("attendance_records");
       return parsed;
     },
 
@@ -196,7 +212,13 @@ export function createAttendanceUseCases(
     loadAttendancePage: async (query: AttendanceListQuery & { includeDeleted?: boolean }) => {
       const tenant = getRequestTenant();
       if (!tenant) {
-        return { records: [], total: 0, page: query.page ?? 1, limit: query.limit ?? 15, hasMore: false };
+        return {
+          records: [],
+          total: 0,
+          page: query.page ?? 1,
+          limit: query.limit ?? 15,
+          hasMore: false,
+        };
       }
       return repo.listAttendancePage(tenant, query);
     },
@@ -227,15 +249,15 @@ export function createAttendanceUseCases(
       if (!tenant) return EMPTY_ATTENDANCE_METRICS;
       const dateParam = (request?.query as { date?: string } | undefined)?.date;
       const selectedDate =
-        typeof dateParam === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
+        typeof dateParam === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
           ? dateParam
           : undefined;
       return repo.aggregateAttendanceCommandMetrics(tenant, { selectedDate });
     },
 
     loadAttendanceWidgetAggregates: async (
-      queries: import('@mms/shared').WidgetQuery[],
-    ): Promise<Record<string, import('@mms/shared').WidgetAggregateResult>> => {
+      queries: import("@mms/shared").WidgetQuery[],
+    ): Promise<Record<string, import("@mms/shared").WidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateAttendanceWidgetQueries(tenant, queries);

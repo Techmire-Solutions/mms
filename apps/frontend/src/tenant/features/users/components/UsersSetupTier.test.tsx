@@ -66,9 +66,7 @@ describe("UsersSetupTier Component", () => {
   });
 
   it("renders read-only message when canEditSetup is false", () => {
-    const html = renderToStaticMarkup(
-      <UsersSetupTier {...defaultProps} canEditSetup={false} />,
-    );
+    const html = renderToStaticMarkup(<UsersSetupTier {...defaultProps} canEditSetup={false} />);
     expect(html).toContain("users.setup.readOnly");
   });
 });

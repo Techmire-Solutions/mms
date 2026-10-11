@@ -1,26 +1,23 @@
-import { type Invoice } from '@mms/shared';
-import type { financeInvoices } from '../schema.js';
-import { mapAuditToInsert } from './repositoryMappers.js';
+import { type Invoice } from "@mms/shared";
+import type { financeInvoices } from "../schema.js";
+import { mapAuditToInsert } from "./repositoryMappers.js";
 
 export type FinanceInvoiceInsert = typeof financeInvoices.$inferInsert;
 
-export function invoiceWriteValues(
-  subdomain: string,
-  record: Invoice,
-): FinanceInvoiceInsert {
+export function invoiceWriteValues(subdomain: string, record: Invoice): FinanceInvoiceInsert {
   return {
     id: record.id,
     workspaceSubdomain: subdomain,
     studentId: record.studentId,
-    studentName: record.studentName ?? '',
-    class: record.class ?? '',
-    session: record.session ?? '',
+    studentName: record.studentName ?? "",
+    class: record.class ?? "",
+    session: record.session ?? "",
     baseFee: String(record.baseFee ?? 0),
     discountType: record.discountType ?? null,
     discountValue: String(record.discountValue ?? 0),
     discountAmt: String(record.discountAmt ?? 0),
     finalAmt: String(record.finalAmt ?? 0),
-    status: record.status ?? 'pending',
+    status: record.status ?? "pending",
     dueDate: record.dueDate,
     paidDate: record.paidDate ?? null,
     method: record.method ?? null,

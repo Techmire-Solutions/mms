@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { isoDateSchema } from './isoDateSchema.js';
-import { moneyAmountSchema, signedMoneyAmountSchema } from './accountingLedgerInvariants.js';
+import { z } from "zod";
+import { isoDateSchema } from "./isoDateSchema.js";
+import { moneyAmountSchema, signedMoneyAmountSchema } from "./accountingLedgerInvariants.js";
 
 export const postingRulesRecordSchema = z
   .object({
@@ -12,9 +12,7 @@ export const postingRulesRecordSchema = z
   })
   .strict();
 
-export const postingRulesUpdateSchema = postingRulesRecordSchema
-  .omit({ updatedAt: true })
-  .strict();
+export const postingRulesUpdateSchema = postingRulesRecordSchema.omit({ updatedAt: true }).strict();
 
 export type PostingRules = z.infer<typeof postingRulesRecordSchema>;
 export type PostingRulesUpdate = z.infer<typeof postingRulesUpdateSchema>;
@@ -48,8 +46,8 @@ export const openingBalanceInsertSchema = z
   })
   .strict()
   .refine(isSingleSidedOpeningBalance, {
-    message: 'accounting.openingBalances.singleSided',
-    path: ['debit'],
+    message: "accounting.openingBalances.singleSided",
+    path: ["debit"],
   });
 
 export const openingBalancesReplaceSchema = z
@@ -66,7 +64,7 @@ export const bankStatementLineRecordSchema = z
   .object({
     id: z.string(),
     date: isoDateSchema,
-    description: z.string().default(''),
+    description: z.string().default(""),
     amount: signedMoneyAmountSchema,
   })
   .strict();

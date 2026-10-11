@@ -61,7 +61,10 @@ export function AttendanceAdvancedRulesSection({
             </p>
           </div>
           <CompactSegmentedControl
-            value={((settingsDraft.defaultViewLayout as string | undefined) || "list") as "list" | "cards"}
+            value={
+              ((settingsDraft.defaultViewLayout as string | undefined) || "list") as
+                "list" | "cards"
+            }
             onChange={(value) => upd("defaultViewLayout", value)}
             options={[
               { value: "list", label: t("attendance.settings.listView") },
@@ -79,7 +82,11 @@ export function AttendanceAdvancedRulesSection({
               {t("attendance.settings.facialRecognitionDesc")}
             </p>
           </div>
-          <Badge pill variant="outline" className={cn("px-2 font-bold", SEMANTIC_BADGE.warningStrong)}>
+          <Badge
+            pill
+            variant="outline"
+            className={cn("px-2 font-bold", SEMANTIC_BADGE.warningStrong)}
+          >
             {t("attendance.settings.comingSoon")}
           </Badge>
         </div>
@@ -93,7 +100,11 @@ export function AttendanceAdvancedRulesSection({
               {t("attendance.settings.auditLoggingDesc")}
             </p>
           </div>
-          <Badge pill variant="outline" className={cn("px-2 font-bold", SEMANTIC_BADGE.successStrong)}>
+          <Badge
+            pill
+            variant="outline"
+            className={cn("px-2 font-bold", SEMANTIC_BADGE.successStrong)}
+          >
             {t("attendance.settings.active")}
           </Badge>
         </div>

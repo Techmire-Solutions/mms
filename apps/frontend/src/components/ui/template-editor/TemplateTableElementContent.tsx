@@ -1,18 +1,18 @@
-import React from 'react';
-import type { TemplateElement } from '@mms/shared';
-import { PRINT_NEUTRAL } from '@/lib/printBrandingTokens';
+import React from "react";
+import type { TemplateElement } from "@mms/shared";
+import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
 import {
   TABLE_FALLBACK_ROWS,
   resolveTableRows,
   visibleTableRowCount,
   type TemplateRenderMode,
-} from './templateDataResolution';
+} from "./templateDataResolution";
 
 export interface TemplateTableElementContentProps {
   el: TemplateElement;
   data?: Record<string, unknown> | null;
   mode: TemplateRenderMode;
-  defaultColAlign: 'left' | 'right' | 'center';
+  defaultColAlign: "left" | "right" | "center";
   tableFontSize: number;
 }
 
@@ -26,7 +26,7 @@ export function TemplateTableElementContent({
   const resolvedRows = resolveTableRows(el, data);
   const rows = (resolvedRows ?? (mode === "print" ? [] : TABLE_FALLBACK_ROWS)).slice(
     0,
-    visibleTableRowCount(el)
+    visibleTableRowCount(el),
   );
 
   return (

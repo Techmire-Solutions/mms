@@ -3,7 +3,16 @@ import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 
 export interface WidgetCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  accentColor?: "primary" | "success" | "warning" | "destructive" | "info" | "emerald" | "indigo" | "rose" | "amber";
+  accentColor?:
+    | "primary"
+    | "success"
+    | "warning"
+    | "destructive"
+    | "info"
+    | "emerald"
+    | "indigo"
+    | "rose"
+    | "amber";
   children: React.ReactNode;
   ariaLabelledby?: string;
   ref?: React.Ref<HTMLDivElement>;
@@ -15,7 +24,15 @@ export interface WidgetCardProps extends React.HTMLAttributes<HTMLDivElement> {
  * WidgetCard is a design system primitive that wraps the Card component.
  * It provides interactive dashboard-specific styles (e.g. lift on hover) and color accent stripes.
  */
-export function WidgetCard({ className, accentColor, ariaLabelledby, children, ref, narrativeText, ...props }: WidgetCardProps) {
+export function WidgetCard({
+  className,
+  accentColor,
+  ariaLabelledby,
+  children,
+  ref,
+  narrativeText,
+  ...props
+}: WidgetCardProps) {
   return (
     <Card
       ref={ref}
@@ -23,7 +40,7 @@ export function WidgetCard({ className, accentColor, ariaLabelledby, children, r
       className={cn(
         "hover:-translate-y-1 hover:shadow-surface-lg transition-all duration-300 text-start",
         accentColor === "destructive" && "border-destructive/30 hover:border-destructive/55",
-        className
+        className,
       )}
       aria-labelledby={ariaLabelledby}
       {...props}

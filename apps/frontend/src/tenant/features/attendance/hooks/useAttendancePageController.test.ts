@@ -18,7 +18,12 @@ vi.mock("@/tenant/hooks/useViewerRole", () => ({
 
 vi.mock("@/tenant/hooks/usePermissions", () => ({
   usePermissions: () => ({ can: () => true }),
-  useModulePermissions: () => ({ canViewSetup: true, canWrite: true, canDelete: true, canRead: true }),
+  useModulePermissions: () => ({
+    canViewSetup: true,
+    canWrite: true,
+    canDelete: true,
+    canRead: true,
+  }),
 }));
 
 vi.mock("@/hooks/usePersistedTabState", () => ({

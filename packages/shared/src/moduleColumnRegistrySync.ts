@@ -1,4 +1,4 @@
-import type { ColumnRegistryEntry, FieldDefinition } from './contactFieldSchemaTypes.js';
+import type { ColumnRegistryEntry, FieldDefinition } from "./contactFieldSchemaTypes.js";
 
 export type ModuleColumnFieldMapping = Record<string, { tabId: string; fieldId: string }>;
 
@@ -71,11 +71,7 @@ export function syncModuleColumnRegistryWithFields(
   }
 
   for (const col of columnRegistry || []) {
-    if (
-      dropUnknownSystemKeys
-      && !col.key.startsWith('custom:')
-      && !defaultKeys.has(col.key)
-    ) {
+    if (dropUnknownSystemKeys && !col.key.startsWith("custom:") && !defaultKeys.has(col.key)) {
       continue;
     }
     const existing = byKey.get(col.key);
@@ -108,14 +104,14 @@ export function syncModuleColumnRegistryWithFields(
 
     const enabledCustomKeys = new Set(customFields.map((field) => customColumnKey(field.key)));
     for (const key of [...byKey.keys()]) {
-      if (key.startsWith('custom:') && !enabledCustomKeys.has(key)) {
+      if (key.startsWith("custom:") && !enabledCustomKeys.has(key)) {
         byKey.delete(key);
       }
     }
   }
 
   const fieldLookup = new Map<string, FieldDefinition>();
-  if (fields && typeof fields === 'object') {
+  if (fields && typeof fields === "object") {
     for (const [tabId, tabFields] of Object.entries(fields)) {
       if (!Array.isArray(tabFields)) continue;
       const tabKey = tabId.toLowerCase();

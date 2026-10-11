@@ -14,15 +14,8 @@ export function ContactsSetupPanel({
   onPrefsDirtyChange,
 }: ContactsSetupPanelProps): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    saved,
-    prefs,
-    isSaving,
-    isPrefsDirty,
-    updatePreference,
-    handleSave,
-  } = useContactsSetupPanelState();
-
+  const { saved, prefs, isSaving, isPrefsDirty, updatePreference, handleSave } =
+    useContactsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);

@@ -1,13 +1,7 @@
 import React from "react";
 import { BookOpen } from "lucide-react";
 import type { TooltipContentProps } from "recharts";
-import {
-  Bar,
-  BarChart,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, Tooltip, XAxis, YAxis } from "recharts";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
 import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
@@ -21,7 +15,11 @@ const MarksTooltip = buildChartTooltip({
   valueFormatter: (value) => `${value} / 100`,
 });
 
-function ClassRankingTooltip({ active = false, payload = [], label }: Partial<TooltipContentProps>) {
+function ClassRankingTooltip({
+  active = false,
+  payload = [],
+  label,
+}: Partial<TooltipContentProps>) {
   if (!active || !payload?.length) return null;
   return (
     <ChartTooltip active={active} payload={payload} label={label}>
@@ -55,7 +53,7 @@ function getActiveLabel(state: unknown): string | null {
   return typeof activeLabel === "string" && activeLabel.length > 0 ? activeLabel : null;
 }
 
-export const AcademicReportCharts = (function AcademicReportCharts({
+export const AcademicReportCharts = function AcademicReportCharts({
   academicResults,
   classRankings,
   onToggleStudentFilter,
@@ -80,10 +78,21 @@ export const AcademicReportCharts = (function AcademicReportCharts({
           className="cursor-pointer"
         >
           <ChartGrid />
-          <XAxis dataKey="studentName" tick={chartAxisTick(10)} angle={-25} textAnchor="end" height={40} />
+          <XAxis
+            dataKey="studentName"
+            tick={chartAxisTick(10)}
+            angle={-25}
+            textAnchor="end"
+            height={40}
+          />
           <YAxis domain={[0, 100]} tick={chartAxisTick(11)} />
           <Tooltip content={<MarksTooltip />} />
-          <Bar dataKey="marks" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name={t("examinations.report.marksLabel")} />
+          <Bar
+            dataKey="marks"
+            fill="hsl(var(--primary))"
+            radius={[4, 4, 0, 0]}
+            name={t("examinations.report.marksLabel")}
+          />
         </BarChart>
       </ReportChartCard>
 
@@ -92,7 +101,9 @@ export const AcademicReportCharts = (function AcademicReportCharts({
         accentColor="info"
         heightClass="h-chart-sm"
         empty={classRankings.length === 0}
-        emptyNode={<EmptyState icon={BookOpen} title={t("examinations.report.noClassData")} compact />}
+        emptyNode={
+          <EmptyState icon={BookOpen} title={t("examinations.report.noClassData")} compact />
+        }
       >
         <BarChart
           data={classRankings}
@@ -108,10 +119,14 @@ export const AcademicReportCharts = (function AcademicReportCharts({
           <XAxis type="number" domain={[0, 100]} tick={chartAxisTick(11)} />
           <YAxis type="category" dataKey="class" width={90} tick={chartAxisTick(11)} />
           <Tooltip content={<ClassRankingTooltip />} />
-          <Bar dataKey="avgMarks" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name={t("examinations.report.classAvg")} />
+          <Bar
+            dataKey="avgMarks"
+            fill="hsl(var(--primary))"
+            radius={[0, 4, 4, 0]}
+            name={t("examinations.report.classAvg")}
+          />
         </BarChart>
       </ReportChartCard>
     </div>
   );
-});
-
+};

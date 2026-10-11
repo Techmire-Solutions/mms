@@ -17,8 +17,6 @@ export {
   useContactColumnPrefs,
   useContactColumnPrefsMutation,
   useContactsSavedReportsSource,
-} from '@/tenant/features/contacts/hooks/useContactsQueries';
+} from "@/tenant/features/contacts/hooks/useContactsQueries";
 
-export {
-  useContactMutations,
-} from '@/tenant/features/contacts/hooks/useContactMutations';
+export { useContactMutations } from "@/tenant/features/contacts/hooks/useContactMutations";

@@ -1,4 +1,4 @@
-import type { StudentsBulkEnrollBody } from '@mms/shared';
+import type { StudentsBulkEnrollBody } from "@mms/shared";
 
 import {
   useStudentsContractCreate,
@@ -10,7 +10,7 @@ import {
   useStudentsContractBulkStatus,
   useStudentsContractLogExportAudit,
   useStudentsContractLogSetupAudit,
-} from '@/tenant/features/students/hooks/useStudentsTsrHooks';
+} from "@/tenant/features/students/hooks/useStudentsTsrHooks";
 
 /** Server mutations for Student records (create, update, delete, bulk delete, bulk status). */
 export function useStudentMutations() {
@@ -33,26 +33,27 @@ export function useStudentMutations() {
     bulkRestoreStudents: bulkRestoreStudentsMutation,
     bulkUpdateStudentStatus: bulkUpdateStudentStatusMutation,
     logExportAudit: {
-      mutateAsync: (payload: { count: number; scope: 'all' | 'filtered' | 'selection' }) => logExportAuditMutation.mutateAsync({ body: payload }),
+      mutateAsync: (payload: { count: number; scope: "all" | "filtered" | "selection" }) =>
+        logExportAuditMutation.mutateAsync({ body: payload }),
       isPending: logExportAuditMutation.isPending,
     },
     logSetupAudit: {
-      mutateAsync: (payload: { area: 'fields' | 'preferences'; summary: string }) => logSetupAuditMutation.mutateAsync({ body: payload }),
+      mutateAsync: (payload: { area: "fields" | "preferences"; summary: string }) =>
+        logSetupAuditMutation.mutateAsync({ body: payload }),
       isPending: logSetupAuditMutation.isPending,
     },
   };
 }
 
-import { useStudentsContractBulkEnroll } from '@/tenant/features/students/hooks/useStudentsTsrHooks';
+import { useStudentsContractBulkEnroll } from "@/tenant/features/students/hooks/useStudentsTsrHooks";
 
 /** Atomic bulk session enrollment mutation for selected students. */
 export function useStudentsBulkEnrollMutation() {
   const bulkEnrollMutation = useStudentsContractBulkEnroll();
-  
+
   return {
-    mutateAsync: (payload: StudentsBulkEnrollBody) => bulkEnrollMutation.mutateAsync({ body: payload }),
+    mutateAsync: (payload: StudentsBulkEnrollBody) =>
+      bulkEnrollMutation.mutateAsync({ body: payload }),
     isPending: bulkEnrollMutation.isPending,
   };
 }
-
-

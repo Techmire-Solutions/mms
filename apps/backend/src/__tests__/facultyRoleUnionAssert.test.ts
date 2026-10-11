@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createUsersUseCases } from '../users/use-cases/usersUseCases.js';
-import type { UsersRepository } from '../users/repository/usersRepository.js';
-import { runWithTenant } from '../lib/tenantContext.js';
-import type { HttpDomainError } from '../lib/httpErrors.js';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createUsersUseCases } from "../users/use-cases/usersUseCases.js";
+import type { UsersRepository } from "../users/repository/usersRepository.js";
+import { runWithTenant } from "../lib/tenantContext.js";
+import type { HttpDomainError } from "../lib/httpErrors.js";
 
 const mockFindFacultyByContactId = vi.fn();
 const mockListFacultyDesignations = vi.fn();
@@ -12,60 +12,68 @@ const mockGetRawUsers = vi.fn();
 const mockUpsertFacultyManagedWorkspaceRole = vi.fn();
 const mockGetTenantUsersSettings = vi.fn();
 
-vi.mock('../db/repositories/facultyRepository.js', () => ({
+vi.mock("../db/repositories/facultyRepository.js", () => ({
   findFacultyByContactId: (...args: unknown[]) => mockFindFacultyByContactId(...args),
 }));
 
-vi.mock('../db/repositories/facultyDesignationRepository.js', () => ({
+vi.mock("../db/repositories/facultyDesignationRepository.js", () => ({
   listFacultyDesignations: (...args: unknown[]) => mockListFacultyDesignations(...args),
 }));
 
-vi.mock('../faculty/use-cases/facultyManagedRolesPrefs.js', () => ({
-  upsertFacultyManagedWorkspaceRole: (...args: unknown[]) => mockUpsertFacultyManagedWorkspaceRole(...args),
+vi.mock("../faculty/use-cases/facultyManagedRolesPrefs.js", () => ({
+  upsertFacultyManagedWorkspaceRole: (...args: unknown[]) =>
+    mockUpsertFacultyManagedWorkspaceRole(...args),
   removeFacultyManagedWorkspaceRole: vi.fn(),
   mergeWorkspaceRolesForPrefsSave: vi.fn((incoming) => incoming),
 }));
 
-vi.mock('../services/users/usersSettingsService.js', () => ({
+vi.mock("../services/users/usersSettingsService.js", () => ({
   getTenantUsersSettings: (...args: unknown[]) => mockGetTenantUsersSettings(...args),
 }));
 
-vi.mock('../services/auth/userService.js', () => ({
+vi.mock("../services/auth/userService.js", () => ({
   getHydratedUsers: (...args: unknown[]) => mockGetHydratedUsers(...args),
   saveUsers: (...args: unknown[]) => mockSaveUsers(...args),
 }));
 
-vi.mock('../services/auth/userServiceShared.js', () => ({
+vi.mock("../services/auth/userServiceShared.js", () => ({
   getRawUsers: (...args: unknown[]) => mockGetRawUsers(...args),
 }));
 
-vi.mock('../services/websocketService.js', () => ({
+vi.mock("../services/websocketService.js", () => ({
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),
 }));
 
-vi.mock('../services/rbacService.js', () => ({
+vi.mock("../services/rbacService.js", () => ({
   invalidateTenantRbac: vi.fn(),
 }));
 
-vi.mock('../services/contactService.js', () => ({
+vi.mock("../services/contactService.js", () => ({
   loadContactsByIds: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../services/globalSettingsService.js', () => ({
+vi.mock("../services/globalSettingsService.js", () => ({
   assertPasswordMeetsPolicy: vi.fn(),
 }));
 
-vi.mock('../services/auth/passwordService.js', () => ({
-  hashPassword: vi.fn().mockResolvedValue('hash'),
+vi.mock("../services/auth/passwordService.js", () => ({
+  hashPassword: vi.fn().mockResolvedValue("hash"),
 }));
 
 function createFakeRepo(): UsersRepository {
   return {
-    listTenantUsersPage: vi.fn().mockResolvedValue({ rows: [], total: 0, page: 1, limit: 50, hasMore: false }),
+    listTenantUsersPage: vi
+      .fn()
+      .mockResolvedValue({ rows: [], total: 0, page: 1, limit: 50, hasMore: false }),
     countTenantUsersActive: vi.fn().mockResolvedValue(0),
     aggregateUsersCommandMetrics: vi.fn().mockResolvedValue({
-      total: 0, active: 0, suspended: 0, admins: 0, twoFaEnabled: 0, activeSessions: 0,
+      total: 0,
+      active: 0,
+      suspended: 0,
+      admins: 0,
+      twoFaEnabled: 0,
+      activeSessions: 0,
     }),
     listTenantUsersByIds: vi.fn().mockResolvedValue([]),
     findTenantUserRowById: vi.fn().mockResolvedValue(null),
@@ -83,16 +91,16 @@ function createFakeRepo(): UsersRepository {
 }
 
 const multiTenureFaculty = {
-  id: 'f1',
-  contactId: 'c1',
-  designationId: 'd1',
+  id: "f1",
+  contactId: "c1",
+  designationId: "d1",
   employDesignations: [
-    { designationId: 'd1', employDesignationStatus: 'active', designationEndDate: null },
-    { designationId: 'd2', employDesignationStatus: 'active', designationEndDate: null },
+    { designationId: "d1", employDesignationStatus: "active", designationEndDate: null },
+    { designationId: "d2", employDesignationStatus: "active", designationEndDate: null },
   ],
 };
 
-describe('faculty designation role assignment on users', () => {
+describe("faculty designation role assignment on users", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetHydratedUsers.mockResolvedValue([]);
@@ -102,66 +110,72 @@ describe('faculty designation role assignment on users', () => {
     mockUpsertFacultyManagedWorkspaceRole.mockResolvedValue(undefined);
   });
 
-  it('forces a managed composite role on create when multiple designation roles apply', async () => {
+  it("forces a managed composite role on create when multiple designation roles apply", async () => {
     mockFindFacultyByContactId.mockResolvedValue(multiTenureFaculty);
     mockListFacultyDesignations.mockResolvedValue([
-      { id: 'd1', status: 'active', assignableRoles: ['teacher'] },
-      { id: 'd2', status: 'active', assignableRoles: ['principal'] },
+      { id: "d1", status: "active", assignableRoles: ["teacher"] },
+      { id: "d2", status: "active", assignableRoles: ["principal"] },
     ]);
 
     const useCases = createUsersUseCases(createFakeRepo());
-    await expect(runWithTenant('demo', () =>
-      useCases.createWorkspaceUser(
-        {
-          name: 'A',
-          email: 'a@example.com',
-          role: 'teacher',
-          contactId: 'c1',
-          status: 'active',
-          setupMethod: 'password',
-          password: 'TempPass1!',
-          twoFactorEnabled: false,
-        },
-        'actor',
-        'admin',
+    await expect(
+      runWithTenant("demo", () =>
+        useCases.createWorkspaceUser(
+          {
+            name: "A",
+            email: "a@example.com",
+            role: "teacher",
+            contactId: "c1",
+            status: "active",
+            setupMethod: "password",
+            password: "TempPass1!",
+            twoFactorEnabled: false,
+          },
+          "actor",
+          "admin",
+        ),
       ),
-    )).resolves.toMatchObject({
+    ).resolves.toMatchObject({
       user: expect.objectContaining({
-        role: 'faculty_ed_c1',
-        roleSource: 'faculty_designations',
+        role: "faculty_ed_c1",
+        roleSource: "faculty_designations",
       }),
     });
     expect(mockUpsertFacultyManagedWorkspaceRole).toHaveBeenCalled();
   });
 
-  it('rejects manual role changes when faculty designations lock the role', async () => {
+  it("rejects manual role changes when faculty designations lock the role", async () => {
     mockFindFacultyByContactId.mockResolvedValue(multiTenureFaculty);
     mockListFacultyDesignations.mockResolvedValue([
-      { id: 'd1', status: 'active', assignableRoles: ['teacher'] },
-      { id: 'd2', status: 'active', assignableRoles: ['principal'] },
+      { id: "d1", status: "active", assignableRoles: ["teacher"] },
+      { id: "d2", status: "active", assignableRoles: ["principal"] },
     ]);
 
     const repo = createFakeRepo();
     vi.mocked(repo.findTenantUserRowById).mockResolvedValue({
-      id: 'u1',
-      role: 'faculty_ed_c1',
-      contactId: 'c1',
-      workspaceSubdomain: 'demo',
+      id: "u1",
+      role: "faculty_ed_c1",
+      contactId: "c1",
+      workspaceSubdomain: "demo",
     } as never);
-    mockGetRawUsers.mockResolvedValue([{
-      id: 'u1',
-      role: 'faculty_ed_c1',
-      contactId: 'c1',
-      name: 'A',
-      email: 'a@example.com',
-    }]);
+    mockGetRawUsers.mockResolvedValue([
+      {
+        id: "u1",
+        role: "faculty_ed_c1",
+        contactId: "c1",
+        name: "A",
+        email: "a@example.com",
+      },
+    ]);
 
     const useCases = createUsersUseCases(repo);
-    await expect(runWithTenant('demo', () =>
-      useCases.updateWorkspaceUser('u1', { role: 'accountant' }, 'actor', 'admin'),
-    )).rejects.toMatchObject({
+    await expect(
+      runWithTenant("demo", () =>
+        useCases.updateWorkspaceUser("u1", { role: "accountant" }, "actor", "admin"),
+      ),
+    ).rejects.toMatchObject({
       statusCode: 403,
-      type: 'faculty_role_locked',
+      type: "faculty_role_locked",
     } satisfies Partial<HttpDomainError>);
   });
 });

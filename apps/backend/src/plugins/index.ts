@@ -1,19 +1,16 @@
-import type { FastifyInstance } from 'fastify';
-import type { ServerConfig } from '../config/serverConfig.js';
-import { registerErrorHandlers } from '../lib/errorHandler.js';
-import { registerCsrfOriginGuard } from './csrfOriginGuard.js';
-import { registerHttpPlugins } from './http.js';
-import { registerProductionHostGuard } from './productionHostGuard.js';
-import { registerRequestHooks } from './requestHooks.js';
-import { registerSecurityPlugins } from './security.js';
-import { registerStaticAssets } from './staticAssets.js';
-import { registerTelemetryPlugin } from './telemetryPlugin.js';
-import { registerMetricsPlugin } from './metricsPlugin.js';
+import type { FastifyInstance } from "fastify";
+import type { ServerConfig } from "../config/serverConfig.js";
+import { registerErrorHandlers } from "../lib/errorHandler.js";
+import { registerCsrfOriginGuard } from "./csrfOriginGuard.js";
+import { registerHttpPlugins } from "./http.js";
+import { registerProductionHostGuard } from "./productionHostGuard.js";
+import { registerRequestHooks } from "./requestHooks.js";
+import { registerSecurityPlugins } from "./security.js";
+import { registerStaticAssets } from "./staticAssets.js";
+import { registerTelemetryPlugin } from "./telemetryPlugin.js";
+import { registerMetricsPlugin } from "./metricsPlugin.js";
 
-export async function registerPlugins(
-  app: FastifyInstance,
-  config: ServerConfig,
-): Promise<void> {
+export async function registerPlugins(app: FastifyInstance, config: ServerConfig): Promise<void> {
   registerTelemetryPlugin(app);
   registerMetricsPlugin(app);
   registerErrorHandlers(app, config.isProd);

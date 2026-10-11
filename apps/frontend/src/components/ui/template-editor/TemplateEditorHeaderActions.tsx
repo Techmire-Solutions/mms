@@ -74,7 +74,9 @@ export function TemplateEditorHeaderActions({
         onClick={onSave}
         disabled={saving}
         aria-busy={saving}
-        aria-label={saving ? t("global.saving") : saved ? t("templateEditor.saved") : t("templateEditor.save")}
+        aria-label={
+          saving ? t("global.saving") : saved ? t("templateEditor.saved") : t("templateEditor.save")
+        }
         className={`min-h-11 h-11 px-3.5 text-xs font-semibold rounded-lg transition-all duration-300 shadow-none flex items-center gap-1.5 ${
           saved
             ? "bg-success hover:bg-success text-success-foreground"

@@ -27,7 +27,9 @@ export function ContactsSyncConflictPanel({
 }: ContactsSyncConflictPanelProps): React.JSX.Element {
   const { t } = useTranslation();
   const { flush, refreshCounts } = useContactsSyncOutbox();
-  const [conflicts, setConflicts] = useState<ContactsSyncConflict[]>(() => getContactsSyncConflicts());
+  const [conflicts, setConflicts] = useState<ContactsSyncConflict[]>(() =>
+    getContactsSyncConflicts(),
+  );
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [dismissTargetId, setDismissTargetId] = useState<string | null>(null);
 
@@ -47,13 +49,13 @@ export function ContactsSyncConflictPanel({
     return () => window.removeEventListener("contacts-sync-outbox-changed", handler);
   }, [refreshList]);
 
-  const handleDismiss = ((id: string) => {
-      dismissContactsSyncConflict(id);
-      refreshList();
-      notify.info(t("contacts.sync.conflictDismissed"));
-    });
+  const handleDismiss = (id: string) => {
+    dismissContactsSyncConflict(id);
+    refreshList();
+    notify.info(t("contacts.sync.conflictDismissed"));
+  };
 
-  const handleRetryAll = (async () => {
+  const handleRetryAll = async () => {
     setRetryingId("__all__");
     try {
       requeueAllContactsSyncConflicts();
@@ -62,13 +64,13 @@ export function ContactsSyncConflictPanel({
     } finally {
       setRetryingId(null);
     }
-  });
+  };
 
   const rows = (() =>
-      conflicts.map((entry) => {
-        const { title } = describeContactsOutboxEntry(entry);
-        return { entry, title };
-      }))();
+    conflicts.map((entry) => {
+      const { title } = describeContactsOutboxEntry(entry);
+      return { entry, title };
+    }))();
 
   return (
     <>

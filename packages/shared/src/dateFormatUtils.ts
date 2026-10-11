@@ -9,8 +9,8 @@
  * - locale inference: ./dateFormatLocales.js
  */
 
-export * from './dateFormatPresets.js';
-export * from './dateFormatParse.js';
-export * from './dateFormatBounds.js';
-export * from './dateFormatTime.js';
-export * from './dateFormatLocales.js';
+export * from "./dateFormatPresets.js";
+export * from "./dateFormatParse.js";
+export * from "./dateFormatBounds.js";
+export * from "./dateFormatTime.js";
+export * from "./dateFormatLocales.js";

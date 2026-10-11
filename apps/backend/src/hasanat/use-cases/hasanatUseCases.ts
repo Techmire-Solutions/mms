@@ -1,12 +1,12 @@
-import type { HasanatRepository } from '../repository/hasanatRepository.js';
-import { hasanatRepository } from '../repository/hasanatRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
+import type { HasanatRepository } from "../repository/hasanatRepository.js";
+import { hasanatRepository } from "../repository/hasanatRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import {
   defineTenantBulkCollectionService,
   upsertWithBroadcast,
-} from '../../services/tenantBulkService.js';
-import { broadcastCollection } from '../../services/websocketService.js';
+} from "../../services/tenantBulkService.js";
+import { broadcastCollection } from "../../services/websocketService.js";
 import {
   dedupeTrimmedIds,
   type Denomination,
@@ -22,7 +22,7 @@ import {
   redemptionListSchema,
   distributionRecordSchema,
   normalizeHasanatReportComparisonQuery,
-} from '@mms/shared';
+} from "@mms/shared";
 
 const EMPTY_HASANAT_METRICS: HasanatCommandMetricsSnapshot = {
   totalStock: 0,
@@ -46,27 +46,39 @@ const EMPTY_HASANAT_METRICS: HasanatCommandMetricsSnapshot = {
  */
 export function createHasanatUseCases(repo: HasanatRepository = hasanatRepository) {
   const denomService = defineTenantBulkCollectionService<Denomination>(
-    { listByWorkspace: repo.listDenomsByWorkspace, replaceForWorkspace: repo.replaceDenomsForWorkspace },
+    {
+      listByWorkspace: repo.listDenomsByWorkspace,
+      replaceForWorkspace: repo.replaceDenomsForWorkspace,
+    },
     denomListSchema,
-    'hasanat_denoms',
+    "hasanat_denoms",
   );
 
   const batchService = defineTenantBulkCollectionService<StockBatch>(
-    { listByWorkspace: repo.listBatchesByWorkspace, replaceForWorkspace: repo.replaceBatchesForWorkspace },
+    {
+      listByWorkspace: repo.listBatchesByWorkspace,
+      replaceForWorkspace: repo.replaceBatchesForWorkspace,
+    },
     batchListSchema,
-    'hasanat_batches',
+    "hasanat_batches",
   );
 
   const distributionBulkService = defineTenantBulkCollectionService<Distribution>(
-    { listByWorkspace: repo.listDistributionsByWorkspace, replaceForWorkspace: repo.replaceDistributionsForWorkspace },
+    {
+      listByWorkspace: repo.listDistributionsByWorkspace,
+      replaceForWorkspace: repo.replaceDistributionsForWorkspace,
+    },
     distributionListSchema,
-    'hasanat_distributions',
+    "hasanat_distributions",
   );
 
   const redemptionService = defineTenantBulkCollectionService<Redemption>(
-    { listByWorkspace: repo.listRedemptionsByWorkspace, replaceForWorkspace: repo.replaceRedemptionsForWorkspace },
+    {
+      listByWorkspace: repo.listRedemptionsByWorkspace,
+      replaceForWorkspace: repo.replaceRedemptionsForWorkspace,
+    },
     redemptionListSchema,
-    'hasanat_redemptions',
+    "hasanat_redemptions",
   );
 
   const distributionCrud = createGenericRelationalService<Distribution>({
@@ -78,8 +90,8 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       bulkRestore: repo.bulkRestoreDistributions,
     },
     schema: distributionRecordSchema,
-    websocketCollection: 'hasanat_distributions',
-    idPrefix: 'hd',
+    websocketCollection: "hasanat_distributions",
+    idPrefix: "hd",
   });
 
   return {
@@ -101,7 +113,7 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       const tenant = getRequestTenant();
       if (!tenant) return;
       await repo.saveDenom(tenant, record);
-      await broadcastCollection('hasanat_denoms');
+      await broadcastCollection("hasanat_denoms");
     },
     replaceDenoms: denomService.replace,
 
@@ -123,7 +135,7 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       const tenant = getRequestTenant();
       if (!tenant) return;
       await repo.saveBatch(tenant, record);
-      await broadcastCollection('hasanat_batches');
+      await broadcastCollection("hasanat_batches");
     },
     replaceBatches: batchService.replace,
 
@@ -147,13 +159,16 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       const tenant = getRequestTenant();
       if (!tenant) return;
       await repo.saveRedemption(tenant, record);
-      await broadcastCollection('hasanat_redemptions');
+      await broadcastCollection("hasanat_redemptions");
     },
     replaceRedemptions: redemptionService.replace,
 
     loadDistributions: distributionCrud.loadAll,
 
-    loadDistributionById: async (id: string, includeDeleted = false): Promise<Distribution | null> => {
+    loadDistributionById: async (
+      id: string,
+      includeDeleted = false,
+    ): Promise<Distribution | null> => {
       const tenant = getRequestTenant();
       const cleanId = id?.trim();
       if (!tenant || !cleanId) return null;
@@ -164,7 +179,10 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
       return dist;
     },
 
-    loadDistributionsByIds: async (ids: string[], includeDeleted = false): Promise<Distribution[]> => {
+    loadDistributionsByIds: async (
+      ids: string[],
+      includeDeleted = false,
+    ): Promise<Distribution[]> => {
       const tenant = getRequestTenant();
       if (!tenant) return [];
       const cleanIds = dedupeTrimmedIds(ids);
@@ -187,13 +205,23 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
     },
 
     upsertDenoms: (records: Denomination[]) =>
-      upsertWithBroadcast(denomListSchema, records, repo.bulkSaveDenoms, 'hasanat_denoms'),
+      upsertWithBroadcast(denomListSchema, records, repo.bulkSaveDenoms, "hasanat_denoms"),
     upsertBatches: (records: StockBatch[]) =>
-      upsertWithBroadcast(batchListSchema, records, repo.bulkSaveBatches, 'hasanat_batches'),
+      upsertWithBroadcast(batchListSchema, records, repo.bulkSaveBatches, "hasanat_batches"),
     upsertDistributions: (records: Distribution[]) =>
-      upsertWithBroadcast(distributionListSchema, records, repo.bulkSaveDistributions, 'hasanat_distributions'),
+      upsertWithBroadcast(
+        distributionListSchema,
+        records,
+        repo.bulkSaveDistributions,
+        "hasanat_distributions",
+      ),
     upsertRedemptions: (records: Redemption[]) =>
-      upsertWithBroadcast(redemptionListSchema, records, repo.bulkSaveRedemptions, 'hasanat_redemptions'),
+      upsertWithBroadcast(
+        redemptionListSchema,
+        records,
+        repo.bulkSaveRedemptions,
+        "hasanat_redemptions",
+      ),
 
     deleteDistributionById: distributionCrud.deleteById,
     createDistribution: distributionCrud.create,
@@ -218,8 +246,8 @@ export function createHasanatUseCases(repo: HasanatRepository = hasanatRepositor
     },
 
     loadHasanatWidgetAggregates: async (
-      queries: import('@mms/shared').WidgetQuery[],
-    ): Promise<Record<string, import('@mms/shared').WidgetAggregateResult>> => {
+      queries: import("@mms/shared").WidgetQuery[],
+    ): Promise<Record<string, import("@mms/shared").WidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateHasanatWidgetQueries(tenant, queries);

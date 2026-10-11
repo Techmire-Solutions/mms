@@ -10,26 +10,18 @@ export interface AttendanceSettingsProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const AttendanceSettings = (function AttendanceSettings({
+export const AttendanceSettings = function AttendanceSettings({
   onPrefsDirtyChange,
 }: AttendanceSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useAttendanceSetupPanelState();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useAttendanceSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
-  const unsavedWarning = isPrefsDirty
-    ? t("attendance.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isPrefsDirty ? t("attendance.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -53,6 +45,6 @@ export const AttendanceSettings = (function AttendanceSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default AttendanceSettings;

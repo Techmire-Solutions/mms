@@ -9,26 +9,18 @@ export interface FacultySettingsProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const FacultySettings = (function FacultySettings({
+export const FacultySettings = function FacultySettings({
   onPrefsDirtyChange,
 }: FacultySettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useFacultySetupPanelState();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useFacultySetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
-  const unsavedWarning = isPrefsDirty
-    ? t("faculty.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isPrefsDirty ? t("faculty.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -43,7 +35,6 @@ export const FacultySettings = (function FacultySettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default FacultySettings;
-

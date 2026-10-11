@@ -60,12 +60,7 @@ const mockExams: Exam[] = [
 
 describe("ResultsView Component", () => {
   it("renders exam selector, stats and rankings list", () => {
-    const html = renderToStaticMarkup(
-      <ResultsView
-        exams={mockExams}
-        results={[]}
-      />,
-    );
+    const html = renderToStaticMarkup(<ResultsView exams={mockExams} results={[]} />);
 
     expect(html).toContain("Tajweed Test");
     expect(html).toContain("Results Stats");

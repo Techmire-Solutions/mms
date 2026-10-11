@@ -48,10 +48,7 @@ export function GoogleContactsConnectedState({
         }
       />
 
-      <FieldErrorMessage
-        message={error || undefined}
-        className={FORM_ERROR_BOX}
-      />
+      <FieldErrorMessage message={error || undefined} className={FORM_ERROR_BOX} />
 
       {syncResult && (
         <WarningCallout

@@ -13,4 +13,8 @@ export interface SmsSendResult {
   error?: string;
 }
 
-export type SmsProviderSender = (to: string, body: string, creds: SmsProviderCredentials) => Promise<SmsSendResult>;
+export type SmsProviderSender = (
+  to: string,
+  body: string,
+  creds: SmsProviderCredentials,
+) => Promise<SmsSendResult>;

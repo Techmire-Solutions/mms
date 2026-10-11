@@ -5,7 +5,9 @@ import { StudentContactSection } from "./StudentContactSection";
 
 vi.mock("@/components/contactLink/ContactPicker", () => ({
   default: ({ value, label }: { value: string; label: string }) => (
-    <div data-testid="contact-picker">{label}:{value}</div>
+    <div data-testid="contact-picker">
+      {label}:{value}
+    </div>
   ),
 }));
 

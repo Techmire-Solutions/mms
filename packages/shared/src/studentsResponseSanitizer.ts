@@ -1,7 +1,7 @@
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import { canViewContactField, canViewContactTab } from './contactFieldAccess.js';
-import type { Student } from './studentTypes.js';
-import type { StudentsSettings } from './studentsModuleSettings.js';
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { canViewContactField, canViewContactTab } from "./contactFieldAccess.js";
+import type { Student } from "./studentTypes.js";
+import type { StudentsSettings } from "./studentsModuleSettings.js";
 
 interface StudentsFieldConfigSnapshot {
   fields: Record<string, FieldDefinition[]>;
@@ -13,21 +13,21 @@ interface StudentsFieldConfigSnapshot {
  * registry (Work list + drawer must not break for restricted viewers).
  */
 const STUDENT_ALWAYS_VISIBLE = new Set([
-  'id',
-  'contactId',
-  'name',
-  'grNumber',
-  'studentId',
-  'status',
-  'deletedAt',
-  'deletedBy',
-  'deletionReason',
+  "id",
+  "contactId",
+  "name",
+  "grNumber",
+  "studentId",
+  "status",
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
 ]);
 
 function isTabKeyedFieldRegistry(
-  fields: StudentsSettings['fields'],
+  fields: StudentsSettings["fields"],
 ): fields is Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object' || Array.isArray(fields)) return false;
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) return false;
   const first = Object.values(fields)[0];
   return Array.isArray(first);
 }

@@ -1,10 +1,7 @@
 import type { AppTranslationKey } from "@mms/shared";
 import { moneyToCents } from "@mms/shared";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
-import {
-  classifyEntry,
-  getEntryAmount,
-} from "./cashbookClassification";
+import { classifyEntry, getEntryAmount } from "./cashbookClassification";
 
 export { classifyEntry, getEntryAmount };
 
@@ -48,9 +45,12 @@ export function getEntryLabel(
   t: (key: AppTranslationKey) => string,
 ): string {
   if (entry.transaction_type) {
-    const translationKey = `accounting.transaction.type.${entry.transaction_type}` as AppTranslationKey;
+    const translationKey =
+      `accounting.transaction.type.${entry.transaction_type}` as AppTranslationKey;
     const translatedValue = t(translationKey);
-    return translatedValue && translatedValue !== translationKey ? translatedValue : entry.transaction_type;
+    return translatedValue && translatedValue !== translationKey
+      ? translatedValue
+      : entry.transaction_type;
   }
   const tags = entry.tags || [];
   if (tags.length > 0) return tags[0];
@@ -84,7 +84,12 @@ export function buildCashbookRows(
       };
     })
     .filter((cashbookRow) => filterType === "all" || cashbookRow.flowType === filterType)
-    .filter((cashbookRow) => !search || cashbookRow.description.toLowerCase().includes(search.toLowerCase()) || cashbookRow.ref.toLowerCase().includes(search.toLowerCase()))
+    .filter(
+      (cashbookRow) =>
+        !search ||
+        cashbookRow.description.toLowerCase().includes(search.toLowerCase()) ||
+        cashbookRow.ref.toLowerCase().includes(search.toLowerCase()),
+    )
     .sort((firstRow, secondRow) => secondRow.date.localeCompare(firstRow.date));
 }
 
@@ -115,14 +120,15 @@ export function sumCashbookTotals(rows: readonly CashbookRow[]): CashbookTotalsC
 }
 
 export type CashbookFooterCell =
-  | { kind: "label" | "blank"; span: number }
-  | { kind: "moneyIn" | "moneyOut"; span: 1 };
+  { kind: "label" | "blank"; span: number } | { kind: "moneyIn" | "moneyOut"; span: 1 };
 
 /**
  * Footer cells for the visible column order: consecutive non-money columns merge into one
  * spanning cell (the first carries the count label) and totals sit under their money columns.
  */
-export function buildCashbookFooterCells(visibleColumnIds: readonly string[]): CashbookFooterCell[] {
+export function buildCashbookFooterCells(
+  visibleColumnIds: readonly string[],
+): CashbookFooterCell[] {
   const cells: CashbookFooterCell[] = [];
   let span = 0;
   let labelled = false;

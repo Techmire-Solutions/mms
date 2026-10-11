@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from "@tanstack/react-query";
 import type {
   ObligationType,
   Mujtahid,
@@ -6,8 +6,8 @@ import type {
   WakalaType,
   ObligationDistribution,
   ObligationCollection,
-} from '@mms/shared';
-import { tsrClient } from '@/lib/api';
+} from "@mms/shared";
+import { tsrClient } from "@/lib/api";
 import {
   OBLIGATIONS_TYPES_QUERY_KEY,
   OBLIGATIONS_MUJTAHIDS_QUERY_KEY,
@@ -16,7 +16,7 @@ import {
   OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY,
   OBLIGATIONS_COLLECTIONS_QUERY_KEY,
   OBLIGATIONS_METRICS_QUERY_KEY,
-} from '@/tenant/features/obligations/hooks/obligationsQueryKeys';
+} from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
 
 function assertSuccess<T>(res: { status: number; body: T }, fallbackMsg: string): T {
   if (res.status < 200 || res.status >= 300) {
@@ -46,7 +46,7 @@ export function useObligationsMutations() {
     ..._replaceTypes,
     mutateAsync: async (types: ObligationType[]) => {
       const res = await _replaceTypes.mutateAsync({ body: types });
-      return assertSuccess(res, 'Failed to update obligation types');
+      return assertSuccess(res, "Failed to update obligation types");
     },
   };
 
@@ -62,7 +62,7 @@ export function useObligationsMutations() {
     ..._replaceMujtahids,
     mutateAsync: async (mujtahids: Mujtahid[]) => {
       const res = await _replaceMujtahids.mutateAsync({ body: mujtahids });
-      return assertSuccess(res, 'Failed to update mujtahids');
+      return assertSuccess(res, "Failed to update mujtahids");
     },
   };
 
@@ -78,7 +78,7 @@ export function useObligationsMutations() {
     ..._replaceReps,
     mutateAsync: async (reps: MujtahidRep[]) => {
       const res = await _replaceReps.mutateAsync({ body: reps });
-      return assertSuccess(res, 'Failed to update mujtahid reps');
+      return assertSuccess(res, "Failed to update mujtahid reps");
     },
   };
 
@@ -94,7 +94,7 @@ export function useObligationsMutations() {
     ..._replaceWakala,
     mutateAsync: async (wakalaTypes: WakalaType[]) => {
       const res = await _replaceWakala.mutateAsync({ body: wakalaTypes });
-      return assertSuccess(res, 'Failed to update wakala types');
+      return assertSuccess(res, "Failed to update wakala types");
     },
   };
 
@@ -110,7 +110,7 @@ export function useObligationsMutations() {
     ..._replaceDistributions,
     mutateAsync: async (distributions: ObligationDistribution[]) => {
       const res = await _replaceDistributions.mutateAsync({ body: distributions });
-      return assertSuccess(res, 'Failed to update obligation distributions');
+      return assertSuccess(res, "Failed to update obligation distributions");
     },
   };
 
@@ -123,7 +123,7 @@ export function useObligationsMutations() {
     ..._replaceCollections,
     mutateAsync: async (collections: ObligationCollection[]) => {
       const res = await _replaceCollections.mutateAsync({ body: collections });
-      return assertSuccess(res, 'Failed to update obligation collections');
+      return assertSuccess(res, "Failed to update obligation collections");
     },
   };
 
@@ -136,7 +136,7 @@ export function useObligationsMutations() {
     ..._deleteCollection,
     mutateAsync: async (id: string) => {
       const res = await _deleteCollection.mutateAsync({ params: { id } });
-      return assertSuccess(res, 'Failed to delete obligation collection');
+      return assertSuccess(res, "Failed to delete obligation collection");
     },
   };
 
@@ -149,7 +149,7 @@ export function useObligationsMutations() {
     ..._restoreCollection,
     mutateAsync: async (id: string) => {
       const res = await _restoreCollection.mutateAsync({ params: { id } });
-      return assertSuccess(res, 'Failed to restore obligation collection');
+      return assertSuccess(res, "Failed to restore obligation collection");
     },
   };
 
@@ -162,7 +162,7 @@ export function useObligationsMutations() {
     ..._bulkDeleteCollections,
     mutateAsync: async (ids: string[]) => {
       const res = await _bulkDeleteCollections.mutateAsync({ body: { ids } });
-      return assertSuccess(res, 'Failed to bulk delete obligation collections');
+      return assertSuccess(res, "Failed to bulk delete obligation collections");
     },
   };
 
@@ -175,7 +175,7 @@ export function useObligationsMutations() {
     ..._bulkRestoreCollections,
     mutateAsync: async (ids: string[]) => {
       const res = await _bulkRestoreCollections.mutateAsync({ body: { ids } });
-      return assertSuccess(res, 'Failed to bulk restore obligation collections');
+      return assertSuccess(res, "Failed to bulk restore obligation collections");
     },
   };
 

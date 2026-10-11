@@ -1,19 +1,14 @@
-import { useQueryClient } from '@tanstack/react-query';
-import type {
-  AttendanceCommandMetricsSnapshot,
-  AttendanceListPageResult,
-} from '@mms/shared';
-import {
-  ATTENDANCE_MODULE_MANIFEST,
-} from '@mms/shared';
-import { serverMetricsQueryOptions, useServerMetrics } from '@/hooks/useServerMetrics';
-import { tsrClient } from '@/lib/api';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import type { AttendanceRecord } from '@/lib/data/attendanceData';
-import { invalidateAttendanceQueries } from '@/tenant/features/attendance/hooks/invalidateAttendanceQueries';
+import { useQueryClient } from "@tanstack/react-query";
+import type { AttendanceCommandMetricsSnapshot, AttendanceListPageResult } from "@mms/shared";
+import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
+import { tsrClient } from "@/lib/api";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import type { AttendanceRecord } from "@/lib/data/attendanceData";
+import { invalidateAttendanceQueries } from "@/tenant/features/attendance/hooks/invalidateAttendanceQueries";
 
-export const ATTENDANCE_QUERY_KEY = ['attendance', 'list'] as const;
-export const ATTENDANCE_METRICS_QUERY_KEY = ['attendance', 'metrics'] as const;
+export const ATTENDANCE_QUERY_KEY = ["attendance", "list"] as const;
+export const ATTENDANCE_METRICS_QUERY_KEY = ["attendance", "metrics"] as const;
 
 export function attendanceCommandMetricsQueryOptions(selectedDate: string) {
   return serverMetricsQueryOptions<AttendanceCommandMetricsSnapshot>({
@@ -44,18 +39,18 @@ export interface AttendancePaginatedParams {
   dateTo?: string;
   status?: string;
   sortField?: string;
-  sortDir?: 'asc' | 'desc';
+  sortDir?: "asc" | "desc";
   includeDeleted?: boolean;
   enabled?: boolean;
 }
 
 export function useAttendancePaginated(params: AttendancePaginatedParams) {
   const { isAuthenticated } = useAuth();
-  
+
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  
+
   const query = tsrClient.attendance.list.useQuery({
-    queryKey: [...ATTENDANCE_QUERY_KEY, 'page', params] as const,
+    queryKey: [...ATTENDANCE_QUERY_KEY, "page", params] as const,
     queryData: {
       query: {
         page: params.page,
@@ -70,14 +65,14 @@ export function useAttendancePaginated(params: AttendancePaginatedParams) {
         status: params.status?.trim(),
         sortField: params.sortField?.trim(),
         sortDir: params.sortDir,
-        includeDeleted: params.includeDeleted ? 'true' : undefined,
+        includeDeleted: params.includeDeleted ? "true" : undefined,
       },
     },
     enabled: isAuthenticated && (params.enabled ?? true),
     staleTime: 15_000,
     placeholderData: (previousData: unknown) => previousData,
   });
-  
+
   return { ...query, data: query.data?.body as AttendanceListPageResult | undefined };
 }
 
@@ -92,12 +87,14 @@ export function useAttendanceRecords(options?: { enabled?: boolean }) {
     enabled: isAuthenticated && (options?.enabled ?? true),
     staleTime: 15_000,
   });
-  
+
   const records = (query.data?.body as { records?: AttendanceRecord[] } | null)?.records ?? [];
   return { ...query, data: records };
 }
 
-export function useAttendanceRecordsCollection(options?: { enabled?: boolean }): AttendanceRecord[] {
+export function useAttendanceRecordsCollection(options?: {
+  enabled?: boolean;
+}): AttendanceRecord[] {
   return useAttendanceRecords(options).data ?? [];
 }
 
@@ -162,8 +159,7 @@ export function useAttendanceMutations() {
   };
 }
 
-
 export {
   ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
   useAttendanceReportAggregates,
-} from './useAttendanceReportAggregates';
+} from "./useAttendanceReportAggregates";

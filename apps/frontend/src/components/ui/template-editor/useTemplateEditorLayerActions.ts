@@ -15,8 +15,8 @@ export interface UseTemplateEditorLayerActionsOptions<TPayload = Record<string, 
   selectedIds: string[];
   commitUpdate: (
     updateFn: (
-      elements: TemplateElement<keyof TPayload & string>[]
-    ) => TemplateElement<keyof TPayload & string>[]
+      elements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
 }
 
@@ -38,7 +38,7 @@ export function useTemplateEditorLayerActions<TPayload = Record<string, unknown>
         return copy;
       });
     },
-    [commitUpdate, selectedId]
+    [commitUpdate, selectedId],
   );
 
   const sendToBack = useCallback(
@@ -54,7 +54,7 @@ export function useTemplateEditorLayerActions<TPayload = Record<string, unknown>
         return copy;
       });
     },
-    [commitUpdate, selectedId]
+    [commitUpdate, selectedId],
   );
 
   const bringSelectedToFront = useCallback(() => {
@@ -81,7 +81,7 @@ export function useTemplateEditorLayerActions<TPayload = Record<string, unknown>
         return copy;
       });
     },
-    [commitUpdate, selectedId]
+    [commitUpdate, selectedId],
   );
 
   const moveBackward = useCallback(
@@ -98,7 +98,7 @@ export function useTemplateEditorLayerActions<TPayload = Record<string, unknown>
         return copy;
       });
     },
-    [commitUpdate, selectedId]
+    [commitUpdate, selectedId],
   );
 
   return {

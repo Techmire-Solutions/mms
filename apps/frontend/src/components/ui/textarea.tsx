@@ -1,10 +1,10 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
-import { FORM_TEXTAREA } from "@/components/ui/formStyles"
+import { cn } from "@/lib/utils";
+import { FORM_TEXTAREA } from "@/components/ui/formStyles";
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  ref?: React.Ref<HTMLTextAreaElement>
+  ref?: React.Ref<HTMLTextAreaElement>;
 }
 
 function Textarea({ className, id, name, ref, ...props }: TextareaProps) {
@@ -21,6 +21,6 @@ function Textarea({ className, id, name, ref, ...props }: TextareaProps) {
     />
   );
 }
-Textarea.displayName = "Textarea"
+Textarea.displayName = "Textarea";
 
-export { Textarea }
+export { Textarea };

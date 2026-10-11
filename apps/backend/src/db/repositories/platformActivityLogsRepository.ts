@@ -1,7 +1,7 @@
-import { asc, desc, gte, inArray, lt, sql } from 'drizzle-orm';
-import { activeDb } from '../dbConnection.js';
-import { platformActivityLogs, workspaces } from '../schema.js';
-import { logger } from '../../lib/logger.js';
+import { asc, desc, gte, inArray, lt, sql } from "drizzle-orm";
+import { activeDb } from "../dbConnection.js";
+import { platformActivityLogs, workspaces } from "../schema.js";
+import { logger } from "../../lib/logger.js";
 
 export interface InsertPlatformActivityLog {
   userId?: string | null;
@@ -15,19 +15,10 @@ export interface InsertPlatformActivityLog {
 
 export async function insertPlatformActivityLog(log: InsertPlatformActivityLog): Promise<void> {
   try {
-    await activeDb().insert(platformActivityLogs).values({
-      userId: log.userId ?? null,
-      userEmail: log.userEmail,
-      action: log.action,
-      targetResource: log.targetResource || null,
-      targetId: log.targetId || null,
-      ipAddress: log.ipAddress || null,
-      metadataMessage: log.metadataMessage || null,
-    });
-  } catch (error) {
-    try {
-      await activeDb().insert(platformActivityLogs).values({
-        userId: null,
+    await activeDb()
+      .insert(platformActivityLogs)
+      .values({
+        userId: log.userId ?? null,
         userEmail: log.userEmail,
         action: log.action,
         targetResource: log.targetResource || null,
@@ -35,8 +26,21 @@ export async function insertPlatformActivityLog(log: InsertPlatformActivityLog):
         ipAddress: log.ipAddress || null,
         metadataMessage: log.metadataMessage || null,
       });
+  } catch (error) {
+    try {
+      await activeDb()
+        .insert(platformActivityLogs)
+        .values({
+          userId: null,
+          userEmail: log.userEmail,
+          action: log.action,
+          targetResource: log.targetResource || null,
+          targetId: log.targetId || null,
+          ipAddress: log.ipAddress || null,
+          metadataMessage: log.metadataMessage || null,
+        });
     } catch (innerError) {
-      logger.warn({ err: innerError }, 'Failed to insert activity log');
+      logger.warn({ err: innerError }, "Failed to insert activity log");
     }
   }
 }
@@ -69,9 +73,7 @@ export async function deletePlatformActivityLogsOlderThan(
   if (candidates.length === 0) return 0;
 
   const ids = candidates.map((row) => row.id);
-  await activeDb()
-    .delete(platformActivityLogs)
-    .where(inArray(platformActivityLogs.id, ids));
+  await activeDb().delete(platformActivityLogs).where(inArray(platformActivityLogs.id, ids));
   return ids.length;
 }
 
@@ -124,8 +126,8 @@ export async function getPlatformMonthlyActivityTrend(
 
   for (let i = safeMonths - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const label = d.toLocaleString('en-US', { month: 'short' });
+    const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const label = d.toLocaleString("en-US", { month: "short" });
     const start = new Date(d.getFullYear(), d.getMonth(), 1);
     const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
     monthBuckets.push({ yearMonth, label, start, end });
@@ -183,7 +185,7 @@ export async function getPlatformMonthlyActivityTrend(
       };
     });
   } catch (error) {
-    logger.warn({ err: error }, 'Failed to compute activity trend');
+    logger.warn({ err: error }, "Failed to compute activity trend");
     return monthBuckets.map((bucket) => ({
       month: bucket.label,
       yearMonth: bucket.yearMonth,
@@ -192,4 +194,3 @@ export async function getPlatformMonthlyActivityTrend(
     }));
   }
 }
-

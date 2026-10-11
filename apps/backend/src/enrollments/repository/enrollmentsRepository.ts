@@ -7,7 +7,7 @@ import type {
   EnrollmentsWidgetAggregateResult,
   EnrollmentsReportAggregates,
   EnrollmentsReportComparisonQuery,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the enrollments module.
@@ -25,7 +25,10 @@ export interface EnrollmentsRepository {
     options?: { includeDeleted?: boolean },
   ): Promise<Enrollment[]>;
   saveEnrollment(tenant: string, record: Enrollment): Promise<void>;
-  listEnrollmentsPage(tenant: string, query: EnrollmentsListQuery): Promise<EnrollmentsListPageResult>;
+  listEnrollmentsPage(
+    tenant: string,
+    query: EnrollmentsListQuery,
+  ): Promise<EnrollmentsListPageResult>;
   countEnrollmentsActive(tenant: string): Promise<number>;
   aggregateEnrollmentsCommandMetrics(tenant: string): Promise<EnrollmentsCommandMetricsSnapshot>;
   aggregateEnrollmentsWidgetQueries(
@@ -48,4 +51,3 @@ export interface EnrollmentsRepository {
     userId?: string,
   ): Promise<{ succeeded: number; failed: number }>;
 }
-

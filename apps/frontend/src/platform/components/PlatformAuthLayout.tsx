@@ -53,7 +53,12 @@ export default function PlatformAuthLayout({
               <PlatformLogoMark />
 
               <div className="flex justify-center">
-                <Badge tone="primary" pill size="lg" className="font-black uppercase tracking-wider shadow-xs">
+                <Badge
+                  tone="primary"
+                  pill
+                  size="lg"
+                  className="font-black uppercase tracking-wider shadow-xs"
+                >
                   <ShieldAlert className="w-3.5 h-3.5 shrink-0" aria-hidden />
                   {t("platform.consoleTitle")}
                 </Badge>

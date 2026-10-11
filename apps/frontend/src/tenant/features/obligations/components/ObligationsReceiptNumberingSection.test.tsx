@@ -15,4 +15,3 @@ describe("ObligationsReceiptNumberingSection Component", () => {
     expect(html).toContain("common.save");
   });
 });
-

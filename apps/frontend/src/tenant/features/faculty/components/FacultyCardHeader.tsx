@@ -1,9 +1,6 @@
-import type { Faculty } from '@mms/shared';
+import type { Faculty } from "@mms/shared";
 import { Badge } from "@/components/ui/badge";
-import {
-  DirectoryCardSubtitleStack,
-  PersonIdentityMeta,
-} from "@/components/ui/PersonIdentityMeta";
+import { DirectoryCardSubtitleStack, PersonIdentityMeta } from "@/components/ui/PersonIdentityMeta";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EntityCard } from "@/components/ui/EntityCard";
 
@@ -32,7 +29,8 @@ export function FacultyCardHeader({
 }: FacultyCardHeaderProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const showEmployeeId = (!isColumnVisible || isColumnVisible("employeeId")) && Boolean(faculty.employeeId);
+  const showEmployeeId =
+    (!isColumnVisible || isColumnVisible("employeeId")) && Boolean(faculty.employeeId);
   const showGender = (!isColumnVisible || isColumnVisible("gender")) && Boolean(faculty.gender);
   const effectiveGender = showGender ? faculty.gender : undefined;
 
@@ -41,7 +39,9 @@ export function FacultyCardHeader({
     <DirectoryCardSubtitleStack>
       <div className="flex items-center gap-1.5 flex-wrap">
         {showEmployeeId && faculty.employeeId ? (
-          <Badge as="span" size="sm"
+          <Badge
+            as="span"
+            size="sm"
             tone="muted"
             className="mt-1 max-w-full px-1.5 py-0.5 rounded font-bold tracking-tight truncate self-start"
             title={faculty.employeeId}

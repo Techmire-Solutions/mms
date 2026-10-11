@@ -3,14 +3,14 @@ import {
   sanitizeStudentsForViewer as sanitizeStudentRecords,
   type Student,
   type StudentsSettings,
-} from '@mms/shared';
-import { loadStudentFieldConfig } from './studentConfigService.js';
+} from "@mms/shared";
+import { loadStudentFieldConfig } from "./studentConfigService.js";
 
 function settingsSnapshot(settings: StudentsSettings | null) {
   if (!settings) return null;
   const fields =
-    settings.fields && typeof settings.fields === 'object' && !Array.isArray(settings.fields)
-      ? (settings.fields as Record<string, import('@mms/shared').FieldDefinition[]>)
+    settings.fields && typeof settings.fields === "object" && !Array.isArray(settings.fields)
+      ? (settings.fields as Record<string, import("@mms/shared").FieldDefinition[]>)
       : undefined;
   if (!fields) return null;
   return {

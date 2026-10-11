@@ -1,5 +1,5 @@
-import type { FastifyRequest } from 'fastify';
-import { ZodError } from 'zod';
+import type { FastifyRequest } from "fastify";
+import { ZodError } from "zod";
 
 interface ContractErrorBody {
   type: string;
@@ -31,16 +31,19 @@ export function handleContractError(
   error: unknown,
   fallback: { status: number; body: ContractErrorBody },
 ): { status: number; body: ContractErrorBody } {
-  request.log.error({ err: error, url: request.url }, fallback.body?.message ?? 'Contract route failed');
+  request.log.error(
+    { err: error, url: request.url },
+    fallback.body?.message ?? "Contract route failed",
+  );
 
   if (error instanceof ZodError) {
     return {
       status: 400,
       body: {
-        type: 'validation_error',
+        type: "validation_error",
         message: `Invalid request: ${error.issues
-          .map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`)
-          .join('; ')}`,
+          .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+          .join("; ")}`,
       },
     };
   }
@@ -48,12 +51,12 @@ export function handleContractError(
   // Preserve intentional domain statuses (HttpDomainError and friends) instead
   // of flattening every failure to the caller's 500 fallback.
   const statusCode = (error as { statusCode?: unknown } | null)?.statusCode;
-  if (typeof statusCode === 'number' && CLIENT_ERROR_STATUSES.has(statusCode)) {
+  if (typeof statusCode === "number" && CLIENT_ERROR_STATUSES.has(statusCode)) {
     const type = (error as { type?: unknown }).type;
     return {
       status: statusCode,
       body: {
-        type: typeof type === 'string' && type ? type : 'error',
+        type: typeof type === "string" && type ? type : "error",
         message: error instanceof Error ? error.message : fallback.body.message,
       },
     };

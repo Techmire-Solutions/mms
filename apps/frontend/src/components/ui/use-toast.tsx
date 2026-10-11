@@ -1,5 +1,5 @@
 // Inspired by react-hot-toast library
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   actionTypes,
   dispatch,
@@ -7,14 +7,14 @@ import {
   getToastMemoryState,
   subscribe,
   type ToasterToast,
-} from '@/components/ui/toastStore';
+} from "@/components/ui/toastStore";
 
-export type { ToasterToast } from '@/components/ui/toastStore';
-export { reducer } from '@/components/ui/toastStore';
+export type { ToasterToast } from "@/components/ui/toastStore";
+export { reducer } from "@/components/ui/toastStore";
 
 const TOAST_DEFAULT_DURATION = 5000;
 
-type ToastPropsWithoutId = Omit<ToasterToast, 'id'>;
+type ToastPropsWithoutId = Omit<ToasterToast, "id">;
 
 function toast({ duration = TOAST_DEFAULT_DURATION, ...props }: ToastPropsWithoutId) {
   const id = genToastId();
@@ -25,8 +25,7 @@ function toast({ duration = TOAST_DEFAULT_DURATION, ...props }: ToastPropsWithou
       toast: { ...updateProps, id },
     });
 
-  const dismiss = (): void =>
-    dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id });
+  const dismiss = (): void => dispatch({ type: actionTypes.DISMISS_TOAST, toastId: id });
 
   dispatch({
     type: actionTypes.ADD_TOAST,

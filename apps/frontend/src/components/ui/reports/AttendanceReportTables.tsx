@@ -3,17 +3,15 @@ import { Users } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { AttendanceSummaryItem, RateBarRenderer, StudentAttendanceItem } from "./attendanceReportTypes";
+import type {
+  AttendanceSummaryItem,
+  RateBarRenderer,
+  StudentAttendanceItem,
+} from "./attendanceReportTypes";
 import type { ExportColumn } from "@/components/ui/ExportToolbar";
 import { AttendanceSummaryTable } from "./AttendanceSummaryTable";
 
@@ -56,7 +54,7 @@ export function AttendanceReportTables({
   const studentPageSize = 15;
   const pagedStudentAttendanceRows = studentAttendanceRows.slice(
     (studentPage - 1) * studentPageSize,
-    studentPage * studentPageSize
+    studentPage * studentPageSize,
   );
 
   return (
@@ -84,15 +82,47 @@ export function AttendanceReportTables({
         >
           <div className="space-y-3 p-3 md:hidden">
             {pagedStudentAttendanceRows.map((studentAttendance) => (
-              <article key={studentAttendance.studentName} className={`${WORK_SURFACE_INNER} space-y-3 p-3`}>
-                <h4 className="truncate text-sm font-semibold text-foreground">{studentAttendance.studentName}</h4>
+              <article
+                key={studentAttendance.studentName}
+                className={`${WORK_SURFACE_INNER} space-y-3 p-3`}
+              >
+                <h4 className="truncate text-sm font-semibold text-foreground">
+                  {studentAttendance.studentName}
+                </h4>
                 <StatGrid>
-                  <StatRow className="min-w-0" label={t("attendance.report.colStudentClass")} value={studentAttendance.class} />
-                  <StatRow className="min-w-0" label={t("attendance.report.colPresent")} value={studentAttendance.present} ddClassName="text-success font-medium" />
-                  <StatRow className="min-w-0" label={t("attendance.report.colAbsent")} value={studentAttendance.absent} ddClassName="text-destructive font-medium" />
-                  <StatRow className="min-w-0" label={t("attendance.report.colLate")} value={studentAttendance.late} ddClassName="text-warning font-medium" />
-                  <StatRow className="min-w-0" label={t("attendance.report.colTotal")} value={studentAttendance.total} />
-                  <StatRow className="min-w-0" label={t("attendance.report.colRate")} value={rateBar(studentAttendance.rate)} />
+                  <StatRow
+                    className="min-w-0"
+                    label={t("attendance.report.colStudentClass")}
+                    value={studentAttendance.class}
+                  />
+                  <StatRow
+                    className="min-w-0"
+                    label={t("attendance.report.colPresent")}
+                    value={studentAttendance.present}
+                    ddClassName="text-success font-medium"
+                  />
+                  <StatRow
+                    className="min-w-0"
+                    label={t("attendance.report.colAbsent")}
+                    value={studentAttendance.absent}
+                    ddClassName="text-destructive font-medium"
+                  />
+                  <StatRow
+                    className="min-w-0"
+                    label={t("attendance.report.colLate")}
+                    value={studentAttendance.late}
+                    ddClassName="text-warning font-medium"
+                  />
+                  <StatRow
+                    className="min-w-0"
+                    label={t("attendance.report.colTotal")}
+                    value={studentAttendance.total}
+                  />
+                  <StatRow
+                    className="min-w-0"
+                    label={t("attendance.report.colRate")}
+                    value={rateBar(studentAttendance.rate)}
+                  />
                 </StatGrid>
               </article>
             ))}
@@ -111,21 +141,44 @@ export function AttendanceReportTables({
                     { key: "total", label: t("attendance.report.colTotal") },
                     { key: "rate", label: t("attendance.report.colRate") },
                   ].map((header) => (
-                    <ModuleTableHeaderCell key={header.key} columnKey={header.key} className="px-3 py-2.5">{header.label}</ModuleTableHeaderCell>
+                    <ModuleTableHeaderCell
+                      key={header.key}
+                      columnKey={header.key}
+                      className="px-3 py-2.5"
+                    >
+                      {header.label}
+                    </ModuleTableHeaderCell>
                   ))}
                 </TableRow>
               </TableHeader>
 
               <TableBody className="divide-y divide-border/50">
                 {pagedStudentAttendanceRows.map((studentAttendance) => (
-                  <TableRow key={studentAttendance.studentName} className="hover:bg-muted/20 transition-colors">
-                    <TableCell className="px-3 py-2.5 font-medium text-foreground">{studentAttendance.studentName}</TableCell>
-                    <TableCell className="px-3 py-2.5 text-muted-foreground">{studentAttendance.class}</TableCell>
-                    <TableCell className="px-3 py-2.5 text-success font-medium">{studentAttendance.present}</TableCell>
-                    <TableCell className="px-3 py-2.5 text-destructive font-medium">{studentAttendance.absent}</TableCell>
-                    <TableCell className="px-3 py-2.5 text-warning font-medium">{studentAttendance.late}</TableCell>
-                    <TableCell className="px-3 py-2.5 text-muted-foreground">{studentAttendance.total}</TableCell>
-                    <TableCell className="px-3 py-2.5 w-32">{rateBar(studentAttendance.rate)}</TableCell>
+                  <TableRow
+                    key={studentAttendance.studentName}
+                    className="hover:bg-muted/20 transition-colors"
+                  >
+                    <TableCell className="px-3 py-2.5 font-medium text-foreground">
+                      {studentAttendance.studentName}
+                    </TableCell>
+                    <TableCell className="px-3 py-2.5 text-muted-foreground">
+                      {studentAttendance.class}
+                    </TableCell>
+                    <TableCell className="px-3 py-2.5 text-success font-medium">
+                      {studentAttendance.present}
+                    </TableCell>
+                    <TableCell className="px-3 py-2.5 text-destructive font-medium">
+                      {studentAttendance.absent}
+                    </TableCell>
+                    <TableCell className="px-3 py-2.5 text-warning font-medium">
+                      {studentAttendance.late}
+                    </TableCell>
+                    <TableCell className="px-3 py-2.5 text-muted-foreground">
+                      {studentAttendance.total}
+                    </TableCell>
+                    <TableCell className="px-3 py-2.5 w-32">
+                      {rateBar(studentAttendance.rate)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

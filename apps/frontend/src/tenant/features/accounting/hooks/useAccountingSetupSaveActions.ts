@@ -46,7 +46,7 @@ export function useAccountingSetupSaveActions({
     );
   })();
 
-  const handleSave = (async (): Promise<void> => {
+  const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;
     // Saving before the stored row has loaded would PUT the placeholder
     // defaults over real preferences — including `retainedEarningsAccount`,
@@ -66,7 +66,7 @@ export function useAccountingSetupSaveActions({
     } finally {
       setSaving(false);
     }
-  });
+  };
 
   return {
     saving,

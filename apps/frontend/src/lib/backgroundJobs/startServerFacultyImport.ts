@@ -3,8 +3,8 @@ import type {
   FacultyCsvImportRow,
   FacultyDepartmentCsvRow,
   FacultyDesignationCsvRow,
-} from '@mms/shared';
-import { startServerBackgroundJob } from '@/lib/backgroundJobs/startServerBackgroundJob';
+} from "@mms/shared";
+import { startServerBackgroundJob } from "@/lib/backgroundJobs/startServerBackgroundJob";
 
 export async function startServerFacultyMembersImport(options: {
   rows: FacultyCsvImportRow[];
@@ -12,7 +12,7 @@ export async function startServerFacultyMembersImport(options: {
   onProgress?: (job: BackgroundJobRecord) => void;
 }): Promise<BackgroundJobRecord> {
   return startServerBackgroundJob({
-    path: '/api/faculty/import',
+    path: "/api/faculty/import",
     body: { rows: options.rows, label: options.label },
     onProgress: options.onProgress,
   });
@@ -24,7 +24,7 @@ export async function startServerFacultyDepartmentsImport(options: {
   onProgress?: (job: BackgroundJobRecord) => void;
 }): Promise<BackgroundJobRecord> {
   return startServerBackgroundJob({
-    path: '/api/faculty/departments/import',
+    path: "/api/faculty/departments/import",
     body: { rows: options.rows, label: options.label },
     onProgress: options.onProgress,
   });
@@ -36,7 +36,7 @@ export async function startServerFacultyDesignationsImport(options: {
   onProgress?: (job: BackgroundJobRecord) => void;
 }): Promise<BackgroundJobRecord> {
   return startServerBackgroundJob({
-    path: '/api/faculty/designations/import',
+    path: "/api/faculty/designations/import",
     body: {
       rows: options.rows.map((r) => ({
         department: r.department,

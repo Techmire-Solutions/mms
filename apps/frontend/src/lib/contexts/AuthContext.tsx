@@ -1,31 +1,36 @@
-import React, { createContext, useState, useContext, useCallback, useRef, useMemo } from 'react';
-import { clear2FAState } from '@/lib/twoFactor';
-import { type User } from '@mms/shared';
-import { appNavigate } from '@/lib/routing/appNavigate';
-import { ROUTES } from '@/lib/config/routes';
-import { apiFetch } from '@/lib/apiClient';
-import { AUTH_PATHS } from '@/lib/apiClientHelpers';
-import { getWorkspaceLocalStoragePrefix } from '@/lib/dbStorageCore';
-import { queryClientInstance } from '@/lib/queryClient';
-import type { AuthError } from '@/lib/authErrors';
+import React, { createContext, useState, useContext, useCallback, useRef, useMemo } from "react";
+import { clear2FAState } from "@/lib/twoFactor";
+import { type User } from "@mms/shared";
+import { appNavigate } from "@/lib/routing/appNavigate";
+import { ROUTES } from "@/lib/config/routes";
+import { apiFetch } from "@/lib/apiClient";
+import { AUTH_PATHS } from "@/lib/apiClientHelpers";
+import { getWorkspaceLocalStoragePrefix } from "@/lib/dbStorageCore";
+import { queryClientInstance } from "@/lib/queryClient";
+import type { AuthError } from "@/lib/authErrors";
 import {
   clearPersistedAuthUser,
   clearUserScopedCachesOnLogout,
   getPersistedAuthUser,
   persistAuthUser,
   type AuthContextType,
-} from '@/lib/contexts/authContextHelpers';
-import { useAuthLoginOperations } from '@/lib/contexts/useAuthLoginOperations';
-import { useAuthSessionSync } from '@/lib/contexts/useAuthSessionSync';
+} from "@/lib/contexts/authContextHelpers";
+import { useAuthLoginOperations } from "@/lib/contexts/useAuthLoginOperations";
+import { useAuthSessionSync } from "@/lib/contexts/useAuthSessionSync";
 
-export type { AuthError } from '@/lib/authErrors';
-export type { AuthContextType, OnboardResult, OnboardPayload } from '@/lib/contexts/authContextHelpers';
-
+export type { AuthError } from "@/lib/authErrors";
+export type {
+  AuthContextType,
+  OnboardResult,
+  OnboardPayload,
+} from "@/lib/contexts/authContextHelpers";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [initialUser] = useState<User | null>(() => (typeof window !== 'undefined' ? getPersistedAuthUser() : null));
+  const [initialUser] = useState<User | null>(() =>
+    typeof window !== "undefined" ? getPersistedAuthUser() : null,
+  );
   const [user, setUser] = useState<User | null>(initialUser);
   // The HttpOnly cookie session is authoritative. A cached user may avoid a
   // visual identity flash, but it must never grant authenticated UI access.
@@ -97,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthError(null);
     setAuthChecked(true);
 
-    void apiFetch(AUTH_PATHS.logout, { method: 'POST' });
+    void apiFetch(AUTH_PATHS.logout, { method: "POST" });
 
     if (shouldRedirect) {
       appNavigate(ROUTES.login, { replace: true });
@@ -108,54 +113,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     appNavigate(ROUTES.login, { replace: true });
   };
 
-
-  const contextValue = useMemo<AuthContextType>(() => ({
-    user,
-    isAuthenticated,
-    isLoadingAuth,
-    isLoadingPublicSettings,
-    authError,
-    appPublicSettings,
-    authChecked,
-    login,
-    verify2FA,
-    resend2FA,
-    logout,
-    extendSession,
-    isExtendingSession,
-    navigateToLogin,
-    checkUserAuth,
-    checkAppState,
-    onboard,
-    exchangeHandoff,
-    requestPasswordOtp,
-    verifyPasswordOtp,
-    resetPasswordWithOtp,
-  }), [
-    user,
-    isAuthenticated,
-    isLoadingAuth,
-    isLoadingPublicSettings,
-    authError,
-    appPublicSettings,
-    authChecked,
-    resend2FA,
-    isExtendingSession,
-    checkUserAuth,
-    checkAppState,
-  ]);
-
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+  const contextValue = useMemo<AuthContextType>(
+    () => ({
+      user,
+      isAuthenticated,
+      isLoadingAuth,
+      isLoadingPublicSettings,
+      authError,
+      appPublicSettings,
+      authChecked,
+      login,
+      verify2FA,
+      resend2FA,
+      logout,
+      extendSession,
+      isExtendingSession,
+      navigateToLogin,
+      checkUserAuth,
+      checkAppState,
+      onboard,
+      exchangeHandoff,
+      requestPasswordOtp,
+      verifyPasswordOtp,
+      resetPasswordWithOtp,
+    }),
+    [
+      user,
+      isAuthenticated,
+      isLoadingAuth,
+      isLoadingPublicSettings,
+      authError,
+      appPublicSettings,
+      authChecked,
+      resend2FA,
+      isExtendingSession,
+      checkUserAuth,
+      checkAppState,
+    ],
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

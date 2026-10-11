@@ -7,7 +7,7 @@ export {
   useFacultyContractList,
   useFacultyContractGet,
   useFacultyContractNextEmployeeId,
-} from './useFacultyTsrQueries';
+} from "./useFacultyTsrQueries";
 
 export {
   useFacultyContractCreate,
@@ -22,4 +22,4 @@ export {
   useFacultyContractMigrateEmployeeIds,
   useFacultyContractLogExportAudit,
   useFacultyContractLogSetupAudit,
-} from './useFacultyTsrMutations';
+} from "./useFacultyTsrMutations";

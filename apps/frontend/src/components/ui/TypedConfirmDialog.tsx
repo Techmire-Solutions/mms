@@ -1,9 +1,9 @@
-import React, { useId } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/PasswordInput';
-import { Field, FieldErrorMessage } from '@/components/ui/FormField';
+import React, { useId } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { Field, FieldErrorMessage } from "@/components/ui/FormField";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -12,7 +12,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 export interface TypedConfirmDialogProps {
   open: boolean;
@@ -35,9 +35,9 @@ export interface TypedConfirmDialogProps {
   error?: string | null;
   pending?: boolean;
   confirmButtonLabel: string;
-  confirmVariant?: 'default' | 'destructive';
+  confirmVariant?: "default" | "destructive";
   /** How confirm text must match `expectedConfirm`. Default: exact. */
-  confirmMatch?: 'exact' | 'caseInsensitive';
+  confirmMatch?: "exact" | "caseInsensitive";
   destructiveTitle?: boolean;
   onConfirm: () => void;
 }
@@ -45,9 +45,9 @@ export interface TypedConfirmDialogProps {
 function confirmMatches(
   value: string,
   expected: string,
-  mode: 'exact' | 'caseInsensitive',
+  mode: "exact" | "caseInsensitive",
 ): boolean {
-  if (mode === 'caseInsensitive') {
+  if (mode === "caseInsensitive") {
     return value.trim().toLowerCase() === expected.trim().toLowerCase();
   }
   return value.trim() === expected;
@@ -67,19 +67,19 @@ export function TypedConfirmDialog({
   expectedConfirm,
   confirmValue,
   onConfirmValueChange,
-  confirmInputName = 'confirmText',
+  confirmInputName = "confirmText",
   confirmPlaceholder,
   password,
   onPasswordChange,
-  passwordInputId = 'confirm-password',
-  passwordInputName = 'currentPassword',
+  passwordInputId = "confirm-password",
+  passwordInputName = "currentPassword",
   passwordLabel,
   passwordHint,
   error = null,
   pending = false,
   confirmButtonLabel,
-  confirmVariant = 'destructive',
-  confirmMatch = 'exact',
+  confirmVariant = "destructive",
+  confirmMatch = "exact",
   destructiveTitle = true,
   onConfirm,
 }: TypedConfirmDialogProps): React.JSX.Element {
@@ -87,8 +87,9 @@ export function TypedConfirmDialog({
   const confirmInputId = useId();
   const formId = useId();
   const hasTypedConfirm = Boolean(expectedConfirm && onConfirmValueChange);
-  const matches = !hasTypedConfirm || confirmMatches(confirmValue ?? '', expectedConfirm ?? '', confirmMatch);
-  const requiresPassword = typeof password === 'string' && onPasswordChange !== undefined;
+  const matches =
+    !hasTypedConfirm || confirmMatches(confirmValue ?? "", expectedConfirm ?? "", confirmMatch);
+  const requiresPassword = typeof password === "string" && onPasswordChange !== undefined;
   const passwordValid = !requiresPassword || password.trim().length > 0;
   const canConfirm = !pending && matches && passwordValid;
 
@@ -110,7 +111,7 @@ export function TypedConfirmDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle
-            className={destructiveTitle ? 'text-destructive font-bold' : 'font-bold'}
+            className={destructiveTitle ? "text-destructive font-bold" : "font-bold"}
           >
             {title}
           </AlertDialogTitle>
@@ -123,7 +124,7 @@ export function TypedConfirmDialog({
                 id={confirmInputId}
                 name={confirmInputName}
                 type="text"
-                value={confirmValue ?? ''}
+                value={confirmValue ?? ""}
                 onChange={(event) => onConfirmValueChange(event.target.value)}
                 placeholder={confirmPlaceholder}
                 disabled={pending}
@@ -137,7 +138,7 @@ export function TypedConfirmDialog({
               <PasswordInput
                 id={passwordInputId}
                 name={passwordInputName}
-                label={passwordLabel ?? t('platform.profileCurrentPassword')}
+                label={passwordLabel ?? t("platform.profileCurrentPassword")}
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => onPasswordChange(event.target.value)}
@@ -152,7 +153,9 @@ export function TypedConfirmDialog({
                 }
               />
               {passwordHint ? (
-                <p id={`${passwordInputId}-hint`} className="text-xs text-muted-foreground">{passwordHint}</p>
+                <p id={`${passwordInputId}-hint`} className="text-xs text-muted-foreground">
+                  {passwordHint}
+                </p>
               ) : null}
             </>
           ) : null}
@@ -160,7 +163,7 @@ export function TypedConfirmDialog({
         </form>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending} className="min-h-11 rounded-xl font-bold">
-            {t('common.cancel')}
+            {t("common.cancel")}
           </AlertDialogCancel>
           <Button
             type="submit"

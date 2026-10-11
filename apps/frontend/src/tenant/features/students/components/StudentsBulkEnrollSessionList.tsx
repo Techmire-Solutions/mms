@@ -79,9 +79,7 @@ export function StudentsBulkEnrollSessionList({
                 )}
               >
                 <div className="min-w-0 text-start">
-                  <p className="truncate font-medium text-foreground">
-                    {session.name}
-                  </p>
+                  <p className="truncate font-medium text-foreground">{session.name}</p>
                   {session.type && (
                     <p className="text-3xs text-muted-foreground truncate capitalize">
                       {session.type}

@@ -49,7 +49,8 @@ export function MarkAttendanceClassBar({
           <h2 className="text-sm font-bold text-foreground m-0">{classInfo?.name}</h2>
           {submitted && (
             <Badge pill tone="success" className="gap-1 px-2 font-bold bg-success/15">
-              <CheckCircle2 className="w-2.5 h-2.5" aria-hidden="true" /> {t("attendance.mark.submitted")}
+              <CheckCircle2 className="w-2.5 h-2.5" aria-hidden="true" />{" "}
+              {t("attendance.mark.submitted")}
             </Badge>
           )}
           {isOffline && (
@@ -66,7 +67,11 @@ export function MarkAttendanceClassBar({
         </div>
       </div>
       <div className="flex items-center gap-2 flex-wrap">
-        {isDraft && <span className="px-2 py-1 rounded-lg bg-warning/15 text-warning text-xs font-bold">{t("attendance.mark.draftSaved")}</span>}
+        {isDraft && (
+          <span className="px-2 py-1 rounded-lg bg-warning/15 text-warning text-xs font-bold">
+            {t("attendance.mark.draftSaved")}
+          </span>
+        )}
         <Button
           onClick={onToggleFaceAI}
           variant="outline"
@@ -75,13 +80,18 @@ export function MarkAttendanceClassBar({
         >
           <Scan className="w-3 h-3" aria-hidden="true" /> {t("attendance.mark.faceAi")}
         </Button>
-        <div className="flex max-w-full overflow-x-auto rounded-lg border border-border text-xs font-semibold" role="group" aria-label={t("attendance.mark.bulkActionsAria")}>
+        <div
+          className="flex max-w-full overflow-x-auto rounded-lg border border-border text-xs font-semibold"
+          role="group"
+          aria-label={t("attendance.mark.bulkActionsAria")}
+        >
           <Button
             onClick={() => onMarkAll("present")}
             variant="ghost"
             className="shrink-0 min-h-11 px-3 py-2 rounded-none bg-success/10 text-success hover:bg-success/15 hover:text-success transition-colors flex items-center gap-1 font-semibold"
           >
-            <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> {t("attendance.mark.allPresent")}
+            <CheckCircle2 className="w-3 h-3" aria-hidden="true" />{" "}
+            {t("attendance.mark.allPresent")}
           </Button>
           <Button
             onClick={() => onMarkAll("absent")}

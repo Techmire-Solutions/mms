@@ -41,7 +41,9 @@ export function renderStudentSessionsCell({
         </span>
       ) : (
         sessionNames.map((sessionName, idx) => (
-          <Badge as="span" size="sm"
+          <Badge
+            as="span"
+            size="sm"
             key={`${sessionName}-${idx}`}
             tone="primary"
             className="px-1.5 py-0.5 rounded-full font-medium"

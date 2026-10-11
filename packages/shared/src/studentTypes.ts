@@ -1,7 +1,13 @@
-import type { SerializedEntityAuditFields } from './softDelete.js';
+import type { SerializedEntityAuditFields } from "./softDelete.js";
 
 /** Active enrollment status for a student profile. */
-export const STUDENT_STATUS_VALUES = ['active', 'inactive', 'suspended', 'graduated', 'transferred'] as const;
+export const STUDENT_STATUS_VALUES = [
+  "active",
+  "inactive",
+  "suspended",
+  "graduated",
+  "transferred",
+] as const;
 export type StudentStatus = (typeof STUDENT_STATUS_VALUES)[number];
 
 /** Prefer configured status options; fall back to the shared default list. */
@@ -18,7 +24,7 @@ export interface Student extends SerializedEntityAuditFields {
   contactId: string | number;
   /** Hydrated from student Contact. */
   name?: string;
-  gender?: 'male' | 'female';
+  gender?: "male" | "female";
   dob?: string;
   phone?: string;
   email?: string;

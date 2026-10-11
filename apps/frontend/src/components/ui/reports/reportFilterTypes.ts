@@ -4,12 +4,7 @@
  */
 
 export type ReportFilterFieldKey =
-  | 'session'
-  | 'class'
-  | 'status'
-  | 'dateFrom'
-  | 'dateTo'
-  | 'student';
+  "session" | "class" | "status" | "dateFrom" | "dateTo" | "student";
 
 export interface ReportFilterFields extends Record<string, unknown> {
   session: string;

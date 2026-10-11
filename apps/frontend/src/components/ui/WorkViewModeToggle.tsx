@@ -22,7 +22,7 @@ const VIEW_MODE_OPTIONS: ReadonlyArray<{
   { mode: "cards", labelKey: "common.viewMode.cards", icon: LayoutGrid },
 ];
 
-export const WorkViewModeToggle = (function WorkViewModeToggle({
+export const WorkViewModeToggle = function WorkViewModeToggle({
   viewMode,
   onViewModeChange,
   className,
@@ -73,4 +73,4 @@ export const WorkViewModeToggle = (function WorkViewModeToggle({
       })}
     </div>
   );
-});
+};

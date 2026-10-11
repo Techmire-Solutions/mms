@@ -36,7 +36,7 @@ export function useQuestionBankSetupSaveActions({
     );
   })();
 
-  const handleSave = (async (): Promise<void> => {
+  const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;
     setSaving(true);
     try {
@@ -52,7 +52,7 @@ export function useQuestionBankSetupSaveActions({
     } finally {
       setSaving(false);
     }
-  });
+  };
 
   return {
     saving,

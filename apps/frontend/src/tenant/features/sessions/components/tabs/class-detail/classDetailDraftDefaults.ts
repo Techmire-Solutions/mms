@@ -3,22 +3,22 @@ import type {
   SessionClassTimetable,
   SessionClassScholarship,
   ScholarshipEligibility,
-} from '@/lib/data/sessionsData';
+} from "@/lib/data/sessionsData";
 
 export const EMPTY_CLASS: Class = {
-  id: '',
-  name: '',
-  gender: 'mixed',
-  ageCalculationDate: '',
+  id: "",
+  name: "",
+  gender: "mixed",
+  ageCalculationDate: "",
   minAge: 0,
   maxAge: 0,
   maxStudents: 0,
   enrolled: 0,
-  enrollmentDeadline: '',
-  status: 'active',
-  facultyId: '',
-  facultyName: '',
-  room: '',
+  enrollmentDeadline: "",
+  status: "active",
+  facultyId: "",
+  facultyName: "",
+  room: "",
   fees: [],
   schedules: [],
   budgets: [],
@@ -47,7 +47,7 @@ export function createEmptyEligibility(): ScholarshipEligibility {
     familyMembers: 0,
     onJobMembers: 0,
     schoolGoingSiblings: 0,
-    residence: 'rental',
+    residence: "rental",
   };
 }
 
@@ -56,7 +56,7 @@ export function createEmptyScholarship(classId: string): SessionClassScholarship
     id: crypto.randomUUID(),
     classId,
     percentage: 0,
-    expiryDate: '',
+    expiryDate: "",
     eligibility: createEmptyEligibility(),
   };
 }

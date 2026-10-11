@@ -77,12 +77,7 @@ describe("FacultyCsvImportDialog", () => {
 
     act(() => {
       root.render(
-        <FacultyCsvImportDialog
-          open={true}
-          entity="faculties"
-          onClose={vi.fn()}
-          canWrite={true}
-        />,
+        <FacultyCsvImportDialog open={true} entity="faculties" onClose={vi.fn()} canWrite={true} />,
       );
     });
 
@@ -98,10 +93,7 @@ describe("FacultyCsvImportDialog", () => {
       templateBtn?.click();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "faculty.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "faculty.csv");
   });
 
   it("renders designations import modal with appropriate title and template download", async () => {
@@ -141,12 +133,7 @@ describe("FacultyCsvImportDialog", () => {
 
     act(() => {
       root.render(
-        <FacultyCsvImportDialog
-          open={true}
-          entity="faculties"
-          onClose={onClose}
-          canWrite={true}
-        />,
+        <FacultyCsvImportDialog open={true} entity="faculties" onClose={onClose} canWrite={true} />,
       );
     });
 

@@ -1,11 +1,8 @@
-import type { ColumnRegistryEntry, FieldDefinition } from './contactFieldSchemaTypes.js';
-import {
-  COLUMN_FIELD_MAPPING,
-  DEFAULT_COLUMN_REGISTRY,
-} from './contactTabRegistry.js';
-import { CONTACT_LOCKED_ENABLED_TABS } from './contactEnabledTabs.js';
-import { syncModuleColumnRegistryWithFields } from './moduleColumnRegistrySync.js';
-import { listEnabledCustomContactFormFields } from './contactFormCustomFields.js';
+import type { ColumnRegistryEntry, FieldDefinition } from "./contactFieldSchemaTypes.js";
+import { COLUMN_FIELD_MAPPING, DEFAULT_COLUMN_REGISTRY } from "./contactTabRegistry.js";
+import { CONTACT_LOCKED_ENABLED_TABS } from "./contactEnabledTabs.js";
+import { syncModuleColumnRegistryWithFields } from "./moduleColumnRegistrySync.js";
+import { listEnabledCustomContactFormFields } from "./contactFormCustomFields.js";
 
 /**
  * Aligns `columnRegistry.enabled` with Setup Fields tab/field enablement.

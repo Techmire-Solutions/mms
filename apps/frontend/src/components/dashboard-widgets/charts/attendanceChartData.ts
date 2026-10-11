@@ -29,7 +29,7 @@ export function buildWeeklyAttendancePoints(
       dateStatsMap.set(attendanceRecord.date, stats);
     }
     stats.total += 1;
-    if (attendanceRecord.status === 'present' || attendanceRecord.status === 'late') {
+    if (attendanceRecord.status === "present" || attendanceRecord.status === "late") {
       stats.present += 1;
     }
   });

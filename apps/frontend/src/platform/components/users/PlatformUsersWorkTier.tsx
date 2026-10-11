@@ -1,6 +1,6 @@
-import React from 'react';
-import { usePlatformAdmins } from '@/platform/hooks/usePlatformAdmins';
-import { PlatformAdminsList } from '@/platform/pages/PlatformAdminsList';
+import React from "react";
+import { usePlatformAdmins } from "@/platform/hooks/usePlatformAdmins";
+import { PlatformAdminsList } from "@/platform/pages/PlatformAdminsList";
 
 /**
  * Users Work tier — operators directory only.

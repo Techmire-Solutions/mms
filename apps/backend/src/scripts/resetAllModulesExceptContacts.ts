@@ -6,30 +6,30 @@
  *   pnpm --filter mms-backend exec tsx src/scripts/resetAllModulesExceptContacts.ts             (DRY RUN)
  *   pnpm --filter mms-backend exec tsx src/scripts/resetAllModulesExceptContacts.ts --execute   (MUTATE)
  */
-import { inArray, sql } from 'drizzle-orm';
-import { loadBackendEnv } from '../config/loadEnv.js';
-import { closeDatabase, getPool, initDb } from '../db/database.js';
-import { withTenant } from '../db/tenant-context.js';
-import { collections, objects } from '../db/schema.js';
-import { verifyTenantAuditChain } from '../services/auditVerificationService.js';
+import { inArray, sql } from "drizzle-orm";
+import { loadBackendEnv } from "../config/loadEnv.js";
+import { closeDatabase, getPool, initDb } from "../db/database.js";
+import { withTenant } from "../db/tenant-context.js";
+import { collections, objects } from "../db/schema.js";
+import { verifyTenantAuditChain } from "../services/auditVerificationService.js";
 import {
   PRESERVED_CONTACT_COLLECTIONS,
   PRESERVED_CONTACT_OBJECTS,
   quoteIdent,
   SELF_REFERENCING_FKS,
-} from './resetAllModulesTables.js';
+} from "./resetAllModulesTables.js";
 import {
   computeTopologicalDeleteOrder,
   countTenantTableRows,
-} from './resetAllModulesTopological.js';
+} from "./resetAllModulesTopological.js";
 
 loadBackendEnv();
 
 async function main() {
-  const isExecute = process.argv.includes('--execute');
+  const isExecute = process.argv.includes("--execute");
   console.log(`\n======================================================`);
   console.log(`RESET ALL MODULES DATA (KEEP CONTACTS & PLATFORM)`);
-  console.log(`Mode: ${isExecute ? 'EXECUTE (HARD RESET)' : 'DRY-RUN (PREVIEW ONLY)'}`);
+  console.log(`Mode: ${isExecute ? "EXECUTE (HARD RESET)" : "DRY-RUN (PREVIEW ONLY)"}`);
   console.log(`======================================================\n`);
 
   await initDb();
@@ -37,9 +37,9 @@ async function main() {
 
   // 1. List all active tenant workspaces
   const wsRes = await pool.query<{ subdomain: string; madrasa_name: string }>(
-    `SELECT subdomain, madrasa_name FROM workspaces ORDER BY subdomain`
+    `SELECT subdomain, madrasa_name FROM workspaces ORDER BY subdomain`,
   );
-  const activeTenants = wsRes.rows.map(r => r.subdomain.toLowerCase());
+  const activeTenants = wsRes.rows.map((r) => r.subdomain.toLowerCase());
   console.log(`Active Workspaces (${activeTenants.length}):`);
   for (const r of wsRes.rows) {
     console.log(` - [${r.subdomain}] ${r.madrasa_name}`);
@@ -56,11 +56,36 @@ async function main() {
     console.log(`\n--- Tenant: ${tenant} ---`);
 
     // Protected baseline counts
-    const contactsCount = await countTenantTableRows(pool, 'contacts', 'workspace_subdomain', tenant);
-    const phonesCount = await countTenantTableRows(pool, 'contact_phones', 'workspace_subdomain', tenant);
-    const emailsCount = await countTenantTableRows(pool, 'contact_emails', 'workspace_subdomain', tenant);
-    const addressesCount = await countTenantTableRows(pool, 'contact_addresses', 'workspace_subdomain', tenant);
-    const usersCount = await countTenantTableRows(pool, 'tenant_users', 'workspace_subdomain', tenant);
+    const contactsCount = await countTenantTableRows(
+      pool,
+      "contacts",
+      "workspace_subdomain",
+      tenant,
+    );
+    const phonesCount = await countTenantTableRows(
+      pool,
+      "contact_phones",
+      "workspace_subdomain",
+      tenant,
+    );
+    const emailsCount = await countTenantTableRows(
+      pool,
+      "contact_emails",
+      "workspace_subdomain",
+      tenant,
+    );
+    const addressesCount = await countTenantTableRows(
+      pool,
+      "contact_addresses",
+      "workspace_subdomain",
+      tenant,
+    );
+    const usersCount = await countTenantTableRows(
+      pool,
+      "tenant_users",
+      "workspace_subdomain",
+      tenant,
+    );
 
     console.log(`Protected records:`);
     console.log(`  contacts: ${contactsCount}`);
@@ -81,18 +106,17 @@ async function main() {
     // Count doc store collections and objects to delete
     const colRes = await pool.query<{ name: string }>(
       `SELECT name FROM collections WHERE name LIKE $1`,
-      [`t:${tenant}:%`]
+      [`t:${tenant}:%`],
     );
     const tenantColsToDelete = colRes.rows.filter(
-      r => !PRESERVED_CONTACT_COLLECTIONS.has(r.name.replace(`t:${tenant}:`, ''))
+      (r) => !PRESERVED_CONTACT_COLLECTIONS.has(r.name.replace(`t:${tenant}:`, "")),
     );
 
-    const objRes = await pool.query<{ key: string }>(
-      `SELECT key FROM objects WHERE key LIKE $1`,
-      [`t:${tenant}:%`]
-    );
+    const objRes = await pool.query<{ key: string }>(`SELECT key FROM objects WHERE key LIKE $1`, [
+      `t:${tenant}:%`,
+    ]);
     const tenantObjsToDelete = objRes.rows.filter(
-      r => !PRESERVED_CONTACT_OBJECTS.has(r.key.replace(`t:${tenant}:`, ''))
+      (r) => !PRESERVED_CONTACT_OBJECTS.has(r.key.replace(`t:${tenant}:`, "")),
     );
 
     console.log(`\nModule rows to delete:`);
@@ -103,7 +127,9 @@ async function main() {
     }
     console.log(`  docstore collections: ${tenantColsToDelete.length}`);
     console.log(`  docstore objects: ${tenantObjsToDelete.length}`);
-    console.log(`Tenant total module records: ${tenantRowsTotal + tenantColsToDelete.length + tenantObjsToDelete.length}`);
+    console.log(
+      `Tenant total module records: ${tenantRowsTotal + tenantColsToDelete.length + tenantObjsToDelete.length}`,
+    );
 
     grandTotalDeleted += tenantRowsTotal + tenantColsToDelete.length + tenantObjsToDelete.length;
 
@@ -136,13 +162,13 @@ async function main() {
 
         // Delete non-contact collections for this tenant
         if (tenantColsToDelete.length > 0) {
-          const colNames = tenantColsToDelete.map(c => c.name);
+          const colNames = tenantColsToDelete.map((c) => c.name);
           await tx.delete(collections).where(inArray(collections.name, colNames));
         }
 
         // Delete non-contact objects for this tenant
         if (tenantObjsToDelete.length > 0) {
-          const objKeys = tenantObjsToDelete.map(o => o.key);
+          const objKeys = tenantObjsToDelete.map((o) => o.key);
           await tx.delete(objects).where(inArray(objects.key, objKeys));
         }
 
@@ -162,24 +188,34 @@ async function main() {
 
   // 4. Orphaned and legacy collections/objects cleanup
   const orphanedColRes = await pool.query<{ name: string }>(
-    `SELECT name FROM collections WHERE name LIKE 't:%'`
+    `SELECT name FROM collections WHERE name LIKE 't:%'`,
   );
-  const orphanedCols = orphanedColRes.rows.filter(r => {
-    const tenant = r.name.split(':')[1];
+  const orphanedCols = orphanedColRes.rows.filter((r) => {
+    const tenant = r.name.split(":")[1];
     return !activeTenants.includes(tenant);
   });
 
   const orphanedObjRes = await pool.query<{ key: string }>(
-    `SELECT key FROM objects WHERE key LIKE 't:%'`
+    `SELECT key FROM objects WHERE key LIKE 't:%'`,
   );
-  const orphanedObjs = orphanedObjRes.rows.filter(r => {
-    const tenant = r.key.split(':')[1];
+  const orphanedObjs = orphanedObjRes.rows.filter((r) => {
+    const tenant = r.key.split(":")[1];
     return !activeTenants.includes(tenant);
   });
 
   // Non-prefixed legacy module collections/objects
-  const nonPrefixedColsToDelete = ['students', 'teachers', 'questions', 'tests', 'assessment_results'];
-  const nonPrefixedObjsToDelete = ['teachers_settings', 'students_settings', 'question_bank_settings'];
+  const nonPrefixedColsToDelete = [
+    "students",
+    "teachers",
+    "questions",
+    "tests",
+    "assessment_results",
+  ];
+  const nonPrefixedObjsToDelete = [
+    "teachers_settings",
+    "students_settings",
+    "question_bank_settings",
+  ];
 
   console.log(`\n--- Orphaned / Legacy Cleanup ---`);
   console.log(`Orphaned test-tenant collections: ${orphanedCols.length}`);
@@ -189,14 +225,16 @@ async function main() {
 
   if (isExecute) {
     if (orphanedCols.length > 0) {
-      const names = orphanedCols.map(c => c.name);
+      const names = orphanedCols.map((c) => c.name);
       await pool.query(`DELETE FROM collections WHERE name = ANY($1::text[])`, [names]);
     }
     if (orphanedObjs.length > 0) {
-      const keys = orphanedObjs.map(o => o.key);
+      const keys = orphanedObjs.map((o) => o.key);
       await pool.query(`DELETE FROM objects WHERE key = ANY($1::text[])`, [keys]);
     }
-    await pool.query(`DELETE FROM collections WHERE name = ANY($1::text[])`, [nonPrefixedColsToDelete]);
+    await pool.query(`DELETE FROM collections WHERE name = ANY($1::text[])`, [
+      nonPrefixedColsToDelete,
+    ]);
     await pool.query(`DELETE FROM objects WHERE key = ANY($1::text[])`, [nonPrefixedObjsToDelete]);
     console.log(`✅ Cleaned up orphaned test collections and objects.`);
   }
@@ -216,11 +254,36 @@ async function main() {
         }
       }
 
-      const contactsCount = await countTenantTableRows(pool, 'contacts', 'workspace_subdomain', tenant);
-      const phonesCount = await countTenantTableRows(pool, 'contact_phones', 'workspace_subdomain', tenant);
-      const emailsCount = await countTenantTableRows(pool, 'contact_emails', 'workspace_subdomain', tenant);
-      const addressesCount = await countTenantTableRows(pool, 'contact_addresses', 'workspace_subdomain', tenant);
-      const usersCount = await countTenantTableRows(pool, 'tenant_users', 'workspace_subdomain', tenant);
+      const contactsCount = await countTenantTableRows(
+        pool,
+        "contacts",
+        "workspace_subdomain",
+        tenant,
+      );
+      const phonesCount = await countTenantTableRows(
+        pool,
+        "contact_phones",
+        "workspace_subdomain",
+        tenant,
+      );
+      const emailsCount = await countTenantTableRows(
+        pool,
+        "contact_emails",
+        "workspace_subdomain",
+        tenant,
+      );
+      const addressesCount = await countTenantTableRows(
+        pool,
+        "contact_addresses",
+        "workspace_subdomain",
+        tenant,
+      );
+      const usersCount = await countTenantTableRows(
+        pool,
+        "tenant_users",
+        "workspace_subdomain",
+        tenant,
+      );
 
       console.log(`Tenant "${tenant}":`);
       console.log(`  contacts: ${contactsCount} (PRESERVED)`);
@@ -242,11 +305,25 @@ async function main() {
     }
 
     // Verify platform console
-    const wsCount = (await pool.query<{ count: number }>('SELECT count(*)::int as count FROM workspaces')).rows[0].count;
-    const puCount = (await pool.query<{ count: number }>('SELECT count(*)::int as count FROM platform_users')).rows[0].count;
-    const pupCount = (await pool.query<{ count: number }>('SELECT count(*)::int as count FROM platform_user_permissions')).rows[0].count;
-    const psCount = (await pool.query<{ count: number }>('SELECT count(*)::int as count FROM platform_settings')).rows[0].count;
-    const palCount = (await pool.query<{ count: number }>('SELECT count(*)::int as count FROM platform_activity_logs')).rows[0].count;
+    const wsCount = (
+      await pool.query<{ count: number }>("SELECT count(*)::int as count FROM workspaces")
+    ).rows[0].count;
+    const puCount = (
+      await pool.query<{ count: number }>("SELECT count(*)::int as count FROM platform_users")
+    ).rows[0].count;
+    const pupCount = (
+      await pool.query<{ count: number }>(
+        "SELECT count(*)::int as count FROM platform_user_permissions",
+      )
+    ).rows[0].count;
+    const psCount = (
+      await pool.query<{ count: number }>("SELECT count(*)::int as count FROM platform_settings")
+    ).rows[0].count;
+    const palCount = (
+      await pool.query<{ count: number }>(
+        "SELECT count(*)::int as count FROM platform_activity_logs",
+      )
+    ).rows[0].count;
 
     console.log(`\nPlatform Console (PRESERVED):`);
     console.log(`  workspaces: ${wsCount}`);
@@ -255,7 +332,9 @@ async function main() {
     console.log(`  platform_settings: ${psCount}`);
     console.log(`  platform_activity_logs: ${palCount}`);
   } else {
-    console.log(`\nDry run complete. Found ${grandTotalDeleted} rows/keys to reset across module tables.`);
+    console.log(
+      `\nDry run complete. Found ${grandTotalDeleted} rows/keys to reset across module tables.`,
+    );
     console.log(`To execute the hard reset, run with --execute.`);
   }
 
@@ -264,7 +343,7 @@ async function main() {
 }
 
 main().catch(async (err) => {
-  console.error('\n❌ Reset failed:', err);
+  console.error("\n❌ Reset failed:", err);
   try {
     await closeDatabase();
   } catch {

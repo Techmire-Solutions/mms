@@ -67,7 +67,10 @@ export function StatCardBody({
                 ) : (
                   <TrendingDown className="w-3 h-3 text-destructive shrink-0" />
                 )}
-                <span>{isPositive ? "+" : ""}{trend}%</span>
+                <span>
+                  {isPositive ? "+" : ""}
+                  {trend}%
+                </span>
               </Badge>
             )}
             {actions}

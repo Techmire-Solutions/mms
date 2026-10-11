@@ -1,18 +1,18 @@
-import { sql } from 'drizzle-orm';
-import type { AppDb } from '../db/tenant-context.js';
-import { activeDb } from '../db/dbConnection.js';
-import { outboxEvents } from '../db/schema/outboxEvents.js';
+import { sql } from "drizzle-orm";
+import type { AppDb } from "../db/tenant-context.js";
+import { activeDb } from "../db/dbConnection.js";
+import { outboxEvents } from "../db/schema/outboxEvents.js";
 
 // ---------------------------------------------------------------------------
 // Public event-type discriminated union
 // ---------------------------------------------------------------------------
 
 export type OutboxEventType =
-  | 'entity.soft_deleted'
-  | 'entity.restored'
-  | 'entity.hard_purge'
-  | 'task.assigned'
-  | 'task.status_changed';
+  | "entity.soft_deleted"
+  | "entity.restored"
+  | "entity.hard_purge"
+  | "task.assigned"
+  | "task.status_changed";
 
 export type SoftDeletedPayload = {
   entityType: string;
@@ -57,22 +57,19 @@ export type HardPurgePayload = {
 
 /** Messaging/outbox intent for task assignee or status notifications. */
 export type TaskNotifyPayload = {
-  entityType: 'tasks';
+  entityType: "tasks";
   entityId: string;
   tenantId: string;
   version: number;
   recipientUserIds: string[];
   actorUserId?: string;
-  reason: 'assignment' | 'status_change';
+  reason: "assignment" | "status_change";
   status?: string;
   title?: string;
 };
 
 export type OutboxPayload =
-  | SoftDeletedPayload
-  | RestoredPayload
-  | HardPurgePayload
-  | TaskNotifyPayload;
+  SoftDeletedPayload | RestoredPayload | HardPurgePayload | TaskNotifyPayload;
 
 // ---------------------------------------------------------------------------
 // Core emit function — MUST be called inside an existing transaction
@@ -115,7 +112,7 @@ export async function emitOutboxEvent(
   if (isExplicitTx) {
     const tx = first as AppDb;
     await tx.insert(outboxEvents).values(row);
-    if ('execute' in tx && typeof tx.execute === 'function') {
+    if ("execute" in tx && typeof tx.execute === "function") {
       try {
         await tx.execute(sql`NOTIFY mms_outbox_events, 'new_event'`);
       } catch {
@@ -132,4 +129,3 @@ export async function emitOutboxEvent(
     }
   }
 }
-

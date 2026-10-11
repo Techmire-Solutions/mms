@@ -94,13 +94,25 @@ export function AccountingFiscalYearsTable({
                     hidden: !onRequestCloseFiscalYear || fy.status === "closed",
                     onClick: () => onRequestCloseFiscalYear?.(fy.id),
                   },
-                  { id: "edit", label: `${t("common.edit")} ${fy.label}`, icon: Pencil, onClick: () => onEditFiscalYear(fy) },
+                  {
+                    id: "edit",
+                    label: `${t("common.edit")} ${fy.label}`,
+                    icon: Pencil,
+                    onClick: () => onEditFiscalYear(fy),
+                  },
                 ]}
               />
             )
           : undefined
       }
-      emptyState={<EmptyState icon={Calendar} title={t("accounting.settings.noFiscalYears")} compact variant="dashed" />}
+      emptyState={
+        <EmptyState
+          icon={Calendar}
+          title={t("accounting.settings.noFiscalYears")}
+          compact
+          variant="dashed"
+        />
+      }
     />
   );
 }

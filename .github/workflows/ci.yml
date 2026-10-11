@@ -134,7 +134,7 @@ jobs:
       - name: zizmor
         uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
         with:
-          version: '1.30.1'
+          version: "1.30.1"
           advanced-security: false
           min-severity: medium
 
@@ -163,6 +163,11 @@ jobs:
       # @mms/shared, e2e) via turbo — shared/e2e were previously unlinted.
       - name: Lint (all packages)
         run: pnpm lint
+
+      # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
+      # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
+      - name: Formatting (Prettier)
+        run: pnpm format:check
 
       # Fails on high/critical advisories. One moderate finding is a reviewed,
       # documented exception (ts-deepmerge via @ts-rest/open-api) — see the
@@ -323,7 +328,7 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          build-shared: 'true'
+          build-shared: "true"
 
       - name: Run Frontend Tests (changed files only, no coverage)
         if: needs.changes.outputs.test_scope == 'changed'
@@ -419,7 +424,7 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          build-shared: 'true'
+          build-shared: "true"
 
       # Any packages/shared change forces full scope, so changed scope skips it.
       - name: Run Shared Package Tests & Coverage
@@ -462,10 +467,10 @@ jobs:
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
 
     env:
-      JWT_SECRET: 'e2e-test-jwt-secret-key-at-least-32-chars-long'
-      DATABASE_URL: 'postgres://postgres:postgres@localhost:5432/mms'
-      NODE_ENV: 'test'
-      LOG_LEVEL: 'silent'
+      JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/mms"
+      NODE_ENV: "test"
+      LOG_LEVEL: "silent"
 
     steps:
       - name: Checkout Code
@@ -476,7 +481,7 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          build-shared: 'true'
+          build-shared: "true"
 
       - name: Run DB Migrations
         run: pnpm --filter mms-backend run db:migrate
@@ -517,10 +522,10 @@ jobs:
           --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
 
     env:
-      JWT_SECRET: 'e2e-test-jwt-secret-key-at-least-32-chars-long'
-      DATABASE_URL: 'postgres://postgres:postgres@localhost:5432/mms'
-      NODE_ENV: 'test'
-      LOG_LEVEL: 'warn'
+      JWT_SECRET: "e2e-test-jwt-secret-key-at-least-32-chars-long"
+      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/mms"
+      NODE_ENV: "test"
+      LOG_LEVEL: "warn"
 
     steps:
       - name: Checkout Code
@@ -531,7 +536,7 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          build-shared: 'true'
+          build-shared: "true"
 
       - name: Run DB Migrations
         run: pnpm --filter mms-backend run db:migrate
@@ -604,7 +609,21 @@ jobs:
   ci-gate:
     name: CI Gate (All Checks Passed)
     if: always()
-    needs: [changes, dependency-review, workflow-lint, typecheck-lint, build, secret-scan, test-frontend, test-frontend-coverage, test-backend-unit, test-backend-db, e2e, merge-reports]
+    needs:
+      [
+        changes,
+        dependency-review,
+        workflow-lint,
+        typecheck-lint,
+        build,
+        secret-scan,
+        test-frontend,
+        test-frontend-coverage,
+        test-backend-unit,
+        test-backend-db,
+        e2e,
+        merge-reports,
+      ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

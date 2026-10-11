@@ -39,7 +39,9 @@ describe("examinationsPageControllerActions", () => {
     const deleteExam = { mutateAsync: vi.fn().mockResolvedValue({}) };
     const restoreExam = { mutateAsync: vi.fn().mockResolvedValue({}) };
     const bulkDeleteExams = { mutateAsync: vi.fn().mockResolvedValue({ succeeded: 2, failed: 0 }) };
-    const bulkRestoreExams = { mutateAsync: vi.fn().mockResolvedValue({ succeeded: 2, failed: 0 }) };
+    const bulkRestoreExams = {
+      mutateAsync: vi.fn().mockResolvedValue({ succeeded: 2, failed: 0 }),
+    };
     const setShowExamForm = vi.fn();
     const setEditExam = vi.fn();
 
@@ -63,7 +65,9 @@ describe("examinationsPageControllerActions", () => {
     expect(setShowExamForm).toHaveBeenCalledWith(false);
 
     const handleSaveResults = createExaminationsSaveResultsHandler(deps);
-    await handleSaveResults("ex-1", [{ id: "r-1", examId: "ex-1", studentId: "std-1", marksObtained: 90 }]);
+    await handleSaveResults("ex-1", [
+      { id: "r-1", examId: "ex-1", studentId: "std-1", marksObtained: 90 },
+    ]);
     expect(replaceExamResults.mutateAsync).toHaveBeenCalled();
 
     const handleDeleteExam = createExaminationsDeleteExamHandler(deps);

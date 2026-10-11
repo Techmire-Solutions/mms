@@ -1,14 +1,14 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { usePlatformAuth } from '@/platform/lib/PlatformAuthContext';
-import { usePlatformSetupStatus } from '@/platform/hooks/usePlatformSetupStatus';
-import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
-import { AuthPageFrame } from '@/components/entry/AuthPageShell';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { ROUTES } from '@/lib/config/routes';
-import PlatformSignIn from '@/platform/pages/auth/PlatformSignIn';
-import PlatformSetup from '@/platform/pages/auth/PlatformSetup';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformSetupStatus } from "@/platform/hooks/usePlatformSetupStatus";
+import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
+import { AuthPageFrame } from "@/components/entry/AuthPageShell";
+import { useTranslation } from "@/hooks/useTranslation";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { ROUTES } from "@/lib/config/routes";
+import PlatformSignIn from "@/platform/pages/auth/PlatformSignIn";
+import PlatformSetup from "@/platform/pages/auth/PlatformSetup";
 
 /**
  * Dedicated Platform Sign-in / Setup Page (`/platform/login` or `/login`).
@@ -16,7 +16,8 @@ import PlatformSetup from '@/platform/pages/auth/PlatformSetup';
  */
 export default function PlatformLoginPage(): React.JSX.Element {
   const { t } = useTranslation();
-  const { isPlatformAuthenticated, platformAuthChecked, isCheckingPlatformAuth } = usePlatformAuth();
+  const { isPlatformAuthenticated, platformAuthChecked, isCheckingPlatformAuth } =
+    usePlatformAuth();
   const { setupStatus, isLoadingSetup, isError, refetch } = usePlatformSetupStatus();
 
   if (!platformAuthChecked || isCheckingPlatformAuth) {
@@ -36,8 +37,8 @@ export default function PlatformLoginPage(): React.JSX.Element {
       <AuthPageFrame dir="ltr">
         <div className="relative z-elevated w-full max-w-md">
           <ErrorState
-            title={t('platform.loadFailed')}
-            description={t('platform.loadFailedHint')}
+            title={t("platform.loadFailed")}
+            description={t("platform.loadFailedHint")}
             onRetry={() => void refetch()}
           />
         </div>

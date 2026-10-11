@@ -1,4 +1,4 @@
-import type { TenantTransaction } from '../tenant-context.js';
+import type { TenantTransaction } from "../tenant-context.js";
 
 /**
  * Quarantined: legacy assignment-edge reporting backfill.
@@ -10,7 +10,7 @@ export async function backfillFacultyReporting(
   tenant: string,
 ): Promise<void> {
   throw new Error(
-    `facultyReportingBackfill is retired after 0147 for workspace ${tenant}. `
-    + 'Use organization position parents on faculty_assignments.position_id instead.',
+    `facultyReportingBackfill is retired after 0147 for workspace ${tenant}. ` +
+      "Use organization position parents on faculty_assignments.position_id instead.",
   );
 }

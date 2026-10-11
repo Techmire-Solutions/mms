@@ -1,23 +1,20 @@
-import {
-  type Contact,
-  type User,
-} from '@mms/shared';
-import { invalidateDuplicateScanCache } from './contactDuplicateScanUseCases.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { applyContactRelationshipInference } from './contactInferenceUseCases.js';
-import { runInTransaction } from '../../db/database.js';
-import { canDeleteContacts } from '../../lib/rbacCanHelpers.js';
+import { type Contact, type User } from "@mms/shared";
+import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
+import { runInTransaction } from "../../db/database.js";
+import { canDeleteContacts } from "../../lib/rbacCanHelpers.js";
 import {
   assertContactUniqueFields,
   ContactPermissionError,
   mergeContactPatch,
   prepareContactRecord,
   stripClientSoftDeleteFields,
-} from './contactValidationUseCases.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
-import type { ContactsRepository } from '../repository/contactsRepository.js';
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
+} from "./contactValidationUseCases.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
 interface UpsertContactOptions {
   user?: User;
@@ -37,22 +34,26 @@ export async function upsertContact(
 }> {
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
-    if (!tenant) throw new Error('Tenant context required');
-    const existing = await repo.findById(tenant, String(contact.id ?? ''));
+    if (!tenant) throw new Error("Tenant context required");
+    const existing = await repo.findById(tenant, String(contact.id ?? ""));
     const created = !existing;
     const restoredFromDelete = existing && Boolean(existing.deletedAt);
 
-    const opts = options && !('role' in options) ? (options as UpsertContactOptions) : undefined;
-    const user = options && 'role' in options ? (options as User) : opts?.user;
+    const opts = options && !("role" in options) ? (options as UpsertContactOptions) : undefined;
+    const user = options && "role" in options ? (options as User) : opts?.user;
     const explicitCanRestore = opts?.canRestore;
-    const language = opts?.language || 'en';
+    const language = opts?.language || "en";
 
     if (restoredFromDelete) {
       if (explicitCanRestore === false) {
-        throw new ContactPermissionError('Restoring soft-deleted contacts requires delete permissions');
+        throw new ContactPermissionError(
+          "Restoring soft-deleted contacts requires delete permissions",
+        );
       }
       if (user && !canDeleteContacts(user)) {
-        throw new ContactPermissionError('Restoring soft-deleted contacts requires delete permissions');
+        throw new ContactPermissionError(
+          "Restoring soft-deleted contacts requires delete permissions",
+        );
       }
     }
 
@@ -76,9 +77,9 @@ export async function upsertContact(
   });
   const tenant = getRequestTenant();
   if (tenant) {
-    await invalidateMultiTierCache({ tenantId: tenant, domain: 'contacts' });
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
   }
-  await broadcastCollection('contacts');
+  await broadcastCollection("contacts");
   return result;
 }
 
@@ -95,14 +96,12 @@ interface UpdateContactByIdOptions {
 export async function updateContactById(
   id: string,
   contact: Contact,
-  languageOrOptions: string | UpdateContactByIdOptions = 'en',
+  languageOrOptions: string | UpdateContactByIdOptions = "en",
   repo: ContactsRepository = contactsRepository,
 ): Promise<Contact | null> {
   const options: UpdateContactByIdOptions =
-    typeof languageOrOptions === 'string'
-      ? { language: languageOrOptions }
-      : languageOrOptions;
-  const language = options.language ?? 'en';
+    typeof languageOrOptions === "string" ? { language: languageOrOptions } : languageOrOptions;
+  const language = options.language ?? "en";
   const applyInference = options.applyRelationshipInference !== false;
 
   const saved = await runInTransaction(async () => {
@@ -132,9 +131,9 @@ export async function updateContactById(
   if (saved) {
     const tenant = getRequestTenant();
     if (tenant) {
-      await invalidateMultiTierCache({ tenantId: tenant, domain: 'contacts' });
+      await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
     }
-    await broadcastCollection('contacts');
+    await broadcastCollection("contacts");
   }
   return saved;
 }
@@ -143,5 +142,4 @@ export {
   mergeContactsById,
   bulkSaveContacts,
   bulkTagContacts,
-} from './contactBulkWriteUseCases.js';
-
+} from "./contactBulkWriteUseCases.js";

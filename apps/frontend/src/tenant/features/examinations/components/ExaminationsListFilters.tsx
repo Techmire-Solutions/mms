@@ -1,15 +1,15 @@
-import React from 'react';
-import { type ModuleColumnCustomizerProps } from '@/components/ui/ModuleColumnCustomizer';
-import { FilterChips } from '@/components/ui/FilterChips';
-import { WorkTaskToolbar } from '@/components/common/work';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import { FilterChips } from "@/components/ui/FilterChips";
+import { WorkTaskToolbar } from "@/components/common/work";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   ExaminationsFiltersMenuButton,
   type EXAM_STATUSES,
-} from '@/tenant/features/examinations/components/ExaminationsFiltersMenuButton';
+} from "@/tenant/features/examinations/components/ExaminationsFiltersMenuButton";
 
-export const EXAMINATIONS_WORK_SEARCH_INPUT_ID = 'examinations-work-search';
+export const EXAMINATIONS_WORK_SEARCH_INPUT_ID = "examinations-work-search";
 
 export interface ExaminationsListFiltersProps {
   viewMode: WorkDirectoryViewMode;
@@ -52,14 +52,14 @@ export function ExaminationsListFilters({
 
   return (
     <WorkTaskToolbar
-      regionLabel={t('nav.examinations')}
+      regionLabel={t("nav.examinations")}
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('examinations.searchExams')}
+      searchPlaceholder={t("examinations.searchExams")}
       searchId={EXAMINATIONS_WORK_SEARCH_INPUT_ID}
       hasActiveFilters={filterStatus.length > 0}
       onClearFilters={clearFilters}
-      clearFiltersLabel={t('examinations.clearFilters')}
+      clearFiltersLabel={t("examinations.clearFilters")}
       filterButton={
         <ExaminationsFiltersMenuButton
           filterStatus={filterStatus}
@@ -86,8 +86,8 @@ export function ExaminationsListFilters({
               canViewDeleted: canDelete,
               viewingDeleted: showDeleted,
               onToggle: onToggleDeleted,
-              activeLabel: t('examinations.trash.showActive'),
-              deletedLabel: t('examinations.trash.showDeleted'),
+              activeLabel: t("examinations.trash.showActive"),
+              deletedLabel: t("examinations.trash.showDeleted"),
             }
           : undefined
       }
@@ -95,12 +95,16 @@ export function ExaminationsListFilters({
         viewMode,
         onViewModeChange,
       }}
-      columnCustomizer={columnCustomizer ? {
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      } : undefined}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
     />
   );
 }

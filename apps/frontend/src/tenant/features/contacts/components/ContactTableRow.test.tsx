@@ -6,7 +6,9 @@ import { ContactTableRow } from "./ContactTableRow";
 
 vi.mock("@/tenant/features/contacts/components/ContactTableCells", () => ({
   renderContactTableCell: ({ col }: { col: { id: string } }) => (
-    <td key={col.id} data-testid={`cell-${col.id}`}>Cell-{col.id}</td>
+    <td key={col.id} data-testid={`cell-${col.id}`}>
+      Cell-{col.id}
+    </td>
   ),
 }));
 

@@ -13,7 +13,9 @@ export function useContactsPageOverlayState() {
   const [importOpen, setImportOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkRestoreOpen, setBulkRestoreOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string | number; name?: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string | number; name?: string } | null>(
+    null,
+  );
   const [conflictPanelOpen, setConflictPanelOpen] = useState(false);
 
   return {

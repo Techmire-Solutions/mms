@@ -7,6 +7,7 @@ import tseslint from "typescript-eslint";
 import boundaryImports from "./eslint-rules/no-cross-feature-imports.cjs";
 import uiHostImports from "./eslint-rules/no-ui-host-imports.cjs";
 import directionalRule from "./eslint-rules/no-physical-directional-classes.cjs";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 const appFiles = [
   "src/components/**/*.{ts,tsx}",
@@ -52,7 +53,9 @@ export default tseslint.config(
       react: pluginReact,
       "react-hooks": pluginReactHooks,
       "unused-imports": pluginUnusedImports,
-      "mms-boundary": { rules: { "no-cross-feature-imports": boundaryImports, "no-ui-host-imports": uiHostImports } },
+      "mms-boundary": {
+        rules: { "no-cross-feature-imports": boundaryImports, "no-ui-host-imports": uiHostImports },
+      },
       "mms-bidi": { rules: { "no-physical-directional-classes": directionalRule } },
     },
     rules: {
@@ -67,9 +70,9 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-imports": [
         "error",
         {
-          "prefer": "type-imports",
-          "fixStyle": "inline-type-imports",
-          "disallowTypeAnnotations": false,
+          prefer: "type-imports",
+          fixStyle: "inline-type-imports",
+          disallowTypeAnnotations: false,
         },
       ],
       "mms-boundary/no-cross-feature-imports": "error",
@@ -89,10 +92,7 @@ export default tseslint.config(
       ],
       "react/prop-types": "off",
       "react/react-in-jsx-scope": "off",
-      "react/no-unknown-property": [
-        "error",
-        { ignore: ["cmdk-input-wrapper", "toast-close"] },
-      ],
+      "react/no-unknown-property": ["error", { ignore: ["cmdk-input-wrapper", "toast-close"] }],
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
       "no-restricted-syntax": [
@@ -120,7 +120,8 @@ export default tseslint.config(
         },
         {
           selector: "Literal[value=/\\b[hw]-\\[\\d+px\\]/]",
-          message: "Use semantic width/height tokens or spacing scale instead of arbitrary pixel values.",
+          message:
+            "Use semantic width/height tokens or spacing scale instead of arbitrary pixel values.",
         },
       ],
     },
@@ -133,4 +134,5 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  eslintConfigPrettier,
 );

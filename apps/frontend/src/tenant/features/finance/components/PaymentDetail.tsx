@@ -1,11 +1,14 @@
-import React from 'react';
-import { Banknote } from 'lucide-react';
-import type { Payment } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Drawer } from '@/components/ui/Drawer';
-import { DetailDrawerArchivedBanner, DetailDrawerRestoreOrEditAction } from '@/components/ui/DetailDrawerArchiveChrome';
-import { DetailSectionCard } from '@/components/ui/DetailSectionCard';
-import { DetailAttributeRow } from '@/components/ui/DetailAttributeRow';
+import React from "react";
+import { Banknote } from "lucide-react";
+import type { Payment } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Drawer } from "@/components/ui/Drawer";
+import {
+  DetailDrawerArchivedBanner,
+  DetailDrawerRestoreOrEditAction,
+} from "@/components/ui/DetailDrawerArchiveChrome";
+import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
 
 export interface PaymentDetailProps {
   payment: Payment;
@@ -15,7 +18,7 @@ export interface PaymentDetailProps {
   onRestore?: (id: string) => void | Promise<void>;
 }
 
-export const PaymentDetail = (function PaymentDetail({
+export const PaymentDetail = function PaymentDetail({
   payment,
   onClose,
   onEdit,
@@ -29,8 +32,8 @@ export const PaymentDetail = (function PaymentDetail({
     <Drawer
       open
       onClose={onClose}
-      title={t('finance.payments.detail.title')}
-      subtitle={payment.studentName || 'Student'}
+      title={t("finance.payments.detail.title")}
+      subtitle={payment.studentName || "Student"}
       icon={Banknote}
       headerExtra={isArchived && <DetailDrawerArchivedBanner deletedAt={payment.deletedAt} />}
       headerActions={
@@ -40,43 +43,40 @@ export const PaymentDetail = (function PaymentDetail({
           canRestore={canDelete}
           onEdit={() => onEdit?.(payment)}
           onRestore={() => onRestore?.(payment.id)}
-          restoreLabel={t('common.restore')}
-          editLabel={t('common.edit')}
+          restoreLabel={t("common.restore")}
+          editLabel={t("common.edit")}
         />
       }
     >
       <div className="flex flex-col gap-6 py-6">
-        <DetailSectionCard title={t('finance.payments.detail.overview')} className="overflow-hidden divide-y divide-border">
+        <DetailSectionCard
+          title={t("finance.payments.detail.overview")}
+          className="overflow-hidden divide-y divide-border"
+        >
           <DetailAttributeRow
-            label={t('finance.fields.payment.invoiceId')}
+            label={t("finance.fields.payment.invoiceId")}
             value={payment.invoiceId}
           />
           <DetailAttributeRow
-            label={t('finance.fields.payment.student')}
+            label={t("finance.fields.payment.student")}
             value={payment.studentName}
           />
           <DetailAttributeRow
-            label={t('finance.fields.payment.amount')}
+            label={t("finance.fields.payment.amount")}
             value={payment.amount.toString()}
           />
+          <DetailAttributeRow label={t("finance.fields.payment.date")} value={payment.date} />
+          <DetailAttributeRow label={t("finance.fields.payment.method")} value={payment.method} />
           <DetailAttributeRow
-            label={t('finance.fields.payment.date')}
-            value={payment.date}
+            label={t("finance.fields.payment.receivedBy")}
+            value={payment.receivedBy || "—"}
           />
           <DetailAttributeRow
-            label={t('finance.fields.payment.method')}
-            value={payment.method}
-          />
-          <DetailAttributeRow
-            label={t('finance.fields.payment.receivedBy')}
-            value={payment.receivedBy || '—'}
-          />
-          <DetailAttributeRow
-            label={t('finance.fields.payment.note')}
-            value={payment.note || '—'}
+            label={t("finance.fields.payment.note")}
+            value={payment.note || "—"}
           />
         </DetailSectionCard>
       </div>
     </Drawer>
   );
-});
+};

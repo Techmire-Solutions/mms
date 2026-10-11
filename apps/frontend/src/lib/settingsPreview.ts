@@ -1,5 +1,5 @@
-import type { BrandingSettings, GlobalSettings } from '@mms/shared';
-import { applyAppTheme, applyBrandingTheme } from '@/lib/brandingTheme';
+import type { BrandingSettings, GlobalSettings } from "@mms/shared";
+import { applyAppTheme, applyBrandingTheme } from "@/lib/brandingTheme";
 import {
   clearAllPreviews,
   clearBrandingPreview,
@@ -8,18 +8,18 @@ import {
   getEffectiveGlobalSettingsScoped,
   setBrandingPreview,
   setGlobalPreview,
-} from '@/lib/settingsPreviewStore';
-import { isTenantHost } from '@/platform/lib/themeScope';
+} from "@/lib/settingsPreviewStore";
+import { isTenantHost } from "@/platform/lib/themeScope";
 
 export {
   getEffectiveGlobalSettingsScoped as getEffectiveGlobalSettings,
   getEffectiveBrandingSettingsScoped as getEffectiveBrandingSettings,
-} from '@/lib/settingsPreviewStore';
+} from "@/lib/settingsPreviewStore";
 
-export const SETTINGS_PREVIEW_EVENT = 'settings-preview-update';
+export const SETTINGS_PREVIEW_EVENT = "settings-preview-update";
 
 function dispatchPreviewUpdate(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   window.dispatchEvent(new Event(SETTINGS_PREVIEW_EVENT));
 }
 

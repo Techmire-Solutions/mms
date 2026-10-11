@@ -28,10 +28,7 @@ export function FacultyPreferencesSection({
 
   return (
     <div className="space-y-4 text-start">
-      <FacultyIdSettingsCard
-        settingsDraft={settingsDraft}
-        upd={upd}
-      />
+      <FacultyIdSettingsCard settingsDraft={settingsDraft} upd={upd} />
 
       <ModuleSetupSaveFooter
         dirty={Boolean(isPrefsDirty)}

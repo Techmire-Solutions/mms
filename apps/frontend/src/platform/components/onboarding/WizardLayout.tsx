@@ -85,13 +85,12 @@ export default function WizardLayout({
         />
       </div>
 
-      <main id="main-content" className="relative z-elevated flex flex-1 flex-col items-center px-4 py-8 sm:px-6 sm:py-10">
+      <main
+        id="main-content"
+        className="relative z-elevated flex flex-1 flex-col items-center px-4 py-8 sm:px-6 sm:py-10"
+      >
         <nav aria-label={stepLabel} className="mb-8 flex justify-center w-full max-w-2xl sm:mb-10">
-          <WizardStepIndicator
-            steps={steps}
-            current={currentStep}
-            ariaLabel={stepLabel}
-          />
+          <WizardStepIndicator steps={steps} current={currentStep} ariaLabel={stepLabel} />
         </nav>
 
         <motion.section
@@ -103,7 +102,10 @@ export default function WizardLayout({
           aria-labelledby="wizard-step-title"
         >
           <header className="border-b border-border/50 bg-muted/10 px-6 py-5 sm:px-8">
-            <h1 id="wizard-step-title" className="m-0 text-lg font-bold tracking-tight text-foreground sm:text-xl text-balance">
+            <h1
+              id="wizard-step-title"
+              className="m-0 text-lg font-bold tracking-tight text-foreground sm:text-xl text-balance"
+            >
               {title}
             </h1>
             {subtitle ? (

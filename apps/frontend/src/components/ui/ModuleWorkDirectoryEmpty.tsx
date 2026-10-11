@@ -40,7 +40,13 @@ export function ModuleWorkDirectoryEmpty({
 
   return (
     <div className={`${WORK_SURFACE} border-border/40 p-6`}>
-      <EmptyState variant="dashed" icon={icon} title={title} description={description} action={action} />
+      <EmptyState
+        variant="dashed"
+        icon={icon}
+        title={title}
+        description={description}
+        action={action}
+      />
     </div>
   );
 }

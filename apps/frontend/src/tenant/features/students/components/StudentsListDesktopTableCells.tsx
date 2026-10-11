@@ -1,8 +1,4 @@
-import {
-  toMessagingRecipient,
-  type ModuleColumnRegistryEntry,
-  type Student,
-} from "@mms/shared";
+import { toMessagingRecipient, type ModuleColumnRegistryEntry, type Student } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { ContactPhoneAction, ContactEmailAction } from "@/components/ui/ContactAction";
 import { PersonIdentityMeta } from "@/components/ui/PersonIdentityMeta";
@@ -85,7 +81,10 @@ export function renderStudentsListDesktopTableCell({
               className="text-xs text-muted-foreground leading-tight mt-0.5 space-y-0.5"
             />
             {viewingDeleted && studentRow.deletionReason ? (
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2" title={studentRow.deletionReason}>
+              <p
+                className="text-xs text-muted-foreground mt-0.5 line-clamp-2"
+                title={studentRow.deletionReason}
+              >
                 {t("students.deletionReasonLabel")}: {studentRow.deletionReason}
               </p>
             ) : null}
@@ -95,7 +94,12 @@ export function renderStudentsListDesktopTableCell({
     }
     case "grNumber":
       return studentRow.grNumber ? (
-        <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+        <Badge
+          as="span"
+          size="sm"
+          tone="primary"
+          className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+        >
           {t("students.grPrefix")}: {studentRow.grNumber}
         </Badge>
       ) : (

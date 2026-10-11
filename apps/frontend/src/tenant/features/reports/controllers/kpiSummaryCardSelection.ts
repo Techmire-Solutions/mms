@@ -1,12 +1,9 @@
-import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { getObject, saveObject } from '@/lib/db';
-import type { CustomCard } from '@/lib/reports/reportMetadata';
-import {
-  areCustomCardsEqual,
-  areStringListsEqual,
-} from '@/components/ui/reports/kpiSummaryConfig';
-import { normalizeStoredCardIds } from '@/components/ui/reports/kpiSummaryFormatters';
-import type { CategorizedKPIItem } from '@/components/ui/reports/kpiSummaryTypes';
+import type { Dispatch, MutableRefObject, SetStateAction } from "react";
+import { getObject, saveObject } from "@/lib/db";
+import type { CustomCard } from "@/lib/reports/reportMetadata";
+import { areCustomCardsEqual, areStringListsEqual } from "@/components/ui/reports/kpiSummaryConfig";
+import { normalizeStoredCardIds } from "@/components/ui/reports/kpiSummaryFormatters";
+import type { CategorizedKPIItem } from "@/components/ui/reports/kpiSummaryTypes";
 
 export interface KpiCardSelectionState {
   customCards: CustomCard[];
@@ -28,7 +25,7 @@ export function syncSelectedCardIdsWithAvailable(
   setSelectedCardIds: Dispatch<SetStateAction<string[]>>,
 ): void {
   const availableCards = possibleCards.filter((card) => card.isAvailable);
-  const availableCardIds = availableCardIdsKey ? availableCardIdsKey.split('\u0000') : [];
+  const availableCardIds = availableCardIdsKey ? availableCardIdsKey.split("\u0000") : [];
   const availableCardIdSet = new Set(availableCardIds);
   const selectedIds = normalizeStoredCardIds(selectedCardIds, availableCards);
   let validSelectedCardIds = selectedIds.filter((cardId: string) => availableCardIdSet.has(cardId));
@@ -36,7 +33,7 @@ export function syncSelectedCardIdsWithAvailable(
     validSelectedCardIds = availableCardIds;
   }
   if (areStringListsEqual(selectedCardIds, validSelectedCardIds)) return;
-  saveObject(`kpi_config_${category}_${role || 'all'}`, validSelectedCardIds);
+  saveObject(`kpi_config_${category}_${role || "all"}`, validSelectedCardIds);
   setSelectedCardIds(validSelectedCardIds);
 }
 
@@ -59,7 +56,7 @@ export function syncNewCustomCardSelections(
   if (newlyAdded.length === 0) return;
   const nextSelectedCardIds = [...new Set([...selectedCardIds, ...newlyAdded])];
   if (areStringListsEqual(selectedCardIds, nextSelectedCardIds)) return;
-  saveObject(`kpi_config_${category}_${role || 'all'}`, nextSelectedCardIds);
+  saveObject(`kpi_config_${category}_${role || "all"}`, nextSelectedCardIds);
   setSelectedCardIds(nextSelectedCardIds);
 }
 
@@ -68,7 +65,7 @@ export function loadCustomCardsForCategory(category: string): CustomCard[] {
 }
 
 export function loadSelectedCardIdsForCategory(category: string, role?: string): string[] {
-  return getObject<string[]>(`kpi_config_${category}_${role || 'all'}`, []);
+  return getObject<string[]>(`kpi_config_${category}_${role || "all"}`, []);
 }
 
 export function loadPreviousCustomCardIds(category: string): string[] {

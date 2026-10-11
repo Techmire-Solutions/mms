@@ -6,11 +6,34 @@ import type { VoucherPrintLayout } from "@/tenant/features/accounting/components
 export const PAYMENT_VOUCHER_PAGE = { width: 559, height: 794 } as const;
 
 export const PAYMENT_VOUCHER_LABEL_KEYS = [
-  "title", "voucherNo", "date", "fiscalYear", "paidTo", "employeeId", "designation", "payPeriod",
-  "purpose", "paidFrom", "particulars", "account", "debit", "credit", "deduction", "amount", "total",
-  "netPaid", "amountInWords",
-  "preparedBy", "approvedBy", "paidBy", "receivedBy", "receiverName", "receiverIdNo",
-  "signature", "thumbImpression", "receiptDeclaration",
+  "title",
+  "voucherNo",
+  "date",
+  "fiscalYear",
+  "paidTo",
+  "employeeId",
+  "designation",
+  "payPeriod",
+  "purpose",
+  "paidFrom",
+  "particulars",
+  "account",
+  "debit",
+  "credit",
+  "deduction",
+  "amount",
+  "total",
+  "netPaid",
+  "amountInWords",
+  "preparedBy",
+  "approvedBy",
+  "paidBy",
+  "receivedBy",
+  "receiverName",
+  "receiverIdNo",
+  "signature",
+  "thumbImpression",
+  "receiptDeclaration",
 ] as const;
 
 export type PaymentVoucherLabels = Record<(typeof PAYMENT_VOUCHER_LABEL_KEYS)[number], string>;
@@ -86,10 +109,16 @@ function sign(label: string, name = ""): string {
 
 function paymentTable(input: PaymentVoucherPrintInput): string {
   const rows = input.particulars
-    .map((row) => `<tr><td>${escapeHtml(row.account)}</td><td class="num">${escapeHtml(row.amount)}</td></tr>`)
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.account)}</td><td class="num">${escapeHtml(row.amount)}</td></tr>`,
+    )
     .join("");
   const deductions = input.deductions
-    .map((row) => `<tr><td>${escapeHtml(input.labels.deduction)}: ${escapeHtml(row.account)}</td><td class="num">${escapeHtml(row.amount)}</td></tr>`)
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(input.labels.deduction)}: ${escapeHtml(row.account)}</td><td class="num">${escapeHtml(row.amount)}</td></tr>`,
+    )
     .join("");
   const net = input.netPaid
     ? `<tr><td>${escapeHtml(input.labels.netPaid)}</td><td class="num">${escapeHtml(input.netPaid)}</td></tr>`
@@ -103,7 +132,10 @@ function paymentTable(input: PaymentVoucherPrintInput): string {
 
 function journalTable(input: PaymentVoucherPrintInput): string {
   const rows = input.journalLines
-    .map((row) => `<tr><td>${escapeHtml(row.account)}</td><td class="num">${escapeHtml(row.debit)}</td><td class="num">${escapeHtml(row.credit)}</td></tr>`)
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.account)}</td><td class="num">${escapeHtml(row.debit)}</td><td class="num">${escapeHtml(row.credit)}</td></tr>`,
+    )
     .join("");
   return `<table class="pv-t">
     <thead><tr><th>${escapeHtml(input.labels.account)}</th><th class="num">${escapeHtml(input.labels.debit)}</th><th class="num">${escapeHtml(input.labels.credit)}</th></tr></thead>
@@ -118,7 +150,10 @@ export function buildPaymentVoucherBody(input: PaymentVoucherPrintInput): string
   const logo = institution.logoUrl
     ? `<img class="pv-logo" src="${escapeHtml(institution.logoUrl)}" alt="" />`
     : "";
-  const party = input.layout === "journal" ? "" : `
+  const party =
+    input.layout === "journal"
+      ? ""
+      : `
   ${line(L.paidTo, payee?.name ?? "")}
   ${payee ? line(L.employeeId, payee.employeeId) + line(L.designation, payee.designation) : ""}
   ${input.payPeriod ? line(L.payPeriod, input.payPeriod) : ""}
@@ -126,7 +161,9 @@ export function buildPaymentVoucherBody(input: PaymentVoucherPrintInput): string
   ${line(L.paidFrom, input.paidFrom.join(", "))}`;
   const narration = input.layout === "journal" ? line(L.purpose, input.narration) : "";
   const signs = `${sign(L.preparedBy, input.preparedByName)}${sign(L.approvedBy)}${sign(L.paidBy)}`;
-  const receiver = input.layout === "payment" ? `
+  const receiver =
+    input.layout === "payment"
+      ? `
   <section class="pv-recv">
     <div class="pv-recv-body">
       <h2>${escapeHtml(L.receivedBy)}</h2>
@@ -134,7 +171,8 @@ export function buildPaymentVoucherBody(input: PaymentVoucherPrintInput): string
       ${line(L.receiverName)}${line(L.receiverIdNo)}${line(L.signature)}${line(L.date)}
     </div>
     <div class="pv-thumb">${escapeHtml(L.thumbImpression)}</div>
-  </section>` : "";
+  </section>`
+      : "";
 
   return `${voucherStyles(input.primaryColor)}
 <div class="pv">

@@ -1,13 +1,16 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import { DEFAULT_EXAMINATIONS_SETTINGS, type ExaminationsSettings } from './examinationsModuleSettings.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import {
+  DEFAULT_EXAMINATIONS_SETTINGS,
+  type ExaminationsSettings,
+} from "./examinationsModuleSettings.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 import {
   EXAMINATIONS_TAB_REGISTRY,
   INITIAL_EXAMINATIONS_FIELD_SEED,
-} from './moduleFieldSetupAcademic.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
+} from "./moduleFieldSetupAcademic.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
 
 /** Deep clone {@link INITIAL_EXAMINATIONS_FIELD_SEED} for default and Setup states. */
 export function cloneExaminationFieldSeed(): Record<string, FieldDefinition[]> {
@@ -30,7 +33,7 @@ export function isExaminationSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Info tab). */
 export function isExaminationLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -40,7 +43,7 @@ export function isExaminationLockedEnabledTab(tabKey: string): boolean {
 export function resolveExaminationFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneExaminationFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -93,7 +96,7 @@ const examinationsFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSch
   .strict();
 
 export const examinationsFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, examinationsFieldConfigPutBodyBaseSchema);
 
@@ -133,9 +136,9 @@ export interface ExaminationsModulePreferences {
 
 /** Extracts preferences slice from a raw composed settings blob. */
 export function normalizeExaminationsModulePreferences(
-  raw: unknown
+  raw: unknown,
 ): ExaminationsModulePreferences {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw || typeof raw !== "object") {
     return {
       passMark: DEFAULT_EXAMINATIONS_SETTINGS.passMark,
       maxMark: DEFAULT_EXAMINATIONS_SETTINGS.maxMark,
@@ -148,30 +151,62 @@ export function normalizeExaminationsModulePreferences(
       aiGrading: DEFAULT_EXAMINATIONS_SETTINGS.aiGrading,
       distinguishHonours: DEFAULT_EXAMINATIONS_SETTINGS.distinguishHonours,
       examReminders: DEFAULT_EXAMINATIONS_SETTINGS.examReminders,
-      defaultViewLayout: DEFAULT_EXAMINATIONS_SETTINGS.defaultViewLayout || 'list',
+      defaultViewLayout: DEFAULT_EXAMINATIONS_SETTINGS.defaultViewLayout || "list",
     };
   }
 
   const prefs = raw as Partial<ExaminationsModulePreferences>;
   return {
-    passMark: typeof prefs.passMark === 'string' ? prefs.passMark : DEFAULT_EXAMINATIONS_SETTINGS.passMark,
-    maxMark: typeof prefs.maxMark === 'string' ? prefs.maxMark : DEFAULT_EXAMINATIONS_SETTINGS.maxMark,
-    gradingSystem: typeof prefs.gradingSystem === 'string' ? prefs.gradingSystem : DEFAULT_EXAMINATIONS_SETTINGS.gradingSystem,
-    showRankings: typeof prefs.showRankings === 'boolean' ? prefs.showRankings : DEFAULT_EXAMINATIONS_SETTINGS.showRankings,
-    allowRetake: typeof prefs.allowRetake === 'boolean' ? prefs.allowRetake : DEFAULT_EXAMINATIONS_SETTINGS.allowRetake,
-    autoPublishResults: typeof prefs.autoPublishResults === 'boolean' ? prefs.autoPublishResults : DEFAULT_EXAMINATIONS_SETTINGS.autoPublishResults,
-    notifyOnResult: typeof prefs.notifyOnResult === 'boolean' ? prefs.notifyOnResult : DEFAULT_EXAMINATIONS_SETTINGS.notifyOnResult,
-    certificateTemplate: typeof prefs.certificateTemplate === 'string' ? prefs.certificateTemplate : DEFAULT_EXAMINATIONS_SETTINGS.certificateTemplate,
-    aiGrading: typeof prefs.aiGrading === 'boolean' ? prefs.aiGrading : DEFAULT_EXAMINATIONS_SETTINGS.aiGrading,
-    distinguishHonours: typeof prefs.distinguishHonours === 'boolean' ? prefs.distinguishHonours : DEFAULT_EXAMINATIONS_SETTINGS.distinguishHonours,
-    examReminders: typeof prefs.examReminders === 'boolean' ? prefs.examReminders : DEFAULT_EXAMINATIONS_SETTINGS.examReminders,
-    defaultViewLayout: typeof prefs.defaultViewLayout === 'string' ? prefs.defaultViewLayout : DEFAULT_EXAMINATIONS_SETTINGS.defaultViewLayout || 'list',
+    passMark:
+      typeof prefs.passMark === "string" ? prefs.passMark : DEFAULT_EXAMINATIONS_SETTINGS.passMark,
+    maxMark:
+      typeof prefs.maxMark === "string" ? prefs.maxMark : DEFAULT_EXAMINATIONS_SETTINGS.maxMark,
+    gradingSystem:
+      typeof prefs.gradingSystem === "string"
+        ? prefs.gradingSystem
+        : DEFAULT_EXAMINATIONS_SETTINGS.gradingSystem,
+    showRankings:
+      typeof prefs.showRankings === "boolean"
+        ? prefs.showRankings
+        : DEFAULT_EXAMINATIONS_SETTINGS.showRankings,
+    allowRetake:
+      typeof prefs.allowRetake === "boolean"
+        ? prefs.allowRetake
+        : DEFAULT_EXAMINATIONS_SETTINGS.allowRetake,
+    autoPublishResults:
+      typeof prefs.autoPublishResults === "boolean"
+        ? prefs.autoPublishResults
+        : DEFAULT_EXAMINATIONS_SETTINGS.autoPublishResults,
+    notifyOnResult:
+      typeof prefs.notifyOnResult === "boolean"
+        ? prefs.notifyOnResult
+        : DEFAULT_EXAMINATIONS_SETTINGS.notifyOnResult,
+    certificateTemplate:
+      typeof prefs.certificateTemplate === "string"
+        ? prefs.certificateTemplate
+        : DEFAULT_EXAMINATIONS_SETTINGS.certificateTemplate,
+    aiGrading:
+      typeof prefs.aiGrading === "boolean"
+        ? prefs.aiGrading
+        : DEFAULT_EXAMINATIONS_SETTINGS.aiGrading,
+    distinguishHonours:
+      typeof prefs.distinguishHonours === "boolean"
+        ? prefs.distinguishHonours
+        : DEFAULT_EXAMINATIONS_SETTINGS.distinguishHonours,
+    examReminders:
+      typeof prefs.examReminders === "boolean"
+        ? prefs.examReminders
+        : DEFAULT_EXAMINATIONS_SETTINGS.examReminders,
+    defaultViewLayout:
+      typeof prefs.defaultViewLayout === "string"
+        ? prefs.defaultViewLayout
+        : DEFAULT_EXAMINATIONS_SETTINGS.defaultViewLayout || "list",
   };
 }
 
 /** Extracts field-config slice from a raw composed settings blob. */
 export function normalizeExaminationsSettings(raw: unknown): ExaminationsSettings {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw || typeof raw !== "object") {
     return { ...DEFAULT_EXAMINATIONS_SETTINGS };
   }
 
@@ -190,7 +225,7 @@ export function normalizeExaminationsSettings(raw: unknown): ExaminationsSetting
     examReminders: DEFAULT_EXAMINATIONS_SETTINGS.examReminders,
     defaultViewLayout: DEFAULT_EXAMINATIONS_SETTINGS.defaultViewLayout,
     fields: resolveExaminationFieldsMap(
-      safe.fields && typeof safe.fields === 'object' && !Array.isArray(safe.fields)
+      safe.fields && typeof safe.fields === "object" && !Array.isArray(safe.fields)
         ? (safe.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -206,7 +241,7 @@ export function normalizeExaminationsSettings(raw: unknown): ExaminationsSetting
 export function composeExaminationsSettings(
   fieldConfig: ExaminationsSettings | null,
   prefs: ExaminationsModulePreferences,
-  formTabs?: TabDefinition[]
+  formTabs?: TabDefinition[],
 ): ExaminationsSettings {
   return {
     ...(fieldConfig ?? DEFAULT_EXAMINATIONS_SETTINGS),
@@ -228,7 +263,7 @@ export function composeExaminationsSettings(
 
 /** Drops preference keys before saving field-config to avoid overriding prefs layer. */
 export function stripExaminationsFieldConfigForPersist(
-  config: Partial<ExaminationsSettings>
+  config: Partial<ExaminationsSettings>,
 ): Partial<ExaminationsSettings> {
   // `name: _name` aliases: the bound locals exist only to omit preference keys from the rest object.
   const {
@@ -254,7 +289,9 @@ export function mergeExaminationsFormTabsFromApi(
   apiTabs: TabDefinition[],
 ): TabDefinition[] {
   const documentOrDefault =
-    documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [...EXAMINATIONS_TAB_REGISTRY];
+    documentFormTabs && documentFormTabs.length > 0
+      ? documentFormTabs
+      : [...EXAMINATIONS_TAB_REGISTRY];
   const merged =
     apiTabs.length === 0
       ? documentOrDefault

@@ -21,13 +21,26 @@ export function useWidgetBuilderRecordOptions({
     if (switchCollection === "sessions") {
       const sessionRecords = (collections.sessions || []) as Session[];
       return sessionRecords.flatMap((session) =>
-        (session.classes || []).map((sessionClass: Class) => ({ id: sessionClass.id, label: `${session.name} - ${sessionClass.name}` }))
+        (session.classes || []).map((sessionClass: Class) => ({
+          id: sessionClass.id,
+          label: `${session.name} - ${sessionClass.name}`,
+        })),
       );
     }
-    const collectionRecords = (collections[switchCollection] || []) as { id?: string | number; name?: string; studentName?: string; invoiceNo?: string }[];
+    const collectionRecords = (collections[switchCollection] || []) as {
+      id?: string | number;
+      name?: string;
+      studentName?: string;
+      invoiceNo?: string;
+    }[];
     return collectionRecords.map((collectionRecord) => ({
       id: String(collectionRecord.id),
-      label: String(collectionRecord.name || collectionRecord.studentName || collectionRecord.invoiceNo || collectionRecord.id),
+      label: String(
+        collectionRecord.name ||
+          collectionRecord.studentName ||
+          collectionRecord.invoiceNo ||
+          collectionRecord.id,
+      ),
     }));
   })() as SwitchRecordOption[];
 

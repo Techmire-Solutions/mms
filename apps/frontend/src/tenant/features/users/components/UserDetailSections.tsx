@@ -1,18 +1,18 @@
-import React from 'react';
-import { Shield, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import React from "react";
+import { Shield, AlertTriangle, CheckCircle2 } from "lucide-react";
 import {
   type filterRbacModulesForSettings,
   type resolveWorkspaceRole,
   workspaceRoleDescription,
   type PermissionAction,
   type SystemUser,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { UserRoleBadge } from '@/tenant/features/users/components/UserBadges';
-import { DetailSectionCard } from '@/components/ui/DetailSectionCard';
-import { DetailAttributeRow } from '@/components/ui/DetailAttributeRow';
-import { UserDetailBasicCard } from '@/tenant/features/users/components/UserDetailBasicCard';
-import { UserDetailPermissionsCard } from '@/tenant/features/users/components/UserDetailPermissionsCard';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { UserRoleBadge } from "@/tenant/features/users/components/UserBadges";
+import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { UserDetailBasicCard } from "@/tenant/features/users/components/UserDetailBasicCard";
+import { UserDetailPermissionsCard } from "@/tenant/features/users/components/UserDetailPermissionsCard";
 
 export interface UserDetailSectionsProps {
   user: SystemUser;
@@ -21,7 +21,7 @@ export interface UserDetailSectionsProps {
   workspaceRole: ReturnType<typeof resolveWorkspaceRole> | null;
   effectivePerms: Record<string, PermissionAction[]>;
   visibleModules: ReturnType<typeof filterRbacModulesForSettings>;
-  onCompose: (channel: 'sms' | 'whatsapp' | 'email') => void;
+  onCompose: (channel: "sms" | "whatsapp" | "email") => void;
   onVerifyEmail: () => void;
   verifyEmailPending: boolean;
 }
@@ -51,46 +51,58 @@ export function UserDetailSections({
         verifyEmailPending={verifyEmailPending}
       />
 
-      <DetailSectionCard title={t('users.detailRole')} accentColor="secondary" className="divide-y divide-border/50 p-0">
+      <DetailSectionCard
+        title={t("users.detailRole")}
+        accentColor="secondary"
+        className="divide-y divide-border/50 p-0"
+      >
         <DetailAttributeRow
           variant="inset"
           icon={Shield}
-          label={t('users.detailRole')}
+          label={t("users.detailRole")}
           value={
             workspaceRole ? (
               <div className="space-y-2">
                 <UserRoleBadge roleId={workspaceRole.id} />
-                <p className="text-xs text-muted-foreground font-normal">{workspaceRoleDescription(workspaceRole, t)}</p>
+                <p className="text-xs text-muted-foreground font-normal">
+                  {workspaceRoleDescription(workspaceRole, t)}
+                </p>
               </div>
             ) : (
-              <span className="text-muted-foreground font-normal">{t('users.detailNoRole')}</span>
+              <span className="text-muted-foreground font-normal">{t("users.detailNoRole")}</span>
             )
           }
         />
       </DetailSectionCard>
 
-      <UserDetailPermissionsCard
-        effectivePerms={effectivePerms}
-        visibleModules={visibleModules}
-      />
+      <UserDetailPermissionsCard effectivePerms={effectivePerms} visibleModules={visibleModules} />
 
-      <DetailSectionCard title={t('users.detailSecurity')} accentColor="destructive" className="divide-y divide-border/50 p-0">
+      <DetailSectionCard
+        title={t("users.detailSecurity")}
+        accentColor="destructive"
+        className="divide-y divide-border/50 p-0"
+      >
         <DetailAttributeRow
           variant="inset"
           icon={AlertTriangle}
-          label={t('users.col2fa')}
+          label={t("users.col2fa")}
           value={
             user.twoFactorEnabled ? (
               <span className="inline-flex items-center gap-1 text-primary">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                {t('users.twoFactorOn')}
+                {t("users.twoFactorOn")}
               </span>
             ) : (
-              t('users.twoFactorOff')
+              t("users.twoFactorOff")
             )
           }
         />
-        <DetailAttributeRow variant="inset" icon={AlertTriangle} label={t('users.detailFailedLogins')} value={user.failedLoginAttempts} />
+        <DetailAttributeRow
+          variant="inset"
+          icon={AlertTriangle}
+          label={t("users.detailFailedLogins")}
+          value={user.failedLoginAttempts}
+        />
       </DetailSectionCard>
     </div>
   );

@@ -1,4 +1,4 @@
-import { MODULE_METRICS_DEFAULT_PERIOD_DAYS } from './moduleCommandMetricsCore.js';
+import { MODULE_METRICS_DEFAULT_PERIOD_DAYS } from "./moduleCommandMetricsCore.js";
 
 type StatusRecord = { status?: string };
 
@@ -57,10 +57,10 @@ export function computeSessionsCommandMetrics(
   for (let i = 0; i < sessions.length; i++) {
     const session = sessions[i];
     const status = session.status;
-    if (status === 'active') active++;
-    else if (status === 'upcoming') upcoming++;
-    else if (status === 'completed') completed++;
-    else if (status === 'cancelled') cancelled++;
+    if (status === "active") active++;
+    else if (status === "upcoming") upcoming++;
+    else if (status === "completed") completed++;
+    else if (status === "cancelled") cancelled++;
 
     const classes = session.classes;
     if (classes) {
@@ -130,12 +130,12 @@ export function computeEnrollmentsCommandMetrics(
   for (let i = 0; i < enrollments.length; i++) {
     const record = enrollments[i];
     const status = record.status;
-    if (status === 'confirmed') confirmed++;
-    else if (status === 'pending') pending++;
-    else if (status === 'cancelled') cancelled++;
-    else if (status === 'completed') completed++;
+    if (status === "confirmed") confirmed++;
+    else if (status === "pending") pending++;
+    else if (status === "cancelled") cancelled++;
+    else if (status === "completed") completed++;
 
-    if (status !== 'cancelled' && record.finalFee) {
+    if (status !== "cancelled" && record.finalFee) {
       revenue += record.finalFee;
     }
 

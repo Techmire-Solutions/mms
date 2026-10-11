@@ -34,9 +34,7 @@ vi.mock("@/tenant/features/contacts/components/ContactsDataBannerRows", () => ({
 
 describe("ContactsDataBanner Component", () => {
   it("renders pending and conflict banners when counts are positive", () => {
-    const html = renderToStaticMarkup(
-      <ContactsDataBanner onReviewConflicts={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<ContactsDataBanner onReviewConflicts={vi.fn()} />);
 
     expect(html).toContain("Pending: 2");
     expect(html).toContain("Conflicts: 1");

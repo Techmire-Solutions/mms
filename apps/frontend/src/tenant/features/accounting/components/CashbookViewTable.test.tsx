@@ -58,12 +58,7 @@ const mockRows: CashbookRow[] = [
 describe("CashbookViewTable", () => {
   it("renders empty state when rows array is empty", () => {
     const markup = renderToStaticMarkup(
-      <CashbookViewTable
-        rows={[]}
-        totalIn={0}
-        totalOut={0}
-        formatCurrency={(val) => `$${val}`}
-      />,
+      <CashbookViewTable rows={[]} totalIn={0} totalOut={0} formatCurrency={(val) => `$${val}`} />,
     );
     expect(markup).toContain("accounting.cashbook.noTransactions");
   });

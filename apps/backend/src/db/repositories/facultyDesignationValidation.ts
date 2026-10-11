@@ -1,10 +1,10 @@
-import { sql } from 'drizzle-orm';
-import { FACULTY_DESIGNATION_HIERARCHY_MAX_DEPTH } from '@mms/shared';
-import type { TenantTransaction } from '../tenant-context.js';
-import { FacultyCatalogConflictError } from './facultyDepartmentValidation.js';
-import { lockFacultyHierarchy } from './facultyAssignmentValidation.js';
+import { sql } from "drizzle-orm";
+import { FACULTY_DESIGNATION_HIERARCHY_MAX_DEPTH } from "@mms/shared";
+import type { TenantTransaction } from "../tenant-context.js";
+import { FacultyCatalogConflictError } from "./facultyDepartmentValidation.js";
+import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 
-type Executor = Pick<TenantTransaction, 'execute'>;
+type Executor = Pick<TenantTransaction, "execute">;
 
 export interface DesignationValidationInput {
   id: string;
@@ -20,21 +20,24 @@ export interface DesignationValidationInput {
  * hierarchy rank (parent rank + 1, root = 1).
  */
 export async function validateFacultyDesignation(
-  tx: Executor, tenant: string, input: DesignationValidationInput,
+  tx: Executor,
+  tenant: string,
+  input: DesignationValidationInput,
 ): Promise<{ hierarchyRank: number }> {
   await lockFacultyHierarchy(tx, tenant);
-  if (!input.name.trim()) throw new Error('Designation name is required');
+  if (!input.name.trim()) throw new Error("Designation name is required");
   const existing = await tx.execute<{ deleted_at: Date | null }>(sql`
     SELECT deleted_at FROM faculty_designations WHERE workspace_subdomain = ${tenant}
       AND id = ${input.id} FOR UPDATE
   `);
-  if (existing.rows.some((row) => row.deleted_at !== null)) throw new Error('Designation is archived');
+  if (existing.rows.some((row) => row.deleted_at !== null))
+    throw new Error("Designation is archived");
 
   const department = await tx.execute<{ id: string }>(sql`
     SELECT id FROM faculty_departments WHERE workspace_subdomain = ${tenant}
       AND id = ${input.departmentId} AND deleted_at IS NULL LIMIT 1
   `);
-  if (!department.rows.length) throw new Error('Department is missing or archived');
+  if (!department.rows.length) throw new Error("Department is missing or archived");
 
   const duplicate = await tx.execute<{ id: string }>(sql`
     SELECT id FROM faculty_designations
@@ -44,11 +47,14 @@ export async function validateFacultyDesignation(
     LIMIT 1
   `);
   if (duplicate.rows.length) {
-    throw new FacultyCatalogConflictError('A designation with this name already exists in this department');
+    throw new FacultyCatalogConflictError(
+      "A designation with this name already exists in this department",
+    );
   }
 
   if (!input.parentDesignationId) return { hierarchyRank: 1 };
-  if (input.parentDesignationId === input.id) throw new Error('A designation cannot be its own parent');
+  if (input.parentDesignationId === input.id)
+    throw new Error("A designation cannot be its own parent");
   const ancestors = await tx.execute<{ id: string; depth: number; cycle: boolean }>(sql`
     WITH RECURSIVE ancestors AS (
       SELECT id, parent_designation_id, 1 AS depth, ARRAY[id] AS path, FALSE AS cycle
@@ -61,19 +67,23 @@ export async function validateFacultyDesignation(
         AND a.depth < ${FACULTY_DESIGNATION_HIERARCHY_MAX_DEPTH}
     ) SELECT id, depth, cycle FROM ancestors
   `);
-  if (!ancestors.rows.length) throw new Error('Parent designation is missing or archived');
+  if (!ancestors.rows.length) throw new Error("Parent designation is missing or archived");
   if (ancestors.rows.some((row) => row.id === input.id || row.cycle)) {
-    throw new Error('Circular designation hierarchy detected');
+    throw new Error("Circular designation hierarchy detected");
   }
   const parentRank = ancestors.rows.length;
   if (parentRank >= FACULTY_DESIGNATION_HIERARCHY_MAX_DEPTH) {
-    throw new Error('Designation hierarchy depth limit exceeded');
+    throw new Error("Designation hierarchy depth limit exceeded");
   }
   return { hierarchyRank: parentRank + 1 };
 }
 
 /** Re-derives `hierarchy_rank` for every live descendant after a parent change. */
-export async function recomputeDescendantRanks(tx: Executor, tenant: string, rootId: string): Promise<void> {
+export async function recomputeDescendantRanks(
+  tx: Executor,
+  tenant: string,
+  rootId: string,
+): Promise<void> {
   await tx.execute(sql`
     WITH RECURSIVE tree AS (
       SELECT id, hierarchy_rank FROM faculty_designations
@@ -92,7 +102,11 @@ export async function recomputeDescendantRanks(tx: Executor, tenant: string, roo
 }
 
 /** A designation cannot be archived while faculty, appointments, or child designations reference it. */
-export async function validateDesignationDeletion(tx: Executor, tenant: string, id: string): Promise<void> {
+export async function validateDesignationDeletion(
+  tx: Executor,
+  tenant: string,
+  id: string,
+): Promise<void> {
   await lockFacultyHierarchy(tx, tenant);
   const dependents = await tx.execute<{ id: string }>(sql`
     SELECT fed.id FROM faculty_employ_designations fed
@@ -107,6 +121,8 @@ export async function validateDesignationDeletion(tx: Executor, tenant: string, 
     LIMIT 1
   `);
   if (dependents.rows.length) {
-    throw new FacultyCatalogConflictError('Designation has dependent faculty, appointments, or child designations');
+    throw new FacultyCatalogConflictError(
+      "Designation has dependent faculty, appointments, or child designations",
+    );
   }
 }

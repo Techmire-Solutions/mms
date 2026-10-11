@@ -3,8 +3,8 @@
 /** Formats a local Date object as a `YYYY-MM-DD` storage string. */
 export function formatDateToIso(date: Date): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -19,7 +19,7 @@ export function todayISO(): string {
  */
 export function parseIsoDate(isoStr?: string): Date | undefined {
   if (!isoStr) return undefined;
-  const [year, month, day] = isoStr.split('-').map(Number);
+  const [year, month, day] = isoStr.split("-").map(Number);
   if (year == null || month == null || day == null || isNaN(year) || isNaN(month) || isNaN(day)) {
     return undefined;
   }
@@ -29,7 +29,7 @@ export function parseIsoDate(isoStr?: string): Date | undefined {
 /** Returns the year portion of a `YYYY-MM-DD` string, or `undefined` if invalid. */
 export function parseIsoYear(isoStr?: string): number | undefined {
   if (!isoStr) return undefined;
-  const [year] = isoStr.split('-').map(Number);
+  const [year] = isoStr.split("-").map(Number);
   return year == null || isNaN(year) ? undefined : year;
 }
 

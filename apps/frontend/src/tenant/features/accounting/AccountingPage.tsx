@@ -15,8 +15,16 @@ import { ACCOUNTING_PAGE_ICON } from "@/tenant/features/accounting/accountingPag
 import { JOURNAL_PAGE_SIZE } from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
 import { useAccountingPageController } from "@/tenant/features/accounting/hooks/useAccountingPageController";
 
-const AccountingReportsTier = React.lazy(() => import("@/tenant/features/accounting/components/AccountingReportsTier").then((m) => ({ default: m.AccountingReportsTier })));
-const AccountingSetupTier = React.lazy(() => import("@/tenant/features/accounting/components/AccountingSetupTier").then((m) => ({ default: m.AccountingSetupTier })));
+const AccountingReportsTier = React.lazy(() =>
+  import("@/tenant/features/accounting/components/AccountingReportsTier").then((m) => ({
+    default: m.AccountingReportsTier,
+  })),
+);
+const AccountingSetupTier = React.lazy(() =>
+  import("@/tenant/features/accounting/components/AccountingSetupTier").then((m) => ({
+    default: m.AccountingSetupTier,
+  })),
+);
 
 /**
  * Accounting and bookkeeping — Work | Reports | Setup.
@@ -32,12 +40,46 @@ export default function Accounting() {
     canExport: c.canWrite,
   });
   const {
-    t, canWrite, canDelete, pageTabs, subTabs, activeTab, setActiveTab, activeSubTab, setActiveSubTab, showDeleted,
-    setShowDeleted, createJournalRequestKey, createAccountRequestKey, accounts, journalEntries, aggregateEntries,
-    fiscalYears, accountsResult, entriesResult, aggregateEntriesResult, journalTotal, filteredCount, setFilteredCount,
-    settings, activeFiscalYear, activeCurrency, listLoadFailed, journalList, journalColumnLayout, accountColumnLayout,
-    setAccounts, setEntries, setFiscalYears, handleDeleteEntry, handleRestoreEntry, handleBulkDeleteEntries,
-    handleBulkRestoreEntries, handleShortcutStateChange, openJournalCreate, openAccountCreate,
+    t,
+    canWrite,
+    canDelete,
+    pageTabs,
+    subTabs,
+    activeTab,
+    setActiveTab,
+    activeSubTab,
+    setActiveSubTab,
+    showDeleted,
+    setShowDeleted,
+    createJournalRequestKey,
+    createAccountRequestKey,
+    accounts,
+    journalEntries,
+    aggregateEntries,
+    fiscalYears,
+    accountsResult,
+    entriesResult,
+    aggregateEntriesResult,
+    journalTotal,
+    filteredCount,
+    setFilteredCount,
+    settings,
+    activeFiscalYear,
+    activeCurrency,
+    listLoadFailed,
+    journalList,
+    journalColumnLayout,
+    accountColumnLayout,
+    setAccounts,
+    setEntries,
+    setFiscalYears,
+    handleDeleteEntry,
+    handleRestoreEntry,
+    handleBulkDeleteEntries,
+    handleBulkRestoreEntries,
+    handleShortcutStateChange,
+    openJournalCreate,
+    openAccountCreate,
   } = c;
 
   return (
@@ -59,9 +101,7 @@ export default function Accounting() {
           onExport={handleExport}
         />
       }
-      metricsStrip={
-        <AccountingCommandMetrics entryTotal={journalTotal} shown={filteredCount} />
-      }
+      metricsStrip={<AccountingCommandMetrics entryTotal={journalTotal} shown={filteredCount} />}
     >
       <ResponsiveAccordionTabs
         tabs={pageTabs}
@@ -84,73 +124,73 @@ export default function Accounting() {
               {activeTab === "work" && (
                 <div className="space-y-5">
                   <AccountingWorkTier
-                  accounts={accounts}
-                  accountsLoaded={accountsResult.isSuccess}
-                  entries={journalEntries}
-                  aggregateEntries={aggregateEntries}
-                  fiscalYears={fiscalYears}
-                  settings={settings}
-                  activeSubTab={activeSubTab}
-                  subTabs={subTabs}
-                  showDeleted={showDeleted}
-                  canWrite={canWrite}
-                  canDelete={canDelete}
-                  listLoadFailed={listLoadFailed}
-                  journalFilters={journalList.filters}
-                  onJournalFiltersChange={journalList.patchFilters}
-                  journalPaging={{
-                    page: journalList.page,
-                    limit: JOURNAL_PAGE_SIZE,
-                    total: journalTotal,
-                    hasMore: entriesResult.data?.hasMore ?? false,
-                    onPageChange: journalList.setPage,
-                  }}
-                  createJournalRequestKey={createJournalRequestKey}
-                  createAccountRequestKey={createAccountRequestKey}
-                  onSubTabChange={(next) => {
-                    setActiveSubTab(next);
-                    if (next !== "journal") setShowDeleted(false);
-                  }}
-                  onShowDeletedChange={() => setShowDeleted((prev) => !prev)}
-                  onRetry={() => {
-                    void accountsResult.refetch();
-                    void entriesResult.refetch();
-                    void aggregateEntriesResult.refetch();
-                  }}
-                  onAccountsChange={setAccounts}
-                  onEntriesChange={setEntries}
-                  onFilteredCountChange={setFilteredCount}
-                  onShortcutStateChange={handleShortcutStateChange}
-                  onDeleteEntry={handleDeleteEntry}
-                  onRestoreEntry={handleRestoreEntry}
-                  onBulkDeleteEntries={handleBulkDeleteEntries}
-                  onBulkRestoreEntries={handleBulkRestoreEntries}
-                  journalColumnProps={{
-                    isColumnVisible: journalColumnLayout.isColumnVisible,
-                    getColumnWidth: journalColumnLayout.getColumnWidth,
-                    onColumnResize: journalColumnLayout.setColumnWidth,
-                    columnCustomizer: {
-                      columnRegistry: journalColumnLayout.columnRegistry,
-                      updateUserColumnLayout: journalColumnLayout.updateUserColumnLayout,
-                      onResetLayout: journalColumnLayout.resetColumnLayout,
-                      labels: journalColumnLayout.customizerLabels,
-                    },
-                  }}
-                  accountColumnProps={{
-                    isColumnVisible: accountColumnLayout.isColumnVisible,
-                    getColumnWidth: accountColumnLayout.getColumnWidth,
-                    onColumnResize: accountColumnLayout.setColumnWidth,
-                    columnCustomizer: {
-                      columnRegistry: accountColumnLayout.columnRegistry,
-                      updateUserColumnLayout: accountColumnLayout.updateUserColumnLayout,
-                      onResetLayout: accountColumnLayout.resetColumnLayout,
-                      labels: accountColumnLayout.customizerLabels,
-                    },
-                  }}
-                  showActiveLabel={t("accounting.trash.showActive")}
-                  showDeletedLabel={t("accounting.trash.showDeleted")}
-                  loadFailedTitle={t("accounting.loadFailed")}
-                />
+                    accounts={accounts}
+                    accountsLoaded={accountsResult.isSuccess}
+                    entries={journalEntries}
+                    aggregateEntries={aggregateEntries}
+                    fiscalYears={fiscalYears}
+                    settings={settings}
+                    activeSubTab={activeSubTab}
+                    subTabs={subTabs}
+                    showDeleted={showDeleted}
+                    canWrite={canWrite}
+                    canDelete={canDelete}
+                    listLoadFailed={listLoadFailed}
+                    journalFilters={journalList.filters}
+                    onJournalFiltersChange={journalList.patchFilters}
+                    journalPaging={{
+                      page: journalList.page,
+                      limit: JOURNAL_PAGE_SIZE,
+                      total: journalTotal,
+                      hasMore: entriesResult.data?.hasMore ?? false,
+                      onPageChange: journalList.setPage,
+                    }}
+                    createJournalRequestKey={createJournalRequestKey}
+                    createAccountRequestKey={createAccountRequestKey}
+                    onSubTabChange={(next) => {
+                      setActiveSubTab(next);
+                      if (next !== "journal") setShowDeleted(false);
+                    }}
+                    onShowDeletedChange={() => setShowDeleted((prev) => !prev)}
+                    onRetry={() => {
+                      void accountsResult.refetch();
+                      void entriesResult.refetch();
+                      void aggregateEntriesResult.refetch();
+                    }}
+                    onAccountsChange={setAccounts}
+                    onEntriesChange={setEntries}
+                    onFilteredCountChange={setFilteredCount}
+                    onShortcutStateChange={handleShortcutStateChange}
+                    onDeleteEntry={handleDeleteEntry}
+                    onRestoreEntry={handleRestoreEntry}
+                    onBulkDeleteEntries={handleBulkDeleteEntries}
+                    onBulkRestoreEntries={handleBulkRestoreEntries}
+                    journalColumnProps={{
+                      isColumnVisible: journalColumnLayout.isColumnVisible,
+                      getColumnWidth: journalColumnLayout.getColumnWidth,
+                      onColumnResize: journalColumnLayout.setColumnWidth,
+                      columnCustomizer: {
+                        columnRegistry: journalColumnLayout.columnRegistry,
+                        updateUserColumnLayout: journalColumnLayout.updateUserColumnLayout,
+                        onResetLayout: journalColumnLayout.resetColumnLayout,
+                        labels: journalColumnLayout.customizerLabels,
+                      },
+                    }}
+                    accountColumnProps={{
+                      isColumnVisible: accountColumnLayout.isColumnVisible,
+                      getColumnWidth: accountColumnLayout.getColumnWidth,
+                      onColumnResize: accountColumnLayout.setColumnWidth,
+                      columnCustomizer: {
+                        columnRegistry: accountColumnLayout.columnRegistry,
+                        updateUserColumnLayout: accountColumnLayout.updateUserColumnLayout,
+                        onResetLayout: accountColumnLayout.resetColumnLayout,
+                        labels: accountColumnLayout.customizerLabels,
+                      },
+                    }}
+                    showActiveLabel={t("accounting.trash.showActive")}
+                    showDeletedLabel={t("accounting.trash.showDeleted")}
+                    loadFailedTitle={t("accounting.loadFailed")}
+                  />
                 </div>
               )}
 

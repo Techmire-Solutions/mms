@@ -1,9 +1,9 @@
-import { sql } from 'drizzle-orm';
-import type { SessionsReportAggregates } from '@mms/shared';
-import { getQueryRows } from '../documentStoreKeys.js';
-import { withTenantRead } from '../tenant-context.js';
+import { sql } from "drizzle-orm";
+import type { SessionsReportAggregates } from "@mms/shared";
+import { getQueryRows } from "../documentStoreKeys.js";
+import { withTenantRead } from "../tenant-context.js";
 
-const WEEKDAY_KEYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const WEEKDAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 /**
  * SQL aggregates for Sessions Reports: capacity-by-class, enrollment trends, today's class rows.
@@ -12,7 +12,7 @@ export async function loadSessionsReportAggregatesSql(
   tenant: string,
 ): Promise<SessionsReportAggregates> {
   const subdomain = tenant.trim().toLowerCase();
-  const todayKey = WEEKDAY_KEYS[new Date().getDay()] ?? 'Mon';
+  const todayKey = WEEKDAY_KEYS[new Date().getDay()] ?? "Mon";
 
   return withTenantRead(subdomain, async (tx) => {
     const capacityResult = await tx.execute(sql`
@@ -117,14 +117,14 @@ export async function loadSessionsReportAggregatesSql(
     `);
 
     const capacity = getQueryRows<Record<string, unknown>>(capacityResult).map((row) => ({
-      sessionId: String(row.sessionId ?? ''),
-      classId: String(row.classId ?? ''),
-      session: String(row.session ?? ''),
-      class: String(row.class ?? ''),
+      sessionId: String(row.sessionId ?? ""),
+      classId: String(row.classId ?? ""),
+      session: String(row.session ?? ""),
+      class: String(row.class ?? ""),
       enrolled: Number(row.enrolled ?? 0),
       capacity: Number(row.capacity ?? 0),
       rate: Number(row.rate ?? 0),
-      status: String(row.status ?? ''),
+      status: String(row.status ?? ""),
     }));
 
     const trendRows = getQueryRows<Record<string, unknown>>(trendResult);
@@ -135,23 +135,24 @@ export async function loadSessionsReportAggregatesSql(
     }> = [];
     for (let i = 0; i < trendRows.length; i++) {
       const row = trendRows[i];
-      if (typeof row?.monthKey === 'string' && /^\d{4}-\d{2}$/.test(row.monthKey)) {
+      if (typeof row?.monthKey === "string" && /^\d{4}-\d{2}$/.test(row.monthKey)) {
         enrollmentTrends.push({
           monthKey: row.monthKey,
           students: Number(row.students ?? 0),
-          sessionName: row.sessionName == null || row.sessionName === '' ? null : String(row.sessionName),
+          sessionName:
+            row.sessionName == null || row.sessionName === "" ? null : String(row.sessionName),
         });
       }
     }
 
     const todaysSessions = getQueryRows<Record<string, unknown>>(todayResult).map((row) => ({
-      id: String(row.id ?? ''),
-      name: String(row.name ?? ''),
-      teacher: String(row.teacher ?? ''),
-      time: String(row.time ?? ''),
-      room: String(row.room ?? ''),
+      id: String(row.id ?? ""),
+      name: String(row.name ?? ""),
+      teacher: String(row.teacher ?? ""),
+      time: String(row.time ?? ""),
+      room: String(row.room ?? ""),
       students: Number(row.students ?? 0),
-      status: row.status === 'live' ? ('live' as const) : ('upcoming' as const),
+      status: row.status === "live" ? ("live" as const) : ("upcoming" as const),
     }));
 
     return { capacity, enrollmentTrends, todaysSessions };

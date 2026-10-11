@@ -1,16 +1,16 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
 import {
   DEFAULT_ENROLLMENTS_SETTINGS,
   type EnrollmentsSettings,
-} from './enrollmentsModuleSettings.js';
+} from "./enrollmentsModuleSettings.js";
 import {
   ENROLLMENTS_TAB_REGISTRY,
   INITIAL_ENROLLMENTS_FIELD_SEED,
-} from './moduleFieldSetupAcademic.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+} from "./moduleFieldSetupAcademic.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 
 /** Deep clone {@link INITIAL_ENROLLMENTS_FIELD_SEED} for default and Setup states. */
 export function cloneEnrollmentFieldSeed(): Record<string, FieldDefinition[]> {
@@ -33,7 +33,7 @@ export function isEnrollmentSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Setup tab). */
 export function isEnrollmentLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -43,7 +43,7 @@ export function isEnrollmentLockedEnabledTab(tabKey: string): boolean {
 export function resolveEnrollmentFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneEnrollmentFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -93,7 +93,7 @@ const enrollmentFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchem
   .strict();
 
 export const enrollmentFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, enrollmentFieldConfigPutBodyBaseSchema);
 
@@ -114,33 +114,33 @@ export const enrollmentPreferencesPutBodySchema = z
 
 export type EnrollmentModulePreferences = Pick<
   EnrollmentsSettings,
-  | 'maxStudentsPerClass'
-  | 'waitlistEnabled'
-  | 'requireEligibilityCheck'
-  | 'autoAssignClass'
-  | 'enrollmentApproval'
-  | 'allowTransfers'
-  | 'dropDeadlineDays'
-  | 'reenrollmentReminder'
-  | 'defaultViewLayout'
+  | "maxStudentsPerClass"
+  | "waitlistEnabled"
+  | "requireEligibilityCheck"
+  | "autoAssignClass"
+  | "enrollmentApproval"
+  | "allowTransfers"
+  | "dropDeadlineDays"
+  | "reenrollmentReminder"
+  | "defaultViewLayout"
 >;
 
 const PREF_KEYS = [
-  'maxStudentsPerClass',
-  'waitlistEnabled',
-  'requireEligibilityCheck',
-  'autoAssignClass',
-  'enrollmentApproval',
-  'allowTransfers',
-  'dropDeadlineDays',
-  'reenrollmentReminder',
-  'defaultViewLayout',
+  "maxStudentsPerClass",
+  "waitlistEnabled",
+  "requireEligibilityCheck",
+  "autoAssignClass",
+  "enrollmentApproval",
+  "allowTransfers",
+  "dropDeadlineDays",
+  "reenrollmentReminder",
+  "defaultViewLayout",
 ] as const;
 
 function normalizeViewLayout(value: string | undefined): string {
   const trimmed = value?.trim();
-  if (trimmed === 'table' || trimmed === 'cards' || trimmed === 'list') return trimmed;
-  return DEFAULT_ENROLLMENTS_SETTINGS.defaultViewLayout ?? 'list';
+  if (trimmed === "table" || trimmed === "cards" || trimmed === "list") return trimmed;
+  return DEFAULT_ENROLLMENTS_SETTINGS.defaultViewLayout ?? "list";
 }
 
 /** Normalize Enrollments module preferences (typed `enrollment_module_preferences`). */
@@ -158,43 +158,43 @@ export function normalizeEnrollmentModulePreferences(
     reenrollmentReminder: DEFAULT_ENROLLMENTS_SETTINGS.reenrollmentReminder,
     defaultViewLayout: DEFAULT_ENROLLMENTS_SETTINGS.defaultViewLayout,
   };
-  if (!partial || typeof partial !== 'object') return { ...defaults };
+  if (!partial || typeof partial !== "object") return { ...defaults };
 
   return {
     maxStudentsPerClass:
-      typeof partial.maxStudentsPerClass === 'string' && partial.maxStudentsPerClass.trim()
+      typeof partial.maxStudentsPerClass === "string" && partial.maxStudentsPerClass.trim()
         ? partial.maxStudentsPerClass.trim()
         : defaults.maxStudentsPerClass,
     waitlistEnabled:
-      typeof partial.waitlistEnabled === 'boolean'
+      typeof partial.waitlistEnabled === "boolean"
         ? partial.waitlistEnabled
         : defaults.waitlistEnabled,
     requireEligibilityCheck:
-      typeof partial.requireEligibilityCheck === 'boolean'
+      typeof partial.requireEligibilityCheck === "boolean"
         ? partial.requireEligibilityCheck
         : defaults.requireEligibilityCheck,
     autoAssignClass:
-      typeof partial.autoAssignClass === 'boolean'
+      typeof partial.autoAssignClass === "boolean"
         ? partial.autoAssignClass
         : defaults.autoAssignClass,
     enrollmentApproval:
-      typeof partial.enrollmentApproval === 'boolean'
+      typeof partial.enrollmentApproval === "boolean"
         ? partial.enrollmentApproval
         : defaults.enrollmentApproval,
     allowTransfers:
-      typeof partial.allowTransfers === 'boolean'
+      typeof partial.allowTransfers === "boolean"
         ? partial.allowTransfers
         : defaults.allowTransfers,
     dropDeadlineDays:
-      typeof partial.dropDeadlineDays === 'string' && partial.dropDeadlineDays.trim()
+      typeof partial.dropDeadlineDays === "string" && partial.dropDeadlineDays.trim()
         ? partial.dropDeadlineDays.trim()
         : defaults.dropDeadlineDays,
     reenrollmentReminder:
-      typeof partial.reenrollmentReminder === 'boolean'
+      typeof partial.reenrollmentReminder === "boolean"
         ? partial.reenrollmentReminder
         : defaults.reenrollmentReminder,
     defaultViewLayout: normalizeViewLayout(
-      typeof partial.defaultViewLayout === 'string'
+      typeof partial.defaultViewLayout === "string"
         ? partial.defaultViewLayout
         : defaults.defaultViewLayout,
     ),
@@ -224,7 +224,7 @@ export function stripEnrollmentFieldConfigForPersist(
 /** Normalize EnrollmentsSettings from typed REST or legacy document blobs. */
 export function normalizeEnrollmentsSettings(config: unknown): EnrollmentsSettings {
   const defaults = { ...DEFAULT_ENROLLMENTS_SETTINGS, formTabs: [...ENROLLMENTS_TAB_REGISTRY] };
-  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
     return { ...defaults };
   }
   const raw = config as Record<string, unknown>;
@@ -234,14 +234,10 @@ export function normalizeEnrollmentsSettings(config: unknown): EnrollmentsSettin
     ...(raw as Partial<EnrollmentsSettings>),
     ...prefs,
     customFields: Array.isArray(raw.customFields)
-      ? (raw.customFields as EnrollmentsSettings['customFields'])
+      ? (raw.customFields as EnrollmentsSettings["customFields"])
       : defaults.customFields,
-    fieldOrder: Array.isArray(raw.fieldOrder)
-      ? (raw.fieldOrder as string[])
-      : defaults.fieldOrder,
-    formTabs: Array.isArray(raw.formTabs)
-      ? (raw.formTabs as TabDefinition[])
-      : defaults.formTabs,
+    fieldOrder: Array.isArray(raw.fieldOrder) ? (raw.fieldOrder as string[]) : defaults.fieldOrder,
+    formTabs: Array.isArray(raw.formTabs) ? (raw.formTabs as TabDefinition[]) : defaults.formTabs,
     enabledTabs: Array.isArray(raw.enabledTabs)
       ? (raw.enabledTabs as string[])
       : (raw.enabledTabs as string[] | undefined),
@@ -249,7 +245,7 @@ export function normalizeEnrollmentsSettings(config: unknown): EnrollmentsSettin
       ? (raw.requiredTabs as string[])
       : (raw.requiredTabs as string[] | undefined),
     fields: resolveEnrollmentFieldsMap(
-      raw.fields && typeof raw.fields === 'object' && !Array.isArray(raw.fields)
+      raw.fields && typeof raw.fields === "object" && !Array.isArray(raw.fields)
         ? (raw.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -278,7 +274,7 @@ export function composeEnrollmentsSettings(
     preferences as Partial<EnrollmentModulePreferences> | null,
   );
   return normalizeEnrollmentsSettings({
-    ...(fieldConfig && typeof fieldConfig === 'object' && !Array.isArray(fieldConfig)
+    ...(fieldConfig && typeof fieldConfig === "object" && !Array.isArray(fieldConfig)
       ? (fieldConfig as Record<string, unknown>)
       : {}),
     ...prefs,

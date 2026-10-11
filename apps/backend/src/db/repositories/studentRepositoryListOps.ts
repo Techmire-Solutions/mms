@@ -1,9 +1,9 @@
-import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Student } from '@mms/shared';
-import { students } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { hydrateStudentsList } from './studentRepository.js';
-import { STUDENT_COLUMNS } from './studentRepositoryColumns.js';
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Student } from "@mms/shared";
+import { students } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { hydrateStudentsList } from "./studentRepository.js";
+import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
 
 /** Default batch size for GR backfill (Setup migrate endpoint). */
 export const MISSING_GR_MIGRATE_CHUNK = 100;
@@ -44,7 +44,7 @@ export async function bulkUpdateStudentsStatusSql(
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
   if (!subdomain || uniqueIds.length === 0) return 0;
-  const normalizedStatus = status.trim().toLowerCase() || 'active';
+  const normalizedStatus = status.trim().toLowerCase() || "active";
 
   return withTenant(subdomain, async (tx) => {
     const updated = await tx

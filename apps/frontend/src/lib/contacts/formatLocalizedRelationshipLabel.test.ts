@@ -17,7 +17,10 @@ function t(key: AppTranslationKey): string {
 
 describe("formatLocalizedRelationshipParts", () => {
   it("returns blank parts for empty relationship", () => {
-    expect(formatLocalizedRelationshipParts(undefined, null, t)).toEqual({ display: "", label: "" });
+    expect(formatLocalizedRelationshipParts(undefined, null, t)).toEqual({
+      display: "",
+      label: "",
+    });
     expect(formatLocalizedRelationshipParts("   ", "male", t)).toEqual({ display: "", label: "" });
   });
 
@@ -41,7 +44,9 @@ describe("formatLocalizedRelationshipParts", () => {
 
   it("localizes known option values", () => {
     expect(formatLocalizedRelationshipParts("sibling", null, t).label).toBe("Frère/Soeur");
-    expect(formatLocalizedRelationshipParts("custom-relation", null, t).label).toBe("custom-relation");
+    expect(formatLocalizedRelationshipParts("custom-relation", null, t).label).toBe(
+      "custom-relation",
+    );
   });
 });
 

@@ -31,7 +31,7 @@ const FacultyIdCardModal = lazy(() =>
   })),
 );
 
-export const FacultyPageOverlays = (function FacultyPageOverlays({
+export const FacultyPageOverlays = function FacultyPageOverlays({
   showForm,
   editFaculty,
   onCloseForm,
@@ -82,7 +82,7 @@ export const FacultyPageOverlays = (function FacultyPageOverlays({
 
       return {
         faculty: facultyMember,
-        assignedClasses: assignedClasses.map(cls => `${cls.className} (${cls.sessionName})`),
+        assignedClasses: assignedClasses.map((cls) => `${cls.className} (${cls.sessionName})`),
         qualification: facultyMember.qualification,
         emergencyPhone: facultyMember.phone ? String(facultyMember.phone) : undefined,
       };
@@ -170,7 +170,6 @@ export const FacultyPageOverlays = (function FacultyPageOverlays({
       ) : null}
     </>
   );
-});
+};
 
 export type { FacultyPageOverlaysProps };
-

@@ -7,18 +7,23 @@ import {
 import { apiContract } from "@/lib/api";
 import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
 
-export const STUDENTS_LOOKUPS_QUERY_KEY = [STUDENTS_MODULE_MANIFEST.collectionKey, "lookups"] as const;
+export const STUDENTS_LOOKUPS_QUERY_KEY = [
+  STUDENTS_MODULE_MANIFEST.collectionKey,
+  "lookups",
+] as const;
 
 async function fetchStudentLookups(_signal?: AbortSignal): Promise<StudentLookupsMap> {
   const res = await apiContract.students.getLookups({ query: undefined, extraHeaders: {} });
-    return (res.body as { lookups?: StudentLookupsMap }).lookups ?? emptyStudentLookupsMap();
+  return (res.body as { lookups?: StudentLookupsMap }).lookups ?? emptyStudentLookupsMap();
 }
 
-async function putStudentLookupKind(
-  kind: StudentLookupKind,
-  items: string[],
-): Promise<string[]> {
-  const res = await apiContract.students.updateLookupKind({ params: { kind }, body: { items }, query: undefined, extraHeaders: {} });
+async function putStudentLookupKind(kind: StudentLookupKind, items: string[]): Promise<string[]> {
+  const res = await apiContract.students.updateLookupKind({
+    params: { kind },
+    body: { items },
+    query: undefined,
+    extraHeaders: {},
+  });
   return (res.body as { items?: string[] }).items ?? [];
 }
 

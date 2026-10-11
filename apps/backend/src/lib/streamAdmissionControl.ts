@@ -1,5 +1,5 @@
-import type { FastifyReply } from 'fastify';
-import { createConcurrencyLimiter, type ConcurrencyLimiter } from './concurrencyLimiter.js';
+import type { FastifyReply } from "fastify";
+import { createConcurrencyLimiter, type ConcurrencyLimiter } from "./concurrencyLimiter.js";
 
 /**
  * Admission control for long-lived streaming responses.
@@ -36,7 +36,7 @@ export function createStreamAdmissionControl(options: {
 }): StreamAdmissionControl {
   const limit = Math.max(1, options.limit);
   const retryAfterSeconds = options.retryAfterSeconds ?? 30;
-  const type = options.type ?? 'snapshot_unavailable';
+  const type = options.type ?? "snapshot_unavailable";
   const limiter: ConcurrencyLimiter = createConcurrencyLimiter(limit);
 
   return {
@@ -46,12 +46,12 @@ export function createStreamAdmissionControl(options: {
       const release = limiter.tryAcquire();
       if (release) return release;
 
-      reply.header('Retry-After', String(retryAfterSeconds));
+      reply.header("Retry-After", String(retryAfterSeconds));
       void reply.status(503).send({
         type,
         message:
           options.unavailableMessage ??
-          'Too many snapshot downloads are in progress. Please retry shortly.',
+          "Too many snapshot downloads are in progress. Please retry shortly.",
       });
       return null;
     },

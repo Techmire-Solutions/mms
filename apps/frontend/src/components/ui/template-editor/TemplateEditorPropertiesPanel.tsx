@@ -3,15 +3,15 @@
  * @description Inspector sidebar panel for configuring element properties, styles, position, alignment, and layers.
  */
 
-import React, { useState } from 'react';
-import type { ElementStyle, TemplateElement, TemplateFieldDefinition } from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { AlignmentType } from './templateEditorUtils';
-import { TemplateEditorMultiSelectPanel } from './TemplateEditorMultiSelectPanel';
-import { TemplateEditorElementIdentitySection } from './TemplateEditorElementIdentitySection';
-import { TemplateEditorPropertiesEmptyState } from './TemplateEditorPropertiesEmptyState';
-import { TemplateEditorPropertiesHeader } from './TemplateEditorPropertiesHeader';
-import { TemplateEditorSingleElementSections } from './TemplateEditorSingleElementSections';
+import React, { useState } from "react";
+import type { ElementStyle, TemplateElement, TemplateFieldDefinition } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { AlignmentType } from "./templateEditorUtils";
+import { TemplateEditorMultiSelectPanel } from "./TemplateEditorMultiSelectPanel";
+import { TemplateEditorElementIdentitySection } from "./TemplateEditorElementIdentitySection";
+import { TemplateEditorPropertiesEmptyState } from "./TemplateEditorPropertiesEmptyState";
+import { TemplateEditorPropertiesHeader } from "./TemplateEditorPropertiesHeader";
+import { TemplateEditorSingleElementSections } from "./TemplateEditorSingleElementSections";
 
 export interface TemplateEditorPropertiesPanelProps<TPayload = Record<string, unknown>> {
   selectedElement: TemplateElement<keyof TPayload & string> | undefined;
@@ -29,9 +29,9 @@ export interface TemplateEditorPropertiesPanelProps<TPayload = Record<string, un
   onDuplicateSelected?: () => void;
   onDeleteSelected?: () => void;
   onAlignSelected?: (alignType: AlignmentType) => void;
-  onDistributeSelected?: (axis: 'horizontal' | 'vertical') => void;
-  onCenterSelected?: (axis: 'both' | 'h' | 'v') => void;
-  onSnapSelected?: (edge: 'top' | 'bottom' | 'left' | 'right') => void;
+  onDistributeSelected?: (axis: "horizontal" | "vertical") => void;
+  onCenterSelected?: (axis: "both" | "h" | "v") => void;
+  onSnapSelected?: (edge: "top" | "bottom" | "left" | "right") => void;
   onBringToFront?: (elementId?: string) => void;
   onSendToBack?: (elementId?: string) => void;
   onBringSelectedToFront?: () => void;
@@ -124,7 +124,7 @@ export function TemplateEditorPropertiesPanel<TPayload = Record<string, unknown>
   return (
     <aside
       role="complementary"
-      aria-label={t('templateEditor.properties')}
+      aria-label={t("templateEditor.properties")}
       className="max-h-64 w-full shrink-0 space-y-4 overflow-y-auto border-t border-border bg-card p-3 lg:max-h-none lg:w-60 lg:border-t-0 lg:border-s print:hidden"
     >
       <TemplateEditorPropertiesHeader

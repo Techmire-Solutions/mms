@@ -1,4 +1,4 @@
-import type { ModuleColumnPreference } from './moduleColumnCore.js';
+import type { ModuleColumnPreference } from "./moduleColumnCore.js";
 
 /** Report segment → Work directory drill-down (globle1 §4.3). */
 export interface ContactsWorkDrillDown {
@@ -20,7 +20,7 @@ export interface ContactsSavedReport {
   createdAt: string;
   lastRunAt?: string;
   /** Defaults to private when omitted (legacy presets). */
-  shareScope?: 'private' | 'roles' | 'users' | 'global';
+  shareScope?: "private" | "roles" | "users" | "global";
   sharedWithRoles?: string[];
   sharedWithUserIds?: string[];
 }

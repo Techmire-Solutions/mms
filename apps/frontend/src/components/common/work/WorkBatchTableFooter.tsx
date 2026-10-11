@@ -11,14 +11,12 @@ export interface WorkBatchTableFooterProps {
  * Standardized semantic footer row for WorkBatchTable.
  * Renders structured cells with alignment, colSpan, and design token styling.
  */
-export function WorkBatchTableFooter({
-  footerRow,
-}: WorkBatchTableFooterProps): React.JSX.Element {
+export function WorkBatchTableFooter({ footerRow }: WorkBatchTableFooterProps): React.JSX.Element {
   return (
     <TableFooter
       className={cn(
         "border-t border-border bg-[--color-surface-table-footer]",
-        footerRow.className
+        footerRow.className,
       )}
     >
       <TableRow className="hover:bg-transparent">
@@ -29,7 +27,7 @@ export function WorkBatchTableFooter({
             className={cn(
               cell.align === "end" && "text-end",
               cell.align === "center" && "text-center",
-              cell.className
+              cell.className,
             )}
           >
             {cell.content}

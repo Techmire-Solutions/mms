@@ -13,7 +13,9 @@ import {
 
 export type ExaminationsListDesktopTableProps = ExaminationsListContentProps;
 
-export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTableProps): React.JSX.Element {
+export function ExaminationsListDesktopTable(
+  props: ExaminationsListDesktopTableProps,
+): React.JSX.Element {
   const {
     exams,
     selectedIds,
@@ -151,8 +153,7 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
               allSelected: allVisibleSelected,
               someSelected: someVisibleSelected,
               selectAllAriaLabel: t("examinations.trash.selectAll"),
-              selectRowAriaLabel: (exam) =>
-                t("examinations.trash.selectExam", { name: exam.name }),
+              selectRowAriaLabel: (exam) => t("examinations.trash.selectExam", { name: exam.name }),
             }
           : undefined
       }

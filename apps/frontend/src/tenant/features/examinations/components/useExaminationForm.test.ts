@@ -77,9 +77,7 @@ describe("useExaminationForm Hook", () => {
     });
 
     expect(hookResult.examDraft.name).toBe("Tajweed Test");
-    expect(hookResult.classes).toEqual([
-      { id: "cls-1", name: "Session 2025 - Grade 1" },
-    ]);
+    expect(hookResult.classes).toEqual([{ id: "cls-1", name: "Session 2025 - Grade 1" }]);
     expect(hookResult.valid).toBe(true);
   });
 

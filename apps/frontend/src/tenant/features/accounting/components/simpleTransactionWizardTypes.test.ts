@@ -13,22 +13,95 @@ import {
 const translate = (key: string) => `t:${key}`;
 
 const seedChart: Account[] = [
-  { id: "a1000", code: "1000", name: "Cash in Hand", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a1010", code: "1010", name: "Bank Account – HBL", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a4000", code: "4000", name: "Student Fee Income", type: "Revenue", subtype: "Operating Revenue", description: "", isActive: true },
-  { id: "a5000", code: "5000", name: "Staff Salaries", type: "Expense", subtype: "Operating Expense", description: "", isActive: true },
-  { id: "a3000", code: "3000", name: "Opening Capital", type: "Equity", subtype: "Owner's Equity", description: "", isActive: true },
+  {
+    id: "a1000",
+    code: "1000",
+    name: "Cash in Hand",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a1010",
+    code: "1010",
+    name: "Bank Account – HBL",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a4000",
+    code: "4000",
+    name: "Student Fee Income",
+    type: "Revenue",
+    subtype: "Operating Revenue",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a5000",
+    code: "5000",
+    name: "Staff Salaries",
+    type: "Expense",
+    subtype: "Operating Expense",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a3000",
+    code: "3000",
+    name: "Opening Capital",
+    type: "Equity",
+    subtype: "Owner's Equity",
+    description: "",
+    isActive: true,
+  },
 ];
 
 /** A chart whose accounts were all created in the UI (generated ids, no seed ids). */
 const generatedChart: Account[] = [
-  { id: "a1f2e3d4-0000-4000-8000-000000000001", code: "1000", name: "Main Cash Box", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a1f2e3d4-0000-4000-8000-000000000002", code: "1010", name: "Meezan Current", type: "Asset", subtype: "Current Asset", description: "", isActive: true },
-  { id: "a1f2e3d4-0000-4000-8000-000000000003", code: "4000", name: "Tuition Income", type: "Revenue", subtype: "Operating Revenue", description: "", isActive: true },
-  { id: "a1f2e3d4-0000-4000-8000-000000000004", code: "5000", name: "Wages", type: "Expense", subtype: "Operating Expense", description: "", isActive: true },
+  {
+    id: "a1f2e3d4-0000-4000-8000-000000000001",
+    code: "1000",
+    name: "Main Cash Box",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a1f2e3d4-0000-4000-8000-000000000002",
+    code: "1010",
+    name: "Meezan Current",
+    type: "Asset",
+    subtype: "Current Asset",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a1f2e3d4-0000-4000-8000-000000000003",
+    code: "4000",
+    name: "Tuition Income",
+    type: "Revenue",
+    subtype: "Operating Revenue",
+    description: "",
+    isActive: true,
+  },
+  {
+    id: "a1f2e3d4-0000-4000-8000-000000000004",
+    code: "5000",
+    name: "Wages",
+    type: "Expense",
+    subtype: "Operating Expense",
+    description: "",
+    isActive: true,
+  },
 ];
 
-const group = (groupKey: string) => TRANSACTION_GROUPS.find((transactionGroup) => transactionGroup.groupKey === groupKey)!;
+const group = (groupKey: string) =>
+  TRANSACTION_GROUPS.find((transactionGroup) => transactionGroup.groupKey === groupKey)!;
 const moneyIn = group("accounting.journal.dashboard.group.moneyIn");
 const moneyOut = group("accounting.journal.dashboard.group.moneyOut");
 const transfers = group("accounting.journal.dashboard.group.transfers");
@@ -53,7 +126,10 @@ const form = (overrides: Partial<WizardFormState> = {}): WizardFormState => ({
 describe("validateWizardForm", () => {
   it("rejects an entry whose two legs are the same account", () => {
     const result = validateWizardForm(form({ debitAcc: "a1000", creditAcc: "a1000" }), seedChart);
-    expect(result).toEqual({ ok: false, errorKey: "accounting.journal.dashboard.wizard.errorSameAccount" });
+    expect(result).toEqual({
+      ok: false,
+      errorKey: "accounting.journal.dashboard.wizard.errorSameAccount",
+    });
   });
 
   it("rejects the same account even when both legs are otherwise valid accounts", () => {
@@ -61,7 +137,9 @@ describe("validateWizardForm", () => {
     // and would post as a permanent no-op.
     const result = validateWizardForm(form({ debitAcc: "a1010", creditAcc: "a1010" }), seedChart);
     expect(result.ok).toBe(false);
-    expect(result.ok === false && result.errorKey).toBe("accounting.journal.dashboard.wizard.errorSameAccount");
+    expect(result.ok === false && result.errorKey).toBe(
+      "accounting.journal.dashboard.wizard.errorSameAccount",
+    );
   });
 
   it("accepts two different active accounts with a parseable amount", () => {
@@ -98,9 +176,13 @@ describe("validateWizardForm", () => {
       ok: false,
       errorKey: "accounting.journal.dashboard.wizard.errorSource",
     });
-    const archivedChart = seedChart.map((account) => (account.id === "a4000" ? { ...account, isActive: false } : account));
+    const archivedChart = seedChart.map((account) =>
+      account.id === "a4000" ? { ...account, isActive: false } : account,
+    );
     expect(validateWizardForm(form(), archivedChart).ok).toBe(false);
-    const deletedChart = seedChart.map((account) => (account.id === "a4000" ? { ...account, deletedAt: "2026-01-01T00:00:00.000Z" } : account));
+    const deletedChart = seedChart.map((account) =>
+      account.id === "a4000" ? { ...account, deletedAt: "2026-01-01T00:00:00.000Z" } : account,
+    );
     expect(validateWizardForm(form(), deletedChart).ok).toBe(false);
   });
 
@@ -124,7 +206,12 @@ describe("resolveSimpleTransactionAccounts", () => {
       errorKey: "accounting.journal.dashboard.wizard.errorSource",
     });
     // …and choosing the very same account again is refused.
-    expect(validateWizardForm(form({ debitAcc: resolved.debitAcc, creditAcc: resolved.debitAcc }), seedChart)).toEqual({
+    expect(
+      validateWizardForm(
+        form({ debitAcc: resolved.debitAcc, creditAcc: resolved.debitAcc }),
+        seedChart,
+      ),
+    ).toEqual({
       ok: false,
       errorKey: "accounting.journal.dashboard.wizard.errorSameAccount",
     });
@@ -139,7 +226,9 @@ describe("resolveSimpleTransactionAccounts", () => {
     // The income leg prefers a Revenue account over any other candidate.
     expect(resolved.creditAcc).toBe("a1f2e3d4-0000-4000-8000-000000000003");
     expect(resolved.debitAcc).not.toBe(resolved.creditAcc);
-    expect(validateWizardForm(form({ ...resolved, amount: "1,234.56" }), generatedChart).ok).toBe(true);
+    expect(validateWizardForm(form({ ...resolved, amount: "1,234.56" }), generatedChart).ok).toBe(
+      true,
+    );
   });
 
   it("keeps a prefill id that does exist and prefers an expense counter-account for money out", () => {
@@ -149,7 +238,9 @@ describe("resolveSimpleTransactionAccounts", () => {
   });
 
   it("replaces archived prefill ids on a transfer", () => {
-    const archivedChart = seedChart.map((account) => (account.id === "a1010" ? { ...account, isActive: false } : account));
+    const archivedChart = seedChart.map((account) =>
+      account.id === "a1010" ? { ...account, isActive: false } : account,
+    );
     const resolved = resolveSimpleTransactionAccounts(transfer, archivedChart);
     // "a1020" is absent from this chart and "a1010" is archived, so both legs
     // fall back to a live option (or to nothing when no second cash leg exists).
@@ -159,7 +250,10 @@ describe("resolveSimpleTransactionAccounts", () => {
   });
 
   it("keeps the two transfer legs different", () => {
-    const sameLegTransfer = resolveSimpleTransactionAccounts({ ...transfer, debitAcc: "a1000", creditAcc: "a1000" }, seedChart);
+    const sameLegTransfer = resolveSimpleTransactionAccounts(
+      { ...transfer, debitAcc: "a1000", creditAcc: "a1000" },
+      seedChart,
+    );
     expect(sameLegTransfer.creditAcc).not.toBe(sameLegTransfer.debitAcc);
     expect(sameLegTransfer.creditAcc).toBe("a1010");
   });
@@ -172,12 +266,17 @@ describe("wizardAccountOptions", () => {
       "a1f2e3d4-0000-4000-8000-000000000001",
       "a1f2e3d4-0000-4000-8000-000000000002",
     ]);
-    expect(options.map((option) => option.label)).toEqual(["1000 — Main Cash Box", "1010 — Meezan Current"]);
+    expect(options.map((option) => option.label)).toEqual([
+      "1000 — Main Cash Box",
+      "1010 — Meezan Current",
+    ]);
   });
 
   it("skips archived accounts and falls back to every account when a chart has no assets", () => {
     const archived = generatedChart.map((account) =>
-      account.id === "a1f2e3d4-0000-4000-8000-000000000001" ? { ...account, isActive: false } : account,
+      account.id === "a1f2e3d4-0000-4000-8000-000000000001"
+        ? { ...account, isActive: false }
+        : account,
     );
     expect(wizardAccountOptions(archived).map((option) => option.value)).toEqual([
       "a1f2e3d4-0000-4000-8000-000000000002",
@@ -207,7 +306,12 @@ describe("wizardCategoryAccountOptions", () => {
 
 describe("buildWizardFormState", () => {
   it("returns a fresh, empty form so a previous transaction cannot be reposted", () => {
-    const first = buildWizardFormState(feeCollection, seedChart, { date: "2026-02-01", fiscalYearLabel: "2026" }, translate);
+    const first = buildWizardFormState(
+      feeCollection,
+      seedChart,
+      { date: "2026-02-01", fiscalYearLabel: "2026" },
+      translate,
+    );
     expect(first.amount).toBe("");
     expect(first.ref).toBe("");
     expect(first.receipt).toBe("");
@@ -217,23 +321,45 @@ describe("buildWizardFormState", () => {
     expect(first.creditAcc).toBe("a4000");
     expect(first.description).toBe("t:accounting.journal.dashboard.desc.feeCollection");
 
-    const second = buildWizardFormState(donation, seedChart, { date: "2026-02-02", fiscalYearLabel: "2026" }, translate);
+    const second = buildWizardFormState(
+      donation,
+      seedChart,
+      { date: "2026-02-02", fiscalYearLabel: "2026" },
+      translate,
+    );
     expect(second.description).toBe("t:accounting.journal.dashboard.desc.donationReceived");
     // Seed id "a4100" is not in this chart, so the income leg falls back to the
     // live Revenue account instead of an id the server would reject.
-    expect(seedChart.some((account) => account.id === second.creditAcc && account.type === "Revenue")).toBe(true);
+    expect(
+      seedChart.some((account) => account.id === second.creditAcc && account.type === "Revenue"),
+    ).toBe(true);
     expect(second.amount).toBe("");
   });
 
   it("applies a prefill that exists only in the live chart on every call", () => {
-    const first = buildWizardFormState(feeCollection, generatedChart, { date: "2026-02-01", fiscalYearLabel: "2026" }, translate);
-    const second = buildWizardFormState(feeCollection, generatedChart, { date: "2026-02-01", fiscalYearLabel: "2026" }, translate);
+    const first = buildWizardFormState(
+      feeCollection,
+      generatedChart,
+      { date: "2026-02-01", fiscalYearLabel: "2026" },
+      translate,
+    );
+    const second = buildWizardFormState(
+      feeCollection,
+      generatedChart,
+      { date: "2026-02-01", fiscalYearLabel: "2026" },
+      translate,
+    );
     expect(first).toEqual(second);
     expect(validateWizardForm({ ...first, amount: "99.99" }, generatedChart).ok).toBe(true);
   });
 
   it("builds a blank form with two distinct legs and no description", () => {
-    const blank = buildWizardFormState(null, seedChart, { date: "2026-02-01", fiscalYearLabel: "2026" }, translate);
+    const blank = buildWizardFormState(
+      null,
+      seedChart,
+      { date: "2026-02-01", fiscalYearLabel: "2026" },
+      translate,
+    );
     expect(blank.description).toBe("");
     expect(blank.debitAcc).toBe("a1000");
     expect(blank.creditAcc).toBe("a1010");

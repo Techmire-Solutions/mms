@@ -104,8 +104,13 @@ export function BrandPresetPicker({
 
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         {BRANDING_THEME_PRESETS.map((preset) => {
-          const active = primaryColor === preset.primaryColor && secondaryColor === preset.secondaryColor;
-          const presetContrast = presetPrimaryContrast(preset.primaryColor, preset.secondaryColor, previewMode);
+          const active =
+            primaryColor === preset.primaryColor && secondaryColor === preset.secondaryColor;
+          const presetContrast = presetPrimaryContrast(
+            preset.primaryColor,
+            preset.secondaryColor,
+            previewMode,
+          );
           const lowContrast = presetContrast !== null && !meetsWcagAaUiContrast(presetContrast);
           return (
             <Button
@@ -115,17 +120,40 @@ export function BrandPresetPicker({
               onClick={() => onApplyPreset(preset.primaryColor, preset.secondaryColor)}
               className={cn(
                 "h-auto min-h-11 flex items-center justify-start gap-2.5 rounded-xl border p-2.5 text-start transition-all hover:border-primary/40",
-                active ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border bg-muted/20 hover:bg-muted/30",
+                active
+                  ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                  : "border-border bg-muted/20 hover:bg-muted/30",
               )}
             >
-              <span className="relative h-9 w-9 shrink-0 rounded-full border border-white/20 shadow-xs" style={{ backgroundColor: preset.primaryColor }}>
-                <span className="absolute -bottom-0.5 -end-0.5 h-3.5 w-3.5 rounded-full border-2 border-background" style={{ backgroundColor: preset.secondaryColor }} aria-hidden />
-                {active ? <Check className="absolute inset-0 m-auto h-4 w-4 text-background drop-shadow-sm" aria-hidden /> : null}
-                {lowContrast ? <AlertTriangle className="absolute -start-1 -top-1 h-3.5 w-3.5 text-warning drop-shadow-sm dark:text-warning" aria-label={t("theme.presetContrastLow")} /> : null}
+              <span
+                className="relative h-9 w-9 shrink-0 rounded-full border border-white/20 shadow-xs"
+                style={{ backgroundColor: preset.primaryColor }}
+              >
+                <span
+                  className="absolute -bottom-0.5 -end-0.5 h-3.5 w-3.5 rounded-full border-2 border-background"
+                  style={{ backgroundColor: preset.secondaryColor }}
+                  aria-hidden
+                />
+                {active ? (
+                  <Check
+                    className="absolute inset-0 m-auto h-4 w-4 text-background drop-shadow-sm"
+                    aria-hidden
+                  />
+                ) : null}
+                {lowContrast ? (
+                  <AlertTriangle
+                    className="absolute -start-1 -top-1 h-3.5 w-3.5 text-warning drop-shadow-sm dark:text-warning"
+                    aria-label={t("theme.presetContrastLow")}
+                  />
+                ) : null}
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-xs font-semibold text-foreground">{t(preset.labelKey)}</span>
-                <span className="block truncate font-mono text-2xs text-muted-foreground">{preset.primaryColor}</span>
+                <span className="block truncate text-xs font-semibold text-foreground">
+                  {t(preset.labelKey)}
+                </span>
+                <span className="block truncate font-mono text-2xs text-muted-foreground">
+                  {preset.primaryColor}
+                </span>
               </span>
             </Button>
           );
@@ -134,4 +162,3 @@ export function BrandPresetPicker({
     </div>
   );
 }
-

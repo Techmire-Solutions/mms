@@ -19,7 +19,11 @@ const ACCOUNTS = [
 
 describe("filterSelectOptions", () => {
   it("given a query, should keep options matching every term case- and accent-insensitively", () => {
-    const options = [{ value: "", label: "Select" }, ...ACCOUNTS, { value: "x", label: "Café Supplies" }];
+    const options = [
+      { value: "", label: "Select" },
+      ...ACCOUNTS,
+      { value: "x", label: "Café Supplies" },
+    ];
     expect(filterSelectOptions(options, "")).toHaveLength(options.length);
     expect(filterSelectOptions(options, "cash").map((o) => o.value)).toEqual(["1000"]);
     expect(filterSelectOptions(options, "fee 4000").map((o) => o.value)).toEqual(["4000"]);
@@ -48,7 +52,14 @@ describe("FormSelect", () => {
     const onChange = vi.fn();
     act(() => {
       root.render(
-        <FormSelect id="acct" value="" onChange={onChange} options={ACCOUNTS} placeholder="Select account" {...props} />,
+        <FormSelect
+          id="acct"
+          value=""
+          onChange={onChange}
+          options={ACCOUNTS}
+          placeholder="Select account"
+          {...props}
+        />,
       );
     });
     return onChange;
@@ -88,7 +99,9 @@ describe("FormSelect", () => {
   it("given no match, should announce the empty state when searching", () => {
     render();
     act(() => {
-      container.querySelector("select")!.dispatchEvent(new KeyboardEvent("keydown", { key: "#", bubbles: true }));
+      container
+        .querySelector("select")!
+        .dispatchEvent(new KeyboardEvent("keydown", { key: "#", bubbles: true }));
     });
     expect(document.querySelector('[role="status"]')?.textContent).toBe("common.noMatchingOptions");
   });

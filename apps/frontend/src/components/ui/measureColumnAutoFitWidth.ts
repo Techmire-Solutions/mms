@@ -2,7 +2,11 @@
  * @file measureColumnAutoFitWidth.ts
  * @description Measures the max unwrapped content width of a table column for Excel-like auto-fit on double-click.
  */
-import { clampModuleColumnWidth, MODULE_COLUMN_WIDTH_MIN, MODULE_COLUMN_WIDTH_MAX } from "@mms/shared";
+import {
+  clampModuleColumnWidth,
+  MODULE_COLUMN_WIDTH_MIN,
+  MODULE_COLUMN_WIDTH_MAX,
+} from "@mms/shared";
 
 let measureContainer: HTMLElement | null = null;
 

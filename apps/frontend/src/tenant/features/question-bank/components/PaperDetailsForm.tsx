@@ -53,7 +53,9 @@ export function PaperDetailsForm({ config, onChange }: PaperDetailsFormProps): R
               inputMode="numeric"
               className={`${FORM_INPUT} shadow-none`}
               value={config.duration}
-              onChange={(event) => onChange("duration", coercePaperNumberInput(event.target.value, config.duration, 5))}
+              onChange={(event) =>
+                onChange("duration", coercePaperNumberInput(event.target.value, config.duration, 5))
+              }
             />
           </Field>
         </div>
@@ -66,7 +68,12 @@ export function PaperDetailsForm({ config, onChange }: PaperDetailsFormProps): R
               inputMode="numeric"
               className={`${FORM_INPUT} shadow-none`}
               value={config.totalMarks}
-              onChange={(event) => onChange("totalMarks", coercePaperNumberInput(event.target.value, config.totalMarks, 1))}
+              onChange={(event) =>
+                onChange(
+                  "totalMarks",
+                  coercePaperNumberInput(event.target.value, config.totalMarks, 1),
+                )
+              }
             />
           </Field>
         </div>

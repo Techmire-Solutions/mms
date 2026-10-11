@@ -44,7 +44,11 @@ export function TemplateEditorTypographyStyleButtons({
   } = states;
 
   return (
-    <div role="group" aria-label={t("templateEditor.textStyle")} className="flex flex-wrap items-center gap-1.5">
+    <div
+      role="group"
+      aria-label={t("templateEditor.textStyle")}
+      className="flex flex-wrap items-center gap-1.5"
+    >
       <StyleBtn
         active={allBold}
         onClick={() => onPatchStyle({ fontWeight: allBold ? "normal" : "bold" })}

@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, Save, UserCheck } from 'lucide-react';
-import {
-  type TaskSettings,
-  DEFAULT_TASK_SETTINGS,
-  type DelegationScope,
-} from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useTaskSettings, useUpdateTaskSettings } from '@/tenant/hooks/collections/tasks';
-import { notify } from '@/lib/notify';
-import { ModuleSetupContent } from '@/components/ui/ModuleSetupContent';
+import React, { useState, useEffect } from "react";
+import { Bell, Save, UserCheck } from "lucide-react";
+import { type TaskSettings, DEFAULT_TASK_SETTINGS, type DelegationScope } from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useTaskSettings, useUpdateTaskSettings } from "@/tenant/hooks/collections/tasks";
+import { notify } from "@/lib/notify";
+import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
 
 export interface TasksSetupTabProps {
   initialSettings?: TaskSettings;
@@ -19,10 +15,12 @@ export interface TasksSetupTabProps {
 }
 
 function settingsEqual(a: TaskSettings, b: TaskSettings): boolean {
-  return a.delegationScope === b.delegationScope
-    && a.allowSelfAssignment === b.allowSelfAssignment
-    && a.notifyOnAssignment === b.notifyOnAssignment
-    && a.notifyOnStatusChange === b.notifyOnStatusChange;
+  return (
+    a.delegationScope === b.delegationScope &&
+    a.allowSelfAssignment === b.allowSelfAssignment &&
+    a.notifyOnAssignment === b.notifyOnAssignment &&
+    a.notifyOnStatusChange === b.notifyOnStatusChange
+  );
 }
 
 export function TasksSetupTab({
@@ -44,9 +42,9 @@ export function TasksSetupTab({
     if (!dirty) return;
     try {
       await updateSettingsMutation.mutateAsync(settings);
-      notify.success(t('tasks.setup.saved'));
+      notify.success(t("tasks.setup.saved"));
     } catch (err) {
-      notify.error(err instanceof Error ? err.message : t('tasks.setup.saveFailed'));
+      notify.error(err instanceof Error ? err.message : t("tasks.setup.saveFailed"));
     }
   };
 
@@ -55,38 +53,42 @@ export function TasksSetupTab({
       <div className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-5">
         <div>
           <h3 className="font-semibold text-base text-foreground mb-1 text-wrap-balance">
-            {t('tasks.setup.delegationScope')}
+            {t("tasks.setup.delegationScope")}
           </h3>
           <p className="text-xs text-muted-foreground text-wrap-pretty">
-            {t('tasks.setup.delegationScopeDesc')}
+            {t("tasks.setup.delegationScopeDesc")}
           </p>
         </div>
 
         <RadioGroup
           value={settings.delegationScope}
-          onValueChange={(val) => setSettings({ ...settings, delegationScope: val as DelegationScope })}
+          onValueChange={(val) =>
+            setSettings({ ...settings, delegationScope: val as DelegationScope })
+          }
           disabled={!canEditSetup || isLoading}
           className="space-y-3"
         >
-          {(['descendants', 'direct_reports'] as const).map((scope) => (
+          {(["descendants", "direct_reports"] as const).map((scope) => (
             <label
               key={scope}
               htmlFor={`scope-${scope}`}
               className="flex items-start gap-3 p-3 rounded-md border border-border bg-background cursor-pointer hover:bg-muted/30 transition-colors"
             >
-              <RadioGroupItem
-                id={`scope-${scope}`}
-                value={scope}
-                className="mt-0.5"
-              />
+              <RadioGroupItem id={`scope-${scope}`} value={scope} className="mt-0.5" />
               <div>
                 <div className="text-sm font-medium text-foreground">
-                  {t(scope === 'descendants' ? 'tasks.setup.descendants' : 'tasks.setup.directReports')}
+                  {t(
+                    scope === "descendants"
+                      ? "tasks.setup.descendants"
+                      : "tasks.setup.directReports",
+                  )}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {t(scope === 'descendants'
-                    ? 'tasks.setup.descendantsDesc'
-                    : 'tasks.setup.directReportsDesc')}
+                  {t(
+                    scope === "descendants"
+                      ? "tasks.setup.descendantsDesc"
+                      : "tasks.setup.directReportsDesc",
+                  )}
                 </div>
               </div>
             </label>
@@ -99,10 +101,10 @@ export function TasksSetupTab({
               <UserCheck className="h-4 w-4 text-muted-foreground" aria-hidden />
               <div>
                 <div className="text-sm font-medium text-foreground">
-                  {t('tasks.setup.allowSelfAssignment')}
+                  {t("tasks.setup.allowSelfAssignment")}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {t('tasks.setup.allowSelfAssignmentDesc')}
+                  {t("tasks.setup.allowSelfAssignmentDesc")}
                 </div>
               </div>
             </div>
@@ -112,7 +114,7 @@ export function TasksSetupTab({
                 setSettings({ ...settings, allowSelfAssignment: checked === true })
               }
               disabled={!canEditSetup || isLoading}
-              aria-label={t('tasks.setup.allowSelfAssignment')}
+              aria-label={t("tasks.setup.allowSelfAssignment")}
             />
           </div>
 
@@ -121,10 +123,10 @@ export function TasksSetupTab({
               <Bell className="h-4 w-4 text-muted-foreground" aria-hidden />
               <div>
                 <div className="text-sm font-medium text-foreground">
-                  {t('tasks.setup.notifyOnAssignment')}
+                  {t("tasks.setup.notifyOnAssignment")}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {t('tasks.setup.notifyOnAssignmentDesc')}
+                  {t("tasks.setup.notifyOnAssignmentDesc")}
                 </div>
               </div>
             </div>
@@ -134,7 +136,7 @@ export function TasksSetupTab({
                 setSettings({ ...settings, notifyOnAssignment: checked === true })
               }
               disabled={!canEditSetup || isLoading}
-              aria-label={t('tasks.setup.notifyOnAssignment')}
+              aria-label={t("tasks.setup.notifyOnAssignment")}
             />
           </div>
 
@@ -143,10 +145,10 @@ export function TasksSetupTab({
               <Bell className="h-4 w-4 text-muted-foreground" aria-hidden />
               <div>
                 <div className="text-sm font-medium text-foreground">
-                  {t('tasks.setup.notifyOnStatusChange')}
+                  {t("tasks.setup.notifyOnStatusChange")}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {t('tasks.setup.notifyOnStatusChangeDesc')}
+                  {t("tasks.setup.notifyOnStatusChangeDesc")}
                 </div>
               </div>
             </div>
@@ -156,7 +158,7 @@ export function TasksSetupTab({
                 setSettings({ ...settings, notifyOnStatusChange: checked === true })
               }
               disabled={!canEditSetup || isLoading}
-              aria-label={t('tasks.setup.notifyOnStatusChange')}
+              aria-label={t("tasks.setup.notifyOnStatusChange")}
             />
           </div>
         </div>
@@ -171,7 +173,7 @@ export function TasksSetupTab({
             >
               <Save className="h-4 w-4" aria-hidden />
               <span>
-                {updateSettingsMutation.isPending ? t('common.saving') : t('common.save')}
+                {updateSettingsMutation.isPending ? t("common.saving") : t("common.save")}
               </span>
             </Button>
           </div>

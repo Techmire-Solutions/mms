@@ -4,19 +4,13 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
 import { TableCellLink } from "@/components/ui/TableCellLink";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { HasanatReportItem } from "./hasanatReportTypes";
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
 
 interface HasanatDistributionTableProps {
   distribution: HasanatReportItem[];
@@ -24,7 +18,7 @@ interface HasanatDistributionTableProps {
   onToggleFacultyFilter: (faculty: string) => void;
 }
 
-export const HasanatDistributionTable = (function HasanatDistributionTable({
+export const HasanatDistributionTable = function HasanatDistributionTable({
   distribution,
   selectedFaculty,
   onToggleFacultyFilter,
@@ -48,14 +42,15 @@ export const HasanatDistributionTable = (function HasanatDistributionTable({
     { key: "balance", header: t("hasanat.report.colBalance") },
   ])() as ExportColumn[];
 
-  const exportRows = (() => distribution.map((item) => ({
-    student: item.studentName,
-    class: item.class,
-    faculty: item.faculty,
-    distributed: item.distributed,
-    redeemed: item.redeemed,
-    balance: item.balance,
-  })))();
+  const exportRows = (() =>
+    distribution.map((item) => ({
+      student: item.studentName,
+      class: item.class,
+      faculty: item.faculty,
+      distributed: item.distributed,
+      redeemed: item.redeemed,
+      balance: item.balance,
+    })))();
 
   const [page, setPage] = useState(1);
   const pageSize = 15;
@@ -85,12 +80,10 @@ export const HasanatDistributionTable = (function HasanatDistributionTable({
             className={`${WORK_SURFACE_INNER} space-y-3 p-3 ${selectedFaculty === hasanatRow.faculty ? "ring-1 ring-primary/20" : ""}`}
           >
             <div className="flex min-w-0 items-start justify-between gap-3">
-              <h4 className="truncate text-sm font-semibold text-foreground">{hasanatRow.studentName}</h4>
-              <Badge
-                pill
-                tone={hasanatRow.balance > 0 ? "warning" : "muted"}
-                className="shrink-0"
-              >
+              <h4 className="truncate text-sm font-semibold text-foreground">
+                {hasanatRow.studentName}
+              </h4>
+              <Badge pill tone={hasanatRow.balance > 0 ? "warning" : "muted"} className="shrink-0">
                 {hasanatRow.balance}
               </Badge>
             </div>
@@ -137,7 +130,12 @@ export const HasanatDistributionTable = (function HasanatDistributionTable({
           <TableHeader>
             <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
               {headers.map((header) => (
-                <ModuleTableHeaderCell key={header.key} columnKey={header.key} variant={header.variant} className="px-3 py-2.5">
+                <ModuleTableHeaderCell
+                  key={header.key}
+                  columnKey={header.key}
+                  variant={header.variant}
+                  className="px-3 py-2.5"
+                >
                   {header.label}
                 </ModuleTableHeaderCell>
               ))}
@@ -145,9 +143,14 @@ export const HasanatDistributionTable = (function HasanatDistributionTable({
           </TableHeader>
           <TableBody className="divide-y divide-border/50">
             {pagedDistribution.map((hasanatRow) => (
-              <TableRow key={hasanatRow.studentName} className={`hover:bg-muted/20 transition-colors ${selectedFaculty === hasanatRow.faculty ? "bg-primary/10" : ""}`}>
+              <TableRow
+                key={hasanatRow.studentName}
+                className={`hover:bg-muted/20 transition-colors ${selectedFaculty === hasanatRow.faculty ? "bg-primary/10" : ""}`}
+              >
                 <TableCell className="px-3 py-2.5 font-medium">{hasanatRow.studentName}</TableCell>
-                <TableCell className="px-3 py-2.5 text-muted-foreground">{hasanatRow.class}</TableCell>
+                <TableCell className="px-3 py-2.5 text-muted-foreground">
+                  {hasanatRow.class}
+                </TableCell>
                 <TableCell className="px-3 py-2.5 text-muted-foreground">
                   <TableCellLink
                     muted
@@ -158,8 +161,20 @@ export const HasanatDistributionTable = (function HasanatDistributionTable({
                     {hasanatRow.faculty}
                   </TableCellLink>
                 </TableCell>
-                <TableCell variant="number" noWrap className="px-3 py-2.5 font-semibold text-primary">{hasanatRow.distributed}</TableCell>
-                <TableCell variant="number" noWrap className="px-3 py-2.5 font-semibold text-success">{hasanatRow.redeemed}</TableCell>
+                <TableCell
+                  variant="number"
+                  noWrap
+                  className="px-3 py-2.5 font-semibold text-primary"
+                >
+                  {hasanatRow.distributed}
+                </TableCell>
+                <TableCell
+                  variant="number"
+                  noWrap
+                  className="px-3 py-2.5 font-semibold text-success"
+                >
+                  {hasanatRow.redeemed}
+                </TableCell>
                 <TableCell variant="badge" noWrap className="px-3 py-2.5">
                   <Badge as="span" pill tone={hasanatRow.balance > 0 ? "warning" : "muted"}>
                     {hasanatRow.balance}
@@ -172,5 +187,4 @@ export const HasanatDistributionTable = (function HasanatDistributionTable({
       </div>
     </ReportDataGridContainer>
   );
-});
-
+};

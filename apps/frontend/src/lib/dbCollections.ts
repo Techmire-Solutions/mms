@@ -7,15 +7,9 @@ import {
   syncToServer,
 } from "@/lib/dbStorageCore.js";
 import { reportClientError, reportClientWarn } from "@/lib/clientErrorReporting";
-import {
-  hydrateLinkedCollection,
-  normalizeLinkedCollection,
-} from "@/lib/dbLinkHydration.js";
+import { hydrateLinkedCollection, normalizeLinkedCollection } from "@/lib/dbLinkHydration.js";
 
-export const DOCUMENT_STORE_COLLECTIONS = new Set([
-  "currencies",
-  "backups",
-]);
+export const DOCUMENT_STORE_COLLECTIONS = new Set(["currencies", "backups"]);
 const BUSINESS_COLLECTIONS = DOCUMENT_STORE_COLLECTIONS;
 
 /**
@@ -43,13 +37,14 @@ export function hasCollectionInCache(key: string): boolean {
  */
 export function saveCollectionCacheOnly<T>(key: string, collectionItems: T[]): void {
   try {
-    const sanitized: unknown[] = key === "sessions" ? validateSessions(collectionItems) : collectionItems;
+    const sanitized: unknown[] =
+      key === "sessions" ? validateSessions(collectionItems) : collectionItems;
     const normalized = normalizeLinkedCollection(key, sanitized);
     const dataToSave = applyTitleCaseRecursive(normalized);
     safeSetItem(scopedStorageKey(key), JSON.stringify(dataToSave));
     dispatchLocalDatabaseUpdate();
   } catch (error) {
-    reportClientError(error, { context: 'db.saveCollectionCache', key });
+    reportClientError(error, { context: "db.saveCollectionCache", key });
   }
 }
 
@@ -76,7 +71,7 @@ export function getCollection<T = unknown>(key: string, defaultData: T[] = [] as
           return collection as T[];
         }
       } catch (error) {
-        reportClientWarn(error, { context: 'db.parseCachedCollection', key });
+        reportClientWarn(error, { context: "db.parseCachedCollection", key });
       }
     }
     const isAuth = typeof window !== "undefined" && localStorage.getItem("mms_user") !== null;
@@ -104,7 +99,7 @@ export function getCollection<T = unknown>(key: string, defaultData: T[] = [] as
     }
     return seedData as T[];
   } catch (error) {
-    reportClientError(error, { context: 'db.getCollection', key });
+    reportClientError(error, { context: "db.getCollection", key });
     return defaultData;
   }
 }
@@ -119,7 +114,8 @@ export function getCollection<T = unknown>(key: string, defaultData: T[] = [] as
  */
 export function saveCollection<T>(key: string, collectionItems: T[]): void {
   try {
-    const sanitized: unknown[] = key === "sessions" ? validateSessions(collectionItems) : collectionItems;
+    const sanitized: unknown[] =
+      key === "sessions" ? validateSessions(collectionItems) : collectionItems;
     const normalized = normalizeLinkedCollection(key, sanitized);
     const dataToSave = applyTitleCaseRecursive(normalized);
     safeSetItem(scopedStorageKey(key), JSON.stringify(dataToSave));
@@ -130,7 +126,7 @@ export function saveCollection<T>(key: string, collectionItems: T[]): void {
       void syncToServer(`/api/db/collections/${key}`, dataToSave);
     }
   } catch (error) {
-    reportClientError(error, { context: 'db.saveCollection', key });
+    reportClientError(error, { context: "db.saveCollection", key });
   }
 }
 
@@ -139,7 +135,8 @@ export function saveCollection<T>(key: string, collectionItems: T[]): void {
  * Throws when the server rejects the write.
  */
 export async function saveCollectionAsync<T>(key: string, collectionItems: T[]): Promise<void> {
-  const sanitized: unknown[] = key === "sessions" ? validateSessions(collectionItems) : collectionItems;
+  const sanitized: unknown[] =
+    key === "sessions" ? validateSessions(collectionItems) : collectionItems;
   const normalized = normalizeLinkedCollection(key, sanitized);
   const dataToSave = applyTitleCaseRecursive(normalized);
   safeSetItem(scopedStorageKey(key), JSON.stringify(dataToSave));

@@ -20,9 +20,7 @@ const mockContact: Contact = {
 
 describe("ContactDetailEducationSection Component", () => {
   it("renders education details correctly", () => {
-    const html = renderToStaticMarkup(
-      <ContactDetailEducationSection contact={mockContact} />,
-    );
+    const html = renderToStaticMarkup(<ContactDetailEducationSection contact={mockContact} />);
 
     expect(html).toContain("BS Computer Science");
     expect(html).toContain("FAST NUCES");

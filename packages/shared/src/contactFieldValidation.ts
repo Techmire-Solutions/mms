@@ -3,9 +3,10 @@ import { translateApp, translateAppParams, type AppTranslationKey } from "./appT
 import type { FieldDefinition } from "./contactTypes.js";
 import { isAllowedRelationshipLabel } from "./contactRelationshipRules.js";
 
-const EMAIL_RE = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+const EMAIL_RE =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
 
-const TEXT_LIKE_FIELD_TYPES: ReadonlySet<FieldDefinition['type']> = new Set([
+const TEXT_LIKE_FIELD_TYPES: ReadonlySet<FieldDefinition["type"]> = new Set([
   "text",
   "textarea",
   "email",
@@ -23,8 +24,8 @@ function isValidOption(options: unknown[], targetValue: string, fieldKey?: strin
     return isAllowedRelationshipLabel(targetValue);
   }
   const normalizedTarget = targetValue.trim().toLowerCase();
-  return options.some((option) =>
-    typeof option === "string" && option.trim().toLowerCase() === normalizedTarget
+  return options.some(
+    (option) => typeof option === "string" && option.trim().toLowerCase() === normalizedTarget,
   );
 }
 
@@ -133,14 +134,13 @@ export function buildCustomFieldSchema(
       });
       break;
     case "currency": {
-      let currencySchema = z.string().refine(
-        (value) => !value || !Number.isNaN(Number(value)),
-        { message: msg("contacts.validation.mustBeNumericString", language, { label }) },
-      );
+      let currencySchema = z.string().refine((value) => !value || !Number.isNaN(Number(value)), {
+        message: msg("contacts.validation.mustBeNumericString", language, { label }),
+      });
       if (fieldDefinition.precision !== undefined) {
         const precision = fieldDefinition.precision;
         currencySchema = currencySchema.refine(
-          (value) => !value || (value.split('.')[1] ?? '').length <= precision,
+          (value) => !value || (value.split(".")[1] ?? "").length <= precision,
           {
             message: msg("contacts.validation.precisionExceeded", language, {
               label,
@@ -155,21 +155,27 @@ export function buildCustomFieldSchema(
     case "select":
     case "single_select":
       baseSchema = fieldDefinition.options?.length
-        ? z.string().refine(
-            (value) => !value || isValidOption(fieldDefinition.options ?? [], value, fieldDefinition.key),
-            { message: msg("contacts.validation.invalidOption", language, { label }) },
-          )
+        ? z
+            .string()
+            .refine(
+              (value) =>
+                !value || isValidOption(fieldDefinition.options ?? [], value, fieldDefinition.key),
+              { message: msg("contacts.validation.invalidOption", language, { label }) },
+            )
         : z.string();
       break;
     case "multiselect":
     case "multi_select":
       baseSchema = fieldDefinition.options?.length
-        ? z.array(z.string()).refine(
-            (values) => values.every((value) =>
-              isValidOption(fieldDefinition.options ?? [], value, fieldDefinition.key)
-            ),
-            { message: msg("contacts.validation.invalidOptions", language, { label }) },
-          )
+        ? z
+            .array(z.string())
+            .refine(
+              (values) =>
+                values.every((value) =>
+                  isValidOption(fieldDefinition.options ?? [], value, fieldDefinition.key),
+                ),
+              { message: msg("contacts.validation.invalidOptions", language, { label }) },
+            )
         : z.array(z.string());
       break;
     case "tags":
@@ -207,7 +213,7 @@ export function buildCustomFieldSchema(
 
   if (!fieldDefinition.required) {
     return z.preprocess(
-      (value) => value === "" || value === null || value === undefined ? undefined : value,
+      (value) => (value === "" || value === null || value === undefined ? undefined : value),
       baseSchema.optional(),
     );
   }
@@ -219,17 +225,15 @@ export function buildCustomFieldSchema(
         if (typeof value === "string") return value.trim();
         return value;
       },
-      baseSchema.refine(
-        (value) => typeof value === "string" && value.trim() !== "",
-        { message: requiredMessage },
-      ),
+      baseSchema.refine((value) => typeof value === "string" && value.trim() !== "", {
+        message: requiredMessage,
+      }),
     );
   }
   if (fieldDefinition.type === "multiselect" || fieldDefinition.type === "multi_select") {
-    return baseSchema.refine(
-      (value) => Array.isArray(value) && value.length > 0,
-      { message: requiredMessage },
-    );
+    return baseSchema.refine((value) => Array.isArray(value) && value.length > 0, {
+      message: requiredMessage,
+    });
   }
   if (fieldDefinition.type === "number") {
     return baseSchema.refine(
@@ -244,9 +248,8 @@ export function buildCustomFieldSchema(
   }
   if (fieldDefinition.type === "tags") {
     return baseSchema.refine(
-      (value) => Array.isArray(value)
-        ? value.length > 0
-        : typeof value === "string" && value.trim() !== "",
+      (value) =>
+        Array.isArray(value) ? value.length > 0 : typeof value === "string" && value.trim() !== "",
       { message: requiredMessage },
     );
   }

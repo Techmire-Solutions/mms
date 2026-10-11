@@ -1,8 +1,8 @@
-import React from 'react';
-import { Copy, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { TemplateElement } from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
+import React from "react";
+import { Copy, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { TemplateElement } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface TemplateEditorPropertiesHeaderProps<TPayload = Record<string, unknown>> {
   selectedElement: TemplateElement<keyof TPayload & string>;
@@ -24,7 +24,7 @@ export function TemplateEditorPropertiesHeader<TPayload = Record<string, unknown
           {selectedElement.type}
         </span>
         <span className="text-xs font-semibold text-foreground truncate max-w-32">
-          {selectedElement.label || t('templateEditor.element')}
+          {selectedElement.label || t("templateEditor.element")}
         </span>
       </div>
       <div className="flex items-center gap-1">
@@ -34,8 +34,8 @@ export function TemplateEditorPropertiesHeader<TPayload = Record<string, unknown
           size="icon"
           onClick={() => onDuplicateElement(selectedElement.id)}
           className="min-h-11 min-w-11 text-muted-foreground hover:text-foreground rounded"
-          title={t('templateEditor.duplicate')}
-          aria-label={t('templateEditor.duplicate')}
+          title={t("templateEditor.duplicate")}
+          aria-label={t("templateEditor.duplicate")}
         >
           <Copy className="w-4 h-4" aria-hidden="true" />
         </Button>
@@ -45,8 +45,8 @@ export function TemplateEditorPropertiesHeader<TPayload = Record<string, unknown
           size="icon"
           onClick={() => onDeleteElement(selectedElement.id)}
           className="min-h-11 min-w-11 text-destructive hover:bg-destructive/10 rounded"
-          title={t('templateEditor.delete')}
-          aria-label={t('templateEditor.delete')}
+          title={t("templateEditor.delete")}
+          aria-label={t("templateEditor.delete")}
         >
           <Trash2 className="w-4 h-4" aria-hidden="true" />
         </Button>

@@ -3,27 +3,62 @@
  * @description Single source of truth for dot-notation permission keys, dynamic role evaluation, and RBAC bridging.
  */
 
-import type { PermissionAction, WorkspaceRole } from './userEntityTypes.js';
-import { DEFAULT_WORKSPACE_ROLES_MAP } from './userRbacDefaults.js';
+import type { PermissionAction, WorkspaceRole } from "./userEntityTypes.js";
+import { DEFAULT_WORKSPACE_ROLES_MAP } from "./userRbacDefaults.js";
 
 /** Canonical tuple of all available permission keys in MMS. */
 export const ALL_PERMISSIONS = [
-  "contacts.read", "contacts.write", "contacts.delete",
-  "students.read", "students.write", "students.delete",
-  "faculty.read", "faculty.write", "faculty.delete",
-  "sessions.read", "sessions.write", "sessions.delete",
-  "attendance.read", "attendance.write", "attendance.delete",
-  "enrollments.read", "enrollments.write", "enrollments.delete",
-  "hasanat.read", "hasanat.write", "hasanat.delete",
-  "examinations.read", "examinations.write", "examinations.delete",
-  "questionBank.read", "questionBank.write", "questionBank.delete",
-  "finance.read", "finance.write", "finance.delete",
-  "accounting.read", "accounting.write", "accounting.delete",
-  "obligations.read", "obligations.write", "obligations.delete",
-  "messaging.read", "messaging.write", "messaging.clearLogs",
-  "tasks.read", "tasks.write", "tasks.delete", "tasks.assign", "tasks.assign_anywhere", "tasks.complete",
-  "users.read", "users.manage",
-  "analytics.view", "configuration.view", "settings.global.write", "settings.branding.write",
+  "contacts.read",
+  "contacts.write",
+  "contacts.delete",
+  "students.read",
+  "students.write",
+  "students.delete",
+  "faculty.read",
+  "faculty.write",
+  "faculty.delete",
+  "sessions.read",
+  "sessions.write",
+  "sessions.delete",
+  "attendance.read",
+  "attendance.write",
+  "attendance.delete",
+  "enrollments.read",
+  "enrollments.write",
+  "enrollments.delete",
+  "hasanat.read",
+  "hasanat.write",
+  "hasanat.delete",
+  "examinations.read",
+  "examinations.write",
+  "examinations.delete",
+  "questionBank.read",
+  "questionBank.write",
+  "questionBank.delete",
+  "finance.read",
+  "finance.write",
+  "finance.delete",
+  "accounting.read",
+  "accounting.write",
+  "accounting.delete",
+  "obligations.read",
+  "obligations.write",
+  "obligations.delete",
+  "messaging.read",
+  "messaging.write",
+  "messaging.clearLogs",
+  "tasks.read",
+  "tasks.write",
+  "tasks.delete",
+  "tasks.assign",
+  "tasks.assign_anywhere",
+  "tasks.complete",
+  "users.read",
+  "users.manage",
+  "analytics.view",
+  "configuration.view",
+  "settings.global.write",
+  "settings.branding.write",
 ] as const;
 
 /** Dot-notation permission keys — align with `mms-rbac` registry vocabulary. */
@@ -118,7 +153,11 @@ const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Object.fr
   "users.manage": { module: "users", requiredActions: ["create", "update", "delete"] },
 
   // System & Settings
-  "analytics.view": { module: "dashboard", requiredActions: ["read"], fallbackModules: ["students"] },
+  "analytics.view": {
+    module: "dashboard",
+    requiredActions: ["read"],
+    fallbackModules: ["students"],
+  },
   "configuration.view": { module: "settings", requiredActions: ["read"] },
   "settings.global.write": { module: "settings", requiredActions: ["create", "update"] },
   "settings.branding.write": { module: "settings", requiredActions: ["create", "update"] },
@@ -253,4 +292,3 @@ export function getModulePermissions(moduleId: string): readonly Permission[] {
     return rule && rule.module === moduleId;
   });
 }
-

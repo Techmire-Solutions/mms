@@ -1,14 +1,11 @@
-import type { StandardMessagingRecipient as MessagingRecipient } from '@mms/shared';
+import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
 
 /** Lean recipient snapshot for session drafts (no extra contact fields). */
-export type ComposerDraftRecipient = Pick<
-  MessagingRecipient,
-  'id' | 'name' | 'phone' | 'email'
->;
+export type ComposerDraftRecipient = Pick<MessagingRecipient, "id" | "name" | "phone" | "email">;
 
 export interface MessageComposerDraftV1 {
   v: 1;
-  channel: 'sms' | 'whatsapp' | 'email';
+  channel: "sms" | "whatsapp" | "email";
   userId?: string;
   message: string;
   subject: string;
@@ -17,15 +14,15 @@ export interface MessageComposerDraftV1 {
 }
 
 function draftKey(channel: string, userId?: string): string {
-  const scope = userId?.trim() ? userId.trim() : 'anon';
+  const scope = userId?.trim() ? userId.trim() : "anon";
   return `mms:messaging-compose-draft:v1:${scope}:${channel}`;
 }
 
 export function readComposerDraft(
-  channel: 'sms' | 'whatsapp' | 'email',
+  channel: "sms" | "whatsapp" | "email",
   userId?: string,
 ): MessageComposerDraftV1 | null {
-  if (typeof sessionStorage === 'undefined') return null;
+  if (typeof sessionStorage === "undefined") return null;
   try {
     const raw = sessionStorage.getItem(draftKey(channel, userId));
     if (!raw) return null;
@@ -39,7 +36,7 @@ export function readComposerDraft(
 }
 
 export function writeComposerDraft(draft: MessageComposerDraftV1): void {
-  if (typeof sessionStorage === 'undefined') return;
+  if (typeof sessionStorage === "undefined") return;
   try {
     sessionStorage.setItem(draftKey(draft.channel, draft.userId), JSON.stringify(draft));
   } catch {
@@ -47,11 +44,8 @@ export function writeComposerDraft(draft: MessageComposerDraftV1): void {
   }
 }
 
-export function clearComposerDraft(
-  channel: 'sms' | 'whatsapp' | 'email',
-  userId?: string,
-): void {
-  if (typeof sessionStorage === 'undefined') return;
+export function clearComposerDraft(channel: "sms" | "whatsapp" | "email", userId?: string): void {
+  if (typeof sessionStorage === "undefined") return;
   try {
     sessionStorage.removeItem(draftKey(channel, userId));
   } catch {
@@ -60,7 +54,7 @@ export function clearComposerDraft(
 }
 
 export function resolveComposerUserId(user: unknown): string | undefined {
-  if (!user || typeof user !== 'object' || !('id' in user)) return undefined;
+  if (!user || typeof user !== "object" || !("id" in user)) return undefined;
   const id = (user as { id: unknown }).id;
   return id == null ? undefined : String(id);
 }

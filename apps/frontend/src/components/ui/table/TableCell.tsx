@@ -4,9 +4,25 @@ import type { TableCellProps } from "./tableTypes";
 import { getTableCellAlignClass, getTableCellWrapClass } from "./tableUtils";
 
 export const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
-  ({ className, noWrap, truncate, align, variant, isFocusable, asHeader, title, tabIndex, children, ...props }, ref) => {
+  (
+    {
+      className,
+      noWrap,
+      truncate,
+      align,
+      variant,
+      isFocusable,
+      asHeader,
+      title,
+      tabIndex,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     const isRowHeader = Boolean(asHeader || props.scope === "row");
-    const resolvedTitle = title ?? (truncate && typeof children === "string" ? children : undefined);
+    const resolvedTitle =
+      title ?? (truncate && typeof children === "string" ? children : undefined);
     const wrapClass = getTableCellWrapClass(noWrap, truncate);
     const alignClass = getTableCellAlignClass(align, variant);
 
@@ -22,8 +38,9 @@ export const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
             "p-2 align-middle font-medium text-foreground text-start",
             wrapClass,
             alignClass,
-            isFocusable && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
-            className
+            isFocusable &&
+              "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
+            className,
           )}
           {...props}
         >
@@ -42,14 +59,15 @@ export const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
           "p-2 align-middle [&:has([role=checkbox])]:pe-0 [&>[role=checkbox]]:translate-y-0.5",
           wrapClass,
           alignClass,
-          isFocusable && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
-          className
+          isFocusable &&
+            "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
+          className,
         )}
         {...props}
       >
         {children}
       </td>
     );
-  }
+  },
 );
 TableCell.displayName = "TableCell";

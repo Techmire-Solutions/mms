@@ -10,7 +10,7 @@ import type { ModuleWorkToolbarProps } from "@/components/ui/moduleWorkToolbarTy
 
 export type { ModuleWorkToolbarProps };
 
-export const ModuleWorkToolbar = (function ModuleWorkToolbar({
+export const ModuleWorkToolbar = function ModuleWorkToolbar({
   shownCountLabel,
   regionLabel,
   search,
@@ -32,16 +32,22 @@ export const ModuleWorkToolbar = (function ModuleWorkToolbar({
   children,
   showExportInTrash = true,
 }: ModuleWorkToolbarProps): JSX.Element {
-  const showChildren = Boolean(children && (!trashToggle?.viewingDeleted || showExportInTrash !== false));
+  const showChildren = Boolean(
+    children && (!trashToggle?.viewingDeleted || showExportInTrash !== false),
+  );
   const hasFilterControls = Boolean(
-    showChildren || filterButton || (hasActiveFilters && onClearFilters) || (!trashToggle?.viewingDeleted && primaryAction) || trashToggle?.canViewDeleted,
+    showChildren ||
+    filterButton ||
+    (hasActiveFilters && onClearFilters) ||
+    (!trashToggle?.viewingDeleted && primaryAction) ||
+    trashToggle?.canViewDeleted,
   );
   const hasLayoutControls = Boolean(
     viewModeToggle ||
-      (columnCustomizer &&
-        (Boolean(columnCustomizer.registry?.length) ||
-          Boolean(columnCustomizer.entityType) ||
-          Boolean(columnCustomizer.descriptor))),
+    (columnCustomizer &&
+      (Boolean(columnCustomizer.registry?.length) ||
+        Boolean(columnCustomizer.entityType) ||
+        Boolean(columnCustomizer.descriptor))),
   );
 
   return (
@@ -103,10 +109,7 @@ export const ModuleWorkToolbar = (function ModuleWorkToolbar({
           {filterButton}
 
           {hasActiveFilters && onClearFilters && clearFiltersLabel && (
-            <ModuleClearFiltersButton
-              onClearFilters={onClearFilters}
-              label={clearFiltersLabel}
-            />
+            <ModuleClearFiltersButton onClearFilters={onClearFilters} label={clearFiltersLabel} />
           )}
 
           {!trashToggle?.viewingDeleted && primaryAction}
@@ -133,18 +136,21 @@ export const ModuleWorkToolbar = (function ModuleWorkToolbar({
                 />
               )}
 
-              {columnCustomizer && (columnCustomizer.registry || columnCustomizer.entityType || columnCustomizer.descriptor) && (
-                <ModuleColumnCustomizer
-                  columnRegistry={columnCustomizer.registry}
-                  entityType={columnCustomizer.entityType}
-                  descriptor={columnCustomizer.descriptor}
-                  updateUserColumnLayout={columnCustomizer.onUpdate}
-                  onResetLayout={columnCustomizer.onReset}
-                  labels={columnCustomizer.labels}
-                  disabled={columnCustomizer.disabled}
-                  className={columnCustomizer.className}
-                />
-              )}
+              {columnCustomizer &&
+                (columnCustomizer.registry ||
+                  columnCustomizer.entityType ||
+                  columnCustomizer.descriptor) && (
+                  <ModuleColumnCustomizer
+                    columnRegistry={columnCustomizer.registry}
+                    entityType={columnCustomizer.entityType}
+                    descriptor={columnCustomizer.descriptor}
+                    updateUserColumnLayout={columnCustomizer.onUpdate}
+                    onResetLayout={columnCustomizer.onReset}
+                    labels={columnCustomizer.labels}
+                    disabled={columnCustomizer.disabled}
+                    className={columnCustomizer.className}
+                  />
+                )}
             </div>
           )}
         </div>
@@ -153,4 +159,4 @@ export const ModuleWorkToolbar = (function ModuleWorkToolbar({
       {filterChips}
     </>
   );
-});
+};

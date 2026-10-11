@@ -50,7 +50,8 @@ export function StudentRelationshipContactList({
                 )}
               </div>
               {canMessage && (
-                <EntityMessagingActions variant="icon-row"
+                <EntityMessagingActions
+                  variant="icon-row"
                   primaryPhone={phone.number}
                   labels={{
                     call: t("students.detail.call"),
@@ -89,7 +90,8 @@ export function StudentRelationshipContactList({
                 )}
               </div>
               {canMessage && hasOpenComposer && (
-                <EntityMessagingActions variant="icon-row"
+                <EntityMessagingActions
+                  variant="icon-row"
                   primaryEmail={email.address}
                   labels={{ email: t("students.list.actionEmail") }}
                   emailAriaLabel={t("students.list.actionEmail")}

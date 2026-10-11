@@ -1,6 +1,11 @@
 import type React from "react";
 import { ShieldCheck, User } from "lucide-react";
-import { getPrimaryEmail, getPrimaryPhone, normalizePhoneInput, type TenantUserProfile } from "@mms/shared";
+import {
+  getPrimaryEmail,
+  getPrimaryPhone,
+  normalizePhoneInput,
+  type TenantUserProfile,
+} from "@mms/shared";
 import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardTitleBar } from "@/components/ui/CardTitleBar";
@@ -67,7 +72,9 @@ export function AccountProfileContactTab({
             className="space-y-4"
           >
             <div className="space-y-1 text-start">
-              <Label htmlFor="profile-name" className="text-xs font-semibold text-muted-foreground">{t("account.fieldName")}</Label>
+              <Label htmlFor="profile-name" className="text-xs font-semibold text-muted-foreground">
+                {t("account.fieldName")}
+              </Label>
               <Input
                 id="profile-name"
                 name="profileName"
@@ -79,7 +86,12 @@ export function AccountProfileContactTab({
               />
             </div>
             <div className="space-y-1 text-start">
-              <Label htmlFor="profile-phone" className="text-xs font-semibold text-muted-foreground">{t("account.fieldPhone")}</Label>
+              <Label
+                htmlFor="profile-phone"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                {t("account.fieldPhone")}
+              </Label>
               <Input
                 id="profile-phone"
                 name="profilePhone"
@@ -93,7 +105,12 @@ export function AccountProfileContactTab({
               />
             </div>
             <div className="space-y-1 text-start">
-              <Label htmlFor="profile-contact-email" className="text-xs font-semibold text-muted-foreground">{t("account.contactEmail")}</Label>
+              <Label
+                htmlFor="profile-contact-email"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                {t("account.contactEmail")}
+              </Label>
               <Input
                 id="profile-contact-email"
                 name="profileContactEmail"
@@ -106,8 +123,11 @@ export function AccountProfileContactTab({
               />
               <p className="text-xs text-muted-foreground mt-1">{t("account.contactEmailHint")}</p>
             </div>
-            <FormSubmitActions submitLabel={t("account.saveContact")} pending={savingContact}
-              disabled={!contactDirty} />
+            <FormSubmitActions
+              submitLabel={t("account.saveContact")}
+              pending={savingContact}
+              disabled={!contactDirty}
+            />
           </form>
         )}
       </CardContent>

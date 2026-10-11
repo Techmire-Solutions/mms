@@ -1,7 +1,10 @@
 import type { AppTranslationKey } from "@mms/shared";
-import { type Exam } from '@/lib/data/examinationData';
+import { type Exam } from "@/lib/data/examinationData";
 
-export const EXAMINATION_SUBJECT_OPTIONS: ReadonlyArray<{ value: string; labelKey: AppTranslationKey }> = [
+export const EXAMINATION_SUBJECT_OPTIONS: ReadonlyArray<{
+  value: string;
+  labelKey: AppTranslationKey;
+}> = [
   { value: "Tajweed", labelKey: "examinations.subjects.tajweed" },
   { value: "Hifz", labelKey: "examinations.subjects.hifz" },
   { value: "Islamic Studies", labelKey: "examinations.subjects.islamicStudies" },

@@ -1,10 +1,10 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   type AccountingCommandMetricsSnapshot,
-} from '@mms/shared';
-import { accountingAccounts, accountingEntries, accountingJournalLines } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+} from "@mms/shared";
+import { accountingAccounts, accountingEntries, accountingJournalLines } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 /**
  * SQL aggregates for Accounting command-centre metrics. Sign conventions
@@ -26,9 +26,7 @@ export async function aggregateAccountingCommandMetrics(
   const subdomain = tenant.trim().toLowerCase();
   const safePeriodDays =
     Number.isFinite(periodDays) && periodDays > 0 ? periodDays : MODULE_METRICS_DEFAULT_PERIOD_DAYS;
-  const periodStart = new Date(Date.now() - safePeriodDays * 86_400_000)
-    .toISOString()
-    .slice(0, 10);
+  const periodStart = new Date(Date.now() - safePeriodDays * 86_400_000).toISOString().slice(0, 10);
 
   return withTenantRead(subdomain, async (tx) => {
     const activeEntries = and(
@@ -76,7 +74,7 @@ export async function aggregateAccountingCommandMetrics(
           eq(accountingJournalLines.workspaceSubdomain, accountingEntries.workspaceSubdomain),
           eq(accountingJournalLines.entryId, accountingEntries.id),
           isNull(accountingEntries.deletedAt),
-          eq(accountingEntries.status, 'posted'),
+          eq(accountingEntries.status, "posted"),
         ),
       )
       .leftJoin(

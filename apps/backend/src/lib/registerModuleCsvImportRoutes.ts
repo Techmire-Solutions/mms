@@ -1,17 +1,20 @@
-import type { FastifyInstance } from 'fastify';
-import type { ZodTypeAny } from 'zod';
-import type { User } from '@mms/shared';
-import { getRequestTenant } from './tenantContext.js';
-import { sendForbidden, sendServiceUnavailable } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
-import { recordModernAuditEvent, mapActionStringToAuditType } from '../services/auditTrailService.js';
-import { logger } from './logger.js';
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeAny } from "zod";
+import type { User } from "@mms/shared";
+import { getRequestTenant } from "./tenantContext.js";
+import { sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
+import {
+  recordModernAuditEvent,
+  mapActionStringToAuditType,
+} from "../services/auditTrailService.js";
+import { logger } from "./logger.js";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
   QueueUnavailableError,
-} from '../services/backgroundJobWorkerService.js';
-import { randomUUID } from 'node:crypto';
+} from "../services/backgroundJobWorkerService.js";
+import { randomUUID } from "node:crypto";
 
 export type RegisterModuleCsvImportRoutesOptions = {
   canWrite: (user: User) => boolean;
@@ -34,7 +37,7 @@ export function registerModuleCsvImportRoutes(
 ): void {
   const bodyLimit = options.bodyLimit ?? 2 * 1024 * 1024;
 
-  fastify.post('/import', { bodyLimit }, async (request, reply) => {
+  fastify.post("/import", { bodyLimit }, async (request, reply) => {
     const user = request.user as User;
     if (!options.canWrite(user)) return sendForbidden(reply);
 
@@ -65,8 +68,8 @@ export function registerModuleCsvImportRoutes(
         {
           id: jobId,
           moduleId: options.moduleId,
-          kind: 'import',
-          status: 'running',
+          kind: "import",
+          status: "running",
           label,
           createdAt: new Date().toISOString(),
         },
@@ -74,7 +77,7 @@ export function registerModuleCsvImportRoutes(
           rows: data.rows,
           label,
           viewerRole: user.role,
-          language: (request.headers?.['accept-language'] as string | undefined) || 'en',
+          language: (request.headers?.["accept-language"] as string | undefined) || "en",
         },
       );
     } catch (err) {
@@ -95,7 +98,10 @@ export function registerModuleCsvImportRoutes(
         action: options.queueAuditAction,
       },
     }).catch((err: unknown) =>
-      logger.error({ err: err instanceof Error ? err.message : String(err) }, 'audit event append failed'),
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        "audit event append failed",
+      ),
     );
 
     return reply.status(202).send({ job });

@@ -1,8 +1,27 @@
-import type { AppTranslationKey } from '@mms/shared';
+import type { AppTranslationKey } from "@mms/shared";
 import type React from "react";
 import {
-  GraduationCap, CalendarCheck, BookOpen, UserCheck, DollarSign, AlertCircle, Star, TrendingUp, Receipt,
-  Users, Target, ShieldCheck, Award, Clock, Heart, Briefcase, Activity, CheckCircle2, PieChart, Zap, BarChart2,
+  GraduationCap,
+  CalendarCheck,
+  BookOpen,
+  UserCheck,
+  DollarSign,
+  AlertCircle,
+  Star,
+  TrendingUp,
+  Receipt,
+  Users,
+  Target,
+  ShieldCheck,
+  Award,
+  Clock,
+  Heart,
+  Briefcase,
+  Activity,
+  CheckCircle2,
+  PieChart,
+  Zap,
+  BarChart2,
 } from "lucide-react";
 import { WIDGET_CHART_PALETTES } from "@mms/shared";
 import type { CustomCard } from "./reportMetadata";
@@ -14,8 +33,22 @@ export interface CustomWidget {
   titleKey?: AppTranslationKey;
   category: string;
   collection: CustomCard["collection"];
-  
-  widgetType?: "kpi" | "progress" | "switch" | "chart" | "sessions-list" | "attendance-summary" | "fee-summary" | "outstanding-list" | "overdue-obligations" | "enrollment-trends" | "revenue-expenses" | "attendance-rate" | "hasanat-distribution" | "card";
+
+  widgetType?:
+    | "kpi"
+    | "progress"
+    | "switch"
+    | "chart"
+    | "sessions-list"
+    | "attendance-summary"
+    | "fee-summary"
+    | "outstanding-list"
+    | "overdue-obligations"
+    | "enrollment-trends"
+    | "revenue-expenses"
+    | "attendance-rate"
+    | "hasanat-distribution"
+    | "card";
 
   // Card fields merged
   icon?: string;
@@ -26,7 +59,7 @@ export interface CustomWidget {
   trend?: number;
   trendType?: "manual" | "database";
   role?: string;
-  
+
   // Switch utility settings
   switchActionType?: "app_setting" | "db_record";
   switchStateKey?: string;
@@ -58,44 +91,91 @@ export interface CustomWidget {
   sortOrder?: number;
 }
 
+const ALERT_COLOR_MAP: Record<string, { bg: string; text: string; border: string; glow: string }> =
+  {
+    red: {
+      bg: "bg-destructive/10 dark:bg-destructive/20",
+      text: "text-destructive dark:text-destructive",
+      border: "border-destructive/30 dark:border-destructive/20",
+      glow: "shadow-glow-destructive",
+    },
+    amber: {
+      bg: "bg-warning/10 dark:bg-warning/20",
+      text: "text-warning dark:text-warning",
+      border: "border-warning/30 dark:border-warning/20",
+      glow: "shadow-glow-warning",
+    },
+    yellow: {
+      bg: "bg-warning/10 dark:bg-warning/20",
+      text: "text-warning",
+      border: "border-warning/30 dark:border-warning/20",
+      glow: "shadow-glow-warning",
+    },
+  };
 
-const ALERT_COLOR_MAP: Record<string, { bg: string; text: string; border: string; glow: string }> = {
-  red: {
-    bg: "bg-destructive/10 dark:bg-destructive/20",
-    text: "text-destructive dark:text-destructive",
-    border: "border-destructive/30 dark:border-destructive/20",
-    glow: "shadow-glow-destructive",
+const COLOR_MAP: Record<
+  string,
+  { bg: string; text: string; ring: string; glow: string; bar: string }
+> = {
+  emerald: {
+    bg: "bg-success/10",
+    text: "text-success",
+    ring: "ring-success/20",
+    glow: "bg-success/5 blur-xl group-hover:bg-success/10",
+    bar: "bg-success",
+  },
+  blue: {
+    bg: "bg-info/10",
+    text: "text-info",
+    ring: "ring-info/20",
+    glow: "bg-info/5 blur-xl group-hover:bg-info/10",
+    bar: "bg-info",
+  },
+  violet: {
+    bg: "bg-primary/10",
+    text: "text-primary",
+    ring: "ring-primary/20",
+    glow: "bg-primary/5 blur-xl group-hover:bg-primary/10",
+    bar: "bg-primary",
   },
   amber: {
-    bg: "bg-warning/10 dark:bg-warning/20",
-    text: "text-warning dark:text-warning",
-    border: "border-warning/30 dark:border-warning/20",
-    glow: "shadow-glow-warning",
-  },
-  yellow: {
-    bg: "bg-warning/10 dark:bg-warning/20",
+    bg: "bg-warning/10",
     text: "text-warning",
-    border: "border-warning/30 dark:border-warning/20",
-    glow: "shadow-glow-warning",
-  }
-};
-
-const COLOR_MAP: Record<string, { bg: string; text: string; ring: string; glow: string; bar: string }> = {
-  emerald: { bg: "bg-success/10", text: "text-success", ring: "ring-success/20", glow: "bg-success/5 blur-xl group-hover:bg-success/10", bar: "bg-success" },
-  blue:    { bg: "bg-info/10",    text: "text-info",    ring: "ring-info/20",    glow: "bg-info/5 blur-xl group-hover:bg-info/10",       bar: "bg-info"    },
-  violet:  { bg: "bg-primary/10",  text: "text-primary",  ring: "ring-primary/20",  glow: "bg-primary/5 blur-xl group-hover:bg-primary/10",  bar: "bg-primary" },
-  amber:   { bg: "bg-warning/10",   text: "text-warning",   ring: "ring-warning/20",   glow: "bg-warning/5 blur-xl group-hover:bg-warning/10",   bar: "bg-warning" },
-  red:     { bg: "bg-destructive/10",     text: "text-destructive",     ring: "ring-destructive/20",     glow: "bg-destructive/5 blur-xl group-hover:bg-destructive/10", bar: "bg-destructive" },
+    ring: "ring-warning/20",
+    glow: "bg-warning/5 blur-xl group-hover:bg-warning/10",
+    bar: "bg-warning",
+  },
+  red: {
+    bg: "bg-destructive/10",
+    text: "text-destructive",
+    ring: "ring-destructive/20",
+    glow: "bg-destructive/5 blur-xl group-hover:bg-destructive/10",
+    bar: "bg-destructive",
+  },
 };
 
 const ICONS_LIST: Record<string, React.ElementType> = {
-  GraduationCap, CalendarCheck, BookOpen, UserCheck, DollarSign, AlertCircle, Star, TrendingUp, Receipt,
-  Users, Target, ShieldCheck, Award, Clock, Heart, Briefcase, Activity, CheckCircle2, PieChart, Zap, BarChart2
+  GraduationCap,
+  CalendarCheck,
+  BookOpen,
+  UserCheck,
+  DollarSign,
+  AlertCircle,
+  Star,
+  TrendingUp,
+  Receipt,
+  Users,
+  Target,
+  ShieldCheck,
+  Award,
+  Clock,
+  Heart,
+  Briefcase,
+  Activity,
+  CheckCircle2,
+  PieChart,
+  Zap,
+  BarChart2,
 };
 
-export {
-  ALERT_COLOR_MAP,
-  WIDGET_CHART_PALETTES as THEME_PALETTES,
-  COLOR_MAP,
-  ICONS_LIST,
-};
+export { ALERT_COLOR_MAP, WIDGET_CHART_PALETTES as THEME_PALETTES, COLOR_MAP, ICONS_LIST };

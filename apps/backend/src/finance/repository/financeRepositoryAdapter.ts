@@ -1,4 +1,4 @@
-import type { FinanceRepository } from './financeRepository.js';
+import type { FinanceRepository } from "./financeRepository.js";
 import {
   listInvoicesByWorkspace,
   findInvoiceById,
@@ -12,15 +12,15 @@ import {
   savePayment,
   bulkSoftDeletePayments,
   bulkRestorePayments,
-} from '../../db/repositories/financeRepository.js';
+} from "../../db/repositories/financeRepository.js";
 import {
   listInvoicesPage,
   listPaymentsPage,
   aggregateFinanceCommandMetrics,
   bulkUpdateInvoicesStatusSql,
-} from '../../db/repositories/financeRepositoryList.js';
-import { loadFinanceReportAggregatesSql } from '../../db/repositories/financeRepositoryReport.js';
-import { aggregateFinanceWidgetQueries } from '../../db/repositories/financeRepositoryWidgets.js';
+} from "../../db/repositories/financeRepositoryList.js";
+import { loadFinanceReportAggregatesSql } from "../../db/repositories/financeRepositoryReport.js";
+import { aggregateFinanceWidgetQueries } from "../../db/repositories/financeRepositoryWidgets.js";
 
 /**
  * Drizzle-backed adapter for {@link FinanceRepository}. Delegates to the
@@ -46,4 +46,3 @@ export const financeRepository: FinanceRepository = {
   aggregateFinanceWidgetQueries,
   loadFinanceReportAggregates: loadFinanceReportAggregatesSql,
 };
-

@@ -65,7 +65,7 @@ function getTrendPayload(state: unknown): EnrollmentTrendItem | null {
   return payload as EnrollmentTrendItem;
 }
 
-export const SessionReportCharts = (function SessionReportCharts({
+export const SessionReportCharts = function SessionReportCharts({
   capacityChartData,
   enrollmentTrends,
   onToggleClassFilter,
@@ -93,8 +93,20 @@ export const SessionReportCharts = (function SessionReportCharts({
           <XAxis dataKey="class" tick={chartAxisTick(11)} />
           <YAxis tick={chartAxisTick(11)} />
           <Tooltip content={<CapacityTooltip />} />
-          <Bar dataKey="enrolled" fill="hsl(var(--primary))" stackId="a" name={t("sessions.report.enrolledLabel")} radius={[0, 0, 0, 0]} />
-          <Bar dataKey="available" fill="hsl(var(--muted))" stackId="a" name={t("sessions.report.availableLabel")} radius={[4, 4, 0, 0]} />
+          <Bar
+            dataKey="enrolled"
+            fill="hsl(var(--primary))"
+            stackId="a"
+            name={t("sessions.report.enrolledLabel")}
+            radius={[0, 0, 0, 0]}
+          />
+          <Bar
+            dataKey="available"
+            fill="hsl(var(--muted))"
+            stackId="a"
+            name={t("sessions.report.availableLabel")}
+            radius={[4, 4, 0, 0]}
+          />
         </BarChart>
       </ReportChartCard>
 
@@ -115,11 +127,16 @@ export const SessionReportCharts = (function SessionReportCharts({
           <XAxis dataKey="month" tick={chartAxisTick(11)} />
           <YAxis tick={chartAxisTick(11)} />
           <Tooltip content={<TrendTooltip />} />
-          <Line type="monotone" dataKey="students" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} name={t("sessions.report.studentsLabel")} />
+          <Line
+            type="monotone"
+            dataKey="students"
+            stroke="hsl(var(--primary))"
+            strokeWidth={2.5}
+            dot={{ r: 3 }}
+            name={t("sessions.report.studentsLabel")}
+          />
         </LineChart>
       </ReportChartCard>
     </div>
   );
-});
-
-
+};

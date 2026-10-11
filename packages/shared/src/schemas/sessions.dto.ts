@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import { deepSanitizeStrings } from './sanitize.js';
-import { SessionSchema } from '../sessionTypes.js';
-import { stripSessionClientSoftDeleteFields } from '../sessionUtils.js';
-import { bulkIdsBodySchema, type BulkIdsBody } from './api.dto.js';
+import { z } from "zod";
+import { deepSanitizeStrings } from "./sanitize.js";
+import { SessionSchema } from "../sessionTypes.js";
+import { stripSessionClientSoftDeleteFields } from "../sessionUtils.js";
+import { bulkIdsBodySchema, type BulkIdsBody } from "./api.dto.js";
 
 const sessionCreateBodyBaseSchema = SessionSchema.omit({
   deletedAt: true,
@@ -11,12 +11,14 @@ const sessionCreateBodyBaseSchema = SessionSchema.omit({
   restoredAt: true,
   restoredBy: true,
   deletedWithCascade: true,
-}).extend({
-  id: z.string().optional(),
-}).strict();
+})
+  .extend({
+    id: z.string().optional(),
+  })
+  .strict();
 
 export const sessionCreateBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   const stripped = stripSessionClientSoftDeleteFields(raw as Record<string, unknown>);
   return deepSanitizeStrings(stripped);
 }, sessionCreateBodyBaseSchema);
@@ -24,7 +26,7 @@ export const sessionCreateBodySchema = z.preprocess((raw) => {
 const sessionUpdateBodyBaseSchema = sessionCreateBodyBaseSchema.partial().strict();
 
 export const sessionUpdateBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   const stripped = stripSessionClientSoftDeleteFields(raw as Record<string, unknown>);
   return deepSanitizeStrings(stripped);
 }, sessionUpdateBodyBaseSchema);

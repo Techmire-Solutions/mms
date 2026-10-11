@@ -1,11 +1,11 @@
-import React from 'react';
-import type { PlatformUserProfile } from '@mms/shared';
-import { Drawer } from '@/components/ui/Drawer';
-import { EntityDescriptorSections } from '@/components/ui/EntityDescriptorSections';
-import { PlatformEditAdminAccessDialog } from '@/platform/components/PlatformEditAdminAccessDialog';
-import { PlatformAdminDangerDialog } from '@/platform/components/PlatformAdminDangerDialog';
-import type { DangerMode } from '@/platform/components/admin/PlatformAdminsTableView';
-import type { usePlatformUserDescriptor } from '@/platform/hooks/usePlatformUserDescriptor';
+import React from "react";
+import type { PlatformUserProfile } from "@mms/shared";
+import { Drawer } from "@/components/ui/Drawer";
+import { EntityDescriptorSections } from "@/components/ui/EntityDescriptorSections";
+import { PlatformEditAdminAccessDialog } from "@/platform/components/PlatformEditAdminAccessDialog";
+import { PlatformAdminDangerDialog } from "@/platform/components/PlatformAdminDangerDialog";
+import type { DangerMode } from "@/platform/components/admin/PlatformAdminsTableView";
+import type { usePlatformUserDescriptor } from "@/platform/hooks/usePlatformUserDescriptor";
 
 export interface PlatformAdminsDialogsProps {
   editingAdmin: PlatformUserProfile | null;
@@ -54,7 +54,7 @@ export function PlatformAdminsDialogs({
       <Drawer
         open={Boolean(inspectAdmin)}
         onClose={onCloseInspect}
-        title={inspectAdmin?.name ?? 'Admin'}
+        title={inspectAdmin?.name ?? "Admin"}
       >
         {inspectAdmin ? (
           <EntityDescriptorSections

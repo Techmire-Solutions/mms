@@ -35,7 +35,10 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
   } = props;
   const { t } = useTranslation();
   const selectedIdsSet = React.useMemo(() => new Set(selectedIds), [selectedIds]);
-  const columnContext = React.useMemo(() => ({ t, statusConfig, formatCurrency }), [t, statusConfig, formatCurrency]);
+  const columnContext = React.useMemo(
+    () => ({ t, statusConfig, formatCurrency }),
+    [t, statusConfig, formatCurrency],
+  );
 
   const columns = React.useMemo<WorkBatchTableColumn<Invoice>[]>(() => {
     const cols: WorkBatchTableColumn<Invoice>[] = [];
@@ -44,7 +47,8 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
       cols.push({
         id: "invoice",
         label: t("finance.columns.invoice"),
-        render: (invoice: Invoice) => renderInvoiceWorkColumnValue(invoice, "invoice", columnContext),
+        render: (invoice: Invoice) =>
+          renderInvoiceWorkColumnValue(invoice, "invoice", columnContext),
       });
     }
 
@@ -52,7 +56,8 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
       cols.push({
         id: "student",
         label: t("finance.columns.student"),
-        render: (invoice: Invoice) => renderInvoiceWorkColumnValue(invoice, "student", columnContext),
+        render: (invoice: Invoice) =>
+          renderInvoiceWorkColumnValue(invoice, "student", columnContext),
       });
     }
 
@@ -60,7 +65,8 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
       cols.push({
         id: "sessionClass",
         label: t("finance.columns.sessionClass"),
-        render: (invoice: Invoice) => renderInvoiceWorkColumnValue(invoice, "sessionClass", columnContext),
+        render: (invoice: Invoice) =>
+          renderInvoiceWorkColumnValue(invoice, "sessionClass", columnContext),
       });
     }
 
@@ -69,7 +75,8 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
         id: "baseFee",
         label: t("finance.columns.baseFee"),
         noWrap: true,
-        render: (invoice: Invoice) => renderInvoiceWorkColumnValue(invoice, "baseFee", columnContext),
+        render: (invoice: Invoice) =>
+          renderInvoiceWorkColumnValue(invoice, "baseFee", columnContext),
       });
     }
 
@@ -78,7 +85,8 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
         id: "discount",
         label: t("finance.columns.discount"),
         noWrap: true,
-        render: (invoice: Invoice) => renderInvoiceWorkColumnValue(invoice, "discount", columnContext),
+        render: (invoice: Invoice) =>
+          renderInvoiceWorkColumnValue(invoice, "discount", columnContext),
       });
     }
 
@@ -96,7 +104,8 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
         id: "status",
         label: t("finance.columns.status"),
         noWrap: true,
-        render: (invoice: Invoice) => renderInvoiceWorkColumnValue(invoice, "status", columnContext),
+        render: (invoice: Invoice) =>
+          renderInvoiceWorkColumnValue(invoice, "status", columnContext),
       });
     }
 
@@ -105,7 +114,8 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
         id: "dueDate",
         label: t("finance.columns.dueDate"),
         noWrap: true,
-        render: (invoice: Invoice) => renderInvoiceWorkColumnValue(invoice, "dueDate", columnContext),
+        render: (invoice: Invoice) =>
+          renderInvoiceWorkColumnValue(invoice, "dueDate", columnContext),
       });
     }
 

@@ -71,12 +71,8 @@
           "name": "accounting_accounts_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "accounting_accounts",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -84,10 +80,7 @@
       "compositePrimaryKeys": {
         "accounting_accounts_workspace_subdomain_id_pk": {
           "name": "accounting_accounts_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -162,12 +155,8 @@
           "name": "accounting_entries_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "accounting_entries",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -175,10 +164,7 @@
       "compositePrimaryKeys": {
         "accounting_entries_workspace_subdomain_id_pk": {
           "name": "accounting_entries_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -253,12 +239,8 @@
           "name": "accounting_fiscal_years_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "accounting_fiscal_years",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -266,10 +248,7 @@
       "compositePrimaryKeys": {
         "accounting_fiscal_years_workspace_subdomain_id_pk": {
           "name": "accounting_fiscal_years_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -344,12 +323,8 @@
           "name": "assessment_results_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "assessment_results",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -357,10 +332,7 @@
       "compositePrimaryKeys": {
         "assessment_results_workspace_subdomain_id_pk": {
           "name": "assessment_results_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -435,12 +407,8 @@
           "name": "attendance_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "attendance",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -448,10 +416,7 @@
       "compositePrimaryKeys": {
         "attendance_workspace_subdomain_id_pk": {
           "name": "attendance_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -526,12 +491,8 @@
           "name": "audit_log_entries_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "audit_log_entries",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -539,10 +500,7 @@
       "compositePrimaryKeys": {
         "audit_log_entries_workspace_subdomain_id_pk": {
           "name": "audit_log_entries_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -924,12 +882,8 @@
           "name": "background_jobs_user_id_tenant_users_id_fk",
           "tableFrom": "background_jobs",
           "tableTo": "tenant_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1026,12 +980,8 @@
           "name": "contact_google_sync_credentials_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "contact_google_sync_credentials",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1039,10 +989,7 @@
       "compositePrimaryKeys": {
         "contact_google_sync_credentials_workspace_subdomain_user_id_pk": {
           "name": "contact_google_sync_credentials_workspace_subdomain_user_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "user_id"
-          ]
+          "columns": ["workspace_subdomain", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1157,12 +1104,8 @@
           "name": "contacts_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "contacts",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1170,10 +1113,7 @@
       "compositePrimaryKeys": {
         "contacts_workspace_subdomain_id_pk": {
           "name": "contacts_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1317,12 +1257,8 @@
           "name": "custom_tabs_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "custom_tabs",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1330,10 +1266,7 @@
       "compositePrimaryKeys": {
         "custom_tabs_workspace_subdomain_id_pk": {
           "name": "custom_tabs_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1434,12 +1367,8 @@
           "name": "enrollments_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "enrollments",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1447,10 +1376,7 @@
       "compositePrimaryKeys": {
         "enrollments_workspace_subdomain_id_pk": {
           "name": "enrollments_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1525,12 +1451,8 @@
           "name": "exam_results_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "exam_results",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1538,10 +1460,7 @@
       "compositePrimaryKeys": {
         "exam_results_workspace_subdomain_id_pk": {
           "name": "exam_results_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1616,12 +1535,8 @@
           "name": "exams_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "exams",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1629,10 +1544,7 @@
       "compositePrimaryKeys": {
         "exams_workspace_subdomain_id_pk": {
           "name": "exams_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1707,12 +1619,8 @@
           "name": "finance_invoices_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "finance_invoices",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1720,10 +1628,7 @@
       "compositePrimaryKeys": {
         "finance_invoices_workspace_subdomain_id_pk": {
           "name": "finance_invoices_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1798,12 +1703,8 @@
           "name": "finance_payments_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "finance_payments",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1811,10 +1712,7 @@
       "compositePrimaryKeys": {
         "finance_payments_workspace_subdomain_id_pk": {
           "name": "finance_payments_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1889,12 +1787,8 @@
           "name": "hasanat_batches_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "hasanat_batches",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1902,10 +1796,7 @@
       "compositePrimaryKeys": {
         "hasanat_batches_workspace_subdomain_id_pk": {
           "name": "hasanat_batches_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1980,12 +1871,8 @@
           "name": "hasanat_denoms_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "hasanat_denoms",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1993,10 +1880,7 @@
       "compositePrimaryKeys": {
         "hasanat_denoms_workspace_subdomain_id_pk": {
           "name": "hasanat_denoms_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2071,12 +1955,8 @@
           "name": "hasanat_distributions_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "hasanat_distributions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2084,10 +1964,7 @@
       "compositePrimaryKeys": {
         "hasanat_distributions_workspace_subdomain_id_pk": {
           "name": "hasanat_distributions_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2162,12 +2039,8 @@
           "name": "hasanat_redemptions_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "hasanat_redemptions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2175,10 +2048,7 @@
       "compositePrimaryKeys": {
         "hasanat_redemptions_workspace_subdomain_id_pk": {
           "name": "hasanat_redemptions_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2318,12 +2188,8 @@
           "name": "message_logs_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "message_logs",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2331,10 +2197,7 @@
       "compositePrimaryKeys": {
         "message_logs_workspace_subdomain_id_pk": {
           "name": "message_logs_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2409,12 +2272,8 @@
           "name": "message_templates_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "message_templates",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2422,10 +2281,7 @@
       "compositePrimaryKeys": {
         "message_templates_workspace_subdomain_id_pk": {
           "name": "message_templates_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2500,12 +2356,8 @@
           "name": "mujtahid_reps_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "mujtahid_reps",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2513,10 +2365,7 @@
       "compositePrimaryKeys": {
         "mujtahid_reps_workspace_subdomain_id_pk": {
           "name": "mujtahid_reps_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2591,12 +2440,8 @@
           "name": "mujtahids_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "mujtahids",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2604,10 +2449,7 @@
       "compositePrimaryKeys": {
         "mujtahids_workspace_subdomain_id_pk": {
           "name": "mujtahids_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2714,12 +2556,8 @@
           "name": "obligation_collections_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "obligation_collections",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2727,10 +2565,7 @@
       "compositePrimaryKeys": {
         "obligation_collections_workspace_subdomain_id_pk": {
           "name": "obligation_collections_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2805,12 +2640,8 @@
           "name": "obligation_distributions_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "obligation_distributions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2818,10 +2649,7 @@
       "compositePrimaryKeys": {
         "obligation_distributions_workspace_subdomain_id_pk": {
           "name": "obligation_distributions_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2896,12 +2724,8 @@
           "name": "obligation_types_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "obligation_types",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2909,10 +2733,7 @@
       "compositePrimaryKeys": {
         "obligation_types_workspace_subdomain_id_pk": {
           "name": "obligation_types_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2990,12 +2811,8 @@
           "name": "platform_activity_logs_user_id_platform_users_id_fk",
           "tableFrom": "platform_activity_logs",
           "tableTo": "platform_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3242,12 +3059,8 @@
           "name": "questions_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "questions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3255,10 +3068,7 @@
       "compositePrimaryKeys": {
         "questions_workspace_subdomain_id_pk": {
           "name": "questions_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -3367,12 +3177,8 @@
           "name": "saved_reports_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "saved_reports",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3380,10 +3186,7 @@
       "compositePrimaryKeys": {
         "saved_reports_workspace_subdomain_id_pk": {
           "name": "saved_reports_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -3485,12 +3288,8 @@
           "name": "sessions_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "sessions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3498,10 +3297,7 @@
       "compositePrimaryKeys": {
         "sessions_workspace_subdomain_id_pk": {
           "name": "sessions_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -3603,12 +3399,8 @@
           "name": "students_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "students",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3616,10 +3408,7 @@
       "compositePrimaryKeys": {
         "students_workspace_subdomain_id_pk": {
           "name": "students_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -3721,12 +3510,8 @@
           "name": "teachers_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "teachers",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3734,10 +3519,7 @@
       "compositePrimaryKeys": {
         "teachers_workspace_subdomain_id_pk": {
           "name": "teachers_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -3910,12 +3692,8 @@
           "name": "tenant_users_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "tenant_users",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3923,14 +3701,8 @@
           "name": "tenant_users_workspace_subdomain_contact_id_contacts_workspace_subdomain_id_fk",
           "tableFrom": "tenant_users",
           "tableTo": "contacts",
-          "columnsFrom": [
-            "workspace_subdomain",
-            "contact_id"
-          ],
-          "columnsTo": [
-            "workspace_subdomain",
-            "id"
-          ],
+          "columnsFrom": ["workspace_subdomain", "contact_id"],
+          "columnsTo": ["workspace_subdomain", "id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4008,12 +3780,8 @@
           "name": "tests_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "tests",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4021,10 +3789,7 @@
       "compositePrimaryKeys": {
         "tests_workspace_subdomain_id_pk": {
           "name": "tests_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -4099,12 +3864,8 @@
           "name": "user_activity_logs_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "user_activity_logs",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4112,10 +3873,7 @@
       "compositePrimaryKeys": {
         "user_activity_logs_workspace_subdomain_id_pk": {
           "name": "user_activity_logs_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -4190,12 +3948,8 @@
           "name": "wakala_types_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "wakala_types",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4203,10 +3957,7 @@
       "compositePrimaryKeys": {
         "wakala_types_workspace_subdomain_id_pk": {
           "name": "wakala_types_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -4293,9 +4044,7 @@
         "workspaces_subdomain_unique": {
           "name": "workspaces_subdomain_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "subdomain"
-          ]
+          "columns": ["subdomain"]
         }
       },
       "policies": {},
@@ -4406,12 +4155,8 @@
           "name": "contact_lookups_workspace_subdomain_workspaces_subdomain_fk",
           "tableFrom": "contact_lookups",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_subdomain"
-          ],
-          "columnsTo": [
-            "subdomain"
-          ],
+          "columnsFrom": ["workspace_subdomain"],
+          "columnsTo": ["subdomain"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4419,10 +4164,7 @@
       "compositePrimaryKeys": {
         "contact_lookups_workspace_subdomain_id_pk": {
           "name": "contact_lookups_workspace_subdomain_id_pk",
-          "columns": [
-            "workspace_subdomain",
-            "id"
-          ]
+          "columns": ["workspace_subdomain", "id"]
         }
       },
       "uniqueConstraints": {},

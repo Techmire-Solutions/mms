@@ -1,9 +1,9 @@
-import React from 'react';
-import type { AppTranslationKey } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import type { PlatformCommandItem } from '@/platform/components/platformCommandItems';
+import React from "react";
+import type { AppTranslationKey } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { PlatformCommandItem } from "@/platform/components/platformCommandItems";
 
 export interface PlatformCommandResultsListProps {
   filteredItems: readonly PlatformCommandItem[];
@@ -26,7 +26,7 @@ export function PlatformCommandResultsList({
     return (
       <div className="max-h-80 overflow-y-auto p-2" role="listbox" id="platform-command-listbox">
         <div className="px-4 py-8 text-center text-sm font-semibold text-muted-foreground">
-          {t('platform.noMatchingConsolePages', { query })}
+          {t("platform.noMatchingConsolePages", { query })}
         </div>
       </div>
     );
@@ -48,7 +48,7 @@ export function PlatformCommandResultsList({
             const index = filteredItems.indexOf(item);
             const Icon = item.icon;
             const isSelected = index === selectedIndex;
-            const translatedLabel = item.customLabel ?? (item.labelKey ? t(item.labelKey) : '');
+            const translatedLabel = item.customLabel ?? (item.labelKey ? t(item.labelKey) : "");
             return (
               <Button
                 key={item.id}
@@ -60,14 +60,17 @@ export function PlatformCommandResultsList({
                 onClick={() => onSelect(item.path, item)}
                 onMouseEnter={() => onHoverIndex(index)}
                 className={cn(
-                  'flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-start text-sm h-auto whitespace-normal justify-start cursor-pointer min-h-11',
+                  "flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-start text-sm h-auto whitespace-normal justify-start cursor-pointer min-h-11",
                   isSelected
-                    ? 'bg-primary text-primary-foreground font-bold shadow-sm'
-                    : 'text-foreground hover:bg-muted/70 font-semibold',
+                    ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                    : "text-foreground hover:bg-muted/70 font-semibold",
                 )}
               >
                 <Icon
-                  className={cn('h-4.5 w-4.5 shrink-0', isSelected ? 'text-primary-foreground' : 'text-primary')}
+                  className={cn(
+                    "h-4.5 w-4.5 shrink-0",
+                    isSelected ? "text-primary-foreground" : "text-primary",
+                  )}
                   aria-hidden="true"
                 />
                 <div className="flex-1 min-w-0 flex flex-col">
@@ -76,10 +79,10 @@ export function PlatformCommandResultsList({
                     {item.badge && (
                       <span
                         className={cn(
-                          'px-1.5 py-0.5 text-3xs font-semibold rounded-md uppercase tracking-wider',
+                          "px-1.5 py-0.5 text-3xs font-semibold rounded-md uppercase tracking-wider",
                           isSelected
-                            ? 'bg-primary-foreground/20 text-primary-foreground'
-                            : 'bg-muted text-muted-foreground border border-border/40',
+                            ? "bg-primary-foreground/20 text-primary-foreground"
+                            : "bg-muted text-muted-foreground border border-border/40",
                         )}
                       >
                         {item.badge}
@@ -89,8 +92,8 @@ export function PlatformCommandResultsList({
                   {item.customSubtitle && (
                     <span
                       className={cn(
-                        'text-2xs font-mono truncate',
-                        isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                        "text-2xs font-mono truncate",
+                        isSelected ? "text-primary-foreground/80" : "text-muted-foreground",
                       )}
                     >
                       {item.customSubtitle}
@@ -100,8 +103,8 @@ export function PlatformCommandResultsList({
                 <div className="flex items-center gap-2 shrink-0">
                   <span
                     className={cn(
-                      'text-xs opacity-70 font-mono hidden sm:inline',
-                      isSelected ? 'text-primary-foreground' : 'text-muted-foreground',
+                      "text-xs opacity-70 font-mono hidden sm:inline",
+                      isSelected ? "text-primary-foreground" : "text-muted-foreground",
                     )}
                   >
                     {item.path}
@@ -109,10 +112,10 @@ export function PlatformCommandResultsList({
                   {item.shortcut ? (
                     <kbd
                       className={cn(
-                        'px-1.5 py-0.5 text-3xs font-mono rounded shadow-2xs',
+                        "px-1.5 py-0.5 text-3xs font-mono rounded shadow-2xs",
                         isSelected
-                          ? 'bg-primary-foreground/20 text-primary-foreground'
-                          : 'bg-muted text-muted-foreground border border-border/60',
+                          ? "bg-primary-foreground/20 text-primary-foreground"
+                          : "bg-muted text-muted-foreground border border-border/60",
                       )}
                     >
                       {item.shortcut}

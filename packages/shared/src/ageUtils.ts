@@ -14,7 +14,9 @@ export function calcAge(dob: string | null | undefined): number | null {
  * @param dob - Date of birth string
  * @returns Object with parsed year, 0-indexed month, day, and UTC Date instance, or null if invalid
  */
-export function parseUtcDateParts(dob: string | null | undefined): { year: number; month: number; day: number; date: Date } | null {
+export function parseUtcDateParts(
+  dob: string | null | undefined,
+): { year: number; month: number; day: number; date: Date } | null {
   if (!dob) return null;
   const dateOnly = dob.split("T")[0];
   const parts = dateOnly.split("-");
@@ -102,7 +104,7 @@ export function getLunarDateString(dob: string, locale = "en"): string {
       timeZone: "UTC",
       day: "numeric",
       month: "long",
-      year: "numeric"
+      year: "numeric",
     });
     return formatter.format(parsed.date);
   } catch {
@@ -115,12 +117,12 @@ function getHijriParts(date: Date): { year: number; month: number; day: number }
     timeZone: "UTC",
     day: "numeric",
     month: "numeric",
-    year: "numeric"
+    year: "numeric",
   });
   const parts = formatter.formatToParts(date);
-  const day = parseInt(parts.find(p => p.type === "day")?.value || "1", 10);
-  const month = parseInt(parts.find(p => p.type === "month")?.value || "1", 10);
-  const year = parseInt(parts.find(p => p.type === "year")?.value || "1", 10);
+  const day = parseInt(parts.find((p) => p.type === "day")?.value || "1", 10);
+  const month = parseInt(parts.find((p) => p.type === "month")?.value || "1", 10);
+  const year = parseInt(parts.find((p) => p.type === "year")?.value || "1", 10);
   return { year, month, day };
 }
 

@@ -1,6 +1,11 @@
 import { useState } from "react";
-import { moneyToCents } from '@mms/shared';
-import { computeLedger, type Account, type JournalEntry, type AccountType } from '@/lib/data/accountingData';
+import { moneyToCents } from "@mms/shared";
+import {
+  computeLedger,
+  type Account,
+  type JournalEntry,
+  type AccountType,
+} from "@/lib/data/accountingData";
 
 export interface GeneralLedgerLineWithRunning {
   date: string;
@@ -24,7 +29,10 @@ export function useGeneralLedger(accounts: Account[], entries: JournalEntry[]) {
     .sort((firstAccount, secondAccount) => firstAccount.code.localeCompare(secondAccount.code));
 
   const activeAccount = accounts.find((account) => account.id === selectedAccount);
-  const lines = (() => selectedAccount ? computeLedger(selectedAccount, entries, dateFrom || undefined, dateTo || undefined) : [])();
+  const lines = (() =>
+    selectedAccount
+      ? computeLedger(selectedAccount, entries, dateFrom || undefined, dateTo || undefined)
+      : [])();
 
   /**
    * The running balance accumulates in integer cents and converts once, so a

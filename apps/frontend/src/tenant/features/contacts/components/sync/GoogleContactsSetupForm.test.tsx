@@ -5,9 +5,7 @@ import { GoogleContactsSetupForm, GoogleContactsSetupHint } from "./GoogleContac
 
 describe("GoogleContactsSetupForm Components", () => {
   it("renders setup hint", () => {
-    const html = renderToStaticMarkup(
-      <GoogleContactsSetupHint t={((k: string) => k) as any} />,
-    );
+    const html = renderToStaticMarkup(<GoogleContactsSetupHint t={((k: string) => k) as any} />);
 
     expect(html).toContain("contacts.sync.oauthSetupTitle");
   });

@@ -41,12 +41,7 @@ const mockExam: Exam = {
 
 describe("ExaminationDetail Component", () => {
   it("renders exam details including title and description", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationDetail
-        exam={mockExam}
-        onClose={vi.fn()}
-      />,
-    );
+    const html = renderToStaticMarkup(<ExaminationDetail exam={mockExam} onClose={vi.fn()} />);
 
     expect(html).toContain("Final Examination");
     expect(html).toContain("Comprehensive exam on Tajweed rules.");

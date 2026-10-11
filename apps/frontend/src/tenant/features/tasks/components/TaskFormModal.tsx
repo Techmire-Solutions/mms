@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   type TaskRecord,
   type TaskInsert,
@@ -7,16 +7,16 @@ import {
   type AppTranslationKey,
   TASK_PRIORITIES,
   TASK_STATUSES,
-} from '@mms/shared';
-import { FormModal } from '@/components/ui/FormModal';
-import { Field } from '@/components/ui/FormPrimitives';
-import { FormSelect } from '@/components/ui/FormSelect';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { DatePicker } from '@/components/ui/DatePicker';
-import { DateTimePicker } from '@/components/ui/DateTimePicker';
-import { TaskFormAssigneePicker } from './TaskFormAssigneePicker';
-import { useTaskFormController } from './useTaskFormController';
+} from "@mms/shared";
+import { FormModal } from "@/components/ui/FormModal";
+import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/ui/FormSelect";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { DateTimePicker } from "@/components/ui/DateTimePicker";
+import { TaskFormAssigneePicker } from "./TaskFormAssigneePicker";
+import { useTaskFormController } from "./useTaskFormController";
 
 export interface TaskFormModalProps {
   open: boolean;
@@ -62,37 +62,37 @@ export function TaskFormModal({
     <FormModal
       open={open}
       onClose={onClose}
-      title={initialData ? t('tasks.edit') : t('tasks.create')}
+      title={initialData ? t("tasks.edit") : t("tasks.create")}
       error={error ?? undefined}
       saving={saving}
       isDirty={Boolean(title.trim())}
       onSave={handleSubmit}
     >
       <div className="space-y-4 py-2">
-        <Field id="task-title" label={t('tasks.title')} required>
+        <Field id="task-title" label={t("tasks.title")} required>
           <Input
             id="task-title"
             name="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={t('tasks.titlePlaceholder')}
+            placeholder={t("tasks.titlePlaceholder")}
             autoFocus
           />
         </Field>
 
-        <Field id="task-description" label={t('tasks.description')}>
+        <Field id="task-description" label={t("tasks.description")}>
           <Textarea
             id="task-description"
             name="description"
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder={t('tasks.descriptionPlaceholder')}
+            placeholder={t("tasks.descriptionPlaceholder")}
           />
         </Field>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field id="task-priority" label={t('tasks.priority')}>
+          <Field id="task-priority" label={t("tasks.priority")}>
             <FormSelect
               id="task-priority"
               name="priority"
@@ -105,7 +105,7 @@ export function TaskFormModal({
             />
           </Field>
 
-          <Field id="task-status" label={t('tasks.status')}>
+          <Field id="task-status" label={t("tasks.status")}>
             <FormSelect
               id="task-status"
               name="status"
@@ -120,7 +120,7 @@ export function TaskFormModal({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field id="task-start-date" label={t('tasks.startDate')}>
+          <Field id="task-start-date" label={t("tasks.startDate")}>
             <DatePicker
               id="task-start-date"
               name="startDate"
@@ -129,7 +129,7 @@ export function TaskFormModal({
             />
           </Field>
 
-          <Field id="task-due-at" label={t('tasks.dueAt')}>
+          <Field id="task-due-at" label={t("tasks.dueAt")}>
             <DateTimePicker
               id="task-due-at"
               name="dueAt"
@@ -139,16 +139,13 @@ export function TaskFormModal({
           </Field>
         </div>
 
-        <Field id="task-parent" label={t('tasks.parentTask')}>
+        <Field id="task-parent" label={t("tasks.parentTask")}>
           <FormSelect
             id="task-parent"
             name="parentTaskId"
-            value={parentTaskId ?? ''}
+            value={parentTaskId ?? ""}
             onChange={(v) => setParentTaskId(v || null)}
-            options={[
-              { value: '', label: t('tasks.parentTaskNone') },
-              ...parentOptions,
-            ]}
+            options={[{ value: "", label: t("tasks.parentTaskNone") }, ...parentOptions]}
           />
         </Field>
 

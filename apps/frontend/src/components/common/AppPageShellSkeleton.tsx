@@ -3,12 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TableSkeleton, StatsSkeleton } from "@/components/ui/LoadingState";
 import { cn } from "@/lib/utils";
 
-export type AppPageShellSkeletonSlot =
-  | "header"
-  | "metrics"
-  | "tabs"
-  | "filterbar"
-  | "table";
+export type AppPageShellSkeletonSlot = "header" | "metrics" | "tabs" | "filterbar" | "table";
 
 export interface AppPageShellSkeletonProps {
   showHeader?: boolean;
@@ -44,7 +39,7 @@ export function AppPageShellSkeleton({
     <div
       className={cn(
         "box-border mx-auto w-full min-w-0 max-w-7xl space-y-8 sm:space-y-10 animate-pulse",
-        className
+        className,
       )}
       role="status"
       aria-live="polite"

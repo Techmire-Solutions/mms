@@ -23,11 +23,16 @@ export function buildWakalaSummary(
 ): WakalaSummaryEntry[] {
   const wakalaSummaryByKey: Record<string, WakalaSummaryEntry> = {};
   filtered.forEach((collection) => {
-    const rep = reps.find((candidateRep) => candidateRep.id === collection.mujtahid_representative_id);
-    const mujtahid = rep ? mujtahids.find((candidateMujtahid) => candidateMujtahid.id === rep.mujtahid_id) : null;
-    const wakalaType = wakalaTypes.find((candidateWakalaType) =>
-      candidateWakalaType.mujtahid_representative_id === collection.mujtahid_representative_id &&
-      candidateWakalaType.obligation_type_id === collection.obligation_type_id
+    const rep = reps.find(
+      (candidateRep) => candidateRep.id === collection.mujtahid_representative_id,
+    );
+    const mujtahid = rep
+      ? mujtahids.find((candidateMujtahid) => candidateMujtahid.id === rep.mujtahid_id)
+      : null;
+    const wakalaType = wakalaTypes.find(
+      (candidateWakalaType) =>
+        candidateWakalaType.mujtahid_representative_id === collection.mujtahid_representative_id &&
+        candidateWakalaType.obligation_type_id === collection.obligation_type_id,
     );
     const key = wakalaType?.id || `no-wakala-${collection.mujtahid_representative_id}`;
     const label = wakalaType
@@ -39,11 +44,16 @@ export function buildWakalaSummary(
         label,
         repName: rep?.name ?? "—",
         mujtahidName: mujtahid?.name ?? "—",
-        obligationType: obligationTypes.find((obligationType) => obligationType.id === collection.obligation_type_id)?.name ?? "—",
+        obligationType:
+          obligationTypes.find(
+            (obligationType) => obligationType.id === collection.obligation_type_id,
+          )?.name ?? "—",
         count: 0,
         total: 0,
         hasWakala: !!wakalaType,
-        distributions: wakalaType ? distributions.filter((distribution) => distribution.wakala_type_id === wakalaType.id) : [],
+        distributions: wakalaType
+          ? distributions.filter((distribution) => distribution.wakala_type_id === wakalaType.id)
+          : [],
       };
     }
     wakalaSummaryByKey[key].count++;
@@ -63,8 +73,12 @@ export function buildRepSummary(
 ): RepSummaryEntry[] {
   const repSummaryByKey: Record<string, RepSummaryEntry> = {};
   filtered.forEach((collection) => {
-    const rep = reps.find((candidateRep) => candidateRep.id === collection.mujtahid_representative_id);
-    const mujtahid = rep ? mujtahids.find((candidateMujtahid) => candidateMujtahid.id === rep.mujtahid_id) : null;
+    const rep = reps.find(
+      (candidateRep) => candidateRep.id === collection.mujtahid_representative_id,
+    );
+    const mujtahid = rep
+      ? mujtahids.find((candidateMujtahid) => candidateMujtahid.id === rep.mujtahid_id)
+      : null;
     const key = collection.mujtahid_representative_id || "none";
     if (!repSummaryByKey[key]) {
       repSummaryByKey[key] = {
@@ -80,20 +94,27 @@ export function buildRepSummary(
     const amount = collection.amount;
     repSummaryByKey[key].count++;
     repSummaryByKey[key].total += amount;
-    const wakalaType = wakalaTypes.find((candidateWakalaType) =>
-      candidateWakalaType.mujtahid_representative_id === collection.mujtahid_representative_id &&
-      candidateWakalaType.obligation_type_id === collection.obligation_type_id
+    const wakalaType = wakalaTypes.find(
+      (candidateWakalaType) =>
+        candidateWakalaType.mujtahid_representative_id === collection.mujtahid_representative_id &&
+        candidateWakalaType.obligation_type_id === collection.obligation_type_id,
     );
     if (wakalaType) {
       const liabilityDistributions = distributions.filter(
-        (distribution) => distribution.wakala_type_id === wakalaType.id && distribution.type === "Liability"
+        (distribution) =>
+          distribution.wakala_type_id === wakalaType.id && distribution.type === "Liability",
       );
-      const totalLiabilityPct = liabilityDistributions.reduce((sum, distribution) => sum + distribution.percentage, 0);
+      const totalLiabilityPct = liabilityDistributions.reduce(
+        (sum, distribution) => sum + distribution.percentage,
+        0,
+      );
       repSummaryByKey[key].due += amount * (totalLiabilityPct / 100);
     } else {
       repSummaryByKey[key].due += amount;
     }
-    const typeName = obligationTypes.find((obligationType) => obligationType.id === collection.obligation_type_id)?.name ?? t("obligations.summary.other");
+    const typeName =
+      obligationTypes.find((obligationType) => obligationType.id === collection.obligation_type_id)
+        ?.name ?? t("obligations.summary.other");
     repSummaryByKey[key].byType[typeName] = (repSummaryByKey[key].byType[typeName] ?? 0) + amount;
   });
   return Object.values(repSummaryByKey).sort((a, b) => b.total - a.total);
@@ -106,7 +127,9 @@ export function buildTypeBreakdown(
 ): TypeBreakdownEntry[] {
   const typeBreakdownByName: Record<string, TypeBreakdownEntry> = {};
   filtered.forEach((collection) => {
-    const name = obligationTypes.find((obligationType) => obligationType.id === collection.obligation_type_id)?.name ?? t("obligations.summary.other");
+    const name =
+      obligationTypes.find((obligationType) => obligationType.id === collection.obligation_type_id)
+        ?.name ?? t("obligations.summary.other");
     if (!typeBreakdownByName[name]) typeBreakdownByName[name] = { name, total: 0, count: 0 };
     typeBreakdownByName[name].total += collection.amount;
     typeBreakdownByName[name].count++;

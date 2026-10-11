@@ -8,12 +8,12 @@ import {
   type ContactsWidgetAggregateResult,
   type ContactsWidgetQuery,
   type FieldConfig,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { loadContactFieldConfig } from './contactConfigService.js';
-import { getDuplicateScanCache } from './contactDuplicateScanUseCases.js';
-import type { ContactsRepository } from '../repository/contactsRepository.js';
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { loadContactFieldConfig } from "./contactConfigService.js";
+import { getDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
 function metricsFieldConfig(fieldConfig: FieldConfig | null): FieldConfig {
   if (fieldConfig?.fields && fieldConfig.formTabs) return fieldConfig;
@@ -43,7 +43,7 @@ export async function loadContactsCommandMetrics(
   const dupeCache = await getDuplicateScanCache();
   // Actionable pairs only (exclude name-only) — cache when warm; 0 when cold (no full-tenant scan).
   const duplicatePairCount = dupeCache
-    ? dupeCache.pairs.filter((pair) => pair.reasonKey !== 'name').length
+    ? dupeCache.pairs.filter((pair) => pair.reasonKey !== "name").length
     : 0;
   return repo.aggregateCommandMetrics(tenant, metricsFieldConfig(fieldConfig), {
     duplicatePairCount,
@@ -56,7 +56,10 @@ export async function loadContactsReportAnalytics(
     language?: string;
   },
   repo: ContactsRepository = contactsRepository,
-): Promise<{ analytics: ContactsReportAnalyticsSnapshot; monthlyByYear?: ContactsMonthlyYearCounts[] }> {
+): Promise<{
+  analytics: ContactsReportAnalyticsSnapshot;
+  monthlyByYear?: ContactsMonthlyYearCounts[];
+}> {
   const tenant = getRequestTenant();
   if (!tenant) {
     return {
@@ -82,7 +85,7 @@ export async function loadContactsReportAnalytics(
     return { analytics };
   }
 
-  const language = options?.language || 'en';
+  const language = options?.language || "en";
   const monthlyByYear = await repo.aggregateMonthlyCreatedCounts(tenant, years, 6, language);
   return { analytics, monthlyByYear };
 }

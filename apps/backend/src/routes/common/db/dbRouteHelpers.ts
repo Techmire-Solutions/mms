@@ -3,9 +3,9 @@ import {
   WORKSPACES_COLLECTION,
   PLATFORM_SUPER_USERS_OBJECT_KEY,
   type TenantDatabaseSnapshot,
-} from '@mms/shared';
-import type { User } from '@mms/shared';
-import { canWriteCollection, canWriteObject } from '../../../services/rbacService.js';
+} from "@mms/shared";
+import type { User } from "@mms/shared";
+import { canWriteCollection, canWriteObject } from "../../../services/rbacService.js";
 
 export function stripServerOnlyObjects(objects: Record<string, unknown>): void {
   for (const key of Object.keys(objects)) {
@@ -34,7 +34,10 @@ export function stripUnwritableObjects(objects: Record<string, unknown>, user: U
   }
 }
 
-export function sanitizeSnapshot(snapshot: TenantDatabaseSnapshot, _user: User): TenantDatabaseSnapshot {
+export function sanitizeSnapshot(
+  snapshot: TenantDatabaseSnapshot,
+  _user: User,
+): TenantDatabaseSnapshot {
   if (snapshot.collections) {
     delete snapshot.collections[WORKSPACES_COLLECTION];
   }

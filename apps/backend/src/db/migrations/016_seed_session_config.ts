@@ -3,18 +3,15 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from '@mms/shared';
-import { getMinimalCollectionsForSeed } from '../minimalSeeds.js';
+} from "@mms/shared";
+import { getMinimalCollectionsForSeed } from "../minimalSeeds.js";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,
   saveCollection,
-} from '../database.js';
+} from "../database.js";
 
-const SESSION_CONFIG_COLLECTIONS = [
-  'sessionStatuses',
-  'sessionTypes',
-] as const;
+const SESSION_CONFIG_COLLECTIONS = ["sessionStatuses", "sessionTypes"] as const;
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -61,11 +58,11 @@ export async function runMigration016(): Promise<void> {
 
   let changed = false;
   if (subdomains.size === 0) {
-    changed = await seedSessionConfigForPrefix('', collections);
+    changed = await seedSessionConfigForPrefix("", collections);
   } else {
     for (const subdomain of subdomains) {
       const didChange = await seedSessionConfigForPrefix(
-        tenantCollectionKey(subdomain, ''),
+        tenantCollectionKey(subdomain, ""),
         collections,
       );
       changed = changed || didChange;
@@ -73,6 +70,6 @@ export async function runMigration016(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 016] Seeded database-owned session configuration defaults.');
+    console.log("[Migration 016] Seeded database-owned session configuration defaults.");
   }
 }

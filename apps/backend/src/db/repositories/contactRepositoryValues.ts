@@ -1,13 +1,13 @@
-import type { Contact } from '@mms/shared';
-import type { contacts } from '../schema.js';
+import type { Contact } from "@mms/shared";
+import type { contacts } from "../schema.js";
 
-
-import { mapAuditToInsert } from './repositoryMappers.js';
+import { mapAuditToInsert } from "./repositoryMappers.js";
 
 export type ContactInsert = typeof contacts.$inferInsert;
 
 export function contactWriteValues(subdomain: string, contact: Contact): ContactInsert {
-  const fullName = contact.name || `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || 'Unnamed';
+  const fullName =
+    contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim() || "Unnamed";
   const audit = mapAuditToInsert(contact);
   return {
     id: String(contact.id),
@@ -21,7 +21,7 @@ export function contactWriteValues(subdomain: string, contact: Contact): Contact
     isSyed: contact.isSyed ?? false,
     avatar: contact.avatar ?? null,
     notes: contact.notes ?? null,
-    whatsappStatus: contact.whatsappStatus ?? 'unknown',
+    whatsappStatus: contact.whatsappStatus ?? "unknown",
     lastCheckedAt: contact.lastCheckedAt ? new Date(contact.lastCheckedAt) : null,
     aiSummary: contact.aiSummary ?? null,
     ...audit,
@@ -30,6 +30,12 @@ export function contactWriteValues(subdomain: string, contact: Contact): Contact
 }
 
 export function contactUpdateSetValues(subdomain: string, contact: Contact) {
-  const { id: _id, workspaceSubdomain: _subdomain, createdAt: _createdAt, createdBy: _createdBy, ...setFields } = contactWriteValues(subdomain, contact);
+  const {
+    id: _id,
+    workspaceSubdomain: _subdomain,
+    createdAt: _createdAt,
+    createdBy: _createdBy,
+    ...setFields
+  } = contactWriteValues(subdomain, contact);
   return setFields;
 }

@@ -1,6 +1,6 @@
-import { type FastifyInstance, type FastifyPluginOptions } from 'fastify';
-import { authenticateTenant } from '../../middleware/authenticate.js';
-import { registerModuleAccess } from '../../middleware/requireTenantModule.js';
+import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import { authenticateTenant } from "../../middleware/authenticate.js";
+import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   accountListSchema,
@@ -10,27 +10,27 @@ import {
   resourceIdParamsSchema,
   softDeleteBodySchema,
   type User,
-} from '@mms/shared';
-import { canDeleteCollection } from '../../services/rbacService.js';
-import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from '../../lib/httpErrors.js';
-import { parseRequest, replyValidationError } from '../../lib/zodRequest.js';
+} from "@mms/shared";
+import { canDeleteCollection } from "../../services/rbacService.js";
+import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "../../lib/httpErrors.js";
+import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 import {
   registerBulkRoutes,
   registerIncludableBulkRoutes,
   registerMetricsRoute,
   registerSoftDeletableBulkRoutes,
-} from '../../lib/crudRouter.js';
+} from "../../lib/crudRouter.js";
 
-import { accountingUseCases } from '../../accounting/use-cases/accountingUseCases.js';
-import { accountingSetupConfigRoutes } from './accountingSetupConfigRoutes.js';
-import { accountingContractRouter } from './accounting/accountingContractRouter.js';
-import { accountingReportRoutes } from './accounting/accountingReportRoutes.js';
-import { accountingLedgerOpsRoutes } from './accounting/accountingLedgerOpsRoutes.js';
-import { accountingVoucherNumberingRoutes } from './accounting/accountingVoucherNumberingRoutes.js';
-import { accountingSpecializedEntryRoutes } from './accounting/accountingSpecializedEntryRoutes.js';
-import { accountingSeedChartRoutes } from './accounting/accountingSeedChartRoutes.js';
-import { accountingReversalRoutes } from './accounting/accountingReversalRoutes.js';
-import { accountingExportRoutes } from './accounting/accountingExportRoutes.js';
+import { accountingUseCases } from "../../accounting/use-cases/accountingUseCases.js";
+import { accountingSetupConfigRoutes } from "./accountingSetupConfigRoutes.js";
+import { accountingContractRouter } from "./accounting/accountingContractRouter.js";
+import { accountingReportRoutes } from "./accounting/accountingReportRoutes.js";
+import { accountingLedgerOpsRoutes } from "./accounting/accountingLedgerOpsRoutes.js";
+import { accountingVoucherNumberingRoutes } from "./accounting/accountingVoucherNumberingRoutes.js";
+import { accountingSpecializedEntryRoutes } from "./accounting/accountingSpecializedEntryRoutes.js";
+import { accountingSeedChartRoutes } from "./accounting/accountingSeedChartRoutes.js";
+import { accountingReversalRoutes } from "./accounting/accountingReversalRoutes.js";
+import { accountingExportRoutes } from "./accounting/accountingExportRoutes.js";
 
 const ACCOUNTING_ENTRIES_COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 const ACCOUNTING_ACCOUNTS_COLLECTION = ACCOUNTING_MODULE_MANIFEST.accountCollectionKey;
@@ -43,8 +43,8 @@ export default async function accountingRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
-  fastify.addHook('preHandler', authenticateTenant);
-  registerModuleAccess(fastify, 'accounting');
+  fastify.addHook("preHandler", authenticateTenant);
+  registerModuleAccess(fastify, "accounting");
 
   await fastify.register(
     async (sub) => {
@@ -52,12 +52,12 @@ export default async function accountingRoutes(
       await sub.register(accountingExportRoutes);
 
       registerIncludableBulkRoutes(sub, {
-        path: '/accounts',
+        path: "/accounts",
         collection: ACCOUNTING_ACCOUNTS_COLLECTION,
         schema: accountListSchema,
         saveFn: accountingUseCases.upsertAccounts,
-        responseKey: 'accounts',
-        errorMessagePrefix: 'accounts',
+        responseKey: "accounts",
+        errorMessagePrefix: "accounts",
 
         customGetRoute: true,
       });
@@ -71,7 +71,7 @@ export default async function accountingRoutes(
        * `isActive: false` write through the bulk upsert. These routes make the
        * guard the thing the UI actually calls.
        */
-      sub.delete('/accounts/:id', async (request, reply) => {
+      sub.delete("/accounts/:id", async (request, reply) => {
         const user = request.user as User;
         if (!canDeleteCollection(user, ACCOUNTING_ACCOUNTS_COLLECTION)) return sendForbidden(reply);
         const params = parseRequest(resourceIdParamsSchema, request.params);
@@ -86,24 +86,33 @@ export default async function accountingRoutes(
           );
           return reply.send({ success: true, archived });
         } catch (error) {
-          return sendIfHttpDomainError(reply, error) ?? sendDatabaseError(reply, 'Failed to archive account', error);
+          return (
+            sendIfHttpDomainError(reply, error) ??
+            sendDatabaseError(reply, "Failed to archive account", error)
+          );
         }
       });
 
-      sub.post('/accounts/:id/restore', async (request, reply) => {
+      sub.post("/accounts/:id/restore", async (request, reply) => {
         const user = request.user as User;
         if (!canDeleteCollection(user, ACCOUNTING_ACCOUNTS_COLLECTION)) return sendForbidden(reply);
         const params = parseRequest(resourceIdParamsSchema, request.params);
         if (!params.ok) return replyValidationError(reply, params.message);
         try {
-          const restored = await accountingUseCases.restoreAccountById(params.data.id, String(user.id));
+          const restored = await accountingUseCases.restoreAccountById(
+            params.data.id,
+            String(user.id),
+          );
           return reply.send({ success: true, restored });
         } catch (error) {
-          return sendIfHttpDomainError(reply, error) ?? sendDatabaseError(reply, 'Failed to restore account', error);
+          return (
+            sendIfHttpDomainError(reply, error) ??
+            sendDatabaseError(reply, "Failed to restore account", error)
+          );
         }
       });
 
-      sub.post('/accounts/bulk-delete', async (request, reply) => {
+      sub.post("/accounts/bulk-delete", async (request, reply) => {
         const user = request.user as User;
         if (!canDeleteCollection(user, ACCOUNTING_ACCOUNTS_COLLECTION)) return sendForbidden(reply);
         const body = parseRequest(bulkIdsBodySchema, request.body);
@@ -116,12 +125,15 @@ export default async function accountingRoutes(
           );
           return reply.send({ success: true, ...result });
         } catch (error) {
-          return sendIfHttpDomainError(reply, error) ?? sendDatabaseError(reply, 'Failed to archive accounts', error);
+          return (
+            sendIfHttpDomainError(reply, error) ??
+            sendDatabaseError(reply, "Failed to archive accounts", error)
+          );
         }
       });
 
       registerSoftDeletableBulkRoutes(sub, {
-        path: '/entries',
+        path: "/entries",
         collection: ACCOUNTING_ENTRIES_COLLECTION,
         schema: journalEntryListSchema,
         loadFn: accountingUseCases.loadEntries,
@@ -130,14 +142,13 @@ export default async function accountingRoutes(
         restoreFn: accountingUseCases.restoreJournalEntryById,
         bulkDeleteFn: accountingUseCases.bulkSoftDeleteJournalEntries,
         bulkRestoreFn: (ids, userId) => accountingUseCases.bulkRestoreJournalEntries(ids, userId),
-        responseKey: 'entries',
-        errorMessagePrefix: 'entries',
-        nameSingular: 'Journal entry',
-
+        responseKey: "entries",
+        errorMessagePrefix: "entries",
+        nameSingular: "Journal entry",
 
         customGetRoute: true,
         mapDeleteError: (error) => {
-          if (error instanceof Error && error.message.includes('Posted')) {
+          if (error instanceof Error && error.message.includes("Posted")) {
             return { statusCode: 400, body: { error: error.message } };
           }
           return null;
@@ -145,19 +156,19 @@ export default async function accountingRoutes(
       });
 
       registerBulkRoutes(sub, {
-        path: '/fiscal-years',
+        path: "/fiscal-years",
         collection: ACCOUNTING_FISCAL_YEARS_COLLECTION,
         schema: fiscalYearListSchema,
         saveFn: accountingUseCases.upsertFiscalYears,
-        responseKey: 'fiscalYears',
-        errorMessagePrefix: 'fiscal years',
+        responseKey: "fiscalYears",
+        errorMessagePrefix: "fiscal years",
         customGetRoute: true,
       });
 
       registerMetricsRoute(sub, {
         collection: ACCOUNTING_ENTRIES_COLLECTION,
         loadMetricsFn: accountingUseCases.loadAccountingCommandMetrics,
-        errorMessagePrefix: 'accounting',
+        errorMessagePrefix: "accounting",
       });
 
       await sub.register(accountingReportRoutes);
@@ -167,7 +178,7 @@ export default async function accountingRoutes(
       await sub.register(accountingSeedChartRoutes);
       await sub.register(accountingReversalRoutes);
     },
-    { prefix: '/api/accounting' },
+    { prefix: "/api/accounting" },
   );
 
   await fastify.register(accountingContractRouter);

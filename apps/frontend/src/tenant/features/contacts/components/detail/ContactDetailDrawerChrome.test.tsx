@@ -72,9 +72,7 @@ describe("ContactDetailDrawerChrome Components", () => {
     );
     expect(htmlTabBar).toContain("Tab: overview");
 
-    const htmlFooter = renderToStaticMarkup(
-      <ContactDetailDrawerFooter contact={mockContact} />,
-    );
+    const htmlFooter = renderToStaticMarkup(<ContactDetailDrawerFooter contact={mockContact} />);
     expect(htmlFooter).toContain("contacts.detail.updatedLabel");
   });
 });

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 
 export interface PlatformLiveAnnouncerContextValue {
   announcePolite: (message: string) => void;
@@ -25,17 +25,17 @@ export interface PlatformLiveRegionProviderProps {
 export function PlatformLiveRegionProvider({
   children,
 }: PlatformLiveRegionProviderProps): React.JSX.Element {
-  const [politeMessage, setPoliteMessage] = useState('');
-  const [assertiveMessage, setAssertiveMessage] = useState('');
+  const [politeMessage, setPoliteMessage] = useState("");
+  const [assertiveMessage, setAssertiveMessage] = useState("");
 
   const announcePolite = useCallback((message: string) => {
-    setPoliteMessage('');
+    setPoliteMessage("");
     // Trigger DOM update on next tick
     window.setTimeout(() => setPoliteMessage(message), 50);
   }, []);
 
   const announceAssertive = useCallback((message: string) => {
-    setAssertiveMessage('');
+    setAssertiveMessage("");
     window.setTimeout(() => setAssertiveMessage(message), 50);
   }, []);
 

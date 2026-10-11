@@ -17,7 +17,20 @@ export interface ContactsMonthlyYearCounts {
   months: { month: string; count: number }[];
 }
 
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
 
 const FORMATTER_CACHE = new Map<string, Intl.DateTimeFormat>();
 const MONTH_LABELS_CACHE = new Map<string, string[]>();
@@ -25,18 +38,15 @@ const MONTH_LABELS_CACHE = new Map<string, string[]>();
 function getMonthFormatter(locale: string): Intl.DateTimeFormat {
   let formatter = FORMATTER_CACHE.get(locale);
   if (!formatter) {
-    formatter = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' });
+    formatter = new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" });
     FORMATTER_CACHE.set(locale, formatter);
   }
   return formatter;
 }
 
 /** Localized short month labels for comparison charts (falls back to English abbreviations). */
-export function formatContactsMonthLabels(
-  language = 'en',
-  monthCount = 12,
-): string[] {
-  const locale = language.trim() || 'en';
+export function formatContactsMonthLabels(language = "en", monthCount = 12): string[] {
+  const locale = language.trim() || "en";
   const cacheKey = `${locale}:${monthCount}`;
   const cached = MONTH_LABELS_CACHE.get(cacheKey);
   if (cached) return cached;

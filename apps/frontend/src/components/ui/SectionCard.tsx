@@ -13,7 +13,7 @@ export interface SectionCardProps {
   padding?: boolean | string;
   className?: string;
   children: React.ReactNode;
-  accentColor?: CardAccentColor | 'none' | false | null;
+  accentColor?: CardAccentColor | "none" | false | null;
   headingLevel?: 2 | 3;
   headingId?: string;
   ref?: React.Ref<HTMLDivElement>;
@@ -36,8 +36,7 @@ export function SectionCard({
   const hasHeader = Boolean(title || Icon || actions);
   const hasStripe = Boolean(accentColor && accentColor !== "none");
   const accentConfig = resolveAccent(hasStripe ? (accentColor as CardAccentColor) : undefined);
-  const paddingClass =
-    typeof padding === "string" ? padding : padding ? "px-5 py-4" : undefined;
+  const paddingClass = typeof padding === "string" ? padding : padding ? "px-5 py-4" : undefined;
 
   return (
     <Card ref={ref} className={className} accentColor={accentColor}>
@@ -64,11 +63,8 @@ export function SectionCard({
           }
         />
       )}
-      <div className={cn(paddingClass, hasStripe && CARD_STRIPE_INSET)}>
-        {children}
-      </div>
+      <div className={cn(paddingClass, hasStripe && CARD_STRIPE_INSET)}>{children}</div>
     </Card>
   );
 }
 SectionCard.displayName = "SectionCard";
-

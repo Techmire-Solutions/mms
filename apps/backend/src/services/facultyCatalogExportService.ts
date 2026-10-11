@@ -3,14 +3,14 @@ import {
   facultyDepartmentsToCsv,
   facultyDesignationsToCsv,
   type FacultyDepartmentEntity,
-} from '@mms/shared';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { listFacultyDepartments } from '../db/repositories/facultyDepartmentRepository.js';
-import { listFacultyDesignations } from '../db/repositories/facultyDesignationRepository.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { listFacultyDepartments } from "../db/repositories/facultyDepartmentRepository.js";
+import { listFacultyDesignations } from "../db/repositories/facultyDesignationRepository.js";
 
 function resolveTenant(tenant?: string): string {
-  const subdomain = (tenant ?? getRequestTenant() ?? '').trim().toLowerCase();
-  if (!subdomain) throw new Error('Tenant context required for faculty catalog export');
+  const subdomain = (tenant ?? getRequestTenant() ?? "").trim().toLowerCase();
+  if (!subdomain) throw new Error("Tenant context required for faculty catalog export");
   return subdomain;
 }
 
@@ -26,7 +26,7 @@ export async function buildFacultyDepartmentsCsvExport(
   const csv = facultyDepartmentsToCsv(departments);
   const filename = buildTenantExportFilename(
     subdomain,
-    options.filename?.trim() || 'faculty-departments.csv',
+    options.filename?.trim() || "faculty-departments.csv",
   );
   return { csv, filename, count: departments.length };
 }
@@ -42,7 +42,7 @@ export async function buildFacultyDesignationsCsvExport(
   const csv = facultyDesignationsToCsv(designations);
   const filename = buildTenantExportFilename(
     subdomain,
-    options.filename?.trim() || 'faculty-designations.csv',
+    options.filename?.trim() || "faculty-designations.csv",
   );
   return { csv, filename, count: designations.length };
 }

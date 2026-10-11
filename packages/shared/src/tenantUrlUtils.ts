@@ -1,4 +1,4 @@
-import { LOCAL_DEV_APP_DOMAIN } from './tenantSubdomainUtils.js';
+import { LOCAL_DEV_APP_DOMAIN } from "./tenantSubdomainUtils.js";
 
 export interface TenantUrlOptions {
   appDomain?: string;
@@ -20,18 +20,12 @@ function appDomainForUrlOptions(options: TenantUrlOptions): string {
 /**
  * Full origin for a tenant workspace, e.g. https://al-noor.{platform-domain}
  */
-export function buildTenantOrigin(
-  subdomain: string,
-  options: TenantUrlOptions = {}
-): string {
+export function buildTenantOrigin(subdomain: string, options: TenantUrlOptions = {}): string {
   const appDomain = appDomainForUrlOptions(options);
   const protocol = options.protocol ?? "https:";
   const port = options.port !== undefined ? options.port : null;
 
-  const host =
-    appDomain === "localhost"
-      ? `${subdomain}.localhost`
-      : `${subdomain}.${appDomain}`;
+  const host = appDomain === "localhost" ? `${subdomain}.localhost` : `${subdomain}.${appDomain}`;
 
   return `${protocol}//${host}${normalizePort(port)}`;
 }
@@ -39,7 +33,7 @@ export function buildTenantOrigin(
 export function buildTenantUrl(
   subdomain: string,
   path = "/",
-  options: TenantUrlOptions = {}
+  options: TenantUrlOptions = {},
 ): string {
   const origin = buildTenantOrigin(subdomain, options);
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -49,10 +43,7 @@ export function buildTenantUrl(
 /**
  * Apex URL (onboarding / marketing) — not used for the signed-in app.
  */
-export function buildApexUrl(
-  path = "/",
-  options: TenantUrlOptions = {}
-): string {
+export function buildApexUrl(path = "/", options: TenantUrlOptions = {}): string {
   const appDomain = appDomainForUrlOptions(options);
   const protocol = options.protocol ?? "https:";
   const port = options.port !== undefined ? options.port : null;

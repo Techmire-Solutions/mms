@@ -1,4 +1,4 @@
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Exam } from "@/lib/data/examinationData";
@@ -40,10 +40,11 @@ export function getExamMeta(
   const assignedClasses = classes.filter((sessionClass) => classIdSet.has(sessionClass.id));
   const studentCount = new Set(
     enrollments
-      .filter((enrollment) =>
-        classIdSet.has(enrollment.classId) &&
-        enrollment.status !== "cancelled" &&
-        enrollment.status !== "completed"
+      .filter(
+        (enrollment) =>
+          classIdSet.has(enrollment.classId) &&
+          enrollment.status !== "cancelled" &&
+          enrollment.status !== "completed",
       )
       .map((enrollment) => String(enrollment.studentId)),
   ).size;

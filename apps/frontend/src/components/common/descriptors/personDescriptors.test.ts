@@ -15,9 +15,7 @@ describe("personDescriptors", () => {
     });
 
     it("should have a primary card slot", () => {
-      const primaryFields = contactsEntityDescriptor.fields.filter(
-        (f) => f.cardSlot === "primary"
-      );
+      const primaryFields = contactsEntityDescriptor.fields.filter((f) => f.cardSlot === "primary");
       expect(primaryFields.length).toBeGreaterThan(0);
     });
   });
@@ -35,9 +33,7 @@ describe("personDescriptors", () => {
     });
 
     it("should map gender badges correctly", () => {
-      const genderField = studentsEntityDescriptor.fields.find(
-        (f) => f.key === "gender"
-      );
+      const genderField = studentsEntityDescriptor.fields.find((f) => f.key === "gender");
       expect(genderField).toBeDefined();
       expect(genderField?.badgeVariantMap).toBeDefined();
       expect(genderField?.badgeVariantMap?.male).toBeDefined();

@@ -4,7 +4,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ContactIdentityMeta } from "./ContactIdentityMeta";
 
 vi.mock("@/components/ui/PersonIdentityMeta", () => ({
-  PersonIdentityMeta: ({ gender, isSyed, children }: {
+  PersonIdentityMeta: ({
+    gender,
+    isSyed,
+    children,
+  }: {
     gender?: string;
     isSyed?: boolean;
     children?: React.ReactNode;

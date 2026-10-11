@@ -1,25 +1,32 @@
-import React from 'react';
-import { Building2 } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { StatCard } from '@/components/ui/StatCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { SubTabBar } from '@/components/ui/SubTabBar';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ListPagination } from '@/components/ui/ListPagination';
-import { WORK_SURFACE } from '@/components/ui/formStyles';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Building2 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { SubTabBar } from "@/components/ui/SubTabBar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ListPagination } from "@/components/ui/ListPagination";
+import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { cn } from "@/lib/utils";
 import {
   DESIGN_SYSTEM_SECTIONS,
   type DesignSystemSectionId,
-} from '@/platform/lib/designSystemRegistry';
-import { ROUTES } from '@/lib/config/routes';
+} from "@/platform/lib/designSystemRegistry";
+import { ROUTES } from "@/lib/config/routes";
 import {
   DesignSystemActionsDemo,
   DesignSystemFeedbackDemo,
   DesignSystemInputsDemo,
-} from '@/platform/components/design-system/DesignSystemGalleryDemos';
+} from "@/platform/components/design-system/DesignSystemGalleryDemos";
 
 function GallerySurface({
   title,
@@ -29,7 +36,7 @@ function GallerySurface({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <section className={cn(WORK_SURFACE, 'space-y-4 p-4 sm:p-5')}>
+    <section className={cn(WORK_SURFACE, "space-y-4 p-4 sm:p-5")}>
       <h2 className="text-sm font-bold text-foreground text-balance">{title}</h2>
       <div className="flex flex-wrap items-start gap-3">{children}</div>
     </section>
@@ -82,21 +89,21 @@ function DataDemo(): React.JSX.Element {
 
 function LayoutDemo(): React.JSX.Element {
   const { t } = useTranslation();
-  const [tab, setTab] = React.useState<'one' | 'two'>('one');
+  const [tab, setTab] = React.useState<"one" | "two">("one");
   return (
     <div className="grid w-full grid-cols-1 gap-4">
       <Breadcrumb
-        ariaLabel={t('common.breadcrumb')}
+        ariaLabel={t("common.breadcrumb")}
         items={[
-          { label: t('platform.consoleTitle'), href: ROUTES.platformDashboard },
-          { label: t('platform.designSystemTitle'), href: ROUTES.platformDesignSystem },
-          { label: t('platform.designSystemLayout') },
+          { label: t("platform.consoleTitle"), href: ROUTES.platformDashboard },
+          { label: t("platform.designSystemTitle"), href: ROUTES.platformDesignSystem },
+          { label: t("platform.designSystemLayout") },
         ]}
       />
       <SubTabBar
         tabs={[
-          { key: 'one', label: 'One' },
-          { key: 'two', label: 'Two' },
+          { key: "one", label: "One" },
+          { key: "two", label: "Two" },
         ]}
         value={tab}
         onChange={setTab}
@@ -108,7 +115,7 @@ function LayoutDemo(): React.JSX.Element {
           <CardTitle className="text-sm">Card / PageHeader</CardTitle>
         </CardHeader>
         <CardContent className="text-xs text-muted-foreground text-pretty">
-          {t('platform.designSystemLayoutHint')}
+          {t("platform.designSystemLayoutHint")}
         </CardContent>
       </Card>
     </div>
@@ -119,8 +126,8 @@ function OverlaysDemo(): React.JSX.Element {
   const { t } = useTranslation();
   return (
     <div className="space-y-2 text-sm text-muted-foreground text-pretty">
-      <p>{t('platform.designSystemOverlaysHint')}</p>
-      <p>{t('platform.designSystemCmdHint')}</p>
+      <p>{t("platform.designSystemOverlaysHint")}</p>
+      <p>{t("platform.designSystemCmdHint")}</p>
     </div>
   );
 }
@@ -145,7 +152,7 @@ export function DesignSystemGallery(): React.JSX.Element {
           <GallerySurface key={section.id} title={t(section.labelKey)}>
             <div className="w-full space-y-3">
               <p className="text-3xs font-mono text-muted-foreground">
-                {section.primitives.join(' · ')}
+                {section.primitives.join(" · ")}
               </p>
               <Renderer />
             </div>

@@ -145,9 +145,7 @@ export function ContactEducationEntryCard({
                   spellCheck={false}
                   enterKeyHint="next"
                   value={
-                    edu.isCurrentlyEnrolled
-                      ? t("contacts.form.currentlyStudying")
-                      : edu.year || ""
+                    edu.isCurrentlyEnrolled ? t("contacts.form.currentlyStudying") : edu.year || ""
                   }
                   disabled={Boolean(edu.isCurrentlyEnrolled)}
                   required={!edu.isCurrentlyEnrolled && isFieldRequired("education", "year")}

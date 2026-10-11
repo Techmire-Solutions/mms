@@ -1,5 +1,5 @@
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Student, toMessagingRecipient } from "@mms/shared";
@@ -34,7 +34,10 @@ export interface EnrollmentListContentProps {
   onRestore?: (id: string) => void;
   onToggleSelectAll: (checked: boolean) => void;
   onToggleSelectedEnrollment: (id: string, checked: boolean) => void;
-  openComposer: (channel: EnrollmentMessageChannel, recipients: ReturnType<typeof toMessagingRecipient>[]) => void;
+  openComposer: (
+    channel: EnrollmentMessageChannel,
+    recipients: ReturnType<typeof toMessagingRecipient>[],
+  ) => void;
 }
 
 export function findEnrollmentStudent(

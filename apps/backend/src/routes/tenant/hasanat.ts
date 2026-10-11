@@ -1,23 +1,23 @@
-import { type FastifyInstance, type FastifyPluginOptions } from 'fastify';
-import { authenticateTenant } from '../../middleware/authenticate.js';
-import { registerModuleAccess } from '../../middleware/requireTenantModule.js';
+import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import { authenticateTenant } from "../../middleware/authenticate.js";
+import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import {
   HASANAT_MODULE_MANIFEST,
   denomListSchema,
   batchListSchema,
   distributionListSchema,
   redemptionListSchema,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   registerBulkRoutes,
   registerMetricsRoute,
   registerSoftDeletableBulkRoutes,
-} from '../../lib/crudRouter.js';
-import { hasanatUseCases } from '../../hasanat/use-cases/hasanatUseCases.js';
-import { hasanatReportRoutes } from './hasanat/hasanatReportRoutes.js';
-import { hasanatSetupConfigRoutes } from './hasanatSetupConfigRoutes.js';
-import { hasanatContractRouter } from './hasanat/hasanatContractRouter.js';
-import { hasanatExportRoutes } from './hasanat/hasanatExportRoutes.js';
+} from "../../lib/crudRouter.js";
+import { hasanatUseCases } from "../../hasanat/use-cases/hasanatUseCases.js";
+import { hasanatReportRoutes } from "./hasanat/hasanatReportRoutes.js";
+import { hasanatSetupConfigRoutes } from "./hasanatSetupConfigRoutes.js";
+import { hasanatContractRouter } from "./hasanat/hasanatContractRouter.js";
+import { hasanatExportRoutes } from "./hasanat/hasanatExportRoutes.js";
 
 const HASANAT_DISTRIBUTIONS_COLLECTION = HASANAT_MODULE_MANIFEST.collectionKey;
 const HASANAT_DENOMS_COLLECTION = HASANAT_MODULE_MANIFEST.denomCollectionKey;
@@ -31,8 +31,8 @@ export default async function hasanatRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
-  fastify.addHook('preHandler', authenticateTenant);
-  registerModuleAccess(fastify, 'hasanat');
+  fastify.addHook("preHandler", authenticateTenant);
+  registerModuleAccess(fastify, "hasanat");
 
   await fastify.register(
     async (sub) => {
@@ -43,31 +43,31 @@ export default async function hasanatRoutes(
       registerMetricsRoute(sub, {
         collection: HASANAT_DISTRIBUTIONS_COLLECTION,
         loadMetricsFn: hasanatUseCases.loadHasanatCommandMetrics,
-        errorMessagePrefix: 'hasanat',
+        errorMessagePrefix: "hasanat",
       });
 
       registerBulkRoutes(sub, {
-        path: '/denoms',
+        path: "/denoms",
         collection: HASANAT_DENOMS_COLLECTION,
         schema: denomListSchema,
         saveFn: hasanatUseCases.upsertDenoms,
-        responseKey: 'denoms',
-        errorMessagePrefix: 'denominations',
+        responseKey: "denoms",
+        errorMessagePrefix: "denominations",
         customGetRoute: true,
       });
 
       registerBulkRoutes(sub, {
-        path: '/batches',
+        path: "/batches",
         collection: HASANAT_BATCHES_COLLECTION,
         schema: batchListSchema,
         saveFn: hasanatUseCases.upsertBatches,
-        responseKey: 'batches',
-        errorMessagePrefix: 'batches',
+        responseKey: "batches",
+        errorMessagePrefix: "batches",
         customGetRoute: true,
       });
 
       registerSoftDeletableBulkRoutes(sub, {
-        path: '/distributions',
+        path: "/distributions",
         collection: HASANAT_DISTRIBUTIONS_COLLECTION,
         schema: distributionListSchema,
         loadFn: hasanatUseCases.loadDistributions,
@@ -76,26 +76,26 @@ export default async function hasanatRoutes(
         restoreFn: hasanatUseCases.restoreDistributionById,
         bulkDeleteFn: hasanatUseCases.bulkSoftDeleteDistributions,
         bulkRestoreFn: (ids, userId) => hasanatUseCases.bulkRestoreDistributions(ids, userId),
-        responseKey: 'distributions',
-        errorMessagePrefix: 'distributions',
-        nameSingular: 'Distribution',
+        responseKey: "distributions",
+        errorMessagePrefix: "distributions",
+        nameSingular: "Distribution",
 
         customGetRoute: true,
         customBulkTrashRoutes: true,
       });
 
       registerBulkRoutes(sub, {
-        path: '/redemptions',
+        path: "/redemptions",
         collection: HASANAT_REDEMPTIONS_COLLECTION,
         schema: redemptionListSchema,
         saveFn: hasanatUseCases.upsertRedemptions,
-        responseKey: 'redemptions',
-        errorMessagePrefix: 'redemptions',
+        responseKey: "redemptions",
+        errorMessagePrefix: "redemptions",
 
         customGetRoute: true,
       });
     },
-    { prefix: '/api/hasanat' },
+    { prefix: "/api/hasanat" },
   );
 
   await fastify.register(hasanatContractRouter);

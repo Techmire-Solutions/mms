@@ -1,16 +1,9 @@
 export { default as EntryPageHead, formatEntryTitle } from "@/components/entry/EntryPageHead";
 export { default as AuthLoadingShell } from "@/components/entry/AuthLoadingShell";
-export {
-  AuthPageBackdrop,
-  AuthCardShell,
-  AuthPageFrame,
-} from "@/components/entry/AuthPageShell";
+export { AuthPageBackdrop, AuthCardShell, AuthPageFrame } from "@/components/entry/AuthPageShell";
 export { AuthEmailField } from "@/components/entry/AuthEmailField";
 export { AuthTextField } from "@/components/entry/AuthTextField";
-export {
-  AuthPasswordField,
-  AuthForgotPasswordLink,
-} from "@/components/entry/AuthPasswordField";
+export { AuthPasswordField, AuthForgotPasswordLink } from "@/components/entry/AuthPasswordField";
 export {
   AuthBackLink,
   AuthSubmitButton,

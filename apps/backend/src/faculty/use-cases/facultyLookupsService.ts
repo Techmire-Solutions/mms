@@ -4,13 +4,13 @@ import {
   emptyFacultyLookupsMap,
   type FacultyLookupKind,
   type FacultyLookupsMap,
-} from '@mms/shared';
-import { createModuleStringListLookupsService } from '../../lib/createModuleStringListLookupsService.js';
+} from "@mms/shared";
+import { createModuleStringListLookupsService } from "../../lib/createModuleStringListLookupsService.js";
 import {
   listFacultyLookupsByKind,
   listFacultyLookupsByWorkspace,
   replaceFacultyLookupsForKind,
-} from '../../db/repositories/facultyLookupsRepository.js';
+} from "../../db/repositories/facultyLookupsRepository.js";
 
 const stringListLookups = createModuleStringListLookupsService<
   FacultyLookupKind,
@@ -22,7 +22,7 @@ const stringListLookups = createModuleStringListLookupsService<
   listByWorkspace: listFacultyLookupsByWorkspace,
   listByKind: listFacultyLookupsByKind,
   replaceForKind: replaceFacultyLookupsForKind,
-  broadcastKey: 'faculty',
+  broadcastKey: "faculty",
 });
 
 export const loadFacultyLookupsMap = stringListLookups.loadMap;

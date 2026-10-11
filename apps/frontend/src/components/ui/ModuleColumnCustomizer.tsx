@@ -1,24 +1,21 @@
-import React from 'react';
-import { Columns3, Search, RotateCcw, X } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ModuleColumnCustomizerList } from '@/components/ui/ModuleColumnCustomizerList';
-import {
-  WORK_TOOLBAR_TRIGGER,
-  WORK_TOOLBAR_TRIGGER_IDLE,
-} from '@/components/ui/formStyles';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Columns3, Search, RotateCcw, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ModuleColumnCustomizerList } from "@/components/ui/ModuleColumnCustomizerList";
+import { WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE } from "@/components/ui/formStyles";
+import { cn } from "@/lib/utils";
 import type {
   ModuleColumnCustomizerLabels,
   ModuleColumnCustomizerProps,
-} from '@/components/ui/moduleColumnCustomizerTypes';
-import { useModuleColumnCustomizerModel } from './useModuleColumnCustomizerModel';
+} from "@/components/ui/moduleColumnCustomizerTypes";
+import { useModuleColumnCustomizerModel } from "./useModuleColumnCustomizerModel";
 
 export type { ModuleColumnCustomizerLabels, ModuleColumnCustomizerProps };
 
 /** Per-user Work directory column layout picker (globle1 §3.4). */
-export const ModuleColumnCustomizer = (function ModuleColumnCustomizer({
+export const ModuleColumnCustomizer = function ModuleColumnCustomizer({
   columnRegistry,
   entityType,
   descriptor,
@@ -78,14 +75,21 @@ export const ModuleColumnCustomizer = (function ModuleColumnCustomizer({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-76 p-3 space-y-3 rounded-xl shadow-lg border border-border/80">
+      <PopoverContent
+        align="end"
+        className="w-76 p-3 space-y-3 rounded-xl shadow-lg border border-border/80"
+      >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 pb-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <h4 className="min-w-0 text-xs font-bold text-foreground uppercase tracking-wide">
               {resolvedLabels.title}
             </h4>
             <span className="text-3xs text-foreground/75 font-medium">
-              ({resolvedLabels.visibleCount ? resolvedLabels.visibleCount(registry.length - hiddenCount, registry.length) : `${registry.length - hiddenCount}/${registry.length}`})
+              (
+              {resolvedLabels.visibleCount
+                ? resolvedLabels.visibleCount(registry.length - hiddenCount, registry.length)
+                : `${registry.length - hiddenCount}/${registry.length}`}
+              )
             </span>
           </div>
           {onResetLayout && (
@@ -105,7 +109,10 @@ export const ModuleColumnCustomizer = (function ModuleColumnCustomizer({
 
         {registry.length > 5 && (
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute start-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Search
+              className="w-3.5 h-3.5 absolute start-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
               type="text"
               value={searchQuery}
@@ -117,7 +124,7 @@ export const ModuleColumnCustomizer = (function ModuleColumnCustomizer({
             {searchQuery && (
               <button
                 type="button"
-                onClick={() => setSearchQuery('')}
+                onClick={() => setSearchQuery("")}
                 className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
                 aria-label={t("common.clearSearch")}
               >
@@ -148,4 +155,4 @@ export const ModuleColumnCustomizer = (function ModuleColumnCustomizer({
       </PopoverContent>
     </Popover>
   );
-});
+};

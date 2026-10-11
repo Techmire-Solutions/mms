@@ -1,6 +1,6 @@
-import React from 'react';
-import { CredentialsResultCard } from '@/components/ui/CredentialsResultCard';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import { CredentialsResultCard } from "@/components/ui/CredentialsResultCard";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface CreateAdminResultCardProps {
   name: string;
@@ -17,16 +17,16 @@ export function CreateAdminResultCard({
 
   return (
     <CredentialsResultCard
-      title={t('platform.adminCreatedSuccess')}
+      title={t("platform.adminCreatedSuccess")}
       fields={[
-        { label: t('platform.adminNameValue'), value: name },
-        { label: t('platform.adminEmailValue'), value: adminEmail },
+        { label: t("platform.adminNameValue"), value: name },
+        { label: t("platform.adminEmailValue"), value: adminEmail },
       ]}
-      passwordLabel={t('platform.initialPasswordValue')}
+      passwordLabel={t("platform.initialPasswordValue")}
       password={initialPassword}
       copyText={`Name: ${name}\nEmail: ${adminEmail}\nPassword: ${initialPassword}`}
-      copyLabel={t('platform.copyAll')}
-      hint={t('platform.provideCredentialsHint')}
+      copyLabel={t("platform.copyAll")}
+      hint={t("platform.provideCredentialsHint")}
     />
   );
 }

@@ -83,10 +83,7 @@ export function EnrollmentsModalLayer({
         panelClassName="h-modal-tall max-h-modal-tall"
       >
         <ErrorBoundary>
-          <EnrollmentWizard
-            onComplete={onCompleteWizard}
-            onCancel={onCloseWizard}
-          />
+          <EnrollmentWizard onComplete={onCompleteWizard} onCancel={onCloseWizard} />
         </ErrorBoundary>
       </FormModal>
 

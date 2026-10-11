@@ -16,7 +16,7 @@ export interface EnrollmentsSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const EnrollmentsSetupTier = (function EnrollmentsSetupTier({
+export const EnrollmentsSetupTier = function EnrollmentsSetupTier({
   onPrefsDirtyChange,
 }: EnrollmentsSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -37,6 +37,6 @@ export const EnrollmentsSetupTier = (function EnrollmentsSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default EnrollmentsSetupTier;

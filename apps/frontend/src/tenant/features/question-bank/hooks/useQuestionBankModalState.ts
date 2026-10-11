@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import type { QuestionBankQuestion } from '@mms/shared';
-import type { PaperBuilderTab } from '@/tenant/features/question-bank/components/PaperBuilder';
+import { useState } from "react";
+import type { QuestionBankQuestion } from "@mms/shared";
+import type { PaperBuilderTab } from "@/tenant/features/question-bank/components/PaperBuilder";
 
 export function useQuestionBankModalState() {
   const [showQuestionModal, setShowQuestionModal] = useState(false);
@@ -8,14 +8,14 @@ export function useQuestionBankModalState() {
   const [activeQuestion, setActiveQuestion] = useState<QuestionBankQuestion | null>(null);
   const [paperBuilderSession, setPaperBuilderSession] = useState(0);
   const [paperBuilderOpen, setPaperBuilderOpen] = useState(false);
-  const [paperBuilderTab, setPaperBuilderTab] = useState<PaperBuilderTab>('details');
+  const [paperBuilderTab, setPaperBuilderTab] = useState<PaperBuilderTab>("details");
 
   const openAddQuestion = (
     setActiveTab: (tab: string) => void,
     setActiveSubTab: (subTab: string) => void,
   ): void => {
-    setActiveTab('work');
-    setActiveSubTab('questions');
+    setActiveTab("work");
+    setActiveSubTab("questions");
     setEditQuestion(null);
     setShowQuestionModal(true);
   };
@@ -29,9 +29,9 @@ export function useQuestionBankModalState() {
     setActiveTab: (tab: string) => void,
     setActiveSubTab: (subTab: string) => void,
   ): void => {
-    setActiveTab('work');
-    setActiveSubTab('generate');
-    setPaperBuilderTab('details');
+    setActiveTab("work");
+    setActiveSubTab("generate");
+    setPaperBuilderTab("details");
     setPaperBuilderSession((session) => session + 1);
     setPaperBuilderOpen(true);
   };

@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Check, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
-import { uploadCanvasImage } from '@/lib/imageUpload';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Modal } from '@/components/ui/Modal';
-import { useAvatarCropperCanvas } from '@/components/ui/useAvatarCropperCanvas';
+import React, { useState } from "react";
+import { Check, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
+import { uploadCanvasImage } from "@/lib/imageUpload";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Modal } from "@/components/ui/Modal";
+import { useAvatarCropperCanvas } from "@/components/ui/useAvatarCropperCanvas";
 
 interface AvatarCropperProps {
   src: string;
@@ -41,12 +41,12 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
     if (!out) return;
 
     setSaving(true);
-    void uploadCanvasImage(out, 'avatar')
+    void uploadCanvasImage(out, "avatar")
       .then((url) => {
         onCrop(url);
       })
       .catch(() => {
-        notify.error(t('account.photoUploadFailed'));
+        notify.error(t("account.photoUploadFailed"));
       })
       .finally(() => {
         setSaving(false);
@@ -57,8 +57,8 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
     <Modal
       open={true}
       onClose={onCancel}
-      title={t('contacts.form.cropProfilePhoto')}
-      subtitle={t('contacts.form.cropperInstructions')}
+      title={t("contacts.form.cropProfilePhoto")}
+      subtitle={t("contacts.form.cropperInstructions")}
       priority
       size="sm"
     >
@@ -71,8 +71,8 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
             style={{
               width: previewSize,
               height: previewSize,
-              cursor: dragging ? 'grabbing' : 'grab',
-              borderRadius: '50%',
+              cursor: dragging ? "grabbing" : "grab",
+              borderRadius: "50%",
             }}
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}
@@ -98,7 +98,7 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
               value={[scale]}
               onValueChange={(values) => setScale(values[0])}
               className="flex-1"
-              aria-label={t('contacts.form.zoomScale')}
+              aria-label={t("contacts.form.zoomScale")}
               disabled={saving}
             />
             <ZoomIn className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -113,7 +113,7 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
               className="flex items-center gap-1.5 px-3 min-h-11 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors text-foreground shadow-none"
             >
               <RotateCw className="w-3.5 h-3.5 -scale-x-100" />
-              <span>{t('contacts.form.rotate')}</span>
+              <span>{t("contacts.form.rotate")}</span>
             </Button>
             <Button
               type="button"
@@ -122,7 +122,7 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
               disabled={saving}
               className="px-3 min-h-11 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors text-muted-foreground shadow-none"
             >
-              {t('contacts.form.reset')}
+              {t("contacts.form.reset")}
             </Button>
             <Button
               type="button"
@@ -131,7 +131,7 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
               className="flex-1 flex items-center justify-center gap-1.5 min-h-11 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shadow-none disabled:opacity-60"
             >
               <Check className="w-4 h-4" />
-              <span>{saving ? t('common.loading') : t('contacts.form.applyPhoto')}</span>
+              <span>{saving ? t("common.loading") : t("contacts.form.applyPhoto")}</span>
             </Button>
           </div>
         </div>

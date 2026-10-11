@@ -1,4 +1,17 @@
-import { and, eq, ilike, or, isNull, isNotNull, inArray, type SQL, type AnyColumn, desc, asc, sql } from 'drizzle-orm';
+import {
+  and,
+  eq,
+  ilike,
+  or,
+  isNull,
+  isNotNull,
+  inArray,
+  type SQL,
+  type AnyColumn,
+  desc,
+  asc,
+  sql,
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -8,21 +21,21 @@ import {
   type FinanceListQuery,
   type FinanceInvoicesListPageResult,
   type FinancePaymentsListPageResult,
-} from '@mms/shared';
-import { financeInvoices, financePayments } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { invoiceRowToRecord, paymentRowToRecord } from './financeRepository.js';
+} from "@mms/shared";
+import { financeInvoices, financePayments } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { invoiceRowToRecord, paymentRowToRecord } from "./financeRepository.js";
 
 function buildInvoiceListConditions(subdomain: string, query: FinanceListQuery): SQL[] {
   const conditions: SQL[] = [eq(financeInvoices.workspaceSubdomain, subdomain)];
-  
+
   if (isQueryFlagTrue(query.includeDeleted)) {
     conditions.push(isNotNull(financeInvoices.deletedAt));
   } else {
     conditions.push(isNull(financeInvoices.deletedAt));
   }
-  
+
   const search = query.search?.trim();
   if (search) {
     const searchPattern = toSqlSearchPattern(search);
@@ -36,19 +49,19 @@ function buildInvoiceListConditions(subdomain: string, query: FinanceListQuery):
       ) as SQL,
     );
   }
-  
+
   return conditions;
 }
 
 function buildPaymentListConditions(subdomain: string, query: FinanceListQuery): SQL[] {
   const conditions: SQL[] = [eq(financePayments.workspaceSubdomain, subdomain)];
-  
+
   if (isQueryFlagTrue(query.includeDeleted)) {
     conditions.push(isNotNull(financePayments.deletedAt));
   } else {
     conditions.push(isNull(financePayments.deletedAt));
   }
-  
+
   const search = query.search?.trim();
   if (search) {
     const searchPattern = toSqlSearchPattern(search);
@@ -61,67 +74,67 @@ function buildPaymentListConditions(subdomain: string, query: FinanceListQuery):
       ) as SQL,
     );
   }
-  
+
   return conditions;
 }
 
-function buildInvoiceOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
-  const field = sortField?.trim() || 'createdAt';
+function buildInvoiceOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
+  const field = sortField?.trim() || "createdAt";
   let column: AnyColumn;
   switch (field) {
-    case 'createdAt':
+    case "createdAt":
       column = financeInvoices.createdAt;
       break;
-    case 'id':
+    case "id":
       column = financeInvoices.id;
       break;
-    case 'studentName':
+    case "studentName":
       column = financeInvoices.studentName;
       break;
-    case 'class':
+    case "class":
       column = financeInvoices.class;
       break;
-    case 'session':
+    case "session":
       column = financeInvoices.session;
       break;
-    case 'totalAmount':
+    case "totalAmount":
       column = financeInvoices.finalAmt;
       break;
-    case 'status':
+    case "status":
       column = financeInvoices.status;
       break;
     default:
       column = financeInvoices.createdAt;
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }
 
-function buildPaymentOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
-  const field = sortField?.trim() || 'createdAt';
+function buildPaymentOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
+  const field = sortField?.trim() || "createdAt";
   let column: AnyColumn;
   switch (field) {
-    case 'createdAt':
+    case "createdAt":
       column = financePayments.createdAt;
       break;
-    case 'id':
+    case "id":
       column = financePayments.id;
       break;
-    case 'invoiceId':
+    case "invoiceId":
       column = financePayments.invoiceId;
       break;
-    case 'studentName':
+    case "studentName":
       column = financePayments.studentName;
       break;
-    case 'method':
+    case "method":
       column = financePayments.method;
       break;
-    case 'amount':
+    case "amount":
       column = financePayments.amount;
       break;
     default:
       column = financePayments.createdAt;
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }
 
 export async function listInvoicesPage(
@@ -182,7 +195,7 @@ export async function listPaymentsPage(
   });
 }
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
+const pad2 = (n: number) => String(n).padStart(2, "0");
 
 /**
  * SQL aggregates for Finance command-centre metrics. Month buckets are computed
@@ -223,7 +236,10 @@ export async function aggregateFinanceCommandMetrics(
     const [row] = await tx
       .select({
         totalInvoices: sql<number>`count(*)::int`,
-        outstanding: sql<number>`count(*) filter (where ${financeInvoices.status} in (${sql.join(openStatuses.map((s) => sql`${s}`), sql`, `)}))::int`,
+        outstanding: sql<number>`count(*) filter (where ${financeInvoices.status} in (${sql.join(
+          openStatuses.map((s) => sql`${s}`),
+          sql`, `,
+        )}))::int`,
         overdue: sql<number>`count(*) filter (where ${financeInvoices.status} = 'overdue')::int`,
         paid: sql<number>`count(*) filter (where ${financeInvoices.status} = 'paid')::int`,
         partial: sql<number>`count(*) filter (where ${financeInvoices.status} = 'partial')::int`,
@@ -241,7 +257,9 @@ export async function aggregateFinanceCommandMetrics(
     const [paymentRow] = await tx
       .select({ totalPayments: sql<number>`count(*)::int` })
       .from(financePayments)
-      .where(and(eq(financePayments.workspaceSubdomain, subdomain), isNull(financePayments.deletedAt)));
+      .where(
+        and(eq(financePayments.workspaceSubdomain, subdomain), isNull(financePayments.deletedAt)),
+      );
 
     return {
       totalInvoices: Number(row?.totalInvoices ?? 0),
@@ -277,7 +295,10 @@ export async function bulkUpdateInvoicesStatusSql(
   return withTenant(subdomain, async (tx) => {
     const updated = await tx
       .update(financeInvoices)
-      .set({ status: status as 'paid' | 'pending' | 'overdue' | 'partial' | 'cancelled', updatedAt: sql`now()` })
+      .set({
+        status: status as "paid" | "pending" | "overdue" | "partial" | "cancelled",
+        updatedAt: sql`now()`,
+      })
       .where(
         and(
           eq(financeInvoices.workspaceSubdomain, subdomain),

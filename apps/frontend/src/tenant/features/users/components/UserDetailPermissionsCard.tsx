@@ -1,11 +1,11 @@
-import React from 'react';
-import { Lock } from 'lucide-react';
-import type { filterRbacModulesForSettings, PermissionAction } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import { Lock } from "lucide-react";
+import type { filterRbacModulesForSettings, PermissionAction } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
 
-import { DetailSectionCard } from '@/components/ui/DetailSectionCard';
-import { DetailAttributeRow } from '@/components/ui/DetailAttributeRow';
-import { Badge } from '@/components/ui/badge';
+import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { Badge } from "@/components/ui/badge";
 
 export interface UserDetailPermissionsCardProps {
   effectivePerms: Record<string, PermissionAction[]>;
@@ -19,11 +19,15 @@ export function UserDetailPermissionsCard({
   const { t } = useTranslation();
 
   return (
-    <DetailSectionCard title={t('users.detailPermissions')} accentColor="warning" className="divide-y divide-border/50 p-0">
+    <DetailSectionCard
+      title={t("users.detailPermissions")}
+      accentColor="warning"
+      className="divide-y divide-border/50 p-0"
+    >
       <DetailAttributeRow
         variant="inset"
         icon={Lock}
-        label={t('users.detailPermissions')}
+        label={t("users.detailPermissions")}
         value={
           <div className="space-y-3">
             {visibleModules.map((mod) => {
@@ -33,12 +37,7 @@ export function UserDetailPermissionsCard({
                 <div key={mod.id} className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="font-semibold text-foreground">{t(mod.labelKey)}</span>
                   {perms.map((action) => (
-                    <Badge
-                      key={`${mod.id}-${action}`}
-                      as="span"
-                      tone="muted"
-                      size="sm"
-                    >
+                    <Badge key={`${mod.id}-${action}`} as="span" tone="muted" size="sm">
                       {t(`users.permission.${action}`)}
                     </Badge>
                   ))}
@@ -46,7 +45,9 @@ export function UserDetailPermissionsCard({
               );
             })}
             {Object.keys(effectivePerms).length === 0 ? (
-              <span className="text-muted-foreground font-normal">{t('users.detailNoPermissions')}</span>
+              <span className="text-muted-foreground font-normal">
+                {t("users.detailNoPermissions")}
+              </span>
             ) : null}
           </div>
         }

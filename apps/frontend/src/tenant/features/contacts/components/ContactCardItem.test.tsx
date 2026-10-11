@@ -59,7 +59,7 @@ describe("ContactCardItem", () => {
         onWhatsApp={vi.fn()}
         onSms={vi.fn()}
         onEmail={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Sayyida Fatima");
@@ -88,7 +88,7 @@ describe("ContactCardItem", () => {
         onEdit={vi.fn()}
         onDelete={vi.fn()}
         onRestore={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Ali Hassan");
@@ -114,7 +114,7 @@ describe("ContactCardItem", () => {
         onView={vi.fn()}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Sayyida Fatima");
@@ -140,7 +140,7 @@ describe("ContactCardItem", () => {
         onSelect={vi.fn()}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain('aria-checked="true"');

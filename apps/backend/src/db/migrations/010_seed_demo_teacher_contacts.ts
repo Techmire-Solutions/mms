@@ -5,18 +5,18 @@ import {
   tenantCollectionKey,
   tenantObjectKey,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,
   listCollectionStorageNames,
   saveCollection,
   saveObject,
-} from '../database.js';
+} from "../database.js";
 
-const TEACHERS_COLLECTION = 'teachers';
-const CONTACTS_COLLECTION = 'contacts';
-const TEACHERS_SETTINGS_KEY = 'teachers_settings';
+const TEACHERS_COLLECTION = "teachers";
+const CONTACTS_COLLECTION = "contacts";
+const TEACHERS_SETTINGS_KEY = "teachers_settings";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -73,10 +73,8 @@ export async function runMigration010(): Promise<void> {
   let changed = false;
 
   if (subdomains.size === 0) {
-    if (
-      await seedTenantTeachers(TEACHERS_COLLECTION, CONTACTS_COLLECTION, TEACHERS_SETTINGS_KEY)
-    ) {
-      console.log('[Migration 010] Initialized teacher/contact storage (legacy storage)');
+    if (await seedTenantTeachers(TEACHERS_COLLECTION, CONTACTS_COLLECTION, TEACHERS_SETTINGS_KEY)) {
+      console.log("[Migration 010] Initialized teacher/contact storage (legacy storage)");
       changed = true;
     }
   } else {
@@ -88,13 +86,15 @@ export async function runMigration010(): Promise<void> {
           tenantObjectKey(subdomain, TEACHERS_SETTINGS_KEY),
         )
       ) {
-        console.log(`[Migration 010] Initialized teacher/contact storage for tenant "${subdomain}"`);
+        console.log(
+          `[Migration 010] Initialized teacher/contact storage for tenant "${subdomain}"`,
+        );
         changed = true;
       }
     }
   }
 
   if (changed) {
-    console.log('[Migration 010] Teacher/contact storage migration completed.');
+    console.log("[Migration 010] Teacher/contact storage migration completed.");
   }
 }

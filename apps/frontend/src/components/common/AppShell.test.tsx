@@ -14,9 +14,7 @@ function renderWithContext(ui: React.ReactElement, contextOverrides = {}) {
     ...contextOverrides,
   };
   return renderToStaticMarkup(
-    <TranslationContext.Provider value={context}>
-      {ui}
-    </TranslationContext.Provider>
+    <TranslationContext.Provider value={context}>{ui}</TranslationContext.Provider>,
   );
 }
 
@@ -25,7 +23,7 @@ describe("AppShell — Universal Layout Shell", () => {
     const html = renderWithContext(
       <AppShell>
         <div>Page Body</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).toContain('href="#main-content"');
@@ -37,12 +35,12 @@ describe("AppShell — Universal Layout Shell", () => {
     const html = renderWithContext(
       <AppShell sidebar={<nav id="test-sidebar">Sidebar Content</nav>}>
         <div>Main Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).toContain("<aside");
     expect(html).toContain('aria-label="nav.desktopNavigation"');
-    expect(html).toContain("id=\"test-sidebar\"");
+    expect(html).toContain('id="test-sidebar"');
     expect(html).toContain("Sidebar Content");
   });
 
@@ -50,7 +48,7 @@ describe("AppShell — Universal Layout Shell", () => {
     const html = renderWithContext(
       <AppShell>
         <div>Content Without Sidebar</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).not.toContain("<aside");
@@ -63,7 +61,7 @@ describe("AppShell — Universal Layout Shell", () => {
         mobileHeader={<div id="mobile-bar">Mobile Header</div>}
       >
         <div>Main Body</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).toContain('id="desktop-bar"');
@@ -74,12 +72,9 @@ describe("AppShell — Universal Layout Shell", () => {
 
   it("applies lg:ps-sidebar class when sidebar is active and sidebarCollapsed=false", () => {
     const html = renderWithContext(
-      <AppShell
-        sidebar={<div>Sidebar</div>}
-        sidebarCollapsed={false}
-      >
+      <AppShell sidebar={<div>Sidebar</div>} sidebarCollapsed={false}>
         <div>Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).toContain("lg:ps-sidebar");
@@ -88,12 +83,9 @@ describe("AppShell — Universal Layout Shell", () => {
 
   it("applies lg:ps-sidebar-collapsed class when sidebar is active and sidebarCollapsed=true", () => {
     const html = renderWithContext(
-      <AppShell
-        sidebar={<div>Sidebar</div>}
-        sidebarCollapsed={true}
-      >
+      <AppShell sidebar={<div>Sidebar</div>} sidebarCollapsed={true}>
         <div>Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).toContain("lg:ps-sidebar-collapsed");
@@ -104,7 +96,7 @@ describe("AppShell — Universal Layout Shell", () => {
     const html = renderWithContext(
       <AppShell dir="rtl" lang="ar">
         <div>Arabic Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).toContain('dir="rtl"');
@@ -126,7 +118,7 @@ describe("AppShell — Universal Layout Shell", () => {
     const html = renderWithContext(
       <AppShell adapter={adapter}>
         <div>Main Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).toContain("adapter-sidebar");
@@ -143,7 +135,7 @@ describe("AppShell — Universal Layout Shell", () => {
     const html = renderWithContext(
       <AppShell contentPadding={true} maxWidthClass="max-w-7xl">
         <div>Padded Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).toContain("p-4 md:p-6 lg:p-8");
@@ -154,7 +146,7 @@ describe("AppShell — Universal Layout Shell", () => {
     const html = renderWithContext(
       <AppShell contentPadding={false}>
         <div>Unpadded Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(html).not.toContain("p-4 md:p-6 lg:p-8");

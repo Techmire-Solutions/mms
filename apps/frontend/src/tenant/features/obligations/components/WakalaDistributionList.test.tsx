@@ -28,7 +28,7 @@ describe("WakalaDistributionList Component", () => {
         onEdit={vi.fn()}
         onDelete={vi.fn()}
         viewMode="cards"
-      />
+      />,
     );
 
     expect(html).toContain("General Relief Fund");
@@ -45,7 +45,7 @@ describe("WakalaDistributionList Component", () => {
         onEdit={vi.fn()}
         onDelete={vi.fn()}
         viewMode="table"
-      />
+      />,
     );
 
     expect(html).toContain("General Relief Fund");

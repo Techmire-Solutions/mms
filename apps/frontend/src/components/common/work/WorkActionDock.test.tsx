@@ -13,22 +13,14 @@ const mockContext = {
 };
 
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <TranslationContext.Provider value={mockContext}>
-      {children}
-    </TranslationContext.Provider>
-  );
+  return <TranslationContext.Provider value={mockContext}>{children}</TranslationContext.Provider>;
 }
 
 describe("WorkActionDock", () => {
   it("renders nothing when selectedCount is 0", () => {
     const html = renderToStaticMarkup(
       <TestWrapper>
-        <WorkActionDock
-          selectedCount={0}
-          countLabel="0 selected"
-          onClearSelection={vi.fn()}
-        />
+        <WorkActionDock selectedCount={0} countLabel="0 selected" onClearSelection={vi.fn()} />
       </TestWrapper>,
     );
     expect(html).toBe("");

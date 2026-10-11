@@ -11,7 +11,7 @@ import {
   sql,
   type SQL,
   type AnyColumn,
-} from 'drizzle-orm';
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -20,11 +20,11 @@ import {
   type ExaminationsCommandMetricsSnapshot,
   type ExaminationsListQuery,
   type ExaminationsListPageResult,
-} from '@mms/shared';
-import { examResults, exams, examClasses } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { examRowToRecord } from './examinationRepository.js';
+} from "@mms/shared";
+import { examResults, exams, examClasses } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { examRowToRecord } from "./examinationRepository.js";
 
 function buildExamsListConditions(subdomain: string, query: ExaminationsListQuery): SQL[] {
   const conditions: SQL[] = [eq(exams.workspaceSubdomain, subdomain)];
@@ -39,12 +39,7 @@ function buildExamsListConditions(subdomain: string, query: ExaminationsListQuer
   const search = query.search?.trim();
   if (search) {
     const pattern = toSqlSearchPattern(search);
-    conditions.push(
-      or(
-        ilike(exams.name, pattern),
-        ilike(exams.subject, pattern),
-      ) as SQL,
-    );
+    conditions.push(or(ilike(exams.name, pattern), ilike(exams.subject, pattern)) as SQL);
   }
 
   const statuses = dedupeTrimmedIds(query.status);
@@ -55,26 +50,26 @@ function buildExamsListConditions(subdomain: string, query: ExaminationsListQuer
   return conditions;
 }
 
-const EXAM_SORT_FIELDS = new Set(['name', 'subject', 'status', 'date', 'updatedAt']);
+const EXAM_SORT_FIELDS = new Set(["name", "subject", "status", "date", "updatedAt"]);
 
-function buildExamsOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
+function buildExamsOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
   const field = sortField?.trim();
   let column: AnyColumn;
   if (field && EXAM_SORT_FIELDS.has(field)) {
     switch (field) {
-      case 'updatedAt':
+      case "updatedAt":
         column = exams.updatedAt;
         break;
-      case 'name':
+      case "name":
         column = exams.name;
         break;
-      case 'subject':
+      case "subject":
         column = exams.subject;
         break;
-      case 'status':
+      case "status":
         column = exams.status;
         break;
-      case 'date':
+      case "date":
         column = exams.date;
         break;
       default:
@@ -83,7 +78,7 @@ function buildExamsOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): S
   } else {
     column = exams.updatedAt;
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }
 
 type ExamRow = typeof exams.$inferSelect;
@@ -117,10 +112,7 @@ export async function listExamsPage(
         })
         .from(examClasses)
         .where(
-          and(
-            eq(examClasses.workspaceSubdomain, subdomain),
-            inArray(examClasses.examId, examIds),
-          ),
+          and(eq(examClasses.workspaceSubdomain, subdomain), inArray(examClasses.examId, examIds)),
         );
 
       const classMap = new Map<string, string[]>();

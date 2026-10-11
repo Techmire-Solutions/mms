@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
-import { usePersistedTabState } from '@/hooks/usePersistedTabState';
-import { useModuleShortcuts } from '@/hooks/useModuleShortcuts';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useDirectoryTrashState } from '@/hooks/useDirectoryTrashState';
-import { useFilteredModuleTierTabs } from '@/tenant/hooks/useModuleTierTabs';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
-import { BookOpen, FileText } from 'lucide-react';
-import { EXAMINATIONS_MODULE_MANIFEST, resolveModuleTierTab, type ExamResult } from '@mms/shared';
-import { type Exam } from '@/lib/data/examinationData';
-import { useExaminationExamColumnLayout } from '@/tenant/features/examinations/hooks/useExaminationExamColumnLayout';
-import { useExaminationResultsColumnLayout } from '@/tenant/features/examinations/hooks/useExaminationResultsColumnLayout';
+import { useState, useEffect } from "react";
+import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
+import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { BookOpen, FileText } from "lucide-react";
+import { EXAMINATIONS_MODULE_MANIFEST, resolveModuleTierTab, type ExamResult } from "@mms/shared";
+import { type Exam } from "@/lib/data/examinationData";
+import { useExaminationExamColumnLayout } from "@/tenant/features/examinations/hooks/useExaminationExamColumnLayout";
+import { useExaminationResultsColumnLayout } from "@/tenant/features/examinations/hooks/useExaminationResultsColumnLayout";
 import {
   useExaminationsExams,
   useExaminationsResults,
   useExaminationsMutations,
-} from '@/tenant/features/examinations/hooks/useExaminationsApi';
+} from "@/tenant/features/examinations/hooks/useExaminationsApi";
 import {
   createExaminationsBulkDeleteHandler,
   createExaminationsBulkRestoreHandler,
@@ -22,7 +22,7 @@ import {
   createExaminationsRestoreExamHandler,
   createExaminationsSaveExamHandler,
   createExaminationsSaveResultsHandler,
-} from '@/tenant/features/examinations/hooks/examinationsPageControllerActions';
+} from "@/tenant/features/examinations/hooks/examinationsPageControllerActions";
 
 export function useExaminationsPageController() {
   const { t } = useTranslation();
@@ -38,20 +38,23 @@ export function useExaminationsPageController() {
     workLabelKey: "nav.examinations",
   });
   const OPS_SUB_TABS = (() => [
-      { id: 'exams', label: t('examinations.exams'), icon: BookOpen },
-      { id: 'results', label: t('examinations.results'), icon: FileText },
-    ])();
-  const [activeTab, setActiveTab] = usePersistedTabState<string>('examinations_active_tab', 'work');
-  const [activeSubTab, setActiveSubTab] = useState('exams');
+    { id: "exams", label: t("examinations.exams"), icon: BookOpen },
+    { id: "results", label: t("examinations.results"), icon: FileText },
+  ])();
+  const [activeTab, setActiveTab] = usePersistedTabState<string>("examinations_active_tab", "work");
+  const [activeSubTab, setActiveSubTab] = useState("exams");
   const [showDeleted, setShowDeleted] = useDirectoryTrashState();
   const [createExamKey, setCreateExamKey] = useState(0);
 
   const examsResult = useExaminationsExams({ includeDeleted: showDeleted });
   const resultsResult = useExaminationsResults();
   const examsEnvelope = examsResult.data?.body as Exam[] | { exams?: Exam[] } | null;
-  const resultsEnvelope = resultsResult.data?.body as ExamResult[] | { results?: ExamResult[] } | null;
-  const exams = Array.isArray(examsEnvelope) ? examsEnvelope : examsEnvelope?.exams ?? [];
-  const examResults = Array.isArray(resultsEnvelope) ? resultsEnvelope : resultsEnvelope?.results ?? [];
+  const resultsEnvelope = resultsResult.data?.body as
+    ExamResult[] | { results?: ExamResult[] } | null;
+  const exams = Array.isArray(examsEnvelope) ? examsEnvelope : (examsEnvelope?.exams ?? []);
+  const examResults = Array.isArray(resultsEnvelope)
+    ? resultsEnvelope
+    : (resultsEnvelope?.results ?? []);
   const {
     replaceExams,
     replaceExamResults,
@@ -95,15 +98,17 @@ export function useExaminationsPageController() {
     activeTab,
     PAGE_TABS.map((tab) => tab.id),
   );
-  const effectiveSubTab = OPS_SUB_TABS.find((tab) => tab.id === activeSubTab) ? activeSubTab : 'exams';
+  const effectiveSubTab = OPS_SUB_TABS.find((tab) => tab.id === activeSubTab)
+    ? activeSubTab
+    : "exams";
 
   useEffect(() => {
-    if (effectiveSubTab === 'exams' || effectiveSubTab === 'results') return;
+    if (effectiveSubTab === "exams" || effectiveSubTab === "results") return;
     setFilteredCount(exams.length);
   }, [effectiveSubTab, exams.length]);
 
   useModuleShortcuts({
-    searchInputId: 'examinations-search-input',
+    searchInputId: "examinations-search-input",
     selectedCount: 0,
     hasActiveFilters: false,
     clearFilters: () => {},
@@ -111,18 +116,18 @@ export function useExaminationsPageController() {
     canWrite,
     showDeleted,
     onCreate: () => {
-      setActiveTab('work');
-      setActiveSubTab('exams');
+      setActiveTab("work");
+      setActiveSubTab("exams");
       setCreateExamKey((key) => key + 1);
     },
-    enabled: activeTab === 'work',
+    enabled: activeTab === "work",
   });
 
   const listLoadFailed = examsResult.isError;
 
   const openCreateExam = () => {
-    setActiveTab('work');
-    setActiveSubTab('exams');
+    setActiveTab("work");
+    setActiveSubTab("exams");
     setEditExam(null);
     setShowExamForm(true);
     setCreateExamKey((key) => key + 1);
@@ -166,6 +171,8 @@ export function useExaminationsPageController() {
     handleBulkDelete,
     handleBulkRestore,
     openCreateExam,
-    refetchExams: () => { void examsResult.refetch(); },
+    refetchExams: () => {
+      void examsResult.refetch();
+    },
   };
 }

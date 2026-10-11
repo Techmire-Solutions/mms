@@ -20,9 +20,7 @@ describe("needsContactCountryCodesCurate", () => {
   });
 
   it("ignores case and surrounding whitespace", () => {
-    expect(
-      needsContactCountryCodesCurate([{ country: "  bangladesh ", code: "+880" }]),
-    ).toBe(true);
+    expect(needsContactCountryCodesCurate([{ country: "  bangladesh ", code: "+880" }])).toBe(true);
   });
 });
 

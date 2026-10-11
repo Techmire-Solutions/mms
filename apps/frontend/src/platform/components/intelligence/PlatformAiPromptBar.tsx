@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { SendHorizontal, Sparkles, Loader2 } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import React, { useState, useCallback } from "react";
+import { SendHorizontal, Sparkles, Loader2 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export interface PlatformAiPromptBarProps {
   onSend: (prompt: string) => void;
@@ -21,7 +21,7 @@ export function PlatformAiPromptBar({
   className,
 }: PlatformAiPromptBarProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState("");
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -29,7 +29,7 @@ export function PlatformAiPromptBar({
       const trimmed = prompt.trim();
       if (!trimmed || isAnalyzing) return;
       onSend(trimmed);
-      setPrompt('');
+      setPrompt("");
     },
     [prompt, isAnalyzing, onSend],
   );
@@ -43,7 +43,7 @@ export function PlatformAiPromptBar({
   );
 
   return (
-    <div className={cn('flex flex-col gap-2.5', className)}>
+    <div className={cn("flex flex-col gap-2.5", className)}>
       {quickPrompts.length > 0 ? (
         <div
           role="region"
@@ -72,10 +72,10 @@ export function PlatformAiPromptBar({
           type="text"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder={placeholder ?? t('platform.aiAskPlaceholder')}
+          placeholder={placeholder ?? t("platform.aiAskPlaceholder")}
           disabled={isAnalyzing}
           className="w-full min-h-11 h-11 ps-4 pe-14 text-xs sm:text-sm rounded-xl border-border bg-background focus:ring-2 focus:ring-primary/30"
-          aria-label={t('platform.aiAskPlaceholder')}
+          aria-label={t("platform.aiAskPlaceholder")}
         />
         <div className="absolute end-1.5 top-1/2 -translate-y-1/2 flex items-center">
           <Button
@@ -83,7 +83,7 @@ export function PlatformAiPromptBar({
             variant="ghost"
             size="icon"
             disabled={!prompt.trim() || isAnalyzing}
-            aria-label={t('common.send')}
+            aria-label={t("common.send")}
             className="min-h-9 min-w-9 h-9 w-9 rounded-lg text-primary hover:bg-primary/10 disabled:opacity-40 cursor-pointer"
           >
             {isAnalyzing ? (

@@ -1,17 +1,13 @@
-import { useQueryClient } from '@tanstack/react-query';
-import type { MutateOptions } from '@tanstack/react-query';
-import type {
-  QuestionBankQuestion,
-  QuestionBankTest,
-  QuestionBankResult,
-} from '@mms/shared';
-import { tsrClient } from '@/lib/api';
+import { useQueryClient } from "@tanstack/react-query";
+import type { MutateOptions } from "@tanstack/react-query";
+import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/shared";
+import { tsrClient } from "@/lib/api";
 import {
   QUESTION_BANK_METRICS_QUERY_KEY,
   QUESTION_BANK_QUESTIONS_QUERY_KEY,
   QUESTION_BANK_RESULTS_QUERY_KEY,
   QUESTION_BANK_TESTS_QUERY_KEY,
-} from './useQuestionBankApi';
+} from "./useQuestionBankApi";
 
 export function useQuestionBankMutations() {
   const queryClient = useQueryClient();
@@ -92,8 +88,7 @@ export function useQuestionBankMutations() {
     },
     deleteQuestion: {
       ...deleteQuestion,
-      mutate: (id: string, opts?: MutateOptions) =>
-        deleteQuestion.mutate({ params: { id } }, opts),
+      mutate: (id: string, opts?: MutateOptions) => deleteQuestion.mutate({ params: { id } }, opts),
       mutateAsync: (id: string) => deleteQuestion.mutateAsync({ params: { id } }),
     },
     restoreQuestion: {

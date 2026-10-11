@@ -69,20 +69,14 @@ describe("FacultyListContent Component", () => {
   });
 
   it("renders cards view when viewMode is cards", () => {
-    const html = renderToStaticMarkup(
-      <FacultyListContent {...defaultProps} viewMode="cards" />,
-    );
+    const html = renderToStaticMarkup(<FacultyListContent {...defaultProps} viewMode="cards" />);
 
     expect(html).toContain("Ustadh Umar");
   });
 
   it("renders empty state when faculty is empty", () => {
     const html = renderToStaticMarkup(
-      <FacultyListContent
-        {...defaultProps}
-        faculty={[]}
-        hasActiveFilters={true}
-      />,
+      <FacultyListContent {...defaultProps} faculty={[]} hasActiveFilters={true} />,
     );
 
     expect(html).toContain("No faculty match filters");

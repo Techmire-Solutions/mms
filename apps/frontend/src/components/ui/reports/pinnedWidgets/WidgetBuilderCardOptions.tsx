@@ -9,7 +9,10 @@ import { Slider } from "@/components/ui/slider";
 import { FORM_LABEL, FORM_INPUT_BUILDER } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 
-export { WidgetBuilderIconPicker, type WidgetBuilderIconTab } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderIconPicker";
+export {
+  WidgetBuilderIconPicker,
+  type WidgetBuilderIconTab,
+} from "@/components/ui/reports/pinnedWidgets/WidgetBuilderIconPicker";
 
 interface WidgetBuilderCardRoleOptionsProps {
   builderRole: string;
@@ -35,7 +38,9 @@ export function WidgetBuilderCardRoleOptions({
 
   return (
     <div className="space-y-1">
-      <label htmlFor="builder-role" className={`${FORM_LABEL} block`}>{t("reports.widgets.builder.dashboardRole")}</label>
+      <label htmlFor="builder-role" className={`${FORM_LABEL} block`}>
+        {t("reports.widgets.builder.dashboardRole")}
+      </label>
       <FormSelect
         id="builder-role"
         value={builderRole}
@@ -65,7 +70,9 @@ export function WidgetBuilderCardTextOptions({
   return (
     <>
       <div className="space-y-1">
-        <label htmlFor="subtext-style" className={`${FORM_LABEL} block`}>{t("reports.widgets.builder.subtextStyle")}</label>
+        <label htmlFor="subtext-style" className={`${FORM_LABEL} block`}>
+          {t("reports.widgets.builder.subtextStyle")}
+        </label>
         <FormSelect
           id="subtext-style"
           value={subTextType}
@@ -79,7 +86,9 @@ export function WidgetBuilderCardTextOptions({
 
       {subTextType === "fixed" && (
         <div className="space-y-1">
-          <label htmlFor="fixed-subtitle" className={`${FORM_LABEL} block`}>{t("reports.widgets.builder.fixedSubtitle")}</label>
+          <label htmlFor="fixed-subtitle" className={`${FORM_LABEL} block`}>
+            {t("reports.widgets.builder.fixedSubtitle")}
+          </label>
           <Input
             id="fixed-subtitle"
             type="text"
@@ -114,13 +123,16 @@ export function WidgetBuilderCardTextOptions({
         ) : (
           <>
             <div className="flex justify-between items-center select-none">
-              <SectionLabel as="p" weight="bold" tracking="wider" className="block">{t("reports.widgets.builder.manualTrend")}</SectionLabel>
+              <SectionLabel as="p" weight="bold" tracking="wider" className="block">
+                {t("reports.widgets.builder.manualTrend")}
+              </SectionLabel>
               <Badge
                 pill
                 tone={trend > 0 ? "success" : trend < 0 ? "destructive" : "muted"}
                 className="px-1.5 font-black"
               >
-                {trend > 0 ? "+" : ""}{trend}%
+                {trend > 0 ? "+" : ""}
+                {trend}%
               </Badge>
             </div>
             <div className="flex items-center gap-3 pt-1">

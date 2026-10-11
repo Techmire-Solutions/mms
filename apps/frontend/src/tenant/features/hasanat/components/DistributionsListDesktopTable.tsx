@@ -11,7 +11,9 @@ import {
 
 type DistributionsListDesktopTableProps = DistributionsListContentProps;
 
-export function DistributionsListDesktopTable(props: DistributionsListDesktopTableProps): React.JSX.Element {
+export function DistributionsListDesktopTable(
+  props: DistributionsListDesktopTableProps,
+): React.JSX.Element {
   const {
     distributions,
     denoms,
@@ -57,7 +59,8 @@ export function DistributionsListDesktopTable(props: DistributionsListDesktopTab
         canDelete
           ? {
               selectedIds,
-              onSelectOne: (id) => onToggleSelectedDistribution(String(id), !selectedIdsSet.has(String(id))),
+              onSelectOne: (id) =>
+                onToggleSelectedDistribution(String(id), !selectedIdsSet.has(String(id))),
               onSelectAll: () => onToggleSelectAll(!allVisibleSelected),
               allSelected: allVisibleSelected,
               someSelected: someVisibleSelected,
@@ -84,11 +87,7 @@ export function DistributionsListDesktopTable(props: DistributionsListDesktopTab
           canRestoreRows={canRestoreRows}
           canDeleteRows={canDeleteRows}
           triggerClassName={MODULE_ROW_ACTIONS_TRIGGER_CLASS}
-          onMessage={
-            onMessage
-              ? (channel, dist) => onMessage(channel, [dist])
-              : undefined
-          }
+          onMessage={onMessage ? (channel, dist) => onMessage(channel, [dist]) : undefined}
           onChangeStatus={onChangeStatus}
           onTrashAction={onTrashAction}
         />

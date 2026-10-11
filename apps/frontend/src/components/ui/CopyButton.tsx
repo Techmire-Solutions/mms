@@ -61,11 +61,11 @@ export function CopyButton({
         size="sm"
         variant={variant ?? "outline"}
         onClick={handleCopy}
-        aria-label={copied ? labelCopied ?? label : label}
+        aria-label={copied ? (labelCopied ?? label) : label}
         className={cn("gap-1.5 text-xs font-semibold rounded-xl cursor-pointer", className)}
       >
         {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
-        {copied ? labelCopied ?? label : label}
+        {copied ? (labelCopied ?? label) : label}
       </Button>
     );
   }

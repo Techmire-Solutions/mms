@@ -1,16 +1,20 @@
-import type { JSX } from 'react';
-import React from 'react';
-import { workspaceRoleLabel, type ModuleColumnRegistryEntry, type WorkspaceRole } from '@mms/shared';
+import type { JSX } from "react";
+import React from "react";
+import {
+  workspaceRoleLabel,
+  type ModuleColumnRegistryEntry,
+  type WorkspaceRole,
+} from "@mms/shared";
 import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from '@/components/ui/ModuleFiltersMenuButton';
-import { WorkTaskToolbar } from '@/components/common/work';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import type { ModuleColumnCustomizerLabels } from '@/components/ui/ModuleColumnCustomizer';
-import { USERS_WORK_SEARCH_INPUT_ID } from '@/tenant/features/users/hooks/useUsersKeyboardShortcuts';
+} from "@/components/ui/ModuleFiltersMenuButton";
+import { WorkTaskToolbar } from "@/components/common/work";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import { USERS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/users/hooks/useUsersKeyboardShortcuts";
 
 interface UsersListFiltersProps {
   viewMode: WorkDirectoryViewMode;
@@ -54,23 +58,24 @@ export function UsersListFilters({
   primaryAction,
 }: UsersListFiltersProps): JSX.Element {
   const { t } = useTranslation();
-  const activeFilterCount = Number(roleFilter !== 'all') + Number(!showDeleted && statusFilter !== 'all');
+  const activeFilterCount =
+    Number(roleFilter !== "all") + Number(!showDeleted && statusFilter !== "all");
   const hasActiveFilters = activeFilterCount > 0;
   const handleClearFilters = (): void => {
-    onRoleFilterChange('all');
-    onStatusFilterChange('all');
+    onRoleFilterChange("all");
+    onStatusFilterChange("all");
   };
 
   return (
     <WorkTaskToolbar
-      regionLabel={t('page.users.title')}
+      regionLabel={t("page.users.title")}
       searchId={USERS_WORK_SEARCH_INPUT_ID}
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('users.searchPlaceholder')}
+      searchPlaceholder={t("users.searchPlaceholder")}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={handleClearFilters}
-      clearFiltersLabel={t('common.clearFilters')}
+      clearFiltersLabel={t("common.clearFilters")}
       viewModeToggle={{
         viewMode,
         onViewModeChange,
@@ -94,25 +99,25 @@ export function UsersListFilters({
                 onClearSelection();
                 onToggleDeleted?.(v);
               },
-              activeLabel: t('users.trash.showActive'),
-              deletedLabel: t('users.trash.showDeleted'),
+              activeLabel: t("users.trash.showActive"),
+              deletedLabel: t("users.trash.showDeleted"),
             }
           : undefined
       }
       primaryAction={primaryAction}
       filterButton={
         <ModuleFilterDropdown
-          label={t('common.filters')}
+          label={t("common.filters")}
           activeCount={activeFilterCount}
-          clearLabel={t('common.clearFilters')}
+          clearLabel={t("common.clearFilters")}
           onClear={handleClearFilters}
         >
           <ModuleFilterRadioGroup
-            label={t('users.filterRole')}
+            label={t("users.filterRole")}
             value={roleFilter}
             onValueChange={onRoleFilterChange}
             options={[
-              { value: 'all', label: t('users.filterAllRoles') },
+              { value: "all", label: t("users.filterAllRoles") },
               ...workspaceRoles.map((workspaceRole) => ({
                 value: workspaceRole.id,
                 label: workspaceRoleLabel(workspaceRole, t),
@@ -123,14 +128,14 @@ export function UsersListFilters({
             <>
               <ModuleFilterDivider />
               <ModuleFilterRadioGroup
-                label={t('users.filterStatus')}
+                label={t("users.filterStatus")}
                 value={statusFilter}
                 onValueChange={onStatusFilterChange}
                 options={[
-                  { value: 'all', label: t('users.filterAllStatuses') },
-                  { value: 'active', label: t('users.status.active') },
-                  { value: 'inactive', label: t('users.status.inactive') },
-                  { value: 'suspended', label: t('users.status.suspended') },
+                  { value: "all", label: t("users.filterAllStatuses") },
+                  { value: "active", label: t("users.status.active") },
+                  { value: "inactive", label: t("users.status.inactive") },
+                  { value: "suspended", label: t("users.status.suspended") },
                 ]}
               />
             </>

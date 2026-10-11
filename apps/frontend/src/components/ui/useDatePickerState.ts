@@ -9,10 +9,7 @@ import {
 import { useDateFormat } from "@/lib/contexts/DateFormatContext";
 import { useDatePickerYearMode } from "./datePickerYearMode";
 import { useDatePickerDateMode } from "./useDatePickerDateMode";
-import {
-  processDatePickerBlur,
-  processDatePickerInputChange,
-} from "./datePickerInputProcessing";
+import { processDatePickerBlur, processDatePickerInputChange } from "./datePickerInputProcessing";
 
 export interface UseDatePickerStateOptions {
   value?: string | number | Date | null;

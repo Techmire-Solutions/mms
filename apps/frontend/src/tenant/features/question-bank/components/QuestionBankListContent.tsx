@@ -1,12 +1,12 @@
-import React from 'react';
-import type { QuestionBankConfig } from '@/tenant/features/question-bank/hooks/useQuestionBankConfig';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { ModuleWorkListStateShell } from '@/components/ui/ModuleWorkListStateShell';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { QuestionsList } from './QuestionsList';
-import type { useQuestionBankFilters } from '@/tenant/features/question-bank/hooks/useQuestionBankFilters';
-import type { useQuestionBankWorkController } from '@/tenant/features/question-bank/hooks/useQuestionBankWorkController';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
+import React from "react";
+import type { QuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { QuestionsList } from "./QuestionsList";
+import type { useQuestionBankFilters } from "@/tenant/features/question-bank/hooks/useQuestionBankFilters";
+import type { useQuestionBankWorkController } from "@/tenant/features/question-bank/hooks/useQuestionBankWorkController";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 interface QuestionBankListContentProps {
   viewMode: WorkDirectoryViewMode;
@@ -72,9 +72,11 @@ export function QuestionBankListContent({
       isError={pageQuery.isError}
       isLoading={pageQuery.isPending}
       isFetching={pageQuery.isFetching}
-      onRetry={() => { void pageQuery.refetch(); }}
-      errorTitle={t('questionBank.loadFailed')}
-      errorHint={t('questionBank.loadFailedHint')}
+      onRetry={() => {
+        void pageQuery.refetch();
+      }}
+      errorTitle={t("questionBank.loadFailed")}
+      errorHint={t("questionBank.loadFailedHint")}
       viewMode={viewMode}
       skeletonColumnCount={6}
       useServerWork={true}
@@ -90,11 +92,7 @@ export function QuestionBankListContent({
       loadingLabel={t("common.loading")}
     >
       {pageQuestions.length === 0 ? (
-        <EmptyState
-          variant="dashed"
-          title={t('questionBank.noQuestions')}
-          className="py-14"
-        />
+        <EmptyState variant="dashed" title={t("questionBank.noQuestions")} className="py-14" />
       ) : (
         <QuestionsList
           viewMode={viewMode}

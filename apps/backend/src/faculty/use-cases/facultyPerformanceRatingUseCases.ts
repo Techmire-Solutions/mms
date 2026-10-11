@@ -2,11 +2,11 @@
  * @file facultyPerformanceRatingUseCases.ts
  * @description Recompute and persist faculty.performance_rating from evaluation scores.
  */
-import { and, eq, isNull } from 'drizzle-orm';
-import { computeFacultyPerformanceRating, parseFacultyPerformanceRating } from '@mms/shared';
-import { faculty } from '../../db/schema.js';
-import { withTenant } from '../../db/tenant-context.js';
-import { recordModernAuditEvent } from '../../services/auditTrailService.js';
+import { and, eq, isNull } from "drizzle-orm";
+import { computeFacultyPerformanceRating, parseFacultyPerformanceRating } from "@mms/shared";
+import { faculty } from "../../db/schema.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 
 /**
  * Recomputes and persists `faculty.performance_rating` from evaluation scores.
@@ -41,9 +41,9 @@ export async function recomputeFacultyPerformanceRating(
     if (changed.length === 0) return;
     await recordModernAuditEvent(tx, {
       workspaceSubdomain: subdomain,
-      tableName: 'faculty',
+      tableName: "faculty",
       recordId: facultyId,
-      actionType: 'UPDATE',
+      actionType: "UPDATE",
       realUserId: actorUserId,
       newState: { performanceRating: stored },
     });

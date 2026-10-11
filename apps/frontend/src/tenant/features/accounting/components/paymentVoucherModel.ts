@@ -45,7 +45,9 @@ const SALARY_LINE_PATTERN = /staff (.+) \((\d{4}-\d{2})\)$/;
 /** Fallback: the original `SAL-<YYYY-MM>-<staffId>` reference. */
 const SALARY_REF_PATTERN = /^SAL-(\d{4}-\d{2})-(.+)$/;
 
-export function parseSalaryVoucherRef(entry: Pick<JournalEntry, "transaction_type" | "lines" | "ref">): SalaryVoucherRef | null {
+export function parseSalaryVoucherRef(
+  entry: Pick<JournalEntry, "transaction_type" | "lines" | "ref">,
+): SalaryVoucherRef | null {
   if (entry.transaction_type !== "salary") return null;
   for (const line of entry.lines) {
     const match = SALARY_LINE_PATTERN.exec(line.description);
@@ -60,26 +62,30 @@ function accountLabel(accountsById: Map<string, Account>, accountId: string): st
   return account ? `${account.code} — ${account.name}` : accountId;
 }
 
-export function buildPaymentVoucherModel(entry: JournalEntry, accounts: readonly Account[]): PaymentVoucherModel {
+export function buildPaymentVoucherModel(
+  entry: JournalEntry,
+  accounts: readonly Account[],
+): PaymentVoucherModel {
   const accountsById = new Map(accounts.map((account) => [account.id, account]));
   const kind = resolveVoucherPrintKind(entry, accounts) ?? "journal";
   const layout = voucherPrintLayout(kind);
   const debitLines = entry.lines.filter((line) => line.debit > 0);
   const creditLines = entry.lines.filter((line) => line.credit > 0);
   const detailLines = layout === "receipt" ? creditLines : debitLines;
-  const deductionLines = layout === "payment"
-    ? creditLines.filter((line) => !isCashInstrumentAccount(accountsById.get(line.account_id)))
-    : [];
-  const cashCredits = creditLines.filter((line) => isCashInstrumentAccount(accountsById.get(line.account_id)));
-  const sourceLines = layout === "receipt"
-    ? debitLines
-    : deductionLines.length > 0
-      ? cashCredits
-      : creditLines;
+  const deductionLines =
+    layout === "payment"
+      ? creditLines.filter((line) => !isCashInstrumentAccount(accountsById.get(line.account_id)))
+      : [];
+  const cashCredits = creditLines.filter((line) =>
+    isCashInstrumentAccount(accountsById.get(line.account_id)),
+  );
+  const sourceLines =
+    layout === "receipt" ? debitLines : deductionLines.length > 0 ? cashCredits : creditLines;
   const amountCents = debitLines.reduce((sum, line) => sum + moneyToCents(line.debit), 0);
-  const netCents = deductionLines.length > 0
-    ? cashCredits.reduce((sum, line) => sum + moneyToCents(line.credit), 0)
-    : amountCents;
+  const netCents =
+    deductionLines.length > 0
+      ? cashCredits.reduce((sum, line) => sum + moneyToCents(line.credit), 0)
+      : amountCents;
   return {
     kind,
     layout,

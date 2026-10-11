@@ -22,13 +22,15 @@ export function WidgetBuilderColorOptions({
     <div className="space-y-1.5 text-start font-sans">
       <p className={`${FORM_LABEL} block`}>{t("reports.widgets.builder.defaultColor")}</p>
       <div className="flex flex-wrap gap-2">
-        {([
-          { id: "emerald", labelKey: "reports.widgets.builder.themeEmerald" },
-          { id: "blue", labelKey: "reports.widgets.builder.themeBlue" },
-          { id: "violet", labelKey: "reports.widgets.builder.themeViolet" },
-          { id: "amber", labelKey: "reports.widgets.builder.themeAmber" },
-          { id: "red", labelKey: "reports.widgets.builder.themeRed" },
-        ] as const).map((colorOption) => {
+        {(
+          [
+            { id: "emerald", labelKey: "reports.widgets.builder.themeEmerald" },
+            { id: "blue", labelKey: "reports.widgets.builder.themeBlue" },
+            { id: "violet", labelKey: "reports.widgets.builder.themeViolet" },
+            { id: "amber", labelKey: "reports.widgets.builder.themeAmber" },
+            { id: "red", labelKey: "reports.widgets.builder.themeRed" },
+          ] as const
+        ).map((colorOption) => {
           const isSelected = builderColor === colorOption.id;
           const cMap = resolveWidgetChartHex(colorOption.id, palette);
           return (

@@ -13,15 +13,17 @@ import type {
 const ObligationCollectionDetail = lazy(() =>
   import("@/tenant/features/obligations/components/ObligationCollectionDetail").then((m) => ({
     default: m.ObligationCollectionDetail,
-  }))
+  })),
 );
 const ObligationCollectionForm = lazy(() =>
   import("@/tenant/features/obligations/components/ObligationCollectionForm").then((m) => ({
     default: m.ObligationCollectionForm,
-  }))
+  })),
 );
 
-const MessageComposer = React.lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
+const MessageComposer = React.lazy(
+  () => import("@/tenant/components/messaging/TenantMessageComposer"),
+);
 
 interface MessagingTarget {
   channel: "sms" | "whatsapp" | "email";

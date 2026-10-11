@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+import { z } from "zod";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 
 /** PUT /api/contacts/field-config — FieldConfig JSON without formTabs SSOT. */
 const contactFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema;
@@ -15,7 +15,7 @@ const relationshipPairSchema = z
   .strict();
 
 export const contactFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, contactFieldConfigPutBodyBaseSchema);
 

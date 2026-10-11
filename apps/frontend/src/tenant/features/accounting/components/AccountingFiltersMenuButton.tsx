@@ -1,12 +1,12 @@
-import type { JSX } from 'react';
-import { Filter } from 'lucide-react';
+import type { JSX } from "react";
+import { Filter } from "lucide-react";
 import {
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from '@/components/ui/ModuleFiltersMenuButton';
-import { useTranslation } from '@/hooks/useTranslation';
-import { JOURNAL_TAGS } from '@/lib/data/accountingData';
-import { getJournalTagLabel } from '@/tenant/features/accounting/components/journalEntriesListShared';
+} from "@/components/ui/ModuleFiltersMenuButton";
+import { useTranslation } from "@/hooks/useTranslation";
+import { JOURNAL_TAGS } from "@/lib/data/accountingData";
+import { getJournalTagLabel } from "@/tenant/features/accounting/components/journalEntriesListShared";
 
 interface AccountingFiltersMenuButtonProps {
   statusFilter: string;
@@ -30,26 +30,26 @@ export function AccountingFiltersMenuButton({
 
   return (
     <ModuleFilterDropdown
-      label={t('accounting.filters')}
+      label={t("accounting.filters")}
       activeCount={activeFilterCount}
       icon={Filter}
-      clearLabel={t('accounting.clearFilters')}
+      clearLabel={t("accounting.clearFilters")}
       onClear={onClearFilters}
     >
       <ModuleFilterRadioGroup
-        label={t('accounting.journal.dashboard.allStatus')}
+        label={t("accounting.journal.dashboard.allStatus")}
         options={[
-          { value: 'all', label: t('accounting.journal.dashboard.allStatus') },
-          { value: 'posted', label: t('accounting.journal.status.posted') },
-          { value: 'draft', label: t('accounting.journal.status.draft') },
+          { value: "all", label: t("accounting.journal.dashboard.allStatus") },
+          { value: "posted", label: t("accounting.journal.status.posted") },
+          { value: "draft", label: t("accounting.journal.status.draft") },
         ]}
         value={statusFilter}
         onValueChange={onChangeStatus}
       />
       <ModuleFilterRadioGroup
-        label={t('accounting.journal.dashboard.allTags')}
+        label={t("accounting.journal.dashboard.allTags")}
         options={[
-          { value: 'all', label: t('accounting.journal.dashboard.allTags') },
+          { value: "all", label: t("accounting.journal.dashboard.allTags") },
           ...JOURNAL_TAGS.map((tag) => ({
             value: tag,
             label: getJournalTagLabel(tag, t),

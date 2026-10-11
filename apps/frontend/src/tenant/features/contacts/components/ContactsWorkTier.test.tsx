@@ -109,14 +109,12 @@ describe("ContactsWorkTier Component", () => {
   it("renders work tier with filters and table", () => {
     const html = renderToStaticMarkup(<ContactsWorkTier {...baseProps} />);
 
-    expect(html).toContain("data-testid=\"contacts-table-mock\"");
+    expect(html).toContain('data-testid="contacts-table-mock"');
   });
 
   it("renders bulk actions bar when items are selected", () => {
-    const html = renderToStaticMarkup(
-      <ContactsWorkTier {...baseProps} selected={["cnt-1"]} />,
-    );
+    const html = renderToStaticMarkup(<ContactsWorkTier {...baseProps} selected={["cnt-1"]} />);
 
-    expect(html).toContain("data-testid=\"contacts-table-mock\"");
+    expect(html).toContain('data-testid="contacts-table-mock"');
   });
 });

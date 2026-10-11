@@ -1,16 +1,16 @@
-import { dedupeTrimmedIds, type Faculty } from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import type { FacultyRepository } from '../repository/facultyRepository.js';
-import { facultyRepository } from '../repository/facultyRepositoryAdapter.js';
-import { ConflictError } from '../../lib/httpErrors.js';
-import { isUniqueViolation } from '../../lib/pgErrors.js';
-import { buildRestoredRecord, nowIso } from '../../lib/softDeleteHelpers.js';
-import { emitOutboxEvent } from '../../services/outboxEventService.js';
-import { cascadeRestoreFacultyAssignments } from '../../db/repositories/facultyAssignmentCascade.js';
-import { cascadeRestoreFacultyEmployments } from '../../db/repositories/facultyEmploymentRepository.js';
-import { cascadeRestoreFacultyEmployDesignations } from '../../db/repositories/facultyEmployDesignationRepository.js';
+import { dedupeTrimmedIds, type Faculty } from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import type { FacultyRepository } from "../repository/facultyRepository.js";
+import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
+import { ConflictError } from "../../lib/httpErrors.js";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
+import { buildRestoredRecord, nowIso } from "../../lib/softDeleteHelpers.js";
+import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { cascadeRestoreFacultyAssignments } from "../../db/repositories/facultyAssignmentCascade.js";
+import { cascadeRestoreFacultyEmployments } from "../../db/repositories/facultyEmploymentRepository.js";
+import { cascadeRestoreFacultyEmployDesignations } from "../../db/repositories/facultyEmployDesignationRepository.js";
 export async function restoreFacultyById(
   id: string,
   userId?: string,
@@ -28,8 +28,10 @@ export async function restoreFacultyById(
         excludeId: id,
         employeeId: existing.employeeId,
       });
-      if (conflict === 'employeeId') {
-        throw new ConflictError(`Employee ID ${existing.employeeId} is already in use by another active faculty`);
+      if (conflict === "employeeId") {
+        throw new ConflictError(
+          `Employee ID ${existing.employeeId} is already in use by another active faculty`,
+        );
       }
     }
 
@@ -40,19 +42,27 @@ export async function restoreFacultyById(
       await cascadeRestoreFacultyEmployments(tenant, [id], userId);
       await cascadeRestoreFacultyEmployDesignations(tenant, [id], userId);
     } catch (err: unknown) {
-      if (isUniqueViolation(err) || (typeof err === 'object' && err !== null && 'code' in err && (err as { code: unknown }).code === '23505')) {
-        throw new ConflictError('Cannot restore faculty: active record with this unique identifier already exists');
+      if (
+        isUniqueViolation(err) ||
+        (typeof err === "object" &&
+          err !== null &&
+          "code" in err &&
+          (err as { code: unknown }).code === "23505")
+      ) {
+        throw new ConflictError(
+          "Cannot restore faculty: active record with this unique identifier already exists",
+        );
       }
       throw err;
     }
 
     const restoredAt = next.restoredAt ?? nowIso();
-    await emitOutboxEvent('entity.restored', {
-      entityType: 'faculty',
+    await emitOutboxEvent("entity.restored", {
+      entityType: "faculty",
       entityId: String(id),
       tenantId: tenant,
       restoredAt,
-      restoredBy: userId ?? 'unknown',
+      restoredBy: userId ?? "unknown",
       version: Date.now(),
     });
 
@@ -60,7 +70,7 @@ export async function restoreFacultyById(
   });
 
   if (restored) {
-    await broadcastCollection('faculty');
+    await broadcastCollection("faculty");
   }
   return restored;
 }
@@ -111,19 +121,27 @@ export async function bulkRestoreFaculty(
           userId,
         );
       } catch (err: unknown) {
-        if (isUniqueViolation(err) || (typeof err === 'object' && err !== null && 'code' in err && (err as { code: unknown }).code === '23505')) {
-          throw new ConflictError('Cannot restore faculty: active record with this unique identifier already exists');
+        if (
+          isUniqueViolation(err) ||
+          (typeof err === "object" &&
+            err !== null &&
+            "code" in err &&
+            (err as { code: unknown }).code === "23505")
+        ) {
+          throw new ConflictError(
+            "Cannot restore faculty: active record with this unique identifier already exists",
+          );
         }
         throw err;
       }
 
       for (const m of toSave) {
-        await emitOutboxEvent('entity.restored', {
-          entityType: 'faculty',
+        await emitOutboxEvent("entity.restored", {
+          entityType: "faculty",
           entityId: String(m.id),
           tenantId: tenant,
           restoredAt: m.restoredAt ?? nowIso(),
-          restoredBy: userId ?? 'unknown',
+          restoredBy: userId ?? "unknown",
           version: Date.now(),
         });
       }
@@ -132,7 +150,7 @@ export async function bulkRestoreFaculty(
   });
 
   if (result.succeeded > 0) {
-    await broadcastCollection('faculty');
+    await broadcastCollection("faculty");
   }
   return result;
 }

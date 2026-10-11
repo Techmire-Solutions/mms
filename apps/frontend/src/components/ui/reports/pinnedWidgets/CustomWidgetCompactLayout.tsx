@@ -69,7 +69,11 @@ export function CustomWidgetCompactLayout({
           {computedCard.value}
         </span>
         <SectionLabel className="mb-0.5">
-          {getCollectionLabel(widget.collection, METADATA_FIELDS[widget.collection]?.name || widget.collection, t)}
+          {getCollectionLabel(
+            widget.collection,
+            METADATA_FIELDS[widget.collection]?.name || widget.collection,
+            t,
+          )}
         </SectionLabel>
       </motion.button>
     );
@@ -83,8 +87,16 @@ export function CustomWidgetCompactLayout({
         alertScheme={alertScheme}
         onMetricClick={onMetricClick}
         t={t}
-        body={displayAsProgress ? <ProgressRing percentage={value} colorHex={colorHex} isCompact /> : formattedValue}
-        bodyClassName={displayAsProgress ? undefined : alertScheme ? alertScheme.text : "text-foreground"}
+        body={
+          displayAsProgress ? (
+            <ProgressRing percentage={value} colorHex={colorHex} isCompact />
+          ) : (
+            formattedValue
+          )
+        }
+        bodyClassName={
+          displayAsProgress ? undefined : alertScheme ? alertScheme.text : "text-foreground"
+        }
         isProgress={displayAsProgress}
       />
     );
@@ -118,7 +130,9 @@ export function CustomWidgetCompactLayout({
 
   if (resolvedWidgetType === "switch") {
     return (
-      <div className={`size-widget-compact p-2 text-center flex flex-col justify-between items-center ${WORK_SURFACE} overflow-hidden relative transition-all duration-300 hover:border-primary/20 hover:shadow-md`}>
+      <div
+        className={`size-widget-compact p-2 text-center flex flex-col justify-between items-center ${WORK_SURFACE} overflow-hidden relative transition-all duration-300 hover:border-primary/20 hover:shadow-md`}
+      >
         <span className="text-xs font-black uppercase text-muted-foreground tracking-wider line-clamp-1 w-full mt-0.5">
           {resolveWidgetTitle(widget, t)}
         </span>
@@ -130,10 +144,7 @@ export function CustomWidgetCompactLayout({
           aria-label={switchLabel}
         />
 
-        <SectionLabel
-          className="mb-0.5"
-          tone={isSwitchOn ? "primary" : "muted"}
-        >
+        <SectionLabel className="mb-0.5" tone={isSwitchOn ? "primary" : "muted"}>
           {switchLabel}
         </SectionLabel>
       </div>
@@ -173,18 +184,29 @@ function CompactMetricButton({
       }`}
       type="button"
     >
-      <span className={cn("text-xs font-black uppercase tracking-wider line-clamp-1 w-full mt-0.5", alertScheme ? "text-foreground" : "text-muted-foreground")}>
+      <span
+        className={cn(
+          "text-xs font-black uppercase tracking-wider line-clamp-1 w-full mt-0.5",
+          alertScheme ? "text-foreground" : "text-muted-foreground",
+        )}
+      >
         {resolveWidgetTitle(widget, t)}
       </span>
       {isProgress ? (
         <div className="my-auto">{body}</div>
       ) : (
-        <span className={`text-base font-black tracking-tight font-mono my-auto max-w-full truncate ${bodyClassName}`}>
+        <span
+          className={`text-base font-black tracking-tight font-mono my-auto max-w-full truncate ${bodyClassName}`}
+        >
           {body}
         </span>
       )}
       <SectionLabel tone={alertScheme ? "foreground" : "muted"} className="mb-0.5">
-        {getCollectionLabel(widget.collection, METADATA_FIELDS[widget.collection]?.name || widget.collection, t)}
+        {getCollectionLabel(
+          widget.collection,
+          METADATA_FIELDS[widget.collection]?.name || widget.collection,
+          t,
+        )}
       </SectionLabel>
     </motion.button>
   );

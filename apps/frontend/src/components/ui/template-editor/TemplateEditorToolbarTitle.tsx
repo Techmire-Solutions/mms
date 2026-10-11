@@ -1,5 +1,5 @@
-import React from 'react';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
+import React from "react";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface TemplateEditorToolbarTitleProps {
   title?: string;
@@ -22,16 +22,16 @@ export function TemplateEditorToolbarTitle({
         id={titleId}
         className="font-bold text-sm text-foreground m-0 whitespace-nowrap max-w-[38ch] truncate"
       >
-        {title || t('templateEditor.title')}
+        {title || t("templateEditor.title")}
       </h2>
       {isDirty && !saved && (
         <span
           role="status"
           aria-live="polite"
           className="px-1.5 py-0.5 rounded-full text-3xs font-bold border border-warning/30 bg-warning/10 text-warning whitespace-nowrap animate-pulse"
-          title={t('templateEditor.dirtyNotice')}
+          title={t("templateEditor.dirtyNotice")}
         >
-          {t('templateEditor.dirtyNotice')}
+          {t("templateEditor.dirtyNotice")}
         </span>
       )}
     </div>

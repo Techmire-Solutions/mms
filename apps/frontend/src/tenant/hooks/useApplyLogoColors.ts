@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import type { LogoColorProportion } from '@mms/shared';
-import { extractLogoBrandColors } from '@/lib/extractLogoBrandColors';
-import { notify } from '@/lib/notify';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useState, useEffect, useRef } from "react";
+import type { LogoColorProportion } from "@mms/shared";
+import { extractLogoBrandColors } from "@/lib/extractLogoBrandColors";
+import { notify } from "@/lib/notify";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface UseApplyLogoColorsOptions {
   logoUrl: string;
@@ -36,7 +36,7 @@ export function useApplyLogoColors({
   const [proportions, setProportions] = useState<readonly LogoColorProportion[]>([]);
   const [bestPair, setBestPair] = useState<{ primary: string; secondary: string } | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
-  const autoExtractedRef = useRef<string>('');
+  const autoExtractedRef = useRef<string>("");
 
   const effectiveLogoUrl = sampleLogoUrl || logoUrl.trim();
   const isSample = Boolean(sampleLogoUrl);
@@ -69,31 +69,31 @@ export function useApplyLogoColors({
     };
   }, []);
 
-  const clearPalette = (() => {
+  const clearPalette = () => {
     setExtractedPalette([]);
     setProportions([]);
     setBestPair(null);
-  });
+  };
 
-  const setSampleLogo = ((dataUrl: string) => {
+  const setSampleLogo = (dataUrl: string) => {
     setSampleLogoUrl(dataUrl);
-  });
+  };
 
-  const clearSampleLogo = (() => {
+  const clearSampleLogo = () => {
     setSampleLogoUrl(null);
-  });
+  };
 
-  const applyBestPair = (() => {
+  const applyBestPair = () => {
     if (!bestPair) return;
     onPrimaryChange(bestPair.primary);
     onSecondaryChange(bestPair.secondary);
-    notify.success(t('theme.logoColorsApplied'), { description: t('theme.logoColorsAppliedDesc') });
-  });
+    notify.success(t("theme.logoColorsApplied"), { description: t("theme.logoColorsAppliedDesc") });
+  };
 
-  const apply = (async (): Promise<void> => {
+  const apply = async (): Promise<void> => {
     if (applying) return;
     if (!effectiveLogoUrl) {
-      notify.error(t('theme.logoColorsMissing'), { description: t('theme.logoColorsMissingDesc') });
+      notify.error(t("theme.logoColorsMissing"), { description: t("theme.logoColorsMissingDesc") });
       return;
     }
 
@@ -107,7 +107,7 @@ export function useApplyLogoColors({
       if (controller.signal.aborted) return;
 
       if (!colors) {
-        notify.error(t('theme.logoColorsFailed'), { description: t('theme.logoColorsFailedDesc') });
+        notify.error(t("theme.logoColorsFailed"), { description: t("theme.logoColorsFailedDesc") });
         return;
       }
       onPrimaryChange(colors.primaryColor);
@@ -115,17 +115,19 @@ export function useApplyLogoColors({
       setExtractedPalette(colors.palette ?? []);
       setProportions(colors.proportions ?? []);
       setBestPair({ primary: colors.primaryColor, secondary: colors.secondaryColor });
-      notify.success(t('theme.logoColorsApplied'), { description: t('theme.logoColorsAppliedDesc') });
+      notify.success(t("theme.logoColorsApplied"), {
+        description: t("theme.logoColorsAppliedDesc"),
+      });
     } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'name' in err && err.name === 'AbortError') return;
-      notify.error(t('theme.logoColorsFailed'));
+      if (err && typeof err === "object" && "name" in err && err.name === "AbortError") return;
+      notify.error(t("theme.logoColorsFailed"));
     } finally {
       if (controllerRef.current === controller) {
         setApplying(false);
         controllerRef.current = null;
       }
     }
-  });
+  };
 
   return {
     applying,

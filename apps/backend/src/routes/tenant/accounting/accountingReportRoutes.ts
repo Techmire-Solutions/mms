@@ -1,13 +1,13 @@
-import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { ACCOUNTING_MODULE_MANIFEST, accountingReportQuerySchema, type User } from "@mms/shared";
+import { canReadCollection } from "../../../services/rbacService.js";
+import { accountingUseCases } from "../../../accounting/use-cases/accountingUseCases.js";
 import {
-  ACCOUNTING_MODULE_MANIFEST,
-  accountingReportQuerySchema,
-  type User,
-} from '@mms/shared';
-import { canReadCollection } from '../../../services/rbacService.js';
-import { accountingUseCases } from '../../../accounting/use-cases/accountingUseCases.js';
-import { sendDatabaseError, sendForbidden, sendIfHttpDomainError } from '../../../lib/httpErrors.js';
-import { parseRequest, replyValidationError } from '../../../lib/zodRequest.js';
+  sendDatabaseError,
+  sendForbidden,
+  sendIfHttpDomainError,
+} from "../../../lib/httpErrors.js";
+import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 
 const COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 
@@ -16,7 +16,7 @@ export async function accountingReportRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
-  fastify.get('/report-aggregates', async (request, reply) => {
+  fastify.get("/report-aggregates", async (request, reply) => {
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(accountingReportQuerySchema, request.query);
@@ -27,7 +27,7 @@ export async function accountingReportRoutes(
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
-        sendDatabaseError(reply, 'Failed to load accounting report aggregates', error)
+        sendDatabaseError(reply, "Failed to load accounting report aggregates", error)
       );
     }
   });

@@ -1,49 +1,49 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  FACULTY_MODULE_MANIFEST,
-  type Faculty,
-  type FacultyQuickFilter,
-} from '@mms/shared';
-import { BookOpen, Layers, Users } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useSessionsCollection } from '@/tenant/hooks/collections/sessions';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FACULTY_MODULE_MANIFEST, type Faculty, type FacultyQuickFilter } from "@mms/shared";
+import { BookOpen, Layers, Users } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import {
   useFacultyByIds,
   useFacultyMetrics,
   useFacultyContractList,
-} from '@/tenant/hooks/collections/faculty';
-import { facultyStatusBadgeConfig } from '@/lib/faculty/facultyStatusUi';
-import { collectFacultyIdsFromSessions } from '@/lib/registryResolve';
-import { facultyNameById } from '@/lib/faculty/facultyAssignment';
+} from "@/tenant/hooks/collections/faculty";
+import { facultyStatusBadgeConfig } from "@/lib/faculty/facultyStatusUi";
+import { collectFacultyIdsFromSessions } from "@/lib/registryResolve";
+import { facultyNameById } from "@/lib/faculty/facultyAssignment";
 import {
   applyFacultyReportDrillDown,
   buildFacultyReportMetricItems,
   computeFacultyWorkload,
   summarizeFacultyWorkload,
-} from '@/tenant/features/reports/controllers/facultyReportMetrics';
-import { resolveFacultyReportExportRows } from '@/tenant/features/reports/controllers/facultyReportExport';
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
-import { mapFacultyRow, type FacultyReportProps, type FacultyReportSubTab } from '@/components/ui/reports/facultyReportTypes';
-import type { SubTab as UINavTab } from '@/components/ui/SubTabBar';
+} from "@/tenant/features/reports/controllers/facultyReportMetrics";
+import { resolveFacultyReportExportRows } from "@/tenant/features/reports/controllers/facultyReportExport";
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import {
+  mapFacultyRow,
+  type FacultyReportProps,
+  type FacultyReportSubTab,
+} from "@/components/ui/reports/facultyReportTypes";
+import type { SubTab as UINavTab } from "@/components/ui/SubTabBar";
 
 /** Controller for Faculty Reports tier — Query + filters; presentational shell stays thin. */
 export function useFacultyReportController({ filters }: FacultyReportProps) {
   const { t } = useTranslation();
-  const [activeSubTab, setActiveSubTab] = useState<FacultyReportSubTab>('roster');
+  const [activeSubTab, setActiveSubTab] = useState<FacultyReportSubTab>("roster");
   const statusBadgeConfig = (() => facultyStatusBadgeConfig(t))();
 
   const REPORT_TABS = (() => [
-      { key: 'roster', label: t('faculty.report.rosterTab') },
-      { key: 'workload', label: t('faculty.report.workloadTab') },
-    ])() as readonly UINavTab<FacultyReportSubTab>[];
+    { key: "roster", label: t("faculty.report.rosterTab") },
+    { key: "workload", label: t("faculty.report.workloadTab") },
+  ])() as readonly UINavTab<FacultyReportSubTab>[];
 
   const [listPage, setListPage] = useState(1);
   const [reportStatusFilter, setReportStatusFilter] = useState<string | null>(null);
   const [selectedFaculty, setSelectedFaculty] = useState<string | null>(null);
 
-  const sessionFilter = filters.session && filters.session !== 'all' ? filters.session : undefined;
-  const classFilter = filters.class && filters.class !== 'all' ? filters.class : undefined;
-  const statusParam = reportStatusFilter || (filters.status !== 'all' ? filters.status : undefined);
+  const sessionFilter = filters.session && filters.session !== "all" ? filters.session : undefined;
+  const classFilter = filters.class && filters.class !== "all" ? filters.class : undefined;
+  const statusParam = reportStatusFilter || (filters.status !== "all" ? filters.status : undefined);
   const searchParam = filters.student || undefined;
 
   useEffect(() => {
@@ -52,18 +52,21 @@ export function useFacultyReportController({ filters }: FacultyReportProps) {
 
   const { data: metrics, isLoading: metricsLoading } = useFacultyMetrics();
 
-  const rosterQuery = useFacultyContractList({
-    page: listPage,
-    limit: FACULTY_MODULE_MANIFEST.defaultPageSize,
-    search: searchParam,
-    status: statusParam,
-  }, activeSubTab === 'roster');
+  const rosterQuery = useFacultyContractList(
+    {
+      page: listPage,
+      limit: FACULTY_MODULE_MANIFEST.defaultPageSize,
+      search: searchParam,
+      status: statusParam,
+    },
+    activeSubTab === "roster",
+  );
 
   const listError = rosterQuery.isError;
   const listLoading = rosterQuery.isLoading;
   const listRefetch = rosterQuery.refetch;
 
-  const rawList = (rosterQuery.data?.body as { faculty?: Faculty[] } | undefined);
+  const rawList = rosterQuery.data?.body as { faculty?: Faculty[] } | undefined;
   const list = rawList?.faculty ?? [];
   const faculty = list.map(mapFacultyRow);
 
@@ -79,7 +82,9 @@ export function useFacultyReportController({ filters }: FacultyReportProps) {
     return sessions.filter((session) => {
       if (sessionFilter && session.id !== sessionFilter) return false;
       if (classFilter) {
-        const hasClass = (session.classes ?? []).some((sessionClass) => sessionClass.name === classFilter);
+        const hasClass = (session.classes ?? []).some(
+          (sessionClass) => sessionClass.name === classFilter,
+        );
         if (!hasClass) return false;
       }
       return true;
@@ -89,7 +94,7 @@ export function useFacultyReportController({ filters }: FacultyReportProps) {
   const resolveClassFacultyMember = useCallback(
     (facultyId: string, facultyName: string): string => {
       const fromRegistry = facultyNameById(workloadFaculty, facultyId);
-      return fromRegistry || facultyName || t('faculty.report.unassigned');
+      return fromRegistry || facultyName || t("faculty.report.unassigned");
     },
     [workloadFaculty, t],
   );
@@ -102,30 +107,30 @@ export function useFacultyReportController({ filters }: FacultyReportProps) {
   const { totalStudents, totalClasses, avgStudents } = summarizeFacultyWorkload(facultyWorkload);
 
   const filteredFacultyWorkload = (() =>
-      selectedFaculty
-        ? facultyWorkload.filter((facultyItem) => facultyItem.faculty === selectedFaculty)
-        : facultyWorkload)();
+    selectedFaculty
+      ? facultyWorkload.filter((facultyItem) => facultyItem.faculty === selectedFaculty)
+      : facultyWorkload)();
 
   const toggleFacultyFilter = (faculty: string): void => {
     setSelectedFaculty((current) => (current === faculty ? null : faculty));
   };
 
   const rosterExportColumns = (() => [
-      { header: t('faculty.report.colName'), key: 'name' },
-      { header: t('faculty.report.colEmployeeId'), key: 'employeeId' },
-      { header: t('faculty.report.colSpecialization'), key: 'specialization' },
-      { header: t('faculty.report.colStatus'), key: 'status' },
-      { header: t('faculty.report.colQualification'), key: 'qualification' },
-      { header: t('faculty.report.colJoinDate'), key: 'joinDate' },
-      { header: t('faculty.report.colGender'), key: 'gender' },
-    ])() as ExportColumn[];
+    { header: t("faculty.report.colName"), key: "name" },
+    { header: t("faculty.report.colEmployeeId"), key: "employeeId" },
+    { header: t("faculty.report.colSpecialization"), key: "specialization" },
+    { header: t("faculty.report.colStatus"), key: "status" },
+    { header: t("faculty.report.colQualification"), key: "qualification" },
+    { header: t("faculty.report.colJoinDate"), key: "joinDate" },
+    { header: t("faculty.report.colGender"), key: "gender" },
+  ])() as ExportColumn[];
 
   const workloadExportColumns = (() => [
-      { header: t('faculty.report.colFaculty'), key: 'faculty' },
-      { header: t('faculty.report.colClasses'), key: 'classes' },
-      { header: t('faculty.report.colSessions'), key: 'sessions' },
-      { header: t('faculty.report.colStudents'), key: 'totalStudents' },
-    ])() as ExportColumn[];
+    { header: t("faculty.report.colFaculty"), key: "faculty" },
+    { header: t("faculty.report.colClasses"), key: "classes" },
+    { header: t("faculty.report.colSessions"), key: "sessions" },
+    { header: t("faculty.report.colStudents"), key: "totalStudents" },
+  ])() as ExportColumn[];
 
   const resolveRosterExportRows = (): Promise<Record<string, unknown>[]> =>
     resolveFacultyReportExportRows({ search: searchParam, status: statusParam });
@@ -136,17 +141,27 @@ export function useFacultyReportController({ filters }: FacultyReportProps) {
   );
 
   const metricItems = (() => [
-      ...buildFacultyReportMetricItems({
-        t,
-        metrics,
-        reportStatusFilter,
-        onStatusFilterChange: setReportStatusFilter,
-        onDrillDown: drillDownToWork,
-      }),
-      { icon: Users, label: t('faculty.report.totalStudents'), value: totalStudents, accent: 'info' },
-      { icon: Layers, label: t('faculty.report.totalClasses'), value: totalClasses, accent: 'secondary' },
-      { icon: BookOpen, label: t('faculty.report.avgStudentsFaculty'), value: avgStudents, accent: 'success' },
-    ])();
+    ...buildFacultyReportMetricItems({
+      t,
+      metrics,
+      reportStatusFilter,
+      onStatusFilterChange: setReportStatusFilter,
+      onDrillDown: drillDownToWork,
+    }),
+    { icon: Users, label: t("faculty.report.totalStudents"), value: totalStudents, accent: "info" },
+    {
+      icon: Layers,
+      label: t("faculty.report.totalClasses"),
+      value: totalClasses,
+      accent: "secondary",
+    },
+    {
+      icon: BookOpen,
+      label: t("faculty.report.avgStudentsFaculty"),
+      value: avgStudents,
+      accent: "success",
+    },
+  ])();
 
   return {
     t,

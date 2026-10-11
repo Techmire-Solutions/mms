@@ -1,7 +1,7 @@
-import { DEFAULT_BRANDING_SETTINGS } from '@mms/shared';
-import { getBrandingChartPalette } from '@/lib/brandingChartPalette';
-import { getScopedBrandingSettings } from '@/lib/settingsPreviewStore';
-import { PRINT_COLORS, PRINT_NEUTRAL_PALETTE } from '@/lib/printTemplateStyles';
+import { DEFAULT_BRANDING_SETTINGS } from "@mms/shared";
+import { getBrandingChartPalette } from "@/lib/brandingChartPalette";
+import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
+import { PRINT_COLORS, PRINT_NEUTRAL_PALETTE } from "@/lib/printTemplateStyles";
 
 /** Neutral print-canvas colours (not institution-specific). */
 export const PRINT_NEUTRAL = PRINT_NEUTRAL_PALETTE;
@@ -23,8 +23,12 @@ export interface PrintBrandingTokens {
 }
 
 function hexWithAlpha(hex: string, alpha: number): string {
-  let hexValue = hex.replace('#', '').trim();
-  if (hexValue.length === 3) hexValue = hexValue.split('').map((hexDigit) => hexDigit + hexDigit).join('');
+  let hexValue = hex.replace("#", "").trim();
+  if (hexValue.length === 3)
+    hexValue = hexValue
+      .split("")
+      .map((hexDigit) => hexDigit + hexDigit)
+      .join("");
   const red = parseInt(hexValue.slice(0, 2), 16);
   const green = parseInt(hexValue.slice(2, 4), 16);
   const blue = parseInt(hexValue.slice(4, 6), 16);

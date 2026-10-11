@@ -1,9 +1,13 @@
-import { createContactLookupMap, hydrateWorkspaceUserProfile, resolveTenantLoginEmail } from '@mms/shared';
+import {
+  createContactLookupMap,
+  hydrateWorkspaceUserProfile,
+  resolveTenantLoginEmail,
+} from "@mms/shared";
 import {
   findTenantUserRowById,
   upsertTenantUsersBatch,
-} from '../../db/repositories/tenantUserRepository.js';
-import { hashPassword } from './passwordService.js';
+} from "../../db/repositories/tenantUserRepository.js";
+import { hashPassword } from "./passwordService.js";
 import {
   getContactsForUsers,
   getRawUsers,
@@ -11,7 +15,7 @@ import {
   type IncomingUser,
   type PersistedUser,
   type TenantUserRow,
-} from './userServiceShared.js';
+} from "./userServiceShared.js";
 
 export async function getHydratedUsers(options?: {
   includeDeleted?: boolean;
@@ -19,9 +23,7 @@ export async function getHydratedUsers(options?: {
   const users = await getRawUsers(options);
   const contacts = await getContactsForUsers(users);
   const contactMap = createContactLookupMap(contacts);
-  return users.map((user) =>
-    hydrateWorkspaceUserProfile(user, contactMap) as PersistedUser,
-  );
+  return users.map((user) => hydrateWorkspaceUserProfile(user, contactMap) as PersistedUser);
 }
 
 export async function saveUsers(next: PersistedUser[]): Promise<void> {
@@ -35,16 +37,23 @@ export async function saveUsers(next: PersistedUser[]): Promise<void> {
       const temporaryPassword = incoming.temporaryPassword?.trim();
       const passwordHash = temporaryPassword
         ? await hashPassword(temporaryPassword)
-        : typeof incoming.passwordHash === 'string' && incoming.passwordHash
+        : typeof incoming.passwordHash === "string" && incoming.passwordHash
           ? incoming.passwordHash
-          : typeof existing?.passwordHash === 'string'
+          : typeof existing?.passwordHash === "string"
             ? existing.passwordHash
-            : '';
-      const loginEmail = resolveTenantLoginEmail(incoming, typeof incoming.email === 'string' ? incoming.email : undefined)
-        || resolveTenantLoginEmail(existing ?? {}, typeof existing?.email === 'string' ? existing.email : undefined);
+            : "";
+      const loginEmail =
+        resolveTenantLoginEmail(
+          incoming,
+          typeof incoming.email === "string" ? incoming.email : undefined,
+        ) ||
+        resolveTenantLoginEmail(
+          existing ?? {},
+          typeof existing?.email === "string" ? existing.email : undefined,
+        );
       const mustChangePassword = temporaryPassword
         ? incoming.mustChangePassword !== false
-        : incoming.mustChangePassword ?? existing?.mustChangePassword ?? false;
+        : (incoming.mustChangePassword ?? existing?.mustChangePassword ?? false);
       const { temporaryPassword: _temporaryPassword, ...rest } = incoming;
       void _temporaryPassword;
       return {
@@ -68,6 +77,6 @@ export async function getWorkspaceUserRow(userId: string): Promise<PersistedUser
 export async function getLinkedContactId(userId: string): Promise<string | number | null> {
   const user = await findTenantUserRowById(requireTenantSubdomain(), userId);
   const contactId = user?.contactId;
-  if (contactId == null || contactId === '') return null;
+  if (contactId == null || contactId === "") return null;
   return contactId;
 }

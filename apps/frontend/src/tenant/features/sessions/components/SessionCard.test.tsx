@@ -25,9 +25,7 @@ const mockSession: Session = {
   type: "academic",
   startDate: "2025-01-01",
   endDate: "2025-06-30",
-  classes: [
-    { id: "c-1", name: "Hifz A", capacity: 20, enrolledCount: 15 },
-  ],
+  classes: [{ id: "c-1", name: "Hifz A", capacity: 20, enrolledCount: 15 }],
 } as unknown as Session;
 
 const baseProps: SessionCardProps = {
@@ -65,9 +63,7 @@ describe("SessionCard Component", () => {
   });
 
   it("renders selected state when session is in selectedIds", () => {
-    const html = renderToStaticMarkup(
-      <SessionCard {...baseProps} selectedIds={["ses-1"]} />,
-    );
+    const html = renderToStaticMarkup(<SessionCard {...baseProps} selectedIds={["ses-1"]} />);
     expect(html).toContain('data-selected="true"');
     expect(html).toContain("border-primary/50");
   });

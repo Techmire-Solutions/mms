@@ -1,13 +1,13 @@
-import type { Contact } from './contactTypes.js';
+import type { Contact } from "./contactTypes.js";
 
 /** Soft-delete metadata must only be set by dedicated soft-delete helpers. */
 export const CLIENT_SOFT_DELETE_KEYS = [
-  'deletedAt',
-  'deletedBy',
-  'deletionReason',
-  'restoredAt',
-  'restoredBy',
-  'deletedWithCascade',
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
+  "restoredAt",
+  "restoredBy",
+  "deletedWithCascade",
 ] as const;
 
 /** Backwards-compatible alias for contact-specific imports. */
@@ -21,12 +21,14 @@ export function isContactDeleted(contact?: Contact | null): boolean {
 /** Active directory rows — excludes soft-deleted records from Work by default. */
 export function filterActiveContacts(contacts?: Contact[] | null): Contact[] {
   if (!Array.isArray(contacts)) return [];
-  return contacts.filter((contact): contact is Contact => Boolean(contact) && !isContactDeleted(contact));
+  return contacts.filter(
+    (contact): contact is Contact => Boolean(contact) && !isContactDeleted(contact),
+  );
 }
 
 /** Strip client-supplied soft-delete and restore fields from a write payload. */
 export function stripClientSoftDeleteFields<T>(record: T): T {
-  if (!record || typeof record !== 'object') {
+  if (!record || typeof record !== "object") {
     return record;
   }
   const next = { ...(record as Record<string, unknown>) };
@@ -39,4 +41,4 @@ export function stripClientSoftDeleteFields<T>(record: T): T {
 /** Backwards-compatible alias for contact-specific imports. */
 export const stripContactClientSoftDeleteFields = stripClientSoftDeleteFields;
 
-export { isEntityDeleted, filterActiveEntities } from './softDelete.js';
+export { isEntityDeleted, filterActiveEntities } from "./softDelete.js";

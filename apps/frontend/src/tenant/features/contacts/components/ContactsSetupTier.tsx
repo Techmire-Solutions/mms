@@ -12,8 +12,12 @@ import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
 import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
 
-const ContactsSetupPanel = lazy(() => import("@/tenant/features/contacts/components/ContactsSetupPanel"));
-const ContactSyncPanel = lazy(() => import("@/tenant/features/contacts/components/ContactSyncPanel"));
+const ContactsSetupPanel = lazy(
+  () => import("@/tenant/features/contacts/components/ContactsSetupPanel"),
+);
+const ContactSyncPanel = lazy(
+  () => import("@/tenant/features/contacts/components/ContactSyncPanel"),
+);
 
 export interface ContactsSetupTierProps {
   onImport: (list: Contact[]) => void | Promise<void>;
@@ -21,7 +25,7 @@ export interface ContactsSetupTierProps {
   canEditSetup: boolean;
 }
 
-export const ContactsSetupTier = (function ContactsSetupTier({
+export const ContactsSetupTier = function ContactsSetupTier({
   onImport,
   canWrite,
   canEditSetup,
@@ -50,9 +54,7 @@ export const ContactsSetupTier = (function ContactsSetupTier({
   })();
 
   const subTabs = useModuleSetupSubTabs({
-    initialKey: shouldOpenContactsSyncSetup()
-      ? "sync"
-      : settingsSubTabs[0]?.key || "preferences",
+    initialKey: shouldOpenContactsSyncSetup() ? "sync" : settingsSubTabs[0]?.key || "preferences",
     isDirty: (currentKey) => {
       if (currentKey === "preferences") return dirtyRef.current.prefs;
       return false;
@@ -78,9 +80,7 @@ export const ContactsSetupTier = (function ContactsSetupTier({
           <Suspense fallback={<ModulePanelSuspenseFallback />}>
             {subTabs.showPrefs &&
               (canEditSetup ? (
-                <ContactsSetupPanel
-                  onPrefsDirtyChange={setPrefsDirty}
-                />
+                <ContactsSetupPanel onPrefsDirtyChange={setPrefsDirty} />
               ) : (
                 <SetupReadOnlyMessage title={t("contacts.setup.readOnly")} />
               ))}
@@ -107,6 +107,6 @@ export const ContactsSetupTier = (function ContactsSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default ContactsSetupTier;

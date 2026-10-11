@@ -11,12 +11,23 @@ export type { FacultyListContentProps } from "@/tenant/features/faculty/componen
 
 export type FacultyListContentInput = Omit<FacultyListContentProps, "customFieldsById">;
 
-
 export function FacultyListContent(props: FacultyListContentInput): React.JSX.Element {
   const { t } = useTranslation();
-  const { faculty, showDeleted, viewMode, columnRegistry, hasActiveFilters, onClearFilters, onShowActive, canWrite } = props;
+  const {
+    faculty,
+    showDeleted,
+    viewMode,
+    columnRegistry,
+    hasActiveFilters,
+    onClearFilters,
+    onShowActive,
+    canWrite,
+  } = props;
   const items = faculty ?? [];
-  const customFieldsById = React.useMemo(() => buildFacultyCustomFieldsById(columnRegistry), [columnRegistry]);
+  const customFieldsById = React.useMemo(
+    () => buildFacultyCustomFieldsById(columnRegistry),
+    [columnRegistry],
+  );
   const contentProps: FacultyListContentProps = { ...props, faculty: items, customFieldsById };
 
   if (items.length === 0) {
@@ -55,5 +66,3 @@ export function FacultyListContent(props: FacultyListContentInput): React.JSX.El
 
   return <FacultyListDesktopTable {...contentProps} />;
 }
-
-

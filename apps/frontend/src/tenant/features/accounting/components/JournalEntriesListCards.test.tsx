@@ -107,6 +107,6 @@ describe("JournalEntriesListCards Component", () => {
       />,
     );
 
-    expect(html).toContain("data-selected=\"true\"");
+    expect(html).toContain('data-selected="true"');
   });
 });

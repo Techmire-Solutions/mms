@@ -101,7 +101,9 @@ export function CustomReportBuilderPreviewPanel({
             )}
             {aggregate !== "None" && (
               <span className="text-xs font-bold uppercase bg-success/15 text-success px-1.5 py-0.5 rounded-md">
-                {t(`reports.visualizer.op${aggregate === "Average" ? "Avg" : aggregate}` as AppTranslationKey)}
+                {t(
+                  `reports.visualizer.op${aggregate === "Average" ? "Avg" : aggregate}` as AppTranslationKey,
+                )}
               </span>
             )}
           </div>
@@ -128,7 +130,10 @@ export function CustomReportBuilderPreviewPanel({
                 onClick={() =>
                   void exportReportPdf({
                     title: reportName,
-                    sourceColumns: selectedFields.map((f) => ({ header: resolveFieldLabel(f), key: f })),
+                    sourceColumns: selectedFields.map((f) => ({
+                      header: resolveFieldLabel(f),
+                      key: f,
+                    })),
                     rows: previewData as Record<string, unknown>[],
                     filename: reportName,
                     orientation,
@@ -154,9 +159,18 @@ export function CustomReportBuilderPreviewPanel({
         />
 
         {previewData.length > 0 && (
-          <SectionLabel as="div" weight="bold" tracking="wider" className="flex items-center justify-between px-1">
+          <SectionLabel
+            as="div"
+            weight="bold"
+            tracking="wider"
+            className="flex items-center justify-between px-1"
+          >
             <span>{t("reports.builder.autoFetched")}</span>
-            <span>{groupBy ? t("reports.builder.groupedBy", { field: resolveFieldLabel(groupBy) }) : t("reports.builder.flatLayout")}</span>
+            <span>
+              {groupBy
+                ? t("reports.builder.groupedBy", { field: resolveFieldLabel(groupBy) })
+                : t("reports.builder.flatLayout")}
+            </span>
           </SectionLabel>
         )}
       </div>

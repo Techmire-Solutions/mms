@@ -1,9 +1,9 @@
-import React from 'react';
-import { Blocks, ExternalLink, KeyRound, Trash2, UserPlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import { Blocks, ExternalLink, KeyRound, Trash2, UserPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface WorkspaceRowActionsProps {
   subdomain: string;
@@ -12,7 +12,7 @@ interface WorkspaceRowActionsProps {
   busy: boolean;
   deletePending: boolean;
   tenantLink: string;
-  variant?: 'table' | 'card';
+  variant?: "table" | "card";
   onToggle: (enabled: boolean) => void;
   onToggleEmailVerification?: (requireEmailVerification: boolean) => void;
   onOpenModules: () => void;
@@ -28,7 +28,7 @@ export function WorkspaceRowActions({
   busy,
   deletePending,
   tenantLink,
-  variant = 'card',
+  variant = "card",
   onToggle,
   onToggleEmailVerification,
   onOpenModules,
@@ -50,10 +50,10 @@ export function WorkspaceRowActions({
           href={tenantLink}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`${t('platform.openWorkspace')} ${subdomain}`}
+          aria-label={`${t("platform.openWorkspace")} ${subdomain}`}
         >
           <ExternalLink className="w-3.5 h-3.5" aria-hidden />
-          {t('platform.openWorkspace')}
+          {t("platform.openWorkspace")}
         </a>
       </Button>
 
@@ -64,8 +64,8 @@ export function WorkspaceRowActions({
         onClick={onOpenModules}
         icon={Blocks}
         className="min-w-11 text-muted-foreground hover:text-primary hover:bg-primary/10"
-        title={`${t('platform.modulesTitle')} (${subdomain})`}
-        aria-label={`${t('platform.modulesTitle')} (${subdomain})`}
+        title={`${t("platform.modulesTitle")} (${subdomain})`}
+        aria-label={`${t("platform.modulesTitle")} (${subdomain})`}
       />
 
       {onOpenCreateAdmin ? (
@@ -76,8 +76,8 @@ export function WorkspaceRowActions({
           onClick={onOpenCreateAdmin}
           icon={UserPlus}
           className="min-w-11 text-muted-foreground hover:text-success hover:bg-success/10"
-          title={t('platform.tooltipCreateAdmin', { subdomain })}
-          aria-label={t('platform.tooltipCreateAdmin', { subdomain })}
+          title={t("platform.tooltipCreateAdmin", { subdomain })}
+          aria-label={t("platform.tooltipCreateAdmin", { subdomain })}
         />
       ) : null}
 
@@ -89,8 +89,8 @@ export function WorkspaceRowActions({
           onClick={onOpenResetPassword}
           icon={KeyRound}
           className="min-w-11 text-muted-foreground hover:text-warning hover:bg-warning/10"
-          title={t('platform.tooltipResetPassword', { subdomain })}
-          aria-label={t('platform.tooltipResetPassword', { subdomain })}
+          title={t("platform.tooltipResetPassword", { subdomain })}
+          aria-label={t("platform.tooltipResetPassword", { subdomain })}
         />
       ) : null}
 
@@ -102,14 +102,14 @@ export function WorkspaceRowActions({
           onClick={onOpenDelete}
           icon={Trash2}
           className="min-w-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-          title={`${t('platform.deleteWorkspace')} (${subdomain})`}
-          aria-label={`${t('platform.deleteWorkspace')} (${subdomain})`}
+          title={`${t("platform.deleteWorkspace")} (${subdomain})`}
+          aria-label={`${t("platform.deleteWorkspace")} (${subdomain})`}
         />
       ) : null}
     </div>
   );
 
-  if (variant === 'table') {
+  if (variant === "table") {
     return actionButtons;
   }
 
@@ -122,14 +122,14 @@ export function WorkspaceRowActions({
             checked={enabled}
             disabled={busy}
             onCheckedChange={onToggle}
-            aria-label={t('platform.workspaceActive')}
+            aria-label={t("platform.workspaceActive")}
             className="scale-100"
           />
           <Label
             htmlFor={`toggle-${subdomain}`}
             className="text-xs font-bold text-muted-foreground cursor-pointer select-none"
           >
-            {enabled ? t('platform.workspaceActive') : t('platform.workspaceInactive')}
+            {enabled ? t("platform.workspaceActive") : t("platform.workspaceInactive")}
           </Label>
         </div>
 
@@ -140,7 +140,7 @@ export function WorkspaceRowActions({
               checked={Boolean(requireEmailVerification)}
               disabled={busy}
               onCheckedChange={onToggleEmailVerification}
-              aria-label={t('platform.emailVerification')}
+              aria-label={t("platform.emailVerification")}
               className="scale-100"
             />
             <Label
@@ -148,17 +148,14 @@ export function WorkspaceRowActions({
               className="text-xs font-bold text-muted-foreground cursor-pointer select-none"
             >
               {requireEmailVerification
-                ? t('platform.emailVerificationRequired')
-                : t('platform.emailVerificationOptional')}
+                ? t("platform.emailVerificationRequired")
+                : t("platform.emailVerificationOptional")}
             </Label>
           </div>
         )}
       </div>
 
-      <div className="w-full sm:w-auto">
-        {actionButtons}
-      </div>
+      <div className="w-full sm:w-auto">{actionButtons}</div>
     </div>
   );
 }
-

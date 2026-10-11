@@ -79,7 +79,9 @@ export function CollectionRowItem({
             {label}
           </span>
         </div>
-        <span className="font-semibold text-xs text-foreground block leading-relaxed truncate">{value}</span>
+        <span className="font-semibold text-xs text-foreground block leading-relaxed truncate">
+          {value}
+        </span>
       </div>
       {value && (
         <div className="flex max-w-3/5 flex-shrink-0 flex-wrap items-center justify-end gap-1">

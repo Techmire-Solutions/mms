@@ -1,13 +1,13 @@
-import React, { type ReactNode } from 'react';
-import { Edit2, Eye, MoreHorizontal, RotateCcw, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { type ReactNode } from "react";
+import { Edit2, Eye, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 /** Hover-reveal trigger styling shared by Work table/card row action menus. */
 export const MODULE_ROW_ACTIONS_TRIGGER_CLASS =
@@ -45,7 +45,7 @@ export interface ModuleRowActionsMenuProps {
  * delete / restore items; modules inject their own extras (messaging channels)
  * and translated labels, so Contacts and Students no longer fork the menu shell.
  */
-export const ModuleRowActionsMenu = (function ModuleRowActionsMenu({
+export const ModuleRowActionsMenu = function ModuleRowActionsMenu({
   triggerLabel,
   viewLabel,
   editLabel,
@@ -62,7 +62,7 @@ export const ModuleRowActionsMenu = (function ModuleRowActionsMenu({
   extras,
   triggerClassName,
   contentClassName,
-  iconClassName = 'w-4 h-4',
+  iconClassName = "w-4 h-4",
 }: ModuleRowActionsMenuProps): React.JSX.Element {
   return (
     <DropdownMenu>
@@ -73,13 +73,13 @@ export const ModuleRowActionsMenu = (function ModuleRowActionsMenu({
           aria-label={triggerLabel}
           className={
             triggerClassName ??
-            'min-w-11 min-h-11 p-0 flex items-center justify-center rounded-lg border border-border/50 bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shadow-none'
+            "min-w-11 min-h-11 p-0 flex items-center justify-center rounded-lg border border-border/50 bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shadow-none"
           }
         >
           <MoreHorizontal className={iconClassName} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className={contentClassName ?? 'w-44'}>
+      <DropdownMenuContent align="end" className={contentClassName ?? "w-44"}>
         {onView && !hideViewItem && viewLabel ? (
           <DropdownMenuItem onClick={onView}>
             <Eye className="w-3.5 h-3.5 me-2" /> {viewLabel}
@@ -114,5 +114,4 @@ export const ModuleRowActionsMenu = (function ModuleRowActionsMenu({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-});
-
+};

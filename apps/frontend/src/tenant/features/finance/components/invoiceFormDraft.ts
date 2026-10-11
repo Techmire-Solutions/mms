@@ -71,16 +71,17 @@ export function buildInvoiceCreatePayload(
   feeStructures: FeeStructure[],
 ): InvoiceCreateInput {
   const structure = feeStructures.find((item) => item.id === draft.feeStructureId);
-  const lines = (!structure || structure.items.length === 0)
-    ? undefined
-    : structure.items.map((item, index) => ({
-        id: `il-${index + 1}`,
-        feeItemId: item.id,
-        description: item.name,
-        quantity: 1,
-        amount: item.amount,
-        discountAmt: 0,
-      }));
+  const lines =
+    !structure || structure.items.length === 0
+      ? undefined
+      : structure.items.map((item, index) => ({
+          id: `il-${index + 1}`,
+          feeItemId: item.id,
+          description: item.name,
+          quantity: 1,
+          amount: item.amount,
+          discountAmt: 0,
+        }));
 
   return {
     id: invoiceId,

@@ -37,8 +37,14 @@ export const TENANT_APP_ROUTE_ACCESS: Readonly<Record<string, RouteAccessRule>> 
   [ROUTES.tasks]: moduleRoute("tasks"),
   [ROUTES.users]: moduleRoute("users"),
   [ROUTES.profile]: { kind: "open", reason: "the signed-in user's own account" },
-  [ROUTES.notifications]: { kind: "open", reason: "the signed-in user's own alerts; each alert gates its module permission" },
-  [ROUTES.settings]: { kind: "open", reason: "workspace settings; each section gates its own permission" },
+  [ROUTES.notifications]: {
+    kind: "open",
+    reason: "the signed-in user's own alerts; each alert gates its module permission",
+  },
+  [ROUTES.settings]: {
+    kind: "open",
+    reason: "workspace settings; each section gates its own permission",
+  },
 };
 
 /** Most specific rule for a pathname; Home only matches exactly. */

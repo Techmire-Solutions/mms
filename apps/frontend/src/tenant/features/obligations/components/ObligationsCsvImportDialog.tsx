@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  obligationsTransferSchema,
-  type ObligationTransferEntity,
-} from "@mms/shared";
+import { obligationsTransferSchema, type ObligationTransferEntity } from "@mms/shared";
 import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface ObligationsCsvImportDialogProps {

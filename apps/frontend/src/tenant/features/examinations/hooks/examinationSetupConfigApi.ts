@@ -5,14 +5,19 @@ import { normalizeExaminationsModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<ExaminationsModulePreferences>({
   fetchPreferencesFn: async (signal) => {
-    const res = await apiContract.examinations.getPreferences({ query: undefined, extraHeaders: {} });
+    const res = await apiContract.examinations.getPreferences({
+      query: undefined,
+      extraHeaders: {},
+    });
     return (res.body as { preferences: ExaminationsModulePreferences }).preferences;
   },
   savePreferencesFn: async (prefs) => {
     const res = await apiContract.examinations.updatePreferences({ body: prefs });
     return (res.body as { preferences: ExaminationsModulePreferences }).preferences;
   },
-  normalizePrefs: normalizeExaminationsModulePreferences as (prefs: unknown) => ExaminationsModulePreferences,
+  normalizePrefs: normalizeExaminationsModulePreferences as (
+    prefs: unknown,
+  ) => ExaminationsModulePreferences,
 });
 
 export const setExaminationPreferencesMemory = api.setPreferencesMemory;

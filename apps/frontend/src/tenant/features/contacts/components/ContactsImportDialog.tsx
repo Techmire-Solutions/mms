@@ -66,7 +66,10 @@ function ContactsImportDialogBody({
         {apple.result && <AppleContactsImportResult result={apple.result} t={t} />}
 
         {apple.fileError && (
-          <p role="alert" className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-2.5">
+          <p
+            role="alert"
+            className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-2.5"
+          >
             {apple.fileError}
           </p>
         )}

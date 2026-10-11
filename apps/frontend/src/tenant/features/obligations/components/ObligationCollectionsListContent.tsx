@@ -7,7 +7,9 @@ import { ObligationCollectionsListDesktopTable } from "@/tenant/features/obligat
 import type { ObligationCollectionListContentProps } from "@/tenant/features/obligations/components/obligationCollectionListContentShared";
 import { Plus, Receipt } from "lucide-react";
 
-export function ObligationCollectionsListContent(props: ObligationCollectionListContentProps): React.JSX.Element {
+export function ObligationCollectionsListContent(
+  props: ObligationCollectionListContentProps,
+): React.JSX.Element {
   const { t } = useTranslation();
   const { collections, search, typeFilter, canWrite, showDeleted, onAddNew } = props;
 

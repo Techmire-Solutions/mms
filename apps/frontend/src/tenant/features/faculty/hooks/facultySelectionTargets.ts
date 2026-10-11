@@ -24,4 +24,3 @@ export function computeFacultySelectionTargets({
     hasEmail: (member) => Boolean(member.email?.trim()),
   });
 }
-

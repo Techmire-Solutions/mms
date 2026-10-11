@@ -1,14 +1,14 @@
-import React from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import * as TabsPrimitive from '@radix-ui/react-tabs';
-import type { SubTab } from '@/components/ui/SubTabBar';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
+import type { SubTab } from "@/components/ui/SubTabBar";
+import { cn } from "@/lib/utils";
 
 interface FormModalTabsProps<K extends string = string> {
   tabs: readonly SubTab<K>[];
   activeTab: K;
   onTabChange: (key: K) => void;
-  dir?: 'ltr' | 'rtl';
+  dir?: "ltr" | "rtl";
   children: React.ReactNode;
 }
 
@@ -17,7 +17,7 @@ interface FormModalTabsProps<K extends string = string> {
  * viewport — so half-desktop and full-desktop keep the same chrome while the
  * dialog stays max-w-2xl.
  */
-export const FormModalTabs = (function FormModalTabs<K extends string = string>({
+export const FormModalTabs = function FormModalTabs<K extends string = string>({
   tabs,
   activeTab,
   onTabChange,
@@ -57,7 +57,8 @@ export const FormModalTabs = (function FormModalTabs<K extends string = string>(
         {tabs.map((tab) => {
           const active = activeTab === tab.key;
           const Icon = tab.icon;
-          const accessibleLabel = tab.badge !== undefined ? `${tab.label} (${tab.badge})` : tab.label;
+          const accessibleLabel =
+            tab.badge !== undefined ? `${tab.label} (${tab.badge})` : tab.label;
           return (
             <button
               type="button"
@@ -97,8 +98,8 @@ export const FormModalTabs = (function FormModalTabs<K extends string = string>(
                     tab.tone === "destructive"
                       ? "bg-destructive text-destructive-foreground"
                       : active
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground",
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground",
                   )}
                 >
                   {tab.badge}
@@ -125,5 +126,4 @@ export const FormModalTabs = (function FormModalTabs<K extends string = string>(
       </div>
     </TabsPrimitive.Root>
   );
-}) as <K extends string = string>(props: FormModalTabsProps<K>) => React.JSX.Element;
-
+} as <K extends string = string>(props: FormModalTabsProps<K>) => React.JSX.Element;

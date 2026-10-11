@@ -1,4 +1,4 @@
-export { studentRowToRecord } from './studentRepositoryMappers.js';
+export { studentRowToRecord } from "./studentRepositoryMappers.js";
 export {
   hydrateStudentsList,
   listStudentsByWorkspace,
@@ -6,8 +6,8 @@ export {
   findStudentsByIds,
   resolveStudentsByIdentifiers,
   countStudentsByWorkspace,
-} from './studentRepositoryHydrate.js';
-export type { ListStudentsOptions } from './studentRepositoryHydrate.js';
+} from "./studentRepositoryHydrate.js";
+export type { ListStudentsOptions } from "./studentRepositoryHydrate.js";
 export {
   persistStudentTx,
   saveStudent,
@@ -15,8 +15,8 @@ export {
   replaceStudentsForWorkspace,
   bulkEnrollStudentsTx,
   bulkEnrollStudents,
-} from './studentRepositoryPersist.js';
+} from "./studentRepositoryPersist.js";
 export {
   bulkSoftDeleteStudentsSql,
   bulkRestoreStudentsSql,
-} from './studentRepositorySoftDelete.js';
+} from "./studentRepositorySoftDelete.js";

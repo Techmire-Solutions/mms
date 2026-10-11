@@ -3,31 +3,27 @@
  * Product UI labels the primary ops tab with the module name (`nav.*`);
  * `DEFAULT_MODULE_TIER_TAB_LABELS.work` is a seed/fallback string only.
  */
-export const MODULE_TIER_TAB_IDS = ['work', 'reports', 'setup'] as const;
+export const MODULE_TIER_TAB_IDS = ["work", "reports", "setup"] as const;
 
 export type ModuleTierTabId = (typeof MODULE_TIER_TAB_IDS)[number];
 
 /** Pre–Work/Reports/Setup tab ids — migrate on read from storage and contact config. */
 export const LEGACY_MODULE_TIER_TAB_IDS = {
-  operations: 'work',
-  analytics: 'reports',
-  configuration: 'setup',
+  operations: "work",
+  analytics: "reports",
+  configuration: "setup",
 } as const;
 
 export type LegacyModuleTierTabId = keyof typeof LEGACY_MODULE_TIER_TAB_IDS;
 
 /** English seed/fallback labels — product tabs use `nav.*` for the primary ops tab. */
 export const DEFAULT_MODULE_TIER_TAB_LABELS: Record<ModuleTierTabId, string> = {
-  work: 'Work',
-  reports: 'Reports',
-  setup: 'Setup',
+  work: "Work",
+  reports: "Reports",
+  setup: "Setup",
 };
 
-const LEGACY_MODULE_TIER_LABELS = new Set([
-  'Operations',
-  'Analytics',
-  'Configuration',
-]);
+const LEGACY_MODULE_TIER_LABELS = new Set(["Operations", "Analytics", "Configuration"]);
 
 export interface ModuleTierTabLike {
   key: string;
@@ -36,7 +32,7 @@ export interface ModuleTierTabLike {
 }
 
 /** Active tab id when every tier section is collapsed. */
-export const MODULE_TIER_TAB_CLOSED = '' as const;
+export const MODULE_TIER_TAB_CLOSED = "" as const;
 
 /** Maps legacy tier tab ids to canonical ids. */
 export function normalizeModuleTierTabId(id: string): string {
@@ -45,10 +41,7 @@ export function normalizeModuleTierTabId(id: string): string {
 }
 
 /** Keeps persisted/requested tab when visible; otherwise collapsed. */
-export function resolveModuleTierTab(
-  activeTab: string,
-  visibleTabIds: readonly string[],
-): string {
+export function resolveModuleTierTab(activeTab: string, visibleTabIds: readonly string[]): string {
   if (activeTab === MODULE_TIER_TAB_CLOSED) return MODULE_TIER_TAB_CLOSED;
   return visibleTabIds.includes(activeTab) ? activeTab : MODULE_TIER_TAB_CLOSED;
 }

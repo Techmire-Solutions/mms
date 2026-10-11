@@ -1,6 +1,11 @@
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import type { Mujtahid, MujtahidRep, ObligationCollection, ObligationType } from "@/lib/data/obligationsData";
+import type {
+  Mujtahid,
+  MujtahidRep,
+  ObligationCollection,
+  ObligationType,
+} from "@/lib/data/obligationsData";
 import { DEFAULT_CURRENCIES, formatMoney } from "@mms/shared";
 
 export interface ObligationContact {
@@ -60,6 +65,7 @@ export function getObligationCollectionResolvedFields(
 export function formatObligationCollectionAmount(collection: ObligationCollection): string {
   return formatMoney(
     collection.amount,
-    OBLIGATION_COLLECTION_CURRENCIES.find((currency) => currency.id === collection.currency_id)?.code,
+    OBLIGATION_COLLECTION_CURRENCIES.find((currency) => currency.id === collection.currency_id)
+      ?.code,
   );
 }

@@ -10,9 +10,20 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/components/ui/FormPrimitives", () => ({
-  Field: ({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) => (
+  Field: ({
+    label,
+    required,
+    children,
+  }: {
+    label: string;
+    required?: boolean;
+    children: React.ReactNode;
+  }) => (
     <div data-testid="form-field" data-required={required ? "true" : "false"}>
-      <label>{label}{required ? " *" : ""}</label>
+      <label>
+        {label}
+        {required ? " *" : ""}
+      </label>
       {children}
     </div>
   ),

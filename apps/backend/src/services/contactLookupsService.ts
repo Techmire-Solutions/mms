@@ -1,1 +1,1 @@
-export * from '../contacts/use-cases/contactLookupsService.js';
+export * from "../contacts/use-cases/contactLookupsService.js";

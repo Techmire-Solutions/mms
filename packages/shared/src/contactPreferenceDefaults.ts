@@ -1,15 +1,15 @@
 /** Contact preference defaults — stable barrel (constants + relationship pairs + normalize). */
-import type { ContactPreferences } from './contactFieldSchemaTypes.js';
-import { COLOR_PALETTES } from './contactPreferenceConstants.js';
+import type { ContactPreferences } from "./contactFieldSchemaTypes.js";
+import { COLOR_PALETTES } from "./contactPreferenceConstants.js";
 import {
   DEFAULT_RELATIONSHIP_PAIRS,
   deriveRelationshipOptionsFromPairs,
   resolveRelationshipPairs,
   sanitizeRelationshipOptionOrder,
-} from './contactRelationshipPairUtils.js';
+} from "./contactRelationshipPairUtils.js";
 
-export * from './contactPreferenceConstants.js';
-export * from './contactRelationshipPairUtils.js';
+export * from "./contactPreferenceConstants.js";
+export * from "./contactRelationshipPairUtils.js";
 
 export const DEFAULT_CONTACT_PREFERENCES: ContactPreferences = {
   defaultCountry: "",

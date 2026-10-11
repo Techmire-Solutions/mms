@@ -2,11 +2,11 @@ import {
   migrateEmergencyTabToRelationship,
   parseTenantScopedStorageKey,
   type FieldConfig,
-} from '@mms/shared';
-import { eq, sql } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
+} from "@mms/shared";
+import { eq, sql } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
 
 /**
  * Renames contact JSONB `emergencyContacts` → `relationshipContacts` and remaps
@@ -22,7 +22,7 @@ export async function runMigration037(): Promise<void> {
       WHERE table_schema = 'public' AND table_name = 'contacts' AND column_name = 'custom_data'
     `)) as unknown;
     const hasCustomData =
-      typeof colCheck === 'object' && colCheck !== null && 'rowCount' in colCheck
+      typeof colCheck === "object" && colCheck !== null && "rowCount" in colCheck
         ? Number((colCheck as { rowCount?: number }).rowCount ?? 0) > 0
         : Array.isArray(colCheck) && (colCheck as unknown[]).length > 0;
 
@@ -42,7 +42,7 @@ export async function runMigration037(): Promise<void> {
 
     const fieldConfigRows = await tx.select().from(schema.contactFieldConfigs);
     for (const row of fieldConfigRows) {
-      if (!row.config || typeof row.config !== 'object' || Array.isArray(row.config)) continue;
+      if (!row.config || typeof row.config !== "object" || Array.isArray(row.config)) continue;
       const config = row.config as unknown as FieldConfig;
       const migrated = migrateEmergencyTabToRelationship(config);
       if (JSON.stringify(config) === JSON.stringify(migrated)) continue;
@@ -59,8 +59,8 @@ export async function runMigration037(): Promise<void> {
   for (const row of objectRows) {
     const parsed = parseTenantScopedStorageKey(row.key);
     const logicalKey = parsed?.logicalKey ?? row.key;
-    if (logicalKey !== 'contact_field_config') continue;
-    if (!row.data || typeof row.data !== 'object' || Array.isArray(row.data)) continue;
+    if (logicalKey !== "contact_field_config") continue;
+    if (!row.data || typeof row.data !== "object" || Array.isArray(row.data)) continue;
 
     const config = row.data as FieldConfig;
     const migrated = migrateEmergencyTabToRelationship(config);

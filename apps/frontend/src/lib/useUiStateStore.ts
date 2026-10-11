@@ -1,8 +1,8 @@
-import { create } from 'zustand';
-import type { UserUiState } from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
-import { AUTH_PATHS } from '@/lib/apiClientHelpers';
-import { reportClientError } from '@/lib/clientErrorReporting';
+import { create } from "zustand";
+import type { UserUiState } from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
+import { AUTH_PATHS } from "@/lib/apiClientHelpers";
+import { reportClientError } from "@/lib/clientErrorReporting";
 
 interface UiStateStore {
   state: UserUiState;
@@ -44,14 +44,14 @@ export const useUiStateStore = create<UiStateStore>((set, get) => ({
       for (const k in updatesToSend) {
         delete pendingUpdates[k];
       }
-      
+
       try {
-        await apiJson(AUTH_PATHS.uiState, { 
-          method: 'PATCH',
-          body: JSON.stringify({ state: updatesToSend }) 
+        await apiJson(AUTH_PATHS.uiState, {
+          method: "PATCH",
+          body: JSON.stringify({ state: updatesToSend }),
         });
       } catch (error) {
-        reportClientError(error, { context: 'uiState.sync' });
+        reportClientError(error, { context: "uiState.sync" });
         // Note: We could implement a rollback mechanism here if needed
       }
     }, 500); // 500ms debounce
@@ -61,12 +61,14 @@ export const useUiStateStore = create<UiStateStore>((set, get) => ({
 // Utility hook for individual keys
 export function useUiPreference<T>(key: string, defaultValue: T): [T, (val: T) => void] {
   const isInitialized = useUiStateStore((s) => s.isInitialized);
-  const value = useUiStateStore((s) => (s.state[key] !== undefined ? s.state[key] : defaultValue)) as T;
+  const value = useUiStateStore((s) =>
+    s.state[key] !== undefined ? s.state[key] : defaultValue,
+  ) as T;
   const updateState = useUiStateStore((s) => s.updateState);
 
-  const setValue = ((newVal: T) => {
-      updateState(key, newVal);
-    });
+  const setValue = (newVal: T) => {
+    updateState(key, newVal);
+  };
 
   // If not initialized yet, we return the default, but we should not crash.
   // The caller needs to decide if they should render a skeleton, or just use default.

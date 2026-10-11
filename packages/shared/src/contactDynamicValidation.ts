@@ -3,11 +3,7 @@ import { translateApp, type AppTranslationKey } from "./appTranslations.js";
 import { canViewContactField, canViewContactTab } from "./contactFieldAccess.js";
 import { isContactCustomCollectionTab } from "./contactEnabledTabs.js";
 import { buildCustomFieldSchema } from "./contactFieldValidation.js";
-import {
-  relationshipSchema,
-  activitySchema,
-  attachmentSchema,
-} from "./contactNestedSchemas.js";
+import { relationshipSchema, activitySchema, attachmentSchema } from "./contactNestedSchemas.js";
 import type { FieldConfig, FieldDefinition } from "./contactTypes.js";
 
 const REQUIRED_TAB_I18N: Partial<Record<string, AppTranslationKey>> = {

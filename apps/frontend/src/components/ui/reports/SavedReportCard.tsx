@@ -19,7 +19,11 @@ export interface SavedReportCardProps {
   onDelete: (id: string) => void;
 }
 
-export function SavedReportCard({ report, onRun, onDelete }: SavedReportCardProps): React.JSX.Element {
+export function SavedReportCard({
+  report,
+  onRun,
+  onDelete,
+}: SavedReportCardProps): React.JSX.Element {
   const { t } = useTranslation();
   const dateFormat = useDateFormat();
   const reducedMotion = useReducedMotion();

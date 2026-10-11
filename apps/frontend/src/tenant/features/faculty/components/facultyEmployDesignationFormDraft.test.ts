@@ -22,7 +22,11 @@ describe("facultyEmployDesignationFormDraft", () => {
   it("picks open active row as primary", () => {
     const rows = [
       newEmployDesignationFormRow({ designationId: "a", employDesignationStatus: "inactive" }),
-      newEmployDesignationFormRow({ designationId: "b", employDesignationStatus: "active", designationEndDate: null }),
+      newEmployDesignationFormRow({
+        designationId: "b",
+        employDesignationStatus: "active",
+        designationEndDate: null,
+      }),
     ];
     expect(pickPrimaryEmployDesignationRow(rows)?.designationId).toBe("b");
   });

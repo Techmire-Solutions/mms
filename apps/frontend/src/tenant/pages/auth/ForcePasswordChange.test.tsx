@@ -1,8 +1,8 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import ForcePasswordChange from './ForcePasswordChange';
-import { ROUTES } from '@/lib/config/routes';
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import ForcePasswordChange from "./ForcePasswordChange";
+import { ROUTES } from "@/lib/config/routes";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -10,11 +10,11 @@ const mockNavigate = vi.fn();
 const mockLogout = vi.fn();
 const mockChangePassword = vi.fn();
 
-vi.mock('react-router-dom', () => ({
+vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock('@/tenant/components/AuthLayout', () => ({
+vi.mock("@/tenant/components/AuthLayout", () => ({
   default: ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div data-testid="auth-layout">
       <h1>{title}</h1>
@@ -23,19 +23,19 @@ vi.mock('@/tenant/components/AuthLayout', () => ({
   ),
 }));
 
-vi.mock('@/lib/contexts/AuthContext', () => ({
+vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => ({
     logout: mockLogout,
   }),
 }));
 
-vi.mock('@/tenant/hooks/useGlobalSettings', () => ({
+vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
   useGlobalSettings: () => ({
-    passwordPolicy: 'strong',
+    passwordPolicy: "strong",
   }),
 }));
 
-vi.mock('@/lib/api', () => ({
+vi.mock("@/lib/api", () => ({
   apiContract: {
     auth: {
       changePassword: (...args: unknown[]) => mockChangePassword(...args),
@@ -43,33 +43,33 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        'account.forcePasswordTitle': 'Force Password Change',
-        'account.forcePasswordBody': 'You must change your password before continuing.',
-        'account.currentPassword': 'Current Password',
-        'account.newPassword': 'New Password',
-        'account.confirmPassword': 'Confirm Password',
-        'account.forcePasswordSubmit': 'Change Password',
-        'account.passwordMismatch': 'New passwords do not match',
-        'account.wrongPassword': 'Wrong current password',
-        'auth.passwordRequired': 'Password is required',
-        'global.passwordPolicyErrorMin12': 'Password must be at least 12 characters.',
-        'entry.productName': 'MMS',
-        'common.loading': 'Loading...',
+        "account.forcePasswordTitle": "Force Password Change",
+        "account.forcePasswordBody": "You must change your password before continuing.",
+        "account.currentPassword": "Current Password",
+        "account.newPassword": "New Password",
+        "account.confirmPassword": "Confirm Password",
+        "account.forcePasswordSubmit": "Change Password",
+        "account.passwordMismatch": "New passwords do not match",
+        "account.wrongPassword": "Wrong current password",
+        "auth.passwordRequired": "Password is required",
+        "global.passwordPolicyErrorMin12": "Password must be at least 12 characters.",
+        "entry.productName": "MMS",
+        "common.loading": "Loading...",
       };
       return translations[key] ?? key;
     },
   }),
 }));
 
-describe('ForcePasswordChange', () => {
+describe("ForcePasswordChange", () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
     mockNavigate.mockReset();
     mockLogout.mockReset();
@@ -87,35 +87,35 @@ describe('ForcePasswordChange', () => {
   const changeInput = (input: HTMLInputElement, value: string) => {
     const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
       window.HTMLInputElement.prototype,
-      'value',
+      "value",
     )?.set;
     nativeInputValueSetter?.call(input, value);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
-  it('renders all password fields and warning banner', async () => {
+  it("renders all password fields and warning banner", async () => {
     const root = await render();
 
-    expect(container.querySelector('#current-password')).not.toBeNull();
-    expect(container.querySelector('#new-password')).not.toBeNull();
-    expect(container.querySelector('#confirm-password')).not.toBeNull();
-    expect(container.textContent).toContain('You must change your password before continuing.');
+    expect(container.querySelector("#current-password")).not.toBeNull();
+    expect(container.querySelector("#new-password")).not.toBeNull();
+    expect(container.querySelector("#confirm-password")).not.toBeNull();
+    expect(container.textContent).toContain("You must change your password before continuing.");
 
     act(() => {
       root.unmount();
     });
   });
 
-  it('validates empty fields on submit', async () => {
+  it("validates empty fields on submit", async () => {
     const root = await render();
-    const form = container.querySelector('form');
+    const form = container.querySelector("form");
 
     await act(async () => {
-      form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
-    expect(container.textContent).toContain('Password is required');
+    expect(container.textContent).toContain("Password is required");
     expect(mockChangePassword).not.toHaveBeenCalled();
 
     act(() => {
@@ -123,24 +123,24 @@ describe('ForcePasswordChange', () => {
     });
   });
 
-  it('validates password mismatch', async () => {
+  it("validates password mismatch", async () => {
     const root = await render();
-    const currentInput = container.querySelector('#current-password') as HTMLInputElement;
-    const newInput = container.querySelector('#new-password') as HTMLInputElement;
-    const confirmInput = container.querySelector('#confirm-password') as HTMLInputElement;
+    const currentInput = container.querySelector("#current-password") as HTMLInputElement;
+    const newInput = container.querySelector("#new-password") as HTMLInputElement;
+    const confirmInput = container.querySelector("#confirm-password") as HTMLInputElement;
 
     act(() => {
-      changeInput(currentInput, 'OldPass123!');
-      changeInput(newInput, 'NewPassword123!@#');
-      changeInput(confirmInput, 'Different123!@#');
+      changeInput(currentInput, "OldPass123!");
+      changeInput(newInput, "NewPassword123!@#");
+      changeInput(confirmInput, "Different123!@#");
     });
 
-    const form = container.querySelector('form');
+    const form = container.querySelector("form");
     await act(async () => {
-      form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
-    expect(container.textContent).toContain('New passwords do not match');
+    expect(container.textContent).toContain("New passwords do not match");
     expect(mockChangePassword).not.toHaveBeenCalled();
 
     act(() => {
@@ -148,24 +148,24 @@ describe('ForcePasswordChange', () => {
     });
   });
 
-  it('validates password policy compliance', async () => {
+  it("validates password policy compliance", async () => {
     const root = await render();
-    const currentInput = container.querySelector('#current-password') as HTMLInputElement;
-    const newInput = container.querySelector('#new-password') as HTMLInputElement;
-    const confirmInput = container.querySelector('#confirm-password') as HTMLInputElement;
+    const currentInput = container.querySelector("#current-password") as HTMLInputElement;
+    const newInput = container.querySelector("#new-password") as HTMLInputElement;
+    const confirmInput = container.querySelector("#confirm-password") as HTMLInputElement;
 
     act(() => {
-      changeInput(currentInput, 'OldPass123!');
-      changeInput(newInput, 'Short1!');
-      changeInput(confirmInput, 'Short1!');
+      changeInput(currentInput, "OldPass123!");
+      changeInput(newInput, "Short1!");
+      changeInput(confirmInput, "Short1!");
     });
 
-    const form = container.querySelector('form');
+    const form = container.querySelector("form");
     await act(async () => {
-      form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
-    expect(container.textContent).toContain('Password must be at least 12 characters.');
+    expect(container.textContent).toContain("Password must be at least 12 characters.");
     expect(mockChangePassword).not.toHaveBeenCalled();
 
     act(() => {
@@ -173,32 +173,32 @@ describe('ForcePasswordChange', () => {
     });
   });
 
-  it('submits valid password and navigates to login with state', async () => {
+  it("submits valid password and navigates to login with state", async () => {
     mockChangePassword.mockResolvedValueOnce({
       status: 200,
       body: { success: true },
     });
 
     const root = await render();
-    const currentInput = container.querySelector('#current-password') as HTMLInputElement;
-    const newInput = container.querySelector('#new-password') as HTMLInputElement;
-    const confirmInput = container.querySelector('#confirm-password') as HTMLInputElement;
+    const currentInput = container.querySelector("#current-password") as HTMLInputElement;
+    const newInput = container.querySelector("#new-password") as HTMLInputElement;
+    const confirmInput = container.querySelector("#confirm-password") as HTMLInputElement;
 
     act(() => {
-      changeInput(currentInput, 'OldPassword123!');
-      changeInput(newInput, 'StrongPassword123!@#');
-      changeInput(confirmInput, 'StrongPassword123!@#');
+      changeInput(currentInput, "OldPassword123!");
+      changeInput(newInput, "StrongPassword123!@#");
+      changeInput(confirmInput, "StrongPassword123!@#");
     });
 
-    const form = container.querySelector('form');
+    const form = container.querySelector("form");
     await act(async () => {
-      form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
     expect(mockChangePassword).toHaveBeenCalledWith({
       body: {
-        currentPassword: 'OldPassword123!',
-        newPassword: 'StrongPassword123!@#',
+        currentPassword: "OldPassword123!",
+        newPassword: "StrongPassword123!@#",
       },
     });
     expect(mockLogout).toHaveBeenCalledWith(false);
@@ -212,29 +212,29 @@ describe('ForcePasswordChange', () => {
     });
   });
 
-  it('displays error banner when changePassword returns non-200', async () => {
+  it("displays error banner when changePassword returns non-200", async () => {
     mockChangePassword.mockResolvedValueOnce({
       status: 400,
-      body: { message: 'Current password is incorrect' },
+      body: { message: "Current password is incorrect" },
     });
 
     const root = await render();
-    const currentInput = container.querySelector('#current-password') as HTMLInputElement;
-    const newInput = container.querySelector('#new-password') as HTMLInputElement;
-    const confirmInput = container.querySelector('#confirm-password') as HTMLInputElement;
+    const currentInput = container.querySelector("#current-password") as HTMLInputElement;
+    const newInput = container.querySelector("#new-password") as HTMLInputElement;
+    const confirmInput = container.querySelector("#confirm-password") as HTMLInputElement;
 
     act(() => {
-      changeInput(currentInput, 'WrongOldPassword123!');
-      changeInput(newInput, 'StrongPassword123!@#');
-      changeInput(confirmInput, 'StrongPassword123!@#');
+      changeInput(currentInput, "WrongOldPassword123!");
+      changeInput(newInput, "StrongPassword123!@#");
+      changeInput(confirmInput, "StrongPassword123!@#");
     });
 
-    const form = container.querySelector('form');
+    const form = container.querySelector("form");
     await act(async () => {
-      form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
-    expect(container.textContent).toContain('Current password is incorrect');
+    expect(container.textContent).toContain("Current password is incorrect");
     expect(mockLogout).not.toHaveBeenCalled();
 
     act(() => {

@@ -62,9 +62,7 @@ describe("EntityDescriptorSections", () => {
   });
 
   it("given no descriptor, should render nothing", () => {
-    const html = renderToStaticMarkup(
-      <EntityDescriptorSections entity={sampleEntity} />,
-    );
+    const html = renderToStaticMarkup(<EntityDescriptorSections entity={sampleEntity} />);
     expect(html).toBe("");
   });
 });

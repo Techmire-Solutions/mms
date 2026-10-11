@@ -119,10 +119,7 @@ export function EditableMultiSelect({
             state.setHighlightedIndex(
               (prev) => (prev - 1 + state.filteredOptions.length) % state.filteredOptions.length,
             );
-          } else if (
-            event.key === "Enter" &&
-            (event.target as HTMLElement).tagName !== "INPUT"
-          ) {
+          } else if (event.key === "Enter" && (event.target as HTMLElement).tagName !== "INPUT") {
             const highlighted = state.filteredOptions[state.highlightedIndex];
             if (highlighted !== undefined) {
               event.preventDefault();

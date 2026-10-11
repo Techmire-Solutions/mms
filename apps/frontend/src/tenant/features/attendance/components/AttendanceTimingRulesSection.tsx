@@ -55,7 +55,9 @@ export function AttendanceTimingRulesSection({
                 onChange={(event) => upd("lateThresholdMins", Number(event.target.value))}
                 className={cn(FORM_INPUT, "w-24 text-center")}
               />
-              <span className="text-xs text-muted-foreground">{t("attendance.settings.minutesShort")}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("attendance.settings.minutesShort")}
+              </span>
             </div>
           </Field>
 
@@ -76,7 +78,9 @@ export function AttendanceTimingRulesSection({
                 onChange={(event) => upd("autoAbsentAfterMins", Number(event.target.value))}
                 className={cn(FORM_INPUT, "w-24 text-center")}
               />
-              <span className="text-xs text-muted-foreground">{t("attendance.settings.minutesShort")}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("attendance.settings.minutesShort")}
+              </span>
             </div>
           </Field>
         </div>

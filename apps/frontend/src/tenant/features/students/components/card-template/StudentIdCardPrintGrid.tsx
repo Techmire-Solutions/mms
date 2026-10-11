@@ -1,10 +1,10 @@
-import React, { type RefObject, type JSX } from 'react';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { StudentCardTemplate } from '../../lib/studentCardTemplateTypes';
-import { StudentCardPrintPreview } from './StudentCardPrintPreview';
-import { StudentIdCardFlipItem } from './StudentIdCardFlipItem';
-import type { StudentIdCardItem } from '../StudentIdCardModal';
-import type { StudentCardPrintMode } from './StudentIdCardPrintControlsBar';
+import React, { type RefObject, type JSX } from "react";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { StudentCardTemplate } from "../../lib/studentCardTemplateTypes";
+import { StudentCardPrintPreview } from "./StudentCardPrintPreview";
+import { StudentIdCardFlipItem } from "./StudentIdCardFlipItem";
+import type { StudentIdCardItem } from "../StudentIdCardModal";
+import type { StudentCardPrintMode } from "./StudentIdCardPrintControlsBar";
 
 export interface StudentIdCardPrintGridProps {
   printAreaRef: RefObject<HTMLDivElement | null>;
@@ -38,7 +38,7 @@ export function StudentIdCardPrintGrid({
       className="id-card-print-container grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-dialog-scroll overflow-y-auto p-2 print:grid-cols-2 print:gap-3 print:max-h-none print:overflow-visible print:p-0"
     >
       {items.map(({ student, sessionNames, guardianName, emergencyPhone, bloodGroup }) => {
-        if (printMode === 'both') {
+        if (printMode === "both") {
           return (
             <React.Fragment key={student.id}>
               {/* Front Side */}
@@ -55,7 +55,7 @@ export function StudentIdCardPrintGrid({
                   className={cutGuideClass}
                 />
                 <span className="absolute top-1.5 end-2 text-4xs font-bold uppercase tracking-wider text-muted-foreground print:hidden">
-                  {t('students.idCard.frontSide')}
+                  {t("students.idCard.frontSide")}
                 </span>
               </div>
 
@@ -73,7 +73,7 @@ export function StudentIdCardPrintGrid({
                   className={cutGuideClass}
                 />
                 <span className="absolute top-1.5 end-2 text-4xs font-bold uppercase tracking-wider text-muted-foreground print:hidden">
-                  {t('students.idCard.backSide')}
+                  {t("students.idCard.backSide")}
                 </span>
               </div>
             </React.Fragment>
@@ -81,7 +81,7 @@ export function StudentIdCardPrintGrid({
         }
 
         const isFlipped =
-          printMode === 'back'
+          printMode === "back"
             ? !flippedCards[student.id]
             : Boolean(flippedCards[student.id] !== globalFlipped);
 

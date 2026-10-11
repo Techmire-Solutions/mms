@@ -9,7 +9,7 @@ This document records the architectural standards, conventions, and design decis
 - **Status:** Accepted & Enforced
 - **Date:** 2026-09-24 (ceiling revised from 200 to 300 to match the `check:code-norms.mjs` ratchet)
 - **Context:** Large monolithic source files decrease readability, complicate git diffs, impair testability, and increase cognitive load.
-- **Decision:** 
+- **Decision:**
   1. A strict hard cap of 300 lines of code (LOC) is established for all source files (`.ts`, `.tsx`, `.js`), machine-enforced by `pnpm run check:code-norms`.
   2. When any file approaches or exceeds 300 LOC, developers and agentic workflows must proactively decompose logic into dedicated sub-components, custom hooks, use-case interactors, or pure utility services before adding new features. New frontend shells should aim for ≤220 LOC.
   3. Stable barrel exports must be maintained so external consumers do not churn.
@@ -109,7 +109,7 @@ This document records the architectural standards, conventions, and design decis
 - **Status:** Accepted & Enforced
 - **Date:** 2026-09-24
 - **Context:** `apps/backend/src/db/preparedStatements.ts` had grown to 329 LOC with duplicated SQL prepare boilerplate and loose `any` typing across query builders, statement holders, and client arguments.
-- **Decision:** 
+- **Decision:**
   1. Decomposed column selections into `apps/backend/src/db/preparedColumns.ts` (102 LOC) to separate projection metadata from statement execution mechanics.
   2. Preserved public column exports in `preparedStatements.ts` as a stable barrel facade to prevent breaking changes in repository consumers.
   3. Eliminated all `any` annotations using strongly typed `PreparedLookupStatement<TRow>` matching table `$inferSelect` types.
@@ -118,3 +118,17 @@ This document records the architectural standards, conventions, and design decis
   6. Ratcheted down repository-wide `any` baseline from 64 to 51 and files over ceiling from 79 to 78.
 - **Consequences:** Strictly typed database read path, zero regressions in hot-path queries, reduced cognitive overhead, and machine-enforced compliance with the 300 LOC hard ceiling.
 
+---
+
+## ADR-009: Prettier Owns Formatting (enforced)
+
+- **Status:** Accepted & Enforced
+- **Date:** 2026-10-11
+- **Context:** `.prettierrc.json` and `.prettierignore` were committed but Prettier was never installed, so formatting was unenforced and the editor hook (`.cursor/hooks/format-edited-file.sh`) silently no-opped.
+- **Decision:**
+  1. `prettier` and `eslint-config-prettier` are root devDependencies; `pnpm format` (write) and `pnpm format:check` (verify) are root scripts.
+  2. `eslint-config-prettier/flat` is registered last in every `eslint.config.js` (frontend, backend, `@mms/shared`, e2e) so ESLint owns no stylistic rules.
+  3. `.prettierignore` excludes agent/scratch trees (`.agent/`, `.cursor/`, `.claude/`, `.commandcode/`, `.superpowers/`, `docs/`) so the tri-mirror rule/skill corpus stays byte-identical for `verify-rules-integrity.mjs`, and the unified translation dictionaries (`packages/shared/src/appTranslations*.ts`, the ADR-001 exemption) which a line-based i18n parity checker (`scripts/i18n/check-translations.ts`) parses one `"key": "value"` per line.
+  4. `pnpm format:check` gates the `typecheck-lint` CI job.
+  5. **ADR-004 authorization recorded:** this change adds root dependencies and edits `.github/workflows/ci.yml` (both Protected Zones); explicit authorization was granted by the project owner for the remediation program of 2026-10-11.
+- **Consequences:** Consistent formatting repo-wide, machine-enforced in CI; the one-time reformat landed as an isolated commit.

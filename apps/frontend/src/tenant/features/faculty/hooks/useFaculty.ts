@@ -1,7 +1,4 @@
-export type {
-  Faculty,
-  FacultyRecord,
-} from '@/tenant/features/faculty/hooks/facultyQueryShared';
+export type { Faculty, FacultyRecord } from "@/tenant/features/faculty/hooks/facultyQueryShared";
 
 export {
   FACULTY_API,
@@ -17,11 +14,9 @@ export {
   sameFacultyListFilters,
   facultyListQueryKeyParams,
   facultyPaginatedQueryKey,
-} from '@/tenant/features/faculty/hooks/facultyQueryShared';
+} from "@/tenant/features/faculty/hooks/facultyQueryShared";
 
-export {
-  useFacultyMutations,
-} from '@/tenant/features/faculty/hooks/useFacultyMutations';
+export { useFacultyMutations } from "@/tenant/features/faculty/hooks/useFacultyMutations";
 
 export {
   fetchAllFacultyForQuery,
@@ -35,5 +30,4 @@ export {
   useFacultyWidgetAggregates,
   checkFacultyRegistrationDuplicate,
   migrateFacultyEmployeeIds,
-} from '@/tenant/features/faculty/hooks/useFacultyQueries';
-
+} from "@/tenant/features/faculty/hooks/useFacultyQueries";

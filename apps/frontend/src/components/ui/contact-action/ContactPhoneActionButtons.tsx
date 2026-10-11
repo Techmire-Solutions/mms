@@ -2,10 +2,7 @@ import React from "react";
 import { Phone, MessageCircle, MessageSquare } from "lucide-react";
 import { MESSAGING_ICON_BTN_TONES } from "@/components/ui/messagingActionStyles";
 import { cn } from "@/lib/utils";
-import {
-  ActionCopyButton,
-  ActionIconButton,
-} from "./contactActionShared";
+import { ActionCopyButton, ActionIconButton } from "./contactActionShared";
 
 export interface ContactPhoneActionButtonsProps {
   canCall: boolean;
@@ -59,7 +56,7 @@ export function ContactPhoneActionButtons({
           icon={Phone}
           label={callLabel}
           tooltipText={callLabel}
-          href={onCall ? undefined : (telHref || undefined)}
+          href={onCall ? undefined : telHref || undefined}
           toneClass={MESSAGING_ICON_BTN_TONES.call}
           onClick={onCall}
         />
@@ -69,7 +66,7 @@ export function ContactPhoneActionButtons({
           icon={MessageCircle}
           label={waLabel}
           tooltipText={waLabel}
-          href={onWhatsApp ? undefined : (waHref || undefined)}
+          href={onWhatsApp ? undefined : waHref || undefined}
           target="_blank"
           rel="noopener noreferrer"
           toneClass={MESSAGING_ICON_BTN_TONES.whatsapp}
@@ -81,7 +78,7 @@ export function ContactPhoneActionButtons({
           icon={MessageSquare}
           label={smsLabel}
           tooltipText={smsLabel}
-          href={onSms ? undefined : (smsHref || undefined)}
+          href={onSms ? undefined : smsHref || undefined}
           toneClass={MESSAGING_ICON_BTN_TONES.sms}
           onClick={onSms}
         />

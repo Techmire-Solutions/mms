@@ -98,7 +98,8 @@ export function StepTransactionForm({
               value={form.fiscal_year || ""}
               onChange={(fiscalYearValue) => {
                 const selected = (fiscalYears || []).find(
-                  (fiscalYear) => fiscalYear.id === fiscalYearValue || fiscalYear.label === fiscalYearValue,
+                  (fiscalYear) =>
+                    fiscalYear.id === fiscalYearValue || fiscalYear.label === fiscalYearValue,
                 );
                 setForm((prev) => ({
                   ...prev,
@@ -140,7 +141,9 @@ export function StepTransactionForm({
           leg1={leg1}
           leg2={leg2}
           form={form}
-          onAccountChange={(field, accountId) => setForm((prev) => ({ ...prev, [field]: accountId }))}
+          onAccountChange={(field, accountId) =>
+            setForm((prev) => ({ ...prev, [field]: accountId }))
+          }
           canAddAccount={canAddAccount}
           onOpenAddAccount={onOpenAddAccount}
           showLowBalanceWarning={showLowBalanceWarning}

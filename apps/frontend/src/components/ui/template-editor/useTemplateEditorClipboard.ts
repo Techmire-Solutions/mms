@@ -14,8 +14,8 @@ export interface UseTemplateEditorClipboardOptions<TPayload = Record<string, unk
   setSelectedIds: Dispatch<SetStateAction<string[]>>;
   commitUpdate: (
     updateFn: (
-      elements: TemplateElement<keyof TPayload & string>[]
-    ) => TemplateElement<keyof TPayload & string>[]
+      elements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
   size: PageSizeInfo;
 }

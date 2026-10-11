@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import type { Message } from '@mms/shared';
+import React, { useState } from "react";
+import type { Message } from "@mms/shared";
 import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { notify } from '@/lib/notify';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { useTranslation } from '@/hooks/useTranslation';
-import { MessagingListCardItem } from './MessagingListCardItem';
-import { type MessagingSelectedLogsMap } from './MessagingWorkTier';
+import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { notify } from "@/lib/notify";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useTranslation } from "@/hooks/useTranslation";
+import { MessagingListCardItem } from "./MessagingListCardItem";
+import { type MessagingSelectedLogsMap } from "./MessagingWorkTier";
 
 export interface MessagingListCardsProps {
   logs: Message[];
@@ -27,7 +27,7 @@ export interface MessagingListCardsProps {
   onFilterContact?: (name: string) => void;
 }
 
-export const MessagingListCards = (function MessagingListCards({
+export const MessagingListCards = function MessagingListCards({
   logs,
   selectedIds,
   allVisibleSelected,
@@ -49,17 +49,17 @@ export const MessagingListCards = (function MessagingListCards({
   const reducedMotion = useReducedMotion();
   const [copiedLogId, setCopiedLogId] = useState<string | null>(null);
 
-  const handleCopyBody = (async (e: React.MouseEvent, log: Message): Promise<void> => {
-      e.stopPropagation();
-      try {
-        await navigator.clipboard.writeText(log.body);
-        setCopiedLogId(String(log.id));
-        notify.success(t('contacts.table.copied'));
-        setTimeout(() => setCopiedLogId(null), 2000);
-      } catch {
-        notify.error(t('messaging.loadFailedHint'));
-      }
-    });
+  const handleCopyBody = async (e: React.MouseEvent, log: Message): Promise<void> => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(log.body);
+      setCopiedLogId(String(log.id));
+      notify.success(t("contacts.table.copied"));
+      setTimeout(() => setCopiedLogId(null), 2000);
+    } catch {
+      notify.error(t("messaging.loadFailedHint"));
+    }
+  };
 
   const selectedIdsArray = Object.keys(selectedIds).filter((k) => selectedIds[k]);
 
@@ -71,8 +71,8 @@ export const MessagingListCards = (function MessagingListCards({
         onSelectAll={() => onToggleAllVisible(!allVisibleSelected)}
         allSelected={allVisibleSelected}
         someSelected={someVisibleSelected}
-        selectAllLabel={t('messaging.selectAllVisible')}
-        deselectAllLabel={t('common.deselect')}
+        selectAllLabel={t("messaging.selectAllVisible")}
+        deselectAllLabel={t("common.deselect")}
         selectedCountLabel={selectedCountLabel as string}
         pageCountLabel={pageCountLabel as string}
         checkboxIdPrefix="messaging-cards"
@@ -97,5 +97,4 @@ export const MessagingListCards = (function MessagingListCards({
       />
     </div>
   );
-});
-
+};

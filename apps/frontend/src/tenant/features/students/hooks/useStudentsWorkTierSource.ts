@@ -29,7 +29,9 @@ export interface BuildStudentsWorkSourceParams {
   bulkStatusPending: boolean;
 }
 
-export function buildStudentsWorkSource(params: BuildStudentsWorkSourceParams): StudentsWorkTierSource {
+export function buildStudentsWorkSource(
+  params: BuildStudentsWorkSourceParams,
+): StudentsWorkTierSource {
   const {
     directory,
     formState,
@@ -93,7 +95,10 @@ export function buildStudentsWorkSource(params: BuildStudentsWorkSourceParams): 
     openEditForm: formState.openEditForm,
     handleRestore: workActions.handleRestore,
     handleBulkStatusChange: workActions.handleBulkStatusChange,
-    handleBulkEnroll: async (payload: { sessionIds: string[]; mode: StudentsBulkEnrollBody["mode"] }) => {
+    handleBulkEnroll: async (payload: {
+      sessionIds: string[];
+      mode: StudentsBulkEnrollBody["mode"];
+    }) => {
       try {
         await workActions.handleBulkEnroll(directory.selectedIds, payload);
         directory.clearSelection();

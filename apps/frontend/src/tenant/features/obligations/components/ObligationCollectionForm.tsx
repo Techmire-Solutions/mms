@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Receipt } from "lucide-react";
 import {
   generateReceiptNo,
-  type ObligationCollection, type ObligationType, type WakalaType, type MujtahidRep, type Mujtahid
+  type ObligationCollection,
+  type ObligationType,
+  type WakalaType,
+  type MujtahidRep,
+  type Mujtahid,
 } from "@/lib/data/obligationsData";
 import { todayISO, type AppTranslationKey } from "@mms/shared";
 import { FormModal } from "@/components/ui/FormModal";
@@ -71,7 +75,9 @@ export function ObligationCollectionForm({
     receipt_no: generateReceiptNo(existingCollections, settings),
     received_by: authUser?.id || "",
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof ObligationCollectionFormState, AppTranslationKey>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof ObligationCollectionFormState, AppTranslationKey>>
+  >({});
   const [submitting, setSubmitting] = useState(false);
 
   const catalogCreate = useObligationCollectionCatalogQuickCreate({
@@ -84,11 +90,12 @@ export function ObligationCollectionForm({
     onChangeMujtahids,
     onChangeReps,
     onChangeWakala,
-    onSelectType: (obligationTypeId) => setForm((prev) => ({
-      ...prev,
-      obligation_type_id: obligationTypeId,
-      mujtahid_representative_id: "",
-    })),
+    onSelectType: (obligationTypeId) =>
+      setForm((prev) => ({
+        ...prev,
+        obligation_type_id: obligationTypeId,
+        mujtahid_representative_id: "",
+      })),
     onSelectRep: (repId) => setForm((prev) => ({ ...prev, mujtahid_representative_id: repId })),
   });
 
@@ -113,7 +120,10 @@ export function ObligationCollectionForm({
 
   const handleSave = async (): Promise<void> => {
     const validationErrors = validateObligationCollectionForm(form);
-    if (Object.keys(validationErrors).length) { setErrors(validationErrors); return; }
+    if (Object.keys(validationErrors).length) {
+      setErrors(validationErrors);
+      return;
+    }
     setSubmitting(true);
     try {
       await onSave(toObligationCollectionPayload(form));

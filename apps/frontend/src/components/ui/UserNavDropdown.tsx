@@ -1,7 +1,7 @@
-import React from 'react';
-import { ChevronDown, LogOut } from 'lucide-react';
-import { UserAvatar } from '@/components/ui/UserAvatar';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { ChevronDown, LogOut } from "lucide-react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,8 +9,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 export interface UserNavDropdownProps {
   name?: string | null;
@@ -32,7 +32,7 @@ export interface UserNavDropdownProps {
  * Follows BiDi/RTL layout, 44x44px touch targets, and semantic design tokens.
  */
 export function UserNavDropdown({
-  name = 'User',
+  name = "User",
   email,
   subtitle,
   compact = false,
@@ -45,7 +45,7 @@ export function UserNavDropdown({
   contentClassName,
   children,
 }: UserNavDropdownProps): React.JSX.Element {
-  const displayName = name || 'User';
+  const displayName = name || "User";
 
   return (
     <DropdownMenu>
@@ -55,19 +55,16 @@ export function UserNavDropdown({
           variant="ghost"
           aria-label={displayName}
           className={cn(
-            'flex items-center rounded-xl transition-colors hover:bg-muted font-normal text-start min-h-11 cursor-pointer',
-            compact ? 'h-11 w-11 min-w-11 p-0 justify-center' : 'gap-2.5 px-2.5 py-1',
+            "flex items-center rounded-xl transition-colors hover:bg-muted font-normal text-start min-h-11 cursor-pointer",
+            compact ? "h-11 w-11 min-w-11 p-0 justify-center" : "gap-2.5 px-2.5 py-1",
             triggerClassName,
             className,
           )}
         >
           <UserAvatar
             name={displayName}
-            size={compact ? 'sm' : 'md'}
-            className={cn(
-              compact ? 'h-7 w-7' : 'h-8 w-8',
-              avatarClassName,
-            )}
+            size={compact ? "sm" : "md"}
+            className={cn(compact ? "h-7 w-7" : "h-8 w-8", avatarClassName)}
             fallbackClassName={avatarFallbackClassName}
           />
           {!compact ? (
@@ -81,19 +78,20 @@ export function UserNavDropdown({
                     {subtitle}
                   </span>
                 ) : email ? (
-                  <span className="text-2xs text-muted-foreground truncate max-w-30">
-                    {email}
-                  </span>
+                  <span className="text-2xs text-muted-foreground truncate max-w-30">{email}</span>
                 ) : null}
               </div>
-              <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-muted-foreground shrink-0" aria-hidden />
+              <ChevronDown
+                className="hidden sm:block h-3.5 w-3.5 text-muted-foreground shrink-0"
+                aria-hidden
+              />
             </>
           ) : null}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className={cn('w-60 p-1.5 rounded-2xl surface-overlay text-start', contentClassName)}
+        className={cn("w-60 p-1.5 rounded-2xl surface-overlay text-start", contentClassName)}
       >
         <DropdownMenuLabel className="p-2">
           <div className="flex flex-col text-start">

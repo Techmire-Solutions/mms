@@ -1,11 +1,11 @@
 import {
   INITIAL_STUDENT_FIELD_SEED,
   STUDENT_COLUMN_FIELD_MAPPING,
-} from './moduleFieldSetupPersons.js';
-import type { ColumnRegistryEntry } from './contactTypes.js';
-import { createFieldRemovalIssuesChecker } from './createFieldRemovalIssuesChecker.js';
+} from "./moduleFieldSetupPersons.js";
+import type { ColumnRegistryEntry } from "./contactTypes.js";
+import { createFieldRemovalIssuesChecker } from "./createFieldRemovalIssuesChecker.js";
 
-export type StudentFieldDependencyArea = 'systemField' | 'column';
+export type StudentFieldDependencyArea = "systemField" | "column";
 
 export interface StudentFieldDependencyIssue {
   area: StudentFieldDependencyArea;
@@ -22,8 +22,8 @@ const checker = createFieldRemovalIssuesChecker({
   systemFieldKeys: SEED_FIELD_KEYS,
   columnFieldMapping: STUDENT_COLUMN_FIELD_MAPPING,
   messageKeys: {
-    systemField: 'students.setup.cannotDeleteSystemField',
-    fieldUsedInColumn: 'students.setup.fieldUsedInColumn',
+    systemField: "students.setup.cannotDeleteSystemField",
+    fieldUsedInColumn: "students.setup.fieldUsedInColumn",
   },
 });
 

@@ -1,5 +1,5 @@
-import type { QueryClient } from '@tanstack/react-query';
-import { createModuleQueryInvalidator } from '@/lib/query/createModuleQueryInvalidator';
+import type { QueryClient } from "@tanstack/react-query";
+import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
 import {
   CONTACTS_QUERY_KEY,
   CONTACTS_DUPLICATES_QUERY_KEY,
@@ -7,14 +7,14 @@ import {
   CONTACTS_METRICS_QUERY_KEY,
   CONTACTS_REPORT_ANALYTICS_QUERY_KEY,
   CONTACTS_WIDGET_AGGREGATES_QUERY_KEY,
-} from '@/tenant/features/contacts/hooks/contactsQueryKeys';
-import { CONTACTS_LOOKUPS_QUERY_KEY } from '@/tenant/features/contacts/hooks/useContactLookups';
+} from "@/tenant/features/contacts/hooks/contactsQueryKeys";
+import { CONTACTS_LOOKUPS_QUERY_KEY } from "@/tenant/features/contacts/hooks/useContactLookups";
 import {
   MESSAGING_CONTACTS_RESOLVE_QUERY_KEY,
   MESSAGING_RECIPIENTS_QUERY_KEY,
-} from '@/tenant/hooks/collections/messaging';
+} from "@/tenant/hooks/collections/messaging";
 
-import { CONTACTS_PREFERENCES_QUERY_KEY } from '@/tenant/features/contacts/hooks/useContactSetupConfig';
+import { CONTACTS_PREFERENCES_QUERY_KEY } from "@/tenant/features/contacts/hooks/useContactSetupConfig";
 
 const invalidateModuleQueries = createModuleQueryInvalidator({
   list: CONTACTS_QUERY_KEY,

@@ -94,8 +94,16 @@ export function ContactAddressEntryCard({
           <CardPrimaryButton
             isPrimary={isOnlyAddressOrPrimary}
             onClick={onSetPrimary}
-            title={isOnlyAddressOrPrimary ? t("contacts.form.primaryAddress") : t("contacts.form.setPrimary")}
-            ariaLabel={isOnlyAddressOrPrimary ? t("contacts.form.primaryAddress") : t("contacts.form.setPrimary")}
+            title={
+              isOnlyAddressOrPrimary
+                ? t("contacts.form.primaryAddress")
+                : t("contacts.form.setPrimary")
+            }
+            ariaLabel={
+              isOnlyAddressOrPrimary
+                ? t("contacts.form.primaryAddress")
+                : t("contacts.form.setPrimary")
+            }
             primaryLabel={t("contacts.form.primary")}
             setPrimaryLabel={t("contacts.form.setPrimary")}
           />
@@ -112,7 +120,7 @@ export function ContactAddressEntryCard({
             error={line1Error}
             id={`cf-${formInstanceId}-address-line1-${idx}`}
           >
-        <LeadingIconInput
+            <LeadingIconInput
               icon={MapPin}
               id={`cf-${formInstanceId}-address-line1-${idx}`}
               name={`cf-${formInstanceId}-address-line1-${idx}`}

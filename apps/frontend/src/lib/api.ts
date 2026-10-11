@@ -3,10 +3,10 @@
  * All requests flow through the existing `apiFetch` transport — preserving
  * CSRF headers, auth-refresh, request-ID, and timeout behaviour.
  */
-import { initTsrReactQuery } from '@ts-rest/react-query/v5';
-import type { TsRestReactQueryHooksContainer } from '@ts-rest/react-query/v5';
-import { initClient } from '@ts-rest/core';
-import type { AppRouter } from '@ts-rest/core';
+import { initTsrReactQuery } from "@ts-rest/react-query/v5";
+import type { TsRestReactQueryHooksContainer } from "@ts-rest/react-query/v5";
+import { initClient } from "@ts-rest/core";
+import type { AppRouter } from "@ts-rest/core";
 import {
   rootContract,
   type studentContract,
@@ -31,8 +31,8 @@ import {
   type publicContract,
   type aiContract,
   type platformContract,
-} from '@mms/shared';
-import { apiFetch, resolveApiUrl, ApiError } from '@/lib/apiClient';
+} from "@mms/shared";
+import { apiFetch, resolveApiUrl, ApiError } from "@/lib/apiClient";
 
 type TsrFetcherArgs = {
   path: string;
@@ -55,7 +55,7 @@ async function tsrApiFetcher(args: TsrFetcherArgs): Promise<{
   const requestBody: BodyInit | undefined =
     rawBody instanceof FormData
       ? rawBody
-      : typeof body === 'string'
+      : typeof body === "string"
         ? body
         : body !== undefined
           ? JSON.stringify(body)
@@ -69,21 +69,26 @@ async function tsrApiFetcher(args: TsrFetcherArgs): Promise<{
   });
 
   let parsed: unknown;
-  const contentType = res.headers.get('content-type') ?? '';
-  if (contentType.includes('application/json')) {
+  const contentType = res.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
     parsed = await res.json().catch(() => null);
   } else {
-    parsed = await res.text().catch(() => '');
+    parsed = await res.text().catch(() => "");
   }
 
   if (res.status === 401 || res.status === 403) {
-    const isCredentialEndpoint = path.includes('/auth/change-password') || path.includes('/auth/login-email');
+    const isCredentialEndpoint =
+      path.includes("/auth/change-password") || path.includes("/auth/login-email");
     if (!isCredentialEndpoint) {
-      const errorBody = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
-      const message = typeof errorBody.message === 'string' ? errorBody.message : `Authentication error (${res.status})`;
-      const type = typeof errorBody.type === 'string' ? errorBody.type : undefined;
-      const requestId = res.headers.get('x-request-id') ?? undefined;
-      const code = typeof errorBody.code === 'string' ? errorBody.code : undefined;
+      const errorBody =
+        parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
+      const message =
+        typeof errorBody.message === "string"
+          ? errorBody.message
+          : `Authentication error (${res.status})`;
+      const type = typeof errorBody.type === "string" ? errorBody.type : undefined;
+      const requestId = res.headers.get("x-request-id") ?? undefined;
+      const code = typeof errorBody.code === "string" ? errorBody.code : undefined;
       throw new ApiError(res.status, message, type, requestId, errorBody.errors, undefined, code);
     }
   }
@@ -92,7 +97,7 @@ async function tsrApiFetcher(args: TsrFetcherArgs): Promise<{
 }
 
 export const tsrClient = initTsrReactQuery(rootContract, {
-  baseUrl: typeof window !== 'undefined' ? window.location.origin : '',
+  baseUrl: typeof window !== "undefined" ? window.location.origin : "",
   api: tsrApiFetcher,
 });
 
@@ -163,6 +168,6 @@ type ApiCallResponse = { status: number; body: unknown; headers: Headers };
 type ApiContract = Record<string, Record<string, (args?: ApiCallArgs) => Promise<ApiCallResponse>>>;
 
 export const apiContract = initClient(rootContract, {
-  baseUrl: typeof window !== 'undefined' ? window.location.origin : '',
+  baseUrl: typeof window !== "undefined" ? window.location.origin : "",
   api: tsrApiFetcher,
 }) as unknown as ApiContract;

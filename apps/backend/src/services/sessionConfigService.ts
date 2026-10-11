@@ -5,16 +5,16 @@ import {
   type FieldDefinition,
   type SessionsSettings,
   type TabDefinition,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleFieldConfigService,
   requireFieldConfigTenant,
-} from '../lib/createModuleFieldConfigService.js';
+} from "../lib/createModuleFieldConfigService.js";
 import {
   getSessionFieldConfigByWorkspace,
   upsertSessionFieldConfig,
-} from '../db/repositories/sessionFieldConfigRepository.js';
-import { getSessionModulePreferencesByWorkspace } from '../db/repositories/sessionModulePreferencesRepository.js';
+} from "../db/repositories/sessionFieldConfigRepository.js";
+import { getSessionModulePreferencesByWorkspace } from "../db/repositories/sessionModulePreferencesRepository.js";
 
 const sessionFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -23,7 +23,7 @@ const sessionFieldConfig = createModuleFieldConfigService<
   Record<string, FieldDefinition[]> | undefined,
   ReturnType<typeof stripSessionFieldConfigForPersist>
 >({
-  broadcastKey: 'sessions',
+  broadcastKey: "sessions",
   getByWorkspace: getSessionFieldConfigByWorkspace,
   upsert: upsertSessionFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -31,7 +31,7 @@ const sessionFieldConfig = createModuleFieldConfigService<
     return composeSessionsSettings(raw, prefs);
   },
   stripForPersist: stripSessionFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload session field config after save',
+  reloadFailedMessage: "Failed to reload session field config after save",
 });
 
 export const loadSessionFieldConfig = sessionFieldConfig.load;

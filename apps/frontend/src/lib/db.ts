@@ -9,11 +9,7 @@ export {
   type SyncStatus,
   type ServerSyncResult,
 } from "@/lib/dbStorageCore.js";
-export {
-  syncDatabase,
-  importDatabase,
-  exportEncryptedTenantBackup,
-} from "@/lib/dbBackupSync.js";
+export { syncDatabase, importDatabase, exportEncryptedTenantBackup } from "@/lib/dbBackupSync.js";
 export {
   hasCollectionInCache,
   saveCollectionCacheOnly,

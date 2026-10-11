@@ -1,4 +1,4 @@
-import { registerBackgroundJobRunner } from '../services/backgroundJobWorkerService.js';
+import { registerBackgroundJobRunner } from "../services/backgroundJobWorkerService.js";
 
 export type ModuleCsvImportJobPayload<TRow = unknown> = {
   rows: TRow[];
@@ -51,7 +51,8 @@ export function registerModuleCsvImportJobRunner<TRow = unknown>(
     const finalTotal = result.total ?? total;
     const importedCount = result.imported;
     const noun = options.entityNounPlural;
-    const label = importPayload.label?.trim() || `Imported ${importedCount} of ${finalTotal} ${noun}`;
+    const label =
+      importPayload.label?.trim() || `Imported ${importedCount} of ${finalTotal} ${noun}`;
 
     await ctx.complete({
       label,

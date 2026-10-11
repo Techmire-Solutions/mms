@@ -1,13 +1,13 @@
-import React from 'react';
-import { normalizeEnabledModules, SYSTEM_MODULES_BY_ID } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useSettingsGlobalDraft } from '@/lib/contexts/SettingsGlobalDraftContext';
-import { useModuleAccess } from '@/tenant/hooks/useModuleAccess';
-import { SettingsFormActions } from '@/components/ui/SettingsFormActions';
-import ModuleSettingsNavGrid from '@/tenant/features/settings/components/modules/ModuleSettingsNavGrid';
-import { SettingsPanel } from '@/components/ui/SettingsShell';
-import { SettingsAdminOnlyNotice } from '@/tenant/features/settings/components/SettingsAdminOnlyNotice';
-import { usePermissions } from '@/tenant/hooks/usePermissions';
+import React from "react";
+import { normalizeEnabledModules, SYSTEM_MODULES_BY_ID } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useSettingsGlobalDraft } from "@/lib/contexts/SettingsGlobalDraftContext";
+import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
+import { SettingsFormActions } from "@/components/ui/SettingsFormActions";
+import ModuleSettingsNavGrid from "@/tenant/features/settings/components/modules/ModuleSettingsNavGrid";
+import { SettingsPanel } from "@/components/ui/SettingsShell";
+import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
 
 /**
  * Enable/disable application modules. Layout mirrors app navigation (`SYSTEM_MODULE_NAV`).
@@ -38,11 +38,11 @@ export default function SystemModulesSettings(): React.JSX.Element {
   const updModule = (moduleId: string, enabled: boolean): void => {
     const mod = SYSTEM_MODULES_BY_ID[moduleId];
     if (mod?.required) return;
-    upd('enabledModules', normalizeEnabledModules({ ...enabledModules, [moduleId]: enabled }));
+    upd("enabledModules", normalizeEnabledModules({ ...enabledModules, [moduleId]: enabled }));
     clearSaved();
   };
 
-  if (!can('settings.global.write')) {
+  if (!can("settings.global.write")) {
     return (
       <SettingsPanel width="wide" introKey="settings.introModules">
         <SettingsAdminOnlyNotice />
@@ -58,21 +58,21 @@ export default function SystemModulesSettings(): React.JSX.Element {
       saved={saved}
       footer={
         <SettingsFormActions
-          saveLabel={t('module.system.save')}
-          savingLabel={t('module.system.saving')}
+          saveLabel={t("module.system.save")}
+          savingLabel={t("module.system.saving")}
           onSave={handleSaveModules}
           onDiscard={handleDiscardModules}
-          discardLabel={t('theme.discardChanges')}
+          discardLabel={t("theme.discardChanges")}
           dirty={isModulesDirty}
           saving={saving}
           saved={saved}
         />
       }
     >
-      <ModuleSettingsNavGrid 
-        enabledModules={enabledModules} 
-        grantedModules={grantedModules} 
-        onToggleModule={updModule} 
+      <ModuleSettingsNavGrid
+        enabledModules={enabledModules}
+        grantedModules={grantedModules}
+        onToggleModule={updModule}
       />
     </SettingsPanel>
   );

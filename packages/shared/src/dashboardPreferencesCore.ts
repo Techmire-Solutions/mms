@@ -106,10 +106,7 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
-function isOneOf<T extends readonly string[]>(
-  value: unknown,
-  options: T,
-): value is (T)[number] {
+function isOneOf<T extends readonly string[]>(value: unknown, options: T): value is T[number] {
   return typeof value === "string" && (options as readonly string[]).includes(value);
 }
 

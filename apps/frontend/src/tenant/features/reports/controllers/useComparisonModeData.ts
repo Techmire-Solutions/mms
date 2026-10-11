@@ -1,22 +1,26 @@
-import { formatDate, type AppTranslationKey } from '@mms/shared';
-import { useSessionsCollection } from '@/tenant/hooks/collections/sessions';
-import { useContactsReportAnalytics } from '@/tenant/hooks/collections/contacts';
-import { useEnrollmentsReportAggregates } from '@/tenant/hooks/collections/enrollments';
-import { useAttendanceReportAggregates } from '@/tenant/hooks/collections/attendance';
-import { useFinanceReportAggregates } from '@/tenant/hooks/collections/finance';
-import { useHasanatReportAggregates } from '@/tenant/hooks/collections/hasanat';
-import { useExaminationsReportAggregates } from '@/tenant/hooks/collections/examinations';
+import { formatDate, type AppTranslationKey } from "@mms/shared";
+import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
+import { useContactsReportAnalytics } from "@/tenant/hooks/collections/contacts";
+import { useEnrollmentsReportAggregates } from "@/tenant/hooks/collections/enrollments";
+import { useAttendanceReportAggregates } from "@/tenant/hooks/collections/attendance";
+import { useFinanceReportAggregates } from "@/tenant/hooks/collections/finance";
+import { useHasanatReportAggregates } from "@/tenant/hooks/collections/hasanat";
+import { useExaminationsReportAggregates } from "@/tenant/hooks/collections/examinations";
 import {
   buildContactsDateRangeComparison,
   computeDynamicDateRangeComparison,
   computeDynamicSessionComparison,
-} from '@/components/ui/reports/comparisonModeCompute';
-import type { ComparisonDataItem, DateRange, DateRangeDataItem } from '@/components/ui/reports/comparisonModeTypes';
+} from "@/components/ui/reports/comparisonModeCompute";
+import type {
+  ComparisonDataItem,
+  DateRange,
+  DateRangeDataItem,
+} from "@/components/ui/reports/comparisonModeTypes";
 
 interface UseComparisonModeDataParams {
   category: string;
   isContacts: boolean;
-  mode: 'sessions' | 'daterange';
+  mode: "sessions" | "daterange";
   valA: string;
   valB: string;
   rangeA: DateRange;
@@ -37,7 +41,7 @@ export function useComparisonModeData({
   t,
 }: UseComparisonModeDataParams) {
   const compareYears = (() => {
-    if (!isContacts || mode !== 'daterange') return undefined;
+    if (!isContacts || mode !== "daterange") return undefined;
     const yearA = Number.parseInt(rangeA.from.slice(0, 4), 10);
     const yearB = Number.parseInt(rangeB.from.slice(0, 4), 10);
     return [yearA, yearB].filter((year) => Number.isFinite(year));
@@ -54,11 +58,11 @@ export function useComparisonModeData({
 
   const buildComparison = (categoryMatchesDateRange: boolean) => {
     if (!nonContactsEnabled) return undefined;
-    if (mode === 'sessions') {
+    if (mode === "sessions") {
       const sessionIds = [valA, valB].filter(Boolean);
       return sessionIds.length > 0 ? { sessionIds } : undefined;
     }
-    if (mode === 'daterange' && categoryMatchesDateRange) {
+    if (mode === "daterange" && categoryMatchesDateRange) {
       return {
         rangeAFrom: rangeA.from,
         rangeATo: rangeA.to,
@@ -69,15 +73,17 @@ export function useComparisonModeData({
     return undefined;
   };
 
-  const enrollmentComparison = (() => buildComparison(categoryKey === 'students' || categoryKey === 'enrollments'))();
+  const enrollmentComparison = (() =>
+    buildComparison(categoryKey === "students" || categoryKey === "enrollments"))();
 
-  const financeComparison = (() => buildComparison(categoryKey === 'financial' || categoryKey === 'finance'))();
+  const financeComparison = (() =>
+    buildComparison(categoryKey === "financial" || categoryKey === "finance"))();
 
-  const attendanceComparison = (() => buildComparison(categoryKey === 'attendance'))();
+  const attendanceComparison = (() => buildComparison(categoryKey === "attendance"))();
 
-  const examinationsComparison = (() => buildComparison(categoryKey === 'examinations'))();
+  const examinationsComparison = (() => buildComparison(categoryKey === "examinations"))();
 
-  const hasanatComparison = (() => buildComparison(categoryKey === 'hasanat'))();
+  const hasanatComparison = (() => buildComparison(categoryKey === "hasanat"))();
 
   const { data: enrollmentsReport } = useEnrollmentsReportAggregates({
     enabled: Boolean(enrollmentComparison),
@@ -106,12 +112,15 @@ export function useComparisonModeData({
 
   const sessions = useSessionsCollection({ enabled: nonContactsEnabled });
   const sessionsOptions = (() =>
-      sessions
-        .filter((session) => session.id !== 'all')
-        .map((session) => ({ id: session.id, name: session.name })))() as { id: string; name: string }[];
+    sessions
+      .filter((session) => session.id !== "all")
+      .map((session) => ({ id: session.id, name: session.name })))() as {
+    id: string;
+    name: string;
+  }[];
 
   const comparisonData = (() => {
-    if (mode === 'sessions') {
+    if (mode === "sessions") {
       if (isContacts) {
         return [];
       }
@@ -143,11 +152,11 @@ export function useComparisonModeData({
   })() as ComparisonDataItem[] | DateRangeDataItem[];
 
   const labelA =
-    mode === 'sessions'
+    mode === "sessions"
       ? sessionsOptions.find((option) => option.id === valA)?.name
       : `${formatDate(rangeA.from)} → ${formatDate(rangeA.to)}`;
   const labelB =
-    mode === 'sessions'
+    mode === "sessions"
       ? sessionsOptions.find((option) => option.id === valB)?.name
       : `${formatDate(rangeB.from)} → ${formatDate(rangeB.to)}`;
 

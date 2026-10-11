@@ -1,6 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
-import { assertNoSeriousA11yViolations } from '../helpers/a11y.js';
-import { loginTenant } from '../helpers/moduleTiers.js';
+import { expect, test, type Page } from "@playwright/test";
+import { assertNoSeriousA11yViolations } from "../helpers/a11y.js";
+import { loginTenant } from "../helpers/moduleTiers.js";
 import {
   RESPONSIVE_VIEWPORTS,
   assertNoHorizontalOverflow,
@@ -8,14 +8,11 @@ import {
   forceRtl,
   waitForAppShellReady,
   waitForToastsToClear,
-} from '../helpers/responsive.js';
-import {
-  bootstrapAuthenticatedTenant,
-  resetPlatformUsers,
-} from '../helpers/tenantBootstrap.js';
+} from "../helpers/responsive.js";
+import { bootstrapAuthenticatedTenant, resetPlatformUsers } from "../helpers/tenantBootstrap.js";
 
-process.env.NODE_ENV = process.env.NODE_ENV || 'test';
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'e2e-test-jwt-secret-key-at-least-32-chars-long';
+process.env.NODE_ENV = process.env.NODE_ENV || "test";
+process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";
 
 /**
  * Document template editor — Obligations invoice template.
@@ -43,33 +40,33 @@ process.env.JWT_SECRET = process.env.JWT_SECRET || 'e2e-test-jwt-secret-key-at-l
 const subdomain = `tpl${Date.now()}`;
 const tenantOrigin = `http://${subdomain}.localhost:5173`;
 const adminEmail = `admin@${subdomain}.com`;
-const temporaryPassword = 'Madrasa@1234';
-const permanentPassword = 'Madrasa@5678';
+const temporaryPassword = "Madrasa@1234";
+const permanentPassword = "Madrasa@5678";
 const platformEmail = `platform-tpl-${Date.now()}@test.com`;
-const platformPassword = 'Pa$$w0rd123';
+const platformPassword = "Pa$$w0rd123";
 
 /** Opens Obligations → Setup → Invoice Template and returns the editor root. */
 async function openInvoiceTemplateEditor(page: Page) {
   await page.goto(`${tenantOrigin}/obligations`);
-  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState("domcontentloaded");
   await waitForAppShellReady(page);
 
   const tierContainer = page
-    .locator('div.hidden.lg\\:block, div.space-y-3.lg\\:hidden')
+    .locator("div.hidden.lg\\:block, div.space-y-3.lg\\:hidden")
     .filter({ visible: true })
     .first();
-  await tierContainer.waitFor({ state: 'visible', timeout: 30_000 });
+  await tierContainer.waitFor({ state: "visible", timeout: 30_000 });
 
   const setupTrigger = tierContainer
-    .getByRole('tab', { name: /Setup/i })
-    .or(tierContainer.getByRole('button', { name: /Setup/i }))
+    .getByRole("tab", { name: /Setup/i })
+    .or(tierContainer.getByRole("button", { name: /Setup/i }))
     .first();
-  await setupTrigger.waitFor({ state: 'visible', timeout: 30_000 });
+  await setupTrigger.waitFor({ state: "visible", timeout: 30_000 });
 
   const isSetupActive = async () => {
-    const selected = await setupTrigger.getAttribute('aria-selected');
-    const expanded = await setupTrigger.getAttribute('aria-expanded');
-    return selected === 'true' || expanded === 'true';
+    const selected = await setupTrigger.getAttribute("aria-selected");
+    const expanded = await setupTrigger.getAttribute("aria-expanded");
+    return selected === "true" || expanded === "true";
   };
 
   if (!(await isSetupActive())) {
@@ -83,17 +80,17 @@ async function openInvoiceTemplateEditor(page: Page) {
     .locator('div[role="tablist"]:visible')
     .filter({ hasText: /Invoice Template/i })
     .first();
-  await subTabContainer.waitFor({ state: 'visible', timeout: 30_000 });
+  await subTabContainer.waitFor({ state: "visible", timeout: 30_000 });
 
   const invoiceTemplateTrigger = subTabContainer
-    .getByRole('tab', { name: /Invoice Template/i })
-    .or(subTabContainer.getByRole('button', { name: /Invoice Template/i }))
+    .getByRole("tab", { name: /Invoice Template/i })
+    .or(subTabContainer.getByRole("button", { name: /Invoice Template/i }))
     .first();
-  await invoiceTemplateTrigger.waitFor({ state: 'visible', timeout: 30_000 });
+  await invoiceTemplateTrigger.waitFor({ state: "visible", timeout: 30_000 });
 
   const isTemplateActive = async () => {
-    const selected = await invoiceTemplateTrigger.getAttribute('aria-selected');
-    return selected === 'true';
+    const selected = await invoiceTemplateTrigger.getAttribute("aria-selected");
+    return selected === "true";
   };
 
   if (!(await isTemplateActive())) {
@@ -102,28 +99,28 @@ async function openInvoiceTemplateEditor(page: Page) {
   }
 
   // The editor is embedded (`fullscreen={false}`) here, so it is a labelled region.
-  const heading = page.getByRole('heading', { name: /Invoice Template Editor/i });
+  const heading = page.getByRole("heading", { name: /Invoice Template Editor/i });
   await expect(heading).toBeVisible({ timeout: 30_000 });
 
-  const editor = page.getByRole('region').filter({ has: heading }).first();
+  const editor = page.getByRole("region").filter({ has: heading }).first();
   return { editor, heading };
 }
 
 function propertiesPanel(page: Page) {
   // <aside aria-label="Properties"> → role=complementary.
-  return page.getByRole('complementary', { name: /Properties/i }).first();
+  return page.getByRole("complementary", { name: /Properties/i }).first();
 }
 
 function canvasElements(page: Page) {
   return page.locator('[role="button"][aria-pressed]');
 }
 
-test.describe.serial('Invoice template editor', { tag: '@local-only' }, () => {
+test.describe.serial("Invoice template editor", { tag: "@local-only" }, () => {
   test.beforeAll(() => {
     resetPlatformUsers();
   });
 
-  test('bootstrap platform admin and tenant workspace', async ({ page }) => {
+  test("bootstrap platform admin and tenant workspace", async ({ page }) => {
     test.setTimeout(180_000);
     await bootstrapAuthenticatedTenant(page, {
       subdomain,
@@ -136,38 +133,38 @@ test.describe.serial('Invoice template editor', { tag: '@local-only' }, () => {
     });
   });
 
-  test('exposes the editor shell, paper size, and print rule', async ({ page }) => {
+  test("exposes the editor shell, paper size, and print rule", async ({ page }) => {
     test.setTimeout(90_000);
     await loginTenant(page, tenantOrigin, adminEmail, permanentPassword);
     const { editor } = await openInvoiceTemplateEditor(page);
 
     // Toolbar control groups are labelled (the toolbar role was removed deliberately:
     // a toolbar role without roving tabindex is a false promise).
-    await expect(page.getByRole('group', { name: /History/i }).first()).toBeVisible();
-    await expect(page.getByRole('group', { name: /View options/i }).first()).toBeVisible();
-    await expect(page.getByRole('group', { name: /Document actions/i }).first()).toBeVisible();
+    await expect(page.getByRole("group", { name: /History/i }).first()).toBeVisible();
+    await expect(page.getByRole("group", { name: /View options/i }).first()).toBeVisible();
+    await expect(page.getByRole("group", { name: /Document actions/i }).first()).toBeVisible();
 
     // The status pill reports the page in CSS pixels — it used to claim "pt".
     await expect(editor.getByText(/\d+ × \d+ px/).first()).toBeVisible();
 
     // Printing the editor must use the template's own paper size.
     const printRule = await page.evaluate(() => {
-      const styles = Array.from(document.querySelectorAll('style'));
-      const printStyle = styles.find((s) => s.textContent?.includes('@page'));
+      const styles = Array.from(document.querySelectorAll("style"));
+      const printStyle = styles.find((s) => s.textContent?.includes("@page"));
       return printStyle ? printStyle.textContent : null;
     });
     expect(printRule).toMatch(/@page\s*\{\s*size:\s*\d+px\s+\d+px\s+(portrait|landscape)/);
   });
 
-  test('selects and nudges an element with the keyboard only', async ({ page }) => {
+  test("selects and nudges an element with the keyboard only", async ({ page }) => {
     test.setTimeout(90_000);
     await loginTenant(page, tenantOrigin, adminEmail, permanentPassword);
     await openInvoiceTemplateEditor(page);
 
     const panel = propertiesPanel(page);
     // Nothing is selected yet, so the inspector shows the layer list as the way in.
-    await expect(panel.getByRole('heading', { name: /Layers/i }).first()).toBeVisible();
-    await panel.locator('li button').first().click();
+    await expect(panel.getByRole("heading", { name: /Layers/i }).first()).toBeVisible();
+    await panel.locator("li button").first().click();
 
     const xField = panel.getByLabel(/Horizontal \(X\)/i).first();
     await expect(xField).toBeVisible();
@@ -177,26 +174,26 @@ test.describe.serial('Invoice template editor', { tag: '@local-only' }, () => {
     // fix the element could not even be selected from the keyboard.
     const element = canvasElements(page).first();
     await element.focus();
-    await page.keyboard.press('Enter');
-    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("ArrowRight");
 
     await expect
       .poll(async () => Number(await xField.inputValue()), { timeout: 5_000 })
       .toBeGreaterThan(before);
   });
 
-  test('layer list reaches elements that cannot be clicked on the canvas', async ({ page }) => {
+  test("layer list reaches elements that cannot be clicked on the canvas", async ({ page }) => {
     test.setTimeout(90_000);
     await loginTenant(page, tenantOrigin, adminEmail, permanentPassword);
     await openInvoiceTemplateEditor(page);
 
     const panel = propertiesPanel(page);
-    const layerRows = panel.locator('li button');
+    const layerRows = panel.locator("li button");
     const rowCount = await layerRows.count();
-    expect(rowCount, 'the shipped presets place 20+ elements on the page').toBeGreaterThan(5);
+    expect(rowCount, "the shipped presets place 20+ elements on the page").toBeGreaterThan(5);
 
     // A 1px divider is essentially unhittable with a pointer; the list is its path.
-    const dividerRow = panel.locator('li button', { hasText: /divider/ }).first();
+    const dividerRow = panel.locator("li button", { hasText: /divider/ }).first();
     if (await dividerRow.count()) {
       await dividerRow.click();
       await expect(panel.getByLabel(/Height \(H\)/i).first()).toHaveValue(/^[0-9.]+$/);
@@ -204,7 +201,9 @@ test.describe.serial('Invoice template editor', { tag: '@local-only' }, () => {
   });
 
   for (const viewport of RESPONSIVE_VIEWPORTS) {
-    test(`${viewport.name} (${viewport.width}px) editor layout and touch targets`, async ({ page }) => {
+    test(`${viewport.name} (${viewport.width}px) editor layout and touch targets`, async ({
+      page,
+    }) => {
       test.setTimeout(90_000);
       await loginTenant(page, tenantOrigin, adminEmail, permanentPassword);
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -215,18 +214,22 @@ test.describe.serial('Invoice template editor', { tag: '@local-only' }, () => {
       if (viewport.width < 1024) {
         // Below `lg` the panes are tabs; the canvas is the default pane and the
         // inspector is one tap away instead of pushing the canvas out of the box.
-        await expect(page.getByRole('tab', { name: 'Elements' }).first()).toBeVisible();
-        await expect(page.getByRole('tab', { name: 'Canvas' }).first()).toBeVisible();
-        await page.getByRole('tab', { name: 'Properties' }).first().click();
+        await expect(page.getByRole("tab", { name: "Elements" }).first()).toBeVisible();
+        await expect(page.getByRole("tab", { name: "Canvas" }).first()).toBeVisible();
+        await page.getByRole("tab", { name: "Properties" }).first().click();
         await expect(propertiesPanel(page)).toBeVisible();
       } else {
         await expect(editor.getByText(/\d+ × \d+ px/).first()).toBeVisible();
       }
 
-      await assertPrimaryControlsMeetTouchTarget(page, { within: 'aside[aria-label*="Properties"], [role="complementary"]' });
+      await assertPrimaryControlsMeetTouchTarget(page, {
+        within: 'aside[aria-label*="Properties"], [role="complementary"]',
+      });
     });
 
-    test(`${viewport.name} (${viewport.width}px) editor axe audit (LTR + RTL)`, async ({ page }) => {
+    test(`${viewport.name} (${viewport.width}px) editor axe audit (LTR + RTL)`, async ({
+      page,
+    }) => {
       test.setTimeout(120_000);
       await loginTenant(page, tenantOrigin, adminEmail, permanentPassword);
       await page.setViewportSize({ width: viewport.width, height: viewport.height });

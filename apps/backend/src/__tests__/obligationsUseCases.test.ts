@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
-import { createObligationsUseCases } from '../obligations/use-cases/obligationsUseCases.js';
-import type { ObligationsRepository } from '../obligations/repository/obligationsRepository.js';
-import { runWithTenant } from '../lib/tenantContext.js';
+import { describe, expect, it, vi } from "vitest";
+import { createObligationsUseCases } from "../obligations/use-cases/obligationsUseCases.js";
+import type { ObligationsRepository } from "../obligations/repository/obligationsRepository.js";
+import { runWithTenant } from "../lib/tenantContext.js";
 
 function createFakeRepo(): ObligationsRepository {
   return {
@@ -67,276 +67,334 @@ function createFakeRepo(): ObligationsRepository {
   };
 }
 
-describe('obligations use-cases (DI with fake repository)', () => {
-  it('loadObligationCollections delegates to the injected repository', async () => {
+describe("obligations use-cases (DI with fake repository)", () => {
+  it("loadObligationCollections delegates to the injected repository", async () => {
     const repo = createFakeRepo();
     const useCases = createObligationsUseCases(repo);
 
-    const result = await runWithTenant('demo', () => useCases.loadObligationCollections());
+    const result = await runWithTenant("demo", () => useCases.loadObligationCollections());
 
     expect(result).toEqual([]);
   });
 
-  it('loadObligationsCommandMetrics delegates to the injected repository with the active tenant', async () => {
+  it("loadObligationsCommandMetrics delegates to the injected repository with the active tenant", async () => {
     const repo = createFakeRepo();
     const useCases = createObligationsUseCases(repo);
 
-    const result = await runWithTenant('demo', () => useCases.loadObligationsCommandMetrics());
+    const result = await runWithTenant("demo", () => useCases.loadObligationsCommandMetrics());
 
     expect(result.total).toBe(5);
-    expect(repo.aggregateObligationsCommandMetrics).toHaveBeenCalledWith('demo');
+    expect(repo.aggregateObligationsCommandMetrics).toHaveBeenCalledWith("demo");
   });
 
-  it('loadObligationTypeById and loadObligationTypesByIds delegate to repository', async () => {
+  it("loadObligationTypeById and loadObligationTypesByIds delegate to repository", async () => {
     const repo = createFakeRepo();
-    const fakeType = { id: 'type-1', name: 'Fitra', quantity_based: false, designated_for: 'Both' as const };
+    const fakeType = {
+      id: "type-1",
+      name: "Fitra",
+      quantity_based: false,
+      designated_for: "Both" as const,
+    };
     (repo.findObligationTypeById as any).mockResolvedValue(fakeType);
     (repo.findObligationTypesByIds as any).mockResolvedValue([fakeType]);
     const useCases = createObligationsUseCases(repo);
 
-    const single = await runWithTenant('demo', () => useCases.loadObligationTypeById('type-1'));
-    const multiple = await runWithTenant('demo', () => useCases.loadObligationTypesByIds(['type-1', ' ']));
+    const single = await runWithTenant("demo", () => useCases.loadObligationTypeById("type-1"));
+    const multiple = await runWithTenant("demo", () =>
+      useCases.loadObligationTypesByIds(["type-1", " "]),
+    );
 
     expect(single).toEqual(fakeType);
     expect(multiple).toEqual([fakeType]);
-    expect(repo.findObligationTypeById).toHaveBeenCalledWith('demo', 'type-1');
-    expect(repo.findObligationTypesByIds).toHaveBeenCalledWith('demo', ['type-1']);
+    expect(repo.findObligationTypeById).toHaveBeenCalledWith("demo", "type-1");
+    expect(repo.findObligationTypesByIds).toHaveBeenCalledWith("demo", ["type-1"]);
   });
 
-  it('saveObligationType delegates to repository with tenant', async () => {
+  it("saveObligationType delegates to repository with tenant", async () => {
     const repo = createFakeRepo();
-    const fakeType = { id: 'type-1', name: 'Fitra', quantity_based: false, designated_for: 'Both' as const };
+    const fakeType = {
+      id: "type-1",
+      name: "Fitra",
+      quantity_based: false,
+      designated_for: "Both" as const,
+    };
     const useCases = createObligationsUseCases(repo);
 
-    await runWithTenant('demo', () => useCases.saveObligationType(fakeType));
+    await runWithTenant("demo", () => useCases.saveObligationType(fakeType));
 
-    expect(repo.saveObligationType).toHaveBeenCalledWith('demo', fakeType);
+    expect(repo.saveObligationType).toHaveBeenCalledWith("demo", fakeType);
   });
 
-  it('loadMujtahidById and loadMujtahidsByIds delegate to repository', async () => {
+  it("loadMujtahidById and loadMujtahidsByIds delegate to repository", async () => {
     const repo = createFakeRepo();
-    const fakeMujtahid = { id: 'm-1', name: 'Ayatollah Sistani' };
+    const fakeMujtahid = { id: "m-1", name: "Ayatollah Sistani" };
     (repo.findMujtahidById as any).mockResolvedValue(fakeMujtahid);
     (repo.findMujtahidsByIds as any).mockResolvedValue([fakeMujtahid]);
     const useCases = createObligationsUseCases(repo);
 
-    const single = await runWithTenant('demo', () => useCases.loadMujtahidById('m-1'));
-    const multiple = await runWithTenant('demo', () => useCases.loadMujtahidsByIds(['m-1', '']));
+    const single = await runWithTenant("demo", () => useCases.loadMujtahidById("m-1"));
+    const multiple = await runWithTenant("demo", () => useCases.loadMujtahidsByIds(["m-1", ""]));
 
     expect(single).toEqual(fakeMujtahid);
     expect(multiple).toEqual([fakeMujtahid]);
-    expect(repo.findMujtahidById).toHaveBeenCalledWith('demo', 'm-1');
-    expect(repo.findMujtahidsByIds).toHaveBeenCalledWith('demo', ['m-1']);
+    expect(repo.findMujtahidById).toHaveBeenCalledWith("demo", "m-1");
+    expect(repo.findMujtahidsByIds).toHaveBeenCalledWith("demo", ["m-1"]);
   });
 
-  it('saveMujtahid delegates to repository with tenant', async () => {
+  it("saveMujtahid delegates to repository with tenant", async () => {
     const repo = createFakeRepo();
-    const fakeMujtahid = { id: 'm-1', name: 'Ayatollah Sistani' };
+    const fakeMujtahid = { id: "m-1", name: "Ayatollah Sistani" };
     const useCases = createObligationsUseCases(repo);
 
-    await runWithTenant('demo', () => useCases.saveMujtahid(fakeMujtahid));
+    await runWithTenant("demo", () => useCases.saveMujtahid(fakeMujtahid));
 
-    expect(repo.saveMujtahid).toHaveBeenCalledWith('demo', fakeMujtahid);
+    expect(repo.saveMujtahid).toHaveBeenCalledWith("demo", fakeMujtahid);
   });
 
-  it('loadMujtahidRepById and loadMujtahidRepsByIds delegate to repository', async () => {
+  it("loadMujtahidRepById and loadMujtahidRepsByIds delegate to repository", async () => {
     const repo = createFakeRepo();
-    const fakeRep = { id: 'rep-1', name: 'Sheikh Representative', mujtahid_id: 'm-1', contact_id: 'c-1' };
+    const fakeRep = {
+      id: "rep-1",
+      name: "Sheikh Representative",
+      mujtahid_id: "m-1",
+      contact_id: "c-1",
+    };
     (repo.findMujtahidRepById as any).mockResolvedValue(fakeRep);
     (repo.findMujtahidRepsByIds as any).mockResolvedValue([fakeRep]);
     const useCases = createObligationsUseCases(repo);
 
-    const single = await runWithTenant('demo', () => useCases.loadMujtahidRepById('rep-1'));
-    const multiple = await runWithTenant('demo', () => useCases.loadMujtahidRepsByIds(['rep-1']));
+    const single = await runWithTenant("demo", () => useCases.loadMujtahidRepById("rep-1"));
+    const multiple = await runWithTenant("demo", () => useCases.loadMujtahidRepsByIds(["rep-1"]));
 
     expect(single).toEqual(fakeRep);
     expect(multiple).toEqual([fakeRep]);
-    expect(repo.findMujtahidRepById).toHaveBeenCalledWith('demo', 'rep-1');
-    expect(repo.findMujtahidRepsByIds).toHaveBeenCalledWith('demo', ['rep-1']);
+    expect(repo.findMujtahidRepById).toHaveBeenCalledWith("demo", "rep-1");
+    expect(repo.findMujtahidRepsByIds).toHaveBeenCalledWith("demo", ["rep-1"]);
   });
 
-  it('saveMujtahidRep delegates to repository with tenant', async () => {
+  it("saveMujtahidRep delegates to repository with tenant", async () => {
     const repo = createFakeRepo();
-    const fakeRep = { id: 'rep-1', name: 'Sheikh Representative', mujtahid_id: 'm-1', contact_id: 'c-1' };
+    const fakeRep = {
+      id: "rep-1",
+      name: "Sheikh Representative",
+      mujtahid_id: "m-1",
+      contact_id: "c-1",
+    };
     const useCases = createObligationsUseCases(repo);
 
-    await runWithTenant('demo', () => useCases.saveMujtahidRep(fakeRep));
+    await runWithTenant("demo", () => useCases.saveMujtahidRep(fakeRep));
 
-    expect(repo.saveMujtahidRep).toHaveBeenCalledWith('demo', fakeRep);
+    expect(repo.saveMujtahidRep).toHaveBeenCalledWith("demo", fakeRep);
   });
 
-  it('loadWakalaTypeById and loadWakalaTypesByIds delegate to repository', async () => {
+  it("loadWakalaTypeById and loadWakalaTypesByIds delegate to repository", async () => {
     const repo = createFakeRepo();
-    const fakeWakala = { id: 'w-1', mujtahid_representative_id: 'rep-1', obligation_type_id: 'type-1' };
+    const fakeWakala = {
+      id: "w-1",
+      mujtahid_representative_id: "rep-1",
+      obligation_type_id: "type-1",
+    };
     (repo.findWakalaTypeById as any).mockResolvedValue(fakeWakala);
     (repo.findWakalaTypesByIds as any).mockResolvedValue([fakeWakala]);
     const useCases = createObligationsUseCases(repo);
 
-    const single = await runWithTenant('demo', () => useCases.loadWakalaTypeById('w-1'));
-    const multiple = await runWithTenant('demo', () => useCases.loadWakalaTypesByIds(['w-1']));
+    const single = await runWithTenant("demo", () => useCases.loadWakalaTypeById("w-1"));
+    const multiple = await runWithTenant("demo", () => useCases.loadWakalaTypesByIds(["w-1"]));
 
     expect(single).toEqual(fakeWakala);
     expect(multiple).toEqual([fakeWakala]);
-    expect(repo.findWakalaTypeById).toHaveBeenCalledWith('demo', 'w-1');
-    expect(repo.findWakalaTypesByIds).toHaveBeenCalledWith('demo', ['w-1']);
+    expect(repo.findWakalaTypeById).toHaveBeenCalledWith("demo", "w-1");
+    expect(repo.findWakalaTypesByIds).toHaveBeenCalledWith("demo", ["w-1"]);
   });
 
-  it('saveWakalaType delegates to repository with tenant', async () => {
+  it("saveWakalaType delegates to repository with tenant", async () => {
     const repo = createFakeRepo();
-    const fakeWakala = { id: 'w-1', mujtahid_representative_id: 'rep-1', obligation_type_id: 'type-1' };
+    const fakeWakala = {
+      id: "w-1",
+      mujtahid_representative_id: "rep-1",
+      obligation_type_id: "type-1",
+    };
     const useCases = createObligationsUseCases(repo);
 
-    await runWithTenant('demo', () => useCases.saveWakalaType(fakeWakala));
+    await runWithTenant("demo", () => useCases.saveWakalaType(fakeWakala));
 
-    expect(repo.saveWakalaType).toHaveBeenCalledWith('demo', fakeWakala);
+    expect(repo.saveWakalaType).toHaveBeenCalledWith("demo", fakeWakala);
   });
 
-  it('loadObligationDistributionById and loadObligationDistributionsByIds delegate to repository', async () => {
+  it("loadObligationDistributionById and loadObligationDistributionsByIds delegate to repository", async () => {
     const repo = createFakeRepo();
-    const fakeDist = { id: 'd-1', name: 'Half Sahm Imam', percentage: 50, wakala_type_id: 'w-1', type: 'Income' as const };
+    const fakeDist = {
+      id: "d-1",
+      name: "Half Sahm Imam",
+      percentage: 50,
+      wakala_type_id: "w-1",
+      type: "Income" as const,
+    };
     (repo.findObligationDistributionById as any).mockResolvedValue(fakeDist);
     (repo.findObligationDistributionsByIds as any).mockResolvedValue([fakeDist]);
     const useCases = createObligationsUseCases(repo);
 
-    const single = await runWithTenant('demo', () => useCases.loadObligationDistributionById('d-1'));
-    const multiple = await runWithTenant('demo', () => useCases.loadObligationDistributionsByIds(['d-1']));
+    const single = await runWithTenant("demo", () =>
+      useCases.loadObligationDistributionById("d-1"),
+    );
+    const multiple = await runWithTenant("demo", () =>
+      useCases.loadObligationDistributionsByIds(["d-1"]),
+    );
 
     expect(single).toEqual(fakeDist);
     expect(multiple).toEqual([fakeDist]);
-    expect(repo.findObligationDistributionById).toHaveBeenCalledWith('demo', 'd-1');
-    expect(repo.findObligationDistributionsByIds).toHaveBeenCalledWith('demo', ['d-1']);
+    expect(repo.findObligationDistributionById).toHaveBeenCalledWith("demo", "d-1");
+    expect(repo.findObligationDistributionsByIds).toHaveBeenCalledWith("demo", ["d-1"]);
   });
 
-  it('saveObligationDistribution delegates to repository with tenant', async () => {
+  it("saveObligationDistribution delegates to repository with tenant", async () => {
     const repo = createFakeRepo();
-    const fakeDist = { id: 'd-1', name: 'Half Sahm Imam', percentage: 50, wakala_type_id: 'w-1', type: 'Income' as const };
+    const fakeDist = {
+      id: "d-1",
+      name: "Half Sahm Imam",
+      percentage: 50,
+      wakala_type_id: "w-1",
+      type: "Income" as const,
+    };
     const useCases = createObligationsUseCases(repo);
 
-    await runWithTenant('demo', () => useCases.saveObligationDistribution(fakeDist));
+    await runWithTenant("demo", () => useCases.saveObligationDistribution(fakeDist));
 
-    expect(repo.saveObligationDistribution).toHaveBeenCalledWith('demo', fakeDist);
+    expect(repo.saveObligationDistribution).toHaveBeenCalledWith("demo", fakeDist);
   });
 
-  it('loadObligationCollectionById handles soft-deleted records correctly', async () => {
+  it("loadObligationCollectionById handles soft-deleted records correctly", async () => {
     const repo = createFakeRepo();
     const activeCollection = {
-      id: 'oc-1',
-      receipt_no: 'REC-001',
-      received_date: '2026-09-01',
-      sender_id: 'c-1',
+      id: "oc-1",
+      receipt_no: "REC-001",
+      received_date: "2026-09-01",
+      sender_id: "c-1",
       reference_id: null,
       amount: 100,
-      currency_id: 'USD',
-      payment_mode: 'Cash' as const,
-      obligation_type_id: 'type-1',
-      mujtahid_representative_id: 'rep-1',
-      received_by: 'u-1',
+      currency_id: "USD",
+      payment_mode: "Cash" as const,
+      obligation_type_id: "type-1",
+      mujtahid_representative_id: "rep-1",
+      received_by: "u-1",
     };
     const deletedCollection = {
       ...activeCollection,
-      id: 'oc-2',
-      deletedAt: '2026-09-02T00:00:00.000Z',
+      id: "oc-2",
+      deletedAt: "2026-09-02T00:00:00.000Z",
     };
 
     (repo.findObligationCollectionById as any).mockImplementation((_tenant: string, id: string) => {
-      if (id === 'oc-1') return Promise.resolve(activeCollection);
-      if (id === 'oc-2') return Promise.resolve(deletedCollection);
+      if (id === "oc-1") return Promise.resolve(activeCollection);
+      if (id === "oc-2") return Promise.resolve(deletedCollection);
       return Promise.resolve(null);
     });
 
     const useCases = createObligationsUseCases(repo);
 
     // Active lookup
-    const active = await runWithTenant('demo', () => useCases.loadObligationCollectionById('oc-1'));
+    const active = await runWithTenant("demo", () => useCases.loadObligationCollectionById("oc-1"));
     expect(active).toEqual(activeCollection);
 
     // Active lookup against deleted record returns null
-    const hiddenDeleted = await runWithTenant('demo', () => useCases.loadObligationCollectionById('oc-2'));
+    const hiddenDeleted = await runWithTenant("demo", () =>
+      useCases.loadObligationCollectionById("oc-2"),
+    );
     expect(hiddenDeleted).toBeNull();
 
     // Deleted lookup against active record returns null
-    const hiddenActive = await runWithTenant('demo', () => useCases.loadObligationCollectionById('oc-1', true));
+    const hiddenActive = await runWithTenant("demo", () =>
+      useCases.loadObligationCollectionById("oc-1", true),
+    );
     expect(hiddenActive).toBeNull();
 
     // Deleted lookup against deleted record returns deleted record
-    const foundDeleted = await runWithTenant('demo', () => useCases.loadObligationCollectionById('oc-2', true));
+    const foundDeleted = await runWithTenant("demo", () =>
+      useCases.loadObligationCollectionById("oc-2", true),
+    );
     expect(foundDeleted).toEqual(deletedCollection);
   });
 
-  it('loadObligationCollectionsByIds scopes soft-deleted records', async () => {
+  it("loadObligationCollectionsByIds scopes soft-deleted records", async () => {
     const repo = createFakeRepo();
     const activeCollection = {
-      id: 'oc-1',
-      receipt_no: 'REC-001',
-      received_date: '2026-09-01',
-      sender_id: 'c-1',
+      id: "oc-1",
+      receipt_no: "REC-001",
+      received_date: "2026-09-01",
+      sender_id: "c-1",
       reference_id: null,
       amount: 100,
-      currency_id: 'USD',
-      payment_mode: 'cash' as const,
-      obligation_type_id: 'type-1',
-      mujtahid_representative_id: 'rep-1',
-      received_by: 'u-1',
+      currency_id: "USD",
+      payment_mode: "cash" as const,
+      obligation_type_id: "type-1",
+      mujtahid_representative_id: "rep-1",
+      received_by: "u-1",
     };
     const deletedCollection = {
       ...activeCollection,
-      id: 'oc-2',
-      deletedAt: '2026-09-02T00:00:00.000Z',
+      id: "oc-2",
+      deletedAt: "2026-09-02T00:00:00.000Z",
     };
 
-    (repo.findObligationCollectionsByIds as any).mockImplementation(async (_tenant: string, ids: string[], opts?: { includeDeleted?: boolean }) => {
-      const all = [activeCollection, deletedCollection].filter((c) => ids.includes(c.id));
-      if (opts?.includeDeleted) return all.filter((c) => Boolean((c as any).deletedAt));
-      return all.filter((c) => !(c as any).deletedAt);
-    });
+    (repo.findObligationCollectionsByIds as any).mockImplementation(
+      async (_tenant: string, ids: string[], opts?: { includeDeleted?: boolean }) => {
+        const all = [activeCollection, deletedCollection].filter((c) => ids.includes(c.id));
+        if (opts?.includeDeleted) return all.filter((c) => Boolean((c as any).deletedAt));
+        return all.filter((c) => !(c as any).deletedAt);
+      },
+    );
     const useCases = createObligationsUseCases(repo);
 
-    const activeList = await runWithTenant('demo', () => useCases.loadObligationCollectionsByIds(['oc-1', 'oc-2']));
+    const activeList = await runWithTenant("demo", () =>
+      useCases.loadObligationCollectionsByIds(["oc-1", "oc-2"]),
+    );
     expect(activeList).toEqual([activeCollection]);
 
-    const deletedList = await runWithTenant('demo', () => useCases.loadObligationCollectionsByIds(['oc-1', 'oc-2'], true));
+    const deletedList = await runWithTenant("demo", () =>
+      useCases.loadObligationCollectionsByIds(["oc-1", "oc-2"], true),
+    );
     expect(deletedList).toEqual([deletedCollection]);
   });
 
-  it('saveObligationCollection delegates to repository with tenant', async () => {
+  it("saveObligationCollection delegates to repository with tenant", async () => {
     const repo = createFakeRepo();
     const collection = {
-      id: 'oc-1',
-      receipt_no: 'REC-001',
-      received_date: '2026-09-01',
-      sender_id: 'c-1',
+      id: "oc-1",
+      receipt_no: "REC-001",
+      received_date: "2026-09-01",
+      sender_id: "c-1",
       reference_id: null,
       amount: 100,
-      currency_id: 'USD',
-      payment_mode: 'Cash' as const,
-      obligation_type_id: 'type-1',
-      mujtahid_representative_id: 'rep-1',
-      received_by: 'u-1',
+      currency_id: "USD",
+      payment_mode: "Cash" as const,
+      obligation_type_id: "type-1",
+      mujtahid_representative_id: "rep-1",
+      received_by: "u-1",
     };
     const useCases = createObligationsUseCases(repo);
 
-    await runWithTenant('demo', () => useCases.saveObligationCollection(collection));
+    await runWithTenant("demo", () => useCases.saveObligationCollection(collection));
 
-    expect(repo.saveObligationCollection).toHaveBeenCalledWith('demo', collection);
+    expect(repo.saveObligationCollection).toHaveBeenCalledWith("demo", collection);
   });
 
-  it('returns empty defaults when no tenant context is bound', async () => {
+  it("returns empty defaults when no tenant context is bound", async () => {
     const repo = createFakeRepo();
     const useCases = createObligationsUseCases(repo);
 
     const metrics = await useCases.loadObligationsCommandMetrics();
-    const singleType = await useCases.loadObligationTypeById('type-1');
-    const typeList = await useCases.loadObligationTypesByIds(['type-1']);
-    const singleMujtahid = await useCases.loadMujtahidById('m-1');
-    const mujtahidList = await useCases.loadMujtahidsByIds(['m-1']);
-    const singleRep = await useCases.loadMujtahidRepById('rep-1');
-    const repList = await useCases.loadMujtahidRepsByIds(['rep-1']);
-    const singleWakala = await useCases.loadWakalaTypeById('w-1');
-    const wakalaList = await useCases.loadWakalaTypesByIds(['w-1']);
-    const singleDist = await useCases.loadObligationDistributionById('d-1');
-    const distList = await useCases.loadObligationDistributionsByIds(['d-1']);
-    const singleCollection = await useCases.loadObligationCollectionById('oc-1');
-    const collectionList = await useCases.loadObligationCollectionsByIds(['oc-1']);
+    const singleType = await useCases.loadObligationTypeById("type-1");
+    const typeList = await useCases.loadObligationTypesByIds(["type-1"]);
+    const singleMujtahid = await useCases.loadMujtahidById("m-1");
+    const mujtahidList = await useCases.loadMujtahidsByIds(["m-1"]);
+    const singleRep = await useCases.loadMujtahidRepById("rep-1");
+    const repList = await useCases.loadMujtahidRepsByIds(["rep-1"]);
+    const singleWakala = await useCases.loadWakalaTypeById("w-1");
+    const wakalaList = await useCases.loadWakalaTypesByIds(["w-1"]);
+    const singleDist = await useCases.loadObligationDistributionById("d-1");
+    const distList = await useCases.loadObligationDistributionsByIds(["d-1"]);
+    const singleCollection = await useCases.loadObligationCollectionById("oc-1");
+    const collectionList = await useCases.loadObligationCollectionsByIds(["oc-1"]);
 
     expect(metrics.total).toBe(0);
     expect(singleType).toBeNull();

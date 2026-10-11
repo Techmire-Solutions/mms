@@ -40,7 +40,7 @@ const baseProps = {
 describe("ChartOfAccountsListDesktopTable", () => {
   it("renders card view when viewMode is cards", () => {
     const html = renderToStaticMarkup(
-      <ChartOfAccountsListDesktopTable {...baseProps} viewMode="cards" />
+      <ChartOfAccountsListDesktopTable {...baseProps} viewMode="cards" />,
     );
 
     expect(html).toContain("Main Cash Account");
@@ -51,7 +51,7 @@ describe("ChartOfAccountsListDesktopTable", () => {
 
   it("renders table view when viewMode is table", () => {
     const html = renderToStaticMarkup(
-      <ChartOfAccountsListDesktopTable {...baseProps} viewMode="table" />
+      <ChartOfAccountsListDesktopTable {...baseProps} viewMode="table" />,
     );
 
     expect(html).toContain("Main Cash Account");

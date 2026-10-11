@@ -1,8 +1,8 @@
-import type { BackgroundJobRecord } from '@mms/shared';
+import type { BackgroundJobRecord } from "@mms/shared";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
-} from '../services/backgroundJobWorkerService.js';
+} from "../services/backgroundJobWorkerService.js";
 
 /** Strip includeDeleted from export query when the viewer cannot access trash. */
 export function normalizeExportQuery(
@@ -43,12 +43,12 @@ export async function enqueueCsvExportJob(
     return existing;
   }
 
-  const kind = input.kind ?? 'export';
+  const kind = input.kind ?? "export";
   const runningJob: BackgroundJobRecord = {
     id: jobId,
     moduleId: input.moduleId,
     kind,
-    status: 'running',
+    status: "running",
     label: input.label,
     createdAt: new Date().toISOString(),
   };

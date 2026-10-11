@@ -11,8 +11,10 @@ export function deriveSelectionState<T extends { id: string | number }>(
 ): { allSelected: boolean; someSelected: boolean } {
   const has = (id: string | number): boolean => {
     if (selectedIds instanceof Set) {
-      return (selectedIds as ReadonlySet<string | number>).has(id) ||
-        (selectedIds as ReadonlySet<string | number>).has(String(id));
+      return (
+        (selectedIds as ReadonlySet<string | number>).has(id) ||
+        (selectedIds as ReadonlySet<string | number>).has(String(id))
+      );
     }
     const arr = selectedIds as ReadonlyArray<string | number>;
     return arr.includes(id) || arr.includes(String(id));

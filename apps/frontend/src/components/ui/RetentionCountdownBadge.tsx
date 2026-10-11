@@ -53,12 +53,7 @@ export function RetentionCountdownBadge({
 
   if (remaining === null) {
     return (
-      <Badge
-        as="span"
-        tone="muted"
-        size="sm"
-        className={className}
-      >
+      <Badge as="span" tone="muted" size="sm" className={className}>
         {t("common.archivedIndefinitely")}
       </Badge>
     );
@@ -74,7 +69,9 @@ export function RetentionCountdownBadge({
       className={cn(isWarning && "font-semibold", className)}
     >
       {isWarning ? "⚠️ " : ""}
-      {remaining === 1 ? t("common.purgesInOneDay") : t("common.purgesInDays", { count: remaining })}
+      {remaining === 1
+        ? t("common.purgesInOneDay")
+        : t("common.purgesInDays", { count: remaining })}
     </Badge>
   );
 }

@@ -1,4 +1,4 @@
-import { BACKUP_UPLOAD_MAX_BYTES } from '@mms/shared';
+import { BACKUP_UPLOAD_MAX_BYTES } from "@mms/shared";
 
 /**
  * Max JSON body for bulk sync upload. Defaults to the shared upload cap
@@ -9,11 +9,10 @@ export const SYNC_MAX_BODY_BYTES =
   Number(process.env.MMS_SYNC_MAX_BODY_BYTES) || BACKUP_UPLOAD_MAX_BYTES;
 
 /** Wall-clock cap for bulk sync processing (default 2 min). Override via `MMS_SYNC_REQUEST_TIMEOUT_MS`. */
-export const SYNC_REQUEST_TIMEOUT_MS =
-  Number(process.env.MMS_SYNC_REQUEST_TIMEOUT_MS) || 120_000;
+export const SYNC_REQUEST_TIMEOUT_MS = Number(process.env.MMS_SYNC_REQUEST_TIMEOUT_MS) || 120_000;
 
 /** Thrown by aborted sync work so the restore transaction rolls back. */
-export const SYNC_ABORTED_MESSAGE = 'backup.syncTimeout';
+export const SYNC_ABORTED_MESSAGE = "backup.syncTimeout";
 
 export function throwIfSyncAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
@@ -46,7 +45,7 @@ export async function withSyncTimeout<T>(
     if (timedOut) {
       throw Object.assign(new Error(SYNC_ABORTED_MESSAGE), {
         statusCode: 408,
-        type: 'server_error',
+        type: "server_error",
       });
     }
     throw error;

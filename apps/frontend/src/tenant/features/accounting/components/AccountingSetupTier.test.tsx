@@ -38,11 +38,7 @@ describe("AccountingSetupTier Component", () => {
   it("renders accounting setup tier in editable mode", () => {
     mockCanEditSetup = true;
     const html = renderToStaticMarkup(
-      <AccountingSetupTier
-        accounts={[]}
-        fiscalYears={[]}
-        onSaveFiscalYears={vi.fn()}
-      />,
+      <AccountingSetupTier accounts={[]} fiscalYears={[]} onSaveFiscalYears={vi.fn()} />,
     );
     expect(html).toContain("module-tier-motion");
     expect(html).toBeDefined();
@@ -51,11 +47,7 @@ describe("AccountingSetupTier Component", () => {
   it("renders read-only message when canEditSetup is false", () => {
     mockCanEditSetup = false;
     const html = renderToStaticMarkup(
-      <AccountingSetupTier
-        accounts={[]}
-        fiscalYears={[]}
-        onSaveFiscalYears={vi.fn()}
-      />,
+      <AccountingSetupTier accounts={[]} fiscalYears={[]} onSaveFiscalYears={vi.fn()} />,
     );
     expect(html).toContain("setup-read-only-message");
     expect(html).toContain("accounting.setup.readOnly");

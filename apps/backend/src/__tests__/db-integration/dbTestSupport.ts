@@ -1,10 +1,7 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import {
-  initializeDatabaseConnection,
-  pingDatabase,
-} from '../../db/dbConnection.js';
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { initializeDatabaseConnection, pingDatabase } from "../../db/dbConnection.js";
 
 /**
  * Support for the OPT-IN real-Postgres suite (`vitest.db.config.ts`, run via
@@ -22,13 +19,13 @@ import {
  * `pnpm test` run, and CI provides a Postgres service for it.
  */
 
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 /** Populates DATABASE_URL from apps/backend/.env when the environment has none. */
 function applyDatabaseUrlFromEnvFile(): void {
   if (process.env.DATABASE_URL) return;
   try {
-    const content = readFileSync(join(backendRoot, '.env'), 'utf-8');
+    const content = readFileSync(join(backendRoot, ".env"), "utf-8");
     const match = content.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
     if (match) process.env.DATABASE_URL = match[1].trim();
   } catch {
@@ -48,10 +45,10 @@ export async function requireDatabaseConnection(): Promise<void> {
 
   if (!(await pingDatabase())) {
     throw new Error(
-      'This suite requires a reachable PostgreSQL instance and will not skip silently.\n' +
-        `  DATABASE_URL: ${process.env.DATABASE_URL ?? '(unset — expected apps/backend/.env)'}\n` +
-        '  Start the dev database, or run the default suite (`pnpm test`) which excludes\n' +
-        '  src/__tests__/db-integration/** entirely.',
+      "This suite requires a reachable PostgreSQL instance and will not skip silently.\n" +
+        `  DATABASE_URL: ${process.env.DATABASE_URL ?? "(unset — expected apps/backend/.env)"}\n` +
+        "  Start the dev database, or run the default suite (`pnpm test`) which excludes\n" +
+        "  src/__tests__/db-integration/** entirely.",
     );
   }
 }

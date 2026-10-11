@@ -53,12 +53,20 @@ export function FormListFieldCard({
       style={{ zIndex: Math.max(1, 10 - index) }}
       className={cn(FORM_CARD, "p-4.5 space-y-4", CARD_STRIPE_INSET)}
     >
-      <div aria-hidden="true" className={cn(CARD_STRIPE_BASE, "transition-colors", LIST_CARD_STRIPE)} />
+      <div
+        aria-hidden="true"
+        className={cn(CARD_STRIPE_BASE, "transition-colors", LIST_CARD_STRIPE)}
+      />
       {hasHeaderContent ? (
         <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-border/50">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             {Icon ? (
-              <div className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-muted/70", LIST_CARD_ICON)}>
+              <div
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-muted/70",
+                  LIST_CARD_ICON,
+                )}
+              >
                 <Icon className="w-3.5 h-3.5" aria-hidden />
               </div>
             ) : null}

@@ -28,7 +28,13 @@ export function normalizePhoneItem(
 ): ContactPhone {
   const resolvedDefaultCode = defaults.defaultPhoneCountryCode || defaultCode || "";
   const defaultLabel = defaults.phoneLabel || DEFAULT_PHONE_LABELS[0] || "Mobile";
-  if (!item) return { label: defaultLabel, number: "", countryCode: resolvedDefaultCode, isPrimary: index === 0 };
+  if (!item)
+    return {
+      label: defaultLabel,
+      number: "",
+      countryCode: resolvedDefaultCode,
+      isPrimary: index === 0,
+    };
   if (typeof item === "string") {
     const parsed = parsePhoneNumber(item.trim(), resolvedDefaultCode);
     return {
@@ -42,7 +48,8 @@ export function normalizePhoneItem(
     const obj = item as Record<string, unknown>;
     const rawNum = String(obj.number || obj.phone || obj.value || obj.num || "").trim();
     const label = String(obj.label || obj.type || defaultLabel).trim() || defaultLabel;
-    const countryCode = String(obj.countryCode || obj.code || resolvedDefaultCode).trim() || resolvedDefaultCode;
+    const countryCode =
+      String(obj.countryCode || obj.code || resolvedDefaultCode).trim() || resolvedDefaultCode;
     const isPrimary = typeof obj.isPrimary === "boolean" ? obj.isPrimary : index === 0;
     const rawStatus = obj.whatsappStatus;
     const whatsappStatus: ContactPhone["whatsappStatus"] =
@@ -57,7 +64,12 @@ export function normalizePhoneItem(
       whatsappStatus,
     };
   }
-  return { label: defaultLabel, number: "", countryCode: resolvedDefaultCode, isPrimary: index === 0 };
+  return {
+    label: defaultLabel,
+    number: "",
+    countryCode: resolvedDefaultCode,
+    isPrimary: index === 0,
+  };
 }
 
 /**

@@ -56,11 +56,7 @@ const CURRENCY_SUFFIX_RE = /\s*(?:[$€£¥₹₨]|(?:Rs\b\.?|(?:PKR|USD|EUR|GBP
 export function parseMoneyInput(raw: string | null | undefined): number | null {
   if (typeof raw !== "string") return null;
   // Clean surrounding whitespace and specific currency symbols/codes
-  const cleaned = raw
-    .trim()
-    .replace(CURRENCY_PREFIX_RE, "")
-    .replace(CURRENCY_SUFFIX_RE, "")
-    .trim();
+  const cleaned = raw.trim().replace(CURRENCY_PREFIX_RE, "").replace(CURRENCY_SUFFIX_RE, "").trim();
   if (cleaned === "" || !ALLOWED_CHARACTERS.test(cleaned)) return null;
 
   const dotCount = countOccurrences(cleaned, ".");
@@ -107,7 +103,8 @@ export function parseMoneyInput(raw: string | null | undefined): number | null {
       : new RegExp(`^\\d{1,3}(\\${groupingSeparator}\\d{3})*$`);
   if (!groupingPattern.test(integerPart)) return null;
 
-  const integerDigits = groupingSeparator === null ? integerPart : integerPart.split(groupingSeparator).join("");
+  const integerDigits =
+    groupingSeparator === null ? integerPart : integerPart.split(groupingSeparator).join("");
   if (integerDigits === "" || integerDigits.length > MAX_INTEGER_DIGITS) return null;
 
   // Exact cents arithmetic: the typed value is never multiplied as a float.

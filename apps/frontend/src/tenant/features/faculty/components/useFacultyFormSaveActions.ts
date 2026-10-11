@@ -9,15 +9,16 @@ import type {
   FacultySettings,
   FieldDefinition,
 } from "@mms/shared";
-import {
-  facultyDraftSnapshot,
-} from "@/tenant/features/faculty/components/facultyFormDraft";
+import { facultyDraftSnapshot } from "@/tenant/features/faculty/components/facultyFormDraft";
 import {
   confirmPendingFacultySave,
   runFacultySaveFlow,
 } from "@/tenant/features/faculty/components/facultyFormSaveFlow";
 import { DUPLICATE_ERROR_KEYS } from "@/tenant/features/faculty/components/facultyFormValidation";
-import type { FacultyUserAccountDraft, LinkedUserInfo } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
+import type {
+  FacultyUserAccountDraft,
+  LinkedUserInfo,
+} from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
 export interface UseFacultyFormSaveActionsInput {
   facultyDraft?: Partial<FacultyMember>;
@@ -63,7 +64,9 @@ export function useFacultyFormSaveActions({
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pendingSaveData, setPendingSaveData] = useState<Partial<FacultyMember> | null>(null);
-  const [typedDuplicateReason, setTypedDuplicateReason] = useState<FacultyDuplicateReason | null>(null);
+  const [typedDuplicateReason, setTypedDuplicateReason] = useState<FacultyDuplicateReason | null>(
+    null,
+  );
   const [duplicateConfirmOpen, setDuplicateConfirmOpen] = useState(false);
 
   const clearDuplicatePrompt = () => {

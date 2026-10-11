@@ -1,8 +1,5 @@
 import { MapPin, type LucideIcon } from "lucide-react";
-import {
-  CollectionRowItem,
-  type CollectionRowAction,
-} from "./ContactDetailShared";
+import { CollectionRowItem, type CollectionRowAction } from "./ContactDetailShared";
 import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
 import { DetailCollectionEmpty } from "./contactDetailChannelHelpers";

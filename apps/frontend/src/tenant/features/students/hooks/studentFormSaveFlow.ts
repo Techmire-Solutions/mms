@@ -80,9 +80,7 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
       contactId: String(input.studentDraft.contactId),
       linkedContact: input.linkedContact,
       grNumber:
-        typeof input.studentDraft.grNumber === "string"
-          ? input.studentDraft.grNumber
-          : undefined,
+        typeof input.studentDraft.grNumber === "string" ? input.studentDraft.grNumber : undefined,
     });
 
     if (duplicateReason === "grNumber") {

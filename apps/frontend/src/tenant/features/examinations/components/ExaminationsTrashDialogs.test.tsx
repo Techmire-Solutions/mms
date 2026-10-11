@@ -54,8 +54,8 @@ describe("ExaminationsTrashDialogs", () => {
     expect(document.body.textContent).toContain("examinations.trash.deleteTitle");
     expect(document.body.textContent).toContain("examinations.trash.deleteConfirm");
 
-    const deleteBtn = Array.from(document.body.querySelectorAll("button")).find(
-      (b) => b.textContent?.includes("common.delete"),
+    const deleteBtn = Array.from(document.body.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("common.delete"),
     );
     expect(deleteBtn).toBeDefined();
 
@@ -87,8 +87,8 @@ describe("ExaminationsTrashDialogs", () => {
 
     expect(document.body.textContent).toContain("examinations.trash.deleteTitle");
 
-    const confirmBtn = Array.from(document.body.querySelectorAll("button")).find(
-      (b) => b.textContent?.includes("common.delete"),
+    const confirmBtn = Array.from(document.body.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("common.delete"),
     );
     expect(confirmBtn).toBeDefined();
 
@@ -119,8 +119,8 @@ describe("ExaminationsTrashDialogs", () => {
 
     expect(document.body.textContent).toContain("examinations.trash.restore");
 
-    const restoreBtn = Array.from(document.body.querySelectorAll("button")).find(
-      (b) => b.textContent?.includes("examinations.trash.restore"),
+    const restoreBtn = Array.from(document.body.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("examinations.trash.restore"),
     );
     expect(restoreBtn).toBeDefined();
 

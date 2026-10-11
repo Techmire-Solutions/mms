@@ -28,7 +28,7 @@ export interface PersonIdentityMetaProps {
 }
 
 /** Gender (+ optional Syed) identity row for person directory cards/tables/detail. */
-export const PersonIdentityMeta = (function PersonIdentityMeta({
+export const PersonIdentityMeta = function PersonIdentityMeta({
   gender,
   isSyed,
   syedLabel,
@@ -42,7 +42,8 @@ export const PersonIdentityMeta = (function PersonIdentityMeta({
 }: PersonIdentityMetaProps): React.JSX.Element | null {
   const { t } = useTranslation();
   const normalizedGender = gender?.trim().toLowerCase();
-  const hasGender = Boolean(normalizedGender) && normalizedGender !== "unspecified" && normalizedGender !== "none";
+  const hasGender =
+    Boolean(normalizedGender) && normalizedGender !== "unspecified" && normalizedGender !== "none";
   const showSyed = Boolean(isSyed);
   const effectiveSyedLabel = syedLabel || t("contacts.table.yesSyed");
 
@@ -52,12 +53,7 @@ export const PersonIdentityMeta = (function PersonIdentityMeta({
   const badgePadding = size === "md" ? "px-2.5 py-0.5" : "px-2 py-0.5";
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-1.5 flex-wrap leading-normal",
-        className,
-      )}
-    >
+    <div className={cn("flex items-center gap-1.5 flex-wrap leading-normal", className)}>
       {hasGender ? (
         <Badge
           as={onGenderClick ? "button" : "span"}
@@ -98,10 +94,10 @@ export const PersonIdentityMeta = (function PersonIdentityMeta({
       {children}
     </div>
   );
-});
+};
 
 /** Optional wrapper when subtitle stacks multiple identity rows (e.g. GR + gender). */
-export const DirectoryCardSubtitleStack = (function DirectoryCardSubtitleStack({
+export const DirectoryCardSubtitleStack = function DirectoryCardSubtitleStack({
   children,
   className,
 }: {
@@ -109,5 +105,4 @@ export const DirectoryCardSubtitleStack = (function DirectoryCardSubtitleStack({
   className?: string;
 }): React.JSX.Element {
   return <div className={cn("mt-0.5 flex flex-col gap-0.5 min-w-0", className)}>{children}</div>;
-});
-
+};

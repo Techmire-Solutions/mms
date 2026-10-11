@@ -22,7 +22,7 @@ export interface ExaminationsSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const ExaminationsSetupTier = (function ExaminationsSetupTier({
+export const ExaminationsSetupTier = function ExaminationsSetupTier({
   onPrefsDirtyChange,
 }: ExaminationsSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -44,11 +44,7 @@ export const ExaminationsSetupTier = (function ExaminationsSetupTier({
     <ModuleTierMotion tier="setup">
       <ErrorBoundary>
         <div className="space-y-4">
-          <SubTabBar
-            tabs={tabs}
-            value={subTabs.sub}
-            onChange={subTabs.handleSubTabChange}
-          />
+          <SubTabBar tabs={tabs} value={subTabs.sub} onChange={subTabs.handleSubTabChange} />
 
           {!canEditSetup ? (
             <SetupReadOnlyMessage title={t("examinations.setup.readOnly")} />
@@ -57,15 +53,13 @@ export const ExaminationsSetupTier = (function ExaminationsSetupTier({
               {subTabs.sub === "preferences" && (
                 <ExaminationsSettings onPrefsDirtyChange={onPrefsDirtyChange} />
               )}
-              {subTabs.sub === "templates" && (
-                <ExaminationTemplateEditor />
-              )}
+              {subTabs.sub === "templates" && <ExaminationTemplateEditor />}
             </Suspense>
           )}
         </div>
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default ExaminationsSetupTier;

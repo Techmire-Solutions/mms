@@ -11,14 +11,7 @@ export type { DynamicChartVisualizerConfigPanelProps } from "@/components/ui/rep
 export function DynamicChartVisualizerConfigPanel(
   props: DynamicChartVisualizerConfigPanelProps,
 ): React.JSX.Element {
-  const {
-    filters,
-    activeMeta,
-    onAddFilter,
-    onUpdateFilter,
-    onDeleteFilter,
-    t,
-  } = props;
+  const { filters, activeMeta, onAddFilter, onUpdateFilter, onDeleteFilter, t } = props;
 
   return (
     <div className="lg:col-span-5 space-y-5 print:hidden">
@@ -28,8 +21,12 @@ export function DynamicChartVisualizerConfigPanel(
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <SectionLabel as="h4" tone="foreground" className="leading-none">{t("reports.visualizer.configTitle")}</SectionLabel>
-            <SectionLabel as="p" weight="bold" tracking="wider" className="mt-0.5">{t("reports.visualizer.configSubtitle")}</SectionLabel>
+            <SectionLabel as="h4" tone="foreground" className="leading-none">
+              {t("reports.visualizer.configTitle")}
+            </SectionLabel>
+            <SectionLabel as="p" weight="bold" tracking="wider" className="mt-0.5">
+              {t("reports.visualizer.configSubtitle")}
+            </SectionLabel>
           </div>
         </div>
 

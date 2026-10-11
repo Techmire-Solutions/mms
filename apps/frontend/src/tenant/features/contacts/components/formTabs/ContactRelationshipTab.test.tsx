@@ -13,7 +13,10 @@ vi.mock("./ContactSubListCards", () => ({
   ContactSubListShell: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sublist-shell">{children}</div>
   ),
-  FormListFieldCard: ({ children, typeSelect }: {
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
@@ -39,7 +42,12 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
       {children}
     </div>
   ),
-  FormSelect: ({ value, options, id, name }: {
+  FormSelect: ({
+    value,
+    options,
+    id,
+    name,
+  }: {
     value?: string;
     options: readonly ({ value: string; label: string } | string)[];
     id?: string;
@@ -49,13 +57,22 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
       {options.map((opt) => {
         const val = typeof opt === "string" ? opt : opt.value;
         const lbl = typeof opt === "string" ? opt : opt.label;
-        return <option key={val} value={val}>{lbl}</option>;
+        return (
+          <option key={val} value={val}>
+            {lbl}
+          </option>
+        );
       })}
     </select>
   ),
-  EditableSelect: ({ value }: { value?: string }) => <div data-testid="editable-select">{value}</div>,
+  EditableSelect: ({ value }: { value?: string }) => (
+    <div data-testid="editable-select">{value}</div>
+  ),
   FieldErrorMessage: () => null,
-  FormListFieldCard: ({ children, typeSelect }: {
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
@@ -66,10 +83,16 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
   ),
 }));
 
-let capturedPickerProps: { label: string; onChange: (id: string | number | null, contact?: unknown) => void } | null = null;
+let capturedPickerProps: {
+  label: string;
+  onChange: (id: string | number | null, contact?: unknown) => void;
+} | null = null;
 
 vi.mock("@/components/contactLink/ContactPicker", () => ({
-  default: (props: { label: string; onChange: (id: string | number | null, contact?: unknown) => void }) => {
+  default: (props: {
+    label: string;
+    onChange: (id: string | number | null, contact?: unknown) => void;
+  }) => {
     capturedPickerProps = props;
     return <div data-testid="contact-picker">{props.label}</div>;
   },
@@ -107,7 +130,7 @@ describe("ContactRelationshipTab Component", () => {
     );
 
     expect(html).toContain("contacts.form.relationshipInstructions");
-    expect(html).toContain("data-testid=\"form-select\"");
+    expect(html).toContain('data-testid="form-select"');
     expect(html).toContain("Parent");
     expect(html).toContain("Child");
     expect(html).toContain("Husband");
@@ -154,4 +177,3 @@ describe("ContactRelationshipTab Component", () => {
     });
   });
 });
-

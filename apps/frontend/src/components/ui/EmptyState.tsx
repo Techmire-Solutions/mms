@@ -20,7 +20,7 @@ interface EmptyStateProps {
  * @param {EmptyStateProps} props - The component props.
  * @returns {React.ReactElement} The rendered EmptyState component.
  */
-export const EmptyState = (function EmptyState({
+export const EmptyState = function EmptyState({
   icon,
   title,
   description = "",
@@ -35,15 +35,18 @@ export const EmptyState = (function EmptyState({
 
   return (
     <FeedbackStateLayout
-      role={role} title={title} description={description} action={action}
-      compact={compact} dashed={isDashed} className={className}
-      icon={Icon && (
-        isDashed ? (
+      role={role}
+      title={title}
+      description={description}
+      action={action}
+      compact={compact}
+      dashed={isDashed}
+      className={className}
+      icon={
+        Icon &&
+        (isDashed ? (
           <Icon
-            className={cn(
-              "text-muted-foreground mx-auto mb-2",
-              compact ? "w-6 h-6" : "w-8 h-8",
-            )}
+            className={cn("text-muted-foreground mx-auto mb-2", compact ? "w-6 h-6" : "w-8 h-8")}
             aria-hidden
           />
         ) : (
@@ -54,15 +57,12 @@ export const EmptyState = (function EmptyState({
             )}
           >
             <Icon
-              className={cn(
-                "text-muted-foreground",
-                compact ? "w-5 h-5" : "w-7 h-7",
-              )}
+              className={cn("text-muted-foreground", compact ? "w-5 h-5" : "w-7 h-7")}
               aria-hidden="true"
             />
           </div>
-        )
-      )}
+        ))
+      }
     />
   );
-});
+};

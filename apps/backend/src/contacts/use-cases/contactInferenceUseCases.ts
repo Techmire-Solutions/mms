@@ -11,11 +11,11 @@ import {
   type RelationshipPair,
   type PlannedRelationship,
   type RelationshipLink,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { loadContactPreferences } from './contactPreferencesService.js';
-import type { ContactsRepository } from '../repository/contactsRepository.js';
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { loadContactPreferences } from "./contactPreferencesService.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
 /**
  * Returns which candidate phones/emails/names already exist in the tenant directory.
@@ -57,7 +57,9 @@ export async function matchContactIdentityIndex(
   }
 
   const existingNames =
-    names.length > 0 ? await repo.findExistingNormalizedContactNames(tenant, names) : new Set<string>();
+    names.length > 0
+      ? await repo.findExistingNormalizedContactNames(tenant, names)
+      : new Set<string>();
 
   const namesSet = new Set(names);
   return {
@@ -74,12 +76,12 @@ function collectMatchingPhones(
 ): void {
   // Unique-index SQL matches full digit keys; also accept last-10 FE comparison keys.
   for (const phone of contact.phones ?? []) {
-    const raw = String(phone.number || '').trim();
+    const raw = String(phone.number || "").trim();
     if (!raw) continue;
-    const digits = raw.replace(/\D/g, '');
-    const withCountry = `${String(phone.countryCode || '').replace(/\D/g, '')}${digits}`.replace(
+    const digits = raw.replace(/\D/g, "");
+    const withCountry = `${String(phone.countryCode || "").replace(/\D/g, "")}${digits}`.replace(
       /\D/g,
-      '',
+      "",
     );
     for (const key of [digits, withCountry, digits.slice(-10), withCountry.slice(-10)]) {
       if (key && candidatePhoneSet.has(key)) existingPhones.add(key);
@@ -92,12 +94,12 @@ function collectMatchingPhones(
 
 function linksForContact(contact: Contact): RelationshipLink[] {
   const collect = (entry: RelationshipContact | ContactRelationship): RelationshipLink | null => {
-    const contactId = entry.contactId == null ? '' : String(entry.contactId);
+    const contactId = entry.contactId == null ? "" : String(entry.contactId);
     if (!contactId.trim()) return null;
     return {
       contactId,
       relationship: entry.relationship,
-      inferred: 'inferred' in entry && entry.inferred === true,
+      inferred: "inferred" in entry && entry.inferred === true,
     };
   };
 
@@ -108,7 +110,9 @@ function linksForContact(contact: Contact): RelationshipLink[] {
 
 function setInferredRelationshipContact(contact: Contact, planned: PlannedRelationship): Contact {
   const relationshipContacts = contact.relationshipContacts ?? [];
-  const existingIndex = relationshipContacts.findIndex((entry) => String(entry.contactId) === planned.contactId);
+  const existingIndex = relationshipContacts.findIndex(
+    (entry) => String(entry.contactId) === planned.contactId,
+  );
   const relationshipEntry: RelationshipContact = {
     contactId: planned.contactId,
     relationship: planned.relationship,
@@ -118,7 +122,9 @@ function setInferredRelationshipContact(contact: Contact, planned: PlannedRelati
   };
   const nextRelationshipContacts =
     existingIndex >= 0
-      ? relationshipContacts.map((entry, index) => (index === existingIndex ? { ...entry, ...relationshipEntry } : entry))
+      ? relationshipContacts.map((entry, index) =>
+          index === existingIndex ? { ...entry, ...relationshipEntry } : entry,
+        )
       : [...relationshipContacts, relationshipEntry];
 
   return {
@@ -138,7 +144,9 @@ export async function applyContactRelationshipInference(
   repo: ContactsRepository = contactsRepository,
 ): Promise<void> {
   const sourceId = String(sourceContact.id);
-  const sourceLinks = linksForContact(sourceContact).filter((entry) => entry.contactId !== sourceId);
+  const sourceLinks = linksForContact(sourceContact).filter(
+    (entry) => entry.contactId !== sourceId,
+  );
   if (sourceLinks.length === 0) return;
 
   const resolvedPairs =
@@ -160,7 +168,7 @@ export async function applyContactRelationshipInference(
     if (!target || target.deletedAt) continue;
 
     const reciprocalLabel = resolveInverseRelationship(
-      sourceLink.relationship ?? '',
+      sourceLink.relationship ?? "",
       sourceContact,
       resolvedPairs,
     );

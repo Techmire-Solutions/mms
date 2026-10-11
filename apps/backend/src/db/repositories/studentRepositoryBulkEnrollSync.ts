@@ -1,7 +1,7 @@
-import { and, eq, inArray } from 'drizzle-orm';
-import { type Student } from '@mms/shared';
-import { studentEnrolledSessions } from '../schema.js';
-import type { AppDb } from '../tenant-context.js';
+import { and, eq, inArray } from "drizzle-orm";
+import { type Student } from "@mms/shared";
+import { studentEnrolledSessions } from "../schema.js";
+import type { AppDb } from "../tenant-context.js";
 
 /**
  * Bulk diff-based sync of enrolled sessions across a batch of students.
@@ -61,8 +61,7 @@ export async function syncBulkStudentEnrolledSessionsTx(
     const existingSet = existingMap.get(studentId) ?? new Set<string>();
 
     const areSame =
-      existingSet.size === newSessions.length &&
-      newSessions.every((s) => existingSet.has(s));
+      existingSet.size === newSessions.length && newSessions.every((s) => existingSet.has(s));
 
     if (!areSame) {
       studentIdsToDelete.push(studentId);

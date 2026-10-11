@@ -48,4 +48,3 @@ export function getCurrentSubdomain(): string | null {
   }
   return parseTenantFromHost(window.location.hostname, getAppDomain());
 }
-

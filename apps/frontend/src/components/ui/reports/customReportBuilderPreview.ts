@@ -1,9 +1,6 @@
 import type { AppTranslationKey } from "@mms/shared";
 import type { AggregateFn, DataSource, PreviewRow } from "./customReportBuilderFields";
-import {
-  compilePreviewFieldExtractor,
-  toCamelCase,
-} from "./customReportBuilderExtractor";
+import { compilePreviewFieldExtractor, toCamelCase } from "./customReportBuilderExtractor";
 
 export { compilePreviewFieldExtractor, toCamelCase };
 
@@ -47,7 +44,13 @@ export function getSourceRows(
   > = {};
   collections.sessions.forEach((session) => {
     const classes = session.classes as
-      | { id: string; facultyName?: string; enrolled?: number; subject?: string; specialization?: string }[]
+      | {
+          id: string;
+          facultyName?: string;
+          enrolled?: number;
+          subject?: string;
+          specialization?: string;
+        }[]
       | undefined;
     if (classes) {
       classes.forEach((sessionClass) => {
@@ -162,7 +165,9 @@ export function applyPreviewAggregates(
             summaryRow[fieldLabel] = values.reduce((sum, value) => sum + value, 0);
             break;
           case "Average":
-            summaryRow[fieldLabel] = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+            summaryRow[fieldLabel] = Math.round(
+              values.reduce((sum, value) => sum + value, 0) / values.length,
+            );
             break;
           case "Max":
             summaryRow[fieldLabel] = Math.max(...values);

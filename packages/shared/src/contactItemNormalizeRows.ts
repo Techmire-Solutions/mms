@@ -66,7 +66,13 @@ export function normalizePhoneItem(
 ): ContactPhone {
   const resolvedDefaultCode = defaults.defaultPhoneCountryCode || defaultCode || "";
   const defaultLabel = defaults.phoneLabel || DEFAULT_PHONE_LABELS[0] || "Mobile";
-  if (!item) return { label: defaultLabel, number: "", countryCode: resolvedDefaultCode, isPrimary: index === 0 };
+  if (!item)
+    return {
+      label: defaultLabel,
+      number: "",
+      countryCode: resolvedDefaultCode,
+      isPrimary: index === 0,
+    };
   if (typeof item === "string") {
     const parsed = parsePhoneNumber(item.trim(), resolvedDefaultCode);
     return {
@@ -80,7 +86,8 @@ export function normalizePhoneItem(
     const obj = item as Record<string, unknown>;
     const rawNum = String(obj.number || obj.phone || obj.value || obj.num || "").trim();
     const label = String(obj.label || obj.type || defaultLabel).trim() || defaultLabel;
-    const countryCode = String(obj.countryCode || obj.code || resolvedDefaultCode).trim() || resolvedDefaultCode;
+    const countryCode =
+      String(obj.countryCode || obj.code || resolvedDefaultCode).trim() || resolvedDefaultCode;
     const isPrimary = typeof obj.isPrimary === "boolean" ? obj.isPrimary : index === 0;
     const rawStatus = obj.whatsappStatus;
     const whatsappStatus: ContactPhone["whatsappStatus"] =
@@ -95,7 +102,12 @@ export function normalizePhoneItem(
       whatsappStatus,
     };
   }
-  return { label: defaultLabel, number: "", countryCode: resolvedDefaultCode, isPrimary: index === 0 };
+  return {
+    label: defaultLabel,
+    number: "",
+    countryCode: resolvedDefaultCode,
+    isPrimary: index === 0,
+  };
 }
 
 /**
@@ -221,15 +233,16 @@ export function normalizeRelationshipContactItem(
     const relationship =
       String(obj.relationship || obj.relation || obj.type || defaultRelationship).trim() ||
       defaultRelationship;
-    const name = typeof obj.name === "string" && obj.name.trim().length > 0 ? obj.name.trim() : undefined;
-    const phone = typeof obj.phone === "string" && obj.phone.trim().length > 0 ? obj.phone.trim() : undefined;
+    const name =
+      typeof obj.name === "string" && obj.name.trim().length > 0 ? obj.name.trim() : undefined;
+    const phone =
+      typeof obj.phone === "string" && obj.phone.trim().length > 0 ? obj.phone.trim() : undefined;
     const inferred = typeof obj.inferred === "boolean" ? obj.inferred : undefined;
     const inferredFromContactId =
       obj.inferredFromContactId != null && String(obj.inferredFromContactId).trim().length > 0
         ? String(obj.inferredFromContactId).trim()
         : undefined;
-    const inferenceDepth =
-      typeof obj.inferenceDepth === "number" ? obj.inferenceDepth : undefined;
+    const inferenceDepth = typeof obj.inferenceDepth === "number" ? obj.inferenceDepth : undefined;
 
     return {
       ...retainExtraKeys(obj, RELATIONSHIP_SYSTEM_KEYS),
@@ -252,7 +265,8 @@ export function normalizeEducationItem(
   item: unknown,
   defaults: ContactItemNormalizeDefaults = {},
 ): ContactEducation {
-  const defaultDegree = defaults.educationDegree || DEFAULT_EDUCATION_DEGREE_LABELS[0] || "Matric / Secondary";
+  const defaultDegree =
+    defaults.educationDegree || DEFAULT_EDUCATION_DEGREE_LABELS[0] || "Matric / Secondary";
   if (!item) {
     return {
       degree: defaultDegree,
@@ -273,14 +287,19 @@ export function normalizeEducationItem(
   }
   if (typeof item === "object") {
     const obj = item as Record<string, unknown>;
-    const degree = String(obj.degree || obj.label || obj.type || defaultDegree).trim() || defaultDegree;
-    const institution = String(obj.institution || obj.school || obj.college || obj.university || obj.value || "").trim();
+    const degree =
+      String(obj.degree || obj.label || obj.type || defaultDegree).trim() || defaultDegree;
+    const institution = String(
+      obj.institution || obj.school || obj.college || obj.university || obj.value || "",
+    ).trim();
     const fieldOfStudy = String(obj.fieldOfStudy || obj.major || obj.subject || "").trim();
     const isCurrentlyEnrolled =
       typeof obj.isCurrentlyEnrolled === "boolean"
         ? obj.isCurrentlyEnrolled
         : obj.isCurrent === true || obj.enrolled === true;
-    const year = isCurrentlyEnrolled ? "" : String(obj.year || obj.passingYear || obj.graduationYear || "").trim();
+    const year = isCurrentlyEnrolled
+      ? ""
+      : String(obj.year || obj.passingYear || obj.graduationYear || "").trim();
     const grade = String(obj.grade || obj.division || obj.score || obj.marks || "").trim();
     return {
       ...retainExtraKeys(obj, EDUCATION_SYSTEM_KEYS),
@@ -336,9 +355,15 @@ export function normalizeExperienceItem(
   }
   if (typeof item === "object") {
     const obj = item as Record<string, unknown>;
-    const title = String(obj.title || obj.jobTitle || obj.role || obj.designation || obj.value || "").trim();
-    const organization = String(obj.organization || obj.company || obj.employer || obj.madrasa || "").trim();
-    const employmentType = String(obj.employmentType || obj.type || defaultEmploymentType).trim() || defaultEmploymentType;
+    const title = String(
+      obj.title || obj.jobTitle || obj.role || obj.designation || obj.value || "",
+    ).trim();
+    const organization = String(
+      obj.organization || obj.company || obj.employer || obj.madrasa || "",
+    ).trim();
+    const employmentType =
+      String(obj.employmentType || obj.type || defaultEmploymentType).trim() ||
+      defaultEmploymentType;
     const location = String(obj.location || obj.city || "").trim();
     const startDate = String(obj.startDate || obj.from || "").trim();
     const endDate = String(obj.endDate || obj.to || "").trim();
@@ -405,9 +430,13 @@ export function normalizeSkillItem(
     const obj = item as Record<string, unknown>;
     const name = String(obj.name || obj.skill || obj.title || obj.value || "").trim();
     const category = String(obj.category || obj.type || defaultCategory).trim() || defaultCategory;
-    const proficiency = String(obj.proficiency || obj.level || defaultProficiency).trim() || defaultProficiency;
-    const yearsOfExperience = String(obj.yearsOfExperience || obj.years || obj.experienceYears || "").trim();
-    const isCertified = typeof obj.isCertified === "boolean" ? obj.isCertified : Boolean(obj.certified);
+    const proficiency =
+      String(obj.proficiency || obj.level || defaultProficiency).trim() || defaultProficiency;
+    const yearsOfExperience = String(
+      obj.yearsOfExperience || obj.years || obj.experienceYears || "",
+    ).trim();
+    const isCertified =
+      typeof obj.isCertified === "boolean" ? obj.isCertified : Boolean(obj.certified);
     const issuer = String(obj.issuer || obj.institution || obj.board || "").trim();
     const description = String(obj.description || obj.notes || obj.details || "").trim();
     return {

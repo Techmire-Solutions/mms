@@ -1,6 +1,6 @@
-import { toTitleCase, type AppTranslationKey } from '@mms/shared';
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import type { AccentColor } from '@/components/ui/statCardAccent';
+import { toTitleCase, type AppTranslationKey } from "@mms/shared";
+import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { AccentColor } from "@/components/ui/statCardAccent";
 
 export type StatusTranslate = (key: AppTranslationKey) => string;
 
@@ -48,7 +48,7 @@ export function createModuleStatusUi(options: {
   }
 
   function statusMetricAccent(status: string): AccentColor {
-    return metricAccentForStatus ? metricAccentForStatus(status) : 'muted';
+    return metricAccentForStatus ? metricAccentForStatus(status) : "muted";
   }
 
   return { statusLabel, statusOptions, statusBadgeConfig, statusMetricAccent };

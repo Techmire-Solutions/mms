@@ -38,10 +38,18 @@ export default function NotificationsPage(): React.JSX.Element {
     >
       <section aria-labelledby="notifications-list-heading" className={WORK_SURFACE}>
         <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
-          <h2 id="notifications-list-heading" className="text-sm font-bold text-foreground text-balance">
+          <h2
+            id="notifications-list-heading"
+            className="text-sm font-bold text-foreground text-balance"
+          >
             {t("notifications.title")}
           </h2>
-          <Badge tone={unreadCount > 0 ? "primary" : "muted"} size="sm" role="status" aria-live="polite">
+          <Badge
+            tone={unreadCount > 0 ? "primary" : "muted"}
+            size="sm"
+            role="status"
+            aria-live="polite"
+          >
             {unreadCount > 0
               ? t("notifications.unreadCount", { count: unreadCount })
               : t("notifications.allRead")}

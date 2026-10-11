@@ -87,12 +87,12 @@ describe("ContactAddressEntryCard", () => {
     expect(stateInput?.value).toBe("Sindh");
   });
 
-function changeInput(input: HTMLInputElement, value: string) {
-  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-  setter?.call(input, value);
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-  input.dispatchEvent(new Event("change", { bubbles: true }));
-}
+  function changeInput(input: HTMLInputElement, value: string) {
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
 
   it("dispatches onUpdateAddress when street address is edited", async () => {
     const onUpdateAddress = vi.fn();

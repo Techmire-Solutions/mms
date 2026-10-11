@@ -1,10 +1,10 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { EventEmitter } from 'node:events';
-import { startOutboxCdcListener, OUTBOX_CDC_CHANNEL } from '../worker/outboxCdcListener.js';
-import type { SearchIndexAdapter } from '../worker/adapters/searchIndexAdapter.js';
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { EventEmitter } from "node:events";
+import { startOutboxCdcListener, OUTBOX_CDC_CHANNEL } from "../worker/outboxCdcListener.js";
+import type { SearchIndexAdapter } from "../worker/adapters/searchIndexAdapter.js";
 
 const mockProcessOutboxCdcBatch = vi.fn();
-vi.mock('../worker/processors/outboxCdcProcessor.js', () => ({
+vi.mock("../worker/processors/outboxCdcProcessor.js", () => ({
   processOutboxCdcBatch: (...args: unknown[]) => mockProcessOutboxCdcBatch(...args),
 }));
 
@@ -21,11 +21,11 @@ const mockPool = {
   }),
 };
 
-vi.mock('../db/dbConnection.js', () => ({
+vi.mock("../db/dbConnection.js", () => ({
   getPool: () => mockPool,
 }));
 
-describe('Outbox CDC Listener (PostgreSQL LISTEN / NOTIFY)', () => {
+describe("Outbox CDC Listener (PostgreSQL LISTEN / NOTIFY)", () => {
   const fakeSearchAdapter: SearchIndexAdapter = {
     deleteDocument: vi.fn().mockResolvedValue(undefined),
     indexDocument: vi.fn().mockResolvedValue(undefined),
@@ -40,7 +40,7 @@ describe('Outbox CDC Listener (PostgreSQL LISTEN / NOTIFY)', () => {
     activeMockClient = null;
   });
 
-  it('connects to pg pool, executes LISTEN on mms_outbox_events, and runs initial backlog drain', async () => {
+  it("connects to pg pool, executes LISTEN on mms_outbox_events, and runs initial backlog drain", async () => {
     const handle = await startOutboxCdcListener(fakeSearchAdapter, {
       fallbackPollIntervalMs: 60_000,
       coalesceDebounceMs: 10,
@@ -58,7 +58,7 @@ describe('Outbox CDC Listener (PostgreSQL LISTEN / NOTIFY)', () => {
     expect(activeMockClient?.release).toHaveBeenCalled();
   });
 
-  it('triggers batch processing on incoming NOTIFY event and coalesces rapid signals', async () => {
+  it("triggers batch processing on incoming NOTIFY event and coalesces rapid signals", async () => {
     const handle = await startOutboxCdcListener(fakeSearchAdapter, {
       fallbackPollIntervalMs: 60_000,
       coalesceDebounceMs: 25,
@@ -69,9 +69,9 @@ describe('Outbox CDC Listener (PostgreSQL LISTEN / NOTIFY)', () => {
     mockProcessOutboxCdcBatch.mockClear();
 
     // Fire 3 rapid notifications
-    activeMockClient?.emit('notification', { channel: OUTBOX_CDC_CHANNEL, payload: 'new_event' });
-    activeMockClient?.emit('notification', { channel: OUTBOX_CDC_CHANNEL, payload: 'new_event' });
-    activeMockClient?.emit('notification', { channel: OUTBOX_CDC_CHANNEL, payload: 'new_event' });
+    activeMockClient?.emit("notification", { channel: OUTBOX_CDC_CHANNEL, payload: "new_event" });
+    activeMockClient?.emit("notification", { channel: OUTBOX_CDC_CHANNEL, payload: "new_event" });
+    activeMockClient?.emit("notification", { channel: OUTBOX_CDC_CHANNEL, payload: "new_event" });
 
     // Before debounce delay expires, should not have fired additional calls
     expect(mockProcessOutboxCdcBatch).not.toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe('Outbox CDC Listener (PostgreSQL LISTEN / NOTIFY)', () => {
     await handle.stop();
   });
 
-  it('ignores notifications on different channels', async () => {
+  it("ignores notifications on different channels", async () => {
     const handle = await startOutboxCdcListener(fakeSearchAdapter, {
       fallbackPollIntervalMs: 60_000,
       coalesceDebounceMs: 20,
@@ -92,7 +92,7 @@ describe('Outbox CDC Listener (PostgreSQL LISTEN / NOTIFY)', () => {
     await new Promise((resolve) => setTimeout(resolve, 30));
     mockProcessOutboxCdcBatch.mockClear();
 
-    activeMockClient?.emit('notification', { channel: 'other_channel', payload: 'ignored' });
+    activeMockClient?.emit("notification", { channel: "other_channel", payload: "ignored" });
     await new Promise((resolve) => setTimeout(resolve, 40));
 
     expect(mockProcessOutboxCdcBatch).not.toHaveBeenCalled();

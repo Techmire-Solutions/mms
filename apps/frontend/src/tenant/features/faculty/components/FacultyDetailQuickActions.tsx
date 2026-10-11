@@ -13,7 +13,10 @@ export interface FacultyDetailQuickActionsProps {
   /** Whether the primary phone resolves to a WhatsApp number (PuppeteerWhatsAppProvider). */
   hasWhatsAppContact?: boolean;
   canWriteMessaging: boolean;
-  onOpenComposer: (channel: MessageChannel, recipients: ReturnType<typeof toMessagingRecipient>[]) => void;
+  onOpenComposer: (
+    channel: MessageChannel,
+    recipients: ReturnType<typeof toMessagingRecipient>[],
+  ) => void;
 }
 
 export function FacultyDetailQuickActions({
@@ -35,9 +38,7 @@ export function FacultyDetailQuickActions({
       primaryEmail={primaryEmail}
       labels={labels}
       callAriaLabel={
-        primaryPhone
-          ? t("faculty.detail.callPhone", { phone: primaryPhone })
-          : undefined
+        primaryPhone ? t("faculty.detail.callPhone", { phone: primaryPhone }) : undefined
       }
       messagingEnabled={canWriteMessaging}
       onWhatsApp={
@@ -67,4 +68,3 @@ export function FacultyDetailQuickActions({
     />
   );
 }
-

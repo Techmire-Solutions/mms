@@ -29,12 +29,8 @@ export function computeDynamicSessionComparison(
   const attendanceBySessionId = new Map(
     attendanceSessions.map((row) => [row.sessionId, row] as const),
   );
-  const financeBySessionId = new Map(
-    financeSessions.map((row) => [row.sessionId, row] as const),
-  );
-  const hasanatBySessionId = new Map(
-    hasanatSessions.map((row) => [row.sessionId, row] as const),
-  );
+  const financeBySessionId = new Map(financeSessions.map((row) => [row.sessionId, row] as const));
+  const hasanatBySessionId = new Map(hasanatSessions.map((row) => [row.sessionId, row] as const));
   const examinationsBySessionId = new Map(
     examinationsSessions.map((row) => [row.sessionId, row] as const),
   );
@@ -60,10 +56,35 @@ export function computeDynamicSessionComparison(
   const metricsB = getMetrics(sessionB);
 
   return [
-    { metric: t("reports.comparison.metricEnrollment"), a: metricsA.enrollment, b: metricsB.enrollment, metricKey: "enrollment" },
-    { metric: t("reports.comparison.metricAttendance"), a: metricsA.attendancePct, b: metricsB.attendancePct, metricKey: "attendancePct" },
-    { metric: t("reports.comparison.metricFeeCollected"), a: metricsA.feeCollected, b: metricsB.feeCollected, metricKey: "feeCollected" },
-    { metric: t("reports.comparison.metricPassRate"), a: metricsA.passRatePct, b: metricsB.passRatePct, metricKey: "passRatePct" },
-    { metric: t("reports.comparison.metricHasanat"), a: metricsA.hasanat, b: metricsB.hasanat, metricKey: "hasanat" },
+    {
+      metric: t("reports.comparison.metricEnrollment"),
+      a: metricsA.enrollment,
+      b: metricsB.enrollment,
+      metricKey: "enrollment",
+    },
+    {
+      metric: t("reports.comparison.metricAttendance"),
+      a: metricsA.attendancePct,
+      b: metricsB.attendancePct,
+      metricKey: "attendancePct",
+    },
+    {
+      metric: t("reports.comparison.metricFeeCollected"),
+      a: metricsA.feeCollected,
+      b: metricsB.feeCollected,
+      metricKey: "feeCollected",
+    },
+    {
+      metric: t("reports.comparison.metricPassRate"),
+      a: metricsA.passRatePct,
+      b: metricsB.passRatePct,
+      metricKey: "passRatePct",
+    },
+    {
+      metric: t("reports.comparison.metricHasanat"),
+      a: metricsA.hasanat,
+      b: metricsB.hasanat,
+      metricKey: "hasanat",
+    },
   ];
 }

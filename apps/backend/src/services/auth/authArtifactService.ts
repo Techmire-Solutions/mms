@@ -1,20 +1,20 @@
-import { randomBytes } from 'node:crypto';
-import { and, eq, lt } from 'drizzle-orm';
-import { authArtifacts } from '../../db/schema.js';
-import { activeDb } from '../../db/dbConnection.js';
-import { isUniqueViolation } from '../../lib/pgErrors.js';
+import { randomBytes } from "node:crypto";
+import { and, eq, lt } from "drizzle-orm";
+import { authArtifacts } from "../../db/schema.js";
+import { activeDb } from "../../db/dbConnection.js";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
 
 export type AuthArtifactKind =
-  | 'handoff'
-  | 'two_factor_challenge'
-  | 'refresh_token'
-  | 'platform_setup'
-  | 'platform_password_reset'
-  | 'platform_two_factor_challenge'
-  | 'login_email_change'
-  | 'messaging_idempotency'
-  | 'tenant_user_invite'
-  | 'tenant_password_otp';
+  | "handoff"
+  | "two_factor_challenge"
+  | "refresh_token"
+  | "platform_setup"
+  | "platform_password_reset"
+  | "platform_two_factor_challenge"
+  | "login_email_change"
+  | "messaging_idempotency"
+  | "tenant_user_invite"
+  | "tenant_password_otp";
 
 export interface AuthArtifactRecord<T> {
   id: string;
@@ -36,7 +36,7 @@ function db() {
 }
 
 export function createArtifactId(): string {
-  return randomBytes(24).toString('hex');
+  return randomBytes(24).toString("hex");
 }
 
 export function authArtifactUserScopeKey(userId: string): string {
@@ -54,7 +54,7 @@ export async function putAuthArtifact<T>(
   idOrOptions: string | PutAuthArtifactOptions = {},
 ): Promise<string> {
   const options: PutAuthArtifactOptions =
-    typeof idOrOptions === 'string' ? { id: idOrOptions } : idOrOptions;
+    typeof idOrOptions === "string" ? { id: idOrOptions } : idOrOptions;
   const id = options.id ?? createArtifactId();
   const expiresAt = new Date(Date.now() + ttlMs);
   await db()
@@ -230,7 +230,7 @@ export async function findRefreshTokenByHash<T>(
       expiresAt: authArtifacts.expiresAt,
     })
     .from(authArtifacts)
-    .where(and(eq(authArtifacts.kind, 'refresh_token'), eq(authArtifacts.lookupKey, tokenHash)))
+    .where(and(eq(authArtifacts.kind, "refresh_token"), eq(authArtifacts.lookupKey, tokenHash)))
     .limit(1);
 
   const row = rows[0];
@@ -244,7 +244,7 @@ export async function findRefreshTokenByHash<T>(
         expiresAt: authArtifacts.expiresAt,
       })
       .from(authArtifacts)
-      .where(eq(authArtifacts.kind, 'refresh_token'));
+      .where(eq(authArtifacts.kind, "refresh_token"));
     for (const candidate of legacy) {
       if (candidate.expiresAt.getTime() < Date.now()) continue;
       const payload = candidate.payload as T & { tokenHash?: string };
@@ -279,7 +279,7 @@ export async function deleteRefreshTokensForUser(userId: string): Promise<void> 
     .delete(authArtifacts)
     .where(
       and(
-        eq(authArtifacts.kind, 'refresh_token'),
+        eq(authArtifacts.kind, "refresh_token"),
         eq(authArtifacts.scopeKey, authArtifactUserScopeKey(userId)),
       ),
     );
@@ -291,7 +291,7 @@ export async function deleteRefreshTokensForUser(userId: string): Promise<void> 
       payload: authArtifacts.payload,
     })
     .from(authArtifacts)
-    .where(eq(authArtifacts.kind, 'refresh_token'));
+    .where(eq(authArtifacts.kind, "refresh_token"));
   for (const row of legacy) {
     const payload = row.payload as { userId?: string };
     if (payload.userId === userId) {
@@ -317,13 +317,13 @@ export async function deleteAuthArtifactsForWorkspace(subdomain: string): Promis
     try {
       const payload = row.payload as Record<string, unknown>;
       const userObj =
-        payload.user && typeof payload.user === 'object'
+        payload.user && typeof payload.user === "object"
           ? (payload.user as Record<string, unknown>)
           : null;
       if (
-        payload.workspaceSubdomain === normalized
-        || payload.subdomain === normalized
-        || (userObj && userObj.workspaceSubdomain === normalized)
+        payload.workspaceSubdomain === normalized ||
+        payload.subdomain === normalized ||
+        (userObj && userObj.workspaceSubdomain === normalized)
       ) {
         await db().delete(authArtifacts).where(eq(authArtifacts.id, row.id));
       }

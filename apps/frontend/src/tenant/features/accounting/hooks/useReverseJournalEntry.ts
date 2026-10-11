@@ -19,11 +19,14 @@ export function useReverseJournalEntry() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, request }: { id: string; request: JournalReversalRequest }) =>
-      apiJson<JournalReversalResponse>(`/api/accounting/entries/${encodeURIComponent(id)}/reverse`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
-      }),
+      apiJson<JournalReversalResponse>(
+        `/api/accounting/entries/${encodeURIComponent(id)}/reverse`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request),
+        },
+      ),
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
 }

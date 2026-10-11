@@ -1,1 +1,1 @@
-export { getPasswordStrength, type PasswordStrengthResult } from '@/lib/passwordStrength';
+export { getPasswordStrength, type PasswordStrengthResult } from "@/lib/passwordStrength";

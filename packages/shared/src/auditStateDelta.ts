@@ -14,8 +14,8 @@ export function calculateStateDelta(
     return { oldDelta: oldState, newDelta: null };
   }
   if (
-    typeof oldState !== 'object' ||
-    typeof newState !== 'object' ||
+    typeof oldState !== "object" ||
+    typeof newState !== "object" ||
     Array.isArray(oldState) ||
     Array.isArray(newState)
   ) {

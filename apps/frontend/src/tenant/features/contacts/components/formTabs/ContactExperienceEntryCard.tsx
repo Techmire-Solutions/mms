@@ -16,8 +16,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { ContactExperience } from "@mms/shared";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 
-export interface ContactExperienceEntryCardProps
-  extends Pick<ContactSubListTabBaseProps, "formInstanceId" | "getLocalId" | "getListItemError" | "isFieldRequired"> {
+export interface ContactExperienceEntryCardProps extends Pick<
+  ContactSubListTabBaseProps,
+  "formInstanceId" | "getLocalId" | "getListItemError" | "isFieldRequired"
+> {
   exp: ContactExperience;
   idx: number;
   showTitle: boolean;

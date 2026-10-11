@@ -1,12 +1,12 @@
-import { type z } from 'zod';
+import { type z } from "zod";
 import {
   buildDynamicFacultySchema,
   resolveFacultyEnabledTabIds,
   resolveFacultyFieldsMapForColumnSync,
   type FieldDefinition,
-} from '@mms/shared';
-import { loadFacultySettingsCombined } from './facultyConfigService.js';
-import { validateOrThrow } from '../lib/zodRequest.js';
+} from "@mms/shared";
+import { loadFacultySettingsCombined } from "./facultyConfigService.js";
+import { validateOrThrow } from "../lib/zodRequest.js";
 
 /** Cache compiled schema by tenant + enabled-tabs/fields fingerprint + language. */
 const schemaCache = new Map<string, z.ZodTypeAny>();
@@ -18,7 +18,7 @@ function facultyValidationCacheKey(
   fields: Record<string, FieldDefinition[]>,
   language: string,
 ): string {
-  return `${tenant}:${enabledTabs.join(',')}:${JSON.stringify(fields)}:${language}`;
+  return `${tenant}:${enabledTabs.join(",")}:${JSON.stringify(fields)}:${language}`;
 }
 
 /**
@@ -28,7 +28,7 @@ function facultyValidationCacheKey(
 export async function validateFacultyDynamic(
   tenant: string,
   facultyRecord: unknown,
-  language = 'en',
+  language = "en",
 ): Promise<void> {
   const settings = await loadFacultySettingsCombined();
   const fields = resolveFacultyFieldsMapForColumnSync(settings.fields);

@@ -58,12 +58,7 @@ const mockExam: Exam = {
 describe("ExaminationForm Component", () => {
   it("renders form modal with edit title when exam is provided", () => {
     const html = renderToStaticMarkup(
-      <ExaminationForm
-        open={true}
-        exam={mockExam}
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <ExaminationForm open={true} exam={mockExam} onClose={vi.fn()} onSave={vi.fn()} />,
     );
 
     expect(html).toContain("examinations.form.title.edit");
@@ -72,12 +67,7 @@ describe("ExaminationForm Component", () => {
 
   it("renders form modal with create title when exam is null", () => {
     const html = renderToStaticMarkup(
-      <ExaminationForm
-        open={true}
-        exam={null}
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <ExaminationForm open={true} exam={null} onClose={vi.fn()} onSave={vi.fn()} />,
     );
 
     expect(html).toContain("examinations.form.title.create");

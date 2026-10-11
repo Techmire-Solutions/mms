@@ -2,7 +2,10 @@ import { type MutableRefObject } from "react";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { formatDate, todayISO, type Student } from "@mms/shared";
-import { useStudentLinkedContactIds, useStudentNextGrNumber } from "@/tenant/features/students/hooks/useStudents";
+import {
+  useStudentLinkedContactIds,
+  useStudentNextGrNumber,
+} from "@/tenant/features/students/hooks/useStudents";
 import { buildStudentContactExcludeIds } from "@/tenant/features/students/hooks/studentFormValidation";
 import { isStudentCreate } from "@/tenant/features/students/hooks/studentFormHandlers";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -52,17 +55,15 @@ export function useStudentFormLinkedData({
     enabled: isStudentCreate(student) && autoGenerateId,
   });
 
-  const handleGrNumberChange = ((value: string) => {
+  const handleGrNumberChange = (value: string) => {
     grManuallyEdited.current = true;
     updateDraft({ grNumber: value });
-  });
+  };
 
-  const excludeIds = (() => buildStudentContactExcludeIds(linkedStudentContactIds, linkedContact))();
+  const excludeIds = (() =>
+    buildStudentContactExcludeIds(linkedStudentContactIds, linkedContact))();
 
-  const isGrAutoAssigned =
-    autoGenerateId
-    && isStudentCreate(student)
-    && !grManuallyEdited.current;
+  const isGrAutoAssigned = autoGenerateId && isStudentCreate(student) && !grManuallyEdited.current;
 
   return {
     linkedContact,

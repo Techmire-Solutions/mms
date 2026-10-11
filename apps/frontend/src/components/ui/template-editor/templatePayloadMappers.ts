@@ -22,7 +22,7 @@ import {
  */
 export function mapToTypstFeeReceipt(
   data: Record<string, unknown>,
-  _template?: DocumentTemplate
+  _template?: DocumentTemplate,
 ): TypstFeeReceiptPayload {
   const feeItemsRaw = Array.isArray(data.feeItems) ? data.feeItems : [];
   const feeItems = feeItemsRaw.map((item) => {
@@ -36,12 +36,23 @@ export function mapToTypstFeeReceipt(
 
   const rawPayload = {
     institution: String(data.institution ?? data.madrasaName ?? "Madrasa Management System"),
-    receiptNo: String(data.receiptNo ?? data.receipt_no ?? data.invoiceNumber ?? data.id ?? "REC-0000"),
+    receiptNo: String(
+      data.receiptNo ?? data.receipt_no ?? data.invoiceNumber ?? data.id ?? "REC-0000",
+    ),
     date: String(data.date ?? data.received_date ?? new Date().toISOString().slice(0, 10)),
     studentName: String(data.studentName ?? data.student_name ?? data.sender ?? "-"),
     rollNo: String(data.rollNo ?? data.roll_no ?? data.rollNumber ?? "-"),
     className: String(data.className ?? data.class_name ?? data.class ?? "-"),
-    feeItems: feeItems.length > 0 ? feeItems : [{ description: "General Obligation / Fee", amount: String(data.amount ?? "0.00"), paid: String(data.paidAmount ?? data.amount ?? "0.00") }],
+    feeItems:
+      feeItems.length > 0
+        ? feeItems
+        : [
+            {
+              description: "General Obligation / Fee",
+              amount: String(data.amount ?? "0.00"),
+              paid: String(data.paidAmount ?? data.amount ?? "0.00"),
+            },
+          ],
     totalAmount: String(data.totalAmount ?? data.total ?? data.amount ?? "0.00"),
     paidAmount: String(data.paidAmount ?? data.paid ?? data.amount ?? "0.00"),
     balance: String(data.balance ?? data.outstanding ?? "0.00"),
@@ -57,7 +68,7 @@ export function mapToTypstFeeReceipt(
  */
 export function mapToTypstReportCard(
   data: Record<string, unknown>,
-  _template?: DocumentTemplate
+  _template?: DocumentTemplate,
 ): TypstReportCardPayload {
   const subjectsRaw = Array.isArray(data.subjects) ? data.subjects : [];
   const subjects = subjectsRaw.map((subj) => {
@@ -95,7 +106,7 @@ export function mapToTypstReportCard(
  */
 export function mapToTypstFinancialLedger(
   data: Record<string, unknown>,
-  _template?: DocumentTemplate
+  _template?: DocumentTemplate,
 ): TypstFinancialLedgerPayload {
   const entriesRaw = Array.isArray(data.entries) ? data.entries : [];
   const entries = entriesRaw.map((entry) => {
@@ -128,10 +139,10 @@ export function mapToTypstFinancialLedger(
  */
 export function mapToZohoInvoice(
   data: Record<string, unknown>,
-  _template?: DocumentTemplate
+  _template?: DocumentTemplate,
 ): ZohoInvoicePayload {
   const rawLineItems = Array.isArray(data.line_items ?? data.lineItems ?? data.feeItems)
-    ? (data.line_items ?? data.lineItems ?? data.feeItems) as unknown[]
+    ? ((data.line_items ?? data.lineItems ?? data.feeItems) as unknown[])
     : [];
 
   const line_items = rawLineItems.map((item) => {
@@ -142,26 +153,52 @@ export function mapToZohoInvoice(
       description: it.description ? String(it.description) : undefined,
       rate: typeof it.rate === "number" ? it.rate : String(it.amount ?? it.rate ?? "0.00"),
       quantity: Number(it.quantity ?? 1),
-      item_total: it.item_total != null ? (typeof it.item_total === "number" ? it.item_total : String(it.item_total)) : undefined,
+      item_total:
+        it.item_total != null
+          ? typeof it.item_total === "number"
+            ? it.item_total
+            : String(it.item_total)
+          : undefined,
     };
   });
 
   const rawPayload = {
-    invoice_number: String(data.invoice_number ?? data.invoiceNumber ?? data.receiptNo ?? data.id ?? "INV-0001"),
+    invoice_number: String(
+      data.invoice_number ?? data.invoiceNumber ?? data.receiptNo ?? data.id ?? "INV-0001",
+    ),
     date: String(data.date ?? data.created_at ?? new Date().toISOString().slice(0, 10)),
-    due_date: String(data.due_date ?? data.dueDate ?? data.date ?? new Date().toISOString().slice(0, 10)),
+    due_date: String(
+      data.due_date ?? data.dueDate ?? data.date ?? new Date().toISOString().slice(0, 10),
+    ),
     customer_id: data.customer_id ? String(data.customer_id) : undefined,
-    customer_name: String(data.customer_name ?? data.studentName ?? data.sender ?? "Valued Customer"),
-    line_items: line_items.length > 0 ? line_items : [{
-      name: "Invoice Charge",
-      rate: String(data.amount ?? data.total ?? "0.00"),
-      quantity: 1,
-    }],
-    total: typeof data.total === "number" ? data.total : String(data.total ?? data.totalAmount ?? data.amount ?? "0.00"),
-    balance: typeof data.balance === "number" ? data.balance : String(data.balance ?? data.outstanding ?? "0.00"),
+    customer_name: String(
+      data.customer_name ?? data.studentName ?? data.sender ?? "Valued Customer",
+    ),
+    line_items:
+      line_items.length > 0
+        ? line_items
+        : [
+            {
+              name: "Invoice Charge",
+              rate: String(data.amount ?? data.total ?? "0.00"),
+              quantity: 1,
+            },
+          ],
+    total:
+      typeof data.total === "number"
+        ? data.total
+        : String(data.total ?? data.totalAmount ?? data.amount ?? "0.00"),
+    balance:
+      typeof data.balance === "number"
+        ? data.balance
+        : String(data.balance ?? data.outstanding ?? "0.00"),
     notes: data.notes ? String(data.notes) : undefined,
     terms: data.terms ? String(data.terms) : undefined,
-    currency_code: data.currency_code ? String(data.currency_code) : (data.currency ? String(data.currency) : DEFAULT_CURRENCY_CODE),
+    currency_code: data.currency_code
+      ? String(data.currency_code)
+      : data.currency
+        ? String(data.currency)
+        : DEFAULT_CURRENCY_CODE,
   };
 
   return zohoInvoicePayloadSchema.parse(rawPayload);

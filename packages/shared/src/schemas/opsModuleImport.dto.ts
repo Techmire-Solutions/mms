@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { csvImportBodySchema } from './csvImport.dto.js';
+import { z } from "zod";
+import { csvImportBodySchema } from "./csvImport.dto.js";
 
 export const attendanceImportRowSchema = z
   .object({

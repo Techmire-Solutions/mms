@@ -1,11 +1,11 @@
-import React, { useRef } from 'react';
-import { Upload, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { LogoColorProportion } from '@mms/shared';
-import { notify } from '@/lib/notify';
-import { ThemeSettingsPaletteSection } from './ThemeSettingsPaletteSection';
+import React, { useRef } from "react";
+import { Upload, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { LogoColorProportion } from "@mms/shared";
+import { notify } from "@/lib/notify";
+import { ThemeSettingsPaletteSection } from "./ThemeSettingsPaletteSection";
 
 export interface ThemeSettingsLogoColourSourceProps {
   t: TranslationFunction;
@@ -41,12 +41,12 @@ export function ThemeSettingsLogoColourSource({
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === 'string') {
+      if (typeof reader.result === "string") {
         onSetSampleLogo?.(reader.result);
       }
     };
     reader.readAsDataURL(file);
-    e.target.value = '';
+    e.target.value = "";
   };
 
   return (
@@ -57,22 +57,25 @@ export function ThemeSettingsLogoColourSource({
             <div className="flex items-center gap-3 min-w-0">
               <img
                 src={logoUrl}
-                alt={t('theme.logoSourceAlt')}
+                alt={t("theme.logoSourceAlt")}
                 className="h-12 w-12 shrink-0 rounded-lg border border-border object-contain bg-background p-1 shadow-sm"
               />
               <div className="min-w-0 space-y-0.5">
                 <div className="flex items-center gap-2">
                   <p className="text-xs font-semibold text-foreground">
-                    {isSample ? t('theme.sampleImageBadge') : t('branding.logo')}
+                    {isSample ? t("theme.sampleImageBadge") : t("branding.logo")}
                   </p>
                   {isSample && (
-                    <Badge variant="outline" className="text-3xs px-1.5 py-0 border-primary/30 text-primary bg-primary/5">
-                      {t('theme.sampleImageBadge')}
+                    <Badge
+                      variant="outline"
+                      className="text-3xs px-1.5 py-0 border-primary/30 text-primary bg-primary/5"
+                    >
+                      {t("theme.sampleImageBadge")}
                     </Badge>
                   )}
                 </div>
                 <p className="text-2xs text-muted-foreground leading-relaxed truncate">
-                  {isSample ? t('theme.testLogoDropzone') : t('theme.logoSourceHint')}
+                  {isSample ? t("theme.testLogoDropzone") : t("theme.logoSourceHint")}
                 </p>
               </div>
             </div>
@@ -87,7 +90,7 @@ export function ThemeSettingsLogoColourSource({
                   className="h-8 min-h-8 px-2 text-2xs text-muted-foreground hover:text-destructive"
                 >
                   <X className="h-3.5 w-3.5 me-1" />
-                  {t('theme.clearSampleLogo')}
+                  {t("theme.clearSampleLogo")}
                 </Button>
               ) : (
                 <>
@@ -95,7 +98,7 @@ export function ThemeSettingsLogoColourSource({
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    aria-label={t('theme.testLogoButton')}
+                    aria-label={t("theme.testLogoButton")}
                     className="hidden"
                     onChange={handleSampleFile}
                   />
@@ -105,10 +108,10 @@ export function ThemeSettingsLogoColourSource({
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     className="h-8 min-h-8 px-2 text-2xs font-semibold text-muted-foreground hover:text-foreground"
-                    title={t('theme.testLogoButton')}
+                    title={t("theme.testLogoButton")}
                   >
                     <Upload className="h-3 w-3 me-1" />
-                    {t('theme.testLogoButton')}
+                    {t("theme.testLogoButton")}
                   </Button>
                 </>
               )}
@@ -118,9 +121,12 @@ export function ThemeSettingsLogoColourSource({
           {proportions.length > 0 && (
             <div className="space-y-1.5 pt-1 border-t border-border/50">
               <div className="flex items-center justify-between text-3xs font-semibold text-muted-foreground">
-                <span>{t('theme.autoExtractedTitle')}</span>
+                <span>{t("theme.autoExtractedTitle")}</span>
                 <span className="font-mono">
-                  {proportions.slice(0, 4).map((p) => `${p.hex.toUpperCase()} (${p.percentage}%)`).join(' · ')}
+                  {proportions
+                    .slice(0, 4)
+                    .map((p) => `${p.hex.toUpperCase()} (${p.percentage}%)`)
+                    .join(" · ")}
                 </span>
               </div>
               <div className="h-3 w-full flex rounded-md overflow-hidden border border-border/60 bg-muted/40 shadow-inner">
@@ -132,7 +138,7 @@ export function ThemeSettingsLogoColourSource({
                     className="h-full transition-all duration-300 hover:opacity-90 cursor-pointer"
                     onClick={() => {
                       void navigator.clipboard?.writeText(item.hex);
-                      notify.success(t('theme.copiedHex', { hex: item.hex }));
+                      notify.success(t("theme.copiedHex", { hex: item.hex }));
                     }}
                   />
                 ))}
@@ -143,15 +149,15 @@ export function ThemeSettingsLogoColourSource({
       ) : (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl border border-dashed border-border bg-muted/20">
           <div className="space-y-0.5">
-            <p className="text-xs font-semibold text-foreground">{t('theme.logoSourceMissing')}</p>
-            <p className="text-2xs text-muted-foreground">{t('theme.testLogoDropzone')}</p>
+            <p className="text-xs font-semibold text-foreground">{t("theme.logoSourceMissing")}</p>
+            <p className="text-2xs text-muted-foreground">{t("theme.testLogoDropzone")}</p>
           </div>
           <div className="flex items-center gap-2">
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              aria-label={t('theme.testLogoButton')}
+              aria-label={t("theme.testLogoButton")}
               className="hidden"
               onChange={handleSampleFile}
             />
@@ -163,7 +169,7 @@ export function ThemeSettingsLogoColourSource({
               className="min-h-11 px-3 text-xs font-semibold"
             >
               <Upload className="h-3.5 w-3.5 me-1.5" />
-              {t('theme.testLogoButton')}
+              {t("theme.testLogoButton")}
             </Button>
           </div>
         </div>

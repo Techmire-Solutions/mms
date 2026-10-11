@@ -3,18 +3,18 @@ import {
   normalizeExaminationsModulePreferences,
   normalizeExaminationsSettings,
   type ExaminationsModulePreferences,
-  type ExaminationsSettings
-} from '@mms/shared';
-import { createModuleSetupConfigHooks } from '@/lib/query/createModuleSetupConfigHooks';
+  type ExaminationsSettings,
+} from "@mms/shared";
+import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchExaminationPreferences,
   saveExaminationPreferencesAsync,
   setExaminationPreferencesMemory,
-} from '@/tenant/features/examinations/hooks/examinationSetupConfigApi';
+} from "@/tenant/features/examinations/hooks/examinationSetupConfigApi";
 
 export const EXAMINATIONS_PREFERENCES_QUERY_KEY = [
   EXAMINATIONS_MODULE_MANIFEST.collectionKey,
-  'preferences',
+  "preferences",
 ] as const;
 
 const setupConfigHooks = createModuleSetupConfigHooks<ExaminationsModulePreferences>({
@@ -28,7 +28,7 @@ const setupConfigHooks = createModuleSetupConfigHooks<ExaminationsModulePreferen
 export const useExaminationPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useExaminationPreferencesMutation = setupConfigHooks.usePreferencesMutation;
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 /** Composed ExaminationsSettings from preferences queries. */
 export function useComposedExaminationsSettings(): ExaminationsSettings {

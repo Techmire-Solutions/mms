@@ -1,9 +1,9 @@
-import type { Contact, RelationshipPair } from './contactEntityTypes.js';
+import type { Contact, RelationshipPair } from "./contactEntityTypes.js";
 import {
   deriveRelationshipOptionsFromPairs,
   normalizeRelationshipTerm,
   resolveRelationshipPairs,
-} from './contactRelationshipPairUtils.js';
+} from "./contactRelationshipPairUtils.js";
 
 export interface RelationshipLink {
   contactId: string;
@@ -20,13 +20,17 @@ export interface PlannedRelationship {
 }
 
 function genderIsFemale(gender?: string | null): boolean {
-  const normalized = typeof gender === 'string' ? gender.trim().toLowerCase() : '';
-  return normalized === 'female' || normalized === 'f' || normalized === 'woman' || normalized === 'girl';
+  const normalized = typeof gender === "string" ? gender.trim().toLowerCase() : "";
+  return (
+    normalized === "female" || normalized === "f" || normalized === "woman" || normalized === "girl"
+  );
 }
 
 function genderIsMale(gender?: string | null): boolean {
-  const normalized = typeof gender === 'string' ? gender.trim().toLowerCase() : '';
-  return normalized === 'male' || normalized === 'm' || normalized === 'man' || normalized === 'boy';
+  const normalized = typeof gender === "string" ? gender.trim().toLowerCase() : "";
+  return (
+    normalized === "male" || normalized === "m" || normalized === "man" || normalized === "boy"
+  );
 }
 
 function isFemale(contact: Contact): boolean {
@@ -46,23 +50,23 @@ export function formatRelationshipDisplayLabel(
   relationship: string,
   gender?: string | null,
 ): string {
-  const trimmed = typeof relationship === 'string' ? relationship.trim() : '';
-  if (!trimmed) return '';
+  const trimmed = typeof relationship === "string" ? relationship.trim() : "";
+  if (!trimmed) return "";
   const term = normalizeRelationshipTerm(trimmed);
-  if (term === 'parent') {
-    if (genderIsFemale(gender)) return 'Mother';
-    if (genderIsMale(gender)) return 'Father';
+  if (term === "parent") {
+    if (genderIsFemale(gender)) return "Mother";
+    if (genderIsMale(gender)) return "Father";
     return trimmed;
   }
-  if (term === 'child') {
-    if (genderIsFemale(gender)) return 'Daughter';
-    if (genderIsMale(gender)) return 'Son';
+  if (term === "child") {
+    if (genderIsFemale(gender)) return "Daughter";
+    if (genderIsMale(gender)) return "Son";
     return trimmed;
   }
-  if (term === 'sibling') {
-    if (genderIsFemale(gender)) return 'Sister';
-    if (genderIsMale(gender)) return 'Brother';
-    return 'Sibling';
+  if (term === "sibling") {
+    if (genderIsFemale(gender)) return "Sister";
+    if (genderIsMale(gender)) return "Brother";
+    return "Sibling";
   }
   return trimmed;
 }
@@ -93,8 +97,7 @@ export function resolveInverseRelationship(
   customPairs?: RelationshipPair[],
 ): string | null {
   if (!relationship || !relationship.trim()) return null;
-  const pairs =
-    customPairs && customPairs.length > 0 ? customPairs : resolveRelationshipPairs();
+  const pairs = customPairs && customPairs.length > 0 ? customPairs : resolveRelationshipPairs();
 
   const norm = normalizeRelationshipTerm(relationship);
 
@@ -108,7 +111,11 @@ export function resolveInverseRelationship(
       if (isMale(sourceContact) && pair.inverseMale) return pair.inverseMale;
       return pair.inverse;
     }
-    if (norm === normInv || (normInvMale && norm === normInvMale) || (normInvFemale && norm === normInvFemale)) {
+    if (
+      norm === normInv ||
+      (normInvMale && norm === normInvMale) ||
+      (normInvFemale && norm === normInvFemale)
+    ) {
       return pair.forward;
     }
   }

@@ -1,14 +1,17 @@
-import type { FastifyInstance } from 'fastify';
-import type { ZodTypeAny } from 'zod';
-import type { User } from '@mms/shared';
-import { isSystemMetadataKey, moduleExportAuditBodySchema } from '@mms/shared';
-import { getRequestTenant } from './tenantContext.js';
-import { enqueueCsvExportJob, normalizeExportQuery } from './csvExportEnqueue.js';
-import { sendForbidden, sendServiceUnavailable } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
-import { recordModernAuditEvent, mapActionStringToAuditType } from '../services/auditTrailService.js';
-import { logger } from './logger.js';
-import { QueueUnavailableError } from '../services/backgroundJobWorkerService.js';
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeAny } from "zod";
+import type { User } from "@mms/shared";
+import { isSystemMetadataKey, moduleExportAuditBodySchema } from "@mms/shared";
+import { getRequestTenant } from "./tenantContext.js";
+import { enqueueCsvExportJob, normalizeExportQuery } from "./csvExportEnqueue.js";
+import { sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
+import {
+  recordModernAuditEvent,
+  mapActionStringToAuditType,
+} from "../services/auditTrailService.js";
+import { logger } from "./logger.js";
+import { QueueUnavailableError } from "../services/backgroundJobWorkerService.js";
 
 export type RegisterModuleCsvExportRoutesOptions = {
   canRead: (user: User) => boolean;
@@ -34,7 +37,7 @@ export function registerModuleCsvExportRoutes(
 ): void {
   const exportAuditSchema = options.exportAuditSchema ?? moduleExportAuditBodySchema;
 
-  fastify.post('/export/csv', async (request, reply) => {
+  fastify.post("/export/csv", async (request, reply) => {
     const user = request.user as User;
     if (!options.canRead(user)) return sendForbidden(reply);
 
@@ -83,19 +86,25 @@ export function registerModuleCsvExportRoutes(
     }
 
     void recordModernAuditEvent({
-      workspaceSubdomain: getRequestTenant() ?? 'unknown',
+      workspaceSubdomain: getRequestTenant() ?? "unknown",
       tableName: options.moduleId,
       recordId: job.id,
       actionType: mapActionStringToAuditType(options.queueAuditAction),
       realUserId: String(user.id),
-      newState: { summary: `Queued ${options.entityNoun} export "${label}"`, action: options.queueAuditAction },
+      newState: {
+        summary: `Queued ${options.entityNoun} export "${label}"`,
+        action: options.queueAuditAction,
+      },
     }).catch((err: unknown) =>
-      logger.error({ err: err instanceof Error ? err.message : String(err) }, 'audit event append failed'),
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        "audit event append failed",
+      ),
     );
     return reply.status(202).send({ job });
   });
 
-  fastify.post('/export-audit', async (request, reply) => {
+  fastify.post("/export-audit", async (request, reply) => {
     const user = request.user as User;
     if (!options.canRead(user)) return sendForbidden(reply);
 
@@ -104,18 +113,24 @@ export function registerModuleCsvExportRoutes(
 
     const data = parsed.data as {
       count: number;
-      scope?: 'all' | 'filtered' | 'selection';
+      scope?: "all" | "filtered" | "selection";
     };
-    const scope = data.scope ?? 'filtered';
+    const scope = data.scope ?? "filtered";
     void recordModernAuditEvent({
-      workspaceSubdomain: getRequestTenant() ?? 'unknown',
+      workspaceSubdomain: getRequestTenant() ?? "unknown",
       tableName: options.moduleId,
       recordId: options.moduleId,
       actionType: mapActionStringToAuditType(options.exportAuditAction),
       realUserId: String(user.id),
-      newState: { summary: `Exported ${data.count} ${options.entityNoun}(s) (${scope})`, action: options.exportAuditAction },
+      newState: {
+        summary: `Exported ${data.count} ${options.entityNoun}(s) (${scope})`,
+        action: options.exportAuditAction,
+      },
     }).catch((err: unknown) =>
-      logger.error({ err: err instanceof Error ? err.message : String(err) }, 'audit event append failed'),
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        "audit event append failed",
+      ),
     );
     return reply.send({ success: true });
   });

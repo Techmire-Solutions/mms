@@ -8,7 +8,11 @@ import { FORM_SELECT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionFormAnswerFields } from "./QuestionFormAnswerFields";
 
-import type { QuestionFormDraft, QuestionFormErrors, UpdateQuestionDraft } from "./questionFormTypes";
+import type {
+  QuestionFormDraft,
+  QuestionFormErrors,
+  UpdateQuestionDraft,
+} from "./questionFormTypes";
 
 interface QuestionFormContentSectionProps {
   questionDraft: QuestionFormDraft;
@@ -55,7 +59,12 @@ export function QuestionFormContentSection({
                 value={questionDraft.type}
                 onChange={(val) => {
                   const nextType = val as QuestionType;
-                  const options = nextType === "mcq" ? ["", "", "", ""] : nextType === "true_false" ? [trueLabel, falseLabel] : [];
+                  const options =
+                    nextType === "mcq"
+                      ? ["", "", "", ""]
+                      : nextType === "true_false"
+                        ? [trueLabel, falseLabel]
+                        : [];
                   updateDraft({ type: nextType, options, answer: "" });
                 }}
                 options={[
@@ -71,7 +80,11 @@ export function QuestionFormContentSection({
             </Field>
           </div>
 
-          <QuestionFormAnswerFields questionDraft={questionDraft} errors={errors} updateDraft={updateDraft} />
+          <QuestionFormAnswerFields
+            questionDraft={questionDraft}
+            errors={errors}
+            updateDraft={updateDraft}
+          />
         </div>
       </SectionCard>
     </div>

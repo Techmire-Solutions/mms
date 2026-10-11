@@ -20,18 +20,27 @@ export function hasContactCardColumnData(contact: Contact, colId: string): boole
     case "isSyed":
       return contact.isSyed !== undefined && contact.isSyed !== null;
     case "socials_platform":
-      return Boolean(contact.socials && contact.socials.some((s) => s.platform && s.platform.trim().length > 0));
+      return Boolean(
+        contact.socials && contact.socials.some((s) => s.platform && s.platform.trim().length > 0),
+      );
     case "socials_url":
-      return Boolean(contact.socials && contact.socials.some((s) => s.url && s.url.trim().length > 0));
+      return Boolean(
+        contact.socials && contact.socials.some((s) => s.url && s.url.trim().length > 0),
+      );
     case "cnic":
       return Boolean(contact.cnic && contact.cnic.trim().length > 0);
     case "tag":
     case "tags":
-      return Boolean((contact.tags && contact.tags.length > 0) || (contact.tag && contact.tag.trim().length > 0));
+      return Boolean(
+        (contact.tags && contact.tags.length > 0) || (contact.tag && contact.tag.trim().length > 0),
+      );
     case "notes":
       return Boolean(contact.notes && contact.notes.trim().length > 0);
     case "education":
-      return Boolean(contact.education && contact.education.some((e) => e.institution?.trim() || e.degree?.trim()));
+      return Boolean(
+        contact.education &&
+        contact.education.some((e) => e.institution?.trim() || e.degree?.trim()),
+      );
     case "education_degree":
     case "educationDegree":
       return Boolean(contact.education && contact.education.some((e) => e.degree?.trim()));
@@ -48,7 +57,10 @@ export function hasContactCardColumnData(contact: Contact, colId: string): boole
     case "educationGrade":
       return Boolean(contact.education && contact.education.some((e) => e.grade?.trim()));
     case "experience":
-      return Boolean(contact.experience && contact.experience.some((e) => e.organization?.trim() || e.title?.trim()));
+      return Boolean(
+        contact.experience &&
+        contact.experience.some((e) => e.organization?.trim() || e.title?.trim()),
+      );
     case "experience_title":
     case "experienceTitle":
       return Boolean(contact.experience && contact.experience.some((e) => e.title?.trim()));
@@ -57,7 +69,9 @@ export function hasContactCardColumnData(contact: Contact, colId: string): boole
       return Boolean(contact.experience && contact.experience.some((e) => e.organization?.trim()));
     case "experience_employmentType":
     case "experienceEmploymentType":
-      return Boolean(contact.experience && contact.experience.some((e) => e.employmentType?.trim()));
+      return Boolean(
+        contact.experience && contact.experience.some((e) => e.employmentType?.trim()),
+      );
     case "experience_location":
     case "experienceLocation":
       return Boolean(contact.experience && contact.experience.some((e) => e.location?.trim()));
@@ -96,17 +110,17 @@ export function hasContactCardColumnData(contact: Contact, colId: string): boole
       if (isRelationshipContactColumnKey(colId)) {
         return Boolean(
           contact.relationshipContacts &&
-            contact.relationshipContacts.some(
-              (link) => (link.name && link.name.trim().length > 0) || link.contactId,
-            ),
+          contact.relationshipContacts.some(
+            (link) => (link.name && link.name.trim().length > 0) || link.contactId,
+          ),
         );
       }
       if (isRelationshipTypeColumnKey(colId)) {
         return Boolean(
           contact.relationshipContacts &&
-            contact.relationshipContacts.some(
-              (link) => link.relationship && link.relationship.trim().length > 0,
-            ),
+          contact.relationshipContacts.some(
+            (link) => link.relationship && link.relationship.trim().length > 0,
+          ),
         );
       }
       const val = contact[colId as keyof Contact];

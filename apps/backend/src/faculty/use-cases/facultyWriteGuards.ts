@@ -1,6 +1,6 @@
-import { sql } from 'drizzle-orm';
-import { withTenantRead } from '../../db/tenant-context.js';
-import { ConflictError, ValidationError } from '../../lib/httpErrors.js';
+import { sql } from "drizzle-orm";
+import { withTenantRead } from "../../db/tenant-context.js";
+import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 
 export interface ContactLinkResolution {
   /** Tenant user already registered for this contact (by contact link or login email), if any. */
@@ -22,19 +22,20 @@ export async function validateFacultyContactLink(
   excludeFacultyId?: string,
 ): Promise<ContactLinkResolution> {
   const subdomain = tenant.trim().toLowerCase();
-  const excludeId = excludeFacultyId ?? '';
+  const excludeId = excludeFacultyId ?? "";
   return withTenantRead(subdomain, async (tx) => {
     const contact = await tx.execute<{ id: string }>(sql`
       SELECT id FROM contacts WHERE workspace_subdomain = ${subdomain} AND id = ${contactId} AND deleted_at IS NULL LIMIT 1
     `);
-    if (!contact.rows.length) throw new ValidationError('Linked contact not found');
+    if (!contact.rows.length) throw new ValidationError("Linked contact not found");
 
     const emails = await tx.execute<{ address: string }>(sql`
       SELECT DISTINCT lower(btrim(address)) AS address FROM contact_emails
       WHERE workspace_subdomain = ${subdomain} AND contact_id = ${contactId} AND btrim(address) <> ''
     `);
     const addresses = emails.rows.map((row) => row.address);
-    if (addresses.length === 0) throw new ValidationError('The linked contact must have an email address');
+    if (addresses.length === 0)
+      throw new ValidationError("The linked contact must have an email address");
 
     const addressList = sql.join(
       addresses.map((address) => sql`${address}`),
@@ -58,7 +59,7 @@ export async function validateFacultyContactLink(
       LIMIT 1
     `);
     if (duplicateEmail.rows.length) {
-      throw new ConflictError('Another faculty profile already uses this contact email');
+      throw new ConflictError("Another faculty profile already uses this contact email");
     }
 
     const users = await tx.execute<{ id: string; contact_id: string | null }>(sql`
@@ -70,7 +71,9 @@ export async function validateFacultyContactLink(
     `);
     const mismatched = users.rows.find((row) => row.contact_id && row.contact_id !== contactId);
     if (mismatched) {
-      throw new ConflictError('The contact email is registered to a user account linked to a different contact');
+      throw new ConflictError(
+        "The contact email is registered to a user account linked to a different contact",
+      );
     }
     const user = users.rows[0] ?? null;
     if (user) {
@@ -79,7 +82,9 @@ export async function validateFacultyContactLink(
           AND user_id = ${user.id} AND id <> ${excludeId} LIMIT 1
       `);
       if (otherFaculty.rows.length) {
-        throw new ConflictError('The registered user account is already linked to another faculty profile');
+        throw new ConflictError(
+          "The registered user account is already linked to another faculty profile",
+        );
       }
     }
     return { userId: user?.id ?? null };
@@ -98,9 +103,11 @@ export async function validateFacultyDesignationLink(
       WHERE workspace_subdomain = ${subdomain} AND id = ${designationId} AND deleted_at IS NULL LIMIT 1
     `);
     const designation = rows.rows[0];
-    if (!designation) throw new ValidationError('Selected designation not found');
-    if (designation.status !== 'active') throw new ValidationError('Selected designation is inactive');
-    if (!designation.department_id) throw new ValidationError('Selected designation must belong to a department');
+    if (!designation) throw new ValidationError("Selected designation not found");
+    if (designation.status !== "active")
+      throw new ValidationError("Selected designation is inactive");
+    if (!designation.department_id)
+      throw new ValidationError("Selected designation must belong to a department");
     return { departmentId: designation.department_id };
   });
 }

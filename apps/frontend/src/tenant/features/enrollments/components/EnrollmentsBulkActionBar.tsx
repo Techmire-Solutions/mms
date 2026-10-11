@@ -58,7 +58,8 @@ export function EnrollmentsBulkActionBar({
             onClick={onRequestBulkCancel}
             className={bulkActionDockActionClassName}
           >
-            <XCircle className="w-3.5 h-3.5 text-muted-foreground" aria-hidden /> {t("enrollments.bulkCancel")}
+            <XCircle className="w-3.5 h-3.5 text-muted-foreground" aria-hidden />{" "}
+            {t("enrollments.bulkCancel")}
           </Button>
         ) : undefined
       }

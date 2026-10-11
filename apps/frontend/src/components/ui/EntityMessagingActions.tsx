@@ -79,8 +79,7 @@ export function EntityMessagingActions({
   const showCall = showCallProp && Boolean(telHref || primaryPhone || onCall);
   const showWhatsApp =
     showWaProp ?? Boolean(messagingEnabled && (onWhatsApp || waHref) && primaryPhone);
-  const showSms =
-    showSmsProp ?? Boolean(messagingEnabled && (onSms || smsHref) && primaryPhone);
+  const showSms = showSmsProp ?? Boolean(messagingEnabled && (onSms || smsHref) && primaryPhone);
   const showEmail =
     showEmailProp ?? Boolean(messagingEnabled && (onEmail || mailHref) && primaryEmail);
 

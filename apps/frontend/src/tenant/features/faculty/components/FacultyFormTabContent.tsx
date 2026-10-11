@@ -6,13 +6,13 @@ import {
 import { FacultyFormDesignationSection } from "@/tenant/features/faculty/components/FacultyFormDesignationSection";
 import { FacultyCustomFieldsSection } from "./FacultyCustomFieldsSection";
 import { FacultyFormAllSections } from "./FacultyFormAllSections";
-import {
-  type FacultyFormTabContentProps,
-} from "./facultyFormTabs";
+import { type FacultyFormTabContentProps } from "./facultyFormTabs";
 
 export type { FacultyFormTabContentProps };
 
-export const FacultyFormTabContent = (function FacultyFormTabContent(props: FacultyFormTabContentProps): React.JSX.Element {
+export const FacultyFormTabContent = function FacultyFormTabContent(
+  props: FacultyFormTabContentProps,
+): React.JSX.Element {
   const {
     activeTab,
     faculty,
@@ -74,7 +74,12 @@ export const FacultyFormTabContent = (function FacultyFormTabContent(props: Facu
           isFieldRequired={isFieldRequired}
           onDraftChange={onDraftChange}
         />
-        <FacultyCustomFieldsSection fields={fields} draft={effectiveDraft} errors={errors} onDraftChange={onDraftChange} />
+        <FacultyCustomFieldsSection
+          fields={fields}
+          draft={effectiveDraft}
+          errors={errors}
+          onDraftChange={onDraftChange}
+        />
       </>
     );
   } else if (activeTab === "designation") {
@@ -120,6 +125,6 @@ export const FacultyFormTabContent = (function FacultyFormTabContent(props: Facu
       linkedContact={linkedContact}
     />
   );
-});
+};
 
 export default FacultyFormTabContent;

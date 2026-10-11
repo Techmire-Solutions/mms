@@ -1,16 +1,16 @@
-import { and, eq } from 'drizzle-orm';
-import type { DbClient } from '../db/dbConnection.js';
-import { activeDb } from '../db/dbConnection.js';
+import { and, eq } from "drizzle-orm";
+import type { DbClient } from "../db/dbConnection.js";
+import { activeDb } from "../db/dbConnection.js";
 import {
   contacts,
   contactPhones,
   contactEmails,
   contactAddresses,
   contactSocials,
-} from '../db/schema.js';
-import { executeSubjectErasure } from './cryptoShreddingService.js';
-import { recordModernAuditEvent } from './auditTrailService.js';
-import { logger } from '../lib/logger.js';
+} from "../db/schema.js";
+import { executeSubjectErasure } from "./cryptoShreddingService.js";
+import { recordModernAuditEvent } from "./auditTrailService.js";
+import { logger } from "../lib/logger.js";
 
 export interface ExecuteGdprErasureOptions {
   requestedBy?: string;
@@ -32,7 +32,7 @@ export interface GdprPseudonymizedRecord {
 export interface GdprErasureResult {
   contactId: string;
   tenant: string;
-  status: 'COMPLETED';
+  status: "COMPLETED";
   erasureRequestId?: string;
   pseudonymizedRecord: GdprPseudonymizedRecord;
 }
@@ -59,11 +59,11 @@ export async function executeGdprErasure(
   const normalizedContactId = contactId.trim();
 
   let db: DbClient;
-  let requestedBy = 'gdpr-worker';
+  let requestedBy = "gdpr-worker";
 
-  if (options && 'execute' in options && typeof (options as DbClient).execute === 'function') {
+  if (options && "execute" in options && typeof (options as DbClient).execute === "function") {
     db = options as DbClient;
-  } else if (options && typeof options === 'object') {
+  } else if (options && typeof options === "object") {
     const opts = options as ExecuteGdprErasureOptions;
     db = opts.db ?? activeDb();
     if (opts.requestedBy) requestedBy = opts.requestedBy;
@@ -80,16 +80,16 @@ export async function executeGdprErasure(
     const shredResult = await executeSubjectErasure({
       subjectId: normalizedContactId,
       workspaceSubdomain: normalizedTenant,
-      regime: 'GDPR',
-      erasureType: 'CRYPTO_SHRED',
+      regime: "GDPR",
+      erasureType: "CRYPTO_SHRED",
       requestedBy,
-      reason: 'GDPR Article 17 Erasure Request',
+      reason: "GDPR Article 17 Erasure Request",
     });
     erasureRequestId = shredResult.erasureRequestId;
   } catch (shredErr) {
     logger.warn(
       { contactId: normalizedContactId, err: shredErr },
-      '[GdprErasure] Crypto-shredding key invalidation logged warning',
+      "[GdprErasure] Crypto-shredding key invalidation logged warning",
     );
   }
 
@@ -97,18 +97,18 @@ export async function executeGdprErasure(
   // to child tables (migrations 0056/0075) and are handled below; the previous
   // raw UPDATE referenced those dropped columns and was silently swallowed.
   try {
-    if (typeof db.update === 'function') {
+    if (typeof db.update === "function") {
       await db
         .update(contacts)
         .set({
-          firstName: 'Anonymized',
-          lastName: 'Subject',
-          name: 'Anonymized Subject',
+          firstName: "Anonymized",
+          lastName: "Subject",
+          name: "Anonymized Subject",
           // Every remaining identifying/scalar attribute must be scrubbed too —
           // omitting these left DOB, gender, and WhatsApp status in place.
           gender: null,
           dob: null,
-          whatsappStatus: 'unknown',
+          whatsappStatus: "unknown",
           isSyed: false,
           lastCheckedAt: null,
           cnic: null,
@@ -116,7 +116,7 @@ export async function executeGdprErasure(
           notes: null,
           aiSummary: null,
           deletedAt: now,
-          deletionReason: 'GDPR Article 17 Erasure Request',
+          deletionReason: "GDPR Article 17 Erasure Request",
           updatedAt: now,
         })
         .where(
@@ -127,12 +127,15 @@ export async function executeGdprErasure(
         );
     }
   } catch (err) {
-    logger.warn({ contactId: normalizedContactId, err }, '[GdprErasure] Drizzle update contacts warning');
+    logger.warn(
+      { contactId: normalizedContactId, err },
+      "[GdprErasure] Drizzle update contacts warning",
+    );
   }
 
   // Scrub plain PII in normalized child tables (emails, phones, addresses, socials)
   try {
-    if (typeof db.delete === 'function') {
+    if (typeof db.delete === "function") {
       // Clear phone numbers
       await db
         .delete(contactPhones)
@@ -174,65 +177,74 @@ export async function executeGdprErasure(
         );
     }
 
-    if (typeof db.insert === 'function') {
+    if (typeof db.insert === "function") {
       await db.insert(contactEmails).values({
         id: `email-gdpr-${normalizedContactId}`,
         workspaceSubdomain: normalizedTenant,
         contactId: normalizedContactId,
         address: pseudonymizedEmail,
         isPrimary: true,
-        label: 'GDPR Erasure',
+        label: "GDPR Erasure",
       });
     }
   } catch (childErr) {
-    logger.warn({ contactId: normalizedContactId, err: childErr }, '[GdprErasure] Child tables scrub warning');
+    logger.warn(
+      { contactId: normalizedContactId, err: childErr },
+      "[GdprErasure] Child tables scrub warning",
+    );
   }
 
   // 3. Emit modern audit event documenting GDPR Article 17 in-place erasure
   try {
     await recordModernAuditEvent({
       workspaceSubdomain: normalizedTenant,
-      tableName: 'contacts',
+      tableName: "contacts",
       recordId: normalizedContactId,
-      actionType: 'REDACT',
+      actionType: "REDACT",
       realUserId: requestedBy,
-      apiEndpoint: 'gdpr.article17.erasure',
-      oldState: { contactId: normalizedContactId, notice: 'PII scrubbed per GDPR Article 17 erasure request' },
+      apiEndpoint: "gdpr.article17.erasure",
+      oldState: {
+        contactId: normalizedContactId,
+        notice: "PII scrubbed per GDPR Article 17 erasure request",
+      },
       newState: {
         id: normalizedContactId,
-        firstName: 'Anonymized',
-        lastName: 'Subject',
+        firstName: "Anonymized",
+        lastName: "Subject",
         email: pseudonymizedEmail,
         phone: null,
         customData: {},
         deletedAt: now.toISOString(),
-        deletionReason: 'GDPR Article 17 Erasure Request',
+        deletionReason: "GDPR Article 17 Erasure Request",
       },
     });
   } catch (auditErr) {
-    logger.warn({ contactId: normalizedContactId, err: auditErr }, '[GdprErasure] Audit record warning');
+    logger.warn(
+      { contactId: normalizedContactId, err: auditErr },
+      "[GdprErasure] Audit record warning",
+    );
   }
 
   logger.info(
     { contactId: normalizedContactId, tenant: normalizedTenant },
-    'GDPR Article 17 erasure executed successfully: subject key shredded and PII pseudonymized in place',
+    "GDPR Article 17 erasure executed successfully: subject key shredded and PII pseudonymized in place",
   );
 
   return {
     contactId: normalizedContactId,
     tenant: normalizedTenant,
-    status: 'COMPLETED',
+    status: "COMPLETED",
     erasureRequestId,
     pseudonymizedRecord: {
       id: normalizedContactId,
-      firstName: 'Anonymized',
-      lastName: 'Subject',
-      name: 'Anonymized Subject',
+      firstName: "Anonymized",
+      lastName: "Subject",
+      name: "Anonymized Subject",
       email: pseudonymizedEmail,
       phone: null,
       customData: {},
       deletedAt: now,
-      deletionReason: 'GDPR Article 17 Erasure Request',
+      deletionReason: "GDPR Article 17 Erasure Request",
     },
   };
 }

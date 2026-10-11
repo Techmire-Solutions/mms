@@ -1,7 +1,7 @@
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import { canViewContactField, canViewContactTab } from './contactFieldAccess.js';
-import type { FacultyMember } from './facultyTypes.js';
-import type { FacultySettings } from './facultyModuleSettings.js';
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { canViewContactField, canViewContactTab } from "./contactFieldAccess.js";
+import type { FacultyMember } from "./facultyTypes.js";
+import type { FacultySettings } from "./facultyModuleSettings.js";
 
 export interface FacultyFieldConfigSnapshot {
   fields: Record<string, FieldDefinition[]>;
@@ -13,20 +13,20 @@ export interface FacultyFieldConfigSnapshot {
  * registry (Work list + drawer must not break for restricted viewers).
  */
 const FACULTY_ALWAYS_VISIBLE = new Set([
-  'id',
-  'contactId',
-  'name',
-  'employeeId',
-  'status',
-  'deletedAt',
-  'deletedBy',
-  'deletionReason',
+  "id",
+  "contactId",
+  "name",
+  "employeeId",
+  "status",
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
 ]);
 
 function isTabKeyedFieldRegistry(
-  fields: FacultySettings['fields'],
+  fields: FacultySettings["fields"],
 ): fields is Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object' || Array.isArray(fields)) return false;
+  if (!fields || typeof fields !== "object" || Array.isArray(fields)) return false;
   const first = Object.values(fields)[0];
   return Array.isArray(first);
 }
@@ -95,4 +95,3 @@ export function sanitizeFacultyListForViewer(
     return sanitized;
   });
 }
-

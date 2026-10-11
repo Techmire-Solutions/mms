@@ -1,10 +1,6 @@
 import type React from "react";
-import {
-  DateRangeFilterBar,
-} from "@/components/ui/DateRangeFilterBar";
-import {
-  type ModuleColumnCustomizerProps,
-} from "@/components/ui/ModuleColumnCustomizer";
+import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { FilterChips } from "@/components/ui/FilterChips";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
@@ -66,34 +62,40 @@ export function AttendanceListFilters({
 
   const chips = [
     ...(statusFilter !== "all"
-      ? [{
-          key: `status:${statusFilter}`,
-          label: statusLabel(statusFilter),
-          onRemove: () => {
-            setStatusFilter("all");
-            setPage(1);
+      ? [
+          {
+            key: `status:${statusFilter}`,
+            label: statusLabel(statusFilter),
+            onRemove: () => {
+              setStatusFilter("all");
+              setPage(1);
+            },
           },
-        }]
+        ]
       : []),
     ...(dateFrom
-      ? [{
-          key: "dateFrom",
-          label: t("attendance.filters.dateFromChip", { date: dateFrom }),
-          onRemove: () => {
-            setDateFrom("");
-            setPage(1);
+      ? [
+          {
+            key: "dateFrom",
+            label: t("attendance.filters.dateFromChip", { date: dateFrom }),
+            onRemove: () => {
+              setDateFrom("");
+              setPage(1);
+            },
           },
-        }]
+        ]
       : []),
     ...(dateTo
-      ? [{
-          key: "dateTo",
-          label: t("attendance.filters.dateToChip", { date: dateTo }),
-          onRemove: () => {
-            setDateTo("");
-            setPage(1);
+      ? [
+          {
+            key: "dateTo",
+            label: t("attendance.filters.dateToChip", { date: dateTo }),
+            onRemove: () => {
+              setDateTo("");
+              setPage(1);
+            },
           },
-        }]
+        ]
       : []),
   ];
 
@@ -120,9 +122,7 @@ export function AttendanceListFilters({
           onClearFilters={clearFilters}
         />
       }
-      filterChips={
-        <FilterChips chips={chips} onClearAll={clearFilters} />
-      }
+      filterChips={<FilterChips chips={chips} onClearAll={clearFilters} />}
       trashToggle={
         canDelete && onToggleDeleted
           ? {
@@ -138,12 +138,16 @@ export function AttendanceListFilters({
         viewMode,
         onViewModeChange,
       }}
-      columnCustomizer={columnCustomizer ? {
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      } : undefined}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
     >
       <DateRangeFilterBar
         idPrefix="attendance-records"

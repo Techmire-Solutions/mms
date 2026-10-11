@@ -1,9 +1,9 @@
-import type { ReactElement } from 'react';
-import { UserCog } from 'lucide-react';
-import { USERS_MODULE_MANIFEST, type SystemUser } from '@mms/shared';
-import { ModuleUniversalBulkActionBar } from '@/components/ui/ModuleUniversalBulkActionBar';
-import type { BulkSelectionMessageChannel } from '@/components/ui/BulkSelectionActions';
-import { useTranslation } from '@/hooks/useTranslation';
+import type { ReactElement } from "react";
+import { UserCog } from "lucide-react";
+import { USERS_MODULE_MANIFEST, type SystemUser } from "@mms/shared";
+import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
+import type { BulkSelectionMessageChannel } from "@/components/ui/BulkSelectionActions";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface UsersBulkActionBarProps {
   selectedIds: string[];
@@ -49,16 +49,16 @@ export function UsersBulkActionBar({
         onBulkRestore(selectedIds);
         onClearSelection();
       }}
-      deleteLabel={t('users.trash.bulkDelete')}
-      restoreLabel={t('users.trash.bulkRestore')}
+      deleteLabel={t("users.trash.bulkDelete")}
+      restoreLabel={t("users.trash.bulkRestore")}
       messagingTargets={{
         waTargets: selectedUsers,
         smsReady: selectedUsers,
         emailReady: selectedUsers,
       }}
-      onWhatsApp={() => onMessage?.('whatsapp', selectedUsers)}
-      onSms={() => onMessage?.('sms', selectedUsers)}
-      onEmail={() => onMessage?.('email', selectedUsers)}
+      onWhatsApp={() => onMessage?.("whatsapp", selectedUsers)}
+      onSms={() => onMessage?.("sms", selectedUsers)}
+      onEmail={() => onMessage?.("email", selectedUsers)}
     />
   );
 }

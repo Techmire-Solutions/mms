@@ -3,8 +3,8 @@ export function slugifyLookupLabel(label: string, index: number): string {
   const base = label
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
     .slice(0, 48);
-  return `${base || 'item'}-${index}`;
+  return `${base || "item"}-${index}`;
 }

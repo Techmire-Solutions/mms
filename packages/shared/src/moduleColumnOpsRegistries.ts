@@ -1,4 +1,4 @@
-import { createColumnRegistry, type ModuleColumnRegistryEntry } from './moduleColumnCore.js';
+import { createColumnRegistry, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
 
 export interface ObligationCollectionWorkColumnLabels {
   receiptNo: string;
@@ -19,16 +19,16 @@ export function buildObligationCollectionWorkColumnRegistry(
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
     [
-      'receiptNo',
-      'receivedDate',
-      'sender',
-      'obligationType',
-      'repMujtahid',
-      'amount',
-      'paymentMode',
-      'reference',
-      'currency',
-      'receivedBy',
+      "receiptNo",
+      "receivedDate",
+      "sender",
+      "obligationType",
+      "repMujtahid",
+      "amount",
+      "paymentMode",
+      "reference",
+      "currency",
+      "receivedBy",
     ],
     labels,
   );
@@ -49,7 +49,7 @@ export function buildAccountingJournalWorkColumnRegistry(
   labels: AccountingJournalWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['ref', 'date', 'description', 'tags', 'debit', 'credit', 'status'],
+    ["ref", "date", "description", "tags", "debit", "credit", "status"],
     labels,
   );
 }
@@ -68,7 +68,7 @@ export function buildAccountingAccountWorkColumnRegistry(
   labels: AccountingAccountWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['code', 'name', 'type', 'subtype', 'description', 'normalBalance'],
+    ["code", "name", "type", "subtype", "description", "normalBalance"],
     labels,
   );
 }
@@ -91,15 +91,15 @@ export function buildHasanatDistributionWorkColumnRegistry(
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
     [
-      'card',
-      'recipient',
-      'recipientType',
-      'recipientClass',
-      'quantity',
-      'reason',
-      'issuedDate',
-      'issuedBy',
-      'status',
+      "card",
+      "recipient",
+      "recipientType",
+      "recipientClass",
+      "quantity",
+      "reason",
+      "issuedDate",
+      "issuedBy",
+      "status",
     ],
     labels,
   );
@@ -117,8 +117,5 @@ export interface HasanatRedemptionWorkColumnLabels {
 export function buildHasanatRedemptionWorkColumnRegistry(
   labels: HasanatRedemptionWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(
-    ['student', 'reward', 'pointsUsed', 'date', 'approvedBy'],
-    labels,
-  );
+  return createColumnRegistry(["student", "reward", "pointsUsed", "date", "approvedBy"], labels);
 }

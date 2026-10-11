@@ -1,7 +1,7 @@
-import { and, eq, lt } from 'drizzle-orm';
-import { withGlobalTenant } from '../db/tenant-context.js';
-import { backgroundJobs } from '../db/schema.js';
-import { logger } from '../lib/logger.js';
+import { and, eq, lt } from "drizzle-orm";
+import { withGlobalTenant } from "../db/tenant-context.js";
+import { backgroundJobs } from "../db/schema.js";
+import { logger } from "../lib/logger.js";
 
 /** A 'pending' job older than this is assumed to have never been dispatched. */
 const STALE_PENDING_MS = 10 * 60 * 1000;
@@ -20,45 +20,48 @@ export async function cleanupOrphanedJobs(): Promise<void> {
       // Only reclaim running jobs whose heartbeat has gone silent — not jobs
       // that another live worker is still processing.
       const runningCutoff = new Date(Date.now() - STALE_RUNNING_MS);
-      const running = await tx.update(backgroundJobs)
+      const running = await tx
+        .update(backgroundJobs)
         .set({
-          status: 'failed',
-          error: 'Worker heartbeat lost while job was running',
+          status: "failed",
+          error: "Worker heartbeat lost while job was running",
           completedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(and(
-          eq(backgroundJobs.status, 'running'),
-          lt(backgroundJobs.updatedAt, runningCutoff),
-        ))
+        .where(
+          and(eq(backgroundJobs.status, "running"), lt(backgroundJobs.updatedAt, runningCutoff)),
+        )
         .returning({ id: backgroundJobs.id });
 
       if (running.length > 0) {
-        logger.info({ count: running.length }, 'Cleaned up orphaned running jobs');
+        logger.info({ count: running.length }, "Cleaned up orphaned running jobs");
       }
 
       // Jobs stuck in 'pending' for a long time were likely inserted but never
       // dispatched (crash between DB insert and queue.add). Fail them so they
       // do not sit forever.
       const stalePendingCutoff = new Date(Date.now() - STALE_PENDING_MS);
-      const pending = await tx.update(backgroundJobs)
+      const pending = await tx
+        .update(backgroundJobs)
         .set({
-          status: 'failed',
-          error: 'Job was never dispatched to the queue',
+          status: "failed",
+          error: "Job was never dispatched to the queue",
           completedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(and(
-          eq(backgroundJobs.status, 'pending'),
-          lt(backgroundJobs.createdAt, stalePendingCutoff),
-        ))
+        .where(
+          and(
+            eq(backgroundJobs.status, "pending"),
+            lt(backgroundJobs.createdAt, stalePendingCutoff),
+          ),
+        )
         .returning({ id: backgroundJobs.id });
 
       if (pending.length > 0) {
-        logger.info({ count: pending.length }, 'Cleaned up stale pending jobs');
+        logger.info({ count: pending.length }, "Cleaned up stale pending jobs");
       }
     });
   } catch (error) {
-    logger.error({ err: error }, 'Failed to cleanup orphaned jobs');
+    logger.error({ err: error }, "Failed to cleanup orphaned jobs");
   }
 }

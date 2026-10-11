@@ -1,1 +1,1 @@
-export type LlmHealthStatus = 'verified' | 'failed' | 'testing' | 'untested';
+export type LlmHealthStatus = "verified" | "failed" | "testing" | "untested";

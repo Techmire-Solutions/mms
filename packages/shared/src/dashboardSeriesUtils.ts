@@ -15,11 +15,7 @@
  *                 the bucket has no records) into a chart point. Callers apply
  *                 their own `?? 0` fallbacks inside the projector.
  */
-export function buildBucketedSeries<
-  B extends { key: string },
-  V,
-  P,
->(
+export function buildBucketedSeries<B extends { key: string }, V, P>(
   buckets: readonly B[],
   values: Map<string, V>,
   toPoint: (bucket: B, value: V | undefined) => P,

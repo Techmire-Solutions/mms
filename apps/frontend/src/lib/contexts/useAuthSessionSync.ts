@@ -1,19 +1,19 @@
-import { useEffect, useCallback } from 'react';
-import type { User } from '@mms/shared';
-import { apiJson, isApiError, SESSION_EXPIRED_EVENT } from '@/lib/apiClient';
-import { AUTH_PATHS } from '@/lib/apiClientHelpers';
-import { isCurrentHostApex } from '@/lib/config/tenantConfig';
-import { getWorkspaceLocalStoragePrefix } from '@/lib/dbStorageCore';
-import { queryClientInstance } from '@/lib/queryClient';
-import { appNavigate } from '@/lib/routing/appNavigate';
-import { ROUTES } from '@/lib/config/routes';
-import { clear2FAState } from '@/lib/twoFactor';
-import type { AuthError } from '@/lib/authErrors';
+import { useEffect, useCallback } from "react";
+import type { User } from "@mms/shared";
+import { apiJson, isApiError, SESSION_EXPIRED_EVENT } from "@/lib/apiClient";
+import { AUTH_PATHS } from "@/lib/apiClientHelpers";
+import { isCurrentHostApex } from "@/lib/config/tenantConfig";
+import { getWorkspaceLocalStoragePrefix } from "@/lib/dbStorageCore";
+import { queryClientInstance } from "@/lib/queryClient";
+import { appNavigate } from "@/lib/routing/appNavigate";
+import { ROUTES } from "@/lib/config/routes";
+import { clear2FAState } from "@/lib/twoFactor";
+import type { AuthError } from "@/lib/authErrors";
 import {
   AUTH_USER_STORAGE_KEY,
   clearPersistedAuthUser,
   clearUserScopedCachesOnLogout,
-} from '@/lib/contexts/authContextHelpers';
+} from "@/lib/contexts/authContextHelpers";
 
 export interface UseAuthSessionSyncParams {
   setUser: (user: User | null) => void;
@@ -34,42 +34,45 @@ export function useAuthSessionSync({
   applyAuthSession,
   userRef,
 }: UseAuthSessionSyncParams) {
-  const checkUserAuth = useCallback(async (signal?: AbortSignal): Promise<void> => {
-    if (isCurrentHostApex()) {
-      setUser(null);
-      setIsAuthenticated(false);
-      setAuthChecked(true);
-      setIsLoadingAuth(false);
-      return;
-    }
-
-    const revision = queryClientInstance.sessionRevision;
-    const isCurrent = () => !signal?.aborted && revision === queryClientInstance.sessionRevision;
-    setIsLoadingAuth(true);
-    setAuthChecked(false);
-    setAuthError(null);
-
-    try {
-      const authResponse = await apiJson<{ user: User }>(AUTH_PATHS.me, { signal });
-      if (!isCurrent()) return;
-      await applyAuthSession(authResponse.user);
-    } catch (error) {
-      if (!isCurrent()) return;
-      setAuthChecked(true);
-      setIsLoadingAuth(false);
-      queryClientInstance.clear();
-      setUser(null);
-      setIsAuthenticated(false);
-      if (isApiError(error) && (error.status === 401 || error.status === 403)) {
-        clearPersistedAuthUser();
-      }
-    } finally {
-      if (isCurrent()) {
+  const checkUserAuth = useCallback(
+    async (signal?: AbortSignal): Promise<void> => {
+      if (isCurrentHostApex()) {
+        setUser(null);
+        setIsAuthenticated(false);
         setAuthChecked(true);
         setIsLoadingAuth(false);
+        return;
       }
-    }
-  }, [applyAuthSession, setUser, setIsAuthenticated, setAuthChecked, setIsLoadingAuth, setAuthError]);
+
+      const revision = queryClientInstance.sessionRevision;
+      const isCurrent = () => !signal?.aborted && revision === queryClientInstance.sessionRevision;
+      setIsLoadingAuth(true);
+      setAuthChecked(false);
+      setAuthError(null);
+
+      try {
+        const authResponse = await apiJson<{ user: User }>(AUTH_PATHS.me, { signal });
+        if (!isCurrent()) return;
+        await applyAuthSession(authResponse.user);
+      } catch (error) {
+        if (!isCurrent()) return;
+        setAuthChecked(true);
+        setIsLoadingAuth(false);
+        queryClientInstance.clear();
+        setUser(null);
+        setIsAuthenticated(false);
+        if (isApiError(error) && (error.status === 401 || error.status === 403)) {
+          clearPersistedAuthUser();
+        }
+      } finally {
+        if (isCurrent()) {
+          setAuthChecked(true);
+          setIsLoadingAuth(false);
+        }
+      }
+    },
+    [applyAuthSession, setUser, setIsAuthenticated, setAuthChecked, setIsLoadingAuth, setAuthError],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -104,12 +107,12 @@ export function useAuthSessionSync({
       appNavigate(ROUTES.login, { replace: true });
     };
 
-    window.addEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
     window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
 
     return () => {
       controller.abort();
-      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener("storage", handleStorage);
       window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
     };
   }, [checkUserAuth, setUser, setIsAuthenticated, setAuthChecked, userRef]);

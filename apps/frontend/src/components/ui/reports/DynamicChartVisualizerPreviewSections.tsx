@@ -5,13 +5,7 @@ import { formatNumber } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -37,16 +31,28 @@ export function VisualizerKpiCards({
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       <div className="p-3 border border-border bg-card/30 rounded-2xl flex flex-col justify-between">
-        <SectionLabel weight="bold" tracking="wider" className="block">{t("reports.visualizer.totalAggregated")}</SectionLabel>
-        <span className="text-sm font-black text-foreground mt-1 leading-none">{formatNumber(totalValue)}</span>
+        <SectionLabel weight="bold" tracking="wider" className="block">
+          {t("reports.visualizer.totalAggregated")}
+        </SectionLabel>
+        <span className="text-sm font-black text-foreground mt-1 leading-none">
+          {formatNumber(totalValue)}
+        </span>
       </div>
       <div className="p-3 border border-border bg-card/30 rounded-2xl flex flex-col justify-between">
-        <SectionLabel weight="bold" tracking="wider" className="block">{t("reports.visualizer.avgPerGroup")}</SectionLabel>
-        <span className="text-sm font-black text-foreground mt-1 leading-none">{formatNumber(avgGroupValue)}</span>
+        <SectionLabel weight="bold" tracking="wider" className="block">
+          {t("reports.visualizer.avgPerGroup")}
+        </SectionLabel>
+        <span className="text-sm font-black text-foreground mt-1 leading-none">
+          {formatNumber(avgGroupValue)}
+        </span>
       </div>
       <div className="p-3 border border-border bg-card/30 rounded-2xl flex flex-col justify-between">
-        <SectionLabel weight="bold" tracking="wider" className="block">{t("reports.visualizer.topGroup")}</SectionLabel>
-        <span className="text-sm font-black text-foreground mt-1 leading-none truncate block max-w-full">{topGroup}</span>
+        <SectionLabel weight="bold" tracking="wider" className="block">
+          {t("reports.visualizer.topGroup")}
+        </SectionLabel>
+        <span className="text-sm font-black text-foreground mt-1 leading-none truncate block max-w-full">
+          {topGroup}
+        </span>
       </div>
     </div>
   );
@@ -97,7 +103,9 @@ export function VisualizerDataMatrix({
                     <p className="text-sm font-semibold text-foreground">{processedRow.name}</p>
                     <StatGrid>
                       <StatRow
-                        label={t("reports.visualizer.aggregatedValue", { op: operation.toUpperCase() })}
+                        label={t("reports.visualizer.aggregatedValue", {
+                          op: operation.toUpperCase(),
+                        })}
                         value={formatNumber(processedRow.value)}
                         ddClassName="font-bold text-primary"
                       />
@@ -129,9 +137,15 @@ export function VisualizerDataMatrix({
                   <TableBody className="divide-y divide-border/50 font-medium">
                     {processedData.map((processedRow, index) => (
                       <TableRow key={index} className="hover:bg-muted/20 transition-colors">
-                        <TableCell className="px-4 py-2.5 text-foreground font-semibold">{processedRow.name}</TableCell>
-                        <TableCell className="px-4 py-2.5 text-primary font-bold">{formatNumber(processedRow.value)}</TableCell>
-                        <TableCell className="px-4 py-2.5 text-muted-foreground">{processedRow.count}</TableCell>
+                        <TableCell className="px-4 py-2.5 text-foreground font-semibold">
+                          {processedRow.name}
+                        </TableCell>
+                        <TableCell className="px-4 py-2.5 text-primary font-bold">
+                          {formatNumber(processedRow.value)}
+                        </TableCell>
+                        <TableCell className="px-4 py-2.5 text-muted-foreground">
+                          {processedRow.count}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

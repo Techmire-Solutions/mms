@@ -34,4 +34,3 @@ describe("FacultyCommandMetrics Component", () => {
     expect(html).toContain("20");
   });
 });
-

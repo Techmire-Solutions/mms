@@ -80,13 +80,16 @@ export const financeInvoiceLinesRelations = relations(financeInvoiceLines, ({ on
   }),
 }));
 
-export const financePaymentAllocationsRelations = relations(financePaymentAllocations, ({ one }) => ({
-  payment: one(financePayments, {
-    fields: [financePaymentAllocations.workspaceSubdomain, financePaymentAllocations.paymentId],
-    references: [financePayments.workspaceSubdomain, financePayments.id],
+export const financePaymentAllocationsRelations = relations(
+  financePaymentAllocations,
+  ({ one }) => ({
+    payment: one(financePayments, {
+      fields: [financePaymentAllocations.workspaceSubdomain, financePaymentAllocations.paymentId],
+      references: [financePayments.workspaceSubdomain, financePayments.id],
+    }),
+    invoice: one(financeInvoices, {
+      fields: [financePaymentAllocations.workspaceSubdomain, financePaymentAllocations.invoiceId],
+      references: [financeInvoices.workspaceSubdomain, financeInvoices.id],
+    }),
   }),
-  invoice: one(financeInvoices, {
-    fields: [financePaymentAllocations.workspaceSubdomain, financePaymentAllocations.invoiceId],
-    references: [financeInvoices.workspaceSubdomain, financeInvoices.id],
-  }),
-}));
+);

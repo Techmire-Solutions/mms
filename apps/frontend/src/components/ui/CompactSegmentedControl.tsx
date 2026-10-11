@@ -35,7 +35,8 @@ const SELECTED_CLASSES: Record<Tone, string> = {
 const UNSELECTED_CLASSES: Record<Tone, string> = {
   card: "text-muted-foreground hover:text-foreground hover:bg-muted",
   primary: "text-muted-foreground hover:text-foreground",
-  outline: "bg-card/30 border-border/50 text-muted-foreground hover:text-foreground hover:bg-card/50",
+  outline:
+    "bg-card/30 border-border/50 text-muted-foreground hover:text-foreground hover:bg-card/50",
 };
 
 /**

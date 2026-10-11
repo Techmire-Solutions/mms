@@ -1,22 +1,19 @@
-import type { Contact } from '@mms/shared';
-import { invalidateDuplicateScanCache } from './contactDuplicateScanUseCases.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import { ConflictError } from '../../lib/httpErrors.js';
-import { isUniqueViolation } from '../../lib/pgErrors.js';
-import {
-  assertContactUniqueFields,
-  ContactUniqueFieldError,
-} from './contactValidationUseCases.js';
-import type { ContactsRepository } from '../repository/contactsRepository.js';
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
-import { emitOutboxEvent } from '../../services/outboxEventService.js';
-import { recordModernAuditEvent } from '../../services/auditTrailService.js';
+import type { Contact } from "@mms/shared";
+import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import { ConflictError } from "../../lib/httpErrors.js";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
+import { assertContactUniqueFields, ContactUniqueFieldError } from "./contactValidationUseCases.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
+import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 
 export interface ContactBulkRestoreConflict {
   id: string;
-  errors: ContactUniqueFieldError['errors'];
+  errors: ContactUniqueFieldError["errors"];
 }
 
 export interface ContactBulkRestoreResult {
@@ -49,7 +46,9 @@ export async function restoreContactById(
         [id],
       );
       if (emailMatches.length > 0) {
-        throw new ConflictError(`Email ${existing.email} is already in use by active contact ${emailMatches[0].id}`);
+        throw new ConflictError(
+          `Email ${existing.email} is already in use by active contact ${emailMatches[0].id}`,
+        );
       }
     }
 
@@ -64,7 +63,7 @@ export async function restoreContactById(
       updatedAt: now,
     };
 
-    await assertContactUniqueFields(tenant, next, 'en', [], repo);
+    await assertContactUniqueFields(tenant, next, "en", [], repo);
 
     // 2. Persist with 23505 race condition protection
     try {
@@ -72,9 +71,14 @@ export async function restoreContactById(
     } catch (err: unknown) {
       if (
         isUniqueViolation(err) ||
-        (typeof err === 'object' && err !== null && 'code' in err && (err as { code: unknown }).code === '23505')
+        (typeof err === "object" &&
+          err !== null &&
+          "code" in err &&
+          (err as { code: unknown }).code === "23505")
       ) {
-        throw new ConflictError('Cannot restore contact: active record with this unique identifier already exists');
+        throw new ConflictError(
+          "Cannot restore contact: active record with this unique identifier already exists",
+        );
       }
       throw err;
     }
@@ -82,25 +86,25 @@ export async function restoreContactById(
     await invalidateDuplicateScanCache();
 
     const restoredAt = next.restoredAt ?? new Date().toISOString();
-    await emitOutboxEvent('entity.restored', {
-      entityType: 'contacts',
+    await emitOutboxEvent("entity.restored", {
+      entityType: "contacts",
       entityId: String(id),
       tenantId: tenant,
       restoredAt,
-      restoredBy: userId ?? 'unknown',
+      restoredBy: userId ?? "unknown",
       version: Date.now(),
     });
     await recordModernAuditEvent({
       workspaceSubdomain: tenant,
-      tableName: 'contacts',
+      tableName: "contacts",
       recordId: String(id),
-      actionType: 'RESTORE',
+      actionType: "RESTORE",
       newState: next,
       minimizeDelta: false,
     });
     return next;
   });
-  if (restored) await broadcastCollection('contacts');
+  if (restored) await broadcastCollection("contacts");
   return restored;
 }
 
@@ -138,10 +142,16 @@ export async function bulkRestoreContacts(
         updatedAt: now,
       };
       try {
-        await assertContactUniqueFields(tenant, restored, {
-          language: 'en',
-          additionalPeers: accepted,
-        }, [], repo);
+        await assertContactUniqueFields(
+          tenant,
+          restored,
+          {
+            language: "en",
+            additionalPeers: accepted,
+          },
+          [],
+          repo,
+        );
         toSave.push(restored);
         accepted.push(restored);
         succeeded += 1;
@@ -161,9 +171,14 @@ export async function bulkRestoreContacts(
       } catch (err: unknown) {
         if (
           isUniqueViolation(err) ||
-          (typeof err === 'object' && err !== null && 'code' in err && (err as { code: unknown }).code === '23505')
+          (typeof err === "object" &&
+            err !== null &&
+            "code" in err &&
+            (err as { code: unknown }).code === "23505")
         ) {
-          throw new ConflictError('Cannot restore contact: active record with this unique identifier already exists');
+          throw new ConflictError(
+            "Cannot restore contact: active record with this unique identifier already exists",
+          );
         }
         throw err;
       }
@@ -172,19 +187,19 @@ export async function bulkRestoreContacts(
       // Emit CDC outbox + audit for each successfully restored contact
       const restoredAt = new Date().toISOString();
       for (const c of toSave) {
-        await emitOutboxEvent('entity.restored', {
-          entityType: 'contacts',
+        await emitOutboxEvent("entity.restored", {
+          entityType: "contacts",
           entityId: String(c.id),
           tenantId: tenant,
           restoredAt,
-          restoredBy: userId ?? 'unknown',
+          restoredBy: userId ?? "unknown",
           version: Date.now(),
         });
         await recordModernAuditEvent({
           workspaceSubdomain: tenant,
-          tableName: 'contacts',
+          tableName: "contacts",
           recordId: String(c.id),
-          actionType: 'RESTORE',
+          actionType: "RESTORE",
           newState: c,
           minimizeDelta: false,
         });
@@ -192,6 +207,6 @@ export async function bulkRestoreContacts(
     }
     return { succeeded, failed, conflicts };
   });
-  if (result.succeeded > 0) await broadcastCollection('contacts');
+  if (result.succeeded > 0) await broadcastCollection("contacts");
   return result;
 }

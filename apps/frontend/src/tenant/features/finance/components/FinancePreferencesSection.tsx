@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  DEFAULT_CURRENCIES,
-  type AppTranslationKey,
-  type FinanceSettings,
-} from "@mms/shared";
+import { DEFAULT_CURRENCIES, type AppTranslationKey, type FinanceSettings } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/ui/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
@@ -51,7 +47,6 @@ export function FinancePreferencesSection({
             }))}
           />
         </Field>
-
 
         <Field id="due-days" label={t("finance.settings.dueDays")}>
           <Input
@@ -136,7 +131,11 @@ export function FinancePreferencesSection({
         </Field>
       </div>
 
-      <div className="space-y-2 pt-2 border-t border-border/60" role="group" aria-label={t("finance.settings.flags")}>
+      <div
+        className="space-y-2 pt-2 border-t border-border/60"
+        role="group"
+        aria-label={t("finance.settings.flags")}
+      >
         <ToggleRow
           label={t("finance.settings.sendEmail")}
           description={t("finance.settings.sendEmailDescription")}

@@ -1,26 +1,61 @@
-import { eq, sql } from 'drizzle-orm';
-import { type Student } from '@mms/shared';
-import { students, studentEnrolledSessions } from '../schema.js';
-import { withTenant, type AppDb } from '../tenant-context.js';
-import { mapAuditToInsert } from './repositoryMappers.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
-import { syncStudentEnrolledSessionsTx } from './studentRepositoryEnrollOps.js';
-import { syncBulkStudentEnrolledSessionsTx } from './studentRepositoryBulkEnrollSync.js';
+import { eq, sql } from "drizzle-orm";
+import { type Student } from "@mms/shared";
+import { students, studentEnrolledSessions } from "../schema.js";
+import { withTenant, type AppDb } from "../tenant-context.js";
+import { mapAuditToInsert } from "./repositoryMappers.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { syncStudentEnrolledSessionsTx } from "./studentRepositoryEnrollOps.js";
+import { syncBulkStudentEnrolledSessionsTx } from "./studentRepositoryBulkEnrollSync.js";
 
 export type StudentInsert = typeof students.$inferInsert;
 
 const KNOWN_STUDENT_KEYS = new Set([
-  'id', 'workspaceSubdomain', 'contactId', 'fatherContactId', 'motherContactId', 'guardianContactId',
-  'fatherName', 'motherName', 'guardianName', 'grNumber', 'studentId', 'status', 'registeredDate',
-  'enrollmentDate', 'discountType', 'discountPct', 'registrationType', 'notes', 'enrolledSessions',
-  'createdAt', 'updatedAt', 'deletedAt', 'deletedBy', 'deletionReason', 'restoredAt', 'restoredBy',
-  'deletedWithCascade', 'createdBy', 'updatedBy', 'customFields',
-  'name', 'gender', 'dob', 'phone', 'email', 'city', 'cnic', 'isSyed', 'avatar',
+  "id",
+  "workspaceSubdomain",
+  "contactId",
+  "fatherContactId",
+  "motherContactId",
+  "guardianContactId",
+  "fatherName",
+  "motherName",
+  "guardianName",
+  "grNumber",
+  "studentId",
+  "status",
+  "registeredDate",
+  "enrollmentDate",
+  "discountType",
+  "discountPct",
+  "registrationType",
+  "notes",
+  "enrolledSessions",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
+  "restoredAt",
+  "restoredBy",
+  "deletedWithCascade",
+  "createdBy",
+  "updatedBy",
+  "customFields",
+  "name",
+  "gender",
+  "dob",
+  "phone",
+  "email",
+  "city",
+  "cnic",
+  "isSyed",
+  "avatar",
 ]);
 
 function extractStudentCustomFields(student: Student): Record<string, unknown> {
   const custom: Record<string, unknown> = {
-    ...(typeof student.customFields === 'object' && student.customFields !== null ? student.customFields : {}),
+    ...(typeof student.customFields === "object" && student.customFields !== null
+      ? student.customFields
+      : {}),
   };
   for (const [key, val] of Object.entries(student)) {
     if (!KNOWN_STUDENT_KEYS.has(key) && val !== undefined) {
@@ -49,7 +84,7 @@ export function studentWriteValues(subdomain: string, student: Student): Student
     guardianName: guardianContactId ? null : (student.guardianName ?? null),
     grNumber,
     studentId,
-    status: student.status ?? 'active',
+    status: student.status ?? "active",
     registeredDate: student.registeredDate ?? null,
     enrollmentDate: student.enrollmentDate ?? null,
     discountType: student.discountType ?? null,
@@ -62,7 +97,13 @@ export function studentWriteValues(subdomain: string, student: Student): Student
 }
 
 export function studentUpdateSetValues(subdomain: string, student: Student) {
-  const { id: _id, workspaceSubdomain: _subdomain, createdAt: _createdAt, createdBy: _createdBy, ...setFields } = studentWriteValues(subdomain, student);
+  const {
+    id: _id,
+    workspaceSubdomain: _subdomain,
+    createdAt: _createdAt,
+    createdBy: _createdBy,
+    ...setFields
+  } = studentWriteValues(subdomain, student);
   return setFields;
 }
 
@@ -89,7 +130,11 @@ export async function saveStudent(tenant: string, student: Student): Promise<voi
   await withTenant(subdomain, async (tx) => {
     await persistStudentTx(tx, subdomain, student);
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'students', key: String(student.id) });
+  await invalidateMultiTierCache({
+    tenantId: subdomain,
+    domain: "students",
+    key: String(student.id),
+  });
 }
 
 export async function bulkSaveStudents(tenant: string, items: Student[]): Promise<void> {
@@ -131,20 +176,22 @@ export async function bulkSaveStudents(tenant: string, items: Student[]): Promis
 
     await syncBulkStudentEnrolledSessionsTx(tx, subdomain, items);
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'students' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
 }
 
 export async function replaceStudentsForWorkspace(tenant: string, items: Student[]): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
-    await tx.delete(studentEnrolledSessions).where(eq(studentEnrolledSessions.workspaceSubdomain, subdomain));
+    await tx
+      .delete(studentEnrolledSessions)
+      .where(eq(studentEnrolledSessions.workspaceSubdomain, subdomain));
     await tx.delete(students).where(eq(students.workspaceSubdomain, subdomain));
     if (items.length === 0) return;
 
-    await tx.insert(students).values(
-      items.map((student) => studentWriteValues(subdomain, student)),
-    );
+    await tx
+      .insert(students)
+      .values(items.map((student) => studentWriteValues(subdomain, student)));
 
     const allSessions = items.flatMap((student) => {
       const sessions = Array.isArray(student.enrolledSessions) ? student.enrolledSessions : [];
@@ -161,9 +208,6 @@ export async function replaceStudentsForWorkspace(tenant: string, items: Student
       await tx.insert(studentEnrolledSessions).values(allSessions);
     }
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'students' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
 }
-export {
-  bulkEnrollStudentsTx,
-  bulkEnrollStudents,
-} from './studentRepositoryEnrollOps.js';
+export { bulkEnrollStudentsTx, bulkEnrollStudents } from "./studentRepositoryEnrollOps.js";

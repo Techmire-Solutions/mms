@@ -9,7 +9,11 @@ import { BarChart2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 
-function DifficultyBreakdownTooltip({ active = false, payload = [], label }: Partial<TooltipContentProps>) {
+function DifficultyBreakdownTooltip({
+  active = false,
+  payload = [],
+  label,
+}: Partial<TooltipContentProps>) {
   if (!active || !payload?.length) return null;
   return (
     <ChartTooltip active={active} payload={payload} label={label}>
@@ -53,15 +57,27 @@ export function QuestionBankReportCharts({
         accentColor="primary"
         heightClass="h-chart-sm"
         empty={!hasDifficultyData}
-        emptyNode={<EmptyState icon={BarChart2} title={t("questionBank.report.noDifficultyData")} compact />}
+        emptyNode={
+          <EmptyState icon={BarChart2} title={t("questionBank.report.noDifficultyData")} compact />
+        }
       >
         <BarChart data={difficultyData} barSize={28}>
           <ChartGrid />
           <XAxis dataKey="name" tick={chartAxisTick(10)} />
           <YAxis allowDecimals={false} tick={chartAxisTick(11)} />
           <Tooltip content={<DifficultyBreakdownTooltip />} />
-          <Bar dataKey="questions" name={t("questionBank.questions")} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="tests" name={t("questionBank.report.generatedTests")} fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+          <Bar
+            dataKey="questions"
+            name={t("questionBank.questions")}
+            fill="hsl(var(--primary))"
+            radius={[4, 4, 0, 0]}
+          />
+          <Bar
+            dataKey="tests"
+            name={t("questionBank.report.generatedTests")}
+            fill="hsl(var(--chart-2))"
+            radius={[4, 4, 0, 0]}
+          />
         </BarChart>
       </ReportChartCard>
 
@@ -70,14 +86,21 @@ export function QuestionBankReportCharts({
         accentColor="secondary"
         heightClass="h-chart-sm"
         empty={!hasCategoryData}
-        emptyNode={<EmptyState icon={BarChart2} title={t("questionBank.report.noCategoryData")} compact />}
+        emptyNode={
+          <EmptyState icon={BarChart2} title={t("questionBank.report.noCategoryData")} compact />
+        }
       >
         <BarChart data={categoryData} barSize={28} layout="vertical">
           <ChartGrid horizontal={false} />
           <XAxis type="number" allowDecimals={false} tick={chartAxisTick(11)} />
           <YAxis type="category" dataKey="name" width={96} tick={chartAxisTick(10)} />
           <Tooltip content={<CategoryBreakdownTooltip />} />
-          <Bar dataKey="questions" name={t("questionBank.questions")} fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+          <Bar
+            dataKey="questions"
+            name={t("questionBank.questions")}
+            fill="hsl(var(--primary))"
+            radius={[0, 4, 4, 0]}
+          />
         </BarChart>
       </ReportChartCard>
     </div>

@@ -30,13 +30,24 @@ export function GuardianContactCard({
   const { t } = useTranslation();
 
   return (
-    <div className={cn("p-3 flex flex-wrap items-center justify-between gap-2 transition-colors hover:bg-muted/30")}>
+    <div
+      className={cn(
+        "p-3 flex flex-wrap items-center justify-between gap-2 transition-colors hover:bg-muted/30",
+      )}
+    >
       <div className="flex min-w-0 items-center gap-3 text-start">
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0", badgeTone)}>
+        <div
+          className={cn(
+            "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
+            badgeTone,
+          )}
+        >
           {badgeCode}
         </div>
         <div className="min-w-0">
-          <SectionLabel toneClassName={badgeTone} className="mb-0.5 block bg-transparent border-0">{label}</SectionLabel>
+          <SectionLabel toneClassName={badgeTone} className="mb-0.5 block bg-transparent border-0">
+            {label}
+          </SectionLabel>
           <h5 className="text-xs font-bold text-foreground truncate">{name}</h5>
           {(phone || email) && (
             <p className="text-xs text-muted-foreground mt-0.5 truncate">{phone || email}</p>
@@ -44,7 +55,8 @@ export function GuardianContactCard({
         </div>
       </div>
       {phone || email ? (
-        <EntityMessagingActions variant="icon-row"
+        <EntityMessagingActions
+          variant="icon-row"
           primaryPhone={phone}
           primaryEmail={email}
           labels={{

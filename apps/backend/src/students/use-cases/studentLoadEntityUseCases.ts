@@ -1,12 +1,8 @@
-import type {
-  Student,
-  StudentsListQuery,
-  StudentsListPageResult,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import type { StudentsRepository } from '../repository/studentsRepository.js';
-import { studentsRepository } from '../repository/studentsRepositoryAdapter.js';
-import { hydrateStudentsFromContacts } from './studentHydrateUseCases.js';
+import type { Student, StudentsListQuery, StudentsListPageResult } from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import type { StudentsRepository } from "../repository/studentsRepository.js";
+import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
+import { hydrateStudentsFromContacts } from "./studentHydrateUseCases.js";
 
 /** Active (or deleted-only) student count via SQL — avoids loading every row. */
 export async function countStudents(
@@ -15,7 +11,7 @@ export async function countStudents(
 ): Promise<number> {
   const tenant = getRequestTenant();
   if (!tenant) return 0;
-  const deleted = options?.includeDeleted ? 'deleted' : 'active';
+  const deleted = options?.includeDeleted ? "deleted" : "active";
   return repo.countByWorkspace(tenant, { deleted });
 }
 
@@ -25,7 +21,13 @@ export async function loadStudentsPage(
 ): Promise<StudentsListPageResult & { nextCursor?: string }> {
   const tenant = getRequestTenant();
   if (!tenant) {
-    return { students: [], total: 0, page: query.page ?? 1, limit: query.limit ?? 50, hasMore: false };
+    return {
+      students: [],
+      total: 0,
+      page: query.page ?? 1,
+      limit: query.limit ?? 50,
+      hasMore: false,
+    };
   }
   const page = await repo.listPage(tenant, query);
   return {
@@ -58,7 +60,10 @@ export async function loadStudentsByIds(
   const matched = repo.resolveByIdentifiers
     ? await repo.resolveByIdentifiers(tenant, ids)
     : await repo.findByIds(tenant, ids);
-  return hydrateStudentsFromContacts(tenant, matched.filter((student) => !student.deletedAt));
+  return hydrateStudentsFromContacts(
+    tenant,
+    matched.filter((student) => !student.deletedAt),
+  );
 }
 
 export async function loadStudentLinkedContactIds(

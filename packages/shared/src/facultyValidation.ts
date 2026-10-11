@@ -1,12 +1,12 @@
-import { type z } from 'zod';
-import type { FieldDefinition } from './contactTypes.js';
-import type { ValidationError } from './contactValidation.js';
+import { type z } from "zod";
+import type { FieldDefinition } from "./contactTypes.js";
+import type { ValidationError } from "./contactValidation.js";
 
 export {
   FACULTY_WRITE_SYSTEM_KEYS,
   collectFacultyWriteExtraFieldKeys,
   buildDynamicFacultySchema,
-} from './schemas/faculty.dto.js';
+} from "./schemas/faculty.dto.js";
 
 /**
  * Translates Zod validation errors into structured field errors for the Faculty form.
@@ -18,8 +18,8 @@ export function formatFacultyZodIssues(
 ): ValidationError[] {
   const errors: ValidationError[] = [];
   for (const issue of error.issues) {
-    const fieldId = String(issue.path[0] ?? '');
-    let tabId = 'basic';
+    const fieldId = String(issue.path[0] ?? "");
+    let tabId = "basic";
     for (const [candidateTabId, tabFields] of Object.entries(fields)) {
       if (tabFields.some((field) => field.key === fieldId)) {
         tabId = candidateTabId;

@@ -1,9 +1,7 @@
 import React from "react";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { Shield } from "lucide-react";
-import {
-  type UsersSettings,
-} from "@mms/shared";
+import { type UsersSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ToggleRow } from "@/components/ui/ToggleRow";
 import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
@@ -19,7 +17,7 @@ export interface UsersSettingsPanelProps {
   onSave: () => void | Promise<void>;
 }
 
-export const UsersSettingsPanel = (function UsersSettingsPanel({
+export const UsersSettingsPanel = function UsersSettingsPanel({
   settingsDraft,
   saved,
   saving,
@@ -29,9 +27,7 @@ export const UsersSettingsPanel = (function UsersSettingsPanel({
 }: UsersSettingsPanelProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const unsavedWarning = isDirty
-    ? t("users.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isDirty ? t("users.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -78,4 +74,4 @@ export const UsersSettingsPanel = (function UsersSettingsPanel({
       />
     </ModuleSetupContent>
   );
-});
+};

@@ -5,23 +5,14 @@
  * Contacts are persons — workspace roles and module memberships live on Users /
  * Teachers / Students. Never seed, display, or reintroduce these as contact system fields.
  */
-export const CONTACT_RETIRED_CLASSIFICATION_KEYS = [
-  "lifecycleStage",
-  "persona",
-] as const;
+export const CONTACT_RETIRED_CLASSIFICATION_KEYS = ["lifecycleStage", "persona"] as const;
 
 /** @mms/shared object/collection keys retired with contact lifecycle CRM. */
-export const CONTACT_RETIRED_OBJECT_KEYS = [
-  "lifecycleColors",
-  "lifecycleStages",
-] as const;
+export const CONTACT_RETIRED_OBJECT_KEYS = ["lifecycleColors", "lifecycleStages"] as const;
 
-export type ContactRetiredClassificationKey =
-  (typeof CONTACT_RETIRED_CLASSIFICATION_KEYS)[number];
+export type ContactRetiredClassificationKey = (typeof CONTACT_RETIRED_CLASSIFICATION_KEYS)[number];
 
-const CONTACT_RETIRED_CLASSIFICATION_KEY_SET = new Set<string>(
-  CONTACT_RETIRED_CLASSIFICATION_KEYS,
-);
+const CONTACT_RETIRED_CLASSIFICATION_KEY_SET = new Set<string>(CONTACT_RETIRED_CLASSIFICATION_KEYS);
 
 /** True when `key` is a retired contact classification field. */
 export function isContactRetiredClassificationKey(

@@ -28,7 +28,16 @@ const mockRow: AttendanceRow = {
 };
 
 const mockStatuses: AttendanceStatus[] = [
-  { id: "present", label: "Present", short: "P", color: "#10b981", bg: "bg-success", text: "text-success", border: "border-success", dot: "bg-success" },
+  {
+    id: "present",
+    label: "Present",
+    short: "P",
+    color: "#10b981",
+    bg: "bg-success",
+    text: "text-success",
+    border: "border-success",
+    dot: "bg-success",
+  },
 ];
 
 describe("MarkAttendanceGrid Component", () => {
@@ -95,4 +104,3 @@ describe("MarkAttendanceGrid Component", () => {
     expect(html).toContain("<table");
   });
 });
-

@@ -34,7 +34,7 @@ export function formatBrandingFooterDefault(madrasaName: string, language: strin
 /** Builds a complete `branding` object from onboarding (sign-in page + settings tab). */
 export function buildBrandingFromOnboarding(input: OnboardingBrandingInput): BrandingSettings {
   const name = input.madrasaName.trim() || DEFAULT_BRANDING_SETTINGS.madrasaName;
-  const logo = input.logoUrl?.trim() ?? '';
+  const logo = input.logoUrl?.trim() ?? "";
 
   return mergeBrandingSettings({
     madrasaName: name,
@@ -45,16 +45,16 @@ export function buildBrandingFromOnboarding(input: OnboardingBrandingInput): Bra
     faviconUrl: input.faviconUrl?.trim() || logo,
     footerText: input.footerText?.trim() || DEFAULT_BRANDING_SETTINGS.footerText,
     legalName: input.legalName?.trim() || name,
-    registrationNumber: input.registrationNumber?.trim() ?? '',
-    addressLine1: input.addressLine1?.trim() ?? '',
-    addressLine2: input.addressLine2?.trim() ?? '',
-    city: input.city?.trim() ?? '',
-    region: input.region?.trim() ?? '',
-    postalCode: input.postalCode?.trim() ?? '',
-    country: input.country?.trim() ?? '',
-    email: input.adminEmail?.trim() ?? '',
-    phone: input.adminPhone?.trim() ?? '',
-    website: input.website?.trim() ?? '',
+    registrationNumber: input.registrationNumber?.trim() ?? "",
+    addressLine1: input.addressLine1?.trim() ?? "",
+    addressLine2: input.addressLine2?.trim() ?? "",
+    city: input.city?.trim() ?? "",
+    region: input.region?.trim() ?? "",
+    postalCode: input.postalCode?.trim() ?? "",
+    country: input.country?.trim() ?? "",
+    email: input.adminEmail?.trim() ?? "",
+    phone: input.adminPhone?.trim() ?? "",
+    website: input.website?.trim() ?? "",
     socialLinks: input.socialLinks ?? [],
   });
 }
@@ -98,7 +98,7 @@ export function isBrandingFieldsDirty(
 }
 
 function trimField(value: string | undefined, maxLen?: number): string {
-  const trimmed = (value ?? '').trim();
+  const trimmed = (value ?? "").trim();
   if (maxLen !== undefined && trimmed.length > maxLen) {
     return trimmed.slice(0, maxLen);
   }
@@ -107,7 +107,7 @@ function trimField(value: string | undefined, maxLen?: number): string {
 
 function normalizeBrandingPhone(phone: string | undefined): string {
   const trimmed = trimField(phone);
-  if (!trimmed) return '';
+  if (!trimmed) return "";
   const parsed = parsePhoneNumber(trimmed);
   return normalizeToE164(parsed.countryCode, parsed.number);
 }
@@ -118,21 +118,23 @@ function normalizeSocialLinks(links: BrandingSocialLink[] | undefined): Branding
   return links
     .map((link) => ({
       platform: allowed.has(link.platform) ? link.platform : BRANDING_SOCIAL_PLATFORMS[0],
-      url: (link.url ?? '').trim(),
+      url: (link.url ?? "").trim(),
     }))
     .filter((link) => link.url.length > 0);
 }
 
-export function mergeBrandingSettings(partial: LegacyBranding | null | undefined): BrandingSettings {
+export function mergeBrandingSettings(
+  partial: LegacyBranding | null | undefined,
+): BrandingSettings {
   const merged: BrandingSettings = {
     ...DEFAULT_BRANDING_SETTINGS,
     ...(partial ?? {}),
     madrasaName:
-      partial && 'madrasaName' in partial
+      partial && "madrasaName" in partial
         ? trimField(partial.madrasaName, BRANDING_NAME_MAX)
         : DEFAULT_BRANDING_SETTINGS.madrasaName,
     tagline:
-      partial && 'tagline' in partial
+      partial && "tagline" in partial
         ? trimField(partial.tagline, BRANDING_TAGLINE_MAX)
         : DEFAULT_BRANDING_SETTINGS.tagline,
     email: trimField(partial?.email),
@@ -149,7 +151,7 @@ export function mergeBrandingSettings(partial: LegacyBranding | null | undefined
     logoUrl: trimField(partial?.logoUrl ?? DEFAULT_BRANDING_SETTINGS.logoUrl),
     faviconUrl: trimField(partial?.faviconUrl ?? DEFAULT_BRANDING_SETTINGS.faviconUrl),
     footerText:
-      partial && 'footerText' in partial
+      partial && "footerText" in partial
         ? trimField(partial.footerText, BRANDING_FOOTER_MAX)
         : DEFAULT_BRANDING_SETTINGS.footerText,
     primaryColor: normalizeBrandingHexLocal(
@@ -177,13 +179,19 @@ export function mergeBrandingSettings(partial: LegacyBranding | null | undefined
 export function formatBrandingAddress(
   branding: Pick<
     BrandingSettings,
-    'addressLine1' | 'addressLine2' | 'city' | 'region' | 'postalCode' | 'country'
+    "addressLine1" | "addressLine2" | "city" | "region" | "postalCode" | "country"
   >,
 ): string {
-  const locality = [branding.city, branding.region].filter(Boolean).join(', ');
-  return [branding.addressLine1, branding.addressLine2, locality, branding.postalCode, branding.country]
+  const locality = [branding.city, branding.region].filter(Boolean).join(", ");
+  return [
+    branding.addressLine1,
+    branding.addressLine2,
+    locality,
+    branding.postalCode,
+    branding.country,
+  ]
     .filter(Boolean)
-    .join(', ');
+    .join(", ");
 }
 
 /**
@@ -204,13 +212,6 @@ export function isInstitutionSetupComplete(
   const postalCode = branding.postalCode?.trim();
 
   return Boolean(
-    name &&
-    tagline &&
-    email &&
-    phone &&
-    addressLine1 &&
-    city &&
-    country &&
-    postalCode,
+    name && tagline && email && phone && addressLine1 && city && country && postalCode,
   );
 }

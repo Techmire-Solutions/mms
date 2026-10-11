@@ -1,8 +1,8 @@
-import React from 'react';
-import { Sparkles, Copy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { notify } from '@/lib/notify';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
+import React from "react";
+import { Sparkles, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { notify } from "@/lib/notify";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface ThemeSettingsPaletteSectionProps {
   t: TranslationFunction;
@@ -28,7 +28,7 @@ export function ThemeSettingsPaletteSection({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
-          {t('theme.logoExtractedPalette')}
+          {t("theme.logoExtractedPalette")}
         </span>
         <div className="flex items-center gap-2">
           {bestPair && onApplyBestPair && (
@@ -40,10 +40,12 @@ export function ThemeSettingsPaletteSection({
               className="h-7 min-h-7 px-2 text-2xs font-bold text-primary border-primary/30 bg-primary/10 hover:bg-primary/20 rounded-md"
             >
               <Sparkles className="h-3 w-3 me-1" />
-              {t('theme.applyLogoPair')}
+              {t("theme.applyLogoPair")}
             </Button>
           )}
-          <span className="text-3xs font-medium text-muted-foreground">{extractedPalette.length} swatches</span>
+          <span className="text-3xs font-medium text-muted-foreground">
+            {extractedPalette.length} swatches
+          </span>
         </div>
       </div>
 
@@ -57,16 +59,18 @@ export function ThemeSettingsPaletteSection({
               type="button"
               onClick={() => {
                 void navigator.clipboard?.writeText(hex);
-                notify.success(t('theme.copiedHex', { hex }));
+                notify.success(t("theme.copiedHex", { hex }));
               }}
-              title={t('theme.copiedHex', { hex })}
+              title={t("theme.copiedHex", { hex })}
               className="h-7 w-7 rounded-md border border-white/20 shadow-2xs shrink-0 cursor-pointer hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group relative"
               style={{ backgroundColor: hex }}
               aria-label={hex}
             >
               <Copy className="h-3 w-3 text-white/0 group-hover:text-white/90 drop-shadow-sm transition-colors" />
             </button>
-            <span className="font-mono text-2xs text-muted-foreground font-semibold px-0.5">{hex}</span>
+            <span className="font-mono text-2xs text-muted-foreground font-semibold px-0.5">
+              {hex}
+            </span>
             <div className="flex items-center gap-1 ps-1 border-s border-border">
               <Button
                 type="button"
@@ -74,9 +78,9 @@ export function ThemeSettingsPaletteSection({
                 size="sm"
                 onClick={() => onPrimaryChange(hex)}
                 className="h-6 min-h-6 px-1.5 text-3xs font-bold text-primary hover:bg-primary/10 rounded-md"
-                title={t('theme.setAsPrimary')}
+                title={t("theme.setAsPrimary")}
               >
-                {t('theme.setAsPrimary')}
+                {t("theme.setAsPrimary")}
               </Button>
               <Button
                 type="button"
@@ -84,9 +88,9 @@ export function ThemeSettingsPaletteSection({
                 size="sm"
                 onClick={() => onSecondaryChange(hex)}
                 className="h-6 min-h-6 px-1.5 text-3xs font-bold text-muted-foreground hover:text-foreground rounded-md"
-                title={t('theme.setAsAccent')}
+                title={t("theme.setAsAccent")}
               >
-                {t('theme.setAsAccent')}
+                {t("theme.setAsAccent")}
               </Button>
             </div>
           </div>

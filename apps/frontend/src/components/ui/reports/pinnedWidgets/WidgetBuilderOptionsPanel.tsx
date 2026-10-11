@@ -16,7 +16,6 @@ import { WidgetBuilderThresholdOptions } from "@/components/ui/reports/pinnedWid
 import { WidgetBuilderTypeSelector } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderTypeSelector";
 import type { WidgetBuilderOptionsPanelProps } from "@/components/ui/reports/pinnedWidgets/widgetBuilderOptionsPanelTypes";
 
-
 export function WidgetBuilderOptionsPanel({
   mode,
   widgetType,
@@ -111,10 +110,7 @@ export function WidgetBuilderOptionsPanel({
         </Field>
 
         {widgetType === "card" && mode === "dashboard" && (
-          <WidgetBuilderCardRoleOptions
-            builderRole={builderRole}
-            setBuilderRole={setBuilderRole}
-          />
+          <WidgetBuilderCardRoleOptions builderRole={builderRole} setBuilderRole={setBuilderRole} />
         )}
 
         {usesMetricOptions ? (
@@ -177,10 +173,7 @@ export function WidgetBuilderOptionsPanel({
         />
       )}
 
-      <WidgetBuilderColorOptions
-        builderColor={builderColor}
-        setBuilderColor={setBuilderColor}
-      />
+      <WidgetBuilderColorOptions builderColor={builderColor} setBuilderColor={setBuilderColor} />
 
       {widgetType === "card" && (
         <WidgetBuilderIconPicker

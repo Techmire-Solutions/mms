@@ -3,11 +3,7 @@
  * @description Pure factory builders and collision-free layout insertion for template elements.
  */
 
-import type {
-  PageSizeInfo,
-  TemplateElement,
-  TemplateFieldDefinition,
-} from "@mms/shared";
+import type { PageSizeInfo, TemplateElement, TemplateFieldDefinition } from "@mms/shared";
 import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
 import { newId, snap } from "./templateEditorUtils";
 
@@ -18,16 +14,13 @@ export function findInsertionPos(
   elements: readonly TemplateElement[],
   w: number,
   h: number,
-  size: PageSizeInfo
+  size: PageSizeInfo,
 ): { x: number; y: number } {
   const pad = 6;
   const overlaps = (x: number, y: number) =>
     elements.some(
       (el) =>
-        x < el.x + el.w + pad &&
-        x + w + pad > el.x &&
-        y < el.y + el.h + pad &&
-        y + h + pad > el.y
+        x < el.x + el.w + pad && x + w + pad > el.x && y < el.y + el.h + pad && y + h + pad > el.y,
     );
 
   const x = 20;
@@ -42,11 +35,7 @@ export function findInsertionPos(
   };
 }
 
-export function createStaticTextElement(
-  x: number,
-  y: number,
-  label: string
-): TemplateElement {
+export function createStaticTextElement(x: number, y: number, label: string): TemplateElement {
   return {
     id: newId(),
     type: "static",
@@ -63,7 +52,7 @@ export function createHeadingElement(
   x: number,
   y: number,
   w: number,
-  label: string
+  label: string,
 ): TemplateElement {
   return {
     id: newId(),
@@ -77,11 +66,7 @@ export function createHeadingElement(
   };
 }
 
-export function createDividerElement(
-  x: number,
-  y: number,
-  w: number
-): TemplateElement {
+export function createDividerElement(x: number, y: number, w: number): TemplateElement {
   return {
     id: newId(),
     type: "divider",
@@ -97,7 +82,7 @@ export function createDividerElement(
 export function createFieldElement<TPayload = Record<string, unknown>>(
   x: number,
   y: number,
-  fieldDef: TemplateFieldDefinition<TPayload>
+  fieldDef: TemplateFieldDefinition<TPayload>,
 ): TemplateElement<keyof TPayload & string> {
   return {
     id: newId(),
@@ -112,11 +97,7 @@ export function createFieldElement<TPayload = Record<string, unknown>>(
   };
 }
 
-export function createQrCodeElement(
-  x: number,
-  y: number,
-  label: string
-): TemplateElement {
+export function createQrCodeElement(x: number, y: number, label: string): TemplateElement {
   return {
     id: newId(),
     type: "qrcode",
@@ -128,11 +109,7 @@ export function createQrCodeElement(
   };
 }
 
-export function createLogoElement(
-  x: number,
-  y: number,
-  label: string
-): TemplateElement {
+export function createLogoElement(x: number, y: number, label: string): TemplateElement {
   return {
     id: newId(),
     type: "logo",
@@ -155,7 +132,7 @@ export function createTableElement(
   x: number,
   y: number,
   w: number,
-  labels: TableElementLabels
+  labels: TableElementLabels,
 ): TemplateElement {
   return {
     id: newId(),
@@ -167,7 +144,13 @@ export function createTableElement(
     h: 120,
     columns: [
       { id: newId(), header: labels.columnIndex, field: "id", width: 40, align: "center" },
-      { id: newId(), header: labels.columnDescription, field: "description", width: 220, align: "left" },
+      {
+        id: newId(),
+        header: labels.columnDescription,
+        field: "description",
+        width: 220,
+        align: "left",
+      },
       { id: newId(), header: labels.columnAmount, field: "amount", width: 100, align: "right" },
     ],
     tableConfig: {

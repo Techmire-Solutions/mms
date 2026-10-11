@@ -19,7 +19,7 @@ export function getTableCellAlignClass(align?: TableCellAlign, variant?: TableCe
 }
 
 export function getAriaSort(
-  sortDirection?: TableSortDirection | boolean | null
+  sortDirection?: TableSortDirection | boolean | null,
 ): "ascending" | "descending" | "none" | undefined {
   if (sortDirection === "asc" || sortDirection === true) return "ascending";
   if (sortDirection === "desc") return "descending";

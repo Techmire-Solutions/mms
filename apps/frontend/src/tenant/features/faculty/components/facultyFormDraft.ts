@@ -64,7 +64,9 @@ const { getInitialDraft, draftSnapshot } = createModuleFormDraft<FacultyMember>(
       faculty?.employDesignationStatus ?? faculty?.profileStatus,
     ),
     employDesignationId: faculty?.employDesignationId ?? null,
-    employDesignations: employDesignationRowsToWritePayload(employDesignationRowsFromFaculty(faculty)),
+    employDesignations: employDesignationRowsToWritePayload(
+      employDesignationRowsFromFaculty(faculty),
+    ),
     employmentStartDate: faculty?.employmentStartDate ?? faculty?.joinDate ?? todayISO(),
     employmentEndDate: faculty?.employmentEndDate ?? null,
     qualification: faculty?.qualification ?? "",
@@ -129,4 +131,3 @@ export const DEFAULT_USER_ACCOUNT_DRAFT = {
   password: "",
   forceReset: true,
 };
-

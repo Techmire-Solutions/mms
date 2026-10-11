@@ -14,25 +14,22 @@ import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
 import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 
-const WakalaTypeManager = lazy(
-  () =>
-    import(
-      "@/tenant/features/obligations/components/WakalaTypeManager"
-    ).then((m) => ({ default: m.WakalaTypeManager })),
+const WakalaTypeManager = lazy(() =>
+  import("@/tenant/features/obligations/components/WakalaTypeManager").then((m) => ({
+    default: m.WakalaTypeManager,
+  })),
 );
 
-const InvoiceTemplateEditor = lazy(
-  () =>
-    import(
-      "@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor"
-    ).then((m) => ({ default: m.InvoiceTemplateEditor })),
+const InvoiceTemplateEditor = lazy(() =>
+  import("@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor").then((m) => ({
+    default: m.InvoiceTemplateEditor,
+  })),
 );
 
-const ObligationsReceiptNumberingSection = lazy(
-  () =>
-    import(
-      "@/tenant/features/obligations/components/ObligationsReceiptNumberingSection"
-    ).then((m) => ({ default: m.ObligationsReceiptNumberingSection })),
+const ObligationsReceiptNumberingSection = lazy(() =>
+  import("@/tenant/features/obligations/components/ObligationsReceiptNumberingSection").then(
+    (m) => ({ default: m.ObligationsReceiptNumberingSection }),
+  ),
 );
 
 export interface SetupTab {
@@ -84,7 +81,7 @@ export function ObligationsSetupTier({
 
   const subTabBarItems = useMemo(
     () => tabs.map((tab) => ({ key: tab.id, label: tab.label })),
-    [tabs]
+    [tabs],
   );
 
   return (
@@ -116,17 +113,15 @@ export function ObligationsSetupTier({
                 />
               )}
 
-              {subTabs.sub === "numbering" && (
-                <ObligationsReceiptNumberingSection />
-              )}
+              {subTabs.sub === "numbering" && <ObligationsReceiptNumberingSection />}
 
               {subTabs.sub === "invoice_template" && (
-                <InvoiceTemplateEditor 
-                  fullscreen={false} 
+                <InvoiceTemplateEditor
+                  fullscreen={false}
                   obligationTypes={obligationTypes}
                   reps={reps}
                   mujtahids={mujtahids}
-                  onClose={() => subTabs.handleSubTabChange("wakala")} 
+                  onClose={() => subTabs.handleSubTabChange("wakala")}
                 />
               )}
             </Suspense>

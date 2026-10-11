@@ -50,12 +50,7 @@ export function FacultyDepartmentSelectField({
   }, [departmentEntities, departmentId, departmentOptions, value]);
 
   return (
-    <Field
-      label={t("faculty.field.department")}
-      id={id}
-      required={required}
-      error={error}
-    >
+    <Field label={t("faculty.field.department")} id={id} required={required} error={error}>
       <FormSelectWithQuickCreate
         id={id}
         name={id}

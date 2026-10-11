@@ -1,5 +1,5 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
 
 export interface FormProgressBarProps {
   value: number;
@@ -19,14 +19,14 @@ export function FormProgressBar({
   const complete = clamped === 100;
 
   return (
-    <div className={cn('space-y-1', className)}>
+    <div className={cn("space-y-1", className)}>
       <div className="flex items-center justify-between">
         {label ? (
           <span className="text-xs font-semibold uppercase text-foreground/80">{label}</span>
         ) : (
           <span />
         )}
-        <span className={cn('text-xs font-bold', complete ? 'text-primary' : 'text-primary/70')}>
+        <span className={cn("text-xs font-bold", complete ? "text-primary" : "text-primary/70")}>
           {Math.round(clamped)}%
         </span>
       </div>
@@ -36,12 +36,12 @@ export function FormProgressBar({
         aria-valuenow={Math.round(clamped)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={typeof label === 'string' ? label : undefined}
+        aria-label={typeof label === "string" ? label : undefined}
       >
         <div
           className={cn(
-            'h-full rounded-full transition-all duration-500',
-            complete ? 'bg-primary' : 'bg-primary/70',
+            "h-full rounded-full transition-all duration-500",
+            complete ? "bg-primary" : "bg-primary/70",
           )}
           style={{ width: `${clamped}%` }}
         />

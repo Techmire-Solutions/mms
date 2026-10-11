@@ -3,52 +3,49 @@ import {
   DEFAULT_STUDENT_REQUIRED_TABS,
   INITIAL_STUDENT_FIELD_SEED,
   STUDENT_TAB_REGISTRY,
-} from './settingsTypes.js';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import type { StudentsSettings } from './settingsTypes.js';
-import {
-  refreshModuleTierTabKeys,
-  refreshModuleTierTabLabels,
-} from './moduleTierTabs.js';
+} from "./settingsTypes.js";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import type { StudentsSettings } from "./settingsTypes.js";
+import { refreshModuleTierTabKeys, refreshModuleTierTabLabels } from "./moduleTierTabs.js";
 
-const OBSOLETE_STUDENT_SETUP_TABS = new Set(['guardian', 'academic']);
+const OBSOLETE_STUDENT_SETUP_TABS = new Set(["guardian", "academic"]);
 export const OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS = new Set([
-  'fatherLink',
-  'motherLink',
-  'guardianLink',
+  "fatherLink",
+  "motherLink",
+  "guardianLink",
 ]);
 export const STUDENT_SETTINGS_VERSION = 5;
 
 function isLegacyFlatFields(fields: unknown): boolean {
-  if (!fields || typeof fields !== 'object') return false;
+  if (!fields || typeof fields !== "object") return false;
   const values = Object.values(fields);
   if (values.length === 0) return false;
   return !Array.isArray(values[0]);
 }
 
-function normalizeTabs(tabs: unknown): StudentsSettings['formTabs'] | undefined {
+function normalizeTabs(tabs: unknown): StudentsSettings["formTabs"] | undefined {
   if (!Array.isArray(tabs)) return undefined;
   const result: TabDefinition[] = [];
   for (let i = 0; i < tabs.length; i++) {
     const tab = tabs[i];
-    if (!tab || typeof tab !== 'object') continue;
+    if (!tab || typeof tab !== "object") continue;
     const tabRecord = tab as Record<string, unknown>;
     const key =
-      typeof tabRecord.key === 'string' && tabRecord.key
+      typeof tabRecord.key === "string" && tabRecord.key
         ? tabRecord.key
-        : typeof tabRecord.id === 'string'
+        : typeof tabRecord.id === "string"
           ? tabRecord.id
           : `tab_${i}`;
-    const label = typeof tabRecord.label === 'string' ? tabRecord.label : key;
+    const label = typeof tabRecord.label === "string" ? tabRecord.label : key;
     result.push({
       key,
       label,
-      enabled: typeof tabRecord.enabled === 'boolean' ? tabRecord.enabled : true,
-      order: typeof tabRecord.order === 'number' ? tabRecord.order : i,
-      ...(typeof tabRecord.icon === 'string' ? { icon: tabRecord.icon } : {}),
-      ...(typeof tabRecord.description === 'string' ? { description: tabRecord.description } : {}),
-      ...(typeof tabRecord.color === 'string' ? { color: tabRecord.color } : {}),
-      ...(typeof tabRecord.isSystem === 'boolean' ? { isSystem: tabRecord.isSystem } : {}),
+      enabled: typeof tabRecord.enabled === "boolean" ? tabRecord.enabled : true,
+      order: typeof tabRecord.order === "number" ? tabRecord.order : i,
+      ...(typeof tabRecord.icon === "string" ? { icon: tabRecord.icon } : {}),
+      ...(typeof tabRecord.description === "string" ? { description: tabRecord.description } : {}),
+      ...(typeof tabRecord.color === "string" ? { color: tabRecord.color } : {}),
+      ...(typeof tabRecord.isSystem === "boolean" ? { isSystem: tabRecord.isSystem } : {}),
     });
   }
   return result;
@@ -105,9 +102,11 @@ function migrateStudentGuardianLinkFields(
   }
 
   const basic = [...(next.basic ?? [])];
-  const hasContactRelationships = basic.some((field) => field.key === 'contactRelationships');
+  const hasContactRelationships = basic.some((field) => field.key === "contactRelationships");
   if (!hasContactRelationships) {
-    const seed = INITIAL_STUDENT_FIELD_SEED.basic?.find((field) => field.key === 'contactRelationships');
+    const seed = INITIAL_STUDENT_FIELD_SEED.basic?.find(
+      (field) => field.key === "contactRelationships",
+    );
     if (seed) {
       basic.push({
         ...seed,
@@ -117,7 +116,7 @@ function migrateStudentGuardianLinkFields(
     }
   } else if (sawObsolete && enableRelationships) {
     for (const field of basic) {
-      if (field.key === 'contactRelationships') field.enabled = true;
+      if (field.key === "contactRelationships") field.enabled = true;
     }
   }
   basic.forEach((field, index) => {
@@ -132,15 +131,15 @@ function remapStudentEnabledTabs(tabs: string[] | undefined): string[] {
   const out: string[] = [];
   let hadAcademic = false;
   for (const tab of source) {
-    if (tab === 'guardian') continue;
-    if (tab === 'academic') {
+    if (tab === "guardian") continue;
+    if (tab === "academic") {
       hadAcademic = true;
       continue;
     }
     if (!out.includes(tab)) out.push(tab);
   }
-  if (hadAcademic && !out.includes('registration')) {
-    out.push('registration');
+  if (hadAcademic && !out.includes("registration")) {
+    out.push("registration");
   }
   if (out.length === 0) {
     return [...DEFAULT_STUDENT_ENABLED_TABS];
@@ -158,9 +157,7 @@ function rebuildStudentFormTabs(existing: TabDefinition[] | undefined): TabDefin
   const extras = (normalizeTabs(existing) ?? []).filter(
     (tab) => !registryKeys.has(tab.key) && !OBSOLETE_STUDENT_SETUP_TABS.has(tab.key),
   );
-  return refreshModuleTierTabLabels(
-    refreshModuleTierTabKeys([...STUDENT_TAB_REGISTRY, ...extras]),
-  );
+  return refreshModuleTierTabLabels(refreshModuleTierTabKeys([...STUDENT_TAB_REGISTRY, ...extras]));
 }
 
 /** Inject missing INITIAL_STUDENT_FIELD_SEED keys without wiping customs. */
@@ -179,7 +176,9 @@ function ensureStudentSeedFields(
     let inserted = false;
     for (const seed of missing) {
       const lowerSeedKeys = new Set(
-        seedFields.filter((candidate) => (candidate.order ?? 0) < (seed.order ?? 0)).map((candidate) => candidate.key),
+        seedFields
+          .filter((candidate) => (candidate.order ?? 0) < (seed.order ?? 0))
+          .map((candidate) => candidate.key),
       );
       let insertAt = current.length;
       let foundLower = false;
@@ -225,9 +224,9 @@ function ensureStudentSeedFields(
 
 /** Apply Setup Fields tab collapse + guardian triad → contactRelationships (v4) + full form seed (v5). */
 export function applyStudentSetupVersionMigrate(draft: Partial<StudentsSettings>): void {
-  const storedVersion = typeof draft.version === 'number' ? draft.version : 0;
+  const storedVersion = typeof draft.version === "number" ? draft.version : 0;
 
-  if (draft.fields && typeof draft.fields === 'object' && !isLegacyFlatFields(draft.fields)) {
+  if (draft.fields && typeof draft.fields === "object" && !isLegacyFlatFields(draft.fields)) {
     let fields = draft.fields as Record<string, FieldDefinition[]>;
     if (fields.guardian || fields.academic) {
       fields = migrateStudentSetupFieldsToTwoTabs(fields);

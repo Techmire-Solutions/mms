@@ -11,12 +11,7 @@ export function DistributionsListContent(props: DistributionsListContentProps): 
 
   if (props.distributions.length === 0) {
     return (
-      <EmptyState
-        variant="dashed"
-        icon={Send}
-        title={t("hasanat.empty.distributions")}
-        compact
-      />
+      <EmptyState variant="dashed" icon={Send} title={t("hasanat.empty.distributions")} compact />
     );
   }
 

@@ -82,10 +82,7 @@ describe("AccountingCsvImportDialog", () => {
       templateBtn?.click();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "chart-of-accounts.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "chart-of-accounts.csv");
   });
 
   it("accepts a valid exported account CSV and initiates background import", async () => {

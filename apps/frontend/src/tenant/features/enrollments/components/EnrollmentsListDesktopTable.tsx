@@ -15,7 +15,9 @@ export type EnrollmentsListDesktopTableProps = Omit<
   "filteredCount" | "page" | "pageSize" | "onPageChange"
 >;
 
-export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTableProps): React.JSX.Element {
+export function EnrollmentsListDesktopTable(
+  props: EnrollmentsListDesktopTableProps,
+): React.JSX.Element {
   const {
     enrollments,
     students,
@@ -64,7 +66,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         label: t("enrollments.columns.student"),
         noWrap: true,
         cellClassName: "px-3 py-2.5",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "student", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "student", columnOptions),
       });
     }
 
@@ -74,7 +77,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         label: t("enrollments.columns.session"),
         truncate: true,
         cellClassName: "px-3 py-2.5 text-xs text-foreground max-w-cell-sm",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "session", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "session", columnOptions),
       });
     }
 
@@ -84,7 +88,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         label: t("enrollments.columns.class"),
         noWrap: true,
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "class", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "class", columnOptions),
       });
     }
 
@@ -94,7 +99,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         label: t("enrollments.columns.enrolledDate"),
         noWrap: true,
         cellClassName: "px-3 py-2.5 font-mono text-xs text-muted-foreground",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "enrolledDate", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "enrolledDate", columnOptions),
       });
     }
 
@@ -105,7 +111,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         headerClassName: "text-end",
         noWrap: true,
         cellClassName: "px-3 py-2.5 text-end font-semibold text-foreground",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "finalFee", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "finalFee", columnOptions),
       });
     }
 
@@ -114,7 +121,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         id: "status",
         label: t("enrollments.columns.status"),
         cellClassName: "px-3 py-2.5",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "status", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "status", columnOptions),
       });
     }
 
@@ -123,7 +131,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         id: "payment",
         label: t("enrollments.columns.payment"),
         cellClassName: "px-3 py-2.5",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "payment", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "payment", columnOptions),
       });
     }
 
@@ -133,7 +142,8 @@ export function EnrollmentsListDesktopTable(props: EnrollmentsListDesktopTablePr
         label: t("enrollments.columns.notes"),
         truncate: true,
         cellClassName: "px-3 py-2.5 text-xs text-muted-foreground max-w-cell-sm",
-        render: (enrollment: Enrollment) => renderEnrollmentWorkColumnValue(enrollment, "notes", columnOptions),
+        render: (enrollment: Enrollment) =>
+          renderEnrollmentWorkColumnValue(enrollment, "notes", columnOptions),
       });
     }
 

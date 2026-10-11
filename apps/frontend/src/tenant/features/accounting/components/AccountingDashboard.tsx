@@ -1,9 +1,14 @@
-import React from 'react';
-import type { Account, JournalEntry, AccountingSettings, FiscalYear } from '@/lib/data/accountingData';
-import { ModuleCommandMetricsGrid } from '@/components/ui/ModuleCommandMetricsGrid';
-import { useAccountingDashboardView } from './useAccountingDashboardView';
-import { AccountingDashboardCharts } from './AccountingDashboardCharts';
-import { AccountingDashboardSnapshots } from './AccountingDashboardSnapshots';
+import React from "react";
+import type {
+  Account,
+  JournalEntry,
+  AccountingSettings,
+  FiscalYear,
+} from "@/lib/data/accountingData";
+import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { useAccountingDashboardView } from "./useAccountingDashboardView";
+import { AccountingDashboardCharts } from "./AccountingDashboardCharts";
+import { AccountingDashboardSnapshots } from "./AccountingDashboardSnapshots";
 
 export interface AccountingDashboardProps {
   accounts: Account[];
@@ -38,7 +43,7 @@ export function AccountingDashboard({
   } = useAccountingDashboardView(accounts, entries);
 
   return (
-    <section aria-label={t('accounting.dashboard.aria')} className="space-y-5">
+    <section aria-label={t("accounting.dashboard.aria")} className="space-y-5">
       <ModuleCommandMetricsGrid items={metricItems} />
 
       <AccountingDashboardCharts

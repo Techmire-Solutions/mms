@@ -1,18 +1,19 @@
-import { getRequestTenant } from './tenantContext.js';
-import { logger } from './logger.js';
-import { redisDel, redisDelPattern, redisKeys } from './redis.js';
-export * from './livePushConnections.js';
+import { getRequestTenant } from "./tenantContext.js";
+import { logger } from "./logger.js";
+import { redisDel, redisDelPattern, redisKeys } from "./redis.js";
+export * from "./livePushConnections.js";
 import {
   WS_TELEMETRY_BUFFERED_LIMIT,
   MAX_WS_BUFFERED_AMOUNT,
   getTenantConnections,
   getTenantSseConnections,
-} from './livePushConnections.js';
-import { MODULE_ACCESS_INVALIDATION_KEYS } from '@mms/shared';
-import { clearModuleAvailabilityCache } from './moduleAvailabilityService.js';
+} from "./livePushConnections.js";
+import { MODULE_ACCESS_INVALIDATION_KEYS } from "@mms/shared";
+import { clearModuleAvailabilityCache } from "./moduleAvailabilityService.js";
 
 // Redis Pub/Sub adapter for horizontal multi-node cluster scaling
-let redisPublisher: { publish: (channel: string, message: string) => Promise<unknown> } | null = null;
+let redisPublisher: { publish: (channel: string, message: string) => Promise<unknown> } | null =
+  null;
 let redisSubscriber: {
   subscribe: (...channels: string[]) => Promise<unknown>;
   on: (event: string, listener: (...args: string[]) => void) => void;
@@ -26,7 +27,7 @@ export function configureRedisPubSub(
   subscriber?: {
     subscribe: (...channels: string[]) => Promise<unknown>;
     on: (event: string, listener: (...args: string[]) => void) => void;
-  }
+  },
 ): void {
   redisPublisher = publisher;
   if (subscriber) {
@@ -45,19 +46,19 @@ export function configureRedisPubSub(
       subscribed = true;
       redisSubscriber.subscribe(WS_INVALIDATION_CHANNEL, JOB_EVENT_CHANNEL).catch((err) => {
         subscribed = false; // allow a later retry (e.g. on `ready`)
-        if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
-          logger.warn({ err }, 'Failed to subscribe to Redis PubSub channels');
+        if (!process.env.VITEST && process.env.NODE_ENV !== "test") {
+          logger.warn({ err }, "Failed to subscribe to Redis PubSub channels");
         }
       });
     };
 
-    subscriber.on('ready', subscribeChannels);
+    subscriber.on("ready", subscribeChannels);
     const status = (subscriber as { status?: string }).status;
-    if (status === undefined || status === 'ready') {
+    if (status === undefined || status === "ready") {
       subscribeChannels();
     }
 
-    redisSubscriber.on('message', (channel: string, message: string) => {
+    redisSubscriber.on("message", (channel: string, message: string) => {
       try {
         if (channel === WS_INVALIDATION_CHANNEL) {
           const { subdomain, type, key } = JSON.parse(message);
@@ -71,7 +72,7 @@ export function configureRedisPubSub(
           }
         }
       } catch (err) {
-        logger.error({ err }, 'Failed to process Redis message');
+        logger.error({ err }, "Failed to process Redis message");
       }
     });
   }
@@ -82,12 +83,12 @@ export function configureRedisPubSub(
  */
 export function broadcastLocalTenantUpdate(
   subdomain: string,
-  type: 'collection' | 'object',
-  key: string
+  type: "collection" | "object",
+  key: string,
 ): void {
   const normSubdomain = subdomain.trim().toLowerCase();
   // Runs for local and Redis-relayed updates alike, so every node drops stale module gates.
-  if (type === 'object' && MODULE_ACCESS_INVALIDATION_KEYS.has(key)) {
+  if (type === "object" && MODULE_ACCESS_INVALIDATION_KEYS.has(key)) {
     clearModuleAvailabilityCache(normSubdomain);
   }
   const tenantSet = getTenantConnections(normSubdomain);
@@ -95,7 +96,7 @@ export function broadcastLocalTenantUpdate(
   if ((!tenantSet || tenantSet.size === 0) && (!sseSet || sseSet.size === 0)) return;
 
   const message = JSON.stringify({
-    event: 'database-update',
+    event: "database-update",
     type,
     key,
   });
@@ -104,11 +105,14 @@ export function broadcastLocalTenantUpdate(
   if (tenantSet) {
     for (const connection of tenantSet) {
       try {
-        const buffered = typeof connection.socket.bufferedAmount === 'number' ? connection.socket.bufferedAmount : 0;
+        const buffered =
+          typeof connection.socket.bufferedAmount === "number"
+            ? connection.socket.bufferedAmount
+            : 0;
         if (buffered > MAX_WS_BUFFERED_AMOUNT) {
           logger.warn(
             { userId: connection.userId, subdomain: normSubdomain, bufferedAmount: buffered },
-            'WS socket buffer backlog exceeded hard ceiling; terminating stalled connection',
+            "WS socket buffer backlog exceeded hard ceiling; terminating stalled connection",
           );
           connection.socket.terminate();
           continue;
@@ -116,14 +120,17 @@ export function broadcastLocalTenantUpdate(
         if (buffered > WS_TELEMETRY_BUFFERED_LIMIT) {
           logger.warn(
             { userId: connection.userId, subdomain: normSubdomain, bufferedAmount: buffered },
-            'WS socket buffer exceeded 64KB: dropping telemetry update under backpressure',
+            "WS socket buffer exceeded 64KB: dropping telemetry update under backpressure",
           );
           continue;
         }
         connection.socket.send(message);
         sentCount++;
       } catch (err) {
-        logger.error({ userId: connection.userId, subdomain: normSubdomain, err }, 'Failed to send update to user');
+        logger.error(
+          { userId: connection.userId, subdomain: normSubdomain, err },
+          "Failed to send update to user",
+        );
       }
     }
   }
@@ -135,13 +142,16 @@ export function broadcastLocalTenantUpdate(
         connection.response.write(ssePayload);
         sentCount++;
       } catch (err) {
-        logger.error({ userId: connection.userId, subdomain: normSubdomain, err }, 'Failed to send SSE update to user');
+        logger.error(
+          { userId: connection.userId, subdomain: normSubdomain, err },
+          "Failed to send SSE update to user",
+        );
       }
     }
   }
 
   if (sentCount > 0) {
-    logger.info({ type, key, sentCount, subdomain: normSubdomain }, 'Broadcasted database-update');
+    logger.info({ type, key, sentCount, subdomain: normSubdomain }, "Broadcasted database-update");
   }
 }
 
@@ -151,8 +161,8 @@ export function broadcastLocalTenantUpdate(
  */
 export function broadcastTenantUpdate(
   subdomain: string,
-  type: 'collection' | 'object',
-  key: string
+  type: "collection" | "object",
+  key: string,
 ): void {
   // Always emit locally on current node
   broadcastLocalTenantUpdate(subdomain, type, key);
@@ -160,23 +170,23 @@ export function broadcastTenantUpdate(
   // Invalidate Redis domain metrics, dashboard, setup, and workspace caches
   const cleanTenant = subdomain?.trim().toLowerCase();
   if (cleanTenant) {
-    if (type === 'collection') {
+    if (type === "collection") {
       void redisDel(redisKeys.metrics(cleanTenant, key));
       void redisDelPattern(redisKeys.metricsPattern(cleanTenant, key));
       void redisDelPattern(redisKeys.dashboardSummaryPattern(cleanTenant));
       void redisDelPattern(redisKeys.setupPattern(cleanTenant, key));
-    } else if (type === 'object') {
+    } else if (type === "object") {
       if (
-        key === 'workspace' ||
-        key === 'branding' ||
-        key === 'settings' ||
-        key === 'global_settings' ||
-        key === 'fields' ||
-        key === 'schema'
+        key === "workspace" ||
+        key === "branding" ||
+        key === "settings" ||
+        key === "global_settings" ||
+        key === "fields" ||
+        key === "schema"
       ) {
         void redisDel(redisKeys.workspace(cleanTenant));
         void redisDel(redisKeys.globalSettings(cleanTenant));
-        void redisDelPattern(redisKeys.setupPattern(cleanTenant, '*'));
+        void redisDelPattern(redisKeys.setupPattern(cleanTenant, "*"));
       }
     }
   }
@@ -185,7 +195,7 @@ export function broadcastTenantUpdate(
   if (redisPublisher) {
     const payload = JSON.stringify({ subdomain, type, key });
     redisPublisher.publish(WS_INVALIDATION_CHANNEL, payload).catch((err) => {
-      logger.error({ err }, 'Failed to publish WS invalidation to Redis');
+      logger.error({ err }, "Failed to publish WS invalidation to Redis");
     });
   }
 }
@@ -230,26 +240,29 @@ export function broadcastLocalJobEvent(jobEvent: {
     for (const connection of tenantSet) {
       if (!jobEvent.userId || connection.userId === jobEvent.userId) {
         try {
-          const buffered = typeof connection.socket.bufferedAmount === 'number' ? connection.socket.bufferedAmount : 0;
+          const buffered =
+            typeof connection.socket.bufferedAmount === "number"
+              ? connection.socket.bufferedAmount
+              : 0;
           if (buffered > MAX_WS_BUFFERED_AMOUNT) {
             logger.warn(
               { userId: connection.userId, jobId: jobEvent.jobId, bufferedAmount: buffered },
-              'WS socket buffer backlog exceeded hard ceiling; terminating stalled connection',
+              "WS socket buffer backlog exceeded hard ceiling; terminating stalled connection",
             );
             connection.socket.terminate();
             continue;
           }
-          if (buffered > WS_TELEMETRY_BUFFERED_LIMIT && jobEvent.event === 'progress') {
+          if (buffered > WS_TELEMETRY_BUFFERED_LIMIT && jobEvent.event === "progress") {
             logger.warn(
               { userId: connection.userId, jobId: jobEvent.jobId, bufferedAmount: buffered },
-              'WS socket buffer > 64KB: coalescing intermediate progress frame under backpressure',
+              "WS socket buffer > 64KB: coalescing intermediate progress frame under backpressure",
             );
             continue;
           }
           connection.socket.send(message);
           sentCount++;
         } catch (err) {
-          logger.error({ userId: connection.userId, err }, 'Failed to send job event to user');
+          logger.error({ userId: connection.userId, err }, "Failed to send job event to user");
         }
       }
     }
@@ -263,14 +276,17 @@ export function broadcastLocalJobEvent(jobEvent: {
           connection.response.write(ssePayload);
           sentCount++;
         } catch (err) {
-          logger.error({ userId: connection.userId, err }, 'Failed to send SSE job event to user');
+          logger.error({ userId: connection.userId, err }, "Failed to send SSE job event to user");
         }
       }
     }
   }
 
   if (sentCount > 0) {
-    logger.info({ event: jobEvent.event, jobId: jobEvent.jobId, sentCount }, 'Broadcasted job event');
+    logger.info(
+      { event: jobEvent.event, jobId: jobEvent.jobId, sentCount },
+      "Broadcasted job event",
+    );
   }
 }
 
@@ -280,5 +296,5 @@ export function broadcastLocalJobEvent(jobEvent: {
  */
 export async function broadcastCollection(key: string): Promise<void> {
   const tenant = getRequestTenant();
-  if (tenant) broadcastTenantUpdate(tenant, 'collection', key);
+  if (tenant) broadcastTenantUpdate(tenant, "collection", key);
 }

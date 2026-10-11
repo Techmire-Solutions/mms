@@ -1,5 +1,10 @@
-import type { Account, AccountingSettings, FiscalYear, JournalEntry } from '@/lib/data/accountingData';
-import type { ModuleColumnCustomizerProps } from '@/components/ui/ModuleColumnCustomizer';
+import type {
+  Account,
+  AccountingSettings,
+  FiscalYear,
+  JournalEntry,
+} from "@/lib/data/accountingData";
+import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
 
 /** Resolves with the entries as the server saved them (server-assigned voucher refs included). */
 export type JournalEntriesChange = (
@@ -7,7 +12,10 @@ export type JournalEntriesChange = (
 ) => void | JournalEntry[] | Promise<void | JournalEntry[]>;
 
 /** Resolves with the saved entry when the caller can report its voucher number. */
-export type JournalEntrySave = (entry: JournalEntry, stayOpen?: boolean) => void | JournalEntry | Promise<void | JournalEntry>;
+export type JournalEntrySave = (
+  entry: JournalEntry,
+  stayOpen?: boolean,
+) => void | JournalEntry | Promise<void | JournalEntry>;
 
 export interface JournalEntriesProps {
   entries: JournalEntry[];
@@ -16,10 +24,12 @@ export interface JournalEntriesProps {
   settings: AccountingSettings;
   fiscalYears: FiscalYear[];
   onChange: JournalEntriesChange;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   onFilteredCountChange?: (count: number) => void;
   onShortcutStateChange?: (state: {
-    mode: 'simple' | 'advanced';
+    mode: "simple" | "advanced";
     selectedCount: number;
     clearSelection: () => void;
   }) => void;

@@ -1,15 +1,15 @@
-import { and, eq, inArray, or, sql } from 'drizzle-orm';
-import { type Student, type RepositoryListOptions } from '@mms/shared';
-import { students, studentEnrolledSessions } from '../schema.js';
-import { withTenantRead, type AppDb } from '../tenant-context.js';
+import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { type Student, type RepositoryListOptions } from "@mms/shared";
+import { students, studentEnrolledSessions } from "../schema.js";
+import { withTenantRead, type AppDb } from "../tenant-context.js";
 import {
   enableIncludeDeleted,
   softDeleteFilterNeedsIncludeDeleted,
-} from '../../lib/softDeleteHelpers.js';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
-import { studentRowToRecord } from './studentRepositoryMappers.js';
-import { getPreparedStudentById } from '../preparedStatements.js';
-import { STUDENT_COLUMNS } from './studentRepositoryColumns.js';
+} from "../../lib/softDeleteHelpers.js";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
+import { studentRowToRecord } from "./studentRepositoryMappers.js";
+import { getPreparedStudentById } from "../preparedStatements.js";
+import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
 
 export async function hydrateStudentsList(
   tx: AppDb,
@@ -20,7 +20,9 @@ export async function hydrateStudentsList(
   const ids = rows.map((r) => r.id);
 
   // P2-2: Fetch all session enrollments for the batch in a single query (replaces N+1 round-trip).
-  const sessionRows = await (tx as Parameters<typeof tx.select>[0] extends undefined ? never : typeof tx)
+  const sessionRows = await (
+    tx as Parameters<typeof tx.select>[0] extends undefined ? never : typeof tx
+  )
     .select({
       studentId: studentEnrolledSessions.studentId,
       sessionId: studentEnrolledSessions.sessionId,
@@ -52,7 +54,7 @@ export async function listStudentsByWorkspace(
   options?: ListStudentsOptions,
 ): Promise<Student[]> {
   const subdomain = tenant.trim().toLowerCase();
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     if (softDeleteFilterNeedsIncludeDeleted(deletedFilter)) await enableIncludeDeleted(tx);
     const conditions = buildTenantSoftDeleteConditions(students, subdomain, deletedFilter);
@@ -79,10 +81,13 @@ export async function findStudentById(
 ): Promise<Student | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    if (!tx || typeof (tx as { select?: unknown }).select !== 'function') return null;
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return null;
     if (options?.includeDeleted) await enableIncludeDeleted(tx);
     let rows: (typeof students.$inferSelect)[];
-    if (process.env.MMS_USE_PREPARED_STATEMENTS !== 'false' && typeof (tx as { execute?: unknown }).execute === 'function') {
+    if (
+      process.env.MMS_USE_PREPARED_STATEMENTS !== "false" &&
+      typeof (tx as { execute?: unknown }).execute === "function"
+    ) {
       try {
         const stmt = getPreparedStudentById(tx);
         rows = await stmt.execute({ subdomain, id });
@@ -114,17 +119,12 @@ export async function findStudentsByIds(
   const subdomain = tenant.trim().toLowerCase();
   if (ids.length === 0) return [];
   return withTenantRead(subdomain, async (tx) => {
-    if (!tx || typeof (tx as { select?: unknown }).select !== 'function') return [];
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return [];
     if (options?.includeDeleted) await enableIncludeDeleted(tx);
     const rows = await tx
       .select(STUDENT_COLUMNS)
       .from(students)
-      .where(
-        and(
-          eq(students.workspaceSubdomain, subdomain),
-          inArray(students.id, ids),
-        ),
-      );
+      .where(and(eq(students.workspaceSubdomain, subdomain), inArray(students.id, ids)));
     return hydrateStudentsList(tx, subdomain, rows);
   });
 }
@@ -137,7 +137,7 @@ export async function resolveStudentsByIdentifiers(
   const subdomain = tenant.trim().toLowerCase();
   if (identifiers.length === 0) return [];
   return withTenantRead(subdomain, async (tx) => {
-    if (!tx || typeof (tx as { select?: unknown }).select !== 'function') return [];
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return [];
     if (options?.includeDeleted) await enableIncludeDeleted(tx);
     const rows = await tx
       .select(STUDENT_COLUMNS)
@@ -161,7 +161,7 @@ export async function countStudentsByWorkspace(
   options?: ListStudentsOptions,
 ): Promise<number> {
   const subdomain = tenant.trim().toLowerCase();
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     if (softDeleteFilterNeedsIncludeDeleted(deletedFilter)) await enableIncludeDeleted(tx);
     const conditions = buildTenantSoftDeleteConditions(students, subdomain, deletedFilter);

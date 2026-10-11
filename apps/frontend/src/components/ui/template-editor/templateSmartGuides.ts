@@ -21,7 +21,7 @@ export function computeSmartGuides(
   otherBoxes: BoundingBox[],
   pageWidth: number,
   pageHeight: number,
-  threshold = 5
+  threshold = 5,
 ): SnapResult {
   let snappedX = activeBox.x;
   let snappedY = activeBox.y;

@@ -7,7 +7,10 @@ import { formatContactOptionLabel } from "@/lib/contacts/contactI18n";
 import { cn } from "@/lib/utils";
 import { REMOVE_BTN } from "@/components/ui/formPrimitiveStyles";
 import { EditableMultiSelectSearchBar } from "@/components/ui/EditableMultiSelectSearchBar";
-import { FORM_SELECT_SEARCH_MIN_OPTIONS, filterSelectOptions } from "@/components/ui/useFormSelectSearch";
+import {
+  FORM_SELECT_SEARCH_MIN_OPTIONS,
+  filterSelectOptions,
+} from "@/components/ui/useFormSelectSearch";
 
 export interface OptionSelectPopoverProps {
   options: string[];
@@ -46,7 +49,10 @@ export function OptionSelectPopover({
   const isSearchable = options.length >= FORM_SELECT_SEARCH_MIN_OPTIONS;
   const visibleOptions = useMemo(() => {
     if (!isSearchable || !query.trim()) return options;
-    const labelled = options.map((option) => ({ value: option, label: formatContactOptionLabel(option, t) }));
+    const labelled = options.map((option) => ({
+      value: option,
+      label: formatContactOptionLabel(option, t),
+    }));
     return filterSelectOptions(labelled, query).map((option) => option.value);
   }, [isSearchable, options, query, t]);
 

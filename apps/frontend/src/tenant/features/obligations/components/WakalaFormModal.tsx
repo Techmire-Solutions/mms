@@ -12,7 +12,15 @@ import type { WakalaFormModalProps, InitialDistRow } from "./wakala/wakalaFormMo
 export type { WakalaFormModalProps, InitialDistRow };
 
 export function WakalaFormModal(props: WakalaFormModalProps): React.JSX.Element {
-  const { title, mujtahids, obligationTypes, onClose, onChangeMujtahids, onChangeReps, onChangeTypes } = props;
+  const {
+    title,
+    mujtahids,
+    obligationTypes,
+    onClose,
+    onChangeMujtahids,
+    onChangeReps,
+    onChangeTypes,
+  } = props;
   const { t } = useTranslation();
 
   const state = useWakalaFormModalState(props);

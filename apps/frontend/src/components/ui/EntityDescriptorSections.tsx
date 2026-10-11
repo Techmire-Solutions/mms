@@ -1,6 +1,9 @@
 import React from "react";
 import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow, type DetailAttributeRowVariant } from "@/components/ui/DetailAttributeRow";
+import {
+  DetailAttributeRow,
+  type DetailAttributeRowVariant,
+} from "@/components/ui/DetailAttributeRow";
 import type { EntityDescriptor } from "@/types/entityRegistry";
 import { getEntityDescriptor } from "@/components/common/entityRegistry";
 
@@ -30,7 +33,11 @@ export function EntityDescriptorSections<T>({
   return (
     <div className="space-y-6">
       {effectiveDescriptor.getDrawerSections().map((section) => (
-        <DetailSectionCard key={section.id} title={section.title} className="divide-y divide-border/50 p-0">
+        <DetailSectionCard
+          key={section.id}
+          title={section.title}
+          className="divide-y divide-border/50 p-0"
+        >
           {section.fields.map((field) => {
             const val = effectiveDescriptor.renderFieldValue(field.key, entity);
             return (

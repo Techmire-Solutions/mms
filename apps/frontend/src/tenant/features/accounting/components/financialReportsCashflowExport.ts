@@ -72,7 +72,9 @@ export function buildCashflowExportRows({
     rows.push({
       section: "",
       code: "",
-      account: t("accounting.dashboard.difference", { amount: formatCurrency(reconciliationDifference) }),
+      account: t("accounting.dashboard.difference", {
+        amount: formatCurrency(reconciliationDifference),
+      }),
       amount: formatCurrency(reconciliationDifference),
     });
   }

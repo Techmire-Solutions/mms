@@ -22,9 +22,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
-  ModuleCommandMetricsGrid: ({ items }: {
-    items: Array<{ label: string; value: number }>;
-  }) => (
+  ModuleCommandMetricsGrid: ({ items }: { items: Array<{ label: string; value: number }> }) => (
     <div data-testid="metrics-grid">
       {items.map((item) => (
         <div key={item.label}>
@@ -39,12 +37,7 @@ vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
 describe("ContactsCommandMetrics Component", () => {
   it("renders metrics grid items for total, filtered, pending sync, and sync conflicts", () => {
     const html = renderToStaticMarkup(
-      <ContactsCommandMetrics
-        shown={45}
-        pendingCount={3}
-        conflictCount={1}
-        flushing={false}
-      />,
+      <ContactsCommandMetrics shown={45} pendingCount={3} conflictCount={1} flushing={false} />,
     );
 
     expect(html).toContain("contacts.metrics.total");

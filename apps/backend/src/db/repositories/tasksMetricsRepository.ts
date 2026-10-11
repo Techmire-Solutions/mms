@@ -1,6 +1,6 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
-import { tasks } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, isNull, sql } from "drizzle-orm";
+import { tasks } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 export interface TaskMetricsRow {
   total: number;
@@ -21,21 +21,24 @@ export interface TaskMetricsRow {
 
 export async function getTaskMetrics(tenant: string): Promise<TaskMetricsRow> {
   return withTenantRead(tenant, async (tx) => {
-    const [row] = await tx.select({
-      total: sql<number>`count(*)::int`,
-      todo: sql<number>`count(*) FILTER (WHERE status = 'todo')::int`,
-      inProgress: sql<number>`count(*) FILTER (WHERE status = 'in_progress')::int`,
-      inReview: sql<number>`count(*) FILTER (WHERE status = 'in_review')::int`,
-      blocked: sql<number>`count(*) FILTER (WHERE status = 'blocked')::int`,
-      completed: sql<number>`count(*) FILTER (WHERE status = 'completed')::int`,
-      cancelled: sql<number>`count(*) FILTER (WHERE status = 'cancelled')::int`,
-      overdue: sql<number>`count(*) FILTER (WHERE due_at < CURRENT_TIMESTAMP
+    const [row] = await tx
+      .select({
+        total: sql<number>`count(*)::int`,
+        todo: sql<number>`count(*) FILTER (WHERE status = 'todo')::int`,
+        inProgress: sql<number>`count(*) FILTER (WHERE status = 'in_progress')::int`,
+        inReview: sql<number>`count(*) FILTER (WHERE status = 'in_review')::int`,
+        blocked: sql<number>`count(*) FILTER (WHERE status = 'blocked')::int`,
+        completed: sql<number>`count(*) FILTER (WHERE status = 'completed')::int`,
+        cancelled: sql<number>`count(*) FILTER (WHERE status = 'cancelled')::int`,
+        overdue: sql<number>`count(*) FILTER (WHERE due_at < CURRENT_TIMESTAMP
         AND status NOT IN ('completed', 'cancelled'))::int`,
-      priorityLow: sql<number>`count(*) FILTER (WHERE priority = 'low')::int`,
-      priorityMedium: sql<number>`count(*) FILTER (WHERE priority = 'medium')::int`,
-      priorityHigh: sql<number>`count(*) FILTER (WHERE priority = 'high')::int`,
-      priorityUrgent: sql<number>`count(*) FILTER (WHERE priority = 'urgent')::int`,
-    }).from(tasks).where(and(eq(tasks.workspaceSubdomain, tenant), isNull(tasks.deletedAt)));
+        priorityLow: sql<number>`count(*) FILTER (WHERE priority = 'low')::int`,
+        priorityMedium: sql<number>`count(*) FILTER (WHERE priority = 'medium')::int`,
+        priorityHigh: sql<number>`count(*) FILTER (WHERE priority = 'high')::int`,
+        priorityUrgent: sql<number>`count(*) FILTER (WHERE priority = 'urgent')::int`,
+      })
+      .from(tasks)
+      .where(and(eq(tasks.workspaceSubdomain, tenant), isNull(tasks.deletedAt)));
 
     return {
       total: row?.total ?? 0,

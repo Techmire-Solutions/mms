@@ -35,10 +35,7 @@ const EXCLUDED_MERGE_KEYS = new Set([
   "updatedAt",
 ]);
 
-export const mergeContacts = (
-  keep: Contact,
-  other: Contact,
-): Contact => {
+export const mergeContacts = (keep: Contact, other: Contact): Contact => {
   const merged: Contact = { ...keep };
 
   // Merge all basic properties dynamically
@@ -254,7 +251,9 @@ export const mergeContacts = (
 
   const addAttachment = (att: ContactAttachment | undefined): void => {
     if (!att || (!att.url && !att.name)) return;
-    const key = (att.url ? att.url.trim().toLowerCase() : `${att.name.trim().toLowerCase()}|${att.size || 0}`);
+    const key = att.url
+      ? att.url.trim().toLowerCase()
+      : `${att.name.trim().toLowerCase()}|${att.size || 0}`;
     if (!seenAttachments.has(key)) {
       seenAttachments.add(key);
       mergedAttachments.push({ ...att });

@@ -1,21 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   normalizeFacultyModulePreferences,
   normalizeFacultySettings,
   FACULTY_MODULE_PREFERENCE_KEYS,
-} from './facultySetupConfigTypes.js';
-import { DEFAULT_FACULTY_SETTINGS } from './facultyModuleSettings.js';
-import { DEFAULT_FACULTY_SPECIALIZATION } from './facultyTypes.js';
+} from "./facultySetupConfigTypes.js";
+import { DEFAULT_FACULTY_SETTINGS } from "./facultyModuleSettings.js";
+import { DEFAULT_FACULTY_SPECIALIZATION } from "./facultyTypes.js";
 
-describe('facultySetupConfigTypes prefs SSOT', () => {
-  it('omits defaultViewLayout from preference keys and normalize output', () => {
-    expect(FACULTY_MODULE_PREFERENCE_KEYS).not.toContain('defaultViewLayout');
+describe("facultySetupConfigTypes prefs SSOT", () => {
+  it("omits defaultViewLayout from preference keys and normalize output", () => {
+    expect(FACULTY_MODULE_PREFERENCE_KEYS).not.toContain("defaultViewLayout");
     const prefs = normalizeFacultyModulePreferences({
-      idPrefix: 'FAC',
-      defaultViewLayout: 'cards',
+      idPrefix: "FAC",
+      defaultViewLayout: "cards",
     } as never);
     expect(prefs).toEqual({
-      idPrefix: 'FAC',
+      idPrefix: "FAC",
       // Employee-ID preferences joined the SSOT after this test was written.
       idTemplate: DEFAULT_FACULTY_SETTINGS.idTemplate,
       idDigits: DEFAULT_FACULTY_SETTINGS.idDigits,
@@ -31,13 +31,13 @@ describe('facultySetupConfigTypes prefs SSOT', () => {
       employeeIdLastYear: DEFAULT_FACULTY_SETTINGS.employeeIdLastYear,
       employeeIdCurrentSequence: DEFAULT_FACULTY_SETTINGS.employeeIdCurrentSequence,
     });
-    expect('defaultViewLayout' in prefs).toBe(false);
+    expect("defaultViewLayout" in prefs).toBe(false);
   });
 
-  it('strips legacy defaultViewLayout from normalizeFacultySettings', () => {
+  it("strips legacy defaultViewLayout from normalizeFacultySettings", () => {
     const settings = normalizeFacultySettings({
-      idPrefix: 'FAC',
-      defaultViewLayout: 'cards',
+      idPrefix: "FAC",
+      defaultViewLayout: "cards",
       defaultSpecialization: DEFAULT_FACULTY_SPECIALIZATION,
     });
     expect(
@@ -46,31 +46,30 @@ describe('facultySetupConfigTypes prefs SSOT', () => {
     expect(settings.defaultSpecialization).toBe(DEFAULT_FACULTY_SPECIALIZATION);
   });
 
-  it('strips legacy customFields[] from normalizeFacultySettings', () => {
+  it("strips legacy customFields[] from normalizeFacultySettings", () => {
     const settings = normalizeFacultySettings({
-      idPrefix: 'FAC',
-      customFields: [{ id: 'house', label: 'House' }],
+      idPrefix: "FAC",
+      customFields: [{ id: "house", label: "House" }],
     });
-    expect('customFields' in settings).toBe(false);
-    expect(typeof settings.fields).toBe('object');
+    expect("customFields" in settings).toBe(false);
+    expect(typeof settings.fields).toBe("object");
     expect(Array.isArray(settings.fields?.basic)).toBe(true);
   });
 
-  it('derives idTemplate from sequence prefix, year format, and delimiter', () => {
+  it("derives idTemplate from sequence prefix, year format, and delimiter", () => {
     const prefs = normalizeFacultyModulePreferences({
-      employeeIdPrefix: 'PROF',
-      employeeIdYearFormat: 'YY',
-      employeeIdDelimiter: '-',
+      employeeIdPrefix: "PROF",
+      employeeIdYearFormat: "YY",
+      employeeIdDelimiter: "-",
     });
-    expect(prefs.idPrefix).toBe('PROF');
-    expect(prefs.idTemplate).toBe('{PREFIX}-{YY}-{SEQ}');
+    expect(prefs.idPrefix).toBe("PROF");
+    expect(prefs.idTemplate).toBe("{PREFIX}-{YY}-{SEQ}");
   });
 
-  it('forces requireContactLink true even when a stored false is present', () => {
+  it("forces requireContactLink true even when a stored false is present", () => {
     const prefs = normalizeFacultyModulePreferences({ requireContactLink: false });
     expect(prefs.requireContactLink).toBe(true);
     const settings = normalizeFacultySettings({ requireContactLink: false });
     expect(settings.requireContactLink).toBe(true);
   });
 });
-

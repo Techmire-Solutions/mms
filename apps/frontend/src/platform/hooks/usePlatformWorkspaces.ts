@@ -1,35 +1,32 @@
-import { useQuery } from '@tanstack/react-query';
-import type {
-  PlatformWorkspaceListResponse,
-  PlatformWorkspacesListQuery,
-} from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import { PLATFORM_QUERY_KEYS } from '@/platform/lib/platformQueryKeys';
+import { useQuery } from "@tanstack/react-query";
+import type { PlatformWorkspaceListResponse, PlatformWorkspacesListQuery } from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { PLATFORM_QUERY_KEYS } from "@/platform/lib/platformQueryKeys";
 
-export { PLATFORM_WORKSPACES_QUERY_KEY } from '@/platform/lib/platformQueryKeys';
-export { usePlatformWorkspaceMetrics } from './usePlatformWorkspaceMetrics';
+export { PLATFORM_WORKSPACES_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
+export { usePlatformWorkspaceMetrics } from "./usePlatformWorkspaceMetrics";
 export {
   useSetWorkspaceEnabled,
   useDeleteWorkspace,
   useSetWorkspaceEmailVerification,
-} from './usePlatformWorkspaceListMutations';
-export { useWorkspaceModules, useUpdateWorkspaceModules } from './usePlatformWorkspaceModules';
+} from "./usePlatformWorkspaceListMutations";
+export { useWorkspaceModules, useUpdateWorkspaceModules } from "./usePlatformWorkspaceModules";
 export {
   useResetWorkspaceAdminPassword,
   useCreateWorkspaceAdmin,
-} from './usePlatformWorkspaceAdminMutations';
+} from "./usePlatformWorkspaceAdminMutations";
 
 function buildListSearchParams(params: PlatformWorkspacesListQuery): string {
   const sp = new URLSearchParams();
-  if (params.page && params.page > 1) sp.set('page', String(params.page));
-  if (params.limit) sp.set('limit', String(params.limit));
-  if (params.search?.trim()) sp.set('search', params.search.trim());
-  if (params.status && params.status !== 'all') sp.set('status', params.status);
-  if (params.sortField) sp.set('sortField', params.sortField);
-  if (params.sortDir) sp.set('sortDir', params.sortDir);
+  if (params.page && params.page > 1) sp.set("page", String(params.page));
+  if (params.limit) sp.set("limit", String(params.limit));
+  if (params.search?.trim()) sp.set("search", params.search.trim());
+  if (params.status && params.status !== "all") sp.set("status", params.status);
+  if (params.sortField) sp.set("sortField", params.sortField);
+  if (params.sortDir) sp.set("sortDir", params.sortDir);
   const q = sp.toString();
-  return q ? `?${q}` : '';
+  return q ? `?${q}` : "";
 }
 
 export type PlatformWorkspacesListParams = PlatformWorkspacesListQuery;
@@ -50,10 +47,10 @@ export function usePlatformWorkspaces(params: PlatformWorkspacesListParams = {})
     queryKey: PLATFORM_QUERY_KEYS.workspaceList({
       page: listParams.page,
       limit: listParams.limit,
-      search: listParams.search ?? '',
-      status: listParams.status ?? 'all',
-      sortField: listParams.sortField ?? 'name',
-      sortDir: listParams.sortDir ?? 'asc',
+      search: listParams.search ?? "",
+      status: listParams.status ?? "all",
+      sortField: listParams.sortField ?? "name",
+      sortDir: listParams.sortDir ?? "asc",
     }),
     queryFn: async ({ signal }) => {
       const res = await apiJson<PlatformWorkspaceListResponse>(

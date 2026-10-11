@@ -47,7 +47,10 @@ export function TemplateEditorFontSizeColorControls({
   return (
     <div className="grid grid-cols-2 gap-2">
       <div className="flex flex-col gap-0.5">
-        <label htmlFor={fontSizeId} className="text-xs font-bold uppercase text-muted-foreground tracking-wide">
+        <label
+          htmlFor={fontSizeId}
+          className="text-xs font-bold uppercase text-muted-foreground tracking-wide"
+        >
           {t("templateEditor.fontSize")}
         </label>
         <div className="flex items-center gap-1">
@@ -94,7 +97,10 @@ export function TemplateEditorFontSizeColorControls({
       </div>
 
       <div className="flex flex-col gap-0.5">
-        <label htmlFor={fontColorId} className="text-xs font-bold uppercase text-muted-foreground tracking-wide">
+        <label
+          htmlFor={fontColorId}
+          className="text-xs font-bold uppercase text-muted-foreground tracking-wide"
+        >
           {t("templateEditor.color")}
         </label>
         <input

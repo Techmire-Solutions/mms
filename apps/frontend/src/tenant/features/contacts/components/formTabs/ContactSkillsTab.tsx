@@ -60,15 +60,18 @@ export function ContactSkillsTab({
 
   const skills = contactDraft.skills || [];
 
-  const emptySkill = useCallback((): ContactSkill => ({
-    name: "",
-    category: defaultCategory || categoryOptions[0] || "",
-    proficiency: defaultProficiency || (proficiencyOptions ? proficiencyOptions[0] : "") || "",
-    yearsOfExperience: "",
-    isCertified: false,
-    issuer: "",
-    description: "",
-  }), [categoryOptions, defaultCategory, defaultProficiency, proficiencyOptions]);
+  const emptySkill = useCallback(
+    (): ContactSkill => ({
+      name: "",
+      category: defaultCategory || categoryOptions[0] || "",
+      proficiency: defaultProficiency || (proficiencyOptions ? proficiencyOptions[0] : "") || "",
+      yearsOfExperience: "",
+      isCertified: false,
+      issuer: "",
+      description: "",
+    }),
+    [categoryOptions, defaultCategory, defaultProficiency, proficiencyOptions],
+  );
 
   const addSkill = useCallback(() => {
     addSubListItem("skills", emptySkill());
@@ -78,9 +81,12 @@ export function ContactSkillsTab({
     ensureSubListItem("skills", emptySkill());
   }, [ensureSubListItem, emptySkill]);
 
-  const removeSkill = useCallback((idx: number) => {
-    removeSubListItem("skills", idx);
-  }, [removeSubListItem]);
+  const removeSkill = useCallback(
+    (idx: number) => {
+      removeSubListItem("skills", idx);
+    },
+    [removeSubListItem],
+  );
 
   const updateSkill = useCallback(
     (idx: number, patch: Partial<ContactSkill> & Record<string, unknown>) => {

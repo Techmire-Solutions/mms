@@ -4,12 +4,9 @@ import {
   WORKSPACES_COLLECTION,
   type Workspace,
   type Enrollment,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
-import { bulkSaveEnrollments } from '../repositories/enrollmentRepository.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
+import { bulkSaveEnrollments } from "../repositories/enrollmentRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -33,7 +30,7 @@ export async function runMigration026(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const enrollmentsKey = `${tenantCollectionKey(subdomain, '')}enrollments`;
+    const enrollmentsKey = `${tenantCollectionKey(subdomain, "")}enrollments`;
     const legacyEnrollments = await getCollectionByStorageName(enrollmentsKey);
     if (!Array.isArray(legacyEnrollments) || legacyEnrollments.length === 0) continue;
 
@@ -46,6 +43,6 @@ export async function runMigration026(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 026] No legacy enrollment records to import.');
+    console.log("[Migration 026] No legacy enrollment records to import.");
   }
 }

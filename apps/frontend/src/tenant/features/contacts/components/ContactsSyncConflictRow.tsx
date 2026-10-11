@@ -54,7 +54,9 @@ export function ContactsSyncConflictRow({
               onClick={() => setExpanded((value) => !value)}
               className="min-h-11 min-w-11 text-muted-foreground hover:text-foreground hover:bg-muted/60"
               aria-expanded={expanded}
-              aria-label={expanded ? t("contacts.sync.conflictCollapse") : t("contacts.sync.conflictExpand")}
+              aria-label={
+                expanded ? t("contacts.sync.conflictCollapse") : t("contacts.sync.conflictExpand")
+              }
             >
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>

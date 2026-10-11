@@ -7,7 +7,13 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
-import { type CategoryPerformance, type PerformanceAnalyticsProps, type StudentStatItem, sumScores, testTotalMarks } from './performanceAnalyticsUtils';
+import {
+  type CategoryPerformance,
+  type PerformanceAnalyticsProps,
+  type StudentStatItem,
+  sumScores,
+  testTotalMarks,
+} from "./performanceAnalyticsUtils";
 
 const PerformanceAnalyticsPanels = lazy(() =>
   import("./PerformanceAnalyticsPanels").then((mod) => ({
@@ -39,7 +45,10 @@ export function PerformanceAnalytics({
   }
 
   const studentStats = (() => {
-    const statsByStudentId: Record<string, { name: string; class: string; scores: number[]; totalPts: number; maxPts: number }> = {};
+    const statsByStudentId: Record<
+      string,
+      { name: string; class: string; scores: number[]; totalPts: number; maxPts: number }
+    > = {};
     for (const result of results) {
       const test = testsById.get(result.testId);
       if (!test) continue;
@@ -61,8 +70,18 @@ export function PerformanceAnalytics({
     }
     return Object.values(statsByStudentId)
       .map((studentStat) => {
-        const averageScore = studentStat.scores.length > 0 ? Math.round(studentStat.scores.reduce((scoreTotal, score) => scoreTotal + score, 0) / studentStat.scores.length) : 0;
-        return { ...studentStat, avg: averageScore, overall: pct(studentStat.totalPts, studentStat.maxPts) };
+        const averageScore =
+          studentStat.scores.length > 0
+            ? Math.round(
+                studentStat.scores.reduce((scoreTotal, score) => scoreTotal + score, 0) /
+                  studentStat.scores.length,
+              )
+            : 0;
+        return {
+          ...studentStat,
+          avg: averageScore,
+          overall: pct(studentStat.totalPts, studentStat.maxPts),
+        };
       })
       .sort((a, b) => b.avg - a.avg);
   })() as StudentStatItem[];
@@ -129,7 +148,12 @@ export function PerformanceAnalytics({
     const totalMarks = testTotalMarksById.get(test.id) ?? 100;
     const averageScore =
       testResults.length > 0
-        ? Math.round(testResults.reduce((scoreTotal, result) => scoreTotal + pct(sumScores(result.scores), totalMarks), 0) / testResults.length)
+        ? Math.round(
+            testResults.reduce(
+              (scoreTotal, result) => scoreTotal + pct(sumScores(result.scores), totalMarks),
+              0,
+            ) / testResults.length,
+          )
         : 0;
     return {
       name: test.name.length > 16 ? `${test.name.slice(0, 16)}…` : test.name,
@@ -169,7 +193,10 @@ export function PerformanceAnalytics({
     });
   })();
 
-  const radarData = catPerformance.map((categoryResult) => ({ subject: `${categoryResult.icon} ${categoryResult.name}`, accuracy: categoryResult.accuracy }));
+  const radarData = catPerformance.map((categoryResult) => ({
+    subject: `${categoryResult.icon} ${categoryResult.name}`,
+    accuracy: categoryResult.accuracy,
+  }));
 
   return (
     <Suspense fallback={<Skeleton className="h-chart-md w-full rounded-xl" />}>

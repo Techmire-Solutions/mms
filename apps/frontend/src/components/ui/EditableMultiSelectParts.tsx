@@ -36,7 +36,8 @@ export const EditableMultiSelectChipRow = React.memo(function EditableMultiSelec
     return <span className="text-muted-foreground select-none">{placeholder}</span>;
   }
 
-  const visibleValues = maxVisible && values.length > maxVisible ? values.slice(0, maxVisible) : values;
+  const visibleValues =
+    maxVisible && values.length > maxVisible ? values.slice(0, maxVisible) : values;
   const remainingCount = maxVisible && values.length > maxVisible ? values.length - maxVisible : 0;
 
   return (
@@ -121,7 +122,9 @@ export const EditableMultiSelectOptionList = React.memo(function EditableMultiSe
       className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1 max-h-48"
     >
       {filteredOptions.length === 0 ? (
-        <div className="px-3 py-3 text-xs text-muted-foreground text-center">{t("common.none")}</div>
+        <div className="px-3 py-3 text-xs text-muted-foreground text-center">
+          {t("common.none")}
+        </div>
       ) : isVirtualized ? (
         <div
           style={{

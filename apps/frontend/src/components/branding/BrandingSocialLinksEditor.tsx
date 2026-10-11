@@ -20,10 +20,11 @@ interface SocialLinksEditorProps {
 export function SocialLinksEditor({ links, onChange }: SocialLinksEditorProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const linkEntries = links.length > 0 ? links : [{ platform: BRANDING_SOCIAL_PLATFORM_DEFS[0].id, url: '' }];
+  const linkEntries =
+    links.length > 0 ? links : [{ platform: BRANDING_SOCIAL_PLATFORM_DEFS[0].id, url: "" }];
 
   const addLink = (): void => {
-    onChange([...linkEntries, { platform: BRANDING_SOCIAL_PLATFORM_DEFS[0].id, url: '' }]);
+    onChange([...linkEntries, { platform: BRANDING_SOCIAL_PLATFORM_DEFS[0].id, url: "" }]);
   };
 
   const updateLink = (index: number, patch: Partial<BrandingSocialLink>): void => {
@@ -43,7 +44,7 @@ export function SocialLinksEditor({ links, onChange }: SocialLinksEditorProps): 
             className="grid grid-cols-1 gap-3 rounded-lg border border-border bg-muted/20 p-3"
           >
             <div className="space-y-1.5">
-              <Label htmlFor={`social-platform-${index}`}>{t('branding.socialPlatform')}</Label>
+              <Label htmlFor={`social-platform-${index}`}>{t("branding.socialPlatform")}</Label>
               <FormSelect
                 id={`social-platform-${index}`}
                 value={link.platform}
@@ -56,13 +57,13 @@ export function SocialLinksEditor({ links, onChange }: SocialLinksEditorProps): 
             </div>
             <div className="flex items-end gap-2">
               <div className="min-w-0 flex-1 space-y-1.5">
-                <Label htmlFor={`social-url-${index}`}>{t('branding.socialUrl')}</Label>
+                <Label htmlFor={`social-url-${index}`}>{t("branding.socialUrl")}</Label>
                 <Input
                   id={`social-url-${index}`}
                   type="text"
-                  inputMode={link.platform === 'WhatsApp' ? 'tel' : 'url'}
+                  inputMode={link.platform === "WhatsApp" ? "tel" : "url"}
                   value={link.url}
-                  placeholder={BRANDING_SOCIAL_PLACEHOLDERS[link.platform] ?? 'https://'}
+                  placeholder={BRANDING_SOCIAL_PLACEHOLDERS[link.platform] ?? "https://"}
                   onChange={(event) => updateLink(index, { url: event.target.value })}
                 />
               </div>
@@ -70,7 +71,7 @@ export function SocialLinksEditor({ links, onChange }: SocialLinksEditorProps): 
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label={t('branding.socialRemoveAria')}
+                aria-label={t("branding.socialRemoveAria")}
                 onClick={() => removeLink(index)}
               >
                 <Trash2 className="h-4 w-4" />
@@ -81,9 +82,8 @@ export function SocialLinksEditor({ links, onChange }: SocialLinksEditorProps): 
       </div>
       <Button type="button" variant="outline" size="sm" onClick={addLink}>
         <Plus className="h-4 w-4" />
-        {t('branding.socialAdd')}
+        {t("branding.socialAdd")}
       </Button>
     </div>
   );
 }
-

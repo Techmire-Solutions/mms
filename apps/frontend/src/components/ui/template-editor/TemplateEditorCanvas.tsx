@@ -4,10 +4,7 @@
  */
 
 import React from "react";
-import {
-  type DocumentTemplate,
-  type PageSizeInfo,
-} from "@mms/shared";
+import { type DocumentTemplate, type PageSizeInfo } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { type SmartGuideLine } from "./templateEditorUtils";
 import { useTemplateMarquee } from "./useTemplateMarquee";

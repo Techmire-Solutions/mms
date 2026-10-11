@@ -1,4 +1,4 @@
-import { afterEach } from 'vitest';
+import { afterEach } from "vitest";
 
 export {};
 
@@ -9,9 +9,11 @@ declare global {
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 // Responsive & Media Query APIs
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // Prevent happy-dom from making live outbound HTTP requests for external stylesheets (e.g. Google Fonts)
-  const happyDomSettings = (window as unknown as { happyDOM?: { settings?: Record<string, unknown> } })?.happyDOM?.settings;
+  const happyDomSettings = (
+    window as unknown as { happyDOM?: { settings?: Record<string, unknown> } }
+  )?.happyDOM?.settings;
   if (happyDomSettings) {
     happyDomSettings.disableCSSFileLoading = true;
     happyDomSettings.handleDisabledFileLoadingAsSuccess = true;
@@ -30,7 +32,7 @@ if (typeof window !== 'undefined') {
         dispatchEvent: () => false,
       }) as unknown as MediaQueryList;
 
-    Object.defineProperty(window, 'matchMedia', {
+    Object.defineProperty(window, "matchMedia", {
       writable: true,
       configurable: true,
       value: matchMediaStub,
@@ -40,7 +42,7 @@ if (typeof window !== 'undefined') {
 
   // Window Opener for OAuth Popup Flows
   let currentOpener: Window | null = null;
-  Object.defineProperty(window, 'opener', {
+  Object.defineProperty(window, "opener", {
     get: () => currentOpener,
     set: (val: Window | null) => {
       currentOpener = val;
@@ -57,13 +59,13 @@ class ResizeObserverStub {
   disconnect() {}
 }
 globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObserver;
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObserver;
 }
 
 class IntersectionObserverStub {
   readonly root: Element | Document | null = null;
-  readonly rootMargin: string = '';
+  readonly rootMargin: string = "";
   readonly thresholds: ReadonlyArray<number> = [];
   observe() {}
   unobserve() {}
@@ -72,18 +74,20 @@ class IntersectionObserverStub {
     return [];
   }
 }
-globalThis.IntersectionObserver ??= IntersectionObserverStub as unknown as typeof IntersectionObserver;
-if (typeof window !== 'undefined') {
-  window.IntersectionObserver ??= IntersectionObserverStub as unknown as typeof IntersectionObserver;
+globalThis.IntersectionObserver ??=
+  IntersectionObserverStub as unknown as typeof IntersectionObserver;
+if (typeof window !== "undefined") {
+  window.IntersectionObserver ??=
+    IntersectionObserverStub as unknown as typeof IntersectionObserver;
 }
 
 // Scrolling APIs (Window & Element targets)
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.scrollTo ??= () => {};
   window.scrollBy ??= () => {};
   window.scroll ??= () => {};
 
-  if (typeof Element !== 'undefined') {
+  if (typeof Element !== "undefined") {
     Element.prototype.scrollIntoView ??= () => {};
     Element.prototype.scrollTo ??= () => {};
     Element.prototype.scrollBy ??= () => {};
@@ -91,7 +95,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Canvas 2D & Export APIs
-if (typeof HTMLCanvasElement !== 'undefined') {
+if (typeof HTMLCanvasElement !== "undefined") {
   HTMLCanvasElement.prototype.getContext ??= (() => ({
     fillRect: () => {},
     clearRect: () => {},
@@ -99,7 +103,7 @@ if (typeof HTMLCanvasElement !== 'undefined') {
       data: new Uint8ClampedArray(w * h * 4),
       width: w,
       height: h,
-      colorSpace: 'srgb' as PredefinedColorSpace,
+      colorSpace: "srgb" as PredefinedColorSpace,
     }),
     putImageData: () => {},
     createImageData: () => [],
@@ -124,30 +128,30 @@ if (typeof HTMLCanvasElement !== 'undefined') {
     clip: () => {},
   })) as unknown as typeof HTMLCanvasElement.prototype.getContext;
 
-  HTMLCanvasElement.prototype.toDataURL ??= () => 'data:image/png;base64,';
+  HTMLCanvasElement.prototype.toDataURL ??= () => "data:image/png;base64,";
   HTMLCanvasElement.prototype.toBlob ??= (cb) => {
-    cb?.(new Blob([], { type: 'image/png' }));
+    cb?.(new Blob([], { type: "image/png" }));
   };
 }
 
 // Object URL Lifecycle (Downloads & Previews)
-if (typeof URL !== 'undefined') {
-  URL.createObjectURL ??= () => 'blob:mock-url';
+if (typeof URL !== "undefined") {
+  URL.createObjectURL ??= () => "blob:mock-url";
   URL.revokeObjectURL ??= () => {};
 }
 
 // Suppress unhandled rejections from happy-dom Web Animations API when animations are canceled
-if (typeof window !== 'undefined') {
-  if (typeof window.Animation !== 'undefined') {
+if (typeof window !== "undefined") {
+  if (typeof window.Animation !== "undefined") {
     const originalCancel = window.Animation.prototype.cancel;
     window.Animation.prototype.cancel = function (this: Animation) {
       this.finished?.catch(() => {});
       return originalCancel.call(this);
     };
   }
-  if (typeof Element !== 'undefined' && Element.prototype.animate) {
+  if (typeof Element !== "undefined" && Element.prototype.animate) {
     const originalAnimate = Element.prototype.animate;
-    Element.prototype.animate = function (this: Element, ...args: Parameters<Element['animate']>) {
+    Element.prototype.animate = function (this: Element, ...args: Parameters<Element["animate"]>) {
       const animation = originalAnimate.apply(this, args);
       animation.finished?.catch(() => {});
       return animation;
@@ -157,11 +161,11 @@ if (typeof window !== 'undefined') {
 
 // Global teardown: clear document nodes and residual test storage
 afterEach(() => {
-  if (typeof document !== 'undefined') {
-    document.body.innerHTML = '';
-    document.head.innerHTML = '';
+  if (typeof document !== "undefined") {
+    document.body.innerHTML = "";
+    document.head.innerHTML = "";
   }
-  if (typeof sessionStorage !== 'undefined') {
+  if (typeof sessionStorage !== "undefined") {
     sessionStorage.clear();
   }
 });

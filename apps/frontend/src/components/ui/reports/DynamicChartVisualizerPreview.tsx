@@ -110,7 +110,10 @@ export function DynamicChartVisualizerPreview({
           t={t}
         />
 
-        <div ref={chartRef} className="relative overflow-hidden rounded-3xl border border-border/30 bg-card/5 p-4 shadow-inner backdrop-blur-md">
+        <div
+          ref={chartRef}
+          className="relative overflow-hidden rounded-3xl border border-border/30 bg-card/5 p-4 shadow-inner backdrop-blur-md"
+        >
           <DynamicChartVisualizerChart
             chartType={chartType}
             operation={operation}

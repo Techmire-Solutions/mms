@@ -45,13 +45,20 @@ export function ObligationsTypeBreakdownSection({
             columns={[
               { header: t("obligations.summary.types.colType"), key: "name" },
               { header: t("obligations.summary.types.colCollections"), key: "count" },
-              { header: t("obligations.summary.types.colTotalAmount", { currency: activeCurrencyCode }), key: "totalFmt" },
+              {
+                header: t("obligations.summary.types.colTotalAmount", {
+                  currency: activeCurrencyCode,
+                }),
+                key: "totalFmt",
+              },
               { header: t("obligations.summary.types.colShare"), key: "shareFmt" },
             ]}
             rows={typeBreakdown.map((typeBreakdownItem) => ({
               ...typeBreakdownItem,
               totalFmt: formatCurrency(typeBreakdownItem.total),
-              shareFmt: totalAmount ? ((typeBreakdownItem.total / totalAmount) * 100).toFixed(1) + "%" : "0%",
+              shareFmt: totalAmount
+                ? ((typeBreakdownItem.total / totalAmount) * 100).toFixed(1) + "%"
+                : "0%",
             }))}
           />
         }
@@ -61,21 +68,41 @@ export function ObligationsTypeBreakdownSection({
           const sharePercent = totalAmount ? (typeBreakdownItem.total / totalAmount) * 100 : 0;
 
           return (
-            <Card key={typeBreakdownItem.name} accentColor="primary" className={cn("p-4 space-y-1.5 transition-all", CARD_STRIPE_INSET)}>
+            <Card
+              key={typeBreakdownItem.name}
+              accentColor="primary"
+              className={cn("p-4 space-y-1.5 transition-all", CARD_STRIPE_INSET)}
+            >
               <header className="flex min-w-0 items-center justify-between gap-2">
-                <h3 className="min-w-0 truncate text-xs font-bold text-foreground m-0">{typeBreakdownItem.name}</h3>
-                <Badge pill variant="outline" className="shrink-0 px-1.5 font-bold text-white border-transparent" style={{ background: colors[index % colors.length] }}>
+                <h3 className="min-w-0 truncate text-xs font-bold text-foreground m-0">
+                  {typeBreakdownItem.name}
+                </h3>
+                <Badge
+                  pill
+                  variant="outline"
+                  className="shrink-0 px-1.5 font-bold text-white border-transparent"
+                  style={{ background: colors[index % colors.length] }}
+                >
                   {typeBreakdownItem.count}
                 </Badge>
               </header>
-              <p className="text-lg font-bold text-foreground font-mono m-0">{formatValueOnly(typeBreakdownItem.total)}</p>
-              <p className="text-xs text-muted-foreground m-0">{t("obligations.summary.types.countWithCurrency", { currency: activeCurrencyCode, count: typeBreakdownItem.count })}</p>
+              <p className="text-lg font-bold text-foreground font-mono m-0">
+                {formatValueOnly(typeBreakdownItem.total)}
+              </p>
+              <p className="text-xs text-muted-foreground m-0">
+                {t("obligations.summary.types.countWithCurrency", {
+                  currency: activeCurrencyCode,
+                  count: typeBreakdownItem.count,
+                })}
+              </p>
               <ProgressBar
                 className="mt-1"
                 value={sharePercent}
                 fillStyle={{ background: colors[index % colors.length] }}
               />
-              <p className="text-xs text-muted-foreground text-end m-0">{totalAmount ? sharePercent.toFixed(1) : 0}%</p>
+              <p className="text-xs text-muted-foreground text-end m-0">
+                {totalAmount ? sharePercent.toFixed(1) : 0}%
+              </p>
             </Card>
           );
         })}

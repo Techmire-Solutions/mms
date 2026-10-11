@@ -3,7 +3,11 @@ import type { AttendanceRecord, ClassStudent } from "@/lib/data/attendanceData";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Session } from "@/lib/data/sessionsData";
 import type { Student } from "@/lib/data/studentsData";
-import type { AttendanceRow, GeoData, OfflinePayload } from "@/tenant/features/attendance/components/markAttendanceTypes";
+import type {
+  AttendanceRow,
+  GeoData,
+  OfflinePayload,
+} from "@/tenant/features/attendance/components/markAttendanceTypes";
 
 export function buildDefaultRows(
   students: ClassStudent[],
@@ -91,10 +95,7 @@ export function studentRollNo(student: Student | undefined, studentId: string): 
   return numeric ? `STU-${numeric.padStart(3, "0")}` : studentId;
 }
 
-export function isEnrollmentInAttendanceRoster(
-  enrollment: Enrollment,
-  classId: string,
-): boolean {
+export function isEnrollmentInAttendanceRoster(enrollment: Enrollment, classId: string): boolean {
   return enrollment.classId === classId && enrollment.status !== "cancelled";
 }
 
@@ -118,16 +119,17 @@ export function enrolledStudentsForClass(
 
       const student = studentsById.get(studentId);
       const name = student?.name || enrollment.studentName || unnamedStudentLabel;
-      const gender = student?.gender === "female" || student?.gender === "male"
-        ? student.gender
-        : "male";
+      const gender =
+        student?.gender === "female" || student?.gender === "male" ? student.gender : "male";
 
-      return [{
-        id: studentId,
-        name,
-        gender,
-        rollNo: studentRollNo(student, studentId),
-      }];
+      return [
+        {
+          id: studentId,
+          name,
+          gender,
+          rollNo: studentRollNo(student, studentId),
+        },
+      ];
     });
 }
 
@@ -147,4 +149,3 @@ export function resolveSessionAndClassInfo(sessions: readonly Session[], classId
   }
   return { classInfo: undefined, sessionInfo: null };
 }
-

@@ -82,10 +82,7 @@ describe("QuestionBankCsvImportDialog", () => {
       templateBtn?.click();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "question-bank.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "question-bank.csv");
   });
 
   it("accepts a valid exported question CSV and initiates background import", async () => {

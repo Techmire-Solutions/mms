@@ -11,7 +11,7 @@ import {
 /**
  * Toaster component that manages and displays active toast notifications.
  * It uses the useToast hook to retrieve and render the current list of toasts.
- * 
+ *
  * @returns {React.JSX.Element} The rendered toast notification system.
  */
 export function Toaster() {
@@ -29,9 +29,7 @@ export function Toaster() {
           >
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
-              )}
+              {description && <ToastDescription>{description}</ToastDescription>}
             </div>
             {action}
             <ToastClose onClick={() => dismiss(id)} />
@@ -41,4 +39,4 @@ export function Toaster() {
       <ToastViewport />
     </ToastProvider>
   );
-} 
+}

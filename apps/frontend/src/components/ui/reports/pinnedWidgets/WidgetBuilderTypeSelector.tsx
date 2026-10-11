@@ -25,35 +25,89 @@ export function WidgetBuilderTypeSelector({
 }: WidgetBuilderTypeSelectorProps): React.JSX.Element {
   const { t } = useTranslation();
   const widgetTypeOptions: WidgetTypeOption[] = [
-    { id: "card", label: t("reports.widgets.builder.typeCard"), desc: t("reports.widgets.builder.typeCardDesc") },
-    { id: "kpi", label: t("reports.widgets.builder.typeKpi"), desc: t("reports.widgets.builder.typeKpiDesc") },
-    { id: "progress", label: t("reports.widgets.builder.typeProgress"), desc: t("reports.widgets.builder.typeProgressDesc") },
-    { id: "switch", label: t("reports.widgets.builder.typeSwitch"), desc: t("reports.widgets.builder.typeSwitchDesc") },
+    {
+      id: "card",
+      label: t("reports.widgets.builder.typeCard"),
+      desc: t("reports.widgets.builder.typeCardDesc"),
+    },
+    {
+      id: "kpi",
+      label: t("reports.widgets.builder.typeKpi"),
+      desc: t("reports.widgets.builder.typeKpiDesc"),
+    },
+    {
+      id: "progress",
+      label: t("reports.widgets.builder.typeProgress"),
+      desc: t("reports.widgets.builder.typeProgressDesc"),
+    },
+    {
+      id: "switch",
+      label: t("reports.widgets.builder.typeSwitch"),
+      desc: t("reports.widgets.builder.typeSwitchDesc"),
+    },
   ];
 
   if (builderCollection === "sessions") {
-    widgetTypeOptions.push({ id: "sessions-list", label: t("reports.widgets.builder.typeSessionsList"), desc: t("reports.widgets.builder.typeSessionsListDesc") });
+    widgetTypeOptions.push({
+      id: "sessions-list",
+      label: t("reports.widgets.builder.typeSessionsList"),
+      desc: t("reports.widgets.builder.typeSessionsListDesc"),
+    });
   } else if (builderCollection === "attendance_records") {
     widgetTypeOptions.push(
-      { id: "attendance-summary", label: t("reports.widgets.builder.typeAttendanceSummary"), desc: t("reports.widgets.builder.typeAttendanceSummaryDesc") },
-      { id: "attendance-rate", label: t("reports.widgets.builder.typeAttendanceRate"), desc: t("reports.widgets.builder.typeAttendanceRateDesc") },
+      {
+        id: "attendance-summary",
+        label: t("reports.widgets.builder.typeAttendanceSummary"),
+        desc: t("reports.widgets.builder.typeAttendanceSummaryDesc"),
+      },
+      {
+        id: "attendance-rate",
+        label: t("reports.widgets.builder.typeAttendanceRate"),
+        desc: t("reports.widgets.builder.typeAttendanceRateDesc"),
+      },
     );
   } else if (builderCollection === "finance_invoices") {
     widgetTypeOptions.push(
-      { id: "fee-summary", label: t("reports.widgets.builder.typeFeeSummary"), desc: t("reports.widgets.builder.typeFeeSummaryDesc") },
-      { id: "outstanding-list", label: t("reports.widgets.builder.typeOutstandingList"), desc: t("reports.widgets.builder.typeOutstandingListDesc") },
-      { id: "overdue-obligations", label: t("reports.widgets.builder.typeOverdueObligations"), desc: t("reports.widgets.builder.typeOverdueObligationsDesc") },
-      { id: "revenue-expenses", label: t("reports.widgets.builder.typeRevenueExpenses"), desc: t("reports.widgets.builder.typeRevenueExpensesDesc") },
+      {
+        id: "fee-summary",
+        label: t("reports.widgets.builder.typeFeeSummary"),
+        desc: t("reports.widgets.builder.typeFeeSummaryDesc"),
+      },
+      {
+        id: "outstanding-list",
+        label: t("reports.widgets.builder.typeOutstandingList"),
+        desc: t("reports.widgets.builder.typeOutstandingListDesc"),
+      },
+      {
+        id: "overdue-obligations",
+        label: t("reports.widgets.builder.typeOverdueObligations"),
+        desc: t("reports.widgets.builder.typeOverdueObligationsDesc"),
+      },
+      {
+        id: "revenue-expenses",
+        label: t("reports.widgets.builder.typeRevenueExpenses"),
+        desc: t("reports.widgets.builder.typeRevenueExpensesDesc"),
+      },
     );
   } else if (builderCollection === "students") {
-    widgetTypeOptions.push({ id: "enrollment-trends", label: t("reports.widgets.builder.typeEnrollmentTrends"), desc: t("reports.widgets.builder.typeEnrollmentTrendsDesc") });
+    widgetTypeOptions.push({
+      id: "enrollment-trends",
+      label: t("reports.widgets.builder.typeEnrollmentTrends"),
+      desc: t("reports.widgets.builder.typeEnrollmentTrendsDesc"),
+    });
   } else if (builderCollection === "hasanat_distributions") {
-    widgetTypeOptions.push({ id: "hasanat-distribution", label: t("reports.widgets.builder.typeHasanatDistribution"), desc: t("reports.widgets.builder.typeHasanatDistributionDesc") });
+    widgetTypeOptions.push({
+      id: "hasanat-distribution",
+      label: t("reports.widgets.builder.typeHasanatDistribution"),
+      desc: t("reports.widgets.builder.typeHasanatDistributionDesc"),
+    });
   }
 
   return (
     <div className="space-y-1.5">
-      <SectionLabel as="p" toneClassName="text-foreground/80" tracking="wider" className="block">{t("reports.widgets.builder.focusType")}</SectionLabel>
+      <SectionLabel as="p" toneClassName="text-foreground/80" tracking="wider" className="block">
+        {t("reports.widgets.builder.focusType")}
+      </SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {widgetTypeOptions.map((widgetTypeOption) => {
           const isSelectedType = widgetType === widgetTypeOption.id;
@@ -75,7 +129,9 @@ export function WidgetBuilderTypeSelector({
               }`}
             >
               <span className="text-xs font-black uppercase block">{widgetTypeOption.label}</span>
-              <span className="text-xs text-muted-foreground block mt-1 leading-none">{widgetTypeOption.desc}</span>
+              <span className="text-xs text-muted-foreground block mt-1 leading-none">
+                {widgetTypeOption.desc}
+              </span>
             </Button>
           );
         })}

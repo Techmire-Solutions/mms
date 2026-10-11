@@ -1,7 +1,18 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from "react";
 
 export function useTemplateEditorPan(canvasViewportRef?: RefObject<HTMLElement | null>) {
-  const panState = useRef<{ startX: number; startY: number; scrollLeft: number; scrollTop: number } | null>(null);
+  const panState = useRef<{
+    startX: number;
+    startY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
 
@@ -19,7 +30,7 @@ export function useTemplateEditorPan(canvasViewportRef?: RefObject<HTMLElement |
       }
       if (e.code === "Space" && !e.repeat) {
         const interactive = target?.closest(
-          'button, a[href], [role="button"], summary, [contenteditable="true"]'
+          'button, a[href], [role="button"], summary, [contenteditable="true"]',
         );
         if (interactive) return;
         e.preventDefault();

@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   DEFAULT_VOUCHER_NUMBERING,
   formatVoucherNumber,
@@ -6,17 +6,24 @@ import {
   voucherNumberingUpdateSchema,
   voucherSequencePattern,
   type VoucherNumberingUpdate,
-} from '@mms/shared';
-import { accountingEntries, accountingVoucherCounters, accountingVoucherNumbering } from '../schema.js';
-import { withTenant, type TenantTransaction } from '../tenant-context.js';
-import { resolveVoucherPeriod, type VoucherPeriod } from './accountingVoucherPeriod.js';
+} from "@mms/shared";
+import {
+  accountingEntries,
+  accountingVoucherCounters,
+  accountingVoucherNumbering,
+} from "../schema.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { resolveVoucherPeriod, type VoucherPeriod } from "./accountingVoucherPeriod.js";
 
 /** Bound on catch-up rounds after hand-typed refs are found ahead of the counter. */
 const MAX_COLLISION_ROUNDS = 5;
 
 export type StoredVoucherNumbering = VoucherNumberingUpdate & { updatedAt?: string };
 
-async function readConfig(tx: TenantTransaction, subdomain: string): Promise<StoredVoucherNumbering> {
+async function readConfig(
+  tx: TenantTransaction,
+  subdomain: string,
+): Promise<StoredVoucherNumbering> {
   const [row] = await tx
     .select({
       autoGenerate: accountingVoucherNumbering.autoGenerate,
@@ -58,7 +65,10 @@ export async function getVoucherNumbering(tenant: string): Promise<StoredVoucher
   return withTenant(subdomain, (tx) => readConfig(tx, subdomain));
 }
 
-export async function saveVoucherNumbering(tenant: string, config: VoucherNumberingUpdate): Promise<void> {
+export async function saveVoucherNumbering(
+  tenant: string,
+  config: VoucherNumberingUpdate,
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     const values = { ...config, updatedAt: new Date() };
@@ -110,8 +120,15 @@ async function claimSequences(
       lastValue: sql`GREATEST(${existingMaxSequence(subdomain, voucherSequencePattern(config, periodYear))}, ${floor}) + ${count}`,
     })
     .onConflictDoUpdate({
-      target: [accountingVoucherCounters.workspaceSubdomain, accountingVoucherCounters.formatKey, accountingVoucherCounters.periodYear],
-      set: { lastValue: sql`GREATEST(${accountingVoucherCounters.lastValue}, ${floor}) + ${count}`, updatedAt: new Date() },
+      target: [
+        accountingVoucherCounters.workspaceSubdomain,
+        accountingVoucherCounters.formatKey,
+        accountingVoucherCounters.periodYear,
+      ],
+      set: {
+        lastValue: sql`GREATEST(${accountingVoucherCounters.lastValue}, ${floor}) + ${count}`,
+        updatedAt: new Date(),
+      },
     })
     .returning({ lastValue: accountingVoucherCounters.lastValue });
   const last = row?.lastValue ?? count;
@@ -119,11 +136,18 @@ async function claimSequences(
 }
 
 /** Moves a counter that fell behind existing refs (hand-typed, restored) past them. */
-async function catchUpCounter(tx: TenantTransaction, subdomain: string, config: VoucherNumberingUpdate, periodYear: number) {
+async function catchUpCounter(
+  tx: TenantTransaction,
+  subdomain: string,
+  config: VoucherNumberingUpdate,
+  periodYear: number,
+) {
   const pattern = voucherSequencePattern(config, periodYear);
   await tx
     .update(accountingVoucherCounters)
-    .set({ lastValue: sql`GREATEST(${accountingVoucherCounters.lastValue}, ${existingMaxSequence(subdomain, pattern)})` })
+    .set({
+      lastValue: sql`GREATEST(${accountingVoucherCounters.lastValue}, ${existingMaxSequence(subdomain, pattern)})`,
+    })
     .where(counterWhere(subdomain, config, periodYear));
 }
 
@@ -142,20 +166,33 @@ export async function allocateVoucherNumbers(
   return withTenant(subdomain, async (tx) => {
     const config = await readConfig(tx, subdomain);
     if (!config.autoGenerate) return null;
-    const { periodYear, printYear } = await resolveVoucherPeriod(tx, subdomain, config, options.date);
+    const { periodYear, printYear } = await resolveVoucherPeriod(
+      tx,
+      subdomain,
+      config,
+      options.date,
+    );
     const issued: string[] = [];
     for (let round = 0; issued.length < wanted; round += 1) {
       if (round >= MAX_COLLISION_ROUNDS) {
-        throw new Error('Unable to allocate a free voucher number; check hand-typed references');
+        throw new Error("Unable to allocate a free voucher number; check hand-typed references");
       }
-      const candidates = (await claimSequences(tx, subdomain, config, periodYear, wanted - issued.length))
-        .map((sequence) => formatVoucherNumber(sequence, config, printYear));
+      const candidates = (
+        await claimSequences(tx, subdomain, config, periodYear, wanted - issued.length)
+      ).map((sequence) => formatVoucherNumber(sequence, config, printYear));
       const takenRows = await tx
         .select({ ref: accountingEntries.ref })
         .from(accountingEntries)
-        .where(and(eq(accountingEntries.workspaceSubdomain, subdomain), inArray(accountingEntries.ref, candidates)));
+        .where(
+          and(
+            eq(accountingEntries.workspaceSubdomain, subdomain),
+            inArray(accountingEntries.ref, candidates),
+          ),
+        );
       const taken = new Set(takenRows.map((row) => row.ref));
-      const free = candidates.filter((candidate) => !taken.has(candidate) && !options.reserved?.has(candidate));
+      const free = candidates.filter(
+        (candidate) => !taken.has(candidate) && !options.reserved?.has(candidate),
+      );
       issued.push(...free);
       if (taken.size > 0) await catchUpCounter(tx, subdomain, config, periodYear);
     }

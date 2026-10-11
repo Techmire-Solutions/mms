@@ -67,7 +67,7 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
 
   const confirmDiscardPrompt = useCallback(
     () => window.confirm(editor.t("templateEditor.discardUnsavedPrompt")),
-    [editor.t]
+    [editor.t],
   );
 
   const hasSelection = editor.selectedIds.length > 0;
@@ -91,26 +91,41 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
     if (deletionNonce) editor.canvasViewportRef.current?.focus();
   }, [deletionNonce, editor.canvasViewportRef]);
 
-  useEffect(() => { onDirtyChange?.(editor.isDirty); }, [editor.isDirty, onDirtyChange]);
-  useEffect(() => { onChange?.(editor.template); }, [editor.template, onChange]);
+  useEffect(() => {
+    onDirtyChange?.(editor.isDirty);
+  }, [editor.isDirty, onDirtyChange]);
+  useEffect(() => {
+    onChange?.(editor.template);
+  }, [editor.template, onChange]);
 
-  const { isExporting, handlePrint, handleExportTypst, handleExportZoho } = useTemplateEditorExport({
-    template: editor.template,
-    sampleData,
-    onExportTypst,
-    onExportZoho,
-    onPrint,
-    t: editor.t,
-  });
+  const { isExporting, handlePrint, handleExportTypst, handleExportZoho } = useTemplateEditorExport(
+    {
+      template: editor.template,
+      sampleData,
+      onExportTypst,
+      onExportZoho,
+      onPrint,
+      t: editor.t,
+    },
+  );
 
-  const handleToggleGuides = useCallback(() => editor.setShowGuides((prev) => !prev), [editor.setShowGuides]);
-  const handleTogglePreview = useCallback(() => editor.setIsPreviewMode((prev) => !prev), [editor.setIsPreviewMode]);
+  const handleToggleGuides = useCallback(
+    () => editor.setShowGuides((prev) => !prev),
+    [editor.setShowGuides],
+  );
+  const handleTogglePreview = useCallback(
+    () => editor.setIsPreviewMode((prev) => !prev),
+    [editor.setIsPreviewMode],
+  );
 
-  const documentLabel = documentType ? documentType.charAt(0).toUpperCase() + documentType.slice(1) : "";
+  const documentLabel = documentType
+    ? documentType.charAt(0).toUpperCase() + documentType.slice(1)
+    : "";
   const editorLabel =
     title ||
-    (documentLabel ? editor.t("templateEditor.documentTitle", { document: documentLabel }) : editor.t("templateEditor.title"));
-
+    (documentLabel
+      ? editor.t("templateEditor.documentTitle", { document: documentLabel })
+      : editor.t("templateEditor.title"));
 
   return (
     <div
@@ -120,9 +135,11 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
       aria-modal={modal.isFullscreen ? "true" : undefined}
       aria-labelledby={titleId}
       data-print-unclamp
-      className={modal.isFullscreen
-        ? "fixed inset-0 z-modal flex flex-col bg-background outline-hidden print:static print:bg-white print:overflow-visible print:border-none print:p-0 print:m-0"
-        : "flex flex-col bg-background rounded-xl border border-border overflow-hidden h-[calc(100dvh-14rem)] min-h-144 max-h-216 outline-hidden print:static print:bg-white print:h-auto print:max-h-none print:overflow-visible print:border-none print:p-0 print:m-0"}
+      className={
+        modal.isFullscreen
+          ? "fixed inset-0 z-modal flex flex-col bg-background outline-hidden print:static print:bg-white print:overflow-visible print:border-none print:p-0 print:m-0"
+          : "flex flex-col bg-background rounded-xl border border-border overflow-hidden h-[calc(100dvh-14rem)] min-h-144 max-h-216 outline-hidden print:static print:bg-white print:h-auto print:max-h-none print:overflow-visible print:border-none print:p-0 print:m-0"
+      }
     >
       <TemplateEditorPrintRules
         width={editor.size.width}

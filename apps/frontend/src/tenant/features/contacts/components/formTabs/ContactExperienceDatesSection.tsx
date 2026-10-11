@@ -78,9 +78,7 @@ export function ContactExperienceDatesSection({
                 required={!exp.isCurrent && isFieldRequired("experience", "endDate")}
                 onChange={(dateStr) => onUpdate({ endDate: dateStr })}
                 placeholder={
-                  exp.isCurrent
-                    ? t("contacts.form.present")
-                    : t("contacts.form.endDatePlaceholder")
+                  exp.isCurrent ? t("contacts.form.present") : t("contacts.form.endDatePlaceholder")
                 }
                 min={exp.startDate || undefined}
                 className={cn(

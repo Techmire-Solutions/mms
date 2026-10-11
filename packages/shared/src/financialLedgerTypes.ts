@@ -11,7 +11,7 @@ export interface FinancialLedgerRow {
   /** Formatted credit amount string, or undefined if this is a debit row. */
   credit?: string;
   /** Controls the row background colour. Defaults to 'neutral'. */
-  variant?: 'debit' | 'credit' | 'neutral';
+  variant?: "debit" | "credit" | "neutral";
 }
 
 export interface MoneyDisplayConfig {

@@ -1,19 +1,19 @@
-import type { FastifyPluginAsync } from 'fastify';
-import rateLimit from '@fastify/rate-limit';
+import type { FastifyPluginAsync } from "fastify";
+import rateLimit from "@fastify/rate-limit";
 import {
   requestTenantPasswordResetSchema,
   resetTenantPasswordSchema,
   verifyTenantPasswordResetSchema,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   requestTenantPasswordReset,
   resetTenantPassword,
   TenantPasswordOtpError,
   verifyTenantPasswordResetOtp,
-} from '../../../services/auth/tenantPasswordOtpService.js';
-import { getRequestTenant } from '../../../lib/tenantContext.js';
-import { AUTH_RATE_LIMIT } from '../../../lib/rateLimitConfig.js';
-import { parseRequest, replyValidationError } from '../../../lib/zodRequest.js';
+} from "../../../services/auth/tenantPasswordOtpService.js";
+import { getRequestTenant } from "../../../lib/tenantContext.js";
+import { AUTH_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
+import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 
 /**
  * Public, rate-limited tenant "set your password" routes — one OTP mechanism
@@ -24,29 +24,34 @@ export const authPasswordOtpRoutes: FastifyPluginAsync = async (fastify) => {
   await fastify.register(async function passwordOtpRateLimited(inner) {
     await inner.register(rateLimit, AUTH_RATE_LIMIT);
 
-    inner.post('/forgot-password', async (request, reply) => {
+    inner.post("/forgot-password", async (request, reply) => {
       const body = parseRequest(requestTenantPasswordResetSchema, request.body);
       if (!body.ok) return replyValidationError(reply, body.message);
 
       const subdomain = getRequestTenant();
       if (!subdomain) {
         return reply.status(400).send({
-          type: 'invalid_request',
-          message: 'Request this from your madrasa subdomain (e.g. your-madrasa.localhost).',
+          type: "invalid_request",
+          message: "Request this from your madrasa subdomain (e.g. your-madrasa.localhost).",
         });
       }
 
-      const result = await requestTenantPasswordReset({ email: body.data.email, workspaceSubdomain: subdomain });
+      const result = await requestTenantPasswordReset({
+        email: body.data.email,
+        workspaceSubdomain: subdomain,
+      });
       return reply.send(result);
     });
 
-    inner.post('/forgot-password/verify', async (request, reply) => {
+    inner.post("/forgot-password/verify", async (request, reply) => {
       const body = parseRequest(verifyTenantPasswordResetSchema, request.body);
       if (!body.ok) return replyValidationError(reply, body.message);
 
       const subdomain = getRequestTenant();
       if (!subdomain) {
-        return reply.status(400).send({ type: 'invalid_request', message: 'Tenant context required' });
+        return reply
+          .status(400)
+          .send({ type: "invalid_request", message: "Tenant context required" });
       }
 
       try {
@@ -64,13 +69,15 @@ export const authPasswordOtpRoutes: FastifyPluginAsync = async (fastify) => {
       }
     });
 
-    inner.post('/forgot-password/reset', async (request, reply) => {
+    inner.post("/forgot-password/reset", async (request, reply) => {
       const body = parseRequest(resetTenantPasswordSchema, request.body);
       if (!body.ok) return replyValidationError(reply, body.message);
 
       const subdomain = getRequestTenant();
       if (!subdomain) {
-        return reply.status(400).send({ type: 'invalid_request', message: 'Tenant context required' });
+        return reply
+          .status(400)
+          .send({ type: "invalid_request", message: "Tenant context required" });
       }
 
       try {
@@ -89,8 +96,8 @@ export const authPasswordOtpRoutes: FastifyPluginAsync = async (fastify) => {
         }
         const err = error as Error & { statusCode?: number };
         return reply.status(err.statusCode ?? 500).send({
-          type: 'server_error',
-          message: err.message || 'Failed to reset password',
+          type: "server_error",
+          message: err.message || "Failed to reset password",
         });
       }
     });

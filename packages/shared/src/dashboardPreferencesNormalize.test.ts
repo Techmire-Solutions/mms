@@ -9,9 +9,9 @@ describe("normalizeDashboardPreferences", () => {
   it("returns defaults for null / non-object input", () => {
     expect(normalizeDashboardPreferences(null)).toEqual(DEFAULT_DASHBOARD_PREFERENCES);
     expect(normalizeDashboardPreferences(undefined)).toEqual(DEFAULT_DASHBOARD_PREFERENCES);
-    expect(
-      normalizeDashboardPreferences("nope" as unknown as Record<string, unknown>),
-    ).toEqual(DEFAULT_DASHBOARD_PREFERENCES);
+    expect(normalizeDashboardPreferences("nope" as unknown as Record<string, unknown>)).toEqual(
+      DEFAULT_DASHBOARD_PREFERENCES,
+    );
   });
 
   it("merges a valid partial over defaults", () => {
@@ -44,15 +44,16 @@ describe("normalizeDashboardPreferences", () => {
   });
 
   it("floors non-integer positive chart periods", () => {
-    expect(normalizeDashboardPreferences({ enrollmentChartPeriod: 10.9 }).enrollmentChartPeriod).toBe(
-      10,
-    );
+    expect(
+      normalizeDashboardPreferences({ enrollmentChartPeriod: 10.9 }).enrollmentChartPeriod,
+    ).toBe(10);
   });
 
   it("accepts disabledCardIds string arrays", () => {
-    expect(
-      normalizeDashboardPreferences({ disabledCardIds: ["a", "b"] }).disabledCardIds,
-    ).toEqual(["a", "b"]);
+    expect(normalizeDashboardPreferences({ disabledCardIds: ["a", "b"] }).disabledCardIds).toEqual([
+      "a",
+      "b",
+    ]);
     expect(normalizeDashboardPreferences({ disabledCardIds: [1, 2] }).disabledCardIds).toEqual([]);
   });
 
@@ -68,8 +69,12 @@ describe("normalizeDashboardPreferences", () => {
       lowAttendanceThreshold: 150,
       urgentAttendanceThreshold: -10,
     });
-    expect(outOfBounds.lowAttendanceThreshold).toBe(DEFAULT_DASHBOARD_PREFERENCES.lowAttendanceThreshold);
-    expect(outOfBounds.urgentAttendanceThreshold).toBe(DEFAULT_DASHBOARD_PREFERENCES.urgentAttendanceThreshold);
+    expect(outOfBounds.lowAttendanceThreshold).toBe(
+      DEFAULT_DASHBOARD_PREFERENCES.lowAttendanceThreshold,
+    );
+    expect(outOfBounds.urgentAttendanceThreshold).toBe(
+      DEFAULT_DASHBOARD_PREFERENCES.urgentAttendanceThreshold,
+    );
   });
 });
 

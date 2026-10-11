@@ -73,7 +73,9 @@ export default function RevenueChart({ isEditMode = false }: { isEditMode?: bool
         />
         <LegendChip
           dotStyle={{ backgroundColor: activeColors.expenses }}
-          label={<span className="text-muted-foreground">{t("accounting.dashboard.expenses")}</span>}
+          label={
+            <span className="text-muted-foreground">{t("accounting.dashboard.expenses")}</span>
+          }
         />
       </div>
 

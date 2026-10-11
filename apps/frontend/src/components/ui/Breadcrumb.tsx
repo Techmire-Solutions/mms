@@ -1,7 +1,7 @@
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 export interface BreadcrumbItem {
   label: string;
@@ -19,7 +19,7 @@ export interface BreadcrumbProps {
  */
 export function Breadcrumb({ items, ariaLabel, className }: BreadcrumbProps): React.JSX.Element {
   return (
-    <nav aria-label={ariaLabel} className={cn('flex items-center gap-2 text-xs', className)}>
+    <nav aria-label={ariaLabel} className={cn("flex items-center gap-2 text-xs", className)}>
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         return (
@@ -38,7 +38,11 @@ export function Breadcrumb({ items, ariaLabel, className }: BreadcrumbProps): Re
                 {item.label}
               </Link>
             ) : (
-              <span className={cn(isLast ? 'font-bold text-foreground' : 'font-medium text-muted-foreground')}>
+              <span
+                className={cn(
+                  isLast ? "font-bold text-foreground" : "font-medium text-muted-foreground",
+                )}
+              >
                 {item.label}
               </span>
             )}

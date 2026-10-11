@@ -1,12 +1,11 @@
-import { matchesWidgetFilter } from './utils.js';
-import type { WidgetQuery, WidgetAggregateResult } from './widgetAggregateTypes.js';
+import { matchesWidgetFilter } from "./utils.js";
+import type { WidgetQuery, WidgetAggregateResult } from "./widgetAggregateTypes.js";
 
-export type EnrollmentsWidgetOperation = 'count' | 'sum' | 'avg' | 'percentage';
-export type EnrollmentsWidgetFilterOperator = 'equals' | 'contains' | 'startsWith' | 'gt' | 'lt';
+export type EnrollmentsWidgetOperation = "count" | "sum" | "avg" | "percentage";
+export type EnrollmentsWidgetFilterOperator = "equals" | "contains" | "startsWith" | "gt" | "lt";
 
 export type EnrollmentsWidgetQuery = WidgetQuery;
 export type EnrollmentsWidgetAggregateResult = WidgetAggregateResult;
-
 
 type EnrollmentRow = Record<string, unknown>;
 
@@ -25,7 +24,7 @@ function filterEnrollmentsForWidget(
 
 function aggregateNumericField(
   items: EnrollmentRow[],
-  operation: 'sum' | 'avg',
+  operation: "sum" | "avg",
   targetField: string,
 ): number {
   let sum = 0;
@@ -37,7 +36,7 @@ function aggregateNumericField(
       count += 1;
     }
   }
-  if (operation === 'sum') return sum;
+  if (operation === "sum") return sum;
   return count > 0 ? Math.round(sum / count) : 0;
 }
 
@@ -45,17 +44,17 @@ function buildChartData(
   items: EnrollmentRow[],
   query: EnrollmentsWidgetQuery,
 ): { name: string; value: number }[] {
-  const xAxisField = query.xAxisField || 'status';
-  const isNumeric = query.operation === 'sum' || query.operation === 'avg';
-  const targetField = query.targetField || '';
+  const xAxisField = query.xAxisField || "status";
+  const isNumeric = query.operation === "sum" || query.operation === "avg";
+  const targetField = query.targetField || "";
   const groupStats = new Map<string, { sum: number; count: number }>();
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     const groupValue = enrollmentFieldValue(item, xAxisField);
     const groupKey =
-      groupValue === undefined || groupValue === null || groupValue === ''
-        ? 'Unknown'
+      groupValue === undefined || groupValue === null || groupValue === ""
+        ? "Unknown"
         : String(groupValue);
     let stat = groupStats.get(groupKey);
     if (!stat) {
@@ -76,7 +75,11 @@ function buildChartData(
   const chartData: { name: string; value: number }[] = [];
   for (const [groupName, stat] of groupStats) {
     const aggregateValue = isNumeric
-      ? (query.operation === 'sum' ? stat.sum : (stat.count > 0 ? Math.round(stat.sum / stat.count) : 0))
+      ? query.operation === "sum"
+        ? stat.sum
+        : stat.count > 0
+          ? Math.round(stat.sum / stat.count)
+          : 0
       : stat.count;
     chartData.push({ name: groupName, value: aggregateValue });
   }
@@ -93,12 +96,12 @@ export function computeEnrollmentsWidgetAggregate(
   const filtered = filterEnrollmentsForWidget(enrollments, query);
 
   let value = 0;
-  if (query.operation === 'count') {
+  if (query.operation === "count") {
     value = filtered.length;
-  } else if (query.operation === 'percentage') {
+  } else if (query.operation === "percentage") {
     value = totalCount > 0 ? Math.round((filtered.length / totalCount) * 100) : 0;
-  } else if (query.operation === 'sum' || query.operation === 'avg') {
-    value = aggregateNumericField(filtered, query.operation, query.targetField || '');
+  } else if (query.operation === "sum" || query.operation === "avg") {
+    value = aggregateNumericField(filtered, query.operation, query.targetField || "");
   }
 
   return {

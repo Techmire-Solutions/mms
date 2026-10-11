@@ -1,5 +1,5 @@
-import { getTableConfig, type PgTable } from 'drizzle-orm/pg-core';
-import type { ErdColumn, ErdRelationship, ErdTable } from '@mms/shared';
+import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
+import type { ErdColumn, ErdRelationship, ErdTable } from "@mms/shared";
 
 export interface IntrospectedTableResult {
   table: ErdTable;
@@ -21,10 +21,10 @@ export function introspectPgTable(table: PgTable): IntrospectedTableResult {
     const ref = fk.reference();
     for (const c of ref.columns) fkNames.add(c.name);
 
-    const fromColumn = ref.columns[0]?.name || '';
+    const fromColumn = ref.columns[0]?.name || "";
     const foreignTableCfg = getTableConfig(ref.foreignTable);
     const toTable = foreignTableCfg.name;
-    const toColumn = ref.foreignColumns[0]?.name || '';
+    const toColumn = ref.foreignColumns[0]?.name || "";
 
     const isOneToOne = ref.columns.every((c) => c.primary || pkNames.has(c.name));
 
@@ -33,9 +33,8 @@ export function introspectPgTable(table: PgTable): IntrospectedTableResult {
       fromColumn,
       toTable,
       toColumn,
-      cardinality: isOneToOne ? '1:1' : 'N:1',
-      onDelete:
-        fk.onDelete === 'cascade' || fk.onDelete === 'set null' ? fk.onDelete : undefined,
+      cardinality: isOneToOne ? "1:1" : "N:1",
+      onDelete: fk.onDelete === "cascade" || fk.onDelete === "set null" ? fk.onDelete : undefined,
     });
   }
 
@@ -46,7 +45,7 @@ export function introspectPgTable(table: PgTable): IntrospectedTableResult {
   for (const idx of cfg.indexes) {
     if (idx.config.unique) {
       for (const col of idx.config.columns) {
-        if (col && 'name' in col && typeof col.name === 'string') {
+        if (col && "name" in col && typeof col.name === "string") {
           uniqueNames.add(col.name);
         }
       }
@@ -54,13 +53,13 @@ export function introspectPgTable(table: PgTable): IntrospectedTableResult {
   }
 
   const columns: ErdColumn[] = cfg.columns.map((c) => {
-    let kind: ErdColumn['kind'] = 'column';
+    let kind: ErdColumn["kind"] = "column";
     if (c.primary || pkNames.has(c.name)) {
-      kind = 'pk';
+      kind = "pk";
     } else if (fkNames.has(c.name)) {
-      kind = 'fk';
+      kind = "fk";
     } else if (c.isUnique || uniqueNames.has(c.name)) {
-      kind = 'unique';
+      kind = "unique";
     }
 
     return {

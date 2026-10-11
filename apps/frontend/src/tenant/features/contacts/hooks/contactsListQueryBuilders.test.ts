@@ -22,9 +22,7 @@ const base: ContactsPaginatedParams = { page: 1 };
 
 describe("buildContactsPageUrl", () => {
   it("builds the base contacts URL with default page size", () => {
-    expect(buildContactsPageUrl({ page: 3 })).toBe(
-      "/api/contacts?page=3&limit=50",
-    );
+    expect(buildContactsPageUrl({ page: 3 })).toBe("/api/contacts?page=3&limit=50");
   });
 
   it("appends every optional filter", () => {
@@ -104,24 +102,31 @@ describe("sameContactsListFilters", () => {
 
   it("returns true for identical params", () => {
     const params = contactsListQueryKeyParams({ page: 1, search: "a" });
-    expect(sameContactsListFilters(params, contactsListQueryKeyParams({ page: 1, search: "a" }))).toBe(true);
+    expect(
+      sameContactsListFilters(params, contactsListQueryKeyParams({ page: 1, search: "a" })),
+    ).toBe(true);
   });
 
   it("returns false when a filter differs", () => {
     const params = contactsListQueryKeyParams({ page: 1, search: "a" });
-    expect(sameContactsListFilters(params, contactsListQueryKeyParams({ page: 1, search: "b" }))).toBe(false);
+    expect(
+      sameContactsListFilters(params, contactsListQueryKeyParams({ page: 1, search: "b" })),
+    ).toBe(false);
   });
 });
 
-  describe("fetchContactById", () => {
-    beforeEach(() => {
-      apiContractMock.contacts.get.mockReset();
-    });
-
-    it("should fetch a contact by id", async () => {
-      apiContractMock.contacts.get.mockResolvedValue({ status: 200, body: { contact: { id: 7, name: "Seven" } } });
-      const contact = await fetchContactById("7");
-      expect(apiContractMock.contacts.get).toHaveBeenCalledWith({ params: { id: "7" } });
-      expect(contact).toEqual({ id: 7, name: "Seven" });
-    });
+describe("fetchContactById", () => {
+  beforeEach(() => {
+    apiContractMock.contacts.get.mockReset();
   });
+
+  it("should fetch a contact by id", async () => {
+    apiContractMock.contacts.get.mockResolvedValue({
+      status: 200,
+      body: { contact: { id: 7, name: "Seven" } },
+    });
+    const contact = await fetchContactById("7");
+    expect(apiContractMock.contacts.get).toHaveBeenCalledWith({ params: { id: "7" } });
+    expect(contact).toEqual({ id: 7, name: "Seven" });
+  });
+});

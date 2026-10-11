@@ -1,8 +1,17 @@
-import { redisBatch, redisDel, redisDelPattern, redisExists, redisGet, redisSet, redisKeys, type RedisBatchOp } from '../lib/redis.js';
+import {
+  redisBatch,
+  redisDel,
+  redisDelPattern,
+  redisExists,
+  redisGet,
+  redisSet,
+  redisKeys,
+  type RedisBatchOp,
+} from "../lib/redis.js";
 
-const REVOKED_TOKEN_PREFIX = 'session:revoked:';
-const USER_REVOKED_AT_PREFIX = 'user:revoked_at:';
-const TENANT_BLOCKED_PREFIX = 'tenant:blocked:';
+const REVOKED_TOKEN_PREFIX = "session:revoked:";
+const USER_REVOKED_AT_PREFIX = "user:revoked_at:";
+const TENANT_BLOCKED_PREFIX = "tenant:blocked:";
 
 const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 15 * 60; // 15 minutes
 
@@ -24,7 +33,7 @@ export async function revokeToken(
 ): Promise<void> {
   if (!jti) return;
   const key = `${REVOKED_TOKEN_PREFIX}${jti}`;
-  await redisSet(key, 'revoked', ttlSeconds);
+  await redisSet(key, "revoked", ttlSeconds);
 }
 
 /**
@@ -53,10 +62,7 @@ export async function revokeAllUserSessions(
 /**
  * Checks if a token issued at `issuedAtMs` has been invalidated by a whole-user session revocation.
  */
-export async function isUserSessionRevoked(
-  userId?: string,
-  issuedAtMs?: number,
-): Promise<boolean> {
+export async function isUserSessionRevoked(userId?: string, issuedAtMs?: number): Promise<boolean> {
   if (!userId || !issuedAtMs) return false;
   const key = `${USER_REVOKED_AT_PREFIX}${userId}`;
   const revokedAtStr = await redisGet(key);
@@ -71,7 +77,7 @@ export async function isUserSessionRevoked(
 export async function blockTenant(tenantId: string): Promise<void> {
   if (!tenantId) return;
   const key = `${TENANT_BLOCKED_PREFIX}${tenantId.toLowerCase()}`;
-  await redisSet(key, 'blocked');
+  await redisSet(key, "blocked");
 }
 
 /**
@@ -120,15 +126,13 @@ export async function checkSessionRevocationBatch(params: {
   issuedAtMs?: number;
 }): Promise<SessionRevocationCheck> {
   const ops: RedisBatchOp[] = [];
-  const tenantKey = params.tenant
-    ? `${TENANT_BLOCKED_PREFIX}${params.tenant.toLowerCase()}`
-    : null;
+  const tenantKey = params.tenant ? `${TENANT_BLOCKED_PREFIX}${params.tenant.toLowerCase()}` : null;
   const jtiKey = params.jti ? `${REVOKED_TOKEN_PREFIX}${params.jti}` : null;
   const userKey = params.userId ? `${USER_REVOKED_AT_PREFIX}${params.userId}` : null;
 
-  if (tenantKey) ops.push({ key: tenantKey, type: 'exists' });
-  if (jtiKey) ops.push({ key: jtiKey, type: 'exists' });
-  if (userKey) ops.push({ key: userKey, type: 'get' });
+  if (tenantKey) ops.push({ key: tenantKey, type: "exists" });
+  if (jtiKey) ops.push({ key: jtiKey, type: "exists" });
+  if (userKey) ops.push({ key: userKey, type: "get" });
 
   const results = await redisBatch(ops);
   let i = 0;
@@ -165,11 +169,11 @@ export async function checkTenantAuthPipelineBatch(params: {
   const settingsKey = tenantClean ? redisKeys.globalSettings(tenantClean) : null;
   const workspaceKey = tenantClean ? redisKeys.workspace(tenantClean) : null;
 
-  if (tenantKey) ops.push({ key: tenantKey, type: 'exists' });
-  if (jtiKey) ops.push({ key: jtiKey, type: 'exists' });
-  if (userKey) ops.push({ key: userKey, type: 'get' });
-  if (settingsKey) ops.push({ key: settingsKey, type: 'get' });
-  if (workspaceKey) ops.push({ key: workspaceKey, type: 'get' });
+  if (tenantKey) ops.push({ key: tenantKey, type: "exists" });
+  if (jtiKey) ops.push({ key: jtiKey, type: "exists" });
+  if (userKey) ops.push({ key: userKey, type: "get" });
+  if (settingsKey) ops.push({ key: settingsKey, type: "get" });
+  if (workspaceKey) ops.push({ key: workspaceKey, type: "get" });
 
   const results = await redisBatch(ops);
   let i = 0;

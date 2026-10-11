@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /** Max field keys accepted by `POST …/field-usage` batch routes. */
 export const FIELD_USAGE_BATCH_MAX = 100;
@@ -8,10 +8,7 @@ export const FIELD_USAGE_BATCH_MAX = 100;
  * Response: `{ counts: Record<string, number> }` with every requested key present.
  */
 export const fieldUsageBatchBodySchema = z.object({
-  fieldKeys: z
-    .array(z.string().min(1).max(128))
-    .min(1)
-    .max(FIELD_USAGE_BATCH_MAX),
+  fieldKeys: z.array(z.string().min(1).max(128)).min(1).max(FIELD_USAGE_BATCH_MAX),
 });
 
 export type FieldUsageBatchBody = z.infer<typeof fieldUsageBatchBodySchema>;

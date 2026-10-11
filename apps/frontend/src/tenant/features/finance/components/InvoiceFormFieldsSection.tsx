@@ -21,7 +21,7 @@ export interface InvoiceFormFieldsSectionProps {
   errors?: Record<string, string>;
 }
 
-export const InvoiceFormFieldsSection = (function InvoiceFormFieldsSection({
+export const InvoiceFormFieldsSection = function InvoiceFormFieldsSection({
   t,
   draft,
   onFieldChange,
@@ -126,4 +126,4 @@ export const InvoiceFormFieldsSection = (function InvoiceFormFieldsSection({
       </SectionCard>
     </div>
   );
-});
+};

@@ -8,10 +8,12 @@ import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridC
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
 
 const ContactReportCharts = lazy(() =>
-  import("@/components/ui/reports/ContactReportCharts").then((mod) => ({ default: mod.ContactReportCharts })),
+  import("@/components/ui/reports/ContactReportCharts").then((mod) => ({
+    default: mod.ContactReportCharts,
+  })),
 );
 
 interface ContactReportProps {
@@ -19,7 +21,7 @@ interface ContactReportProps {
 }
 
 /** Contacts CRM Report dashboard — analytics metrics, distribution charts, and pinned widgets. */
-const ContactReport = (function ContactReport(_props: ContactReportProps = {}): React.JSX.Element {
+const ContactReport = function ContactReport(_props: ContactReportProps = {}): React.JSX.Element {
   const { t } = useTranslation();
   const palette = useBrandPalette();
   const analyticsQuery = useContactsReportAnalytics();
@@ -32,9 +34,21 @@ const ContactReport = (function ContactReport(_props: ContactReportProps = {}): 
     const unverified = Math.max(0, data.total - data.whatsappCount);
     const missing = data.missingInfoCount;
     return [
-      { name: t("reports.contacts.kpi.whatsappVerified"), value: verified, color: palette.charts[0] || palette.primary },
-      { name: t("reports.contacts.kpi.activeContacts"), value: unverified, color: palette.charts[1] || palette.secondary },
-      { name: t("reports.contacts.kpi.missingContactInfo"), value: missing, color: palette.charts[2] || palette.primary },
+      {
+        name: t("reports.contacts.kpi.whatsappVerified"),
+        value: verified,
+        color: palette.charts[0] || palette.primary,
+      },
+      {
+        name: t("reports.contacts.kpi.activeContacts"),
+        value: unverified,
+        color: palette.charts[1] || palette.secondary,
+      },
+      {
+        name: t("reports.contacts.kpi.missingContactInfo"),
+        value: missing,
+        color: palette.charts[2] || palette.primary,
+      },
     ].filter((item) => item.value > 0);
   })();
 
@@ -113,7 +127,7 @@ const ContactReport = (function ContactReport(_props: ContactReportProps = {}): 
           >
             <div className="hidden md:block">
               <WorkBatchTable
-                data={summaryRows.map(row => ({ ...row, id: row.metric }))}
+                data={summaryRows.map((row) => ({ ...row, id: row.metric }))}
                 columns={[
                   {
                     id: "metric",
@@ -162,6 +176,6 @@ const ContactReport = (function ContactReport(_props: ContactReportProps = {}): 
       <PinnedWidgets category="contacts" />
     </div>
   );
-});
+};
 
 export default ContactReport;

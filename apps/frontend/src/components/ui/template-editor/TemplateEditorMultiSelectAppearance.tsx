@@ -41,7 +41,10 @@ export function TemplateEditorMultiSelectAppearance({
     >
       <div className="grid grid-cols-2 gap-2">
         <div className="flex flex-col gap-0.5">
-          <label htmlFor={bgColorId} className="text-xs font-bold uppercase text-muted-foreground tracking-wide">
+          <label
+            htmlFor={bgColorId}
+            className="text-xs font-bold uppercase text-muted-foreground tracking-wide"
+          >
             {t("templateEditor.backgroundColor")}
           </label>
           <div className="flex items-center gap-1.5">
@@ -69,7 +72,10 @@ export function TemplateEditorMultiSelectAppearance({
         </div>
 
         <div className="flex flex-col gap-0.5">
-          <label htmlFor={borderColorId} className="text-xs font-bold uppercase text-muted-foreground tracking-wide">
+          <label
+            htmlFor={borderColorId}
+            className="text-xs font-bold uppercase text-muted-foreground tracking-wide"
+          >
             {t("templateEditor.borderColor")}
           </label>
           <input
@@ -94,7 +100,8 @@ export function TemplateEditorMultiSelectAppearance({
           value={initialBorderWidth}
           onChange={(val) => {
             const num = Number(val);
-            if (!Number.isNaN(num)) onPatchSelectedStyles({ borderWidth: Math.max(0, Math.min(12, num)) });
+            if (!Number.isNaN(num))
+              onPatchSelectedStyles({ borderWidth: Math.max(0, Math.min(12, num)) });
           }}
         />
         <StyleInput
@@ -105,7 +112,8 @@ export function TemplateEditorMultiSelectAppearance({
           value={initialBorderRadius}
           onChange={(val) => {
             const num = Number(val);
-            if (!Number.isNaN(num)) onPatchSelectedStyles({ borderRadius: Math.max(0, Math.min(32, num)) });
+            if (!Number.isNaN(num))
+              onPatchSelectedStyles({ borderRadius: Math.max(0, Math.min(32, num)) });
           }}
         />
       </div>

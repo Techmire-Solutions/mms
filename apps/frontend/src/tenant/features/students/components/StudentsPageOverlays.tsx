@@ -24,7 +24,7 @@ const StudentIdCardModal = lazy(() =>
 );
 import { StudentsCsvImportDialog } from "@/tenant/features/students/components/StudentsCsvImportDialog";
 
-export const StudentsPageOverlays = (function StudentsPageOverlays({
+export const StudentsPageOverlays = function StudentsPageOverlays({
   showStudentForm,
   editStudent,
   onCloseForm,
@@ -81,11 +81,7 @@ export const StudentsPageOverlays = (function StudentsPageOverlays({
         <Suspense fallback={<ModuleOverlayLoadingFallback />}>
           <AnimatePresence>
             {showStudentForm ? (
-              <StudentForm
-                student={editStudent}
-                onClose={onCloseForm}
-                onSave={onSave}
-              />
+              <StudentForm student={editStudent} onClose={onCloseForm} onSave={onSave} />
             ) : null}
             {messagingTarget ? (
               <MessageComposer
@@ -145,12 +141,8 @@ export const StudentsPageOverlays = (function StudentsPageOverlays({
       ) : null}
 
       {importOpen && onCloseImport ? (
-        <StudentsCsvImportDialog
-          open={importOpen}
-          onClose={onCloseImport}
-          canWrite={canWrite}
-        />
+        <StudentsCsvImportDialog open={importOpen} onClose={onCloseImport} canWrite={canWrite} />
       ) : null}
     </>
   );
-});
+};

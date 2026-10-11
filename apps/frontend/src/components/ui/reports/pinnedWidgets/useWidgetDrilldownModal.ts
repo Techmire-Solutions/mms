@@ -28,15 +28,14 @@ export function useWidgetDrilldownModal(widget: CustomWidget) {
     enabled: widget.collection !== "contacts",
   });
 
-  const widgetRecords = (() => (widget.collection === "contacts" ? [] : getFilteredRecords(widget, collections)))();
+  const widgetRecords = (() =>
+    widget.collection === "contacts" ? [] : getFilteredRecords(widget, collections))();
 
   const pagination = useLocalPagination({
     items: widgetRecords,
     pageSize: 10,
     filterFn: (record, query) =>
-      Object.values(record).some((fieldValue) =>
-        String(fieldValue).toLowerCase().includes(query)
-      ),
+      Object.values(record).some((fieldValue) => String(fieldValue).toLowerCase().includes(query)),
   });
 
   const studentNameMap = (() => {

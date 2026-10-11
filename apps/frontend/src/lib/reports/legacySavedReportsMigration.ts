@@ -1,7 +1,7 @@
-import type { GenericSavedReportCategory } from '@mms/shared';
+import type { GenericSavedReportCategory } from "@mms/shared";
 
 /** Legacy localStorage collection that held generic saved-report presets. */
-export const LEGACY_SAVED_REPORTS_COLLECTION_KEY = 'reports_saved_reports';
+export const LEGACY_SAVED_REPORTS_COLLECTION_KEY = "reports_saved_reports";
 
 /** Shape of a legacy browser-local saved-report preset. */
 export interface LegacyLocalSavedReport {
@@ -28,7 +28,7 @@ export function stableSerialize(value: unknown): string {
 }
 
 function canonicalize(value: unknown): unknown {
-  if (value === null || typeof value !== 'object') {
+  if (value === null || typeof value !== "object") {
     return value;
   }
   if (Array.isArray(value)) {
@@ -47,24 +47,26 @@ export function reportsEquivalentByNameAndFilters(
   left: { name: string; filters: Record<string, unknown> },
   right: { name: string; filters: Record<string, unknown> },
 ): boolean {
-  return left.name === right.name && stableSerialize(left.filters) === stableSerialize(right.filters);
+  return (
+    left.name === right.name && stableSerialize(left.filters) === stableSerialize(right.filters)
+  );
 }
 
 export function isLegacyLocalSavedReport(value: unknown): value is LegacyLocalSavedReport {
-  if (value === null || typeof value !== 'object') return false;
+  if (value === null || typeof value !== "object") return false;
   const record = value as Record<string, unknown>;
   return (
-    typeof record.id === 'string' &&
+    typeof record.id === "string" &&
     record.id.length > 0 &&
-    typeof record.name === 'string' &&
+    typeof record.name === "string" &&
     record.name.length > 0 &&
-    typeof record.category === 'string' &&
+    typeof record.category === "string" &&
     record.category.length > 0 &&
     record.filters !== null &&
-    typeof record.filters === 'object' &&
+    typeof record.filters === "object" &&
     !Array.isArray(record.filters) &&
-    typeof record.lastRun === 'string' &&
-    typeof record.createdBy === 'string'
+    typeof record.lastRun === "string" &&
+    typeof record.createdBy === "string"
   );
 }
 
@@ -78,7 +80,7 @@ export function planLegacySavedReportsMigration(args: {
   serverReports: ReadonlyArray<{ name: string; filters: Record<string, unknown> }>;
 }): LegacySavedReportsMigrationPlan {
   const { category, localReports, serverReports } = args;
-  const toImport: LegacySavedReportsMigrationPlan['toImport'] = [];
+  const toImport: LegacySavedReportsMigrationPlan["toImport"] = [];
   const categoryIdsToRemove: string[] = [];
   const retainedLocalReports: unknown[] = [];
 

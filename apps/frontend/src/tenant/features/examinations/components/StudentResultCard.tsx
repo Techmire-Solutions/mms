@@ -1,12 +1,15 @@
 import React from "react";
 import { Award, Printer } from "lucide-react";
-import { getRankSuffix, type GradeInfo } from "@/tenant/features/examinations/components/gradeUtils";
-import { type Exam } from '@/lib/data/examinationData';
+import {
+  getRankSuffix,
+  type GradeInfo,
+} from "@/tenant/features/examinations/components/gradeUtils";
+import { type Exam } from "@/lib/data/examinationData";
 import { formatDate } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/Modal";
 import { Card } from "@/components/ui/card";
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 import { CARD_STRIPE_INSET, SEMANTIC_BADGE } from "@/lib/semanticTone";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -81,7 +84,8 @@ export function StudentResultCard({
               onClick={onCertificate}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-warning/40 bg-warning/10 text-warning text-sm font-semibold hover:bg-warning/15"
             >
-              <Award className="w-4 h-4" aria-hidden="true" /> {t("examinations.resultCard.certificate")}
+              <Award className="w-4 h-4" aria-hidden="true" />{" "}
+              {t("examinations.resultCard.certificate")}
             </Button>
           )}
           <Button
@@ -97,10 +101,20 @@ export function StudentResultCard({
       <div className="space-y-4">
         {/* Circular progress */}
         <div className="p-4 rounded-xl border border-border bg-muted/20 text-center relative overflow-hidden">
-          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ background: `linear-gradient(135deg, ${grade.bg}, transparent)` }} />
+          <div
+            className="absolute inset-0 opacity-5 pointer-events-none"
+            style={{ background: `linear-gradient(135deg, ${grade.bg}, transparent)` }}
+          />
           <div className="relative w-28 h-28 mx-auto" aria-hidden="true">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
+              <circle
+                cx="50"
+                cy="50"
+                r="42"
+                fill="none"
+                stroke="hsl(var(--border))"
+                strokeWidth="8"
+              />
               <circle
                 cx="50"
                 cy="50"
@@ -115,30 +129,46 @@ export function StudentResultCard({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-bold" style={{ color: grade.color }}>{grade.label}</span>
+              <span className="text-2xl font-bold" style={{ color: grade.color }}>
+                {grade.label}
+              </span>
               <span className="text-xs text-muted-foreground font-semibold">{percentage}%</span>
             </div>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:rtl:divide-x-reverse" role="status" aria-label={t("examinations.resultCard.metricsAria")}>
+        <div
+          className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:rtl:divide-x-reverse"
+          role="status"
+          aria-label={t("examinations.resultCard.metricsAria")}
+        >
           <div className="min-w-0 px-2 py-3.5 text-center sm:px-3">
             <p className="text-sm font-bold text-foreground break-words">{`${result.marksObtained}/${exam.totalMarks}`}</p>
             <p className="text-xs text-muted-foreground">{t("examinations.resultCard.marks")}</p>
           </div>
           <div className="min-w-0 px-2 py-3.5 text-center sm:px-3">
-            <p className="text-sm font-bold text-foreground break-words">{getRankSuffix(position)} / {total}</p>
+            <p className="text-sm font-bold text-foreground break-words">
+              {getRankSuffix(position)} / {total}
+            </p>
             <p className="text-xs text-muted-foreground">{t("examinations.resultCard.rank")}</p>
           </div>
           <div className="min-w-0 px-2 py-3.5 text-center flex flex-col items-center gap-1 sm:px-3">
-            <StatusBadge status={result.passed ? "pass" : "fail"} config={passFailConfig} size="sm" />
+            <StatusBadge
+              status={result.passed ? "pass" : "fail"}
+              config={passFailConfig}
+              size="sm"
+            />
             <p className="text-xs text-muted-foreground">{t("examinations.resultCard.status")}</p>
           </div>
         </div>
 
         {/* Exam info */}
-        <Card accentColor="primary" className={cn("p-4 space-y-2 text-sm text-muted-foreground", CARD_STRIPE_INSET)} aria-label={t("examinations.resultCard.examDetailsAria")}>
+        <Card
+          accentColor="primary"
+          className={cn("p-4 space-y-2 text-sm text-muted-foreground", CARD_STRIPE_INSET)}
+          aria-label={t("examinations.resultCard.examDetailsAria")}
+        >
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>{t("examinations.resultCard.exam")}</span>
@@ -154,7 +184,6 @@ export function StudentResultCard({
             </div>
           </div>
         </Card>
-
       </div>
     </Modal>
   );

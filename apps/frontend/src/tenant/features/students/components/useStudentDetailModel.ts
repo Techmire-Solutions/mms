@@ -19,9 +19,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";
 import type { SiblingStudentItem } from "@/tenant/features/students/components/StudentDetailSiblingsSection";
 import { buildStudentSortedEnabledFields } from "@/tenant/features/students/components/studentDetailSortedFields";
-import {
-  buildStudentContactProfile,
-} from "@/tenant/features/students/components/studentDetailContactProfile";
+import { buildStudentContactProfile } from "@/tenant/features/students/components/studentDetailContactProfile";
 import { buildStudentRelationships } from "@/tenant/features/students/components/studentDetailRelationships";
 import { buildStudentSiblings } from "@/tenant/features/students/components/studentDetailSiblingMatch";
 
@@ -114,8 +112,8 @@ export function useStudentDetailModel(student: Student) {
 
   const hasVisibleDetailFields = sortedEnabledFields.some((field) => {
     if (
-      STUDENT_DETAIL_HERO_FIELD_KEYS.has(field.key)
-      || OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS.has(field.key)
+      STUDENT_DETAIL_HERO_FIELD_KEYS.has(field.key) ||
+      OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS.has(field.key)
     ) {
       return false;
     }
@@ -125,28 +123,42 @@ export function useStudentDetailModel(student: Student) {
     return true;
   });
 
-  const siblingRelatedContactIds = useMemo(() =>
-    Array.from(new Set([
-      guardians.fatherContactId ? String(guardians.fatherContactId) : "",
-      guardians.guardianContactId ? String(guardians.guardianContactId) : "",
-    ].filter(Boolean))),
+  const siblingRelatedContactIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          [
+            guardians.fatherContactId ? String(guardians.fatherContactId) : "",
+            guardians.guardianContactId ? String(guardians.guardianContactId) : "",
+          ].filter(Boolean),
+        ),
+      ),
     [guardians.fatherContactId, guardians.guardianContactId],
   );
   const siblingFatherName = (guardians.fatherName || student.fatherName || "").trim();
   const hasSiblingLookup = siblingRelatedContactIds.length > 0 || Boolean(siblingFatherName);
-  const siblingQueryParams = useMemo(() => ({
-    page: 1,
-    limit: STUDENTS_MODULE_MANIFEST.maxPageSize,
-    relatedContactIds: siblingRelatedContactIds.join(",") || undefined,
-    fatherName: siblingFatherName || undefined,
-    excludeId: student.id ? String(student.id) : undefined,
-  }), [siblingRelatedContactIds, siblingFatherName, student.id]);
+  const siblingQueryParams = useMemo(
+    () => ({
+      page: 1,
+      limit: STUDENTS_MODULE_MANIFEST.maxPageSize,
+      relatedContactIds: siblingRelatedContactIds.join(",") || undefined,
+      fatherName: siblingFatherName || undefined,
+      excludeId: student.id ? String(student.id) : undefined,
+    }),
+    [siblingRelatedContactIds, siblingFatherName, student.id],
+  );
   const allStudentsQuery = useStudentsContractList(siblingQueryParams, hasSiblingLookup);
   const allStudents = getStudentsFromPage(allStudentsQuery.data?.body);
 
-  const siblings: SiblingStudentItem[] = buildStudentSiblings(student, guardians, allStudents, sessions);
+  const siblings: SiblingStudentItem[] = buildStudentSiblings(
+    student,
+    guardians,
+    allStudents,
+    sessions,
+  );
 
-  const showNotesSection = Boolean(student.notes) && sortedEnabledFields.some((field) => field.key === "notes");
+  const showNotesSection =
+    Boolean(student.notes) && sortedEnabledFields.some((field) => field.key === "notes");
 
   /** O(1) lookup map for sibling navigation — avoids .find() on every click. */
   const siblingMap = useMemo(

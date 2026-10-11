@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation } from "@tanstack/react-query";
 import type {
   PlatformPasswordForgotInput,
   PlatformPasswordForgotResult,
@@ -6,8 +6,8 @@ import type {
   PlatformSetupRegisterInput,
   PlatformSetupRegisterResult,
   PlatformUser,
-} from '@mms/shared';
-import { apiContract } from '@/lib/api';
+} from "@mms/shared";
+import { apiContract } from "@/lib/api";
 
 /** Hook to start platform setup registration. */
 export function usePlatformSetupRegister() {

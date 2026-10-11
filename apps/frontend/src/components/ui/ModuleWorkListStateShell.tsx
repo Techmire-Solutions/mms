@@ -104,7 +104,12 @@ export function ModuleWorkListStateShell({
   return (
     <AnimatePresence mode="wait">
       {isError ? (
-        <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div
+          key="error"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
           <ErrorState title={errorTitle} description={errorHint} onRetry={onRetry} />
         </motion.div>
       ) : isLoading ? (

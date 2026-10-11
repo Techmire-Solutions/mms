@@ -9,13 +9,16 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { MEDIA_LG_UP } from "@/lib/breakpoints";
 import type { ResponsiveAccordionTabsProps } from "@/components/ui/ResponsiveAccordionTabsTypes";
 
-export type { AccordionTabItem, ResponsiveAccordionTabsProps } from "@/components/ui/ResponsiveAccordionTabsTypes";
+export type {
+  AccordionTabItem,
+  ResponsiveAccordionTabsProps,
+} from "@/components/ui/ResponsiveAccordionTabsTypes";
 
 /**
  * Responsive tab shell — mobile accordion (content under active heading),
  * desktop horizontal tabs or sidebar nav.
  */
-export const ResponsiveAccordionTabs = (function ResponsiveAccordionTabs({
+export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
   tabs,
   activeTab,
   onTabChange,
@@ -32,22 +35,22 @@ export const ResponsiveAccordionTabs = (function ResponsiveAccordionTabs({
   const sectionRefs = useRef<Partial<Record<string, HTMLElement | null>>>({});
   const prefix = panelIdPrefix;
 
-  const handleTabChange = (async (tabId: string) => {
-      if (collapsible && activeTab === tabId) {
-        onTabChange("");
+  const handleTabChange = async (tabId: string) => {
+    if (collapsible && activeTab === tabId) {
+      onTabChange("");
+      return;
+    }
+    if (tabId === activeTab) return;
+    if (isDirty && onSave) {
+      try {
+        const res = await onSave();
+        if (res === false) return;
+      } catch {
         return;
       }
-      if (tabId === activeTab) return;
-      if (isDirty && onSave) {
-        try {
-          const res = await onSave();
-          if (res === false) return;
-        } catch {
-          return;
-        }
-      }
-      onTabChange(tabId);
-    });
+    }
+    onTabChange(tabId);
+  };
 
   useScrollSurfaceOnChange(activeTab, {
     resolveMobileTarget: (key) => sectionRefs.current[key],
@@ -125,5 +128,4 @@ export const ResponsiveAccordionTabs = (function ResponsiveAccordionTabs({
       )}
     </div>
   );
-});
-
+};

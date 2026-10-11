@@ -47,7 +47,10 @@ function SubTabBarDesktopPillList<K extends string>({
           >
             {t.icon && (
               <t.icon
-                className={cn("h-3.5 w-3.5 transition-colors", active ? "text-primary" : "text-muted-foreground")}
+                className={cn(
+                  "h-3.5 w-3.5 transition-colors",
+                  active ? "text-primary" : "text-muted-foreground",
+                )}
                 aria-hidden
               />
             )}

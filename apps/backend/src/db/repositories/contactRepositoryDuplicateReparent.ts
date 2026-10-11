@@ -1,12 +1,6 @@
-import { sql } from 'drizzle-orm';
-import {
-  contactRelationships,
-  students,
-  faculty,
-  tenantUsers,
-  messageLogs,
-} from '../schema.js';
-import { withTenant } from '../tenant-context.js';
+import { sql } from "drizzle-orm";
+import { contactRelationships, students, faculty, tenantUsers, messageLogs } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
 
 /** Re-parents relationships and student/teacher/user/message foreign keys when merging deleteId into keepId. */
 export async function reparentContactReferences(

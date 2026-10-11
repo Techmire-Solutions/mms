@@ -42,7 +42,6 @@ export function SimpleTransactionAmountInput({
       ? t("accounting.journal.dashboard.wizard.errorAmountInvalid")
       : undefined;
 
-
   return (
     <div>
       <Field
@@ -76,7 +75,11 @@ export function SimpleTransactionAmountInput({
             }}
             style={{
               paddingInlineStart:
-                currencySymbol.length > 2 ? "3.5rem" : currencySymbol.length > 1 ? "2.75rem" : "2rem",
+                currencySymbol.length > 2
+                  ? "3.5rem"
+                  : currencySymbol.length > 1
+                    ? "2.75rem"
+                    : "2rem",
             }}
             className={`${currencyPaddingClass} text-lg font-bold`}
           />

@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 import {
   DEFAULT_SMS_INTEGRATION,
   listSmsProviderPresets,
   type SmsIntegrationConfig,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
 import {
   fetchSmsIntegration,
   saveSmsIntegration,
   testSmsIntegration,
-} from '@/lib/smsIntegrationApi';
+} from "@/lib/smsIntegrationApi";
 
 export function useSmsIntegrationPanel() {
   const { t } = useTranslation();
@@ -19,8 +19,8 @@ export function useSmsIntegrationPanel() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [form, setForm] = useState<SmsIntegrationConfig>(DEFAULT_SMS_INTEGRATION);
-  const [accountSecret, setAccountSecret] = useState('');
-  const [testPhone, setTestPhone] = useState('');
+  const [accountSecret, setAccountSecret] = useState("");
+  const [testPhone, setTestPhone] = useState("");
 
   const load = useCallback(async (): Promise<void> => {
     setLoading(true);
@@ -53,10 +53,10 @@ export function useSmsIntegrationPanel() {
         accountSecret: accountSecret.trim() || undefined,
       });
       setForm(saved);
-      setAccountSecret('');
-      notify.success(t('sms.saveSuccess'), { description: t('sms.saveSuccessDesc') });
+      setAccountSecret("");
+      notify.success(t("sms.saveSuccess"), { description: t("sms.saveSuccessDesc") });
     } catch (error) {
-      notify.error(t('sms.saveFailed'), {
+      notify.error(t("sms.saveFailed"), {
         description: error instanceof Error ? error.message : undefined,
       });
     } finally {
@@ -71,13 +71,13 @@ export function useSmsIntegrationPanel() {
       if (accountSecret.trim()) {
         const saved = await saveSmsIntegration({ ...form, accountSecret: accountSecret.trim() });
         setForm(saved);
-        setAccountSecret('');
+        setAccountSecret("");
       }
       const config = await testSmsIntegration(testPhone.trim());
       setForm(config);
-      notify.success(t('sms.testSuccess'), { description: t('sms.testSuccessDesc') });
+      notify.success(t("sms.testSuccess"), { description: t("sms.testSuccessDesc") });
     } catch (error) {
-      notify.error(t('sms.testFailed'), {
+      notify.error(t("sms.testFailed"), {
         description: error instanceof Error ? error.message : undefined,
       });
     } finally {

@@ -46,9 +46,7 @@ export function FacultyContactBackgroundSection({
                   {edu.degree && edu.institution && (
                     <div className="text-muted-foreground text-[11px]">{edu.institution}</div>
                   )}
-                  {details && (
-                    <div className="text-muted-foreground/80 text-[11px]">{details}</div>
-                  )}
+                  {details && <div className="text-muted-foreground/80 text-[11px]">{details}</div>}
                 </div>
               );
             })}
@@ -87,7 +85,10 @@ export function FacultyContactBackgroundSection({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {experiences.map((exp, idx) => {
-              const dates = [exp.startDate, exp.isCurrent ? t("contacts.form.present") : exp.endDate]
+              const dates = [
+                exp.startDate,
+                exp.isCurrent ? t("contacts.form.present") : exp.endDate,
+              ]
                 .filter(Boolean)
                 .join(" - ");
               return (

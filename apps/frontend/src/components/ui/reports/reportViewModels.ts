@@ -1,8 +1,12 @@
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
-import type { SubTab } from '@/components/ui/SubTabBar';
-import type { FacultyReportTablesProps, FacultyReportFilters, FacultyWorkloadItem } from './facultyReportTypes';
-import type { StudentReportTablesProps, StudentReportFilters } from './studentReportTypes';
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { SubTab } from "@/components/ui/SubTabBar";
+import type {
+  FacultyReportTablesProps,
+  FacultyReportFilters,
+  FacultyWorkloadItem,
+} from "./facultyReportTypes";
+import type { StudentReportTablesProps, StudentReportFilters } from "./studentReportTypes";
 
 interface ReportListModel {
   t: TranslationFunction;
@@ -16,10 +20,12 @@ interface ReportListModel {
   setReportStatusFilter: (status: string | null) => void;
 }
 
-export interface FacultyReportViewModel extends ReportListModel,
-  Omit<FacultyReportTablesProps, 'workloadRows' | 'onToggleFacultyFilter'> {
-  REPORT_TABS: readonly SubTab<FacultyReportTablesProps['activeSubTab']>[];
-  setActiveSubTab: (tab: FacultyReportTablesProps['activeSubTab']) => void;
+export interface FacultyReportViewModel
+  extends
+    ReportListModel,
+    Omit<FacultyReportTablesProps, "workloadRows" | "onToggleFacultyFilter"> {
+  REPORT_TABS: readonly SubTab<FacultyReportTablesProps["activeSubTab"]>[];
+  setActiveSubTab: (tab: FacultyReportTablesProps["activeSubTab"]) => void;
   filters: FacultyReportFilters;
   rosterExportColumns: ExportColumn[];
   workloadExportColumns: ExportColumn[];
@@ -30,8 +36,8 @@ export interface FacultyReportViewModel extends ReportListModel,
 }
 
 export interface StudentReportViewModel extends ReportListModel, StudentReportTablesProps {
-  REPORT_TABS: readonly SubTab<StudentReportTablesProps['activeSubTab']>[];
-  setActiveSubTab: (tab: StudentReportTablesProps['activeSubTab']) => void;
+  REPORT_TABS: readonly SubTab<StudentReportTablesProps["activeSubTab"]>[];
+  setActiveSubTab: (tab: StudentReportTablesProps["activeSubTab"]) => void;
   filters: StudentReportFilters;
   historyPage: number;
   setHistoryPage: (page: number) => void;

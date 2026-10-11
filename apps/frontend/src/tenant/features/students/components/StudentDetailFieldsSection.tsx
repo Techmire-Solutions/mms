@@ -43,8 +43,8 @@ export function StudentDetailFieldsSection({
 
   const renderField = (field: SortedField): React.ReactNode => {
     if (
-      STUDENT_DETAIL_HERO_FIELD_KEYS.has(field.key)
-      || OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS.has(field.key)
+      STUDENT_DETAIL_HERO_FIELD_KEYS.has(field.key) ||
+      OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS.has(field.key)
     ) {
       return null;
     }

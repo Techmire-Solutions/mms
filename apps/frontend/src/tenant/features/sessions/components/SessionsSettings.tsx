@@ -13,27 +13,18 @@ export interface SessionsSettingsProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const SessionsSettings = (function SessionsSettings({
+export const SessionsSettings = function SessionsSettings({
   onPrefsDirtyChange,
 }: SessionsSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    typeOptions,
-    upd,
-    saved,
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useSessionsSetupPanelState();
+  const { settingsDraft, typeOptions, upd, saved, saving, isPrefsDirty, handleSave } =
+    useSessionsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
-  const unsavedWarning = isPrefsDirty
-    ? t("sessions.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isPrefsDirty ? t("sessions.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -71,6 +62,6 @@ export const SessionsSettings = (function SessionsSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default SessionsSettings;

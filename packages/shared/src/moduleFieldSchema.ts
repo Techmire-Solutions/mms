@@ -51,10 +51,13 @@ export function getSortedFields(
   defaultDefs: readonly ModuleFieldDef[],
   fieldOrder: string[] | undefined,
   fieldsConfig: Record<string, ModuleFieldConfig> | undefined,
-  customFields: ModuleCustomField[] | undefined
+  customFields: ModuleCustomField[] | undefined,
 ): ModuleFieldDef[] {
   const defaultFieldDefinitions = defaultDefs.map((fieldDefinition) => {
-    const fieldConfig = fieldsConfig?.[fieldDefinition.id] || { enabled: true, required: !!fieldDefinition.required };
+    const fieldConfig = fieldsConfig?.[fieldDefinition.id] || {
+      enabled: true,
+      required: !!fieldDefinition.required,
+    };
     return {
       ...fieldDefinition,
       enabled: fieldConfig.enabled,

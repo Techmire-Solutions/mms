@@ -63,21 +63,23 @@ export function createEntityDescriptorFromFieldConfig<T>(
     .flatMap(([tabId, tabFields]) =>
       (tabFields ?? [])
         .filter(
-          (field) =>
-            field.enabled && (options.canViewField ? options.canViewField(field) : true),
+          (field) => field.enabled && (options.canViewField ? options.canViewField(field) : true),
         )
-        .map((field) => ({
-          key: field.key,
-          label: options.resolveLabel(field),
-          labelKey: field.labelKey,
-          type: mapRegistryFieldType(field.type),
-          defaultVisibleInTable: true,
-          tableOrder: (field.order + 1) * 10,
-          cardSlot: "meta",
-          drawerSection: tabId,
-          drawerOrder: field.order,
-          ...(options.fieldOverrides?.[field.key] ?? {}),
-        }) satisfies DescriptorFieldDefinition<T>),
+        .map(
+          (field) =>
+            ({
+              key: field.key,
+              label: options.resolveLabel(field),
+              labelKey: field.labelKey,
+              type: mapRegistryFieldType(field.type),
+              defaultVisibleInTable: true,
+              tableOrder: (field.order + 1) * 10,
+              cardSlot: "meta",
+              drawerSection: tabId,
+              drawerOrder: field.order,
+              ...(options.fieldOverrides?.[field.key] ?? {}),
+            }) satisfies DescriptorFieldDefinition<T>,
+        ),
     )
     .sort((a, b) => (a.drawerOrder ?? 999) - (b.drawerOrder ?? 999));
 

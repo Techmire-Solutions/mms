@@ -6,12 +6,12 @@ import { SessionsListConfirmDialogs } from "@/tenant/features/sessions/component
 const SessionDetail = lazy(() =>
   import("@/tenant/features/sessions/components/SessionDetail").then((m) => ({
     default: m.SessionDetail,
-  }))
+  })),
 );
 const SessionForm = lazy(() =>
   import("@/tenant/features/sessions/components/SessionForm").then((m) => ({
     default: m.SessionForm,
-  }))
+  })),
 );
 import { SessionsCsvImportDialog } from "@/tenant/features/sessions/components/SessionsCsvImportDialog";
 
@@ -107,11 +107,7 @@ export function SessionsDialogLayer({
       />
 
       {importOpen && onCloseImport ? (
-        <SessionsCsvImportDialog
-          open={importOpen}
-          onClose={onCloseImport}
-          canWrite={canWrite}
-        />
+        <SessionsCsvImportDialog open={importOpen} onClose={onCloseImport} canWrite={canWrite} />
       ) : null}
     </>
   );

@@ -42,10 +42,7 @@ const mockStatusBadgeConfig = {
 describe("StudentDetailSiblingsSection Component", () => {
   it("returns null when siblings array is empty", () => {
     const html = renderToStaticMarkup(
-      <StudentDetailSiblingsSection
-        siblings={[]}
-        statusBadgeConfig={mockStatusBadgeConfig}
-      />,
+      <StudentDetailSiblingsSection siblings={[]} statusBadgeConfig={mockStatusBadgeConfig} />,
     );
     expect(html).toBe("");
   });

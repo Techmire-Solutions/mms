@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import { usePlatformWorkspaces } from '@/platform/hooks/usePlatformWorkspaces';
+import React, { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";
 import {
   PlatformDashboardFleetControls,
   type FleetStatusFilter,
-} from '@/platform/components/dashboard/PlatformDashboardFleetControls';
-import { PlatformDashboardFleetTable } from '@/platform/components/dashboard/PlatformDashboardFleetTable';
-import { ConfirmAlertDialog } from '@/components/ui/ConfirmAlertDialog';
-import { notify } from '@/lib/notify';
+} from "@/platform/components/dashboard/PlatformDashboardFleetControls";
+import { PlatformDashboardFleetTable } from "@/platform/components/dashboard/PlatformDashboardFleetTable";
+import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { notify } from "@/lib/notify";
 
 const PAGE_SIZE = 5;
 const REFRESH_MS = 60_000;
@@ -17,13 +17,13 @@ const REFRESH_MS = 60_000;
 export function PlatformDashboardFleet(): React.JSX.Element | null {
   const { t } = useTranslation();
   const { canWorkspaces } = usePlatformPermissions();
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<FleetStatusFilter>('all');
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<FleetStatusFilter>("all");
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -32,7 +32,7 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
     limit: PAGE_SIZE,
     search: search.trim() || undefined,
     status,
-    sortField: 'name',
+    sortField: "name",
     sortDir,
   });
 
@@ -52,7 +52,7 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
   const rows = data ?? [];
   const filteredByDate = rows.filter((row) => {
     if (!dateFrom && !dateTo) return true;
-    const created = row.createdAt?.slice(0, 10) ?? '';
+    const created = row.createdAt?.slice(0, 10) ?? "";
     if (dateFrom && created < dateFrom) return false;
     if (dateTo && created > dateTo) return false;
     return true;
@@ -78,7 +78,9 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
 
   return (
     <div className="space-y-4" data-testid="dashboard-fleet">
-      <h2 className="text-sm font-bold text-foreground text-balance">{t('platform.fleetDirectory')}</h2>
+      <h2 className="text-sm font-bold text-foreground text-balance">
+        {t("platform.fleetDirectory")}
+      </h2>
       <PlatformDashboardFleetControls
         search={search}
         onSearchChange={setSearch}
@@ -102,17 +104,17 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
         onToggleSelectAll={onToggleSelectAll}
         onPageChange={setPage}
         sortDir={sortDir}
-        onToggleSort={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
+        onToggleSort={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
         onRequestExport={() => setExportOpen(true)}
       />
       <ConfirmAlertDialog
         open={exportOpen}
         onOpenChange={setExportOpen}
-        title={t('platform.fleetExportTitle')}
-        description={t('platform.fleetExportHint', { count: selected.size })}
-        confirmLabel={t('platform.workspaces.exportSelected')}
+        title={t("platform.fleetExportTitle")}
+        description={t("platform.fleetExportHint", { count: selected.size })}
+        confirmLabel={t("platform.workspaces.exportSelected")}
         onConfirm={() => {
-          notify.success(t('platform.fleetExportQueued', { count: selected.size }));
+          notify.success(t("platform.fleetExportQueued", { count: selected.size }));
           setSelected(new Set());
         }}
       />

@@ -1,6 +1,6 @@
-import { and, eq, inArray } from 'drizzle-orm';
-import { type Class } from '@mms/shared';
-import { randomUUID } from 'node:crypto';
+import { and, eq, inArray } from "drizzle-orm";
+import { type Class } from "@mms/shared";
+import { randomUUID } from "node:crypto";
 import {
   sessionClasses,
   sessionClassFees,
@@ -12,8 +12,8 @@ import {
   sessionClassRefreshments,
   scholarshipEligibilities,
   sessionClassScholarships,
-} from '../schema.js';
-import { type TenantTransaction } from '../tenant-context.js';
+} from "../schema.js";
+import { type TenantTransaction } from "../tenant-context.js";
 
 type Transaction = TenantTransaction;
 
@@ -27,7 +27,12 @@ export async function persistSessionClassesTx(
   const existingClasses = await tx
     .select({ id: sessionClasses.id })
     .from(sessionClasses)
-    .where(and(eq(sessionClasses.workspaceSubdomain, subdomain), eq(sessionClasses.sessionId, sessionId)));
+    .where(
+      and(
+        eq(sessionClasses.workspaceSubdomain, subdomain),
+        eq(sessionClasses.sessionId, sessionId),
+      ),
+    );
 
   const existingClassIds = existingClasses.map((c) => c.id);
 
@@ -55,18 +60,72 @@ export async function persistSessionClassesTx(
     }
 
     await Promise.all([
-      tx.delete(sessionClassFees).where(and(eq(sessionClassFees.workspaceSubdomain, subdomain), inArray(sessionClassFees.sessionClassId, existingClassIds))),
-      tx.delete(sessionClassSchedules).where(and(eq(sessionClassSchedules.workspaceSubdomain, subdomain), inArray(sessionClassSchedules.sessionClassId, existingClassIds))),
-      tx.delete(sessionClassBudgets).where(and(eq(sessionClassBudgets.workspaceSubdomain, subdomain), inArray(sessionClassBudgets.sessionClassId, existingClassIds))),
-      tx.delete(sessionClassDiscounts).where(and(eq(sessionClassDiscounts.workspaceSubdomain, subdomain), inArray(sessionClassDiscounts.sessionClassId, existingClassIds))),
-      tx.delete(sessionClassTimetables).where(and(eq(sessionClassTimetables.workspaceSubdomain, subdomain), inArray(sessionClassTimetables.sessionClassId, existingClassIds))),
-      tx.delete(sessionClassRefreshments).where(and(eq(sessionClassRefreshments.workspaceSubdomain, subdomain), inArray(sessionClassRefreshments.sessionClassId, existingClassIds))),
-      tx.delete(sessionClassScholarships).where(and(eq(sessionClassScholarships.workspaceSubdomain, subdomain), inArray(sessionClassScholarships.sessionClassId, existingClassIds))),
+      tx
+        .delete(sessionClassFees)
+        .where(
+          and(
+            eq(sessionClassFees.workspaceSubdomain, subdomain),
+            inArray(sessionClassFees.sessionClassId, existingClassIds),
+          ),
+        ),
+      tx
+        .delete(sessionClassSchedules)
+        .where(
+          and(
+            eq(sessionClassSchedules.workspaceSubdomain, subdomain),
+            inArray(sessionClassSchedules.sessionClassId, existingClassIds),
+          ),
+        ),
+      tx
+        .delete(sessionClassBudgets)
+        .where(
+          and(
+            eq(sessionClassBudgets.workspaceSubdomain, subdomain),
+            inArray(sessionClassBudgets.sessionClassId, existingClassIds),
+          ),
+        ),
+      tx
+        .delete(sessionClassDiscounts)
+        .where(
+          and(
+            eq(sessionClassDiscounts.workspaceSubdomain, subdomain),
+            inArray(sessionClassDiscounts.sessionClassId, existingClassIds),
+          ),
+        ),
+      tx
+        .delete(sessionClassTimetables)
+        .where(
+          and(
+            eq(sessionClassTimetables.workspaceSubdomain, subdomain),
+            inArray(sessionClassTimetables.sessionClassId, existingClassIds),
+          ),
+        ),
+      tx
+        .delete(sessionClassRefreshments)
+        .where(
+          and(
+            eq(sessionClassRefreshments.workspaceSubdomain, subdomain),
+            inArray(sessionClassRefreshments.sessionClassId, existingClassIds),
+          ),
+        ),
+      tx
+        .delete(sessionClassScholarships)
+        .where(
+          and(
+            eq(sessionClassScholarships.workspaceSubdomain, subdomain),
+            inArray(sessionClassScholarships.sessionClassId, existingClassIds),
+          ),
+        ),
     ]);
 
     await tx
       .delete(sessionClasses)
-      .where(and(eq(sessionClasses.workspaceSubdomain, subdomain), eq(sessionClasses.sessionId, sessionId)));
+      .where(
+        and(
+          eq(sessionClasses.workspaceSubdomain, subdomain),
+          eq(sessionClasses.sessionId, sessionId),
+        ),
+      );
   }
 
   // 2. Insert new classes and their sub-graphs
@@ -91,17 +150,17 @@ export async function persistSessionClassesTx(
       workspaceSubdomain: subdomain,
       sessionId,
       name: c.name,
-      gender: c.gender || 'mixed',
-      ageCalculationDate: c.ageCalculationDate || '',
+      gender: c.gender || "mixed",
+      ageCalculationDate: c.ageCalculationDate || "",
       ageMin: c.minAge ?? 4,
       ageMax: c.maxAge ?? 25,
       capacity: c.maxStudents ?? 30,
       enrolled: c.enrolled ?? 0,
-      enrollmentDeadline: c.enrollmentDeadline || '',
-      status: c.status || 'active',
+      enrollmentDeadline: c.enrollmentDeadline || "",
+      status: c.status || "active",
       facultyId: c.facultyId?.trim() ? c.facultyId.trim() : null,
-      facultyName: c.facultyName || '',
-      room: c.room || '',
+      facultyName: c.facultyName || "",
+      room: c.room || "",
       sortOrder: idx,
     });
 
@@ -147,7 +206,7 @@ export async function persistSessionClassesTx(
         startDate: d.startDate || null,
         endDate: d.endDate || null,
         eligibilityCriteria: d.eligibilityCriteria || {},
-        status: d.status || 'active',
+        status: d.status || "active",
       });
     }
 
@@ -181,7 +240,7 @@ export async function persistSessionClassesTx(
           endTime: p.endTime,
           subject: p.subject,
           facultyId: p.facultyId?.trim() ? p.facultyId.trim() : null,
-          facultyName: p.facultyName || '',
+          facultyName: p.facultyName || "",
         });
       }
     }
@@ -227,7 +286,7 @@ export async function persistSessionClassesTx(
         sessionClassId: classId,
         scholarshipEligibilityId: eligibilityId || null,
         percentage: String(sc.percentage ?? 0),
-        expiryDate: sc.expiryDate || '',
+        expiryDate: sc.expiryDate || "",
       });
     }
   }
@@ -237,8 +296,10 @@ export async function persistSessionClassesTx(
   if (scheduleInserts.length > 0) await tx.insert(sessionClassSchedules).values(scheduleInserts);
   if (budgetInserts.length > 0) await tx.insert(sessionClassBudgets).values(budgetInserts);
   if (discountInserts.length > 0) await tx.insert(sessionClassDiscounts).values(discountInserts);
-  if (refreshmentInserts.length > 0) await tx.insert(sessionClassRefreshments).values(refreshmentInserts);
+  if (refreshmentInserts.length > 0)
+    await tx.insert(sessionClassRefreshments).values(refreshmentInserts);
   if (timetableInserts.length > 0) await tx.insert(sessionClassTimetables).values(timetableInserts);
   if (periodInserts.length > 0) await tx.insert(sessionClassTimetablePeriods).values(periodInserts);
-  if (scholarshipInserts.length > 0) await tx.insert(sessionClassScholarships).values(scholarshipInserts);
+  if (scholarshipInserts.length > 0)
+    await tx.insert(sessionClassScholarships).values(scholarshipInserts);
 }

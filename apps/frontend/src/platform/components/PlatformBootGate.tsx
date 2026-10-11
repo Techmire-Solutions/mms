@@ -1,11 +1,11 @@
-import React, { Suspense } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import type { PlatformAdminPermissionKey } from '@mms/shared';
-import { platformUserCan } from '@mms/shared';
-import { usePlatformAuth } from '@/platform/lib/PlatformAuthContext';
-import { ROUTES } from '@/lib/config/routes';
-import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
-import ApexPageNotFound from '@/platform/components/ApexPageNotFound';
+import React, { Suspense } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import type { PlatformAdminPermissionKey } from "@mms/shared";
+import { platformUserCan } from "@mms/shared";
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { ROUTES } from "@/lib/config/routes";
+import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
+import ApexPageNotFound from "@/platform/components/ApexPageNotFound";
 
 interface PlatformBootGateProps {
   /** When true, unauthenticated users are redirected to apex home. */
@@ -23,12 +23,8 @@ export default function PlatformBootGate({
   requireSuperUser = false,
   requirePermission,
 }: PlatformBootGateProps): React.JSX.Element {
-  const {
-    platformUser,
-    isPlatformAuthenticated,
-    isCheckingPlatformAuth,
-    platformAuthChecked,
-  } = usePlatformAuth();
+  const { platformUser, isPlatformAuthenticated, isCheckingPlatformAuth, platformAuthChecked } =
+    usePlatformAuth();
 
   if (!platformAuthChecked || isCheckingPlatformAuth) {
     return <RouteStatusFallback fullScreen />;
@@ -38,7 +34,7 @@ export default function PlatformBootGate({
     return <Navigate to={ROUTES.platformLogin} replace />;
   }
 
-  if (requireSuperUser && platformUser?.role !== 'super_user') {
+  if (requireSuperUser && platformUser?.role !== "super_user") {
     return <Navigate to={ROUTES.platformDashboard} replace />;
   }
 
@@ -56,7 +52,8 @@ export default function PlatformBootGate({
 /** Catch-all: unauthenticated users on unknown URLs return to sign-in. */
 export function PlatformFallbackRoute(): React.JSX.Element {
   const location = useLocation();
-  const { isPlatformAuthenticated, isCheckingPlatformAuth, platformAuthChecked } = usePlatformAuth();
+  const { isPlatformAuthenticated, isCheckingPlatformAuth, platformAuthChecked } =
+    usePlatformAuth();
 
   if (!platformAuthChecked || isCheckingPlatformAuth) {
     return <RouteStatusFallback fullScreen />;

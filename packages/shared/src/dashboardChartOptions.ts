@@ -11,13 +11,7 @@ export type HasanatChartType = "pie" | "bar" | "radar";
 
 /** Color-token values selectable across dashboard charts. */
 export type ChartColorOption =
-  | "emerald"
-  | "blue"
-  | "violet"
-  | "amber"
-  | "red"
-  | "semantic"
-  | "mixed";
+  "emerald" | "blue" | "violet" | "amber" | "red" | "semantic" | "mixed";
 
 export interface ChartOption<V extends string> {
   value: V;

@@ -14,7 +14,12 @@ describe("DensityToggle Component", () => {
   it("renders a radiogroup with aria-label", () => {
     const html = renderToStaticMarkup(
       <TooltipProvider>
-        <DensityToggle density="standard" onChange={vi.fn()} ariaLabel="Row density" labels={LABELS} />
+        <DensityToggle
+          density="standard"
+          onChange={vi.fn()}
+          ariaLabel="Row density"
+          labels={LABELS}
+        />
       </TooltipProvider>,
     );
 
@@ -27,7 +32,12 @@ describe("DensityToggle Component", () => {
     (activeDensity) => {
       const html = renderToStaticMarkup(
         <TooltipProvider>
-          <DensityToggle density={activeDensity} onChange={vi.fn()} ariaLabel="Row density" labels={LABELS} />
+          <DensityToggle
+            density={activeDensity}
+            onChange={vi.fn()}
+            ariaLabel="Row density"
+            labels={LABELS}
+          />
         </TooltipProvider>,
       );
 

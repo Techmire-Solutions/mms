@@ -13,7 +13,10 @@ export interface StudentsBulkEnrollModalProps {
   open: boolean;
   onClose: () => void;
   selectedCount: number;
-  onConfirm: (payload: { sessionIds: string[]; mode: StudentsBulkEnrollBody["mode"] }) => Promise<void> | void;
+  onConfirm: (payload: {
+    sessionIds: string[];
+    mode: StudentsBulkEnrollBody["mode"];
+  }) => Promise<void> | void;
   isPending?: boolean;
 }
 
@@ -140,4 +143,3 @@ export function StudentsBulkEnrollModal({
     </FormModal>
   );
 }
-

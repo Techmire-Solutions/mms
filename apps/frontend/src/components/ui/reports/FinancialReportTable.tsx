@@ -6,25 +6,21 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
 
 interface FinancialInvoiceTableProps {
   invoices: Invoice[];
 }
 
-export const FinancialInvoiceTable = (function FinancialInvoiceTable({ invoices }: FinancialInvoiceTableProps): React.JSX.Element {
+export const FinancialInvoiceTable = function FinancialInvoiceTable({
+  invoices,
+}: FinancialInvoiceTableProps): React.JSX.Element {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
   const statusConfig = (() => ({
@@ -56,16 +52,17 @@ export const FinancialInvoiceTable = (function FinancialInvoiceTable({ invoices 
     { key: "status", header: t("finance.columns.status") },
   ])() as ExportColumn[];
 
-  const exportRows = (() => invoices.map((inv) => ({
-    invoice: inv.id,
-    student: inv.studentName,
-    class: inv.class,
-    baseFee: formatCurrency(inv.baseFee),
-    discount: inv.discountAmt > 0 ? `-${formatCurrency(inv.discountAmt)}` : "—",
-    final: formatCurrency(inv.finalAmt),
-    dueDate: formatDate(inv.dueDate),
-    status: statusConfig[inv.status as keyof typeof statusConfig]?.label ?? inv.status,
-  })))();
+  const exportRows = (() =>
+    invoices.map((inv) => ({
+      invoice: inv.id,
+      student: inv.studentName,
+      class: inv.class,
+      baseFee: formatCurrency(inv.baseFee),
+      discount: inv.discountAmt > 0 ? `-${formatCurrency(inv.discountAmt)}` : "—",
+      final: formatCurrency(inv.finalAmt),
+      dueDate: formatDate(inv.dueDate),
+      status: statusConfig[inv.status as keyof typeof statusConfig]?.label ?? inv.status,
+    })))();
 
   const [page, setPage] = useState(1);
   const pageSize = 15;
@@ -93,13 +90,21 @@ export const FinancialInvoiceTable = (function FinancialInvoiceTable({ invoices 
           <article key={invoice.id} className={`${WORK_SURFACE_INNER} space-y-3 p-3`}>
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div>
-                <h4 className="truncate text-sm font-semibold text-foreground">{invoice.studentName}</h4>
-                <p className="text-xs text-muted-foreground">{invoice.id} • {invoice.class}</p>
+                <h4 className="truncate text-sm font-semibold text-foreground">
+                  {invoice.studentName}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {invoice.id} • {invoice.class}
+                </p>
               </div>
               <StatusBadge status={invoice.status} config={statusConfig} />
             </div>
             <StatGrid>
-              <StatRow className="min-w-0" label={t("finance.columns.baseFee")} value={formatCurrency(invoice.baseFee)} />
+              <StatRow
+                className="min-w-0"
+                label={t("finance.columns.baseFee")}
+                value={formatCurrency(invoice.baseFee)}
+              />
               {invoice.discountAmt > 0 ? (
                 <StatRow
                   className="min-w-0"
@@ -114,7 +119,11 @@ export const FinancialInvoiceTable = (function FinancialInvoiceTable({ invoices 
                 value={formatCurrency(invoice.finalAmt)}
                 ddClassName="font-semibold text-foreground"
               />
-              <StatRow className="min-w-0" label={t("finance.columns.dueDate")} value={formatDate(invoice.dueDate)} />
+              <StatRow
+                className="min-w-0"
+                label={t("finance.columns.dueDate")}
+                value={formatDate(invoice.dueDate)}
+              />
             </StatGrid>
           </article>
         ))}
@@ -125,7 +134,12 @@ export const FinancialInvoiceTable = (function FinancialInvoiceTable({ invoices 
           <TableHeader>
             <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
               {headers.map((header) => (
-                <ModuleTableHeaderCell key={header.key} columnKey={header.key} variant={header.variant} className="px-3 py-2.5">
+                <ModuleTableHeaderCell
+                  key={header.key}
+                  columnKey={header.key}
+                  variant={header.variant}
+                  className="px-3 py-2.5"
+                >
                   {header.label}
                 </ModuleTableHeaderCell>
               ))}
@@ -134,15 +148,29 @@ export const FinancialInvoiceTable = (function FinancialInvoiceTable({ invoices 
           <TableBody className="divide-y divide-border/50">
             {pagedInvoices.map((invoice) => (
               <TableRow key={invoice.id} className="hover:bg-muted/20 transition-colors">
-                <TableCell className="px-3 py-2.5 font-medium text-foreground">{invoice.id}</TableCell>
-                <TableCell className="px-3 py-2.5 font-medium text-foreground">{invoice.studentName}</TableCell>
+                <TableCell className="px-3 py-2.5 font-medium text-foreground">
+                  {invoice.id}
+                </TableCell>
+                <TableCell className="px-3 py-2.5 font-medium text-foreground">
+                  {invoice.studentName}
+                </TableCell>
                 <TableCell className="px-3 py-2.5 text-muted-foreground">{invoice.class}</TableCell>
-                <TableCell variant="currency" noWrap className="px-3 py-2.5 text-muted-foreground">{formatCurrency(invoice.baseFee)}</TableCell>
+                <TableCell variant="currency" noWrap className="px-3 py-2.5 text-muted-foreground">
+                  {formatCurrency(invoice.baseFee)}
+                </TableCell>
                 <TableCell variant="currency" noWrap className="px-3 py-2.5 text-destructive">
                   {invoice.discountAmt > 0 ? `-${formatCurrency(invoice.discountAmt)}` : "—"}
                 </TableCell>
-                <TableCell variant="currency" noWrap className="px-3 py-2.5 font-semibold text-foreground">{formatCurrency(invoice.finalAmt)}</TableCell>
-                <TableCell noWrap className="px-3 py-2.5 text-muted-foreground">{formatDate(invoice.dueDate)}</TableCell>
+                <TableCell
+                  variant="currency"
+                  noWrap
+                  className="px-3 py-2.5 font-semibold text-foreground"
+                >
+                  {formatCurrency(invoice.finalAmt)}
+                </TableCell>
+                <TableCell noWrap className="px-3 py-2.5 text-muted-foreground">
+                  {formatDate(invoice.dueDate)}
+                </TableCell>
                 <TableCell variant="badge" noWrap className="px-3 py-2.5">
                   <StatusBadge status={invoice.status} config={statusConfig} />
                 </TableCell>
@@ -153,4 +181,4 @@ export const FinancialInvoiceTable = (function FinancialInvoiceTable({ invoices 
       </div>
     </ReportDataGridContainer>
   );
-});
+};

@@ -12,8 +12,9 @@ export const SMS_MULTI_SEGMENT_WARN = 2;
 export const SMS_HIGH_SEGMENT_WARN = 3;
 
 /** GSM 7-bit basic character set regex */
-const GSM_7BIT_BASIC_REGEX = /^[A-Za-z0-9 @£$¥èéùìòÇØøÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ!"#%&'()*+,\-./:;<=>?¡¿\r\n\t]*$/;
-const GSM_7BIT_EXTENSION = '{}[]~^|€';
+const GSM_7BIT_BASIC_REGEX =
+  /^[A-Za-z0-9 @£$¥èéùìòÇØøÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ!"#%&'()*+,\-./:;<=>?¡¿\r\n\t]*$/;
+const GSM_7BIT_EXTENSION = "{}[]~^|€";
 
 function isGsm7Character(ch: string): boolean {
   if (GSM_7BIT_EXTENSION.includes(ch)) return true;
@@ -53,7 +54,7 @@ export function calculateSmsSegments(text: string): SmsSegmentResult {
   }
 
   // A string is GSM 7-bit if all characters without extension chars match the basic set
-  const nonExtText = text.replace(/[{}[\]~^|€]/g, '');
+  const nonExtText = text.replace(/[{}[\]~^|€]/g, "");
   const isUnicode = !GSM_7BIT_BASIC_REGEX.test(nonExtText);
 
   if (isUnicode) {
@@ -81,7 +82,7 @@ export function calculateSmsSegments(text: string): SmsSegmentResult {
     // GSM 7-bit encoding calculation (extension characters count as 2)
     let gsmCharLength = 0;
     for (const ch of text) {
-      if ('{}[]~^|€'.includes(ch)) {
+      if ("{}[]~^|€".includes(ch)) {
         gsmCharLength += 2;
       } else {
         gsmCharLength += 1;
@@ -113,16 +114,15 @@ export function calculateSmsSegments(text: string): SmsSegmentResult {
  * Builds a `sms:` URI that opens the device Messages app with recipient and body pre-filled.
  * The user must tap Send — the app cannot send SMS silently.
  */
-export function buildDeviceSmsUri(phone: string, body = ''): string | null {
+export function buildDeviceSmsUri(phone: string, body = ""): string | null {
   const trimmed = phone.trim();
   if (!trimmed) return null;
 
-  const normalized = trimmed.replace(/[^\d+]/g, '');
-  if (normalized.replace(/\D/g, '').length < 8) return null;
+  const normalized = trimmed.replace(/[^\d+]/g, "");
+  if (normalized.replace(/\D/g, "").length < 8) return null;
 
-  const address = normalized.startsWith('+') ? normalized : normalized;
+  const address = normalized.startsWith("+") ? normalized : normalized;
   if (!body.trim()) return `sms:${address}`;
 
   return `sms:${address}?body=${encodeURIComponent(body.trim())}`;
 }
-

@@ -1,1 +1,1 @@
-export * from './schemas/platform.dto.js';
+export * from "./schemas/platform.dto.js";

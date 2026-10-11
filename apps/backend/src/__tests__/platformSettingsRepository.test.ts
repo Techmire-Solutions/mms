@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockLimit = vi.fn();
 const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
@@ -19,11 +19,11 @@ const mockDb = {
   insert: mockInsert,
 };
 
-vi.mock('../db/dbClient.js', () => ({
+vi.mock("../db/dbClient.js", () => ({
   getDb: () => mockDb,
 }));
 
-vi.mock('../db/dbConnection.js', () => ({
+vi.mock("../db/dbConnection.js", () => ({
   activeDb: () => mockDb,
   getRootDb: () => mockDb,
   getReadReplicaDb: () => mockDb,
@@ -38,9 +38,9 @@ import {
   insertPlatformSettingsDefaultRow,
   upsertPlatformSettingsRow,
   GLOBAL_SETTINGS_ID,
-} from '../db/repositories/platformSettingsRepository.js';
+} from "../db/repositories/platformSettingsRepository.js";
 
-describe('platformSettingsRepository', () => {
+describe("platformSettingsRepository", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelect.mockReturnValue({ from: mockFrom });
@@ -53,15 +53,15 @@ describe('platformSettingsRepository', () => {
     });
   });
 
-  describe('findPlatformSettingsRow', () => {
-    it('returns formatted settings when row exists', async () => {
-      const now = new Date('2026-01-01T00:00:00.000Z');
+  describe("findPlatformSettingsRow", () => {
+    it("returns formatted settings when row exists", async () => {
+      const now = new Date("2026-01-01T00:00:00.000Z");
       mockLimit.mockResolvedValue([
         {
           id: GLOBAL_SETTINGS_ID,
           syncTlsOnCreate: true,
-          tlsExtraSans: '*.madrasa.local',
-          certbotEmail: 'admin@madrasa.local',
+          tlsExtraSans: "*.madrasa.local",
+          certbotEmail: "admin@madrasa.local",
           updatedAt: now,
         },
       ]);
@@ -70,70 +70,70 @@ describe('platformSettingsRepository', () => {
       expect(result).toEqual({
         id: GLOBAL_SETTINGS_ID,
         syncTlsOnCreate: true,
-        tlsExtraSans: '*.madrasa.local',
-        certbotEmail: 'admin@madrasa.local',
+        tlsExtraSans: "*.madrasa.local",
+        certbotEmail: "admin@madrasa.local",
         updatedAt: now.toISOString(),
       });
     });
 
-    it('returns null when row does not exist', async () => {
+    it("returns null when row does not exist", async () => {
       mockLimit.mockResolvedValue([]);
       const result = await findPlatformSettingsRow();
       expect(result).toBeNull();
     });
   });
 
-  describe('insertPlatformSettingsDefaultRow', () => {
-    it('inserts and returns formatted default row', async () => {
-      const now = new Date('2026-01-01T00:00:00.000Z');
+  describe("insertPlatformSettingsDefaultRow", () => {
+    it("inserts and returns formatted default row", async () => {
+      const now = new Date("2026-01-01T00:00:00.000Z");
       mockReturning.mockResolvedValue([
         {
           id: GLOBAL_SETTINGS_ID,
           syncTlsOnCreate: false,
-          tlsExtraSans: '',
-          certbotEmail: '',
+          tlsExtraSans: "",
+          certbotEmail: "",
           updatedAt: now,
         },
       ]);
 
       const result = await insertPlatformSettingsDefaultRow({
         syncTlsOnCreate: false,
-        tlsExtraSans: '',
-        certbotEmail: '',
+        tlsExtraSans: "",
+        certbotEmail: "",
       });
 
       expect(result).toEqual({
         id: GLOBAL_SETTINGS_ID,
         syncTlsOnCreate: false,
-        tlsExtraSans: '',
-        certbotEmail: '',
+        tlsExtraSans: "",
+        certbotEmail: "",
         updatedAt: now.toISOString(),
       });
     });
   });
 
-  describe('upsertPlatformSettingsRow', () => {
-    it('persists and returns updated platform settings', async () => {
+  describe("upsertPlatformSettingsRow", () => {
+    it("persists and returns updated platform settings", async () => {
       const current = {
         id: GLOBAL_SETTINGS_ID,
         syncTlsOnCreate: true,
-        tlsExtraSans: '*.old.local',
-        certbotEmail: 'old@madrasa.local',
+        tlsExtraSans: "*.old.local",
+        certbotEmail: "old@madrasa.local",
         emailNotifications: true,
         smsNotifications: false,
-        updatedAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: "2026-01-01T00:00:00.000Z",
       };
 
       const result = await upsertPlatformSettingsRow(
         {
-          certbotEmail: 'new@madrasa.local',
-          tlsExtraSans: '*.new.local',
+          certbotEmail: "new@madrasa.local",
+          tlsExtraSans: "*.new.local",
         },
         current,
       );
 
-      expect(result.certbotEmail).toBe('new@madrasa.local');
-      expect(result.tlsExtraSans).toBe('*.new.local');
+      expect(result.certbotEmail).toBe("new@madrasa.local");
+      expect(result.tlsExtraSans).toBe("*.new.local");
       expect(result.syncTlsOnCreate).toBe(true);
       expect(mockInsertValues).toHaveBeenCalled();
       expect(mockOnConflictDoUpdate).toHaveBeenCalled();

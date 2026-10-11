@@ -10,14 +10,33 @@ import {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { useSaveVoucherNumbering, useVoucherNumbering } from "@/tenant/features/accounting/hooks/useVoucherNumbering";
+import {
+  useSaveVoucherNumbering,
+  useVoucherNumbering,
+} from "@/tenant/features/accounting/hooks/useVoucherNumbering";
 
 const isDelimiter = (value: string): value is VoucherNumberingUpdate["delimiter"] =>
   (VOUCHER_DELIMITERS as readonly string[]).includes(value);
 
 function pickFormat(source: VoucherNumbering | VoucherNumberingUpdate): VoucherNumberingUpdate {
-  const { autoGenerate, prefix, delimiter, yearFormat, sequenceDigits, startingSequence, rolloverPolicy } = source;
-  return { autoGenerate, prefix, delimiter, yearFormat, sequenceDigits, startingSequence, rolloverPolicy };
+  const {
+    autoGenerate,
+    prefix,
+    delimiter,
+    yearFormat,
+    sequenceDigits,
+    startingSequence,
+    rolloverPolicy,
+  } = source;
+  return {
+    autoGenerate,
+    prefix,
+    delimiter,
+    yearFormat,
+    sequenceDigits,
+    startingSequence,
+    rolloverPolicy,
+  };
 }
 
 /** Draft, validation and save for the Setup → journal voucher numbering card. */
@@ -25,23 +44,35 @@ export function useVoucherNumberingSettings() {
   const { t } = useTranslation();
   const { data: loaded } = useVoucherNumbering();
   const save = useSaveVoucherNumbering();
-  const [draft, setDraft] = useState<VoucherNumberingUpdate>(() => (loaded ? pickFormat(loaded) : DEFAULT_VOUCHER_NUMBERING));
+  const [draft, setDraft] = useState<VoucherNumberingUpdate>(() =>
+    loaded ? pickFormat(loaded) : DEFAULT_VOUCHER_NUMBERING,
+  );
 
   useEffect(() => {
     if (loaded) setDraft(pickFormat(loaded));
   }, [loaded]);
 
   const stored = loaded ? pickFormat(loaded) : null;
-  const dirty = !!stored && (Object.keys(draft) as (keyof VoucherNumberingUpdate)[]).some((key) => draft[key] !== stored[key]);
+  const dirty =
+    !!stored &&
+    (Object.keys(draft) as (keyof VoucherNumberingUpdate)[]).some(
+      (key) => draft[key] !== stored[key],
+    );
   const prefixValid = VOUCHER_PREFIX_PATTERN.test(draft.prefix);
   // A changed format or period rule starts a different counter, seeded server-side on first use.
-  const sameCounter = !!stored && voucherFormatKey(stored) === voucherFormatKey(draft) && stored.rolloverPolicy === draft.rolloverPolicy;
+  const sameCounter =
+    !!stored &&
+    voucherFormatKey(stored) === voucherFormatKey(draft) &&
+    stored.rolloverPolicy === draft.rolloverPolicy;
 
-  const cardConfig = useMemo<SequenceNumberingConfig>(() => ({
-    ...draft,
-    currentSequence: sameCounter && loaded ? loaded.currentSequence : 0,
-    ...(loaded && loaded.periodYear > 0 ? { lastRolloverYear: loaded.periodYear } : {}),
-  }), [draft, loaded, sameCounter]);
+  const cardConfig = useMemo<SequenceNumberingConfig>(
+    () => ({
+      ...draft,
+      currentSequence: sameCounter && loaded ? loaded.currentSequence : 0,
+      ...(loaded && loaded.periodYear > 0 ? { lastRolloverYear: loaded.periodYear } : {}),
+    }),
+    [draft, loaded, sameCounter],
+  );
 
   /** The shared card edits a looser shape; keep the stored format valid as it changes. */
   const handleCardChange = (next: SequenceNumberingConfig) => {

@@ -96,4 +96,3 @@ export default function PinnedWidgets({ category }: { category: string }): React
     </div>
   );
 }
-

@@ -36,7 +36,7 @@ describe("UserCardHeader", () => {
         showSelect={true}
         onToggleSelect={vi.fn()}
         onView={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Admin User");
@@ -54,7 +54,7 @@ describe("UserCardHeader", () => {
         onToggleSelect={vi.fn()}
         onView={vi.fn()}
         isColumnVisible={(key) => key === "email"}
-      />
+      />,
     );
 
     expect(html).toContain("Admin User");
@@ -70,7 +70,7 @@ describe("UserCardHeader", () => {
         onToggleSelect={vi.fn()}
         onView={vi.fn()}
         isColumnVisible={(key) => key !== "email"}
-      />
+      />,
     );
 
     expect(html).toContain("Admin User");
@@ -85,7 +85,7 @@ describe("UserCardHeader", () => {
         showSelect={false}
         onToggleSelect={vi.fn()}
         onView={vi.fn()}
-      />
+      />,
     );
 
     expect(html).not.toContain('role="checkbox"');
@@ -99,7 +99,7 @@ describe("UserCardHeader", () => {
         showSelect={true}
         onToggleSelect={vi.fn()}
         onView={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain('aria-checked="true"');
@@ -118,10 +118,12 @@ describe("UserCardHeader", () => {
         showSelect={true}
         onToggleSelect={vi.fn()}
         onView={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Admin User");
-    expect(html).not.toContain('class="mt-0.5 text-xs font-semibold text-muted-foreground truncate"');
+    expect(html).not.toContain(
+      'class="mt-0.5 text-xs font-semibold text-muted-foreground truncate"',
+    );
   });
 });

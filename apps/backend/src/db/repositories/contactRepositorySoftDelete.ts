@@ -1,8 +1,8 @@
-import { and, eq, inArray, isNull, isNotNull } from 'drizzle-orm';
-import { dedupeTrimmedIds } from '@mms/shared';
-import { contacts } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
+import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
+import { dedupeTrimmedIds } from "@mms/shared";
+import { contacts } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
 export async function bulkSoftDeleteContactsSql(
   tenant: string,
@@ -37,7 +37,7 @@ export async function bulkSoftDeleteContactsSql(
       failed: uniqueIds.length - updated.length,
     };
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'contacts' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "contacts" });
   return res;
 }
 
@@ -75,6 +75,6 @@ export async function bulkRestoreContactsSql(
       failed: uniqueIds.length - updated.length,
     };
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'contacts' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "contacts" });
   return res;
 }

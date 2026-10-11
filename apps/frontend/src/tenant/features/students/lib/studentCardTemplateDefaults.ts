@@ -54,7 +54,12 @@ export function getDefaultStudentCardTemplate(branding?: BrandingInfo): StudentC
         y: 44,
         w: 58,
         h: 68,
-        style: { borderWidth: 1, borderColor: "rgb(203, 213, 225)", borderRadius: 6, backgroundColor: "rgb(248, 250, 252)" },
+        style: {
+          borderWidth: 1,
+          borderColor: "rgb(203, 213, 225)",
+          borderRadius: 6,
+          backgroundColor: "rgb(248, 250, 252)",
+        },
       },
       {
         id: "student_name",

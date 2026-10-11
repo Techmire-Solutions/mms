@@ -1,11 +1,11 @@
-import type { Permission } from './permissions.js';
-import { z } from 'zod';
-import { isoDateSchema } from './isoDateSchema.js';
+import type { Permission } from "./permissions.js";
+import { z } from "zod";
+import { isoDateSchema } from "./isoDateSchema.js";
 
-export const ENROLLMENT_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed'] as const;
+export const ENROLLMENT_STATUSES = ["pending", "confirmed", "cancelled", "completed"] as const;
 export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 
-export const ENROLLMENT_PAYMENT_STATUSES = ['paid', 'pending', 'none'] as const;
+export const ENROLLMENT_PAYMENT_STATUSES = ["paid", "pending", "none"] as const;
 export type EnrollmentPaymentStatus = (typeof ENROLLMENT_PAYMENT_STATUSES)[number];
 
 export const enrollmentTimelineItemSchema = z
@@ -23,22 +23,22 @@ export const enrollmentRecordSchema = z
   .object({
     id: z.string(),
     studentId: z.string(),
-    studentName: z.string().optional().default(''),
+    studentName: z.string().optional().default(""),
     sessionId: z.string(),
-    sessionName: z.string().optional().default(''),
+    sessionName: z.string().optional().default(""),
     classId: z.string(),
-    className: z.string().optional().default(''),
+    className: z.string().optional().default(""),
     enrolledDate: z.string(),
     baseFee: z.number().default(0),
-    discountType: z.string().optional().default('none'),
-    discountLabel: z.string().optional().default(''),
+    discountType: z.string().optional().default("none"),
+    discountLabel: z.string().optional().default(""),
     discountPct: z.number().default(0),
     discountAmt: z.number().default(0),
     finalFee: z.number().default(0),
-    status: z.enum(ENROLLMENT_STATUSES).default('pending'),
+    status: z.enum(ENROLLMENT_STATUSES).default("pending"),
     invoiceId: z.string().nullable().optional(),
-    paymentStatus: z.enum(ENROLLMENT_PAYMENT_STATUSES).default('none'),
-    notes: z.string().optional().default(''),
+    paymentStatus: z.enum(ENROLLMENT_PAYMENT_STATUSES).default("none"),
+    notes: z.string().optional().default(""),
     timeline: z.array(enrollmentTimelineItemSchema).optional().default([]),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
@@ -54,23 +54,23 @@ export const enrollmentRecordSchema = z
 export const enrollmentRecordInsertSchema = z
   .object({
     id: z.string().optional(),
-    studentId: z.string().min(1, 'Student is required'),
-    studentName: z.string().optional().default(''),
-    sessionId: z.string().min(1, 'Session is required'),
-    sessionName: z.string().optional().default(''),
-    classId: z.string().min(1, 'Class is required'),
-    className: z.string().optional().default(''),
+    studentId: z.string().min(1, "Student is required"),
+    studentName: z.string().optional().default(""),
+    sessionId: z.string().min(1, "Session is required"),
+    sessionName: z.string().optional().default(""),
+    classId: z.string().min(1, "Class is required"),
+    className: z.string().optional().default(""),
     enrolledDate: isoDateSchema,
     baseFee: z.number().nonnegative().optional().default(0),
-    discountType: z.string().optional().default('none'),
-    discountLabel: z.string().optional().default(''),
+    discountType: z.string().optional().default("none"),
+    discountLabel: z.string().optional().default(""),
     discountPct: z.number().min(0).max(100).optional().default(0),
     discountAmt: z.number().nonnegative().optional().default(0),
     finalFee: z.number().nonnegative().optional().default(0),
-    status: z.enum(ENROLLMENT_STATUSES).optional().default('pending'),
+    status: z.enum(ENROLLMENT_STATUSES).optional().default("pending"),
     invoiceId: z.string().nullable().optional(),
-    paymentStatus: z.enum(ENROLLMENT_PAYMENT_STATUSES).optional().default('none'),
-    notes: z.string().optional().default(''),
+    paymentStatus: z.enum(ENROLLMENT_PAYMENT_STATUSES).optional().default("none"),
+    notes: z.string().optional().default(""),
     timeline: z.array(enrollmentTimelineItemSchema).optional().default([]),
   })
   .strict();
@@ -89,36 +89,38 @@ export function isEnrollmentDeleted(enrollment: { deletedAt?: string | null }): 
 }
 
 /** Active directory rows — excludes soft-deleted records from Work by default. */
-export function filterActiveEnrollments<T extends { deletedAt?: string | null }>(enrollments: T[]): T[] {
+export function filterActiveEnrollments<T extends { deletedAt?: string | null }>(
+  enrollments: T[],
+): T[] {
   return enrollments.filter((enrollment) => !isEnrollmentDeleted(enrollment));
 }
 
 /** Enrollments module manifest — aligns with globle1 universal module architecture. */
 
 export const ENROLLMENTS_MODULE_MANIFEST = {
-  moduleId: 'enrollments',
-  entityType: 'Enrollment',
-  collectionKey: 'enrollments',
-  settingsObjectKey: 'enrollments_settings',
-  columnPreferencesObjectKey: 'enrollment_user_column_preferences',
-  restBasePath: '/api/enrollments',
-  analyticsCategory: 'enrollments',
-  tiers: ['work', 'reports', 'setup'] as const,
-  setupSubTabs: ['preferences'] as const,
+  moduleId: "enrollments",
+  entityType: "Enrollment",
+  collectionKey: "enrollments",
+  settingsObjectKey: "enrollments_settings",
+  columnPreferencesObjectKey: "enrollment_user_column_preferences",
+  restBasePath: "/api/enrollments",
+  analyticsCategory: "enrollments",
+  tiers: ["work", "reports", "setup"] as const,
+  setupSubTabs: ["preferences"] as const,
   permissions: {
-    read: 'enrollments.read',
-    write: 'enrollments.write',
-    delete: 'enrollments.write',
-    setupView: 'configuration.view',
-    setupWrite: 'settings.global.write',
-    export: 'enrollments.read',
-    reports: 'enrollments.read',
+    read: "enrollments.read",
+    write: "enrollments.write",
+    delete: "enrollments.write",
+    setupView: "configuration.view",
+    setupWrite: "settings.global.write",
+    export: "enrollments.read",
+    reports: "enrollments.read",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ['directory', 'eligibility'] as const,
-    bulkActions: ['cancel', 'delete', 'export'] as const,
+    directoryViews: ["directory", "eligibility"] as const,
+    bulkActions: ["cancel", "delete", "export"] as const,
   },
-  defaultExportFilename: 'enrollments.csv',
+  defaultExportFilename: "enrollments.csv",
   exportChunkSize: 100,
   softDelete: {
     workExcludesDeleted: true,
@@ -132,4 +134,3 @@ export const ENROLLMENTS_MODULE_MANIFEST = {
 } as const;
 
 export type EnrollmentsModuleTier = (typeof ENROLLMENTS_MODULE_MANIFEST.tiers)[number];
-

@@ -32,11 +32,7 @@ export function MarkAttendanceStudentCard({
   });
 
   return (
-    <EntityCard
-      className={cn("space-y-3 p-4", statusInfo?.bg)}
-      {...cardProps}
-      {...motionProps}
-    >
+    <EntityCard className={cn("space-y-3 p-4", statusInfo?.bg)} {...cardProps} {...motionProps}>
       <EntityCard.Header
         id={row.studentId}
         displayName={row.name}

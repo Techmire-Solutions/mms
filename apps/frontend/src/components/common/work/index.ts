@@ -16,10 +16,7 @@ export {
   type WorkBatchTableColumn,
 } from "./WorkBatchTable";
 
-export {
-  WorkBatchTableFooter,
-  type WorkBatchTableFooterProps,
-} from "./WorkBatchTableFooter";
+export { WorkBatchTableFooter, type WorkBatchTableFooterProps } from "./WorkBatchTableFooter";
 
 export {
   deriveSelectionState,
@@ -28,10 +25,7 @@ export {
   type WorkBatchTableFooterCell,
 } from "./workBatchTableTypes";
 
-export {
-  WorkBatchTableRow,
-  type WorkBatchTableRowProps,
-} from "./WorkBatchTableRow";
+export { WorkBatchTableRow, type WorkBatchTableRowProps } from "./WorkBatchTableRow";
 
 export {
   WorkQueue,
@@ -39,7 +33,6 @@ export {
   type WorkQueuePriority,
   type WorkQueueItemStatus,
 } from "./WorkQueue";
-
 
 export {
   BulkActionDock,

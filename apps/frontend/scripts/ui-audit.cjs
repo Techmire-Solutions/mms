@@ -2,11 +2,11 @@
 // Scans apps/frontend/src/routes/**/*.tsx for UI patterns
 // Outputs JSON report to apps/frontend/scripts/ui-audit-report.json
 
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
+const fs = require("fs");
+const path = require("path");
+const glob = require("glob");
 
-const ROUTES_GLOB = path.join(__dirname, '..', 'src', 'routes', '**', '*.{tsx,jsx,ts,js}');
+const ROUTES_GLOB = path.join(__dirname, "..", "src", "routes", "**", "*.{tsx,jsx,ts,js}");
 
 // Regex patterns to detect UI anti‑patterns
 const patterns = {
@@ -20,7 +20,7 @@ const patterns = {
 };
 
 function auditFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, "utf8");
   const findings = {};
   for (const [key, regex] of Object.entries(patterns)) {
     const matches = [];
@@ -40,9 +40,9 @@ function main() {
     const res = auditFile(f);
     if (res) report.push(res);
   });
-  const outPath = path.join(__dirname, 'ui-audit-report.json');
-  fs.writeFileSync(outPath, JSON.stringify(report, null, 2), 'utf8');
-  console.log('UI audit completed. Report written to', outPath);
+  const outPath = path.join(__dirname, "ui-audit-report.json");
+  fs.writeFileSync(outPath, JSON.stringify(report, null, 2), "utf8");
+  console.log("UI audit completed. Report written to", outPath);
 }
 
 main();

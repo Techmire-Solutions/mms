@@ -67,7 +67,9 @@ describe("contactSanitization", () => {
   describe("sanitizeEmailForMailto", () => {
     it("converts valid email to mailto:<email>", () => {
       expect(sanitizeEmailForMailto("info@madrasa.com")).toBe("mailto:info@madrasa.com");
-      expect(sanitizeEmailForMailto("  student.test@domain.org  ")).toBe("mailto:student.test@domain.org");
+      expect(sanitizeEmailForMailto("  student.test@domain.org  ")).toBe(
+        "mailto:student.test@domain.org",
+      );
     });
 
     it("returns null for invalid or empty emails", () => {

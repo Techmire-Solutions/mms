@@ -1,12 +1,12 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { PlatformUserProfile } from '@mms/shared';
-import { apiContract } from '@/lib/api';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
-import { updateAdminsCache } from './platformAdminsCache';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { PlatformUserProfile } from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { updateAdminsCache } from "./platformAdminsCache";
 
-export const PLATFORM_ADMINS_QUERY_KEY = ['platform', 'admins'] as const;
+export const PLATFORM_ADMINS_QUERY_KEY = ["platform", "admins"] as const;
 
 /** Soft-disable or re-enable a platform admin (password re-auth). */
 export function useSetPlatformAdminDisabled() {
@@ -19,11 +19,7 @@ export function useSetPlatformAdminDisabled() {
     { adminId: string; disabled: boolean; password: string },
     { previousUsers: unknown }
   >({
-    mutationFn: async ({
-      adminId,
-      disabled,
-      password,
-    }) => {
+    mutationFn: async ({ adminId, disabled, password }) => {
       const res = await apiContract.platform.setAdminDisabled({
         params: { adminId },
         body: { disabled, password },
@@ -42,7 +38,7 @@ export function useSetPlatformAdminDisabled() {
     },
     onSuccess: (_response, variables) => {
       notify.success(
-        t(variables.disabled ? 'platform.disableAdminSuccess' : 'platform.enableAdminSuccess'),
+        t(variables.disabled ? "platform.disableAdminSuccess" : "platform.enableAdminSuccess"),
       );
     },
     onError: (err, _variables, context) => {
@@ -63,13 +59,7 @@ export function useDeletePlatformAdmin() {
   const { t } = useTranslation();
 
   return useMutation({
-    mutationFn: async ({
-      adminId,
-      password,
-    }: {
-      adminId: string;
-      password: string;
-    }) => {
+    mutationFn: async ({ adminId, password }: { adminId: string; password: string }) => {
       const res = await apiContract.platform.deleteAdmin({
         params: { adminId },
         body: { password },
@@ -78,7 +68,7 @@ export function useDeletePlatformAdmin() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: PLATFORM_ADMINS_QUERY_KEY });
-      notify.success(t('platform.deleteAdminSuccess'));
+      notify.success(t("platform.deleteAdminSuccess"));
     },
     onError: (err) => {
       notify.error(getPlatformErrorMessage(err, t));
@@ -97,13 +87,15 @@ export function useVerifyPlatformAdminEmail() {
         params: { adminId },
       });
       if (res.status !== 200) {
-        throw new Error((res.body as { message?: string })?.message ?? 'Failed to verify admin email');
+        throw new Error(
+          (res.body as { message?: string })?.message ?? "Failed to verify admin email",
+        );
       }
       return res.body as { user: PlatformUserProfile; success: boolean };
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: PLATFORM_ADMINS_QUERY_KEY });
-      notify.success(t('users.emailVerifiedSuccess'));
+      notify.success(t("users.emailVerifiedSuccess"));
     },
     onError: (err) => {
       notify.error(getPlatformErrorMessage(err, t));

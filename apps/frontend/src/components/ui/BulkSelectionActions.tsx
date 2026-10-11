@@ -1,4 +1,12 @@
-import { Download, Loader2, Mail, MessageCircle, MessageSquare, RotateCcw, type LucideIcon } from "lucide-react";
+import {
+  Download,
+  Loader2,
+  Mail,
+  MessageCircle,
+  MessageSquare,
+  RotateCcw,
+  type LucideIcon,
+} from "lucide-react";
 import type { ReactElement } from "react";
 import {
   bulkActionDockActionClassName,

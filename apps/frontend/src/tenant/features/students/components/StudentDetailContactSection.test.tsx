@@ -43,9 +43,7 @@ describe("StudentDetailContactSection Component", () => {
   });
 
   it("returns null when contactProfile is null", () => {
-    const html = renderToStaticMarkup(
-      <StudentDetailContactSection contactProfile={null} />,
-    );
+    const html = renderToStaticMarkup(<StudentDetailContactSection contactProfile={null} />);
 
     expect(html).toBe("");
   });

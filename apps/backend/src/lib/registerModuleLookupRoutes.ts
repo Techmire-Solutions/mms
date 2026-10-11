@@ -1,9 +1,9 @@
-import type { FastifyInstance } from 'fastify';
-import type { ZodTypeAny } from 'zod';
-import type { Permission, User } from '@mms/shared';
-import { roleHasPermission } from '@mms/shared';
-import { sendDatabaseError, sendForbidden } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeAny } from "zod";
+import type { Permission, User } from "@mms/shared";
+import { roleHasPermission } from "@mms/shared";
+import { sendDatabaseError, sendForbidden } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
 
 export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TItems = unknown> = {
   canRead: (user: User) => boolean;
@@ -12,12 +12,7 @@ export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TIt
   putBodySchema: ZodTypeAny;
   loadMap: () => Promise<unknown>;
   replaceKind: (kind: TKind, items: TItems) => Promise<unknown>;
-  audit: (
-    user: User,
-    action: string,
-    summary: string,
-    entityId: string,
-  ) => Promise<void>;
+  audit: (user: User, action: string, summary: string, entityId: string) => Promise<void>;
   auditAction: string;
   loadError: string;
   saveError: string;
@@ -29,8 +24,8 @@ export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TIt
     user: User;
     kind: TKind;
     items: TItems;
-    reply: import('fastify').FastifyReply;
-  }) => Promise<import('fastify').FastifyReply | null | undefined>;
+    reply: import("fastify").FastifyReply;
+  }) => Promise<import("fastify").FastifyReply | null | undefined>;
 };
 
 /**
@@ -40,7 +35,7 @@ export function registerModuleLookupRoutes<TKind extends string = string, TItems
   fastify: FastifyInstance,
   options: RegisterModuleLookupRoutesOptions<TKind, TItems>,
 ): void {
-  fastify.get('/lookups', async (request, reply) => {
+  fastify.get("/lookups", async (request, reply) => {
     const user = request.user as User;
     if (!options.canRead(user)) return sendForbidden(reply);
     try {
@@ -51,7 +46,7 @@ export function registerModuleLookupRoutes<TKind extends string = string, TItems
     }
   });
 
-  fastify.put('/lookups/:kind', async (request, reply) => {
+  fastify.put("/lookups/:kind", async (request, reply) => {
     const user = request.user as User;
     if (!roleHasPermission(user.role, options.setupWritePermission)) {
       return sendForbidden(reply);

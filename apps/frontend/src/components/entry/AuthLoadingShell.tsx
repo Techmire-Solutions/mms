@@ -1,6 +1,6 @@
-import React from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { AuthCardShell, AuthPageFrame } from '@/components/entry/AuthPageShell';
+import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { AuthCardShell, AuthPageFrame } from "@/components/entry/AuthPageShell";
 
 /** Skeleton shell shown while tenant branding loads — matches auth card layout. */
 export default function AuthLoadingShell(): React.JSX.Element {
@@ -21,7 +21,7 @@ export default function AuthLoadingShell(): React.JSX.Element {
           <div className="h-11 animate-pulse rounded-lg bg-muted" aria-hidden />
           <div className="h-11 animate-pulse rounded-lg bg-muted" aria-hidden />
           <div className="h-11 animate-pulse rounded-xl bg-muted/80" aria-hidden />
-          <span className="sr-only">{t('auth.loadingWorkspace')}</span>
+          <span className="sr-only">{t("auth.loadingWorkspace")}</span>
         </div>
       </AuthCardShell>
     </AuthPageFrame>

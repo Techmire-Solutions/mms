@@ -13,11 +13,7 @@ const mockContext = {
 };
 
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <TranslationContext.Provider value={mockContext}>
-      {children}
-    </TranslationContext.Provider>
-  );
+  return <TranslationContext.Provider value={mockContext}>{children}</TranslationContext.Provider>;
 }
 
 describe("WorkQueue", () => {
@@ -30,8 +26,20 @@ describe("WorkQueue", () => {
   }
 
   const sampleTasks: SampleTask[] = [
-    { id: "task-1", title: "Review Grade Submissions", description: "Grade submissions for Quran Class A", priority: "urgent", status: "Pending" },
-    { id: "task-2", title: "Approve Leave Request", description: "Teacher leave request from Ustadh Bilal", priority: "normal", status: "In Review" },
+    {
+      id: "task-1",
+      title: "Review Grade Submissions",
+      description: "Grade submissions for Quran Class A",
+      priority: "urgent",
+      status: "Pending",
+    },
+    {
+      id: "task-2",
+      title: "Approve Leave Request",
+      description: "Teacher leave request from Ustadh Bilal",
+      priority: "normal",
+      status: "In Review",
+    },
   ];
 
   it("renders queue title, items, priority badges, and status badges", () => {

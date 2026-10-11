@@ -1,16 +1,13 @@
-import React from 'react';
-import {
-  AlignHorizontalDistributeCenter,
-  AlignVerticalDistributeCenter,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { TemplateEditorSection } from './TemplateEditorSection';
+import React from "react";
+import { AlignHorizontalDistributeCenter, AlignVerticalDistributeCenter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { TemplateEditorSection } from "./TemplateEditorSection";
 
 export interface TemplateEditorMultiSelectDistributeProps {
   isOpen: boolean;
   onToggle: () => void;
-  onDistributeSelected: (axis: 'horizontal' | 'vertical') => void;
+  onDistributeSelected: (axis: "horizontal" | "vertical") => void;
   t: TranslationFunction;
 }
 
@@ -29,7 +26,11 @@ export function TemplateEditorMultiSelectDistribute({
       t={t}
       panelClassName="space-y-1.5"
     >
-      <div role="group" aria-label={t("templateEditor.distribute")} className="grid grid-cols-2 gap-1.5">
+      <div
+        role="group"
+        aria-label={t("templateEditor.distribute")}
+        className="grid grid-cols-2 gap-1.5"
+      >
         <Button
           type="button"
           variant="outline"

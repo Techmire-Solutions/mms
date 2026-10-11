@@ -1,11 +1,11 @@
-import type { JSX } from 'react';
-import { Filter } from 'lucide-react';
+import type { JSX } from "react";
+import { Filter } from "lucide-react";
 import {
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from '@/components/ui/ModuleFiltersMenuButton';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { ObligationType } from '@/lib/data/obligationsData';
+} from "@/components/ui/ModuleFiltersMenuButton";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { ObligationType } from "@/lib/data/obligationsData";
 
 interface ObligationsFiltersMenuButtonProps {
   typeFilter: string;
@@ -27,16 +27,16 @@ export function ObligationsFiltersMenuButton({
 
   return (
     <ModuleFilterDropdown
-      label={t('obligations.filters')}
+      label={t("obligations.filters")}
       activeCount={activeFilterCount}
       icon={Filter}
-      clearLabel={t('obligations.clearFilters')}
+      clearLabel={t("obligations.clearFilters")}
       onClear={onClearFilters}
     >
       <ModuleFilterRadioGroup
-        label={t('obligations.filter.type')}
+        label={t("obligations.filter.type")}
         options={[
-          { value: 'all', label: t('obligations.filter.allTypes') },
+          { value: "all", label: t("obligations.filter.allTypes") },
           ...obligationTypes.map((item) => ({ value: item.id, label: item.name })),
         ]}
         value={typeFilter}

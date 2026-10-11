@@ -39,18 +39,19 @@ export function ObligationCollectionsListFilters({
   const activeFilterCount = typeFilter !== "all" ? 1 : 0;
   const selectedType = obligationTypes.find((item) => item.id === typeFilter);
 
-  const filterChips = activeFilterCount > 0 ? (
-    <FilterChips
-      chips={[
-        {
-          key: `type:${typeFilter}`,
-          label: selectedType?.name ?? t("obligations.filter.allTypes"),
-          onRemove: () => onTypeFilterChange("all"),
-        },
-      ]}
-      onClearAll={() => onTypeFilterChange("all")}
-    />
-  ) : null;
+  const filterChips =
+    activeFilterCount > 0 ? (
+      <FilterChips
+        chips={[
+          {
+            key: `type:${typeFilter}`,
+            label: selectedType?.name ?? t("obligations.filter.allTypes"),
+            onRemove: () => onTypeFilterChange("all"),
+          },
+        ]}
+        onClearAll={() => onTypeFilterChange("all")}
+      />
+    ) : null;
 
   return (
     <WorkTaskToolbar
@@ -87,12 +88,16 @@ export function ObligationCollectionsListFilters({
         viewMode,
         onViewModeChange,
       }}
-      columnCustomizer={columnCustomizer ? {
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      } : undefined}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
     />
   );
 }

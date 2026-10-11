@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /** Per-class capacity row for Sessions Reports. */
 export const sessionsReportCapacityItemSchema = z.object({
@@ -27,7 +27,7 @@ export const sessionsReportTodaySessionSchema = z.object({
   time: z.string(),
   room: z.string(),
   students: z.number().int().nonnegative(),
-  status: z.enum(['live', 'upcoming']),
+  status: z.enum(["live", "upcoming"]),
 });
 
 export const sessionsReportAggregatesSchema = z.object({

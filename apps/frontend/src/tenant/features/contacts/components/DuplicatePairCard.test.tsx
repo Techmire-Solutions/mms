@@ -6,9 +6,13 @@ import type { DuplicatePair } from "./duplicateDetectionTypes";
 import { DuplicatePairCard } from "./DuplicatePairCard";
 
 vi.mock("@/tenant/features/contacts/components/DuplicateDetectionParts", () => ({
-  ConfidenceBadge: ({ score }: { score: number }) => <div data-testid="confidence-badge">{score}%</div>,
+  ConfidenceBadge: ({ score }: { score: number }) => (
+    <div data-testid="confidence-badge">{score}%</div>
+  ),
   DuplicateContactCard: ({ contact, label }: { contact: Contact; label: string }) => (
-    <div data-testid="contact-card">{label}: {contact.name}</div>
+    <div data-testid="contact-card">
+      {label}: {contact.name}
+    </div>
   ),
 }));
 

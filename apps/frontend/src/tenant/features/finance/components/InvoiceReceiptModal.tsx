@@ -13,7 +13,7 @@ export interface InvoiceReceiptModalProps {
   madrasaName?: string;
 }
 
-export const InvoiceReceiptModal = (function InvoiceReceiptModal({
+export const InvoiceReceiptModal = function InvoiceReceiptModal({
   invoices,
   onClose,
   madrasaName = "Madrasa Management System",
@@ -26,8 +26,7 @@ export const InvoiceReceiptModal = (function InvoiceReceiptModal({
     printRef,
   );
 
-  const title =
-    invoices.length > 1 ? t("finance.printReceipts") : t("finance.printReceipt");
+  const title = invoices.length > 1 ? t("finance.printReceipts") : t("finance.printReceipt");
 
   return (
     <Modal
@@ -41,11 +40,23 @@ export const InvoiceReceiptModal = (function InvoiceReceiptModal({
       panelClassName="print:shadow-none print:border-0"
       headerActions={
         <div className="flex items-center gap-2 print:hidden">
-          <Button size="sm" variant="outline" onClick={handleExportTypst} className="gap-1.5" title={t("templateEditor.exportTypst")}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleExportTypst}
+            className="gap-1.5"
+            title={t("templateEditor.exportTypst")}
+          >
             <FileCode2 className="w-3.5 h-3.5 text-info" aria-hidden />
             <span>{t("templateEditor.typst")}</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={handleExportZoho} className="gap-1.5" title={t("templateEditor.exportZoho")}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleExportZoho}
+            className="gap-1.5"
+            title={t("templateEditor.exportZoho")}
+          >
             <CloudUpload className="w-3.5 h-3.5 text-warning" aria-hidden />
             <span>{t("templateEditor.zoho")}</span>
           </Button>
@@ -67,6 +78,6 @@ export const InvoiceReceiptModal = (function InvoiceReceiptModal({
       </div>
     </Modal>
   );
-});
+};
 
 export default InvoiceReceiptModal;

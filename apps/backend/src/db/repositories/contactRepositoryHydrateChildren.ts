@@ -1,33 +1,33 @@
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 import {
   type Transaction,
   type ContactChildMaps,
   createEmptyContactChildMaps,
-} from './contactRepositoryHydrateTypes.js';
+} from "./contactRepositoryHydrateTypes.js";
 import {
   buildPhonesAggSql,
   buildEmailsAggSql,
   buildAddressesAggSql,
   buildTagsAggSql,
   assignPersonalChildRows,
-} from './contactHydratePersonalSql.js';
+} from "./contactHydratePersonalSql.js";
 import {
   buildSocialsAggSql,
   buildEducationsAggSql,
   buildExperiencesAggSql,
   buildSkillsAggSql,
   assignProfessionalChildRows,
-} from './contactHydrateProfessionalSql.js';
+} from "./contactHydrateProfessionalSql.js";
 import {
   buildRelationshipsAggSql,
   buildActivitiesAggSql,
   buildAttachmentsAggSql,
   buildBankDetailsAggSql,
   assignEngagementChildRows,
-} from './contactHydrateEngagementSql.js';
+} from "./contactHydrateEngagementSql.js";
 
-export * from './contactRepositoryHydrateTypes.js';
-export * from './contactRepositoryHydrateSummaryChildren.js';
+export * from "./contactRepositoryHydrateTypes.js";
+export * from "./contactRepositoryHydrateSummaryChildren.js";
 
 export async function loadContactChildMaps(
   tx: Transaction,
@@ -93,12 +93,17 @@ export async function loadContactChildMapsAggregated(
       ${buildActivitiesAggSql(subdomain)},
       ${buildAttachmentsAggSql(subdomain)},
       ${buildBankDetailsAggSql(subdomain)}
-    FROM (VALUES ${sql.join(contactIds.map((id) => sql`(${id}::text)`), sql`, `)}) AS c(id)
+    FROM (VALUES ${sql.join(
+      contactIds.map((id) => sql`(${id}::text)`),
+      sql`, `,
+    )}) AS c(id)
   `);
 
-  const rows = (Array.isArray(queryResult)
-    ? queryResult
-    : ((queryResult as { rows?: Record<string, unknown>[] })?.rows ?? [])) as Record<string, unknown>[];
+  const rows = (
+    Array.isArray(queryResult)
+      ? queryResult
+      : ((queryResult as { rows?: Record<string, unknown>[] })?.rows ?? [])
+  ) as Record<string, unknown>[];
   for (const row of rows) {
     const contactId = String(row.contactId);
     assignPersonalChildRows(result, contactId, row);

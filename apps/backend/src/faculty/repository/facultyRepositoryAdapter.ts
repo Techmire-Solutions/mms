@@ -1,4 +1,4 @@
-import type { Faculty } from '@mms/shared';
+import type { Faculty } from "@mms/shared";
 import {
   bulkSaveFaculty,
   findFacultyById,
@@ -9,7 +9,7 @@ import {
   findSubordinates,
   reassignSubordinates,
   findAncestorChain,
-} from '../../db/repositories/facultyRepository.js';
+} from "../../db/repositories/facultyRepository.js";
 import {
   aggregateFacultyCommandMetrics,
   bulkUpdateFacultySpecializationSql,
@@ -21,10 +21,10 @@ import {
   listActiveFacultyMissingEmployeeId,
   listFacultyLinkedContactIdsSql,
   listFacultyPage,
-} from '../../db/repositories/facultyRepositoryList.js';
-import { aggregateFacultyWidgetQueries } from '../../db/repositories/facultyRepositoryWidgets.js';
-import type { FacultyRepository } from './facultyRepository.js';
-import { guardFacultyAssignmentDependents } from '../../db/repositories/facultyDeleteGuard.js';
+} from "../../db/repositories/facultyRepositoryList.js";
+import { aggregateFacultyWidgetQueries } from "../../db/repositories/facultyRepositoryWidgets.js";
+import type { FacultyRepository } from "./facultyRepository.js";
+import { guardFacultyAssignmentDependents } from "../../db/repositories/facultyDeleteGuard.js";
 
 /**
  * Drizzle adapter for `FacultyRepository`.
@@ -55,11 +55,13 @@ function createFacultyRepository(): FacultyRepository {
     bulkUpdateSpecializationSql: (tenant, ids, specialization) =>
       bulkUpdateFacultySpecializationSql(tenant, ids, specialization),
     countSubordinates: (tenant, supervisorId) => countSubordinates(tenant, supervisorId),
-    countSubordinatesBatch: (tenant, supervisorIds) => countSubordinatesBatch(tenant, supervisorIds),
+    countSubordinatesBatch: (tenant, supervisorIds) =>
+      countSubordinatesBatch(tenant, supervisorIds),
     findSubordinates: (tenant, supervisorId) => findSubordinates(tenant, supervisorId),
     reassignSubordinates: (tenant, oldSupervisorId, newSupervisorId, txClient) =>
       reassignSubordinates(tenant, oldSupervisorId, newSupervisorId, txClient),
-    findAncestorChain: (tenant, facultyId, maxDepth) => findAncestorChain(tenant, facultyId, maxDepth),
+    findAncestorChain: (tenant, facultyId, maxDepth) =>
+      findAncestorChain(tenant, facultyId, maxDepth),
   };
 }
 

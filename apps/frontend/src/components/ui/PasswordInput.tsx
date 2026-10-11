@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Lock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FORM_LABEL } from '@/components/ui/formStyles';
-import { useTranslation } from '@/hooks/useTranslation';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { Eye, EyeOff, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { FORM_LABEL } from "@/components/ui/formStyles";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
 
-export interface PasswordInputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+export interface PasswordInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "type"
+> {
   id: string;
   label?: string;
   showToggle?: boolean;
@@ -22,7 +24,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   value,
   onChange,
   disabled,
-  autoComplete = 'current-password',
+  autoComplete = "current-password",
   required = true,
   className,
   ...rest
@@ -44,14 +46,14 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         />
         <Input
           id={id}
-          type={showToggle && showPassword ? 'text' : 'password'}
+          type={showToggle && showPassword ? "text" : "password"}
           autoComplete={autoComplete}
           required={required}
           minLength={minPasswordLength}
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className={cn('h-11 ps-9', showToggle && 'pe-11', className)}
+          className={cn("h-11 ps-9", showToggle && "pe-11", className)}
           {...rest}
         />
         {showToggle ? (
@@ -62,7 +64,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
             disabled={disabled}
             onClick={() => setShowPassword((prev) => !prev)}
             className="absolute end-0.5 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50"
-            aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+            aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
             aria-pressed={showPassword}
           >
             {showPassword ? (

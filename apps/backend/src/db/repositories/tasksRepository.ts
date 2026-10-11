@@ -3,16 +3,16 @@
  * @description Persistence and query operations for tasks.
  */
 
-import { and, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
-import { toSqlSearchPattern, type TaskListQuery, type TaskRecord } from '@mms/shared';
-import { taskAssignees, tasks } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { fetchAssigneesByTaskIds } from './tasksAssigneesRepository.js';
+import { and, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { toSqlSearchPattern, type TaskListQuery, type TaskRecord } from "@mms/shared";
+import { taskAssignees, tasks } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { fetchAssigneesByTaskIds } from "./tasksAssigneesRepository.js";
 
-export { getTaskMetrics } from './tasksMetricsRepository.js';
-export { createTask, updateTask, updateTaskStatus } from './tasksWriteRepository.js';
-export { deleteTask, restoreTask, bulkRestoreTasks } from './tasksTrashRepository.js';
-import { SELECT_COLS, mapTaskRow } from './tasksRowMapping.js';
+export { getTaskMetrics } from "./tasksMetricsRepository.js";
+export { createTask, updateTask, updateTaskStatus } from "./tasksWriteRepository.js";
+export { deleteTask, restoreTask, bulkRestoreTasks } from "./tasksTrashRepository.js";
+import { SELECT_COLS, mapTaskRow } from "./tasksRowMapping.js";
 
 export async function listTasks(
   tenant: string,
@@ -89,7 +89,9 @@ export async function findTaskById(tenant: string, id: string): Promise<TaskReco
     const [taskRow] = await tx
       .select(SELECT_COLS)
       .from(tasks)
-      .where(and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id), isNull(tasks.deletedAt)))
+      .where(
+        and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id), isNull(tasks.deletedAt)),
+      )
       .limit(1);
 
     if (!taskRow) return null;
@@ -98,4 +100,3 @@ export async function findTaskById(tenant: string, id: string): Promise<TaskReco
     return mapTaskRow(taskRow, assigneesMap);
   });
 }
-

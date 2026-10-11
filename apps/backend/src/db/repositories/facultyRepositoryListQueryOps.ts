@@ -1,14 +1,14 @@
-import { and, asc, eq, isNull, sql, type SQL } from 'drizzle-orm';
-import type { FacultyMember } from '@mms/shared';
-import { faculty, facultyEmployments } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { FACULTY_PROJECTION_COLUMNS, facultyRowToRecord } from './facultyRepositoryColumns.js';
+import { and, asc, eq, isNull, sql, type SQL } from "drizzle-orm";
+import type { FacultyMember } from "@mms/shared";
+import { faculty, facultyEmployments } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { FACULTY_PROJECTION_COLUMNS, facultyRowToRecord } from "./facultyRepositoryColumns.js";
 
 export {
   listFacultyLinkedContactIdsSql,
   findSoftDeletedFacultyByContactIdSql,
   findFacultyRegistrationConflictSql,
-} from './facultyRepositoryListContactOps.js';
+} from "./facultyRepositoryListContactOps.js";
 
 export async function countFacultyActive(
   tenant: string,
@@ -52,10 +52,12 @@ export async function countFacultyForNextEmployeeId(
 
     const seqConditions: SQL[] = [eq(facultyEmployments.workspaceSubdomain, subdomain)];
     if (options?.prefix?.trim()) {
-      seqConditions.push(sql`${facultyEmployments.employeeId} ILIKE ${options.prefix.trim() + '%'}`);
+      seqConditions.push(
+        sql`${facultyEmployments.employeeId} ILIKE ${options.prefix.trim() + "%"}`,
+      );
     }
     if (options?.restartAnnually && options.year) {
-      seqConditions.push(sql`${facultyEmployments.employeeId} LIKE ${'%' + options.year + '%'}`);
+      seqConditions.push(sql`${facultyEmployments.employeeId} LIKE ${"%" + options.year + "%"}`);
     }
 
     const maxRows = await tx

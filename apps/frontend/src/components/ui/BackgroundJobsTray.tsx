@@ -74,10 +74,7 @@ export function BackgroundJobsTray({
         size="icon"
         aria-label={t("backgroundJobs.trayLabel")}
         onClick={() => setOpen(true)}
-        className={cn(
-          "relative min-h-11 min-w-11 h-11 w-11 rounded-lg",
-          className,
-        )}
+        className={cn("relative min-h-11 min-w-11 h-11 w-11 rounded-lg", className)}
       >
         <Download className="h-5 w-5 text-muted-foreground" />
         {badgeCount > 0 && (
@@ -102,7 +99,9 @@ export function BackgroundJobsTray({
         >
           <div className="space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <p className="min-w-0 flex-1 text-sm text-muted-foreground">{t("backgroundJobs.panelDesc")}</p>
+              <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+                {t("backgroundJobs.panelDesc")}
+              </p>
               {onRefresh && (
                 <Button
                   type="button"
