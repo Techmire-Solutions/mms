@@ -28,7 +28,7 @@
     "prepare": "node -e \"try{require('node:child_process').execSync('git config core.hooksPath .githooks',{stdio:'ignore'})}catch{}\""
   },
   "devDependencies": {
-    "turbo": "^2.11.4",
+    "turbo": "^2.11.7",
     "typescript": "~7.0.2",
     "typescript-v6": "npm:typescript@~6.0.3"
   }
