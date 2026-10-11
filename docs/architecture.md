@@ -103,7 +103,7 @@ packages/shared/src/
 | Compiler strictness | TypeScript base | `tsconfig.base.json` |
 | Lint | ESLint (per-package) | `eslint.config.js` (each package) |
 | Unit/integration tests | Vitest + coverage thresholds | `vitest.config.ts` (each package) |
-| E2E | Playwright (2 shards) | `e2e/playwright.config.ts` |
+| E2E | Playwright (`chromium` + `a11y` projects, 2 CI shards each) | `e2e/playwright.config.ts` |
 | CI | DAG: changes → [typecheck-lint, build (release artifact on main), secret-scan, test-frontend, test-backend-unit, test-backend-db (conditional), e2e] → ci-gate | `.github/workflows/ci.yml` |
 
 **Adopted but not yet enforced (need a coordinated dependency+lockfile change, then a one-time `format:write`):**

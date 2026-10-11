@@ -25,16 +25,25 @@ const PRODUCTION_IGNORED_SPECS = [
   '**/responsive-authenticated.spec.ts',
 ] as const;
 
+const ignoredSpecs = [
+  ...(isProduction ? PRODUCTION_IGNORED_SPECS : []),
+  ...(process.env.CI ? LOCAL_ONLY_SPECS : []),
+];
+
+/**
+ * Long axe sweeps, split one sweep per test. A separate project so CI shards
+ * them on their own runners: sharding hands each runner a contiguous slice of
+ * tests by count, which put every long test on shard 1.
+ */
+const A11Y_SWEEP_SPECS = ['**/a11y-shell.spec.ts'];
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: './tests',
   /* Ignore heavy mutation/seed flows on production targets or CI local-only specs */
-  testIgnore: [
-    ...(isProduction ? PRODUCTION_IGNORED_SPECS : []),
-    ...(process.env.CI ? LOCAL_ONLY_SPECS : []),
-  ],
+  testIgnore: ignoredSpecs,
   /* Skip heavy local-only tests on CI */
   grepInvert: process.env.CI ? /@local-only/ : undefined,
   /* Maximum time one test can run for. */
@@ -70,10 +79,16 @@ export default defineConfig({
     reducedMotion: 'reduce',
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects for major browsers (a project testIgnore replaces the top-level one) */
   projects: [
     {
       name: 'chromium',
+      testIgnore: [...ignoredSpecs, ...A11Y_SWEEP_SPECS],
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'a11y',
+      testMatch: A11Y_SWEEP_SPECS,
       use: { ...devices['Desktop Chrome'] },
     },
   ],
