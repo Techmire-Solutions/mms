@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { SHARD_TIMINGS_FILE, pickShard, timingKey, type WeightedFile } from './shardSequencer';
@@ -45,6 +45,21 @@ describe('pickShard', () => {
 
     // Assert
     expect(reversed).toEqual(forward);
+  });
+});
+
+describe('shard-timings.json', () => {
+  it('given the recorded keys, should name existing test files relative to the frontend root', () => {
+    // Arrange
+    const frontendRoot = path.resolve(import.meta.dirname, '../..');
+
+    // Act
+    const unmatched = Object.keys(recorded).filter(
+      (key) => key.startsWith('..') || path.isAbsolute(key) || !existsSync(path.join(frontendRoot, key)),
+    );
+
+    // Assert
+    expect(unmatched).toEqual([]);
   });
 });
 
