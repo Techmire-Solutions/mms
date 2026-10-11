@@ -12,7 +12,7 @@ import { facultyResolveQueryOptions } from "@/tenant/hooks/collections/faculty";
 import { VOUCHER_KIND_TITLE_KEY, voucherPreparerName } from "@/tenant/features/accounting/components/paymentVoucherKind";
 import { buildPaymentVoucherModel, type SalaryVoucherRef } from "@/tenant/features/accounting/components/paymentVoucherModel";
 import type { PaymentVoucherPrintInput } from "@/tenant/features/accounting/components/paymentVoucherHtml";
-import { loadVoucherTemplate, voucherTableLines, type VoucherPrintPayload } from "@/tenant/features/accounting/components/voucherTemplateModel";
+import { loadVoucherTemplate, voucherContactLine, voucherTableLines, type VoucherPrintPayload } from "@/tenant/features/accounting/components/voucherTemplateModel";
 import { buildVoucherTemplate, voucherLayoutCopy } from "@/tenant/features/accounting/components/voucherTemplateLayout";
 import { buildVoucherTemplateHtml } from "@/tenant/features/accounting/components/voucherTemplateHtml";
 
@@ -59,12 +59,11 @@ export function usePaymentVoucherPrint(accounts: readonly Account[]) {
       const payee = await resolvePayee(model.salary);
       const branding = getScopedBrandingSettings();
       const title = t(VOUCHER_KIND_TITLE_KEY[model.kind]);
-      const contactLine = [branding.addressLine1, branding.city, branding.phone].filter(Boolean).join(" · ");
       const spokenAmount = model.deductions.length > 0 ? model.netAmount : model.amount;
       const data: VoucherPrintPayload = {
         title,
         institution: branding.madrasaName,
-        contactLine,
+        contactLine: voucherContactLine(branding),
         voucherNo: entry.ref || entry.id,
         date: formatDate(entry.date),
         fiscalYear: entry.fiscal_year,

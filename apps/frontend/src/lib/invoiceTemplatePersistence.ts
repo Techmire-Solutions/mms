@@ -1,9 +1,5 @@
-import {
-  documentTemplateSchema,
-  INVOICE_TEMPLATE_OBJECT_KEY,
-  type TemplateFieldDefinition,
-} from "@mms/shared";
-import { getObject, saveObject } from "@/lib/db";
+import { INVOICE_TEMPLATE_OBJECT_KEY, type TemplateFieldDefinition } from "@mms/shared";
+import { createDocumentTemplateStore } from "./documentTemplatePersistence.js";
 import { getDefaultTemplate } from "./invoiceTemplateDefaults.js";
 import type {
   BrandingInfo,
@@ -17,19 +13,20 @@ import { indexLookups, resolveField } from "./invoiceTemplateResolver.js";
 export type { IndexedFieldLookups, InvoiceTemplateFieldKey };
 export { indexLookups, resolveField };
 
-const STORAGE_KEY = INVOICE_TEMPLATE_OBJECT_KEY;
-
 export const INVOICE_TEMPLATE_CHANGED_EVENT = "mms:invoice-template-changed";
+
+export const invoiceTemplateDocumentStore = createDocumentTemplateStore<InvoiceReceiptPayload>({
+  key: INVOICE_TEMPLATE_OBJECT_KEY,
+  changedEvent: INVOICE_TEMPLATE_CHANGED_EVENT,
+  documentName: "invoice",
+});
 
 /**
  * Loads the current invoice template configuration from local cache.
  * Falls back to default template if cached object is missing or corrupted.
  */
 export function loadTemplate(branding?: BrandingInfo): InvoiceTemplate {
-  const fallback = getDefaultTemplate(branding);
-  const loaded = getObject<InvoiceTemplate>(STORAGE_KEY, fallback);
-  const parsed = documentTemplateSchema.safeParse(loaded);
-  return parsed.success ? (parsed.data as InvoiceTemplate) : fallback;
+  return invoiceTemplateDocumentStore.load(getDefaultTemplate(branding));
 }
 
 /**
@@ -37,20 +34,7 @@ export function loadTemplate(branding?: BrandingInfo): InvoiceTemplate {
  * Dispatches an update event for reactive subscribers.
  */
 export function saveTemplate(tmpl: InvoiceTemplate): void {
-  const parsed = documentTemplateSchema.safeParse(tmpl);
-  if (!parsed.success) {
-    const detail = parsed.error.issues
-      .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
-      .join("; ");
-    throw new TypeError(
-      `Cannot save invalid invoice template: missing pageSize or elements array. ${detail}`,
-    );
-  }
-  const validTemplate = parsed.data as InvoiceTemplate;
-  saveObject(STORAGE_KEY, validTemplate);
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent(INVOICE_TEMPLATE_CHANGED_EVENT, { detail: validTemplate }));
-  }
+  invoiceTemplateDocumentStore.save(tmpl);
 }
 
 /**

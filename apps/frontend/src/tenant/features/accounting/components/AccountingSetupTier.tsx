@@ -65,7 +65,9 @@ export const AccountingSetupTier = (function AccountingSetupTier({
                   onPrefsDirtyChange={onPrefsDirtyChange}
                 />
               )}
-              {subTabs.sub === "templates" && <AccountingVoucherTemplateEditor />}
+              {subTabs.sub === "templates" && (
+                <AccountingVoucherTemplateEditor onClose={() => subTabs.handleSubTabChange("preferences")} />
+              )}
             </Suspense>
           )}
         </div>
