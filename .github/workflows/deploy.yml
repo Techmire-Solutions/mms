@@ -118,7 +118,7 @@ jobs:
 
       # Build once, promote the same bytes: both the automatic path and a
       # verified manual dispatch deploy the tarball CI built and attested for
-      # this exact commit (artifacts are kept 14 days; older targets need the
+      # this exact commit (artifacts are kept 90 days; older targets need the
       # allow_unverified incident hatch, which rebuilds).
       - name: Download CI release artifact
         if: github.event_name == 'workflow_run' || !inputs.allow_unverified

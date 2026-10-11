@@ -25,6 +25,13 @@ vi.mock('@/lib/contexts/AuthContext', () => ({
   }),
 }));
 
+// Default roles, as the hook returns when no custom roles are configured;
+// unmocked it fetches users config from the backend during the test.
+vi.mock('@/tenant/hooks/useWorkspaceRoles', async () => {
+  const { cloneDefaultWorkspaceRoles } = await import('@mms/shared');
+  return { useWorkspaceRoles: () => cloneDefaultWorkspaceRoles() };
+});
+
 vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
