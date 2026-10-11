@@ -49,7 +49,6 @@ export class NotifiedObligationsMutationError extends NotifiedMutationError {}
 export function useObligationsTypes(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listTypes.useQuery({
     queryKey: OBLIGATIONS_TYPES_QUERY_KEY,
     enabled: isAuthenticated && enabled,
@@ -70,7 +69,6 @@ export function useObligationsTypesCollection(options?: { enabled?: boolean }): 
 export function useObligationsMujtahids(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listMujtahids.useQuery({
     queryKey: OBLIGATIONS_MUJTAHIDS_QUERY_KEY,
     enabled: isAuthenticated && enabled,
@@ -91,7 +89,6 @@ export function useObligationsMujtahidsCollection(options?: { enabled?: boolean 
 export function useObligationsReps(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listReps.useQuery({
     queryKey: OBLIGATIONS_REPS_QUERY_KEY,
     enabled: isAuthenticated && enabled,
@@ -112,7 +109,6 @@ export function useObligationsRepsCollection(options?: { enabled?: boolean }): M
 export function useObligationsWakala(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listWakala.useQuery({
     queryKey: OBLIGATIONS_WAKALA_QUERY_KEY,
     enabled: isAuthenticated && enabled,
@@ -133,7 +129,6 @@ export function useObligationsWakalaCollection(options?: { enabled?: boolean }):
 export function useObligationsDistributions(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listDistributions.useQuery({
     queryKey: OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY,
     enabled: isAuthenticated && enabled,
@@ -160,7 +155,6 @@ export function useObligationsCollections(options?: {
   const { isAuthenticated } = useAuth();
   const includeDeleted = options?.includeDeleted ?? false;
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listCollections.useQuery({
     queryKey: [...OBLIGATIONS_COLLECTIONS_QUERY_KEY, { includeDeleted }],
     queryData: { query: { includeDeleted: includeDeleted ? "true" : undefined } },
@@ -195,7 +189,6 @@ export function useObligationsReportAggregates(
 ) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.reportAggregates.useQuery({
     queryKey: [...OBLIGATIONS_REPORT_AGGREGATES_QUERY_KEY, query],
     queryData: { query: query ?? {} },

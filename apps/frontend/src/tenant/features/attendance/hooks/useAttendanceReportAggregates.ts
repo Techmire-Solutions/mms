@@ -17,7 +17,6 @@ export function useAttendanceReportAggregates(options?: {
   const enabled = options?.enabled ?? true;
   const comparison = normalizeAttendanceReportComparisonQuery(options?.comparison);
   const classId = options?.classId?.trim() || undefined;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.attendance.reportAggregates.useQuery({
     queryKey: [
       ...ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,

@@ -48,7 +48,6 @@ export function financePaymentsListQueryOptions(query: Record<string, unknown> =
 }
 
 export function useFinanceContractInvoices(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.listInvoices.useQuery({
     queryKey: [...FINANCE_INVOICES_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -58,7 +57,6 @@ export function useFinanceContractInvoices(query: Record<string, unknown>, enabl
 }
 
 export function useFinanceContractPayments(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.listPayments.useQuery({
     queryKey: [...FINANCE_PAYMENTS_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -68,7 +66,6 @@ export function useFinanceContractPayments(query: Record<string, unknown>, enabl
 }
 
 export function useFinanceContractMetrics(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.getMetrics.useQuery({
     queryKey: ["finance", "metrics", "contract"],
     queryData: {},
@@ -78,7 +75,6 @@ export function useFinanceContractMetrics(enabled = true) {
 }
 
 export function useFinanceContractReportAggregates(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.getReportAggregates.useQuery({
     queryKey: ["finance_invoices", "report-aggregates", "contract", query],
     queryData: { query },
@@ -88,7 +84,6 @@ export function useFinanceContractReportAggregates(query: Record<string, unknown
 }
 
 export function useFinanceContractFieldConfig(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.getFieldConfig.useQuery({
     queryKey: ["finance", "field-config", "contract"],
     queryData: {},
@@ -98,7 +93,6 @@ export function useFinanceContractFieldConfig(enabled = true) {
 }
 
 export function useFinanceContractPreferences(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.getPreferences.useQuery({
     queryKey: ["finance", "preferences", "contract"],
     queryData: {},
@@ -109,7 +103,6 @@ export function useFinanceContractPreferences(enabled = true) {
 
 export function useFinanceContractUpdateFieldConfig() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.updateFieldConfig.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -117,7 +110,6 @@ export function useFinanceContractUpdateFieldConfig() {
 
 export function useFinanceContractUpdatePreferences() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.updatePreferences.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -125,7 +117,6 @@ export function useFinanceContractUpdatePreferences() {
 
 export function useFinanceContractCreateInvoice() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.createInvoice.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -133,7 +124,6 @@ export function useFinanceContractCreateInvoice() {
 
 export function useFinanceContractUpdateInvoice() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.updateInvoice.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -141,7 +131,6 @@ export function useFinanceContractUpdateInvoice() {
 
 export function useFinanceContractDeleteInvoice() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.deleteInvoice.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -149,7 +138,6 @@ export function useFinanceContractDeleteInvoice() {
 
 export function useFinanceContractCreatePayment() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.createPayment.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -157,7 +145,6 @@ export function useFinanceContractCreatePayment() {
 
 export function useFinanceContractUpdatePayment() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.updatePayment.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -165,7 +152,6 @@ export function useFinanceContractUpdatePayment() {
 
 export function useFinanceContractDeletePayment() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.deletePayment.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -173,7 +159,6 @@ export function useFinanceContractDeletePayment() {
 
 export function useFinanceContractBulkDeleteInvoices() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.bulkDeleteInvoices.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -181,7 +166,6 @@ export function useFinanceContractBulkDeleteInvoices() {
 
 export function useFinanceContractBulkDeletePayments() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.bulkDeletePayments.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -189,7 +173,6 @@ export function useFinanceContractBulkDeletePayments() {
 
 export function useFinanceContractBulkStatusInvoices() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.bulkStatusInvoices.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -197,7 +180,6 @@ export function useFinanceContractBulkStatusInvoices() {
 
 export function useFinanceContractRestoreInvoice() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.restoreInvoice.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -205,7 +187,6 @@ export function useFinanceContractRestoreInvoice() {
 
 export function useFinanceContractRestorePayment() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.restorePayment.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -213,7 +194,6 @@ export function useFinanceContractRestorePayment() {
 
 export function useFinanceContractBulkRestoreInvoices() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.bulkRestoreInvoices.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });
@@ -221,7 +201,6 @@ export function useFinanceContractBulkRestoreInvoices() {
 
 export function useFinanceContractBulkRestorePayments() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.finance.bulkRestorePayments.useMutation({
     onSuccess: () => invalidateFinanceQueries(queryClient),
   });

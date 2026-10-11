@@ -43,30 +43,24 @@ export function useContactMutations() {
   const logExportAuditMutation = useContactsContractLogExportAudit();
   const logSetupAuditMutation = useContactsContractLogSetupAudit();
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const upsertContactMutation = tsrClient.contacts.create.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const updateContactMutation = tsrClient.contacts.update.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteContactMutation = tsrClient.contacts.delete.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const mergeContactsMutation = tsrClient.contacts.merge.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const matchContactIdentity = tsrClient.contacts.identityMatch.useMutation();
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkTagContactsMutation = tsrClient.contacts.bulkTag.useMutation({
     onSuccess: invalidate,
   });

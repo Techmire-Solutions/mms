@@ -33,7 +33,6 @@ export function hasanatListQueryOptions(query: Record<string, unknown> = {}) {
 
 export function useHasanatContractList(query: Record<string, unknown> = {}, enabled = true) {
   const { can } = usePermissions();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.listDistributions.useQuery({
     queryKey: [HASANAT_DISTRIBUTIONS_QUERY_KEY, "contract-list", query],
     queryData: { query },
@@ -44,7 +43,6 @@ export function useHasanatContractList(query: Record<string, unknown> = {}, enab
 
 export function useHasanatContractDenoms(enabled = true) {
   const { can } = usePermissions();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.listDenoms.useQuery({
     queryKey: [HASANAT_DENOMS_QUERY_KEY, "contract-list"],
     queryData: { query: {} },
@@ -55,7 +53,6 @@ export function useHasanatContractDenoms(enabled = true) {
 
 export function useHasanatContractBatches(enabled = true) {
   const { can } = usePermissions();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.listBatches.useQuery({
     queryKey: [HASANAT_BATCHES_QUERY_KEY, "contract-list"],
     queryData: { query: {} },
@@ -66,7 +63,6 @@ export function useHasanatContractBatches(enabled = true) {
 
 export function useHasanatContractRedemptions(enabled = true) {
   const { can } = usePermissions();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.listRedemptions.useQuery({
     queryKey: [HASANAT_REDEMPTIONS_QUERY_KEY, "contract-list"],
     queryData: { query: {} },
@@ -77,7 +73,6 @@ export function useHasanatContractRedemptions(enabled = true) {
 
 export function useHasanatContractBulkDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.bulkDeleteDistributions.useMutation({
     onSuccess: () => invalidateHasanatQueries(queryClient),
   });
@@ -85,7 +80,6 @@ export function useHasanatContractBulkDelete() {
 
 export function useHasanatContractBulkRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.bulkRestoreDistributions.useMutation({
     onSuccess: () => invalidateHasanatQueries(queryClient),
   });
@@ -93,7 +87,6 @@ export function useHasanatContractBulkRestore() {
 
 export function useHasanatContractDeleteDistribution() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.deleteDistribution.useMutation({
     onSuccess: () => invalidateHasanatQueries(queryClient),
   });
@@ -101,7 +94,6 @@ export function useHasanatContractDeleteDistribution() {
 
 export function useHasanatContractRestoreDistribution() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.restoreDistribution.useMutation({
     onSuccess: () => invalidateHasanatQueries(queryClient),
   });

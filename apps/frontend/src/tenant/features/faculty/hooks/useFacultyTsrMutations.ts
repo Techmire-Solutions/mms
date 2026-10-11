@@ -2,16 +2,15 @@
  * @file useFacultyTsrMutations.ts
  * @description Contract-backed Faculty write / bulk / audit mutation hooks.
  */
-import { tsr } from "@/lib/api";
+import { tsrClient } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateFacultyQueries } from "@/tenant/features/faculty/hooks/invalidateFacultyQueries";
 
-const facultyClient = tsr.faculty;
+const facultyClient = tsrClient.faculty;
 
 /** Contract-backed create. */
 export function useFacultyContractCreate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.create.useMutation({
     onSuccess: () => invalidateFacultyQueries(queryClient),
   });
@@ -20,7 +19,6 @@ export function useFacultyContractCreate() {
 /** Contract-backed update. */
 export function useFacultyContractUpdate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.update.useMutation({
     onSuccess: () => invalidateFacultyQueries(queryClient),
   });
@@ -29,7 +27,6 @@ export function useFacultyContractUpdate() {
 /** Contract-backed soft-delete. */
 export function useFacultyContractDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.delete.useMutation({
     onSuccess: () => invalidateFacultyQueries(queryClient),
   });
@@ -38,7 +35,6 @@ export function useFacultyContractDelete() {
 /** Contract-backed bulk status update. */
 export function useFacultyContractBulkStatus() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.bulkStatus.useMutation({
     onSuccess: () => invalidateFacultyQueries(queryClient),
   });
@@ -46,14 +42,12 @@ export function useFacultyContractBulkStatus() {
 
 /** Contract-backed duplicate check mutation. */
 export function useFacultyContractDuplicateCheck() {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.duplicateCheck.useMutation({});
 }
 
 /** Contract-backed restore */
 export function useFacultyContractRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.restore.useMutation({
     onSuccess: () => invalidateFacultyQueries(queryClient),
   });
@@ -62,7 +56,6 @@ export function useFacultyContractRestore() {
 /** Contract-backed bulk delete */
 export function useFacultyContractBulkDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.bulkDelete.useMutation({
     onSuccess: () => invalidateFacultyQueries(queryClient),
   });
@@ -71,7 +64,6 @@ export function useFacultyContractBulkDelete() {
 /** Contract-backed bulk restore */
 export function useFacultyContractBulkRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.bulkRestore.useMutation({
     onSuccess: () => invalidateFacultyQueries(queryClient),
   });
@@ -80,7 +72,6 @@ export function useFacultyContractBulkRestore() {
 /** Contract-backed bulk specialization */
 export function useFacultyContractBulkSpecialization() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.bulkSpecialization.useMutation({
     onSuccess: () => invalidateFacultyQueries(queryClient),
   });
@@ -88,18 +79,15 @@ export function useFacultyContractBulkSpecialization() {
 
 /** Contract-backed migrate employee IDs */
 export function useFacultyContractMigrateEmployeeIds() {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.migrateEmployeeIds.useMutation({});
 }
 
 /** Contract-backed log export audit */
 export function useFacultyContractLogExportAudit() {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.exportAudit.useMutation({});
 }
 
 /** Contract-backed log setup audit */
 export function useFacultyContractLogSetupAudit() {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.setupAudit.useMutation({});
 }

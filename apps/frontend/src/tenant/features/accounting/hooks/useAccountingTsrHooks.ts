@@ -69,7 +69,6 @@ export function accountingFiscalYearsListQueryOptions(query: Record<string, unkn
 }
 
 export function useAccountingContractAccounts(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listAccounts.useQuery({
     queryKey: [...ACCOUNTING_ACCOUNTS_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -79,7 +78,6 @@ export function useAccountingContractAccounts(query: Record<string, unknown>, en
 }
 
 export function useAccountingContractEntries(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listEntries.useQuery({
     queryKey: [...ACCOUNTING_ENTRIES_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -89,7 +87,6 @@ export function useAccountingContractEntries(query: Record<string, unknown>, ena
 }
 
 export function useAccountingContractFiscalYears(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listFiscalYears.useQuery({
     queryKey: [...ACCOUNTING_FISCAL_YEARS_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -100,7 +97,6 @@ export function useAccountingContractFiscalYears(query: Record<string, unknown>,
 
 export function useAccountingContractUpsertAccounts() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.upsertAccounts.useMutation({
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
@@ -108,7 +104,6 @@ export function useAccountingContractUpsertAccounts() {
 
 export function useAccountingContractUpsertEntries() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.upsertEntries.useMutation({
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
@@ -116,7 +111,6 @@ export function useAccountingContractUpsertEntries() {
 
 export function useAccountingContractUpsertFiscalYears() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.upsertFiscalYears.useMutation({
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
@@ -124,7 +118,6 @@ export function useAccountingContractUpsertFiscalYears() {
 
 export function useAccountingContractDeleteEntry() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.deleteEntry.useMutation({
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
@@ -132,7 +125,6 @@ export function useAccountingContractDeleteEntry() {
 
 export function useAccountingContractRestoreEntry() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.restoreEntry.useMutation({
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
@@ -140,7 +132,6 @@ export function useAccountingContractRestoreEntry() {
 
 export function useAccountingContractBulkDeleteEntries() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.bulkDeleteEntries.useMutation({
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
@@ -148,7 +139,6 @@ export function useAccountingContractBulkDeleteEntries() {
 
 export function useAccountingContractBulkRestoreEntries() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.bulkRestoreEntries.useMutation({
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });

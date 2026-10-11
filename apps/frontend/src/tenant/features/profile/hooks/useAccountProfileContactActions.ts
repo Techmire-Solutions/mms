@@ -56,7 +56,6 @@ export function useAccountProfileContactActions() {
   const queryClient = useQueryClient();
   const { data: profile, refetch } = useTenantProfile();
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const updateContactMutation = tsrClient.profile.updateContact.useMutation();
 
   const [name, setName] = useState("");

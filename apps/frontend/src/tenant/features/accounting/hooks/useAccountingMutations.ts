@@ -32,23 +32,16 @@ export function useAccountingMutations() {
     void queryClient.invalidateQueries({ queryKey: VOUCHER_NUMBERING_QUERY_KEY });
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const upsertAccounts = tsrClient.accounting.upsertAccounts.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const upsertEntries = tsrClient.accounting.upsertEntries.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const upsertFiscalYears = tsrClient.accounting.upsertFiscalYears.useMutation({
     onSuccess: invalidate,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteEntry = tsrClient.accounting.deleteEntry.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreEntry = tsrClient.accounting.restoreEntry.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkDeleteEntries = tsrClient.accounting.bulkDeleteEntries.useMutation({
     onSuccess: invalidate,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkRestoreEntries = tsrClient.accounting.bulkRestoreEntries.useMutation({
     onSuccess: invalidate,
   });

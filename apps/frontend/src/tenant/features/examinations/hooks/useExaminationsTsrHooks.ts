@@ -29,7 +29,6 @@ export function examinationsExamsListQueryOptions(query: Record<string, unknown>
 }
 
 export function useExaminationsContractList(query: Record<string, unknown> = {}, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.listExams.useQuery({
     queryKey: [...EXAMINATIONS_EXAMS_QUERY_KEY, "contract-list", query],
     queryData: { query },
@@ -42,7 +41,6 @@ export function useExaminationsContractResults(
   query: Record<string, unknown> = {},
   enabled = true,
 ) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.listResults.useQuery({
     queryKey: [...EXAMINATIONS_RESULTS_QUERY_KEY, "contract-results", query],
     queryData: { query },
@@ -53,7 +51,6 @@ export function useExaminationsContractResults(
 
 export function useExaminationsContractBulkDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.bulkDeleteExams.useMutation({
     onSuccess: () => invalidateExaminationsQueries(queryClient),
   });
@@ -61,7 +58,6 @@ export function useExaminationsContractBulkDelete() {
 
 export function useExaminationsContractBulkRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.bulkRestoreExams.useMutation({
     onSuccess: () => invalidateExaminationsQueries(queryClient),
   });
@@ -69,7 +65,6 @@ export function useExaminationsContractBulkRestore() {
 
 export function useExaminationsContractBulkUpdateExams() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.bulkUpdateExams.useMutation({
     onSuccess: () => invalidateExaminationsQueries(queryClient),
   });
@@ -77,7 +72,6 @@ export function useExaminationsContractBulkUpdateExams() {
 
 export function useExaminationsContractBulkUpdateResults() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.bulkUpdateResults.useMutation({
     onSuccess: () => invalidateExaminationsQueries(queryClient),
   });
@@ -85,7 +79,6 @@ export function useExaminationsContractBulkUpdateResults() {
 
 export function useExaminationsContractDeleteExam() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.deleteExam.useMutation({
     onSuccess: () => invalidateExaminationsQueries(queryClient),
   });
@@ -93,7 +86,6 @@ export function useExaminationsContractDeleteExam() {
 
 export function useExaminationsContractRestoreExam() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.restoreExam.useMutation({
     onSuccess: () => invalidateExaminationsQueries(queryClient),
   });

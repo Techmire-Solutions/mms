@@ -50,7 +50,6 @@ export interface SessionsWidgetAggregateWidgetInput {
 export function useSessionsPaginated(params: SessionsPaginatedParams) {
   const { isAuthenticated } = useAuth();
   const enabled = params.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.sessions.list.useQuery({
     queryKey: [...SESSIONS_QUERY_KEY, "page", params],
     queryData: {
@@ -74,7 +73,6 @@ export function useSessionsPaginated(params: SessionsPaginatedParams) {
 export function useSessions(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.sessions.list.useQuery({
     queryKey: SESSIONS_QUERY_KEY,
     queryData: { query: { page: 1, limit: 100, sortField: "createdAt", sortDir: "desc" } },
@@ -148,7 +146,6 @@ export function useSessionsMetrics(options?: { enabled?: boolean }) {
 export function useSessionsReportAggregates(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.sessions.reportAggregates.useQuery({
     queryKey: SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
     enabled: isAuthenticated && enabled,

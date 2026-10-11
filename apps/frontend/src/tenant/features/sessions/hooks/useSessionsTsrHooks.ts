@@ -26,7 +26,6 @@ export function sessionsListQueryOptions(query: Record<string, unknown> = {}) {
 }
 
 export function useSessionsContractList(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.sessions.list.useQuery({
     queryKey: [...SESSIONS_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -37,7 +36,6 @@ export function useSessionsContractList(query: Record<string, unknown>, enabled 
 
 export function useSessionsContractCreate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.sessions.create.useMutation({
     onSuccess: () => invalidateSessionsQueries(queryClient),
   });
@@ -45,7 +43,6 @@ export function useSessionsContractCreate() {
 
 export function useSessionsContractBulkDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.sessions.bulkDelete.useMutation({
     onSuccess: () => invalidateSessionsQueries(queryClient),
   });
@@ -53,7 +50,6 @@ export function useSessionsContractBulkDelete() {
 
 export function useSessionsContractBulkStatus() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.sessions.bulkStatus.useMutation({
     onSuccess: () => invalidateSessionsQueries(queryClient),
   });
@@ -61,7 +57,6 @@ export function useSessionsContractBulkStatus() {
 
 export function useSessionsContractBulkRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.sessions.bulkRestore.useMutation({
     onSuccess: () => invalidateSessionsQueries(queryClient),
   });

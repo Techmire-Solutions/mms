@@ -17,7 +17,6 @@ export interface TenantProfileData {
 export function useTenantProfile(enabled = true) {
   const { isAuthenticated } = useAuth();
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.profile.getProfile.useQuery({
     queryKey: TENANT_PROFILE_KEY,
     enabled: isAuthenticated && enabled,

@@ -34,7 +34,6 @@ export function useHasanatDenoms(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const { can } = usePermissions();
   const canRead = can("hasanat.read");
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.listDenoms.useQuery({
     queryKey: HASANAT_DENOMS_QUERY_KEY,
     enabled: isAuthenticated && canRead && (options?.enabled ?? true),
@@ -57,7 +56,6 @@ export function useHasanatBatches(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const { can } = usePermissions();
   const canRead = can("hasanat.read");
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.listBatches.useQuery({
     queryKey: HASANAT_BATCHES_QUERY_KEY,
     enabled: isAuthenticated && canRead && (options?.enabled ?? true),
@@ -81,7 +79,6 @@ export function useHasanatDistributions(options?: { enabled?: boolean; includeDe
   const { can } = usePermissions();
   const canRead = can("hasanat.read");
   const includeDeleted = options?.includeDeleted ?? false;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.listDistributions.useQuery({
     queryKey: [...HASANAT_DISTRIBUTIONS_QUERY_KEY, { includeDeleted }],
     queryData: { query: { includeDeleted: includeDeleted ? "true" : "false" } },
@@ -119,7 +116,6 @@ export function useHasanatReportAggregates(options?: {
   const enabled = options?.enabled ?? true;
   const comparison = normalizeHasanatReportComparisonQuery(options?.comparison);
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.reportAggregates.useQuery({
     queryKey: [...HASANAT_REPORT_AGGREGATES_QUERY_KEY, comparison ?? null],
     queryData: {
@@ -140,7 +136,6 @@ export function useHasanatRedemptions(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const { can } = usePermissions();
   const canRead = can("hasanat.read");
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.hasanat.listRedemptions.useQuery({
     queryKey: HASANAT_REDEMPTIONS_QUERY_KEY,
     enabled: isAuthenticated && canRead && (options?.enabled ?? true),

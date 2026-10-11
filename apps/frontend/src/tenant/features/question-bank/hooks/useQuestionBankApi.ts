@@ -47,7 +47,6 @@ export function useQuestionBankQuestions(options?: {
   const { isAuthenticated } = useAuth();
   const includeDeleted = options?.includeDeleted ?? false;
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.listQuestions.useQuery({
     queryKey: [...QUESTION_BANK_QUESTIONS_QUERY_KEY, { includeDeleted }],
     queryData: { query: { includeDeleted: includeDeleted ? "true" : undefined } },
@@ -73,7 +72,6 @@ export function useQuestionBankQuestionsCollection(options?: {
 export function useQuestionBankTests(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.listTests.useQuery({
     queryKey: QUESTION_BANK_TESTS_QUERY_KEY,
     enabled: isAuthenticated && enabled,
@@ -97,7 +95,6 @@ export function useQuestionBankTestsCollection(options?: {
 export function useQuestionBankResults(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.listResults.useQuery({
     queryKey: QUESTION_BANK_RESULTS_QUERY_KEY,
     enabled: isAuthenticated && enabled,
@@ -140,7 +137,6 @@ export function useQuestionBankReportAggregates(
 ) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.reportAggregates.useQuery({
     queryKey: [...QUESTION_BANK_REPORT_AGGREGATES_QUERY_KEY, filters ?? {}],
     queryData: { query: filters },

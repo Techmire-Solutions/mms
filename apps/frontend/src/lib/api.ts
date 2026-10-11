@@ -4,34 +4,8 @@
  * CSRF headers, auth-refresh, request-ID, and timeout behaviour.
  */
 import { initTsrReactQuery } from "@ts-rest/react-query/v5";
-import type { TsRestReactQueryHooksContainer } from "@ts-rest/react-query/v5";
 import { initClient } from "@ts-rest/core";
-import type { AppRouter } from "@ts-rest/core";
-import {
-  rootContract,
-  type studentContract,
-  type financeContract,
-  type attendanceContract,
-  type contactsContract,
-  type facultyContract,
-  type userContract,
-  type messagingContract,
-  type sessionContract,
-  type questionBankContract,
-  type accountingContract,
-  type hasanatContract,
-  type obligationContract,
-  type examinationContract,
-  type enrollmentContract,
-  type dashboardContract,
-  type savedReportsContract,
-  type workspaceContract,
-  type authContract,
-  type profileContract,
-  type publicContract,
-  type aiContract,
-  type platformContract,
-} from "@mms/shared";
+import { rootContract } from "@mms/shared";
 import { apiFetch, resolveApiUrl, ApiError } from "@/lib/apiClient";
 
 type TsrFetcherArgs = {
@@ -96,54 +70,47 @@ async function tsrApiFetcher(args: TsrFetcherArgs): Promise<{
   return { status: res.status, body: parsed, headers: res.headers };
 }
 
+/**
+ * Structural view of the ts-rest react-query hooks container.
+ *
+ * WHY: @ts-rest 3.52.1's recursive `TsRestReactQueryHooksContainer` +
+ * `ClientInferResponses` conditionals fail to instantiate against the 24-domain
+ * root contract (and even a single heavy domain) under this TS toolchain, so
+ * every `tsrClient.<domain>.<route>.useQuery/useMutation(...)` call degraded to
+ * a non-callable union. That forced ~288 per-call
+ * `@ts-expect-error - TS union discrimination limit with ts-rest` suppressions
+ * across the feature hooks.
+ *
+ * Instead of 288 escapes, the container is widened ONCE here, in this reviewed
+ * file. The requests are unchanged — the hooks still run through the same
+ * `tsrApiFetcher` transport (CSRF / auth-refresh / request-id preserved) — and
+ * feature code keeps reading the response envelope (`.data.{status,body,headers}`)
+ * as before. Narrowing to domain types stays with the shared-contract SSOT.
+ * See ADR-010.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- single documented ts-rest type escape (ADR-010)
+type TsrHookOptions = Record<string, any>;
+// The hooks' results are widened to `any` (not `unknown`): consumers spread the
+// result object and read arbitrary envelope/result fields, exactly as they did
+// when the per-call `@ts-expect-error` degraded the types. `unknown` would break
+// spreads (index signatures do not spread) — see ADR-010.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- single documented ts-rest type escape (ADR-010)
+type TsrHookResult = any;
+type TsrHooksContainer = Record<
+  string,
+  Record<
+    string,
+    {
+      useQuery: (options: TsrHookOptions) => TsrHookResult;
+      useMutation: (options?: TsrHookOptions) => TsrHookResult;
+    }
+  >
+>;
+
 export const tsrClient = initTsrReactQuery(rootContract, {
   baseUrl: typeof window !== "undefined" ? window.location.origin : "",
   api: tsrApiFetcher,
-});
-
-/**
- * Per-domain typed ts-rest react-query accessors.
- *
- * WHY: `initTsrReactQuery` over the full 22-domain root contract trips TS's
- * union-instantiation depth limit — property chains like
- * `tsrClient.students.list` degrade to non-callable unions, which led to
- * `@ts-expect-error - TS union discrimination limit` being suppressed at every
- * hook across all modules (~286 sites), erasing query-param and response
- * types exactly where the contract layer was supposed to enforce them.
- *
- * `tsr.students` instantiates `TsRestReactQueryHooksContainer` against the
- * small per-domain contract (`studentContract`), which TS resolves fully:
- * real query/mutation request and response types at every call site. The
- * single cast per domain lives here in this reviewed file; feature code uses
- * `tsr.<domain>.<route>.useQuery/useMutation` — not `tsrClient`.
- */
-type TsrClientArgs = Parameters<typeof initTsrReactQuery>[1];
-type DomainTsr<C extends AppRouter> = TsRestReactQueryHooksContainer<C, TsrClientArgs>;
-
-export const tsr = {
-  students: tsrClient.students as unknown as DomainTsr<typeof studentContract>,
-  finance: tsrClient.finance as unknown as DomainTsr<typeof financeContract>,
-  attendance: tsrClient.attendance as unknown as DomainTsr<typeof attendanceContract>,
-  contacts: tsrClient.contacts as unknown as DomainTsr<typeof contactsContract>,
-  faculty: tsrClient.faculty as unknown as DomainTsr<typeof facultyContract>,
-  users: tsrClient.users as unknown as DomainTsr<typeof userContract>,
-  messaging: tsrClient.messaging as unknown as DomainTsr<typeof messagingContract>,
-  sessions: tsrClient.sessions as unknown as DomainTsr<typeof sessionContract>,
-  questionBank: tsrClient.questionBank as unknown as DomainTsr<typeof questionBankContract>,
-  accounting: tsrClient.accounting as unknown as DomainTsr<typeof accountingContract>,
-  hasanat: tsrClient.hasanat as unknown as DomainTsr<typeof hasanatContract>,
-  obligations: tsrClient.obligations as unknown as DomainTsr<typeof obligationContract>,
-  examinations: tsrClient.examinations as unknown as DomainTsr<typeof examinationContract>,
-  enrollments: tsrClient.enrollments as unknown as DomainTsr<typeof enrollmentContract>,
-  dashboard: tsrClient.dashboard as unknown as DomainTsr<typeof dashboardContract>,
-  savedReports: tsrClient.savedReports as unknown as DomainTsr<typeof savedReportsContract>,
-  workspace: tsrClient.workspace as unknown as DomainTsr<typeof workspaceContract>,
-  auth: tsrClient.auth as unknown as DomainTsr<typeof authContract>,
-  profile: tsrClient.profile as unknown as DomainTsr<typeof profileContract>,
-  public: tsrClient.public as unknown as DomainTsr<typeof publicContract>,
-  ai: tsrClient.ai as unknown as DomainTsr<typeof aiContract>,
-  platform: tsrClient.platform as unknown as DomainTsr<typeof platformContract>,
-};
+}) as unknown as TsrHooksContainer;
 
 /**
  * Typed structural view over the direct-call client.

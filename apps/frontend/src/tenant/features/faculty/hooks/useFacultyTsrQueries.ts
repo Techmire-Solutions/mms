@@ -7,7 +7,7 @@ import {
   type FacultyQuickFilter,
   type FacultySortField,
 } from "@mms/shared";
-import { apiContract, tsr } from "@/lib/api";
+import { apiContract, tsrClient } from "@/lib/api";
 import { queryOptions } from "@tanstack/react-query";
 import { FACULTY_QUERY_KEY } from "@/tenant/features/faculty/hooks/facultyQueryKeys";
 import {
@@ -43,7 +43,7 @@ function facultyPaginatedParamsFromRecord(query: Record<string, unknown>): Facul
   };
 }
 
-const facultyClient = tsr.faculty;
+const facultyClient = tsrClient.faculty;
 const facultyApi = apiContract.faculty;
 
 export function facultyListQueryOptions(
@@ -83,7 +83,6 @@ export function facultyListQueryOptions(
 export function useFacultyContractList(query: Record<string, unknown>, enabled = true) {
   const params = facultyPaginatedParamsFromRecord(query);
   const keyParams = facultyListQueryKeyParams(params);
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.list.useQuery({
     queryKey: facultyPaginatedQueryKey(params),
     queryData: { query },
@@ -104,7 +103,6 @@ export function useFacultyContractList(query: Record<string, unknown>, enabled =
 
 /** Contract-backed get by ID. */
 export function useFacultyContractGet(id: string, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.get.useQuery({
     queryKey: [...FACULTY_QUERY_KEY, "contract-get", id],
     queryData: { params: { id } },
@@ -115,7 +113,6 @@ export function useFacultyContractGet(id: string, enabled = true) {
 
 /** Contract-backed next employee ID query. */
 export function useFacultyContractNextEmployeeId(query: { prefix?: string }, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.nextEmployeeId.useQuery({
     queryKey: [...FACULTY_QUERY_KEY, "next-employee-id", query],
     queryData: { query },

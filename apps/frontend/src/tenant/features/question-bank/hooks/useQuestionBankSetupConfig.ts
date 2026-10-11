@@ -16,16 +16,13 @@ const QUERY_KEY_PREFS = ["question-bank", "config", "preferences"] as const;
 export function useComposedQuestionBankSettings() {
   const queryClient = useQueryClient();
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.questionBank.getComposedConfig.useQuery({
     queryKey: QUERY_KEY_COMPOSED,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const updateFieldsMutation = tsrClient.questionBank.updateFieldConfig.useMutation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const updatePrefsMutation = tsrClient.questionBank.updatePreferences.useMutation();
 
   const updateAsync = async (draft: QuestionBankSettings) => {

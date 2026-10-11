@@ -82,7 +82,6 @@ export function enrollmentsCommandMetricsQueryOptions() {
 export function useEnrollmentsPaginated(params: EnrollmentsPaginatedParams) {
   const { isAuthenticated } = useAuth();
   const enabled = params.enabled ?? true;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.list.useQuery({
     queryKey: [...ENROLLMENTS_QUERY_KEY, "page", params],
     queryData: {
@@ -114,7 +113,6 @@ export function useEnrollments(options?: EnrollmentsCollectionOptions) {
     sessionId || classId
       ? ([...ENROLLMENTS_QUERY_KEY, "scope", { sessionId, classId }] as const)
       : ENROLLMENTS_QUERY_KEY;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.list.useQuery({
     queryKey: scopedQueryKey,
     queryData: {
@@ -149,7 +147,6 @@ export function useEnrollmentsReportAggregates(options?: {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
   const comparison = normalizeEnrollmentsReportComparisonQuery(options?.comparison);
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.reportAggregates.useQuery({
     queryKey: [...ENROLLMENTS_REPORT_AGGREGATES_QUERY_KEY, comparison ?? null],
     queryData: {

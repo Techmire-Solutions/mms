@@ -42,7 +42,6 @@ export function useContactsReportAnalytics(params: ContactsReportAnalyticsParams
   const compareYears = params.compareYears?.filter(Boolean) ?? [];
   const language = params.language ?? "en";
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.reportAnalytics.useQuery({
     queryKey: [...CONTACTS_REPORT_ANALYTICS_QUERY_KEY, compareYears.join(","), language] as const,
     queryData: { query: { years: compareYears, lang: language } },
@@ -117,7 +116,6 @@ export function useContactsDuplicatePairs(params: ContactsDuplicatesParams = {})
   const page = params.page ?? 1;
   const limit = params.limit ?? 100;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.getDuplicates.useQuery({
     queryKey: [...CONTACTS_DUPLICATES_QUERY_KEY, page, limit] as const,
     queryData: { query: { page, limit } },
