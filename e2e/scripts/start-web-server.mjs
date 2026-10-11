@@ -1,16 +1,21 @@
 import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(scriptDir, '../..');
-const binExt = process.platform === 'win32' ? '.cmd' : '';
+const repoRoot = path.resolve(import.meta.dirname, '../..');
 
 const processes = [];
 let shuttingDown = false;
 
-function bin(packageDir, name) {
-  return path.join(repoRoot, packageDir, 'node_modules', '.bin', `${name}${binExt}`);
+/**
+ * Resolves a dependency's bin entry to its JS file so it runs under `node`.
+ * Spawning the `.bin/*.cmd` shims needs a shell on Windows (Node refuses with
+ * EINVAL), and a shell breaks on paths with spaces.
+ */
+function binScript(packageDir, pkg, name) {
+  const pkgJson = path.join(repoRoot, packageDir, 'node_modules', pkg, 'package.json');
+  const { bin } = JSON.parse(readFileSync(pkgJson, 'utf8'));
+  return path.join(path.dirname(pkgJson), typeof bin === 'string' ? bin : bin[name]);
 }
 
 function start(name, packageDir, command, args) {
@@ -72,7 +77,7 @@ async function waitForBackend(url, timeoutMs = 60000) {
   throw new Error(`Backend at ${url} failed to become ready within ${timeoutMs}ms`);
 }
 
-start('backend', 'apps/backend', bin('apps/backend', 'tsx'), ['src/index.ts']);
+start('backend', 'apps/backend', process.execPath, [binScript('apps/backend', 'tsx', 'tsx'), 'src/index.ts']);
 await waitForBackend('http://127.0.0.1:3000/ready');
-start('frontend', 'apps/frontend', bin('apps/frontend', 'vite'), ['--host', '127.0.0.1']);
+start('frontend', 'apps/frontend', process.execPath, [binScript('apps/frontend', 'vite', 'vite'), '--host', '127.0.0.1']);
 

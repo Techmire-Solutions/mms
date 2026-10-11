@@ -290,12 +290,13 @@ jobs:
     if: ${{ needs.changes.outputs.frontend == 'true' || github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    # Changed-scope PRs run one unsharded job; full scope keeps two shards.
+    # Changed-scope PRs run one unsharded job; full scope uses three shards
+    # (two took ~165s of tests each and were the slowest job on main).
     strategy:
       fail-fast: false
       matrix:
-        shardIndex: ${{ fromJSON(needs.changes.outputs.test_scope == 'full' && '[1, 2]' || '[1]') }}
-        shardTotal: ${{ fromJSON(needs.changes.outputs.test_scope == 'full' && '[2]' || '[1]') }}
+        shardIndex: ${{ fromJSON(needs.changes.outputs.test_scope == 'full' && '[1, 2, 3]' || '[1]') }}
+        shardTotal: ${{ fromJSON(needs.changes.outputs.test_scope == 'full' && '[3]' || '[1]') }}
     steps:
       # Changed scope diffs against HEAD^1: a PR checkout is the merge commit,
       # whose first parent is the base branch, so depth 2 is enough.
