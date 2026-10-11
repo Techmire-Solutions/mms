@@ -5,6 +5,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { Badge } from "@/components/ui/badge";
+
 export interface FilterChip {
   key: string;
   label: string;
@@ -47,25 +49,31 @@ export function FilterChips({
         className={cn("flex items-center gap-2 flex-wrap", className)}
       >
         {visibleChips.map((chip) => (
-          <button
+          <Badge
             key={chip.key}
-            type="button"
+            as="button"
+            tone="primary"
+            pill
+            size="sm"
             onClick={chip.onRemove}
             aria-label={chip.label}
             title={chip.label}
-            className="flex min-h-11 items-center gap-1.5 text-xs font-semibold px-2.5 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            className="min-h-11 px-3 py-2 text-xs font-semibold gap-1.5 focus-visible:ring-2 focus-visible:ring-ring"
           >
-            {chip.label}
-            <X className="w-3 h-3" aria-hidden="true" />
-          </button>
+            <span>{chip.label}</span>
+            <X className="w-3 h-3 shrink-0" aria-hidden="true" />
+          </Badge>
         ))}
 
         {overflow && (
-          <button
-            type="button"
+          <Badge
+            as="button"
+            tone="secondary"
+            pill
+            size="sm"
             onClick={() => setExpanded((e) => !e)}
             aria-expanded={expanded}
-            className="flex min-h-11 items-center gap-1 text-xs font-semibold px-2.5 py-2 rounded-full border border-border/60 bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            className="min-h-11 px-3 py-2 text-xs font-semibold gap-1 border border-border/60 bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
           >
             {expanded ? (
               <>
@@ -78,7 +86,7 @@ export function FilterChips({
                 <ChevronDown className="w-3 h-3" aria-hidden="true" />
               </>
             )}
-          </button>
+          </Badge>
         )}
 
         {chips.length > 1 && onClearAll && (

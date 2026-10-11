@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { SearchBar } from "@/components/ui/SearchBar";
-import { SimplePagination } from "@/components/ui/SimplePagination";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { useLocalPagination } from "@/hooks/useLocalPagination";
 import { ROUTES } from "@/lib/config/routes";
 import { Badge } from "@/components/ui/badge";
@@ -132,9 +132,11 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
         <Link to={ROUTES.finance} className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline">
           {t("dashboard.widgets.viewAllOutstanding")}
         </Link>
-        <SimplePagination
-          currentPage={currentPage}
-          totalPages={totalPages}
+        <ListPagination
+          variant="compact"
+          page={currentPage}
+          total={totalPages}
+          limit={1}
           onPageChange={setCurrentPage}
         />
       </footer>

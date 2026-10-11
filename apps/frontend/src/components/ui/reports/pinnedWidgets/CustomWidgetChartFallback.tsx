@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis } from "recharts";
-import SafeResponsiveContainer from "@/components/ui/SafeResponsiveContainer";
+import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
 import { chartAxisTick } from "@/components/ui/ChartGrid";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";

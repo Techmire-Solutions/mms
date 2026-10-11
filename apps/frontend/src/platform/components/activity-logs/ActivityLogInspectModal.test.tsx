@@ -22,8 +22,8 @@ vi.mock('@/components/ui/Modal', () => ({
   }) => (open ? <div data-testid="modal"><h2>{title}</h2>{children}</div> : null),
 }));
 
-vi.mock('@/components/ui/CopyBtn', () => ({
-  CopyBtn: ({ text, label }: { text: string; label?: string }) => (
+vi.mock('@/components/ui/CopyButton', () => ({
+  CopyButton: ({ text, label }: { text: string; label?: string }) => (
     <button data-testid="copy-btn" data-text={text}>{label}</button>
   ),
 }));

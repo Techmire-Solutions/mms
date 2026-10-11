@@ -9,8 +9,8 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleSoftDeleteConfirmDialogs", () => ({
-  ModuleSoftDeleteConfirmDialogs: ({
+vi.mock("@/components/ui/ModuleTrashConfirmDialogs", () => ({
+  ModuleTrashConfirmDialogs: ({
     singleDeleteTitle,
     bulkDeleteTitle,
   }: {

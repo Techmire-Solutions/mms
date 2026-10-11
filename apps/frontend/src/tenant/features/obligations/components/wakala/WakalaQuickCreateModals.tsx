@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { NameFormModal } from "@/tenant/features/obligations/components/MujtahidNameFormModal";
+import { MujtahidNameFormModal } from "@/tenant/features/obligations/components/MujtahidNameFormModal";
 import { ObligationTypeFormModal } from "@/tenant/features/obligations/components/ObligationTypeFormModal";
 import type { Mujtahid, MujtahidRep, ObligationType } from "@/lib/data/obligationsData";
 
@@ -32,7 +32,7 @@ export function WakalaQuickCreateModals({
   return (
     <>
       {isAddMujtahidOpen && (
-        <NameFormModal
+        <MujtahidNameFormModal
           title={t("obligations.mujtahids.addTitle")}
           label={t("obligations.mujtahids.nameLabel")}
           initial={{ name: "" }}
@@ -42,7 +42,7 @@ export function WakalaQuickCreateModals({
       )}
 
       {isAddRepOpen && (
-        <NameFormModal
+        <MujtahidNameFormModal
           title={t("obligations.mujtahids.repAddTitle")}
           label={t("obligations.mujtahids.repNameLabel")}
           initial={{ name: "" }}

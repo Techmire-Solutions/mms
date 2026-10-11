@@ -24,7 +24,7 @@ export const DESIGN_SYSTEM_SECTIONS: readonly DesignSystemSectionMeta[] = [
   {
     id: 'actions',
     labelKey: 'platform.designSystemActions',
-    primitives: ['Button', 'ActionButton', 'DensityToggle'],
+    primitives: ['Button', 'ActionButton', 'DensityToggle', 'CopyButton'],
   },
   {
     id: 'inputs',
@@ -37,6 +37,7 @@ export const DESIGN_SYSTEM_SECTIONS: readonly DesignSystemSectionMeta[] = [
       'Switch',
       'FormSelect',
       'EditableSelect',
+      'CompactSegmentedControl',
       'SegmentedPillFilter',
       'DateRangeFilterBar',
     ],
@@ -49,7 +50,7 @@ export const DESIGN_SYSTEM_SECTIONS: readonly DesignSystemSectionMeta[] = [
   {
     id: 'overlays',
     labelKey: 'platform.designSystemOverlays',
-    primitives: ['Popover', 'Tooltip', 'DropdownMenu', 'Modal', 'CommandPalette'],
+    primitives: ['Popover', 'Tooltip', 'DropdownMenu', 'Modal', 'FormModal', 'CommandPalette'],
   },
   {
     id: 'data',

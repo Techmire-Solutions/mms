@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { FeeStructure } from "@mms/shared";
 import type { InvoiceDraft } from "@/tenant/features/finance/components/invoiceFormDraft";
-import { InvoiceFormStudentPicker } from "@/tenant/features/finance/components/InvoiceFormStudentPicker";
+import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { InvoiceFormMetadataFields } from "@/tenant/features/finance/components/InvoiceFormMetadataFields";
 
 export interface InvoiceFormFieldsSectionProps {
@@ -58,14 +58,25 @@ export const InvoiceFormFieldsSection = (function InvoiceFormFieldsSection({
             </div>
           )}
 
-          <InvoiceFormStudentPicker
-            t={t}
-            studentId={draft.studentId}
-            onPick={(id, name) => {
-              onFieldChange("studentId", id);
-              if (name) onFieldChange("studentName", name);
-            }}
-          />
+          <div className="space-y-1.5">
+            <RegistryPersonSelect
+              kind="student"
+              id="invoice-student-id-select"
+              name="studentId"
+              label={t("finance.form.studentId")}
+              searchLabel={t("finance.form.studentId")}
+              searchPlaceholder={t("registryPerson.searchPlaceholder")}
+              value={draft.studentId}
+              onPick={(id, name) => {
+                onFieldChange("studentId", id);
+                if (name) onFieldChange("studentName", name);
+              }}
+              onChange={(id, name) => {
+                onFieldChange("studentId", id);
+                if (name) onFieldChange("studentName", name);
+              }}
+            />
+          </div>
 
           <Field
             id="invoice-student-name"

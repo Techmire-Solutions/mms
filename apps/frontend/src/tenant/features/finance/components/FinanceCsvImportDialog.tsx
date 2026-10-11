@@ -3,9 +3,7 @@ import {
   financeTransferSchema,
   type FinanceTransferEntity,
 } from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface FinanceCsvImportDialogProps {
   open: boolean;
@@ -19,24 +17,14 @@ export function FinanceCsvImportDialog({
   onClose,
   canWrite,
 }: FinanceCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<FinanceTransferEntity>({
-    apiPath: "/api/finance/import",
-    schema: financeTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<FinanceTransferEntity>
+    <StandardModuleCsvImportDialog<FinanceTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.finance")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/finance/import"
+      schema={financeTransferSchema}
+      navKey="nav.finance"
     />
   );
 }

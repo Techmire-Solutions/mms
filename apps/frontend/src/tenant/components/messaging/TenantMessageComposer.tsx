@@ -1,5 +1,5 @@
 import React from 'react';
-import MessageComposer, { type MessageComposerProps } from '@/components/ui/MessageComposer';
+import { MessageComposer, type MessageComposerProps } from '@/components/ui/MessageComposer';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useBranding } from '@/tenant/hooks/useBranding';
 import { TenantMessageComposerRecipientPicker } from './TenantMessageComposerRecipientPicker';

@@ -4,7 +4,7 @@ import { resolveWidgetTitle } from "@/lib/dashboardWidgets";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Modal } from "@/components/ui/Modal";
-import { SimplePagination } from "@/components/ui/SimplePagination";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Badge } from "@/components/ui/badge";
 import { useWidgetDrilldownModal } from "@/components/ui/reports/pinnedWidgets/useWidgetDrilldownModal";
@@ -62,9 +62,11 @@ export function WidgetDrilldownModal({
             <span className="text-xs font-bold text-muted-foreground">
               {t("reports.widgets.foundCount", { count: filteredRecords.length })}
             </span>
-            <SimplePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
+            <ListPagination
+              variant="compact"
+              page={currentPage}
+              total={totalPages}
+              limit={1}
               onPageChange={setCurrentPage}
             />
           </div>

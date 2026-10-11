@@ -20,7 +20,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import SafeResponsiveContainer from '@/components/ui/SafeResponsiveContainer';
+import { SafeResponsiveContainer } from '@/components/ui/SafeResponsiveContainer';
 import { ChartGrid, ChartPolarGrid, chartAxisTick } from '@/components/ui/ChartGrid';
 import {
   capitalize,

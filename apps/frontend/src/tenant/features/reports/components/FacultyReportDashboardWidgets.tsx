@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Bar, BarChart, Tooltip, XAxis, YAxis } from "recharts";
-import SafeResponsiveContainer from "@/components/ui/SafeResponsiveContainer";
+import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
 import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { SectionLabel } from "@/components/ui/SectionLabel";

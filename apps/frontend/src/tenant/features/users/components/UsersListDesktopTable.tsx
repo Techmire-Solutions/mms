@@ -1,7 +1,7 @@
 import React, { type JSX } from 'react';
 import type { SystemUser } from '@mms/shared';
 import { useTranslation } from '@/hooks/useTranslation';
-import { UsersListAvatar } from '@/tenant/features/users/components/UsersListAvatar';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { UsersRowActions } from '@/tenant/features/users/components/UsersRowActions';
 import { renderUserWorkColumnValue } from '@/tenant/features/users/components/userWorkColumnCell';
 import { WorkBatchTable, type WorkBatchTableColumn } from '@/components/common/work';
@@ -61,7 +61,7 @@ export function UsersListDesktopTable({
         cellClassName: 'px-3 py-2.5',
         render: (user) => (
           <div className="flex items-center gap-2.5">
-            <UsersListAvatar user={user} />
+            <UserAvatar name={user.name || user.email} id={user.id} size="sm" />
             <p className="text-sm font-semibold text-foreground">
               {user.name?.trim() || user.email || ""}
             </p>

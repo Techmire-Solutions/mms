@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CardTitleBar } from "@/components/ui/CardTitleBar";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/FormField";
-import PasswordInput from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
 import { WarningCallout } from "@/components/ui/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";

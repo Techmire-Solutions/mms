@@ -9,8 +9,8 @@ vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock('@/components/ui/CopyBtn', () => ({
-  CopyBtn: ({ text, label }: { text: string; label: string }) => <button data-copy={text}>{label}</button>,
+vi.mock('@/components/ui/CopyButton', () => ({
+  CopyButton: ({ text, label }: { text: string; label: string }) => <button data-copy={text}>{label}</button>,
 }));
 
 function markup(node: React.ReactNode): HTMLDivElement {

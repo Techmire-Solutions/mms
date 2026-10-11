@@ -3,9 +3,7 @@ import {
   questionBankTransferSchema,
   type QuestionBankTransferEntity,
 } from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
-import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
-import { useTranslation } from "@/hooks/useTranslation";
+import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface QuestionBankCsvImportDialogProps {
   open: boolean;
@@ -19,24 +17,14 @@ export function QuestionBankCsvImportDialog({
   onClose,
   canWrite,
 }: QuestionBankCsvImportDialogProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-
-  const actions = useModuleCsvImportActions<QuestionBankTransferEntity>({
-    apiPath: "/api/question-bank/import",
-    schema: questionBankTransferSchema,
-    onSuccess: onClose,
-  });
-
-  if (!open || !canWrite) return null;
-
   return (
-    <ModuleImportDialog<QuestionBankTransferEntity>
+    <StandardModuleCsvImportDialog<QuestionBankTransferEntity>
       open={open}
       onClose={onClose}
-      title={`${t("common.import")} - ${t("nav.questionBank")}`}
-      subtitle={t("faculty.io.csvHint")}
       canWrite={canWrite}
-      actions={actions}
+      apiPath="/api/question-bank/import"
+      schema={questionBankTransferSchema}
+      navKey="nav.questionBank"
     />
   );
 }

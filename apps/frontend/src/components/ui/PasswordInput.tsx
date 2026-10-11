@@ -76,5 +76,3 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
     </div>
   );
 };
-
-export default PasswordInput;

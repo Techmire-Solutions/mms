@@ -3,6 +3,7 @@ import type { AppTranslationKey } from "@mms/shared";
 import { cn } from "@/lib/utils";
 import { SEMANTIC_BADGE } from "@/lib/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Badge } from "@/components/ui/badge";
 
 export interface StatusBadgeConfigItem {
   label: string;
@@ -85,37 +86,30 @@ export const StatusBadge = (function StatusBadge({
 
   const badgeConfigByStatus = { ...defaultConfig, ...(config || {}) };
   const badgeConfig = badgeConfigByStatus[status] || { label: status, cls: SEMANTIC_BADGE.muted };
-  const sizeClass = size === "sm" ? "text-xs px-1.5 py-0.5" : "text-xs px-2 py-0.5";
-  const className = cn(
-    "inline-flex items-center gap-1 font-bold rounded-md border",
-    sizeClass,
-    badgeConfig.cls,
-    onClick && "cursor-pointer hover:opacity-80 transition-colors",
-  );
-
   const content = (
     <>
       {badgeConfig.dot && (
-        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", badgeConfig.dot)} />
+        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", badgeConfig.dot)} aria-hidden="true" />
       )}
       {badgeConfig.label}
     </>
   );
 
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        className={className}
-        onClick={(event) => {
-          event.stopPropagation();
-          onClick();
-        }}
-      >
-        {content}
-      </button>
-    );
-  }
-
-  return <span className={className}>{content}</span>;
+  return (
+    <Badge
+      as={onClick ? "button" : "span"}
+      size={size}
+      onClick={
+        onClick
+          ? (event) => {
+              event.stopPropagation();
+              onClick();
+            }
+          : undefined
+      }
+      className={cn("font-bold text-xs", badgeConfig.cls)}
+    >
+      {content}
+    </Badge>
+  );
 });

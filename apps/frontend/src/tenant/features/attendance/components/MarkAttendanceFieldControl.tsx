@@ -1,7 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormSelect } from "@/components/ui/FormSelect";
 import { Input } from "@/components/ui/input";
-import { RegistryDateField } from "@/components/ui/RegistryDateField";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
@@ -104,7 +104,7 @@ export function MarkAttendanceFieldControl({
     return (
       <>
         <label htmlFor={inputId} className="sr-only">{field.label}</label>
-        <RegistryDateField
+        <DatePicker
           id={inputId}
           name={field.id}
           value={stringValue}

@@ -11,6 +11,13 @@ describe("Badge Component", () => {
     expect(html).toContain("rounded-md");
   });
 
+  it("renders primary variant with children", () => {
+    const html = renderToStaticMarkup(<Badge variant="primary">Primary Badge</Badge>);
+    expect(html).toContain("Primary Badge");
+    expect(html).toContain("bg-primary");
+    expect(html).toContain("rounded-md");
+  });
+
   it("renders pill shape when pill=true", () => {
     const html = renderToStaticMarkup(<Badge pill>Pill Badge</Badge>);
     expect(html).toContain("Pill Badge");

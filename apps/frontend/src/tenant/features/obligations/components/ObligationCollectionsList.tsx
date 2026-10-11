@@ -1,6 +1,6 @@
 import React from "react";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { ModuleStandardTrashDialogs } from "@/components/ui/ModuleStandardTrashDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
 import { ObligationCollectionsListContent } from "@/tenant/features/obligations/components/ObligationCollectionsListContent";
 import { ObligationCollectionsListFilters } from "@/tenant/features/obligations/components/ObligationCollectionsListFilters";
 import { ObligationsBulkActionBar } from "@/tenant/features/obligations/components/ObligationsBulkActionBar";
@@ -163,7 +163,7 @@ export function ObligationCollectionsList({
         }}
       />
 
-      <ModuleStandardTrashDialogs
+      <ModuleTrashConfirmDialogs
         pendingTrashId={pendingTrashId}
         onPendingTrashIdChange={setPendingTrashId}
         confirmBulkOpen={confirmBulkOpen}

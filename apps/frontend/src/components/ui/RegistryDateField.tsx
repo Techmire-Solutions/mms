@@ -23,7 +23,10 @@ export interface RegistryDateFieldProps {
   "aria-describedby"?: string;
 }
 
-/** Thin DatePicker wrapper for module registry / custom fields (ModuleFieldDef). */
+/**
+ * @deprecated Prefer using `DatePicker` from `@/components/ui/DatePicker` directly.
+ * Retained as a backward-compatible adapter.
+ */
 export function RegistryDateField({
   id,
   name,

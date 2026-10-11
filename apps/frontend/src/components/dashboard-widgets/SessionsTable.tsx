@@ -10,7 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { SimplePagination } from "@/components/ui/SimplePagination";
+import { ListPagination } from "@/components/ui/ListPagination";
 import { Badge } from "@/components/ui/badge";
 import { useLocalPagination } from "@/hooks/useLocalPagination";
 import { ROUTES } from "@/lib/config/routes";
@@ -158,9 +158,11 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
 
       {totalPages > 1 && (
         <footer className="px-5 py-3.5 border-t border-border/40 flex items-center justify-end gap-2 bg-muted/10 select-none">
-          <SimplePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
+          <ListPagination
+            variant="compact"
+            page={currentPage}
+            total={totalPages}
+            limit={1}
             onPageChange={setCurrentPage}
           />
         </footer>

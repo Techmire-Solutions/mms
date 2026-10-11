@@ -1,19 +1,21 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export interface SubTabBadgeProps {
+export interface SubTabBarBadgeProps {
   badge: number | string;
   active: boolean;
   /** When true, applies group-hover muted treatment (underline sub-tab chrome). */
   interactive?: boolean;
 }
 
+export type SubTabBadgeProps = SubTabBarBadgeProps;
+
 /** Single sub-tab count pill SSOT. */
-export function SubTabBadge({
+export function SubTabBarBadge({
   badge,
   active,
   interactive = false,
-}: SubTabBadgeProps): React.JSX.Element {
+}: SubTabBarBadgeProps): React.JSX.Element {
   return (
     <span
       className={cn(
@@ -30,3 +32,6 @@ export function SubTabBadge({
     </span>
   );
 }
+
+/** Backward-compatibility alias */
+export const SubTabBadge = SubTabBarBadge;

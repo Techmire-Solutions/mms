@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Key } from "lucide-react";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
-import PasswordInput from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { FieldErrorMessage } from "@/components/ui/FormField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUpdatePlatformPassword } from "@/platform/hooks/usePlatformProfile";

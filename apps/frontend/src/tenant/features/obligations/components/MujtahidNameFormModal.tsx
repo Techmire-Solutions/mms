@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
 import type { Mujtahid, MujtahidRep } from "@/tenant/features/obligations/components/mujtahidManagerTypes";
 
-export interface NameFormModalProps {
+export interface MujtahidNameFormModalProps {
   title: string;
   initial: Partial<Mujtahid> | Partial<MujtahidRep>;
   onSave: (form: Partial<Mujtahid> | Partial<MujtahidRep>) => Promise<unknown> | void;
@@ -13,7 +13,9 @@ export interface NameFormModalProps {
   label: string;
 }
 
-export function NameFormModal({ initial, onSave, onClose, label, title }: NameFormModalProps) {
+export type NameFormModalProps = MujtahidNameFormModalProps;
+
+export function MujtahidNameFormModal({ initial, onSave, onClose, label, title }: MujtahidNameFormModalProps) {
   const { t } = useTranslation();
   const [form, setForm] = useState({ ...initial });
   const [error, setError] = useState("");
@@ -74,3 +76,6 @@ export function NameFormModal({ initial, onSave, onClose, label, title }: NameFo
     </FormModal>
   );
 }
+
+/** Backward-compatibility alias */
+export const NameFormModal = MujtahidNameFormModal;

@@ -2,7 +2,7 @@ import React from 'react';
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
 import WorkspaceLogo from '@/platform/components/WorkspaceLogo';
 import { tenantUrl } from '@/lib/config/tenantConfig';
-import { CopyBtn } from '@/components/ui/CopyBtn';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { ExternalLink, Mail } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -57,7 +57,7 @@ export function WorkspaceIdentityCell({
             <span className="font-bold text-primary">{workspace.subdomain}</span>
             <span className="text-muted-foreground">.{appDomain}</span>
           </div>
-          <CopyBtn
+          <CopyButton
             text={tenantLink}
             className="min-h-11 min-w-11 p-0 text-muted-foreground hover:text-foreground opacity-60 hover:opacity-100 transition-opacity rounded-md cursor-pointer"
             showToast
