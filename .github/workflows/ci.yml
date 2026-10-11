@@ -256,7 +256,9 @@ jobs:
           path: |
             mms-dist.tar.gz
             mms-dist.tar.gz.sha256
-          retention-days: 14
+          # The repo maximum: a verified rollback (deploy.yml manual dispatch)
+          # can only promote a commit whose artifact still exists.
+          retention-days: 90
           if-no-files-found: error
 
   secret-scan:
