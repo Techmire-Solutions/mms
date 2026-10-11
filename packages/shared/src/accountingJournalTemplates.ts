@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import type { AppTranslationKey } from './appTranslations.js';
+import { z } from "zod";
+import type { AppTranslationKey } from "./appTranslations.js";
 
 /**
  * A journal entry template ("tag"): its name is written to `JournalEntry.tags`,
@@ -10,8 +10,8 @@ export const journalTemplateSchema = z
   .object({
     id: z.string().trim().min(1).max(64),
     name: z.string().trim().min(1).max(60),
-    debitAccountId: z.string().default(''),
-    creditAccountId: z.string().default(''),
+    debitAccountId: z.string().default(""),
+    creditAccountId: z.string().default(""),
   })
   .strict();
 
@@ -50,18 +50,78 @@ export interface JournalTemplateSeed {
 
 /** Most-used vouchers for a madrasa; heads follow the default chart's code blocks. */
 export const JOURNAL_TEMPLATE_SEEDS: readonly JournalTemplateSeed[] = [
-  { id: 'petty-cash-expense', nameKey: 'accounting.templates.seed.pettyCashExpense', debitCode: '61500', creditCode: '10200' },
-  { id: 'cash-payment', nameKey: 'accounting.templates.seed.cashPayment', debitCode: '60500', creditCode: '10100' },
-  { id: 'bank-payment', nameKey: 'accounting.templates.seed.bankPayment', debitCode: '61500', creditCode: '10300' },
-  { id: 'payroll', nameKey: 'accounting.templates.seed.payroll', debitCode: '60100', creditCode: '10300' },
-  { id: 'utilities', nameKey: 'accounting.templates.seed.utilities', debitCode: '60300', creditCode: '10300' },
-  { id: 'rent-payment', nameKey: 'accounting.templates.seed.rentPayment', debitCode: '60200', creditCode: '10300' },
-  { id: 'bank-charges', nameKey: 'accounting.templates.seed.bankCharges', debitCode: '61400', creditCode: '10300' },
-  { id: 'fee-collection', nameKey: 'accounting.templates.seed.feeCollection', debitCode: '10100', creditCode: '42000' },
-  { id: 'donation-received', nameKey: 'accounting.templates.seed.donationReceived', debitCode: '10100', creditCode: '43000' },
-  { id: 'cash-deposit', nameKey: 'accounting.templates.seed.cashDeposit', debitCode: '10300', creditCode: '10100' },
-  { id: 'cash-withdrawal', nameKey: 'accounting.templates.seed.cashWithdrawal', debitCode: '10100', creditCode: '10300' },
-  { id: 'petty-cash-topup', nameKey: 'accounting.templates.seed.pettyCashTopUp', debitCode: '10200', creditCode: '10300' },
+  {
+    id: "petty-cash-expense",
+    nameKey: "accounting.templates.seed.pettyCashExpense",
+    debitCode: "61500",
+    creditCode: "10200",
+  },
+  {
+    id: "cash-payment",
+    nameKey: "accounting.templates.seed.cashPayment",
+    debitCode: "60500",
+    creditCode: "10100",
+  },
+  {
+    id: "bank-payment",
+    nameKey: "accounting.templates.seed.bankPayment",
+    debitCode: "61500",
+    creditCode: "10300",
+  },
+  {
+    id: "payroll",
+    nameKey: "accounting.templates.seed.payroll",
+    debitCode: "60100",
+    creditCode: "10300",
+  },
+  {
+    id: "utilities",
+    nameKey: "accounting.templates.seed.utilities",
+    debitCode: "60300",
+    creditCode: "10300",
+  },
+  {
+    id: "rent-payment",
+    nameKey: "accounting.templates.seed.rentPayment",
+    debitCode: "60200",
+    creditCode: "10300",
+  },
+  {
+    id: "bank-charges",
+    nameKey: "accounting.templates.seed.bankCharges",
+    debitCode: "61400",
+    creditCode: "10300",
+  },
+  {
+    id: "fee-collection",
+    nameKey: "accounting.templates.seed.feeCollection",
+    debitCode: "10100",
+    creditCode: "42000",
+  },
+  {
+    id: "donation-received",
+    nameKey: "accounting.templates.seed.donationReceived",
+    debitCode: "10100",
+    creditCode: "43000",
+  },
+  {
+    id: "cash-deposit",
+    nameKey: "accounting.templates.seed.cashDeposit",
+    debitCode: "10300",
+    creditCode: "10100",
+  },
+  {
+    id: "cash-withdrawal",
+    nameKey: "accounting.templates.seed.cashWithdrawal",
+    debitCode: "10100",
+    creditCode: "10300",
+  },
+  {
+    id: "petty-cash-topup",
+    nameKey: "accounting.templates.seed.pettyCashTopUp",
+    debitCode: "10200",
+    creditCode: "10300",
+  },
 ];
 
 /**
@@ -73,12 +133,14 @@ export function buildSeedJournalTemplates(
   translate: (key: AppTranslationKey) => string,
 ): JournalTemplate[] {
   const idByCode = new Map(
-    accounts.filter((account) => account.isActive !== false).map((account) => [account.code, account.id]),
+    accounts
+      .filter((account) => account.isActive !== false)
+      .map((account) => [account.code, account.id]),
   );
   return JOURNAL_TEMPLATE_SEEDS.map((seed) => ({
     id: seed.id,
     name: translate(seed.nameKey),
-    debitAccountId: idByCode.get(seed.debitCode) ?? '',
-    creditAccountId: idByCode.get(seed.creditCode) ?? '',
+    debitAccountId: idByCode.get(seed.debitCode) ?? "",
+    creditAccountId: idByCode.get(seed.creditCode) ?? "",
   }));
 }

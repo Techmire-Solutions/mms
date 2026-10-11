@@ -1,14 +1,14 @@
-import React from 'react';
-import { RotateCcw } from 'lucide-react';
-import type { Message } from '@mms/shared';
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { Button } from '@/components/ui/button';
-import { WorkBatchTable } from '@/components/common/work';
-import { useTranslation } from '@/hooks/useTranslation';
-import { formatDirectoryPageCountLabel } from '@/lib/formatDirectoryPageCountLabel';
-import { SEMANTIC_TEXT, SEMANTIC_BG } from '@/lib/semanticTone';
-import type { MessagingSelectedLogsMap } from './MessagingWorkTier';
-import { useMessagingTableColumns } from './useMessagingTableColumns';
+import React from "react";
+import { RotateCcw } from "lucide-react";
+import type { Message } from "@mms/shared";
+import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { WorkBatchTable } from "@/components/common/work";
+import { useTranslation } from "@/hooks/useTranslation";
+import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/semanticTone";
+import type { MessagingSelectedLogsMap } from "./MessagingWorkTier";
+import { useMessagingTableColumns } from "./useMessagingTableColumns";
 
 export interface MessagingListDesktopTableProps {
   logs: Message[];
@@ -56,20 +56,20 @@ export function MessagingListDesktopTable({
 
   const selectedCount = Object.keys(selectedIds).length;
   const pageCountLabel = formatDirectoryPageCountLabel(logs.length, t, {
-    singular: 'messaging.log',
-    plural: 'messaging.logs',
+    singular: "messaging.log",
+    plural: "messaging.logs",
   });
 
   return (
     <WorkBatchTable<Message>
       data={logs}
       columns={columns}
-      caption={t('messaging.logs')}
+      caption={t("messaging.logs")}
       className="table-fixed text-xs"
       stickyColumnId="recipient"
       onRowClick={onViewLog}
       rowClassName={(log) =>
-        log.status === 'failed'
+        log.status === "failed"
           ? `${SEMANTIC_BG.destructive} hover:bg-destructive/10 border-s-2 border-s-destructive`
           : undefined
       }
@@ -82,9 +82,9 @@ export function MessagingListDesktopTable({
         onSelectAll: () => onToggleAllVisible(!allVisibleSelected),
         allSelected: allVisibleSelected,
         someSelected: someVisibleSelected,
-        selectAllAriaLabel: t('messaging.selectAllVisible'),
+        selectAllAriaLabel: t("messaging.selectAllVisible"),
         selectRowAriaLabel: (log) =>
-          t('messaging.selectRecipient', { name: getRecipientName(log.contactId) }),
+          t("messaging.selectRecipient", { name: getRecipientName(log.contactId) }),
       }}
       columnResize={{
         getColumnWidth,
@@ -100,14 +100,14 @@ export function MessagingListDesktopTable({
                 className={`text-xs font-semibold ${SEMANTIC_TEXT.primary} hover:bg-primary/10`}
               >
                 <RotateCcw className="me-1 h-3.5 w-3.5" />
-                {t('messaging.resend')}
+                {t("messaging.resend")}
               </Button>
             )
           : undefined
       }
-      actionsLabel={t('common.actions')}
+      actionsLabel={t("common.actions")}
       footerCount={{
-        selectedCountLabel: t('messaging.selectedCount', { count: selectedCount }),
+        selectedCountLabel: t("messaging.selectedCount", { count: selectedCount }),
         pageCountLabel,
       }}
     />

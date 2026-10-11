@@ -1,9 +1,9 @@
-import { sessionFieldConfigs } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { sessionFieldConfigs } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: sessionFieldConfigs,
-  jsonColumn: 'config',
+  jsonColumn: "config",
 });
 
 export const getSessionFieldConfigByWorkspace = repo.getByWorkspace;

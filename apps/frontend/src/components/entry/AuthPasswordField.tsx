@@ -55,7 +55,8 @@ export function AuthPasswordField({
   describedBy?: string;
 }): React.JSX.Element {
   const errorId = `${id}-error`;
-  const describedByIds = [error ? errorId : null, describedBy ?? null].filter(Boolean).join(" ") || undefined;
+  const describedByIds =
+    [error ? errorId : null, describedBy ?? null].filter(Boolean).join(" ") || undefined;
 
   return (
     <>

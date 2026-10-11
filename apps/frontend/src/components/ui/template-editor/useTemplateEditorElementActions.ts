@@ -4,11 +4,7 @@
  */
 
 import { useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from "react";
-import type {
-  ElementStyle,
-  PageSizeInfo,
-  TemplateElement,
-} from "@mms/shared";
+import type { ElementStyle, PageSizeInfo, TemplateElement } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useTemplateEditorAlignActions } from "./useTemplateEditorAlignActions";
 import { useTemplateEditorLayerActions } from "./useTemplateEditorLayerActions";
@@ -22,14 +18,14 @@ export interface UseTemplateEditorElementActionsOptions<TPayload = Record<string
   setSelectedIds: Dispatch<SetStateAction<string[]>>;
   commitUpdate: (
     updateFn: (
-      elements: TemplateElement<keyof TPayload & string>[]
-    ) => TemplateElement<keyof TPayload & string>[]
+      elements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
   commitUpdateCoalesced: (
     coalesceKey: string,
     updateFn: (
-      elements: TemplateElement<keyof TPayload & string>[]
-    ) => TemplateElement<keyof TPayload & string>[]
+      elements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
   size: PageSizeInfo;
   onElementAdded?: (elementId: string) => void;
@@ -57,20 +53,17 @@ export function useTemplateEditorElementActions<TPayload = Record<string, unknow
     (elementId: string) => {
       setSelectedIds([elementId]);
     },
-    [setSelectedIds]
+    [setSelectedIds],
   );
 
   const patchElement = useCallback(
-    (
-      elementId: string,
-      patch: Partial<TemplateElement<keyof TPayload & string>>
-    ) => {
+    (elementId: string, patch: Partial<TemplateElement<keyof TPayload & string>>) => {
       const keys = Object.keys(patch).join(",");
       commitUpdateCoalesced(`patch:${elementId}:${keys}`, (els) =>
-        els.map((el) => (el.id === elementId ? { ...el, ...patch } : el))
+        els.map((el) => (el.id === elementId ? { ...el, ...patch } : el)),
       );
     },
-    [commitUpdateCoalesced]
+    [commitUpdateCoalesced],
   );
 
   const patchStyle = useCallback(
@@ -78,11 +71,11 @@ export function useTemplateEditorElementActions<TPayload = Record<string, unknow
       const keys = Object.keys(stylePatch).join(",");
       commitUpdateCoalesced(`style:${elementId}:${keys}`, (els) =>
         els.map((el) =>
-          el.id === elementId ? { ...el, style: { ...el.style, ...stylePatch } } : el
-        )
+          el.id === elementId ? { ...el, style: { ...el.style, ...stylePatch } } : el,
+        ),
       );
     },
-    [commitUpdateCoalesced]
+    [commitUpdateCoalesced],
   );
 
   const deleteElement = useCallback(
@@ -91,7 +84,7 @@ export function useTemplateEditorElementActions<TPayload = Record<string, unknow
       setSelectedIds((prev) => prev.filter((id) => id !== elementId));
       onElementDeleted?.(1);
     },
-    [commitUpdate, onElementDeleted, setSelectedIds]
+    [commitUpdate, onElementDeleted, setSelectedIds],
   );
 
   const deleteSelected = useCallback(() => {
@@ -109,15 +102,14 @@ export function useTemplateEditorElementActions<TPayload = Record<string, unknow
       commitUpdateCoalesced,
     });
 
-  const { duplicateElement, duplicateSelected } =
-    useTemplateEditorDuplicateActions<TPayload>({
-      elementsRef,
-      commitUpdate,
-      size,
-      onElementAdded,
-      selectedIds,
-      setSelectedIds,
-    });
+  const { duplicateElement, duplicateSelected } = useTemplateEditorDuplicateActions<TPayload>({
+    elementsRef,
+    commitUpdate,
+    size,
+    onElementAdded,
+    selectedIds,
+    setSelectedIds,
+  });
 
   const alignActions = useTemplateEditorAlignActions<TPayload>({
     selectedIds,
@@ -170,6 +162,6 @@ export function useTemplateEditorElementActions<TPayload = Record<string, unknow
       layerActions,
       alignActions,
       addActions,
-    ]
+    ],
   );
 }

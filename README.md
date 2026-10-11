@@ -6,16 +6,16 @@ A full-stack, multi-tenant **Madrasa Management System** built for Islamic educa
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| **Frontend** | React 19 · Vite 8 · Tailwind CSS v4 · Radix UI / shadcn · TanStack Query v5 · Framer Motion · Recharts |
-| **Backend** | Fastify 5 · Node.js ≥ 24.14 (`--experimental-strip-types`) · TypeScript 7 (strict) |
-| **Database** | PostgreSQL 16 · Drizzle ORM · Row-Level Security (RLS) · Forward-only migrations |
-| **Cache / Queue** | Redis 7 · BullMQ |
-| **Shared** | `@mms/shared` — Zod DTOs, types, manifests, pure utils (zero DOM/React/Fastify deps) |
-| **Monorepo** | pnpm workspaces · Turborepo · TypeScript project references |
-| **CI/CD** | GitHub Actions (typecheck → lint → unit → DB integration → E2E → deploy) |
-| **Production** | Hetzner VPS · PM2 · Apache reverse proxy (PORT 5002) |
+| Layer             | Technology                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------ |
+| **Frontend**      | React 19 · Vite 8 · Tailwind CSS v4 · Radix UI / shadcn · TanStack Query v5 · Framer Motion · Recharts |
+| **Backend**       | Fastify 5 · Node.js ≥ 24.14 (`--experimental-strip-types`) · TypeScript 7 (strict)                     |
+| **Database**      | PostgreSQL 16 · Drizzle ORM · Row-Level Security (RLS) · Forward-only migrations                       |
+| **Cache / Queue** | Redis 7 · BullMQ                                                                                       |
+| **Shared**        | `@mms/shared` — Zod DTOs, types, manifests, pure utils (zero DOM/React/Fastify deps)                   |
+| **Monorepo**      | pnpm workspaces · Turborepo · TypeScript project references                                            |
+| **CI/CD**         | GitHub Actions (typecheck → lint → unit → DB integration → E2E → deploy)                               |
+| **Production**    | Hetzner VPS · PM2 · Apache reverse proxy (PORT 5002)                                                   |
 
 ---
 
@@ -38,48 +38,48 @@ mms/
 
 ### Backend source (`apps/backend/src/`)
 
-| Directory | Purpose |
-|---|---|
-| `contacts/` | Canonical person/contact registry |
-| `students/` | Student module — enrollment linking, field guards |
-| `faculty/` | Faculty (teachers) module |
-| `sessions/` | Class sessions |
-| `enrollments/` | Session ↔ student enrollments |
-| `attendance/` | Attendance records |
-| `examinations/` | Exam + question bank |
-| `finance/` | Invoices, payments, double-entry ledger |
-| `accounting/` | Accounting / chart of accounts |
-| `messaging/` | SMS / WhatsApp campaigns |
-| `hasanat/` | Hasanat (merit) points module |
-| `obligations/` | Obligations / dues tracking |
-| `questionBank/` | Question bank |
-| `users/` | Workspace users + RBAC |
-| `services/` | Auth, audit verification, artifact purge schedulers |
-| `lib/` | DB pool, Redis, Pino logger, live WebSocket push |
-| `db/` | Drizzle schema, migrations, RLS helpers |
-| `worker/` | BullMQ job processors (exports, imports, bulk ops) |
-| `middleware/` | Auth, CSRF, rate-limit, tenant isolation |
+| Directory       | Purpose                                             |
+| --------------- | --------------------------------------------------- |
+| `contacts/`     | Canonical person/contact registry                   |
+| `students/`     | Student module — enrollment linking, field guards   |
+| `faculty/`      | Faculty (teachers) module                           |
+| `sessions/`     | Class sessions                                      |
+| `enrollments/`  | Session ↔ student enrollments                       |
+| `attendance/`   | Attendance records                                  |
+| `examinations/` | Exam + question bank                                |
+| `finance/`      | Invoices, payments, double-entry ledger             |
+| `accounting/`   | Accounting / chart of accounts                      |
+| `messaging/`    | SMS / WhatsApp campaigns                            |
+| `hasanat/`      | Hasanat (merit) points module                       |
+| `obligations/`  | Obligations / dues tracking                         |
+| `questionBank/` | Question bank                                       |
+| `users/`        | Workspace users + RBAC                              |
+| `services/`     | Auth, audit verification, artifact purge schedulers |
+| `lib/`          | DB pool, Redis, Pino logger, live WebSocket push    |
+| `db/`           | Drizzle schema, migrations, RLS helpers             |
+| `worker/`       | BullMQ job processors (exports, imports, bulk ops)  |
+| `middleware/`   | Auth, CSRF, rate-limit, tenant isolation            |
 
 ### Frontend source (`apps/frontend/src/`)
 
-| Directory | Purpose |
-|---|---|
-| `tenant/features/` | 20 feature modules (students, faculty, sessions, finance, …) |
-| `tenant/hooks/collections/` | TanStack Query facades per resource |
-| `platform/` | Platform apex (super-admin, tenant management) |
-| `components/ui/` | Shared design-system primitives |
-| `lib/` | `apiClient`, query factories, i18n, routing |
+| Directory                   | Purpose                                                      |
+| --------------------------- | ------------------------------------------------------------ |
+| `tenant/features/`          | 20 feature modules (students, faculty, sessions, finance, …) |
+| `tenant/hooks/collections/` | TanStack Query facades per resource                          |
+| `platform/`                 | Platform apex (super-admin, tenant management)               |
+| `components/ui/`            | Shared design-system primitives                              |
+| `lib/`                      | `apiClient`, query factories, i18n, routing                  |
 
 ---
 
 ## Prerequisites
 
-| Tool | Version |
-|---|---|
-| Node.js | ≥ 24.14.0 |
-| pnpm | 11.15.1 (enforced via `packageManager`) |
-| PostgreSQL | 16 (or use Docker) |
-| Redis | 7 (or use Docker) |
+| Tool       | Version                                 |
+| ---------- | --------------------------------------- |
+| Node.js    | ≥ 24.14.0                               |
+| pnpm       | 11.15.1 (enforced via `packageManager`) |
+| PostgreSQL | 16 (or use Docker)                      |
+| Redis      | 7 (or use Docker)                       |
 
 ---
 
@@ -115,6 +115,7 @@ PLATFORM_APP_URL=http://localhost:5173
 ### 3. Start infrastructure (Postgres + Redis)
 
 **Option A — Docker Compose (recommended):**
+
 ```bash
 docker compose up postgres redis -d
 ```
@@ -141,9 +142,9 @@ screen -r mms-dev
 ./restart_servers.sh --foreground
 ```
 
-| URL | Service |
-|---|---|
-| `http://localhost:5173` | Frontend |
+| URL                            | Service              |
+| ------------------------------ | -------------------- |
+| `http://localhost:5173`        | Frontend             |
 | `http://localhost:3000/health` | Backend health check |
 
 ---
@@ -199,12 +200,12 @@ cp .env.example .env   # set POSTGRES_PASSWORD, REDIS_PASSWORD, JWT_SECRET
 docker compose up -d
 ```
 
-| Container | Port | Notes |
-|---|---|---|
-| `mms-postgres` | `127.0.0.1:5432` | Bound to loopback only |
-| `mms-redis` | `127.0.0.1:6379` | Password-protected, loopback only |
-| `mms-backend` | `5002` | API + health endpoint |
-| `mms-worker` | — | BullMQ job processor |
+| Container      | Port             | Notes                             |
+| -------------- | ---------------- | --------------------------------- |
+| `mms-postgres` | `127.0.0.1:5432` | Bound to loopback only            |
+| `mms-redis`    | `127.0.0.1:6379` | Password-protected, loopback only |
+| `mms-backend`  | `5002`           | API + health endpoint             |
+| `mms-worker`   | —                | BullMQ job processor              |
 
 ---
 
@@ -229,30 +230,30 @@ Automated deploys on push to `main` via [`.github/workflows/deploy.yml`](.github
 
 ### Root `.env` (docker-compose only)
 
-| Variable | Required | Description |
-|---|---|---|
-| `POSTGRES_PASSWORD` | ✅ | PostgreSQL password |
-| `REDIS_PASSWORD` | ✅ | Redis `requirepass` value |
-| `JWT_SECRET` | ✅ | 256-bit hex secret (`openssl rand -hex 32`) |
-| `POSTGRES_USER` | — | Default: `postgres` |
-| `POSTGRES_DB` | — | Default: `mms` |
+| Variable            | Required | Description                                 |
+| ------------------- | -------- | ------------------------------------------- |
+| `POSTGRES_PASSWORD` | ✅       | PostgreSQL password                         |
+| `REDIS_PASSWORD`    | ✅       | Redis `requirepass` value                   |
+| `JWT_SECRET`        | ✅       | 256-bit hex secret (`openssl rand -hex 32`) |
+| `POSTGRES_USER`     | —        | Default: `postgres`                         |
+| `POSTGRES_DB`       | —        | Default: `mms`                              |
 
 ### `apps/backend/.env`
 
-| Variable | Required | Description |
-|---|---|---|
-| `JWT_SECRET` | ✅ | Same 256-bit hex key |
-| `DATABASE_URL` | ✅ | `postgresql://user:pass@host:5432/db` |
-| `REDIS_URL` | ✅ | `redis://:password@host:6379` |
-| `NODE_ENV` | — | `development` / `production` / `test` |
-| `PORT` | — | `3000` dev · `5002` prod |
-| `PLATFORM_APP_URL` | — | Frontend URL for CORS + email links |
-| `MMS_APP_DOMAIN` | — | Apex domain for tenant subdomains |
-| `PG_POOL_MAX` | — | Default: `20` |
-| `PG_STATEMENT_TIMEOUT_MS` | — | Default: `30000` |
-| `PLATFORM_RESEND_API_KEY` | — | Transactional email via Resend |
-| `PLATFORM_SMTP_HOST` | — | Transactional email via SMTP |
-| `PLATFORM_ALLOW_ENV_BOOTSTRAP` | — | `false` by default; enables admin seeding |
+| Variable                       | Required | Description                               |
+| ------------------------------ | -------- | ----------------------------------------- |
+| `JWT_SECRET`                   | ✅       | Same 256-bit hex key                      |
+| `DATABASE_URL`                 | ✅       | `postgresql://user:pass@host:5432/db`     |
+| `REDIS_URL`                    | ✅       | `redis://:password@host:6379`             |
+| `NODE_ENV`                     | —        | `development` / `production` / `test`     |
+| `PORT`                         | —        | `3000` dev · `5002` prod                  |
+| `PLATFORM_APP_URL`             | —        | Frontend URL for CORS + email links       |
+| `MMS_APP_DOMAIN`               | —        | Apex domain for tenant subdomains         |
+| `PG_POOL_MAX`                  | —        | Default: `20`                             |
+| `PG_STATEMENT_TIMEOUT_MS`      | —        | Default: `30000`                          |
+| `PLATFORM_RESEND_API_KEY`      | —        | Transactional email via Resend            |
+| `PLATFORM_SMTP_HOST`           | —        | Transactional email via SMTP              |
+| `PLATFORM_ALLOW_ENV_BOOTSTRAP` | —        | `false` by default; enables admin seeding |
 
 See [`apps/backend/.env.example`](apps/backend/.env.example) for the full reference with comments.
 
@@ -262,24 +263,24 @@ See [`apps/backend/.env.example`](apps/backend/.env.example) for the full refere
 
 MMS uses a **three-tier module architecture** (Work · Reports · Setup) across all domains:
 
-| Module | Description |
-|---|---|
-| **Contacts** | Canonical person registry shared across all person modules |
-| **Students** | Student profiles, custom fields, tab guards, guardian linking |
-| **Teachers** | Teacher profiles, custom fields, employment fields |
-| **Sessions** | Class/lecture sessions, scheduling |
-| **Enrollments** | Session ↔ student many-to-many with status tracking |
-| **Attendance** | Per-session attendance with bulk entry |
-| **Examinations** | Exam management linked to sessions and question bank |
-| **Question Bank** | Categorised question library with source citations |
-| **Finance** | Invoices, payment collection, fee plans |
-| **Accounting** | Double-entry ledger, chart of accounts, journal entries |
-| **Hasanat** | Islamic merit points — track, assign, redeem |
-| **Obligations** | Dues and obligation tracking per student |
-| **Messaging** | SMS/WhatsApp campaigns with template personalisation |
-| **Users** | Workspace users with role-based access control (RBAC) |
-| **Dashboard** | Configurable widget dashboard with trend metrics |
-| **Settings** | Global, branding, i18n, email, backup/restore |
+| Module            | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| **Contacts**      | Canonical person registry shared across all person modules    |
+| **Students**      | Student profiles, custom fields, tab guards, guardian linking |
+| **Teachers**      | Teacher profiles, custom fields, employment fields            |
+| **Sessions**      | Class/lecture sessions, scheduling                            |
+| **Enrollments**   | Session ↔ student many-to-many with status tracking           |
+| **Attendance**    | Per-session attendance with bulk entry                        |
+| **Examinations**  | Exam management linked to sessions and question bank          |
+| **Question Bank** | Categorised question library with source citations            |
+| **Finance**       | Invoices, payment collection, fee plans                       |
+| **Accounting**    | Double-entry ledger, chart of accounts, journal entries       |
+| **Hasanat**       | Islamic merit points — track, assign, redeem                  |
+| **Obligations**   | Dues and obligation tracking per student                      |
+| **Messaging**     | SMS/WhatsApp campaigns with template personalisation          |
+| **Users**         | Workspace users with role-based access control (RBAC)         |
+| **Dashboard**     | Configurable widget dashboard with trend metrics              |
+| **Settings**      | Global, branding, i18n, email, backup/restore                 |
 
 ---
 
@@ -300,12 +301,12 @@ MMS uses a **three-tier module architecture** (Work · Reports · Setup) across 
 
 Full BiDi / RTL support with four languages:
 
-| Locale | Language |
-|---|---|
-| `en` | English (LTR) |
-| `ar` | Arabic (RTL) |
-| `ur` | Urdu (RTL) |
-| `fa` | Persian / Farsi (RTL) |
+| Locale | Language              |
+| ------ | --------------------- |
+| `en`   | English (LTR)         |
+| `ar`   | Arabic (RTL)          |
+| `ur`   | Urdu (RTL)            |
+| `fa`   | Persian / Farsi (RTL) |
 
 Translation keys live in `@mms/shared` (`appTranslationsEn.ts`, `appTranslationsAr.ts`, etc.). Run `pnpm check:i18n` to verify completeness.
 
@@ -332,11 +333,11 @@ Typecheck → ESLint → unit tests → DB integration tests → E2E → deploy 
 
 This repository ships configuration for multiple AI coding agents:
 
-| Tool | Config |
-|---|---|
-| Antigravity | [`AGENTS.md`](AGENTS.md) · [`.agent/`](.agent/) |
-| Cursor | [`.cursor/rules/`](.cursor/rules/) · [`.cursor/skills/`](.cursor/skills/) |
-| Claude Code | [`CLAUDE.md`](CLAUDE.md) · [`.claude/`](.claude/) |
+| Tool        | Config                                                                    |
+| ----------- | ------------------------------------------------------------------------- |
+| Antigravity | [`AGENTS.md`](AGENTS.md) · [`.agent/`](.agent/)                           |
+| Cursor      | [`.cursor/rules/`](.cursor/rules/) · [`.cursor/skills/`](.cursor/skills/) |
+| Claude Code | [`CLAUDE.md`](CLAUDE.md) · [`.claude/`](.claude/)                         |
 
 Start with [`AGENTS.md`](AGENTS.md) for the full skill/rule index and workspace orientation.
 

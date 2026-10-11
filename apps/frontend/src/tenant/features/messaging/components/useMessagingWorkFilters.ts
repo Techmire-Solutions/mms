@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import type { SetURLSearchParams } from 'react-router-dom';
-import { useDebounce } from '@/hooks/useDebounce';
-import { messagingExportEndDateBound } from './messagingReportsExport';
-import { useMessagingWorkTierUrlSync } from './useMessagingWorkTierUrlSync';
+import { useState } from "react";
+import type { SetURLSearchParams } from "react-router-dom";
+import { useDebounce } from "@/hooks/useDebounce";
+import { messagingExportEndDateBound } from "./messagingReportsExport";
+import { useMessagingWorkTierUrlSync } from "./useMessagingWorkTierUrlSync";
 
-export type MessagingChannelFilter = 'all' | 'sms' | 'whatsapp' | 'email';
-export type MessagingStatusFilter = 'all' | 'sent' | 'delivered' | 'failed' | 'skipped';
+export type MessagingChannelFilter = "all" | "sms" | "whatsapp" | "email";
+export type MessagingStatusFilter = "all" | "sent" | "delivered" | "failed" | "skipped";
 
 export interface UseMessagingWorkFiltersProps {
   searchParams: URLSearchParams;
@@ -20,20 +20,23 @@ export function useMessagingWorkFilters({
   controlledChannel,
   controlledOnChannelChange,
 }: UseMessagingWorkFiltersProps) {
-  const channelParam = searchParams.get('channel') as MessagingChannelFilter | null;
-  const statusParam = searchParams.get('status') as MessagingStatusFilter | null;
-  const categoryParam = searchParams.get('category') || null;
-  const searchParam = searchParams.get('search') || '';
+  const channelParam = searchParams.get("channel") as MessagingChannelFilter | null;
+  const statusParam = searchParams.get("status") as MessagingStatusFilter | null;
+  const categoryParam = searchParams.get("category") || null;
+  const searchParam = searchParams.get("search") || "";
 
   const [search, setSearch] = useState(searchParam);
   const [logsPage, setLogsPage] = useState(1);
-  const [internalChannel, setInternalChannel] = useState<MessagingChannelFilter>(channelParam || 'all');
+  const [internalChannel, setInternalChannel] = useState<MessagingChannelFilter>(
+    channelParam || "all",
+  );
   const channel = controlledChannel !== undefined ? controlledChannel : internalChannel;
-  const setChannel = controlledOnChannelChange !== undefined ? controlledOnChannelChange : setInternalChannel;
-  const [category, setCategory] = useState(categoryParam || 'all');
-  const [status, setStatus] = useState<MessagingStatusFilter>(statusParam || 'all');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const setChannel =
+    controlledOnChannelChange !== undefined ? controlledOnChannelChange : setInternalChannel;
+  const [category, setCategory] = useState(categoryParam || "all");
+  const [status, setStatus] = useState<MessagingStatusFilter>(statusParam || "all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const debouncedSearch = useDebounce(search, 250);
   const queryStartDate = startDate.trim() || undefined;
@@ -49,27 +52,27 @@ export function useMessagingWorkFilters({
   });
 
   const hasActiveFilters =
-    channel !== 'all' ||
-    category !== 'all' ||
-    status !== 'all' ||
+    channel !== "all" ||
+    category !== "all" ||
+    status !== "all" ||
     Boolean(startDate) ||
     Boolean(endDate) ||
     Boolean(debouncedSearch.trim());
 
   const activeFilterCount =
-    (channel !== 'all' ? 1 : 0) +
-    (category !== 'all' ? 1 : 0) +
-    (status !== 'all' ? 1 : 0) +
+    (channel !== "all" ? 1 : 0) +
+    (category !== "all" ? 1 : 0) +
+    (status !== "all" ? 1 : 0) +
     (startDate ? 1 : 0) +
     (endDate ? 1 : 0);
 
   const clearFilters = (): void => {
-    setChannel('all');
-    setCategory('all');
-    setStatus('all');
-    setStartDate('');
-    setEndDate('');
-    setSearch('');
+    setChannel("all");
+    setCategory("all");
+    setStatus("all");
+    setStartDate("");
+    setEndDate("");
+    setSearch("");
     setLogsPage(1);
   };
 

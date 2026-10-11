@@ -132,7 +132,12 @@ export function ObligationCollectionsList({
         onAddNew={onAddNew}
         onView={onView}
         onPrint={setPrintCollection}
-        onToggleSelectAll={(checked) => onToggleSelectAll?.(checked, filtered.map((col) => col.id))}
+        onToggleSelectAll={(checked) =>
+          onToggleSelectAll?.(
+            checked,
+            filtered.map((col) => col.id),
+          )
+        }
         onToggleSelectedCollection={(id, checked) => onToggleSelectedCollection?.(id, checked)}
         onTrashAction={(id) => {
           if (showDeleted) void onRestore?.(id);

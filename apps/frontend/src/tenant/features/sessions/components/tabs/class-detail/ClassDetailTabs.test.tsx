@@ -1,27 +1,27 @@
-import React, { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { type FacultyMember } from '@mms/shared';
-import { ClassDetailGeneralTab } from './ClassDetailGeneralTab';
-import { ClassDetailFeesTab } from './ClassDetailFeesTab';
-import { ClassDetailScheduleTab } from './ClassDetailScheduleTab';
-import { ClassDetailBudgetTab } from './ClassDetailBudgetTab';
-import { ClassDetailScholarshipTab } from './ClassDetailScholarshipTab';
-import { EMPTY_CLASS } from './useClassDetailDraft';
+import React, { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type FacultyMember } from "@mms/shared";
+import { ClassDetailGeneralTab } from "./ClassDetailGeneralTab";
+import { ClassDetailFeesTab } from "./ClassDetailFeesTab";
+import { ClassDetailScheduleTab } from "./ClassDetailScheduleTab";
+import { ClassDetailBudgetTab } from "./ClassDetailBudgetTab";
+import { ClassDetailScholarshipTab } from "./ClassDetailScholarshipTab";
+import { EMPTY_CLASS } from "./useClassDetailDraft";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock('@/hooks/useTranslation', () => {
+vi.mock("@/hooks/useTranslation", () => {
   const labels: Record<string, string> = {
-    'sessions.classes.detail.fees.add': 'Fee Item',
-    'sessions.discounts.add': 'Discount',
-    'sessions.classes.detail.schedule.add': 'Schedule Block',
-    'sessions.classes.detail.timetable.add': 'Period',
-    'sessions.classes.detail.budget.add': 'Budget Item',
-    'sessions.classes.detail.refreshments.add': 'Refreshment',
+    "sessions.classes.detail.fees.add": "Fee Item",
+    "sessions.discounts.add": "Discount",
+    "sessions.classes.detail.schedule.add": "Schedule Block",
+    "sessions.classes.detail.timetable.add": "Period",
+    "sessions.classes.detail.budget.add": "Budget Item",
+    "sessions.classes.detail.refreshments.add": "Refreshment",
   };
   return {
     useTranslation: () => ({
@@ -30,12 +30,12 @@ vi.mock('@/hooks/useTranslation', () => {
   };
 });
 
-describe('ClassDetail Sub-Tabs & Helpers', () => {
+describe("ClassDetail Sub-Tabs & Helpers", () => {
   let container: HTMLDivElement;
   let root: Root;
 
   beforeEach(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
     vi.clearAllMocks();
@@ -48,14 +48,14 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
     container.remove();
   });
 
-  describe('ClassDetailGeneralTab', () => {
-    it('renders general inputs and calls updateDraft', async () => {
+  describe("ClassDetailGeneralTab", () => {
+    it("renders general inputs and calls updateDraft", async () => {
       const updateDraft = vi.fn();
       const sampleFaculty: FacultyMember = {
-        id: 't1',
-        contactId: 'c1',
-        name: 'Ustadh Ali',
-        status: 'active',
+        id: "t1",
+        contactId: "c1",
+        name: "Ustadh Ali",
+        status: "active",
       };
       await act(async () => {
         root.render(
@@ -68,24 +68,24 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
         );
       });
 
-      const nameInput = container.querySelector('#class-name') as HTMLInputElement;
+      const nameInput = container.querySelector("#class-name") as HTMLInputElement;
       expect(nameInput).not.toBeNull();
-      expect(nameInput.value).toBe('');
+      expect(nameInput.value).toBe("");
 
       await act(async () => {
         const nativeSetter = Object.getOwnPropertyDescriptor(
           window.HTMLInputElement.prototype,
-          'value',
+          "value",
         )?.set;
-        nativeSetter?.call(nameInput, 'Tajweed Class');
-        nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+        nativeSetter?.call(nameInput, "Tajweed Class");
+        nameInput.dispatchEvent(new Event("input", { bubbles: true }));
       });
-      expect(updateDraft).toHaveBeenCalledWith('name', 'Tajweed Class');
+      expect(updateDraft).toHaveBeenCalledWith("name", "Tajweed Class");
     });
   });
 
-  describe('ClassDetailFeesTab', () => {
-    it('triggers onAddFee and onAddDiscount callbacks', async () => {
+  describe("ClassDetailFeesTab", () => {
+    it("triggers onAddFee and onAddDiscount callbacks", async () => {
       const onAddFee = vi.fn();
       const onAddDiscount = vi.fn();
       await act(async () => {
@@ -104,14 +104,14 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
         );
       });
 
-      const buttons = container.querySelectorAll('button');
+      const buttons = container.querySelectorAll("button");
       for (const btn of buttons) {
-        if (btn.textContent?.includes('Fee Item')) {
+        if (btn.textContent?.includes("Fee Item")) {
           await act(async () => {
             btn.click();
           });
         }
-        if (btn.textContent?.includes('Discount')) {
+        if (btn.textContent?.includes("Discount")) {
           await act(async () => {
             btn.click();
           });
@@ -122,8 +122,8 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
     });
   });
 
-  describe('ClassDetailScheduleTab', () => {
-    it('triggers onAddSchedule and onAddPeriod callbacks', async () => {
+  describe("ClassDetailScheduleTab", () => {
+    it("triggers onAddSchedule and onAddPeriod callbacks", async () => {
       const onAddSchedule = vi.fn();
       const onAddPeriod = vi.fn();
       await act(async () => {
@@ -142,14 +142,14 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
         );
       });
 
-      const buttons = container.querySelectorAll('button');
+      const buttons = container.querySelectorAll("button");
       for (const btn of buttons) {
-        if (btn.textContent?.includes('Schedule Block')) {
+        if (btn.textContent?.includes("Schedule Block")) {
           await act(async () => {
             btn.click();
           });
         }
-        if (btn.textContent?.includes('Period')) {
+        if (btn.textContent?.includes("Period")) {
           await act(async () => {
             btn.click();
           });
@@ -160,8 +160,8 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
     });
   });
 
-  describe('ClassDetailBudgetTab', () => {
-    it('triggers onAddBudget and onAddRefreshment callbacks', async () => {
+  describe("ClassDetailBudgetTab", () => {
+    it("triggers onAddBudget and onAddRefreshment callbacks", async () => {
       const onAddBudget = vi.fn();
       const onAddRefreshment = vi.fn();
       await act(async () => {
@@ -180,14 +180,14 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
         );
       });
 
-      const buttons = container.querySelectorAll('button');
+      const buttons = container.querySelectorAll("button");
       for (const btn of buttons) {
-        if (btn.textContent?.includes('Budget Item')) {
+        if (btn.textContent?.includes("Budget Item")) {
           await act(async () => {
             btn.click();
           });
         }
-        if (btn.textContent?.includes('Refreshment')) {
+        if (btn.textContent?.includes("Refreshment")) {
           await act(async () => {
             btn.click();
           });
@@ -198,20 +198,20 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
     });
   });
 
-  describe('ClassDetailScholarshipTab', () => {
-    it('triggers onUpdateScholarship and onUpdateEligibility on changes', async () => {
+  describe("ClassDetailScholarshipTab", () => {
+    it("triggers onUpdateScholarship and onUpdateEligibility on changes", async () => {
       const onUpdateScholarship = vi.fn();
       const onUpdateEligibility = vi.fn();
       await act(async () => {
         root.render(
           <ClassDetailScholarshipTab
             scholarship={{
-              id: 's1',
-              classId: 'c1',
+              id: "s1",
+              classId: "c1",
               percentage: 50,
-              expiryDate: '2026-12-31',
+              expiryDate: "2026-12-31",
               eligibility: {
-                id: 'e1',
+                id: "e1",
                 orphan: false,
                 job: false,
                 business: false,
@@ -219,7 +219,7 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
                 familyMembers: 5,
                 onJobMembers: 1,
                 schoolGoingSiblings: 2,
-                residence: 'rental',
+                residence: "rental",
               },
             }}
             onUpdateScholarship={onUpdateScholarship}
@@ -228,9 +228,9 @@ describe('ClassDetail Sub-Tabs & Helpers', () => {
         );
       });
 
-      const pctInput = container.querySelector('#sch-pct') as HTMLInputElement;
+      const pctInput = container.querySelector("#sch-pct") as HTMLInputElement;
       expect(pctInput).not.toBeNull();
-      expect(pctInput.value).toBe('50');
+      expect(pctInput.value).toBe("50");
 
       const orphanCheckbox = (container.querySelector('button[role="checkbox"]') ||
         container.querySelector('input[type="checkbox"]')) as HTMLElement;

@@ -13,18 +13,12 @@ export interface EnrollmentsSettingsProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const EnrollmentsSettings = (function EnrollmentsSettings({
+export const EnrollmentsSettings = function EnrollmentsSettings({
   onPrefsDirtyChange,
 }: EnrollmentsSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useEnrollmentsSetupPanelState();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useEnrollmentsSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
@@ -42,10 +36,7 @@ export const EnrollmentsSettings = (function EnrollmentsSettings({
         accentColor="primary"
         className={SETUP_SECTION_CARD_CLASS}
       >
-        <EnrollmentsPreferencesSection
-          settingsDraft={settingsDraft}
-          upd={upd}
-        />
+        <EnrollmentsPreferencesSection settingsDraft={settingsDraft} upd={upd} />
         <ModuleSetupSaveFooter
           dirty={isPrefsDirty}
           saving={saving}
@@ -69,6 +60,6 @@ export const EnrollmentsSettings = (function EnrollmentsSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default EnrollmentsSettings;

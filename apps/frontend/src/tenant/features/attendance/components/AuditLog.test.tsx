@@ -51,7 +51,9 @@ describe("AuditLog Component", () => {
   it("renders audit log entries list after loading", async () => {
     await act(async () => {
       const root = createRoot(container!);
-      root.render(React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" } }));
+      root.render(
+        React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" } }),
+      );
     });
 
     expect(container!.innerHTML).toContain("attendance.audit.title");
@@ -62,7 +64,12 @@ describe("AuditLog Component", () => {
   it("renders audit log in cards mode without table", async () => {
     await act(async () => {
       const root = createRoot(container!);
-      root.render(React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" }, viewMode: "cards" }));
+      root.render(
+        React.createElement(AuditLog, {
+          filters: { classId: "cls-1", date: "2025-01-01" },
+          viewMode: "cards",
+        }),
+      );
     });
 
     expect(container!.innerHTML).toContain("admin");
@@ -72,7 +79,12 @@ describe("AuditLog Component", () => {
   it("renders audit log in table mode", async () => {
     await act(async () => {
       const root = createRoot(container!);
-      root.render(React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" }, viewMode: "table" }));
+      root.render(
+        React.createElement(AuditLog, {
+          filters: { classId: "cls-1", date: "2025-01-01" },
+          viewMode: "table",
+        }),
+      );
     });
 
     expect(container!.innerHTML).toContain("admin");

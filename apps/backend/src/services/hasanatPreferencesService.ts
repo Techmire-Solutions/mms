@@ -1,15 +1,12 @@
-import {
-  normalizeHasanatModulePreferences,
-  type HasanatModulePreferences,
-} from '@mms/shared';
+import { normalizeHasanatModulePreferences, type HasanatModulePreferences } from "@mms/shared";
 import {
   getHasanatModulePreferences,
   setHasanatModulePreferences,
-} from '../db/repositories/hasanatModulePreferencesRepository.js';
-import { createModulePreferencesService } from '../lib/createModulePreferencesService.js';
+} from "../db/repositories/hasanatModulePreferencesRepository.js";
+import { createModulePreferencesService } from "../lib/createModulePreferencesService.js";
 
 const service = createModulePreferencesService<HasanatModulePreferences>({
-  broadcastKey: 'hasanat',
+  broadcastKey: "hasanat",
   getByWorkspace: getHasanatModulePreferences,
   upsert: setHasanatModulePreferences,
   normalize: normalizeHasanatModulePreferences,

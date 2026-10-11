@@ -1,11 +1,11 @@
-import { emitOutboxEvent } from '../../services/outboxEventService.js';
-import { and, eq, isNull } from 'drizzle-orm';
-import { facultyAssignments } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
-import type { InsertFacultyAssignmentRow } from '../schema/facultyAssignmentTables.js';
-import { validateFacultyAssignment, lockFacultyHierarchy } from './facultyAssignmentValidation.js';
-import { findFacultyAssignmentById } from './facultyAssignmentRepository.js';
-import { recordModernAuditEvent } from '../../services/auditTrailService.js';
+import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { and, eq, isNull } from "drizzle-orm";
+import { facultyAssignments } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
+import type { InsertFacultyAssignmentRow } from "../schema/facultyAssignmentTables.js";
+import { validateFacultyAssignment, lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
+import { findFacultyAssignmentById } from "./facultyAssignmentRepository.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 
 export async function saveFacultyAssignment(
   tenant: string,
@@ -24,7 +24,7 @@ export async function saveFacultyAssignment(
           departmentId: assignment.departmentId,
           designationId: assignment.designationId,
           isPrimary: assignment.isPrimary,
-          status: assignment.status ?? 'active',
+          status: assignment.status ?? "active",
           startDate: assignment.startDate,
           endDate: assignment.endDate ?? null,
           notes: assignment.notes ?? null,
@@ -32,8 +32,14 @@ export async function saveFacultyAssignment(
           updatedBy: assignment.updatedBy ?? null,
         },
       });
-    await recordModernAuditEvent(tx, { workspaceSubdomain: subdomain, tableName: 'faculty_assignments',
-      recordId: assignment.id, actionType: 'UPDATE', realUserId: assignment.updatedBy, newState: assignment });
+    await recordModernAuditEvent(tx, {
+      workspaceSubdomain: subdomain,
+      tableName: "faculty_assignments",
+      recordId: assignment.id,
+      actionType: "UPDATE",
+      realUserId: assignment.updatedBy,
+      newState: assignment,
+    });
   });
 }
 
@@ -47,7 +53,7 @@ export async function closeAssignment(
   await withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
     const current = await findFacultyAssignmentById(subdomain, id);
-    if (!current) throw new Error('Assignment not found');
+    if (!current) throw new Error("Assignment not found");
     await validateFacultyAssignment(tx, subdomain, { ...current, endDate });
     await tx
       .update(facultyAssignments)
@@ -59,8 +65,14 @@ export async function closeAssignment(
           isNull(facultyAssignments.deletedAt),
         ),
       );
-    await recordModernAuditEvent(tx, { workspaceSubdomain: subdomain, tableName: 'faculty_assignments',
-      recordId: id, actionType: 'UPDATE', realUserId: updatedBy, newState: { endDate } });
+    await recordModernAuditEvent(tx, {
+      workspaceSubdomain: subdomain,
+      tableName: "faculty_assignments",
+      recordId: id,
+      actionType: "UPDATE",
+      realUserId: updatedBy,
+      newState: { endDate },
+    });
   });
 }
 
@@ -83,11 +95,25 @@ export async function softDeleteFacultyAssignment(
           eq(facultyAssignments.id, id),
           isNull(facultyAssignments.deletedAt),
         ),
-      ).returning({ id: facultyAssignments.id, facultyId: facultyAssignments.facultyId });
+      )
+      .returning({ id: facultyAssignments.id, facultyId: facultyAssignments.facultyId });
     if (!changed.length) return;
-    await recordModernAuditEvent(tx, { workspaceSubdomain: subdomain, tableName: 'faculty_assignments',
-      recordId: id, actionType: 'DELETE', realUserId: deletedBy, newState: { reason } });
-    await emitOutboxEvent(tx, 'entity.soft_deleted', { entityType: 'faculty_assignments', entityId: id,
-      tenantId: subdomain, deletedAt: deletedAt.toISOString(), deletedBy, deletionReason: reason, version: deletedAt.getTime() });
+    await recordModernAuditEvent(tx, {
+      workspaceSubdomain: subdomain,
+      tableName: "faculty_assignments",
+      recordId: id,
+      actionType: "DELETE",
+      realUserId: deletedBy,
+      newState: { reason },
+    });
+    await emitOutboxEvent(tx, "entity.soft_deleted", {
+      entityType: "faculty_assignments",
+      entityId: id,
+      tenantId: subdomain,
+      deletedAt: deletedAt.toISOString(),
+      deletedBy,
+      deletionReason: reason,
+      version: deletedAt.getTime(),
+    });
   });
 }

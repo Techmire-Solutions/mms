@@ -8,7 +8,7 @@ describe("SectionCard", () => {
     const html = renderToStaticMarkup(
       <SectionCard title="Preferences Section">
         <p>Section Content</p>
-      </SectionCard>
+      </SectionCard>,
     );
 
     expect(html).toContain("Preferences Section");
@@ -21,7 +21,7 @@ describe("SectionCard", () => {
     const html = renderToStaticMarkup(
       <SectionCard title="Danger Zone" accentColor="destructive">
         <p>Warning Content</p>
-      </SectionCard>
+      </SectionCard>,
     );
 
     expect(html).toContain("bg-destructive/45");
@@ -32,7 +32,7 @@ describe("SectionCard", () => {
     const html = renderToStaticMarkup(
       <SectionCard title="Plain Section" accentColor={false}>
         <p>Plain Content</p>
-      </SectionCard>
+      </SectionCard>,
     );
 
     expect(html).not.toContain("bg-primary/45");

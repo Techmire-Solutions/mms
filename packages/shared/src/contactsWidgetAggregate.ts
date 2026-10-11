@@ -1,13 +1,11 @@
-import type { WidgetQuery, WidgetAggregateResult, WidgetFilter } from './widgetAggregateTypes.js';
+import type { WidgetQuery, WidgetAggregateResult, WidgetFilter } from "./widgetAggregateTypes.js";
 
-export type ContactsWidgetOperation = 'count' | 'sum' | 'avg' | 'percentage';
-export type ContactsWidgetFilterOperator = 'equals' | 'contains' | 'startsWith' | 'gt' | 'lt';
+export type ContactsWidgetOperation = "count" | "sum" | "avg" | "percentage";
+export type ContactsWidgetFilterOperator = "equals" | "contains" | "startsWith" | "gt" | "lt";
 export type ContactsWidgetFilter = WidgetFilter;
 
 export type ContactsWidgetQuery = WidgetQuery;
 export type ContactsWidgetAggregateResult = WidgetAggregateResult;
-
-
 
 export function contactsWidgetQueryFromWidget(widget: {
   id: string;

@@ -6,10 +6,7 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDatePickerState } from "@/components/ui/useDatePickerState";
 import { DatePickerCalendarContent } from "@/components/ui/DatePickerCalendarContent";
-import {
-  keepOpenForChrome,
-  resolveDatePickerHiddenValue,
-} from "@/components/ui/datePickerBounds";
+import { keepOpenForChrome, resolveDatePickerHiddenValue } from "@/components/ui/datePickerBounds";
 import type { DatePickerProps } from "@/components/ui/datePickerTypes";
 
 export type { DatePickerProps };

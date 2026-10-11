@@ -22,7 +22,9 @@ export function TemplateEditorCanvasEmptyState({
         </div>
         <div className="text-center" dir="auto">
           <p className="text-xs font-semibold text-muted-foreground m-0">
-            {t(isPreviewMode ? "templateEditor.emptyPreviewHint" : "templateEditor.emptyCanvasHint")}
+            {t(
+              isPreviewMode ? "templateEditor.emptyPreviewHint" : "templateEditor.emptyCanvasHint",
+            )}
           </p>
           {!isPreviewMode && (
             <p className="text-2xs text-muted-foreground/80 mt-0.5 m-0">

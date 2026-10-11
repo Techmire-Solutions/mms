@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Sub-schemas
@@ -11,7 +11,7 @@ export const questionBankCategoryBreakdownItemSchema = z.object({
 });
 
 export const questionBankDifficultyBreakdownItemSchema = z.object({
-  difficulty: z.enum(['easy', 'medium', 'hard', 'unset']),
+  difficulty: z.enum(["easy", "medium", "hard", "unset"]),
   questionCount: z.number().int().nonnegative(),
 });
 
@@ -40,8 +40,12 @@ export const questionBankReportAggregatesSchema = z.object({
 // Exported types
 // ---------------------------------------------------------------------------
 
-export type QuestionBankCategoryBreakdownItem = z.infer<typeof questionBankCategoryBreakdownItemSchema>;
-export type QuestionBankDifficultyBreakdownItem = z.infer<typeof questionBankDifficultyBreakdownItemSchema>;
+export type QuestionBankCategoryBreakdownItem = z.infer<
+  typeof questionBankCategoryBreakdownItemSchema
+>;
+export type QuestionBankDifficultyBreakdownItem = z.infer<
+  typeof questionBankDifficultyBreakdownItemSchema
+>;
 export type QuestionBankMonthlyResultItem = z.infer<typeof questionBankMonthlyResultItemSchema>;
 export type QuestionBankReportAggregates = z.infer<typeof questionBankReportAggregatesSchema>;
 

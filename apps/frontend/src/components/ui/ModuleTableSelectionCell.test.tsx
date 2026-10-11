@@ -18,7 +18,7 @@ describe("ModuleTableSelectionCell", () => {
             />
           </TableRow>
         </TableBody>
-      </Table>
+      </Table>,
     );
 
     expect(html).toContain('aria-label="Select Contact"');
@@ -38,7 +38,7 @@ describe("ModuleTableSelectionCell", () => {
             />
           </TableRow>
         </TableBody>
-      </Table>
+      </Table>,
     );
 
     expect(html).toContain("bg-primary/5");
@@ -56,7 +56,7 @@ describe("ModuleTableSelectionCell", () => {
             />
           </TableRow>
         </TableBody>
-      </Table>
+      </Table>,
     );
 
     expect(html).toContain("h-4");
@@ -65,4 +65,3 @@ describe("ModuleTableSelectionCell", () => {
     expect(html).not.toContain("w-6");
   });
 });
-

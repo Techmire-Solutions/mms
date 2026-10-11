@@ -1,8 +1,5 @@
 import React, { type JSX } from "react";
-import {
-  ContactEmailAction,
-  ContactPhoneAction,
-} from "@/components/ui/ContactAction";
+import { ContactEmailAction, ContactPhoneAction } from "@/components/ui/ContactAction";
 import type {
   ContactResolvedPhone,
   ContactResolvedEmail,
@@ -10,7 +7,15 @@ import type {
 
 export interface EntityCardInfoPillsProps {
   /** List of all resolved phones for multi-phone contacts. */
-  phones?: ContactResolvedPhone[] | Array<{ number?: string; phone?: string; countryCode?: string; phoneDisplay?: string; label?: string }>;
+  phones?:
+    | ContactResolvedPhone[]
+    | Array<{
+        number?: string;
+        phone?: string;
+        countryCode?: string;
+        phoneDisplay?: string;
+        label?: string;
+      }>;
   /** List of all resolved emails for multi-email contacts. */
   emails?: ContactResolvedEmail[] | Array<{ address?: string; email?: string; label?: string }>;
   /** Scalar fallback phone string. */
@@ -30,7 +35,7 @@ export interface EntityCardInfoPillsProps {
 }
 
 /** Phone/email face pills stack for Work directory entity cards with inline contact actions (supports multiple channels). */
-export const EntityCardInfoPills = (function EntityCardInfoPills({
+export const EntityCardInfoPills = function EntityCardInfoPills({
   phones: phonesProp,
   emails: emailsProp,
   phone,
@@ -46,14 +51,20 @@ export const EntityCardInfoPills = (function EntityCardInfoPills({
   onCall,
   onEmail,
 }: EntityCardInfoPillsProps): JSX.Element | null {
-  const effectivePhones: Array<{ phone: string; countryCode?: string; phoneDisplay?: string; label?: string }> = (() => {
+  const effectivePhones: Array<{
+    phone: string;
+    countryCode?: string;
+    phoneDisplay?: string;
+    label?: string;
+  }> = (() => {
     if (Array.isArray(phonesProp) && phonesProp.length > 0) {
       return phonesProp
         .map((p) => {
           const rec = p as Record<string, unknown>;
           const rawPhone = String(rec.phone || rec.number || "").trim();
           const cc = typeof rec.countryCode === "string" ? rec.countryCode : undefined;
-          const disp = typeof rec.phoneDisplay === "string" ? rec.phoneDisplay : (rawPhone || undefined);
+          const disp =
+            typeof rec.phoneDisplay === "string" ? rec.phoneDisplay : rawPhone || undefined;
           const lbl = typeof rec.label === "string" ? rec.label : undefined;
           return {
             phone: rawPhone,
@@ -132,4 +143,4 @@ export const EntityCardInfoPills = (function EntityCardInfoPills({
         : null}
     </div>
   );
-});
+};

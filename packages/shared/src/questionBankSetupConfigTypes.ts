@@ -1,22 +1,22 @@
-import { z } from 'zod';
-import type { FieldDefinition } from './contactTypes.js';
+import { z } from "zod";
+import type { FieldDefinition } from "./contactTypes.js";
 import {
   DEFAULT_QUESTION_BANK_SETTINGS,
   type QuestionBankSettings,
-} from './questionBankModuleSettings.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+} from "./questionBankModuleSettings.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 import {
   QUESTION_BANK_TAB_REGISTRY,
   INITIAL_QUESTION_BANK_FIELD_SEED,
-} from './moduleFieldSetupAcademic.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
+} from "./moduleFieldSetupAcademic.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
 import type {
   QuestionCategory,
   QuestionSourceBook,
   QuestionTypeRegistryEntry,
   QuestionDifficultyRegistryEntry,
-} from './questionBankTypes.js';
+} from "./questionBankTypes.js";
 
 /** Deep clone {@link INITIAL_QUESTION_BANK_FIELD_SEED} for default and Setup states. */
 export function cloneQuestionBankFieldSeed(): Record<string, FieldDefinition[]> {
@@ -39,7 +39,7 @@ export function isQuestionBankSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Setup tab). */
 export function isQuestionBankLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -49,7 +49,7 @@ export function isQuestionBankLockedEnabledTab(tabKey: string): boolean {
 export function resolveQuestionBankFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneQuestionBankFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -99,7 +99,7 @@ const questionBankFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSch
   .strict();
 
 export const questionBankFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, questionBankFieldConfigPutBodyBaseSchema);
 
@@ -127,9 +127,9 @@ export interface QuestionBankModulePreferences {
 
 /** Extracts preferences slice from a raw composed settings blob. */
 export function normalizeQuestionBankModulePreferences(
-  raw: unknown
+  raw: unknown,
 ): QuestionBankModulePreferences {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw || typeof raw !== "object") {
     return {
       aiGrading: DEFAULT_QUESTION_BANK_SETTINGS.aiGrading ?? false,
       defaultTestDuration: DEFAULT_QUESTION_BANK_SETTINGS.defaultTestDuration ?? 30,
@@ -142,18 +142,32 @@ export function normalizeQuestionBankModulePreferences(
 
   const prefs = raw as Partial<QuestionBankSettings>;
   return {
-    aiGrading: typeof prefs.aiGrading === 'boolean' ? prefs.aiGrading : (DEFAULT_QUESTION_BANK_SETTINGS.aiGrading ?? false),
-    defaultTestDuration: typeof prefs.defaultTestDuration === 'number' ? prefs.defaultTestDuration : (DEFAULT_QUESTION_BANK_SETTINGS.defaultTestDuration ?? 30),
-    categories: Array.isArray(prefs.categories) ? prefs.categories : (DEFAULT_QUESTION_BANK_SETTINGS.categories ?? []),
-    sourceBooks: Array.isArray(prefs.sourceBooks) ? prefs.sourceBooks : (DEFAULT_QUESTION_BANK_SETTINGS.sourceBooks ?? []),
-    questionTypes: Array.isArray(prefs.questionTypes) ? prefs.questionTypes : (DEFAULT_QUESTION_BANK_SETTINGS.questionTypes ?? []),
-    difficultyLevels: Array.isArray(prefs.difficultyLevels) ? prefs.difficultyLevels : (DEFAULT_QUESTION_BANK_SETTINGS.difficultyLevels ?? []),
+    aiGrading:
+      typeof prefs.aiGrading === "boolean"
+        ? prefs.aiGrading
+        : (DEFAULT_QUESTION_BANK_SETTINGS.aiGrading ?? false),
+    defaultTestDuration:
+      typeof prefs.defaultTestDuration === "number"
+        ? prefs.defaultTestDuration
+        : (DEFAULT_QUESTION_BANK_SETTINGS.defaultTestDuration ?? 30),
+    categories: Array.isArray(prefs.categories)
+      ? prefs.categories
+      : (DEFAULT_QUESTION_BANK_SETTINGS.categories ?? []),
+    sourceBooks: Array.isArray(prefs.sourceBooks)
+      ? prefs.sourceBooks
+      : (DEFAULT_QUESTION_BANK_SETTINGS.sourceBooks ?? []),
+    questionTypes: Array.isArray(prefs.questionTypes)
+      ? prefs.questionTypes
+      : (DEFAULT_QUESTION_BANK_SETTINGS.questionTypes ?? []),
+    difficultyLevels: Array.isArray(prefs.difficultyLevels)
+      ? prefs.difficultyLevels
+      : (DEFAULT_QUESTION_BANK_SETTINGS.difficultyLevels ?? []),
   };
 }
 
 /** Extracts field-config slice from a raw composed settings blob. */
 export function normalizeQuestionBankFieldConfigOnly(raw: unknown): QuestionBankSettings {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw || typeof raw !== "object") {
     return { ...DEFAULT_QUESTION_BANK_SETTINGS };
   }
 
@@ -163,7 +177,7 @@ export function normalizeQuestionBankFieldConfigOnly(raw: unknown): QuestionBank
     defaultTestDuration: DEFAULT_QUESTION_BANK_SETTINGS.defaultTestDuration ?? 30,
     categories: DEFAULT_QUESTION_BANK_SETTINGS.categories ?? [],
     fields: resolveQuestionBankFieldsMap(
-      safe.fields && typeof safe.fields === 'object' && !Array.isArray(safe.fields)
+      safe.fields && typeof safe.fields === "object" && !Array.isArray(safe.fields)
         ? (safe.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -190,9 +204,17 @@ export function composeQuestionBankSettings(
 
 /** Drops preference keys before saving field-config to avoid overriding prefs layer. */
 export function stripQuestionBankFieldConfigForPersist(
-  config: Partial<QuestionBankSettings>
+  config: Partial<QuestionBankSettings>,
 ): Partial<QuestionBankSettings> {
   // `_`-prefixed names omit preference keys from the rest object (ESLint-clean, no behavior change).
-  const { aiGrading: _aiGrading, defaultTestDuration: _defaultTestDuration, categories: _categories, sourceBooks: _sourceBooks, questionTypes: _questionTypes, difficultyLevels: _difficultyLevels, ...fieldConfigOnly } = config;
+  const {
+    aiGrading: _aiGrading,
+    defaultTestDuration: _defaultTestDuration,
+    categories: _categories,
+    sourceBooks: _sourceBooks,
+    questionTypes: _questionTypes,
+    difficultyLevels: _difficultyLevels,
+    ...fieldConfigOnly
+  } = config;
   return fieldConfigOnly;
 }

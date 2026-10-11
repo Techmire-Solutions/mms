@@ -33,7 +33,9 @@ export async function exportCustomReportPdf(
     format: pageSize,
   });
   doc.text(reportName, 14, 15);
-  const tableData = previewData.map((previewRow) => selectedFields.map((selectedField) => previewRow[selectedField]));
+  const tableData = previewData.map((previewRow) =>
+    selectedFields.map((selectedField) => previewRow[selectedField]),
+  );
   autoTable(doc, {
     head: [selectedFields],
     body: tableData as string[][],

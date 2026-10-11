@@ -33,7 +33,10 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
   EditableSelect: ({ value }: { value?: string }) => (
     <div data-testid="editable-select">{value}</div>
   ),
-  FormListFieldCard: ({ children, typeSelect }: {
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
@@ -48,7 +51,10 @@ vi.mock("./ContactSubListCards", () => ({
   ContactSubListShell: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sublist-shell">{children}</div>
   ),
-  FormListFieldCard: ({ children, typeSelect }: {
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (

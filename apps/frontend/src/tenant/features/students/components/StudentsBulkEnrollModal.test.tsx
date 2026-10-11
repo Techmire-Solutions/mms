@@ -21,10 +21,7 @@ vi.mock("@/tenant/hooks/collections/sessions", () => ({
 }));
 
 vi.mock("@/components/ui/FormModal", () => ({
-  FormModal: ({ title, children }: {
-    title: string;
-    children: React.ReactNode;
-  }) => (
+  FormModal: ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div data-testid="modal">
       <h1>{title}</h1>
       <div>{children}</div>

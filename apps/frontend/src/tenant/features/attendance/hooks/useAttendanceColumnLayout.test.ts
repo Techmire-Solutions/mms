@@ -15,9 +15,10 @@ vi.mock("@/hooks/useModuleColumnLayout", () => ({
   useModuleColumnLayout: (params: any) => ({
     moduleId: params.moduleId,
     columnRegistry: params.tenantRegistry,
-    isColumnVisible: (key: string) => params.tenantRegistry.some(
-      (column: { key: string; enabled: boolean }) => column.key === key && column.enabled,
-    ),
+    isColumnVisible: (key: string) =>
+      params.tenantRegistry.some(
+        (column: { key: string; enabled: boolean }) => column.key === key && column.enabled,
+      ),
   }),
 }));
 
@@ -53,7 +54,8 @@ describe("useAttendanceColumnLayout Hook", () => {
     expect(hookResult.moduleId).toBe("attendance");
     expect(hookResult.isColumnVisible("student")).toBe(true);
     expect(hookResult.isColumnVisible("session")).toBe(true);
-    expect(hookResult.columnRegistry.find((column: { key: string }) => column.key === "session")?.label)
-      .toBe("attendance.columns.session");
+    expect(
+      hookResult.columnRegistry.find((column: { key: string }) => column.key === "session")?.label,
+    ).toBe("attendance.columns.session");
   });
 });

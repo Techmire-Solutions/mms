@@ -25,7 +25,9 @@ export function facultyRowIdentity(
   t: TranslationFunction,
 ): { facultyIdStr: string; displayName: string; isSelected: boolean } {
   const facultyIdStr = String(faculty.id);
-  const isSelected = Array.isArray(selectedIds) ? selectedIds.includes(facultyIdStr) : selectedIds.has(facultyIdStr);
+  const isSelected = Array.isArray(selectedIds)
+    ? selectedIds.includes(facultyIdStr)
+    : selectedIds.has(facultyIdStr);
   return {
     facultyIdStr,
     displayName: resolveFacultyDisplayName(faculty, t),
@@ -79,14 +81,8 @@ export function resolveFacultyFieldDisplayText(
     notSpecifiedFallback?: boolean;
   },
 ): string | undefined {
-  const {
-    t,
-    displayName,
-    customFieldLabel,
-    customFieldType,
-    isCustom,
-    notSpecifiedFallback,
-  } = options;
+  const { t, displayName, customFieldLabel, customFieldType, isCustom, notSpecifiedFallback } =
+    options;
   const missing = () => (notSpecifiedFallback ? t("common.notSpecified") : undefined);
 
   if (isCustom || fieldKey.startsWith("custom:")) {
@@ -136,7 +132,9 @@ export function resolveFacultyFieldDisplayText(
     return faculty.designationEndDate ? formatDate(faculty.designationEndDate) : missing();
   }
   if (fieldKey === "performanceRating") {
-    return faculty.performanceRating != null ? formatFacultyPerformanceRating(faculty.performanceRating) : missing();
+    return faculty.performanceRating != null
+      ? formatFacultyPerformanceRating(faculty.performanceRating)
+      : missing();
   }
   if (fieldKey === "parentDesignationId") {
     const parent = (faculty as Record<string, unknown>).parentDesignationName;
@@ -144,13 +142,13 @@ export function resolveFacultyFieldDisplayText(
   }
   if (fieldKey === "department" || fieldKey === "departmentId") {
     const dynamic = (faculty as Record<string, unknown>).departmentName;
-    return (typeof dynamic === "string" && dynamic) ? dynamic : faculty.department || missing();
+    return typeof dynamic === "string" && dynamic ? dynamic : faculty.department || missing();
   }
   if (fieldKey === "designation" || fieldKey === "designationId") {
     // Prefer the server-projected current designation name (from assignment join),
     // falling back to the legacy static designation string.
     const dynamic = (faculty as Record<string, unknown>).designationName;
-    return (typeof dynamic === "string" && dynamic) ? dynamic : faculty.designation || missing();
+    return typeof dynamic === "string" && dynamic ? dynamic : faculty.designation || missing();
   }
   if (fieldKey === "reportingFacultyId" || fieldKey === "reportingFacultyName") {
     return faculty.reportingFacultyName || missing();

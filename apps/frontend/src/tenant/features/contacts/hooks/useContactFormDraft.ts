@@ -76,8 +76,13 @@ export function useContactFormDraft({
     [contactDraft, baselineSnapshot],
   );
 
-  const { addSubListItem, ensureSubListItem, updateSubListItem, removeSubListItem, setPrimarySubListItem } =
-    useContactFormSubLists(setContactDraft);
+  const {
+    addSubListItem,
+    ensureSubListItem,
+    updateSubListItem,
+    removeSubListItem,
+    setPrimarySubListItem,
+  } = useContactFormSubLists(setContactDraft);
 
   const {
     cropSrc,

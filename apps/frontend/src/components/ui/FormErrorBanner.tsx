@@ -1,7 +1,11 @@
-import type React from 'react';
-import { AlertCircle } from 'lucide-react';
+import type React from "react";
+import { AlertCircle } from "lucide-react";
 
-export function FormErrorBanner({ errors }: { errors: readonly string[] }): React.JSX.Element | null {
+export function FormErrorBanner({
+  errors,
+}: {
+  errors: readonly string[];
+}): React.JSX.Element | null {
   if (errors.length === 0) return null;
   return (
     <div className="mb-3 space-y-1 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive">

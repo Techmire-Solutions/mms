@@ -71,7 +71,11 @@ export const EntityCardMetadata = React.memo(function EntityCardMetadata<
   extraColumns,
 }: EntityCardMetadataProps<TColumn, TEntity>): React.JSX.Element | null {
   const { t } = useTranslation();
-  const effectiveDescriptor = (descriptor ?? (entityType ? (getEntityDescriptor(entityType) as EntityDescriptor<TEntity> | undefined) : undefined));
+  const effectiveDescriptor =
+    descriptor ??
+    (entityType
+      ? (getEntityDescriptor(entityType) as EntityDescriptor<TEntity> | undefined)
+      : undefined);
 
   if (effectiveDescriptor && entity) {
     const cardFields = effectiveDescriptor.getCardFields().filter((field) => {

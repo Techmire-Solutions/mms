@@ -43,7 +43,11 @@ describe("customWidgetSchema", () => {
   });
 
   it("accepts passthrough extra fields gracefully", () => {
-    const parsed = customWidgetSchema.safeParse({ ...validWidget, isDefault: true, customProp: "ok" });
+    const parsed = customWidgetSchema.safeParse({
+      ...validWidget,
+      isDefault: true,
+      customProp: "ok",
+    });
     expect(parsed.success).toBe(true);
   });
 

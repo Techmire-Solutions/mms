@@ -60,18 +60,20 @@ export function SimpleTransactionTagSelector({
                 {typeTag}
               </Button>
             )}
-            {JOURNAL_TAGS.filter((tag) => tag !== typeTag).slice(0, 5).map((tag) => (
-              <Button
-                key={tag}
-                type="button"
-                variant={tags.includes(tag) ? "default" : "outline"}
-                onClick={() => toggleTag(tag)}
-                aria-pressed={tags.includes(tag)}
-                className="min-h-11 px-3 py-1 rounded-full text-xs font-semibold"
-              >
-                {tag}
-              </Button>
-            ))}
+            {JOURNAL_TAGS.filter((tag) => tag !== typeTag)
+              .slice(0, 5)
+              .map((tag) => (
+                <Button
+                  key={tag}
+                  type="button"
+                  variant={tags.includes(tag) ? "default" : "outline"}
+                  onClick={() => toggleTag(tag)}
+                  aria-pressed={tags.includes(tag)}
+                  className="min-h-11 px-3 py-1 rounded-full text-xs font-semibold"
+                >
+                  {tag}
+                </Button>
+              ))}
             {customTags.map((tag) => (
               <Badge
                 key={tag}

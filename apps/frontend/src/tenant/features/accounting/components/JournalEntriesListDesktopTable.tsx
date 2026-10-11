@@ -12,7 +12,9 @@ import { useJournalEntriesTableColumns } from "./useJournalEntriesTableColumns";
 
 type JournalEntriesListDesktopTableProps = JournalEntriesListProps;
 
-export function JournalEntriesListDesktopTable(props: JournalEntriesListDesktopTableProps): React.JSX.Element {
+export function JournalEntriesListDesktopTable(
+  props: JournalEntriesListDesktopTableProps,
+): React.JSX.Element {
   const {
     entries,
     selectedIds,

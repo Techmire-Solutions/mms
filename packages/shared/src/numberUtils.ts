@@ -9,4 +9,3 @@ export function calcPercentChange(current: number, previous: number): number {
   if (previous > 0) return Math.round(((current - previous) / previous) * 100);
   return current > 0 ? 100 : 0;
 }
-

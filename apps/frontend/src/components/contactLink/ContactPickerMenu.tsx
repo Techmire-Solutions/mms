@@ -1,12 +1,7 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import { User } from "lucide-react";
-import {
-  type Contact,
-  getDisplayName,
-  getPrimaryPhone,
-  getPrimaryAddress,
-} from "@mms/shared";
+import { type Contact, getDisplayName, getPrimaryPhone, getPrimaryAddress } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";

@@ -10,7 +10,10 @@ import {
 import { Field, FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
-import { buildDesignationDraftPatch, selectableDesignationOptions } from "./facultyFormDesignationDraft";
+import {
+  buildDesignationDraftPatch,
+  selectableDesignationOptions,
+} from "./facultyFormDesignationDraft";
 
 export interface FacultyDesignationSelectFieldProps {
   id?: string;
@@ -50,11 +53,12 @@ export function FacultyDesignationSelectField({
   );
 
   const selectOptions = useMemo(
-    () => activeOptions.map((item) => {
-      const roleId = item.assignableRoles?.[0];
-      const roleLabel = roleId ? resolveRoleDisplayName(roleId, workspaceRoles, t) : undefined;
-      return { value: item.id, label: formatDesignationOptionLabel(item, roleLabel) };
-    }),
+    () =>
+      activeOptions.map((item) => {
+        const roleId = item.assignableRoles?.[0];
+        const roleLabel = roleId ? resolveRoleDisplayName(roleId, workspaceRoles, t) : undefined;
+        return { value: item.id, label: formatDesignationOptionLabel(item, roleLabel) };
+      }),
     [activeOptions, t, workspaceRoles],
   );
 

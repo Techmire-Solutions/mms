@@ -8,10 +8,10 @@ import {
   type MessageLogCreateDto,
   type MessageTemplate,
   type StandardMessagingRecipient as MessagingRecipient,
-} from '@mms/shared';
-import { openDeviceSmsComposer } from '@/lib/deviceSms';
+} from "@mms/shared";
+import { openDeviceSmsComposer } from "@/lib/deviceSms";
 
-export type DispatchSpeed = 'safe' | 'normal' | 'express';
+export type DispatchSpeed = "safe" | "normal" | "express";
 
 export const SPEED_DELAYS: Record<DispatchSpeed, number> = {
   safe: 1200,
@@ -27,7 +27,7 @@ export type ValidatedMessagingRecipient = MessagingRecipient & {
 
 export function validateMessagingRecipients(
   recipients: MessagingRecipient[],
-  channel: 'sms' | 'whatsapp' | 'email',
+  channel: "sms" | "whatsapp" | "email",
 ): ValidatedMessagingRecipient[] {
   return recipients.map((recipient) => {
     const validation = validateRecipientAddress(recipient, channel);
@@ -41,13 +41,12 @@ export function validateMessagingRecipients(
 }
 
 export function findUnknownTokens(
-  channel: 'sms' | 'whatsapp' | 'email',
+  channel: "sms" | "whatsapp" | "email",
   subject: string,
   message: string,
 ): string[] {
   const unknownBodyTokens = findUnknownPersonalizationTokens(message);
-  const unknownSubjectTokens =
-    channel === 'email' ? findUnknownPersonalizationTokens(subject) : [];
+  const unknownSubjectTokens = channel === "email" ? findUnknownPersonalizationTokens(subject) : [];
   return [...new Set([...unknownBodyTokens, ...unknownSubjectTokens])];
 }
 
@@ -55,11 +54,11 @@ export type SentDispatchRecord = {
   recipientId: string | number;
   body: string;
   subject?: string;
-  status: 'sent' | 'failed';
+  status: "sent" | "failed";
 };
 
 export interface ExecuteRecipientSendParams {
-  channel: 'sms' | 'whatsapp' | 'email';
+  channel: "sms" | "whatsapp" | "email";
   recipient: MessagingRecipient;
   text: string;
   subject: string;
@@ -76,7 +75,7 @@ export function executeRecipientSend({
   defaultSubject,
 }: ExecuteRecipientSendParams): boolean {
   const personalizedBody = personalizeMessage(text, recipient, personalizeOptions);
-  if (channel === 'email') {
+  if (channel === "email") {
     if (!recipient.email) return false;
     const personalizedSubject = personalizeMessage(
       subject || defaultSubject,
@@ -86,16 +85,16 @@ export function executeRecipientSend({
     return (
       window.open(
         `mailto:${recipient.email}?subject=${encodeURIComponent(personalizedSubject)}&body=${encodeURIComponent(personalizedBody)}`,
-        '_blank',
+        "_blank",
       ) !== null
     );
   }
   if (!recipient.phone) return false;
-  if (channel === 'sms') return openDeviceSmsComposer(recipient.phone, personalizedBody);
+  if (channel === "sms") return openDeviceSmsComposer(recipient.phone, personalizedBody);
   const numberId = PuppeteerWhatsAppProvider.getNumberId(recipient.phone);
   return Boolean(
     numberId &&
-      window.open(`https://wa.me/${numberId}?text=${encodeURIComponent(personalizedBody)}`, '_blank'),
+    window.open(`https://wa.me/${numberId}?text=${encodeURIComponent(personalizedBody)}`, "_blank"),
   );
 }
 
@@ -104,7 +103,7 @@ export interface SaveDispatchHistoryParams {
   user: unknown;
   activeTemplates: MessageTemplate[];
   templateId: string;
-  channel: 'sms' | 'whatsapp' | 'email';
+  channel: "sms" | "whatsapp" | "email";
   subject: string;
   recordDispatches: {
     mutateAsync: (args: {
@@ -132,7 +131,7 @@ export async function saveDispatchHistory({
   if (!pending.length) return true;
 
   if (!auditIdempotencyKeyRef.current) {
-    auditIdempotencyKeyRef.current = generateClientEntityId('msg', '-');
+    auditIdempotencyKeyRef.current = generateClientEntityId("msg", "-");
   }
   const idempotencyKey = auditIdempotencyKeyRef.current;
 
@@ -143,11 +142,8 @@ export async function saveDispatchHistory({
       channel,
       body: record.body,
       status: record.status,
-      subject:
-        channel === 'email'
-          ? record.subject || subject || undefined
-          : undefined,
-      category: activeTemplate?.category || 'general',
+      subject: channel === "email" ? record.subject || subject || undefined : undefined,
+      category: activeTemplate?.category || "general",
     }));
     try {
       await recordDispatches.mutateAsync({

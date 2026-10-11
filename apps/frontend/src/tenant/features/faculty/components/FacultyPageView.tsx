@@ -17,12 +17,12 @@ import type { FacultyIoEntity } from "@/tenant/features/faculty/facultyPageWorkS
 const FacultyReportsTier = lazy(() =>
   import("@/tenant/features/faculty/components/FacultyReportsTier").then((m) => ({
     default: m.FacultyReportsTier,
-  }))
+  })),
 );
 const FacultySetupTier = lazy(() =>
   import("@/tenant/features/faculty/components/FacultySetupTier").then((m) => ({
     default: m.FacultySetupTier,
-  }))
+  })),
 );
 
 export type FacultyPageViewProps = ReturnType<typeof useFacultyPageController>;
@@ -39,11 +39,7 @@ function EntityTabPanel({
   onAdd: () => void;
   children: React.ReactNode;
 }): React.JSX.Element {
-  return (
-    <div className="space-y-5">
-      {children}
-    </div>
-  );
+  return <div className="space-y-5">{children}</div>;
 }
 
 /**
@@ -87,9 +83,7 @@ export function FacultyPageView({
           onAddDesignation={openCreateDesignation}
         />
       }
-      metricsStrip={
-        <FacultyCommandMetrics total={metricsTotal ?? shownCount} shown={shownCount} />
-      }
+      metricsStrip={<FacultyCommandMetrics total={metricsTotal ?? shownCount} shown={shownCount} />}
     >
       <ResponsiveAccordionTabs
         tabs={visibleTabs}

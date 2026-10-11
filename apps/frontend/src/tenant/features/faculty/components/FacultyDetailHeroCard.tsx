@@ -35,7 +35,12 @@ export function FacultyDetailHeroCard({
         <StatusBadge status={resolveFacultyStatus(faculty.status)} config={statusConfig} />
       ) : null}
       {faculty.employeeId ? (
-        <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+        <Badge
+          as="span"
+          size="sm"
+          tone="primary"
+          className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+        >
           {t("faculty.employeeIdPrefix")}: {faculty.employeeId}
         </Badge>
       ) : null}

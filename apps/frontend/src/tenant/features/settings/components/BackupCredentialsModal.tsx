@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Lock, Mail } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FormModal } from '@/components/ui/FormModal';
-import { Label } from '@/components/ui/label';
-import { LeadingIconInput } from '@/components/ui/LeadingIconInput';
-import { PasswordInput } from '@/components/ui/PasswordInput';
-import { SettingsCallout } from '@/components/ui/SettingsShell';
+import React, { useEffect, useState } from "react";
+import { Lock, Mail } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { FormModal } from "@/components/ui/FormModal";
+import { Label } from "@/components/ui/label";
+import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { SettingsCallout } from "@/components/ui/SettingsShell";
 
 export interface BackupCredentialsModalProps {
   open: boolean;
-  mode: 'export' | 'decrypt';
+  mode: "export" | "decrypt";
   adminEmail: string;
   emailReadOnly?: boolean;
   loading?: boolean;
@@ -28,18 +28,17 @@ export default function BackupCredentialsModal({
 }: BackupCredentialsModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const [email, setEmail] = useState(adminEmail);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     if (open) {
       setEmail(adminEmail);
-      setPassword('');
+      setPassword("");
     }
   }, [open, adminEmail]);
 
-  const title = mode === 'export' ? t('backup.encryptExportTitle') : t('backup.decryptTitle');
-  const subtitle =
-    mode === 'export' ? t('backup.encryptExportDesc') : t('backup.decryptDesc');
+  const title = mode === "export" ? t("backup.encryptExportTitle") : t("backup.decryptTitle");
+  const subtitle = mode === "export" ? t("backup.encryptExportDesc") : t("backup.decryptDesc");
 
   return (
     <FormModal
@@ -49,15 +48,15 @@ export default function BackupCredentialsModal({
       subtitle={subtitle}
       icon={Lock}
       size="sm"
-      cancelLabel={t('backup.confirmCancel')}
+      cancelLabel={t("backup.confirmCancel")}
       saveLabel={
         loading
-          ? mode === 'export'
-            ? t('backup.creating')
-            : t('backup.decrypting')
-          : mode === 'export'
-            ? t('backup.createButton')
-            : t('backup.decryptAction')
+          ? mode === "export"
+            ? t("backup.creating")
+            : t("backup.decrypting")
+          : mode === "export"
+            ? t("backup.createButton")
+            : t("backup.decryptAction")
       }
       onSave={() => onSubmit(password, email)}
       saving={loading}
@@ -75,9 +74,9 @@ export default function BackupCredentialsModal({
         }}
         className="space-y-4"
       >
-        <SettingsCallout>{t('backup.encryptNote')}</SettingsCallout>
+        <SettingsCallout>{t("backup.encryptNote")}</SettingsCallout>
         <div className="space-y-2">
-          <Label htmlFor="backup-admin-email">{t('backup.adminEmailLabel')}</Label>
+          <Label htmlFor="backup-admin-email">{t("backup.adminEmailLabel")}</Label>
           <LeadingIconInput
             id="backup-admin-email"
             name="backupAdminEmail"
@@ -91,7 +90,7 @@ export default function BackupCredentialsModal({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="backup-admin-password">{t('backup.adminPasswordLabel')}</Label>
+          <Label htmlFor="backup-admin-password">{t("backup.adminPasswordLabel")}</Label>
           <PasswordInput
             id="backup-admin-password"
             name="backupAdminPassword"

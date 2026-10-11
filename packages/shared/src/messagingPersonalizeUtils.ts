@@ -62,7 +62,13 @@ export function findUnknownPersonalizationTokens(body: string): string[] {
 export function personalizeMessage(
   body: string,
   recipient: PersonalizeRecipient,
-  options?: { date?: string; dueDate?: string; amount?: string | number; madrasaName?: string; salutation?: string }
+  options?: {
+    date?: string;
+    dueDate?: string;
+    amount?: string | number;
+    madrasaName?: string;
+    salutation?: string;
+  },
 ): string {
   if (!body) return "";
   const name = recipient.name || "";
@@ -71,7 +77,12 @@ export function personalizeMessage(
   const email = recipient.email || "";
   const dateStr = options?.date || new Date().toISOString().split("T")[0];
   const dueDateStr = recipient.dueDate || options?.dueDate || "";
-  const amountStr = recipient.amount !== undefined ? String(recipient.amount) : (options?.amount !== undefined ? String(options.amount) : "");
+  const amountStr =
+    recipient.amount !== undefined
+      ? String(recipient.amount)
+      : options?.amount !== undefined
+        ? String(options.amount)
+        : "";
   const madrasaNameStr = recipient.madrasaName || options?.madrasaName || "";
   const salutationStr = recipient.salutation || options?.salutation || "";
   const timeStr = recipient.time || "";
@@ -112,16 +123,28 @@ export interface VariableToken {
 
 /** Registry of standard dynamic personalization tokens supported across SMS, WhatsApp, and Email campaigns. */
 export const MESSAGING_VARIABLE_TOKENS: VariableToken[] = [
-  { token: '{name}', labelKey: 'messaging.tokenFullName', fallbackExample: '{name|Valued Parent}' },
-  { token: '{first_name}', labelKey: 'messaging.tokenFirstName', fallbackExample: '{first_name|Parent}' },
-  { token: '{phone}', labelKey: 'messaging.tokenPhone', fallbackExample: '{phone}' },
-  { token: '{email}', labelKey: 'messaging.tokenEmail', fallbackExample: '{email}' },
-  { token: '{date}', labelKey: 'messaging.tokenDate', fallbackExample: '{date}' },
-  { token: '{due_date}', labelKey: 'messaging.tokenDueDate', fallbackExample: '{due_date}' },
-  { token: '{amount}', labelKey: 'messaging.tokenAmount', fallbackExample: '{amount|0 PKR}' },
-  { token: '{madrasa_name}', labelKey: 'messaging.tokenMadrasaName', fallbackExample: '{madrasa_name|Madrasa}' },
-  { token: '{salutation}', labelKey: 'messaging.tokenSalutation', fallbackExample: '{salutation|Respected}' },
-  { token: '{time}', labelKey: 'messaging.tokenTime', fallbackExample: '{time}' },
+  { token: "{name}", labelKey: "messaging.tokenFullName", fallbackExample: "{name|Valued Parent}" },
+  {
+    token: "{first_name}",
+    labelKey: "messaging.tokenFirstName",
+    fallbackExample: "{first_name|Parent}",
+  },
+  { token: "{phone}", labelKey: "messaging.tokenPhone", fallbackExample: "{phone}" },
+  { token: "{email}", labelKey: "messaging.tokenEmail", fallbackExample: "{email}" },
+  { token: "{date}", labelKey: "messaging.tokenDate", fallbackExample: "{date}" },
+  { token: "{due_date}", labelKey: "messaging.tokenDueDate", fallbackExample: "{due_date}" },
+  { token: "{amount}", labelKey: "messaging.tokenAmount", fallbackExample: "{amount|0 PKR}" },
+  {
+    token: "{madrasa_name}",
+    labelKey: "messaging.tokenMadrasaName",
+    fallbackExample: "{madrasa_name|Madrasa}",
+  },
+  {
+    token: "{salutation}",
+    labelKey: "messaging.tokenSalutation",
+    fallbackExample: "{salutation|Respected}",
+  },
+  { token: "{time}", labelKey: "messaging.tokenTime", fallbackExample: "{time}" },
 ];
 
 /**
@@ -149,39 +172,49 @@ export function insertVariableTokenAt(
   const before = body.slice(0, start);
   const after = body.slice(end);
   const needsSpace = before.length > 0 && !/\s$/.test(before);
-  const insert = `${needsSpace ? ' ' : ''}${token}`;
+  const insert = `${needsSpace ? " " : ""}${token}`;
   return { next: `${before}${insert}${after}`, caret: before.length + insert.length };
 }
-
-
 
 /**
  * Validates whether a recipient has a valid contact address for the chosen dispatch channel.
  */
 export function validateRecipientAddress(
   recipient: PersonalizeRecipient,
-  channel: 'sms' | 'whatsapp' | 'email'
-): { isValid: boolean; address: string; reason?: 'missing_email' | 'invalid_email_format' | 'missing_phone' | 'invalid_phone_format' } {
-  if (channel === 'email') {
-    const email = recipient.email?.trim() || '';
-    if (!email) return { isValid: false, address: '', reason: 'missing_email' };
+  channel: "sms" | "whatsapp" | "email",
+): {
+  isValid: boolean;
+  address: string;
+  reason?: "missing_email" | "invalid_email_format" | "missing_phone" | "invalid_phone_format";
+} {
+  if (channel === "email") {
+    const email = recipient.email?.trim() || "";
+    if (!email) return { isValid: false, address: "", reason: "missing_email" };
     const isValidFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    return { isValid: isValidFormat, address: email, reason: isValidFormat ? undefined : 'invalid_email_format' };
+    return {
+      isValid: isValidFormat,
+      address: email,
+      reason: isValidFormat ? undefined : "invalid_email_format",
+    };
   }
 
-  const phone = recipient.phone?.trim() || '';
-  if (!phone) return { isValid: false, address: '', reason: 'missing_phone' };
+  const phone = recipient.phone?.trim() || "";
+  if (!phone) return { isValid: false, address: "", reason: "missing_phone" };
 
-  if (channel === 'whatsapp') {
+  if (channel === "whatsapp") {
     const numberId = PuppeteerWhatsAppProvider.getNumberId(phone);
     return {
       isValid: numberId != null,
       address: numberId ?? phone,
-      reason: numberId != null ? undefined : 'invalid_phone_format',
+      reason: numberId != null ? undefined : "invalid_phone_format",
     };
   }
 
-  const cleanDigits = phone.replace(/\D/g, '');
+  const cleanDigits = phone.replace(/\D/g, "");
   const isValidLength = cleanDigits.length >= 7 && cleanDigits.length <= 15;
-  return { isValid: isValidLength, address: phone, reason: isValidLength ? undefined : 'invalid_phone_format' };
+  return {
+    isValid: isValidLength,
+    address: phone,
+    reason: isValidLength ? undefined : "invalid_phone_format",
+  };
 }

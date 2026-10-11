@@ -43,7 +43,11 @@ function mapTodayRows(
   }));
 }
 
-const SESSION_SEARCH_FIELDS = (session: UpcomingSessionItem) => [session.name, session.teacher, session.room];
+const SESSION_SEARCH_FIELDS = (session: UpcomingSessionItem) => [
+  session.name,
+  session.teacher,
+  session.room,
+];
 
 /**
  * Today's scheduled sessions widget — rows from report-aggregates (or parent `items`).
@@ -104,7 +108,12 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
 
       <div className="divide-y divide-border/40 min-h-chart-md">
         {paginatedSessions.length === 0 ? (
-          <EmptyState title={t("sessions.report.noData")} compact icon={null} className="select-none" />
+          <EmptyState
+            title={t("sessions.report.noData")}
+            compact
+            icon={null}
+            className="select-none"
+          />
         ) : (
           paginatedSessions.map((session, sessionIndex) => (
             <motion.article
@@ -137,7 +146,9 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
 
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-foreground truncate m-0">{session.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 m-0 font-medium">{session.teacher}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 m-0 font-medium">
+                  {session.teacher}
+                </p>
               </div>
 
               <div className="hidden sm:flex items-center gap-3.5 text-xs text-muted-foreground flex-shrink-0 font-semibold select-none">

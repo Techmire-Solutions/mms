@@ -26,11 +26,7 @@ interface UseSessionDisplayConfigParams {
   t: TranslationFunction;
 }
 
-export function useSessionDisplayConfig({
-  statuses,
-  types,
-  t,
-}: UseSessionDisplayConfigParams) {
+export function useSessionDisplayConfig({ statuses, types, t }: UseSessionDisplayConfigParams) {
   const statusOptions = (() => {
     return statuses.length > 0 ? statuses : ["active", "upcoming", "completed", "cancelled"];
   })();
@@ -43,7 +39,8 @@ export function useSessionDisplayConfig({
     for (const statusOption of statusOptions) {
       const translationKey = `sessions.status.${statusOption}` as AppTranslationKey;
       const translated = t(translationKey);
-      sessionStatusLabelsByValue[statusOption] = translated === translationKey ? toTitleCase(statusOption) : translated;
+      sessionStatusLabelsByValue[statusOption] =
+        translated === translationKey ? toTitleCase(statusOption) : translated;
     }
     return sessionStatusLabelsByValue;
   })();

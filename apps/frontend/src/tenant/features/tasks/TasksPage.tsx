@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { CheckSquare } from 'lucide-react';
-import { TASKS_MODULE_MANIFEST, tasksTransferSchema, type TaskRecord, type TaskInsert, type TaskStatus } from '@mms/shared';
-import { useGenericModuleExport } from '@/lib/backgroundJobs/useGenericModuleExport';
-import { ModulePageShell } from '@/components/ui/ModulePageShell';
-import { ModuleTierMotion } from '@/components/ui/ModuleTierMotion';
-import { ResponsiveAccordionTabs } from '@/components/ui/ResponsiveAccordionTabs';
-import { useDirectoryTrashState } from '@/hooks/useDirectoryTrashState';
-import { useWorkSelection } from '@/hooks/useWorkSelection';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
+import React, { useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import { CheckSquare } from "lucide-react";
+import {
+  TASKS_MODULE_MANIFEST,
+  tasksTransferSchema,
+  type TaskRecord,
+  type TaskInsert,
+  type TaskStatus,
+} from "@mms/shared";
+import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
+import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   useTasks,
   useTaskMetrics,
@@ -19,30 +25,31 @@ import {
   useUpdateTaskStatus,
   useDeleteTask,
   useRestoreTask,
-} from '@/tenant/hooks/collections/tasks';
-import { TasksWorkTab } from './components/TasksWorkTab';
-import { TasksReportsTab } from './components/TasksReportsTab';
-import { TasksSetupTab } from './components/TasksSetupTab';
-import { TaskFormModal } from './components/TaskFormModal';
-import { TasksCsvImportDialog } from './components/TasksCsvImportDialog';
-import { TasksPageHeaderActions } from './components/TasksPageHeaderActions';
+} from "@/tenant/hooks/collections/tasks";
+import { TasksWorkTab } from "./components/TasksWorkTab";
+import { TasksReportsTab } from "./components/TasksReportsTab";
+import { TasksSetupTab } from "./components/TasksSetupTab";
+import { TaskFormModal } from "./components/TaskFormModal";
+import { TasksCsvImportDialog } from "./components/TasksCsvImportDialog";
+import { TasksPageHeaderActions } from "./components/TasksPageHeaderActions";
 
 export default function TasksPage(): React.JSX.Element {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'work' | 'reports' | 'setup'>('work');
+  const [activeTab, setActiveTab] = useState<"work" | "reports" | "setup">("work");
   const [formOpen, setFormOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskRecord | null>(null);
   const [viewingDeleted, setViewingDeleted] = useDirectoryTrashState();
-  const { selectedIds, toggleSelected, toggleSelectAll, clearSelection } = useWorkSelection<string>();
+  const { selectedIds, toggleSelected, toggleSelectAll, clearSelection } =
+    useWorkSelection<string>();
 
   const { canRead, canWrite, canDelete, canEditSetup, canViewSetup } =
     useModulePermissions(TASKS_MODULE_MANIFEST);
 
   const { handleExport, isExporting } = useGenericModuleExport({
-    path: '/api/tasks/export/csv',
-    filename: 'tasks.csv',
-    auditPath: '/api/tasks/export-audit',
+    path: "/api/tasks/export/csv",
+    filename: "tasks.csv",
+    auditPath: "/api/tasks/export-audit",
     columns: tasksTransferSchema.exportColumns,
     canExport: canRead,
   });
@@ -61,11 +68,17 @@ export default function TasksPage(): React.JSX.Element {
   const tasks = tasksData?.tasks ?? [];
 
   const handleOpenCreate = () => {
-    if (!viewingDeleted) { setEditingTask(null); setFormOpen(true); }
+    if (!viewingDeleted) {
+      setEditingTask(null);
+      setFormOpen(true);
+    }
   };
 
   const handleOpenEdit = (task: TaskRecord) => {
-    if (!viewingDeleted) { setEditingTask(task); setFormOpen(true); }
+    if (!viewingDeleted) {
+      setEditingTask(task);
+      setFormOpen(true);
+    }
   };
 
   const handleSave = async (data: TaskInsert) => {
@@ -80,38 +93,38 @@ export default function TasksPage(): React.JSX.Element {
   const handleDelete = (id: string) => {
     deleteTaskMutation.mutate(id, {
       onSuccess: () => {
-        notify.archivedWithUndo(t('common.recordArchived'), () => {
+        notify.archivedWithUndo(t("common.recordArchived"), () => {
           void restoreTaskMutation.mutateAsync(id);
         });
       },
       onError: (err) => {
-        notify.error(err instanceof Error ? err.message : t('tasks.deleteFailed'));
+        notify.error(err instanceof Error ? err.message : t("tasks.deleteFailed"));
       },
     });
   };
 
   const handleRestore = (id: string) => {
     restoreTaskMutation.mutate(id, {
-      onSuccess: () => notify.success(t('tasks.restored')),
+      onSuccess: () => notify.success(t("tasks.restored")),
       onError: (err) => {
-        notify.error(err instanceof Error ? err.message : t('tasks.restoreFailed'));
+        notify.error(err instanceof Error ? err.message : t("tasks.restoreFailed"));
       },
     });
   };
 
   const pageTabs = [
-    { id: 'work', label: t('nav.tasks') },
-    ...(canRead ? [{ id: 'reports' as const, label: t('module.reports') }] : []),
-    ...(canViewSetup ? [{ id: 'setup' as const, label: t('module.setup') }] : []),
+    { id: "work", label: t("nav.tasks") },
+    ...(canRead ? [{ id: "reports" as const, label: t("module.reports") }] : []),
+    ...(canViewSetup ? [{ id: "setup" as const, label: t("module.setup") }] : []),
   ];
 
   return (
     <ModulePageShell
-      seoTitle={`MMS - ${t('nav.tasks')}`}
-      seoDescription={t('page.tasks.subtitle')}
+      seoTitle={`MMS - ${t("nav.tasks")}`}
+      seoDescription={t("page.tasks.subtitle")}
       headerIcon={CheckSquare}
-      headerTitle={t('nav.tasks')}
-      headerSubtitle={t('page.tasks.subtitle')}
+      headerTitle={t("nav.tasks")}
+      headerSubtitle={t("page.tasks.subtitle")}
       headerActions={
         <TasksPageHeaderActions
           canWrite={canWrite}
@@ -126,15 +139,15 @@ export default function TasksPage(): React.JSX.Element {
       metricsStrip={
         <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
           <span>
-            {t('tasks.metrics.total')}:{' '}
+            {t("tasks.metrics.total")}:{" "}
             <strong className="text-foreground">{metrics?.total ?? tasks.length}</strong>
           </span>
           <span>
-            {t('tasks.metrics.inProgress')}:{' '}
+            {t("tasks.metrics.inProgress")}:{" "}
             <strong className="text-foreground">{metrics?.inProgress ?? 0}</strong>
           </span>
           <span>
-            {t('tasks.metrics.completed')}:{' '}
+            {t("tasks.metrics.completed")}:{" "}
             <strong className="text-foreground">{metrics?.completed ?? 0}</strong>
           </span>
         </div>
@@ -143,12 +156,12 @@ export default function TasksPage(): React.JSX.Element {
       <ResponsiveAccordionTabs
         tabs={pageTabs}
         activeTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab as 'work' | 'reports' | 'setup')}
+        onTabChange={(tab) => setActiveTab(tab as "work" | "reports" | "setup")}
         panelIdPrefix="tasks-tab"
       >
         <AnimatePresence mode="wait">
           <ModuleTierMotion tier={activeTab} className="space-y-4">
-            {activeTab === 'work' && (
+            {activeTab === "work" && (
               <TasksWorkTab
                 tasks={tasks}
                 isLoading={tasksLoading}
@@ -171,9 +184,9 @@ export default function TasksPage(): React.JSX.Element {
               />
             )}
 
-            {activeTab === 'reports' && canRead ? <TasksReportsTab /> : null}
+            {activeTab === "reports" && canRead ? <TasksReportsTab /> : null}
 
-            {activeTab === 'setup' && canViewSetup ? (
+            {activeTab === "setup" && canViewSetup ? (
               <TasksSetupTab canEditSetup={canEditSetup} />
             ) : null}
           </ModuleTierMotion>

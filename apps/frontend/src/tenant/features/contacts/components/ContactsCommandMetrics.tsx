@@ -38,8 +38,18 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
 
   const items = useMemo(
     () => [
-      { icon: Users, label: t("contacts.metrics.total"), value: metrics.total, accent: "primary" as const },
-      { icon: Filter, label: t("contacts.metrics.filtered"), value: shown, accent: "info" as const },
+      {
+        icon: Users,
+        label: t("contacts.metrics.total"),
+        value: metrics.total,
+        accent: "primary" as const,
+      },
+      {
+        icon: Filter,
+        label: t("contacts.metrics.filtered"),
+        value: shown,
+        accent: "info" as const,
+      },
       {
         icon: Clock,
         label: t("contacts.metrics.pendingSync"),
@@ -55,7 +65,16 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
         onClick: conflictCount > 0 ? onReviewConflicts : undefined,
       },
     ],
-    [t, metrics.total, shown, pendingCount, flushing, onFlushPending, conflictCount, onReviewConflicts],
+    [
+      t,
+      metrics.total,
+      shown,
+      pendingCount,
+      flushing,
+      onFlushPending,
+      conflictCount,
+      onReviewConflicts,
+    ],
   );
 
   return <ModuleCommandMetricsGrid items={items} />;

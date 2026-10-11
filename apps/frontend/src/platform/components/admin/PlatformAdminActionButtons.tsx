@@ -1,12 +1,12 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { PlatformUserProfile } from '@mms/shared';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { PlatformUserProfile } from "@mms/shared";
 
 export interface PlatformAdminActionButtonsProps {
   admin: PlatformUserProfile;
   onEditAccess: (admin: PlatformUserProfile) => void;
-  onToggleStatus: (admin: PlatformUserProfile, mode: 'disable' | 'enable') => void;
+  onToggleStatus: (admin: PlatformUserProfile, mode: "disable" | "enable") => void;
   onDelete: (admin: PlatformUserProfile) => void;
   verifyPending?: boolean;
   onVerifyEmail?: (adminId: string) => void;
@@ -22,7 +22,7 @@ export function PlatformAdminActionButtons({
 }: PlatformAdminActionButtonsProps): React.JSX.Element | null {
   const { t } = useTranslation();
 
-  if (admin.role !== 'admin') {
+  if (admin.role !== "admin") {
     return null;
   }
 
@@ -38,32 +38,24 @@ export function PlatformAdminActionButtons({
           className="border-success/40 bg-success/10 text-success hover:bg-success/20 hover:border-success/60"
           onClick={() => onVerifyEmail(admin.id)}
         >
-          {t('users.actionVerifyEmail')}
+          {t("users.actionVerifyEmail")}
         </Button>
       ) : null}
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onEditAccess(admin)}
-      >
-        {t('platform.editAdminAccess')}
+      <Button variant="outline" size="sm" onClick={() => onEditAccess(admin)}>
+        {t("platform.editAdminAccess")}
       </Button>
 
       <Button
         variant="outline"
         size="sm"
-        onClick={() => onToggleStatus(admin, isDisabled ? 'enable' : 'disable')}
+        onClick={() => onToggleStatus(admin, isDisabled ? "enable" : "disable")}
       >
-        {t(isDisabled ? 'platform.enableAdmin' : 'platform.disableAdmin')}
+        {t(isDisabled ? "platform.enableAdmin" : "platform.disableAdmin")}
       </Button>
 
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={() => onDelete(admin)}
-      >
-        {t('platform.deleteAdmin')}
+      <Button variant="destructive" size="sm" onClick={() => onDelete(admin)}>
+        {t("platform.deleteAdmin")}
       </Button>
     </div>
   );

@@ -26,7 +26,11 @@ interface ResultRowProps {
   questions: Question[] | Map<string, Question>;
 }
 
-export function AutoGradingResultRow({ result, test, questions }: ResultRowProps): React.ReactElement {
+export function AutoGradingResultRow({
+  result,
+  test,
+  questions,
+}: ResultRowProps): React.ReactElement {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const totalMarks = testTotalMarks(test, questions) || 100;
@@ -53,16 +57,25 @@ export function AutoGradingResultRow({ result, test, questions }: ResultRowProps
           <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-foreground">
             {getInitials(result.studentName)}
           </div>
-          <p className="m-0 min-w-0 truncate text-sm font-semibold text-foreground">{result.studentName}</p>
+          <p className="m-0 min-w-0 truncate text-sm font-semibold text-foreground">
+            {result.studentName}
+          </p>
         </div>
         <div className="flex flex-shrink-0 items-center gap-4">
           <div className="text-end">
-            <p className="text-sm font-bold text-foreground m-0">{marksObtained}/{totalMarks}</p>
+            <p className="text-sm font-bold text-foreground m-0">
+              {marksObtained}/{totalMarks}
+            </p>
             <p className="text-xs text-muted-foreground m-0">{percentageScore}%</p>
           </div>
           <StatusBadge
             status={gradeLabel.status}
-            config={{ [gradeLabel.status]: { ...GRADE_BADGE_CONFIG[gradeLabel.status], label: gradeLabel.label } }}
+            config={{
+              [gradeLabel.status]: {
+                ...GRADE_BADGE_CONFIG[gradeLabel.status],
+                label: gradeLabel.label,
+              },
+            }}
           />
           {open ? (
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
@@ -90,7 +103,9 @@ export function AutoGradingResultRow({ result, test, questions }: ResultRowProps
                     ? studentAns === question.answer
                     : isQuestionAnswerCorrect(question, studentAns);
                 const correctDisplay =
-                  question.type === "matching" || question.type === "fill_blank" || question.type === "ordering"
+                  question.type === "matching" ||
+                  question.type === "fill_blank" ||
+                  question.type === "ordering"
                     ? splitQuestionCompoundAnswer(question.answer).join(", ")
                     : question.answer;
                 return (
@@ -100,18 +115,29 @@ export function AutoGradingResultRow({ result, test, questions }: ResultRowProps
                     role="listitem"
                   >
                     {correct ? (
-                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-success" aria-label={t("questionBank.grading.correctAnswer")} />
+                      <CheckCircle2
+                        className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-success"
+                        aria-label={t("questionBank.grading.correctAnswer")}
+                      />
                     ) : (
-                      <XCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-destructive" aria-label={t("questionBank.grading.incorrectAnswer")} />
+                      <XCircle
+                        className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-destructive"
+                        aria-label={t("questionBank.grading.incorrectAnswer")}
+                      />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className={`font-semibold m-0 ${correct ? "text-success" : "text-destructive"}`}>
-                        {t("questionBank.grading.questionLabel", { n: questionIndex + 1, text: question.text })}
+                      <p
+                        className={`font-semibold m-0 ${correct ? "text-success" : "text-destructive"}`}
+                      >
+                        {t("questionBank.grading.questionLabel", {
+                          n: questionIndex + 1,
+                          text: question.text,
+                        })}
                       </p>
                       {!correct && question.type !== "short" && (
                         <p className="mt-0.5 text-destructive m-0">
-                          {t("questionBank.grading.studentAnswer", { answer: studentAns || "—" })}{" "}
-                          · {t("questionBank.grading.correctLabel", { answer: correctDisplay })}
+                          {t("questionBank.grading.studentAnswer", { answer: studentAns || "—" })} ·{" "}
+                          {t("questionBank.grading.correctLabel", { answer: correctDisplay })}
                         </p>
                       )}
                       {question.type === "short" && (

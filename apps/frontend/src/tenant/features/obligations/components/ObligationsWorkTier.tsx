@@ -4,7 +4,12 @@ import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ObligationCollectionsList } from "@/tenant/features/obligations/components/ObligationCollectionsList";
 import type { useObligationColumnLayout } from "@/tenant/features/obligations/hooks/useObligationColumnLayout";
-import type { ObligationCollection, ObligationType, Mujtahid, MujtahidRep } from "@/lib/data/obligationsData";
+import type {
+  ObligationCollection,
+  ObligationType,
+  Mujtahid,
+  MujtahidRep,
+} from "@/lib/data/obligationsData";
 
 interface ObligationsWorkTierProps {
   collections: ObligationCollection[];

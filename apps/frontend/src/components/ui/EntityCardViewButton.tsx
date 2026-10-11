@@ -15,7 +15,7 @@ export interface EntityCardViewButtonProps {
 }
 
 /** Shared outline View control for Work directory entity card footers. */
-export const EntityCardViewButton = (function EntityCardViewButton({
+export const EntityCardViewButton = function EntityCardViewButton({
   label,
   ariaLabel,
   onClick,
@@ -33,15 +33,11 @@ export const EntityCardViewButton = (function EntityCardViewButton({
       whileHover={{ scale: scaleHover }}
       whileTap={{ scale: scaleTap }}
       onClick={onClick}
-      className={cn(
-        "dark:border-border/30",
-        className,
-      )}
+      className={cn("dark:border-border/30", className)}
       aria-label={ariaLabel}
     >
       <Eye aria-hidden="true" className="w-3.5 h-3.5" />
       <span>{label}</span>
     </MotionButton>
   );
-});
-
+};

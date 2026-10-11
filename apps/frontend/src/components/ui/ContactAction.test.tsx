@@ -12,9 +12,7 @@ import {
 describe("ContactAction Primitives", () => {
   describe("ContactPhoneAction", () => {
     it("renders formatted phone and action links for tel, sms, and wa.me", () => {
-      const html = renderToStaticMarkup(
-        <ContactPhoneAction phone="+92 300 1234567" />,
-      );
+      const html = renderToStaticMarkup(<ContactPhoneAction phone="+92 300 1234567" />);
 
       expect(html).toContain("+92");
       expect(html).toContain("300 1234567");
@@ -26,9 +24,7 @@ describe("ContactAction Primitives", () => {
     });
 
     it("includes accessible aria-labels on action buttons", () => {
-      const html = renderToStaticMarkup(
-        <ContactPhoneAction phone="+92 300 1234567" name="Ali" />,
-      );
+      const html = renderToStaticMarkup(<ContactPhoneAction phone="+92 300 1234567" name="Ali" />);
 
       expect(html).toContain('aria-label="Call +92 300 1234567 (Ali)"');
       expect(html).toContain('aria-label="WhatsApp +92 300 1234567 (Ali)"');
@@ -36,9 +32,7 @@ describe("ContactAction Primitives", () => {
     });
 
     it("renders fallback dash and no broken links when phone is null or empty", () => {
-      const html = renderToStaticMarkup(
-        <ContactPhoneAction phone={null} />,
-      );
+      const html = renderToStaticMarkup(<ContactPhoneAction phone={null} />);
 
       expect(html).toContain("—");
       expect(html).not.toContain("tel:");
@@ -47,9 +41,7 @@ describe("ContactAction Primitives", () => {
     });
 
     it("keeps local numbers local when no country code is configured", () => {
-      const html = renderToStaticMarkup(
-        <ContactPhoneAction phone="0300 1234567" />,
-      );
+      const html = renderToStaticMarkup(<ContactPhoneAction phone="0300 1234567" />);
 
       expect(html).toContain('href="tel:03001234567"');
       expect(html).toContain('href="sms:03001234567"');
@@ -72,9 +64,7 @@ describe("ContactAction Primitives", () => {
 
   describe("ContactEmailAction", () => {
     it("renders email and mailto action link", () => {
-      const html = renderToStaticMarkup(
-        <ContactEmailAction email="info@madrasa.org" />,
-      );
+      const html = renderToStaticMarkup(<ContactEmailAction email="info@madrasa.org" />);
 
       expect(html).toContain("info@madrasa.org");
       expect(html).toContain('href="mailto:info@madrasa.org"');
@@ -92,9 +82,7 @@ describe("ContactAction Primitives", () => {
     });
 
     it("renders fallback dash when email is empty", () => {
-      const html = renderToStaticMarkup(
-        <ContactEmailAction email="" />,
-      );
+      const html = renderToStaticMarkup(<ContactEmailAction email="" />);
 
       expect(html).toContain("—");
       expect(html).not.toContain("mailto:");
@@ -103,17 +91,13 @@ describe("ContactAction Primitives", () => {
 
   describe("Polymorphic ContactAction wrapper", () => {
     it("dispatches to phone action when type is phone", () => {
-      const html = renderToStaticMarkup(
-        <ContactAction type="phone" phone="+92 300 1234567" />,
-      );
+      const html = renderToStaticMarkup(<ContactAction type="phone" phone="+92 300 1234567" />);
 
       expect(html).toContain('href="tel:+923001234567"');
     });
 
     it("dispatches to email action when type is email", () => {
-      const html = renderToStaticMarkup(
-        <ContactAction type="email" email="admin@mms.org" />,
-      );
+      const html = renderToStaticMarkup(<ContactAction type="email" email="admin@mms.org" />);
 
       expect(html).toContain('href="mailto:admin@mms.org"');
     });

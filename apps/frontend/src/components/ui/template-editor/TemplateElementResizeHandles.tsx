@@ -1,16 +1,16 @@
-import React from 'react';
-import { CANVAS_ACCENT } from './templateEditorUtils';
-import type { ResizeHandle } from './useTemplateEditorInteractions';
+import React from "react";
+import { CANVAS_ACCENT } from "./templateEditorUtils";
+import type { ResizeHandle } from "./useTemplateEditorInteractions";
 
 const RESIZE_HANDLES: { handle: ResizeHandle; style: React.CSSProperties; cursor: string }[] = [
-  { handle: 'n', style: { top: -4, left: 'calc(50% - 6px)' }, cursor: 'cursor-ns-resize' },
-  { handle: 's', style: { bottom: -4, left: 'calc(50% - 6px)' }, cursor: 'cursor-ns-resize' },
-  { handle: 'w', style: { left: -4, top: 'calc(50% - 6px)' }, cursor: 'cursor-ew-resize' },
-  { handle: 'e', style: { right: -4, top: 'calc(50% - 6px)' }, cursor: 'cursor-ew-resize' },
-  { handle: 'nw', style: { top: -5, left: -5 }, cursor: 'cursor-nwse-resize' },
-  { handle: 'ne', style: { top: -5, right: -5 }, cursor: 'cursor-nesw-resize' },
-  { handle: 'sw', style: { bottom: -5, left: -5 }, cursor: 'cursor-nesw-resize' },
-  { handle: 'se', style: { bottom: -5, right: -5 }, cursor: 'cursor-se-resize' },
+  { handle: "n", style: { top: -4, left: "calc(50% - 6px)" }, cursor: "cursor-ns-resize" },
+  { handle: "s", style: { bottom: -4, left: "calc(50% - 6px)" }, cursor: "cursor-ns-resize" },
+  { handle: "w", style: { left: -4, top: "calc(50% - 6px)" }, cursor: "cursor-ew-resize" },
+  { handle: "e", style: { right: -4, top: "calc(50% - 6px)" }, cursor: "cursor-ew-resize" },
+  { handle: "nw", style: { top: -5, left: -5 }, cursor: "cursor-nwse-resize" },
+  { handle: "ne", style: { top: -5, right: -5 }, cursor: "cursor-nesw-resize" },
+  { handle: "sw", style: { bottom: -5, left: -5 }, cursor: "cursor-nesw-resize" },
+  { handle: "se", style: { bottom: -5, right: -5 }, cursor: "cursor-se-resize" },
 ];
 
 export interface TemplateElementResizeHandlesProps {

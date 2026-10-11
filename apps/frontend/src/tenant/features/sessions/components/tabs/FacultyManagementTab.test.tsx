@@ -69,11 +69,7 @@ describe("FacultyManagementTab", () => {
 
     await act(async () => {
       root.render(
-        <FacultyManagementTab
-          session={mockSession}
-          onUpdate={vi.fn()}
-          canMutate={true}
-        />
+        <FacultyManagementTab session={mockSession} onUpdate={vi.fn()} canMutate={true} />,
       );
     });
 
@@ -88,11 +84,7 @@ describe("FacultyManagementTab", () => {
 
     await act(async () => {
       root.render(
-        <FacultyManagementTab
-          session={emptySession}
-          onUpdate={vi.fn()}
-          canMutate={true}
-        />
+        <FacultyManagementTab session={emptySession} onUpdate={vi.fn()} canMutate={true} />,
       );
     });
 
@@ -105,16 +97,12 @@ describe("FacultyManagementTab", () => {
 
     await act(async () => {
       root.render(
-        <FacultyManagementTab
-          session={mockSession}
-          onUpdate={onUpdate}
-          canMutate={true}
-        />
+        <FacultyManagementTab session={mockSession} onUpdate={onUpdate} canMutate={true} />,
       );
     });
 
     const deleteBtn = document.body.querySelector<HTMLButtonElement>(
-      'button[aria-label="Delete faculty"]'
+      'button[aria-label="Delete faculty"]',
     );
     expect(deleteBtn).not.toBeNull();
 
@@ -126,7 +114,7 @@ describe("FacultyManagementTab", () => {
       expect.objectContaining({
         id: "session-1",
         faculty: [],
-      })
+      }),
     );
   });
 });

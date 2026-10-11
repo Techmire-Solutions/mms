@@ -4,7 +4,10 @@ import { cn } from "@/lib/utils";
 import { FORM_SELECT } from "@/components/ui/formStyles";
 import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import { FormSelectSearchContent } from "@/components/ui/FormSelectSearchContent";
-import { FORM_SELECT_SEARCH_MIN_OPTIONS, useFormSelectSearch } from "@/components/ui/useFormSelectSearch";
+import {
+  FORM_SELECT_SEARCH_MIN_OPTIONS,
+  useFormSelectSearch,
+} from "@/components/ui/useFormSelectSearch";
 
 export interface FormSelectOption {
   value: string;
@@ -64,10 +67,12 @@ export function FormSelect({
     [options],
   );
   const listOptions = React.useMemo(
-    () => (placeholder !== undefined ? [{ value: "", label: placeholder }, ...normalized] : normalized),
+    () =>
+      placeholder !== undefined ? [{ value: "", label: placeholder }, ...normalized] : normalized,
     [normalized, placeholder],
   );
-  const isSearchable = !disabled && (searchable ?? normalized.length >= FORM_SELECT_SEARCH_MIN_OPTIONS);
+  const isSearchable =
+    !disabled && (searchable ?? normalized.length >= FORM_SELECT_SEARCH_MIN_OPTIONS);
   const search = useFormSelectSearch({ options: listOptions, value, onPick: onChange });
 
   const handleSelectKeyDown = (event: React.KeyboardEvent<HTMLSelectElement>): void => {
@@ -82,7 +87,10 @@ export function FormSelect({
   };
 
   return (
-    <Popover open={isSearchable && search.open} onOpenChange={(open) => (open ? search.openWith() : search.close())}>
+    <Popover
+      open={isSearchable && search.open}
+      onOpenChange={(open) => (open ? search.openWith() : search.close())}
+    >
       <PopoverAnchor asChild>
         <div className={cn("relative", className)}>
           <select

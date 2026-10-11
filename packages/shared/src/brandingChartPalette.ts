@@ -1,6 +1,6 @@
-import type { BrandingThemeMode } from './brandingColorUtils.js';
-import { brandingTokenToHex } from './brandingColorUtils.js';
-import { buildBrandingCssVariables } from './brandingCssVariables.js';
+import type { BrandingThemeMode } from "./brandingColorUtils.js";
+import { brandingTokenToHex } from "./brandingColorUtils.js";
+import { buildBrandingCssVariables } from "./brandingCssVariables.js";
 
 /** Hex palette derived from institution brand colours for chart libraries. */
 export interface BrandingChartPaletteHex {
@@ -18,17 +18,16 @@ export function resolveBrandingChartPaletteHex(
   mode: BrandingThemeMode,
 ): BrandingChartPaletteHex {
   const vars = buildBrandingCssVariables(primaryHex, secondaryHex, mode);
-  const toHex = (key: string): string =>
-    brandingTokenToHex(vars[key] ?? '', primaryHex);
+  const toHex = (key: string): string => brandingTokenToHex(vars[key] ?? "", primaryHex);
   return {
-    primary: toHex('--primary'),
-    secondary: toHex('--secondary'),
+    primary: toHex("--primary"),
+    secondary: toHex("--secondary"),
     charts: [
-      toHex('--chart-1'),
-      toHex('--chart-2'),
-      toHex('--chart-3'),
-      toHex('--chart-4'),
-      toHex('--chart-5'),
+      toHex("--chart-1"),
+      toHex("--chart-2"),
+      toHex("--chart-3"),
+      toHex("--chart-4"),
+      toHex("--chart-5"),
     ],
   };
 }

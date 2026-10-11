@@ -5,14 +5,20 @@ import type { Session } from "@/lib/data/sessionsData";
 import { SessionsListFilters } from "@/tenant/features/sessions/components/SessionsListFilters";
 import { SessionsList } from "@/tenant/features/sessions/components/SessionsList";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import type { SessionSortField, SessionStatus, SessionType } from "@/tenant/features/sessions/components/sessionPageTypes";
+import type {
+  SessionSortField,
+  SessionStatus,
+  SessionType,
+} from "@/tenant/features/sessions/components/sessionPageTypes";
 
 interface SessionsColumnLayout {
   isColumnVisible: (key: string) => boolean;
   getColumnWidth: (key: string) => number | undefined;
   setColumnWidth: (key: string, width: number) => void;
   columnRegistry: Parameters<typeof SessionsListFilters>[0]["columnLayout"]["columnRegistry"];
-  updateUserColumnLayout: Parameters<typeof SessionsListFilters>[0]["columnLayout"]["updateUserColumnLayout"];
+  updateUserColumnLayout: Parameters<
+    typeof SessionsListFilters
+  >[0]["columnLayout"]["updateUserColumnLayout"];
   customizerLabels: Parameters<typeof SessionsListFilters>[0]["columnLayout"]["customizerLabels"];
   resetColumnLayout?: () => void;
 }

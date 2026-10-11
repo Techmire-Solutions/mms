@@ -13,11 +13,7 @@ describe("FormModalTabs", () => {
 
   it("renders tab bar with desktop sidebar responsive classes", () => {
     const html = renderToStaticMarkup(
-      <FormModalTabs
-        tabs={tabs}
-        activeTab="basic"
-        onTabChange={vi.fn()}
-      >
+      <FormModalTabs tabs={tabs} activeTab="basic" onTabChange={vi.fn()}>
         <div>Tab content</div>
       </FormModalTabs>,
     );
@@ -39,11 +35,7 @@ describe("FormModalTabs", () => {
 
   it("renders error badge with destructive styling", () => {
     const html = renderToStaticMarkup(
-      <FormModalTabs
-        tabs={tabs}
-        activeTab="basic"
-        onTabChange={vi.fn()}
-      >
+      <FormModalTabs tabs={tabs} activeTab="basic" onTabChange={vi.fn()}>
         <div>Tab content</div>
       </FormModalTabs>,
     );

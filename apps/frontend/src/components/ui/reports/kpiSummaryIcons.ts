@@ -1,4 +1,4 @@
-import type { ElementType } from 'react';
+import type { ElementType } from "react";
 import {
   Activity,
   AlertCircle,
@@ -15,7 +15,7 @@ import {
   UserCheck,
   Users,
   Zap,
-} from 'lucide-react';
+} from "lucide-react";
 
 export const KPI_ICONS: Record<string, ElementType> = {
   Users,

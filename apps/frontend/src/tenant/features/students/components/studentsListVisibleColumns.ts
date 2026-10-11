@@ -20,7 +20,9 @@ export function getStudentVisibleWorkColumns(
   });
 }
 
-export function toStudentsListContentSortField(columnKey: string): StudentsListContentSortField | null {
+export function toStudentsListContentSortField(
+  columnKey: string,
+): StudentsListContentSortField | null {
   if (STUDENT_LIST_SORTABLE_FIELDS.has(columnKey as StudentsListContentSortField)) {
     return columnKey as StudentsListContentSortField;
   }

@@ -21,7 +21,9 @@ const dept = (overrides: Partial<FacultyDepartmentEntity> = {}): FacultyDepartme
   ...overrides,
 });
 
-const desig = (overrides: Partial<FacultyDesignationDefinition> = {}): FacultyDesignationDefinition => ({
+const desig = (
+  overrides: Partial<FacultyDesignationDefinition> = {},
+): FacultyDesignationDefinition => ({
   id: "des-1",
   departmentId: "dept-1",
   name: "Principal",

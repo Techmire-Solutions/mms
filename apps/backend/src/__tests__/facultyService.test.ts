@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import * as facultyService from '../services/facultyService.js';
-import { facultyUseCases } from '../faculty/use-cases/facultyUseCases.js';
+import { describe, expect, it } from "vitest";
+import * as facultyService from "../services/facultyService.js";
+import { facultyUseCases } from "../faculty/use-cases/facultyUseCases.js";
 
-describe('facultyService seam', () => {
-  it('exports facultyUseCases and re-exports bound operation methods identically', () => {
+describe("facultyService seam", () => {
+  it("exports facultyUseCases and re-exports bound operation methods identically", () => {
     expect(facultyService.facultyUseCases).toBe(facultyUseCases);
     expect(facultyService.createFaculty).toBe(facultyUseCases.createFaculty);
     expect(facultyService.updateFacultyById).toBe(facultyUseCases.updateFacultyById);
@@ -13,14 +13,22 @@ describe('facultyService seam', () => {
     expect(facultyService.bulkSoftDeleteFaculty).toBe(facultyUseCases.bulkSoftDeleteFaculty);
     expect(facultyService.bulkRestoreFaculty).toBe(facultyUseCases.bulkRestoreFaculty);
     expect(facultyService.bulkUpdateFacultyStatus).toBe(facultyUseCases.bulkUpdateFacultyStatus);
-    expect(facultyService.bulkUpdateFacultySpecialization).toBe(facultyUseCases.bulkUpdateFacultySpecialization);
+    expect(facultyService.bulkUpdateFacultySpecialization).toBe(
+      facultyUseCases.bulkUpdateFacultySpecialization,
+    );
     expect(facultyService.loadFacultyById).toBe(facultyUseCases.loadFacultyById);
     expect(facultyService.loadFacultyByIds).toBe(facultyUseCases.loadFacultyByIds);
-    expect(facultyService.loadFacultyWidgetAggregates).toBe(facultyUseCases.loadFacultyWidgetAggregates);
+    expect(facultyService.loadFacultyWidgetAggregates).toBe(
+      facultyUseCases.loadFacultyWidgetAggregates,
+    );
     expect(facultyService.loadFacultyPage).toBe(facultyUseCases.loadFacultyPage);
     expect(facultyService.countFaculty).toBe(facultyUseCases.countFaculty);
-    expect(facultyService.loadFacultyCommandMetrics).toBe(facultyUseCases.loadFacultyCommandMetrics);
-    expect(facultyService.loadFacultyLinkedContactIds).toBe(facultyUseCases.loadFacultyLinkedContactIds);
+    expect(facultyService.loadFacultyCommandMetrics).toBe(
+      facultyUseCases.loadFacultyCommandMetrics,
+    );
+    expect(facultyService.loadFacultyLinkedContactIds).toBe(
+      facultyUseCases.loadFacultyLinkedContactIds,
+    );
     expect(facultyService.loadFacultyHierarchyTree).toBe(facultyUseCases.loadFacultyHierarchyTree);
     expect(facultyService.computeNextFacultyEmployeeIdForSettings).toBe(
       facultyUseCases.computeNextFacultyEmployeeIdForSettings,

@@ -1,23 +1,23 @@
-import type { StudentsRepository } from '../repository/studentsRepository.js';
-import { studentsRepository } from '../repository/studentsRepositoryAdapter.js';
-import * as loadEntity from './studentLoadEntityUseCases.js';
-import * as loadAggregate from './studentLoadAggregateUseCases.js';
-import * as write from './studentWriteUseCases.js';
-import * as softDelete from './studentSoftDeleteUseCases.js';
-import * as restore from './studentRestoreUseCases.js';
-import * as operation from './studentOperationUseCases.js';
-import * as sanitize from './studentSanitizeUseCases.js';
+import type { StudentsRepository } from "../repository/studentsRepository.js";
+import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
+import * as loadEntity from "./studentLoadEntityUseCases.js";
+import * as loadAggregate from "./studentLoadAggregateUseCases.js";
+import * as write from "./studentWriteUseCases.js";
+import * as softDelete from "./studentSoftDeleteUseCases.js";
+import * as restore from "./studentRestoreUseCases.js";
+import * as operation from "./studentOperationUseCases.js";
+import * as sanitize from "./studentSanitizeUseCases.js";
 
 // Barrel — raw functions keep the repository interface as a trailing DI param.
-export * from './studentNormalizeUseCases.js';
-export * from './studentLoadEntityUseCases.js';
-export * from './studentLoadAggregateUseCases.js';
-export * from './studentHydrateUseCases.js';
-export * from './studentWriteUseCases.js';
-export * from './studentSoftDeleteUseCases.js';
-export * from './studentRestoreUseCases.js';
-export * from './studentOperationUseCases.js';
-export * from './studentSanitizeUseCases.js';
+export * from "./studentNormalizeUseCases.js";
+export * from "./studentLoadEntityUseCases.js";
+export * from "./studentLoadAggregateUseCases.js";
+export * from "./studentHydrateUseCases.js";
+export * from "./studentWriteUseCases.js";
+export * from "./studentSoftDeleteUseCases.js";
+export * from "./studentRestoreUseCases.js";
+export * from "./studentOperationUseCases.js";
+export * from "./studentSanitizeUseCases.js";
 
 /**
  * Composition root — binds a `StudentsRepository` to every use case.
@@ -37,10 +37,13 @@ export function createStudentsUseCases(repo: StudentsRepository = studentsReposi
     loadStudentLinkedContactIds: (excludeStudentId?: string) =>
       loadEntity.loadStudentLinkedContactIds(excludeStudentId, repo),
     loadStudentsCommandMetrics: () => loadAggregate.loadStudentsCommandMetrics(repo),
-    loadStudentsWidgetAggregates: (queries: Parameters<typeof loadAggregate.loadStudentsWidgetAggregates>[0]) =>
-      loadAggregate.loadStudentsWidgetAggregates(queries, repo),
-    createStudent: (record: Parameters<typeof write.createStudent>[0], options?: Parameters<typeof write.createStudent>[1]) =>
-      write.createStudent(record, options, repo),
+    loadStudentsWidgetAggregates: (
+      queries: Parameters<typeof loadAggregate.loadStudentsWidgetAggregates>[0],
+    ) => loadAggregate.loadStudentsWidgetAggregates(queries, repo),
+    createStudent: (
+      record: Parameters<typeof write.createStudent>[0],
+      options?: Parameters<typeof write.createStudent>[1],
+    ) => write.createStudent(record, options, repo),
     updateStudentById: (
       id: string,
       record: Parameters<typeof write.updateStudentById>[1],
@@ -66,10 +69,11 @@ export function createStudentsUseCases(repo: StudentsRepository = studentsReposi
       input: Parameters<typeof operation.checkStudentRegistrationDuplicate>[0],
       tenantOverride?: string,
     ) => operation.checkStudentRegistrationDuplicate(input, repo, tenantOverride),
-    migrateStudentsMissingGrNumbers: (userId?: string) => operation.migrateStudentsMissingGrNumbers(repo, userId),
-    sanitizeStudentForViewer: (student: import('@mms/shared').Student, viewerRole: string) =>
+    migrateStudentsMissingGrNumbers: (userId?: string) =>
+      operation.migrateStudentsMissingGrNumbers(repo, userId),
+    sanitizeStudentForViewer: (student: import("@mms/shared").Student, viewerRole: string) =>
       sanitize.sanitizeStudentForViewer(student, viewerRole),
-    sanitizeStudentsForViewer: (students: import('@mms/shared').Student[], viewerRole: string) =>
+    sanitizeStudentsForViewer: (students: import("@mms/shared").Student[], viewerRole: string) =>
       sanitize.sanitizeStudentsForViewer(students, viewerRole),
   };
 }

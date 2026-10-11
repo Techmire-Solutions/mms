@@ -30,7 +30,11 @@ export function QuestionBankTaxonomySection({
         <SectionLabel as="h4" weight="bold" tracking="wide">
           {t("questionBank.typesTitle")}
         </SectionLabel>
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t("questionBank.typesTitle")}>
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label={t("questionBank.typesTitle")}
+        >
           {questionTypes.map((entry) => (
             <Button
               key={entry.id}
@@ -55,7 +59,11 @@ export function QuestionBankTaxonomySection({
         <SectionLabel as="h4" weight="bold" tracking="wide">
           {t("questionBank.difficultiesTitle")}
         </SectionLabel>
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t("questionBank.difficultiesTitle")}>
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label={t("questionBank.difficultiesTitle")}
+        >
           {difficultyLevels.map((entry) => (
             <Button
               key={entry.id}

@@ -11,16 +11,20 @@ import {
   type JournalEntry,
   type OpeningBalance,
   type Payment,
-} from '@mms/shared';
-import crypto from 'node:crypto';
-import { findEntryById, findEntryIdBySource, saveEntry } from '../../db/repositories/accountingRepository.js';
-import { getPostingRules } from '../../db/repositories/accountingLedgerOpsRepository.js';
-import { listFiscalYearsByWorkspace } from '../../db/repositories/accountingFiscalYearsRepository.js';
+} from "@mms/shared";
+import crypto from "node:crypto";
+import {
+  findEntryById,
+  findEntryIdBySource,
+  saveEntry,
+} from "../../db/repositories/accountingRepository.js";
+import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
+import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
   assertJournalEntryPeriodOpen,
   prepareJournalEntryForPersist,
-} from '../use-cases/accountingLedgerGuards.js';
-import { isUniqueViolation } from '../../lib/pgErrors.js';
+} from "../use-cases/accountingLedgerGuards.js";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
 
 function postingDate(value: string | undefined): string {
   return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : new Date().toISOString().slice(0, 10);
@@ -40,7 +44,11 @@ async function persistGeneratedEntry(
   entry: JournalEntry,
   years?: readonly FiscalYear[],
 ): Promise<JournalEntry | null> {
-  const existingId = await findEntryIdBySource(tenant, entry.source_type ?? '', entry.source_id ?? '');
+  const existingId = await findEntryIdBySource(
+    tenant,
+    entry.source_type ?? "",
+    entry.source_id ?? "",
+  );
   if (existingId) return null;
   const resolvedYears = years ?? (await listFiscalYearsByWorkspace(tenant));
   // System postings are always new, so the period lock applies unconditionally.
@@ -56,11 +64,11 @@ async function persistGeneratedEntry(
 }
 
 function entryForSource(
-  sourceType: JournalEntry['source_type'],
+  sourceType: JournalEntry["source_type"],
   sourceId: string,
   date: string,
   description: string,
-  lines: JournalEntry['lines'],
+  lines: JournalEntry["lines"],
   fiscalYearId?: string,
 ): JournalEntry {
   return {
@@ -68,11 +76,11 @@ function entryForSource(
     date,
     ref: `${sourceType}:${sourceId}`,
     description,
-    status: 'posted',
-    created_by: 'system',
+    status: "posted",
+    created_by: "system",
     tags: [],
     attachments: [],
-    fiscal_year: '',
+    fiscal_year: "",
     fiscal_year_id: fiscalYearId,
     source_type: sourceType,
     source_id: sourceId,
@@ -91,7 +99,7 @@ function resolveYearId(years: readonly FiscalYear[], date: string): string | und
 
 /** Posts Dr AR / Cr Income when posting accounts are configured. Skips otherwise. */
 export async function tryPostInvoiceJournal(tenant: string, invoice: Invoice): Promise<void> {
-  if (invoice.status === 'cancelled' || invoice.deletedAt) return;
+  if (invoice.status === "cancelled" || invoice.deletedAt) return;
   const accounts = await getPostingRules(tenant);
   const date = postingDate(invoice.dueDate);
   const lines = buildInvoicePostingLines({
@@ -106,7 +114,14 @@ export async function tryPostInvoiceJournal(tenant: string, invoice: Invoice): P
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
-    entryForSource('invoice', invoice.id, date, `Invoice ${invoice.invoiceNumber ?? invoice.id}`, lines, resolveYearId(years, date)),
+    entryForSource(
+      "invoice",
+      invoice.id,
+      date,
+      `Invoice ${invoice.invoiceNumber ?? invoice.id}`,
+      lines,
+      resolveYearId(years, date),
+    ),
     years,
   );
 }
@@ -126,7 +141,14 @@ export async function tryPostPaymentJournal(tenant: string, payment: Payment): P
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
-    entryForSource('payment', payment.id, date, `Payment ${payment.id}`, lines, resolveYearId(years, date)),
+    entryForSource(
+      "payment",
+      payment.id,
+      date,
+      `Payment ${payment.id}`,
+      lines,
+      resolveYearId(years, date),
+    ),
     years,
   );
 }
@@ -138,28 +160,36 @@ export async function tryPostOpeningJournal(
 ): Promise<JournalEntry | null> {
   const years = await listFiscalYearsByWorkspace(tenant);
   const year = years.find((row) => row.id === fiscalYearId);
-  if (!year) throw Object.assign(new Error('Fiscal year not found'), { statusCode: 404, type: 'not_found' });
+  if (!year)
+    throw Object.assign(new Error("Fiscal year not found"), { statusCode: 404, type: "not_found" });
   const lines = buildOpeningEntryLines(balances);
   if (!lines) {
-    throw Object.assign(new Error('Opening balances must form a balanced journal'), {
+    throw Object.assign(new Error("Opening balances must form a balanced journal"), {
       statusCode: 422,
-      type: 'validation_error',
+      type: "validation_error",
     });
   }
-  const entry = entryForSource('opening', fiscalYearId, year.startDate, `Opening balances ${year.label}`, lines, fiscalYearId);
+  const entry = entryForSource(
+    "opening",
+    fiscalYearId,
+    year.startDate,
+    `Opening balances ${year.label}`,
+    lines,
+    fiscalYearId,
+  );
 
   // Opening balances are edited over time, but the source key allows only one
   // entry per fiscal year. Rather than reporting success while silently ignoring
   // the edit, distinguish "unchanged replay" from "the balances actually moved".
-  const existingId = await findEntryIdBySource(tenant, 'opening', fiscalYearId);
+  const existingId = await findEntryIdBySource(tenant, "opening", fiscalYearId);
   if (existingId) {
     const original = await findEntryById(tenant, existingId);
     if (openingLinesMatch(original?.lines, lines)) return null;
     throw Object.assign(
       new Error(
-        'Opening balances were already posted for this fiscal year — reverse that entry before posting revised balances',
+        "Opening balances were already posted for this fiscal year — reverse that entry before posting revised balances",
       ),
-      { statusCode: 422, type: 'validation_error' },
+      { statusCode: 422, type: "validation_error" },
     );
   }
 
@@ -168,20 +198,23 @@ export async function tryPostOpeningJournal(
 
 /** Same accounts and same debit/credit on each side, ignoring line ids/descriptions. */
 function openingLinesMatch(
-  stored: JournalEntry['lines'] | undefined,
-  incoming: JournalEntry['lines'],
+  stored: JournalEntry["lines"] | undefined,
+  incoming: JournalEntry["lines"],
 ): boolean {
   if (!stored || stored.length !== incoming.length) return false;
-  const normalize = (lines: JournalEntry['lines']): string =>
+  const normalize = (lines: JournalEntry["lines"]): string =>
     lines
       .map((line) => `${line.account_id}|${line.debit}|${line.credit}`)
       .sort()
-      .join(';');
+      .join(";");
   return normalize(stored) === normalize(incoming);
 }
 
-export async function tryPostInvoiceReversalJournal(tenant: string, invoice: Invoice): Promise<void> {
-  const existingId = await findEntryIdBySource(tenant, 'invoice', invoice.id);
+export async function tryPostInvoiceReversalJournal(
+  tenant: string,
+  invoice: Invoice,
+): Promise<void> {
+  const existingId = await findEntryIdBySource(tenant, "invoice", invoice.id);
   if (!existingId) return;
   const original = await findEntryById(tenant, existingId);
   if (!original?.lines?.length) return;
@@ -190,7 +223,14 @@ export async function tryPostInvoiceReversalJournal(tenant: string, invoice: Inv
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
-    entryForSource('reversal', invoice.id, date, `Cancel ${invoice.invoiceNumber ?? invoice.id}`, lines, resolveYearId(years, date)),
+    entryForSource(
+      "reversal",
+      invoice.id,
+      date,
+      `Cancel ${invoice.invoiceNumber ?? invoice.id}`,
+      lines,
+      resolveYearId(years, date),
+    ),
     years,
   );
 }
@@ -214,7 +254,14 @@ export async function tryPostLateFeeJournals(
     if (!lines) continue;
     await persistGeneratedEntry(
       tenant,
-      entryForSource('invoice', `latefee:${fee.invoice.id}`, date, `Late fee ${fee.invoice.invoiceNumber ?? fee.invoice.id}`, lines, yearId),
+      entryForSource(
+        "invoice",
+        `latefee:${fee.invoice.id}`,
+        date,
+        `Late fee ${fee.invoice.invoiceNumber ?? fee.invoice.id}`,
+        lines,
+        yearId,
+      ),
       years,
     );
   }
@@ -223,7 +270,7 @@ export async function tryPostLateFeeJournals(
 /** Reverses an existing posting identified by its `(source_type, source_id)` key. */
 export async function tryPostReversalOfSource(
   tenant: string,
-  sourceType: NonNullable<JournalEntry['source_type']>,
+  sourceType: NonNullable<JournalEntry["source_type"]>,
   sourceId: string,
   description: string,
 ): Promise<void> {
@@ -236,7 +283,7 @@ export async function tryPostReversalOfSource(
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
-    entryForSource('reversal', sourceId, date, description, lines, resolveYearId(years, date)),
+    entryForSource("reversal", sourceId, date, description, lines, resolveYearId(years, date)),
     years,
   );
 }
@@ -249,10 +296,13 @@ export async function tryPostReversalOfSource(
  * {@link tryPostLateFeeJournals}). Without this the fee survived cancellation
  * and left AR and income overstated by the fee amount.
  */
-export async function tryPostLateFeeReversalJournal(tenant: string, invoice: Invoice): Promise<void> {
+export async function tryPostLateFeeReversalJournal(
+  tenant: string,
+  invoice: Invoice,
+): Promise<void> {
   await tryPostReversalOfSource(
     tenant,
-    'invoice',
+    "invoice",
     `latefee:${invoice.id}`,
     `Reverse late fee ${invoice.invoiceNumber ?? invoice.id}`,
   );
@@ -271,10 +321,10 @@ export async function tryPostLateFeeReversalJournal(tenant: string, invoice: Inv
  */
 function lifecycleSourceId(
   entityId: string,
-  event: 'archive' | 'restore',
+  event: "archive" | "restore",
   archivedAt: string,
 ): string {
-  return `${event}-${crypto.hash('sha256', `${entityId}|${event}|${archivedAt}`, 'hex').slice(0, 40)}`;
+  return `${event}-${crypto.hash("sha256", `${entityId}|${event}|${archivedAt}`, "hex").slice(0, 40)}`;
 }
 
 /**
@@ -286,7 +336,7 @@ function lifecycleSourceId(
  */
 export async function tryPostArchiveReversalJournal(
   tenant: string,
-  sourceType: NonNullable<JournalEntry['source_type']>,
+  sourceType: NonNullable<JournalEntry["source_type"]>,
   sourceId: string,
   archivedAt: string,
   description: string,
@@ -300,8 +350,8 @@ export async function tryPostArchiveReversalJournal(
   await persistGeneratedEntry(
     tenant,
     entryForSource(
-      'reversal',
-      lifecycleSourceId(sourceId, 'archive', archivedAt),
+      "reversal",
+      lifecycleSourceId(sourceId, "archive", archivedAt),
       date,
       description,
       buildReversalLines(original.lines),
@@ -320,15 +370,15 @@ export async function tryPostArchiveReversalJournal(
  */
 export async function tryPostRestoreJournal(
   tenant: string,
-  sourceType: NonNullable<JournalEntry['source_type']>,
+  sourceType: NonNullable<JournalEntry["source_type"]>,
   sourceId: string,
   archivedAt: string,
   description: string,
 ): Promise<void> {
   const reversalId = await findEntryIdBySource(
     tenant,
-    'reversal',
-    lifecycleSourceId(sourceId, 'archive', archivedAt),
+    "reversal",
+    lifecycleSourceId(sourceId, "archive", archivedAt),
   );
   if (!reversalId) return;
   const existingId = await findEntryIdBySource(tenant, sourceType, sourceId);
@@ -340,8 +390,8 @@ export async function tryPostRestoreJournal(
   await persistGeneratedEntry(
     tenant,
     entryForSource(
-      'reversal',
-      lifecycleSourceId(sourceId, 'restore', archivedAt),
+      "reversal",
+      lifecycleSourceId(sourceId, "restore", archivedAt),
       date,
       description,
       original.lines,
@@ -369,7 +419,14 @@ export async function tryPostCreditNoteJournal(
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
-    entryForSource('reversal', creditNoteId, date, `Credit note ${invoice.invoiceNumber ?? invoice.id}`, lines, resolveYearId(years, date)),
+    entryForSource(
+      "reversal",
+      creditNoteId,
+      date,
+      `Credit note ${invoice.invoiceNumber ?? invoice.id}`,
+      lines,
+      resolveYearId(years, date),
+    ),
     years,
   );
 }

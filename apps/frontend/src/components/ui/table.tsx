@@ -27,12 +27,17 @@ const Table = React.forwardRef<HTMLTableElement, TableProps>(
         tabIndex={scrollRegionLabel ? 0 : undefined}
         className={cn("relative w-full max-w-full overflow-x-auto", containerClassName)}
       >
-        <table ref={ref} role="table" className={cn("w-full caption-bottom text-sm", className)} {...props}>
+        <table
+          ref={ref}
+          role="table"
+          className={cn("w-full caption-bottom text-sm", className)}
+          {...props}
+        >
           {children}
         </table>
       </div>
     </TableContext.Provider>
-  )
+  ),
 );
 Table.displayName = "Table";
 
@@ -47,20 +52,26 @@ const TableHeader = React.forwardRef<HTMLTableSectionElement, TableHeaderProps>(
         className={cn(
           "[&_tr]:border-b",
           isSticky && "sticky top-0 z-10 bg-background/95 backdrop-blur-xs shadow-2xs",
-          className
+          className,
         )}
         {...props}
       />
     );
-  }
+  },
 );
 TableHeader.displayName = "TableHeader";
 
-const TableBody = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
-  ({ className, ...props }, ref) => (
-    <tbody ref={ref} role="rowgroup" className={cn("[&_tr:last-child]:border-0", className)} {...props} />
-  )
-);
+const TableBody = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ className, ...props }, ref) => (
+  <tbody
+    ref={ref}
+    role="rowgroup"
+    className={cn("[&_tr:last-child]:border-0", className)}
+    {...props}
+  />
+));
 TableBody.displayName = "TableBody";
 
 const TableFooter = React.forwardRef<HTMLTableSectionElement, TableFooterProps>(
@@ -71,11 +82,11 @@ const TableFooter = React.forwardRef<HTMLTableSectionElement, TableFooterProps>(
       className={cn(
         "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
         sticky && "sticky bottom-0 z-10 bg-background/95 backdrop-blur-xs",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  ),
 );
 TableFooter.displayName = "TableFooter";
 
@@ -87,19 +98,20 @@ const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
       tabIndex={isFocusable ? (tabIndex ?? 0) : tabIndex}
       className={cn(
         "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-        isFocusable && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
-        className
+        isFocusable &&
+          "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
+        className,
       )}
       {...props}
     />
-  )
+  ),
 );
 TableRow.displayName = "TableRow";
 
 const TableCaption = React.forwardRef<HTMLTableCaptionElement, TableCaptionProps>(
   ({ className, ...props }, ref) => (
     <caption ref={ref} className={cn("mt-4 text-sm text-muted-foreground", className)} {...props} />
-  )
+  ),
 );
 TableCaption.displayName = "TableCaption";
 

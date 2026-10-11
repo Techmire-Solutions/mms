@@ -1,4 +1,4 @@
-import { logger } from './logger.js';
+import { logger } from "./logger.js";
 
 export interface MinimalWebSocket {
   close(code?: number, reason?: string): void;
@@ -6,9 +6,9 @@ export interface MinimalWebSocket {
   ping(): void;
   send(data: string): void;
   bufferedAmount?: number;
-  on(event: 'pong', listener: () => void): void;
-  on(event: 'close', listener: () => void): void;
-  on(event: 'error', listener: (err: Error) => void): void;
+  on(event: "pong", listener: () => void): void;
+  on(event: "close", listener: () => void): void;
+  on(event: "error", listener: (err: Error) => void): void;
   off?(event: string, listener: (...args: [Error]) => void): void;
   removeListener?(event: string, listener: (...args: [Error]) => void): void;
 }
@@ -19,17 +19,17 @@ export interface MinimalSseResponse {
   flushHeaders?(): void;
   write(chunk: string | Buffer): boolean;
   end(): void;
-  on(event: 'close' | 'error', listener: (err?: Error) => void): void;
+  on(event: "close" | "error", listener: (err?: Error) => void): void;
   off?(event: string, listener: (err?: Error) => void): void;
   removeListener?(event: string, listener: (err?: Error) => void): void;
 }
 
 export const SSE_STREAM_HEADERS = {
-  'Content-Type': 'text/event-stream',
-  'Cache-Control': 'no-cache, no-transform',
-  'Connection': 'keep-alive',
-  'X-Accel-Buffering': 'no',
-  'Transfer-Encoding': 'chunked',
+  "Content-Type": "text/event-stream",
+  "Cache-Control": "no-cache, no-transform",
+  Connection: "keep-alive",
+  "X-Accel-Buffering": "no",
+  "Transfer-Encoding": "chunked",
 } as const;
 
 export const WS_TELEMETRY_BUFFERED_LIMIT = 64 * 1024; // 64 KB soft threshold for non-critical telemetry
@@ -102,7 +102,7 @@ export function registerConnection(
   const onPong = () => {
     clearPongDeadline();
   };
-  socket.on('pong', onPong);
+  socket.on("pong", onPong);
 
   let cleanedUp = false;
   const cleanup = () => {
@@ -120,26 +120,26 @@ export function registerConnection(
       }
     }
 
-    if (typeof socket.off === 'function') {
-      socket.off('pong', onPong);
-      socket.off('close', cleanup);
-      socket.off('error', onError);
-    } else if (typeof socket.removeListener === 'function') {
-      socket.removeListener('pong', onPong);
-      socket.removeListener('close', cleanup);
-      socket.removeListener('error', onError);
+    if (typeof socket.off === "function") {
+      socket.off("pong", onPong);
+      socket.off("close", cleanup);
+      socket.off("error", onError);
+    } else if (typeof socket.removeListener === "function") {
+      socket.removeListener("pong", onPong);
+      socket.removeListener("close", cleanup);
+      socket.removeListener("error", onError);
     }
 
-    logger.info({ userId, subdomain: normSubdomain }, 'WS connection closed');
+    logger.info({ userId, subdomain: normSubdomain }, "WS connection closed");
   };
 
   const onError = (err: Error) => {
-    logger.error({ userId, subdomain: normSubdomain, err }, 'WS connection error');
+    logger.error({ userId, subdomain: normSubdomain, err }, "WS connection error");
     cleanup();
   };
 
-  socket.on('close', cleanup);
-  socket.on('error', onError);
+  socket.on("close", cleanup);
+  socket.on("error", onError);
 
   const pingInterval = setInterval(() => {
     try {
@@ -147,12 +147,12 @@ export function registerConnection(
       pongTimeout = setTimeout(() => {
         logger.warn(
           { userId, subdomain: normSubdomain },
-          'WS heartbeat pong deadline expired (10s); terminating stalled socket',
+          "WS heartbeat pong deadline expired (10s); terminating stalled socket",
         );
         cleanup();
         socket.terminate();
       }, WS_PONG_DEADLINE_MS);
-      if (typeof pongTimeout.unref === 'function') {
+      if (typeof pongTimeout.unref === "function") {
         pongTimeout.unref();
       }
 
@@ -162,13 +162,13 @@ export function registerConnection(
       socket.terminate();
     }
   }, WS_HEARTBEAT_INTERVAL_MS);
-  if (typeof pingInterval.unref === 'function') {
+  if (typeof pingInterval.unref === "function") {
     pingInterval.unref();
   }
 
   logger.info(
     { userId, subdomain: normSubdomain, active: getActiveConnectionsCount() },
-    'WS connection registered',
+    "WS connection registered",
   );
   return cleanup;
 }
@@ -192,21 +192,21 @@ export function registerSseConnection(
   }
   tenantSet.add(connection);
 
-  if (typeof response.writeHead === 'function') {
+  if (typeof response.writeHead === "function") {
     response.writeHead(200, {
       ...SSE_STREAM_HEADERS,
     });
-  } else if (typeof response.setHeader === 'function') {
+  } else if (typeof response.setHeader === "function") {
     for (const [key, value] of Object.entries(SSE_STREAM_HEADERS)) {
       response.setHeader(key, value);
     }
   }
-  if (typeof response.flushHeaders === 'function') {
+  if (typeof response.flushHeaders === "function") {
     response.flushHeaders();
   }
 
   // Initial connection frame
-  response.write(': connected\n\n');
+  response.write(": connected\n\n");
 
   let cleanedUp = false;
   const cleanup = () => {
@@ -223,36 +223,36 @@ export function registerSseConnection(
       }
     }
 
-    if (typeof response.off === 'function') {
-      response.off('close', cleanup);
-      response.off('error', cleanup);
-    } else if (typeof response.removeListener === 'function') {
-      response.removeListener('close', cleanup);
-      response.removeListener('error', cleanup);
+    if (typeof response.off === "function") {
+      response.off("close", cleanup);
+      response.off("error", cleanup);
+    } else if (typeof response.removeListener === "function") {
+      response.removeListener("close", cleanup);
+      response.removeListener("error", cleanup);
     }
 
-    logger.info({ userId, subdomain: normSubdomain }, 'SSE connection closed');
+    logger.info({ userId, subdomain: normSubdomain }, "SSE connection closed");
   };
 
-  response.on('close', cleanup);
-  response.on('error', cleanup);
+  response.on("close", cleanup);
+  response.on("error", cleanup);
 
   // Keep-alive heartbeat comment every 25s
   const pingInterval = setInterval(() => {
     try {
-      response.write(': ping\n\n');
+      response.write(": ping\n\n");
     } catch {
       cleanup();
       response.end();
     }
   }, 25000);
-  if (typeof pingInterval.unref === 'function') {
+  if (typeof pingInterval.unref === "function") {
     pingInterval.unref();
   }
 
   logger.info(
     { userId, subdomain: normSubdomain, active: getActiveConnectionsCount() },
-    'SSE connection registered',
+    "SSE connection registered",
   );
   return cleanup;
 }

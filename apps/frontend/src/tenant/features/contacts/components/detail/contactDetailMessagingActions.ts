@@ -23,9 +23,7 @@ interface DetailMessagingRowActionInput {
 }
 
 /** Build a CollectionRowAction with shared messaging icon button tones. */
-function detailMessagingRowAction(
-  input: DetailMessagingRowActionInput,
-): CollectionRowAction {
+function detailMessagingRowAction(input: DetailMessagingRowActionInput): CollectionRowAction {
   return {
     key: input.key,
     icon: input.icon,

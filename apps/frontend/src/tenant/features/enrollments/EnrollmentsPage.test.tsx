@@ -145,6 +145,8 @@ describe("EnrollmentsPage Component", () => {
   it("wires resetColumnLayout to columnCustomizer.onResetLayout", () => {
     renderToStaticMarkup(<EnrollmentsPage />);
     expect(capturedWorkTierProps?.columnProps?.columnCustomizer?.onResetLayout).toBeDefined();
-    expect(typeof capturedWorkTierProps?.columnProps?.columnCustomizer?.onResetLayout).toBe("function");
+    expect(typeof capturedWorkTierProps?.columnProps?.columnCustomizer?.onResetLayout).toBe(
+      "function",
+    );
   });
 });

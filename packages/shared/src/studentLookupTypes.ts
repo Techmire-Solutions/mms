@@ -1,17 +1,17 @@
-import { z } from 'zod';
-import { GENDERS } from './contactPreferenceConstants.js';
-import { STUDENT_STATUS_VALUES } from './studentTypes.js';
+import { z } from "zod";
+import { GENDERS } from "./contactPreferenceConstants.js";
+import { STUDENT_STATUS_VALUES } from "./studentTypes.js";
 
 /** Students Setup option-list kinds migrated off document-store collections. */
-export const STUDENT_LOOKUP_KINDS = ['statuses', 'genderFilters', 'discountTypes'] as const;
+export const STUDENT_LOOKUP_KINDS = ["statuses", "genderFilters", "discountTypes"] as const;
 
 export type StudentLookupKind = (typeof STUDENT_LOOKUP_KINDS)[number];
 
 /** Legacy document-store collection key → typed lookup kind. */
 export const STUDENT_LOOKUP_LEGACY_COLLECTION_KEYS = {
-  studentStatuses: 'statuses',
-  studentGenderFilters: 'genderFilters',
-  studentDiscountTypes: 'discountTypes',
+  studentStatuses: "statuses",
+  studentGenderFilters: "genderFilters",
+  studentDiscountTypes: "discountTypes",
 } as const satisfies Record<string, StudentLookupKind>;
 
 type StudentLookupLegacyCollectionKey = keyof typeof STUDENT_LOOKUP_LEGACY_COLLECTION_KEYS;
@@ -31,7 +31,7 @@ export const studentLookupKindParamsSchema = z.object({
 });
 
 /** Schema for validating student lookup put request body. */
-export * from './schemas/studentLookup.dto.js';
+export * from "./schemas/studentLookup.dto.js";
 
 const STUDENT_LOOKUP_KINDS_SET = new Set<string>(STUDENT_LOOKUP_KINDS);
 
@@ -49,11 +49,11 @@ export function isStudentLookupLegacyCollectionKey(
 
 export function defaultStudentLookupItems(kind: StudentLookupKind): string[] {
   switch (kind) {
-    case 'statuses':
+    case "statuses":
       return [...STUDENT_STATUS_VALUES];
-    case 'genderFilters':
+    case "genderFilters":
       return [...GENDERS];
-    case 'discountTypes':
+    case "discountTypes":
       return [];
     default: {
       const _exhaustive: never = kind;
@@ -64,9 +64,9 @@ export function defaultStudentLookupItems(kind: StudentLookupKind): string[] {
 
 export function emptyStudentLookupsMap(): StudentLookupsMap {
   return {
-    statuses: defaultStudentLookupItems('statuses'),
-    genderFilters: defaultStudentLookupItems('genderFilters'),
-    discountTypes: defaultStudentLookupItems('discountTypes'),
+    statuses: defaultStudentLookupItems("statuses"),
+    genderFilters: defaultStudentLookupItems("genderFilters"),
+    discountTypes: defaultStudentLookupItems("discountTypes"),
   };
 }
 
@@ -75,12 +75,11 @@ export function emptyStudentLookupsMap(): StudentLookupsMap {
  * when Setup persists a list and when validation overlays the live list.
  */
 export const STUDENT_LOOKUP_FIELD_TARGETS = {
-  statuses: { tabId: 'registration', fieldId: 'status' },
-  genderFilters: { tabId: 'basic', fieldId: 'gender' },
+  statuses: { tabId: "registration", fieldId: "status" },
+  genderFilters: { tabId: "basic", fieldId: "gender" },
 } as const satisfies Record<
-  Exclude<StudentLookupKind, 'discountTypes'>,
+  Exclude<StudentLookupKind, "discountTypes">,
   { tabId: string; fieldId: string }
 >;
 
 export type StudentLookupStringKind = keyof typeof STUDENT_LOOKUP_FIELD_TARGETS;
-

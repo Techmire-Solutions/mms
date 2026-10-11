@@ -13,11 +13,7 @@ const mockContext = {
 };
 
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <TranslationContext.Provider value={mockContext}>
-      {children}
-    </TranslationContext.Provider>
-  );
+  return <TranslationContext.Provider value={mockContext}>{children}</TranslationContext.Provider>;
 }
 
 describe("WorkBatchTable", () => {
@@ -152,4 +148,3 @@ describe("WorkBatchTable", () => {
     expect(html).toContain("text-end");
   });
 });
-

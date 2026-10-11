@@ -102,22 +102,48 @@ export function ModuleTrashConfirmDialogs({
     : undefined;
 
   // If using Mode 2 (pendingTrashId / confirmBulkOpen)
-  if (pendingTrashId !== undefined && onPendingTrashIdChange && confirmBulkOpen !== undefined && onConfirmBulkOpenChange && i18nNamespace) {
-    const sTitle = labels?.singleTitle ?? singleDeleteTitle ?? t(`${i18nNamespace}.trash.deleteTitle` as AppTranslationKey);
-    const sDesc = labels?.singleDescription ?? singleDeleteDescription ?? t(`${i18nNamespace}.trash.deleteConfirm` as AppTranslationKey);
+  if (
+    pendingTrashId !== undefined &&
+    onPendingTrashIdChange &&
+    confirmBulkOpen !== undefined &&
+    onConfirmBulkOpenChange &&
+    i18nNamespace
+  ) {
+    const sTitle =
+      labels?.singleTitle ??
+      singleDeleteTitle ??
+      t(`${i18nNamespace}.trash.deleteTitle` as AppTranslationKey);
+    const sDesc =
+      labels?.singleDescription ??
+      singleDeleteDescription ??
+      t(`${i18nNamespace}.trash.deleteConfirm` as AppTranslationKey);
     const sConfirm = labels?.singleConfirm ?? deleteConfirmLabel ?? t("common.delete");
     const cLabel = labels?.cancel ?? cancelLabel ?? t("common.cancel");
 
     const bTitle = showDeleted
-      ? (labels?.bulkRestoreTitle ?? bulkRestoreTitle ?? t(`${i18nNamespace}.trash.restore` as AppTranslationKey))
-      : (labels?.bulkDeleteTitle ?? bulkDeleteTitle ?? t(`${i18nNamespace}.trash.deleteTitle` as AppTranslationKey));
+      ? (labels?.bulkRestoreTitle ??
+        bulkRestoreTitle ??
+        t(`${i18nNamespace}.trash.restore` as AppTranslationKey))
+      : (labels?.bulkDeleteTitle ??
+        bulkDeleteTitle ??
+        t(`${i18nNamespace}.trash.deleteTitle` as AppTranslationKey));
 
     const bDesc = showDeleted
-      ? (labels?.bulkRestoreDescription ?? bulkRestoreDescription ?? t(`${i18nNamespace}.trash.bulkRestoreConfirm` as AppTranslationKey, { count: selectedCount }))
-      : (labels?.bulkDeleteDescription ?? bulkDeleteDescription ?? t(`${i18nNamespace}.trash.bulkDeleteConfirm` as AppTranslationKey, { count: selectedCount }));
+      ? (labels?.bulkRestoreDescription ??
+        bulkRestoreDescription ??
+        t(`${i18nNamespace}.trash.bulkRestoreConfirm` as AppTranslationKey, {
+          count: selectedCount,
+        }))
+      : (labels?.bulkDeleteDescription ??
+        bulkDeleteDescription ??
+        t(`${i18nNamespace}.trash.bulkDeleteConfirm` as AppTranslationKey, {
+          count: selectedCount,
+        }));
 
     const bConfirm = showDeleted
-      ? (labels?.bulkRestoreConfirm ?? restoreConfirmLabel ?? t(`${i18nNamespace}.trash.restore` as AppTranslationKey))
+      ? (labels?.bulkRestoreConfirm ??
+        restoreConfirmLabel ??
+        t(`${i18nNamespace}.trash.restore` as AppTranslationKey))
       : (labels?.bulkDeleteConfirm ?? deleteConfirmLabel ?? t("common.delete"));
 
     return (

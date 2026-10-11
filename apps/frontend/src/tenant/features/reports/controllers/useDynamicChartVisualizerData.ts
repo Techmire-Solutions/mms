@@ -1,31 +1,28 @@
-import type {
-  ContactsWidgetOperation,
-  StudentsWidgetOperation,
-} from '@mms/shared';
-import { useReportCollectionRows } from '@/lib/reports/useReportCollections';
-import { useContactsWidgetAggregates } from '@/tenant/hooks/collections/contacts';
-import { useStudentsWidgetAggregates } from '@/tenant/hooks/collections/students';
+import type { ContactsWidgetOperation, StudentsWidgetOperation } from "@mms/shared";
+import { useReportCollectionRows } from "@/lib/reports/useReportCollections";
+import { useContactsWidgetAggregates } from "@/tenant/hooks/collections/contacts";
+import { useStudentsWidgetAggregates } from "@/tenant/hooks/collections/students";
 import type {
   AggregatedItem,
   ChartOperation,
   FilterRule,
-} from '@/components/ui/reports/dynamicChartVisualizerTypes';
+} from "@/components/ui/reports/dynamicChartVisualizerTypes";
 import {
   aggregateVisualizerRows,
   sortAndCapAggregatedItems,
-} from '@/components/ui/reports/dynamicChartVisualizerHelpers';
+} from "@/components/ui/reports/dynamicChartVisualizerHelpers";
 
-const CONTACTS_VISUALIZER_QUERY_ID = 'contacts-visualizer';
-const STUDENTS_VISUALIZER_QUERY_ID = 'students-visualizer';
+const CONTACTS_VISUALIZER_QUERY_ID = "contacts-visualizer";
+const STUDENTS_VISUALIZER_QUERY_ID = "students-visualizer";
 
 function toContactsWidgetOperation(operation: ChartOperation): ContactsWidgetOperation {
-  if (operation === 'sum' || operation === 'avg') return operation;
-  return 'count';
+  if (operation === "sum" || operation === "avg") return operation;
+  return "count";
 }
 
 function toStudentsWidgetOperation(operation: ChartOperation): StudentsWidgetOperation {
-  if (operation === 'sum' || operation === 'avg') return operation;
-  return 'count';
+  if (operation === "sum" || operation === "avg") return operation;
+  return "count";
 }
 
 export interface UseDynamicChartVisualizerDataOptions {
@@ -43,10 +40,10 @@ export function useDynamicChartVisualizerData({
   xAxisField,
   filters,
 }: UseDynamicChartVisualizerDataOptions): AggregatedItem[] {
-  const isContacts = collectionKey === 'contacts';
-  const isStudents = collectionKey === 'students';
+  const isContacts = collectionKey === "contacts";
+  const isStudents = collectionKey === "students";
   const { rows: collectionRows, denominations } = useReportCollectionRows(
-    isContacts || isStudents ? '' : collectionKey,
+    isContacts || isStudents ? "" : collectionKey,
   );
 
   const contactsVisualizerWidgets = (() => {
@@ -54,7 +51,7 @@ export function useDynamicChartVisualizerData({
     return [
       {
         id: CONTACTS_VISUALIZER_QUERY_ID,
-        collection: 'contacts' as const,
+        collection: "contacts" as const,
         operation: toContactsWidgetOperation(operation),
         targetField: targetField || undefined,
         xAxisField,
@@ -75,7 +72,7 @@ export function useDynamicChartVisualizerData({
     return [
       {
         id: STUDENTS_VISUALIZER_QUERY_ID,
-        collection: 'students' as const,
+        collection: "students" as const,
         operation: toStudentsWidgetOperation(operation),
         targetField: targetField || undefined,
         xAxisField,
@@ -83,7 +80,7 @@ export function useDynamicChartVisualizerData({
           .filter((rule) => rule.field && rule.value)
           .map((rule) => ({
             field: rule.field,
-            operator: rule.operator as 'equals' | 'contains' | 'gt' | 'lt' | undefined,
+            operator: rule.operator as "equals" | "contains" | "gt" | "lt" | undefined,
             value: rule.value,
           })),
         chartLimit: 20,

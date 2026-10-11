@@ -113,7 +113,11 @@ export function MergePreview({
             disabled={confirming}
             className="flex items-center gap-2 px-5 min-h-11 font-semibold"
           >
-            {confirming ? <Loader2 className="w-4 h-4 animate-spin" /> : <GitMerge className="w-4 h-4" />}
+            {confirming ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <GitMerge className="w-4 h-4" />
+            )}
             <span>{confirming ? t("common.loading") : t("contacts.duplicates.confirmMerge")}</span>
           </Button>
         </>

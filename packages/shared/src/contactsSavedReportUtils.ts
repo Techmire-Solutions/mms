@@ -1,7 +1,7 @@
-import type { ContactsSavedReport, ContactsWorkDrillDown } from './contactsPreferencesTypes.js';
-import { isContactsQuickFilter } from './contactsListQuery.js';
+import type { ContactsSavedReport, ContactsWorkDrillDown } from "./contactsPreferencesTypes.js";
+import { isContactsQuickFilter } from "./contactsListQuery.js";
 
-export type ContactsSavedReportShareScope = 'private' | 'roles' | 'users' | 'global';
+export type ContactsSavedReportShareScope = "private" | "roles" | "users" | "global";
 
 export interface ContactsSavedReportViewer {
   id: string;
@@ -10,7 +10,7 @@ export interface ContactsSavedReportViewer {
 }
 
 interface ContactsSavedReportIssue {
-  kind: 'stale_gender' | 'stale_quick_filter';
+  kind: "stale_gender" | "stale_quick_filter";
   field: keyof ContactsWorkDrillDown;
   value: string;
 }
@@ -20,15 +20,15 @@ export function canViewContactsSavedReport(
   report: ContactsSavedReport,
   viewer: ContactsSavedReportViewer,
 ): boolean {
-  const scope = report.shareScope ?? 'private';
-  if (scope === 'global') return true;
+  const scope = report.shareScope ?? "private";
+  if (scope === "global") return true;
   if (report.createdBy === viewer.id) return true;
   if (viewer.isAdmin) return true;
-  if (scope === 'private') return false;
-  if (scope === 'roles') {
+  if (scope === "private") return false;
+  if (scope === "roles") {
     return (report.sharedWithRoles ?? []).includes(viewer.role);
   }
-  if (scope === 'users') {
+  if (scope === "users") {
     return (report.sharedWithUserIds ?? []).includes(viewer.id);
   }
   return false;
@@ -52,15 +52,15 @@ export function validateContactsSavedReportDrillDown(
   const issues: ContactsSavedReportIssue[] = [];
   if (drillDown.gender && options.genders?.length && !options.genders.includes(drillDown.gender)) {
     issues.push({
-      kind: 'stale_gender',
-      field: 'gender',
+      kind: "stale_gender",
+      field: "gender",
       value: drillDown.gender,
     });
   }
   if (drillDown.quickFilter && !isContactsQuickFilter(drillDown.quickFilter)) {
     issues.push({
-      kind: 'stale_quick_filter',
-      field: 'quickFilter',
+      kind: "stale_quick_filter",
+      field: "quickFilter",
       value: drillDown.quickFilter,
     });
   }

@@ -2,9 +2,9 @@
  * Cross-module public surface for Messaging Query keys / hooks.
  * Other features must import from here — not `@/tenant/features/messaging/hooks/*`.
  */
-export { MESSAGING_CONTACTS_RESOLVE_QUERY_KEY } from '@/tenant/features/messaging/hooks/useMessagingContactsByIds';
-export { MESSAGING_RECIPIENTS_QUERY_KEY } from '@/tenant/features/messaging/hooks/useMessagingWorkRecipients';
-export { invalidateMessagingQueries } from '@/tenant/features/messaging/hooks/invalidateMessagingQueries';
+export { MESSAGING_CONTACTS_RESOLVE_QUERY_KEY } from "@/tenant/features/messaging/hooks/useMessagingContactsByIds";
+export { MESSAGING_RECIPIENTS_QUERY_KEY } from "@/tenant/features/messaging/hooks/useMessagingWorkRecipients";
+export { invalidateMessagingQueries } from "@/tenant/features/messaging/hooks/invalidateMessagingQueries";
 export {
   MESSAGING_TEMPLATES_QUERY_KEY,
   MESSAGING_LOGS_QUERY_KEY,
@@ -13,7 +13,7 @@ export {
   useMessageLogs,
   useMessagingMetrics,
   useMessagingMutations,
-} from '@/tenant/features/messaging/hooks/useMessaging';
+} from "@/tenant/features/messaging/hooks/useMessaging";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   messagingLogsListQueryOptions,
@@ -25,7 +25,13 @@ export {
   useMessagingContractDeleteTemplate,
   useMessagingContractRecordLogs,
   useMessagingContractClearLogs,
-} from '@/tenant/features/messaging/hooks/useMessagingTsrHooks';
+} from "@/tenant/features/messaging/hooks/useMessagingTsrHooks";
 
-export { MESSAGING_CHANNEL_CONFIG, type MessagingChannelConfig } from '@/tenant/features/messaging/config';
-export { exportMessagingLogsFiltered, messagingExportEndDateBound } from '@/tenant/features/messaging/components/messagingReportsExport';
+export {
+  MESSAGING_CHANNEL_CONFIG,
+  type MessagingChannelConfig,
+} from "@/tenant/features/messaging/config";
+export {
+  exportMessagingLogsFiltered,
+  messagingExportEndDateBound,
+} from "@/tenant/features/messaging/components/messagingReportsExport";

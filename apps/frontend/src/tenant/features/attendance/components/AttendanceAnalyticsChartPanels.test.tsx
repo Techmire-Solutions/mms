@@ -13,18 +13,23 @@ vi.mock("@/components/ui/SafeResponsiveContainer", () => {
   };
 });
 
-
 vi.mock("@/components/ui/ChartGrid", () => ({
   ChartGrid: () => <div data-testid="chart-grid" />,
   chartAxisTick: () => ({}),
 }));
 
 vi.mock("recharts", () => ({
-  BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="bar-chart">{children}</div>
+  ),
   Bar: () => null,
-  AreaChart: ({ children }: { children: React.ReactNode }) => <div data-testid="area-chart">{children}</div>,
+  AreaChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="area-chart">{children}</div>
+  ),
   Area: () => null,
-  PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
+  PieChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pie-chart">{children}</div>
+  ),
   Pie: () => null,
   Cell: () => null,
   XAxis: () => null,

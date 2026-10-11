@@ -46,16 +46,16 @@ function facultyWorkColumnBreakpointClass(columnKey: string): string {
     return "hidden sm:table-cell";
   }
   if (
-    columnKey === "qualification"
-    || columnKey === "specialization"
-    || columnKey === "joinDate"
-    || columnKey === "employmentStartDate"
-    || columnKey === "employmentEndDate"
-    || columnKey === "designationStartDate"
-    || columnKey === "designationEndDate"
-    || columnKey === "employDesignationStatus"
-    || columnKey === "performanceRating"
-    || columnKey === "notes"
+    columnKey === "qualification" ||
+    columnKey === "specialization" ||
+    columnKey === "joinDate" ||
+    columnKey === "employmentStartDate" ||
+    columnKey === "employmentEndDate" ||
+    columnKey === "designationStartDate" ||
+    columnKey === "designationEndDate" ||
+    columnKey === "employDesignationStatus" ||
+    columnKey === "performanceRating" ||
+    columnKey === "notes"
   ) {
     return "hidden md:table-cell";
   }

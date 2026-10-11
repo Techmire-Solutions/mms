@@ -1,8 +1,8 @@
-import { useCallback } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { reportClientError } from '@/lib/clientErrorReporting';
-import { useComposedQuestionBankSettings } from './useQuestionBankSetupConfig';
-import { STANDARD_MODULES_CONFIG_REGISTRY } from '@/hooks/standardModuleConfigRegistry';
+import { useCallback } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { reportClientError } from "@/lib/clientErrorReporting";
+import { useComposedQuestionBankSettings } from "./useQuestionBankSetupConfig";
+import { STANDARD_MODULES_CONFIG_REGISTRY } from "@/hooks/standardModuleConfigRegistry";
 import {
   getSortedFields,
   getFlatFieldsConfig,
@@ -15,8 +15,8 @@ import {
   type QuestionSourceBook,
   type QuestionDifficulty,
   type QuestionType,
-} from '@mms/shared';
-import { useQuestionBankLabels } from './useQuestionBankLabels';
+} from "@mms/shared";
+import { useQuestionBankLabels } from "./useQuestionBankLabels";
 
 export interface QuestionBankConfig {
   settings: QuestionBankSettings;
@@ -40,11 +40,12 @@ export function useQuestionBankConfig(
   questions?: readonly QuestionCategoryRef[],
 ): QuestionBankConfig {
   const { t } = useTranslation();
-  const { fieldLabel, typeLabel, difficultyLabel, questionLanguageLabel } = useQuestionBankLabels(t);
+  const { fieldLabel, typeLabel, difficultyLabel, questionLanguageLabel } =
+    useQuestionBankLabels(t);
 
-  const registry = STANDARD_MODULES_CONFIG_REGISTRY['question-bank'];
+  const registry = STANDARD_MODULES_CONFIG_REGISTRY["question-bank"];
   const { data: settings, updateAsync } = useComposedQuestionBankSettings();
-  
+
   const defaultSettings = registry.defaultSettings as QuestionBankSettings;
   const defaultFieldDefs = registry.defaultFieldDefs;
 
@@ -55,28 +56,27 @@ export function useQuestionBankConfig(
     [updateAsync],
   );
 
-  const updateSettings = ((settingsDraft: QuestionBankSettings) => {
-      // Fire-and-forget for local updates
-      updateSettingsAsync(settingsDraft).catch((error) => reportClientError(error, { context: 'questionBank.updateSettings' }));
-    });
+  const updateSettings = (settingsDraft: QuestionBankSettings) => {
+    // Fire-and-forget for local updates
+    updateSettingsAsync(settingsDraft).catch((error) =>
+      reportClientError(error, { context: "questionBank.updateSettings" }),
+    );
+  };
 
   const fields = (() => getFlatFieldsConfig(settings.fields))();
   const customFields = (() => (settings.customFields || []) as ModuleCustomField[])();
   const fieldOrder = (() => settings.fieldOrder ?? defaultSettings.fieldOrder ?? [])();
 
-  const orderedFields = (() => getSortedFields(defaultFieldDefs, fieldOrder, fields, customFields))();
+  const orderedFields = (() =>
+    getSortedFields(defaultFieldDefs, fieldOrder, fields, customFields))();
 
-  const isFieldEnabled = ((fieldId: string): boolean => fields[fieldId]?.enabled !== false);
+  const isFieldEnabled = (fieldId: string): boolean => fields[fieldId]?.enabled !== false;
 
   const enabledDifficulties = (() =>
-      (settings.difficultyLevels ?? [])
-        .filter((entry) => entry.enabled)
-        .map((entry) => entry.id))();
+    (settings.difficultyLevels ?? []).filter((entry) => entry.enabled).map((entry) => entry.id))();
 
   const enabledQuestionTypes = (() =>
-      (settings.questionTypes ?? [])
-        .filter((entry) => entry.enabled)
-        .map((entry) => entry.id))();
+    (settings.questionTypes ?? []).filter((entry) => entry.enabled).map((entry) => entry.id))();
 
   const categories = (() => mergeQuestionCategories(settings.categories, questions))();
 

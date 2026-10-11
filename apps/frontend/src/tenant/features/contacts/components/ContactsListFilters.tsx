@@ -59,7 +59,9 @@ export const ContactsListFilters = React.memo(function ContactsListFilters({
 
   return (
     <ModuleWorkToolbar
-      shownCountLabel={shownCount != null ? t("contacts.shownCount", { count: shownCount }) : undefined}
+      shownCountLabel={
+        shownCount != null ? t("contacts.shownCount", { count: shownCount }) : undefined
+      }
       regionLabel={t("contacts.filters")}
       search={search}
       onSearchChange={onSearchChange}
@@ -83,13 +85,17 @@ export const ContactsListFilters = React.memo(function ContactsListFilters({
           t={t}
         />
       }
-      trashToggle={canViewDeleted && onShowDeletedChange ? {
-        canViewDeleted,
-        viewingDeleted,
-        onToggle: onShowDeletedChange,
-        activeLabel: t("contacts.showActive"),
-        deletedLabel: t("contacts.showDeleted"),
-      } : undefined}
+      trashToggle={
+        canViewDeleted && onShowDeletedChange
+          ? {
+              canViewDeleted,
+              viewingDeleted,
+              onToggle: onShowDeletedChange,
+              activeLabel: t("contacts.showActive"),
+              deletedLabel: t("contacts.showDeleted"),
+            }
+          : undefined
+      }
       viewModeToggle={{
         viewMode,
         onViewModeChange,

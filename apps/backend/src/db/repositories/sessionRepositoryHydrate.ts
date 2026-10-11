@@ -1,5 +1,5 @@
-import { and, eq, inArray, sql } from 'drizzle-orm';
-import { type Session } from '@mms/shared';
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { type Session } from "@mms/shared";
 import {
   type sessions,
   sessionFaculty,
@@ -13,9 +13,9 @@ import {
   sessionClassRefreshments,
   scholarshipEligibilities,
   sessionClassScholarships,
-} from '../schema.js';
-import { type TenantTransaction } from '../tenant-context.js';
-import { sessionRowToRecord } from './sessionRepositoryMappers.js';
+} from "../schema.js";
+import { type TenantTransaction } from "../tenant-context.js";
+import { sessionRowToRecord } from "./sessionRepositoryMappers.js";
 
 export {
   listSessionsByWorkspace,
@@ -24,7 +24,7 @@ export {
   findSessionsSummaryByIds,
   findClassesOrSessionsByIds,
   findClassOrSessionById,
-} from './sessionRepositoryQueries.js';
+} from "./sessionRepositoryQueries.js";
 
 type Transaction = TenantTransaction;
 
@@ -215,21 +215,28 @@ export async function hydrateSessionsListAggregated(
         FROM session_classes c
         WHERE c.session_id = s.id AND c.workspace_subdomain = ${subdomain}
       ), '[]'::json) AS classes
-    FROM (VALUES ${sql.join(sessionIds.map((id) => sql`(${id}::text)`), sql`, `)}) AS s(id)
+    FROM (VALUES ${sql.join(
+      sessionIds.map((id) => sql`(${id}::text)`),
+      sql`, `,
+    )}) AS s(id)
   `);
 
-  const rows = (Array.isArray(queryResult) ? queryResult : ((queryResult as { rows?: unknown[] })?.rows ?? [])) as Array<{
+  const rows = (
+    Array.isArray(queryResult) ? queryResult : ((queryResult as { rows?: unknown[] })?.rows ?? [])
+  ) as Array<{
     sessionId: unknown;
     faculty?: SessionFacultyRow[];
-    classes?: Array<ClassRow & {
-      fees?: FeeRow[];
-      schedules?: ScheduleRow[];
-      budgets?: BudgetRow[];
-      discounts?: DiscountRow[];
-      timetables?: Array<TimetableRow & { periods?: PeriodRow[] }>;
-      refreshments?: RefreshmentRow[];
-      scholarships?: Array<ScholarshipRow & { eligibility?: EligibilityRow }>;
-    }>;
+    classes?: Array<
+      ClassRow & {
+        fees?: FeeRow[];
+        schedules?: ScheduleRow[];
+        budgets?: BudgetRow[];
+        discounts?: DiscountRow[];
+        timetables?: Array<TimetableRow & { periods?: PeriodRow[] }>;
+        refreshments?: RefreshmentRow[];
+        scholarships?: Array<ScholarshipRow & { eligibility?: EligibilityRow }>;
+      }
+    >;
   }>;
   const facultyBySession = new Map<string, SessionFacultyRow[]>();
   const classesBySession = new Map<string, ClassRow[]>();
@@ -310,8 +317,8 @@ export async function hydrateSessionsList(
 
   // Attempt consolidated O(1) SQL aggregation when tx.execute is available
   if (
-    process.env.MMS_DISABLE_AGGREGATED_CHILD_HYDRATION !== 'true' &&
-    typeof (tx as { execute?: unknown })?.execute === 'function'
+    process.env.MMS_DISABLE_AGGREGATED_CHILD_HYDRATION !== "true" &&
+    typeof (tx as { execute?: unknown })?.execute === "function"
   ) {
     try {
       return await hydrateSessionsListAggregated(tx, subdomain, sessionRows);
@@ -382,9 +389,7 @@ export async function hydrateSessionsList(
       list.push(f);
       facultyMap.set(f.sessionId, list);
     }
-    return sessionRows.map((row) =>
-      sessionRowToRecord(row, facultyMap.get(row.id) ?? [], []),
-    );
+    return sessionRows.map((row) => sessionRowToRecord(row, facultyMap.get(row.id) ?? [], []));
   }
 
   // 2. Batch load Class-level children
@@ -664,10 +669,15 @@ export async function hydrateSessionsListSummary(
         FROM session_classes c
         WHERE c.session_id = s.id AND c.workspace_subdomain = ${subdomain}
       ), '[]'::json) AS classes
-    FROM (VALUES ${sql.join(sessionIds.map((id) => sql`(${id}::text)`), sql`, `)}) AS s(id)
+    FROM (VALUES ${sql.join(
+      sessionIds.map((id) => sql`(${id}::text)`),
+      sql`, `,
+    )}) AS s(id)
   `);
 
-  const rows = (Array.isArray(queryResult) ? queryResult : ((queryResult as { rows?: unknown[] })?.rows ?? [])) as Array<{
+  const rows = (
+    Array.isArray(queryResult) ? queryResult : ((queryResult as { rows?: unknown[] })?.rows ?? [])
+  ) as Array<{
     sessionId: unknown;
     faculty?: SessionFacultyRow[];
     classes?: ClassRow[];
@@ -681,11 +691,6 @@ export async function hydrateSessionsListSummary(
   }
 
   return sessionRows.map((row) =>
-    sessionRowToRecord(
-      row,
-      facultyBySession.get(row.id) ?? [],
-      classesBySession.get(row.id) ?? [],
-    ),
+    sessionRowToRecord(row, facultyBySession.get(row.id) ?? [], classesBySession.get(row.id) ?? []),
   );
 }
-

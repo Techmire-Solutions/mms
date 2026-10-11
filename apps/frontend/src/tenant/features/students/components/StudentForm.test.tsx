@@ -33,7 +33,15 @@ vi.mock("@/tenant/features/students/hooks/useStudentFormState", () => ({
 }));
 
 vi.mock("@/components/ui/FormModal", () => ({
-  FormModal: ({ title, children, footerStart }: { title: string; children: React.ReactNode; footerStart: React.ReactNode }) => (
+  FormModal: ({
+    title,
+    children,
+    footerStart,
+  }: {
+    title: string;
+    children: React.ReactNode;
+    footerStart: React.ReactNode;
+  }) => (
     <div data-testid="form-modal">
       <h1>{title}</h1>
       <div>{footerStart}</div>
@@ -48,9 +56,7 @@ vi.mock("@/tenant/features/students/components/StudentFormTabContent", () => ({
 
 describe("StudentForm Component", () => {
   it("renders form modal with title, footer entity chip, and tab content", () => {
-    const html = renderToStaticMarkup(
-      <StudentForm onClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<StudentForm onClose={vi.fn()} onSave={vi.fn()} />);
 
     expect(html).toContain("students.form.addTitle");
     expect(html).toContain("Zayd Harith");

@@ -19,9 +19,7 @@ describe("CustomWidgetCardLayout", () => {
       trend: 10,
     };
 
-    const html = renderToStaticMarkup(
-      <CustomWidgetCardLayout computedCard={mockCard} />
-    );
+    const html = renderToStaticMarkup(<CustomWidgetCardLayout computedCard={mockCard} />);
 
     expect(html).toContain("Active Madrasas");
     expect(html).toContain("18");

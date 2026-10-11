@@ -1,9 +1,7 @@
-import type { AttendanceReportOverview } from '@mms/shared';
-import type {
-  AttendanceStatus,
-} from '@/lib/data/attendanceData';
+import type { AttendanceReportOverview } from "@mms/shared";
+import type { AttendanceStatus } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
-import { useAttendanceReportAggregates } from '@/tenant/hooks/collections/attendance';
+import { useAttendanceReportAggregates } from "@/tenant/hooks/collections/attendance";
 import { useTranslation } from "@/hooks/useTranslation";
 import { attendanceStatusLabel } from "@/lib/attendanceStatusUi";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
@@ -27,7 +25,7 @@ export interface ClassStatEntry {
 function formatStudentName(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length < 2) return parts[0] || name;
-  return `${parts[0]} ${parts[1]?.[0] ?? ''}.`;
+  return `${parts[0]} ${parts[1]?.[0] ?? ""}.`;
 }
 
 export function useAttendanceAnalyticsModel(filters: AnalyticsFilters) {
@@ -44,7 +42,7 @@ export function useAttendanceAnalyticsModel(filters: AnalyticsFilters) {
   }));
 
   const totalStats = Object.fromEntries(
-    (overview?.statusCounts ?? []).map((item) => [item.status, item.count])
+    (overview?.statusCounts ?? []).map((item) => [item.status, item.count]),
   );
 
   const monthlyTrend = (overview?.monthlyTrend ?? []).map((month) => ({

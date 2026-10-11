@@ -32,7 +32,12 @@ export function DataTableCards<TData extends { id: string | number }>({
 
   const renderOne = (row: TData): React.ReactNode => {
     const index = indexById.get(row.id) ?? 0;
-    if (renderCard) return <React.Fragment key={String(row.id)}>{renderCard(row, index, { isColumnVisible })}</React.Fragment>;
+    if (renderCard)
+      return (
+        <React.Fragment key={String(row.id)}>
+          {renderCard(row, index, { isColumnVisible })}
+        </React.Fragment>
+      );
     return (
       <EntityCard
         key={String(row.id)}

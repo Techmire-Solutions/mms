@@ -38,7 +38,10 @@ export function usePinnedWidgetsController(category: string) {
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [editingWidgetId, setEditingWidgetId] = useState<string | null>(null);
   const [sectionSettings, setSectionSettings] = useState<Record<string, boolean>>(() => {
-    return getObject<Record<string, boolean>>("dashboard_section_settings", DEFAULT_SECTION_SETTINGS);
+    return getObject<Record<string, boolean>>(
+      "dashboard_section_settings",
+      DEFAULT_SECTION_SETTINGS,
+    );
   });
   const normalizedCategory = (() => {
     if (category === "faculty") return "faculty";
@@ -52,7 +55,8 @@ export function usePinnedWidgetsController(category: string) {
     if (normalizedCategory === "contacts") return "contacts";
     if (normalizedCategory === "faculty") return "faculty";
     if (normalizedCategory === "attendance") return "attendance_records";
-    if (normalizedCategory === "financial" || normalizedCategory === "accounting") return "finance_invoices";
+    if (normalizedCategory === "financial" || normalizedCategory === "accounting")
+      return "finance_invoices";
     if (normalizedCategory === "hasanat") return "hasanat_distributions";
     if (normalizedCategory === "sessions") return "sessions";
     if (normalizedCategory === "enrollments") return "enrollments";
@@ -62,11 +66,16 @@ export function usePinnedWidgetsController(category: string) {
   })() as CustomWidget["collection"];
   const filteredWidgets = (() => {
     return widgets.filter((widget) => {
-      const widgetCategory = widget.category === "faculty" ? "faculty"
-        : widget.category === "finance" ? "financial"
-        : widget.category === "academic" ? "examinations"
-        : widget.category === "question-bank" ? "questionBank"
-        : widget.category;
+      const widgetCategory =
+        widget.category === "faculty"
+          ? "faculty"
+          : widget.category === "finance"
+            ? "financial"
+            : widget.category === "academic"
+              ? "examinations"
+              : widget.category === "question-bank"
+                ? "questionBank"
+                : widget.category;
       return widgetCategory === normalizedCategory;
     });
   })();
@@ -133,7 +142,9 @@ export function usePinnedWidgetsController(category: string) {
         settings[sectionKey] = !settings[sectionKey];
         saveObject("dashboard_section_settings", settings);
       } else {
-        const currentSwitchValue = getObject<unknown>(switchStateKey, false) === true || getObject<unknown>(switchStateKey, "false") === "true";
+        const currentSwitchValue =
+          getObject<unknown>(switchStateKey, false) === true ||
+          getObject<unknown>(switchStateKey, "false") === "true";
         saveObject(switchStateKey, !currentSwitchValue);
       }
       window.dispatchEvent(new Event("local-database-update"));

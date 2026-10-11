@@ -1,6 +1,6 @@
-import { Children, type ReactElement } from 'react';
-import { describe, expect, it } from 'vitest';
-import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Children, type ReactElement } from "react";
+import { describe, expect, it } from "vitest";
+import { ProgressBar } from "@/components/ui/ProgressBar";
 
 /**
  * Regression tests for a systemic ARIA conflict.
@@ -47,71 +47,71 @@ function barParts(props: Parameters<typeof ProgressBar>[0]): ReactElement[] {
   return Children.toArray(fragment.props.children) as ReactElement[];
 }
 
-describe('ProgressBar', () => {
-  it('exposes a progressbar widget with its value by default', () => {
+describe("ProgressBar", () => {
+  it("exposes a progressbar widget with its value by default", () => {
     const props = rootProps({ value: 42 });
 
-    expect(props.role).toBe('progressbar');
-    expect(props['aria-valuenow']).toBe(42);
-    expect(props['aria-valuemin']).toBe(0);
-    expect(props['aria-valuemax']).toBe(100);
-    expect(props['aria-hidden']).toBeUndefined();
+    expect(props.role).toBe("progressbar");
+    expect(props["aria-valuenow"]).toBe(42);
+    expect(props["aria-valuemin"]).toBe(0);
+    expect(props["aria-valuemax"]).toBe(100);
+    expect(props["aria-hidden"]).toBeUndefined();
   });
 
-  it('clamps the reported value to 0–100', () => {
-    expect(rootProps({ value: -10 })['aria-valuenow']).toBe(0);
-    expect(rootProps({ value: 999 })['aria-valuenow']).toBe(100);
-    expect(rootProps({ value: 55.4 })['aria-valuenow']).toBe(55);
+  it("clamps the reported value to 0–100", () => {
+    expect(rootProps({ value: -10 })["aria-valuenow"]).toBe(0);
+    expect(rootProps({ value: 999 })["aria-valuenow"]).toBe(100);
+    expect(rootProps({ value: 55.4 })["aria-valuenow"]).toBe(55);
   });
 
   /**
    * The core regression: a decorative bar must not also be a widget, because
    * `aria-hidden` and `role="progressbar"` assert opposite things.
    */
-  it('drops the widget role when marked decorative, so the ARIA contracts cannot contradict', () => {
-    const props = rootProps({ value: 42, 'aria-hidden': 'true' });
+  it("drops the widget role when marked decorative, so the ARIA contracts cannot contradict", () => {
+    const props = rootProps({ value: 42, "aria-hidden": "true" });
 
-    expect(props['aria-hidden']).toBe('true');
+    expect(props["aria-hidden"]).toBe("true");
     expect(props.role).toBeUndefined();
-    expect(props['aria-valuenow']).toBeUndefined();
-    expect(props['aria-valuemin']).toBeUndefined();
-    expect(props['aria-valuemax']).toBeUndefined();
+    expect(props["aria-valuenow"]).toBeUndefined();
+    expect(props["aria-valuemin"]).toBeUndefined();
+    expect(props["aria-valuemax"]).toBeUndefined();
   });
 
-  it('treats the boolean form of aria-hidden as decorative too', () => {
-    const props = rootProps({ value: 42, 'aria-hidden': true });
+  it("treats the boolean form of aria-hidden as decorative too", () => {
+    const props = rootProps({ value: 42, "aria-hidden": true });
 
     expect(props.role).toBeUndefined();
-    expect(props['aria-valuenow']).toBeUndefined();
+    expect(props["aria-valuenow"]).toBeUndefined();
   });
 
-  it('keeps the visual chrome identical in both forms', () => {
-    const exposed = renderBar({ value: 30, label: '30%' });
-    const decorative = renderBar({ value: 30, 'aria-hidden': 'true', label: '30%' });
+  it("keeps the visual chrome identical in both forms", () => {
+    const exposed = renderBar({ value: 30, label: "30%" });
+    const decorative = renderBar({ value: 30, "aria-hidden": "true", label: "30%" });
 
     // Same className and same children shape: only the ARIA contract differs.
     expect(decorative.props.className).toBe(exposed.props.className);
 
     // `Children.toArray` drops the `false` produced by `label != null && …`.
-    const decorativeParts = barParts({ value: 30, 'aria-hidden': 'true', label: '30%' });
-    const exposedParts = barParts({ value: 30, label: '30%' });
+    const decorativeParts = barParts({ value: 30, "aria-hidden": "true", label: "30%" });
+    const exposedParts = barParts({ value: 30, label: "30%" });
     expect(decorativeParts).toHaveLength(2);
     expect(decorativeParts).toHaveLength(exposedParts.length);
   });
 
-  it('renders only the track when no label is supplied', () => {
+  it("renders only the track when no label is supplied", () => {
     expect(barParts({ value: 10 })).toHaveLength(1);
   });
 
-  it('forwards unrelated DOM props in the exposed form', () => {
-    const props = rootProps({ value: 10, 'data-testid': 'bar', id: 'progress-1' });
-    expect(props['data-testid']).toBe('bar');
-    expect(props.id).toBe('progress-1');
+  it("forwards unrelated DOM props in the exposed form", () => {
+    const props = rootProps({ value: 10, "data-testid": "bar", id: "progress-1" });
+    expect(props["data-testid"]).toBe("bar");
+    expect(props.id).toBe("progress-1");
   });
 
-  it('still forwards unrelated DOM props when decorative', () => {
-    const props = rootProps({ value: 10, 'aria-hidden': 'true', 'data-testid': 'bar' });
-    expect(props['data-testid']).toBe('bar');
+  it("still forwards unrelated DOM props when decorative", () => {
+    const props = rootProps({ value: 10, "aria-hidden": "true", "data-testid": "bar" });
+    expect(props["data-testid"]).toBe("bar");
     expect(props.role).toBeUndefined();
   });
 });

@@ -1,12 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import type { FieldDefinition } from './contactTypes.js';
-import {
-  normalizeQuestionBankSettings,
-  type QuestionBankSettings,
-} from './settingsTypes.js';
+import { describe, expect, it } from "vitest";
+import type { FieldDefinition } from "./contactTypes.js";
+import { normalizeQuestionBankSettings, type QuestionBankSettings } from "./settingsTypes.js";
 
-describe('normalizeQuestionBankSettings', () => {
-  it('migrates legacy flat field config into tabbed editor arrays', () => {
+describe("normalizeQuestionBankSettings", () => {
+  it("migrates legacy flat field config into tabbed editor arrays", () => {
     const legacySettings: Partial<QuestionBankSettings> = {
       fields: {
         text: { enabled: true, required: true },
@@ -23,15 +20,15 @@ describe('normalizeQuestionBankSettings', () => {
     const basicFields = normalized.fields?.basic as FieldDefinition[];
     const optionsFields = normalized.fields?.options as FieldDefinition[];
 
-    expect(basicFields.find((field) => field.key === 'categoryId')).toMatchObject({
+    expect(basicFields.find((field) => field.key === "categoryId")).toMatchObject({
       enabled: true,
       required: false,
     });
-    expect(optionsFields.find((field) => field.key === 'type')).toMatchObject({
+    expect(optionsFields.find((field) => field.key === "type")).toMatchObject({
       enabled: false,
       required: true,
     });
-    expect(optionsFields.find((field) => field.key === 'answer')).toMatchObject({
+    expect(optionsFields.find((field) => field.key === "answer")).toMatchObject({
       enabled: true,
       required: false,
     });

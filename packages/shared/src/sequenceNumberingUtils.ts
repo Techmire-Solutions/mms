@@ -4,11 +4,7 @@ import type {
   SequenceRolloverPolicy,
 } from "./sequenceNumberingTypes.js";
 
-export type {
-  SequenceNumberingConfig,
-  SequenceYearFormat,
-  SequenceRolloverPolicy,
-};
+export type { SequenceNumberingConfig, SequenceYearFormat, SequenceRolloverPolicy };
 
 /** Formats a deterministic sequence ID given a sequence number, configuration, and reference date. */
 export function formatDeterministicSequence(
@@ -96,4 +92,3 @@ export function formatTemplateSequence(
 }
 
 export * from "./sequenceNumberingAdapters.js";
-

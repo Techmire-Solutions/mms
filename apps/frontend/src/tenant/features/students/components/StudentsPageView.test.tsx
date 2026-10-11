@@ -5,7 +5,12 @@ import { GraduationCap } from "lucide-react";
 import { StudentsPageView } from "./StudentsPageView";
 
 vi.mock("@/components/ui/ModulePageShell", () => ({
-  ModulePageShell: ({ headerTitle, children, headerActions, metricsStrip }: {
+  ModulePageShell: ({
+    headerTitle,
+    children,
+    headerActions,
+    metricsStrip,
+  }: {
     headerTitle: string;
     children: React.ReactNode;
     headerActions?: React.ReactNode;

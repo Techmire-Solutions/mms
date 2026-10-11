@@ -7,7 +7,7 @@ import type {
   AttendanceReportAggregatesQuery,
   WidgetQuery,
   WidgetAggregateResult,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the attendance module.

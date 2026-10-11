@@ -1,5 +1,5 @@
 /** Light or dark application chrome. */
-export type BrandingThemeMode = 'light' | 'dark';
+export type BrandingThemeMode = "light" | "dark";
 
 export interface HslColor {
   h: number;
@@ -18,12 +18,12 @@ export function clamp(value: number, min: number, max: number): number {
  * Parses a hex colour into HSL components.
  */
 export function hexToHslColor(hex: string): HslColor | null {
-  let normalized = hex.replace(/^#/, '').trim();
+  let normalized = hex.replace(/^#/, "").trim();
   if (normalized.length === 3) {
     normalized = normalized
-      .split('')
+      .split("")
       .map((ch) => ch + ch)
-      .join('');
+      .join("");
   }
   if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return null;
 
@@ -79,9 +79,9 @@ const BRANDING_HEX = /^#[0-9a-f]{6}$/;
 
 /** Coerces a user-entered hex colour to `#rrggbb` or returns fallback. */
 export function normalizeBrandingHex(raw: string | undefined, fallback: string): string {
-  const trimmed = (raw ?? '').trim();
+  const trimmed = (raw ?? "").trim();
   if (!trimmed) return fallback.toLowerCase();
-  const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+  const withHash = trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
   if (!BRANDING_HEX.test(withHash)) return fallback.toLowerCase();
   return withHash.toLowerCase();
 }
@@ -98,7 +98,8 @@ export function hslColorToHex(color: HslColor): string {
     if (adjustedHue > 1) adjustedHue -= 1;
     if (adjustedHue < 1 / 6) return lowerBound + (upperBound - lowerBound) * 6 * adjustedHue;
     if (adjustedHue < 1 / 2) return upperBound;
-    if (adjustedHue < 2 / 3) return lowerBound + (upperBound - lowerBound) * (2 / 3 - adjustedHue) * 6;
+    if (adjustedHue < 2 / 3)
+      return lowerBound + (upperBound - lowerBound) * (2 / 3 - adjustedHue) * 6;
     return lowerBound;
   };
 
@@ -109,7 +110,10 @@ export function hslColorToHex(color: HslColor): string {
   if (saturation === 0) {
     red = green = blue = lightness;
   } else {
-    const upperBound = lightness < 0.5 ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation;
+    const upperBound =
+      lightness < 0.5
+        ? lightness * (1 + saturation)
+        : lightness + saturation - lightness * saturation;
     const lowerBound = 2 * lightness - upperBound;
     red = hueToRgb(lowerBound, upperBound, hue + 1 / 3);
     green = hueToRgb(lowerBound, upperBound, hue);
@@ -119,7 +123,7 @@ export function hslColorToHex(color: HslColor): string {
   const toHex = (channel: number) =>
     Math.round(clamp(channel * 255, 0, 255))
       .toString(16)
-      .padStart(2, '0');
+      .padStart(2, "0");
 
   return `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
 }

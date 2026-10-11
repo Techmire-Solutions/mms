@@ -1,7 +1,7 @@
-import { createCipheriv, createDecipheriv, randomBytes, hash } from 'node:crypto';
+import { createCipheriv, createDecipheriv, randomBytes, hash } from "node:crypto";
 
-const ALGORITHM = 'aes-256-gcm';
-const PREFIX = 'enc:aes256gcm:';
+const ALGORITHM = "aes-256-gcm";
+const PREFIX = "enc:aes256gcm:";
 const IV_LENGTH = 12;
 const TAG_LENGTH = 16;
 
@@ -13,17 +13,15 @@ function getDerivedKey(explicitKey?: string): Buffer {
   // existing ciphertext was derived from it; `AT_REST_ENCRYPTION_KEY` is
   // preferred so the two domains can be separated.
   const secretSource =
-    explicitKey ||
-    process.env.AT_REST_ENCRYPTION_KEY?.trim() ||
-    process.env.JWT_SECRET?.trim();
+    explicitKey || process.env.AT_REST_ENCRYPTION_KEY?.trim() || process.env.JWT_SECRET?.trim();
 
   if (!secretSource) {
     throw new Error(
-      'No at-rest encryption key configured. Set AT_REST_ENCRYPTION_KEY (preferred) or JWT_SECRET.',
+      "No at-rest encryption key configured. Set AT_REST_ENCRYPTION_KEY (preferred) or JWT_SECRET.",
     );
   }
 
-  return hash('sha256', secretSource, 'buffer');
+  return hash("sha256", secretSource, "buffer");
 }
 
 /**
@@ -33,7 +31,7 @@ function getDerivedKey(explicitKey?: string): Buffer {
  */
 function isEncryptedEnvelope(value: string): boolean {
   if (!value.startsWith(PREFIX)) return false;
-  const parts = value.slice(PREFIX.length).split(':');
+  const parts = value.slice(PREFIX.length).split(":");
   if (parts.length !== 3) return false;
   const [ivHex, tagHex, ciphertextHex] = parts;
   return (
@@ -50,7 +48,10 @@ function isEncryptedEnvelope(value: string): boolean {
  * Encrypts sensitive string data at rest using AES-256-GCM.
  * Output format: enc:aes256gcm:<iv_hex>:<tag_hex>:<ciphertext_hex>
  */
-export function encryptSecretAtRest(plaintext?: string | null, explicitKey?: string): string | undefined {
+export function encryptSecretAtRest(
+  plaintext?: string | null,
+  explicitKey?: string,
+): string | undefined {
   if (!plaintext) return undefined;
   if (isEncryptedEnvelope(plaintext)) return plaintext; // already encrypted
 
@@ -58,27 +59,30 @@ export function encryptSecretAtRest(plaintext?: string | null, explicitKey?: str
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv);
 
-  const ciphertext = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+  const ciphertext = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
 
-  return `${PREFIX}${iv.toString('hex')}:${tag.toString('hex')}:${ciphertext.toString('hex')}`;
+  return `${PREFIX}${iv.toString("hex")}:${tag.toString("hex")}:${ciphertext.toString("hex")}`;
 }
 
 /**
  * Decrypts sensitive string data at rest.
  * Gracefully handles unencrypted values for seamless backward-compatibility.
  */
-export function decryptSecretAtRest(value?: string | null, explicitKey?: string): string | undefined {
+export function decryptSecretAtRest(
+  value?: string | null,
+  explicitKey?: string,
+): string | undefined {
   if (!value) return undefined;
   if (!value.startsWith(PREFIX)) return value; // plaintext legacy fallback
   // Prefixed but malformed → fail closed rather than returning raw bytes.
   if (!isEncryptedEnvelope(value)) return undefined;
 
   try {
-    const [ivHex, tagHex, ciphertextHex] = value.slice(PREFIX.length).split(':');
-    const iv = Buffer.from(ivHex, 'hex');
-    const tag = Buffer.from(tagHex, 'hex');
-    const ciphertext = Buffer.from(ciphertextHex, 'hex');
+    const [ivHex, tagHex, ciphertextHex] = value.slice(PREFIX.length).split(":");
+    const iv = Buffer.from(ivHex, "hex");
+    const tag = Buffer.from(tagHex, "hex");
+    const ciphertext = Buffer.from(ciphertextHex, "hex");
 
     if (iv.length !== IV_LENGTH || tag.length !== TAG_LENGTH) return undefined;
 
@@ -87,7 +91,7 @@ export function decryptSecretAtRest(value?: string | null, explicitKey?: string)
     decipher.setAuthTag(tag);
 
     const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-    return decrypted.toString('utf8');
+    return decrypted.toString("utf8");
   } catch {
     // If decryption fails (e.g. key changed), return undefined or log safely without leaking data
     return undefined;

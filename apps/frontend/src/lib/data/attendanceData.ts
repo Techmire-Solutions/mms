@@ -9,10 +9,46 @@ export type { AttendanceSettings, AttendanceRecord };
 export { DEFAULT_ATT_SETTINGS };
 
 export const ATTENDANCE_STATUSES = [
-  { id: "present", label: "Present", short: "P", color: "emerald", bg: "bg-success/10", text: "text-success", border: "border-success/30", dot: "bg-success" },
-  { id: "absent",  label: "Absent",  short: "A", color: "red",     bg: "bg-destructive/10",     text: "text-destructive",     border: "border-destructive/30",     dot: "bg-destructive" },
-  { id: "late",    label: "Late",    short: "L", color: "amber",   bg: "bg-warning/10",   text: "text-warning",   border: "border-warning/30",   dot: "bg-warning" },
-  { id: "excused", label: "Excused", short: "E", color: "blue",    bg: "bg-info/10",    text: "text-info",    border: "border-info/30",    dot: "bg-info" },
+  {
+    id: "present",
+    label: "Present",
+    short: "P",
+    color: "emerald",
+    bg: "bg-success/10",
+    text: "text-success",
+    border: "border-success/30",
+    dot: "bg-success",
+  },
+  {
+    id: "absent",
+    label: "Absent",
+    short: "A",
+    color: "red",
+    bg: "bg-destructive/10",
+    text: "text-destructive",
+    border: "border-destructive/30",
+    dot: "bg-destructive",
+  },
+  {
+    id: "late",
+    label: "Late",
+    short: "L",
+    color: "amber",
+    bg: "bg-warning/10",
+    text: "text-warning",
+    border: "border-warning/30",
+    dot: "bg-warning",
+  },
+  {
+    id: "excused",
+    label: "Excused",
+    short: "E",
+    color: "blue",
+    bg: "bg-info/10",
+    text: "text-info",
+    border: "border-info/30",
+    dot: "bg-info",
+  },
 ];
 
 export interface ClassStudent {
@@ -33,8 +69,12 @@ export type AttendanceStatus = {
   dot: string;
 };
 
-export function getAttendanceStatusInfo(status: string, customStatuses?: AttendanceStatus[]): AttendanceStatus {
-  const statusList = customStatuses && customStatuses.length > 0 ? customStatuses : ATTENDANCE_STATUSES;
+export function getAttendanceStatusInfo(
+  status: string,
+  customStatuses?: AttendanceStatus[],
+): AttendanceStatus {
+  const statusList =
+    customStatuses && customStatuses.length > 0 ? customStatuses : ATTENDANCE_STATUSES;
   const found = statusList.find((statusOption) => statusOption.id === status);
   if (found) return found;
   return {
@@ -73,14 +113,32 @@ export function calcClassStats(classId: string, records: AttendanceRecord[]) {
 
 export function calcStudentRate(studentId: string, records: AttendanceRecord[]): number {
   const studentRecords = records.filter((record) => record.studentId === studentId);
-  const present = studentRecords.filter((record) => record.status === "present" || record.status === "late").length;
+  const present = studentRecords.filter(
+    (record) => record.status === "present" || record.status === "late",
+  ).length;
   const total = studentRecords.length;
   return total ? Math.round((present / total) * 100) : 100;
 }
 
-export function getMonthlyTrend(classId: string, records: AttendanceRecord[]): { month: string; rate: number }[] {
+export function getMonthlyTrend(
+  classId: string,
+  records: AttendanceRecord[],
+): { month: string; rate: number }[] {
   const classRecords = records.filter((record) => record.classId === classId);
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const grouped: Record<string, { present: number; total: number }> = {};
   classRecords.forEach((record) => {
     if (!record.date) return;
@@ -94,9 +152,13 @@ export function getMonthlyTrend(classId: string, records: AttendanceRecord[]): {
   });
   return months.flatMap((month) => {
     const monthStats = grouped[month];
-    return monthStats && monthStats.total ? [{
-      month,
-      rate: Math.round((monthStats.present / monthStats.total) * 100),
-    }] : [];
+    return monthStats && monthStats.total
+      ? [
+          {
+            month,
+            rate: Math.round((monthStats.present / monthStats.total) * 100),
+          },
+        ]
+      : [];
   });
 }

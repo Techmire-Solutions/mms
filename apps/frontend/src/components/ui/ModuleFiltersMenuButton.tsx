@@ -110,7 +110,10 @@ export function ModuleFilterDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className={cn("w-56 max-h-dialog-scroll overflow-y-auto bg-card border border-border", contentClassName)}
+        className={cn(
+          "w-56 max-h-dialog-scroll overflow-y-auto bg-card border border-border",
+          contentClassName,
+        )}
       >
         {activeCount > 0 && clearLabel && onClear ? (
           <>
@@ -129,4 +132,3 @@ export function ModuleFilterDropdown({
     </DropdownMenu>
   );
 }
-

@@ -80,7 +80,7 @@ describe("FacultyFormDesignationSection", () => {
     expect(html).toContain("faculty.form.designationCard");
     expect(html).toContain("faculty.form.designations.addTenure");
     expect(html).toContain("Islamic Jurisprudence · Head of Department · Instructor");
-    expect(html).not.toContain("data-testid=\"faculty-designation-roles\"");
+    expect(html).not.toContain('data-testid="faculty-designation-roles"');
     expect(html).toContain('id="designation-0-designationId"');
     expect(html).toContain('aria-label="faculty.designations.addDesignation"');
     expect(html).toContain("employDesignationStatus");

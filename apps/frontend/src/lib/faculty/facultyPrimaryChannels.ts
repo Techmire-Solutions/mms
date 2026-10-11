@@ -1,9 +1,4 @@
-import {
-  getPrimaryEmail,
-  getPrimaryPhone,
-  type Contact,
-  type FacultyMember,
-} from "@mms/shared";
+import { getPrimaryEmail, getPrimaryPhone, type Contact, type FacultyMember } from "@mms/shared";
 
 export type FacultyPrimaryChannels = {
   phone: string | null;
@@ -19,12 +14,8 @@ export function resolveFacultyPrimaryChannels(
   linkedContact?: Partial<Contact> | null,
 ): FacultyPrimaryChannels {
   const phone =
-    (linkedContact ? getPrimaryPhone(linkedContact) : null)
-    || faculty.phone?.trim()
-    || null;
+    (linkedContact ? getPrimaryPhone(linkedContact) : null) || faculty.phone?.trim() || null;
   const email =
-    (linkedContact ? getPrimaryEmail(linkedContact) : null)
-    || faculty.email?.trim()
-    || null;
+    (linkedContact ? getPrimaryEmail(linkedContact) : null) || faculty.email?.trim() || null;
   return { phone, email };
 }

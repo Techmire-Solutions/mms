@@ -26,10 +26,7 @@ const mockRel: StudentRelationshipCardData = {
 describe("StudentDetailRelationsSection Component", () => {
   it("renders relationships list section with total count", () => {
     const html = renderToStaticMarkup(
-      <StudentDetailRelationsSection
-        relationships={[mockRel]}
-        canMessage={true}
-      />,
+      <StudentDetailRelationsSection relationships={[mockRel]} canMessage={true} />,
     );
 
     expect(html).toContain("students.detail.allRelationships");
@@ -38,11 +35,7 @@ describe("StudentDetailRelationsSection Component", () => {
   });
 
   it("returns null when relationships array is empty", () => {
-    const html = renderToStaticMarkup(
-      <StudentDetailRelationsSection
-        relationships={[]}
-      />,
-    );
+    const html = renderToStaticMarkup(<StudentDetailRelationsSection relationships={[]} />);
 
     expect(html).toBe("");
   });

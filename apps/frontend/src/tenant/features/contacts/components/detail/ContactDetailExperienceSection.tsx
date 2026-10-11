@@ -23,7 +23,10 @@ export function ContactDetailExperienceSection({
 
   if (experienceList.length === 0) {
     return (
-      <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.experience")}>
+      <DetailSectionCard
+        className={COLLECTION_CONTAINER_CLASS}
+        title={t("contacts.detail.experience")}
+      >
         <div className="p-3 text-xs text-muted-foreground italic">
           {t("contacts.detail.emptyExperience")}
         </div>
@@ -32,12 +35,12 @@ export function ContactDetailExperienceSection({
   }
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.experience")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.detail.experience")}
+    >
       {experienceList.map((exp, idx) => {
-        const period = [
-          exp.startDate,
-          exp.isCurrent ? t("contacts.form.present") : exp.endDate,
-        ]
+        const period = [exp.startDate, exp.isCurrent ? t("contacts.form.present") : exp.endDate]
           .filter(Boolean)
           .join(" – ");
 

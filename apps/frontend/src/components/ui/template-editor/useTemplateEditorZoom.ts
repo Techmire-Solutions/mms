@@ -29,9 +29,12 @@ export function useTemplateEditorZoom({ size }: UseTemplateEditorZoomOptions) {
   const canvasViewportRef = useRef<HTMLElement>(null);
   const scaleRef = useRef(1);
   /** Page-space point that must stay under the cursor across a zoom change. */
-  const anchorRef = useRef<{ pageX: number; pageY: number; cursorX: number; cursorY: number } | null>(
-    null
-  );
+  const anchorRef = useRef<{
+    pageX: number;
+    pageY: number;
+    cursorX: number;
+    cursorY: number;
+  } | null>(null);
 
   const canvasScale = customZoom ?? autoScale;
   scaleRef.current = canvasScale;
@@ -41,12 +44,12 @@ export function useTemplateEditorZoom({ size }: UseTemplateEditorZoomOptions) {
 
   const zoomIn = useCallback(
     () => setCustomZoom((prev) => clampManual((prev ?? scaleRef.current) + 0.1)),
-    []
+    [],
   );
 
   const zoomOut = useCallback(
     () => setCustomZoom((prev) => clampManual((prev ?? scaleRef.current) - 0.1)),
-    []
+    [],
   );
 
   const zoomReset = useCallback(() => setCustomZoom(1), []);

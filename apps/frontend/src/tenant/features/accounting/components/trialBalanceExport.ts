@@ -11,7 +11,13 @@ type TrialBalanceExportRow = {
 };
 
 export function exportTrialBalanceCsv(
-  rows: Array<{ code: string; name: string; type: string; totalDebit: number; totalCredit: number }>,
+  rows: Array<{
+    code: string;
+    name: string;
+    type: string;
+    totalDebit: number;
+    totalCredit: number;
+  }>,
   grandDebit: number,
   grandCredit: number,
   t: TranslationFunction,

@@ -42,19 +42,32 @@ export function SectionHeader({
       className={cn(
         "gap-2",
         layout === "stacked"
-          ? cn("flex flex-col sm:flex-row sm:justify-between", align === "start" ? "sm:items-start" : "sm:items-center", noMargin ? "" : "mb-3")
+          ? cn(
+              "flex flex-col sm:flex-row sm:justify-between",
+              align === "start" ? "sm:items-start" : "sm:items-center",
+              noMargin ? "" : "mb-3",
+            )
           : "flex flex-wrap items-center justify-between",
         className,
       )}
     >
       <div className="flex min-w-0 items-center gap-2.5">
         {icon && (
-          <div className={cn("w-7 h-7 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center", iconClassName)} aria-hidden="true">
+          <div
+            className={cn(
+              "w-7 h-7 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center",
+              iconClassName,
+            )}
+            aria-hidden="true"
+          >
             {icon}
           </div>
         )}
         <div className="min-w-0">
-          <HeadingTag id={headingId} className="m-0 min-w-0 truncate text-sm font-bold text-foreground">
+          <HeadingTag
+            id={headingId}
+            className="m-0 min-w-0 truncate text-sm font-bold text-foreground"
+          >
             {title}
           </HeadingTag>
           {subtitle && <p className="text-xs text-muted-foreground m-0 truncate">{subtitle}</p>}

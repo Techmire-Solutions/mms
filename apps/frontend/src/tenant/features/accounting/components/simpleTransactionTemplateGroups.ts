@@ -2,16 +2,21 @@ import { Tags } from "lucide-react";
 import type { Account, AppTranslationKey, JournalTemplate } from "@mms/shared";
 import { TRANSACTION_GROUPS } from "./simpleTransactionWizardGroups";
 import { wizardCashAccounts } from "./simpleTransactionWizardLogic";
-import type { QuickActionType, TransactionGroup, TransactionGroupColor } from "./simpleTransactionWizardTypes";
+import type {
+  QuickActionType,
+  TransactionGroup,
+  TransactionGroupColor,
+} from "./simpleTransactionWizardTypes";
 
 const MONEY_IN: AppTranslationKey = "accounting.journal.dashboard.group.moneyIn";
 const MONEY_OUT: AppTranslationKey = "accounting.journal.dashboard.group.moneyOut";
 const TRANSFERS: AppTranslationKey = "accounting.journal.dashboard.group.transfers";
 
 /** Colour and icon per group, taken from the built-in groups so both pickers look alike. */
-const GROUP_META = new Map<AppTranslationKey, { color: TransactionGroupColor; icon: TransactionGroup["icon"] }>(
-  TRANSACTION_GROUPS.map((group) => [group.groupKey, { color: group.color, icon: group.icon }]),
-);
+const GROUP_META = new Map<
+  AppTranslationKey,
+  { color: TransactionGroupColor; icon: TransactionGroup["icon"] }
+>(TRANSACTION_GROUPS.map((group) => [group.groupKey, { color: group.color, icon: group.icon }]));
 
 /**
  * The wizard records cash/bank movements, so a template belongs to it only when
@@ -19,7 +24,10 @@ const GROUP_META = new Map<AppTranslationKey, { color: TransactionGroupColor; ic
  * cash debited is money in, cash credited is money out. Templates with no cash
  * head (accruals, reclassifications) stay JV-only.
  */
-export function classifyTemplateGroup(template: JournalTemplate, cashAccountIds: ReadonlySet<string>): AppTranslationKey | null {
+export function classifyTemplateGroup(
+  template: JournalTemplate,
+  cashAccountIds: ReadonlySet<string>,
+): AppTranslationKey | null {
   const debitIsCash = cashAccountIds.has(template.debitAccountId);
   const creditIsCash = cashAccountIds.has(template.creditAccountId);
   if (debitIsCash && creditIsCash) return TRANSFERS;

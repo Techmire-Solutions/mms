@@ -1,6 +1,6 @@
-import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
-import { LLM_PROVIDER_KEYS } from '../llmSettingsTypes.js';
+import { initContract } from "@ts-rest/core";
+import { z } from "zod";
+import { LLM_PROVIDER_KEYS } from "../llmSettingsTypes.js";
 
 const c = initContract();
 const errorResponse = z.unknown();
@@ -16,7 +16,7 @@ export const aiModelsBodySchema = z
 
 export const aiChatMessageSchema = z
   .object({
-    role: z.enum(['user', 'assistant', 'system']),
+    role: z.enum(["user", "assistant", "system"]),
     content: z.string(),
   })
   .strict();
@@ -81,8 +81,8 @@ export type AiTestResultResponse = z.infer<typeof aiTestResultResponseSchema>;
 
 export const aiContract = c.router({
   models: {
-    method: 'POST',
-    path: '/api/ai/models',
+    method: "POST",
+    path: "/api/ai/models",
     body: aiModelsBodySchema,
     responses: {
       200: aiModelsResponseSchema,
@@ -90,11 +90,11 @@ export const aiContract = c.router({
       403: errorResponse,
       500: errorResponse,
     },
-    summary: 'Retrieve available models for an AI provider',
+    summary: "Retrieve available models for an AI provider",
   },
   test: {
-    method: 'POST',
-    path: '/api/ai/test',
+    method: "POST",
+    path: "/api/ai/test",
     body: aiTestBodySchema,
     responses: {
       200: aiTestResultResponseSchema,
@@ -102,6 +102,6 @@ export const aiContract = c.router({
       403: errorResponse,
       500: errorResponse,
     },
-    summary: 'Test AI prompt completion and model connectivity',
+    summary: "Test AI prompt completion and model connectivity",
   },
 });

@@ -1,6 +1,6 @@
-import type { StandardMessagingRecipient as MessagingRecipient } from '@mms/shared';
-import type { ValidatedMessagingRecipient } from './useMessageComposerDispatch';
-import type { RecipientTab } from './MessageComposerRecipients';
+import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";
+import type { RecipientTab } from "./MessageComposerRecipients";
 
 export function filterDisplayedRecipients(args: {
   recipientTab: RecipientTab;
@@ -10,9 +10,9 @@ export function filterDisplayedRecipients(args: {
   validated: ValidatedMessagingRecipient[];
 }): ValidatedMessagingRecipient[] {
   const list =
-    args.recipientTab === 'eligible'
+    args.recipientTab === "eligible"
       ? args.eligible
-      : args.recipientTab === 'skipped'
+      : args.recipientTab === "skipped"
         ? args.skipped
         : args.validated;
   const query = args.recipientSearch.trim().toLowerCase();

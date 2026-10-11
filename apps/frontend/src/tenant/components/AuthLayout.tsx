@@ -1,9 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  DEFAULT_BRANDING_SETTINGS,
-  type PublicBranding,
-  getInitials,
-} from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, type PublicBranding, getInitials } from "@mms/shared";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import { applyTenantEntryTheme } from "@/tenant/lib/brandingEntryTheme";
 import { applyTenantDocumentFavicon } from "@/lib/documentFavicon";
@@ -40,9 +36,7 @@ export default function AuthLayout({
   const { workspace, publicBranding } = useTenant();
 
   const displayName =
-    publicBranding?.madrasaName.trim() ||
-    workspace?.madrasaName.trim() ||
-    t("entry.productName");
+    publicBranding?.madrasaName.trim() || workspace?.madrasaName.trim() || t("entry.productName");
   const displayTagline = publicBranding?.tagline.trim() || workspace?.tagline?.trim() || "";
   const logoUrl = publicBranding?.logoUrl.trim() || "";
 

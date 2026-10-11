@@ -1,15 +1,18 @@
-import { describe, expect, it } from 'vitest';
-import { computeDashboardMetricTrends, percentChange } from '@/tenant/features/dashboard/hooks/dashboardMetricTrends';
-import type { DashboardCollectionData } from '@/tenant/features/dashboard/hooks/useDashboardData';
+import { describe, expect, it } from "vitest";
+import {
+  computeDashboardMetricTrends,
+  percentChange,
+} from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";
+import type { DashboardCollectionData } from "@/tenant/features/dashboard/hooks/useDashboardData";
 import type {
   AttendanceCommandMetricsSnapshot,
   FinanceCommandMetricsSnapshot,
   HasanatCommandMetricsSnapshot,
   SessionsCommandMetricsSnapshot,
-} from '@mms/shared';
+} from "@mms/shared";
 
-describe('computeDashboardMetricTrends', () => {
-  it('computes trend percentages correctly for student, faculty, and contact metrics', () => {
+describe("computeDashboardMetricTrends", () => {
+  it("computes trend percentages correctly for student, faculty, and contact metrics", () => {
     const mockData: DashboardCollectionData = {
       studentsTotal: 100,
       studentMetricsNew: 10,
@@ -65,7 +68,7 @@ describe('computeDashboardMetricTrends', () => {
     expect(trends.sessionsTrend).toBe(20); // (12 - 10) / 10 = 20%
   });
 
-  it('handles zero or missing metrics safely without division by zero', () => {
+  it("handles zero or missing metrics safely without division by zero", () => {
     const mockData: DashboardCollectionData = {
       studentsTotal: 0,
       facultyTotal: 0,
@@ -90,19 +93,18 @@ describe('computeDashboardMetricTrends', () => {
     expect(trends.sessionsTrend).toBe(0);
   });
 
-  describe('percentChange', () => {
-    it('returns 100 when previous is zero and current is positive', () => {
+  describe("percentChange", () => {
+    it("returns 100 when previous is zero and current is positive", () => {
       expect(percentChange(10, 0)).toBe(100);
     });
 
-    it('returns 0 when both are zero', () => {
+    it("returns 0 when both are zero", () => {
       expect(percentChange(0, 0)).toBe(0);
     });
 
-    it('rounds relative delta', () => {
+    it("rounds relative delta", () => {
       expect(percentChange(150, 100)).toBe(50);
       expect(percentChange(50, 100)).toBe(-50);
     });
   });
 });
-

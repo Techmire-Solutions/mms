@@ -40,10 +40,7 @@ export function EnrollmentsFiltersMenuButton({
     >
       <ModuleFilterRadioGroup
         label={t("enrollments.filter.status")}
-        options={[
-          { value: "all", label: t("enrollments.filter.all") },
-          ...statusOptions,
-        ]}
+        options={[{ value: "all", label: t("enrollments.filter.all") }, ...statusOptions]}
         value={statusFilter}
         onValueChange={onStatusFilterChange}
       />
@@ -52,10 +49,7 @@ export function EnrollmentsFiltersMenuButton({
 
       <ModuleFilterRadioGroup
         label={t("enrollments.filter.session")}
-        options={[
-          { value: "all", label: t("enrollments.filter.allSessions") },
-          ...sessionOptions,
-        ]}
+        options={[{ value: "all", label: t("enrollments.filter.allSessions") }, ...sessionOptions]}
         value={sessionFilter}
         onValueChange={onSessionFilterChange}
       />

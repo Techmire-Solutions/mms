@@ -79,12 +79,7 @@ export function TemplateElementContent({
     );
   }
 
-  if (
-    el.type === "logo" ||
-    el.type === "avatar" ||
-    el.type === "photo" ||
-    el.type === "image"
-  ) {
+  if (el.type === "logo" || el.type === "avatar" || el.type === "photo" || el.type === "image") {
     return (
       <TemplateImageElementContent
         el={el}
@@ -115,17 +110,11 @@ export function TemplateElementContent({
   const content = resolveElementText(el, data, mode, interpolate);
   const isEmptyBoundField = el.type === "field" && content === "";
   if (isEmptyBoundField && mode === "edit") {
-    return (
-      <span className="w-full truncate italic text-muted-foreground">
-        {`{${el.field}}`}
-      </span>
-    );
+    return <span className="w-full truncate italic text-muted-foreground">{`{${el.field}}`}</span>;
   }
   if (isEmptyBoundField) {
     return <span className="w-full truncate">—</span>;
   }
 
-  return (
-    <span className="w-full break-words whitespace-pre-wrap leading-tight">{content}</span>
-  );
+  return <span className="w-full break-words whitespace-pre-wrap leading-tight">{content}</span>;
 }

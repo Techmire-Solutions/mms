@@ -19,12 +19,12 @@ export const METADATA_FIELDS = {
       { value: "discountType", label: "Discount Type" },
       { value: "discountPct", label: "Discount Percentage", isNumeric: true },
       { value: "age", label: "Age", isNumeric: true },
-      { value: "registeredDate", label: "Registration Date" }
+      { value: "registeredDate", label: "Registration Date" },
     ],
     numericFields: [
       { value: "discountPct", label: "Discount Percentage" },
-      { value: "age", label: "Age" }
-    ]
+      { value: "age", label: "Age" },
+    ],
   },
   faculty: {
     name: "Faculty",
@@ -53,13 +53,13 @@ export const METADATA_FIELDS = {
       { value: "enrolled", label: "Enrolled Count", isNumeric: true },
       { value: "capacity", label: "Capacity Limit", isNumeric: true },
       { value: "startDate", label: "Start Date" },
-      { value: "endDate", label: "End Date" }
+      { value: "endDate", label: "End Date" },
     ],
     numericFields: [
       { value: "baseFee", label: "Base Fee" },
       { value: "enrolled", label: "Enrolled Count" },
-      { value: "capacity", label: "Capacity Limit" }
-    ]
+      { value: "capacity", label: "Capacity Limit" },
+    ],
   },
   enrollments: {
     name: "Enrollments",
@@ -96,14 +96,14 @@ export const METADATA_FIELDS = {
       { value: "discountAmt", label: "Discount Offset", isNumeric: true },
       { value: "baseAmt", label: "Base Fee Amount", isNumeric: true },
       { value: "dueDate", label: "Due Date" },
-      { value: "paidDate", label: "Paid Date" }
+      { value: "paidDate", label: "Paid Date" },
     ],
     numericFields: [
       { value: "finalAmt", label: "Final Amount" },
       { value: "paidAmt", label: "Paid Amount" },
       { value: "discountAmt", label: "Discount Offset" },
-      { value: "baseAmt", label: "Base Fee Amount" }
-    ]
+      { value: "baseAmt", label: "Base Fee Amount" },
+    ],
   },
   attendance_records: {
     name: "Attendance Registry",
@@ -113,9 +113,9 @@ export const METADATA_FIELDS = {
       { value: "status", label: "Status (present/absent/late/excused)" },
       { value: "className", label: "Class Name" },
       { value: "sessionName", label: "Session Title" },
-      { value: "date", label: "Attendance Date" }
+      { value: "date", label: "Attendance Date" },
     ],
-    numericFields: []
+    numericFields: [],
   },
   hasanat_distributions: {
     name: "Hasanat Rewards",
@@ -127,12 +127,12 @@ export const METADATA_FIELDS = {
       { value: "issuedBy", label: "Faculty Grantor" },
       { value: "reason", label: "Reason For Award" },
       { value: "points", label: "Computed Points", isNumeric: true },
-      { value: "issuedDate", label: "Award Date" }
+      { value: "issuedDate", label: "Award Date" },
     ],
     numericFields: [
       { value: "quantity", label: "Quantity Distributed" },
-      { value: "points", label: "Computed Points" }
-    ]
+      { value: "points", label: "Computed Points" },
+    ],
   },
   contacts: {
     name: "Contacts",
@@ -143,9 +143,9 @@ export const METADATA_FIELDS = {
       { value: "city", label: "City" },
       { value: "state", label: "State" },
       { value: "createdAt", label: "Created Date" },
-      { value: "updatedAt", label: "Last Updated Date" }
+      { value: "updatedAt", label: "Last Updated Date" },
     ],
-    numericFields: []
+    numericFields: [],
   },
   ...QUESTION_BANK_METADATA_FIELDS,
 } as const;

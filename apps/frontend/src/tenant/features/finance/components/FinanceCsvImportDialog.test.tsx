@@ -82,10 +82,7 @@ describe("FinanceCsvImportDialog", () => {
       templateBtn?.click();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "invoices.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "invoices.csv");
   });
 
   it("accepts a valid exported invoice CSV and initiates background import", async () => {

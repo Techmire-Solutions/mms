@@ -17,25 +17,25 @@
  *   BUNDLE_BUDGET_TOTAL_MB=14 BUNDLE_BUDGET_LARGEST_CHUNK_MB=4 pnpm ...
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import process from 'node:process';
-import { fileURLToPath } from 'node:url';
-import { gzipSync } from 'node:zlib';
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import { fileURLToPath } from "node:url";
+import { gzipSync } from "node:zlib";
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const assetsDir = path.join(rootDir, 'apps', 'frontend', 'dist', 'assets');
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const assetsDir = path.join(rootDir, "apps", "frontend", "dist", "assets");
 
 /**
  * Budgets are deliberately a little above the measured baseline so ordinary
  * code changes do not trip them; they exist to catch real regressions.
  * Baseline (measured post-mermaid 12 + modular splitting): ~13.1 MB total JS, ~1.4 MB largest chunk (elk).
  */
-const TOTAL_JS_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_TOTAL_MB ?? '14.5');
+const TOTAL_JS_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_TOTAL_MB ?? "14.5");
 const LARGEST_CHUNK_BUDGET_MB = Number.parseFloat(
-  process.env.BUNDLE_BUDGET_LARGEST_CHUNK_MB ?? '2.5',
+  process.env.BUNDLE_BUDGET_LARGEST_CHUNK_MB ?? "2.5",
 );
-const GZIP_TOTAL_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_GZIP_MB ?? '4.2');
+const GZIP_TOTAL_BUDGET_MB = Number.parseFloat(process.env.BUNDLE_BUDGET_GZIP_MB ?? "4.2");
 
 const MB = 1024 * 1024;
 
@@ -47,13 +47,13 @@ function fail(message) {
 if (!fs.existsSync(assetsDir)) {
   fail(
     `No build output at ${path.relative(rootDir, assetsDir)}. ` +
-      'Run `pnpm --filter mms-frontend build` first.',
+      "Run `pnpm --filter mms-frontend build` first.",
   );
 }
 
 const files = fs
   .readdirSync(assetsDir)
-  .filter((name) => name.endsWith('.js'))
+  .filter((name) => name.endsWith(".js"))
   .map((name) => {
     const full = path.join(assetsDir, name);
     return { name, bytes: fs.statSync(full).size };
@@ -61,7 +61,7 @@ const files = fs
   .sort((a, b) => b.bytes - a.bytes);
 
 if (files.length === 0) {
-  fail('No JavaScript chunks found in the build output.');
+  fail("No JavaScript chunks found in the build output.");
 }
 
 const totalBytes = files.reduce((sum, f) => sum + f.bytes, 0);
@@ -87,14 +87,12 @@ const report = {
   },
 };
 
-if (process.argv.includes('--json')) {
+if (process.argv.includes("--json")) {
   console.log(JSON.stringify(report, null, 2));
 } else {
-  console.log('Frontend bundle budget');
+  console.log("Frontend bundle budget");
   console.log(`  chunks            : ${report.chunkCount}`);
-  console.log(
-    `  total JS          : ${report.totalJsMb} MB (budget ${TOTAL_JS_BUDGET_MB} MB)`,
-  );
+  console.log(`  total JS          : ${report.totalJsMb} MB (budget ${TOTAL_JS_BUDGET_MB} MB)`);
   console.log(
     `  total JS (gzip)   : ${report.gzipTotalJsMb} MB (budget ${GZIP_TOTAL_BUDGET_MB} MB)`,
   );
@@ -102,7 +100,7 @@ if (process.argv.includes('--json')) {
     `  largest chunk     : ${report.largestChunkMb} MB ${largest.name} ` +
       `(budget ${LARGEST_CHUNK_BUDGET_MB} MB)`,
   );
-  console.log('\n  Top 5 chunks:');
+  console.log("\n  Top 5 chunks:");
   for (const f of files.slice(0, 5)) {
     console.log(`    ${(f.bytes / MB).toFixed(2).padStart(6)} MB  ${f.name}`);
   }
@@ -110,14 +108,10 @@ if (process.argv.includes('--json')) {
 
 const violations = [];
 if (totalBytes > TOTAL_JS_BUDGET_MB * MB) {
-  violations.push(
-    `total JS ${report.totalJsMb} MB exceeds ${TOTAL_JS_BUDGET_MB} MB`,
-  );
+  violations.push(`total JS ${report.totalJsMb} MB exceeds ${TOTAL_JS_BUDGET_MB} MB`);
 }
 if (gzipTotalBytes > GZIP_TOTAL_BUDGET_MB * MB) {
-  violations.push(
-    `total gzipped JS ${report.gzipTotalJsMb} MB exceeds ${GZIP_TOTAL_BUDGET_MB} MB`,
-  );
+  violations.push(`total gzipped JS ${report.gzipTotalJsMb} MB exceeds ${GZIP_TOTAL_BUDGET_MB} MB`);
 }
 if (largest.bytes > LARGEST_CHUNK_BUDGET_MB * MB) {
   violations.push(
@@ -127,11 +121,11 @@ if (largest.bytes > LARGEST_CHUNK_BUDGET_MB * MB) {
 
 if (violations.length > 0) {
   fail(
-    `Bundle budget exceeded:\n  - ${violations.join('\n  - ')}\n\n` +
-      'Either reduce the bundle (lazy-load the dependency, review manualChunks in ' +
-      'apps/frontend/vite.config.ts) or raise the budget deliberately via the ' +
-      'BUNDLE_BUDGET_* env vars in .github/workflows/ci.yml.',
+    `Bundle budget exceeded:\n  - ${violations.join("\n  - ")}\n\n` +
+      "Either reduce the bundle (lazy-load the dependency, review manualChunks in " +
+      "apps/frontend/vite.config.ts) or raise the budget deliberately via the " +
+      "BUNDLE_BUDGET_* env vars in .github/workflows/ci.yml.",
   );
 }
 
-console.log('\n✓ Bundle within budget.');
+console.log("\n✓ Bundle within budget.");

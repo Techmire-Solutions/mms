@@ -1,9 +1,9 @@
-import type { FieldDefinition } from './contactTypes.js';
+import type { FieldDefinition } from "./contactTypes.js";
 import {
   ENROLLMENTS_TAB_REGISTRY,
   INITIAL_ENROLLMENTS_FIELD_SEED,
-} from './moduleFieldSetupAcademic.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
+} from "./moduleFieldSetupAcademic.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
 
 /** Deep clone {@link INITIAL_ENROLLMENTS_FIELD_SEED} for default and Setup states. */
 export function cloneEnrollmentFieldSeed(): Record<string, FieldDefinition[]> {
@@ -26,7 +26,7 @@ export function isEnrollmentSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Setup tab). */
 export function isEnrollmentLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -36,7 +36,7 @@ export function isEnrollmentLockedEnabledTab(tabKey: string): boolean {
 export function resolveEnrollmentFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneEnrollmentFieldSeed();
   }
   const entries = Object.entries(fields);

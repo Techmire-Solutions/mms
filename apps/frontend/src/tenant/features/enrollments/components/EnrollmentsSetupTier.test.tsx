@@ -31,7 +31,9 @@ vi.mock("@/tenant/hooks/usePermissions", () => ({
 
 vi.mock("@/tenant/features/enrollments/components/EnrollmentsSettings", () => ({
   default: () => <div data-testid="enrollments-settings">Enrollments Settings Panel</div>,
-  EnrollmentsSettings: () => <div data-testid="enrollments-settings">Enrollments Settings Panel</div>,
+  EnrollmentsSettings: () => (
+    <div data-testid="enrollments-settings">Enrollments Settings Panel</div>
+  ),
 }));
 
 describe("EnrollmentsSetupTier Component", () => {

@@ -1,8 +1,16 @@
 import { useRef, useState, useMemo, useCallback, useEffect } from "react";
 import { getPageDimensions, useInvoiceTemplate } from "@/lib/invoiceTemplateStore";
-import { type ObligationCollection, type ObligationType, type MujtahidRep, type Mujtahid } from "@/lib/data/obligationsData";
+import {
+  type ObligationCollection,
+  type ObligationType,
+  type MujtahidRep,
+  type Mujtahid,
+} from "@/lib/data/obligationsData";
 import { DEFAULT_CURRENCIES } from "@mms/shared";
-import { useMergedObligationContacts, useMergedObligationUsers } from "@/tenant/features/obligations/hooks/useObligationLookups";
+import {
+  useMergedObligationContacts,
+  useMergedObligationUsers,
+} from "@/tenant/features/obligations/hooks/useObligationLookups";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { buildPrintWindowHtml } from "@/lib/printWindowHtml";

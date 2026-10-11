@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const accountingFinancialStatementItemSchema = z.object({
   code: z.string(),
@@ -8,7 +8,9 @@ export const accountingFinancialStatementItemSchema = z.object({
   section: z.string().optional(),
 });
 
-export type AccountingFinancialStatementItem = z.infer<typeof accountingFinancialStatementItemSchema>;
+export type AccountingFinancialStatementItem = z.infer<
+  typeof accountingFinancialStatementItemSchema
+>;
 
 /** Per-account debit/credit totals with a normal-side `balance`. */
 export const accountingTrialBalanceRowSchema = z.object({
@@ -77,23 +79,31 @@ export const accountingReportAggregatesSchema = z.object({
   incomeStatementTrialBalance: z.array(accountingTrialBalanceRowSchema).optional(),
   /** Cumulative Asset/Liability/Equity rows as of `dateTo` (Balance Sheet). */
   balanceSheetTrialBalance: z.array(accountingTrialBalanceRowSchema).default([]),
-  comparison: z.object({
-    revenue: z.object({
-      a: z.number().default(0),
-      b: z.number().default(0),
-      deltaPct: z.number().default(0),
-    }).optional(),
-    expenses: z.object({
-      a: z.number().default(0),
-      b: z.number().default(0),
-      deltaPct: z.number().default(0),
-    }).optional(),
-    netSurplus: z.object({
-      a: z.number().default(0),
-      b: z.number().default(0),
-      deltaPct: z.number().default(0),
-    }).optional(),
-  }).optional(),
+  comparison: z
+    .object({
+      revenue: z
+        .object({
+          a: z.number().default(0),
+          b: z.number().default(0),
+          deltaPct: z.number().default(0),
+        })
+        .optional(),
+      expenses: z
+        .object({
+          a: z.number().default(0),
+          b: z.number().default(0),
+          deltaPct: z.number().default(0),
+        })
+        .optional(),
+      netSurplus: z
+        .object({
+          a: z.number().default(0),
+          b: z.number().default(0),
+          deltaPct: z.number().default(0),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 export type AccountingReportAggregates = z.infer<typeof accountingReportAggregatesSchema>;

@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from 'react';
-import type { PlatformUserProfile } from '@mms/shared';
-import { useWorkSelection } from '@/hooks/useWorkSelection';
+import { useCallback, useMemo } from "react";
+import type { PlatformUserProfile } from "@mms/shared";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
 
 export interface UsePlatformAdminSelectionResult {
   selectedIds: string[];

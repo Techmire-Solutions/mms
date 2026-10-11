@@ -1,26 +1,22 @@
-import { z } from 'zod';
-import type { AppTranslationKey } from './appTranslations.js';
-import { baseListQueryFields } from './apiSchemas.js';
+import { z } from "zod";
+import type { AppTranslationKey } from "./appTranslations.js";
+import { baseListQueryFields } from "./apiSchemas.js";
 import {
   FACULTY_SORT_FIELDS,
   FACULTY_SORT_FIELD_SET,
   type FacultySortField,
-} from './facultyDirectoryColumns.js';
-import { resolveFacultyStatusRoles, type Faculty } from './facultyTypes.js';
+} from "./facultyDirectoryColumns.js";
+import { resolveFacultyStatusRoles, type Faculty } from "./facultyTypes.js";
 
-export {
-  FACULTY_SORT_FIELDS,
-  FACULTY_SORT_FIELD_SET,
-  type FacultySortField,
-};
+export { FACULTY_SORT_FIELDS, FACULTY_SORT_FIELD_SET, type FacultySortField };
 
 /** Work-directory filter presets — SSOT for schema + Filters menu. */
 export const FACULTY_QUICK_FILTERS = [
-  'all',
-  'active',
-  'inactive',
-  'onLeave',
-  'missingEmployeeId',
+  "all",
+  "active",
+  "inactive",
+  "onLeave",
+  "missingEmployeeId",
 ] as const;
 
 const facultyQuickFilterSchema = z.enum(FACULTY_QUICK_FILTERS);
@@ -36,11 +32,11 @@ export function isFacultyQuickFilter(value: string): value is FacultyQuickFilter
 }
 
 const FACULTY_QUICK_FILTER_LABEL_KEYS = {
-  all: 'faculty.filtersAll',
-  active: 'faculty.filtersActive',
-  inactive: 'faculty.filtersInactive',
-  onLeave: 'faculty.filtersOnLeave',
-  missingEmployeeId: 'faculty.filtersMissingEmployeeId',
+  all: "faculty.filtersAll",
+  active: "faculty.filtersActive",
+  inactive: "faculty.filtersInactive",
+  onLeave: "faculty.filtersOnLeave",
+  missingEmployeeId: "faculty.filtersMissingEmployeeId",
 } as const satisfies Record<FacultyQuickFilter, AppTranslationKey>;
 
 /** Preset options for the Faculty Work Filters menu. */
@@ -62,7 +58,7 @@ const FACULTY_QUICK_FILTER_STATUS_VALUES = (() => {
  * (e.g. `onLeave` → `on_leave`); `undefined` for non-status presets.
  */
 export function facultyQuickFilterStatusValue(preset: FacultyQuickFilter): string | undefined {
-  if (preset === 'all' || preset === 'missingEmployeeId') return undefined;
+  if (preset === "all" || preset === "missingEmployeeId") return undefined;
   return FACULTY_QUICK_FILTER_STATUS_VALUES[preset];
 }
 
@@ -86,7 +82,7 @@ export type FacultyListQueryParsed = z.infer<typeof facultyListQuerySchema>;
  * Service / FE Query / SQL list query — Zod wire fields with boolean `includeDeleted`
  * after HTTP normalize (same authority as {@link facultyListQuerySchema}).
  */
-export type FacultyListQuery = Omit<FacultyListQueryParsed, 'includeDeleted' | 'skipCount'> & {
+export type FacultyListQuery = Omit<FacultyListQueryParsed, "includeDeleted" | "skipCount"> & {
   includeDeleted?: boolean;
   skipCount?: boolean;
 };

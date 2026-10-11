@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findFacultyAssignmentById = vi.fn();
 const validateFacultyAssignment = vi.fn();
@@ -6,45 +6,45 @@ const lockFacultyHierarchy = vi.fn();
 const recordModernAuditEvent = vi.fn();
 const withTenant = vi.fn();
 
-vi.mock('../db/repositories/facultyAssignmentRepository.js', () => ({
+vi.mock("../db/repositories/facultyAssignmentRepository.js", () => ({
   findFacultyAssignmentById: (...args: unknown[]) => findFacultyAssignmentById(...args),
 }));
 
-vi.mock('../db/repositories/facultyAssignmentValidation.js', () => ({
+vi.mock("../db/repositories/facultyAssignmentValidation.js", () => ({
   validateFacultyAssignment: (...args: unknown[]) => validateFacultyAssignment(...args),
   lockFacultyHierarchy: (...args: unknown[]) => lockFacultyHierarchy(...args),
 }));
 
-vi.mock('../services/auditTrailService.js', () => ({
+vi.mock("../services/auditTrailService.js", () => ({
   recordModernAuditEvent: (...args: unknown[]) => recordModernAuditEvent(...args),
 }));
 
-vi.mock('../db/tenant-context.js', () => ({
+vi.mock("../db/tenant-context.js", () => ({
   withTenant: (...args: unknown[]) => withTenant(...args),
 }));
 
-vi.mock('../db/schema.js', () => ({
+vi.mock("../db/schema.js", () => ({
   facultyAssignments: {
-    workspaceSubdomain: 'workspace_subdomain',
-    id: 'id',
-    facultyId: 'faculty_id',
-    designationId: 'designation_id',
-    departmentId: 'department_id',
-    isPrimary: 'is_primary',
-    deletedAt: 'deleted_at',
-    startDate: 'start_date',
-    endDate: 'end_date',
+    workspaceSubdomain: "workspace_subdomain",
+    id: "id",
+    facultyId: "faculty_id",
+    designationId: "designation_id",
+    departmentId: "department_id",
+    isPrimary: "is_primary",
+    deletedAt: "deleted_at",
+    startDate: "start_date",
+    endDate: "end_date",
   },
   faculty: {
-    workspaceSubdomain: 'workspace_subdomain',
-    id: 'id',
-    deletedAt: 'deleted_at',
+    workspaceSubdomain: "workspace_subdomain",
+    id: "id",
+    deletedAt: "deleted_at",
   },
 }));
 
-import { saveFacultyAssignment } from '../db/repositories/facultyAssignmentWriteRepository.js';
+import { saveFacultyAssignment } from "../db/repositories/facultyAssignmentWriteRepository.js";
 
-describe('saveFacultyAssignment writes', () => {
+describe("saveFacultyAssignment writes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     withTenant.mockImplementation(async (_tenant: string, fn: (tx: unknown) => Promise<void>) => {
@@ -67,16 +67,16 @@ describe('saveFacultyAssignment writes', () => {
     recordModernAuditEvent.mockResolvedValue(undefined);
   });
 
-  it('validates and upserts an appointment', async () => {
+  it("validates and upserts an appointment", async () => {
     findFacultyAssignmentById.mockResolvedValue(null);
-    await saveFacultyAssignment('demo', {
-      id: 'a1',
-      facultyId: 'f1',
-      departmentId: 'd1',
-      designationId: 'des1',
+    await saveFacultyAssignment("demo", {
+      id: "a1",
+      facultyId: "f1",
+      departmentId: "d1",
+      designationId: "des1",
       isPrimary: true,
-      startDate: '2026-01-01',
-      updatedBy: 'u1',
+      startDate: "2026-01-01",
+      updatedBy: "u1",
     } as never);
 
     expect(validateFacultyAssignment).toHaveBeenCalled();

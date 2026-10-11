@@ -1,9 +1,9 @@
-import { financeFieldConfigs } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { financeFieldConfigs } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: financeFieldConfigs,
-  jsonColumn: 'config',
+  jsonColumn: "config",
 });
 
 export const getFinanceFieldConfigByWorkspace = repo.getByWorkspace;

@@ -4,13 +4,13 @@ import {
   emptyStudentLookupsMap,
   type StudentLookupKind,
   type StudentLookupsMap,
-} from '@mms/shared';
-import { createModuleStringListLookupsService } from '../../lib/createModuleStringListLookupsService.js';
+} from "@mms/shared";
+import { createModuleStringListLookupsService } from "../../lib/createModuleStringListLookupsService.js";
 import {
   listStudentLookupsByKind,
   listStudentLookupsByWorkspace,
   replaceStudentLookupsForKind,
-} from '../../db/repositories/studentLookupsRepository.js';
+} from "../../db/repositories/studentLookupsRepository.js";
 
 const stringListLookups = createModuleStringListLookupsService<
   StudentLookupKind,
@@ -22,7 +22,7 @@ const stringListLookups = createModuleStringListLookupsService<
   listByWorkspace: listStudentLookupsByWorkspace,
   listByKind: listStudentLookupsByKind,
   replaceForKind: replaceStudentLookupsForKind,
-  broadcastKey: 'students',
+  broadcastKey: "students",
 });
 
 export const loadStudentLookupsMap = stringListLookups.loadMap;

@@ -20,11 +20,7 @@ export interface StatGridProps extends HTMLAttributes<HTMLDListElement> {
  * `grid grid-cols-* gap-2 text-sm` `<dl>` chrome (obligations / accounting /
  * reports / examinations / attendance cards). Rows via {@link StatRow}.
  */
-export function StatGrid({
-  columns = "2",
-  className,
-  ...props
-}: StatGridProps): React.JSX.Element {
+export function StatGrid({ columns = "2", className, ...props }: StatGridProps): React.JSX.Element {
   return (
     <dl className={cn("grid gap-2 text-sm", STAT_GRID_COLUMNS[columns], className)} {...props} />
   );
@@ -65,7 +61,9 @@ export function StatRow({
     <div className={cn(fullWidth && "col-span-full", className)}>
       <dt className={cn("text-xs font-semibold text-muted-foreground", dtClassName)}>{label}</dt>
       <dd className={cn("text-foreground", ddClassName)}>{value}</dd>
-      {hint != null && <dd className={cn("text-xs text-muted-foreground", hintClassName)}>{hint}</dd>}
+      {hint != null && (
+        <dd className={cn("text-xs text-muted-foreground", hintClassName)}>{hint}</dd>
+      )}
     </div>
   );
 }

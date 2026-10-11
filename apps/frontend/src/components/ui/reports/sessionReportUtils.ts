@@ -60,7 +60,8 @@ export function buildCapacityChartData(sessions: Session[]): CapacityBarDatum[] 
 }
 
 export function buildEnrollmentTrends(sessions: Session[]): EnrollmentTrendItem[] {
-  const trendMap: Record<string, { month: string; students: number; sessionName: string | null }> = {};
+  const trendMap: Record<string, { month: string; students: number; sessionName: string | null }> =
+    {};
   for (const session of sessions) {
     const date = session.startDate ? new Date(session.startDate) : new Date();
     const monthKey = isNaN(date.getTime()) ? "Current" : formatMonthYear(date);
@@ -108,4 +109,3 @@ export function buildTodaysSessions(sessions: Session[]): TodaySessionItem[] {
   }
   return result;
 }
-

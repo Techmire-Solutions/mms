@@ -1,8 +1,8 @@
-import { KPISummarySettings } from '@/components/ui/reports/kpiSummarySettings';
-import { KPICardsGrid } from '@/components/ui/reports/kpiSummaryCards';
-import type { KPISummaryProps } from '@/components/ui/reports/kpiSummaryTypes';
-import { useKPISummaryModel } from '@/tenant/features/reports/controllers/useKPISummaryModel';
-import DynamicCardBuilder from '@/tenant/features/reports/components/DynamicCardBuilder';
+import { KPISummarySettings } from "@/components/ui/reports/kpiSummarySettings";
+import { KPICardsGrid } from "@/components/ui/reports/kpiSummaryCards";
+import type { KPISummaryProps } from "@/components/ui/reports/kpiSummaryTypes";
+import { useKPISummaryModel } from "@/tenant/features/reports/controllers/useKPISummaryModel";
+import DynamicCardBuilder from "@/tenant/features/reports/components/DynamicCardBuilder";
 
 export default function KPISummary({ category, role }: KPISummaryProps): JSX.Element {
   const model = useKPISummaryModel({ category, role });

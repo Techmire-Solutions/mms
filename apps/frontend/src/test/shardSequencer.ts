@@ -1,18 +1,18 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { BaseSequencer, type TestSpecification } from 'vitest/node';
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { BaseSequencer, type TestSpecification } from "vitest/node";
 
 /** Per-file cost in ms, keyed by `timingKey`; regenerate with `pnpm test:shard-timings`. */
-export const SHARD_TIMINGS_FILE = path.join(import.meta.dirname, 'shard-timings.json');
+export const SHARD_TIMINGS_FILE = path.join(import.meta.dirname, "shard-timings.json");
 
 /** POSIX path of a test file relative to the Vitest root (stable across OSes). */
 export function timingKey(root: string, moduleId: string): string {
-  return path.relative(root, moduleId).split(path.sep).join('/');
+  return path.relative(root, moduleId).split(path.sep).join("/");
 }
 
 function loadTimings(): Record<string, number> {
   try {
-    return JSON.parse(readFileSync(SHARD_TIMINGS_FILE, 'utf8')) as Record<string, number>;
+    return JSON.parse(readFileSync(SHARD_TIMINGS_FILE, "utf8")) as Record<string, number>;
   } catch {
     return {};
   }

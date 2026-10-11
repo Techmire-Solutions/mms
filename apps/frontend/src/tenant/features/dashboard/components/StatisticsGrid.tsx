@@ -43,7 +43,10 @@ export function StatisticsGrid({
 
   if (isLoading) {
     return (
-      <section aria-label={t("dashboard.statsSectionLabel")} className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans">
+      <section
+        aria-label={t("dashboard.statsSectionLabel")}
+        className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans"
+      >
         {Array.from({ length: 4 }).map((_, idx) => (
           <div
             key={`stat-skeleton-${idx}`}
@@ -84,8 +87,10 @@ export function StatisticsGrid({
   }
 
   return (
-    <section aria-label={t("dashboard.statsSectionLabel")} className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans">
-
+    <section
+      aria-label={t("dashboard.statsSectionLabel")}
+      className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans"
+    >
       {statItems.map((statItem, statIndex) => {
         const { IconComponent: Icon, colorTheme, accent } = resolveCardVisuals(statItem);
         const hasPositiveTrend = statItem.trend >= 0;
@@ -116,7 +121,9 @@ export function StatisticsGrid({
               trendAriaLabel={
                 statItem.trend !== 0 && !isEditMode
                   ? t("dashboard.trendAria", {
-                      direction: hasPositiveTrend ? t("dashboard.trendUp") : t("dashboard.trendDown"),
+                      direction: hasPositiveTrend
+                        ? t("dashboard.trendUp")
+                        : t("dashboard.trendDown"),
                       value: Math.abs(statItem.trend),
                     })
                   : undefined

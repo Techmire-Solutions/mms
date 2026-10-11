@@ -1,7 +1,7 @@
-import React from 'react';
-import type { Message } from '@mms/shared';
-import { MessagingWorkTierDirectory } from './MessagingWorkTierDirectory';
-import { useMessagingWorkTierController } from './useMessagingWorkTierController';
+import React from "react";
+import type { Message } from "@mms/shared";
+import { MessagingWorkTierDirectory } from "./MessagingWorkTierDirectory";
+import { useMessagingWorkTierController } from "./useMessagingWorkTierController";
 
 export type MessagingSelectedLogsMap = Record<string, Message>;
 
@@ -9,10 +9,10 @@ interface MessagingWorkTierProps {
   canWrite: boolean;
   canClearLogs: boolean;
   onClearLogsRequest: () => void;
-  onResend: Parameters<typeof useMessagingWorkTierController>[0]['onResend'];
-  onBulkResend?: Parameters<typeof useMessagingWorkTierController>[0]['onBulkResend'];
-  channel?: Parameters<typeof useMessagingWorkTierController>[0]['channel'];
-  onChannelChange?: Parameters<typeof useMessagingWorkTierController>[0]['onChannelChange'];
+  onResend: Parameters<typeof useMessagingWorkTierController>[0]["onResend"];
+  onBulkResend?: Parameters<typeof useMessagingWorkTierController>[0]["onBulkResend"];
+  channel?: Parameters<typeof useMessagingWorkTierController>[0]["channel"];
+  onChannelChange?: Parameters<typeof useMessagingWorkTierController>[0]["onChannelChange"];
 }
 
 export function MessagingWorkTier(props: MessagingWorkTierProps): React.JSX.Element {

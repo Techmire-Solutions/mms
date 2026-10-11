@@ -1,4 +1,4 @@
-import { generateClientEntityId } from './clientEntityIdUtils.js';
+import { generateClientEntityId } from "./clientEntityIdUtils.js";
 
 export interface ParseContactsRowContext {
   getVal: (key: string) => string;
@@ -9,13 +9,13 @@ export interface ParseContactsRowContext {
 
 export function splitList(val: string | undefined): string[] {
   if (!val) return [];
-  return val.split(';').map((s) => s.trim());
+  return val.split(";").map((s) => s.trim());
 }
 
 export function parseBool(val: string | undefined): boolean {
   if (!val) return false;
   const s = val.trim().toLowerCase();
-  return s === 'yes' || s === 'true' || s === '1' || s === 'y';
+  return s === "yes" || s === "true" || s === "1" || s === "y";
 }
 
 export function cleanCell(val: string): string {
@@ -27,5 +27,5 @@ export function cleanCell(val: string): string {
 }
 
 export function generateId(): string {
-  return generateClientEntityId('c', '_');
+  return generateClientEntityId("c", "_");
 }

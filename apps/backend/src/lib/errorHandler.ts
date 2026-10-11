@@ -1,17 +1,17 @@
-import type { FastifyError, FastifyInstance } from 'fastify';
-import { PlatformError } from '../services/platform/platformErrorService.js';
+import type { FastifyError, FastifyInstance } from "fastify";
+import { PlatformError } from "../services/platform/platformErrorService.js";
 import {
   dependencyForDiagnosticStage,
   getRequestDiagnosticContext,
   getRuntimeDependencySnapshot,
-} from './requestDiagnostics.js';
+} from "./requestDiagnostics.js";
 
 export function registerErrorHandlers(app: FastifyInstance, isProd: boolean): void {
   app.setErrorHandler((error: FastifyError, request, reply) => {
     if (error.validation) {
       return reply.status(400).send({
-        type: 'validation_error',
-        message: 'Invalid request',
+        type: "validation_error",
+        message: "Invalid request",
       });
     }
 
@@ -36,15 +36,15 @@ export function registerErrorHandlers(app: FastifyInstance, isProd: boolean): vo
           dependency,
           ...(diagnostic ? { runtimeDependencies: getRuntimeDependencySnapshot() } : {}),
         },
-        'unhandled server error',
+        "unhandled server error",
       );
     }
 
     if (statusCode >= 500 && isProd) {
       return reply.status(500).send({
-        type: 'server_error',
+        type: "server_error",
         message: diagnostic?.stage
-          ? `Internal server error during ${diagnostic.stage.replaceAll('_', ' ')}. Reference: ${request.id}`
+          ? `Internal server error during ${diagnostic.stage.replaceAll("_", " ")}. Reference: ${request.id}`
           : `Internal server error. Reference: ${request.id}`,
         requestId: request.id,
         ...(diagnostic
@@ -58,7 +58,7 @@ export function registerErrorHandlers(app: FastifyInstance, isProd: boolean): vo
     }
 
     return reply.status(statusCode).send({
-      type: error.code ?? 'server_error',
+      type: error.code ?? "server_error",
       message: error.message,
     });
   });

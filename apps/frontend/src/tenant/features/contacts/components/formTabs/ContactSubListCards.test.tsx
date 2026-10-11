@@ -6,13 +6,7 @@ import { FormListFieldCard } from "@/components/ui/FormPrimitives";
 import { ContactSubListShell, resolveSubListAllowAdd } from "./ContactSubListCards";
 
 vi.mock("@/components/ui/EmptyState", () => ({
-  EmptyState: ({
-    title,
-    action,
-  }: {
-    title: string;
-    action?: React.ReactNode;
-  }) => (
+  EmptyState: ({ title, action }: { title: string; action?: React.ReactNode }) => (
     <div>
       <p>{title}</p>
       {action}

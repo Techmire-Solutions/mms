@@ -52,7 +52,10 @@ export function SidebarNavItem({
       className={cn(
         "group flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative select-none cursor-pointer",
         active
-          ? cn("bg-sidebar-accent text-sidebar-accent-foreground font-semibold", activeShadow && "shadow-xs")
+          ? cn(
+              "bg-sidebar-accent text-sidebar-accent-foreground font-semibold",
+              activeShadow && "shadow-xs",
+            )
           : "text-sidebar-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
         centerIcon && "justify-center px-0 min-w-11",
       )}
@@ -64,7 +67,13 @@ export function SidebarNavItem({
           transition={reducedMotion ? undefined : { type: "spring", stiffness: 300, damping: 30 }}
         />
       ) : null}
-      <Icon className={cn("h-4.5 w-4.5 shrink-0 transition-colors", active ? "text-sidebar-primary" : "")} aria-hidden />
+      <Icon
+        className={cn(
+          "h-4.5 w-4.5 shrink-0 transition-colors",
+          active ? "text-sidebar-primary" : "",
+        )}
+        aria-hidden
+      />
       <AnimatePresence>
         {showLabel ? (
           <motion.span

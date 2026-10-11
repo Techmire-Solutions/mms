@@ -30,7 +30,7 @@ export default function AdminSetup({ data, onChange }: AdminSetupProps) {
   const { t } = useTranslation();
 
   const update = (field: keyof OnboardingData, fieldValue: unknown) => {
-    onChange((prev) => ({ ...prev, [field]: fieldValue } as OnboardingData));
+    onChange((prev) => ({ ...prev, [field]: fieldValue }) as OnboardingData);
   };
 
   return (

@@ -44,7 +44,11 @@ export function BudgetAddModal({
     <FormModal
       open={open}
       onClose={onClose}
-      title={budgetType === "income" ? t("sessions.budget.addIncomeTitle") : t("sessions.budget.addExpenseTitle")}
+      title={
+        budgetType === "income"
+          ? t("sessions.budget.addIncomeTitle")
+          : t("sessions.budget.addExpenseTitle")
+      }
       icon={Wallet}
       cancelLabel={t("common.cancel")}
       saveLabel={t("common.save")}

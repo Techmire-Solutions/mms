@@ -104,7 +104,10 @@ export function StyleInput({
 
   return (
     <div className={`flex flex-col gap-0.5 ${className}`}>
-      <label htmlFor={inputId} className="text-xs font-bold uppercase text-muted-foreground tracking-wide">
+      <label
+        htmlFor={inputId}
+        className="text-xs font-bold uppercase text-muted-foreground tracking-wide"
+      >
         {label}
       </label>
       <Input

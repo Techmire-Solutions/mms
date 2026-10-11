@@ -3,10 +3,10 @@
  * @description Resolves industry terminology profile for UI labels (no DB renames).
  */
 
-import { getTerminologyForIndustry } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { getCurrentSubdomain } from '@/lib/config/tenantConfig';
-import { useWorkspaceBySubdomain } from '@/tenant/hooks/useWorkspaceBySubdomain';
+import { getTerminologyForIndustry } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getCurrentSubdomain } from "@/lib/config/tenantConfig";
+import { useWorkspaceBySubdomain } from "@/tenant/hooks/useWorkspaceBySubdomain";
 
 /** Resolved, locale-aware industry terminology labels. */
 export interface ResolvedIndustryTerminology {

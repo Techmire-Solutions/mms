@@ -5,11 +5,11 @@
 import {
   buildStudentWorkColumnRegistry,
   type StudentWorkColumnLabels,
-} from './studentColumnRegistrySync.js';
+} from "./studentColumnRegistrySync.js";
 import {
   buildFacultyWorkColumnRegistry,
   type FacultyWorkColumnLabels,
-} from './facultyColumnRegistrySync.js';
+} from "./facultyColumnRegistrySync.js";
 
 export {
   buildStudentWorkColumnRegistry,
@@ -41,8 +41,8 @@ export const MODULE_COLUMN_WIDTH_MAX = 640;
 
 /** Custom-field key when a Work column key is prefixed with `custom:`, else `null`. */
 export function customFieldKeyFromColumnKey(columnKey: string): string | null {
-  if (!columnKey.startsWith('custom:')) return null;
-  return columnKey.slice('custom:'.length);
+  if (!columnKey.startsWith("custom:")) return null;
+  return columnKey.slice("custom:".length);
 }
 
 /** Clamp a user-resized column width to the supported range. */
@@ -93,7 +93,7 @@ export function mergeModuleColumnPreferences(
       order: serverPreference.order,
     };
     const width = localPreference?.width ?? serverPreference.width;
-    if (typeof width === 'number') {
+    if (typeof width === "number") {
       next.width = clampModuleColumnWidth(width);
     }
     return next;
@@ -106,7 +106,10 @@ export function mergeModuleColumnPreferences(
         key: localPreference.key,
         enabled: localPreference.enabled,
         order: localPreference.order,
-        width: typeof localPreference.width === 'number' ? clampModuleColumnWidth(localPreference.width) : undefined,
+        width:
+          typeof localPreference.width === "number"
+            ? clampModuleColumnWidth(localPreference.width)
+            : undefined,
       });
     }
   }
@@ -114,10 +117,7 @@ export function mergeModuleColumnPreferences(
   return merged;
 }
 
-export function isModuleColumnVisible(
-  registry: ModuleColumnRegistryEntry[],
-  key: string,
-): boolean {
+export function isModuleColumnVisible(registry: ModuleColumnRegistryEntry[], key: string): boolean {
   const column = registry.find((registryColumn) => registryColumn.key === key);
   return column?.enabled ?? false;
 }
@@ -156,7 +156,7 @@ export function createColumnRegistry<T extends object>(
 ): ModuleColumnRegistryEntry[] {
   return keys.map((key, index) => ({
     key,
-    label: String(labels[key as keyof T] ?? ''),
+    label: String(labels[key as keyof T] ?? ""),
     enabled: true,
     order: index,
     ...(index === 0 && fixedFirst ? { fixed: true } : {}),

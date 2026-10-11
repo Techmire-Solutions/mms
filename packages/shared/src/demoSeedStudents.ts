@@ -1,5 +1,5 @@
-import type { Contact } from './contactTypes.js';
-import type { Student } from './studentTypes.js';
+import type { Contact } from "./contactTypes.js";
+import type { Student } from "./studentTypes.js";
 import {
   DEMO_CITIES,
   DEMO_FEMALE_FIRST,
@@ -15,7 +15,7 @@ import {
   demoRegisteredDate,
   demoSlug,
   demoStudentDob,
-} from './demoSeedConstants.js';
+} from "./demoSeedConstants.js";
 
 /** Builds parent contacts for demo students (ids 2001…). */
 export function buildDemoStudentParentContacts(): Contact[] {
@@ -32,11 +32,11 @@ export function buildDemoStudentParentContacts(): Contact[] {
       name,
       firstName,
       lastName,
-      gender: 'female',
+      gender: "female",
       createdAt: DEMO_STUDENT_DATE,
       updatedAt: DEMO_STUDENT_DATE,
-      phones: [{ label: 'Mobile', number: phone }],
-      emails: [{ label: 'Personal', address: email }],
+      phones: [{ label: "Mobile", number: phone }],
+      emails: [{ label: "Personal", address: email }],
       relationships: [],
       activities: [],
     });
@@ -49,7 +49,9 @@ export function buildDemoStudentContacts(): Contact[] {
   const contacts: Contact[] = [];
   for (let index = 1; index <= DEMO_STUDENT_COUNT; index += 1) {
     const female = index % 4 === 0;
-    const firstName = female ? demoPick(DEMO_FEMALE_FIRST, index) : demoPick(DEMO_MALE_FIRST, index);
+    const firstName = female
+      ? demoPick(DEMO_FEMALE_FIRST, index)
+      : demoPick(DEMO_MALE_FIRST, index);
     const lastName = demoPick(DEMO_LAST_NAMES, index);
     const name = `${firstName} ${lastName}`;
     const email = `${demoSlug(`${firstName}.${lastName}`)}@student.com`;
@@ -61,17 +63,17 @@ export function buildDemoStudentContacts(): Contact[] {
       name,
       firstName,
       lastName,
-      gender: female ? 'female' : 'male',
+      gender: female ? "female" : "male",
       dob: demoStudentDob(index),
       email,
       phone,
       city: demoPick(DEMO_CITIES, index + 2),
-      country: 'Pakistan',
+      country: "Pakistan",
       createdAt: DEMO_STUDENT_DATE,
       updatedAt: DEMO_STUDENT_DATE,
-      phones: [{ label: 'Mobile', number: phone }],
-      emails: [{ label: 'Personal', address: email }],
-      relationships: [{ contactId: parentId, relationship: 'Parent' }],
+      phones: [{ label: "Mobile", number: phone }],
+      emails: [{ label: "Personal", address: email }],
+      relationships: [{ contactId: parentId, relationship: "Parent" }],
       activities: [],
     });
   }
@@ -82,8 +84,8 @@ export function buildDemoStudentContacts(): Contact[] {
 export function buildDemoStudents(): Student[] {
   const students: Student[] = [];
   for (let index = 1; index <= DEMO_STUDENT_COUNT; index += 1) {
-    const status: Student['status'] =
-      index % 13 === 0 ? 'suspended' : index % 9 === 0 ? 'inactive' : 'active';
+    const status: Student["status"] =
+      index % 13 === 0 ? "suspended" : index % 9 === 0 ? "inactive" : "active";
     students.push({
       id: `st${index}`,
       contactId: DEMO_STUDENT_CONTACT_ID_START + index - 1,
@@ -91,7 +93,7 @@ export function buildDemoStudents(): Student[] {
       grNumber: `${demoPad(index, 4)}-2026`,
       status,
       registeredDate: demoRegisteredDate(index),
-      enrolledSessions: index % 3 === 0 ? ['s1'] : [],
+      enrolledSessions: index % 3 === 0 ? ["s1"] : [],
     });
   }
   return students;

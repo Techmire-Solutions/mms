@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ICONS_LIST } from "@/lib/reports/pinnedWidgetTypes";
-import { WIDGET_BUILDER_ICON_CATEGORIES, type WidgetBuilderIconTab } from "@/components/ui/reports/pinnedWidgets/widgetBuilderIconCategories";
+import {
+  WIDGET_BUILDER_ICON_CATEGORIES,
+  type WidgetBuilderIconTab,
+} from "@/components/ui/reports/pinnedWidgets/widgetBuilderIconCategories";
 
 interface WidgetBuilderIconPickerProps {
   builderIcon: string;
@@ -68,7 +71,9 @@ export function WidgetBuilderIconPicker({
 
       <div className="grid grid-autofill-icons gap-1.5 bg-card/20 border border-border/50 p-2.5 rounded-2xl max-h-icon-picker overflow-y-auto pe-1">
         {filteredIcons.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic col-span-full py-2 text-center font-sans">{t("reports.widgets.builder.noIconsFound")}</p>
+          <p className="text-xs text-muted-foreground italic col-span-full py-2 text-center font-sans">
+            {t("reports.widgets.builder.noIconsFound")}
+          </p>
         ) : (
           filteredIcons.map((iconName) => {
             const Icon = ICONS_LIST[iconName];
@@ -82,7 +87,9 @@ export function WidgetBuilderIconPicker({
                 size="icon"
                 onClick={() => setBuilderIcon(iconName)}
                 className={`rounded-xl border flex items-center justify-center hover:scale-105 shadow-none ${
-                  active ? "border-primary bg-primary/10 text-primary shadow-sm" : "border-border text-muted-foreground hover:text-foreground"
+                  active
+                    ? "border-primary bg-primary/10 text-primary shadow-sm"
+                    : "border-border text-muted-foreground hover:text-foreground"
                 }`}
                 title={iconName}
               >

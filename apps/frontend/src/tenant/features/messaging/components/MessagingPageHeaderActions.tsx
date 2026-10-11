@@ -1,5 +1,5 @@
 import { Download, Send, Upload } from "lucide-react";
-import type { AppTranslationKey } from '@mms/shared';
+import type { AppTranslationKey } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

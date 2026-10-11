@@ -19,9 +19,7 @@ export function ReportMoneyCardsGrid({
   className,
   surface = false,
 }: ReportMoneyCardsGridProps): React.JSX.Element {
-  const grid = (
-    <EntityCardsGrid className={cn("p-3", className)}>{children}</EntityCardsGrid>
-  );
+  const grid = <EntityCardsGrid className={cn("p-3", className)}>{children}</EntityCardsGrid>;
   if (surface) {
     return <div className={WORK_SURFACE}>{grid}</div>;
   }

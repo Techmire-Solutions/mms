@@ -2,29 +2,29 @@
  * @file userRolePrivilege.ts
  * @description Faculty designation role collection and managed composite role helpers.
  */
-import type { FacultyDesignationDefinition } from './facultyDesignationTypes.js';
-import type { FacultyEmployDesignationWriteRow } from './facultyEmployDesignationTypes.js';
-import type { WorkspaceRole } from './userEntityTypes.js';
-import { DEFAULT_WORKSPACE_ROLES_MAP, unionPermissionMaps } from './userRbacDefaults.js';
+import type { FacultyDesignationDefinition } from "./facultyDesignationTypes.js";
+import type { FacultyEmployDesignationWriteRow } from "./facultyEmployDesignationTypes.js";
+import type { WorkspaceRole } from "./userEntityTypes.js";
+import { DEFAULT_WORKSPACE_ROLES_MAP, unionPermissionMaps } from "./userRbacDefaults.js";
 
-export const FACULTY_MANAGED_ROLE_PREFIX = 'faculty_ed_';
+export const FACULTY_MANAGED_ROLE_PREFIX = "faculty_ed_";
 
 function isForbiddenSourceRole(roleId: string | undefined): boolean {
-  const normalized = (roleId ?? '').trim().toLowerCase();
-  return normalized === 'super_admin' || normalized === 'super_user';
+  const normalized = (roleId ?? "").trim().toLowerCase();
+  return normalized === "super_admin" || normalized === "super_user";
 }
 
 export type TenureRoleSource = Pick<
   FacultyEmployDesignationWriteRow,
-  'designationId' | 'employDesignationStatus' | 'designationEndDate'
+  "designationId" | "employDesignationStatus" | "designationEndDate"
 >;
 
 export type DesignationRoleSource = Pick<
   FacultyDesignationDefinition,
-  'id' | 'status' | 'assignableRoles'
+  "id" | "status" | "assignableRoles"
 >;
 
-export type FacultyRoleAssignmentKind = 'none' | 'catalog' | 'composite';
+export type FacultyRoleAssignmentKind = "none" | "catalog" | "composite";
 
 export interface FacultyDesignationRoleAssignment {
   kind: FacultyRoleAssignmentKind;
@@ -35,7 +35,7 @@ export interface FacultyDesignationRoleAssignment {
 
 /** True when tenure is active and not ended (open-ended). */
 export function isActiveOpenEmployDesignationTenure(row: TenureRoleSource): boolean {
-  if (row.employDesignationStatus !== 'active') return false;
+  if (row.employDesignationStatus !== "active") return false;
   return !row.designationEndDate?.trim();
 }
 
@@ -53,7 +53,7 @@ export function collectActiveTenureAssignableRoleIds(
     const designationId = tenure.designationId.trim();
     if (!designationId) continue;
     const def = designationById.get(designationId);
-    if (!def || def.status !== 'active') continue;
+    if (!def || def.status !== "active") continue;
     const roleId = def.assignableRoles[0]?.trim();
     if (!roleId || isForbiddenSourceRole(roleId)) continue;
     out.add(roleId);
@@ -63,17 +63,23 @@ export function collectActiveTenureAssignableRoleIds(
 
 /** Stable managed role id for a faculty-linked contact. */
 export function buildFacultyManagedRoleId(contactId: string): string {
-  const safe = contactId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_').slice(0, 80);
-  return `${FACULTY_MANAGED_ROLE_PREFIX}${safe || 'unknown'}`;
+  const safe = contactId
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "_")
+    .slice(0, 80);
+  return `${FACULTY_MANAGED_ROLE_PREFIX}${safe || "unknown"}`;
 }
 
 export function isFacultyManagedRoleId(roleId: string | undefined): boolean {
   return Boolean(roleId?.startsWith(FACULTY_MANAGED_ROLE_PREFIX));
 }
 
-export function isFacultyManagedRole(role: Pick<WorkspaceRole, 'id' | 'managedBy'> | undefined): boolean {
+export function isFacultyManagedRole(
+  role: Pick<WorkspaceRole, "id" | "managedBy"> | undefined,
+): boolean {
   if (!role) return false;
-  return role.managedBy === 'faculty_designations' || isFacultyManagedRoleId(role.id);
+  return role.managedBy === "faculty_designations" || isFacultyManagedRoleId(role.id);
 }
 
 /** Drop managed faculty composites from admin-facing role pickers. */
@@ -106,8 +112,8 @@ function resolveSourceRoles(
 }
 
 function compositeLabel(sourceRoles: readonly WorkspaceRole[]): string {
-  const names = sourceRoles.map((r) => r.customLabel?.trim() || r.id.replace(/_/g, ' '));
-  return `Faculty (${names.join(' + ')})`;
+  const names = sourceRoles.map((r) => r.customLabel?.trim() || r.id.replace(/_/g, " "));
+  return `Faculty (${names.join(" + ")})`;
 }
 
 /** Build or refresh a per-contact managed composite role. */
@@ -120,14 +126,15 @@ export function buildFacultyCompositeRole(input: {
   );
   return {
     id: buildFacultyManagedRoleId(input.contactId),
-    labelKey: 'users.role.custom',
-    descriptionKey: 'users.role.customDesc',
+    labelKey: "users.role.custom",
+    descriptionKey: "users.role.customDesc",
     customLabel: compositeLabel(input.sourceRoles),
-    customDescription: 'Managed from faculty designations; permissions are the union of source roles.',
+    customDescription:
+      "Managed from faculty designations; permissions are the union of source roles.",
     isSystem: false,
-    badgeVariant: 'primary',
+    badgeVariant: "primary",
     permissions: unionPermissionMaps(input.sourceRoles.map((r) => r.permissions)),
-    managedBy: 'faculty_designations',
+    managedBy: "faculty_designations",
     sourceRoleIds,
   };
 }
@@ -144,17 +151,17 @@ export function resolveFacultyDesignationRoleAssignment(
 ): FacultyDesignationRoleAssignment {
   const byId = new Map(designations.map((d) => [d.id, d]));
   const sourceRoleIds = collectActiveTenureAssignableRoleIds(employDesignations, byId);
-  if (sourceRoleIds.length === 0) return { kind: 'none', sourceRoleIds: [] };
+  if (sourceRoleIds.length === 0) return { kind: "none", sourceRoleIds: [] };
   if (sourceRoleIds.length === 1) {
-    return { kind: 'catalog', roleId: sourceRoleIds[0], sourceRoleIds };
+    return { kind: "catalog", roleId: sourceRoleIds[0], sourceRoleIds };
   }
   const sourceRoles = resolveSourceRoles(sourceRoleIds, roleCatalog);
-  if (sourceRoles.length === 0) return { kind: 'none', sourceRoleIds: [] };
+  if (sourceRoles.length === 0) return { kind: "none", sourceRoleIds: [] };
   if (sourceRoles.length === 1) {
-    return { kind: 'catalog', roleId: sourceRoles[0]!.id, sourceRoleIds: [sourceRoles[0]!.id] };
+    return { kind: "catalog", roleId: sourceRoles[0]!.id, sourceRoleIds: [sourceRoles[0]!.id] };
   }
   const composite = buildFacultyCompositeRole({ contactId, sourceRoles });
-  return { kind: 'composite', roleId: composite.id, sourceRoleIds, composite };
+  return { kind: "composite", roleId: composite.id, sourceRoleIds, composite };
 }
 
 /** Refresh permissions on existing managed composites from current catalog roles. */
@@ -171,7 +178,7 @@ export function refreshFacultyManagedRolePermissions(
       permissions: unionPermissionMaps(sourceRoles.map((r) => r.permissions)),
       customLabel: compositeLabel(sourceRoles),
       sourceRoleIds: sourceRoles.map((r) => r.id).sort((a, b) => a.localeCompare(b)),
-      managedBy: 'faculty_designations' as const,
+      managedBy: "faculty_designations" as const,
     };
   });
 }

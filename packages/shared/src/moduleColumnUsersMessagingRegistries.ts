@@ -1,4 +1,4 @@
-import { createColumnRegistry, type ModuleColumnRegistryEntry } from './moduleColumnCore.js';
+import { createColumnRegistry, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
 
 export interface UsersWorkColumnLabels {
   user: string;
@@ -15,7 +15,7 @@ export function buildUsersWorkColumnRegistry(
   labels: UsersWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['user', 'email', 'role', 'status', 'lastLogin', 'created', 'twoFactor'],
+    ["user", "email", "role", "status", "lastLogin", "created", "twoFactor"],
     labels,
   );
 }
@@ -32,10 +32,7 @@ export interface UsersActivityWorkColumnLabels {
 export function buildUsersActivityWorkColumnRegistry(
   labels: UsersActivityWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(
-    ['time', 'user', 'action', 'detail', 'ip'],
-    labels,
-  );
+  return createColumnRegistry(["time", "user", "action", "detail", "ip"], labels);
 }
 
 export interface MessagingRecipientsWorkColumnLabels {
@@ -48,10 +45,7 @@ export interface MessagingRecipientsWorkColumnLabels {
 export function buildMessagingRecipientsWorkColumnRegistry(
   labels: MessagingRecipientsWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(
-    ['recipient', 'phone', 'email'],
-    labels,
-  );
+  return createColumnRegistry(["recipient", "phone", "email"], labels);
 }
 
 export interface MessagingHistoryWorkColumnLabels {
@@ -65,10 +59,7 @@ export interface MessagingHistoryWorkColumnLabels {
 export function buildMessagingHistoryWorkColumnRegistry(
   labels: MessagingHistoryWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(
-    ['recipient', 'channel', 'body', 'dateSent'],
-    labels,
-  );
+  return createColumnRegistry(["recipient", "channel", "body", "dateSent"], labels);
 }
 
 export interface MessagingTemplatesWorkColumnLabels {
@@ -82,8 +73,5 @@ export interface MessagingTemplatesWorkColumnLabels {
 export function buildMessagingTemplatesWorkColumnRegistry(
   labels: MessagingTemplatesWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
-  return createColumnRegistry(
-    ['label', 'category', 'channel', 'body'],
-    labels,
-  );
+  return createColumnRegistry(["label", "category", "channel", "body"], labels);
 }

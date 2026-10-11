@@ -1,9 +1,9 @@
-import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import {
   authenticatePlatform,
   requirePlatformPermission,
-} from '../../middleware/authenticatePlatform.js';
-import { getIntrospectedErdDomains } from '../../services/platform/platformErdService.js';
+} from "../../middleware/authenticatePlatform.js";
+import { getIntrospectedErdDomains } from "../../services/platform/platformErdService.js";
 
 /**
  * Platform schema routes providing dynamic database introspection and live ERD catalogs.
@@ -14,9 +14,9 @@ export default async function platformSchemaRoutes(
   _options: FastifyPluginOptions,
 ): Promise<void> {
   fastify.get(
-    '/erd',
+    "/erd",
     {
-      preHandler: [authenticatePlatform, requirePlatformPermission('system')],
+      preHandler: [authenticatePlatform, requirePlatformPermission("system")],
     },
     async (_request, reply) => {
       const erdData = getIntrospectedErdDomains();

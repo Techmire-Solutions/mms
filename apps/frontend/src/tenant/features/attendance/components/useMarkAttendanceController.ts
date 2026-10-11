@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type AttendanceRecord, type ClassStudent } from '@/lib/data/attendanceData';
+import { type AttendanceRecord, type ClassStudent } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
-import { useSessionsCollection } from '@/tenant/hooks/collections/sessions';
+import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
-import { useStudentsByIds } from '@/tenant/hooks/collections/students';
+import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
 import { addAuditEntry } from "@/tenant/features/attendance/components/markAttendanceQueue";
@@ -19,7 +19,12 @@ import {
   loadQueue,
   useMarkAttendancePersistence,
 } from "@/tenant/features/attendance/components/useMarkAttendancePersistence";
-import type { AttendanceRow, GeoData, MarkAttendanceProps, OfflinePayload } from "@/tenant/features/attendance/components/markAttendanceTypes";
+import type {
+  AttendanceRow,
+  GeoData,
+  MarkAttendanceProps,
+  OfflinePayload,
+} from "@/tenant/features/attendance/components/markAttendanceTypes";
 
 export function useMarkAttendanceController({
   filters,
@@ -58,7 +63,10 @@ export function useMarkAttendanceController({
 
   const [rows, setRows] = useState<AttendanceRow[]>(() => {
     if (!filters.classId || !filters.date) return [];
-    const existing = records.filter((attendanceRecord) => attendanceRecord.classId === filters.classId && attendanceRecord.date === filters.date);
+    const existing = records.filter(
+      (attendanceRecord) =>
+        attendanceRecord.classId === filters.classId && attendanceRecord.date === filters.date,
+    );
     if (existing.length > 0) {
       return attendanceRowsFromRecords(existing);
     }
@@ -78,7 +86,10 @@ export function useMarkAttendanceController({
     const handleOffline = () => setIsOffline(true);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-    return () => { window.removeEventListener("online", handleOnline); window.removeEventListener("offline", handleOffline); };
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
   const studentRosterKey = students.map((student) => `${student.id}-${student.name}`).join("|");
@@ -86,7 +97,10 @@ export function useMarkAttendanceController({
 
   useEffect(() => {
     if (!filters.classId || !filters.date) return;
-    const existing = records.filter((attendanceRecord) => attendanceRecord.classId === filters.classId && attendanceRecord.date === filters.date);
+    const existing = records.filter(
+      (attendanceRecord) =>
+        attendanceRecord.classId === filters.classId && attendanceRecord.date === filters.date,
+    );
     let nextRows: AttendanceRow[];
     if (existing.length > 0) {
       nextRows = attendanceRowsFromRecords(existing);
@@ -98,8 +112,8 @@ export function useMarkAttendanceController({
     setIsDraft(false);
     setGeo(null);
     setShowFaceAI(false);
-  // stableKey encodes classId + date + roster — safe single dep
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // stableKey encodes classId + date + roster — safe single dep
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stableKey]);
 
   const filteredRows = (() =>
@@ -115,7 +129,9 @@ export function useMarkAttendanceController({
 
   const setRow = (studentId: string, key: string, value: unknown) => {
     const before = rows.find((row) => row.studentId === studentId);
-    setRows((previousRows) => previousRows.map((row) => row.studentId === studentId ? { ...row, [key]: value } : row));
+    setRows((previousRows) =>
+      previousRows.map((row) => (row.studentId === studentId ? { ...row, [key]: value } : row)),
+    );
     if (filters.classId && filters.date && before) {
       addAuditEntry(filters.classId, filters.date, {
         action: "edit",
@@ -130,7 +146,12 @@ export function useMarkAttendanceController({
 
   const markAll = (status: AttendanceRecord["status"]) => {
     setRows((previousRows) => previousRows.map((row) => ({ ...row, status })));
-    addAuditEntry(filters.classId, filters.date, { action: "bulk_mark", status, count: rows.length, by: role });
+    addAuditEntry(filters.classId, filters.date, {
+      action: "bulk_mark",
+      status,
+      count: rows.length,
+      by: role,
+    });
   };
 
   const requestGeo = () => {
@@ -138,7 +159,7 @@ export function useMarkAttendanceController({
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setGeo(null)
+        () => setGeo(null),
       );
     } else {
       setGeo(null);

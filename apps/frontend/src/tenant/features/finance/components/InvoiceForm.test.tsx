@@ -77,12 +77,7 @@ vi.mock("@/components/ui/FormModal", () => ({
       <h2>{title}</h2>
       {error ? <div role="alert">{error}</div> : null}
       {children}
-      <button
-        data-testid="save-invoice-btn"
-        type="button"
-        disabled={saveDisabled}
-        onClick={onSave}
-      >
+      <button data-testid="save-invoice-btn" type="button" disabled={saveDisabled} onClick={onSave}>
         Save Invoice
       </button>
     </div>
@@ -115,13 +110,7 @@ describe("InvoiceForm Component", () => {
 
   it("renders form inputs with inputMode=decimal on baseFee and discountValue", async () => {
     await act(async () => {
-      root.render(
-        <InvoiceForm
-          open={true}
-          onClose={vi.fn()}
-          onSave={vi.fn()}
-        />,
-      );
+      root.render(<InvoiceForm open={true} onClose={vi.fn()} onSave={vi.fn()} />);
     });
 
     const baseFeeInput = container.querySelector("#invoice-base-fee") as HTMLInputElement;
@@ -136,16 +125,12 @@ describe("InvoiceForm Component", () => {
 
   it("disables save button when required fields are missing", async () => {
     await act(async () => {
-      root.render(
-        <InvoiceForm
-          open={true}
-          onClose={vi.fn()}
-          onSave={vi.fn()}
-        />,
-      );
+      root.render(<InvoiceForm open={true} onClose={vi.fn()} onSave={vi.fn()} />);
     });
 
-    const saveBtn = container.querySelector("[data-testid='save-invoice-btn']") as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      "[data-testid='save-invoice-btn']",
+    ) as HTMLButtonElement;
     expect(saveBtn.disabled).toBe(true);
   });
 
@@ -153,13 +138,7 @@ describe("InvoiceForm Component", () => {
     const onSave = vi.fn();
 
     await act(async () => {
-      root.render(
-        <InvoiceForm
-          open={true}
-          onClose={vi.fn()}
-          onSave={onSave}
-        />,
-      );
+      root.render(<InvoiceForm open={true} onClose={vi.fn()} onSave={onSave} />);
     });
 
     const studentNameInput = container.querySelector("#invoice-student-name") as HTMLInputElement;
@@ -167,7 +146,9 @@ describe("InvoiceForm Component", () => {
     const classInput = container.querySelector("#invoice-class") as HTMLInputElement;
     const sessionInput = container.querySelector("#invoice-session") as HTMLInputElement;
     const baseFeeInput = container.querySelector("#invoice-base-fee") as HTMLInputElement;
-    const saveBtn = container.querySelector("[data-testid='save-invoice-btn']") as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      "[data-testid='save-invoice-btn']",
+    ) as HTMLButtonElement;
 
     await act(async () => {
       setInputValue(studentNameInput, "Yusuf Harith");
@@ -198,13 +179,7 @@ describe("InvoiceForm Component", () => {
 
   it("updates field values and allows clearing inputs", async () => {
     await act(async () => {
-      root.render(
-        <InvoiceForm
-          open={true}
-          onClose={vi.fn()}
-          onSave={vi.fn()}
-        />,
-      );
+      root.render(<InvoiceForm open={true} onClose={vi.fn()} onSave={vi.fn()} />);
     });
 
     const studentNameInput = container.querySelector("#invoice-student-name") as HTMLInputElement;

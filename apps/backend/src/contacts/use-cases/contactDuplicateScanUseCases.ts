@@ -7,15 +7,15 @@ import {
   type ContactDuplicatePair,
   type ContactPreferences,
   type ContactsDuplicatePairsPageResult,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { deleteObject, getObject, saveObject } from '../../db/database.js';
-import { loadContactPreferences } from './contactPreferencesService.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { deleteObject, getObject, saveObject } from "../../db/database.js";
+import { loadContactPreferences } from "./contactPreferencesService.js";
 import type {
   ContactDuplicateCandidateKeys,
   ContactsRepository,
-} from '../repository/contactsRepository.js';
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
+} from "../repository/contactsRepository.js";
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
 const CACHE_KEY = CONTACTS_DUPLICATE_SCAN_CACHE_OBJECT_KEY;
 
@@ -66,12 +66,15 @@ async function findBlockedDuplicatePairs(
   );
   if (blockedIds.length === 0) return [];
   const pool = await repo.findByIds(tenant, blockedIds);
-  return findContactDuplicatePairs(pool.filter((contact) => !contact.deletedAt), preferences ?? {});
+  return findContactDuplicatePairs(
+    pool.filter((contact) => !contact.deletedAt),
+    preferences ?? {},
+  );
 }
 
 export async function getDuplicateScanCache(): Promise<ContactDuplicateScanCache | null> {
   const raw = await getObject(CACHE_KEY);
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const cache = raw as ContactDuplicateScanCache;
   if (!Array.isArray(cache.pairs)) return null;
   return cache;
@@ -92,7 +95,7 @@ export async function runContactsDuplicateScan(
 ): Promise<{ pairCount: number; contactCount: number }> {
   const tenant = getRequestTenant();
   const preferences = await loadContactPreferences();
-  const total = tenant ? await repo.countByWorkspace(tenant, { deleted: 'active' }) : 0;
+  const total = tenant ? await repo.countByWorkspace(tenant, { deleted: "active" }) : 0;
   await onProgress?.(0, Math.max(total, 1));
   const pairs = await findBlockedDuplicatePairs(preferences, repo);
 

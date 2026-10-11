@@ -89,9 +89,7 @@ export const ContactsList = React.memo(function ContactsList({
           hasActiveFilters={hasActiveFilters}
           viewingDeleted={viewingDeleted}
           onClearFilters={onClearFilters}
-          onShowActive={
-            onShowDeletedChange ? () => onShowDeletedChange(false) : undefined
-          }
+          onShowActive={onShowDeletedChange ? () => onShowDeletedChange(false) : undefined}
           clearFiltersLabel={t("contacts.clearFilters")}
           showActiveLabel={t("contacts.showActive")}
         />

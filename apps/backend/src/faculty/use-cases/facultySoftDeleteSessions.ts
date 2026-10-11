@@ -1,12 +1,14 @@
-import type { Faculty } from '@mms/shared';
+import type { Faculty } from "@mms/shared";
 
 /**
  * Revokes all sessions for users linked to the soft-deleted faculty members.
  */
 export async function revokeFacultySessions(tenant: string, members: Faculty[]): Promise<void> {
   try {
-    const { revokeAllUserSessions, revokeUserSessionKeys } = await import('../../services/session.service.js');
-    const { listAllTenantUsersByWorkspace } = await import('../../db/repositories/tenantUserRepository.js');
+    const { revokeAllUserSessions, revokeUserSessionKeys } =
+      await import("../../services/session.service.js");
+    const { listAllTenantUsersByWorkspace } =
+      await import("../../db/repositories/tenantUserRepository.js");
 
     for (const m of members) {
       await revokeAllUserSessions(String(m.id));

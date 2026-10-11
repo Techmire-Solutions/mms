@@ -2,25 +2,25 @@
  * @file examinationsModuleManifest.ts
  * @description Examinations module manifest, DTO validation schemas, and types.
  */
-import type { Permission } from './permissions.js';
-import { z } from 'zod';
-import { isoDateSchema } from './isoDateSchema.js';
+import type { Permission } from "./permissions.js";
+import { z } from "zod";
+import { isoDateSchema } from "./isoDateSchema.js";
 
 /** Zod schema for single Exam record. */
 export const examRecordSchema = z
   .object({
     id: z.string(),
     name: z.string(),
-    subject: z.string().default(''),
+    subject: z.string().default(""),
     totalMarks: z.number().default(100),
     passingMarks: z.number().default(50),
     date: z.string(),
     duration: z.number().default(60),
     classIds: z.array(z.string()).default([]),
     status: z
-      .enum(['completed', 'scheduled', 'cancelled', 'upcoming', 'ongoing'])
-      .default('upcoming'),
-    description: z.string().default(''),
+      .enum(["completed", "scheduled", "cancelled", "upcoming", "ongoing"])
+      .default("upcoming"),
+    description: z.string().default(""),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
     deletionReason: z.string().nullable().optional(),
@@ -35,18 +35,18 @@ export const examRecordSchema = z
 export const examRecordInsertSchema = z
   .object({
     id: z.string().optional(),
-    name: z.string().min(1, 'Exam name is required'),
-    subject: z.string().optional().default(''),
+    name: z.string().min(1, "Exam name is required"),
+    subject: z.string().optional().default(""),
     totalMarks: z.number().positive().default(100),
     passingMarks: z.number().nonnegative().default(50),
     date: isoDateSchema,
     duration: z.number().positive().default(60),
     classIds: z.array(z.string()).optional().default([]),
     status: z
-      .enum(['completed', 'scheduled', 'cancelled', 'upcoming', 'ongoing'])
+      .enum(["completed", "scheduled", "cancelled", "upcoming", "ongoing"])
       .optional()
-      .default('upcoming'),
-    description: z.string().optional().default(''),
+      .default("upcoming"),
+    description: z.string().optional().default(""),
   })
   .strict();
 
@@ -80,8 +80,8 @@ export const examResultRecordSchema = z
 export const examResultRecordInsertSchema = z
   .object({
     id: z.string().optional(),
-    examId: z.string().min(1, 'Exam ID is required'),
-    studentId: z.string().min(1, 'Student ID is required'),
+    examId: z.string().min(1, "Exam ID is required"),
+    studentId: z.string().min(1, "Student ID is required"),
     marksObtained: z.number().nonnegative().default(0),
   })
   .strict();
@@ -95,17 +95,17 @@ export const examResultListSchema = z.array(examResultRecordSchema);
 
 /** Examinations module manifest — aligns with MMS universal module architecture. */
 export const EXAMINATIONS_MODULE_MANIFEST = {
-  moduleId: 'examinations',
-  entityType: 'Exam',
-  collectionKey: 'exams',
-  resultsCollectionKey: 'exam_results',
-  settingsObjectKey: 'examinations_settings',
-  examColumnPreferencesObjectKey: 'examination_exam_user_column_preferences',
-  resultsColumnPreferencesObjectKey: 'examination_results_user_column_preferences',
-  restBasePath: '/api/examinations',
-  analyticsCategory: 'examinations',
-  tiers: ['work', 'reports', 'setup'] as const,
-  setupSubTabs: ['preferences', 'templates'] as const,
+  moduleId: "examinations",
+  entityType: "Exam",
+  collectionKey: "exams",
+  resultsCollectionKey: "exam_results",
+  settingsObjectKey: "examinations_settings",
+  examColumnPreferencesObjectKey: "examination_exam_user_column_preferences",
+  resultsColumnPreferencesObjectKey: "examination_results_user_column_preferences",
+  restBasePath: "/api/examinations",
+  analyticsCategory: "examinations",
+  tiers: ["work", "reports", "setup"] as const,
+  setupSubTabs: ["preferences", "templates"] as const,
   softDelete: {
     workExcludesDeleted: true,
     reportsIncludeDeleted: false,
@@ -114,17 +114,17 @@ export const EXAMINATIONS_MODULE_MANIFEST = {
     retentionDays: null,
   },
   permissions: {
-    read: 'students.read',
-    write: 'students.write',
-    delete: 'students.write',
-    setupView: 'configuration.view',
-    setupWrite: 'settings.global.write',
-    export: 'students.read',
-    reports: 'students.read',
+    read: "students.read",
+    write: "students.write",
+    delete: "students.write",
+    setupView: "configuration.view",
+    setupWrite: "settings.global.write",
+    export: "students.read",
+    reports: "students.read",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ['exams', 'results'] as const,
-    bulkActions: ['delete'] as const,
+    directoryViews: ["exams", "results"] as const,
+    bulkActions: ["delete"] as const,
   },
   defaultPageSize: 12,
   maxPageSize: 100,
@@ -132,4 +132,3 @@ export const EXAMINATIONS_MODULE_MANIFEST = {
 
 export type ExaminationsModuleManifest = typeof EXAMINATIONS_MODULE_MANIFEST;
 export type ExaminationsModuleTier = (typeof EXAMINATIONS_MODULE_MANIFEST.tiers)[number];
-

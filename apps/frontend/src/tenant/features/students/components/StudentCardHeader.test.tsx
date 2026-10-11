@@ -34,7 +34,7 @@ describe("StudentCardHeader", () => {
         displayName="Ali Hassan"
         onSelectOne={vi.fn()}
         onViewStudent={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Ali Hassan");
@@ -56,7 +56,7 @@ describe("StudentCardHeader", () => {
         onSelectOne={vi.fn()}
         onViewStudent={vi.fn()}
         isColumnVisible={(key) => key === "parents" || key === "gender"}
-      />
+      />,
     );
 
     expect(html).toContain("Ali Hassan");
@@ -73,7 +73,7 @@ describe("StudentCardHeader", () => {
         onSelectOne={vi.fn()}
         onViewStudent={vi.fn()}
         isColumnVisible={(key) => key !== "parents"}
-      />
+      />,
     );
 
     expect(html).toContain("Ali Hassan");
@@ -95,7 +95,7 @@ describe("StudentCardHeader", () => {
         isSelected={false}
         onSelectOne={vi.fn()}
         onViewStudent={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Uncle Tariq");
@@ -115,7 +115,7 @@ describe("StudentCardHeader", () => {
         isSelected={false}
         onSelectOne={vi.fn()}
         onViewStudent={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Hassan Ali");
@@ -136,7 +136,7 @@ describe("StudentCardHeader", () => {
         isSelected={false}
         onSelectOne={vi.fn()}
         onViewStudent={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Ali Hassan");
@@ -152,7 +152,7 @@ describe("StudentCardHeader", () => {
         isSelected={true}
         onSelectOne={vi.fn()}
         onViewStudent={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain('aria-checked="true"');

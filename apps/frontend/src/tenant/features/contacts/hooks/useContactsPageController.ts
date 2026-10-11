@@ -50,7 +50,10 @@ export function useContactsPageController() {
   const messaging = useContactsMessagingActions();
 
   const [activeTab, setActiveTab] = usePersistedTabState<string>("contacts_active_tab", "work");
-  const effectiveTab = resolveModuleTierTab(activeTab, visibleTopTabs.map((tab) => tab.id));
+  const effectiveTab = resolveModuleTierTab(
+    activeTab,
+    visibleTopTabs.map((tab) => tab.id),
+  );
 
   const handleGoogleContactsOAuth = useCallback(() => {
     setActiveTab("setup");

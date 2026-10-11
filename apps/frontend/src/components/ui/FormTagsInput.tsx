@@ -12,7 +12,13 @@ interface TagsInputProps {
   name?: string;
 }
 
-export function TagsInput({ selected = [], predefined = [], onChange, id, name }: TagsInputProps): React.JSX.Element {
+export function TagsInput({
+  selected = [],
+  predefined = [],
+  onChange,
+  id,
+  name,
+}: TagsInputProps): React.JSX.Element {
   const { t } = useTranslation();
   const [inputVal, setInputVal] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,17 +75,19 @@ export function TagsInput({ selected = [], predefined = [], onChange, id, name }
 
       {predefined.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {predefined.filter((predefinedTag) => !selectedSet.has(predefinedTag)).map((tag) => (
-            <Button
-              key={tag}
-              type="button"
-              variant="outline"
-              onClick={() => toggle(tag)}
-              className="inline-flex items-center justify-center min-h-11 min-w-11 px-3 rounded-md text-xs font-medium border border-border bg-muted/50 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all"
-            >
-              + {tag}
-            </Button>
-          ))}
+          {predefined
+            .filter((predefinedTag) => !selectedSet.has(predefinedTag))
+            .map((tag) => (
+              <Button
+                key={tag}
+                type="button"
+                variant="outline"
+                onClick={() => toggle(tag)}
+                className="inline-flex items-center justify-center min-h-11 min-w-11 px-3 rounded-md text-xs font-medium border border-border bg-muted/50 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all"
+              >
+                + {tag}
+              </Button>
+            ))}
         </div>
       )}
 

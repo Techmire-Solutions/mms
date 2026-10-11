@@ -1,14 +1,12 @@
 import React from "react";
 import { BookOpen } from "lucide-react";
-import { type Account, type JournalEntry, type FiscalYear } from '@/lib/data/accountingData';
+import { type Account, type JournalEntry, type FiscalYear } from "@/lib/data/accountingData";
 import { FormModal } from "@/components/ui/FormModal";
 import { Button } from "@/components/ui/button";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
 import { JournalEntryLinesEditor } from "./JournalEntryLinesEditor";
-import {
-  JournalEntryFormDetailsSection,
-} from "./JournalEntryFormDetailsSection";
+import { JournalEntryFormDetailsSection } from "./JournalEntryFormDetailsSection";
 import { JournalEntryFormTagsSection } from "./JournalEntryFormTagsSection";
 import { useJournalEntryForm } from "./useJournalEntryForm";
 import { useAccountQuickCreate } from "./useAccountQuickCreate";
@@ -23,7 +21,9 @@ interface JournalEntryFormProps {
   onClose: () => void;
   initial?: JournalEntry | null;
   fiscalYears: FiscalYear[];
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
 }
 
 export function JournalEntryForm({
@@ -57,14 +57,20 @@ export function JournalEntryForm({
     errorMessages,
   } = useJournalEntryForm({ accounts, entries, onSave, initial, fiscalYears });
   const journalTemplates = useJournalTemplates(accounts);
-  const lineAssist = useJournalLineAssist({ form, setForm, updateLine, toggleTag, templates: journalTemplates.templates });
+  const lineAssist = useJournalLineAssist({
+    form,
+    setForm,
+    updateLine,
+    toggleTag,
+    templates: journalTemplates.templates,
+  });
 
   const accountQuickCreate = useAccountQuickCreate({
     accounts,
     onAccountsChange,
     onSelectAccount: (target, accountId) => {
-      if (target.kind === 'line') {
-        updateLine(target.lineIndex, 'account_id', accountId);
+      if (target.kind === "line") {
+        updateLine(target.lineIndex, "account_id", accountId);
       }
     },
   });
@@ -74,7 +80,9 @@ export function JournalEntryForm({
       <FormModal
         open={!accountQuickCreate.open}
         onClose={onClose}
-        title={isEdit ? t("accounting.journal.form.editTitle") : t("accounting.journal.form.newTitle")}
+        title={
+          isEdit ? t("accounting.journal.form.editTitle") : t("accounting.journal.form.newTitle")
+        }
         subtitle={activeFiscalYear || undefined}
         icon={BookOpen}
         size="xl"
@@ -83,12 +91,21 @@ export function JournalEntryForm({
         progressLabel={t("common.formProgress")}
         cancelLabel={t("accounting.journal.form.cancel")}
         saveLabel={t("accounting.journal.form.postEntry")}
-        onSave={async () => { await saveEntry("posted"); }}
+        onSave={async () => {
+          await saveEntry("posted");
+        }}
         saving={submitting}
         saveDisabled={!isBalanced || submitting}
         error={errorMessages}
         footerStart={
-          <Button type="button" variant="outline" disabled={submitting} onClick={async () => { await saveEntry("draft"); }}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={submitting}
+            onClick={async () => {
+              await saveEntry("draft");
+            }}
+          >
             {t("accounting.journal.form.saveDraft")}
           </Button>
         }
@@ -126,9 +143,15 @@ export function JournalEntryForm({
             onUpdateLine={lineAssist.updateLineAssisted}
             lockedSideFor={lineAssist.lockedSideFor}
             lockTemplateName={lineAssist.lockTemplateName}
-            mirror={lineAssist.canMirror ? { checked: lineAssist.mirrorAmounts, onChange: lineAssist.setMirrorAmounts } : undefined}
+            mirror={
+              lineAssist.canMirror
+                ? { checked: lineAssist.mirrorAmounts, onChange: lineAssist.setMirrorAmounts }
+                : undefined
+            }
             canAddAccount={accountQuickCreate.canAdd}
-            onOpenAddAccount={(lineIndex) => accountQuickCreate.openCreate({ kind: 'line', lineIndex })}
+            onOpenAddAccount={(lineIndex) =>
+              accountQuickCreate.openCreate({ kind: "line", lineIndex })
+            }
           />
         </form>
       </FormModal>

@@ -1,8 +1,13 @@
-import { z } from 'zod';
-import type { SerializedEntityAuditFields } from './softDelete.js';
+import { z } from "zod";
+import type { SerializedEntityAuditFields } from "./softDelete.js";
 
 /** Status of WhatsApp registration checks for phone numbers. */
-export const WHATSAPP_STATUS_VALUES = ['PENDING', 'REGISTERED', 'NOT_REGISTERED', 'FAILED'] as const;
+export const WHATSAPP_STATUS_VALUES = [
+  "PENDING",
+  "REGISTERED",
+  "NOT_REGISTERED",
+  "FAILED",
+] as const;
 
 /** Status of WhatsApp registration checks for phone numbers. */
 export type WhatsAppStatus = (typeof WHATSAPP_STATUS_VALUES)[number];
@@ -124,13 +129,13 @@ export interface RelationshipPair {
 
 /** Supported activity types recorded on a contact timeline. */
 export const CONTACT_ACTIVITY_TYPES = [
-  'note',
-  'stage_change',
-  'whatsapp',
-  'email',
-  'system',
-  'task',
-  'call',
+  "note",
+  "stage_change",
+  "whatsapp",
+  "email",
+  "system",
+  "task",
+  "call",
 ] as const;
 
 /** Type representing an activity log category on a contact timeline. */
@@ -172,7 +177,7 @@ export interface Contact extends SerializedEntityAuditFields {
   notes?: string;
 
   // Status & Scalar Extensions
-  whatsappStatus?: WhatsAppStatus | 'unknown';
+  whatsappStatus?: WhatsAppStatus | "unknown";
   lastCheckedAt?: string | null;
   phone?: string;
   email?: string;
@@ -206,8 +211,15 @@ export function getContactTags(
   if (Array.isArray(contact.tags) && contact.tags.length > 0) {
     return Array.from(new Set(contact.tags.map((t) => String(t).trim()).filter(Boolean)));
   }
-  if (typeof contact.tag === 'string' && contact.tag.trim()) {
-    return Array.from(new Set(contact.tag.split(',').map((t) => t.trim()).filter(Boolean)));
+  if (typeof contact.tag === "string" && contact.tag.trim()) {
+    return Array.from(
+      new Set(
+        contact.tag
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      ),
+    );
   }
   return [];
 }
@@ -215,14 +227,13 @@ export function getContactTags(
 /** Payload schema for bulk tagging contact records. */
 export const contactsBulkTagBodySchema = z
   .object({
-    ids: z.array(z.string().min(1)).min(1, 'At least one contact ID is required'),
+    ids: z.array(z.string().min(1)).min(1, "At least one contact ID is required"),
     addTags: z.array(z.string().trim().min(1)).optional(),
     removeTags: z.array(z.string().trim().min(1)).optional(),
   })
   .strict()
-  .refine(
-    (data) => (data.addTags?.length ?? 0) > 0 || (data.removeTags?.length ?? 0) > 0,
-    { message: 'At least one tag to add or remove must be provided' },
-  );
+  .refine((data) => (data.addTags?.length ?? 0) > 0 || (data.removeTags?.length ?? 0) > 0, {
+    message: "At least one tag to add or remove must be provided",
+  });
 
 export type ContactsBulkTagBody = z.infer<typeof contactsBulkTagBodySchema>;

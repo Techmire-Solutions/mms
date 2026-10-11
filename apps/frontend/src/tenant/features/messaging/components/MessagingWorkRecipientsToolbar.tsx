@@ -1,25 +1,26 @@
-import React, { type JSX } from 'react';
-import { CheckSquare } from 'lucide-react';
-import type { MessagingGenderFilter, MessagingRoleFilter, ModuleColumnRegistryEntry } from '@mms/shared';
-import { Button } from '@/components/ui/button';
+import React, { type JSX } from "react";
+import { CheckSquare } from "lucide-react";
+import type {
+  MessagingGenderFilter,
+  MessagingRoleFilter,
+  ModuleColumnRegistryEntry,
+} from "@mms/shared";
+import { Button } from "@/components/ui/button";
 import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from '@/components/ui/ModuleFiltersMenuButton';
-import { type ModuleColumnCustomizerLabels } from '@/components/ui/ModuleColumnCustomizer';
-import { FilterChips } from '@/components/ui/FilterChips';
-import {
-  WORK_TOOLBAR_TRIGGER,
-  WORK_TOOLBAR_TRIGGER_IDLE,
-} from '@/components/ui/formStyles';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useTranslation } from '@/hooks/useTranslation';
-import { cn } from '@/lib/utils';
-import { SEMANTIC_TEXT } from '@/lib/semanticTone';
-import { WorkTaskToolbar } from '@/components/common/work';
+} from "@/components/ui/ModuleFiltersMenuButton";
+import { type ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import { FilterChips } from "@/components/ui/FilterChips";
+import { WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE } from "@/components/ui/formStyles";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { WorkTaskToolbar } from "@/components/common/work";
 
-export const MESSAGING_RECIPIENTS_SEARCH_INPUT_ID = 'messaging-recipients-search';
+export const MESSAGING_RECIPIENTS_SEARCH_INPUT_ID = "messaging-recipients-search";
 
 export interface MessagingWorkRecipientsToolbarProps {
   viewMode: WorkDirectoryViewMode;
@@ -33,14 +34,14 @@ export interface MessagingWorkRecipientsToolbarProps {
   onSearchChange: (value: string) => void;
   onGenderFilterChange: (value: MessagingGenderFilter) => void;
   onRoleFilterChange: (value: MessagingRoleFilter) => void;
-  onSelectReachable: (kind: 'phone' | 'email') => void;
+  onSelectReachable: (kind: "phone" | "email") => void;
   columnRegistry?: ModuleColumnRegistryEntry[];
   updateUserColumnLayout?: (columns: ModuleColumnRegistryEntry[]) => void;
   onResetColumnLayout?: () => void;
   columnCustomizerLabels?: ModuleColumnCustomizerLabels;
 }
 
-export const MessagingWorkRecipientsToolbar = (function MessagingWorkRecipientsToolbar({
+export const MessagingWorkRecipientsToolbar = function MessagingWorkRecipientsToolbar({
   viewMode,
   onViewModeChange,
   searchContact,
@@ -59,8 +60,8 @@ export const MessagingWorkRecipientsToolbar = (function MessagingWorkRecipientsT
   columnCustomizerLabels,
 }: MessagingWorkRecipientsToolbarProps): JSX.Element {
   const { t } = useTranslation();
-  const defaultRole = roleOptions[0]?.value ?? 'all';
-  const defaultGender = genderOptions[0]?.value ?? 'all';
+  const defaultRole = roleOptions[0]?.value ?? "all";
+  const defaultGender = genderOptions[0]?.value ?? "all";
   const activeFilterCount =
     (roleFilter !== defaultRole ? 1 : 0) + (genderFilter !== defaultGender ? 1 : 0);
 
@@ -76,32 +77,44 @@ export const MessagingWorkRecipientsToolbar = (function MessagingWorkRecipientsT
 
   const chips = [
     ...(roleFilter !== defaultRole
-      ? [{ key: `role:${roleFilter}`, label: roleLabel(roleFilter), onRemove: () => onRoleFilterChange(defaultRole as MessagingRoleFilter) }]
+      ? [
+          {
+            key: `role:${roleFilter}`,
+            label: roleLabel(roleFilter),
+            onRemove: () => onRoleFilterChange(defaultRole as MessagingRoleFilter),
+          },
+        ]
       : []),
     ...(genderFilter !== defaultGender
-      ? [{ key: `gender:${genderFilter}`, label: genderLabel(genderFilter), onRemove: () => onGenderFilterChange(defaultGender as MessagingGenderFilter) }]
+      ? [
+          {
+            key: `gender:${genderFilter}`,
+            label: genderLabel(genderFilter),
+            onRemove: () => onGenderFilterChange(defaultGender as MessagingGenderFilter),
+          },
+        ]
       : []),
   ];
 
   return (
     <WorkTaskToolbar
-      regionLabel={t('messaging.stepSelectRecipients')}
+      regionLabel={t("messaging.stepSelectRecipients")}
       search={searchContact}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('messaging.search.placeholder')}
+      searchPlaceholder={t("messaging.search.placeholder")}
       searchId={MESSAGING_RECIPIENTS_SEARCH_INPUT_ID}
       hasActiveFilters={activeFilterCount > 0}
       onClearFilters={clearFilters}
-      clearFiltersLabel={t('common.clearFilters')}
+      clearFiltersLabel={t("common.clearFilters")}
       filterButton={
         <ModuleFilterDropdown
-          label={t('common.filters')}
+          label={t("common.filters")}
           activeCount={activeFilterCount}
-          clearLabel={t('common.clearFilters')}
+          clearLabel={t("common.clearFilters")}
           onClear={clearFilters}
         >
           <ModuleFilterRadioGroup
-            label={t('messaging.filterByRole')}
+            label={t("messaging.filterByRole")}
             value={roleFilter}
             onValueChange={(value) => onRoleFilterChange(value as MessagingRoleFilter)}
             options={roleOptions.map((option) => ({
@@ -112,7 +125,7 @@ export const MessagingWorkRecipientsToolbar = (function MessagingWorkRecipientsT
 
           <ModuleFilterDivider />
           <ModuleFilterRadioGroup
-            label={t('contacts.reportFields.gender')}
+            label={t("contacts.reportFields.gender")}
             value={genderFilter}
             onValueChange={(value) => onGenderFilterChange(value as MessagingGenderFilter)}
             options={genderOptions.map((option) => ({
@@ -142,21 +155,23 @@ export const MessagingWorkRecipientsToolbar = (function MessagingWorkRecipientsT
         type="button"
         variant="outline"
         disabled={selectingReachable}
-        onClick={() => onSelectReachable('phone')}
-        className={cn(WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE, 'text-xs font-semibold')}
+        onClick={() => onSelectReachable("phone")}
+        className={cn(WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE, "text-xs font-semibold")}
       >
-        <CheckSquare className={`me-1 h-3.5 w-3.5 ${SEMANTIC_TEXT.info}`} /> {t('messaging.selectAllValidPhone')}
+        <CheckSquare className={`me-1 h-3.5 w-3.5 ${SEMANTIC_TEXT.info}`} />{" "}
+        {t("messaging.selectAllValidPhone")}
       </Button>
 
       <Button
         type="button"
         variant="outline"
         disabled={selectingReachable}
-        onClick={() => onSelectReachable('email')}
-        className={cn(WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE, 'text-xs font-semibold')}
+        onClick={() => onSelectReachable("email")}
+        className={cn(WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE, "text-xs font-semibold")}
       >
-        <CheckSquare className={`me-1 h-3.5 w-3.5 ${SEMANTIC_TEXT.warning}`} /> {t('messaging.selectAllValidEmail')}
+        <CheckSquare className={`me-1 h-3.5 w-3.5 ${SEMANTIC_TEXT.warning}`} />{" "}
+        {t("messaging.selectAllValidEmail")}
       </Button>
     </WorkTaskToolbar>
   );
-});
+};

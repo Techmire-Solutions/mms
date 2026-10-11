@@ -1,5 +1,5 @@
-import type { BrandingThemeMode } from './brandingColorUtils.js';
-import { ensureAccessibleSemanticPair, brandingSurfaces } from './brandingCssContrast.js';
+import type { BrandingThemeMode } from "./brandingColorUtils.js";
+import { ensureAccessibleSemanticPair, brandingSurfaces } from "./brandingCssContrast.js";
 
 /**
  * Builds accessible semantic status fill and foreground tokens.
@@ -14,18 +14,18 @@ export function buildSemanticStatusTokens(
   surfaceHue = 0,
 ): Record<string, string> {
   const bases =
-    mode === 'light'
+    mode === "light"
       ? {
-          '--destructive': { h: 0, s: 72, l: 51 },
-          '--success': { h: 142, s: 71, l: 36 },
-          '--warning': { h: 32, s: 95, l: 44 },
-          '--info': { h: 217, s: 91, l: 52 },
+          "--destructive": { h: 0, s: 72, l: 51 },
+          "--success": { h: 142, s: 71, l: 36 },
+          "--warning": { h: 32, s: 95, l: 44 },
+          "--info": { h: 217, s: 91, l: 52 },
         }
       : {
-          '--destructive': { h: 0, s: 63, l: 31 },
-          '--success': { h: 142, s: 65, l: 32 },
-          '--warning': { h: 32, s: 90, l: 38 },
-          '--info': { h: 217, s: 88, l: 46 },
+          "--destructive": { h: 0, s: 63, l: 31 },
+          "--success": { h: 142, s: 65, l: 32 },
+          "--warning": { h: 32, s: 90, l: 38 },
+          "--info": { h: 217, s: 88, l: 46 },
         };
 
   const surfaces = brandingSurfaces(mode, surfaceHue);

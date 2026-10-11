@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 export interface UseModuleCreateHotkeyOptions {
   enabled: boolean;
@@ -17,19 +17,17 @@ export function useModuleCreateHotkey({ enabled, onCreate }: UseModuleCreateHotk
       const target = event.target as HTMLElement | null;
       if (
         target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.isContentEditable)
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
       ) {
         return;
       }
-      if ((event.metaKey || event.ctrlKey) && event.key?.toLowerCase() === 'n') {
+      if ((event.metaKey || event.ctrlKey) && event.key?.toLowerCase() === "n") {
         event.preventDefault();
         onCreate();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [enabled, onCreate]);
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface WorkspaceLogoProps {
   logoUrl?: string | null;
@@ -10,7 +10,7 @@ interface WorkspaceLogoProps {
 function WorkspaceLogo({
   logoUrl,
   madrasaName,
-  className = 'rounded-lg',
+  className = "rounded-lg",
 }: WorkspaceLogoProps): React.JSX.Element {
   if (logoUrl) {
     return (
@@ -37,4 +37,4 @@ function WorkspaceLogo({
   );
 }
 
-export default (WorkspaceLogo);
+export default WorkspaceLogo;

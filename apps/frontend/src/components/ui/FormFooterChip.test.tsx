@@ -1,10 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import {
-  FormFooterEntityChip,
-  FormFooterErrorChip,
-} from "./FormFooterChip";
+import { FormFooterEntityChip, FormFooterErrorChip } from "./FormFooterChip";
 
 describe("FormFooterChip Components", () => {
   describe("FormFooterEntityChip", () => {

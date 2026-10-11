@@ -1,22 +1,19 @@
-import type { ColumnRegistryEntry, FieldDefinition } from './contactTypes.js';
-import type { FacultySettings } from './facultyModuleSettings.js';
-import { FACULTY_LOCKED_ENABLED_TABS } from './moduleFieldSetupFaculty.js';
-import type { FacultyWorkColumnLabels } from './facultyDirectoryColumns.js';
+import type { ColumnRegistryEntry, FieldDefinition } from "./contactTypes.js";
+import type { FacultySettings } from "./facultyModuleSettings.js";
+import { FACULTY_LOCKED_ENABLED_TABS } from "./moduleFieldSetupFaculty.js";
+import type { FacultyWorkColumnLabels } from "./facultyDirectoryColumns.js";
 import {
   DEFAULT_FACULTY_COLUMN_REGISTRY,
   FACULTY_COLUMN_FIELD_MAPPING,
   facultyWorkColumnLabelsFrom,
-} from './facultyDirectoryColumns.js';
-import {
-  customFieldKeyFromColumnKey,
-  type ModuleColumnRegistryEntry,
-} from './moduleColumnCore.js';
-import { syncModuleColumnRegistryWithFields } from './moduleColumnRegistrySync.js';
+} from "./facultyDirectoryColumns.js";
+import { customFieldKeyFromColumnKey, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
+import { syncModuleColumnRegistryWithFields } from "./moduleColumnRegistrySync.js";
 import {
   listEnabledCustomFacultyFormFields,
   resolveFacultyFieldsMapForColumnSync,
-} from './facultyFormCustomFields.js';
-import { resolveFacultyEnabledTabIds } from './facultyEnabledTabs.js';
+} from "./facultyFormCustomFields.js";
+import { resolveFacultyEnabledTabIds } from "./facultyEnabledTabs.js";
 
 export type { FacultyWorkColumnLabels };
 
@@ -95,7 +92,7 @@ export function buildFacultyWorkColumnRegistry(
       enabled: col.enabled !== false,
       order: col.order,
       width: col.width,
-      fixed: col.fixed || col.key === 'name',
+      fixed: col.fixed || col.key === "name",
     };
   });
 }

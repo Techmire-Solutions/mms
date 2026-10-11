@@ -6,37 +6,39 @@ import {
   FACULTY_MODULE_MANIFEST,
   type FacultyQuickFilter,
   type FacultySortField,
-} from '@mms/shared';
-import { apiContract, tsr } from '@/lib/api';
-import { queryOptions } from '@tanstack/react-query';
-import { FACULTY_QUERY_KEY } from '@/tenant/features/faculty/hooks/facultyQueryKeys';
+} from "@mms/shared";
+import { apiContract, tsr } from "@/lib/api";
+import { queryOptions } from "@tanstack/react-query";
+import { FACULTY_QUERY_KEY } from "@/tenant/features/faculty/hooks/facultyQueryKeys";
 import {
   facultyListQueryKeyParams,
   facultyPaginatedQueryKey,
   sameFacultyListFilters,
   type FacultyPaginatedParams,
-} from '@/tenant/features/faculty/hooks/facultyListQueryBuilders';
+} from "@/tenant/features/faculty/hooks/facultyListQueryBuilders";
 
 function facultyPaginatedParamsFromRecord(query: Record<string, unknown>): FacultyPaginatedParams {
-  const page = typeof query.page === 'number' ? query.page : Number(query.page ?? 1);
-  const limit = typeof query.limit === 'number'
-    ? query.limit
-    : Number(query.limit ?? FACULTY_MODULE_MANIFEST.defaultPageSize);
+  const page = typeof query.page === "number" ? query.page : Number(query.page ?? 1);
+  const limit =
+    typeof query.limit === "number"
+      ? query.limit
+      : Number(query.limit ?? FACULTY_MODULE_MANIFEST.defaultPageSize);
   return {
     page: Number.isFinite(page) ? page : 1,
     limit: Number.isFinite(limit) ? limit : FACULTY_MODULE_MANIFEST.defaultPageSize,
-    search: typeof query.search === 'string' ? query.search : undefined,
-    status: typeof query.status === 'string' ? query.status : undefined,
-    specialization: typeof query.specialization === 'string' ? query.specialization : undefined,
-    gender: typeof query.gender === 'string' ? query.gender : undefined,
-    department: typeof query.department === 'string' ? query.department : undefined,
-    designation: typeof query.designation === 'string' ? query.designation : undefined,
+    search: typeof query.search === "string" ? query.search : undefined,
+    status: typeof query.status === "string" ? query.status : undefined,
+    specialization: typeof query.specialization === "string" ? query.specialization : undefined,
+    gender: typeof query.gender === "string" ? query.gender : undefined,
+    department: typeof query.department === "string" ? query.department : undefined,
+    designation: typeof query.designation === "string" ? query.designation : undefined,
     reportingFacultyId:
-      typeof query.reportingFacultyId === 'string' ? query.reportingFacultyId : undefined,
+      typeof query.reportingFacultyId === "string" ? query.reportingFacultyId : undefined,
     quickFilter:
-      typeof query.quickFilter === 'string' ? (query.quickFilter as FacultyQuickFilter) : undefined,
-    sortField: typeof query.sortField === 'string' ? (query.sortField as FacultySortField) : undefined,
-    sortDir: query.sortDir === 'desc' ? 'desc' : query.sortDir === 'asc' ? 'asc' : undefined,
+      typeof query.quickFilter === "string" ? (query.quickFilter as FacultyQuickFilter) : undefined,
+    sortField:
+      typeof query.sortField === "string" ? (query.sortField as FacultySortField) : undefined,
+    sortDir: query.sortDir === "desc" ? "desc" : query.sortDir === "asc" ? "asc" : undefined,
     includeDeleted: query.includeDeleted === true,
   };
 }
@@ -59,12 +61,13 @@ export function facultyListQueryOptions(
         fetchOptions: { signal },
       });
       if (response.status !== 200) {
-        throw new Error(messages?.loadFailed ?? 'Failed to fetch faculty');
+        throw new Error(messages?.loadFailed ?? "Failed to fetch faculty");
       }
       return response.body;
     },
     placeholderData: (previousData, previousQuery) => {
-      const previousKey = (previousQuery as unknown as { queryKey?: readonly unknown[] })?.queryKey?.[3];
+      const previousKey = (previousQuery as unknown as { queryKey?: readonly unknown[] })
+        ?.queryKey?.[3];
       return sameFacultyListFilters(
         previousKey as ReturnType<typeof facultyListQueryKeyParams> | undefined,
         keyParams,
@@ -87,7 +90,8 @@ export function useFacultyContractList(query: Record<string, unknown>, enabled =
     staleTime: 15_000,
     enabled,
     placeholderData: (previousData: unknown, previousQuery: unknown) => {
-      const previousKey = (previousQuery as unknown as { queryKey?: readonly unknown[] })?.queryKey?.[3];
+      const previousKey = (previousQuery as unknown as { queryKey?: readonly unknown[] })
+        ?.queryKey?.[3];
       return sameFacultyListFilters(
         previousKey as ReturnType<typeof facultyListQueryKeyParams> | undefined,
         keyParams,
@@ -102,7 +106,7 @@ export function useFacultyContractList(query: Record<string, unknown>, enabled =
 export function useFacultyContractGet(id: string, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.get.useQuery({
-    queryKey: [...FACULTY_QUERY_KEY, 'contract-get', id],
+    queryKey: [...FACULTY_QUERY_KEY, "contract-get", id],
     queryData: { params: { id } },
     enabled,
     staleTime: 30_000,
@@ -113,7 +117,7 @@ export function useFacultyContractGet(id: string, enabled = true) {
 export function useFacultyContractNextEmployeeId(query: { prefix?: string }, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return facultyClient.nextEmployeeId.useQuery({
-    queryKey: [...FACULTY_QUERY_KEY, 'next-employee-id', query],
+    queryKey: [...FACULTY_QUERY_KEY, "next-employee-id", query],
     queryData: { query },
     enabled,
     staleTime: 0,

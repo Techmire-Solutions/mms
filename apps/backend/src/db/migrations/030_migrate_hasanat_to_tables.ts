@@ -7,17 +7,14 @@ import {
   type StockBatch,
   type Distribution,
   type Redemption,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceDenomsForWorkspace,
   replaceBatchesForWorkspace,
   replaceDistributionsForWorkspace,
   replaceRedemptionsForWorkspace,
-} from '../repositories/hasanatRepository.js';
+} from "../repositories/hasanatRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -41,7 +38,7 @@ export async function runMigration030(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
 
     // 1. Denominations
     const legacyDenoms = await getCollectionByStorageName(`${prefix}hasanat_denoms`);
@@ -85,6 +82,6 @@ export async function runMigration030(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 030] No legacy hasanat records to import.');
+    console.log("[Migration 030] No legacy hasanat records to import.");
   }
 }

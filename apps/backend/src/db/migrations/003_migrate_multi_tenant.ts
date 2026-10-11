@@ -1,10 +1,10 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes } from "node:crypto";
 import {
   WORKSPACES_COLLECTION,
   tenantCollectionKey,
   tenantObjectKey,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   deleteCollectionByStorageName,
   deleteObjectByStorageKey,
@@ -16,7 +16,7 @@ import {
   runInTransaction,
   saveCollection,
   saveObject,
-} from '../database.js';
+} from "../database.js";
 
 interface LegacyWorkspace {
   subdomain: string;
@@ -45,21 +45,22 @@ export async function runMigration003(): Promise<void> {
     names = await listCollectionStorageNames();
   } catch (err: unknown) {
     // Fresh schema: objects table doesn't exist yet — nothing to migrate.
-    const code = (err as { cause?: { code?: string } })?.cause?.code ?? (err as { code?: string })?.code;
-    if (code === '42P01') return;
+    const code =
+      (err as { cause?: { code?: string } })?.cause?.code ?? (err as { code?: string })?.code;
+    if (code === "42P01") return;
     throw err;
   }
-  if (names.some((name) => name.startsWith('t:'))) {
+  if (names.some((name) => name.startsWith("t:"))) {
     return;
   }
 
-  const legacyWorkspace = (await getObject('workspace')) as LegacyWorkspace | null;
+  const legacyWorkspace = (await getObject("workspace")) as LegacyWorkspace | null;
   if (!legacyWorkspace?.subdomain) {
     return;
   }
 
   const subdomain = legacyWorkspace.subdomain;
-  const workspaceId = randomBytes(8).toString('hex');
+  const workspaceId = randomBytes(8).toString("hex");
 
   await runInTransaction(async () => {
     for (const name of names) {
@@ -72,7 +73,7 @@ export async function runMigration003(): Promise<void> {
 
     const objectKeys = await listObjectStorageKeys();
     for (const key of objectKeys) {
-      if (key === 'workspace') {
+      if (key === "workspace") {
         await deleteObjectByStorageKey(key);
         continue;
       }
@@ -82,7 +83,7 @@ export async function runMigration003(): Promise<void> {
       await deleteObjectByStorageKey(key);
     }
 
-    const usersKey = tenantCollectionKey(subdomain, 'users');
+    const usersKey = tenantCollectionKey(subdomain, "users");
     const users = (await getCollectionByStorageName(usersKey)) as LegacyStoredUser[] | null;
     if (Array.isArray(users)) {
       const normalized = users.map((user) => ({

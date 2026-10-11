@@ -17,16 +17,16 @@ import {
   type StudentExportColumn,
   type StudentsListQuery,
   type StudentsSettings,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleExportService,
   type ModuleExportQueryInput,
   type ModuleExportOptions,
   type ModuleExportResult,
-} from '../lib/createModuleExportService.js';
-import { normalizeIncludeDeletedFlag } from '../lib/csvExportStreamFactory.js';
-import { loadStudentFieldConfig } from './studentConfigService.js';
-import { loadStudentsByIds, loadStudentsPage } from '../students/use-cases/studentUseCases.js';
+} from "../lib/createModuleExportService.js";
+import { normalizeIncludeDeletedFlag } from "../lib/csvExportStreamFactory.js";
+import { loadStudentFieldConfig } from "./studentConfigService.js";
+import { loadStudentsByIds, loadStudentsPage } from "../students/use-cases/studentUseCases.js";
 
 export type StudentsExportQueryInput = ModuleExportQueryInput<StudentsListQuery>;
 export type StudentsCsvExportOptions = ModuleExportOptions<StudentExportColumn>;
@@ -81,7 +81,7 @@ const studentsCsv = createModuleExportService<
         const chunkExportRows = buildStudentsExportRows(chunk, columns);
         const dataRows = chunkExportRows.slice(1);
         if (dataRows.length > 0) {
-          yield '\n' + buildCsvContent(dataRows);
+          yield "\n" + buildCsvContent(dataRows);
         }
       }
     }

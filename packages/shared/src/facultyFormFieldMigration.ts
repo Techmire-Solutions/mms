@@ -2,29 +2,31 @@
  * @file facultyFormFieldMigration.ts
  * @description Legacy Faculty Setup field-key migration and product locks.
  */
-import { INITIAL_FACULTY_FIELD_SEED, findFacultySeedField } from './moduleFieldSetupPersons.js';
-import type { FieldDefinition } from './contactFieldSchemaTypes.js';
+import { INITIAL_FACULTY_FIELD_SEED, findFacultySeedField } from "./moduleFieldSetupPersons.js";
+import type { FieldDefinition } from "./contactFieldSchemaTypes.js";
 
 const RETIRED_FACULTY_FORM_FIELDS = new Set([
-  'specialization',
-  'qualification',
-  'hierarchyRank',
-  'reportingFacultyId',
-  'performanceRating',
-  'profileStatus',
+  "specialization",
+  "qualification",
+  "hierarchyRank",
+  "reportingFacultyId",
+  "performanceRating",
+  "profileStatus",
 ]);
 
 /** Legacy seed keys renamed by the Faculty Management model; stored configs are remapped on read. */
 const LEGACY_FACULTY_FIELD_KEY_RENAMES: Readonly<Record<string, string>> = {
-  joinDate: 'employmentStartDate',
-  profileStatus: 'employDesignationStatus',
+  joinDate: "employmentStartDate",
+  profileStatus: "employDesignationStatus",
 };
 
 /** Legacy seed keys with no successor (department now derives from the designation). */
-const LEGACY_FACULTY_FIELD_KEYS_DROPPED = new Set(['department', 'departmentId', 'designation']);
+const LEGACY_FACULTY_FIELD_KEYS_DROPPED = new Set(["department", "departmentId", "designation"]);
 
 /** Fields whose enablement/required flags are product-owned and never overridable in Setup. */
-const LOCKED_FACULTY_FIELD_FLAGS: Readonly<Record<string, { enabled: boolean; required: boolean }>> = {
+const LOCKED_FACULTY_FIELD_FLAGS: Readonly<
+  Record<string, { enabled: boolean; required: boolean }>
+> = {
   contactId: { enabled: true, required: true },
   designationId: { enabled: true, required: true },
   designationStartDate: { enabled: true, required: true },
@@ -52,7 +54,12 @@ function migrateLegacyFacultyFieldKeys(
       const renamedKey = LEGACY_FACULTY_FIELD_KEY_RENAMES[field.key];
       const seedField = renamedKey ? findFacultySeedField(renamedKey) : undefined;
       const next = seedField
-        ? { ...seedField, enabled: field.enabled, required: field.required ?? seedField.required, order: field.order }
+        ? {
+            ...seedField,
+            enabled: field.enabled,
+            required: field.required ?? seedField.required,
+            order: field.order,
+          }
         : field;
       if (present.has(next.key)) continue;
       const canonicalTab = facultySeedTabForKey(next.key);

@@ -38,9 +38,7 @@ describe("prepareContactPreferencesSetupSave", () => {
 
   it("rejects empty or incomplete country rows", () => {
     expect(
-      prepareContactPreferencesSetupSave(DEFAULT_CONTACT_PREFERENCES, [
-        { country: "", code: "" },
-      ]),
+      prepareContactPreferencesSetupSave(DEFAULT_CONTACT_PREFERENCES, [{ country: "", code: "" }]),
     ).toEqual({ ok: false, issue: "emptyCountryRow" });
     expect(
       prepareContactPreferencesSetupSave(DEFAULT_CONTACT_PREFERENCES, [

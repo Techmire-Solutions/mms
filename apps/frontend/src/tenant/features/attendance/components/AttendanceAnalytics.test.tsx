@@ -37,9 +37,7 @@ vi.mock("./AttendanceAnalyticsInsights", () => ({
 
 describe("AttendanceAnalytics Component", () => {
   it("renders metrics grid and insights", () => {
-    const html = renderToStaticMarkup(
-      <AttendanceAnalytics filters={{}} />,
-    );
+    const html = renderToStaticMarkup(<AttendanceAnalytics filters={{}} />);
 
     expect(html).toContain("attendance.analytics.kpi.overallAttendance:92%");
     expect(html).toContain("Insights");
@@ -48,7 +46,11 @@ describe("AttendanceAnalytics Component", () => {
   it("renders chart panels", () => {
     const html = renderToStaticMarkup(
       <AttendanceAnalyticsChartPanels
-        t={((key: string) => key) as unknown as Parameters<typeof AttendanceAnalyticsChartPanels>[0]["t"]}
+        t={
+          ((key: string) => key) as unknown as Parameters<
+            typeof AttendanceAnalyticsChartPanels
+          >[0]["t"]
+        }
         colors={["#000"]}
         classStats={[]}
         monthlyTrend={[]}

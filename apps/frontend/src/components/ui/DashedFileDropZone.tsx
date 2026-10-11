@@ -102,7 +102,10 @@ export function DashedFileDropZone({
       )}
     >
       {isUploading ? (
-        <Loader2 className={cn("animate-spin", browseLabel ? "h-6 w-6" : "h-7 w-7")} aria-hidden="true" />
+        <Loader2
+          className={cn("animate-spin", browseLabel ? "h-6 w-6" : "h-7 w-7")}
+          aria-hidden="true"
+        />
       ) : (
         <Icon className={browseLabel ? "h-6 w-6" : "h-7 w-7"} aria-hidden="true" />
       )}

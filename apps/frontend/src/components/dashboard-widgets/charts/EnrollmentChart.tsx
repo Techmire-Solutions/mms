@@ -1,8 +1,5 @@
 import { useBrandedDashboardChartColors } from "@/components/dashboard-widgets/useBrandedDashboardChartColors";
-import {
-  ComposedChart, Area, Line, Bar, XAxis, YAxis,
-  Tooltip,
-} from "recharts";
+import { ComposedChart, Area, Line, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
 import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +60,10 @@ export default function EnrollmentChart({ isEditMode = false }: { isEditMode?: b
   const activeMonths = months.slice(-monthsCount);
 
   const enrollmentData: EnrollmentPoint[] = (() => {
-    const trendsEnvelope = reportAggregates as { body?: { cumulativeTrends?: Array<{ monthKey: string; students: number }> }; cumulativeTrends?: Array<{ monthKey: string; students: number }> } | null;
+    const trendsEnvelope = reportAggregates as {
+      body?: { cumulativeTrends?: Array<{ monthKey: string; students: number }> };
+      cumulativeTrends?: Array<{ monthKey: string; students: number }>;
+    } | null;
     const trends = trendsEnvelope?.body?.cumulativeTrends ?? trendsEnvelope?.cumulativeTrends ?? [];
     const byKey = new Map<string, number>(
       trends.map((trend) => [trend.monthKey, Number(trend.students) || 0]),
@@ -98,7 +98,10 @@ export default function EnrollmentChart({ isEditMode = false }: { isEditMode?: b
                 colorValue={colorTheme}
                 colorOptions={ENROLLMENT_CHART_COLOR_OPTIONS}
                 onColorChange={(value) => {
-                  updatePref("enrollmentChartColor", value as DashboardPreferences["enrollmentChartColor"]);
+                  updatePref(
+                    "enrollmentChartColor",
+                    value as DashboardPreferences["enrollmentChartColor"],
+                  );
                 }}
               >
                 <Select
@@ -107,18 +110,32 @@ export default function EnrollmentChart({ isEditMode = false }: { isEditMode?: b
                     updatePref("enrollmentChartPeriod", Number(value));
                   }}
                 >
-                  <SelectTrigger className={FORM_SELECT_MINI} aria-label={t("dashboard.widgets.selectPeriod")}>
+                  <SelectTrigger
+                    className={FORM_SELECT_MINI}
+                    aria-label={t("dashboard.widgets.selectPeriod")}
+                  >
                     <SelectValue placeholder={t("dashboard.widgets.selectPeriod")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="3">{t("dashboard.charts.monthsRange", { count: 3 })}</SelectItem>
-                    <SelectItem value="6">{t("dashboard.charts.monthsRange", { count: 6 })}</SelectItem>
-                    <SelectItem value="10">{t("dashboard.charts.monthsRange", { count: 10 })}</SelectItem>
+                    <SelectItem value="3">
+                      {t("dashboard.charts.monthsRange", { count: 3 })}
+                    </SelectItem>
+                    <SelectItem value="6">
+                      {t("dashboard.charts.monthsRange", { count: 6 })}
+                    </SelectItem>
+                    <SelectItem value="10">
+                      {t("dashboard.charts.monthsRange", { count: 10 })}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </ChartPrefsControlGroup>
             )}
-            <Badge pill variant="outline" className={`gap-1.5 px-2.5 py-1 ${activeColor.bg} ${activeColor.text}`} aria-label={`Growth: ${growth}%`}>
+            <Badge
+              pill
+              variant="outline"
+              className={`gap-1.5 px-2.5 py-1 ${activeColor.bg} ${activeColor.text}`}
+              aria-label={`Growth: ${growth}%`}
+            >
               <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
               <span className="text-xs font-bold tabular-nums">+{growth}%</span>
             </Badge>
@@ -135,8 +152,15 @@ export default function EnrollmentChart({ isEditMode = false }: { isEditMode?: b
           </defs>
           <ChartGrid vertical={false} />
           <XAxis dataKey="month" tick={chartAxisTick(11, true)} {...CHART_AXIS_LINE_PROPS} />
-          <YAxis tick={chartAxisTick(11, true)} {...CHART_AXIS_LINE_PROPS} domain={["dataMin - 20", "dataMax + 10"]} />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: activeColor.stroke, strokeWidth: 1, strokeDasharray: "4 4" }} />
+          <YAxis
+            tick={chartAxisTick(11, true)}
+            {...CHART_AXIS_LINE_PROPS}
+            domain={["dataMin - 20", "dataMax + 10"]}
+          />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ stroke: activeColor.stroke, strokeWidth: 1, strokeDasharray: "4 4" }}
+          />
 
           {chartType === "area" && (
             <Area
@@ -146,7 +170,12 @@ export default function EnrollmentChart({ isEditMode = false }: { isEditMode?: b
               strokeWidth={2.5}
               fill={activeColor.fill}
               dot={false}
-              activeDot={{ r: 5, fill: activeColor.stroke, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+              activeDot={{
+                r: 5,
+                fill: activeColor.stroke,
+                strokeWidth: 2,
+                stroke: "hsl(var(--card))",
+              }}
             />
           )}
           {chartType === "line" && (
@@ -156,7 +185,12 @@ export default function EnrollmentChart({ isEditMode = false }: { isEditMode?: b
               stroke={activeColor.stroke}
               strokeWidth={2.5}
               dot={{ r: 3, fill: activeColor.stroke }}
-              activeDot={{ r: 5, fill: activeColor.stroke, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+              activeDot={{
+                r: 5,
+                fill: activeColor.stroke,
+                strokeWidth: 2,
+                stroke: "hsl(var(--card))",
+              }}
             />
           )}
           {chartType === "bar" && (

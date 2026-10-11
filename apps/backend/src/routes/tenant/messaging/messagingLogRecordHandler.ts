@@ -1,10 +1,10 @@
-import type { FastifyReply, FastifyRequest } from 'fastify';
-import type { Message, MessageLogCreateDto, User } from '@mms/shared';
-import { randomUUID } from 'node:crypto';
-import { getRequestTenant } from '../../../lib/tenantContext.js';
-import { sendDatabaseError, sendForbidden } from '../../../lib/httpErrors.js';
-import { replyValidationError } from '../../../lib/zodRequest.js';
-import { canWriteMessaging } from '../../../services/rbacService.js';
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { Message, MessageLogCreateDto, User } from "@mms/shared";
+import { randomUUID } from "node:crypto";
+import { getRequestTenant } from "../../../lib/tenantContext.js";
+import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
+import { replyValidationError } from "../../../lib/zodRequest.js";
+import { canWriteMessaging } from "../../../services/rbacService.js";
 import {
   authArtifactUserScopeKey,
   authArtifactWorkspaceScopeKey,
@@ -12,12 +12,12 @@ import {
   findAuthArtifactByLookupKey,
   tryClaimAuthArtifactByLookupKey,
   updateAuthArtifactPayload,
-} from '../../../services/auth/authArtifactService.js';
-import { messagingUseCases } from '../../../messaging/use-cases/messagingUseCases.js';
+} from "../../../services/auth/authArtifactService.js";
+import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
 import {
   collectUnknownPersonalizationTokens,
   formatUnknownTokensMessage,
-} from './messagingPersonalizationGuard.js';
+} from "./messagingPersonalizationGuard.js";
 import {
   MESSAGING_IDEMPOTENCY_TTL_MS,
   type MessagingIdempotencyPayload,
@@ -27,7 +27,7 @@ import {
   replyIdempotencyBodyMismatch,
   resolveIdempotencyKey,
   waitForCompletedIdempotency,
-} from './messagingLogIdempotency.js';
+} from "./messagingLogIdempotency.js";
 
 function normalizeDispatchLogs(user: User, logs: MessageLogCreateDto[]): Message[] {
   const sentAt = new Date().toISOString();
@@ -38,9 +38,9 @@ function normalizeDispatchLogs(user: User, logs: MessageLogCreateDto[]): Message
     channel: log.channel,
     body: log.body,
     sentAt,
-    status: log.status || 'sent',
+    status: log.status || "sent",
     subject: log.subject,
-    category: log.category || 'general',
+    category: log.category || "general",
     errorMessage: log.errorMessage,
   }));
 }
@@ -70,13 +70,10 @@ export async function handleRecordMessageLogs(
   if (tokenRejection) return tokenRejection;
   const tenantSubdomain = getRequestTenant();
   if (!tenantSubdomain) {
-    return reply.status(400).send({ type: 'validation_error', message: 'Tenant context required' });
+    return reply.status(400).send({ type: "validation_error", message: "Tenant context required" });
   }
 
-  const idempotencyKey = resolveIdempotencyKey(
-    data.idempotencyKey,
-    req.headers['idempotency-key'],
-  );
+  const idempotencyKey = resolveIdempotencyKey(data.idempotencyKey, req.headers["idempotency-key"]);
   const bodyDigest = messagingDispatchBodyDigest(data.logs);
   const lookupKey = idempotencyKey
     ? messagingIdempotencyLookupKey(tenantSubdomain, user.id, idempotencyKey)
@@ -86,40 +83,39 @@ export async function handleRecordMessageLogs(
   try {
     if (lookupKey) {
       const existing = await findAuthArtifactByLookupKey<MessagingIdempotencyPayload>(
-        'messaging_idempotency',
+        "messaging_idempotency",
         lookupKey,
       );
       if (existing) {
         if (!idempotencyBodyMatches(existing.payload, bodyDigest)) {
           return replyIdempotencyBodyMismatch(reply);
         }
-        const recorded =
-          existing.payload.recorded === null ? undefined : existing.payload.recorded;
+        const recorded = existing.payload.recorded === null ? undefined : existing.payload.recorded;
         if (recorded !== undefined) {
           return reply.send({ recorded });
         }
         const waited = await waitForCompletedIdempotency(lookupKey, bodyDigest);
-        if (waited && 'mismatch' in waited) return replyIdempotencyBodyMismatch(reply);
-        if (waited && 'recorded' in waited) return reply.send({ recorded: waited.recorded });
+        if (waited && "mismatch" in waited) return replyIdempotencyBodyMismatch(reply);
+        if (waited && "recorded" in waited) return reply.send({ recorded: waited.recorded });
         return reply.status(409).send({
-          type: 'conflict',
-          message: 'Idempotent request still in progress',
+          type: "conflict",
+          message: "Idempotent request still in progress",
         });
       }
 
       const claim = await tryClaimAuthArtifactByLookupKey<MessagingIdempotencyPayload>(
-        'messaging_idempotency',
+        "messaging_idempotency",
         { recorded: null, bodyDigest },
         MESSAGING_IDEMPOTENCY_TTL_MS,
         { lookupKey, scopeKey },
       );
       if (!claim.claimed) {
         const waited = await waitForCompletedIdempotency(lookupKey, bodyDigest);
-        if (waited && 'mismatch' in waited) return replyIdempotencyBodyMismatch(reply);
-        if (waited && 'recorded' in waited) return reply.send({ recorded: waited.recorded });
+        if (waited && "mismatch" in waited) return replyIdempotencyBodyMismatch(reply);
+        if (waited && "recorded" in waited) return reply.send({ recorded: waited.recorded });
         return reply.status(409).send({
-          type: 'conflict',
-          message: 'Idempotent request still in progress',
+          type: "conflict",
+          message: "Idempotent request still in progress",
         });
       }
 
@@ -139,6 +135,6 @@ export async function handleRecordMessageLogs(
     const recorded = await messagingUseCases.recordMessageLogs(tenantSubdomain, normalized);
     return reply.send({ recorded: recorded.length });
   } catch (err) {
-    return sendDatabaseError(reply, 'Failed to record message logs', err);
+    return sendDatabaseError(reply, "Failed to record message logs", err);
   }
 }

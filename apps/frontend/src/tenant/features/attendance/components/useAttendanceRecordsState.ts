@@ -27,10 +27,9 @@ export function useAttendanceRecordsState({
 }: AttendanceRecordsProps) {
   const { statuses } = useAttendanceConfig();
   const { t } = useTranslation();
-  const {
-    canWrite: canWriteAttendance,
-    canDelete: canDeleteAttendance,
-  } = useModulePermissions(ATTENDANCE_MODULE_MANIFEST);
+  const { canWrite: canWriteAttendance, canDelete: canDeleteAttendance } = useModulePermissions(
+    ATTENDANCE_MODULE_MANIFEST,
+  );
   const sessions = useSessionsCollection();
 
   const [searchInput, setSearchInput] = useState("");
@@ -47,7 +46,17 @@ export function useAttendanceRecordsState({
 
   useEffect(() => {
     setListPage(1);
-  }, [deferredSearch, statusFilter, dateFrom, dateTo, filters.sessionId, filters.classId, filters.facultyId, filters.date, showDeleted]);
+  }, [
+    deferredSearch,
+    statusFilter,
+    dateFrom,
+    dateTo,
+    filters.sessionId,
+    filters.classId,
+    filters.facultyId,
+    filters.date,
+    showDeleted,
+  ]);
 
   const attendancePageQuery = useAttendancePaginated({
     page: listPage,
@@ -85,7 +94,19 @@ export function useAttendanceRecordsState({
 
   useEffect(() => {
     clearSelection();
-  }, [showDeleted, listPage, debouncedSearch, statusFilter, dateFrom, dateTo, filters.sessionId, filters.classId, filters.facultyId, filters.date, clearSelection]);
+  }, [
+    showDeleted,
+    listPage,
+    debouncedSearch,
+    statusFilter,
+    dateFrom,
+    dateTo,
+    filters.sessionId,
+    filters.classId,
+    filters.facultyId,
+    filters.date,
+    clearSelection,
+  ]);
 
   const statusMap = new Map<string, (typeof statuses)[number]>();
   for (const s of statuses) {

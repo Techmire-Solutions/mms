@@ -2,9 +2,9 @@
  * @file useFacultyTsrMutations.ts
  * @description Contract-backed Faculty write / bulk / audit mutation hooks.
  */
-import { tsr } from '@/lib/api';
-import { useQueryClient } from '@tanstack/react-query';
-import { invalidateFacultyQueries } from '@/tenant/features/faculty/hooks/invalidateFacultyQueries';
+import { tsr } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateFacultyQueries } from "@/tenant/features/faculty/hooks/invalidateFacultyQueries";
 
 const facultyClient = tsr.faculty;
 
@@ -12,28 +12,36 @@ const facultyClient = tsr.faculty;
 export function useFacultyContractCreate() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return facultyClient.create.useMutation({ onSuccess: () => invalidateFacultyQueries(queryClient) });
+  return facultyClient.create.useMutation({
+    onSuccess: () => invalidateFacultyQueries(queryClient),
+  });
 }
 
 /** Contract-backed update. */
 export function useFacultyContractUpdate() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return facultyClient.update.useMutation({ onSuccess: () => invalidateFacultyQueries(queryClient) });
+  return facultyClient.update.useMutation({
+    onSuccess: () => invalidateFacultyQueries(queryClient),
+  });
 }
 
 /** Contract-backed soft-delete. */
 export function useFacultyContractDelete() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return facultyClient.delete.useMutation({ onSuccess: () => invalidateFacultyQueries(queryClient) });
+  return facultyClient.delete.useMutation({
+    onSuccess: () => invalidateFacultyQueries(queryClient),
+  });
 }
 
 /** Contract-backed bulk status update. */
 export function useFacultyContractBulkStatus() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return facultyClient.bulkStatus.useMutation({ onSuccess: () => invalidateFacultyQueries(queryClient) });
+  return facultyClient.bulkStatus.useMutation({
+    onSuccess: () => invalidateFacultyQueries(queryClient),
+  });
 }
 
 /** Contract-backed duplicate check mutation. */
@@ -46,28 +54,36 @@ export function useFacultyContractDuplicateCheck() {
 export function useFacultyContractRestore() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return facultyClient.restore.useMutation({ onSuccess: () => invalidateFacultyQueries(queryClient) });
+  return facultyClient.restore.useMutation({
+    onSuccess: () => invalidateFacultyQueries(queryClient),
+  });
 }
 
 /** Contract-backed bulk delete */
 export function useFacultyContractBulkDelete() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return facultyClient.bulkDelete.useMutation({ onSuccess: () => invalidateFacultyQueries(queryClient) });
+  return facultyClient.bulkDelete.useMutation({
+    onSuccess: () => invalidateFacultyQueries(queryClient),
+  });
 }
 
 /** Contract-backed bulk restore */
 export function useFacultyContractBulkRestore() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return facultyClient.bulkRestore.useMutation({ onSuccess: () => invalidateFacultyQueries(queryClient) });
+  return facultyClient.bulkRestore.useMutation({
+    onSuccess: () => invalidateFacultyQueries(queryClient),
+  });
 }
 
 /** Contract-backed bulk specialization */
 export function useFacultyContractBulkSpecialization() {
   const queryClient = useQueryClient();
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  return facultyClient.bulkSpecialization.useMutation({ onSuccess: () => invalidateFacultyQueries(queryClient) });
+  return facultyClient.bulkSpecialization.useMutation({
+    onSuccess: () => invalidateFacultyQueries(queryClient),
+  });
 }
 
 /** Contract-backed migrate employee IDs */

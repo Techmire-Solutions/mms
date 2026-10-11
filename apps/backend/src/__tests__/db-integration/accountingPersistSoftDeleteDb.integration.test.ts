@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { and, eq, sql } from 'drizzle-orm';
-import { readFileSync } from 'node:fs';
-import { resolve, dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { and, eq, sql } from "drizzle-orm";
+import { readFileSync } from "node:fs";
+import { resolve, dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   initializeDatabaseConnection,
   pingDatabase,
   closeDatabase,
   beginLongLivedTenantTransaction,
-} from '../../db/dbConnection.js';
+} from "../../db/dbConnection.js";
 import {
   workspaces,
   accountingAccounts,
@@ -16,9 +16,9 @@ import {
   accountingJournalLines,
   accountingEntryTags,
   accountingEntryAttachments,
-} from '../../db/schema.js';
-import { bulkSaveEntries } from '../../db/repositories/accountingEntriesPersist.js';
-import type { JournalEntry } from '@mms/shared';
+} from "../../db/schema.js";
+import { bulkSaveEntries } from "../../db/repositories/accountingEntriesPersist.js";
+import type { JournalEntry } from "@mms/shared";
 
 /**
  * A whole-list journal save re-sends every row it holds, including
@@ -27,14 +27,14 @@ import type { JournalEntry } from '@mms/shared';
  * in one session silently un-deletes a row another session archived (or
  * re-deletes a restored one).
  */
-const TEST_SUBDOMAIN = 'softdelete-parity-accounting';
+const TEST_SUBDOMAIN = "softdelete-parity-accounting";
 
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 function applyDatabaseUrlFromEnvFile(): void {
   if (process.env.DATABASE_URL) return;
   try {
-    const content = readFileSync(join(backendRoot, '.env'), 'utf-8');
+    const content = readFileSync(join(backendRoot, ".env"), "utf-8");
     const match = content.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
     if (match) process.env.DATABASE_URL = match[1].trim();
   } catch {
@@ -43,7 +43,7 @@ function applyDatabaseUrlFromEnvFile(): void {
 }
 
 let dbAvailable = false;
-const trashedAt = new Date('2026-02-01T00:00:00.000Z');
+const trashedAt = new Date("2026-02-01T00:00:00.000Z");
 
 async function purgeWorkspace(): Promise<void> {
   const tx = await beginLongLivedTenantTransaction(null);
@@ -52,12 +52,18 @@ async function purgeWorkspace(): Promise<void> {
     await tx.tx
       .delete(accountingEntryAttachments)
       .where(eq(accountingEntryAttachments.workspaceSubdomain, TEST_SUBDOMAIN));
-    await tx.tx.delete(accountingEntryTags).where(eq(accountingEntryTags.workspaceSubdomain, TEST_SUBDOMAIN));
+    await tx.tx
+      .delete(accountingEntryTags)
+      .where(eq(accountingEntryTags.workspaceSubdomain, TEST_SUBDOMAIN));
     await tx.tx
       .delete(accountingJournalLines)
       .where(eq(accountingJournalLines.workspaceSubdomain, TEST_SUBDOMAIN));
-    await tx.tx.delete(accountingEntries).where(eq(accountingEntries.workspaceSubdomain, TEST_SUBDOMAIN));
-    await tx.tx.delete(accountingAccounts).where(eq(accountingAccounts.workspaceSubdomain, TEST_SUBDOMAIN));
+    await tx.tx
+      .delete(accountingEntries)
+      .where(eq(accountingEntries.workspaceSubdomain, TEST_SUBDOMAIN));
+    await tx.tx
+      .delete(accountingAccounts)
+      .where(eq(accountingAccounts.workspaceSubdomain, TEST_SUBDOMAIN));
     await tx.tx.delete(workspaces).where(eq(workspaces.subdomain, TEST_SUBDOMAIN));
     await tx.commit();
   } catch {
@@ -76,51 +82,51 @@ beforeAll(async () => {
   const seedTx = await beginLongLivedTenantTransaction(null);
   try {
     await seedTx.tx.insert(workspaces).values({
-      id: 'ws-softdelete-parity-accounting',
+      id: "ws-softdelete-parity-accounting",
       subdomain: TEST_SUBDOMAIN,
-      madrasaName: 'Soft Delete Parity Accounting',
+      madrasaName: "Soft Delete Parity Accounting",
       enabled: true,
     });
     await seedTx.tx.insert(accountingAccounts).values([
       {
-        id: 'sd-acc-1',
+        id: "sd-acc-1",
         workspaceSubdomain: TEST_SUBDOMAIN,
-        code: '1000',
-        name: 'Cash',
-        type: 'asset',
+        code: "1000",
+        name: "Cash",
+        type: "asset",
       },
       {
-        id: 'sd-acc-2',
+        id: "sd-acc-2",
         workspaceSubdomain: TEST_SUBDOMAIN,
-        code: '4000',
-        name: 'Income',
-        type: 'revenue',
+        code: "4000",
+        name: "Income",
+        type: "revenue",
       },
     ]);
     await seedTx.tx.insert(accountingEntries).values([
       {
-        id: 'sd-entry-trashed',
+        id: "sd-entry-trashed",
         workspaceSubdomain: TEST_SUBDOMAIN,
-        date: '2026-01-01',
-        ref: 'REF-TRASHED',
-        description: 'trashed by another session',
-        status: 'draft',
-        createdBy: 'u1',
-        fiscalYear: 'FY2026',
+        date: "2026-01-01",
+        ref: "REF-TRASHED",
+        description: "trashed by another session",
+        status: "draft",
+        createdBy: "u1",
+        fiscalYear: "FY2026",
         deletedAt: trashedAt,
-        deletedBy: 'other-session',
-        deletionReason: 'duplicate',
+        deletedBy: "other-session",
+        deletionReason: "duplicate",
         updatedAt: new Date(),
       },
       {
-        id: 'sd-entry-active',
+        id: "sd-entry-active",
         workspaceSubdomain: TEST_SUBDOMAIN,
-        date: '2026-01-02',
-        ref: 'REF-ACTIVE',
-        description: 'active row',
-        status: 'draft',
-        createdBy: 'u1',
-        fiscalYear: 'FY2026',
+        date: "2026-01-02",
+        ref: "REF-ACTIVE",
+        description: "active row",
+        status: "draft",
+        createdBy: "u1",
+        fiscalYear: "FY2026",
         updatedAt: new Date(),
       },
     ]);
@@ -136,8 +142,8 @@ afterAll(async () => {
   await closeDatabase();
 });
 
-describe('bulkSaveEntries soft-delete ownership', () => {
-  it('does not resurrect a trashed row and does not re-trash an active one', async (ctx) => {
+describe("bulkSaveEntries soft-delete ownership", () => {
+  it("does not resurrect a trashed row and does not re-trash an active one", async (ctx) => {
     if (!dbAvailable) {
       ctx.skip();
       return;
@@ -146,31 +152,31 @@ describe('bulkSaveEntries soft-delete ownership', () => {
     // A whole-list save from a session that still believes both rows are active.
     const batch: JournalEntry[] = [
       {
-        id: 'sd-entry-trashed',
-        date: '2026-01-01',
-        ref: 'REF-TRASHED-EDITED',
-        description: 'edited while trashed elsewhere',
-        status: 'draft',
-        created_by: 'u1',
-        fiscal_year: 'FY2026',
+        id: "sd-entry-trashed",
+        date: "2026-01-01",
+        ref: "REF-TRASHED-EDITED",
+        description: "edited while trashed elsewhere",
+        status: "draft",
+        created_by: "u1",
+        fiscal_year: "FY2026",
         tags: [],
         attachments: [],
         deletedAt: null,
         deletedBy: null,
         deletionReason: null,
         lines: [
-          { id: 'sd-line-1', account_id: 'sd-acc-1', debit: 10, credit: 0, description: '' },
-          { id: 'sd-line-2', account_id: 'sd-acc-2', debit: 0, credit: 10, description: '' },
+          { id: "sd-line-1", account_id: "sd-acc-1", debit: 10, credit: 0, description: "" },
+          { id: "sd-line-2", account_id: "sd-acc-2", debit: 0, credit: 10, description: "" },
         ],
       },
       {
-        id: 'sd-entry-active',
-        date: '2026-01-02',
-        ref: 'REF-ACTIVE',
-        description: 'active row',
-        status: 'draft',
-        created_by: 'u1',
-        fiscal_year: 'FY2026',
+        id: "sd-entry-active",
+        date: "2026-01-02",
+        ref: "REF-ACTIVE",
+        description: "active row",
+        status: "draft",
+        created_by: "u1",
+        fiscal_year: "FY2026",
         tags: [],
         attachments: [],
         deletedAt: null,
@@ -179,13 +185,13 @@ describe('bulkSaveEntries soft-delete ownership', () => {
         lines: [],
       },
       {
-        id: 'sd-entry-new',
-        date: '2026-01-03',
-        ref: 'REF-NEW',
-        description: 'brand new',
-        status: 'draft',
-        created_by: 'u1',
-        fiscal_year: 'FY2026',
+        id: "sd-entry-new",
+        date: "2026-01-03",
+        ref: "REF-NEW",
+        description: "brand new",
+        status: "draft",
+        created_by: "u1",
+        fiscal_year: "FY2026",
         tags: [],
         attachments: [],
         deletedAt: null,
@@ -203,17 +209,17 @@ describe('bulkSaveEntries soft-delete ownership', () => {
         .where(eq(accountingEntries.workspaceSubdomain, TEST_SUBDOMAIN));
       const byId = new Map(entries.map((entry) => [entry.id, entry]));
 
-      const trashed = byId.get('sd-entry-trashed');
+      const trashed = byId.get("sd-entry-trashed");
       // Content still updates…
-      expect(trashed?.ref).toBe('REF-TRASHED-EDITED');
+      expect(trashed?.ref).toBe("REF-TRASHED-EDITED");
       // …but the trashed state another session owns is untouched (the batch
       // sent deletedAt/deletedBy/deletionReason as null for this row).
       expect(trashed?.deletedAt).not.toBeNull();
-      expect(trashed?.deletedBy).toBe('other-session');
-      expect(trashed?.deletionReason).toBe('duplicate');
+      expect(trashed?.deletedBy).toBe("other-session");
+      expect(trashed?.deletionReason).toBe("duplicate");
 
-      expect(byId.get('sd-entry-active')?.deletedAt).toBeNull();
-      expect(byId.get('sd-entry-new')?.deletedAt).toBeNull();
+      expect(byId.get("sd-entry-active")?.deletedAt).toBeNull();
+      expect(byId.get("sd-entry-new")?.deletedAt).toBeNull();
 
       // Lines are still replaced for a row that stays trashed.
       const lines = await verifyTx.tx
@@ -222,10 +228,10 @@ describe('bulkSaveEntries soft-delete ownership', () => {
         .where(
           and(
             eq(accountingJournalLines.workspaceSubdomain, TEST_SUBDOMAIN),
-            eq(accountingJournalLines.entryId, 'sd-entry-trashed'),
+            eq(accountingJournalLines.entryId, "sd-entry-trashed"),
           ),
         );
-      expect(lines.map((line) => line.id).sort()).toEqual(['sd-line-1', 'sd-line-2']);
+      expect(lines.map((line) => line.id).sort()).toEqual(["sd-line-1", "sd-line-2"]);
 
       await verifyTx.commit();
     } catch (error) {

@@ -47,11 +47,7 @@ const mockEnrollments: Enrollment[] = [
 
 describe("examinationsListContentShared Utilities", () => {
   it("computes assigned classes and active student count correctly", () => {
-    const { assignedClasses, studentCount } = getExamMeta(
-      mockExam,
-      mockClasses,
-      mockEnrollments,
-    );
+    const { assignedClasses, studentCount } = getExamMeta(mockExam, mockClasses, mockEnrollments);
 
     expect(assignedClasses).toHaveLength(2);
     expect(assignedClasses.map((c) => c.id)).toEqual(["cls-1", "cls-2"]);

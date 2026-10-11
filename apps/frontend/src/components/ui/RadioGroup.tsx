@@ -20,26 +20,35 @@ export interface RadioGroupProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
-  ({ className, name, value: controlledValue, defaultValue, onValueChange, disabled, children, ...props }, ref) => {
-    const [uncontrolledValue, setUncontrolledValue] = React.useState<string | undefined>(defaultValue);
+  (
+    {
+      className,
+      name,
+      value: controlledValue,
+      defaultValue,
+      onValueChange,
+      disabled,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const [uncontrolledValue, setUncontrolledValue] = React.useState<string | undefined>(
+      defaultValue,
+    );
     const isControlled = controlledValue !== undefined;
     const value = isControlled ? controlledValue : uncontrolledValue;
 
-    const onChange = ((nextValue: string) => {
-        if (!isControlled) {
-          setUncontrolledValue(nextValue);
-        }
-        onValueChange?.(nextValue);
-      });
+    const onChange = (nextValue: string) => {
+      if (!isControlled) {
+        setUncontrolledValue(nextValue);
+      }
+      onValueChange?.(nextValue);
+    };
 
     return (
       <RadioGroupContext.Provider value={{ name, value, onChange, disabled }}>
-        <div
-          ref={ref}
-          role="radiogroup"
-          className={cn("grid gap-2", className)}
-          {...props}
-        >
+        <div ref={ref} role="radiogroup" className={cn("grid gap-2", className)} {...props}>
           {children}
         </div>
       </RadioGroupContext.Provider>
@@ -48,7 +57,10 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
 );
 RadioGroup.displayName = "RadioGroup";
 
-export interface RadioGroupItemProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> {
+export interface RadioGroupItemProps extends Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "onChange"
+> {
   value: string;
 }
 
@@ -81,7 +93,9 @@ const RadioGroupItem = React.forwardRef<HTMLButtonElement, RadioGroupItemProps>(
         <span
           className={cn(
             "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-primary shadow transition-colors",
-            checked ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/40 bg-background",
+            checked
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-muted-foreground/40 bg-background",
           )}
         >
           {checked && <Circle className="h-2 w-2 fill-current text-current" />}

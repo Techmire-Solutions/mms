@@ -99,7 +99,9 @@ export function SequenceNumberingCard({
     <SectionCard title={title} icon={icon} accentColor="primary" className={className}>
       <div className="space-y-4">
         <ToggleRow
-          label={autoGenerateLabel ?? t("common.sequenceNumbering.autoGenerate", { entity: entityLabel })}
+          label={
+            autoGenerateLabel ?? t("common.sequenceNumbering.autoGenerate", { entity: entityLabel })
+          }
           value={config.autoGenerate}
           onChange={(value) => updateField("autoGenerate", value)}
         />
@@ -168,11 +170,29 @@ export function SequenceNumberingCard({
 
             <div className="border-t border-border/40 pt-2">
               <ToggleRow
-                label={restartLabel ?? t(allowFiscalRollover ? "common.sequenceNumbering.restartFiscal" : "common.sequenceNumbering.restartAnnually")}
-                description={restartDesc ?? t(allowFiscalRollover ? "common.sequenceNumbering.restartFiscalDesc" : "common.sequenceNumbering.restartAnnuallyDesc", { entity: entityLabel })}
+                label={
+                  restartLabel ??
+                  t(
+                    allowFiscalRollover
+                      ? "common.sequenceNumbering.restartFiscal"
+                      : "common.sequenceNumbering.restartAnnually",
+                  )
+                }
+                description={
+                  restartDesc ??
+                  t(
+                    allowFiscalRollover
+                      ? "common.sequenceNumbering.restartFiscalDesc"
+                      : "common.sequenceNumbering.restartAnnuallyDesc",
+                    { entity: entityLabel },
+                  )
+                }
                 value={isAnnualReset}
                 onChange={(enabled) =>
-                  updateField("rolloverPolicy", enabled ? (allowFiscalRollover ? "annual_fiscal" : "annual_calendar") : "never")
+                  updateField(
+                    "rolloverPolicy",
+                    enabled ? (allowFiscalRollover ? "annual_fiscal" : "annual_calendar") : "never",
+                  )
                 }
               />
             </div>

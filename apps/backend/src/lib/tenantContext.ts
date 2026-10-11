@@ -1,6 +1,6 @@
-import { AsyncLocalStorage } from 'node:async_hooks';
-import { parseTenantFromHost, resolveAppDomainForRequest } from '@mms/shared';
-import { requestHostname } from './requestHost.js';
+import { AsyncLocalStorage } from "node:async_hooks";
+import { parseTenantFromHost, resolveAppDomainForRequest } from "@mms/shared";
+import { requestHostname } from "./requestHost.js";
 
 const tenantStorage = new AsyncLocalStorage<string | null>();
 const requestUserIdStorage = new AsyncLocalStorage<string | null>();
@@ -13,10 +13,9 @@ export function getRequestTenant(): string | null {
 /** Returns the active tenant subdomain or throws if missing (strict context requirement). */
 export function requireTenant(): string {
   const tenant = getRequestTenant();
-  if (!tenant) throw new Error('Tenant context required');
+  if (!tenant) throw new Error("Tenant context required");
   return tenant.trim().toLowerCase();
 }
-
 
 /** Authenticated user id for the current request (audit GUCs), if any. */
 export function getRequestUserId(): string | null {
@@ -47,13 +46,13 @@ export function bindRequestTenant(subdomain: string | null): void {
 /** Extracts tenant subdomain from Host / X-Forwarded-Host (Vite dev proxy). */
 export function resolveSubdomainFromRequest(
   hostHeader: string | undefined,
-  forwardedHost?: string | string[] | undefined
+  forwardedHost?: string | string[] | undefined,
 ): string | null {
   const hostname = requestHostname({
-    hostname: hostHeader ?? '',
+    hostname: hostHeader ?? "",
     headers: {
       host: hostHeader,
-      'x-forwarded-host': forwardedHost,
+      "x-forwarded-host": forwardedHost,
     },
   });
   const appDomain = resolveAppDomainForRequest(hostname, process.env.MMS_APP_DOMAIN);

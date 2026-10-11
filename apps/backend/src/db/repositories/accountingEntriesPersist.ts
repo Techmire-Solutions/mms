@@ -1,5 +1,5 @@
-import { and, eq, inArray, isNotNull, isNull, ne, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type JournalEntry } from '@mms/shared';
+import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type JournalEntry } from "@mms/shared";
 import {
   accountingAccounts,
   accountingBankReconciliations,
@@ -12,10 +12,10 @@ import {
   accountingEntryAttachments,
   accountingOpeningBalances,
   accountingPostingRules,
-} from '../schema.js';
-import { withTenant, type TenantTransaction } from '../tenant-context.js';
-import { lockJournalEntries } from './accountingEntryLocks.js';
-import { ConflictError } from '../../lib/httpErrors.js';
+} from "../schema.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { lockJournalEntries } from "./accountingEntryLocks.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 
 async function syncEntryChildren(
   tx: TenantTransaction,
@@ -58,7 +58,7 @@ async function syncEntryChildren(
         accountId: l.account_id,
         debit: String(l.debit ?? 0),
         credit: String(l.credit ?? 0),
-        description: l.description ?? '',
+        description: l.description ?? "",
       })),
     );
   }
@@ -109,16 +109,19 @@ export async function saveEntry(tenant: string, record: JournalEntry): Promise<v
  * the trash/restore paths own the transitions. They are removed from the UPDATE
  * sets instead — see {@link entryUpdateSetValues}.
  */
-function entryInsertValues(subdomain: string, record: JournalEntry): typeof accountingEntries.$inferInsert {
+function entryInsertValues(
+  subdomain: string,
+  record: JournalEntry,
+): typeof accountingEntries.$inferInsert {
   return {
     id: record.id,
     workspaceSubdomain: subdomain,
     date: record.date,
-    ref: record.ref ?? '',
-    description: record.description ?? '',
-    status: record.status ?? 'posted',
-    createdBy: record.created_by ?? '',
-    fiscalYear: record.fiscal_year ?? '',
+    ref: record.ref ?? "",
+    description: record.description ?? "",
+    status: record.status ?? "posted",
+    createdBy: record.created_by ?? "",
+    fiscalYear: record.fiscal_year ?? "",
     fiscalYearId: record.fiscal_year_id || null,
     sourceType: record.source_type ?? null,
     sourceId: record.source_id || null,
@@ -150,7 +153,7 @@ function entryUpdateSetValues(record: JournalEntry) {
     deletedBy: _deletedBy,
     deletionReason: _deletionReason,
     ...setFields
-  } = entryInsertValues('', record);
+  } = entryInsertValues("", record);
   return setFields;
 }
 
@@ -159,7 +162,7 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, JournalEntry>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -179,19 +182,19 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
       .onConflictDoUpdate({
         target: [accountingEntries.workspaceSubdomain, accountingEntries.id],
         set: {
-          date: sql.raw('excluded.date'),
-          ref: sql.raw('excluded.ref'),
-          description: sql.raw('excluded.description'),
-          status: sql.raw('excluded.status'),
-          createdBy: sql.raw('excluded.created_by'),
-          fiscalYear: sql.raw('excluded.fiscal_year'),
-          fiscalYearId: sql.raw('excluded.fiscal_year_id'),
-          sourceType: sql.raw('excluded.source_type'),
-          sourceId: sql.raw('excluded.source_id'),
-          transactionType: sql.raw('excluded.transaction_type'),
-          reversedRef: sql.raw('excluded.reversed_ref'),
-          simpleMode: sql.raw('excluded.simple_mode'),
-          updatedAt: sql.raw('excluded.updated_at'),
+          date: sql.raw("excluded.date"),
+          ref: sql.raw("excluded.ref"),
+          description: sql.raw("excluded.description"),
+          status: sql.raw("excluded.status"),
+          createdBy: sql.raw("excluded.created_by"),
+          fiscalYear: sql.raw("excluded.fiscal_year"),
+          fiscalYearId: sql.raw("excluded.fiscal_year_id"),
+          sourceType: sql.raw("excluded.source_type"),
+          sourceId: sql.raw("excluded.source_id"),
+          transactionType: sql.raw("excluded.transaction_type"),
+          reversedRef: sql.raw("excluded.reversed_ref"),
+          simpleMode: sql.raw("excluded.simple_mode"),
+          updatedAt: sql.raw("excluded.updated_at"),
         },
       });
 
@@ -233,7 +236,7 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
         accountId: l.account_id,
         debit: String(l.debit ?? 0),
         credit: String(l.credit ?? 0),
-        description: l.description ?? '',
+        description: l.description ?? "",
       })),
     );
     if (allLines.length > 0) {
@@ -264,24 +267,35 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
   });
 }
 
-export async function replaceEntriesForWorkspace(tenant: string, records: JournalEntry[]): Promise<void> {
+export async function replaceEntriesForWorkspace(
+  tenant: string,
+  records: JournalEntry[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, JournalEntry>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(accountingEntryAttachments).where(eq(accountingEntryAttachments.workspaceSubdomain, subdomain));
-    await tx.delete(accountingEntryTags).where(eq(accountingEntryTags.workspaceSubdomain, subdomain));
-    await tx.delete(accountingJournalLines).where(eq(accountingJournalLines.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingEntryAttachments)
+      .where(eq(accountingEntryAttachments.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingEntryTags)
+      .where(eq(accountingEntryTags.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingJournalLines)
+      .where(eq(accountingJournalLines.workspaceSubdomain, subdomain));
     await tx.delete(accountingEntries).where(eq(accountingEntries.workspaceSubdomain, subdomain));
 
     if (uniqueRecords.length === 0) return;
 
-    await tx.insert(accountingEntries).values(uniqueRecords.map((record) => entryInsertValues(subdomain, record)));
+    await tx
+      .insert(accountingEntries)
+      .values(uniqueRecords.map((record) => entryInsertValues(subdomain, record)));
 
     const allLines = uniqueRecords.flatMap((record) =>
       (record.lines ?? []).map((l) => ({
@@ -291,7 +305,7 @@ export async function replaceEntriesForWorkspace(tenant: string, records: Journa
         accountId: l.account_id,
         debit: String(l.debit ?? 0),
         credit: String(l.credit ?? 0),
-        description: l.description ?? '',
+        description: l.description ?? "",
       })),
     );
     if (allLines.length > 0) {
@@ -325,16 +339,34 @@ export async function replaceEntriesForWorkspace(tenant: string, records: Journa
 export async function deleteAccountingByWorkspace(workspaceSubdomain: string): Promise<void> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(accountingBankReconciliations).where(eq(accountingBankReconciliations.workspaceSubdomain, subdomain));
-    await tx.delete(accountingBankStatementLines).where(eq(accountingBankStatementLines.workspaceSubdomain, subdomain));
-    await tx.delete(accountingBankStatements).where(eq(accountingBankStatements.workspaceSubdomain, subdomain));
-    await tx.delete(accountingOpeningBalances).where(eq(accountingOpeningBalances.workspaceSubdomain, subdomain));
-    await tx.delete(accountingPostingRules).where(eq(accountingPostingRules.workspaceSubdomain, subdomain));
-    await tx.delete(accountingEntryAttachments).where(eq(accountingEntryAttachments.workspaceSubdomain, subdomain));
-    await tx.delete(accountingEntryTags).where(eq(accountingEntryTags.workspaceSubdomain, subdomain));
-    await tx.delete(accountingJournalLines).where(eq(accountingJournalLines.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingBankReconciliations)
+      .where(eq(accountingBankReconciliations.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingBankStatementLines)
+      .where(eq(accountingBankStatementLines.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingBankStatements)
+      .where(eq(accountingBankStatements.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingOpeningBalances)
+      .where(eq(accountingOpeningBalances.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingPostingRules)
+      .where(eq(accountingPostingRules.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingEntryAttachments)
+      .where(eq(accountingEntryAttachments.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingEntryTags)
+      .where(eq(accountingEntryTags.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingJournalLines)
+      .where(eq(accountingJournalLines.workspaceSubdomain, subdomain));
     await tx.delete(accountingEntries).where(eq(accountingEntries.workspaceSubdomain, subdomain));
-    await tx.delete(accountingFiscalYears).where(eq(accountingFiscalYears.workspaceSubdomain, subdomain));
+    await tx
+      .delete(accountingFiscalYears)
+      .where(eq(accountingFiscalYears.workspaceSubdomain, subdomain));
     await tx.delete(accountingAccounts).where(eq(accountingAccounts.workspaceSubdomain, subdomain));
   });
 }
@@ -363,7 +395,7 @@ export async function bulkSoftDeleteEntries(
           eq(accountingEntries.workspaceSubdomain, subdomain),
           inArray(accountingEntries.id, uniqueIds),
           isNull(accountingEntries.deletedAt),
-          ne(accountingEntries.status, 'posted'),
+          ne(accountingEntries.status, "posted"),
         ),
       )
       .returning({ id: accountingEntries.id });
@@ -444,12 +476,12 @@ export async function bulkRestoreEntries(
     } catch (error) {
       const err = error as { code?: string; constraint?: string };
       if (
-        err?.code === '23505' &&
-        (err?.constraint === 'accounting_entries_workspace_ref_active_uidx' ||
-          err?.constraint?.includes('ref'))
+        err?.code === "23505" &&
+        (err?.constraint === "accounting_entries_workspace_ref_active_uidx" ||
+          err?.constraint?.includes("ref"))
       ) {
         throw new ConflictError(
-          'Cannot restore journal entry: reference is already used by an active entry',
+          "Cannot restore journal entry: reference is already used by an active entry",
         );
       }
       throw error;

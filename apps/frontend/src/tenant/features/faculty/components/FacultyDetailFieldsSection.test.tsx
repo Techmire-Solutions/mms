@@ -53,4 +53,3 @@ describe("FacultyDetailFieldsSection Component", () => {
     expect(html).toContain("umar@example.com");
   });
 });
-

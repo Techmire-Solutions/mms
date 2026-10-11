@@ -24,7 +24,9 @@ export function PlatformProfileCard({
         <div className="flex items-center gap-3 text-sm">
           <Mail className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden />
           <span className="text-muted-foreground">{t("platform.profileEmail")}</span>
-          <span className="font-semibold text-foreground ms-auto truncate max-w-filter-sm">{profile.email}</span>
+          <span className="font-semibold text-foreground ms-auto truncate max-w-filter-sm">
+            {profile.email}
+          </span>
         </div>
         {memberSince ? (
           <div className="flex items-center gap-3 text-sm">

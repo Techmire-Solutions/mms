@@ -1,19 +1,25 @@
-import React from 'react';
-import { Move, AlignStartVertical, AlignEndVertical, AlignStartHorizontal, AlignEndHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { TemplateElement } from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { StyleInput } from './TemplateEditorStyleControls';
-import { TemplateEditorSection } from './TemplateEditorSection';
+import React from "react";
+import {
+  Move,
+  AlignStartVertical,
+  AlignEndVertical,
+  AlignStartHorizontal,
+  AlignEndHorizontal,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { TemplateElement } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { StyleInput } from "./TemplateEditorStyleControls";
+import { TemplateEditorSection } from "./TemplateEditorSection";
 
 export interface TemplateEditorPositionSectionProps<TFieldKey extends string = string> {
   selectedElement: TemplateElement<TFieldKey>;
   isOpen: boolean;
   onToggle: () => void;
   onPatchElement: (elementId: string, patch: Partial<TemplateElement<TFieldKey>>) => void;
-  onCenterSelected?: (axis: 'both' | 'h' | 'v') => void;
+  onCenterSelected?: (axis: "both" | "h" | "v") => void;
   /** Snap the selected element(s) flush against the specified page edge. */
-  onSnapSelected?: (edge: 'top' | 'bottom' | 'left' | 'right') => void;
+  onSnapSelected?: (edge: "top" | "bottom" | "left" | "right") => void;
   t: TranslationFunction;
 }
 
@@ -37,7 +43,7 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
     >
       <div className="grid grid-cols-2 gap-2">
         <StyleInput
-          label={t('templateEditor.positionX')}
+          label={t("templateEditor.positionX")}
           numeric
           value={selectedElement.x}
           onChange={(val) => {
@@ -46,7 +52,7 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
           }}
         />
         <StyleInput
-          label={t('templateEditor.positionY')}
+          label={t("templateEditor.positionY")}
           numeric
           value={selectedElement.y}
           onChange={(val) => {
@@ -55,7 +61,7 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
           }}
         />
         <StyleInput
-          label={t('templateEditor.width')}
+          label={t("templateEditor.width")}
           numeric
           value={selectedElement.w}
           onChange={(val) => {
@@ -64,7 +70,7 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
           }}
         />
         <StyleInput
-          label={t('templateEditor.height')}
+          label={t("templateEditor.height")}
           numeric
           value={selectedElement.h}
           onChange={(val) => {
@@ -77,28 +83,32 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
       {onCenterSelected && (
         <div className="pt-2 border-t border-border space-y-2">
           <p className="text-xs font-bold uppercase text-muted-foreground tracking-widest m-0">
-            {t('templateEditor.centerOnPage')}
+            {t("templateEditor.centerOnPage")}
           </p>
-          <div role="group" aria-label={t('templateEditor.centerOnPage')} className="grid grid-cols-2 gap-1.5">
+          <div
+            role="group"
+            aria-label={t("templateEditor.centerOnPage")}
+            className="grid grid-cols-2 gap-1.5"
+          >
             <Button
               type="button"
               variant="outline"
-              onClick={() => onCenterSelected('h')}
+              onClick={() => onCenterSelected("h")}
               className="min-h-11 text-xs rounded-lg border-border hover:bg-muted flex items-center justify-center gap-1.5"
-              title={t('templateEditor.centerHorizontally')}
-              aria-label={t('templateEditor.centerHorizontally')}
+              title={t("templateEditor.centerHorizontally")}
+              aria-label={t("templateEditor.centerHorizontally")}
             >
-              <span>{t('templateEditor.centerHorizontally')}</span>
+              <span>{t("templateEditor.centerHorizontally")}</span>
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => onCenterSelected('v')}
+              onClick={() => onCenterSelected("v")}
               className="min-h-11 text-xs rounded-lg border-border hover:bg-muted flex items-center justify-center gap-1.5"
-              title={t('templateEditor.centerVertically')}
-              aria-label={t('templateEditor.centerVertically')}
+              title={t("templateEditor.centerVertically")}
+              aria-label={t("templateEditor.centerVertically")}
             >
-              <span>{t('templateEditor.centerVertically')}</span>
+              <span>{t("templateEditor.centerVertically")}</span>
             </Button>
           </div>
         </div>
@@ -107,17 +117,21 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
       {onSnapSelected && (
         <div className="pt-2 border-t border-border space-y-2">
           <p className="text-xs font-bold uppercase text-muted-foreground tracking-widest m-0">
-            {t('templateEditor.snapToEdge')}
+            {t("templateEditor.snapToEdge")}
           </p>
-          <div role="group" aria-label={t('templateEditor.snapToEdge')} className="grid grid-cols-4 gap-1">
+          <div
+            role="group"
+            aria-label={t("templateEditor.snapToEdge")}
+            className="grid grid-cols-4 gap-1"
+          >
             <Button
               type="button"
               variant="outline"
               size="icon"
-              onClick={() => onSnapSelected('top')}
+              onClick={() => onSnapSelected("top")}
               className="min-h-11 w-full rounded-lg border-border hover:bg-muted"
-              title={t('templateEditor.snapTop')}
-              aria-label={t('templateEditor.snapTop')}
+              title={t("templateEditor.snapTop")}
+              aria-label={t("templateEditor.snapTop")}
             >
               <AlignStartHorizontal className="w-4 h-4" aria-hidden="true" />
             </Button>
@@ -125,10 +139,10 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
               type="button"
               variant="outline"
               size="icon"
-              onClick={() => onSnapSelected('bottom')}
+              onClick={() => onSnapSelected("bottom")}
               className="min-h-11 w-full rounded-lg border-border hover:bg-muted"
-              title={t('templateEditor.snapBottom')}
-              aria-label={t('templateEditor.snapBottom')}
+              title={t("templateEditor.snapBottom")}
+              aria-label={t("templateEditor.snapBottom")}
             >
               <AlignEndHorizontal className="w-4 h-4" aria-hidden="true" />
             </Button>
@@ -136,10 +150,10 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
               type="button"
               variant="outline"
               size="icon"
-              onClick={() => onSnapSelected('left')}
+              onClick={() => onSnapSelected("left")}
               className="min-h-11 w-full rounded-lg border-border hover:bg-muted"
-              title={t('templateEditor.snapLeft')}
-              aria-label={t('templateEditor.snapLeft')}
+              title={t("templateEditor.snapLeft")}
+              aria-label={t("templateEditor.snapLeft")}
             >
               <AlignStartVertical className="w-4 h-4" aria-hidden="true" />
             </Button>
@@ -147,10 +161,10 @@ export function TemplateEditorPositionSection<TFieldKey extends string = string>
               type="button"
               variant="outline"
               size="icon"
-              onClick={() => onSnapSelected('right')}
+              onClick={() => onSnapSelected("right")}
               className="min-h-11 w-full rounded-lg border-border hover:bg-muted"
-              title={t('templateEditor.snapRight')}
-              aria-label={t('templateEditor.snapRight')}
+              title={t("templateEditor.snapRight")}
+              aria-label={t("templateEditor.snapRight")}
             >
               <AlignEndVertical className="w-4 h-4" aria-hidden="true" />
             </Button>

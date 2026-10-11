@@ -1,12 +1,12 @@
-import { useRef, type ReactNode } from 'react';
-import { Sparkles } from 'lucide-react';
-import { insertVariableTokenAt } from '@mms/shared';
-import { Field } from '@/components/ui/FormPrimitives';
-import { FORM_INPUT_ERROR } from '@/components/ui/formStyles';
-import { MessagingVariableTokensBar } from '@/components/ui/MessagingVariableTokensBar';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useRef, type ReactNode } from "react";
+import { Sparkles } from "lucide-react";
+import { insertVariableTokenAt } from "@mms/shared";
+import { Field } from "@/components/ui/FormPrimitives";
+import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
+import { MessagingVariableTokensBar } from "@/components/ui/MessagingVariableTokensBar";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface MessagingMessageBodyFieldProps {
   id: string;
@@ -53,7 +53,7 @@ export function MessagingMessageBodyField({
   };
 
   return (
-    <Field id={id} label={t('messaging.messageBody')} required={required} error={error}>
+    <Field id={id} label={t("messaging.messageBody")} required={required} error={error}>
       <MessagingVariableTokensBar onSelectToken={insertToken} className="mb-2" />
       <Textarea
         ref={textareaRef}
@@ -69,7 +69,7 @@ export function MessagingMessageBodyField({
       />
       <p className="mt-1 flex items-center gap-1 text-xs italic text-muted-foreground">
         <Sparkles className="h-3 w-3 flex-shrink-0 text-primary/70" />
-        {t('messaging.fallbackHint')}
+        {t("messaging.fallbackHint")}
       </p>
       {footer}
     </Field>

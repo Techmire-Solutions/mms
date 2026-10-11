@@ -35,12 +35,7 @@ vi.mock("@/components/ui/DashedFileDropZone", () => ({
 
 describe("AppleContactsPanel Component", () => {
   it("renders panel with export guide and dropzone when canWrite is true", () => {
-    const html = renderToStaticMarkup(
-      <AppleContactsPanel
-        onImport={vi.fn()}
-        canWrite={true}
-      />,
-    );
+    const html = renderToStaticMarkup(<AppleContactsPanel onImport={vi.fn()} canWrite={true} />);
 
     expect(html).toContain("contacts.sync.appleTitle");
     expect(html).toContain("contacts.sync.uploadVcf");

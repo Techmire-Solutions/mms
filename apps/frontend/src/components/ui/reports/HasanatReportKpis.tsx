@@ -19,13 +19,35 @@ export const HasanatReportKpis = React.memo(function HasanatReportKpis({
 }: HasanatReportKpisProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const items = useMemo(() => [
-    { icon: Star, label: t("hasanat.report.totalDistributed"), value: formatNumber(totalDistributed), accent: "primary" as const },
-    { icon: Gift, label: t("hasanat.report.totalRedeemed"), value: formatNumber(totalRedeemed), accent: "green" as const },
-    { icon: TrendingDown, label: t("hasanat.report.balance"), value: formatNumber(totalBalance), accent: "amber" as const },
-    { icon: Users, label: t("hasanat.report.redemptionRate"), value: `${redemptionRate}%`, accent: "blue" as const },
-  ], [t, totalDistributed, totalRedeemed, totalBalance, redemptionRate]);
+  const items = useMemo(
+    () => [
+      {
+        icon: Star,
+        label: t("hasanat.report.totalDistributed"),
+        value: formatNumber(totalDistributed),
+        accent: "primary" as const,
+      },
+      {
+        icon: Gift,
+        label: t("hasanat.report.totalRedeemed"),
+        value: formatNumber(totalRedeemed),
+        accent: "green" as const,
+      },
+      {
+        icon: TrendingDown,
+        label: t("hasanat.report.balance"),
+        value: formatNumber(totalBalance),
+        accent: "amber" as const,
+      },
+      {
+        icon: Users,
+        label: t("hasanat.report.redemptionRate"),
+        value: `${redemptionRate}%`,
+        accent: "blue" as const,
+      },
+    ],
+    [t, totalDistributed, totalRedeemed, totalBalance, redemptionRate],
+  );
 
   return <ModuleCommandMetricsGrid items={items} />;
 });
-

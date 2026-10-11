@@ -1,13 +1,13 @@
-import { formatNumber } from '@mms/shared';
+import { formatNumber } from "@mms/shared";
 import type {
   AttendanceCommandMetricsSnapshot,
   FinanceCommandMetricsSnapshot,
   HasanatCommandMetricsSnapshot,
   SessionsCommandMetricsSnapshot,
   ExaminationsCommandMetricsSnapshot,
-} from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { ContactKPIAnalytics, EntityKPIMetrics } from './kpiSummaryTypes';
+} from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { ContactKPIAnalytics, EntityKPIMetrics } from "./kpiSummaryTypes";
 
 interface DerivedKpiMetrics {
   attendanceRate: number;
@@ -19,17 +19,17 @@ interface DerivedKpiMetrics {
   capacityUsed: number;
   classesCount: number;
   growthValue: string;
-  growthTrend: 'up' | 'down' | 'flat';
+  growthTrend: "up" | "down" | "flat";
   growthSub: string;
   totalStudentsValue: string;
   totalStudentsSub: string;
-  totalStudentsTrend: 'up' | 'down' | 'flat';
+  totalStudentsTrend: "up" | "down" | "flat";
   totalStudentsVelocity?: string;
-  attendanceTrend: 'up' | 'down' | 'flat';
-  feesTrend: 'up' | 'down' | 'flat';
-  outstandingTrend: 'up' | 'down' | 'flat';
-  hasanatTrend: 'up' | 'down' | 'flat';
-  sessionsTrend: 'up' | 'down' | 'flat';
+  attendanceTrend: "up" | "down" | "flat";
+  feesTrend: "up" | "down" | "flat";
+  outstandingTrend: "up" | "down" | "flat";
+  hasanatTrend: "up" | "down" | "flat";
+  sessionsTrend: "up" | "down" | "flat";
   hasAttendanceData: boolean;
   hasFinanceData: boolean;
   hasHasanatData: boolean;
@@ -37,18 +37,18 @@ interface DerivedKpiMetrics {
   hasSessionsData: boolean;
 }
 
-function trendFromDelta(delta: number): 'up' | 'down' | 'flat' {
-  if (delta > 0) return 'up';
-  if (delta < 0) return 'down';
-  return 'flat';
+function trendFromDelta(delta: number): "up" | "down" | "flat" {
+  if (delta > 0) return "up";
+  if (delta < 0) return "down";
+  return "flat";
 }
 
-function trendFromChange(current: number, previous: number): 'up' | 'down' | 'flat' {
+function trendFromChange(current: number, previous: number): "up" | "down" | "flat" {
   if (previous > 0) {
     const delta = current - previous;
     return trendFromDelta(delta);
   }
-  return current > 0 ? 'up' : 'flat';
+  return current > 0 ? "up" : "flat";
 }
 
 interface ComputeDerivedKpiMetricsOptions {
@@ -76,32 +76,36 @@ export function computeDerivedKpiMetrics({
   examinationsMetrics,
   t,
 }: ComputeDerivedKpiMetricsOptions): DerivedKpiMetrics {
-  const isStudentsCategory = category === 'students';
-  const needsContactAnalytics = category === 'contacts' || category === 'students' || category === 'sessions';
+  const isStudentsCategory = category === "students";
+  const needsContactAnalytics =
+    category === "contacts" || category === "students" || category === "sessions";
 
-  let totalStudentsValue = '0';
-  let totalStudentsSub = t('reports.kpi.sub.noStudents');
-  let totalStudentsTrend: DerivedKpiMetrics['totalStudentsTrend'] = 'flat';
+  let totalStudentsValue = "0";
+  let totalStudentsSub = t("reports.kpi.sub.noStudents");
+  let totalStudentsTrend: DerivedKpiMetrics["totalStudentsTrend"] = "flat";
   let totalStudentsVelocity: string | undefined;
-  if (category === 'contacts' && contactAnalytics) {
+  if (category === "contacts" && contactAnalytics) {
     totalStudentsValue = String(contactAnalytics.total);
-    totalStudentsSub = t('reports.kpi.sub.newRecentlyCount', { count: contactAnalytics.newLast30Days });
-    totalStudentsTrend = contactAnalytics.newLast30Days >= contactAnalytics.newPrior30Days ? 'up' : 'down';
-    totalStudentsVelocity = contactAnalytics.newPrior30Days > 0
-      ? `${Math.round(((contactAnalytics.newLast30Days - contactAnalytics.newPrior30Days) / contactAnalytics.newPrior30Days) * 100)}%`
-      : `+${contactAnalytics.newLast30Days}`;
-  } else if (category === 'contacts') {
-    totalStudentsSub = t('reports.kpi.sub.noContacts');
+    totalStudentsSub = t("reports.kpi.sub.newRecentlyCount", {
+      count: contactAnalytics.newLast30Days,
+    });
+    totalStudentsTrend =
+      contactAnalytics.newLast30Days >= contactAnalytics.newPrior30Days ? "up" : "down";
+    totalStudentsVelocity =
+      contactAnalytics.newPrior30Days > 0
+        ? `${Math.round(((contactAnalytics.newLast30Days - contactAnalytics.newPrior30Days) / contactAnalytics.newPrior30Days) * 100)}%`
+        : `+${contactAnalytics.newLast30Days}`;
+  } else if (category === "contacts") {
+    totalStudentsSub = t("reports.kpi.sub.noContacts");
   } else {
     const metrics = isStudentsCategory ? studentMetrics : auxiliaryStudentMetrics;
     totalStudentsValue = String(metrics?.total ?? 0);
-    totalStudentsSub = t('reports.kpi.sub.activeNow', { count: metrics?.active ?? 0 });
-    totalStudentsTrend = (metrics?.newThisPeriod ?? 0) > 0 ? 'up' : 'flat';
+    totalStudentsSub = t("reports.kpi.sub.activeNow", { count: metrics?.active ?? 0 });
+    totalStudentsTrend = (metrics?.newThisPeriod ?? 0) > 0 ? "up" : "flat";
   }
 
-  const attendanceRate = attendanceMetrics?.overallPresentRate
-    ?? attendanceMetrics?.selectedDatePresentRate
-    ?? 0;
+  const attendanceRate =
+    attendanceMetrics?.overallPresentRate ?? attendanceMetrics?.selectedDatePresentRate ?? 0;
   const collected = financeMetrics?.collectedTotal ?? 0;
   const outstanding = financeMetrics?.outstandingBalance ?? 0;
   const outstandingInvoiceCount = financeMetrics?.outstanding ?? 0;
@@ -113,21 +117,21 @@ export function computeDerivedKpiMetrics({
   const capacityUsed = capacity > 0 ? Math.round((enrolled / capacity) * 100) : 0;
   const classesCount = sessionsMetrics?.totalClasses ?? 0;
 
-  let growthValue = '+0%';
-  let growthTrend: DerivedKpiMetrics['growthTrend'] = 'flat';
-  let growthSub = t('reports.kpi.sub.noSignupDates');
+  let growthValue = "+0%";
+  let growthTrend: DerivedKpiMetrics["growthTrend"] = "flat";
+  let growthSub = t("reports.kpi.sub.noSignupDates");
   if (needsContactAnalytics && contactAnalytics?.hasSignupDates) {
     const recent = contactAnalytics.growthRecentSignups30d;
     const prior = contactAnalytics.growthPriorSignups30d;
     if (prior === 0) {
-      growthValue = recent > 0 ? `+${recent * 100}%` : '0%';
-      growthTrend = recent > 0 ? 'up' : 'flat';
-      growthSub = t('reports.kpi.sub.growthNewLast30d', { count: recent });
+      growthValue = recent > 0 ? `+${recent * 100}%` : "0%";
+      growthTrend = recent > 0 ? "up" : "flat";
+      growthSub = t("reports.kpi.sub.growthNewLast30d", { count: recent });
     } else {
       const percentage = Math.round(((recent - prior) / prior) * 100);
-      growthValue = `${percentage >= 0 ? '+' : ''}${percentage}%`;
-      growthTrend = percentage > 0 ? 'up' : percentage < 0 ? 'down' : 'flat';
-      growthSub = t('reports.kpi.sub.growthVsPrevious', { recent, prior });
+      growthValue = `${percentage >= 0 ? "+" : ""}${percentage}%`;
+      growthTrend = percentage > 0 ? "up" : percentage < 0 ? "down" : "flat";
+      growthSub = t("reports.kpi.sub.growthVsPrevious", { recent, prior });
     }
   }
 
@@ -148,8 +152,8 @@ export function computeDerivedKpiMetrics({
     totalStudentsTrend,
     totalStudentsVelocity,
     attendanceTrend: trendFromDelta(
-      (attendanceMetrics?.selectedDatePresentRate ?? 0)
-      - (attendanceMetrics?.priorDatePresentRate ?? 0),
+      (attendanceMetrics?.selectedDatePresentRate ?? 0) -
+        (attendanceMetrics?.priorDatePresentRate ?? 0),
     ),
     feesTrend: trendFromChange(
       financeMetrics?.collectedThisMonth ?? 0,
@@ -170,7 +174,8 @@ export function computeDerivedKpiMetrics({
     hasAttendanceData: (attendanceMetrics?.total ?? 0) > 0,
     hasFinanceData: (financeMetrics?.totalInvoices ?? 0) > 0,
     hasHasanatData: (hasanatMetrics?.distributed ?? 0) > 0 || totalHasanat > 0,
-    hasExamData: (examinationsMetrics?.totalResults ?? 0) > 0 && (examinationsMetrics?.total ?? 0) > 0,
+    hasExamData:
+      (examinationsMetrics?.totalResults ?? 0) > 0 && (examinationsMetrics?.total ?? 0) > 0,
     hasSessionsData: (sessionsMetrics?.total ?? 0) > 0,
   };
 }

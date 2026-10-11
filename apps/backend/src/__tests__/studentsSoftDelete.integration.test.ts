@@ -1,38 +1,44 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildApp } from '../app.js';
-import { adminToken } from './helpers/tokens.js';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buildApp } from "../app.js";
+import { adminToken } from "./helpers/tokens.js";
 
-vi.mock('../db/database.js', () => ({
+vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock('../db/tenant-context.js', () => ({
-  withTenant: vi.fn().mockImplementation(async (_tenant: string | null | undefined, callback: (tx?: unknown) => Promise<unknown>) => {
-    return callback({ execute: vi.fn().mockResolvedValue(undefined) });
-  }),
+vi.mock("../db/tenant-context.js", () => ({
+  withTenant: vi
+    .fn()
+    .mockImplementation(
+      async (_tenant: string | null | undefined, callback: (tx?: unknown) => Promise<unknown>) => {
+        return callback({ execute: vi.fn().mockResolvedValue(undefined) });
+      },
+    ),
 }));
 
-vi.mock('../services/auth/authArtifactService.js', () => ({
+vi.mock("../services/auth/authArtifactService.js", () => ({
   purgeExpiredAuthArtifacts: vi.fn().mockResolvedValue(undefined),
   putAuthArtifact: vi.fn(),
   takeAuthArtifact: vi.fn(),
 }));
 
-vi.mock('../services/workspaceService.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../services/workspaceService.js')>();
+vi.mock("../services/workspaceService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/workspaceService.js")>();
   const demoWorkspace = {
-    id: 'ws-demo',
-    subdomain: 'demo',
-    madrasaName: 'Demo Madrasa',
-    createdAt: '2026-01-01T00:00:00.000Z',
+    id: "ws-demo",
+    subdomain: "demo",
+    madrasaName: "Demo Madrasa",
+    createdAt: "2026-01-01T00:00:00.000Z",
     enabled: true,
   };
   return {
     ...actual,
-    getWorkspaceBySubdomain: vi.fn().mockImplementation(async (subdomain: string) =>
-      subdomain === 'demo' ? demoWorkspace : null,
-    ),
+    getWorkspaceBySubdomain: vi
+      .fn()
+      .mockImplementation(async (subdomain: string) =>
+        subdomain === "demo" ? demoWorkspace : null,
+      ),
   };
 });
 
@@ -40,8 +46,8 @@ const mockLoadStudentsPage = vi.fn();
 const mockDeleteStudentById = vi.fn();
 const mockRestoreStudentById = vi.fn();
 
-vi.mock('../students/use-cases/studentUseCases.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../students/use-cases/studentUseCases.js')>();
+vi.mock("../students/use-cases/studentUseCases.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../students/use-cases/studentUseCases.js")>();
   return {
     ...actual,
     studentUseCases: {
@@ -55,48 +61,48 @@ vi.mock('../students/use-cases/studentUseCases.js', async (importOriginal) => {
   };
 });
 
-describe('students soft delete routes', () => {
+describe("students soft delete routes", () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_SECRET = "test-secret";
     vi.clearAllMocks();
   });
 
-  it('DELETE /api/students/:id soft-deletes student', async () => {
+  it("DELETE /api/students/:id soft-deletes student", async () => {
     mockDeleteStudentById.mockResolvedValue(true);
     const app = await buildApp();
     const res = await app.inject({
-      method: 'DELETE',
-      url: '/api/students/s1',
+      method: "DELETE",
+      url: "/api/students/s1",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
-      payload: { deletionReason: 'Left country' },
+      payload: { deletionReason: "Left country" },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockDeleteStudentById).toHaveBeenCalledWith('s1', 'u-admin', 'Left country');
+    expect(mockDeleteStudentById).toHaveBeenCalledWith("s1", "u-admin", "Left country");
     await app.close();
   });
 
-  it('POST /api/students/:id/restore restores a student', async () => {
+  it("POST /api/students/:id/restore restores a student", async () => {
     mockRestoreStudentById.mockResolvedValue(true);
     const app = await buildApp();
     const res = await app.inject({
-      method: 'POST',
-      url: '/api/students/s1/restore',
+      method: "POST",
+      url: "/api/students/s1/restore",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockRestoreStudentById).toHaveBeenCalledWith('s1', 'u-admin');
+    expect(mockRestoreStudentById).toHaveBeenCalledWith("s1", "u-admin");
     await app.close();
   });
 
-  it('GET /api/students lists with includeDeleted options', async () => {
+  it("GET /api/students lists with includeDeleted options", async () => {
     mockLoadStudentsPage.mockResolvedValue({
-      students: [{ id: 's-deleted', deletedAt: '2026-01-15T00:00:00.000Z' }],
+      students: [{ id: "s-deleted", deletedAt: "2026-01-15T00:00:00.000Z" }],
       total: 1,
       page: 1,
       limit: 50,
@@ -104,10 +110,10 @@ describe('students soft delete routes', () => {
     });
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/students?page=1&includeDeleted=true',
+      method: "GET",
+      url: "/api/students?page=1&includeDeleted=true",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
     });

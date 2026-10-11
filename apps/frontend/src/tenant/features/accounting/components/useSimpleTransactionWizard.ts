@@ -2,7 +2,11 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isJournalRefUnique, type JournalEntry } from "@/lib/data/accountingData";
-import { generateClientEntityId, isJournalEntryBalanced, journalEntryRecordSchema } from "@mms/shared";
+import {
+  generateClientEntityId,
+  isJournalEntryBalanced,
+  journalEntryRecordSchema,
+} from "@mms/shared";
 import { notify } from "@/lib/notify";
 import { validateWizardForm } from "./simpleTransactionWizardTypes";
 import { parseMoneyInput } from "./simpleTransactionMoney";
@@ -16,8 +20,10 @@ import {
 
 export { LAST_TYPE_SESSION_KEY };
 
-export interface UseSimpleTransactionWizardParams
-  extends Omit<UseSimpleTransactionDraftParams, "t"> {
+export interface UseSimpleTransactionWizardParams extends Omit<
+  UseSimpleTransactionDraftParams,
+  "t"
+> {
   entries: JournalEntry[];
   onSave: JournalEntrySave;
 }

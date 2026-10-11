@@ -39,7 +39,7 @@ export function TemplateEditorPaneSwitcher({
       { key: "canvas" as const, label: t("templateEditor.tabCanvas") },
       { key: "properties" as const, label: t("templateEditor.properties") },
     ],
-    [t]
+    [t],
   );
 
   return (

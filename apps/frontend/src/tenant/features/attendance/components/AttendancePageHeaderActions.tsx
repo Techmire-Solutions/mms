@@ -42,11 +42,7 @@ export function AttendancePageHeaderActions({
       <Button variant="outline" icon={Upload} onClick={onImport}>
         {t("common.import")}
       </Button>
-      <Button
-        variant="primary"
-        icon={ClipboardEdit}
-        onClick={onMarkAttendance}
-      >
+      <Button variant="primary" icon={ClipboardEdit} onClick={onMarkAttendance}>
         {t("attendance.tabs.mark")}
       </Button>
     </div>

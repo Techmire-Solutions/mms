@@ -3,29 +3,27 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from '@mms/shared';
-import { getMinimalCollectionsForSeed, getMinimalObjects } from '../minimalSeeds.js';
+} from "@mms/shared";
+import { getMinimalCollectionsForSeed, getMinimalObjects } from "../minimalSeeds.js";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,
   listCollectionStorageNames,
   saveCollection,
   saveObject,
-} from '../database.js';
+} from "../database.js";
 
 const CONTACT_CONFIG_COLLECTIONS = [
-  'genders',
-  'socialPlatforms',
-  'relationships',
-  'phoneLabels',
-  'emailLabels',
-  'addressLabels',
-  'countryCodes',
- ] as const;
-
-const CONTACT_CONFIG_OBJECTS = [
-  'socialPlaceholders',
+  "genders",
+  "socialPlatforms",
+  "relationships",
+  "phoneLabels",
+  "emailLabels",
+  "addressLabels",
+  "countryCodes",
 ] as const;
+
+const CONTACT_CONFIG_OBJECTS = ["socialPlaceholders"] as const;
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -82,11 +80,11 @@ export async function runMigration013(): Promise<void> {
 
   let changed = false;
   if (subdomains.size === 0) {
-    changed = await seedContactConfigForPrefix('', collections, objects);
+    changed = await seedContactConfigForPrefix("", collections, objects);
   } else {
     for (const subdomain of subdomains) {
       const didChange = await seedContactConfigForPrefix(
-        tenantCollectionKey(subdomain, ''),
+        tenantCollectionKey(subdomain, ""),
         collections,
         objects,
       );
@@ -95,6 +93,6 @@ export async function runMigration013(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 013] Seeded database-owned contact configuration defaults.');
+    console.log("[Migration 013] Seeded database-owned contact configuration defaults.");
   }
 }

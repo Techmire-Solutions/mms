@@ -40,10 +40,7 @@ describe("useUnsavedChangesGuard Hook", () => {
       root.render(React.createElement(TestComponent));
     });
 
-    expect(addEventListenerSpy).not.toHaveBeenCalledWith(
-      "beforeunload",
-      expect.any(Function),
-    );
+    expect(addEventListenerSpy).not.toHaveBeenCalledWith("beforeunload", expect.any(Function));
   });
 
   it("attaches beforeunload listener when isDirty is true", () => {
@@ -56,10 +53,7 @@ describe("useUnsavedChangesGuard Hook", () => {
       root.render(React.createElement(TestComponent));
     });
 
-    expect(addEventListenerSpy).toHaveBeenCalledWith(
-      "beforeunload",
-      expect.any(Function),
-    );
+    expect(addEventListenerSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function));
   });
 
   it("removes beforeunload listener on unmount", async () => {
@@ -76,9 +70,6 @@ describe("useUnsavedChangesGuard Hook", () => {
       root.unmount();
     });
 
-    expect(removeEventListenerSpy).toHaveBeenCalledWith(
-      "beforeunload",
-      expect.any(Function),
-    );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function));
   });
 });

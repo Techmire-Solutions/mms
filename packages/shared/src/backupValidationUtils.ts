@@ -1,11 +1,11 @@
-import type { AppTranslationKey } from './appTranslations.js';
+import type { AppTranslationKey } from "./appTranslations.js";
 import {
   BACKUP_FORMAT_ID,
   BACKUP_FORMAT_VERSION,
   type WorkspaceBackupDataSource,
   type WorkspaceBackupEnvelope,
   type WorkspaceBackupSummaryResult,
-} from './backupSchemas.js';
+} from "./backupSchemas.js";
 import {
   buildStorageKeysFromSnapshot,
   computeBackupChecksum,
@@ -13,11 +13,8 @@ import {
   extractBackupRawKeys,
   parseStorageKeysToSnapshot,
   remapBackupKeysToPrefix,
-} from './backupEnvelopeUtils.js';
-import {
-  hasPrototypePollution,
-  validateAndNormalizeSnapshot,
-} from './backupSecurityUtils.js';
+} from "./backupEnvelopeUtils.js";
+import { hasPrototypePollution, validateAndNormalizeSnapshot } from "./backupSecurityUtils.js";
 
 /** Result of a parsed and validated backup payload. */
 export interface ValidatedBackupPayload {
@@ -27,8 +24,7 @@ export interface ValidatedBackupPayload {
 }
 
 export type ParseAndValidateResult =
-  | { ok: true; data: ValidatedBackupPayload }
-  | { ok: false; errorKey: AppTranslationKey };
+  { ok: true; data: ValidatedBackupPayload } | { ok: false; errorKey: AppTranslationKey };
 
 /** Verifies cryptographic SHA-256 checksum if present in envelope. */
 async function validateBackupPayloadChecksum(
@@ -36,13 +32,13 @@ async function validateBackupPayloadChecksum(
   raw: Record<string, string>,
 ): Promise<boolean> {
   if (
-    typeof parsed === 'object' &&
+    typeof parsed === "object" &&
     parsed !== null &&
     !Array.isArray(parsed) &&
     (parsed as Record<string, unknown>).format === BACKUP_FORMAT_ID
   ) {
     const checksum = (parsed as WorkspaceBackupEnvelope).checksum;
-    if (typeof checksum === 'string' && checksum.length > 0) {
+    if (typeof checksum === "string" && checksum.length > 0) {
       const computed = await computeBackupChecksum(raw);
       return computed.toLowerCase() === checksum.toLowerCase();
     }
@@ -61,39 +57,39 @@ function parseAndValidateBackupPayload(
   try {
     const parsed: unknown = JSON.parse(jsonString);
     if (hasPrototypePollution(parsed)) {
-      return { ok: false, errorKey: 'backup.securityViolation' };
+      return { ok: false, errorKey: "backup.securityViolation" };
     }
 
     if (
-      typeof parsed === 'object' &&
+      typeof parsed === "object" &&
       parsed !== null &&
       !Array.isArray(parsed) &&
       (parsed as Record<string, unknown>).format === BACKUP_FORMAT_ID
     ) {
       const envelope = parsed as WorkspaceBackupEnvelope;
-      if (typeof envelope.version === 'number' && envelope.version > BACKUP_FORMAT_VERSION) {
-        return { ok: false, errorKey: 'backup.unsupportedFutureVersion' };
+      if (typeof envelope.version === "number" && envelope.version > BACKUP_FORMAT_VERSION) {
+        return { ok: false, errorKey: "backup.unsupportedFutureVersion" };
       }
       if (
-        typeof envelope.minCompatibleVersion === 'number' &&
+        typeof envelope.minCompatibleVersion === "number" &&
         envelope.minCompatibleVersion > BACKUP_FORMAT_VERSION
       ) {
-        return { ok: false, errorKey: 'backup.unsupportedFutureVersion' };
+        return { ok: false, errorKey: "backup.unsupportedFutureVersion" };
       }
     }
 
     const raw = extractBackupRawKeys(parsed);
     if (!raw) {
-      return { ok: false, errorKey: 'backup.invalidFormat' };
+      return { ok: false, errorKey: "backup.invalidFormat" };
     }
 
     if (Object.keys(raw).length === 0) {
-      return { ok: false, errorKey: 'backup.emptyBackup' };
+      return { ok: false, errorKey: "backup.emptyBackup" };
     }
 
     const remapped = remapBackupKeysToPrefix(raw, targetPrefix);
     if (Object.keys(remapped).length === 0) {
-      return { ok: false, errorKey: 'backup.invalidFormat' };
+      return { ok: false, errorKey: "backup.invalidFormat" };
     }
 
     const snapshot = parseStorageKeysToSnapshot(remapped, targetPrefix);
@@ -113,7 +109,7 @@ function parseAndValidateBackupPayload(
       },
     };
   } catch {
-    return { ok: false, errorKey: 'backup.invalidFormat' };
+    return { ok: false, errorKey: "backup.invalidFormat" };
   }
 }
 
@@ -130,7 +126,7 @@ async function parseAndValidateBackupPayloadAsync(
     syncResult.data.raw,
   );
   if (!checksumValid) {
-    return { ok: false, errorKey: 'backup.checksumMismatch' };
+    return { ok: false, errorKey: "backup.checksumMismatch" };
   }
 
   return syncResult;
@@ -149,7 +145,7 @@ export function summarizeWorkspaceBackup(
   const { parsed, remapped } = result.data;
   const stats = computeBackupStats(remapped);
   const legacyFormat =
-    typeof parsed === 'object' &&
+    typeof parsed === "object" &&
     parsed !== null &&
     !Array.isArray(parsed) &&
     (parsed as Record<string, unknown>).format !== BACKUP_FORMAT_ID;
@@ -161,18 +157,17 @@ export function summarizeWorkspaceBackup(
   let version: number | undefined;
 
   if (
-    typeof parsed === 'object' &&
+    typeof parsed === "object" &&
     parsed !== null &&
     !Array.isArray(parsed) &&
     (parsed as Record<string, unknown>).format === BACKUP_FORMAT_ID
   ) {
     const env = parsed as WorkspaceBackupEnvelope;
-    exportedAt = typeof env.exportedAt === 'string' ? env.exportedAt : null;
-    subdomain = typeof env.subdomain === 'string' ? env.subdomain : null;
-    dataSource =
-      env.dataSource === 'server' || env.dataSource === 'local' ? env.dataSource : null;
-    checksum = typeof env.checksum === 'string' ? env.checksum : null;
-    version = typeof env.version === 'number' ? env.version : undefined;
+    exportedAt = typeof env.exportedAt === "string" ? env.exportedAt : null;
+    subdomain = typeof env.subdomain === "string" ? env.subdomain : null;
+    dataSource = env.dataSource === "server" || env.dataSource === "local" ? env.dataSource : null;
+    checksum = typeof env.checksum === "string" ? env.checksum : null;
+    version = typeof env.version === "number" ? env.version : undefined;
   }
 
   return {
@@ -190,8 +185,7 @@ export function summarizeWorkspaceBackup(
 }
 
 export type BackupValidationResult =
-  | { ok: true; data: Record<string, string> }
-  | { ok: false; errorKey: AppTranslationKey };
+  { ok: true; data: Record<string, string> } | { ok: false; errorKey: AppTranslationKey };
 
 /**
  * Validates exported workspace JSON before restore.
@@ -209,19 +203,19 @@ export function validateWorkspaceBackupJson(
   if (expectedSubdomain) {
     const parsed = result.data.parsed;
     if (
-      typeof parsed !== 'object' ||
+      typeof parsed !== "object" ||
       parsed === null ||
       Array.isArray(parsed) ||
       (parsed as Record<string, unknown>).format !== BACKUP_FORMAT_ID
     ) {
-      return { ok: false, errorKey: 'backup.workspaceUnidentified' };
+      return { ok: false, errorKey: "backup.workspaceUnidentified" };
     }
     const sourceSubdomain = (parsed as WorkspaceBackupEnvelope).subdomain;
     if (!sourceSubdomain) {
-      return { ok: false, errorKey: 'backup.workspaceUnidentified' };
+      return { ok: false, errorKey: "backup.workspaceUnidentified" };
     }
     if (sourceSubdomain.toLowerCase() !== expectedSubdomain.toLowerCase()) {
-      return { ok: false, errorKey: 'backup.workspaceMismatch' };
+      return { ok: false, errorKey: "backup.workspaceMismatch" };
     }
   }
   return { ok: true, data: result.data.remapped };
@@ -242,19 +236,19 @@ export async function validateWorkspaceBackupJsonAsync(
   if (expectedSubdomain) {
     const parsed = result.data.parsed;
     if (
-      typeof parsed !== 'object' ||
+      typeof parsed !== "object" ||
       parsed === null ||
       Array.isArray(parsed) ||
       (parsed as Record<string, unknown>).format !== BACKUP_FORMAT_ID
     ) {
-      return { ok: false, errorKey: 'backup.workspaceUnidentified' };
+      return { ok: false, errorKey: "backup.workspaceUnidentified" };
     }
     const sourceSubdomain = (parsed as WorkspaceBackupEnvelope).subdomain;
     if (!sourceSubdomain) {
-      return { ok: false, errorKey: 'backup.workspaceUnidentified' };
+      return { ok: false, errorKey: "backup.workspaceUnidentified" };
     }
     if (sourceSubdomain.toLowerCase() !== expectedSubdomain.toLowerCase()) {
-      return { ok: false, errorKey: 'backup.workspaceMismatch' };
+      return { ok: false, errorKey: "backup.workspaceMismatch" };
     }
   }
   return { ok: true, data: result.data.remapped };

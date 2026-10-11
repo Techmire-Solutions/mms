@@ -1,7 +1,7 @@
 import React from "react";
 import { IdCard, School } from "lucide-react";
 import { hydrateFacultyFromContact, type FacultyMember } from "@mms/shared";
-import { Drawer } from '@/components/ui/Drawer';
+import { Drawer } from "@/components/ui/Drawer";
 import { DetailDrawerRestoreOrEditAction } from "@/components/ui/DetailDrawerArchiveChrome";
 import { DrawerUpdatedStamp } from "@/components/ui/DrawerUpdatedStamp";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,7 @@ import { FacultyDetailHeroCard } from "@/tenant/features/faculty/components/Facu
 import { DetailNotesBlock } from "@/components/ui/DetailNotesBlock";
 import { FacultyDetailQuickActions } from "@/tenant/features/faculty/components/FacultyDetailQuickActions";
 import { FacultyDetailSessionsSection } from "@/tenant/features/faculty/components/FacultyDetailSessionsSection";
-import {
-  resolveFacultyDisplayName,
-} from "@/tenant/features/faculty/components/facultyFieldDisplay";
+import { resolveFacultyDisplayName } from "@/tenant/features/faculty/components/facultyFieldDisplay";
 import { useFacultyDetailModel } from "@/tenant/features/faculty/components/useFacultyDetailModel";
 
 export interface FacultyDetailProps {
@@ -161,4 +159,3 @@ export function FacultyDetail({
 
 export const FacultyDrawer = FacultyDetail;
 export default FacultyDetail;
-

@@ -46,5 +46,5 @@ export const COLLECTION_OPTIONS = [
   { value: "contacts", label: "Contacts" },
   { value: "questions", label: "Question Bank Questions" },
   { value: "tests", label: "Generated Tests" },
-  { value: "assessment_results", label: "Assessment Results" }
+  { value: "assessment_results", label: "Assessment Results" },
 ] as const;

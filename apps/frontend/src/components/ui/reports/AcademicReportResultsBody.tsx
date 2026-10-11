@@ -4,13 +4,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TableCellLink } from "@/components/ui/TableCellLink";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
 import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -19,20 +13,20 @@ import type { AcademicResultItem } from "./academicReportTypes";
 
 const GRADE_BADGE_CLS: Record<string, string> = {
   "A+": SEMANTIC_BADGE.successStrong,
-  "A": SEMANTIC_BADGE.success,
+  A: SEMANTIC_BADGE.success,
   "B+": SEMANTIC_BADGE.info,
-  "B": SEMANTIC_BADGE.info,
-  "C": SEMANTIC_BADGE.warning,
-  "F": SEMANTIC_BADGE.destructive,
+  B: SEMANTIC_BADGE.info,
+  C: SEMANTIC_BADGE.warning,
+  F: SEMANTIC_BADGE.destructive,
 };
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
 
 interface AcademicReportResultsBodyProps {
   academicResults: AcademicResultItem[];
   onToggleStudentFilter: (studentName: string) => void;
 }
 
-export const AcademicReportResultsBody = (function AcademicReportResultsBody({
+export const AcademicReportResultsBody = function AcademicReportResultsBody({
   academicResults,
   onToggleStudentFilter,
 }: AcademicReportResultsBodyProps): React.JSX.Element {
@@ -55,18 +49,20 @@ export const AcademicReportResultsBody = (function AcademicReportResultsBody({
     { key: "grade", header: t("examinations.report.colGrade") },
   ])() as ExportColumn[];
 
-  const exportRows = (() => academicResults.map((result) => ({
-    rank: result.rank,
-    student: result.studentName,
-    class: result.class,
-    subject: result.subject,
-    marks: `${result.marks}/${result.total}`,
-    grade: result.grade,
-  })))();
+  const exportRows = (() =>
+    academicResults.map((result) => ({
+      rank: result.rank,
+      student: result.studentName,
+      class: result.class,
+      subject: result.subject,
+      marks: `${result.marks}/${result.total}`,
+      grade: result.grade,
+    })))();
 
   const [page, setPage] = useState(1);
   const pageSize = 15;
-  const pagedAcademicResults = (() => academicResults.slice((page - 1) * pageSize, page * pageSize))();
+  const pagedAcademicResults = (() =>
+    academicResults.slice((page - 1) * pageSize, page * pageSize))();
 
   return (
     <ReportDataGridContainer
@@ -94,9 +90,15 @@ export const AcademicReportResultsBody = (function AcademicReportResultsBody({
                 {academicResult.rank === 1 ? (
                   <Trophy className="h-4 w-4 shrink-0 text-warning" />
                 ) : (
-                  <span className="shrink-0 text-xs font-semibold text-muted-foreground">#{academicResult.rank}</span>
+                  <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+                    #{academicResult.rank}
+                  </span>
                 )}
-                <TableCellLink tap onClick={() => onToggleStudentFilter(academicResult.studentName)} className="truncate">
+                <TableCellLink
+                  tap
+                  onClick={() => onToggleStudentFilter(academicResult.studentName)}
+                  className="truncate"
+                >
                   {academicResult.studentName}
                 </TableCellLink>
               </div>
@@ -112,8 +114,16 @@ export const AcademicReportResultsBody = (function AcademicReportResultsBody({
               />
             </div>
             <StatGrid>
-              <StatRow className="min-w-0" label={t("examinations.report.colClass")} value={academicResult.class} />
-              <StatRow className="min-w-0" label={t("examinations.report.colSubject")} value={academicResult.subject} />
+              <StatRow
+                className="min-w-0"
+                label={t("examinations.report.colClass")}
+                value={academicResult.class}
+              />
+              <StatRow
+                className="min-w-0"
+                label={t("examinations.report.colSubject")}
+                value={academicResult.subject}
+              />
               <StatRow
                 fullWidth
                 label={t("examinations.report.colMarks")}
@@ -130,7 +140,12 @@ export const AcademicReportResultsBody = (function AcademicReportResultsBody({
           <TableHeader>
             <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
               {headers.map((header) => (
-                <ModuleTableHeaderCell key={header.key} columnKey={header.key} variant={header.variant} className="px-3 py-2.5">
+                <ModuleTableHeaderCell
+                  key={header.key}
+                  columnKey={header.key}
+                  variant={header.variant}
+                  className="px-3 py-2.5"
+                >
                   {header.label}
                 </ModuleTableHeaderCell>
               ))}
@@ -138,7 +153,10 @@ export const AcademicReportResultsBody = (function AcademicReportResultsBody({
           </TableHeader>
           <TableBody className="divide-y divide-border/50">
             {pagedAcademicResults.map((academicResult) => (
-              <TableRow key={`${academicResult.studentName}-${academicResult.class}`} className="hover:bg-muted/20 transition-colors">
+              <TableRow
+                key={`${academicResult.studentName}-${academicResult.class}`}
+                className="hover:bg-muted/20 transition-colors"
+              >
                 <TableCell variant="badge" noWrap className="px-3 py-2.5">
                   {academicResult.rank === 1 ? (
                     <Trophy className="w-4 h-4 text-warning inline-block" />
@@ -146,9 +164,15 @@ export const AcademicReportResultsBody = (function AcademicReportResultsBody({
                     <span className="text-muted-foreground">{academicResult.rank}</span>
                   )}
                 </TableCell>
-                <TableCell className="px-3 py-2.5 font-medium">{academicResult.studentName}</TableCell>
-                <TableCell className="px-3 py-2.5 text-muted-foreground">{academicResult.class}</TableCell>
-                <TableCell className="px-3 py-2.5 text-muted-foreground">{academicResult.subject}</TableCell>
+                <TableCell className="px-3 py-2.5 font-medium">
+                  {academicResult.studentName}
+                </TableCell>
+                <TableCell className="px-3 py-2.5 text-muted-foreground">
+                  {academicResult.class}
+                </TableCell>
+                <TableCell className="px-3 py-2.5 text-muted-foreground">
+                  {academicResult.subject}
+                </TableCell>
                 <TableCell variant="number" noWrap className="px-3 py-2.5 font-semibold">
                   {academicResult.marks}/{academicResult.total}
                 </TableCell>
@@ -171,6 +195,6 @@ export const AcademicReportResultsBody = (function AcademicReportResultsBody({
       </div>
     </ReportDataGridContainer>
   );
-});
+};
 
 export { GRADE_BADGE_CLS, AcademicReportResultsBody as AcademicReportResultsTable };

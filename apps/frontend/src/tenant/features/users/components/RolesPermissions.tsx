@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
-import { Shield, Lock } from 'lucide-react';
-import { workspaceRoleLabel } from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { ConfirmAlertDialog } from '@/components/ui/ConfirmAlertDialog';
+import React, { useEffect } from "react";
+import { Shield, Lock } from "lucide-react";
+import { workspaceRoleLabel } from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
 
-import { PermissionMatrix } from '@/tenant/features/users/components/PermissionMatrix';
-import { RoleFormModal } from '@/tenant/features/users/components/RoleFormModal';
-import { RolesListSidebar } from '@/tenant/features/users/components/RolesListSidebar';
-import { useRolesPermissionsController } from '@/tenant/features/users/hooks/useRolesPermissionsController';
-import { Badge } from '@/components/ui/badge';
+import { PermissionMatrix } from "@/tenant/features/users/components/PermissionMatrix";
+import { RoleFormModal } from "@/tenant/features/users/components/RoleFormModal";
+import { RolesListSidebar } from "@/tenant/features/users/components/RolesListSidebar";
+import { useRolesPermissionsController } from "@/tenant/features/users/hooks/useRolesPermissionsController";
+import { Badge } from "@/components/ui/badge";
 
 export interface RolesPermissionsProps {
   onDirtyChange?: (dirty: boolean) => void;
@@ -77,19 +77,25 @@ export function RolesPermissions({
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-primary" />
                   <p className="text-sm font-bold text-foreground">
-                    {t('users.permissions.matrixTitle', { name: workspaceRoleLabel(displayRole, t) })}
+                    {t("users.permissions.matrixTitle", {
+                      name: workspaceRoleLabel(displayRole, t),
+                    })}
                   </p>
-                  {displayRole.isSystem ? <Lock className="h-3 w-3 text-muted-foreground" aria-hidden /> : null}
-                  {displayRole.id === 'super_admin' && !isSuperAdmin ? (
+                  {displayRole.isSystem ? (
+                    <Lock className="h-3 w-3 text-muted-foreground" aria-hidden />
+                  ) : null}
+                  {displayRole.id === "super_admin" && !isSuperAdmin ? (
                     <Badge as="span" tone="primary" size="sm">
-                      {t('users.permissions.superAdminProtectedBadge')}
+                      {t("users.permissions.superAdminProtectedBadge")}
                     </Badge>
                   ) : null}
                 </div>
                 {canManageDisplayRole ? (
                   <div className="flex items-center gap-2">
                     {permDirty ? (
-                      <Badge as="span" tone="warning" size="sm">{t('users.permissions.unsaved')}</Badge>
+                      <Badge as="span" tone="warning" size="sm">
+                        {t("users.permissions.unsaved")}
+                      </Badge>
                     ) : null}
                     <Button
                       type="button"
@@ -98,18 +104,25 @@ export function RolesPermissions({
                       disabled={!permDirty}
                       onClick={resetPermDraft}
                     >
-                      {t('users.permissions.resetPermissions')}
+                      {t("users.permissions.resetPermissions")}
                     </Button>
-                    <Button type="button" size="sm" disabled={!permDirty} onClick={savePermissionDraft}>
-                      {t('users.permissions.savePermissions')}
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={!permDirty}
+                      onClick={savePermissionDraft}
+                    >
+                      {t("users.permissions.savePermissions")}
                     </Button>
                   </div>
                 ) : null}
               </div>
               {canManageDisplayRole ? (
-                <p className="text-xs text-muted-foreground">{t('users.permissions.editHint')}</p>
-              ) : displayRole.id === 'super_admin' ? (
-                <p className="text-xs text-muted-foreground">{t('users.permissions.superAdminProtected')}</p>
+                <p className="text-xs text-muted-foreground">{t("users.permissions.editHint")}</p>
+              ) : displayRole.id === "super_admin" ? (
+                <p className="text-xs text-muted-foreground">
+                  {t("users.permissions.superAdminProtected")}
+                </p>
               ) : null}
               <PermissionMatrix
                 modules={visibleModules}
@@ -128,7 +141,7 @@ export function RolesPermissions({
         open={!!editing}
         onClose={closeRoleForm}
         title={editTitle}
-        role={editing === 'new' ? null : editing}
+        role={editing === "new" ? null : editing}
         visibleModules={visibleModules}
         onSave={handleSave}
       />
@@ -138,10 +151,10 @@ export function RolesPermissions({
         onOpenChange={(open) => {
           if (!open) clearPendingMatrixLeave();
         }}
-        title={t('settings.unsavedChanges')}
-        description={t('users.permissions.discardUnsavedMatrixConfirm')}
-        confirmLabel={t('common.yes')}
-        cancelLabel={t('common.cancel')}
+        title={t("settings.unsavedChanges")}
+        description={t("users.permissions.discardUnsavedMatrixConfirm")}
+        confirmLabel={t("common.yes")}
+        cancelLabel={t("common.cancel")}
         destructive
         onConfirm={confirmPendingMatrixLeave}
       />

@@ -5,21 +5,21 @@
 
 /** Codes thrown via `PlatformError` (setup, password, admin ops). */
 export const PLATFORM_SERVICE_ERROR_CODES = [
-  'setup_not_needed',
-  'invalid_email',
-  'invalid_name',
-  'password_too_short',
-  'password_weak',
-  'email_send_failed',
-  'smtp_required',
-  'invalid_setup',
-  'invalid_code',
-  'too_many_attempts',
-  'user_exists',
-  'invalid_reset',
-  'invalid_current_password',
-  'user_not_found',
-  'forbidden',
+  "setup_not_needed",
+  "invalid_email",
+  "invalid_name",
+  "password_too_short",
+  "password_weak",
+  "email_send_failed",
+  "smtp_required",
+  "invalid_setup",
+  "invalid_code",
+  "too_many_attempts",
+  "user_exists",
+  "invalid_reset",
+  "invalid_current_password",
+  "user_not_found",
+  "forbidden",
 ] as const;
 
 /** @see PLATFORM_SERVICE_ERROR_CODES */
@@ -29,17 +29,17 @@ export type PlatformServiceErrorCode = (typeof PLATFORM_SERVICE_ERROR_CODES)[num
  * HTTP/middleware/route error `type` values (not always thrown as `PlatformError`).
  */
 export const PLATFORM_HTTP_ERROR_TYPES = [
-  'invalid_credentials',
-  'account_disabled',
-  'auth_required',
-  'session_revoked',
-  'validation_error',
-  'rate_limit_exceeded',
-  'not_found',
-  'database_error',
-  'remote_migrate_disabled',
-  'migrate_restart_in_progress',
-  'two_factor_unavailable',
+  "invalid_credentials",
+  "account_disabled",
+  "auth_required",
+  "session_revoked",
+  "validation_error",
+  "rate_limit_exceeded",
+  "not_found",
+  "database_error",
+  "remote_migrate_disabled",
+  "migrate_restart_in_progress",
+  "two_factor_unavailable",
 ] as const;
 
 /** @see PLATFORM_HTTP_ERROR_TYPES */

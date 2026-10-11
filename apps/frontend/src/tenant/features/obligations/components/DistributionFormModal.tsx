@@ -16,7 +16,12 @@ interface DistributionFormModalProps {
   onClose: () => void;
 }
 
-export function DistributionFormModal({ initial, onSave, onClose, title }: DistributionFormModalProps): React.JSX.Element {
+export function DistributionFormModal({
+  initial,
+  onSave,
+  onClose,
+  title,
+}: DistributionFormModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const [form, setForm] = useState({ ...initial });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -26,7 +31,12 @@ export function DistributionFormModal({ initial, onSave, onClose, title }: Distr
   const validate = (): Record<string, string> => {
     const nextErrors: Record<string, string> = {};
     if (!form.name?.trim()) nextErrors.name = t("obligations.mujtahids.nameRequired");
-    if (!form.percentage || isNaN(Number(form.percentage)) || Number(form.percentage) <= 0 || Number(form.percentage) > 100) {
+    if (
+      !form.percentage ||
+      isNaN(Number(form.percentage)) ||
+      Number(form.percentage) <= 0 ||
+      Number(form.percentage) > 100
+    ) {
       nextErrors.pct = t("obligations.wakala.pctInvalid");
     }
     return nextErrors;
@@ -98,7 +108,10 @@ export function DistributionFormModal({ initial, onSave, onClose, title }: Distr
             onChange={(val) => setForm({ ...form, type: val as DistributionType })}
             options={DISTRIBUTION_TYPES.map((type) => ({
               value: type,
-              label: type === "Income" ? t("obligations.distribution.income") : t("obligations.distribution.liability"),
+              label:
+                type === "Income"
+                  ? t("obligations.distribution.income")
+                  : t("obligations.distribution.liability"),
             }))}
           />
         </Field>
@@ -109,7 +122,11 @@ export function DistributionFormModal({ initial, onSave, onClose, title }: Distr
             type="text"
             inputMode="decimal"
             placeholder="0.00"
-            value={form.percentage === undefined || form.percentage === null ? "" : String(form.percentage)}
+            value={
+              form.percentage === undefined || form.percentage === null
+                ? ""
+                : String(form.percentage)
+            }
             onChange={(event) => {
               if (errors.pct) {
                 setErrors((prev) => {
@@ -120,7 +137,10 @@ export function DistributionFormModal({ initial, onSave, onClose, title }: Distr
               }
               const val = event.target.value;
               if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-                setForm({ ...form, percentage: val === "" ? ("" as unknown as number) : parseFloat(val) || 0 });
+                setForm({
+                  ...form,
+                  percentage: val === "" ? ("" as unknown as number) : parseFloat(val) || 0,
+                });
               }
             }}
             className={FORM_INPUT}

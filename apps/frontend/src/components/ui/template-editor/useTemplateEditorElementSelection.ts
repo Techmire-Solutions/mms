@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
-import type { DocumentTemplate, TemplateElement } from '@mms/shared';
-import type { DragStateInfo, ResizeHandle, ResizeStateInfo } from './useTemplateEditorInteractions';
+import { useState, useMemo, useCallback, type MouseEvent as ReactMouseEvent } from "react";
+import type { DocumentTemplate, TemplateElement } from "@mms/shared";
+import type { DragStateInfo, ResizeHandle, ResizeStateInfo } from "./useTemplateEditorInteractions";
 
 export interface UseTemplateEditorElementSelectionOptions<TPayload> {
   elements: TemplateElement<keyof TPayload & string>[];
@@ -72,7 +72,7 @@ export function useTemplateEditorElementSelection<TPayload>({
   );
 
   const onMouseDownResize = useCallback(
-    (event: ReactMouseEvent, elementId: string, handle: ResizeHandle = 'se') => {
+    (event: ReactMouseEvent, elementId: string, handle: ResizeHandle = "se") => {
       if (event.button !== 0) return;
       event.preventDefault();
       event.stopPropagation();

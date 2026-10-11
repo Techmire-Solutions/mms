@@ -80,7 +80,11 @@ export function generateQrMatrix(text: string): boolean[][] {
         const inFinderTR = mr < 9 && mc >= size - 9;
         const inFinderBL = mr >= size - 9 && mc < 9;
         const inTiming = mr === 6 || mc === 6;
-        const inAlignment = mr >= alignCenter - 2 && mr <= alignCenter + 2 && mc >= alignCenter - 2 && mc <= alignCenter + 2;
+        const inAlignment =
+          mr >= alignCenter - 2 &&
+          mr <= alignCenter + 2 &&
+          mc >= alignCenter - 2 &&
+          mc <= alignCenter + 2;
 
         if (inFinderTL || inFinderTR || inFinderBL || inTiming || inAlignment) {
           continue;

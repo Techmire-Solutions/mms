@@ -10,7 +10,8 @@ export interface ReportChartCardProps {
   action?: React.ReactNode;
   actions?: React.ReactNode;
   heightClass?: string;
-  accentColor?: "primary" | "secondary" | "success" | "warning" | "destructive" | "info" | "neutral";
+  accentColor?:
+    "primary" | "secondary" | "success" | "warning" | "destructive" | "info" | "neutral";
   className?: string;
   children: React.ReactNode;
   empty?: boolean;
@@ -22,7 +23,7 @@ export interface ReportChartCardProps {
  * Standardized chart card wrapper for all module report views.
  * Ensures zero-CLS ResponsiveContainer initialization, theme stripe inset, and consistent typography.
  */
-export const ReportChartCard = (function ReportChartCard({
+export const ReportChartCard = function ReportChartCard({
   title,
   subtitle,
   action,
@@ -46,17 +47,13 @@ export const ReportChartCard = (function ReportChartCard({
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-foreground truncate">{title}</h3>
-          {subtitle && (
-            <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>}
         </div>
         {headerAction && <div className="shrink-0">{headerAction}</div>}
       </div>
 
       {empty && emptyNode ? (
-        <div className={cn("flex items-center justify-center", heightClass)}>
-          {emptyNode}
-        </div>
+        <div className={cn("flex items-center justify-center", heightClass)}>{emptyNode}</div>
       ) : (
         <div className={cn("w-full", heightClass)} aria-hidden="true">
           <SafeResponsiveContainer
@@ -72,6 +69,6 @@ export const ReportChartCard = (function ReportChartCard({
       )}
     </Card>
   );
-});
+};
 
 export default ReportChartCard;

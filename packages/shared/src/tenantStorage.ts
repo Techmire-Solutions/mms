@@ -21,7 +21,7 @@ function isTenantScopedStorageKey(key: string): boolean {
  * Returns null for global keys (e.g. `workspaces`).
  */
 export function parseTenantScopedStorageKey(
-  key: string
+  key: string,
 ): { subdomain: string; logicalKey: string } | null {
   if (!isTenantScopedStorageKey(key)) return null;
   const parts = key.split(":");

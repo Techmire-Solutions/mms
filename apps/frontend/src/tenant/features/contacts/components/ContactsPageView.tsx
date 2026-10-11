@@ -12,11 +12,13 @@ import { ContactsWorkTier } from "@/tenant/features/contacts/components/Contacts
 import { ContactsPageHeaderActions } from "@/tenant/features/contacts/components/ContactsPageHeaderActions";
 import type { useContactsPageController } from "@/tenant/features/contacts/hooks/useContactsPageController";
 
-const ContactsSetupTier = lazy(() => import("@/tenant/features/contacts/components/ContactsSetupTier"));
+const ContactsSetupTier = lazy(
+  () => import("@/tenant/features/contacts/components/ContactsSetupTier"),
+);
 const ContactsReportsTier = lazy(() =>
   import("@/tenant/features/contacts/components/ContactsReportsTier").then((m) => ({
     default: m.ContactsReportsTier,
-  }))
+  })),
 );
 
 export type ContactsPageViewProps = ReturnType<typeof useContactsPageController>;

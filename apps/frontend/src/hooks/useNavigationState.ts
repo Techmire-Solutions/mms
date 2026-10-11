@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 interface NavigationStateOptions {
   initialCollapsed?: boolean | (() => boolean);
@@ -22,13 +22,24 @@ export function useNavigationState({
   const toggleCollapsed = useCallback(() => setCollapsed((previous) => !previous), []);
   const openCommandPalette = useCallback(() => setCommandPaletteOpen(true), []);
   const closeCommandPalette = useCallback(() => setCommandPaletteOpen(false), []);
-  const toggleCommandPalette = useCallback(() => setCommandPaletteOpen((previous) => !previous), []);
+  const toggleCommandPalette = useCallback(
+    () => setCommandPaletteOpen((previous) => !previous),
+    [],
+  );
 
   return {
-    mobileOpen, setMobileOpen, openMobileSidebar, closeMobileSidebar,
-    collapsed, setCollapsed, toggleCollapsed,
-    commandPaletteOpen, setCommandPaletteOpen, openCommandPalette,
-    closeCommandPalette, toggleCommandPalette,
+    mobileOpen,
+    setMobileOpen,
+    openMobileSidebar,
+    closeMobileSidebar,
+    collapsed,
+    setCollapsed,
+    toggleCollapsed,
+    commandPaletteOpen,
+    setCommandPaletteOpen,
+    openCommandPalette,
+    closeCommandPalette,
+    toggleCommandPalette,
   };
 }
 

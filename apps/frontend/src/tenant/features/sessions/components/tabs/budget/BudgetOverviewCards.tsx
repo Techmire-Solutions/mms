@@ -44,13 +44,21 @@ export function BudgetOverviewCards({
   ];
 
   return (
-    <section aria-label={t("sessions.budget.summaryAria")} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <section
+      aria-label={t("sessions.budget.summaryAria")}
+      className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+    >
       {stats.map((stat) => (
         <article key={stat.label} className={`${WORK_SURFACE_INNER} p-4`}>
-          <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center mb-2`} aria-hidden="true">
+          <div
+            className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center mb-2`}
+            aria-hidden="true"
+          >
             <stat.icon className={`w-4 h-4 ${stat.color}`} />
           </div>
-          <p className={`text-base font-bold ${stat.color} m-0`}>{formatMoney(stat.value, currency)}</p>
+          <p className={`text-base font-bold ${stat.color} m-0`}>
+            {formatMoney(stat.value, currency)}
+          </p>
           <p className="text-xs text-muted-foreground mt-0.5 m-0">{stat.label}</p>
         </article>
       ))}

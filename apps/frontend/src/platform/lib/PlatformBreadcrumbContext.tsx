@@ -1,5 +1,5 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import type { BreadcrumbItem } from '@/components/ui/Breadcrumb';
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import type { BreadcrumbItem } from "@/components/ui/Breadcrumb";
 
 export type PlatformBreadcrumbSegment = BreadcrumbItem;
 
@@ -32,7 +32,9 @@ export function PlatformBreadcrumbProvider({
   );
 
   return (
-    <PlatformBreadcrumbContext.Provider value={value}>{children}</PlatformBreadcrumbContext.Provider>
+    <PlatformBreadcrumbContext.Provider value={value}>
+      {children}
+    </PlatformBreadcrumbContext.Provider>
   );
 }
 

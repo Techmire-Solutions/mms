@@ -1,37 +1,33 @@
-import type {
-  AttendanceReportAggregates,
-  AttendanceReportComparisonQuery,
-} from '@mms/shared';
-import {
-  ATTENDANCE_MODULE_MANIFEST,
-  normalizeAttendanceReportComparisonQuery,
-} from '@mms/shared';
-import { tsrClient } from '@/lib/api';
-import { useAuth } from '@/lib/contexts/AuthContext';
+import type { AttendanceReportAggregates, AttendanceReportComparisonQuery } from "@mms/shared";
+import { ATTENDANCE_MODULE_MANIFEST, normalizeAttendanceReportComparisonQuery } from "@mms/shared";
+import { tsrClient } from "@/lib/api";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export const ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY = [
   ATTENDANCE_MODULE_MANIFEST.collectionKey,
-  'report-aggregates',
+  "report-aggregates",
 ] as const;
 
-export function useAttendanceReportAggregates(
-  options?: {
-    enabled?: boolean;
-    classId?: string;
-    comparison?: AttendanceReportComparisonQuery;
-  },
-) {
+export function useAttendanceReportAggregates(options?: {
+  enabled?: boolean;
+  classId?: string;
+  comparison?: AttendanceReportComparisonQuery;
+}) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
   const comparison = normalizeAttendanceReportComparisonQuery(options?.comparison);
   const classId = options?.classId?.trim() || undefined;
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.attendance.reportAggregates.useQuery({
-    queryKey: [...ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY, classId ?? null, comparison ?? null] as const,
+    queryKey: [
+      ...ATTENDANCE_REPORT_AGGREGATES_QUERY_KEY,
+      classId ?? null,
+      comparison ?? null,
+    ] as const,
     queryData: {
       query: {
         classId,
-        sessionIds: comparison?.sessionIds?.length ? comparison.sessionIds.join(',') : undefined,
+        sessionIds: comparison?.sessionIds?.length ? comparison.sessionIds.join(",") : undefined,
         rangeAFrom: comparison?.rangeAFrom,
         rangeATo: comparison?.rangeATo,
         rangeBFrom: comparison?.rangeBFrom,
@@ -44,8 +40,6 @@ export function useAttendanceReportAggregates(
 
   return {
     ...query,
-    data: query.data?.status === 200
-      ? query.data.body as AttendanceReportAggregates
-      : undefined,
+    data: query.data?.status === 200 ? (query.data.body as AttendanceReportAggregates) : undefined,
   };
 }

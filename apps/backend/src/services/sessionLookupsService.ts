@@ -4,13 +4,13 @@ import {
   emptySessionLookupsMap,
   type SessionLookupKind,
   type SessionLookupsMap,
-} from '@mms/shared';
-import { createModuleStringListLookupsService } from '../lib/createModuleStringListLookupsService.js';
+} from "@mms/shared";
+import { createModuleStringListLookupsService } from "../lib/createModuleStringListLookupsService.js";
 import {
   listSessionLookupsByKind,
   listSessionLookupsByWorkspace,
   replaceSessionLookupsForKind,
-} from '../db/repositories/sessionLookupsRepository.js';
+} from "../db/repositories/sessionLookupsRepository.js";
 
 const stringListLookups = createModuleStringListLookupsService<
   SessionLookupKind,
@@ -22,7 +22,7 @@ const stringListLookups = createModuleStringListLookupsService<
   listByWorkspace: listSessionLookupsByWorkspace,
   listByKind: listSessionLookupsByKind,
   replaceForKind: replaceSessionLookupsForKind,
-  broadcastKey: 'sessions',
+  broadcastKey: "sessions",
 });
 
 export const loadSessionLookupsMap = stringListLookups.loadMap;

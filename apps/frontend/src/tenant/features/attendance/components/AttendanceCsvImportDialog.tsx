@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  attendanceTransferSchema,
-  type AttendanceTransferEntity,
-} from "@mms/shared";
+import { attendanceTransferSchema, type AttendanceTransferEntity } from "@mms/shared";
 import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface AttendanceCsvImportDialogProps {

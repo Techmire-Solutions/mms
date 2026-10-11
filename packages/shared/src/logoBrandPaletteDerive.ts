@@ -7,13 +7,13 @@ import {
   suggestSecondaryColor,
   type BrandingPresetAccessibility,
   type HslColor,
-} from './brandingTheme.js';
+} from "./brandingTheme.js";
 import {
   type DeriveBrandColorsFromPaletteOptions,
   type LogoBrandColors,
   type LogoColorProportion,
   normalizeBrandHex,
-} from './logoBrandHexUtils.js';
+} from "./logoBrandHexUtils.js";
 
 const DEFAULT_DERIVE_OPTIONS: Required<DeriveBrandColorsFromPaletteOptions> = {
   minSaturation: 10,
@@ -50,7 +50,7 @@ function brandCandidateScore(hsl: HslColor, frequencyWeight: number): number {
  */
 function accessiblePrimaryFit(hex: string): number {
   const adjusted = ensureAccentButtonContrast(hex);
-  const ratio = getContrastRatio('#ffffff', adjusted);
+  const ratio = getContrastRatio("#ffffff", adjusted);
   if (!meetsWcagAaTextContrast(ratio)) return 0;
 
   const baseHsl = hexToHslColor(hex);
@@ -124,7 +124,8 @@ function pickSecondaryCandidate(
     .filter((candidate) => normalizeBrandHex(candidate.hex) !== primaryNormalized)
     .sort(
       (a, b) =>
-        brandCandidateScore(b.hsl, b.frequencyWeight) - brandCandidateScore(a.hsl, a.frequencyWeight),
+        brandCandidateScore(b.hsl, b.frequencyWeight) -
+        brandCandidateScore(a.hsl, a.frequencyWeight),
     );
 
   for (const candidate of secondaryCandidates) {
@@ -134,7 +135,7 @@ function pickSecondaryCandidate(
     const adjHsl = hexToHslColor(adjusted);
     if (!adjHsl) continue;
 
-    const textRatio = getContrastRatio('#ffffff', adjusted);
+    const textRatio = getContrastRatio("#ffffff", adjusted);
     if (!meetsWcagAaTextContrast(textRatio)) continue;
     if (hueDistance(adjHsl, primaryHsl) < deriveOptions.minHueSeparation) continue;
     if (!fillsAreDistinct(primaryColor, adjusted)) continue;
@@ -144,7 +145,7 @@ function pickSecondaryCandidate(
 
   const harmonious = suggestSecondaryColor(primaryColor);
   if (
-    meetsWcagAaTextContrast(getContrastRatio('#ffffff', harmonious)) &&
+    meetsWcagAaTextContrast(getContrastRatio("#ffffff", harmonious)) &&
     fillsAreDistinct(primaryColor, harmonious)
   ) {
     return harmonious;
@@ -153,7 +154,10 @@ function pickSecondaryCandidate(
   return ensureAccentButtonContrast(harmonious);
 }
 
-function finalizeAccessiblePair(primaryColor: string, secondaryColor: string): {
+function finalizeAccessiblePair(
+  primaryColor: string,
+  secondaryColor: string,
+): {
   primaryColor: string;
   secondaryColor: string;
   accessibility: BrandingPresetAccessibility;

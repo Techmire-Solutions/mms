@@ -1,19 +1,19 @@
-import crypto from 'node:crypto';
-import { asc, desc, eq } from 'drizzle-orm';
+import crypto from "node:crypto";
+import { asc, desc, eq } from "drizzle-orm";
 import {
   canonicalizeJson,
   formatAuditEventHashInput,
   GENESIS_AUDIT_HASH,
   type AuditVerificationStatus,
-} from '@mms/shared';
+} from "@mms/shared";
 
-import { activeDb } from '../db/dbConnection.js';
+import { activeDb } from "../db/dbConnection.js";
 import {
   auditTrailEvents,
   auditVerificationRuns,
   auditMerkleRoots,
-} from '../db/schema/auditTrail.js';
-import { logger } from '../lib/logger.js';
+} from "../db/schema/auditTrail.js";
+import { logger } from "../lib/logger.js";
 
 export interface ChainVerificationResult {
   runId: string;
@@ -43,7 +43,7 @@ export function buildMerkleRoot(leafHashes: string[]): string {
     for (let i = 0; i < currentLevel.length; i += 2) {
       const left = currentLevel[i];
       const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : left;
-      const parentHash = crypto.hash('sha256', `${left}${right}`, 'hex');
+      const parentHash = crypto.hash("sha256", `${left}${right}`, "hex");
       nextLevel.push(parentHash);
     }
     currentLevel = nextLevel;
@@ -61,7 +61,7 @@ export async function verifyTenantAuditChain(
   options?: { limit?: number },
 ): Promise<ChainVerificationResult> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
-  const runId = `ver_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+  const runId = `ver_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
   const limit = options?.limit ?? 5000;
   const db = activeDb();
 
@@ -89,15 +89,12 @@ export async function verifyTenantAuditChain(
     })
     .from(auditTrailEvents)
     .where(eq(auditTrailEvents.workspaceSubdomain, subdomain))
-    .orderBy(
-      asc(auditTrailEvents.transactionTimestamp),
-      asc(auditTrailEvents.id),
-    )
+    .orderBy(asc(auditTrailEvents.transactionTimestamp), asc(auditTrailEvents.id))
     .limit(limit);
 
   let expectedPreviousHash = GENESIS_AUDIT_HASH;
   const discrepancies: string[] = [];
-  let status: AuditVerificationStatus = 'VERIFIED';
+  let status: AuditVerificationStatus = "VERIFIED";
   let headHash = GENESIS_AUDIT_HASH;
   let previousId: number | null = null;
 
@@ -111,8 +108,8 @@ export async function verifyTenantAuditChain(
         discrepancies.push(
           `Event #${event.id} (${event.tableName}:${event.recordId}): missing records detected between ID #${previousId} and #${event.id} (sequence gap).`,
         );
-        if (status !== 'TAMPERED') {
-          status = 'SEQUENCE_GAP';
+        if (status !== "TAMPERED") {
+          status = "SEQUENCE_GAP";
         }
       }
     }
@@ -121,8 +118,8 @@ export async function verifyTenantAuditChain(
       discrepancies.push(
         `Event #${event.id} (${event.tableName}:${event.recordId}): hash_previous mismatch. Expected ${expectedPreviousHash}, found ${event.hashPrevious}.`,
       );
-      if (status !== 'TAMPERED' && status !== 'SEQUENCE_GAP') {
-        status = 'BROKEN_CHAIN';
+      if (status !== "TAMPERED" && status !== "SEQUENCE_GAP") {
+        status = "BROKEN_CHAIN";
       }
     }
 
@@ -148,18 +145,14 @@ export async function verifyTenantAuditChain(
     const timestampIso = event.transactionTimestamp.toISOString();
 
     // 3. Recompute expected hash_current
-    const hashInput = formatAuditEventHashInput(
-      event.hashPrevious,
-      canonicalPayload,
-      timestampIso,
-    );
-    const computedHash = crypto.hash('sha256', hashInput, 'hex');
+    const hashInput = formatAuditEventHashInput(event.hashPrevious, canonicalPayload, timestampIso);
+    const computedHash = crypto.hash("sha256", hashInput, "hex");
 
     if (event.hashCurrent !== computedHash) {
       discrepancies.push(
         `Event #${event.id} (${event.tableName}:${event.recordId}): hash_current tampered. Computed ${computedHash}, found ${event.hashCurrent}.`,
       );
-      status = 'TAMPERED';
+      status = "TAMPERED";
     }
 
     expectedPreviousHash = event.hashCurrent;
@@ -176,7 +169,7 @@ export async function verifyTenantAuditChain(
     discrepancies,
   });
 
-  if (status !== 'VERIFIED') {
+  if (status !== "VERIFIED") {
     logger.error(
       {
         runId,
@@ -184,7 +177,7 @@ export async function verifyTenantAuditChain(
         status,
         discrepanciesCount: discrepancies.length,
       },
-      'CRITICAL: Audit trail cryptographic verification failure detected!',
+      "CRITICAL: Audit trail cryptographic verification failure detected!",
     );
   }
 
@@ -230,7 +223,7 @@ export async function computeAndPublishMerkleCheckpoint(periodStart?: Date): Pro
       desc(auditTrailEvents.transactionTimestamp),
       desc(auditTrailEvents.id),
     )
-    .as('shard_heads');
+    .as("shard_heads");
 
   const shardHeadRows = await db
     .select({
@@ -241,9 +234,9 @@ export async function computeAndPublishMerkleCheckpoint(periodStart?: Date): Pro
 
   const leafHashes = shardHeadRows
     .map((h: { workspaceSubdomain: string; latestHash: string | null }) => h.latestHash)
-    .filter((hash): hash is string => typeof hash === 'string' && hash.length > 0);
+    .filter((hash): hash is string => typeof hash === "string" && hash.length > 0);
   const rootHash = buildMerkleRoot(leafHashes);
-  const id = `mrk_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+  const id = `mrk_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
 
   await db.insert(auditMerkleRoots).values({
     id,
@@ -263,7 +256,4 @@ export async function computeAndPublishMerkleCheckpoint(periodStart?: Date): Pro
   };
 }
 
-export {
-  detectAuditAnomalies,
-  type DetectAnomaliesOptions,
-} from './auditAnomalyService.js';
+export { detectAuditAnomalies, type DetectAnomaliesOptions } from "./auditAnomalyService.js";

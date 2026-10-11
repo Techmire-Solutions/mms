@@ -10,12 +10,12 @@
  * - If no wildcard characters are present, wraps in '%...%' for substring match.
  */
 export function toSqlSearchPattern(search?: string | null): string {
-  if (!search) return '%';
+  if (!search) return "%";
   const trimmed = search.trim();
-  if (!trimmed) return '%';
+  if (!trimmed) return "%";
 
-  if (trimmed.includes('*') || trimmed.includes('?')) {
-    return trimmed.replace(/\*/g, '%').replace(/\?/g, '_');
+  if (trimmed.includes("*") || trimmed.includes("?")) {
+    return trimmed.replace(/\*/g, "%").replace(/\?/g, "_");
   }
 
   return `%${trimmed}%`;
@@ -32,14 +32,14 @@ export function matchesWildcardSearch(haystack: string, term: string): boolean {
   const trimmed = term.trim();
   if (!trimmed) return true;
 
-  if (trimmed.includes('*') || trimmed.includes('?')) {
+  if (trimmed.includes("*") || trimmed.includes("?")) {
     const rawPattern = trimmed
-      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-      .replace(/\*/g, '.*')
-      .replace(/\?/g, '.');
+      .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+      .replace(/\*/g, ".*")
+      .replace(/\?/g, ".");
     const regexPattern = `^${rawPattern}$`;
     try {
-      const re = new RegExp(regexPattern, 'i');
+      const re = new RegExp(regexPattern, "i");
       if (re.test(haystack)) return true;
       return haystack.split(/\s+/).some((word) => re.test(word));
     } catch {

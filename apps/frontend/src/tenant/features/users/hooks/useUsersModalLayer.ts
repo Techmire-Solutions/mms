@@ -1,13 +1,10 @@
-import { useState } from 'react';
-import {
-  canManageTargetUser,
-  type SystemUser,
-} from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { useMessageComposerState } from '@/hooks/useMessageComposerState';
-import { notify } from '@/lib/notify';
-import { buildUsersModalLayerProps } from './usersPageModalLayerProps';
-import type { useUsersPageActions } from './useUsersPageActions';
+import { useState } from "react";
+import { canManageTargetUser, type SystemUser } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { useMessageComposerState } from "@/hooks/useMessageComposerState";
+import { notify } from "@/lib/notify";
+import { buildUsersModalLayerProps } from "./usersPageModalLayerProps";
+import type { useUsersPageActions } from "./useUsersPageActions";
 
 export interface UseUsersModalLayerOptions {
   authUser: { id?: string; role?: string } | null;
@@ -32,11 +29,11 @@ export function useUsersModalLayer({
   const [showInvite, setShowInvite] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
 
-  const actorId = authUser?.id ?? 'system';
+  const actorId = authUser?.id ?? "system";
 
   const handleOpenEdit = (user: SystemUser): void => {
     if (!canManageTargetUser(authUser?.role, user.role)) {
-      notify.error(t('users.errors.cannotModifySuperAdmin'));
+      notify.error(t("users.errors.cannotModifySuperAdmin"));
       return;
     }
     setEditing(user);
@@ -44,13 +41,13 @@ export function useUsersModalLayer({
 
   const handleOpenPasswordReset = (user: SystemUser): void => {
     if (user.id === actorId) {
-      notify.info(t('users.resetPasswordSelfTitle'), {
-        description: t('users.resetPasswordSelfDescription'),
+      notify.info(t("users.resetPasswordSelfTitle"), {
+        description: t("users.resetPasswordSelfDescription"),
       });
       return;
     }
     if (!canManageTargetUser(authUser?.role, user.role)) {
-      notify.error(t('users.errors.cannotResetSuperAdminPassword'));
+      notify.error(t("users.errors.cannotResetSuperAdminPassword"));
       return;
     }
     setResettingPasswordFor(user);
@@ -58,17 +55,14 @@ export function useUsersModalLayer({
 
   const { messagingTarget, openComposer, closeComposer } = useMessageComposerState();
 
-  const handleMessageUsers = (
-    channel: 'sms' | 'whatsapp' | 'email',
-    targetUsers: SystemUser[],
-  ) => {
+  const handleMessageUsers = (channel: "sms" | "whatsapp" | "email", targetUsers: SystemUser[]) => {
     openComposer(
       channel,
       targetUsers.map((u) => ({
         id: u.id,
         name: u.name,
-        phone: u.phone || '',
-        email: u.email || '',
+        phone: u.phone || "",
+        email: u.email || "",
       })),
     );
   };

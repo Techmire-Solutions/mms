@@ -5,7 +5,12 @@ import { Users } from "lucide-react";
 import { ContactsPageView } from "./ContactsPageView";
 
 vi.mock("@/components/ui/ModulePageShell", () => ({
-  ModulePageShell: ({ headerTitle, children, headerActions, metricsStrip }: {
+  ModulePageShell: ({
+    headerTitle,
+    children,
+    headerActions,
+    metricsStrip,
+  }: {
     headerTitle: string;
     children: React.ReactNode;
     headerActions?: React.ReactNode;
@@ -74,9 +79,7 @@ vi.mock("@/tenant/features/contacts/components/ContactsPageHeaderActions", () =>
 
 const baseProps: React.ComponentProps<typeof ContactsPageView> = {
   t: ((key: string) => key) as never,
-  visibleTopTabs: [
-    { id: "work", label: "Contacts", description: "Directory", icon: Users },
-  ],
+  visibleTopTabs: [{ id: "work", label: "Contacts", description: "Directory", icon: Users }],
   effectiveTab: "work",
   setActiveTab: vi.fn(),
   canExport: true,

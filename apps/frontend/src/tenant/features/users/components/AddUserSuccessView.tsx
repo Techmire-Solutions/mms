@@ -1,8 +1,8 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { AddUserFormState } from './addUserModalTypes';
+import React from "react";
+import { motion } from "framer-motion";
+import { Check } from "lucide-react";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { AddUserFormState } from "./addUserModalTypes";
 
 export interface AddUserSuccessViewProps {
   form: AddUserFormState;
@@ -20,11 +20,11 @@ export function AddUserSuccessView({ form, t }: AddUserSuccessViewProps): React.
         <Check className="h-8 w-8 text-primary" />
       </div>
       <div>
-        <p className="text-base font-bold text-foreground">{t('users.addSuccessTitle')}</p>
+        <p className="text-base font-bold text-foreground">{t("users.addSuccessTitle")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {form.setupMethod === 'invite'
-            ? t('users.addSuccessInvite', { email: form.email })
-            : t('users.addSuccessPassword', { name: form.name })}
+          {form.setupMethod === "invite"
+            ? t("users.addSuccessInvite", { email: form.email })
+            : t("users.addSuccessPassword", { name: form.name })}
         </p>
       </div>
     </motion.div>

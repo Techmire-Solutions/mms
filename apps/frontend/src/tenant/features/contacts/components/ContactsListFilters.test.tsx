@@ -16,7 +16,10 @@ vi.mock("@/tenant/features/contacts/hooks/useContactsToolbarModel", () => ({
 }));
 
 vi.mock("@/components/ui/ModuleWorkToolbar", () => ({
-  ModuleWorkToolbar: ({ searchPlaceholder, filterButton }: {
+  ModuleWorkToolbar: ({
+    searchPlaceholder,
+    filterButton,
+  }: {
     searchPlaceholder: string;
     filterButton: React.ReactNode;
   }) => (

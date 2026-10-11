@@ -9,7 +9,12 @@ export type AppTranslationKey = keyof typeof APP_TRANSLATIONS_EN;
 
 /** Dynamic sub-blocks to ignore in ICU plural selects. */
 export type ExcludedPlaceholders =
-  | "records" | "months" | "reminders" | "students" | "cards" | "Months"
+  | "records"
+  | "months"
+  | "reminders"
+  | "students"
+  | "cards"
+  | "Months"
   | "count, select, one {record"
   | "count, select, one {month"
   | "count, select, one {reminder"
@@ -20,18 +25,16 @@ export type ExcludedPlaceholders =
   | "count, select, one {Month";
 
 /** Extracts all dynamic placeholder names (wrapped in curly braces) from a string literal type. */
-export type ExtractPlaceholders<S extends string> =
-  S extends `${string}{${infer P}}${infer R}`
-    ? (P extends ExcludedPlaceholders ? never : P) | ExtractPlaceholders<R>
-    : never;
+export type ExtractPlaceholders<S extends string> = S extends `${string}{${infer P}}${infer R}`
+  ? (P extends ExcludedPlaceholders ? never : P) | ExtractPlaceholders<R>
+  : never;
 
 /** Strict parameter arguments map based on translation key. */
-export type TranslationArgs<K extends AppTranslationKey> =
-  [AppTranslationKey] extends [K]
-    ? [params?: Record<string, string | number>]
-    : ExtractPlaceholders<typeof APP_TRANSLATIONS_EN[K]> extends never
-      ? [params?: never]
-      : [params: Record<ExtractPlaceholders<typeof APP_TRANSLATIONS_EN[K]>, string | number>];
+export type TranslationArgs<K extends AppTranslationKey> = [AppTranslationKey] extends [K]
+  ? [params?: Record<string, string | number>]
+  : ExtractPlaceholders<(typeof APP_TRANSLATIONS_EN)[K]> extends never
+    ? [params?: never]
+    : [params: Record<ExtractPlaceholders<(typeof APP_TRANSLATIONS_EN)[K]>, string | number>];
 
 // Global runtime cache for loaded translation packs.
 // English is statically loaded by default.
@@ -68,7 +71,7 @@ export function translateAppParams<K extends AppTranslationKey>(
   const params = args[0] as Record<string, string | number> | undefined;
   let text = translateApp(key, language);
   if (!params) return text;
-  
+
   // Format simple ICU plural select formatting: {count, select, one {record} other {records}}
   text = text.replace(ICU_SELECT_REGEX, (_match, varName, singular, plural) => {
     const val = Number(params[varName]);
@@ -127,7 +130,7 @@ const MODULE_DESC_KEYS: Partial<Record<string, AppTranslationKey>> = {
 export function translateSystemModuleLabel(
   moduleId: string,
   language: string,
-  fallback: string
+  fallback: string,
 ): string {
   const key = MODULE_NAV_KEYS[moduleId];
   return key ? translateApp(key, language) : fallback;
@@ -137,7 +140,7 @@ export function translateSystemModuleLabel(
 export function translateSystemModuleDescription(
   moduleId: string,
   language: string,
-  fallback: string
+  fallback: string,
 ): string {
   const key = MODULE_DESC_KEYS[moduleId];
   return key ? translateApp(key, language) : fallback;
@@ -152,11 +155,7 @@ const MODULE_TAB_KEYS: Record<string, AppTranslationKey> = {
 };
 
 /** Maps standard module tab ids to localized labels. */
-export function translateModuleTabLabel(
-  tabId: string,
-  fallback: string,
-  language: string
-): string {
+export function translateModuleTabLabel(tabId: string, fallback: string, language: string): string {
   const key = MODULE_TAB_KEYS[normalizeModuleTierTabId(tabId)];
   return key ? translateApp(key, language) : fallback;
 }

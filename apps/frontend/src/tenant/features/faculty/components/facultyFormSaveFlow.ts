@@ -60,12 +60,15 @@ export async function runFacultySaveFlow(input: FacultySaveFlowInput): Promise<b
   input.setErrors({});
   const payload = buildFacultySavePayload(input);
 
-  const validationErrors: ValidationError[] | null = validateFacultyDraft(payload as Record<string, unknown>, {
-    settings: input.settings,
-    enabledTabs: input.enabledTabs,
-    fields: input.fields,
-    language: input.language,
-  });
+  const validationErrors: ValidationError[] | null = validateFacultyDraft(
+    payload as Record<string, unknown>,
+    {
+      settings: input.settings,
+      enabledTabs: input.enabledTabs,
+      fields: input.fields,
+      language: input.language,
+    },
+  );
   if (validationErrors) {
     input.setErrors(facultyValidationErrorsByField(validationErrors));
     const firstField = validationErrors[0]?.fieldId;
@@ -76,9 +79,9 @@ export async function runFacultySaveFlow(input: FacultySaveFlowInput): Promise<b
 
   const allowedDesignationRoles = input.facultyDraft.designationAssignableRoles;
   if (
-    input.userAccountDraft?.enabled
-    && input.facultyDraft.designationId
-    && !(allowedDesignationRoles ?? []).includes(input.userAccountDraft.role)
+    input.userAccountDraft?.enabled &&
+    input.facultyDraft.designationId &&
+    !(allowedDesignationRoles ?? []).includes(input.userAccountDraft.role)
   ) {
     input.setErrors({ "user.role": input.t("faculty.designations.roleNotAllowed") });
     notify.error(input.t("faculty.designations.roleNotAllowed"));

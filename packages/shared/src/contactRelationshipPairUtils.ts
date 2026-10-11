@@ -1,5 +1,5 @@
 /** Relationship pair defaults and pure helpers for Contacts preferences. */
-import type { RelationshipPair } from './contactEntityTypes.js';
+import type { RelationshipPair } from "./contactEntityTypes.js";
 
 /** Fixed system relationship pairs — the only allowed catalog. */
 export const DEFAULT_RELATIONSHIP_PAIRS: RelationshipPair[] = [
@@ -29,16 +29,12 @@ export function normalizeRelationshipTerm(relationship: unknown): string {
  * Always returns a clone of {@link DEFAULT_RELATIONSHIP_PAIRS}.
  * Stored custom / legacy pairs are ignored (hardcoded catalog).
  */
-export function resolveRelationshipPairs(
-  _pairs?: RelationshipPair[] | null,
-): RelationshipPair[] {
+export function resolveRelationshipPairs(_pairs?: RelationshipPair[] | null): RelationshipPair[] {
   return DEFAULT_RELATIONSHIP_PAIRS.map((pair) => ({ ...pair }));
 }
 
 /** True when stored pairs already match the system catalog (by id + labels). */
-export function relationshipPairsMatchDefaults(
-  pairs?: RelationshipPair[] | null,
-): boolean {
+export function relationshipPairsMatchDefaults(pairs?: RelationshipPair[] | null): boolean {
   if (!Array.isArray(pairs) || pairs.length !== DEFAULT_RELATIONSHIP_PAIRS.length) {
     return false;
   }
@@ -133,4 +129,6 @@ function uniqueRelationshipLabels(labels: readonly (string | undefined | null)[]
   return options;
 }
 
-export const RELATIONSHIPS: string[] = deriveRelationshipOptionsFromPairs(DEFAULT_RELATIONSHIP_PAIRS);
+export const RELATIONSHIPS: string[] = deriveRelationshipOptionsFromPairs(
+  DEFAULT_RELATIONSHIP_PAIRS,
+);

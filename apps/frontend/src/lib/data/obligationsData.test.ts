@@ -28,7 +28,7 @@ describe("generateReceiptNo", () => {
         receiptSequenceDigits: 5,
         receiptDelimiter: "-",
       },
-      "2026-06-15"
+      "2026-06-15",
     );
     expect(result).toBe("REC-00043");
   });

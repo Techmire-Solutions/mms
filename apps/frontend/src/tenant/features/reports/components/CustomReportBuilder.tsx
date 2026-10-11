@@ -1,13 +1,13 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { X, Sliders } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { SectionLabel } from '@/components/ui/SectionLabel';
-import { WORK_SURFACE } from '@/components/ui/formStyles';
-import { useTranslation } from '@/hooks/useTranslation';
-import { CustomReportBuilderConfigPanel } from '@/components/ui/reports/CustomReportBuilderConfigPanel';
-import { CustomReportBuilderPreviewPanel } from '@/components/ui/reports/CustomReportBuilderPreviewPanel';
-import { useCustomReportBuilderState } from '@/tenant/features/reports/controllers/useCustomReportBuilderState';
+import React from "react";
+import { motion } from "framer-motion";
+import { X, Sliders } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SectionLabel } from "@/components/ui/SectionLabel";
+import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { useTranslation } from "@/hooks/useTranslation";
+import { CustomReportBuilderConfigPanel } from "@/components/ui/reports/CustomReportBuilderConfigPanel";
+import { CustomReportBuilderPreviewPanel } from "@/components/ui/reports/CustomReportBuilderPreviewPanel";
+import { useCustomReportBuilderState } from "@/tenant/features/reports/controllers/useCustomReportBuilderState";
 
 /** Props for the CustomReportBuilder component. */
 interface CustomReportBuilderProps {
@@ -17,7 +17,10 @@ interface CustomReportBuilderProps {
   initialSource?: string;
 }
 
-export default function CustomReportBuilder({ onClose, initialSource }: CustomReportBuilderProps): React.JSX.Element {
+export default function CustomReportBuilder({
+  onClose,
+  initialSource,
+}: CustomReportBuilderProps): React.JSX.Element {
   const { t } = useTranslation();
   const {
     reportName,
@@ -56,8 +59,12 @@ export default function CustomReportBuilder({ onClose, initialSource }: CustomRe
             <Sliders className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="truncate text-sm font-black text-foreground uppercase tracking-wider leading-none">{t('reports.builder.title')}</h3>
-            <SectionLabel as="p" weight="bold" tracking="wider" className="mt-1">{t('reports.builder.subtitle')}</SectionLabel>
+            <h3 className="truncate text-sm font-black text-foreground uppercase tracking-wider leading-none">
+              {t("reports.builder.title")}
+            </h3>
+            <SectionLabel as="p" weight="bold" tracking="wider" className="mt-1">
+              {t("reports.builder.subtitle")}
+            </SectionLabel>
           </div>
         </div>
         <Button

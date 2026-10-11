@@ -52,7 +52,9 @@ export function FormCheckboxCard({
         className={cn(
           "relative overflow-hidden group/card flex min-h-11 items-center gap-3 rounded-xl border p-3 transition-all select-none",
           CARD_STRIPE_INSET,
-          disabled ? "cursor-not-allowed opacity-60 bg-muted/20 border-border/50" : "cursor-pointer",
+          disabled
+            ? "cursor-not-allowed opacity-60 bg-muted/20 border-border/50"
+            : "cursor-pointer",
           checked
             ? "bg-primary/10 border-primary/40 text-primary font-bold shadow-xs"
             : "bg-muted/30 border-border/70 hover:bg-muted/50 text-muted-foreground",

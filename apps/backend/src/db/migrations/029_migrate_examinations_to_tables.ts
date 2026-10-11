@@ -5,15 +5,12 @@ import {
   type Workspace,
   type Exam,
   type ExamResult,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceExamsForWorkspace,
   replaceExamResultsForWorkspace,
-} from '../repositories/examinationRepository.js';
+} from "../repositories/examinationRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -37,7 +34,7 @@ export async function runMigration029(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
 
     // 1. Exams
     const legacyExams = await getCollectionByStorageName(`${prefix}exams`);
@@ -61,6 +58,6 @@ export async function runMigration029(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 029] No legacy examination records to import.');
+    console.log("[Migration 029] No legacy examination records to import.");
   }
 }

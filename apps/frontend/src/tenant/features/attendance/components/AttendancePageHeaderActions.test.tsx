@@ -37,7 +37,7 @@ describe("AttendancePageHeaderActions", () => {
           onMarkAttendance={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

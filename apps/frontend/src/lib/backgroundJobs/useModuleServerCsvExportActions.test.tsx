@@ -99,7 +99,9 @@ describe("useModuleServerCsvExportActions", () => {
     startExport = vi.fn<Options["startExport"]>().mockResolvedValue(completedJob());
     onError = vi.fn<Options["onError"]>();
     logExportAudit = {
-      mutateAsync: vi.fn<Options["logExportAudit"]["mutateAsync"]>().mockResolvedValue({ ok: true }),
+      mutateAsync: vi
+        .fn<Options["logExportAudit"]["mutateAsync"]>()
+        .mockResolvedValue({ ok: true }),
     };
     vi.clearAllMocks();
   });
@@ -223,9 +225,10 @@ describe("useModuleServerCsvExportActions", () => {
   it("blocks re-entry while an export is in flight", async () => {
     let release: (job: BackgroundJobRecord) => void = () => {};
     startExport.mockImplementation(
-      () => new Promise<BackgroundJobRecord>((resolve) => {
-        release = resolve;
-      }),
+      () =>
+        new Promise<BackgroundJobRecord>((resolve) => {
+          release = resolve;
+        }),
     );
     renderHook({ hasActiveFilters: true });
 

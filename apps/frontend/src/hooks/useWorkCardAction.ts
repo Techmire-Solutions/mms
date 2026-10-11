@@ -83,8 +83,7 @@ export function useWorkCardAction<TEntity extends WorkCardEntity>({
       return selectedIds.has(entity.id) || selectedIds.has(String(entity.id));
     }
     return (
-      selectedIds.includes(entity.id as never) ||
-      selectedIds.includes(String(entity.id) as never)
+      selectedIds.includes(entity.id as never) || selectedIds.includes(String(entity.id) as never)
     );
   }, [selectedIds, entity.id]);
 
@@ -176,4 +175,3 @@ export function useWorkCardAction<TEntity extends WorkCardEntity>({
     cardProps,
   };
 }
-

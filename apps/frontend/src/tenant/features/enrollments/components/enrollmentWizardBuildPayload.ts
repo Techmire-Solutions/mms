@@ -1,8 +1,8 @@
 import { formatMoney, todayISO } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { type Enrollment, type CalculatedFee } from '@/lib/data/enrollmentData';
-import { type Student } from '@/lib/data/studentsData';
-import { type Session, type Class } from '@/lib/data/sessionsData';
+import { type Enrollment, type CalculatedFee } from "@/lib/data/enrollmentData";
+import { type Student } from "@/lib/data/studentsData";
+import { type Session, type Class } from "@/lib/data/sessionsData";
 
 export function buildEnrollmentPayload(params: {
   student: Student;

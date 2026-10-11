@@ -15,7 +15,10 @@ export interface ModuleUniversalBulkActionBarProps<T = unknown> {
   canDelete: boolean;
   canExport?: boolean;
   canWriteMessaging?: boolean;
-  leadingIcon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  leadingIcon: React.ComponentType<{
+    className?: string;
+    "aria-hidden"?: boolean | "true" | "false";
+  }>;
   i18nNamespace: string;
   bulkActions?: readonly string[];
   // Selection
@@ -87,15 +90,19 @@ export function ModuleUniversalBulkActionBar<T>({
 
   if (selectedCount === 0) return null;
 
-  const showWhatsApp = Boolean(bulkActions?.includes("whatsapp") && canWriteMessaging && onWhatsApp);
+  const showWhatsApp = Boolean(
+    bulkActions?.includes("whatsapp") && canWriteMessaging && onWhatsApp,
+  );
   const showSms = Boolean(bulkActions?.includes("sms") && canWriteMessaging && onSms);
   const showEmail = Boolean(bulkActions?.includes("email") && canWriteMessaging && onEmail);
   const showMessaging = !viewingDeleted && (showWhatsApp || showSms || showEmail);
 
   const handleChannel = (channel: BulkSelectionMessageChannel) => {
-    if (channel === "whatsapp" && onWhatsApp && messagingTargets) onWhatsApp(messagingTargets.waTargets);
+    if (channel === "whatsapp" && onWhatsApp && messagingTargets)
+      onWhatsApp(messagingTargets.waTargets);
     else if (channel === "sms" && onSms && messagingTargets) onSms(messagingTargets.smsReady);
-    else if (channel === "email" && onEmail && messagingTargets) onEmail(messagingTargets.emailReady);
+    else if (channel === "email" && onEmail && messagingTargets)
+      onEmail(messagingTargets.emailReady);
   };
 
   const primaryCountKey = `${i18nNamespace}.selectedCount` as AppTranslationKey;
@@ -109,8 +116,7 @@ export function ModuleUniversalBulkActionBar<T>({
   const fallbackRestoreKey = `${i18nNamespace}.trash.restore` as AppTranslationKey;
   const useFallbackRestore = !(primaryRestoreKey in APP_TRANSLATIONS_EN);
   const restoreLabelFinal =
-    restoreLabel ??
-    ((!useFallbackRestore ? t(primaryRestoreKey) : "") || t(fallbackRestoreKey));
+    restoreLabel ?? ((!useFallbackRestore ? t(primaryRestoreKey) : "") || t(fallbackRestoreKey));
 
   const statusKey = `${i18nNamespace}.bulkStatus` as AppTranslationKey;
 
@@ -141,7 +147,10 @@ export function ModuleUniversalBulkActionBar<T>({
               isPending: exportAction.isPending,
             }
           : bulkActions?.includes("export") && canExport && onBulkExport
-            ? { label: exportLabel ?? t(`${i18nNamespace}.bulkExport` as AppTranslationKey), onClick: onBulkExport }
+            ? {
+                label: exportLabel ?? t(`${i18nNamespace}.bulkExport` as AppTranslationKey),
+                onClick: onBulkExport,
+              }
             : undefined
       }
       messaging={
@@ -163,7 +172,11 @@ export function ModuleUniversalBulkActionBar<T>({
       }
       extraActions={
         <>
-          {!viewingDeleted && bulkActions?.includes("status") && canWrite && onBulkStatusChange && statusConfig ? (
+          {!viewingDeleted &&
+          bulkActions?.includes("status") &&
+          canWrite &&
+          onBulkStatusChange &&
+          statusConfig ? (
             <BulkSelectionStatusAction
               label={t(statusKey)}
               statuses={Object.keys(statusConfig)}

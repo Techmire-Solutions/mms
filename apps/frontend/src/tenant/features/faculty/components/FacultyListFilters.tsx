@@ -1,9 +1,5 @@
 import { useMemo } from "react";
-import type {
-  FacultySortField,
-  FacultyQuickFilter,
-  ModuleColumnRegistryEntry,
-} from "@mms/shared";
+import type { FacultySortField, FacultyQuickFilter, ModuleColumnRegistryEntry } from "@mms/shared";
 import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -113,7 +109,9 @@ export function FacultyListFilters({
 
   return (
     <WorkTaskToolbar
-      shownCountLabel={shownCount != null ? t("faculty.shownCount", { count: shownCount }) : undefined}
+      shownCountLabel={
+        shownCount != null ? t("faculty.shownCount", { count: shownCount }) : undefined
+      }
       regionLabel={t("faculty.filters")}
       search={search}
       onSearchChange={onSearchChange}
@@ -152,13 +150,17 @@ export function FacultyListFilters({
           onClearFilters={onClearFilters}
         />
       }
-      trashToggle={canDelete ? {
-        canViewDeleted: canDelete,
-        viewingDeleted: showDeleted,
-        onToggle: onToggleDeleted,
-        activeLabel: t("faculty.showActive"),
-        deletedLabel: t("faculty.showDeleted"),
-      } : undefined}
+      trashToggle={
+        canDelete
+          ? {
+              canViewDeleted: canDelete,
+              viewingDeleted: showDeleted,
+              onToggle: onToggleDeleted,
+              activeLabel: t("faculty.showActive"),
+              deletedLabel: t("faculty.showDeleted"),
+            }
+          : undefined
+      }
       viewModeToggle={{
         viewMode,
         onViewModeChange,
@@ -172,5 +174,3 @@ export function FacultyListFilters({
     />
   );
 }
-
-

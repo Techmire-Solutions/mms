@@ -20,7 +20,7 @@ describe("StatCardBody", () => {
         value="1,450"
         title="Total Enrolled"
         footer="Updated 5m ago"
-      />
+      />,
     );
 
     expect(html).toContain("1,450");
@@ -37,7 +37,7 @@ describe("StatCardBody", () => {
         value="500"
         title="Active Students"
         trend={12}
-      />
+      />,
     );
 
     expect(positiveHtml).toContain("+12%");
@@ -49,7 +49,7 @@ describe("StatCardBody", () => {
         value="500"
         title="Active Students"
         trend={-8}
-      />
+      />,
     );
 
     expect(negativeHtml).toContain("-8%");
@@ -63,7 +63,7 @@ describe("StatCardBody", () => {
         value="100"
         title="Test Metric"
         actions={<button type="button">Edit Action</button>}
-      />
+      />,
     );
 
     expect(html).toContain("Edit Action");

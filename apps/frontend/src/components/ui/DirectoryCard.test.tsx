@@ -36,7 +36,7 @@ describe("DirectoryCard", () => {
           subtitle: <span>{mockEntity.code}</span>,
         }}
         onView={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Zayd Ahmad");
@@ -53,7 +53,7 @@ describe("DirectoryCard", () => {
         header={{
           displayName: mockEntity.name,
         }}
-      />
+      />,
     );
 
     expect(html).toContain('role="checkbox"');
@@ -71,7 +71,7 @@ describe("DirectoryCard", () => {
           phone: mockEntity.phone,
           email: mockEntity.email,
         }}
-      />
+      />,
     );
 
     expect(html).toContain("+1234567890");
@@ -89,7 +89,7 @@ describe("DirectoryCard", () => {
         keyFor={(col) => col.key}
         labelFor={(col) => col.label}
         renderValue={(col) => mockEntity[col.key as keyof TestEntity]}
-      />
+      />,
     );
 
     expect(html).toContain("Student Code");
@@ -105,7 +105,7 @@ describe("DirectoryCard", () => {
         }}
         banner={<div data-testid="test-banner">Archived Record</div>}
         overflowActions={<button type="button">More Options</button>}
-      />
+      />,
     );
 
     expect(html).toContain("Archived Record");
@@ -114,10 +114,7 @@ describe("DirectoryCard", () => {
 
   it("renders start-edge colored line and inset by default", () => {
     const html = renderToStaticMarkup(
-      <DirectoryCard
-        entity={mockEntity}
-        header={{ displayName: mockEntity.name }}
-      />
+      <DirectoryCard entity={mockEntity} header={{ displayName: mockEntity.name }} />,
     );
 
     expect(html).toContain("w-1.5");
@@ -131,7 +128,7 @@ describe("DirectoryCard", () => {
         entity={mockEntity}
         header={{ displayName: mockEntity.name }}
         accentClassName="bg-success/70"
-      />
+      />,
     );
 
     expect(html).toContain("bg-success/70");
@@ -144,7 +141,7 @@ describe("DirectoryCard", () => {
         entity={mockEntity}
         header={{ displayName: mockEntity.name }}
         accentClassName={false}
-      />
+      />,
     );
 
     expect(html).not.toContain("bg-primary/50");

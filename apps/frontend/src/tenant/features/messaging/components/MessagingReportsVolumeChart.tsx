@@ -37,7 +37,15 @@ export function MessagingReportsVolumeChart({
       }
     >
       <PieChart>
-        <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+        <Pie
+          data={chartData}
+          cx="50%"
+          cy="50%"
+          innerRadius={60}
+          outerRadius={80}
+          paddingAngle={5}
+          dataKey="value"
+        >
           {chartData.map((entry) => (
             <Cell key={entry.name} fill={entry.fillColor || "var(--color-primary)"} />
           ))}
@@ -48,4 +56,3 @@ export function MessagingReportsVolumeChart({
     </ReportChartCard>
   );
 }
-

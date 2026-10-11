@@ -9,7 +9,11 @@ import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionTypeAnswerFields } from "@/tenant/features/question-bank/components/QuestionTypeAnswerFields";
 
-import type { QuestionFormDraft, QuestionFormErrors, UpdateQuestionDraft } from "./questionFormTypes";
+import type {
+  QuestionFormDraft,
+  QuestionFormErrors,
+  UpdateQuestionDraft,
+} from "./questionFormTypes";
 
 interface QuestionFormAnswerFieldsProps {
   questionDraft: QuestionFormDraft;
@@ -79,7 +83,10 @@ export function QuestionFormAnswerFields({
   if (questionDraft.type === "true_false") {
     return (
       <div className="sm:col-span-2">
-        <span className={LABEL}>{t("questionBank.correctAnswer")}<RequiredMark /></span>
+        <span className={LABEL}>
+          {t("questionBank.correctAnswer")}
+          <RequiredMark />
+        </span>
         <div className="flex gap-3 mt-1.5">
           {[trueLabel, falseLabel].map((answerValue) => (
             <Button

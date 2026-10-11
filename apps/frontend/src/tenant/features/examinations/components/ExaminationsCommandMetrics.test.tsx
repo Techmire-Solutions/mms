@@ -37,9 +37,7 @@ vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
 
 describe("ExaminationsCommandMetrics Component", () => {
   it("renders total, filtered, upcoming, and ongoing metric counts", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationsCommandMetrics shown={4} total={10} />,
-    );
+    const html = renderToStaticMarkup(<ExaminationsCommandMetrics shown={4} total={10} />);
 
     expect(html).toContain("examinations.metrics.total:10");
     expect(html).toContain("examinations.metrics.filtered:4");

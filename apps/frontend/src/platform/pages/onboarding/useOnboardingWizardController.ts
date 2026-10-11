@@ -51,7 +51,8 @@ export function useOnboardingWizardController() {
   const validateCurrentStep = (): string | null => {
     if (step === 1) {
       if (!data.name.trim()) return t("onboarding.errorMadrasaName");
-      if (!data.subdomain || !isValidSubdomain(data.subdomain)) return t("onboarding.errorSubdomain");
+      if (!data.subdomain || !isValidSubdomain(data.subdomain))
+        return t("onboarding.errorSubdomain");
     }
     if (step === 2 && data.modules.length === 0) {
       return t("onboarding.errorModules");
@@ -84,7 +85,10 @@ export function useOnboardingWizardController() {
       return;
     }
 
-    const policyCheck = validatePasswordPolicy(data.password, DEFAULT_GLOBAL_SETTINGS.passwordPolicy);
+    const policyCheck = validatePasswordPolicy(
+      data.password,
+      DEFAULT_GLOBAL_SETTINGS.passwordPolicy,
+    );
     if (!policyCheck.valid) {
       setSubmitError(policyCheck.errorKey ? t(policyCheck.errorKey) : t("onboarding.submitFailed"));
       return;

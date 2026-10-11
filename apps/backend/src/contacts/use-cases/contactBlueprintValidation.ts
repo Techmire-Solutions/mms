@@ -1,19 +1,24 @@
-import crypto from 'node:crypto';
-import type { z } from 'zod';
+import crypto from "node:crypto";
+import type { z } from "zod";
 import {
   buildDynamicContactSchema,
   resolveContactEnabledTabIds,
   verifyBlueprintVersion,
-} from '@mms/shared';
-import { loadContactFieldConfig } from './contactConfigService.js';
+} from "@mms/shared";
+import { loadContactFieldConfig } from "./contactConfigService.js";
 
 // Cache compiled schemas by tenant, language, and active blueprint fingerprint (bounded to 100 entries).
 const SCHEMA_CACHE_MAX_ENTRIES = 100;
 const schemaCache = new Map<string, z.ZodTypeAny>();
 
-function getBlueprintCacheKey(tenant: string, fieldConfig: unknown, language: string, viewerRole?: string): string {
-  const fingerprint = crypto.hash('sha256', JSON.stringify(fieldConfig), 'hex');
-  return `${tenant}:${language}:${fingerprint}:${viewerRole || ''}`;
+function getBlueprintCacheKey(
+  tenant: string,
+  fieldConfig: unknown,
+  language: string,
+  viewerRole?: string,
+): string {
+  const fingerprint = crypto.hash("sha256", JSON.stringify(fieldConfig), "hex");
+  return `${tenant}:${language}:${fingerprint}:${viewerRole || ""}`;
 }
 
 /**
@@ -28,7 +33,7 @@ function getBlueprintCacheKey(tenant: string, fieldConfig: unknown, language: st
 export async function validateContactDynamic(
   tenant: string,
   contact: unknown,
-  language = 'en',
+  language = "en",
   viewerRole?: string,
 ): Promise<void> {
   const fieldConfig = await loadContactFieldConfig();
@@ -38,7 +43,7 @@ export async function validateContactDynamic(
 
   // Version Lock check (Rule 16.3 / CS-6)
   let submittedBlueprintId: unknown;
-  if (contact && typeof contact === 'object' && !Array.isArray(contact)) {
+  if (contact && typeof contact === "object" && !Array.isArray(contact)) {
     submittedBlueprintId = (contact as Record<string, unknown>)._blueprintId;
   }
   verifyBlueprintVersion(submittedBlueprintId, fieldConfig.version);
@@ -47,7 +52,7 @@ export async function validateContactDynamic(
   let schema = schemaCache.get(cacheKey);
 
   if (!schema) {
-    const enabledTabIds = resolveContactEnabledTabIds(fieldConfig, viewerRole || '');
+    const enabledTabIds = resolveContactEnabledTabIds(fieldConfig, viewerRole || "");
     const requiredTabIds = new Set(fieldConfig.requiredTabs || []);
     const fields = fieldConfig.fields || {};
 
@@ -66,6 +71,6 @@ export async function validateContactDynamic(
     schemaCache.set(cacheKey, schema);
   }
 
-  const { validateOrThrow } = await import('../../lib/zodRequest.js');
+  const { validateOrThrow } = await import("../../lib/zodRequest.js");
   validateOrThrow(schema, contact);
 }

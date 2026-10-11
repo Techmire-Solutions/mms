@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import type React from 'react';
-import { apiContract } from '@/lib/api';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { LlmConfig, LlmTestResult } from '@mms/shared';
-import type { SandboxMessage } from './llmSettingsTypes';
+import { useState } from "react";
+import type React from "react";
+import { apiContract } from "@/lib/api";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { LlmConfig, LlmTestResult } from "@mms/shared";
+import type { SandboxMessage } from "./llmSettingsTypes";
 
 export function useLlmSettingsSandbox(configs: LlmConfig[]) {
   const { t } = useTranslation();
   const [sandboxMessages, setSandboxMessages] = useState<SandboxMessage[]>([]);
-  const [sandboxInput, setSandboxInput] = useState('');
-  const [sandboxConfigId, setSandboxConfigId] = useState<string>('');
-  const [sandboxSystemInstruction, setSandboxSystemInstruction] = useState('');
+  const [sandboxInput, setSandboxInput] = useState("");
+  const [sandboxConfigId, setSandboxConfigId] = useState<string>("");
+  const [sandboxSystemInstruction, setSandboxSystemInstruction] = useState("");
   const [sandboxTesting, setSandboxTesting] = useState(false);
 
   const handleSendSandboxMessage = async (event?: React.FormEvent) => {
@@ -18,17 +18,18 @@ export function useLlmSettingsSandbox(configs: LlmConfig[]) {
     const promptText = sandboxInput.trim();
     if (!promptText || sandboxTesting) return;
 
-    const targetConfigId = sandboxConfigId || configs.find((config) => config.isDefaultText)?.id || configs[0]?.id;
+    const targetConfigId =
+      sandboxConfigId || configs.find((config) => config.isDefaultText)?.id || configs[0]?.id;
     if (!targetConfigId) return;
 
     const userMsg: SandboxMessage = {
       id: crypto.randomUUID(),
-      role: 'user',
+      role: "user",
       content: promptText,
     };
 
     setSandboxMessages((prev) => [...prev, userMsg]);
-    setSandboxInput('');
+    setSandboxInput("");
     setSandboxTesting(true);
 
     const historyForApi = [...sandboxMessages, userMsg].map((message) => ({
@@ -54,7 +55,7 @@ export function useLlmSettingsSandbox(configs: LlmConfig[]) {
           ...prev,
           {
             id: crypto.randomUUID(),
-            role: 'assistant',
+            role: "assistant",
             content: responseText,
             metrics: body.metrics,
           },
@@ -64,8 +65,8 @@ export function useLlmSettingsSandbox(configs: LlmConfig[]) {
           ...prev,
           {
             id: crypto.randomUUID(),
-            role: 'assistant',
-            content: body.message || t('settings.llmTestConnectionError'),
+            role: "assistant",
+            content: body.message || t("settings.llmTestConnectionError"),
             error: true,
           },
         ]);
@@ -75,8 +76,8 @@ export function useLlmSettingsSandbox(configs: LlmConfig[]) {
         ...prev,
         {
           id: crypto.randomUUID(),
-          role: 'assistant',
-          content: (err instanceof Error ? err.message : undefined) || t('settings.llmSendFailed'),
+          role: "assistant",
+          content: (err instanceof Error ? err.message : undefined) || t("settings.llmSendFailed"),
           error: true,
         },
       ]);

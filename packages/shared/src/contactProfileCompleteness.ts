@@ -1,15 +1,15 @@
-import type { Contact, FieldConfig } from './contactTypes.js';
-import { isContactLockedEnabledTab } from './contactEnabledTabs.js';
+import type { Contact, FieldConfig } from "./contactTypes.js";
+import { isContactLockedEnabledTab } from "./contactEnabledTabs.js";
 
 const LIST_TAB_DATA_KEYS: Record<string, string> = {
-  phones: 'phones',
-  emails: 'emails',
-  addresses: 'addresses',
-  socials: 'socials',
-  relationship: 'relationshipContacts',
+  phones: "phones",
+  emails: "emails",
+  addresses: "addresses",
+  socials: "socials",
+  relationship: "relationshipContacts",
 };
 
-const COMPLETENESS_SKIP_TYPES = new Set(['boolean', 'ai_summary']);
+const COMPLETENESS_SKIP_TYPES = new Set(["boolean", "ai_summary"]);
 
 function isCompletenessTabActive(tab: { key: string; enabled?: boolean }): boolean {
   return tab.enabled !== false || isContactLockedEnabledTab(tab.key);
@@ -18,20 +18,23 @@ function isCompletenessTabActive(tab: { key: string; enabled?: boolean }): boole
 /** Returns true when a form field value is considered filled. */
 export function hasFieldValue(value: unknown): boolean {
   if (value === null || value === undefined) return false;
-  if (typeof value === 'string') return value.trim().length > 0;
-  if (typeof value === 'number') return !Number.isNaN(value);
-  if (typeof value === 'boolean') return value;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value === "number") return !Number.isNaN(value);
+  if (typeof value === "boolean") return value;
   if (Array.isArray(value)) return value.length > 0;
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     const valueObject = value as Record<string, unknown>;
-    if ('url' in valueObject) return Boolean(valueObject.url);
+    if ("url" in valueObject) return Boolean(valueObject.url);
     return Object.keys(valueObject).length > 0;
   }
   return false;
 }
 
 /** Config-driven profile completeness (0–100) for command-centre metrics. */
-export function calculateProfileCompleteness(contact: Partial<Contact>, fieldConfig: FieldConfig): number {
+export function calculateProfileCompleteness(
+  contact: Partial<Contact>,
+  fieldConfig: FieldConfig,
+): number {
   const fields = fieldConfig.fields || {};
   const formTabs = (fieldConfig.formTabs || []).filter(isCompletenessTabActive);
   const record = contact as Record<string, unknown>;
@@ -73,12 +76,13 @@ export function calculateProfileCompleteness(contact: Partial<Contact>, fieldCon
 
   const reqRatio = totalRequired === 0 ? 0 : filledRequired / totalRequired;
   const optRatio = totalOptional === 0 ? 0 : filledOptional / totalOptional;
-  
-  const progress = totalRequired === 0 
-    ? optRatio 
-    : totalOptional === 0 
-      ? reqRatio 
-      : (reqRatio * 0.7) + (optRatio * 0.3);
+
+  const progress =
+    totalRequired === 0
+      ? optRatio
+      : totalOptional === 0
+        ? reqRatio
+        : reqRatio * 0.7 + optRatio * 0.3;
 
   return Math.round(progress * 100);
 }

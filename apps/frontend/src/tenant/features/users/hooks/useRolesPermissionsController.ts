@@ -1,21 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   excludeFacultyManagedRoles,
   filterRbacModulesForSettings,
   workspaceRoleLabel,
   type WorkspaceRole,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useGlobalSettings } from '@/tenant/hooks/useGlobalSettings';
-import { usePermissions } from '@/tenant/hooks/usePermissions';
-import { useWorkspaceRoles } from '@/tenant/hooks/useWorkspaceRoles';
-import { useUsersConfig } from '@/hooks/useStandardModuleConfig';
-import { notify } from '@/lib/notify';
-import { useRolesPermissionDraft } from '@/tenant/features/users/hooks/useRolesPermissionDraft';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
+import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
+import { useUsersConfig } from "@/hooks/useStandardModuleConfig";
+import { notify } from "@/lib/notify";
+import { useRolesPermissionDraft } from "@/tenant/features/users/hooks/useRolesPermissionDraft";
 
 type PendingMatrixLeave =
-  | { type: 'select'; role: WorkspaceRole }
-  | { type: 'edit'; target: WorkspaceRole | 'new' };
+  { type: "select"; role: WorkspaceRole } | { type: "edit"; target: WorkspaceRole | "new" };
 
 export function useRolesPermissionsController() {
   const { t } = useTranslation();
@@ -25,7 +24,7 @@ export function useRolesPermissionsController() {
   const loadedRoles = useWorkspaceRoles();
   const visibleModules = (() => filterRbacModulesForSettings(globalSettings.enabledModules))();
   const [roles, setRoles] = useState<WorkspaceRole[]>(loadedRoles);
-  const [editing, setEdit] = useState<WorkspaceRole | 'new' | null>(null);
+  const [editing, setEdit] = useState<WorkspaceRole | "new" | null>(null);
   const [selected, setSel] = useState<WorkspaceRole | null>(null);
   const [pendingMatrixLeave, setPendingMatrixLeave] = useState<PendingMatrixLeave | null>(null);
 
@@ -39,24 +38,21 @@ export function useRolesPermissionsController() {
   const canManageDisplayRole =
     Boolean(displayRole) &&
     canManageRole(displayRole?.id) &&
-    displayRole?.managedBy !== 'faculty_designations';
+    displayRole?.managedBy !== "faculty_designations";
 
-  const {
-    permDraft,
-    permDirty,
-    togglePermDraft,
-    selectAllDraft,
-    clearAllDraft,
-    resetPermDraft,
-  } = useRolesPermissionDraft(displayRole);
+  const { permDraft, permDirty, togglePermDraft, selectAllDraft, clearAllDraft, resetPermDraft } =
+    useRolesPermissionDraft(displayRole);
 
-  const commitRole = async (role: WorkspaceRole, toastKey: 'role' | 'permissions'): Promise<void> => {
-    if (role.managedBy === 'faculty_designations') {
-      notify.error(t('users.roleLockedByFaculty'));
+  const commitRole = async (
+    role: WorkspaceRole,
+    toastKey: "role" | "permissions",
+  ): Promise<void> => {
+    if (role.managedBy === "faculty_designations") {
+      notify.error(t("users.roleLockedByFaculty"));
       return;
     }
     if (!canManageRole(role.id)) {
-      notify.error(t('users.errors.cannotModifySuperAdmin'));
+      notify.error(t("users.errors.cannotModifySuperAdmin"));
       return;
     }
     const existingRole = roles.find((workspaceRole) => workspaceRole.id === role.id);
@@ -68,29 +64,31 @@ export function useRolesPermissionsController() {
       setRoles(excludeFacultyManagedRoles(updatedRoles));
       setEdit(null);
       setSel(role);
-      if (toastKey === 'permissions') {
-        notify.success(t('users.permissions.permissionsSaved'), {
-          description: t('users.permissions.permissionsSavedDesc', { name: workspaceRoleLabel(role, t) }),
+      if (toastKey === "permissions") {
+        notify.success(t("users.permissions.permissionsSaved"), {
+          description: t("users.permissions.permissionsSavedDesc", {
+            name: workspaceRoleLabel(role, t),
+          }),
         });
       } else {
-        notify.success(t('users.permissions.roleSaved'), {
-          description: t('users.permissions.roleSavedDesc', { name: workspaceRoleLabel(role, t) }),
+        notify.success(t("users.permissions.roleSaved"), {
+          description: t("users.permissions.roleSavedDesc", { name: workspaceRoleLabel(role, t) }),
         });
       }
     } catch (error) {
-      notify.error(t('settings.serverSaveFailed'), {
+      notify.error(t("settings.serverSaveFailed"), {
         description: error instanceof Error ? error.message : String(error),
       });
     }
   };
 
   const handleSave = (role: WorkspaceRole): void => {
-    void commitRole(role, 'role');
+    void commitRole(role, "role");
   };
 
   const savePermissionDraft = (): void => {
     if (!displayRole || !permDraft || !canManageDisplayRole) return;
-    void commitRole({ ...displayRole, permissions: structuredClone(permDraft) }, 'permissions');
+    void commitRole({ ...displayRole, permissions: structuredClone(permDraft) }, "permissions");
   };
 
   const requestSelectRole = (next: WorkspaceRole): void => {
@@ -99,18 +97,18 @@ export function useRolesPermissionsController() {
       setSel(next);
       return;
     }
-    setPendingMatrixLeave({ type: 'select', role: next });
+    setPendingMatrixLeave({ type: "select", role: next });
   };
 
-  const requestEditRole = (target: WorkspaceRole | 'new'): void => {
-    if (target !== 'new' && !canManageRole(target.id)) {
+  const requestEditRole = (target: WorkspaceRole | "new"): void => {
+    if (target !== "new" && !canManageRole(target.id)) {
       return;
     }
     if (!permDirty) {
       setEdit(target);
       return;
     }
-    setPendingMatrixLeave({ type: 'edit', target });
+    setPendingMatrixLeave({ type: "edit", target });
   };
 
   const clearPendingMatrixLeave = (): void => {
@@ -120,7 +118,7 @@ export function useRolesPermissionsController() {
   const confirmPendingMatrixLeave = (): void => {
     if (!pendingMatrixLeave) return;
     resetPermDraft();
-    if (pendingMatrixLeave.type === 'select') {
+    if (pendingMatrixLeave.type === "select") {
       setSel(pendingMatrixLeave.role);
     } else {
       setEdit(pendingMatrixLeave.target);
@@ -133,10 +131,10 @@ export function useRolesPermissionsController() {
   };
 
   const editTitle = editing
-    ? editing === 'new'
-      ? t('users.permissions.createTitle')
-      : t('users.permissions.editTitle', { name: workspaceRoleLabel(editing, t) })
-    : '';
+    ? editing === "new"
+      ? t("users.permissions.createTitle")
+      : t("users.permissions.editTitle", { name: workspaceRoleLabel(editing, t) })
+    : "";
 
   return {
     t,

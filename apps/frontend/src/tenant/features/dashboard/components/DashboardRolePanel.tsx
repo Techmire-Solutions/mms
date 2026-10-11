@@ -1,10 +1,10 @@
-import React from 'react';
-import QuickActionsPanel from '@/tenant/features/dashboard/components/QuickActionsPanel';
-import NotificationsPanel from '@/tenant/features/dashboard/components/NotificationsPanel';
-import type { DashboardRole } from '@/lib/dashboardRole';
-import type { buildDashboardNotifications } from '@/lib/buildDashboardNotifications';
-import { useOpenTenantNotification } from '@/tenant/hooks/notifications/useOpenTenantNotification';
-import { useNotificationReadState } from '@/tenant/hooks/notifications/useNotificationReadState';
+import React from "react";
+import QuickActionsPanel from "@/tenant/features/dashboard/components/QuickActionsPanel";
+import NotificationsPanel from "@/tenant/features/dashboard/components/NotificationsPanel";
+import type { DashboardRole } from "@/lib/dashboardRole";
+import type { buildDashboardNotifications } from "@/lib/buildDashboardNotifications";
+import { useOpenTenantNotification } from "@/tenant/hooks/notifications/useOpenTenantNotification";
+import { useNotificationReadState } from "@/tenant/hooks/notifications/useNotificationReadState";
 
 interface DashboardRolePanelProps {
   dashboardRole: DashboardRole;
@@ -38,4 +38,3 @@ export function DashboardRolePanel({
 }
 
 export default DashboardRolePanel;
-

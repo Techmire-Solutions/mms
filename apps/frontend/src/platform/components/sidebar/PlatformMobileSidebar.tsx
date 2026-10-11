@@ -1,19 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { usePlatformAuth } from '@/platform/lib/PlatformAuthContext';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import { usePlatformSidebar } from '@/platform/lib/PlatformSidebarContext';
-import { getVisiblePlatformNavSections } from '@/platform/lib/platformNav';
-import { useOverlayBehavior } from '@/hooks/useOverlayBehavior';
-import { PlatformSignOutDialog } from '@/platform/components/common/PlatformSignOutDialog';
-import { PlatformSidebarSearch } from '@/platform/components/sidebar/PlatformSidebarSearch';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
-import { OVERLAY_BACKDROP } from '@/components/ui/formStyles';
-import { PlatformSidebarNav } from '@/platform/components/PlatformSidebarNav';
-import { PlatformSidebarBrand } from '@/platform/components/sidebar/PlatformSidebarBrand';
-import { PlatformSidebarFooter } from '@/platform/components/sidebar/PlatformSidebarFooter';
+import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
+import { getVisiblePlatformNavSections } from "@/platform/lib/platformNav";
+import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
+import { PlatformSignOutDialog } from "@/platform/components/common/PlatformSignOutDialog";
+import { PlatformSidebarSearch } from "@/platform/components/sidebar/PlatformSidebarSearch";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { OVERLAY_BACKDROP } from "@/components/ui/formStyles";
+import { PlatformSidebarNav } from "@/platform/components/PlatformSidebarNav";
+import { PlatformSidebarBrand } from "@/platform/components/sidebar/PlatformSidebarBrand";
+import { PlatformSidebarFooter } from "@/platform/components/sidebar/PlatformSidebarFooter";
 
 /**
  * Mobile drawer for Platform Apex, mounted outside the desktop aside so it remains
@@ -51,12 +51,12 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
     <>
       <div
         role="region"
-        aria-label={t('nav.openMenu')}
+        aria-label={t("nav.openMenu")}
         className="lg:hidden fixed inset-0 z-sidebar-mobile flex"
       >
         <div
           data-overlay-backdrop
-          className={cn('fixed inset-0', OVERLAY_BACKDROP, 'transition-opacity duration-300')}
+          className={cn("fixed inset-0", OVERLAY_BACKDROP, "transition-opacity duration-300")}
           onClick={() => {
             if (!openGestureActiveRef.current) {
               closeMobileSidebar();
@@ -68,7 +68,7 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
           ref={drawerRef}
           role="dialog"
           aria-modal="true"
-          aria-label={t('nav.openMenu')}
+          aria-label={t("nav.openMenu")}
           className="relative w-sidebar-mobile max-w-sheet bg-sidebar h-full shadow-drawer flex flex-col z-elevated border-e border-sidebar-border"
         >
           <div className="flex flex-col justify-between h-full w-full">
@@ -79,7 +79,12 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
               onCloseMobile={closeMobileSidebar}
             />
 
-            <PlatformSidebarSearch onOpen={() => { closeMobileSidebar(); openCommandPalette(); }} />
+            <PlatformSidebarSearch
+              onOpen={() => {
+                closeMobileSidebar();
+                openCommandPalette();
+              }}
+            />
 
             <TooltipProvider delayDuration={150}>
               <PlatformSidebarNav

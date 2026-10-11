@@ -1,20 +1,30 @@
 import React, { lazy, Suspense, useState } from "react";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useFinanceInvoicesPaginated, useFinanceReportAggregates } from "@/tenant/hooks/collections/finance";
+import {
+  useFinanceInvoicesPaginated,
+  useFinanceReportAggregates,
+} from "@/tenant/hooks/collections/finance";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 
-
-
 const FinancialReportCharts = lazy(() =>
-  import("@/components/ui/reports/FinancialReportSections").then((mod) => ({ default: mod.FinancialReportCharts })),
+  import("@/components/ui/reports/FinancialReportSections").then((mod) => ({
+    default: mod.FinancialReportCharts,
+  })),
 );
 import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 import { FinancialInvoiceTable } from "@/components/ui/reports/FinancialReportTable";
-import { formatMonthYear, getCollectedAmountForInvoice, getOutstandingAmountForInvoice } from "@mms/shared";
-import type { DiscountUsageByTypeItem, MonthlyFeeCollectionItem } from '@/components/ui/reports/FinancialReportSections';
+import {
+  formatMonthYear,
+  getCollectedAmountForInvoice,
+  getOutstandingAmountForInvoice,
+} from "@mms/shared";
+import type {
+  DiscountUsageByTypeItem,
+  MonthlyFeeCollectionItem,
+} from "@/components/ui/reports/FinancialReportSections";
 
 /** Active filter state passed down from the parent report view. */
 interface FinancialReportFilters {
@@ -36,11 +46,19 @@ interface FinancialReportProps {
  * Renders the financial reports and charts including revenue trends,
  * collection rates, discount distribution, and a filterable invoice table.
  */
-const FinancialReport = (function FinancialReport({ filters }: FinancialReportProps): React.JSX.Element {
+const FinancialReport = function FinancialReport({
+  filters,
+}: FinancialReportProps): React.JSX.Element {
   const { t } = useTranslation();
   const palette = useBrandPalette();
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const PIE_COLORS = (() => [palette.primary, palette.secondary, palette.charts[2], palette.charts[3], palette.charts[0]])();
+  const PIE_COLORS = (() => [
+    palette.primary,
+    palette.secondary,
+    palette.charts[2],
+    palette.charts[3],
+    palette.charts[0],
+  ])();
 
   const invoicesQuery = useFinanceInvoicesPaginated({
     page: 1,
@@ -53,16 +71,21 @@ const FinancialReport = (function FinancialReport({ filters }: FinancialReportPr
   const financeInvoices = invoicesQuery.data?.invoices ?? [];
 
   const monthlyFeeCollection = (() => {
-    if (aggregatesQuery.data?.monthlyFeeCollection && aggregatesQuery.data.monthlyFeeCollection.length > 0) {
+    if (
+      aggregatesQuery.data?.monthlyFeeCollection &&
+      aggregatesQuery.data.monthlyFeeCollection.length > 0
+    ) {
       return aggregatesQuery.data.monthlyFeeCollection;
     }
-    const monthlyTotals: Record<string, { collected: number; outstanding: number; total: number }> = {};
+    const monthlyTotals: Record<string, { collected: number; outstanding: number; total: number }> =
+      {};
     financeInvoices.forEach((invoice) => {
       const dueDate = new Date(invoice.dueDate);
       if (isNaN(dueDate.getTime())) return;
       const monthLabel = formatMonthYear(dueDate);
 
-      if (!monthlyTotals[monthLabel]) monthlyTotals[monthLabel] = { collected: 0, outstanding: 0, total: 0 };
+      if (!monthlyTotals[monthLabel])
+        monthlyTotals[monthLabel] = { collected: 0, outstanding: 0, total: 0 };
 
       const collected = getCollectedAmountForInvoice(invoice);
       const outstanding = getOutstandingAmountForInvoice(invoice);
@@ -72,17 +95,27 @@ const FinancialReport = (function FinancialReport({ filters }: FinancialReportPr
       monthlyTotals[monthLabel].total += invoice.finalAmt;
     });
 
-    return Object.entries(monthlyTotals).map(([month, monthTotals]) => ({
-      month,
-      collected: monthTotals.collected,
-      outstanding: monthTotals.outstanding,
-      total: monthTotals.total,
-      rate: monthTotals.total > 0 ? Math.round((monthTotals.collected / monthTotals.total) * 100) : 0,
-    })).sort((firstMonth, secondMonth) => new Date(firstMonth.month).getTime() - new Date(secondMonth.month).getTime()).slice(-6);
+    return Object.entries(monthlyTotals)
+      .map(([month, monthTotals]) => ({
+        month,
+        collected: monthTotals.collected,
+        outstanding: monthTotals.outstanding,
+        total: monthTotals.total,
+        rate:
+          monthTotals.total > 0 ? Math.round((monthTotals.collected / monthTotals.total) * 100) : 0,
+      }))
+      .sort(
+        (firstMonth, secondMonth) =>
+          new Date(firstMonth.month).getTime() - new Date(secondMonth.month).getTime(),
+      )
+      .slice(-6);
   })() as MonthlyFeeCollectionItem[];
 
   const discountUsageByType = (() => {
-    if (aggregatesQuery.data?.discountUsageByType && aggregatesQuery.data.discountUsageByType.length > 0) {
+    if (
+      aggregatesQuery.data?.discountUsageByType &&
+      aggregatesQuery.data.discountUsageByType.length > 0
+    ) {
       return aggregatesQuery.data.discountUsageByType;
     }
     const discountTotalsByType: Record<string, { count: number; totalDiscounted: number }> = {};
@@ -91,7 +124,8 @@ const FinancialReport = (function FinancialReport({ filters }: FinancialReportPr
     financeInvoices.forEach((invoice) => {
       if (invoice.discountAmt > 0 && invoice.discountType && invoice.status !== "cancelled") {
         const discountType = invoice.discountType;
-        if (!discountTotalsByType[discountType]) discountTotalsByType[discountType] = { count: 0, totalDiscounted: 0 };
+        if (!discountTotalsByType[discountType])
+          discountTotalsByType[discountType] = { count: 0, totalDiscounted: 0 };
         discountTotalsByType[discountType].count++;
         discountTotalsByType[discountType].totalDiscounted += invoice.discountAmt;
         totalDiscountAmount += invoice.discountAmt;
@@ -102,7 +136,10 @@ const FinancialReport = (function FinancialReport({ filters }: FinancialReportPr
       type: discountType,
       count: discountTotals.count,
       totalDiscounted: discountTotals.totalDiscounted,
-      percentage: totalDiscountAmount > 0 ? Math.round((discountTotals.totalDiscounted / totalDiscountAmount) * 100) : 0,
+      percentage:
+        totalDiscountAmount > 0
+          ? Math.round((discountTotals.totalDiscounted / totalDiscountAmount) * 100)
+          : 0,
     }));
   })() as DiscountUsageByTypeItem[];
 
@@ -168,6 +205,6 @@ const FinancialReport = (function FinancialReport({ filters }: FinancialReportPr
       <PinnedWidgets category="finance" />
     </div>
   );
-});
+};
 
 export default FinancialReport;

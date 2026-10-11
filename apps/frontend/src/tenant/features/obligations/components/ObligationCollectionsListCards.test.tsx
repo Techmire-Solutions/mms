@@ -120,10 +120,7 @@ describe("ObligationCollectionsListCards", () => {
 
   it("falls back to dash when sender name absent", () => {
     const html = renderToStaticMarkup(
-      <ObligationCollectionsListCards
-        {...baseProps}
-        getContact={() => undefined}
-      />,
+      <ObligationCollectionsListCards {...baseProps} getContact={() => undefined} />,
     );
     // EntityCard.Header displayName="—"
     expect(html).toContain("—");

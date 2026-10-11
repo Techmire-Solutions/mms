@@ -1,9 +1,9 @@
-import { z } from 'zod';
-import type { AppTranslationKey } from './appTranslations.js';
-import type { Student } from './studentTypes.js';
-import { baseListQuerySchema } from './apiSchemas.js';
-import { isQueryFlagTrue } from './paginationUtils.js';
-import { isoDateSchema } from './isoDateSchema.js';
+import { z } from "zod";
+import type { AppTranslationKey } from "./appTranslations.js";
+import type { Student } from "./studentTypes.js";
+import { baseListQuerySchema } from "./apiSchemas.js";
+import { isQueryFlagTrue } from "./paginationUtils.js";
+import { isoDateSchema } from "./isoDateSchema.js";
 
 export interface StudentsListQuery {
   page?: number;
@@ -13,7 +13,7 @@ export interface StudentsListQuery {
   status?: string;
   gender?: string;
   sortField?: string;
-  sortDir?: 'asc' | 'desc' | '';
+  sortDir?: "asc" | "desc" | "";
   /** When true, SQL list returns deleted-only rows (Work trash). */
   includeDeleted?: boolean;
   /** Work-directory preset filter; omit or `all` means no preset. */
@@ -32,12 +32,12 @@ export interface StudentsListQuery {
 
 /** Work-directory filter presets — SSOT for schema + Filters menu. */
 const STUDENTS_QUICK_FILTERS = [
-  'all',
-  'new',
-  'missingGr',
-  'active',
-  'graduated',
-  'transferred',
+  "all",
+  "new",
+  "missingGr",
+  "active",
+  "graduated",
+  "transferred",
 ] as const;
 
 const studentsQuickFilterSchema = z.enum(STUDENTS_QUICK_FILTERS);
@@ -53,12 +53,12 @@ export function isStudentsQuickFilter(value: string): value is StudentsQuickFilt
 }
 
 const STUDENTS_QUICK_FILTER_LABEL_KEYS = {
-  all: 'students.filtersAll',
-  new: 'students.filtersNew',
-  missingGr: 'students.filtersMissingGr',
-  active: 'students.filtersActive',
-  graduated: 'students.filtersGraduated',
-  transferred: 'students.filtersTransferred',
+  all: "students.filtersAll",
+  new: "students.filtersNew",
+  missingGr: "students.filtersMissingGr",
+  active: "students.filtersActive",
+  graduated: "students.filtersGraduated",
+  transferred: "students.filtersTransferred",
 } as const satisfies Record<StudentsQuickFilter, AppTranslationKey>;
 
 /** Preset options for the Students Work Filters menu. */
@@ -96,7 +96,7 @@ export const studentsNextGrNumberQuerySchema = z.object({
   template: z.string().max(64).optional(),
   digits: z.coerce.number().int().min(1).max(12).optional(),
   restartAnnually: z
-    .enum(['true', 'false'])
+    .enum(["true", "false"])
     .optional()
     .transform((v) => (v === undefined ? undefined : isQueryFlagTrue(v))),
 });

@@ -1,5 +1,10 @@
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import type { Faculty, FacultyCustomField, FacultySortField, ModuleColumnRegistryEntry } from "@mms/shared";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import type {
+  Faculty,
+  FacultyCustomField,
+  FacultySortField,
+  ModuleColumnRegistryEntry,
+} from "@mms/shared";
 import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 
 export interface FacultyListContentProps {
@@ -41,6 +46,3 @@ export interface FacultyListContentProps {
   onWhatsApp?: (faculty: Faculty[]) => void;
   onEmail?: (faculty: Faculty[]) => void;
 }
-
-
-

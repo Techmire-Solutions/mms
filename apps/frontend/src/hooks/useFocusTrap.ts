@@ -18,7 +18,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS_QUERY)).filter(
     (el) =>
       (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0) &&
-      el.getAttribute("aria-hidden") !== "true"
+      el.getAttribute("aria-hidden") !== "true",
   );
 }
 
@@ -30,7 +30,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
  * @returns Ref object to be attached to the modal/overlay container.
  */
 export function useFocusTrap<T extends HTMLElement = HTMLElement>(
-  active: boolean
+  active: boolean,
 ): React.RefObject<T | null> {
   const containerRef = useRef<T | null>(null);
 

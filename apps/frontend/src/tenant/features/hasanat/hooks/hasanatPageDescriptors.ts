@@ -41,16 +41,14 @@ export function unwrapHasanatEnvelopes(
   const denomsEnvelope = denomsBody as Denomination[] | { denoms?: Denomination[] } | null;
   const batchesEnvelope = batchesBody as StockBatch[] | { batches?: StockBatch[] } | null;
   const distributionsEnvelope = distributionsBody as
-    | Distribution[]
-    | { distributions?: Distribution[] }
-    | null;
+    Distribution[] | { distributions?: Distribution[] } | null;
 
   return {
-    denoms: Array.isArray(denomsEnvelope) ? denomsEnvelope : denomsEnvelope?.denoms ?? [],
-    batches: Array.isArray(batchesEnvelope) ? batchesEnvelope : batchesEnvelope?.batches ?? [],
+    denoms: Array.isArray(denomsEnvelope) ? denomsEnvelope : (denomsEnvelope?.denoms ?? []),
+    batches: Array.isArray(batchesEnvelope) ? batchesEnvelope : (batchesEnvelope?.batches ?? []),
     distributions: Array.isArray(distributionsEnvelope)
       ? distributionsEnvelope
-      : distributionsEnvelope?.distributions ?? [],
+      : (distributionsEnvelope?.distributions ?? []),
   };
 }
 
@@ -65,4 +63,3 @@ export function formatHasanatMessageRecipients(
     email: distribution.email || "",
   }));
 }
-

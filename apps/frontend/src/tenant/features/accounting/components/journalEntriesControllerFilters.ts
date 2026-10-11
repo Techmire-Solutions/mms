@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { AccountingListQuery } from '@mms/shared';
-import { moneyToCents } from '@mms/shared';
-import { useDebounce } from '@/hooks/useDebounce';
-import type { JournalEntry } from '@/lib/data/accountingData';
-import { getJournalEntryLineTotals } from '@/tenant/features/accounting/components/journalEntriesListShared';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { AccountingListQuery } from "@mms/shared";
+import { moneyToCents } from "@mms/shared";
+import { useDebounce } from "@/hooks/useDebounce";
+import type { JournalEntry } from "@/lib/data/accountingData";
+import { getJournalEntryLineTotals } from "@/tenant/features/accounting/components/journalEntriesListShared";
 
 /** Journal Work filter values. Owned by the page that issues the server query. */
 export interface JournalEntryFilterState {
@@ -15,14 +15,14 @@ export interface JournalEntryFilterState {
 }
 
 /** Sentinel the filter menu and the chips use for "no filter on this field". */
-export const JOURNAL_FILTER_ALL = 'all';
+export const JOURNAL_FILTER_ALL = "all";
 
 export const EMPTY_JOURNAL_ENTRY_FILTERS: JournalEntryFilterState = {
-  search: '',
+  search: "",
   statusFilter: JOURNAL_FILTER_ALL,
   tagFilter: JOURNAL_FILTER_ALL,
-  dateFrom: '',
-  dateTo: '',
+  dateFrom: "",
+  dateTo: "",
 };
 
 /**
@@ -74,8 +74,8 @@ export function buildJournalEntriesListQuery(
     tag: filters.tagFilter === JOURNAL_FILTER_ALL ? undefined : filters.tagFilter,
     dateFrom: filters.dateFrom || undefined,
     dateTo: filters.dateTo || undefined,
-    sortField: 'date',
-    sortDir: 'desc',
+    sortField: "date",
+    sortDir: "desc",
     includeDeleted,
   };
 }
@@ -97,7 +97,9 @@ export interface JournalEntriesListQueryState {
  * The search text is debounced, and `includeDeleted` (the trash toggle) is part
  * of the request, so flipping it also returns to page 1.
  */
-export function useJournalEntriesListQueryState(includeDeleted: boolean): JournalEntriesListQueryState {
+export function useJournalEntriesListQueryState(
+  includeDeleted: boolean,
+): JournalEntriesListQueryState {
   const [filters, setFilters] = useState(EMPTY_JOURNAL_ENTRY_FILTERS);
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(filters.search, SEARCH_DEBOUNCE_MS);
@@ -113,12 +115,13 @@ export function useJournalEntriesListQueryState(includeDeleted: boolean): Journa
   }, [includeDeleted]);
 
   const query = useMemo(
-    () => buildJournalEntriesListQuery(
-      { ...filters, search: debouncedSearch },
-      page,
-      JOURNAL_PAGE_SIZE,
-      includeDeleted,
-    ),
+    () =>
+      buildJournalEntriesListQuery(
+        { ...filters, search: debouncedSearch },
+        page,
+        JOURNAL_PAGE_SIZE,
+        includeDeleted,
+      ),
     [filters, debouncedSearch, page, includeDeleted],
   );
 
@@ -135,7 +138,10 @@ export function useJournalEntriesListQueryState(includeDeleted: boolean): Journa
  * Accumulated in integer cents and divided once: summing the per-entry floats
  * turned two balanced 0.10 + 0.20 pages into a "0.30000000000000004" footer.
  */
-export function computeJournalGrandTotals(entries: JournalEntry[]): { grandDebit: number; grandCredit: number } {
+export function computeJournalGrandTotals(entries: JournalEntry[]): {
+  grandDebit: number;
+  grandCredit: number;
+} {
   let grandDebitCents = 0;
   let grandCreditCents = 0;
   for (const journalEntry of entries) {

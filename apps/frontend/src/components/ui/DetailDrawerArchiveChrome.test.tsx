@@ -46,10 +46,7 @@ describe("DetailDrawerArchiveChrome retention utilities", () => {
   describe("RetentionCountdownBadge", () => {
     it("renders 'Archived indefinitely' when retentionDays is null", () => {
       const html = renderToStaticMarkup(
-        <RetentionCountdownBadge
-          deletedAt="2026-02-01T12:00:00Z"
-          retentionDays={null}
-        />,
+        <RetentionCountdownBadge deletedAt="2026-02-01T12:00:00Z" retentionDays={null} />,
       );
       expect(html).toContain("common.archivedIndefinitely");
     });
@@ -57,10 +54,7 @@ describe("DetailDrawerArchiveChrome retention utilities", () => {
     it("renders warning tone with emoji when <= 7 days remain", () => {
       // Deleted 5 days ago (Feb 24), retention = 8 days -> 3 days remaining
       const html = renderToStaticMarkup(
-        <RetentionCountdownBadge
-          deletedAt="2026-02-24T12:00:00Z"
-          retentionDays={8}
-        />,
+        <RetentionCountdownBadge deletedAt="2026-02-24T12:00:00Z" retentionDays={8} />,
       );
       expect(html).toContain("⚠️ common.purgesInDays");
       expect(html).toContain("text-destructive");
@@ -69,10 +63,7 @@ describe("DetailDrawerArchiveChrome retention utilities", () => {
     it("renders standard tone when > 7 days remain", () => {
       // Deleted 1 day ago (Feb 28), retention = 30 days -> 29 days remaining
       const html = renderToStaticMarkup(
-        <RetentionCountdownBadge
-          deletedAt="2026-02-28T12:00:00Z"
-          retentionDays={30}
-        />,
+        <RetentionCountdownBadge deletedAt="2026-02-28T12:00:00Z" retentionDays={30} />,
       );
       expect(html).toContain("common.purgesInDays");
       expect(html).not.toContain("⚠️");

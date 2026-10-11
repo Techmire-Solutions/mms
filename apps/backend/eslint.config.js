@@ -1,6 +1,7 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
+import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 export default tseslint.config(
   { ignores: ["dist/**"] },
@@ -33,9 +34,9 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-imports": [
         "error",
         {
-          "prefer": "type-imports",
-          "fixStyle": "inline-type-imports",
-          "disallowTypeAnnotations": false,
+          prefer: "type-imports",
+          fixStyle: "inline-type-imports",
+          disallowTypeAnnotations: false,
         },
       ],
       // Type-aware rules: catch unhandled/misused promises (real bug sources).
@@ -51,4 +52,5 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  eslintConfigPrettier,
 );

@@ -15,7 +15,8 @@ export interface StatCardProps {
   label: string;
   value: string | number;
   sub?: string | null;
-  icon?: LucideIcon | React.ComponentType<{ className?: string; style?: React.CSSProperties }> | null;
+  icon?:
+    LucideIcon | React.ComponentType<{ className?: string; style?: React.CSSProperties }> | null;
   accent?: AccentColor;
   trend?: number;
   /** Contextual label for the trend period, e.g. "vs last month". */
@@ -39,8 +40,7 @@ export interface StatCardProps {
   isActive?: boolean;
 }
 
-
-export const StatCard = (function StatCard({
+export const StatCard = function StatCard({
   label,
   value,
   sub = null,
@@ -66,8 +66,10 @@ export const StatCard = (function StatCard({
   // Use CSS token --animation-stagger-unit (0.04s) for consistent stagger across the design system.
   const staggerUnit = parseFloat(
     typeof window !== "undefined"
-      ? getComputedStyle(document.documentElement).getPropertyValue("--animation-stagger-unit").trim() || "0.04"
-      : "0.04"
+      ? getComputedStyle(document.documentElement)
+          .getPropertyValue("--animation-stagger-unit")
+          .trim() || "0.04"
+      : "0.04",
   );
   const motionProps = reducedMotion
     ? { initial: false, animate: { opacity: 1, y: 0 } }
@@ -92,12 +94,19 @@ export const StatCard = (function StatCard({
             CARD_STRIPE_INSET,
             onClick && "hover:border-primary/40 hover:bg-card/75",
             isActive && "ring-2 ring-primary/60 border-primary/60 bg-primary/5",
-            className
+            className,
           )}
         >
           <div className="flex items-center gap-3 min-w-0">
             {Icon && (
-              <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 shadow-sm ring-4", theme.iconBg, theme.ring)} aria-hidden="true">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 shadow-sm ring-4",
+                  theme.iconBg,
+                  theme.ring,
+                )}
+                aria-hidden="true"
+              >
                 <Icon className={cn("w-4 h-4", theme.iconText)} />
               </div>
             )}
@@ -109,9 +118,7 @@ export const StatCard = (function StatCard({
                 {formattedValue}
               </p>
               {sub && (
-                <p className="text-xs font-semibold text-muted-foreground mt-1 truncate">
-                  {sub}
-                </p>
+                <p className="text-xs font-semibold text-muted-foreground mt-1 truncate">{sub}</p>
               )}
             </div>
           </div>
@@ -136,13 +143,20 @@ export const StatCard = (function StatCard({
           CARD_STRIPE_INSET,
           onClick && "hover:border-primary/40 hover:bg-card/75",
           isActive && "ring-2 ring-primary/60 border-primary/60 bg-primary/5",
-          className
+          className,
         )}
       >
         <div className="flex items-start justify-between gap-3 w-full">
           <div className="flex items-center gap-3.5 min-w-0">
             {Icon && (
-              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 shadow-sm ring-4", theme.iconBg, theme.ring)} aria-hidden="true">
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 shadow-sm ring-4",
+                  theme.iconBg,
+                  theme.ring,
+                )}
+                aria-hidden="true"
+              >
                 <Icon className={cn("w-5 h-5", theme.iconText)} />
               </div>
             )}
@@ -154,17 +168,13 @@ export const StatCard = (function StatCard({
                 {formattedValue}
               </p>
               {sub && (
-                <p className="text-xs font-semibold text-muted-foreground mt-1 truncate">
-                  {sub}
-                </p>
+                <p className="text-xs font-semibold text-muted-foreground mt-1 truncate">{sub}</p>
               )}
             </div>
           </div>
 
           <div className="flex flex-col items-end gap-1 shrink-0">
-            {trend !== undefined && (
-              <StatCardTrend trend={trend} trendLabel={trendLabel} />
-            )}
+            {trend !== undefined && <StatCardTrend trend={trend} trendLabel={trendLabel} />}
             {sparklineData && <StatCardSparkline data={sparklineData} />}
           </div>
         </div>
@@ -177,5 +187,4 @@ export const StatCard = (function StatCard({
       </Card>
     </Comp>
   );
-});
-
+};

@@ -43,10 +43,7 @@ function titleCaseWord(word: string): string {
 }
 
 function titleCaseSegment(segment: string): string {
-  return segment
-    .split(" ")
-    .map(titleCaseWord)
-    .join(" ");
+  return segment.split(" ").map(titleCaseWord).join(" ");
 }
 
 export interface AddTagsResult {
@@ -73,9 +70,7 @@ export function buildAddedTags(
   const normalizedOptionsMap = new Map<string, string>(
     options.map((opt) => [normalizeOption(opt), opt]),
   );
-  const normalizedValuesSet = new Set<string>(
-    values.map((val) => normalizeOption(val)),
-  );
+  const normalizedValuesSet = new Set<string>(values.map((val) => normalizeOption(val)));
 
   for (const part of parts) {
     const text = titleCaseSegment(part);

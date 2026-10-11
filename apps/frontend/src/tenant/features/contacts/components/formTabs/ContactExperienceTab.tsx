@@ -70,9 +70,12 @@ export function ContactExperienceTab({
     ensureSubListItem("experience", emptyExperience());
   }, [ensureSubListItem, emptyExperience]);
 
-  const removeExperience = useCallback((idx: number) => {
-    removeSubListItem("experience", idx);
-  }, [removeSubListItem]);
+  const removeExperience = useCallback(
+    (idx: number) => {
+      removeSubListItem("experience", idx);
+    },
+    [removeSubListItem],
+  );
 
   const updateExperience = useCallback(
     (idx: number, patch: Partial<ContactExperience> & Record<string, unknown>) => {

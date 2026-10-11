@@ -23,7 +23,8 @@ export function ContactDetailOverviewQuickActions({
   if (contact.deletedAt) return null;
 
   return (
-    <EntityMessagingActions variant="button-group"
+    <EntityMessagingActions
+      variant="button-group"
       primaryPhone={primaryPhone}
       primaryEmail={primaryEmail}
       labels={{

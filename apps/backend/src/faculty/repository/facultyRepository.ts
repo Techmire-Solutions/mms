@@ -8,8 +8,8 @@ import type {
   FacultyListQuery,
   FacultyWidgetAggregateResult,
   FacultyWidgetQuery,
-} from '@mms/shared';
-import type { TenantTransaction } from '../../db/tenant-context.js';
+} from "@mms/shared";
+import type { TenantTransaction } from "../../db/tenant-context.js";
 
 /**
  * Sole gateway to faculty storage.
@@ -21,16 +21,17 @@ import type { TenantTransaction } from '../../db/tenant-context.js';
  * `db/repositories/facultyRepository*` functions.
  */
 export interface FacultyRepository {
-  countByWorkspace(
-    tenant: string,
-    options?: { includeDeleted?: boolean },
-  ): Promise<number>;
+  countByWorkspace(tenant: string, options?: { includeDeleted?: boolean }): Promise<number>;
   listPage(tenant: string, query: FacultyListQuery): Promise<FacultyListPageResult>;
   findById(tenant: string, id: string): Promise<Faculty | null>;
   findByIds(tenant: string, ids: string[]): Promise<Faculty[]>;
   /** Soft-delete probe for restore-on-create re-registration (Contact SSOT). */
   findSoftDeletedByContactId(tenant: string, contactId: string): Promise<Faculty | null>;
-  save(tenant: string, member: Faculty | FacultyRecord, options?: { createOnly?: boolean }): Promise<void>;
+  save(
+    tenant: string,
+    member: Faculty | FacultyRecord,
+    options?: { createOnly?: boolean },
+  ): Promise<void>;
   guardAssignmentDependents(tenant: string, ids: string[]): Promise<void>;
   bulkSave(tenant: string, members: Array<Faculty | FacultyRecord>): Promise<void>;
   aggregateCommandMetrics(
@@ -55,7 +56,11 @@ export interface FacultyRepository {
     input: FacultyDuplicateCheckInput,
   ): Promise<FacultyDuplicateReason | null>;
   bulkUpdateStatusSql(tenant: string, ids: string[], status: string): Promise<number>;
-  bulkUpdateSpecializationSql(tenant: string, ids: string[], specialization: string): Promise<number>;
+  bulkUpdateSpecializationSql(
+    tenant: string,
+    ids: string[],
+    specialization: string,
+  ): Promise<number>;
   countSubordinates(tenant: string, supervisorId: string): Promise<number>;
   countSubordinatesBatch(tenant: string, supervisorIds: string[]): Promise<Record<string, number>>;
   findSubordinates(tenant: string, supervisorId: string): Promise<Faculty[]>;

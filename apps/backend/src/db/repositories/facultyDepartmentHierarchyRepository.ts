@@ -1,6 +1,6 @@
-import { validateHierarchyDepth } from './facultyHierarchySql.js';
-import { sql } from 'drizzle-orm';
-import { withTenantRead } from '../tenant-context.js';
+import { validateHierarchyDepth } from "./facultyHierarchySql.js";
+import { sql } from "drizzle-orm";
+import { withTenantRead } from "../tenant-context.js";
 
 export interface DepartmentAncestor {
   id: string;

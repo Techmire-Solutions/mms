@@ -1,5 +1,5 @@
-import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { EntityMessagingActions } from '@/components/ui/EntityMessagingActions';
+import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
 
 export interface PersonMessagingRowActionsExtrasProps {
   /** Primary phone (or null when the row has none) — drives SMS visibility. */
@@ -49,7 +49,8 @@ export function PersonMessagingRowActionsExtras({
   return (
     <>
       <DropdownMenuSeparator />
-      <EntityMessagingActions variant="dropdown"
+      <EntityMessagingActions
+        variant="dropdown"
         showWhatsApp={showWhatsApp}
         showSms={showSms}
         showEmail={showEmail}

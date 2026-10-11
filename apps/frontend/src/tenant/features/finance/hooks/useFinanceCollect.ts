@@ -9,7 +9,10 @@ import type {
   RemindInvoicesResult,
 } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
-import { FINANCE_INVOICES_QUERY_KEY, FINANCE_METRICS_QUERY_KEY } from "@/tenant/features/finance/hooks/useFinanceApi";
+import {
+  FINANCE_INVOICES_QUERY_KEY,
+  FINANCE_METRICS_QUERY_KEY,
+} from "@/tenant/features/finance/hooks/useFinanceApi";
 
 const CREDIT_NOTES_KEY = ["finance", "credit-notes"] as const;
 
@@ -40,7 +43,9 @@ export function useFinanceCollectMutations() {
   });
   const cancel = useMutation({
     mutationFn: (invoiceId: string) =>
-      apiJson<{ invoice: Invoice }>(`/api/finance/invoices/${invoiceId}/cancel`, { method: "POST" }),
+      apiJson<{ invoice: Invoice }>(`/api/finance/invoices/${invoiceId}/cancel`, {
+        method: "POST",
+      }),
     onSuccess: () => invalidateFinance(queryClient),
   });
   const credit = useMutation({

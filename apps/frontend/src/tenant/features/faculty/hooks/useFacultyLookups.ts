@@ -7,7 +7,10 @@ import {
 import { apiContract } from "@/lib/api";
 import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
 
-export const FACULTY_LOOKUPS_QUERY_KEY = [FACULTY_MODULE_MANIFEST.collectionKey, "lookups"] as const;
+export const FACULTY_LOOKUPS_QUERY_KEY = [
+  FACULTY_MODULE_MANIFEST.collectionKey,
+  "lookups",
+] as const;
 
 export async function fetchFacultyLookups(_signal?: AbortSignal): Promise<FacultyLookupsMap> {
   const res = await apiContract.faculty.getLookups({ query: undefined, extraHeaders: {} });
@@ -18,7 +21,12 @@ export async function putFacultyLookupKind(
   kind: FacultyLookupKind,
   items: string[],
 ): Promise<string[]> {
-  const res = await apiContract.faculty.updateLookupKind({ params: { kind }, body: { items }, query: undefined, extraHeaders: {} });
+  const res = await apiContract.faculty.updateLookupKind({
+    params: { kind },
+    body: { items },
+    query: undefined,
+    extraHeaders: {},
+  });
   return (res.body as { items?: string[] }).items ?? [];
 }
 

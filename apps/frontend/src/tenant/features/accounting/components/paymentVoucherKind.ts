@@ -56,28 +56,42 @@ function cashInstrument(account: Account | undefined): CashInstrument | null {
  * and receipts; expense and salary stay on the payment voucher; everything else
  * is a journal voucher.
  */
-export function resolveVoucherPrintKind(entry: JournalEntry, accounts: readonly Account[]): VoucherPrintKind | null {
+export function resolveVoucherPrintKind(
+  entry: JournalEntry,
+  accounts: readonly Account[],
+): VoucherPrintKind | null {
   if (entry.status !== "posted" || entry.deletedAt || entry.lines.length === 0) return null;
   if (entry.transaction_type === "salary") return "payment";
 
   const byId = new Map(accounts.map((account) => [account.id, account]));
   const instrument = (accountId: string) => cashInstrument(byId.get(accountId));
-  const credits = entry.lines.filter((line) => line.credit > 0).map((line) => instrument(line.account_id));
-  const debits = entry.lines.filter((line) => line.debit > 0).map((line) => instrument(line.account_id));
+  const credits = entry.lines
+    .filter((line) => line.credit > 0)
+    .map((line) => instrument(line.account_id));
+  const debits = entry.lines
+    .filter((line) => line.debit > 0)
+    .map((line) => instrument(line.account_id));
   const creditsPetty = credits.includes("petty");
   const creditsCash = credits.includes("cash");
   const creditsBank = credits.includes("bank");
   const debitsCash = debits.includes("cash");
   const debitsBank = debits.includes("bank");
-  const debitsNonCash = entry.lines.some((line) => line.debit > 0 && instrument(line.account_id) === null);
-  const creditsNonCash = entry.lines.some((line) => line.credit > 0 && instrument(line.account_id) === null);
+  const debitsNonCash = entry.lines.some(
+    (line) => line.debit > 0 && instrument(line.account_id) === null,
+  );
+  const creditsNonCash = entry.lines.some(
+    (line) => line.credit > 0 && instrument(line.account_id) === null,
+  );
 
   if (creditsPetty && debitsNonCash) return "petty_cash";
   if (creditsCash && !creditsBank && !creditsPetty && debitsNonCash) return "cash_payment";
   if (creditsBank && !creditsCash && !creditsPetty && debitsNonCash) return "bank_payment";
 
-  const expenseIds = new Set(accounts.filter((account) => account.type === "Expense").map((account) => account.id));
-  if (entry.lines.some((line) => line.debit > 0 && expenseIds.has(line.account_id))) return "payment";
+  const expenseIds = new Set(
+    accounts.filter((account) => account.type === "Expense").map((account) => account.id),
+  );
+  if (entry.lines.some((line) => line.debit > 0 && expenseIds.has(line.account_id)))
+    return "payment";
   if ((creditsCash || creditsBank || creditsPetty) && debitsNonCash) return "payment";
 
   if (debitsCash && !debitsBank && creditsNonCash) return "cash_receipt";

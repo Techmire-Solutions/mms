@@ -1,14 +1,14 @@
-import type { SessionLookupKind } from '@mms/shared';
-import { sessionLookups } from '../schema.js';
+import type { SessionLookupKind } from "@mms/shared";
+import { sessionLookups } from "../schema.js";
 import {
   createModuleLookupsRepo,
   type ModuleLookupRowInput,
   type ModuleLookupDbRow,
-} from './moduleSetupRepoFactories.js';
+} from "./moduleSetupRepoFactories.js";
 
 export type { ModuleLookupDbRow as LookupDbRow };
 
-export interface SessionLookupRowInput extends Omit<ModuleLookupRowInput, 'kind'> {
+export interface SessionLookupRowInput extends Omit<ModuleLookupRowInput, "kind"> {
   kind: SessionLookupKind;
 }
 

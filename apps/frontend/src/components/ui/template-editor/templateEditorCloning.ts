@@ -1,5 +1,5 @@
-import type { TemplateElement } from '@mms/shared';
-import { newId } from './templateEditorUtils';
+import type { TemplateElement } from "@mms/shared";
+import { newId } from "./templateEditorUtils";
 
 /**
  * Clones template elements, generating fresh unique IDs for reset/preset operations.

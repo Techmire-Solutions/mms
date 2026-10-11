@@ -2,11 +2,11 @@
  * @file studentFormCustomFields.ts
  * @description Helpers for Students form custom (non-seed) fields and default value application.
  */
-import { INITIAL_STUDENT_FIELD_SEED } from './moduleFieldSetupPersons.js';
-import { createFormCustomFieldHelpers } from './createFormCustomFieldHelpers.js';
-import type { Student } from './studentTypes.js';
-import type { FieldDefinition } from './contactFieldSchemaTypes.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
+import { INITIAL_STUDENT_FIELD_SEED } from "./moduleFieldSetupPersons.js";
+import { createFormCustomFieldHelpers } from "./createFormCustomFieldHelpers.js";
+import type { Student } from "./studentTypes.js";
+import type { FieldDefinition } from "./contactFieldSchemaTypes.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
 
 const helpers = createFormCustomFieldHelpers(INITIAL_STUDENT_FIELD_SEED);
 
@@ -35,7 +35,7 @@ export function cloneStudentFieldSeed(): Record<string, FieldDefinition[]> {
 export function resolveStudentFieldsMapForColumnSync(
   fields: Record<string, unknown> | undefined,
 ): Readonly<Record<string, FieldDefinition[]>> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneStudentFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -87,13 +87,13 @@ export function applyStudentScalarCustomFieldDefaults(
   draft: Partial<Student>,
   fields: Record<string, FieldDefinition[]> | undefined,
 ): Partial<Student> {
-  if (!fields || typeof fields !== 'object') return draft;
+  if (!fields || typeof fields !== "object") return draft;
   if (draft.id != null && String(draft.id).length > 0) return draft;
 
   const next: Record<string, unknown> = { ...draft };
   const customFields = [
-    ...listEnabledCustomStudentFormFields(fields, 'basic'),
-    ...listEnabledCustomStudentFormFields(fields, 'registration'),
+    ...listEnabledCustomStudentFormFields(fields, "basic"),
+    ...listEnabledCustomStudentFormFields(fields, "registration"),
   ];
   for (const field of customFields) {
     if (Object.hasOwn(next, field.key)) continue;

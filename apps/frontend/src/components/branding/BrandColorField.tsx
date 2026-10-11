@@ -1,10 +1,10 @@
-import React from 'react';
-import { normalizeBrandingHex } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { WORK_SURFACE } from '@/components/ui/formStyles';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { normalizeBrandingHex } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { cn } from "@/lib/utils";
 
 export interface BrandColorFieldProps {
   id: string;
@@ -29,11 +29,11 @@ export function BrandColorField({
   }, [value]);
 
   const isValidHex = /^#([0-9a-fA-F]{3}){1,2}$/.test(
-    hexDraft.startsWith('#') ? hexDraft : `#${hexDraft}`
+    hexDraft.startsWith("#") ? hexDraft : `#${hexDraft}`,
   );
 
   const commitHex = (): void => {
-    const prefixed = hexDraft.trim().startsWith('#') ? hexDraft.trim() : `#${hexDraft.trim()}`;
+    const prefixed = hexDraft.trim().startsWith("#") ? hexDraft.trim() : `#${hexDraft.trim()}`;
     const normalized = normalizeBrandingHex(prefixed, value);
     if (normalized !== value || hexDraft.trim()) {
       React.startTransition(() => {
@@ -73,7 +73,7 @@ export function BrandColorField({
             onChange={(event) => {
               const val = event.target.value;
               setHexDraft(val);
-              const testHex = val.startsWith('#') ? val : `#${val}`;
+              const testHex = val.startsWith("#") ? val : `#${val}`;
               if (/^#([0-9a-fA-F]{6})$/.test(testHex)) {
                 React.startTransition(() => {
                   onChange(testHex.toLowerCase());
@@ -82,24 +82,26 @@ export function BrandColorField({
             }}
             onBlur={commitHex}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') {
+              if (event.key === "Enter") {
                 event.preventDefault();
                 commitHex();
               }
             }}
-            placeholder={t('theme.hexPlaceholder')}
+            placeholder={t("theme.hexPlaceholder")}
             spellCheck={false}
             autoComplete="off"
             className={cn(
-              'h-11 min-h-11 font-mono text-xs pe-8',
-              !isValidHex && hexDraft.trim() && 'border-destructive/80 focus-visible:ring-destructive/30'
+              "h-11 min-h-11 font-mono text-xs pe-8",
+              !isValidHex &&
+                hexDraft.trim() &&
+                "border-destructive/80 focus-visible:ring-destructive/30",
             )}
-            aria-label={t('theme.hexAria', { label })}
+            aria-label={t("theme.hexAria", { label })}
           />
           {isValidHex && (
             <span
               className="absolute end-2.5 top-3.5 h-4 w-4 rounded-full border border-white/20 shadow-2xs transition-transform hover:scale-110"
-              style={{ backgroundColor: hexDraft.startsWith('#') ? hexDraft : `#${hexDraft}` }}
+              style={{ backgroundColor: hexDraft.startsWith("#") ? hexDraft : `#${hexDraft}` }}
               aria-hidden="true"
             />
           )}

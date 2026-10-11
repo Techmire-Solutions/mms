@@ -15,14 +15,14 @@ export {
   useSessionsReportAggregates,
   useSessionMutations,
   useSessionsMetrics,
-} from '@/tenant/features/sessions/hooks/useSessions';
-export { invalidateSessionsQueries } from '@/tenant/features/sessions/hooks/invalidateSessionsQueries';
+} from "@/tenant/features/sessions/hooks/useSessions";
+export { invalidateSessionsQueries } from "@/tenant/features/sessions/hooks/invalidateSessionsQueries";
 export {
   useComposedSessionsSettings,
   useSessionPreferencesMutation,
   useSessionPreferencesQuery,
   SESSIONS_PREFERENCES_QUERY_KEY,
-} from '@/tenant/features/sessions/hooks/useSessionSetupConfig';
+} from "@/tenant/features/sessions/hooks/useSessionSetupConfig";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   sessionsListQueryOptions,
@@ -31,4 +31,4 @@ export {
   useSessionsContractBulkDelete,
   useSessionsContractBulkStatus,
   useSessionsContractBulkRestore,
-} from '@/tenant/features/sessions/hooks/useSessionsTsrHooks';
+} from "@/tenant/features/sessions/hooks/useSessionsTsrHooks";

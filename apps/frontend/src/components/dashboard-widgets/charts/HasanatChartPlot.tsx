@@ -1,15 +1,27 @@
-import React from 'react';
+import React from "react";
 import {
-  Cell, PieChart, Pie, Tooltip,
-  BarChart, Bar, XAxis, YAxis,
-  RadarChart, PolarAngleAxis, PolarRadiusAxis, Radar,
-} from 'recharts';
-import { SafeResponsiveContainer } from '@/components/ui/SafeResponsiveContainer';
-import { ChartGrid, ChartPolarGrid, chartAxisTick } from '@/components/ui/ChartGrid';
-import { useTranslation } from '@/hooks/useTranslation';
-import { formatNumber } from '@mms/shared';
-import { buildChartTooltip, CHART_AXIS_LINE_PROPS } from '@/components/dashboard-widgets/charts/chartPrimitives';
-import type { HasanatPoint } from './useHasanatChartData';
+  Cell,
+  PieChart,
+  Pie,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  RadarChart,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from "recharts";
+import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
+import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/ui/ChartGrid";
+import { useTranslation } from "@/hooks/useTranslation";
+import { formatNumber } from "@mms/shared";
+import {
+  buildChartTooltip,
+  CHART_AXIS_LINE_PROPS,
+} from "@/components/dashboard-widgets/charts/chartPrimitives";
+import type { HasanatPoint } from "./useHasanatChartData";
 
 const HasanatTooltip = buildChartTooltip({
   valueFormatter: (value, { t }) => t("hasanat.dashboard.pts", { count: formatNumber(value) }),
@@ -17,19 +29,31 @@ const HasanatTooltip = buildChartTooltip({
 });
 
 interface HasanatChartPlotProps {
-  chartType: 'pie' | 'bar' | 'radar';
+  chartType: "pie" | "bar" | "radar";
   hasanatData: HasanatPoint[];
   activeColors: { mem: string; att: string; beh: string };
 }
 
-export function HasanatChartPlot({ chartType, hasanatData, activeColors }: HasanatChartPlotProps): React.JSX.Element {
+export function HasanatChartPlot({
+  chartType,
+  hasanatData,
+  activeColors,
+}: HasanatChartPlotProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  if (chartType === 'pie') {
+  if (chartType === "pie") {
     return (
       <div className="flex-shrink-0">
         <PieChart width={120} height={120}>
-          <Pie data={hasanatData} cx="50%" cy="50%" innerRadius={36} outerRadius={54} paddingAngle={3} dataKey="value">
+          <Pie
+            data={hasanatData}
+            cx="50%"
+            cy="50%"
+            innerRadius={36}
+            outerRadius={54}
+            paddingAngle={3}
+            dataKey="value"
+          >
             {hasanatData.map((hasanatPoint, index) => (
               <Cell key={index} fill={hasanatPoint.color} />
             ))}
@@ -40,7 +64,7 @@ export function HasanatChartPlot({ chartType, hasanatData, activeColors }: Hasan
     );
   }
 
-  if (chartType === 'bar') {
+  if (chartType === "bar") {
     return (
       <div className="flex-1 w-full">
         <SafeResponsiveContainer height={120}>
@@ -66,8 +90,14 @@ export function HasanatChartPlot({ chartType, hasanatData, activeColors }: Hasan
         <RadarChart cx="50%" cy="50%" outerRadius="75%" data={hasanatData}>
           <ChartPolarGrid />
           <PolarAngleAxis dataKey="name" tick={chartAxisTick(8, true)} />
-          <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={chartAxisTick(7)} />
-          <Radar name={t('dashboard.widgets.hasanatPointsSeries')} dataKey="value" stroke={activeColors.mem} fill={activeColors.mem} fillOpacity={0.35} />
+          <PolarRadiusAxis angle={30} domain={[0, "auto"]} tick={chartAxisTick(7)} />
+          <Radar
+            name={t("dashboard.widgets.hasanatPointsSeries")}
+            dataKey="value"
+            stroke={activeColors.mem}
+            fill={activeColors.mem}
+            fillOpacity={0.35}
+          />
           <Tooltip content={<HasanatTooltip />} />
         </RadarChart>
       </SafeResponsiveContainer>

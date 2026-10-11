@@ -166,13 +166,17 @@ describe("hasAnyPermission & hasAllPermissions", () => {
     };
 
     expect(hasAnyPermission("auditor", ["finance.read", "users.manage"], [customRole])).toBe(true);
-    expect(hasAnyPermission("auditor", ["finance.write", "users.manage"], [customRole])).toBe(false);
+    expect(hasAnyPermission("auditor", ["finance.write", "users.manage"], [customRole])).toBe(
+      false,
+    );
   });
 
   it("evaluates hasAllPermissions correctly with static and custom roles", () => {
     expect(hasAllPermissions("teacher", ["students.read", "students.write"])).toBe(true);
     expect(hasAllPermissions("teacher", ["students.read", "finance.write"])).toBe(false);
-    expect(hasAllPermissions("admin", ["students.read", "finance.write", "users.manage"])).toBe(true);
+    expect(hasAllPermissions("admin", ["students.read", "finance.write", "users.manage"])).toBe(
+      true,
+    );
 
     const customRole: WorkspaceRole = {
       id: "auditor",
@@ -186,8 +190,12 @@ describe("hasAnyPermission & hasAllPermissions", () => {
       },
     };
 
-    expect(hasAllPermissions("auditor", ["finance.read", "accounting.read"], [customRole])).toBe(true);
-    expect(hasAllPermissions("auditor", ["finance.read", "finance.write"], [customRole])).toBe(false);
+    expect(hasAllPermissions("auditor", ["finance.read", "accounting.read"], [customRole])).toBe(
+      true,
+    );
+    expect(hasAllPermissions("auditor", ["finance.read", "finance.write"], [customRole])).toBe(
+      false,
+    );
   });
 });
 
@@ -244,4 +252,3 @@ describe("getModulePermissions", () => {
     expect(getModulePermissions("unknown_module")).toEqual([]);
   });
 });
-

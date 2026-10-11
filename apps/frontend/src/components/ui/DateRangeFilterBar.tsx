@@ -50,10 +50,7 @@ export function DateRangeFilterBar({
       {showFrom ? (
         <div className="flex min-w-0 flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-2">
           {fromLabel ? (
-            <label
-              htmlFor={fromId}
-              className={cn(FORM_LABEL, "mb-0")}
-            >
+            <label htmlFor={fromId} className={cn(FORM_LABEL, "mb-0")}>
               {fromLabel}
             </label>
           ) : null}
@@ -71,10 +68,7 @@ export function DateRangeFilterBar({
       {showTo ? (
         <div className="flex min-w-0 flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-2">
           {toLabel ? (
-            <label
-              htmlFor={toId}
-              className={cn(FORM_LABEL, "mb-0")}
-            >
+            <label htmlFor={toId} className={cn(FORM_LABEL, "mb-0")}>
               {toLabel}
             </label>
           ) : null}

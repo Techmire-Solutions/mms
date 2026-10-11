@@ -1,7 +1,7 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
-import type { AccountingReportAggregates, LedgerPostingAccounts } from '@mms/shared';
-import { accountingAccounts, accountingEntries, accountingJournalLines } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, isNull, sql } from "drizzle-orm";
+import type { AccountingReportAggregates, LedgerPostingAccounts } from "@mms/shared";
+import { accountingAccounts, accountingEntries, accountingJournalLines } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 export interface AccountingReportQuery {
   dateFrom?: string;
@@ -52,25 +52,25 @@ function isCashAccount(
   // An explicitly configured cash/bank account wins outright, even when its code
   // or name would not match the conventional heuristic.
   if (configuredCashAccountId && row.id === configuredCashAccountId) return true;
-  if (row.type !== 'Asset') return false;
+  if (row.type !== "Asset") return false;
   const haystack = `${row.name} ${row.subtype}`.toLowerCase();
   if (NON_CASH_ASSET_RE.test(haystack)) return false;
-  return row.code.startsWith('10') || haystack.includes('cash') || haystack.includes('bank');
+  return row.code.startsWith("10") || haystack.includes("cash") || haystack.includes("bank");
 }
 
 /** Accounts-receivable accounts, used only when no AR account is configured. */
 function isReceivableAccount(row: { type: string; name: string; subtype: string }): boolean {
-  return row.type === 'Asset' && /receiv/i.test(`${row.name} ${row.subtype}`);
+  return row.type === "Asset" && /receiv/i.test(`${row.name} ${row.subtype}`);
 }
 
 /** Current-liability payable accounts for the working-capital adjustment. */
 function isPayableAccount(row: { type: string; name: string; subtype: string }): boolean {
-  return row.type === 'Liability' && /payab/i.test(`${row.name} ${row.subtype}`);
+  return row.type === "Liability" && /payab/i.test(`${row.name} ${row.subtype}`);
 }
 
 /** Non-cash expense add-backs. */
 function isDepreciationAccount(row: { type: string; name: string; subtype: string }): boolean {
-  return row.type === 'Expense' && /depreciat|amorti/i.test(`${row.name} ${row.subtype}`);
+  return row.type === "Expense" && /depreciat|amorti/i.test(`${row.name} ${row.subtype}`);
 }
 
 /**
@@ -132,12 +132,14 @@ export async function aggregateAccountingReport(
             eq(accountingJournalLines.workspaceSubdomain, accountingEntries.workspaceSubdomain),
             eq(accountingJournalLines.entryId, accountingEntries.id),
             isNull(accountingEntries.deletedAt),
-            eq(accountingEntries.status, 'posted'),
-            excludeClosing ? sql`${accountingEntries.sourceType} IS DISTINCT FROM 'closing'` : undefined,
+            eq(accountingEntries.status, "posted"),
+            excludeClosing
+              ? sql`${accountingEntries.sourceType} IS DISTINCT FROM 'closing'`
+              : undefined,
             entryDateFilter,
           ),
         )
-        .as('posted_lines');
+        .as("posted_lines");
 
       const rows = await tx
         .select({
@@ -175,7 +177,7 @@ export async function aggregateAccountingReport(
       return rows.map((r) => {
         const totalDebit = Number(r.totalDebit);
         const totalCredit = Number(r.totalCredit);
-        const isDebitNormal = r.type === 'Asset' || r.type === 'Expense';
+        const isDebitNormal = r.type === "Asset" || r.type === "Expense";
         return {
           id: r.id,
           code: r.code,
@@ -198,13 +200,13 @@ export async function aggregateAccountingReport(
     const sumByType = (rows: readonly TrialBalanceRow[], type: string): number =>
       rows.reduce((total, row) => (row.type === type ? total + row.balance : total), 0);
 
-    const revenue = sumByType(flowRows, 'Revenue');
-    const expenses = sumByType(flowRows, 'Expense');
+    const revenue = sumByType(flowRows, "Revenue");
+    const expenses = sumByType(flowRows, "Expense");
     const netSurplus = revenue - expenses;
-    const assets = sumByType(asOfRows, 'Asset');
-    const liabilities = sumByType(asOfRows, 'Liability');
-    const equityAccounts = sumByType(asOfRows, 'Equity');
-    const asOfSurplus = sumByType(asOfRows, 'Revenue') - sumByType(asOfRows, 'Expense');
+    const assets = sumByType(asOfRows, "Asset");
+    const liabilities = sumByType(asOfRows, "Liability");
+    const equityAccounts = sumByType(asOfRows, "Equity");
+    const asOfSurplus = sumByType(asOfRows, "Revenue") - sumByType(asOfRows, "Expense");
 
     let cashInflow = 0;
     let cashOutflow = 0;
@@ -220,7 +222,8 @@ export async function aggregateAccountingReport(
       // A configured AR account is authoritative and EXCLUSIVE: unlike cash there
       // is exactly one receivable, so the name heuristic must not add further
       // accounts to the working-capital adjustment.
-      const isConfiguredAr = Boolean(postingRules.arAccountId) && row.id === postingRules.arAccountId;
+      const isConfiguredAr =
+        Boolean(postingRules.arAccountId) && row.id === postingRules.arAccountId;
       if (isConfiguredAr || (!postingRules.arAccountId && isReceivableAccount(row))) {
         receivableMovement += row.totalDebit - row.totalCredit;
       }
@@ -241,7 +244,10 @@ export async function aggregateAccountingReport(
       payables: payableMovement,
     };
     const netCashFlowIndirect =
-      netSurplus + cashFlowAdjustments.depreciation + cashFlowAdjustments.receivables + cashFlowAdjustments.payables;
+      netSurplus +
+      cashFlowAdjustments.depreciation +
+      cashFlowAdjustments.receivables +
+      cashFlowAdjustments.payables;
 
     return {
       revenue,
@@ -262,7 +268,7 @@ export async function aggregateAccountingReport(
       trialBalance: rangeRows,
       incomeStatementTrialBalance: flowRows,
       balanceSheetTrialBalance: asOfRows.filter(
-        (row) => row.type === 'Asset' || row.type === 'Liability' || row.type === 'Equity',
+        (row) => row.type === "Asset" || row.type === "Liability" || row.type === "Equity",
       ),
     };
   });

@@ -1,5 +1,8 @@
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
-import { useSetWorkspaceEmailVerification, useSetWorkspaceEnabled } from '@/platform/hooks/usePlatformWorkspaces';
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import {
+  useSetWorkspaceEmailVerification,
+  useSetWorkspaceEnabled,
+} from "@/platform/hooks/usePlatformWorkspaces";
 
 export function usePlatformWorkspaceListActions() {
   const setEnabled = useSetWorkspaceEnabled();
@@ -9,7 +12,10 @@ export function usePlatformWorkspaceListActions() {
     setEnabled.mutate({ subdomain, enabled });
   };
 
-  const handleToggleEmailVerification = (subdomain: string, requireEmailVerification: boolean): void => {
+  const handleToggleEmailVerification = (
+    subdomain: string,
+    requireEmailVerification: boolean,
+  ): void => {
     setEmailVerification.mutate({ subdomain, requireEmailVerification });
   };
 

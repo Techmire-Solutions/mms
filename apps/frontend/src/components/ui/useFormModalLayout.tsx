@@ -1,13 +1,13 @@
-import React from 'react';
-import { Settings, Eye } from 'lucide-react';
-import { FormProgressBar } from '@/components/ui/FormProgressBar';
-import type { SubTab } from '@/components/ui/SubTabBar';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useDomFormProgress } from '@/components/ui/useDomFormProgress';
+import React from "react";
+import { Settings, Eye } from "lucide-react";
+import { FormProgressBar } from "@/components/ui/FormProgressBar";
+import type { SubTab } from "@/components/ui/SubTabBar";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useDomFormProgress } from "@/components/ui/useDomFormProgress";
 
-type FormModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+type FormModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 
 interface UseFormModalLayoutOptions<K extends string> {
   open: boolean;
@@ -40,21 +40,21 @@ export function useFormModalLayout<K extends string>({
 }: UseFormModalLayoutOptions<K>) {
   const { t } = useTranslation();
 
-  const hasTabs =
-    !builderMode && tabs !== undefined && tabs.length > 1 && activeTab !== undefined;
+  const hasTabs = !builderMode && tabs !== undefined && tabs.length > 1 && activeTab !== undefined;
 
-  const { progress: domProgress, label: domLabel, ref: containerRef } = useDomFormProgress(
-    open,
-    !hasTabs && progress === undefined,
-  );
+  const {
+    progress: domProgress,
+    label: domLabel,
+    ref: containerRef,
+  } = useDomFormProgress(open, !hasTabs && progress === undefined);
 
-  const panelClassName = cn(tall ? 'h-modal-tall max-h-modal-tall' : undefined, panelClassNameProp);
+  const panelClassName = cn(tall ? "h-modal-tall max-h-modal-tall" : undefined, panelClassNameProp);
 
   const effectiveSize = ((): FormModalSize => {
-    const requested = size ?? (hasTabs ? 'xl' : 'lg');
-    if (requested === 'xl' || requested === '2xl' || requested === '3xl') return requested;
-    if (hasTabs) return 'xl';
-    if (tall) return 'lg';
+    const requested = size ?? (hasTabs ? "xl" : "lg");
+    if (requested === "xl" || requested === "2xl" || requested === "3xl") return requested;
+    if (hasTabs) return "xl";
+    if (tall) return "lg";
     return requested;
   })();
 
@@ -96,19 +96,19 @@ export function useFormModalLayout<K extends string>({
     return (
       <Button
         type="button"
-        variant={builderMode ? 'default' : 'outline'}
+        variant={builderMode ? "default" : "outline"}
         onClick={() => onBuilderModeChange(!builderMode)}
         className="text-xs min-h-11 px-2.5 flex items-center gap-1.5 font-bold uppercase tracking-wider transition-all duration-300"
       >
         {builderMode ? (
           <>
             <Eye className="w-3.5 h-3.5" />
-            <span>{t('contacts.form.viewForm')}</span>
+            <span>{t("contacts.form.viewForm")}</span>
           </>
         ) : (
           <>
             <Settings className="w-3.5 h-3.5" />
-            <span>{t('contacts.form.editForm')}</span>
+            <span>{t("contacts.form.editForm")}</span>
           </>
         )}
       </Button>

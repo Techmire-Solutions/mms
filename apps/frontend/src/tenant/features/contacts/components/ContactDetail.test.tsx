@@ -5,7 +5,12 @@ import type { Contact } from "@mms/shared";
 import { ContactDetail } from "./ContactDetail";
 
 vi.mock("@/components/ui/Drawer", () => ({
-  Drawer: ({ title, children, headerActions, headerExtra }: {
+  Drawer: ({
+    title,
+    children,
+    headerActions,
+    headerExtra,
+  }: {
     title: string;
     children: React.ReactNode;
     headerActions?: React.ReactNode;
@@ -77,11 +82,7 @@ const mockContact: Contact = {
 describe("ContactDetail Component", () => {
   it("renders detail drawer with contact name and drawer content", () => {
     const html = renderToStaticMarkup(
-      <ContactDetail
-        contact={mockContact}
-        onClose={vi.fn()}
-        onEdit={vi.fn()}
-      />,
+      <ContactDetail contact={mockContact} onClose={vi.fn()} onEdit={vi.fn()} />,
     );
 
     expect(html).toContain("Zayd Harith");

@@ -2,25 +2,25 @@ import {
   MESSAGING_MODULE_MANIFEST,
   buildMessagingRecipientsWorkColumnRegistry,
   buildMessagingHistoryWorkColumnRegistry,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useModuleColumnLayout } from '@/hooks/useModuleColumnLayout';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 
 export function useMessagingRecipientsColumnLayout() {
   const { t } = useTranslation();
 
   const tenantRegistry = (() =>
-      buildMessagingRecipientsWorkColumnRegistry({
-        recipient: t('messaging.recipient'),
-        phone: t('contacts.form.primaryPhone'),
-        email: t('contacts.form.primaryEmail'),
-      }))();
+    buildMessagingRecipientsWorkColumnRegistry({
+      recipient: t("messaging.recipient"),
+      phone: t("contacts.form.primaryPhone"),
+      email: t("contacts.form.primaryEmail"),
+    }))();
 
   return useModuleColumnLayout({
     moduleId: `${MESSAGING_MODULE_MANIFEST.moduleId}_recipients`,
     tenantRegistry,
     apiPath: `${MESSAGING_MODULE_MANIFEST.restBasePath}/recipients`,
-    translationPrefix: 'messaging.columns',
+    translationPrefix: "messaging.columns",
   });
 }
 
@@ -28,17 +28,17 @@ export function useMessagingHistoryColumnLayout() {
   const { t } = useTranslation();
 
   const tenantRegistry = (() =>
-      buildMessagingHistoryWorkColumnRegistry({
-        recipient: t('messaging.recipient'),
-        channel: t('messaging.channel'),
-        body: t('messaging.messageBody'),
-        dateSent: t('messaging.dateSent'),
-      }))();
+    buildMessagingHistoryWorkColumnRegistry({
+      recipient: t("messaging.recipient"),
+      channel: t("messaging.channel"),
+      body: t("messaging.messageBody"),
+      dateSent: t("messaging.dateSent"),
+    }))();
 
   return useModuleColumnLayout({
     moduleId: `${MESSAGING_MODULE_MANIFEST.moduleId}_history`,
     tenantRegistry,
     apiPath: `${MESSAGING_MODULE_MANIFEST.restBasePath}/history`,
-    translationPrefix: 'messaging.columns',
+    translationPrefix: "messaging.columns",
   });
 }

@@ -38,7 +38,7 @@ describe("QuestionBankPageActions", () => {
           onAddQuestion={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

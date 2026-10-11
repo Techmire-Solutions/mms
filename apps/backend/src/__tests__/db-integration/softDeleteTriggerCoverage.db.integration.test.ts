@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { sql } from 'drizzle-orm';
-import { closeDatabase, getRootDb } from '../../db/dbConnection.js';
-import { applyDrizzleMigrations } from '../../db/dbInit.js';
-import { requireDatabaseConnection } from './dbTestSupport.js';
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { sql } from "drizzle-orm";
+import { closeDatabase, getRootDb } from "../../db/dbConnection.js";
+import { applyDrizzleMigrations } from "../../db/dbInit.js";
+import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 /**
  * Guards the soft-delete safety net: every base table carrying a `deleted_at`
@@ -23,8 +23,8 @@ afterAll(async () => {
   await closeDatabase();
 });
 
-describe('soft-delete hard-delete trigger coverage', () => {
-  it('every table with a deleted_at column has a forbid_hard_delete trigger', async () => {
+describe("soft-delete hard-delete trigger coverage", () => {
+  it("every table with a deleted_at column has a forbid_hard_delete trigger", async () => {
     const db = getRootDb();
 
     const softDeleteTables = await db.execute(sql`

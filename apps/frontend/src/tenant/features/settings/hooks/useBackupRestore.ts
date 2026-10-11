@@ -4,31 +4,29 @@ import {
   formatBackupSize,
   isBackupErrorKey,
   type WorkspaceBackupRecord,
-} from '@mms/shared';
-import { getWorkspaceLocalStoragePrefix } from '@/lib/db';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useLiveCollection } from '@/hooks/useLiveCollection';
-import { useBranding } from '@/tenant/hooks/useBranding';
-import { useBackupRestoreExport } from '@/tenant/features/settings/hooks/useBackupRestoreExport';
-import { useBackupRestoreImport } from '@/tenant/features/settings/hooks/useBackupRestoreImport';
+} from "@mms/shared";
+import { getWorkspaceLocalStoragePrefix } from "@/lib/db";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLiveCollection } from "@/hooks/useLiveCollection";
+import { useBranding } from "@/tenant/hooks/useBranding";
+import { useBackupRestoreExport } from "@/tenant/features/settings/hooks/useBackupRestoreExport";
+import { useBackupRestoreImport } from "@/tenant/features/settings/hooks/useBackupRestoreImport";
 
-import type { UseBackupRestoreOptions } from '@/tenant/features/settings/hooks/backupRestoreTypes';
+import type { UseBackupRestoreOptions } from "@/tenant/features/settings/hooks/backupRestoreTypes";
 
-export type { UseBackupRestoreOptions } from '@/tenant/features/settings/hooks/backupRestoreTypes';
+export type { UseBackupRestoreOptions } from "@/tenant/features/settings/hooks/backupRestoreTypes";
 
-export function useBackupRestore({
-  subdomain,
-  adminEmail,
-}: UseBackupRestoreOptions) {
+export function useBackupRestore({ subdomain, adminEmail }: UseBackupRestoreOptions) {
   const { t } = useTranslation();
   const branding = useBranding();
-  const backups = useLiveCollection<WorkspaceBackupRecord>('backups', DEFAULT_BACKUP_HISTORY);
+  const backups = useLiveCollection<WorkspaceBackupRecord>("backups", DEFAULT_BACKUP_HISTORY);
 
-  const confirmPhrase = subdomain ?? 'RESTORE';
+  const confirmPhrase = subdomain ?? "RESTORE";
   const storagePrefix = getWorkspaceLocalStoragePrefix();
-  const tenantLabel = branding.madrasaName?.trim() || subdomain || 'workspace';
+  const tenantLabel = branding.madrasaName?.trim() || subdomain || "workspace";
 
-  const errorDescription = ((message: string): string => (isBackupErrorKey(message) ? t(message) : message));
+  const errorDescription = (message: string): string =>
+    isBackupErrorKey(message) ? t(message) : message;
 
   const exportActions = useBackupRestoreExport({
     subdomain,
@@ -47,13 +45,13 @@ export function useBackupRestore({
     downloadSafetyBackup: exportActions.downloadSafetyBackup,
   });
 
-  const workspaceNote = t('backup.workspaceScopeNote', { prefix: storagePrefix });
+  const workspaceNote = t("backup.workspaceScopeNote", { prefix: storagePrefix });
   const tips = [
-    t('backup.tipRegular'),
-    t('backup.tipOffsite'),
-    t('backup.tipVerify'),
-    t('backup.tipHistoryLimit'),
-    t('backup.tipScope'),
+    t("backup.tipRegular"),
+    t("backup.tipOffsite"),
+    t("backup.tipVerify"),
+    t("backup.tipHistoryLimit"),
+    t("backup.tipScope"),
   ];
 
   return {

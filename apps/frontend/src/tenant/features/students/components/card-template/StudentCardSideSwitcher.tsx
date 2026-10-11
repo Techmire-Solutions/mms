@@ -1,7 +1,7 @@
-import React from 'react';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { CompactSegmentedControl } from '@/components/ui/CompactSegmentedControl';
-import type { CardSide } from '../../lib/studentCardTemplateTypes';
+import React from "react";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
+import type { CardSide } from "../../lib/studentCardTemplateTypes";
 
 export interface StudentCardSideSwitcherProps {
   activeSide: CardSide;
@@ -18,10 +18,10 @@ export function StudentCardSideSwitcher({
     <CompactSegmentedControl<CardSide>
       value={activeSide}
       onChange={onSelectSide}
-      ariaLabel={t('students.cardTemplate.sideGroup')}
+      ariaLabel={t("students.cardTemplate.sideGroup")}
       options={[
-        { value: 'front', label: t('students.cardTemplate.side.front') },
-        { value: 'back', label: t('students.cardTemplate.side.back') },
+        { value: "front", label: t("students.cardTemplate.side.front") },
+        { value: "back", label: t("students.cardTemplate.side.back") },
       ]}
     />
   );

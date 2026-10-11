@@ -33,7 +33,7 @@ export function useUsersSetupSaveActions({
     );
   })();
 
-  const handleSave = (async (): Promise<void> => {
+  const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;
     setSaving(true);
     try {
@@ -47,7 +47,7 @@ export function useUsersSetupSaveActions({
     } finally {
       setSaving(false);
     }
-  });
+  };
 
   return {
     saving,

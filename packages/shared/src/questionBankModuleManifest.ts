@@ -1,8 +1,16 @@
-import { z } from 'zod';
-import type { Permission } from './permissions.js';
+import { z } from "zod";
+import type { Permission } from "./permissions.js";
 
-export const questionDifficultySchema = z.enum(['easy', 'medium', 'hard']);
-export const questionTypeSchema = z.enum(['mcq', 'true_false', 'short', 'fill_blank', 'matching', 'numeric', 'ordering']);
+export const questionDifficultySchema = z.enum(["easy", "medium", "hard"]);
+export const questionTypeSchema = z.enum([
+  "mcq",
+  "true_false",
+  "short",
+  "fill_blank",
+  "matching",
+  "numeric",
+  "ordering",
+]);
 
 export const questionSourceReferenceSchema = z.object({
   bookName: z.string().optional(),
@@ -47,7 +55,7 @@ export const questionBankQuestionRecordSchema = z
     categoryId: z.string().optional(),
     type: questionTypeSchema,
     difficulty: questionDifficultySchema,
-    questionLanguage: z.enum(['en', 'ar', 'ur', 'fa']),
+    questionLanguage: z.enum(["en", "ar", "ur", "fa"]),
     text: z.string(),
     options: z.array(z.string()),
     answer: z.string(),
@@ -73,7 +81,7 @@ export const questionBankQuestionInsertSchema = z
     categoryIds: z.array(z.string()).min(1),
     type: questionTypeSchema,
     difficulty: questionDifficultySchema,
-    questionLanguage: z.enum(['en', 'ar', 'ur', 'fa']).default('en'),
+    questionLanguage: z.enum(["en", "ar", "ur", "fa"]).default("en"),
     text: z.string().min(1),
     options: z.array(z.string()).default([]),
     answer: z.string(),
@@ -93,7 +101,9 @@ export function isQuestionDeleted(question: { deletedAt?: string | null }): bool
   return Boolean(question.deletedAt);
 }
 
-export function filterActiveQuestions<T extends { deletedAt?: string | null }>(questions: T[]): T[] {
+export function filterActiveQuestions<T extends { deletedAt?: string | null }>(
+  questions: T[],
+): T[] {
   return questions.filter((q) => !isQuestionDeleted(q));
 }
 
@@ -105,31 +115,33 @@ export function filterActiveQuestions<T extends { deletedAt?: string | null }>(q
 export const questionBankQuestionWriteSchema = z
   .object({
     id: z.string(),
-    categoryIds: z.array(z.string()).min(1, { message: 'questionBank.validation.categoryRequired' }),
+    categoryIds: z
+      .array(z.string())
+      .min(1, { message: "questionBank.validation.categoryRequired" }),
     type: questionTypeSchema,
     difficulty: questionDifficultySchema,
-    questionLanguage: z.enum(['en', 'ar', 'ur', 'fa']),
-    text: z.string().min(1, { message: 'questionBank.validation.textRequired' }),
+    questionLanguage: z.enum(["en", "ar", "ur", "fa"]),
+    text: z.string().min(1, { message: "questionBank.validation.textRequired" }),
     options: z.array(z.string()),
     answer: z.string(),
     sourceCitations: z.array(questionBookCitationSchema).optional(),
   })
   .strict()
   .superRefine((question, ctx) => {
-    if (question.type === 'mcq') {
+    if (question.type === "mcq") {
       if (!question.answer || !question.options.includes(question.answer)) {
         ctx.addIssue({
-          code: 'custom',
-          path: ['answer'],
-          message: 'questionBank.validation.answerFromChoices',
+          code: "custom",
+          path: ["answer"],
+          message: "questionBank.validation.answerFromChoices",
         });
       }
-    } else if (question.type === 'true_false') {
+    } else if (question.type === "true_false") {
       if (!question.answer) {
         ctx.addIssue({
-          code: 'custom',
-          path: ['answer'],
-          message: 'questionBank.validation.trueFalseRequired',
+          code: "custom",
+          path: ["answer"],
+          message: "questionBank.validation.trueFalseRequired",
         });
       }
     }
@@ -141,7 +153,7 @@ export const questionBankTestRecordSchema = z
     name: z.string(),
     categoryId: z.string().nullable(),
     questionIds: z.array(z.string()),
-    difficulty: z.enum(['easy', 'medium', 'hard', 'mixed']),
+    difficulty: z.enum(["easy", "medium", "hard", "mixed"]),
     duration: z.number(),
     createdAt: z.string(),
     updatedAt: z.string().optional(),
@@ -170,7 +182,7 @@ export const questionBankTestInsertSchema = z
     name: z.string().min(1),
     categoryId: z.string().nullable().optional(),
     questionIds: z.array(z.string()).default([]),
-    difficulty: z.enum(['easy', 'medium', 'hard', 'mixed']).default('mixed'),
+    difficulty: z.enum(["easy", "medium", "hard", "mixed"]).default("mixed"),
     duration: z.number().default(60),
     examClass: z.string().optional(),
     totalMarks: z.number().optional(),
@@ -216,7 +228,7 @@ export const questionBankResultInsertSchema = z
     id: z.string().optional(),
     testId: z.string(),
     studentId: z.string(),
-    studentName: z.string().default(''),
+    studentName: z.string().default(""),
     submittedAt: z.string(),
     answers: z.record(z.string(), z.string()).default({}),
     scores: z.record(z.string(), z.number()).default({}),
@@ -229,22 +241,21 @@ export type QuestionBankResultInsert = z.infer<typeof questionBankResultInsertSc
 export type QuestionBankResultUpdate = z.infer<typeof questionBankResultUpdateSchema>;
 export const questionBankResultListSchema = z.array(questionBankResultRecordSchema);
 
-
 /**
  * Question Bank module manifest — soft-delete on questions (JSONB); tests/results upsert-only.
  */
 export const QUESTION_BANK_MODULE_MANIFEST = {
-  moduleId: 'questionBank',
-  entityType: 'QuestionBankQuestion',
-  collectionKey: 'questions',
-  testsCollectionKey: 'tests',
-  resultsCollectionKey: 'assessment_results',
-  settingsObjectKey: 'question_bank_settings',
-  columnPreferencesObjectKey: 'question_bank_user_column_preferences',
-  restBasePath: '/api/question-bank',
-  analyticsCategory: 'questionBank',
-  tiers: ['work', 'reports', 'setup'] as const,
-  setupSubTabs: ['preferences'] as const,
+  moduleId: "questionBank",
+  entityType: "QuestionBankQuestion",
+  collectionKey: "questions",
+  testsCollectionKey: "tests",
+  resultsCollectionKey: "assessment_results",
+  settingsObjectKey: "question_bank_settings",
+  columnPreferencesObjectKey: "question_bank_user_column_preferences",
+  restBasePath: "/api/question-bank",
+  analyticsCategory: "questionBank",
+  tiers: ["work", "reports", "setup"] as const,
+  setupSubTabs: ["preferences"] as const,
   /** Questions soft-delete via JSONB; tests/papers and assessment_results are upsert-only (no trash UI). */
   softDelete: {
     workExcludesDeleted: true,
@@ -254,17 +265,17 @@ export const QUESTION_BANK_MODULE_MANIFEST = {
     retentionDays: null,
   },
   permissions: {
-    read: 'students.read',
-    write: 'students.write',
-    delete: 'students.write',
-    setupView: 'configuration.view',
-    setupWrite: 'settings.global.write',
-    export: 'students.read',
-    reports: 'students.read',
+    read: "students.read",
+    write: "students.write",
+    delete: "students.write",
+    setupView: "configuration.view",
+    setupWrite: "settings.global.write",
+    export: "students.read",
+    reports: "students.read",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ['questions', 'generate'] as const,
-    bulkActions: ['delete'] as const,
+    directoryViews: ["questions", "generate"] as const,
+    bulkActions: ["delete"] as const,
   },
   defaultPageSize: 15,
   maxPageSize: 100,

@@ -1,8 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
-import type { MutateOptions } from '@tanstack/react-query';
-import type { Enrollment } from '@mms/shared';
-import { tsrClient } from '@/lib/api';
-import { invalidateEnrollmentsQueries } from './invalidateEnrollmentsQueries';
+import { useQueryClient } from "@tanstack/react-query";
+import type { MutateOptions } from "@tanstack/react-query";
+import type { Enrollment } from "@mms/shared";
+import { tsrClient } from "@/lib/api";
+import { invalidateEnrollmentsQueries } from "./invalidateEnrollmentsQueries";
 
 export function useEnrollmentMutations() {
   const queryClient = useQueryClient();
@@ -17,16 +17,21 @@ export function useEnrollmentMutations() {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreEnrollment = tsrClient.enrollments.restore.useMutation({ onSuccess: invalidate });
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  const bulkDeleteEnrollments = tsrClient.enrollments.bulkDelete.useMutation({ onSuccess: invalidate });
+  const bulkDeleteEnrollments = tsrClient.enrollments.bulkDelete.useMutation({
+    onSuccess: invalidate,
+  });
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  const bulkRestoreEnrollments = tsrClient.enrollments.bulkRestore.useMutation({ onSuccess: invalidate });
+  const bulkRestoreEnrollments = tsrClient.enrollments.bulkRestore.useMutation({
+    onSuccess: invalidate,
+  });
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const logExportAudit = tsrClient.enrollments.exportAudit.useMutation({});
 
   return {
     createEnrollment: {
       ...createEnrollment,
-      mutate: (enrollment: Enrollment, opts?: MutateOptions) => createEnrollment.mutate({ body: enrollment }, opts),
+      mutate: (enrollment: Enrollment, opts?: MutateOptions) =>
+        createEnrollment.mutate({ body: enrollment }, opts),
       mutateAsync: (enrollment: Enrollment) => createEnrollment.mutateAsync({ body: enrollment }),
     },
     updateEnrollment: {
@@ -38,33 +43,54 @@ export function useEnrollmentMutations() {
     },
     deleteEnrollment: {
       ...deleteEnrollment,
-      mutate: ({ id, deletionReason }: { id: string; deletionReason?: string }, opts?: MutateOptions) =>
-        deleteEnrollment.mutate({ params: { id }, body: deletionReason ? { deletionReason } : {} }, opts),
+      mutate: (
+        { id, deletionReason }: { id: string; deletionReason?: string },
+        opts?: MutateOptions,
+      ) =>
+        deleteEnrollment.mutate(
+          { params: { id }, body: deletionReason ? { deletionReason } : {} },
+          opts,
+        ),
       mutateAsync: ({ id, deletionReason }: { id: string; deletionReason?: string }) =>
-        deleteEnrollment.mutateAsync({ params: { id }, body: deletionReason ? { deletionReason } : {} }),
+        deleteEnrollment.mutateAsync({
+          params: { id },
+          body: deletionReason ? { deletionReason } : {},
+        }),
     },
     restoreEnrollment: {
       ...restoreEnrollment,
-      mutate: (id: string, opts?: MutateOptions) => restoreEnrollment.mutate({ params: { id }, body: {} }, opts),
+      mutate: (id: string, opts?: MutateOptions) =>
+        restoreEnrollment.mutate({ params: { id }, body: {} }, opts),
       mutateAsync: (id: string) => restoreEnrollment.mutateAsync({ params: { id }, body: {} }),
     },
     bulkDeleteEnrollments: {
       ...bulkDeleteEnrollments,
-      mutate: ({ ids, deletionReason }: { ids: string[]; deletionReason?: string }, opts?: MutateOptions) =>
-        bulkDeleteEnrollments.mutate({ body: { ids, ...(deletionReason ? { deletionReason } : {}) } }, opts),
+      mutate: (
+        { ids, deletionReason }: { ids: string[]; deletionReason?: string },
+        opts?: MutateOptions,
+      ) =>
+        bulkDeleteEnrollments.mutate(
+          { body: { ids, ...(deletionReason ? { deletionReason } : {}) } },
+          opts,
+        ),
       mutateAsync: ({ ids, deletionReason }: { ids: string[]; deletionReason?: string }) =>
-        bulkDeleteEnrollments.mutateAsync({ body: { ids, ...(deletionReason ? { deletionReason } : {}) } }),
+        bulkDeleteEnrollments.mutateAsync({
+          body: { ids, ...(deletionReason ? { deletionReason } : {}) },
+        }),
     },
     bulkRestoreEnrollments: {
       ...bulkRestoreEnrollments,
-      mutate: (ids: string[], opts?: MutateOptions) => bulkRestoreEnrollments.mutate({ body: { ids } }, opts),
+      mutate: (ids: string[], opts?: MutateOptions) =>
+        bulkRestoreEnrollments.mutate({ body: { ids } }, opts),
       mutateAsync: (ids: string[]) => bulkRestoreEnrollments.mutateAsync({ body: { ids } }),
     },
     logExportAudit: {
       ...logExportAudit,
-      mutate: (payload: { count: number; scope: 'all' | 'filtered' | 'selection' }, opts?: MutateOptions) =>
-        logExportAudit.mutate({ body: payload }, opts),
-      mutateAsync: (payload: { count: number; scope: 'all' | 'filtered' | 'selection' }) =>
+      mutate: (
+        payload: { count: number; scope: "all" | "filtered" | "selection" },
+        opts?: MutateOptions,
+      ) => logExportAudit.mutate({ body: payload }, opts),
+      mutateAsync: (payload: { count: number; scope: "all" | "filtered" | "selection" }) =>
         logExportAudit.mutateAsync({ body: payload }),
     },
   };

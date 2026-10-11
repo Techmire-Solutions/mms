@@ -1,8 +1,8 @@
-import { and, eq, sql } from 'drizzle-orm';
-import { formatTemplateSequence, type StudentGrNumberSettings } from '@mms/shared';
-import { students, studentSequenceConfig } from '../schema.js';
-import { withTenant, type TenantTransaction } from '../tenant-context.js';
-import { enableIncludeDeleted } from '../../lib/softDeleteHelpers.js';
+import { and, eq, sql } from "drizzle-orm";
+import { formatTemplateSequence, type StudentGrNumberSettings } from "@mms/shared";
+import { students, studentSequenceConfig } from "../schema.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 
 export interface GenerateGrNumberInput {
   regDate: string;
@@ -24,7 +24,7 @@ export async function generateNextGrNumberBatchSql(
   const subdomain = tenant.trim().toLowerCase();
   const parsedYear = input.regDate ? new Date(input.regDate).getFullYear() : NaN;
   const year = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
-  const template = input.settings.grNumberTemplate || '{seq}-{year}';
+  const template = input.settings.grNumberTemplate || "{seq}-{year}";
   const digits = input.settings.grNumberDigits || 4;
   const restartAnnually = input.settings.grNumberRestartAnnually !== false;
 
@@ -36,7 +36,7 @@ export async function generateNextGrNumberBatchSql(
       })
       .from(studentSequenceConfig)
       .where(eq(studentSequenceConfig.workspaceSubdomain, subdomain))
-      .for('update');
+      .for("update");
 
     if (!row) {
       await enableIncludeDeleted(tx);
@@ -72,7 +72,7 @@ export async function generateNextGrNumberBatchSql(
         })
         .from(studentSequenceConfig)
         .where(eq(studentSequenceConfig.workspaceSubdomain, subdomain))
-        .for('update');
+        .for("update");
     }
 
     const lastYear = row?.lastYear ?? year;
@@ -124,7 +124,7 @@ export async function previewNextGrNumberSql(
   const subdomain = tenant.trim().toLowerCase();
   const parsedYear = input.regDate ? new Date(input.regDate).getFullYear() : NaN;
   const year = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
-  const template = input.settings.grNumberTemplate || '{seq}-{year}';
+  const template = input.settings.grNumberTemplate || "{seq}-{year}";
   const digits = input.settings.grNumberDigits || 4;
   const restartAnnually = input.settings.grNumberRestartAnnually !== false;
 
@@ -179,6 +179,5 @@ export async function generateNextGrNumberSql(
   txClient?: TenantTransaction,
 ): Promise<string> {
   const [single] = await generateNextGrNumberBatchSql(tenant, 1, input, txClient);
-  return single ?? '';
+  return single ?? "";
 }
-

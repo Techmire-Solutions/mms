@@ -1,5 +1,5 @@
-import type { ZodType } from 'zod';
-import type { FastifyReply, FastifyRequest } from 'fastify';
+import type { ZodType } from "zod";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import {
   isQueryFlagTrue,
   type User,
@@ -18,16 +18,19 @@ import {
   USERS_MODULE_MANIFEST,
   MESSAGING_MODULE_MANIFEST,
   LIST_PAGE_MAX_LIMIT,
-} from '@mms/shared';
-import { canDeleteCollection, canReadCollection } from './rbacCanHelpers.js';
-import { sendForbidden, sendDatabaseError } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
-import { includeDeletedQuerySchema } from '@mms/shared';
-import { sql } from 'drizzle-orm';
-import { withTenant } from '../db/tenant-context.js';
-import { getRequestTenant } from './tenantContext.js';
+} from "@mms/shared";
+import { canDeleteCollection, canReadCollection } from "./rbacCanHelpers.js";
+import { sendForbidden, sendDatabaseError } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
+import { includeDeletedQuerySchema } from "@mms/shared";
+import { sql } from "drizzle-orm";
+import { withTenant } from "../db/tenant-context.js";
+import { getRequestTenant } from "./tenantContext.js";
 
-const MANIFESTS_BY_COLLECTION: Record<string, { softDelete?: { captureDeletionReason?: boolean } }> = {
+const MANIFESTS_BY_COLLECTION: Record<
+  string,
+  { softDelete?: { captureDeletionReason?: boolean } }
+> = {
   contacts: CONTACTS_MODULE_MANIFEST,
   students: STUDENTS_MODULE_MANIFEST,
   faculty: FACULTY_MODULE_MANIFEST,
@@ -138,10 +141,7 @@ export interface SoftDeletableBulkRoutesOptions<T> {
     result: { succeeded: number; failed: number },
     deletionReason?: string,
   ) => Promise<void>;
-  onAfterBulkRestore?: (
-    user: User,
-    result: { succeeded: number; failed: number },
-  ) => Promise<void>;
+  onAfterBulkRestore?: (user: User, result: { succeeded: number; failed: number }) => Promise<void>;
 }
 
 export type SoftDeletableBulkTrashRoutesOptions = {
@@ -156,10 +156,7 @@ export type SoftDeletableBulkTrashRoutesOptions = {
     reason?: string,
   ) => Promise<{ succeeded: number; failed: number }>;
   /** Second `userId` arg for modules that audit restore actor (Contacts). */
-  bulkRestoreFn: (
-    ids: string[],
-    userId: string,
-  ) => Promise<{ succeeded: number; failed: number }>;
+  bulkRestoreFn: (ids: string[], userId: string) => Promise<{ succeeded: number; failed: number }>;
   canDelete?: (user: User) => boolean;
   /** Whether this module captures deletion reason. Defaults to true. When false, deletionReason is stripped. */
   captureDeletionReason?: boolean;
@@ -172,10 +169,7 @@ export type SoftDeletableBulkTrashRoutesOptions = {
     result: { succeeded: number; failed: number },
     deletionReason?: string,
   ) => Promise<void>;
-  onAfterBulkRestore?: (
-    user: User,
-    result: { succeeded: number; failed: number },
-  ) => Promise<void>;
+  onAfterBulkRestore?: (user: User, result: { succeeded: number; failed: number }) => Promise<void>;
 };
 
 export type BulkListLoadContext = {
@@ -195,7 +189,7 @@ export type BulkListLoadContext = {
  * clamping to `max` so a caller cannot request an unbounded page size.
  */
 function parseClampedInt(value: string | undefined, fallback: number, max: number): number {
-  const parsed = Number.parseInt(value ?? '', 10);
+  const parsed = Number.parseInt(value ?? "", 10);
   if (!Number.isFinite(parsed) || parsed < 1) return fallback;
   return Math.min(parsed, max);
 }
@@ -248,14 +242,17 @@ export async function handleBulkListGet(
     }
 
     if (includeDeleted && !canDelete(user)) {
-      return sendForbidden(reply, `Viewing deleted ${errorMessagePrefix} requires delete permissions`);
+      return sendForbidden(
+        reply,
+        `Viewing deleted ${errorMessagePrefix} requires delete permissions`,
+      );
     }
 
     const runInScope = async <R>(fn: () => Promise<R>): Promise<R> => {
       if (!includeDeleted) return fn();
       const tenant = getRequestTenant() ?? user.workspaceSubdomain;
       return withTenant(tenant, async (tx) => {
-        if (tx && typeof tx.execute === 'function') {
+        if (tx && typeof tx.execute === "function") {
           await tx.execute(sql`SET LOCAL app.include_deleted = 'true'`);
         }
         return fn();
@@ -266,7 +263,10 @@ export async function handleBulkListGet(
       const data = await runInScope(() =>
         loadPageFn({
           ...pageQuery,
-          limit: Math.min(Number(pageQuery.limit ?? defaultPageSize ?? 50) || 50, LIST_PAGE_MAX_LIMIT),
+          limit: Math.min(
+            Number(pageQuery.limit ?? defaultPageSize ?? 50) || 50,
+            LIST_PAGE_MAX_LIMIT,
+          ),
           ...(supportsIncludeDeleted ? { includeDeleted } : {}),
         }),
       );
@@ -287,7 +287,7 @@ export async function handleBulkListGet(
             limit,
             search: queryParams.search,
             sortField: queryParams.sortField,
-            sortDir: queryParams.sortDir as 'asc' | 'desc',
+            sortDir: queryParams.sortDir as "asc" | "desc",
             ...(supportsIncludeDeleted ? { includeDeleted } : {}),
           }),
         );

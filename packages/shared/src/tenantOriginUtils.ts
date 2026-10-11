@@ -1,5 +1,5 @@
-import { LOCAL_DEV_APP_DOMAIN } from './tenantSubdomainUtils.js';
-import { parseTenantFromHost } from './tenantSubdomainUtils.js';
+import { LOCAL_DEV_APP_DOMAIN } from "./tenantSubdomainUtils.js";
+import { parseTenantFromHost } from "./tenantSubdomainUtils.js";
 
 /**
  * True for local dev origins only. Production CORS should use `isOriginAllowedForAppDomain`

@@ -15,9 +15,7 @@ describe("templatePayloadMappers", () => {
       studentName: "Ahmad Tariq",
       rollNo: "R-102",
       className: "Hifz 1",
-      feeItems: [
-        { description: "Tuition", amount: "200.00", paid: "200.00" },
-      ],
+      feeItems: [{ description: "Tuition", amount: "200.00", paid: "200.00" }],
       totalAmount: "200.00",
       paidAmount: "200.00",
       balance: "0.00",
@@ -69,7 +67,14 @@ describe("templatePayloadMappers", () => {
       period: "Q3 2026",
       currency: "USD",
       entries: [
-        { date: "2026-09-01", accountCode: "4001", description: "Tuition Income", debit: "0.00", credit: "1500.00", balance: "1500.00" },
+        {
+          date: "2026-09-01",
+          accountCode: "4001",
+          description: "Tuition Income",
+          debit: "0.00",
+          credit: "1500.00",
+          balance: "1500.00",
+        },
       ],
       totalDebit: "0.00",
       totalCredit: "1500.00",
@@ -92,7 +97,13 @@ describe("templatePayloadMappers", () => {
       customer_id: "CUST-441",
       customer_name: "Tariq Jamil",
       line_items: [
-        { name: "Annual Tuition", description: "Term 1", rate: "450.00", quantity: 1, item_total: "450.00" },
+        {
+          name: "Annual Tuition",
+          description: "Term 1",
+          rate: "450.00",
+          quantity: 1,
+          item_total: "450.00",
+        },
       ],
       total: "450.00",
       balance: "450.00",

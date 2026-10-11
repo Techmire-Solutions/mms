@@ -4,7 +4,7 @@ import {
   mergeBrandingSettings,
   pickBrandingFields,
   type BrandingSettings,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /** Persist institution fields from draft; keep theme/appearance from baseline. */
 export function mergeBrandingIdentityForSave(
@@ -46,4 +46,3 @@ export function resetBrandingIdentityFields(
     ...pickBrandingFields(baseline, BRANDING_IDENTITY_FIELD_KEYS),
   };
 }
-

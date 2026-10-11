@@ -87,9 +87,9 @@ export function AccountProfileSettingsTabs({
   const [activeTab, setActiveTab] = useState<"profile" | "security">("profile");
 
   const tabs = (() => [
-      { key: "profile" as const, label: t("account.contactSection"), icon: User },
-      { key: "security" as const, label: t("account.loginSection"), icon: Lock },
-    ])();
+    { key: "profile" as const, label: t("account.contactSection"), icon: User },
+    { key: "security" as const, label: t("account.loginSection"), icon: Lock },
+  ])();
 
   return (
     <div className="w-full">

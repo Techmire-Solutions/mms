@@ -7,8 +7,8 @@ export interface UseTemplateEditorBatchTransformActionsOptions<TPayload = Record
   commitUpdateCoalesced: (
     coalesceKey: string,
     updateFn: (
-      elements: TemplateElement<keyof TPayload & string>[]
-    ) => TemplateElement<keyof TPayload & string>[]
+      elements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
 }
 
@@ -29,11 +29,11 @@ export function useTemplateEditorBatchTransformActions<TPayload = Record<string,
                 x: Math.min(Math.max(0, size.width - el.w), Math.max(0, el.x + dx)),
                 y: Math.min(Math.max(0, size.height - el.h), Math.max(0, el.y + dy)),
               }
-            : el
-        )
+            : el,
+        ),
       );
     },
-    [commitUpdateCoalesced, selectedIds, size.height, size.width]
+    [commitUpdateCoalesced, selectedIds, size.height, size.width],
   );
 
   const resizeSelected = useCallback(
@@ -48,11 +48,11 @@ export function useTemplateEditorBatchTransformActions<TPayload = Record<string,
                 w: Math.min(Math.max(20, size.width - el.x), Math.max(20, el.w + dw)),
                 h: Math.min(Math.max(4, size.height - el.y), Math.max(4, el.h + dh)),
               }
-            : el
-        )
+            : el,
+        ),
       );
     },
-    [commitUpdateCoalesced, selectedIds, size.height, size.width]
+    [commitUpdateCoalesced, selectedIds, size.height, size.width],
   );
 
   const patchSelectedStyles = useCallback(
@@ -67,11 +67,11 @@ export function useTemplateEditorBatchTransformActions<TPayload = Record<string,
                 ...el,
                 style: { ...el.style, ...stylePatch },
               }
-            : el
-        )
+            : el,
+        ),
       );
     },
-    [commitUpdateCoalesced, selectedIds]
+    [commitUpdateCoalesced, selectedIds],
   );
 
   return {

@@ -1,6 +1,11 @@
 import React from "react";
 import { Printer, Settings } from "lucide-react";
-import type { ObligationCollection, ObligationType, MujtahidRep, Mujtahid } from "@/lib/data/obligationsData";
+import type {
+  ObligationCollection,
+  ObligationType,
+  MujtahidRep,
+  Mujtahid,
+} from "@/lib/data/obligationsData";
 import { InvoicePrintPreview } from "@/tenant/features/obligations/components/invoice/InvoicePrintPreview";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/Modal";
@@ -59,7 +64,8 @@ export function PrintInvoiceModal({
             variant="outline"
             className="flex min-h-11 items-center gap-1.5 px-3 py-1.5 h-auto text-xs font-semibold rounded-lg border border-border hover:bg-muted transition-colors shadow-none"
           >
-            <Settings className="w-3.5 h-3.5" aria-hidden="true" /> {t("obligations.print.customizeTemplate")}
+            <Settings className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+            {t("obligations.print.customizeTemplate")}
           </Button>
         ) : null
       }
@@ -120,10 +126,7 @@ export function PrintInvoiceModal({
           className="origin-top scale-preview-sm sm:scale-preview-md md:scale-preview-lg lg:scale-preview-xl"
           style={{ direction: isRtl ? "rtl" : "ltr" }}
         >
-          <div
-            ref={printRef}
-            style={{ lineHeight: 1.4, width: size.width, height: size.height }}
-          >
+          <div ref={printRef} style={{ lineHeight: 1.4, width: size.width, height: size.height }}>
             <InvoicePrintPreview
               template={template}
               collection={collection}

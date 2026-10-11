@@ -1,16 +1,16 @@
-import React from 'react';
-import { MoreHorizontal, Eye, ExternalLink } from 'lucide-react';
-import type { PlatformWorkspaceRow } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { usePlatformInspector } from '@/platform/lib/PlatformInspectorContext';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { MoreHorizontal, Eye, ExternalLink } from "lucide-react";
+import type { PlatformWorkspaceRow } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { tenantUrl } from '@/lib/config/tenantConfig';
+} from "@/components/ui/dropdown-menu";
+import { tenantUrl } from "@/lib/config/tenantConfig";
 
 interface PlatformDashboardFleetRowMenuProps {
   row: PlatformWorkspaceRow;
@@ -30,7 +30,7 @@ export function PlatformDashboardFleetRowMenu({
           size="sm"
           icon={MoreHorizontal}
           className="min-w-11"
-          aria-label={t('common.actions')}
+          aria-label={t("common.actions")}
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 rounded-xl">
@@ -38,7 +38,7 @@ export function PlatformDashboardFleetRowMenu({
           className="cursor-pointer text-xs font-semibold gap-2"
           onSelect={() =>
             openInspector({
-              kind: 'workspace',
+              kind: "workspace",
               subdomain: row.subdomain,
               madrasaName: row.madrasaName,
               enabled: row.enabled,
@@ -48,12 +48,12 @@ export function PlatformDashboardFleetRowMenu({
           }
         >
           <Eye className="h-3.5 w-3.5" aria-hidden />
-          {t('platform.inspectWorkspace')}
+          {t("platform.inspectWorkspace")}
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="cursor-pointer text-xs font-semibold gap-2">
-          <a href={tenantUrl(row.subdomain, '/')} target="_blank" rel="noopener noreferrer">
+          <a href={tenantUrl(row.subdomain, "/")} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            {t('platform.openWorkspace')}
+            {t("platform.openWorkspace")}
           </a>
         </DropdownMenuItem>
       </DropdownMenuContent>

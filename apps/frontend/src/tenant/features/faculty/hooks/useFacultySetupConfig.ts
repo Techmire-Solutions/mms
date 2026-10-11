@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo } from "react";
 import {
   FACULTY_MODULE_MANIFEST,
   composeFacultySettings,
@@ -6,29 +6,30 @@ import {
   normalizeFacultySettings,
   type FacultyModulePreferences,
   type FacultySettings,
-} from '@mms/shared';
-import { QueryClient, QueryClientContext, useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { SETUP_STALE_TIME } from '@/lib/queryClient';
-import { createModuleSetupConfigHooks } from '@/lib/query/createModuleSetupConfigHooks';
+} from "@mms/shared";
+import { QueryClient, QueryClientContext, useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { SETUP_STALE_TIME } from "@/lib/queryClient";
+import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchFacultyFieldConfig,
   fetchFacultyPreferences,
   saveFacultyPreferencesAsync,
   setFacultyPreferencesMemory,
-} from '@/tenant/features/faculty/hooks/facultySetupConfigApi';
+} from "@/tenant/features/faculty/hooks/facultySetupConfigApi";
 
 export const FACULTY_PREFERENCES_QUERY_KEY = [
   FACULTY_MODULE_MANIFEST.collectionKey,
-  'preferences',
+  "preferences",
 ] as const;
 
 export const FACULTY_FIELD_CONFIG_QUERY_KEY = [
   FACULTY_MODULE_MANIFEST.collectionKey,
-  'field-config',
+  "field-config",
 ] as const;
 
-const DEFAULT_FACULTY_MODULE_PREFERENCES: FacultyModulePreferences = normalizeFacultyModulePreferences(null);
+const DEFAULT_FACULTY_MODULE_PREFERENCES: FacultyModulePreferences =
+  normalizeFacultyModulePreferences(null);
 const DEFAULT_FACULTY_FIELD_CONFIG: FacultySettings = normalizeFacultySettings(null);
 
 const fallbackQueryClient = new QueryClient({

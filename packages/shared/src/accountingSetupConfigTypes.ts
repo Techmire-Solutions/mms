@@ -1,14 +1,21 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import { DEFAULT_ACCOUNTING_SETTINGS, type AccountingSettings } from './accountingModuleSettings.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import {
+  DEFAULT_ACCOUNTING_SETTINGS,
+  type AccountingSettings,
+} from "./accountingModuleSettings.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 import {
   ACCOUNTING_TAB_REGISTRY,
   INITIAL_ACCOUNTING_FIELD_SEED,
-} from './moduleFieldSetupFinance.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
-import { journalTemplatesSchema, normalizeJournalTemplates, type JournalTemplate } from './accountingJournalTemplates.js';
+} from "./moduleFieldSetupFinance.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
+import {
+  journalTemplatesSchema,
+  normalizeJournalTemplates,
+  type JournalTemplate,
+} from "./accountingJournalTemplates.js";
 
 /** Deep clone {@link INITIAL_ACCOUNTING_FIELD_SEED} for default and Setup states. */
 export function cloneAccountingFieldSeed(): Record<string, FieldDefinition[]> {
@@ -31,7 +38,7 @@ export function isAccountingSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Setup tab). */
 export function isAccountingLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -41,7 +48,7 @@ export function isAccountingLockedEnabledTab(tabKey: string): boolean {
 export function resolveAccountingFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneAccountingFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -88,25 +95,25 @@ const accountingFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchem
 /** PUT /api/accounting/preferences — strongly typed module preferences. */
 export const accountingPreferencesPutBodySchema = z
   .object({
-    currency: z.string().min(1).default('PKR'),
-    currencySymbol: z.string().min(1).default('₨'),
-    dateFormat: z.string().min(1).default('DD/MM/YYYY'),
-    decimalSeparator: z.enum(['period', 'comma']).default('period'),
+    currency: z.string().min(1).default("PKR"),
+    currencySymbol: z.string().min(1).default("₨"),
+    dateFormat: z.string().min(1).default("DD/MM/YYYY"),
+    decimalSeparator: z.enum(["period", "comma"]).default("period"),
     decimalPlaces: z.number().int().min(0).max(4).default(2),
-    fyStartMonth: z.string().min(1).default('July'),
+    fyStartMonth: z.string().min(1).default("July"),
     accountCodeLength: z.number().int().min(1).max(20).default(4),
     requireNarration: z.boolean().default(true),
     allowEditPosted: z.boolean().default(false),
     autoPostDrafts: z.boolean().default(false),
-    retainedEarningsAccount: z.string().default('a3100'),
-    organizationName: z.string().default('').optional(),
+    retainedEarningsAccount: z.string().default("a3100"),
+    organizationName: z.string().default("").optional(),
     defaultViewLayout: z.string().optional(),
     journalTemplates: journalTemplatesSchema.optional(),
   })
   .strict();
 
 export const accountingFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, accountingFieldConfigPutBodyBaseSchema);
 
@@ -115,7 +122,7 @@ export interface AccountingModulePreferences {
   currency: string;
   currencySymbol: string;
   dateFormat: string;
-  decimalSeparator: 'period' | 'comma';
+  decimalSeparator: "period" | "comma";
   decimalPlaces: number;
   fyStartMonth: string;
   accountCodeLength: number;
@@ -149,31 +156,65 @@ export const DEFAULT_ACCOUNTING_PREFERENCES: AccountingModulePreferences = {
 
 /** Normalizes raw DB JSON into strict typed preferences. */
 export function normalizeAccountingModulePreferences(raw: unknown): AccountingModulePreferences {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw || typeof raw !== "object") {
     return { ...DEFAULT_ACCOUNTING_PREFERENCES };
   }
   const safe = raw as Partial<AccountingModulePreferences>;
   return {
-    currency: typeof safe.currency === 'string' ? safe.currency : DEFAULT_ACCOUNTING_PREFERENCES.currency,
-    currencySymbol: typeof safe.currencySymbol === 'string' ? safe.currencySymbol : DEFAULT_ACCOUNTING_PREFERENCES.currencySymbol,
-    dateFormat: typeof safe.dateFormat === 'string' ? safe.dateFormat : DEFAULT_ACCOUNTING_PREFERENCES.dateFormat,
-    decimalSeparator: safe.decimalSeparator === 'comma' ? 'comma' : 'period',
-    decimalPlaces: typeof safe.decimalPlaces === 'number' ? safe.decimalPlaces : DEFAULT_ACCOUNTING_PREFERENCES.decimalPlaces,
-    fyStartMonth: typeof safe.fyStartMonth === 'string' ? safe.fyStartMonth : DEFAULT_ACCOUNTING_PREFERENCES.fyStartMonth,
-    accountCodeLength: typeof safe.accountCodeLength === 'number' ? safe.accountCodeLength : DEFAULT_ACCOUNTING_PREFERENCES.accountCodeLength,
-    requireNarration: typeof safe.requireNarration === 'boolean' ? safe.requireNarration : DEFAULT_ACCOUNTING_PREFERENCES.requireNarration,
-    allowEditPosted: typeof safe.allowEditPosted === 'boolean' ? safe.allowEditPosted : DEFAULT_ACCOUNTING_PREFERENCES.allowEditPosted,
-    autoPostDrafts: typeof safe.autoPostDrafts === 'boolean' ? safe.autoPostDrafts : DEFAULT_ACCOUNTING_PREFERENCES.autoPostDrafts,
-    retainedEarningsAccount: typeof safe.retainedEarningsAccount === 'string' ? safe.retainedEarningsAccount : DEFAULT_ACCOUNTING_PREFERENCES.retainedEarningsAccount,
-    organizationName: typeof safe.organizationName === 'string' ? safe.organizationName : DEFAULT_ACCOUNTING_PREFERENCES.organizationName,
-    defaultViewLayout: typeof safe.defaultViewLayout === 'string' ? safe.defaultViewLayout : DEFAULT_ACCOUNTING_PREFERENCES.defaultViewLayout,
+    currency:
+      typeof safe.currency === "string" ? safe.currency : DEFAULT_ACCOUNTING_PREFERENCES.currency,
+    currencySymbol:
+      typeof safe.currencySymbol === "string"
+        ? safe.currencySymbol
+        : DEFAULT_ACCOUNTING_PREFERENCES.currencySymbol,
+    dateFormat:
+      typeof safe.dateFormat === "string"
+        ? safe.dateFormat
+        : DEFAULT_ACCOUNTING_PREFERENCES.dateFormat,
+    decimalSeparator: safe.decimalSeparator === "comma" ? "comma" : "period",
+    decimalPlaces:
+      typeof safe.decimalPlaces === "number"
+        ? safe.decimalPlaces
+        : DEFAULT_ACCOUNTING_PREFERENCES.decimalPlaces,
+    fyStartMonth:
+      typeof safe.fyStartMonth === "string"
+        ? safe.fyStartMonth
+        : DEFAULT_ACCOUNTING_PREFERENCES.fyStartMonth,
+    accountCodeLength:
+      typeof safe.accountCodeLength === "number"
+        ? safe.accountCodeLength
+        : DEFAULT_ACCOUNTING_PREFERENCES.accountCodeLength,
+    requireNarration:
+      typeof safe.requireNarration === "boolean"
+        ? safe.requireNarration
+        : DEFAULT_ACCOUNTING_PREFERENCES.requireNarration,
+    allowEditPosted:
+      typeof safe.allowEditPosted === "boolean"
+        ? safe.allowEditPosted
+        : DEFAULT_ACCOUNTING_PREFERENCES.allowEditPosted,
+    autoPostDrafts:
+      typeof safe.autoPostDrafts === "boolean"
+        ? safe.autoPostDrafts
+        : DEFAULT_ACCOUNTING_PREFERENCES.autoPostDrafts,
+    retainedEarningsAccount:
+      typeof safe.retainedEarningsAccount === "string"
+        ? safe.retainedEarningsAccount
+        : DEFAULT_ACCOUNTING_PREFERENCES.retainedEarningsAccount,
+    organizationName:
+      typeof safe.organizationName === "string"
+        ? safe.organizationName
+        : DEFAULT_ACCOUNTING_PREFERENCES.organizationName,
+    defaultViewLayout:
+      typeof safe.defaultViewLayout === "string"
+        ? safe.defaultViewLayout
+        : DEFAULT_ACCOUNTING_PREFERENCES.defaultViewLayout,
     journalTemplates: normalizeJournalTemplates(safe.journalTemplates),
   };
 }
 
 /** Extracts field-config slice from a raw composed settings blob. */
 export function normalizeAccountingSettings(raw: unknown): AccountingSettings {
-  if (!raw || typeof raw !== 'object') {
+  if (!raw || typeof raw !== "object") {
     return { ...DEFAULT_ACCOUNTING_SETTINGS };
   }
   const safe = raw as Partial<AccountingSettings>;
@@ -192,15 +233,21 @@ export function normalizeAccountingSettings(raw: unknown): AccountingSettings {
     organizationName: DEFAULT_ACCOUNTING_SETTINGS.organizationName,
     defaultViewLayout: DEFAULT_ACCOUNTING_SETTINGS.defaultViewLayout,
     fields: resolveAccountingFieldsMap(
-      safe.fields && typeof safe.fields === 'object' && !Array.isArray(safe.fields)
+      safe.fields && typeof safe.fields === "object" && !Array.isArray(safe.fields)
         ? (safe.fields as Record<string, unknown>)
         : undefined,
     ),
     customFields: Array.isArray(safe.customFields) ? safe.customFields : [],
-    fieldOrder: Array.isArray(safe.fieldOrder) ? safe.fieldOrder : DEFAULT_ACCOUNTING_SETTINGS.fieldOrder,
+    fieldOrder: Array.isArray(safe.fieldOrder)
+      ? safe.fieldOrder
+      : DEFAULT_ACCOUNTING_SETTINGS.fieldOrder,
     formTabs: Array.isArray(safe.formTabs) ? safe.formTabs : DEFAULT_ACCOUNTING_SETTINGS.formTabs,
-    enabledTabs: Array.isArray(safe.enabledTabs) ? safe.enabledTabs : DEFAULT_ACCOUNTING_SETTINGS.enabledTabs,
-    requiredTabs: Array.isArray(safe.requiredTabs) ? safe.requiredTabs : DEFAULT_ACCOUNTING_SETTINGS.requiredTabs,
+    enabledTabs: Array.isArray(safe.enabledTabs)
+      ? safe.enabledTabs
+      : DEFAULT_ACCOUNTING_SETTINGS.enabledTabs,
+    requiredTabs: Array.isArray(safe.requiredTabs)
+      ? safe.requiredTabs
+      : DEFAULT_ACCOUNTING_SETTINGS.requiredTabs,
   };
 }
 
@@ -208,7 +255,7 @@ export function normalizeAccountingSettings(raw: unknown): AccountingSettings {
 export function composeAccountingSettings(
   fieldConfig: AccountingSettings | null,
   prefs: AccountingModulePreferences,
-  formTabs?: TabDefinition[]
+  formTabs?: TabDefinition[],
 ): AccountingSettings {
   return {
     ...(fieldConfig ?? DEFAULT_ACCOUNTING_SETTINGS),
@@ -232,10 +279,10 @@ export function composeAccountingSettings(
 
 /** Drops preference keys before saving field-config to avoid overriding prefs layer. */
 export function stripAccountingFieldConfigForPersist(
-  config: Partial<AccountingSettings>
+  config: Partial<AccountingSettings>,
 ): Partial<AccountingSettings> {
   // `name: _name` aliases: the bound locals exist only to omit preference keys from the rest object.
-  const { 
+  const {
     currency: _currency,
     currencySymbol: _currencySymbol,
     dateFormat: _dateFormat,
@@ -250,7 +297,7 @@ export function stripAccountingFieldConfigForPersist(
     organizationName: _organizationName,
     defaultViewLayout: _defaultViewLayout,
     journalTemplates: _journalTemplates,
-    ...fieldConfigOnly 
+    ...fieldConfigOnly
   } = config;
   return fieldConfigOnly;
 }
@@ -260,12 +307,7 @@ export function mergeAccountingFormTabsFromApi(
   apiTabs: TabDefinition[],
 ): TabDefinition[] {
   const documentOrDefault = documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [];
-  const merged =
-    apiTabs.length === 0
-      ? documentOrDefault
-      : [
-          ...apiTabs,
-        ];
+  const merged = apiTabs.length === 0 ? documentOrDefault : [...apiTabs];
   const seenKeys = new Set<string>();
   return merged.filter((tab) => {
     if (!tab?.key || seenKeys.has(tab.key)) return false;

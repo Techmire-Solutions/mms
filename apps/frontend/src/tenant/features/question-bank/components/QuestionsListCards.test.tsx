@@ -65,23 +65,17 @@ describe("QuestionsListCards", () => {
   });
 
   it("does not render checkbox when canDelete=false", () => {
-    const html = renderToStaticMarkup(
-      <QuestionsListCards {...baseProps} canDelete={false} />,
-    );
+    const html = renderToStaticMarkup(<QuestionsListCards {...baseProps} canDelete={false} />);
     expect(html).not.toContain('type="checkbox"');
   });
 
   it("applies selected styles when question is in selectedIds", () => {
-    const html = renderToStaticMarkup(
-      <QuestionsListCards {...baseProps} selectedIds={["q-1"]} />,
-    );
+    const html = renderToStaticMarkup(<QuestionsListCards {...baseProps} selectedIds={["q-1"]} />);
     expect(html).toContain("border-primary/50");
   });
 
   it("renders empty list without crashing", () => {
-    const html = renderToStaticMarkup(
-      <QuestionsListCards {...baseProps} questions={[]} />,
-    );
+    const html = renderToStaticMarkup(<QuestionsListCards {...baseProps} questions={[]} />);
     expect(html).toBeDefined();
   });
 });

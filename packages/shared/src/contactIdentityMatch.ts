@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const identityValueListSchema = z
   .array(z.string().max(320))

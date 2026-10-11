@@ -1,12 +1,6 @@
-import {
-  resolveBrandingChartPaletteHex,
-  type BrandingChartPaletteHex,
-} from '@mms/shared';
-import {
-  getScopedBrandingSettings,
-  getScopedGlobalSettings,
-} from '@/lib/settingsPreviewStore';
-import { resolveThemeMode } from '@/lib/brandingThemeCore';
+import { resolveBrandingChartPaletteHex, type BrandingChartPaletteHex } from "@mms/shared";
+import { getScopedBrandingSettings, getScopedGlobalSettings } from "@/lib/settingsPreviewStore";
+import { resolveThemeMode } from "@/lib/brandingThemeCore";
 
 export type { BrandingChartPaletteHex };
 
@@ -22,14 +16,14 @@ export function getBrandingChartPalette(): BrandingChartPaletteHex {
 
 /** Reads a live CSS variable as `hsl(h, s%, l%)` for SVG/canvas. */
 export function readThemeCssColor(varName: string): string {
-  if (typeof window === 'undefined') return '';
+  if (typeof window === "undefined") return "";
   const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-  return raw ? `hsl(${raw.replace(/ /g, ', ')})` : '';
+  return raw ? `hsl(${raw.replace(/ /g, ", ")})` : "";
 }
 
 /** Brand chart colours as CSS `hsl()` strings (from computed document variables). */
 export function getBrandingChartPaletteCss(): string[] {
-  return ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5'].map((name) =>
+  return ["--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5"].map((name) =>
     readThemeCssColor(name),
   );
 }
@@ -51,10 +45,10 @@ export function resolveWidgetChartHex(name: string, palette: BrandingChartPalett
 
 /** Threshold alert swatch for dashboard widgets (Recharts). */
 export function resolveThresholdChartHex(
-  color: 'red' | 'amber' | 'yellow' | undefined,
+  color: "red" | "amber" | "yellow" | undefined,
   palette: BrandingChartPaletteHex,
 ): string {
-  if (color === 'amber') return palette.secondary;
-  if (color === 'yellow') return palette.charts[2];
+  if (color === "amber") return palette.secondary;
+  if (color === "yellow") return palette.charts[2];
   return palette.charts[0];
 }

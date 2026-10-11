@@ -1,17 +1,11 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import {
-  DEFAULT_SESSIONS_SETTINGS,
-  type SessionsSettings,
-} from './sessionsModuleSettings.js';
-import {
-  SESSIONS_TAB_REGISTRY,
-  INITIAL_SESSIONS_FIELD_SEED,
-} from './moduleFieldSetupAcademic.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
-import { normalizeSessionsViewLayout } from './sessionsExportUtils.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { DEFAULT_SESSIONS_SETTINGS, type SessionsSettings } from "./sessionsModuleSettings.js";
+import { SESSIONS_TAB_REGISTRY, INITIAL_SESSIONS_FIELD_SEED } from "./moduleFieldSetupAcademic.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
+import { normalizeSessionsViewLayout } from "./sessionsExportUtils.js";
 
 /** Deep clone {@link INITIAL_SESSIONS_FIELD_SEED} for default and Setup states. */
 export function cloneSessionFieldSeed(): Record<string, FieldDefinition[]> {
@@ -29,7 +23,7 @@ export function isSessionSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Info tab). */
 export function isSessionLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -39,7 +33,7 @@ export function isSessionLockedEnabledTab(tabKey: string): boolean {
 export function resolveSessionsFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneSessionFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -89,7 +83,7 @@ const sessionFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
   .strict();
 
 export const sessionFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, sessionFieldConfigPutBodyBaseSchema);
 
@@ -111,29 +105,29 @@ export const sessionPreferencesPutBodySchema = z
 
 export type SessionModulePreferences = Pick<
   SessionsSettings,
-  | 'defaultDuration'
-  | 'defaultSessionType'
-  | 'allowOverlap'
-  | 'archiveOldSessions'
-  | 'requireBudget'
-  | 'timetableConflictCheck'
-  | 'notifyOnSessionStart'
-  | 'academicYear'
-  | 'sessionStart'
-  | 'defaultViewLayout'
+  | "defaultDuration"
+  | "defaultSessionType"
+  | "allowOverlap"
+  | "archiveOldSessions"
+  | "requireBudget"
+  | "timetableConflictCheck"
+  | "notifyOnSessionStart"
+  | "academicYear"
+  | "sessionStart"
+  | "defaultViewLayout"
 >;
 
 const PREF_KEYS = [
-  'defaultDuration',
-  'defaultSessionType',
-  'allowOverlap',
-  'archiveOldSessions',
-  'requireBudget',
-  'timetableConflictCheck',
-  'notifyOnSessionStart',
-  'academicYear',
-  'sessionStart',
-  'defaultViewLayout',
+  "defaultDuration",
+  "defaultSessionType",
+  "allowOverlap",
+  "archiveOldSessions",
+  "requireBudget",
+  "timetableConflictCheck",
+  "notifyOnSessionStart",
+  "academicYear",
+  "sessionStart",
+  "defaultViewLayout",
 ] as const;
 
 /** Normalize Sessions module preferences (typed `session_module_preferences`). */
@@ -152,43 +146,43 @@ export function normalizeSessionModulePreferences(
     sessionStart: DEFAULT_SESSIONS_SETTINGS.sessionStart,
     defaultViewLayout: DEFAULT_SESSIONS_SETTINGS.defaultViewLayout,
   };
-  if (!partial || typeof partial !== 'object') return { ...defaults };
+  if (!partial || typeof partial !== "object") return { ...defaults };
 
   return {
     defaultDuration:
-      typeof partial.defaultDuration === 'string' && partial.defaultDuration.trim()
+      typeof partial.defaultDuration === "string" && partial.defaultDuration.trim()
         ? partial.defaultDuration.trim()
         : defaults.defaultDuration,
     defaultSessionType:
-      typeof partial.defaultSessionType === 'string' && partial.defaultSessionType.trim()
+      typeof partial.defaultSessionType === "string" && partial.defaultSessionType.trim()
         ? partial.defaultSessionType.trim()
         : defaults.defaultSessionType,
     allowOverlap:
-      typeof partial.allowOverlap === 'boolean' ? partial.allowOverlap : defaults.allowOverlap,
+      typeof partial.allowOverlap === "boolean" ? partial.allowOverlap : defaults.allowOverlap,
     archiveOldSessions:
-      typeof partial.archiveOldSessions === 'boolean'
+      typeof partial.archiveOldSessions === "boolean"
         ? partial.archiveOldSessions
         : defaults.archiveOldSessions,
     requireBudget:
-      typeof partial.requireBudget === 'boolean' ? partial.requireBudget : defaults.requireBudget,
+      typeof partial.requireBudget === "boolean" ? partial.requireBudget : defaults.requireBudget,
     timetableConflictCheck:
-      typeof partial.timetableConflictCheck === 'boolean'
+      typeof partial.timetableConflictCheck === "boolean"
         ? partial.timetableConflictCheck
         : defaults.timetableConflictCheck,
     notifyOnSessionStart:
-      typeof partial.notifyOnSessionStart === 'boolean'
+      typeof partial.notifyOnSessionStart === "boolean"
         ? partial.notifyOnSessionStart
         : defaults.notifyOnSessionStart,
     academicYear:
-      typeof partial.academicYear === 'string' && partial.academicYear.trim()
+      typeof partial.academicYear === "string" && partial.academicYear.trim()
         ? partial.academicYear.trim()
         : defaults.academicYear,
     sessionStart:
-      typeof partial.sessionStart === 'string' && partial.sessionStart.trim()
+      typeof partial.sessionStart === "string" && partial.sessionStart.trim()
         ? partial.sessionStart.trim()
         : defaults.sessionStart,
     defaultViewLayout: normalizeSessionsViewLayout(
-      typeof partial.defaultViewLayout === 'string'
+      typeof partial.defaultViewLayout === "string"
         ? partial.defaultViewLayout
         : defaults.defaultViewLayout,
     ),
@@ -219,7 +213,7 @@ export function stripSessionFieldConfigForPersist(
 /** Normalize SessionsSettings from typed REST or legacy document blobs. */
 export function normalizeSessionsSettings(config: unknown): SessionsSettings {
   const defaults = { ...DEFAULT_SESSIONS_SETTINGS, formTabs: [...SESSIONS_TAB_REGISTRY] };
-  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
     return { ...defaults };
   }
   const raw = config as Record<string, unknown>;
@@ -229,14 +223,10 @@ export function normalizeSessionsSettings(config: unknown): SessionsSettings {
     ...(raw as Partial<SessionsSettings>),
     ...prefs,
     customFields: Array.isArray(raw.customFields)
-      ? (raw.customFields as SessionsSettings['customFields'])
+      ? (raw.customFields as SessionsSettings["customFields"])
       : defaults.customFields,
-    fieldOrder: Array.isArray(raw.fieldOrder)
-      ? (raw.fieldOrder as string[])
-      : defaults.fieldOrder,
-    formTabs: Array.isArray(raw.formTabs)
-      ? (raw.formTabs as TabDefinition[])
-      : defaults.formTabs,
+    fieldOrder: Array.isArray(raw.fieldOrder) ? (raw.fieldOrder as string[]) : defaults.fieldOrder,
+    formTabs: Array.isArray(raw.formTabs) ? (raw.formTabs as TabDefinition[]) : defaults.formTabs,
     enabledTabs: Array.isArray(raw.enabledTabs)
       ? (raw.enabledTabs as string[])
       : (raw.enabledTabs as string[] | undefined),
@@ -244,7 +234,7 @@ export function normalizeSessionsSettings(config: unknown): SessionsSettings {
       ? (raw.requiredTabs as string[])
       : (raw.requiredTabs as string[] | undefined),
     fields: resolveSessionsFieldsMap(
-      raw.fields && typeof raw.fields === 'object' && !Array.isArray(raw.fields)
+      raw.fields && typeof raw.fields === "object" && !Array.isArray(raw.fields)
         ? (raw.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -273,7 +263,7 @@ export function composeSessionsSettings(
     preferences as Partial<SessionModulePreferences> | null,
   );
   return normalizeSessionsSettings({
-    ...(fieldConfig && typeof fieldConfig === 'object' && !Array.isArray(fieldConfig)
+    ...(fieldConfig && typeof fieldConfig === "object" && !Array.isArray(fieldConfig)
       ? (fieldConfig as Record<string, unknown>)
       : {}),
     ...prefs,
@@ -290,9 +280,7 @@ export function mergeSessionsFormTabsFromApi(
   _fields?: Record<string, FieldDefinition[]> | undefined,
 ): TabDefinition[] {
   const documentOrDefault =
-    documentFormTabs && documentFormTabs.length > 0
-      ? documentFormTabs
-      : [...SESSIONS_TAB_REGISTRY];
+    documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [...SESSIONS_TAB_REGISTRY];
 
   const merged =
     apiTabs.length === 0

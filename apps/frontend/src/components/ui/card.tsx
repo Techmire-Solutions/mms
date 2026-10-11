@@ -2,10 +2,15 @@ import * as React from "react";
 
 import { CARD_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET, type CardAccentColor, getCardStripeClass } from "@/lib/semanticTone";
+import {
+  CARD_STRIPE_BASE,
+  CARD_STRIPE_INSET,
+  type CardAccentColor,
+  getCardStripeClass,
+} from "@/lib/semanticTone";
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  accentColor?: CardAccentColor | 'none' | false | null;
+  accentColor?: CardAccentColor | "none" | false | null;
   interactive?: boolean;
 }
 
@@ -34,7 +39,8 @@ const Card = ({
       ref={ref}
       className={cn(
         CARD_SURFACE,
-        interactive && "cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-hidden active:scale-tap-micro hover:border-foreground/20",
+        interactive &&
+          "cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-hidden active:scale-tap-micro hover:border-foreground/20",
         hasStripe && CARD_STRIPE_INSET,
         className,
       )}
@@ -43,7 +49,11 @@ const Card = ({
       {hasStripe && (
         <div
           aria-hidden="true"
-          className={cn(CARD_STRIPE_BASE, "transition-colors duration-150 ease-out", getCardStripeClass(accentColor as string))}
+          className={cn(
+            CARD_STRIPE_BASE,
+            "transition-colors duration-150 ease-out",
+            getCardStripeClass(accentColor as string),
+          )}
         />
       )}
       {props.children}
@@ -57,11 +67,7 @@ const CardHeader = ({
   className,
   ...props
 }: CardHeaderProps & { ref?: React.Ref<HTMLDivElement> }) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
-    {...props}
-  />
+  <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
 );
 CardHeader.displayName = "CardHeader";
 
@@ -73,7 +79,10 @@ const CardTitle = ({
 }: CardTitleProps & { ref?: React.Ref<HTMLHeadingElement> }) => (
   <Component
     ref={ref}
-    className={cn("font-semibold leading-none tracking-tight text-card-foreground text-balance break-words", className)}
+    className={cn(
+      "font-semibold leading-none tracking-tight text-card-foreground text-balance break-words",
+      className,
+    )}
     {...props}
   />
 );
@@ -106,11 +115,7 @@ const CardFooter = ({
   className,
   ...props
 }: CardFooterProps & { ref?: React.Ref<HTMLDivElement> }) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props}
-  />
+  <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
 );
 CardFooter.displayName = "CardFooter";
 

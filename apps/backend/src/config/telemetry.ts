@@ -1,6 +1,6 @@
-import { randomBytes } from 'node:crypto';
-import { AsyncLocalStorage } from 'node:async_hooks';
-import { logger } from '../lib/logger.js';
+import { randomBytes } from "node:crypto";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { logger } from "../lib/logger.js";
 
 export interface SpanAttributes {
   [key: string]: string | number | boolean | undefined | null;
@@ -20,7 +20,7 @@ export interface Span {
   endTime?: number;
   durationMs?: number;
   attributes: SpanAttributes;
-  status: 'ok' | 'error' | 'unset';
+  status: "ok" | "error" | "unset";
   error?: Error | string;
 }
 
@@ -28,26 +28,26 @@ export interface Span {
 const traceStorage = new AsyncLocalStorage<SpanContext>();
 
 export function generateTraceId(): string {
-  return randomBytes(16).toString('hex');
+  return randomBytes(16).toString("hex");
 }
 
 export function generateSpanId(): string {
-  return randomBytes(8).toString('hex');
+  return randomBytes(8).toString("hex");
 }
 
 export function parseTraceParent(header?: string | null): SpanContext | null {
-  if (!header || typeof header !== 'string') return null;
-  const parts = header.trim().split('-');
+  if (!header || typeof header !== "string") return null;
+  const parts = header.trim().split("-");
   if (parts.length < 4) return null;
   const [version, traceId, parentSpanId, traceFlags] = parts;
-  if (version !== '00' || traceId.length !== 32 || parentSpanId.length !== 16) {
+  if (version !== "00" || traceId.length !== 32 || parentSpanId.length !== 16) {
     return null;
   }
   return {
     traceId,
     spanId: generateSpanId(),
     parentSpanId,
-    traceFlags: traceFlags || '01',
+    traceFlags: traceFlags || "01",
   };
 }
 
@@ -63,40 +63,45 @@ export class TelemetryTracer {
   private serviceName: string;
   private isEnabled: boolean;
 
-  constructor(serviceName = 'mms-backend') {
+  constructor(serviceName = "mms-backend") {
     this.serviceName = serviceName;
-    this.isEnabled = process.env.ENABLE_OTEL_TRACING === 'true' || process.env.NODE_ENV === 'production';
+    this.isEnabled =
+      process.env.ENABLE_OTEL_TRACING === "true" || process.env.NODE_ENV === "production";
   }
 
-  public startSpan(name: string, attributes: SpanAttributes = {}, parentContext?: SpanContext): { span: Span; end: (error?: unknown) => void } {
+  public startSpan(
+    name: string,
+    attributes: SpanAttributes = {},
+    parentContext?: SpanContext,
+  ): { span: Span; end: (error?: unknown) => void } {
     const parent = parentContext ?? getCurrentSpanContext();
     const traceId = parent ? parent.traceId : generateTraceId();
     const spanId = generateSpanId();
     const parentSpanId = parent ? parent.spanId : undefined;
-    const traceFlags = parent ? parent.traceFlags : '01';
+    const traceFlags = parent ? parent.traceFlags : "01";
 
     const span: Span = {
       name,
       context: { traceId, spanId, parentSpanId, traceFlags },
       startTime: Date.now(),
       attributes: {
-        'service.name': this.serviceName,
+        "service.name": this.serviceName,
         ...attributes,
       },
-      status: 'unset',
+      status: "unset",
     };
 
     const end = (error?: unknown) => {
       span.endTime = Date.now();
       span.durationMs = span.endTime - span.startTime;
       if (error) {
-        span.status = 'error';
+        span.status = "error";
         span.error = error instanceof Error ? error.message : String(error);
-      } else if (span.status === 'unset') {
-        span.status = 'ok';
+      } else if (span.status === "unset") {
+        span.status = "ok";
       }
 
-      if (this.isEnabled && process.env.DEBUG_OTEL === 'true') {
+      if (this.isEnabled && process.env.DEBUG_OTEL === "true") {
         logger.debug(
           {
             traceId: span.context.traceId,
@@ -132,6 +137,4 @@ export class TelemetryTracer {
   }
 }
 
-export const tracer = new TelemetryTracer(
-  process.env.OTEL_SERVICE_NAME || 'mms-backend',
-);
+export const tracer = new TelemetryTracer(process.env.OTEL_SERVICE_NAME || "mms-backend");

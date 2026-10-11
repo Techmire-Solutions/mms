@@ -1,8 +1,8 @@
-import React from 'react';
-import { DynamicChartVisualizerConfigPanel } from '@/components/ui/reports/DynamicChartVisualizerConfigPanel';
-import { DynamicChartVisualizerPreview } from '@/components/ui/reports/DynamicChartVisualizerPreview';
-import { useDynamicChartVisualizer } from '@/tenant/features/reports/controllers/useDynamicChartVisualizer';
-import type { VisualizerConfig } from '@/lib/reports/reportMetadata';
+import React from "react";
+import { DynamicChartVisualizerConfigPanel } from "@/components/ui/reports/DynamicChartVisualizerConfigPanel";
+import { DynamicChartVisualizerPreview } from "@/components/ui/reports/DynamicChartVisualizerPreview";
+import { useDynamicChartVisualizer } from "@/tenant/features/reports/controllers/useDynamicChartVisualizer";
+import type { VisualizerConfig } from "@/lib/reports/reportMetadata";
 
 interface DynamicChartVisualizerProps {
   initialConfig?: VisualizerConfig;
@@ -23,7 +23,9 @@ export default function DynamicChartVisualizer({
         title={visualizer.title}
         setTitle={visualizer.setTitle}
         collectionKey={visualizer.collectionKey}
-        setCollectionKey={(value) => visualizer.setCollectionKey(value as typeof visualizer.collectionKey)}
+        setCollectionKey={(value) =>
+          visualizer.setCollectionKey(value as typeof visualizer.collectionKey)
+        }
         xAxisField={visualizer.xAxisField}
         setXAxisField={visualizer.setXAxisField}
         operation={visualizer.operation}

@@ -29,7 +29,12 @@ export function StudentDetailHeroCard({
     >
       <StatusBadge status={student.status || "active"} config={statusBadgeConfig} />
       {student.grNumber ? (
-        <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+        <Badge
+          as="span"
+          size="sm"
+          tone="primary"
+          className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+        >
           {t("students.grPrefix")}: {student.grNumber}
         </Badge>
       ) : null}

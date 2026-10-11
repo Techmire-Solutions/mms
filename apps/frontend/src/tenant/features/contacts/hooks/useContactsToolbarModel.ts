@@ -27,7 +27,9 @@ export function useContactsToolbarModel(): ContactsListFiltersModel {
 
   const sortOptions = useMemo(() => {
     const dynamicSorts: ContactsListFiltersSortOption[] = availableColumns
-      .filter((column): column is typeof column & { sortField: string } => Boolean(column.sortField))
+      .filter((column): column is typeof column & { sortField: string } =>
+        Boolean(column.sortField),
+      )
       .map((column) => ({
         field: column.sortField,
         label: column.label,
@@ -35,7 +37,9 @@ export function useContactsToolbarModel(): ContactsListFiltersModel {
 
     const combined = [...dynamicSorts];
     systemSortOptions.forEach((systemSortOption) => {
-      if (!combined.some((existingSortOption) => existingSortOption.field === systemSortOption.field)) {
+      if (
+        !combined.some((existingSortOption) => existingSortOption.field === systemSortOption.field)
+      ) {
         combined.push(systemSortOption);
       }
     });

@@ -48,10 +48,7 @@ describe("PaymentsListCards", () => {
 
   it("hides invoice ID subtitle when invoice column hidden", () => {
     const html = renderToStaticMarkup(
-      <PaymentsListCards
-        {...baseProps}
-        isColumnVisible={(k) => k !== "invoice"}
-      />,
+      <PaymentsListCards {...baseProps} isColumnVisible={(k) => k !== "invoice"} />,
     );
     expect(html).not.toContain("INV-001");
   });
@@ -63,24 +60,18 @@ describe("PaymentsListCards", () => {
   });
 
   it("renders restore button when showDeleted=true", () => {
-    const html = renderToStaticMarkup(
-      <PaymentsListCards {...baseProps} showDeleted={true} />,
-    );
+    const html = renderToStaticMarkup(<PaymentsListCards {...baseProps} showDeleted={true} />);
     expect(html).toContain("finance.trash.restore");
   });
 
   it("renders footer border div unconditionally even when canDelete=false", () => {
-    const html = renderToStaticMarkup(
-      <PaymentsListCards {...baseProps} canDelete={false} />,
-    );
+    const html = renderToStaticMarkup(<PaymentsListCards {...baseProps} canDelete={false} />);
     // EntityCard.Footer always renders its container div
     expect(html).toContain("border-t border-border");
   });
 
   it("renders empty list without crashing", () => {
-    const html = renderToStaticMarkup(
-      <PaymentsListCards {...baseProps} payments={[]} />,
-    );
+    const html = renderToStaticMarkup(<PaymentsListCards {...baseProps} payments={[]} />);
     expect(html).toBeDefined();
   });
 
@@ -93,10 +84,7 @@ describe("PaymentsListCards", () => {
 
   it("hides amount when amount column hidden", () => {
     const html = renderToStaticMarkup(
-      <PaymentsListCards
-        {...baseProps}
-        isColumnVisible={(k) => k !== "amount"}
-      />,
+      <PaymentsListCards {...baseProps} isColumnVisible={(k) => k !== "amount"} />,
     );
     expect(html).not.toContain("PKR 2500");
   });

@@ -16,7 +16,10 @@ import {
   requeueContactsSyncConflict,
 } from "@/lib/contacts/contactsSyncOutboxConflicts";
 
-function conflictFixture(id: string, kind: ContactsOutboxEntry["kind"] = "upsert"): ContactsSyncConflict {
+function conflictFixture(
+  id: string,
+  kind: ContactsOutboxEntry["kind"] = "upsert",
+): ContactsSyncConflict {
   return {
     id,
     kind,

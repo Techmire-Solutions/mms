@@ -3,13 +3,10 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
-import { bulkSaveAttendanceRecords } from '../repositories/attendanceRepository.js';
-import type { AttendanceRecord } from '@mms/shared';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
+import { bulkSaveAttendanceRecords } from "../repositories/attendanceRepository.js";
+import type { AttendanceRecord } from "@mms/shared";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -33,7 +30,7 @@ export async function runMigration025(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const attendanceKey = `${tenantCollectionKey(subdomain, '')}attendance_records`;
+    const attendanceKey = `${tenantCollectionKey(subdomain, "")}attendance_records`;
     const legacyAttendance = await getCollectionByStorageName(attendanceKey);
     if (!Array.isArray(legacyAttendance) || legacyAttendance.length === 0) continue;
 
@@ -46,6 +43,6 @@ export async function runMigration025(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 025] No legacy attendance records to import.');
+    console.log("[Migration 025] No legacy attendance records to import.");
   }
 }

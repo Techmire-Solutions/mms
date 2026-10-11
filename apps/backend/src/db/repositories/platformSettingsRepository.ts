@@ -1,9 +1,9 @@
-import { eq } from 'drizzle-orm';
-import type { PlatformSettings, PlatformSettingsUpdateInput } from '@mms/shared';
-import { activeDb } from '../dbConnection.js';
-import { platformSettings } from '../schema.js';
+import { eq } from "drizzle-orm";
+import type { PlatformSettings, PlatformSettingsUpdateInput } from "@mms/shared";
+import { activeDb } from "../dbConnection.js";
+import { platformSettings } from "../schema.js";
 
-export const GLOBAL_SETTINGS_ID = 'global';
+export const GLOBAL_SETTINGS_ID = "global";
 
 function rowToPlatformSettings(row: typeof platformSettings.$inferSelect): PlatformSettings {
   return {
@@ -17,7 +17,9 @@ function rowToPlatformSettings(row: typeof platformSettings.$inferSelect): Platf
   };
 }
 
-export async function findPlatformSettingsRow(id = GLOBAL_SETTINGS_ID): Promise<PlatformSettings | null> {
+export async function findPlatformSettingsRow(
+  id = GLOBAL_SETTINGS_ID,
+): Promise<PlatformSettings | null> {
   const rows = await activeDb()
     .select({
       id: platformSettings.id,
@@ -66,8 +68,10 @@ export async function upsertPlatformSettingsRow(
   id = GLOBAL_SETTINGS_ID,
 ): Promise<PlatformSettings> {
   const syncTlsOnCreate = input.syncTlsOnCreate ?? current.syncTlsOnCreate;
-  const tlsExtraSans = input.tlsExtraSans !== undefined ? input.tlsExtraSans.trim() : current.tlsExtraSans;
-  const certbotEmail = input.certbotEmail !== undefined ? input.certbotEmail.trim() : current.certbotEmail;
+  const tlsExtraSans =
+    input.tlsExtraSans !== undefined ? input.tlsExtraSans.trim() : current.tlsExtraSans;
+  const certbotEmail =
+    input.certbotEmail !== undefined ? input.certbotEmail.trim() : current.certbotEmail;
   const emailNotifications = input.emailNotifications ?? current.emailNotifications;
   const smsNotifications = input.smsNotifications ?? current.smsNotifications;
   const updatedAt = new Date();

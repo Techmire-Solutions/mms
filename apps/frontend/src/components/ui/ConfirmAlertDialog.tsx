@@ -63,9 +63,7 @@ export function ConfirmAlertDialog({
     }
   }, [open]);
 
-  const handleConfirm = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ): Promise<void> => {
+  const handleConfirm = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
     // Prevent Radix auto-close so callers can keep the dialog open on guard failure.
     event.preventDefault();
     if (confirming) return;

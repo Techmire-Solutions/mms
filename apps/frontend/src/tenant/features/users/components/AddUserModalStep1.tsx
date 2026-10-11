@@ -23,10 +23,19 @@ export function Step1({ form, setForm, errors }: AddUserStepProps): JSX.Element 
   const { t } = useTranslation();
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
-  const handleContactChange = (contactId: string | number | null, contact?: Contact | null): void => {
+  const handleContactChange = (
+    contactId: string | number | null,
+    contact?: Contact | null,
+  ): void => {
     if (!contactId || !contact) {
       setSelectedContact(null);
-      setForm((previousForm) => ({ ...previousForm, contactId: null, name: "", email: "", phone: "" }));
+      setForm((previousForm) => ({
+        ...previousForm,
+        contactId: null,
+        name: "",
+        email: "",
+        phone: "",
+      }));
       return;
     }
     setSelectedContact(contact);
@@ -41,10 +50,11 @@ export function Step1({ form, setForm, errors }: AddUserStepProps): JSX.Element 
     }));
   };
 
-  const statusOptions = (() => USER_STATUS_VALUES.map((status) => ({
-    value: status,
-    label: t(`users.status.${status}`),
-  })))();
+  const statusOptions = (() =>
+    USER_STATUS_VALUES.map((status) => ({
+      value: status,
+      label: t(`users.status.${status}`),
+    })))();
 
   return (
     <div className="space-y-4">
@@ -136,7 +146,9 @@ export function Step1({ form, setForm, errors }: AddUserStepProps): JSX.Element 
           id="add-user-status"
           name="status"
           value={form.status}
-          onChange={(val) => setForm((previousForm) => ({ ...previousForm, status: val as UserStatus }))}
+          onChange={(val) =>
+            setForm((previousForm) => ({ ...previousForm, status: val as UserStatus }))
+          }
           options={statusOptions}
         />
       </Field>

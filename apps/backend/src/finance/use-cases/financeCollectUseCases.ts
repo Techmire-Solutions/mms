@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from "node:crypto";
 import {
   canApplyLateFee,
   canCancelInvoice,
@@ -18,11 +18,11 @@ import {
   type Invoice,
   type RemindInvoicesBody,
   type RemindInvoicesResult,
-} from '@mms/shared';
-import { requireTenant } from '../../lib/tenantContext.js';
-import { loadFinanceModulePreferences } from '../../services/financePreferencesService.js';
-import { loadContactsByIdsForTenant } from '../../services/contactService.js';
-import { financeUseCases } from './financeUseCases.js';
+} from "@mms/shared";
+import { requireTenant } from "../../lib/tenantContext.js";
+import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
+import { loadContactsByIdsForTenant } from "../../services/contactService.js";
+import { financeUseCases } from "./financeUseCases.js";
 import {
   applyLateFeeAmounts,
   listCreditNotesForInvoice,
@@ -31,14 +31,14 @@ import {
   markInvoicesReminded,
   markOverdueInvoices,
   saveCreditNote,
-} from '../../db/repositories/financeCollectRepository.js';
+} from "../../db/repositories/financeCollectRepository.js";
 import {
   tryPostCreditNoteJournal,
   tryPostInvoiceReversalJournal,
   tryPostLateFeeJournals,
   tryPostLateFeeReversalJournal,
-} from '../../accounting/ledgerPosting/ledgerPostingService.js';
-import { withTenant } from '../../db/tenant-context.js';
+} from "../../accounting/ledgerPosting/ledgerPostingService.js";
+import { withTenant } from "../../db/tenant-context.js";
 
 function domainError(message: string, statusCode: number, type: string): Error {
   return Object.assign(new Error(message), { statusCode, type });
@@ -55,13 +55,16 @@ function domainError(message: string, statusCode: number, type: string): Error {
  * posted. The HTTP route happened to wrap this call in a transaction; the
  * `finance:collect` background job did not.
  */
-export async function collectOverdueInvoices(input: CollectInvoicesBody = {}): Promise<CollectInvoicesResult> {
+export async function collectOverdueInvoices(
+  input: CollectInvoicesBody = {},
+): Promise<CollectInvoicesResult> {
   const tenant = requireTenant();
   const body = input;
   const result = await withTenant(tenant, async () => {
     const today = todayISO();
     const prefs = await loadFinanceModulePreferences();
-    const lateFeePercent = Number.parseFloat(prefs?.lateFeePercent ?? DEFAULT_FINANCE_SETTINGS.lateFeePercent) || 0;
+    const lateFeePercent =
+      Number.parseFloat(prefs?.lateFeePercent ?? DEFAULT_FINANCE_SETTINGS.lateFeePercent) || 0;
     const markedOverdue = await markOverdueInvoices(tenant, today);
     let lateFeesApplied = 0;
     if (body.applyLateFee && lateFeePercent > 0) {
@@ -70,40 +73,52 @@ export async function collectOverdueInvoices(input: CollectInvoicesBody = {}): P
         .filter((invoice) => canApplyLateFee(invoice, lateFeePercent, today))
         .map((invoice) => ({ invoice, amount: computeLateFee(invoice.finalAmt, lateFeePercent) }))
         .filter((fee) => fee.amount > 0);
-      await applyLateFeeAmounts(tenant, fees.map((fee) => ({ invoiceId: fee.invoice.id, amount: fee.amount })));
+      await applyLateFeeAmounts(
+        tenant,
+        fees.map((fee) => ({ invoiceId: fee.invoice.id, amount: fee.amount })),
+      );
       await tryPostLateFeeJournals(tenant, fees);
       lateFeesApplied = fees.length;
     }
     return { markedOverdue, lateFeesApplied };
   });
-  const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-  broadcastTenantUpdate(tenant, 'collection', 'finance_invoices');
-  broadcastTenantUpdate(tenant, 'collection', 'finance_metrics');
+  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  broadcastTenantUpdate(tenant, "collection", "finance_invoices");
+  broadcastTenantUpdate(tenant, "collection", "finance_metrics");
   return result;
 }
 
-export async function remindOpenInvoices(input: RemindInvoicesBody = {}): Promise<RemindInvoicesResult> {
+export async function remindOpenInvoices(
+  input: RemindInvoicesBody = {},
+): Promise<RemindInvoicesResult> {
   const tenant = requireTenant();
   const body = input;
   const prefs = await loadFinanceModulePreferences();
   if (prefs && !prefs.overdueReminder && !prefs.feeReminders) {
     return { reminded: 0, skipped: 0, recipients: [] };
   }
-  const reminderDays = Number.parseInt(prefs?.reminderDaysBefore ?? DEFAULT_FINANCE_SETTINGS.reminderDaysBefore, 10) || 0;
+  const reminderDays =
+    Number.parseInt(prefs?.reminderDaysBefore ?? DEFAULT_FINANCE_SETTINGS.reminderDaysBefore, 10) ||
+    0;
   const today = todayISO();
   const invoices = body.invoiceIds?.length
     ? await listInvoicesByIds(tenant, body.invoiceIds)
     : await listOpenInvoicesForCollect(tenant);
   const eligible = invoices.filter(
     (invoice) =>
-      invoiceOpenBalance(invoice) > 0
-      && isInvoiceDueForReminder(invoice.dueDate, reminderDays, today)
-      && !wasRemindedRecently(invoice.lastRemindedAt),
+      invoiceOpenBalance(invoice) > 0 &&
+      isInvoiceDueForReminder(invoice.dueDate, reminderDays, today) &&
+      !wasRemindedRecently(invoice.lastRemindedAt),
   );
-  const contactIds = [...new Set(eligible.map((invoice) => invoice.familyContactId).filter((id): id is string => Boolean(id)))];
-  const contacts = contactIds.length > 0 ? await loadContactsByIdsForTenant(tenant, contactIds) : [];
+  const contactIds = [
+    ...new Set(
+      eligible.map((invoice) => invoice.familyContactId).filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const contacts =
+    contactIds.length > 0 ? await loadContactsByIdsForTenant(tenant, contactIds) : [];
   const contactById = new Map(contacts.map((contact) => [String(contact.id), contact]));
-  const recipients: RemindInvoicesResult['recipients'] = [];
+  const recipients: RemindInvoicesResult["recipients"] = [];
   const remindedIds: string[] = [];
   for (const invoice of eligible) {
     const contact = invoice.familyContactId ? contactById.get(invoice.familyContactId) : undefined;
@@ -113,7 +128,7 @@ export async function remindOpenInvoices(input: RemindInvoicesBody = {}): Promis
     recipients.push({
       id: String(recipient.id),
       name: recipient.name,
-      phone: recipient.phone ?? '',
+      phone: recipient.phone ?? "",
       email: recipient.email,
       invoiceId: invoice.id,
       dueDate: invoice.dueDate,
@@ -122,32 +137,39 @@ export async function remindOpenInvoices(input: RemindInvoicesBody = {}): Promis
     remindedIds.push(invoice.id);
   }
   await markInvoicesReminded(tenant, remindedIds);
-  const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-  broadcastTenantUpdate(tenant, 'collection', 'finance_invoices');
-  return { reminded: remindedIds.length, skipped: invoices.length - remindedIds.length, recipients };
+  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  broadcastTenantUpdate(tenant, "collection", "finance_invoices");
+  return {
+    reminded: remindedIds.length,
+    skipped: invoices.length - remindedIds.length,
+    recipients,
+  };
 }
 
 export async function cancelInvoice(invoiceId: string): Promise<Invoice> {
   const tenant = requireTenant();
   const invoice = await financeUseCases.getInvoiceById(invoiceId);
-  if (!invoice || invoice.deletedAt) throw domainError('Invoice not found', 404, 'not_found');
+  if (!invoice || invoice.deletedAt) throw domainError("Invoice not found", 404, "not_found");
   if (!canCancelInvoice(invoice)) {
     throw domainError(
       (invoice.creditedAmt ?? 0) > 0
-        ? 'Reverse the credit notes on this invoice before cancelling it'
-        : 'Only unpaid invoices can be cancelled',
+        ? "Reverse the credit notes on this invoice before cancelling it"
+        : "Only unpaid invoices can be cancelled",
       422,
-      'validation_error',
+      "validation_error",
     );
   }
-  const cancelled = await financeUseCases.updateInvoiceById(invoiceId, { ...invoice, status: 'cancelled' });
-  if (!cancelled) throw domainError('Invoice not found', 404, 'not_found');
+  const cancelled = await financeUseCases.updateInvoiceById(invoiceId, {
+    ...invoice,
+    status: "cancelled",
+  });
+  if (!cancelled) throw domainError("Invoice not found", 404, "not_found");
   await tryPostInvoiceReversalJournal(tenant, cancelled);
   // Late fees post under their own source key, so reversing the invoice entry
   // alone left the fee on the books.
   await tryPostLateFeeReversalJournal(tenant, cancelled);
-  const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-  broadcastTenantUpdate(tenant, 'collection', 'finance_invoices');
+  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   return cancelled;
 }
 
@@ -162,15 +184,15 @@ export async function createCreditNote(input: CreditNoteInsert): Promise<CreditN
   const parsed = input;
   const note = await withTenant(tenant, async () => {
     const invoice = await financeUseCases.getInvoiceById(parsed.invoiceId);
-    if (!invoice || invoice.deletedAt) throw domainError('Invoice not found', 404, 'not_found');
+    if (!invoice || invoice.deletedAt) throw domainError("Invoice not found", 404, "not_found");
     if (!canCreditInvoice(invoice, parsed.amount)) {
-      throw domainError('Credit exceeds the open balance', 422, 'validation_error');
+      throw domainError("Credit exceeds the open balance", 422, "validation_error");
     }
     const created: CreditNote = {
       id: `cn-${randomUUID()}`,
       invoiceId: invoice.id,
       amount: parsed.amount,
-      reason: parsed.reason ?? '',
+      reason: parsed.reason ?? "",
       createdAt: new Date().toISOString(),
     };
     const creditedAmt = (invoice.creditedAmt ?? 0) + parsed.amount;
@@ -179,13 +201,13 @@ export async function createCreditNote(input: CreditNoteInsert): Promise<CreditN
     await financeUseCases.updateInvoiceById(invoice.id, {
       ...invoice,
       creditedAmt,
-      status: remaining <= 0 ? 'paid' : invoice.status,
+      status: remaining <= 0 ? "paid" : invoice.status,
     });
     await tryPostCreditNoteJournal(tenant, invoice, created.id, parsed.amount);
     return created;
   });
-  const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-  broadcastTenantUpdate(tenant, 'collection', 'finance_invoices');
+  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   return note;
 }
 

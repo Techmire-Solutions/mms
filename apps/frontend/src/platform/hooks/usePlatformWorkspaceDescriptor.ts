@@ -13,13 +13,10 @@ import { useTranslation } from "@/hooks/useTranslation";
  */
 export function usePlatformWorkspaceDescriptor(): EntityDescriptor<PlatformWorkspaceRow> {
   const { t } = useTranslation();
-  return useStaticEntityDescriptor(
-    platformWorkspacesEntityDescriptor,
-    (key, fallback) => {
-      const res = t(key as Parameters<typeof t>[0]);
-      return res && res !== key ? res : fallback;
-    },
-  );
+  return useStaticEntityDescriptor(platformWorkspacesEntityDescriptor, (key, fallback) => {
+    const res = t(key as Parameters<typeof t>[0]);
+    return res && res !== key ? res : fallback;
+  });
 }
 
 export const usePlatformWorkspacesEntityDescriptor = usePlatformWorkspaceDescriptor;

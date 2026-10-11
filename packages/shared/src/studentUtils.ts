@@ -6,12 +6,12 @@ import {
   normalizeContactLinkedRecord,
   stripRecordFields,
   type ContactLike,
-} from './contactLinkPolicy.js';
+} from "./contactLinkPolicy.js";
 import {
   resolveStudentGuardianLinks,
   type ContactWithRelationships,
-} from './studentGuardianFromContacts.js';
-import type { Student } from './studentTypes.js';
+} from "./studentGuardianFromContacts.js";
+import type { Student } from "./studentTypes.js";
 
 export {
   STUDENT_CLIENT_SOFT_DELETE_KEYS,
@@ -21,17 +21,17 @@ export {
   filterActiveEntities,
   isStudentDeleted,
   filterActiveStudents,
-} from './studentSoftDelete.js';
+} from "./studentSoftDelete.js";
 
-import { stripStudentClientSoftDeleteFields } from './studentSoftDelete.js';
+import { stripStudentClientSoftDeleteFields } from "./studentSoftDelete.js";
 
 export const STUDENT_GUARDIAN_LINK_FIELDS = [
-  'fatherContactId',
-  'motherContactId',
-  'guardianContactId',
-  'fatherName',
-  'motherName',
-  'guardianName',
+  "fatherContactId",
+  "motherContactId",
+  "guardianContactId",
+  "fatherName",
+  "motherName",
+  "guardianName",
 ] as const;
 
 function stripStudentGuardianLinkFields<T extends Record<string, unknown>>(record: T): T {
@@ -54,11 +54,17 @@ export function hydrateStudentFromContacts<T extends Student>(
   student: T,
   contacts: ContactLike[] | Map<string, ContactLike>,
 ): T {
-  const contactLookup = contacts instanceof Map
-    ? contacts
-    : (Array.isArray(contacts) && contacts.length > 8 ? createContactLookupMap(contacts) : contacts);
+  const contactLookup =
+    contacts instanceof Map
+      ? contacts
+      : Array.isArray(contacts) && contacts.length > 8
+        ? createContactLookupMap(contacts)
+        : contacts;
   const primary = lookupContact(contactLookup, student.contactId);
-  const guardians = resolveStudentGuardianLinks(student, (primary as ContactWithRelationships) ?? null);
+  const guardians = resolveStudentGuardianLinks(
+    student,
+    (primary as ContactWithRelationships) ?? null,
+  );
   const withGuardians = {
     ...student,
     fatherContactId: guardians.fatherContactId,
@@ -81,9 +87,7 @@ export function hydrateStudentListFromContacts<T extends Student>(
   contacts: ContactLike[] | Map<string, ContactLike>,
 ): T[] {
   if (!Array.isArray(students) || students.length === 0) return [];
-  const contactLookup = contacts instanceof Map
-    ? contacts
-    : createContactLookupMap(contacts);
+  const contactLookup = contacts instanceof Map ? contacts : createContactLookupMap(contacts);
   return students.map((student) => hydrateStudentFromContacts(student, contactLookup));
 }
 
@@ -111,17 +115,17 @@ export function formatStudentNameWithParents(
   } | null,
   labels?: StudentNameParentLabels,
 ): string {
-  if (!student) return '';
+  if (!student) return "";
 
-  const name = (student.name || '').trim();
-  const father = (student.fatherName || '').trim();
-  const mother = (student.motherName || '').trim();
-  const guardian = (student.guardianName || '').trim();
+  const name = (student.name || "").trim();
+  const father = (student.fatherName || "").trim();
+  const mother = (student.motherName || "").trim();
+  const guardian = (student.guardianName || "").trim();
 
-  const fatherLabel = labels?.father || 'Father';
-  const motherLabel = labels?.mother || 'Mother';
-  const guardianLabel = labels?.guardian || 'Guardian';
-  const separator = labels?.separator ?? ', ';
+  const fatherLabel = labels?.father || "Father";
+  const motherLabel = labels?.mother || "Mother";
+  const guardianLabel = labels?.guardian || "Guardian";
+  const separator = labels?.separator ?? ", ";
 
   const parts: string[] = [];
   if (father) {

@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query';
-import { apiJson } from '@/lib/apiClient';
+import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
+import { apiJson } from "@/lib/apiClient";
 import type {
   AuditRetentionRegime,
   AuditActionType,
@@ -9,11 +9,11 @@ import type {
   AuditExportPayload,
   AuditMerkleRootsResponse,
   AuditErasureResponse,
-} from '@mms/shared';
+} from "@mms/shared";
 
-export const AUDIT_EVENTS_QUERY_KEY = ['audit', 'events'] as const;
-export const AUDIT_MERKLE_ROOTS_QUERY_KEY = ['audit', 'merkle-roots'] as const;
-export const AUDIT_ANOMALIES_QUERY_KEY = ['audit', 'anomalies'] as const;
+export const AUDIT_EVENTS_QUERY_KEY = ["audit", "events"] as const;
+export const AUDIT_MERKLE_ROOTS_QUERY_KEY = ["audit", "merkle-roots"] as const;
+export const AUDIT_ANOMALIES_QUERY_KEY = ["audit", "anomalies"] as const;
 
 export interface AuditListFilters {
   limit?: number;
@@ -34,20 +34,20 @@ export type {
 export interface ExecuteErasureParams {
   subjectId: string;
   regime: AuditRetentionRegime;
-  erasureType: 'CRYPTO_SHRED' | 'REDACT_APPEND';
+  erasureType: "CRYPTO_SHRED" | "REDACT_APPEND";
   reason?: string;
 }
 
 export function auditEventsQueryOptions(filters: AuditListFilters = {}) {
   const params = new URLSearchParams();
-  if (filters.limit) params.set('limit', String(filters.limit));
-  if (filters.offset) params.set('offset', String(filters.offset));
-  if (filters.tableName) params.set('tableName', filters.tableName);
-  if (filters.recordId) params.set('recordId', filters.recordId);
-  if (filters.actionType) params.set('actionType', filters.actionType);
+  if (filters.limit) params.set("limit", String(filters.limit));
+  if (filters.offset) params.set("offset", String(filters.offset));
+  if (filters.tableName) params.set("tableName", filters.tableName);
+  if (filters.recordId) params.set("recordId", filters.recordId);
+  if (filters.actionType) params.set("actionType", filters.actionType);
 
   const queryStr = params.toString();
-  const path = `/api/audit/events${queryStr ? `?${queryStr}` : ''}`;
+  const path = `/api/audit/events${queryStr ? `?${queryStr}` : ""}`;
 
   return queryOptions({
     queryKey: [...AUDIT_EVENTS_QUERY_KEY, filters] as const,
@@ -63,7 +63,8 @@ export function useAuditEventsQuery(filters: AuditListFilters = {}) {
 export function useAuditMerkleRootsQuery() {
   return useQuery({
     queryKey: AUDIT_MERKLE_ROOTS_QUERY_KEY,
-    queryFn: ({ signal }) => apiJson<AuditMerkleRootsResponse>('/api/audit/merkle-roots', { signal }),
+    queryFn: ({ signal }) =>
+      apiJson<AuditMerkleRootsResponse>("/api/audit/merkle-roots", { signal }),
     staleTime: 60_000,
   });
 }
@@ -72,8 +73,8 @@ export function useAuditVerifyMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      apiJson<AuditVerificationResult>('/api/audit/verify', {
-        method: 'POST',
+      apiJson<AuditVerificationResult>("/api/audit/verify", {
+        method: "POST",
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: AUDIT_EVENTS_QUERY_KEY });
@@ -85,9 +86,9 @@ export function useAuditErasureMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (params: ExecuteErasureParams) =>
-      apiJson<AuditErasureResponse>('/api/audit/erasure', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      apiJson<AuditErasureResponse>("/api/audit/erasure", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
       }),
     onSuccess: () => {

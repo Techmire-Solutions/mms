@@ -50,8 +50,10 @@ export function hydrateModuleSetupCollectionsFromLegacyObjects(
     isEmptyCollection(next[modulePrefsCollection])
   ) {
     const legacySettings = objects[settingsObjectKey];
-    if (legacySettings && typeof legacySettings === 'object' && !Array.isArray(legacySettings)) {
-      const { fieldConfig, preferences } = splitSettingsBlob(legacySettings as Record<string, unknown>);
+    if (legacySettings && typeof legacySettings === "object" && !Array.isArray(legacySettings)) {
+      const { fieldConfig, preferences } = splitSettingsBlob(
+        legacySettings as Record<string, unknown>,
+      );
       if (isEmptyCollection(next[fieldConfigCollection])) {
         next[fieldConfigCollection] = [{ config: fieldConfig }];
       }
@@ -63,7 +65,7 @@ export function hydrateModuleSetupCollectionsFromLegacyObjects(
 
   if (isEmptyCollection(next[columnPrefsCollection])) {
     const legacyColumn = objects[columnPreferencesObjectKey];
-    if (legacyColumn && typeof legacyColumn === 'object' && !Array.isArray(legacyColumn)) {
+    if (legacyColumn && typeof legacyColumn === "object" && !Array.isArray(legacyColumn)) {
       const rows: Array<Record<string, unknown>> = [];
       for (const [userId, preferences] of Object.entries(legacyColumn as Record<string, unknown>)) {
         if (!userId.trim() || !Array.isArray(preferences)) continue;

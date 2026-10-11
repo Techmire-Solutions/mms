@@ -7,12 +7,7 @@ import { FormCollectionShell } from "./FormCollectionShell";
 describe("FormCollectionShell", () => {
   it("renders optional title, children, and add button", () => {
     const html = renderToStaticMarkup(
-      <FormCollectionShell
-        title="Holdings"
-        icon={Award}
-        addLabel="Designation"
-        onAdd={vi.fn()}
-      >
+      <FormCollectionShell title="Holdings" icon={Award} addLabel="Designation" onAdd={vi.fn()}>
         <div data-testid="row">row</div>
       </FormCollectionShell>,
     );

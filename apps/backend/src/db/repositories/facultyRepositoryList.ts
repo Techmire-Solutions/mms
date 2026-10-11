@@ -8,10 +8,10 @@ export {
   listFacultyLinkedContactIdsSql,
   findSoftDeletedFacultyByContactIdSql,
   findFacultyRegistrationConflictSql,
-} from './facultyRepositoryListQuery.js';
+} from "./facultyRepositoryListQuery.js";
 
 export {
   bulkUpdateFacultyStatusSql,
   bulkUpdateFacultySpecializationSql,
   aggregateFacultyCommandMetrics,
-} from './facultyRepositoryListOps.js';
+} from "./facultyRepositoryListOps.js";

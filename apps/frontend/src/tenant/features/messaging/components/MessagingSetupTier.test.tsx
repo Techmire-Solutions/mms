@@ -46,7 +46,9 @@ vi.mock("@/components/ui/SubTabBar", () => ({
 }));
 
 vi.mock("@/components/ui/SetupReadOnlyMessage", () => ({
-  SetupReadOnlyMessage: ({ title }: { title: string }) => <div data-testid="read-only">{title}</div>,
+  SetupReadOnlyMessage: ({ title }: { title: string }) => (
+    <div data-testid="read-only">{title}</div>
+  ),
 }));
 
 vi.mock("./MessagingSetupTemplateForm", () => ({
@@ -60,11 +62,7 @@ vi.mock("./MessagingTemplateList", () => ({
 describe("MessagingSetupTier Component", () => {
   it("renders module tier motion, template form, and template list in editable mode", () => {
     const html = renderToStaticMarkup(
-      <MessagingSetupTier
-        canWrite={true}
-        canEditSetup={true}
-        onDeleteRequest={vi.fn()}
-      />,
+      <MessagingSetupTier canWrite={true} canEditSetup={true} onDeleteRequest={vi.fn()} />,
     );
 
     expect(html).toContain("module-tier-motion");
@@ -74,11 +72,7 @@ describe("MessagingSetupTier Component", () => {
 
   it("renders read-only message when canEditSetup is false", () => {
     const html = renderToStaticMarkup(
-      <MessagingSetupTier
-        canWrite={false}
-        canEditSetup={false}
-        onDeleteRequest={vi.fn()}
-      />,
+      <MessagingSetupTier canWrite={false} canEditSetup={false} onDeleteRequest={vi.fn()} />,
     );
 
     expect(html).toContain("messaging.setup.readOnly");

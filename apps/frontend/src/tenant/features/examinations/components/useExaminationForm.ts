@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { notify } from "@/lib/notify";
-import { type Exam } from '@/lib/data/examinationData';
+import { type Exam } from "@/lib/data/examinationData";
 import { toTitleCase } from "@mms/shared";
 import { EXAMINATION_FORM_EMPTY } from "./examinationFormConstants";
 
@@ -47,7 +47,8 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
     });
   };
 
-  const classes = (() => sessions.flatMap((session) =>
+  const classes = (() =>
+    sessions.flatMap((session) =>
       (session.classes || []).map((sessionClass) => ({
         id: sessionClass.id,
         name: `${session.name} - ${sessionClass.name}`,
@@ -85,16 +86,25 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
         id: exam?.id || `ex${crypto.randomUUID()}`,
       };
       await onSave(examToSave);
-      notify.success(exam ? t("examinations.form.toast.updated") : t("examinations.form.toast.created"));
+      notify.success(
+        exam ? t("examinations.form.toast.updated") : t("examinations.form.toast.created"),
+      );
       onClose();
     } catch (err: unknown) {
-      notify.error(t("examinations.form.toast.saveFailed"), { description: err instanceof Error ? err.message : String(err) });
+      notify.error(t("examinations.form.toast.saveFailed"), {
+        description: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  const valid = !!(examDraft.name && examDraft.date && examDraft.classIds && examDraft.classIds.length > 0);
+  const valid = !!(
+    examDraft.name &&
+    examDraft.date &&
+    examDraft.classIds &&
+    examDraft.classIds.length > 0
+  );
   const submitError = Object.values(errors)[0] || undefined;
 
   const getFieldError = (fieldId: string): string | undefined => errors[fieldId];
@@ -113,4 +123,3 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
     getFieldError,
   };
 }
-

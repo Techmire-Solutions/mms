@@ -8,7 +8,7 @@ export interface ModuleWorkToolbarProps {
   // 1. Accessibility & Layout
   shownCountLabel?: string;
   regionLabel: string;
-  
+
   // 2. Search
   search: string;
   onSearchChange: (val: string) => void;
@@ -17,7 +17,7 @@ export interface ModuleWorkToolbarProps {
   isSearching?: boolean;
 
   // 3. Middle Area (Filters)
-  filterButton?: React.ReactNode; 
+  filterButton?: React.ReactNode;
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
   clearFiltersLabel?: string;
@@ -25,7 +25,7 @@ export interface ModuleWorkToolbarProps {
 
   // 4. Action Bars & Triggers
   primaryAction?: React.ReactNode;
-  
+
   trashToggle?: {
     canViewDeleted: boolean;
     viewingDeleted: boolean;
@@ -33,12 +33,12 @@ export interface ModuleWorkToolbarProps {
     activeLabel?: string;
     deletedLabel?: string;
   };
-  
+
   viewModeToggle?: {
     viewMode: WorkDirectoryViewMode;
     onViewModeChange: (m: WorkDirectoryViewMode) => void;
   };
-  
+
   columnCustomizer?: {
     registry?: ModuleColumnRegistryEntry[];
     entityType?: string;
@@ -60,6 +60,6 @@ export interface ModuleWorkToolbarProps {
   aiSuggestions?: React.ReactNode;
 
   // 6. Additional custom slot
-  children?: React.ReactNode; 
+  children?: React.ReactNode;
   showExportInTrash?: boolean;
 }

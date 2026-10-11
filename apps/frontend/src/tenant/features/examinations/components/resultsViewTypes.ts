@@ -1,4 +1,4 @@
-import type { Exam, ExamResult } from '@/lib/data/examinationData';
+import type { Exam, ExamResult } from "@/lib/data/examinationData";
 import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
 import type { StudentResultItem } from "@/tenant/features/examinations/components/StudentResultCard";
 

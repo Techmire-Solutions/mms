@@ -1,9 +1,9 @@
-import { enrollmentFieldConfigs } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { enrollmentFieldConfigs } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: enrollmentFieldConfigs,
-  jsonColumn: 'config',
+  jsonColumn: "config",
 });
 
 export const getEnrollmentFieldConfigByWorkspace = repo.getByWorkspace;

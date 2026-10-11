@@ -1,14 +1,14 @@
-import { Building2 } from 'lucide-react';
-import type { AppTranslationKey } from '@mms/shared';
-import { ROUTES } from '@/lib/config/routes';
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
-import { PLATFORM_STATIC_COMMANDS } from '@/platform/components/platformStaticCommands';
+import { Building2 } from "lucide-react";
+import type { AppTranslationKey } from "@mms/shared";
+import { ROUTES } from "@/lib/config/routes";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import { PLATFORM_STATIC_COMMANDS } from "@/platform/components/platformStaticCommands";
 
 export type PlatformCommandCategory =
-  | 'platform.commandCategory.recent'
-  | 'platform.commandCategory.navigation'
-  | 'platform.commandCategory.actions'
-  | 'platform.manageMadrasas';
+  | "platform.commandCategory.recent"
+  | "platform.commandCategory.navigation"
+  | "platform.commandCategory.actions"
+  | "platform.manageMadrasas";
 
 /** A console palette entry: static route command, direct action, or dynamic workspace link. */
 export interface PlatformCommandItem {
@@ -22,23 +22,25 @@ export interface PlatformCommandItem {
   keywords: string[];
   badge?: string;
   shortcut?: string;
-  actionType?: 'navigate' | 'action';
+  actionType?: "navigate" | "action";
   perform?: () => void | Promise<void>;
-  requiredPermission?: 'workspaces' | 'onboard' | 'system' | 'admins' | 'settings';
+  requiredPermission?: "workspaces" | "onboard" | "system" | "admins" | "settings";
 }
 
 export { PLATFORM_STATIC_COMMANDS };
 
 /** Dynamic per-workspace palette entries (pre-filtered to the SearchBar `q` param on navigate). */
-export function buildWorkspaceCommandItems(workspaces: PlatformWorkspaceRowData[]): PlatformCommandItem[] {
+export function buildWorkspaceCommandItems(
+  workspaces: PlatformWorkspaceRowData[],
+): PlatformCommandItem[] {
   return workspaces.map((ws) => ({
     id: `ws-${ws.subdomain}`,
     customLabel: ws.madrasaName,
     customSubtitle: ws.subdomain,
-    category: 'platform.manageMadrasas',
+    category: "platform.manageMadrasas",
     path: `${ROUTES.platformWorkspaces}?q=${encodeURIComponent(ws.subdomain)}`,
     icon: Building2,
-    keywords: [ws.subdomain, ws.madrasaName, ws.enabled ? 'active' : 'inactive'],
+    keywords: [ws.subdomain, ws.madrasaName, ws.enabled ? "active" : "inactive"],
   }));
 }
 
@@ -54,10 +56,10 @@ export function commandItemIsPermitted(
   },
 ): boolean {
   if (!item.requiredPermission) return true;
-  if (item.requiredPermission === 'workspaces') return perms.canWorkspaces;
-  if (item.requiredPermission === 'onboard') return perms.canOnboard;
-  if (item.requiredPermission === 'settings') return perms.canSettings;
-  if (item.requiredPermission === 'system') return perms.canSystem;
-  if (item.requiredPermission === 'admins') return perms.canAdmins;
+  if (item.requiredPermission === "workspaces") return perms.canWorkspaces;
+  if (item.requiredPermission === "onboard") return perms.canOnboard;
+  if (item.requiredPermission === "settings") return perms.canSettings;
+  if (item.requiredPermission === "system") return perms.canSystem;
+  if (item.requiredPermission === "admins") return perms.canAdmins;
   return true;
 }

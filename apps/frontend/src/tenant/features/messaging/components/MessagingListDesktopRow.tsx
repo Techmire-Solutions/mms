@@ -1,11 +1,5 @@
 import type React from "react";
-import {
-  AlertCircle,
-  Check,
-  Copy,
-  Filter,
-  RotateCcw,
-} from "lucide-react";
+import { AlertCircle, Check, Copy, Filter, RotateCcw } from "lucide-react";
 import {
   calculateSmsSegments,
   formatDateTime,
@@ -142,9 +136,7 @@ export function MessagingListDesktopRow({
           <div className="flex items-center justify-between gap-2">
             <span className="truncate">
               {log.channel === "email" && log.subject && (
-                <strong className="text-foreground font-semibold me-1.5">
-                  {log.subject}:
-                </strong>
+                <strong className="text-foreground font-semibold me-1.5">{log.subject}:</strong>
               )}
               {log.body}
             </span>

@@ -35,8 +35,26 @@ const mockRecord: AttendanceRecord = {
 };
 
 const mockStatuses: AttendanceStatus[] = [
-  { id: "present", label: "Present", short: "P", color: "#10b981", bg: "bg-success", text: "text-success", border: "border-success", dot: "bg-success" },
-  { id: "absent", label: "Absent", short: "A", color: "#ef4444", bg: "bg-destructive", text: "text-destructive", border: "border-destructive", dot: "bg-destructive" },
+  {
+    id: "present",
+    label: "Present",
+    short: "P",
+    color: "#10b981",
+    bg: "bg-success",
+    text: "text-success",
+    border: "border-success",
+    dot: "bg-success",
+  },
+  {
+    id: "absent",
+    label: "Absent",
+    short: "A",
+    color: "#ef4444",
+    bg: "bg-destructive",
+    text: "text-destructive",
+    border: "border-destructive",
+    dot: "bg-destructive",
+  },
 ];
 
 describe("AttendanceRecordStatusCell Component", () => {

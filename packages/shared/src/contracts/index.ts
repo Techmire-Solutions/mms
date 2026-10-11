@@ -1,34 +1,39 @@
-import { initContract } from '@ts-rest/core';
+import { initContract } from "@ts-rest/core";
 import {
   studentContract,
   studentCrudContract,
   studentOperationsContract,
   studentCrudRoutes,
   studentOperationRoutes,
-} from './students.contract.js';
-import { financeContract } from './finance.contract.js';
-import { attendanceContract } from './attendance.contract.js';
-import { contactsContract } from './contacts.contract.js';
-import { facultyContract } from './faculty.contract.js';
-import { userContract } from './users.contract.js';
-import { messagingContract } from './messaging.contract.js';
-import { sessionContract } from './sessions.contract.js';
-import { questionBankContract } from './questionBank.contract.js';
-import { accountingContract } from './accounting.contract.js';
-import { hasanatContract } from './hasanat.contract.js';
-import { obligationContract } from './obligations.contract.js';
-import { examinationContract } from './examinations.contract.js';
-import { enrollmentContract } from './enrollments.contract.js';
-import { dashboardContract } from './dashboard.contract.js';
-import { savedReportsContract } from './savedReports.contract.js';
-import { workspaceContract } from './workspace.contract.js';
-import { authContract } from './auth.contract.js';
-import { profileContract } from './profile.contract.js';
-import { publicContract } from './public.contract.js';
-import { aiContract } from './ai.contract.js';
-import { healthContract } from './health.contract.js';
-import { moduleAccessContract } from './moduleAccess.contract.js';
-import { platformContract, platformWorkspacesContract, platformSettingsContract, platformAdminsContract } from './platform.contract.js';
+} from "./students.contract.js";
+import { financeContract } from "./finance.contract.js";
+import { attendanceContract } from "./attendance.contract.js";
+import { contactsContract } from "./contacts.contract.js";
+import { facultyContract } from "./faculty.contract.js";
+import { userContract } from "./users.contract.js";
+import { messagingContract } from "./messaging.contract.js";
+import { sessionContract } from "./sessions.contract.js";
+import { questionBankContract } from "./questionBank.contract.js";
+import { accountingContract } from "./accounting.contract.js";
+import { hasanatContract } from "./hasanat.contract.js";
+import { obligationContract } from "./obligations.contract.js";
+import { examinationContract } from "./examinations.contract.js";
+import { enrollmentContract } from "./enrollments.contract.js";
+import { dashboardContract } from "./dashboard.contract.js";
+import { savedReportsContract } from "./savedReports.contract.js";
+import { workspaceContract } from "./workspace.contract.js";
+import { authContract } from "./auth.contract.js";
+import { profileContract } from "./profile.contract.js";
+import { publicContract } from "./public.contract.js";
+import { aiContract } from "./ai.contract.js";
+import { healthContract } from "./health.contract.js";
+import { moduleAccessContract } from "./moduleAccess.contract.js";
+import {
+  platformContract,
+  platformWorkspacesContract,
+  platformSettingsContract,
+  platformAdminsContract,
+} from "./platform.contract.js";
 
 const c = initContract();
 

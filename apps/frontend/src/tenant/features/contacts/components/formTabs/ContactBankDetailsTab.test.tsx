@@ -136,10 +136,7 @@ describe("ContactBankDetailsTab Component", () => {
 
   it("renders empty state when no bank accounts exist", () => {
     const html = renderToStaticMarkup(
-      <ContactBankDetailsTab
-        {...baseProps}
-        contactDraft={{ bankDetails: [] }}
-      />,
+      <ContactBankDetailsTab {...baseProps} contactDraft={{ bankDetails: [] }} />,
     );
 
     expect(html).toContain("contacts.form.noBankDetailsYet");

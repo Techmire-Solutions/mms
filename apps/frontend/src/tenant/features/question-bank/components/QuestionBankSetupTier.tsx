@@ -16,7 +16,7 @@ export interface QuestionBankSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const QuestionBankSetupTier = (function QuestionBankSetupTier({
+export const QuestionBankSetupTier = function QuestionBankSetupTier({
   onPrefsDirtyChange,
 }: QuestionBankSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -37,6 +37,6 @@ export const QuestionBankSetupTier = (function QuestionBankSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default QuestionBankSetupTier;

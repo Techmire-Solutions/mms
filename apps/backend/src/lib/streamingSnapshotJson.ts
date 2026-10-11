@@ -2,7 +2,7 @@ import {
   WORKSPACES_COLLECTION,
   PLATFORM_SUPER_USERS_OBJECT_KEY,
   isServerOnlyObjectKey,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Streaming source for {@link generateSnapshotJsonFromSource}: the same three
@@ -39,7 +39,7 @@ export function shouldIncludeCollectionKey(key: string): boolean {
 export async function* generateSnapshotJsonFromSource(
   source: SnapshotJsonSource,
 ): AsyncGenerator<string, void, unknown> {
-  yield '{';
+  yield "{";
 
   let hasPreviousField = false;
 
@@ -47,38 +47,41 @@ export async function* generateSnapshotJsonFromSource(
     yield '"collections":{';
     let firstCollection = true;
     for await (const [colName, items] of source.collections) {
-      if (!firstCollection) yield ',';
+      if (!firstCollection) yield ",";
       firstCollection = false;
       yield `${JSON.stringify(colName)}:[`;
       if (Array.isArray(items)) {
         for (let i = 0; i < items.length; i++) {
-          if (i > 0) yield ',';
+          if (i > 0) yield ",";
           yield JSON.stringify(items[i]);
         }
-      } else if (items && typeof (items as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function') {
+      } else if (
+        items &&
+        typeof (items as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
+      ) {
         let firstItem = true;
         for await (const item of items as AsyncIterable<unknown>) {
-          if (!firstItem) yield ',';
+          if (!firstItem) yield ",";
           firstItem = false;
           yield JSON.stringify(item);
         }
       }
-      yield ']';
+      yield "]";
     }
-    yield '}';
+    yield "}";
     hasPreviousField = true;
   }
 
   if (source.objects) {
-    if (hasPreviousField) yield ',';
+    if (hasPreviousField) yield ",";
     yield '"objects":{';
     let firstObject = true;
     for await (const [objKey, objVal] of source.objects) {
-      if (!firstObject) yield ',';
+      if (!firstObject) yield ",";
       firstObject = false;
       yield `${JSON.stringify(objKey)}:${JSON.stringify(objVal)}`;
     }
-    yield '}';
+    yield "}";
     hasPreviousField = true;
   }
 
@@ -89,7 +92,7 @@ export async function* generateSnapshotJsonFromSource(
     const assetsIter = source.assets[Symbol.asyncIterator]();
     const first = await assetsIter.next();
     if (!first.done) {
-      if (hasPreviousField) yield ',';
+      if (hasPreviousField) yield ",";
       yield '"assets":{';
       const [firstUrl, firstBase64] = first.value;
       yield `${JSON.stringify(firstUrl)}:${JSON.stringify(firstBase64)}`;
@@ -99,23 +102,25 @@ export async function* generateSnapshotJsonFromSource(
         yield `,${JSON.stringify(assetUrl)}:${JSON.stringify(assetBase64)}`;
         next = await assetsIter.next();
       }
-      yield '}';
+      yield "}";
     }
   }
 
-  yield '}';
+  yield "}";
 }
 
 /**
  * Consumes a streaming source and returns the parsed snapshot object. Useful for
  * tests and for callers (e.g. restore) that still need a materialized snapshot.
  */
-export async function materializeSnapshotFromSource(
-  source: SnapshotJsonSource,
-): Promise<{ collections?: Record<string, unknown[]>; objects?: Record<string, unknown>; assets?: Record<string, string> }> {
+export async function materializeSnapshotFromSource(source: SnapshotJsonSource): Promise<{
+  collections?: Record<string, unknown[]>;
+  objects?: Record<string, unknown>;
+  assets?: Record<string, string>;
+}> {
   const chunks: string[] = [];
   for await (const chunk of generateSnapshotJsonFromSource(source)) {
     chunks.push(chunk);
   }
-  return JSON.parse(chunks.join(''));
+  return JSON.parse(chunks.join(""));
 }

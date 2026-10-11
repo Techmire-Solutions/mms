@@ -9,8 +9,22 @@ export const DEFAULT_STUDENT_REQUIRED_TABS: string[] = [];
 export const STUDENT_LOCKED_ENABLED_TABS = ["basic"] as const;
 
 export const STUDENT_TAB_REGISTRY: TabDefinition[] = [
-  { key: "basic", label: "Identity", labelKey: "students.form.tab.basic", enabled: true, order: 0, isSystem: true },
-  { key: "registration", label: "Registration", labelKey: "students.form.tab.registration", enabled: true, order: 1, isSystem: true },
+  {
+    key: "basic",
+    label: "Identity",
+    labelKey: "students.form.tab.basic",
+    enabled: true,
+    order: 0,
+    isSystem: true,
+  },
+  {
+    key: "registration",
+    label: "Registration",
+    labelKey: "students.form.tab.registration",
+    enabled: true,
+    order: 1,
+    isSystem: true,
+  },
 ];
 
 const STUDENT_SEED_FORM_TAB_KEYS = new Set(
@@ -77,7 +91,8 @@ export const INITIAL_STUDENT_FIELD_SEED: Record<string, FieldDefinition[]> = {
       enabled: true,
       order: 3,
       required: false,
-      description: "Shown from the linked contact’s Relationships in Contacts (Parent/Child, Husband/Wife, Guardian/Dependent).",
+      description:
+        "Shown from the linked contact’s Relationships in Contacts (Parent/Child, Husband/Wife, Guardian/Dependent).",
       descriptionKey: "students.fields.contactRelationshipsDesc",
     },
   ],
@@ -112,7 +127,8 @@ export const INITIAL_STUDENT_FIELD_SEED: Record<string, FieldDefinition[]> = {
       enabled: true,
       order: 2,
       required: true,
-      description: "Timestamp set when the student profile is registered; displayed read-only on the form.",
+      description:
+        "Timestamp set when the student profile is registered; displayed read-only on the form.",
       descriptionKey: "students.fields.registeredDateDesc",
     },
     {
@@ -138,24 +154,13 @@ export const STUDENT_REGISTRATION_SEED_FIELD_KEYS = new Set(
  * Detail drawer fields shown in hero / notes chrome — skip from the attributes list.
  * Pair with {@link OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS} when filtering detail rows.
  */
-export const STUDENT_DETAIL_HERO_FIELD_KEYS = new Set([
-  "contactId",
-  "grNumber",
-  "status",
-  "notes",
-]);
+export const STUDENT_DETAIL_HERO_FIELD_KEYS = new Set(["contactId", "grNumber", "status", "notes"]);
 
 export {
   DEFAULT_STUDENT_COLUMN_REGISTRY,
   STUDENT_CARD_FACE_COLUMN_IDS,
   STUDENT_COLUMN_FIELD_MAPPING,
-} from './studentDirectoryColumns.js';
+} from "./studentDirectoryColumns.js";
 
 /** Face chrome on Contacts Work cards — excluded from the metadata tile grid. */
-export const CONTACT_CARD_FACE_COLUMN_IDS = new Set([
-  "name",
-  "phone",
-  "email",
-  "gender",
-  "isSyed",
-]);
+export const CONTACT_CARD_FACE_COLUMN_IDS = new Set(["name", "phone", "email", "gender", "isSyed"]);

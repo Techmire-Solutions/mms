@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
 import type {
   DataTableColumn,
   DataTableColumnLayout,
@@ -75,7 +78,9 @@ export function useDataTableState<TData>({
   const toggleFilterValue = useCallback((filterId: string, value: string) => {
     setFilterSelection((prev) => {
       const current = prev[filterId] ?? [];
-      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+      const next = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
       return { ...prev, [filterId]: next };
     });
   }, []);

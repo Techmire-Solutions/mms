@@ -96,9 +96,7 @@ describe("FacultyForm Component", () => {
     mockControllerState.errors = {};
     mockControllerState.isFieldEnabled = () => true;
 
-    const html = renderToStaticMarkup(
-      <FacultyForm onClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<FacultyForm onClose={vi.fn()} onSave={vi.fn()} />);
 
     expect(html).toContain("faculty.form.addTitle");
     expect(html).toContain('data-save-on-tab-change="false"');
@@ -110,9 +108,7 @@ describe("FacultyForm Component", () => {
     mockControllerState.errors = {};
     mockControllerState.isFieldEnabled = () => true;
 
-    const html = renderToStaticMarkup(
-      <FacultyForm onClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<FacultyForm onClose={vi.fn()} onSave={vi.fn()} />);
 
     expect(html).toContain('data-tab-key="contact"');
     expect(html).toContain('data-tab-key="employment"');
@@ -129,9 +125,7 @@ describe("FacultyForm Component", () => {
     };
     mockControllerState.isFieldEnabled = () => true;
 
-    const html = renderToStaticMarkup(
-      <FacultyForm onClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<FacultyForm onClose={vi.fn()} onSave={vi.fn()} />);
 
     expect(html).toContain('data-tab-key="employment" data-badge="1"');
     expect(html).toContain('data-tab-key="designation" data-badge="1"');
@@ -145,9 +139,7 @@ describe("FacultyForm Component", () => {
     };
     mockControllerState.isFieldEnabled = () => true;
 
-    const html = renderToStaticMarkup(
-      <FacultyForm onClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<FacultyForm onClose={vi.fn()} onSave={vi.fn()} />);
 
     expect(html).toContain('data-tab-key="designation" data-badge="1"');
     expect(html).not.toContain('data-tab-key="account"');

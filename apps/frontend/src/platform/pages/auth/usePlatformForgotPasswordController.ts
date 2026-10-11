@@ -73,7 +73,12 @@ export function usePlatformForgotPasswordController() {
       const result = await forgotMutation.mutateAsync({ email: email.trim() });
       setSent(true);
       if (result.devReset) {
-        setDevHint(t("platform.forgotDevResetHint", { code: result.devReset.code, resetId: result.devReset.resetId }));
+        setDevHint(
+          t("platform.forgotDevResetHint", {
+            code: result.devReset.code,
+            resetId: result.devReset.resetId,
+          }),
+        );
         setResetId(result.devReset.resetId);
       }
     } catch (err) {
@@ -114,10 +119,10 @@ export function usePlatformForgotPasswordController() {
     } catch (err) {
       setError(getPlatformErrorMessage(err, t));
       if (
-        err instanceof ApiError
-        && (err.type === 'too_many_attempts' || err.type === 'invalid_reset')
+        err instanceof ApiError &&
+        (err.type === "too_many_attempts" || err.type === "invalid_reset")
       ) {
-        setResetId('');
+        setResetId("");
         setCode(createEmptyOtp());
         setSent(false);
         navigate(ROUTES.platformForgotPassword, { replace: true });
@@ -131,16 +136,21 @@ export function usePlatformForgotPasswordController() {
     try {
       const result = await resendMutation.mutateAsync(resetId);
       if (result.devReset) {
-        setDevHint(t("platform.forgotDevResetHint", { code: result.devReset.code, resetId: result.devReset.resetId }));
+        setDevHint(
+          t("platform.forgotDevResetHint", {
+            code: result.devReset.code,
+            resetId: result.devReset.resetId,
+          }),
+        );
       }
       setResendCycle((value) => value + 1);
     } catch (err) {
       setError(getPlatformErrorMessage(err, t));
       if (
-        err instanceof ApiError
-        && (err.type === 'too_many_attempts' || err.type === 'invalid_reset')
+        err instanceof ApiError &&
+        (err.type === "too_many_attempts" || err.type === "invalid_reset")
       ) {
-        setResetId('');
+        setResetId("");
         setCode(createEmptyOtp());
         setSent(false);
         navigate(ROUTES.platformForgotPassword, { replace: true });
@@ -188,4 +198,6 @@ export function usePlatformForgotPasswordController() {
   };
 }
 
-export type PlatformForgotPasswordController = ReturnType<typeof usePlatformForgotPasswordController>;
+export type PlatformForgotPasswordController = ReturnType<
+  typeof usePlatformForgotPasswordController
+>;

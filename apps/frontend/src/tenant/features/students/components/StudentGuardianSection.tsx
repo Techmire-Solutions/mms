@@ -60,11 +60,7 @@ export function StudentGuardianSection({
         accentColor="info"
       >
         {!studentDraft.contactId ? (
-          <EmptyState
-            compact
-            icon={Users}
-            title={t("students.form.guardiansNeedContact")}
-          />
+          <EmptyState compact icon={Users} title={t("students.form.guardiansNeedContact")} />
         ) : !hasAnyLink ? (
           <div className="space-y-3">
             <EmptyState
@@ -85,16 +81,21 @@ export function StudentGuardianSection({
               }
             />
             {!canOpenContactEditor ? (
-              <p className="text-xs text-muted-foreground text-center">{t("students.form.guardiansEditOnContact")}</p>
+              <p className="text-xs text-muted-foreground text-center">
+                {t("students.form.guardiansEditOnContact")}
+              </p>
             ) : null}
           </div>
         ) : (
           <div className="flex flex-col gap-3">
             {links.map((link, index) => {
               const contact = link.contactId ? byId.get(String(link.contactId)) : undefined;
-              const name = contact?.name || link.name || (link.contactId ? t("common.loading") : undefined);
+              const name =
+                contact?.name || link.name || (link.contactId ? t("common.loading") : undefined);
               if (!name) return null;
-              const phone = contact ? getPrimaryPhone(contact) || undefined : link.phone || undefined;
+              const phone = contact
+                ? getPrimaryPhone(contact) || undefined
+                : link.phone || undefined;
               const emptyDash = t("students.table.emptyDash");
               const gender = contact?.gender ?? link.gender;
               const { display, label } = formatLocalizedRelationshipParts(
@@ -127,7 +128,9 @@ export function StudentGuardianSection({
                 {t("students.form.guardiansEditContactCta")}
               </Button>
             ) : (
-              <p className="text-xs text-muted-foreground">{t("students.form.guardiansEditOnContact")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("students.form.guardiansEditOnContact")}
+              </p>
             )}
           </div>
         ) : null}

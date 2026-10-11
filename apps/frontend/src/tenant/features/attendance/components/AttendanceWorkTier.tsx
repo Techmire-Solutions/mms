@@ -43,7 +43,7 @@ export interface AttendanceWorkTierProps {
   onRestoreRecord: (id: string) => Promise<void>;
   onBulkDeleteRecords: (ids: string[]) => Promise<void>;
   onBulkRestoreRecords: (ids: string[]) => Promise<void>;
-  onMessage: (channel: 'sms' | 'whatsapp' | 'email', records: AttendanceRecord[]) => void;
+  onMessage: (channel: "sms" | "whatsapp" | "email", records: AttendanceRecord[]) => void;
   onTotalChange?: (total: number) => void;
   columnProps?: AttendanceColumnProps;
 }
@@ -84,8 +84,11 @@ export function AttendanceWorkTier({
           icon={ShieldCheck}
           title={<span className="font-bold capitalize">{roleLabel}</span>}
           description={
-            (teacherRoleText || accountantRoleText) ? (
-              <span>{teacherRoleText}{accountantRoleText}</span>
+            teacherRoleText || accountantRoleText ? (
+              <span>
+                {teacherRoleText}
+                {accountantRoleText}
+              </span>
             ) : undefined
           }
         />

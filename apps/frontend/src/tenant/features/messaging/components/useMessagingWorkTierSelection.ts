@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import type { Message } from '@mms/shared';
-import type { MessagingSelectedLogsMap } from './MessagingWorkTier';
+import React, { useState } from "react";
+import type { Message } from "@mms/shared";
+import type { MessagingSelectedLogsMap } from "./MessagingWorkTier";
 
 interface UseMessagingWorkTierSelectionParams {
   logs: Message[];
@@ -12,17 +12,18 @@ export function useMessagingWorkTierSelection({ logs }: UseMessagingWorkTierSele
 
   const allVisibleSelected =
     logs.length > 0 && logs.every((log: Message) => Boolean(selectedById[String(log.id)]));
-  const someVisibleSelected =
-    logs.some((log: Message) => Boolean(selectedById[String(log.id)]));
+  const someVisibleSelected = logs.some((log: Message) => Boolean(selectedById[String(log.id)]));
   const selectedList = (() => Object.values(selectedById))();
   const selectedCount = selectedList.length;
 
-  const toggleLog = ((log: Message, shiftKey?: boolean): void => {
+  const toggleLog = (log: Message, shiftKey?: boolean): void => {
     const key = String(log.id);
     const isCurrentlySelected = Boolean(selectedById[key]);
 
     if (shiftKey && lastSelectedLogRef.current) {
-      const lastIndex = logs.findIndex((l: Message) => String(l.id) === String(lastSelectedLogRef.current?.id));
+      const lastIndex = logs.findIndex(
+        (l: Message) => String(l.id) === String(lastSelectedLogRef.current?.id),
+      );
       const currentIndex = logs.findIndex((l: Message) => String(l.id) === key);
 
       if (lastIndex !== -1 && currentIndex !== -1) {
@@ -46,7 +47,7 @@ export function useMessagingWorkTierSelection({ logs }: UseMessagingWorkTierSele
     if (next[key]) delete next[key];
     else next[key] = log;
     setSelectedById(next);
-  });
+  };
 
   const toggleAllVisible = (checked: boolean): void => {
     const next = { ...selectedById };

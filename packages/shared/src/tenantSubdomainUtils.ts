@@ -79,8 +79,8 @@ export function isApexHost(hostname: string, appDomain: string): boolean {
  * Used in production to reject Apache vhosts that incorrectly proxy other domains to MMS.
  */
 export function isHostAllowedForAppDomain(hostname: string, appDomain: string): boolean {
-  const host = hostname.toLowerCase().split(':')[0];
-  if (host === 'localhost' || host === '127.0.0.1') return true;
+  const host = hostname.toLowerCase().split(":")[0];
+  if (host === "localhost" || host === "127.0.0.1") return true;
   const domain = appDomain.toLowerCase().trim();
   if (!domain || !host) return false;
   if (host === domain || host === `www.${domain}`) return true;

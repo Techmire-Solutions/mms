@@ -1,11 +1,11 @@
-import type { User } from '@mms/shared';
-import { getRequestTenant } from './tenantContext.js';
+import type { User } from "@mms/shared";
+import { getRequestTenant } from "./tenantContext.js";
 import {
   recordModernAuditEvent,
   mapActionStringToAuditType,
   type DbOrTransaction,
-} from '../services/auditTrailService.js';
-import { logger } from './logger.js';
+} from "../services/auditTrailService.js";
+import { logger } from "./logger.js";
 
 export interface CollectionAuditExtraOptions {
   tx?: DbOrTransaction;
@@ -34,9 +34,12 @@ export function createCollectionAuditHelper(defaultEntityId: string) {
     const tenant = getRequestTenant();
     if (!tenant) return;
     const actionType = mapActionStringToAuditType(action);
-    const resolvedNewState = options?.newState !== undefined
-      ? options.newState
-      : (summary ? { summary, action } : { action });
+    const resolvedNewState =
+      options?.newState !== undefined
+        ? options.newState
+        : summary
+          ? { summary, action }
+          : { action };
 
     const auditInput = {
       workspaceSubdomain: tenant,
@@ -58,7 +61,10 @@ export function createCollectionAuditHelper(defaultEntityId: string) {
       : recordModernAuditEvent(auditInput);
 
     await auditPromise.catch((err: unknown) =>
-      logger.error({ err: err instanceof Error ? err.message : String(err) }, 'audit event append failed'),
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        "audit event append failed",
+      ),
     );
   };
 }

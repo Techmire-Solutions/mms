@@ -22,4 +22,3 @@ const setupConfigHooks = createModuleSetupConfigHooks<ContactPreferences>({
 
 export const useContactPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useContactPreferencesMutation = setupConfigHooks.usePreferencesMutation;
-

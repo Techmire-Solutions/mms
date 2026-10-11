@@ -1,10 +1,10 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const sharedSrc = path.resolve(__dirname, '../../packages/shared/src');
+const sharedSrc = path.resolve(__dirname, "../../packages/shared/src");
 
 // 1. Arabic translations for sessions sub-modules
 export const AR_SESSIONS_TRANSLATIONS: Record<string, string> = {
@@ -20,7 +20,8 @@ export const AR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.budget.category.stationery": "قرطاسية ومطبوعات",
   "sessions.budget.category.teachersalaries": "رواتب المعلمين",
   "sessions.budget.category.utilities": "خدمات ومرافق",
-  "sessions.budget.confirmDeleteDescription": "حذف {name} من الميزانية؟ لا يمكن التراجع عن هذا الإجراء.",
+  "sessions.budget.confirmDeleteDescription":
+    "حذف {name} من الميزانية؟ لا يمكن التراجع عن هذا الإجراء.",
   "sessions.budget.confirmDeleteTitle": "حذف المعاملة؟",
   "sessions.budget.deleteExpenseNamed": "حذف المصروف {name}",
   "sessions.budget.deleteIncomeNamed": "حذف الإيراد {name}",
@@ -43,7 +44,8 @@ export const AR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.classes.ageRange": "الفئة العمرية",
   "sessions.classes.ageYears": "{min}–{max} سنة",
   "sessions.classes.ariaLabel": "فصول الحصة",
-  "sessions.classes.confirmDeleteDescription": "حذف {name} من هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "sessions.classes.confirmDeleteDescription":
+    "حذف {name} من هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
   "sessions.classes.confirmDeleteTitle": "حذف الفصل؟",
   "sessions.classes.count": "{count} فصول",
   "sessions.classes.deleteNamed": "حذف {name}",
@@ -73,7 +75,8 @@ export const AR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.discounts.active": "نشط",
   "sessions.discounts.add": "إضافة خصم",
   "sessions.discounts.ariaLabel": "خصومات الحصة",
-  "sessions.discounts.confirmDeleteDescription": "حذف {name} من هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "sessions.discounts.confirmDeleteDescription":
+    "حذف {name} من هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
   "sessions.discounts.confirmDeleteTitle": "حذف الخصم؟",
   "sessions.discounts.count": "{count} خصومات",
   "sessions.discounts.deactivate": "إلغاء التفعيل",
@@ -95,7 +98,8 @@ export const AR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   // events
   "sessions.events.add": "إضافة فعالية",
   "sessions.events.ariaLabel": "فعاليات الحصة",
-  "sessions.events.confirmDeleteDescription": "حذف {name} من هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "sessions.events.confirmDeleteDescription":
+    "حذف {name} من هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
   "sessions.events.confirmDeleteTitle": "حذف الفعالية؟",
   "sessions.events.count": "{count} فعاليات",
   "sessions.events.deleteNamed": "حذف {name}",
@@ -120,11 +124,13 @@ export const AR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   // tabarruk
   "sessions.tabarruk.add": "إضافة تبرك",
   "sessions.tabarruk.ariaLabel": "تبرك الحصة",
-  "sessions.tabarruk.confirmDeleteDescription": "حذف {name} من هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "sessions.tabarruk.confirmDeleteDescription":
+    "حذف {name} من هذه الحصة؟ لا يمكن التراجع عن هذا الإجراء.",
   "sessions.tabarruk.confirmDeleteTitle": "حذف عنصر التبرك؟",
   "sessions.tabarruk.count": "تم تسجيل {count} عناصر",
   "sessions.tabarruk.deleteNamed": "حذف {name}",
-  "sessions.tabarruk.description": "يشير التبرك إلى المواد المباركة الموزعة على الطلاب والحاضرين في المناسبات، مثل التمور أو ماء زمزم أو الحلويات.",
+  "sessions.tabarruk.description":
+    "يشير التبرك إلى المواد المباركة الموزعة على الطلاب والحاضرين في المناسبات، مثل التمور أو ماء زمزم أو الحلويات.",
   "sessions.tabarruk.edit": "تعديل التبرك",
   "sessions.tabarruk.editNamed": "تعديل {name}",
   "sessions.tabarruk.emptyTitle": "لم يتم تسجيل أي تبرك بعد",
@@ -143,7 +149,8 @@ export const AR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.timetable.activityCount": "{count} أنشطة",
   "sessions.timetable.add": "إضافة نشاط",
   "sessions.timetable.ariaLabel": "جدول الحصة",
-  "sessions.timetable.confirmDeleteDescription": "حذف {name} من الجدول؟ لا يمكن التراجع عن هذا الإجراء.",
+  "sessions.timetable.confirmDeleteDescription":
+    "حذف {name} من الجدول؟ لا يمكن التراجع عن هذا الإجراء.",
   "sessions.timetable.confirmDeleteTitle": "حذف النشاط؟",
   "sessions.timetable.count": "تمت جدولة {count} أنشطة",
   "sessions.timetable.day.Fri": "الجمعة",
@@ -189,7 +196,8 @@ export const UR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.budget.category.stationery": "سٹیشنری و کتب",
   "sessions.budget.category.teachersalaries": "اساتذہ کی تنخواہیں",
   "sessions.budget.category.utilities": "یوٹیلٹی بلز",
-  "sessions.budget.confirmDeleteDescription": "بجٹ سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
+  "sessions.budget.confirmDeleteDescription":
+    "بجٹ سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
   "sessions.budget.confirmDeleteTitle": "لین دین حذف کریں؟",
   "sessions.budget.deleteExpenseNamed": "اخراجات {name} حذف کریں",
   "sessions.budget.deleteIncomeNamed": "آمدنی {name} حذف کریں",
@@ -212,7 +220,8 @@ export const UR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.classes.ageRange": "عمر کی حد",
   "sessions.classes.ageYears": "{min} تا {max} سال",
   "sessions.classes.ariaLabel": "سیشن کی کلاسز",
-  "sessions.classes.confirmDeleteDescription": "اس سیشن سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
+  "sessions.classes.confirmDeleteDescription":
+    "اس سیشن سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
   "sessions.classes.confirmDeleteTitle": "کلاس حذف کریں؟",
   "sessions.classes.count": "{count} کلاسز",
   "sessions.classes.deleteNamed": "{name} حذف کریں",
@@ -242,7 +251,8 @@ export const UR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.discounts.active": "فعال",
   "sessions.discounts.add": "رعایت شامل کریں",
   "sessions.discounts.ariaLabel": "سیشن کی رعایتیں",
-  "sessions.discounts.confirmDeleteDescription": "اس سیشن سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
+  "sessions.discounts.confirmDeleteDescription":
+    "اس سیشن سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
   "sessions.discounts.confirmDeleteTitle": "رعایت حذف کریں؟",
   "sessions.discounts.count": "{count} رعایتیں",
   "sessions.discounts.deactivate": "غیر فعال کریں",
@@ -264,7 +274,8 @@ export const UR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   // events
   "sessions.events.add": "تقریب شامل کریں",
   "sessions.events.ariaLabel": "سیشن کی تقریبات",
-  "sessions.events.confirmDeleteDescription": "اس سیشن سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
+  "sessions.events.confirmDeleteDescription":
+    "اس سیشن سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
   "sessions.events.confirmDeleteTitle": "تقریب حذف کریں؟",
   "sessions.events.count": "{count} تقریبات",
   "sessions.events.deleteNamed": "{name} حذف کریں",
@@ -289,11 +300,13 @@ export const UR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   // tabarruk
   "sessions.tabarruk.add": "تبرک شامل کریں",
   "sessions.tabarruk.ariaLabel": "سیشن کا تبرک",
-  "sessions.tabarruk.confirmDeleteDescription": "اس سیشن سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
+  "sessions.tabarruk.confirmDeleteDescription":
+    "اس سیشن سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
   "sessions.tabarruk.confirmDeleteTitle": "تبرک حذف کریں؟",
   "sessions.tabarruk.count": "{count} اشیاء درج ہیں",
   "sessions.tabarruk.deleteNamed": "{name} حذف کریں",
-  "sessions.tabarruk.description": "تبرک سے مراد وہ بابرکت اشیاء ہیں جو طلبہ اور شرکاء میں تقریبات کے دوران تقسیم کی جاتی ہیں، جیسے کھجوریں، زمزم کا پانی یا مٹھائی۔",
+  "sessions.tabarruk.description":
+    "تبرک سے مراد وہ بابرکت اشیاء ہیں جو طلبہ اور شرکاء میں تقریبات کے دوران تقسیم کی جاتی ہیں، جیسے کھجوریں، زمزم کا پانی یا مٹھائی۔",
   "sessions.tabarruk.edit": "تبرک میں ترمیم کریں",
   "sessions.tabarruk.editNamed": "{name} میں ترمیم کریں",
   "sessions.tabarruk.emptyTitle": "ابھی تک کوئی تبرک درج نہیں ہے",
@@ -312,7 +325,8 @@ export const UR_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.timetable.activityCount": "{count} سرگرمیاں",
   "sessions.timetable.add": "سرگرمی شامل کریں",
   "sessions.timetable.ariaLabel": "سیشن کا ٹائم ٹیبل",
-  "sessions.timetable.confirmDeleteDescription": "ٹائم ٹیبل سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
+  "sessions.timetable.confirmDeleteDescription":
+    "ٹائم ٹیبل سے {name} کو حذف کریں؟ یہ عمل واپس نہیں ہو سکتا۔",
   "sessions.timetable.confirmDeleteTitle": "سرگرمی حذف کریں؟",
   "sessions.timetable.count": "{count} سرگرمیاں شیڈول ہیں",
   "sessions.timetable.day.Fri": "جمعہ",
@@ -381,7 +395,8 @@ export const FA_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.classes.ageRange": "محدوده سنی",
   "sessions.classes.ageYears": "{min} تا {max} سال",
   "sessions.classes.ariaLabel": "کلاس‌های دوره",
-  "sessions.classes.confirmDeleteDescription": "حذف {name} از این دوره؟ این عملیات قابل بازگشت نیست.",
+  "sessions.classes.confirmDeleteDescription":
+    "حذف {name} از این دوره؟ این عملیات قابل بازگشت نیست.",
   "sessions.classes.confirmDeleteTitle": "حذف کلاس؟",
   "sessions.classes.count": "{count} کلاس",
   "sessions.classes.deleteNamed": "حذف {name}",
@@ -411,7 +426,8 @@ export const FA_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.discounts.active": "فعال",
   "sessions.discounts.add": "افزودن تخفیف",
   "sessions.discounts.ariaLabel": "تخفیف‌های دوره",
-  "sessions.discounts.confirmDeleteDescription": "حذف {name} از این دوره؟ این عملیات قابل بازگشت نیست.",
+  "sessions.discounts.confirmDeleteDescription":
+    "حذف {name} از این دوره؟ این عملیات قابل بازگشت نیست.",
   "sessions.discounts.confirmDeleteTitle": "حذف تخفیف؟",
   "sessions.discounts.count": "{count} تخفیف",
   "sessions.discounts.deactivate": "غیرفعال‌سازی",
@@ -433,7 +449,8 @@ export const FA_SESSIONS_TRANSLATIONS: Record<string, string> = {
   // events
   "sessions.events.add": "افزودن رویداد",
   "sessions.events.ariaLabel": "رویدادهای دوره",
-  "sessions.events.confirmDeleteDescription": "حذف {name} از این دوره؟ این عملیات قابل بازگشت نیست.",
+  "sessions.events.confirmDeleteDescription":
+    "حذف {name} از این دوره؟ این عملیات قابل بازگشت نیست.",
   "sessions.events.confirmDeleteTitle": "حذف رویداد؟",
   "sessions.events.count": "{count} رویداد",
   "sessions.events.deleteNamed": "حذف {name}",
@@ -458,11 +475,13 @@ export const FA_SESSIONS_TRANSLATIONS: Record<string, string> = {
   // tabarruk
   "sessions.tabarruk.add": "افزودن تبرک",
   "sessions.tabarruk.ariaLabel": "تبرکات دوره",
-  "sessions.tabarruk.confirmDeleteDescription": "حذف {name} از این دوره؟ این عملیات قابل بازگشت نیست.",
+  "sessions.tabarruk.confirmDeleteDescription":
+    "حذف {name} از این دوره؟ این عملیات قابل بازگشت نیست.",
   "sessions.tabarruk.confirmDeleteTitle": "حذف تبرک؟",
   "sessions.tabarruk.count": "{count} مورد ثبت شده",
   "sessions.tabarruk.deleteNamed": "حذف {name}",
-  "sessions.tabarruk.description": "تبرک اشاره به اقلام متبرکی دارد که در مناسبت‌ها بین طلاب و مراجعین توزیع می‌شود، مانند خرما، آب زمزم یا شیرینی.",
+  "sessions.tabarruk.description":
+    "تبرک اشاره به اقلام متبرکی دارد که در مناسبت‌ها بین طلاب و مراجعین توزیع می‌شود، مانند خرما، آب زمزم یا شیرینی.",
   "sessions.tabarruk.edit": "ویرایش تبرک",
   "sessions.tabarruk.editNamed": "ویرایش {name}",
   "sessions.tabarruk.emptyTitle": "هنوز تبرکی ثبت نشده است",
@@ -481,7 +500,8 @@ export const FA_SESSIONS_TRANSLATIONS: Record<string, string> = {
   "sessions.timetable.activityCount": "{count} برنامه",
   "sessions.timetable.add": "افزودن برنامه",
   "sessions.timetable.ariaLabel": "برنامه زمانی دوره",
-  "sessions.timetable.confirmDeleteDescription": "حذف {name} از برنامه؟ این عملیات قابل بازگشت نیست.",
+  "sessions.timetable.confirmDeleteDescription":
+    "حذف {name} از برنامه؟ این عملیات قابل بازگشت نیست.",
   "sessions.timetable.confirmDeleteTitle": "حذف برنامه؟",
   "sessions.timetable.count": "{count} برنامه زمان‌بندی شده",
   "sessions.timetable.day.Fri": "جمعه",
@@ -514,25 +534,28 @@ export const FA_SESSIONS_TRANSLATIONS: Record<string, string> = {
 };
 
 function updateTranslationsFile(filePath: string, newDict: Record<string, string>) {
-  let content = fs.readFileSync(filePath, 'utf-8');
+  let content = fs.readFileSync(filePath, "utf-8");
   for (const [key, value] of Object.entries(newDict)) {
-    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`^(\\s*"${escapedKey}":\\s*")[^"]*(",?)$`, 'm');
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`^(\\s*"${escapedKey}":\\s*")[^"]*(",?)$`, "m");
     if (regex.test(content)) {
       content = content.replace(regex, `$1${value}$2`);
     } else {
       // If not present, inject before the last closing brace / as const
       const match = content.match(/\n\}( as const)?;\s*$/);
       if (match && match.index !== undefined) {
-        content = content.slice(0, match.index) + `,\n  "${key}": "${value}"\n};` + (match[1] ? ' as const;' : '');
+        content =
+          content.slice(0, match.index) +
+          `,\n  "${key}": "${value}"\n};` +
+          (match[1] ? " as const;" : "");
       }
     }
   }
-  fs.writeFileSync(filePath, content, 'utf-8');
+  fs.writeFileSync(filePath, content, "utf-8");
 }
 
-updateTranslationsFile(path.join(sharedSrc, 'appTranslationsAr.ts'), AR_SESSIONS_TRANSLATIONS);
-updateTranslationsFile(path.join(sharedSrc, 'appTranslationsUr.ts'), UR_SESSIONS_TRANSLATIONS);
-updateTranslationsFile(path.join(sharedSrc, 'appTranslationsFa.ts'), FA_SESSIONS_TRANSLATIONS);
+updateTranslationsFile(path.join(sharedSrc, "appTranslationsAr.ts"), AR_SESSIONS_TRANSLATIONS);
+updateTranslationsFile(path.join(sharedSrc, "appTranslationsUr.ts"), UR_SESSIONS_TRANSLATIONS);
+updateTranslationsFile(path.join(sharedSrc, "appTranslationsFa.ts"), FA_SESSIONS_TRANSLATIONS);
 
-console.log('Successfully updated session translations for AR, UR, and FA!');
+console.log("Successfully updated session translations for AR, UR, and FA!");

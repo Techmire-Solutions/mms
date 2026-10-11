@@ -3,7 +3,7 @@
  * full-tree scan and the `--changed` per-file comparison.
  */
 
-export const SCAN_DIRS = ['apps/frontend/src', 'apps/backend/src', 'packages/shared/src'];
+export const SCAN_DIRS = ["apps/frontend/src", "apps/backend/src", "packages/shared/src"];
 export const IGNORED = /(^|\/)(node_modules|dist|coverage|\.turbo)\//;
 export const SOURCE_EXT = /\.(ts|tsx)$/;
 export const TEST_FILE = /\.(test|spec)\.(ts|tsx)$/;
@@ -25,28 +25,36 @@ const ANY_ANNOTATION = /:\s*any\b|<any>|\bas\s+any\b/;
  * no utility for. See the full rationale in scripts/check-code-norms.mjs.
  */
 const INERT_THEME_NAMESPACES = [
-  { prefix: '--font-size-', use: '--text-' },
-  { prefix: '--line-height-', use: '--leading-' },
-  { prefix: '--letter-spacing-', use: '--tracking-' },
-  { prefix: '--box-shadow-', use: '--shadow-' },
-  { prefix: '--border-radius-', use: '--radius-' },
+  { prefix: "--font-size-", use: "--text-" },
+  { prefix: "--line-height-", use: "--leading-" },
+  { prefix: "--letter-spacing-", use: "--tracking-" },
+  { prefix: "--box-shadow-", use: "--shadow-" },
+  { prefix: "--border-radius-", use: "--radius-" },
 ];
 
-const isComment = (line) => line.trimStart().startsWith('//') || line.trimStart().startsWith('*');
+const isComment = (line) => line.trimStart().startsWith("//") || line.trimStart().startsWith("*");
 
 /** True when `rel` is a .ts/.tsx file the ratchet scans. */
 export function isScannedSource(rel) {
-  return SOURCE_EXT.test(rel) && !IGNORED.test(`${rel}/`) && SCAN_DIRS.some((dir) => rel.startsWith(`${dir}/`));
+  return (
+    SOURCE_EXT.test(rel) &&
+    !IGNORED.test(`${rel}/`) &&
+    SCAN_DIRS.some((dir) => rel.startsWith(`${dir}/`))
+  );
 }
 
 /** True when `rel` is a CSS file the inert-token check scans. */
 export function isScannedCss(rel) {
-  return rel.endsWith('.css') && !IGNORED.test(`${rel}/`) && SCAN_DIRS.some((dir) => rel.startsWith(`${dir}/`));
+  return (
+    rel.endsWith(".css") &&
+    !IGNORED.test(`${rel}/`) &&
+    SCAN_DIRS.some((dir) => rel.startsWith(`${dir}/`))
+  );
 }
 
 /** Violations in one .ts/.tsx file; test files only count toward nothing. */
 export function measureSource(rel, content) {
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   const result = { anySites: [], arbitrarySites: [], hasHex: false, lineCount: lines.length };
   if (TEST_FILE.test(rel)) return result;
   lines.forEach((line, index) => {
@@ -61,12 +69,14 @@ export function measureSource(rel, content) {
 /** Inert `@theme` token declarations in one CSS file. */
 export function measureCss(rel, content) {
   const sites = [];
-  content.split('\n').forEach((line, index) => {
+  content.split("\n").forEach((line, index) => {
     const declaration = /^\s*(--[a-z0-9-]+)\s*:/.exec(line);
     if (!declaration) return;
     for (const { prefix, use } of INERT_THEME_NAMESPACES) {
       if (declaration[1].startsWith(prefix)) {
-        sites.push(`${rel}:${index + 1}  ${declaration[1]} declares no utility — use ${use}* instead`);
+        sites.push(
+          `${rel}:${index + 1}  ${declaration[1]} declares no utility — use ${use}* instead`,
+        );
       }
     }
   });

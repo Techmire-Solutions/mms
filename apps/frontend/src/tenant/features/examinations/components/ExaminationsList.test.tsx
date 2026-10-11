@@ -72,12 +72,7 @@ vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
 
 describe("ExaminationsList Component", () => {
   it("renders filters, content, and pagination", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationsList
-        onNew={vi.fn()}
-        onEdit={vi.fn()}
-      />,
-    );
+    const html = renderToStaticMarkup(<ExaminationsList onNew={vi.fn()} onEdit={vi.fn()} />);
 
     expect(html).toContain("List Filters");
     expect(html).toContain("List Content");

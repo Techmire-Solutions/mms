@@ -28,26 +28,30 @@ export function employDesignationRowsFromFaculty(
 ): FacultyEmployDesignationFormRow[] {
   const nested = faculty?.employDesignations;
   if (Array.isArray(nested) && nested.length > 0) {
-    return nested.map((row) => newEmployDesignationFormRow({
-      clientId: `fed-${row.employDesignationId ?? row.designationId ?? crypto.randomUUID()}`,
-      employDesignationId: row.employDesignationId ?? null,
-      designationId: row.designationId ?? "",
-      designationStartDate: row.designationStartDate ?? todayISO(),
-      designationEndDate: row.designationEndDate ?? null,
-      employDesignationStatus: row.employDesignationStatus,
-    }));
+    return nested.map((row) =>
+      newEmployDesignationFormRow({
+        clientId: `fed-${row.employDesignationId ?? row.designationId ?? crypto.randomUUID()}`,
+        employDesignationId: row.employDesignationId ?? null,
+        designationId: row.designationId ?? "",
+        designationStartDate: row.designationStartDate ?? todayISO(),
+        designationEndDate: row.designationEndDate ?? null,
+        employDesignationStatus: row.employDesignationStatus,
+      }),
+    );
   }
   if (faculty?.designationId) {
-    return [newEmployDesignationFormRow({
-      clientId: `fed-${faculty.employDesignationId ?? faculty.designationId}`,
-      employDesignationId: faculty.employDesignationId ?? null,
-      designationId: String(faculty.designationId),
-      designationStartDate: faculty.designationStartDate ?? todayISO(),
-      designationEndDate: faculty.designationEndDate ?? null,
-      employDesignationStatus: resolveFacultyProfileStatus(
-        faculty.employDesignationStatus ?? faculty.profileStatus,
-      ),
-    })];
+    return [
+      newEmployDesignationFormRow({
+        clientId: `fed-${faculty.employDesignationId ?? faculty.designationId}`,
+        employDesignationId: faculty.employDesignationId ?? null,
+        designationId: String(faculty.designationId),
+        designationStartDate: faculty.designationStartDate ?? todayISO(),
+        designationEndDate: faculty.designationEndDate ?? null,
+        employDesignationStatus: resolveFacultyProfileStatus(
+          faculty.employDesignationStatus ?? faculty.profileStatus,
+        ),
+      }),
+    ];
   }
   return [];
 }
@@ -57,9 +61,10 @@ export function pickPrimaryEmployDesignationRow(
   rows: readonly FacultyEmployDesignationFormRow[],
 ): FacultyEmployDesignationFormRow | undefined {
   const openActive = rows.find(
-    (row) => row.designationId
-      && resolveFacultyProfileStatus(row.employDesignationStatus) === "active"
-      && !row.designationEndDate,
+    (row) =>
+      row.designationId &&
+      resolveFacultyProfileStatus(row.employDesignationStatus) === "active" &&
+      !row.designationEndDate,
   );
   if (openActive) return openActive;
   const withDesignation = rows.filter((row) => row.designationId);

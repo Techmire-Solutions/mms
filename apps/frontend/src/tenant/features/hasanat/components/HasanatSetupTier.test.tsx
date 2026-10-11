@@ -56,9 +56,7 @@ describe("HasanatSetupTier Component", () => {
   });
 
   it("renders read-only message when canEditSetup is false", () => {
-    const html = renderToStaticMarkup(
-      <HasanatSetupTier {...defaultProps} canEditSetup={false} />,
-    );
+    const html = renderToStaticMarkup(<HasanatSetupTier {...defaultProps} canEditSetup={false} />);
     expect(html).toContain("setup-read-only-message");
     expect(html).toContain("hasanat.setup.readOnly");
   });

@@ -92,13 +92,20 @@ export function AccountProfileLoginEmailCard({
         <div className="space-y-4 border-t border-border pt-4 mt-2">
           {!showEmailForm && !challengeId ? (
             <div className="pt-1">
-              <Button type="button" variant="outline" onClick={onShowEmailForm} className="w-full min-h-11">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onShowEmailForm}
+                className="w-full min-h-11"
+              >
                 {t("account.changeLoginEmail")}
               </Button>
             </div>
           ) : (
             <>
-              <p className="text-xs font-semibold text-foreground mb-1">{t("account.changeLoginEmail")}</p>
+              <p className="text-xs font-semibold text-foreground mb-1">
+                {t("account.changeLoginEmail")}
+              </p>
               {!challengeId ? (
                 <form
                   onSubmit={(event) => {
@@ -119,13 +126,22 @@ export function AccountProfileLoginEmailCard({
                       className="min-h-11"
                     />
                   </Field>
-                  <PasswordInput id={`${id}-password`} name="loginPassword"
-                    label={t("account.currentPassword")} value={loginPassword}
+                  <PasswordInput
+                    id={`${id}-password`}
+                    name="loginPassword"
+                    label={t("account.currentPassword")}
+                    value={loginPassword}
                     onChange={(event) => onLoginPasswordChange(event.target.value)}
-                    required autoComplete="current-password" />
-                  <FormSubmitActions submitLabel={t("account.sendCode")} pending={loginEmailBusy}
-                    variant="secondary" disabled={!newLoginEmail.trim() || !loginPassword}
-                    cancel={{ label: t("common.cancel"), onClick: onCancelLoginEmailRequest }} />
+                    required
+                    autoComplete="current-password"
+                  />
+                  <FormSubmitActions
+                    submitLabel={t("account.sendCode")}
+                    pending={loginEmailBusy}
+                    variant="secondary"
+                    disabled={!newLoginEmail.trim() || !loginPassword}
+                    cancel={{ label: t("common.cancel"), onClick: onCancelLoginEmailRequest }}
+                  />
                 </form>
               ) : (
                 <form
@@ -136,10 +152,17 @@ export function AccountProfileLoginEmailCard({
                   className="space-y-4 pt-2"
                 >
                   {devCode ? (
-                    <WarningCallout tone="info" density="compact"
-                      description={t("account.devCodeHint", { code: devCode })} />
+                    <WarningCallout
+                      tone="info"
+                      density="compact"
+                      description={t("account.devCodeHint", { code: devCode })}
+                    />
                   ) : null}
-                  <Field id={`${id}-login-email-code`} label={t("account.verificationCode")} required>
+                  <Field
+                    id={`${id}-login-email-code`}
+                    label={t("account.verificationCode")}
+                    required
+                  >
                     <Input
                       id={`${id}-login-email-code`}
                       name="verifyCode"
@@ -151,9 +174,13 @@ export function AccountProfileLoginEmailCard({
                       className="min-h-11"
                     />
                   </Field>
-                  <FormSubmitActions submitLabel={t("account.confirmLoginEmail")} pending={loginEmailBusy}
-                    variant="primary" disabled={!verifyCode.trim()}
-                    cancel={{ label: t("common.cancel"), onClick: onCancelLoginEmailConfirm }} />
+                  <FormSubmitActions
+                    submitLabel={t("account.confirmLoginEmail")}
+                    pending={loginEmailBusy}
+                    variant="primary"
+                    disabled={!verifyCode.trim()}
+                    cancel={{ label: t("common.cancel"), onClick: onCancelLoginEmailConfirm }}
+                  />
                 </form>
               )}
             </>

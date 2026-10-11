@@ -13,7 +13,9 @@ interface SpecializedEntrySalaryAccountFieldsProps {
   accounts: Account[];
   expenseAccounts: Account[];
   paymentAccounts: Account[];
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
 }
 
 export function SpecializedEntrySalaryAccountFields({
@@ -62,7 +64,9 @@ export function SpecializedEntrySalaryAccountFields({
                   })),
                 ]}
                 canAdd={accountQuickCreate.canAdd}
-                onOpenAdd={() => accountQuickCreate.openCreate({ kind: "field", field: "debitAcc" })}
+                onOpenAdd={() =>
+                  accountQuickCreate.openCreate({ kind: "field", field: "debitAcc" })
+                }
                 addAriaLabel={t("accounting.coa.addAccount")}
               />
             </FormControl>
@@ -93,7 +97,9 @@ export function SpecializedEntrySalaryAccountFields({
                   })),
                 ]}
                 canAdd={accountQuickCreate.canAdd}
-                onOpenAdd={() => accountQuickCreate.openCreate({ kind: "field", field: "creditAcc" })}
+                onOpenAdd={() =>
+                  accountQuickCreate.openCreate({ kind: "field", field: "creditAcc" })
+                }
                 addAriaLabel={t("accounting.coa.addAccount")}
               />
             </FormControl>

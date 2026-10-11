@@ -78,11 +78,7 @@ const mockResults: ExamResult[] = [
 describe("EnterMarks Component", () => {
   it("renders exam radio selection and students marks inputs", () => {
     const html = renderToStaticMarkup(
-      <EnterMarks
-        exams={[mockExam]}
-        results={mockResults}
-        onSaveResults={vi.fn()}
-      />,
+      <EnterMarks exams={[mockExam]} results={mockResults} onSaveResults={vi.fn()} />,
     );
 
     expect(html).toContain("Tajweed Test");

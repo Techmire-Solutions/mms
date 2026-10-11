@@ -1,14 +1,14 @@
-import type { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify';
-import { initServer, type RouterImplementation } from '@ts-rest/fastify';
-import { platformAdminsContract } from '@mms/shared';
+import type { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from "fastify";
+import { initServer, type RouterImplementation } from "@ts-rest/fastify";
+import { platformAdminsContract } from "@mms/shared";
 import {
   authenticatePlatform,
   requirePlatformPermission,
   requirePlatformSuperUser,
-} from '../../middleware/authenticatePlatform.js';
-import { replyValidationError } from '../../lib/zodRequest.js';
-import { AUTH_RATE_LIMIT } from '../../lib/rateLimitConfig.js';
-import { createStrictRateLimitGuard } from '../../lib/rateLimitGuard.js';
+} from "../../middleware/authenticatePlatform.js";
+import { replyValidationError } from "../../lib/zodRequest.js";
+import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
+import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
 import {
   handleListAdmins,
   handleCreateAdmin,
@@ -16,7 +16,7 @@ import {
   handleVerifyAdminEmail,
   handleSetAdminDisabled,
   handleDeleteAdmin,
-} from './platformUsersHandlers.js';
+} from "./platformUsersHandlers.js";
 
 const s = initServer();
 
@@ -26,8 +26,8 @@ export default async function platformUsersRoutes(
 ): Promise<void> {
   const authRateLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
 
-  fastify.addHook('preHandler', authenticatePlatform);
-  fastify.addHook('preHandler', requirePlatformPermission('admins'));
+  fastify.addHook("preHandler", authenticatePlatform);
+  fastify.addHook("preHandler", requirePlatformPermission("admins"));
 
   const router = s.router(platformAdminsContract, {
     listAdmins: handleListAdmins,

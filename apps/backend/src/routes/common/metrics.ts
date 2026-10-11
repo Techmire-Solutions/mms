@@ -1,9 +1,9 @@
-import { type FastifyInstance } from 'fastify';
-import { metrics } from '../../lib/metrics.js';
+import { type FastifyInstance } from "fastify";
+import { metrics } from "../../lib/metrics.js";
 import {
   isMetricsEndpointEnabled,
   isMetricsRequestAuthorized,
-} from '../../plugins/metricsPlugin.js';
+} from "../../plugins/metricsPlugin.js";
 
 /**
  * Prometheus scrape endpoint.
@@ -14,20 +14,20 @@ import {
  * token is the minimum for any non-loopback scrape path.
  */
 export default async function metricsRoutes(app: FastifyInstance): Promise<void> {
-  app.get('/metrics', async (request, reply) => {
+  app.get("/metrics", async (request, reply) => {
     if (!isMetricsEndpointEnabled()) {
-      return reply.status(404).send({ type: 'not_found', message: 'Not found' });
+      return reply.status(404).send({ type: "not_found", message: "Not found" });
     }
 
     const authorization = request.headers.authorization;
     if (!isMetricsRequestAuthorized(authorization)) {
       return reply
         .status(401)
-        .header('WWW-Authenticate', 'Bearer')
-        .send({ type: 'unauthorized', message: 'A valid metrics token is required' });
+        .header("WWW-Authenticate", "Bearer")
+        .send({ type: "unauthorized", message: "A valid metrics token is required" });
     }
 
     const { contentType, body } = metrics.render();
-    return reply.header('Content-Type', contentType).send(body);
+    return reply.header("Content-Type", contentType).send(body);
   });
 }

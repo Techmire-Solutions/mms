@@ -48,7 +48,12 @@ export function useStudentsPageController() {
   });
   const { data: metrics } = useStudentsMetrics();
   const mutations = useStudentMutations();
-  const { settings, statuses: configuredStatuses, genderFilters, isFieldEnabled } = useStudentConfig();
+  const {
+    settings,
+    statuses: configuredStatuses,
+    genderFilters,
+    isFieldEnabled,
+  } = useStudentConfig();
   const studentStatusOptions = resolveStudentStatuses(configuredStatuses);
   const [activeTab, setActiveTab] = usePersistedTabState<string>("students_active_tab", "work");
   const effectiveTab = resolveModuleTierTab(

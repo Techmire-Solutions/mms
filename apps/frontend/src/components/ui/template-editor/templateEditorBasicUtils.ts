@@ -30,12 +30,7 @@ export interface BoundingBox {
 }
 
 export function boxesIntersect(a: BoundingBox, b: BoundingBox): boolean {
-  return (
-    a.x < b.x + b.w &&
-    a.x + a.w > b.x &&
-    a.y < b.y + b.h &&
-    a.y + a.h > b.y
-  );
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
 export function normalizeHexColor(color?: string, fallback = "#0f172a"): string {
@@ -51,18 +46,21 @@ export function normalizeHexColor(color?: string, fallback = "#0f172a"): string 
   }
   const rgbMatch = trimmed.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/);
   if (rgbMatch) {
-    const r = Math.min(255, Math.max(0, parseInt(rgbMatch[1]!, 10))).toString(16).padStart(2, "0");
-    const g = Math.min(255, Math.max(0, parseInt(rgbMatch[2]!, 10))).toString(16).padStart(2, "0");
-    const b = Math.min(255, Math.max(0, parseInt(rgbMatch[3]!, 10))).toString(16).padStart(2, "0");
+    const r = Math.min(255, Math.max(0, parseInt(rgbMatch[1]!, 10)))
+      .toString(16)
+      .padStart(2, "0");
+    const g = Math.min(255, Math.max(0, parseInt(rgbMatch[2]!, 10)))
+      .toString(16)
+      .padStart(2, "0");
+    const b = Math.min(255, Math.max(0, parseInt(rgbMatch[3]!, 10)))
+      .toString(16)
+      .padStart(2, "0");
     return `#${r}${g}${b}`;
   }
   return fallback;
 }
 
-export function interpolateTemplateTokens(
-  text: string,
-  data?: Record<string, unknown>,
-): string {
+export function interpolateTemplateTokens(text: string, data?: Record<string, unknown>): string {
   if (!text || !data) return text;
   return text.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (match, key) => {
     if (key in data && data[key] != null) {

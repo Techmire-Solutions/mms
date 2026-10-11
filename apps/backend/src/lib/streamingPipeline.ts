@@ -1,6 +1,6 @@
-import { Readable, Transform, type Writable } from 'node:stream';
-import { pipeline } from 'node:stream/promises';
-import { logger } from './logger.js';
+import { Readable, Transform, type Writable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { logger } from "./logger.js";
 
 export interface StreamingPipelineOptions {
   /** Maximum buffer size in bytes before pausing generator/source (default: 16,384 bytes = 16KB) */
@@ -52,17 +52,18 @@ export async function executeMemoryBoundedPipeline(
   let totalBytes = 0;
   let totalChunks = 0;
 
-  const readableStream = source instanceof Readable
-    ? source
-    : Readable.from(source, { highWaterMark, objectMode: false });
+  const readableStream =
+    source instanceof Readable
+      ? source
+      : Readable.from(source, { highWaterMark, objectMode: false });
 
   const monitorTransform = new Transform({
     highWaterMark,
     transform(chunk, _encoding, callback) {
       const len = Buffer.isBuffer(chunk)
         ? chunk.length
-        : typeof chunk === 'string'
-          ? Buffer.byteLength(chunk, 'utf8')
+        : typeof chunk === "string"
+          ? Buffer.byteLength(chunk, "utf8")
           : 0;
 
       totalBytes += len;
@@ -85,13 +86,13 @@ export async function executeMemoryBoundedPipeline(
     const errorName =
       err instanceof Error
         ? err.name
-        : typeof err === 'object' && err !== null && 'name' in err
+        : typeof err === "object" && err !== null && "name" in err
           ? String((err as { name: unknown }).name)
           : undefined;
-    if (errorName === 'AbortError') {
-      logger.info('Streaming pipeline aborted by client');
+    if (errorName === "AbortError") {
+      logger.info("Streaming pipeline aborted by client");
     } else {
-      logger.error({ err }, 'Streaming pipeline failed');
+      logger.error({ err }, "Streaming pipeline failed");
       throw err;
     }
   }

@@ -1,7 +1,7 @@
-import { randomBytes } from 'node:crypto';
-import type { JWT } from '@fastify/jwt';
-import type { User } from '@mms/shared';
-import { resolveNotificationChannel } from '@mms/shared';
+import { randomBytes } from "node:crypto";
+import type { JWT } from "@fastify/jwt";
+import type { User } from "@mms/shared";
+import { resolveNotificationChannel } from "@mms/shared";
 import {
   authArtifactUserScopeKey,
   authArtifactWorkspaceScopeKey,
@@ -11,22 +11,22 @@ import {
   getAuthArtifact,
   putAuthArtifact,
   takeAuthArtifact,
-} from './authArtifactService.js';
+} from "./authArtifactService.js";
 import {
   generateOtpCode,
   hashOtpCode,
   verifyOtpCode,
   createRefreshTokenValue,
   hashRefreshToken,
-} from './authCookieService.js';
-import { getPublicUserById } from './userService.js';
-import { loadGlobalSettings } from '../globalSettingsService.js';
-import { sendTenantEmail } from '../email/emailService.js';
-import { sendTenantSms } from '../sms/smsService.js';
-import { getContactById } from '../../contacts/use-cases/contactLoadUseCases.js';
-import { runWithTenant } from '../../lib/tenantContext.js';
-import { logger } from '../../lib/logger.js';
-import { isDevCredentialLoggingEnabled } from '../../lib/devLogging.js';
+} from "./authCookieService.js";
+import { getPublicUserById } from "./userService.js";
+import { loadGlobalSettings } from "../globalSettingsService.js";
+import { sendTenantEmail } from "../email/emailService.js";
+import { sendTenantSms } from "../sms/smsService.js";
+import { getContactById } from "../../contacts/use-cases/contactLoadUseCases.js";
+import { runWithTenant } from "../../lib/tenantContext.js";
+import { logger } from "../../lib/logger.js";
+import { isDevCredentialLoggingEnabled } from "../../lib/devLogging.js";
 
 const CHALLENGE_TTL_MS = 10 * 60 * 1000;
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -50,7 +50,7 @@ export async function createTwoFactorChallenge(user: User): Promise<string> {
   const code = generateOtpCode();
   const challengeId = createArtifactId();
   await putAuthArtifact<TwoFactorChallengePayload>(
-    'two_factor_challenge',
+    "two_factor_challenge",
     {
       userId: user.id,
       email: user.email,
@@ -69,13 +69,16 @@ export async function createTwoFactorChallenge(user: User): Promise<string> {
 }
 
 export async function resendTwoFactorChallenge(challengeId: string): Promise<boolean> {
-  const entry = await getAuthArtifact<TwoFactorChallengePayload>(challengeId, 'two_factor_challenge');
+  const entry = await getAuthArtifact<TwoFactorChallengePayload>(
+    challengeId,
+    "two_factor_challenge",
+  );
   if (!entry) return false;
 
   const code = generateOtpCode();
   entry.payload.codeHash = hashOtpCode(code);
   await deleteAuthArtifact(challengeId);
-  await putAuthArtifact('two_factor_challenge', entry.payload, CHALLENGE_TTL_MS, {
+  await putAuthArtifact("two_factor_challenge", entry.payload, CHALLENGE_TTL_MS, {
     id: challengeId,
     scopeKey: authArtifactWorkspaceScopeKey(entry.payload.workspaceSubdomain),
   });
@@ -87,9 +90,12 @@ export async function verifyTwoFactorChallenge(
   challengeId: string,
   code: string,
 ): Promise<User | null> {
-  const entry = await takeAuthArtifact<TwoFactorChallengePayload>(challengeId, 'two_factor_challenge');
+  const entry = await takeAuthArtifact<TwoFactorChallengePayload>(
+    challengeId,
+    "two_factor_challenge",
+  );
   if (!entry) return null;
-  if (!verifyOtpCode(code.replace(/\s/g, ''), entry.payload.codeHash)) return null;
+  if (!verifyOtpCode(code.replace(/\s/g, ""), entry.payload.codeHash)) return null;
 
   const user = await runWithTenant(entry.payload.workspaceSubdomain, () =>
     getPublicUserById(entry.payload.userId),
@@ -99,26 +105,33 @@ export async function verifyTwoFactorChallenge(
   return user;
 }
 
-async function dispatchTwoFactorCode(email: string, contactId: string | number | undefined, code: string): Promise<void> {
+async function dispatchTwoFactorCode(
+  email: string,
+  contactId: string | number | undefined,
+  code: string,
+): Promise<void> {
   const settings = await loadGlobalSettings();
   const channel = resolveNotificationChannel(settings);
   const text = `Your MMS verification code is ${code}. It expires in 10 minutes.`;
 
-  if (channel === 'email') {
-    await sendTenantEmail({ to: email, subject: 'MMS verification code', text });
+  if (channel === "email") {
+    await sendTenantEmail({ to: email, subject: "MMS verification code", text });
     return;
   }
 
-  if (channel === 'sms') {
+  if (channel === "sms") {
     // Users have no phone field of their own — resolve it via the linked contact
     // (Contacts Canonical: profile fields, including phone, live on the contact).
     const contact = contactId != null ? await getContactById(String(contactId)) : null;
     if (contact?.phone) {
       const result = await sendTenantSms({ to: contact.phone, body: text }, settings);
       if (result.sent) return;
-      logger.warn({ channel, reason: result.reason }, '2FA SMS dispatch failed, falling back to log');
+      logger.warn(
+        { channel, reason: result.reason },
+        "2FA SMS dispatch failed, falling back to log",
+      );
     } else {
-      logger.warn({ channel }, '2FA SMS channel active but the admin has no phone number on file');
+      logger.warn({ channel }, "2FA SMS channel active but the admin has no phone number on file");
     }
   }
 
@@ -126,9 +139,9 @@ async function dispatchTwoFactorCode(email: string, contactId: string | number |
   // and retained. Local development can opt in with MMS_LOG_DEV_CREDENTIALS=true;
   // the code is also filtered out by lib/logRedaction.ts as a backstop.
   if (isDevCredentialLoggingEnabled()) {
-    logger.info({ channel, code }, '2FA code generated (dev credential logging enabled)');
+    logger.info({ channel, code }, "2FA code generated (dev credential logging enabled)");
   } else {
-    logger.info({ channel }, '2FA code generated');
+    logger.info({ channel }, "2FA code generated");
   }
 }
 
@@ -136,7 +149,7 @@ export async function issueRefreshToken(user: User): Promise<string> {
   const refreshToken = createRefreshTokenValue();
   const tokenHash = hashRefreshToken(refreshToken);
   await putAuthArtifact<RefreshTokenPayload>(
-    'refresh_token',
+    "refresh_token",
     {
       userId: user.id,
       workspaceSubdomain: user.workspaceSubdomain,
@@ -144,7 +157,7 @@ export async function issueRefreshToken(user: User): Promise<string> {
     },
     REFRESH_TTL_MS,
     {
-      id: randomBytes(16).toString('hex'),
+      id: randomBytes(16).toString("hex"),
       lookupKey: tokenHash,
       scopeKey: authArtifactUserScopeKey(user.id),
     },
@@ -161,9 +174,9 @@ export async function rotateRefreshToken(
   // Rotation: issue new pair; old refresh artifact was deleted by the caller.
   const refreshToken = await issueRefreshToken(user);
 
-  const jti = randomBytes(16).toString('hex');
+  const jti = randomBytes(16).toString("hex");
   const accessToken = jwtSigner.sign(
-    { ...user, twoFactorVerified: true, tokenType: 'access', jti },
+    { ...user, twoFactorVerified: true, tokenType: "access", jti },
     { expiresIn: accessExpiresIn },
   );
 

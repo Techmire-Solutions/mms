@@ -3,14 +3,14 @@ import {
   type SmsIntegrationConfig,
   type SmsIntegrationSecrets,
   type SmsProviderId,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
 import {
   getSmsIntegrationRow,
   upsertSmsIntegrationConfigRow,
   upsertSmsIntegrationSecretsRow,
-} from '../../db/repositories/smsIntegrationRepository.js';
-import { type SmsIntegrationRow } from '../../db/schema/messaging.js';
+} from "../../db/repositories/smsIntegrationRepository.js";
+import { type SmsIntegrationRow } from "../../db/schema/messaging.js";
 
 function rowToConfig(row: SmsIntegrationRow): SmsIntegrationConfig {
   const overrides: Partial<SmsIntegrationConfig> = {
@@ -44,7 +44,7 @@ export async function saveSmsIntegrationConfig(
   config: SmsIntegrationConfig,
 ): Promise<SmsIntegrationConfig> {
   const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error('Tenant context missing');
+  if (!subdomain) throw new Error("Tenant context missing");
   const merged = mergeSmsIntegrationConfig(config);
   await upsertSmsIntegrationConfigRow(subdomain, merged);
   return merged;
@@ -61,11 +61,9 @@ export async function loadSmsIntegrationSecrets(): Promise<SmsIntegrationSecrets
   return secrets;
 }
 
-export async function saveSmsIntegrationSecrets(
-  secrets: SmsIntegrationSecrets,
-): Promise<void> {
+export async function saveSmsIntegrationSecrets(secrets: SmsIntegrationSecrets): Promise<void> {
   const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error('Tenant context missing');
+  if (!subdomain) throw new Error("Tenant context missing");
   await upsertSmsIntegrationSecretsRow(subdomain, secrets);
 }
 

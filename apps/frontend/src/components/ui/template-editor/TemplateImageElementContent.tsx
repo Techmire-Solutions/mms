@@ -1,6 +1,6 @@
-import React from 'react';
-import type { ElementStyle, TemplateElement } from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
+import React from "react";
+import type { ElementStyle, TemplateElement } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface TemplateImageElementContentProps {
   el: TemplateElement;
@@ -33,9 +33,7 @@ export function TemplateImageElementContent({
 
   if (isPhotoTarget) {
     const photoVal =
-      (data?.photo as string) ||
-      (data?.student_photo as string) ||
-      (data?.avatar as string);
+      (data?.photo as string) || (data?.student_photo as string) || (data?.avatar as string);
 
     if (
       photoVal &&

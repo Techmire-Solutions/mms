@@ -98,9 +98,7 @@ export const ContactCardItem = React.memo(function ContactCardItem({
       onEdit={onEdit}
       reducedMotion={reducedMotion}
       accentClassName={
-        showGenderAccent
-          ? getGenderAccentBarClass(isSelected, contact.gender)
-          : undefined
+        showGenderAccent ? getGenderAccentBarClass(isSelected, contact.gender) : undefined
       }
       header={{ displayName }}
       headerSlot={

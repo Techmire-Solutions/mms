@@ -59,13 +59,7 @@ export function DistributeModalFields({
         }
 
         if (field.id === "recipientType") {
-          return (
-            <DistributeRecipientTypeField
-              key="recipientType"
-              data={data}
-              setData={setData}
-            />
-          );
+          return <DistributeRecipientTypeField key="recipientType" data={data} setData={setData} />;
         }
 
         if (field.id === "recipientName") {
@@ -94,7 +88,13 @@ export function DistributeModalFields({
 
         if (field.id === "quantity") {
           return (
-            <Field key="quantity" id="qty" label={t("hasanat.form.quantity")} required error={errors?.quantity}>
+            <Field
+              key="quantity"
+              id="qty"
+              label={t("hasanat.form.quantity")}
+              required
+              error={errors?.quantity}
+            >
               <Input
                 id="qty"
                 name="quantity"
@@ -103,7 +103,7 @@ export function DistributeModalFields({
                 className={FORM_INPUT}
                 value={data.quantity ?? ""}
                 onChange={(event) => {
-                  const sanitized = event.target.value.replace(/[^0-9]/g, '');
+                  const sanitized = event.target.value.replace(/[^0-9]/g, "");
                   updateField(
                     "quantity",
                     sanitized === "" ? "" : Math.min(Number(sanitized), totalAvailable),
@@ -116,7 +116,13 @@ export function DistributeModalFields({
 
         if (field.id === "issuedDate") {
           return (
-            <Field key="issuedDate" id="issue-date" label={t("hasanat.form.issuedDate")} required error={errors?.issuedDate}>
+            <Field
+              key="issuedDate"
+              id="issue-date"
+              label={t("hasanat.form.issuedDate")}
+              required
+              error={errors?.issuedDate}
+            >
               <DatePicker
                 id="issue-date"
                 name="issuedDate"

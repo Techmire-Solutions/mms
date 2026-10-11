@@ -1,22 +1,19 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from "node:crypto";
 import {
   normalizeStoredFaculty,
   stripFacultyClientSoftDeleteFields,
   type FacultyRecord,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /** Client-supplied soft-delete metadata must never reach storage. */
-export {
-  normalizeStoredFaculty,
-  stripFacultyClientSoftDeleteFields,
-};
+export { normalizeStoredFaculty, stripFacultyClientSoftDeleteFields };
 
 /** Resolves a stable row id for creates (`fac-<uuid>` prefix). */
 export function resolveFacultyRowId(id: unknown): string {
-  if (typeof id === 'string' && id.trim() !== '') {
+  if (typeof id === "string" && id.trim() !== "") {
     return id.trim();
   }
-  if (typeof id === 'number' && Number.isFinite(id)) {
+  if (typeof id === "number" && Number.isFinite(id)) {
     return String(id);
   }
   return `fac-${randomUUID()}`;
@@ -41,7 +38,9 @@ export function mergeFacultyPatch(
  * Parses + normalizes a write payload: strips client soft-delete metadata and
  * contact-owned profile keys. Accepts pre-validated FacultyRecord.
  */
-export function prepareFacultyRecord(record: FacultyRecord | Record<string, unknown>): FacultyRecord {
+export function prepareFacultyRecord(
+  record: FacultyRecord | Record<string, unknown>,
+): FacultyRecord {
   const raw: Record<string, unknown> = { ...record };
   // customDesignation is create-bootstrap catalog UX only — not a faculty column.
   delete raw.customDesignation;

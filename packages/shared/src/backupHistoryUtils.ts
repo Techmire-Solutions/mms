@@ -1,11 +1,11 @@
-import type { AppTranslationKey } from './appTranslations.js';
+import type { AppTranslationKey } from "./appTranslations.js";
 import {
   BACKUP_HISTORY_MAX,
   type WorkspaceBackupRecord,
   type WorkspaceBackupStats,
   type WorkspaceBackupSummary,
-} from './backupSchemas.js';
-import { formatBackupSize } from './backupEnvelopeUtils.js';
+} from "./backupSchemas.js";
+import { formatBackupSize } from "./backupEnvelopeUtils.js";
 
 /** Prepends a new backup entry and enforces history limits. */
 export function appendBackupHistory(
@@ -32,14 +32,14 @@ export interface PendingRestore {
 }
 
 export type PendingDecrypt =
-  | { kind: 'file'; encryptedText: string; fileName: string; adminEmail: string }
-  | { kind: 'history'; backup: WorkspaceBackupRecord };
+  | { kind: "file"; encryptedText: string; fileName: string; adminEmail: string }
+  | { kind: "history"; backup: WorkspaceBackupRecord };
 
 /**
  * Checks if an error message string matches a localized backup translation key format.
  */
 export function isBackupErrorKey(message: string): message is AppTranslationKey {
-  return message.startsWith('backup.');
+  return message.startsWith("backup.");
 }
 
 /**
@@ -57,7 +57,7 @@ export function createBackupHistoryEntry(
     name,
     date: now.toISOString(),
     size: formatBackupSize(dataStr.length),
-    status: 'success',
+    status: "success",
     data: dataStr.length <= meta.maxInlineBytes ? dataStr : undefined,
     keyCount: stats.keyCount,
     collectionCount: stats.collectionCount,

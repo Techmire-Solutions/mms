@@ -52,7 +52,9 @@ export function SettingsFormActions({
         )}
         {children}
       </div>
-    ) : <></>;
+    ) : (
+      <></>
+    );
   }
 
   return (
@@ -79,7 +81,11 @@ export function SettingsFormActions({
         disabled={saveDisabled || !dirty || saving}
         className="min-h-11 gap-2 px-5 py-2.5 ms-auto font-semibold shadow-xs"
       >
-        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Save className="h-3.5 w-3.5" aria-hidden />}
+        {saving ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+        ) : (
+          <Save className="h-3.5 w-3.5" aria-hidden />
+        )}
         <span>{saveText}</span>
       </Button>
     </div>

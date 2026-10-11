@@ -62,9 +62,7 @@ export function TemplateEditorMultiSelectPanel<TPayload = Record<string, unknown
   const toggleSection = (section: keyof typeof openSections) =>
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
 
-  const hasTextLike = selectedElements.some(
-    (el) => el.type === "static" || el.type === "field"
-  );
+  const hasTextLike = selectedElements.some((el) => el.type === "static" || el.type === "field");
 
   const sampleStyle = selectedElements[0]?.style || {};
   const initialBgColor = normalizeHexColor(sampleStyle.backgroundColor, PRINT_COLORS.white);

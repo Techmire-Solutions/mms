@@ -1,4 +1,4 @@
-import { resolveAccentTone, withAccentAliases, type AccentName } from './accentTone';
+import { resolveAccentTone, withAccentAliases, type AccentName } from "./accentTone";
 
 /** SSOT for card and section start-edge accent stripe geometry */
 export const CARD_STRIPE_WIDTH = "w-1.5";

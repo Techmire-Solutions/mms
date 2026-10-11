@@ -12,7 +12,12 @@ import { getAuditLog } from "@/tenant/features/attendance/components/markAttenda
 import type { MarkAttendanceProps } from "@/tenant/features/attendance/components/markAttendanceTypes";
 import { useMarkAttendanceController } from "@/tenant/features/attendance/components/useMarkAttendanceController";
 
-export type { AuditEntry, AttendanceRow, GeoData, OfflinePayload } from "@/tenant/features/attendance/components/markAttendanceTypes";
+export type {
+  AuditEntry,
+  AttendanceRow,
+  GeoData,
+  OfflinePayload,
+} from "@/tenant/features/attendance/components/markAttendanceTypes";
 export { getAuditLog };
 
 export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
@@ -30,11 +35,21 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
 
   return (
     <section className="space-y-4">
-      <MarkAttendanceOfflineBanner offline={controller.isOffline} queue={controller.offlineQueue} onSync={() => void controller.handleSync()} />
-      {controller.syncedMsg && <div className="px-4 py-2 rounded-xl bg-success/10 border border-success/30 text-success text-sm font-semibold">✓ {controller.t("attendance.mark.syncSuccess")}</div>}
+      <MarkAttendanceOfflineBanner
+        offline={controller.isOffline}
+        queue={controller.offlineQueue}
+        onSync={() => void controller.handleSync()}
+      />
+      {controller.syncedMsg && (
+        <div className="px-4 py-2 rounded-xl bg-success/10 border border-success/30 text-success text-sm font-semibold">
+          ✓ {controller.t("attendance.mark.syncSuccess")}
+        </div>
+      )}
 
       <AnimatePresence>
-        {controller.showFaceAI && <MarkAttendanceFacePlaceholder onClose={() => controller.setShowFaceAI(false)} />}
+        {controller.showFaceAI && (
+          <MarkAttendanceFacePlaceholder onClose={() => controller.setShowFaceAI(false)} />
+        )}
       </AnimatePresence>
 
       <MarkAttendanceClassBar

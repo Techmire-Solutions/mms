@@ -86,7 +86,9 @@ export function ObligationsRepDuesCardsView({
           </StatGrid>
         </ReportMoneyCard>
       ))}
-      <ReportMoneySummaryTile label={t("obligations.summary.rep.repCount", { count: repSummary.length })}>
+      <ReportMoneySummaryTile
+        label={t("obligations.summary.rep.repCount", { count: repSummary.length })}
+      >
         <StatGrid>
           <StatRow
             label={t("obligations.summary.rep.colTotalCollectedShort")}

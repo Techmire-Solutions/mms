@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
-import { createSessionsUseCases } from '../sessions/use-cases/sessionsUseCases.js';
-import type { SessionsRepository } from '../sessions/repository/sessionsRepository.js';
-import { runWithTenant } from '../lib/tenantContext.js';
-import { NotFoundError } from '../lib/httpErrors.js';
+import { describe, expect, it, vi } from "vitest";
+import { createSessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
+import type { SessionsRepository } from "../sessions/repository/sessionsRepository.js";
+import { runWithTenant } from "../lib/tenantContext.js";
+import { NotFoundError } from "../lib/httpErrors.js";
 
 function createFakeRepo(): SessionsRepository {
   return {
@@ -44,57 +44,55 @@ function createFakeRepo(): SessionsRepository {
   };
 }
 
-describe('sessions use-cases (DI with fake repository)', () => {
-  it('countSessions delegates to the injected repository with the active tenant', async () => {
+describe("sessions use-cases (DI with fake repository)", () => {
+  it("countSessions delegates to the injected repository with the active tenant", async () => {
     const repo = createFakeRepo();
     const useCases = createSessionsUseCases(repo);
 
-    const result = await runWithTenant('demo', () => useCases.countSessions());
+    const result = await runWithTenant("demo", () => useCases.countSessions());
 
     expect(result).toBe(3);
-    expect(repo.countSessionsActive).toHaveBeenCalledWith('demo');
+    expect(repo.countSessionsActive).toHaveBeenCalledWith("demo");
   });
 
-  it('loadSessionsPage delegates to the injected repository', async () => {
+  it("loadSessionsPage delegates to the injected repository", async () => {
     const repo = createFakeRepo();
     const useCases = createSessionsUseCases(repo);
 
-    const result = await runWithTenant('demo', () =>
+    const result = await runWithTenant("demo", () =>
       useCases.loadSessionsPage({ page: 2, limit: 12 }),
     );
 
     expect(result).toEqual({ sessions: [], total: 0, page: 1, limit: 12, hasMore: false });
-    expect(repo.listSessionsPage).toHaveBeenCalledWith('demo', { page: 2, limit: 12 });
+    expect(repo.listSessionsPage).toHaveBeenCalledWith("demo", { page: 2, limit: 12 });
   });
 
-  it('bulkUpdateSessionsStatus delegates to the injected repository', async () => {
+  it("bulkUpdateSessionsStatus delegates to the injected repository", async () => {
     const repo = createFakeRepo();
     const useCases = createSessionsUseCases(repo);
 
-    const result = await runWithTenant('demo', () =>
-      useCases.bulkUpdateSessionsStatus(['s1', 's2'], 'active'),
+    const result = await runWithTenant("demo", () =>
+      useCases.bulkUpdateSessionsStatus(["s1", "s2"], "active"),
     );
 
     expect(result).toEqual({ succeeded: 2, failed: 0 });
-    expect(repo.bulkUpdateSessionsStatus).toHaveBeenCalledWith('demo', ['s1', 's2'], 'active');
+    expect(repo.bulkUpdateSessionsStatus).toHaveBeenCalledWith("demo", ["s1", "s2"], "active");
   });
 
-  it('loadSessionsByIds filters out soft-deleted sessions', async () => {
+  it("loadSessionsByIds filters out soft-deleted sessions", async () => {
     const repo = createFakeRepo();
     vi.mocked(repo.findSessionsByIds).mockResolvedValue([
-      { id: 's1', name: 'Active Session' } as never,
-      { id: 's2', name: 'Deleted Session', deletedAt: '2026-07-27T00:00:00.000Z' } as never,
+      { id: "s1", name: "Active Session" } as never,
+      { id: "s2", name: "Deleted Session", deletedAt: "2026-07-27T00:00:00.000Z" } as never,
     ]);
     const useCases = createSessionsUseCases(repo);
 
-    const result = await runWithTenant('demo', () =>
-      useCases.loadSessionsByIds(['s1', 's2']),
-    );
+    const result = await runWithTenant("demo", () => useCases.loadSessionsByIds(["s1", "s2"]));
 
-    expect(result.map((s) => s.id)).toEqual(['s1']);
+    expect(result.map((s) => s.id)).toEqual(["s1"]);
   });
 
-  it('returns empty defaults when no tenant context is bound', async () => {
+  it("returns empty defaults when no tenant context is bound", async () => {
     const repo = createFakeRepo();
     const useCases = createSessionsUseCases(repo);
 
@@ -107,44 +105,45 @@ describe('sessions use-cases (DI with fake repository)', () => {
     expect(repo.listSessionsPage).not.toHaveBeenCalled();
   });
 
-  it('deleteSessionById delegates cascade soft-delete to the repository', async () => {
+  it("deleteSessionById delegates cascade soft-delete to the repository", async () => {
     const repo = createFakeRepo();
     const useCases = createSessionsUseCases(repo);
 
-    const ok = await runWithTenant('demo', () =>
-      useCases.deleteSessionById('s1', 'u-admin', 'Cancelled session'),
+    const ok = await runWithTenant("demo", () =>
+      useCases.deleteSessionById("s1", "u-admin", "Cancelled session"),
     );
 
     expect(ok).toBe(true);
     expect(repo.softDeleteSessionWithCascade).toHaveBeenCalledWith(
-      'demo',
-      's1',
-      'u-admin',
-      'Cancelled session',
+      "demo",
+      "s1",
+      "u-admin",
+      "Cancelled session",
     );
   });
 
-  it('restoreSessionById delegates cascade restore to the repository', async () => {
+  it("restoreSessionById delegates cascade restore to the repository", async () => {
     const repo = createFakeRepo();
     const useCases = createSessionsUseCases(repo);
 
-    const ok = await runWithTenant('demo', () =>
-      useCases.restoreSessionById('s1', 'u-admin'),
-    );
+    const ok = await runWithTenant("demo", () => useCases.restoreSessionById("s1", "u-admin"));
 
     expect(ok).toBe(true);
-    expect(repo.restoreSessionWithCascade).toHaveBeenCalledWith('demo', 's1', 'u-admin');
+    expect(repo.restoreSessionWithCascade).toHaveBeenCalledWith("demo", "s1", "u-admin");
   });
 
   it('deleteSessionById throws NotFoundError with "already archived" if session is already soft-deleted', async () => {
     const repo = createFakeRepo();
     vi.mocked(repo.softDeleteSessionWithCascade).mockResolvedValue(false);
-    vi.mocked(repo.findSessionById).mockResolvedValue({ id: 's1', deletedAt: '2026-08-01T00:00:00.000Z' } as never);
+    vi.mocked(repo.findSessionById).mockResolvedValue({
+      id: "s1",
+      deletedAt: "2026-08-01T00:00:00.000Z",
+    } as never);
     const useCases = createSessionsUseCases(repo);
 
-    await expect(
-      runWithTenant('demo', () => useCases.deleteSessionById('s1')),
-    ).rejects.toThrow(new NotFoundError('Session is already archived'));
+    await expect(runWithTenant("demo", () => useCases.deleteSessionById("s1"))).rejects.toThrow(
+      new NotFoundError("Session is already archived"),
+    );
   });
 
   it('deleteSessionById throws NotFoundError with "not found" if session does not exist', async () => {
@@ -153,20 +152,20 @@ describe('sessions use-cases (DI with fake repository)', () => {
     vi.mocked(repo.findSessionById).mockResolvedValue(null);
     const useCases = createSessionsUseCases(repo);
 
-    await expect(
-      runWithTenant('demo', () => useCases.deleteSessionById('s1')),
-    ).rejects.toThrow(new NotFoundError('Session not found'));
+    await expect(runWithTenant("demo", () => useCases.deleteSessionById("s1"))).rejects.toThrow(
+      new NotFoundError("Session not found"),
+    );
   });
 
   it('restoreSessionById throws NotFoundError with "already active" if session is not soft-deleted', async () => {
     const repo = createFakeRepo();
     vi.mocked(repo.restoreSessionWithCascade).mockResolvedValue(false);
-    vi.mocked(repo.findSessionById).mockResolvedValue({ id: 's1', deletedAt: null } as never);
+    vi.mocked(repo.findSessionById).mockResolvedValue({ id: "s1", deletedAt: null } as never);
     const useCases = createSessionsUseCases(repo);
 
-    await expect(
-      runWithTenant('demo', () => useCases.restoreSessionById('s1')),
-    ).rejects.toThrow(new NotFoundError('Session is already active'));
+    await expect(runWithTenant("demo", () => useCases.restoreSessionById("s1"))).rejects.toThrow(
+      new NotFoundError("Session is already active"),
+    );
   });
 
   it('restoreSessionById throws NotFoundError with "not found" if session does not exist', async () => {
@@ -175,41 +174,41 @@ describe('sessions use-cases (DI with fake repository)', () => {
     vi.mocked(repo.findSessionById).mockResolvedValue(null);
     const useCases = createSessionsUseCases(repo);
 
-    await expect(
-      runWithTenant('demo', () => useCases.restoreSessionById('s1')),
-    ).rejects.toThrow(new NotFoundError('Session not found'));
+    await expect(runWithTenant("demo", () => useCases.restoreSessionById("s1"))).rejects.toThrow(
+      new NotFoundError("Session not found"),
+    );
   });
 
-  it('bulkSoftDeleteSessions delegates to bulkSoftDeleteSessionsWithCascade', async () => {
+  it("bulkSoftDeleteSessions delegates to bulkSoftDeleteSessionsWithCascade", async () => {
     const repo = createFakeRepo();
     const useCases = createSessionsUseCases(repo);
 
-    const res = await runWithTenant('demo', () =>
-      useCases.bulkSoftDeleteSessions(['s1', 's2'], 'u-admin', 'Batch archive'),
+    const res = await runWithTenant("demo", () =>
+      useCases.bulkSoftDeleteSessions(["s1", "s2"], "u-admin", "Batch archive"),
     );
 
     expect(res).toEqual({ succeeded: 1, failed: 0 });
     expect(repo.bulkSoftDeleteSessionsWithCascade).toHaveBeenCalledWith(
-      'demo',
-      ['s1', 's2'],
-      'u-admin',
-      'Batch archive',
+      "demo",
+      ["s1", "s2"],
+      "u-admin",
+      "Batch archive",
     );
   });
 
-  it('bulkRestoreSessions delegates to bulkRestoreSessionsWithCascade', async () => {
+  it("bulkRestoreSessions delegates to bulkRestoreSessionsWithCascade", async () => {
     const repo = createFakeRepo();
     const useCases = createSessionsUseCases(repo);
 
-    const res = await runWithTenant('demo', () =>
-      useCases.bulkRestoreSessions(['s1', 's2'], 'u-admin'),
+    const res = await runWithTenant("demo", () =>
+      useCases.bulkRestoreSessions(["s1", "s2"], "u-admin"),
     );
 
     expect(res).toEqual({ succeeded: 1, failed: 0 });
     expect(repo.bulkRestoreSessionsWithCascade).toHaveBeenCalledWith(
-      'demo',
-      ['s1', 's2'],
-      'u-admin',
+      "demo",
+      ["s1", "s2"],
+      "u-admin",
     );
   });
 });

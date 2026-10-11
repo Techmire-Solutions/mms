@@ -5,7 +5,11 @@ import {
   type ImageUploadPurpose,
 } from "@mms/shared";
 
-function canvasToBlobAsync(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob | null> {
+function canvasToBlobAsync(
+  canvas: HTMLCanvasElement,
+  type: string,
+  quality: number,
+): Promise<Blob | null> {
   return new Promise((resolve) => {
     canvas.toBlob((blob) => resolve(blob), type, quality);
   });
@@ -61,9 +65,9 @@ export function optimizeImage(
   } = options;
 
   if (
-    typeof window === "undefined"
-    || typeof FileReader === "undefined"
-    || !file.type.startsWith("image/")
+    typeof window === "undefined" ||
+    typeof FileReader === "undefined" ||
+    !file.type.startsWith("image/")
   ) {
     return Promise.resolve(file);
   }

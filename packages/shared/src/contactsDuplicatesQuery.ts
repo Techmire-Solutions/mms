@@ -1,6 +1,6 @@
-import type { ContactDuplicatePair } from './contactDuplicateUtils.js';
-import { LIST_PAGE_MAX_LIMIT } from './apiSchemas.js';
-import { paginateArray } from './utils.js';
+import type { ContactDuplicatePair } from "./contactDuplicateUtils.js";
+import { LIST_PAGE_MAX_LIMIT } from "./apiSchemas.js";
+import { paginateArray } from "./utils.js";
 
 export interface ContactsDuplicatePairsPageResult {
   pairs: ContactDuplicatePair[];

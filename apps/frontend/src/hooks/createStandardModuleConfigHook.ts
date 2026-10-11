@@ -16,9 +16,7 @@ export interface StandardModuleConfigSettingsLike {
   requiredTabs?: string[];
 }
 
-export interface StandardModuleConfigCore<
-  TSettings extends StandardModuleConfigSettingsLike,
-> {
+export interface StandardModuleConfigCore<TSettings extends StandardModuleConfigSettingsLike> {
   settings: TSettings;
   orderedFields: ModuleFieldDef[];
   fields: Record<string, { enabled: boolean; required: boolean }>;
@@ -83,14 +81,11 @@ export function createStandardModuleConfigHook<
     const updateAsyncRef = useRef(updateAsyncFn);
     updateAsyncRef.current = updateAsyncFn;
 
-    const updateSettingsAsync = useCallback(
-      async (settingsDraft: TSettings): Promise<void> => {
-        if (updateAsyncRef.current) {
-          await updateAsyncRef.current(settingsDraft);
-        }
-      },
-      [],
-    );
+    const updateSettingsAsync = useCallback(async (settingsDraft: TSettings): Promise<void> => {
+      if (updateAsyncRef.current) {
+        await updateAsyncRef.current(settingsDraft);
+      }
+    }, []);
 
     const updateSettings = useCallback(
       (settingsDraft: TSettings): void => {
@@ -148,8 +143,8 @@ export function createStandardModuleConfigHook<
       isFieldEnabled,
       isFieldRequired,
     };
-    
-    const enhanceForCore = useEnhance ?? (() => ({} as TExtra));
+
+    const enhanceForCore = useEnhance ?? (() => ({}) as TExtra);
     const enhanced = enhanceForCore(core);
 
     return {

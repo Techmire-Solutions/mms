@@ -15,18 +15,38 @@ vi.mock("@/hooks/useTranslation", () => ({
 
 vi.mock("@/tenant/hooks/useWorkspaceRoles", () => ({
   useWorkspaceRoles: () => [
-    { id: "admin", labelKey: "users.role.admin", descriptionKey: "users.desc.admin", isSystem: true, badgeVariant: "primary", permissions: {} },
-    { id: "staff", labelKey: "users.role.staff", descriptionKey: "users.desc.staff", isSystem: true, badgeVariant: "muted", permissions: {} },
-    { id: "custom_role", labelKey: "custom_role", descriptionKey: "custom_role_desc", customLabel: "Senior Mudarris", isSystem: false, badgeVariant: "success", permissions: {} },
+    {
+      id: "admin",
+      labelKey: "users.role.admin",
+      descriptionKey: "users.desc.admin",
+      isSystem: true,
+      badgeVariant: "primary",
+      permissions: {},
+    },
+    {
+      id: "staff",
+      labelKey: "users.role.staff",
+      descriptionKey: "users.desc.staff",
+      isSystem: true,
+      badgeVariant: "muted",
+      permissions: {},
+    },
+    {
+      id: "custom_role",
+      labelKey: "custom_role",
+      descriptionKey: "custom_role_desc",
+      customLabel: "Senior Mudarris",
+      isSystem: false,
+      badgeVariant: "success",
+      permissions: {},
+    },
   ],
 }));
 
 vi.mock("@/tenant/hooks/collections/users", () => ({
   useUsersContractList: () => ({
     data: {
-      users: [
-        { id: "usr-1", contactId: "cnt-1", email: "faculty@madrasa.org", role: "staff" },
-      ],
+      users: [{ id: "usr-1", contactId: "cnt-1", email: "faculty@madrasa.org", role: "staff" }],
     },
   }),
 }));
@@ -89,4 +109,3 @@ describe("FacultyUserAccountSection Component", () => {
     expect(html).toContain("auth.password");
   });
 });
-

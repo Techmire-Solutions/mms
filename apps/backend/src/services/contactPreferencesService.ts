@@ -1,1 +1,1 @@
-export * from '../contacts/use-cases/contactPreferencesService.js';
+export * from "../contacts/use-cases/contactPreferencesService.js";

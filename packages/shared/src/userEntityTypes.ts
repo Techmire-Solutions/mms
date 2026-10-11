@@ -1,24 +1,28 @@
-import type { AppTranslationKey } from './appTranslations.js';
+import type { AppTranslationKey } from "./appTranslations.js";
 
 /** Workspace account status (UI + local store; backend enforcement is future work). */
-export type UserStatus = 'active' | 'inactive' | 'suspended';
+export type UserStatus = "active" | "inactive" | "suspended";
 
-export const USER_STATUS_VALUES = ['active', 'inactive', 'suspended'] as const satisfies readonly UserStatus[];
+export const USER_STATUS_VALUES = [
+  "active",
+  "inactive",
+  "suspended",
+] as const satisfies readonly UserStatus[];
 
 /** CRUD actions granted per module in the roles matrix. */
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete';
+export type PermissionAction = "create" | "read" | "update" | "delete";
 
 export const PERMISSION_ACTIONS: readonly PermissionAction[] = [
-  'create',
-  'read',
-  'update',
-  'delete',
+  "create",
+  "read",
+  "update",
+  "delete",
 ] as const;
 
 /** Map of module id → permitted actions. */
 export type PermissionMap = Record<string, PermissionAction[]>;
 
-export type UserBadgeVariant = 'primary' | 'muted' | 'warning' | 'destructive' | 'success';
+export type UserBadgeVariant = "primary" | "muted" | "warning" | "destructive" | "success";
 
 /** RBAC module row in the permissions grid. */
 export interface RbacModuleDef {
@@ -39,7 +43,7 @@ export interface WorkspaceRole {
   badgeVariant: UserBadgeVariant;
   permissions: PermissionMap;
   /** Server-owned role derived from faculty employ-designation assignable roles. */
-  managedBy?: 'faculty_designations';
+  managedBy?: "faculty_designations";
   /** Sorted unique catalog role ids whose permissions were unioned into this role. */
   sourceRoleIds?: string[];
 }
@@ -62,7 +66,7 @@ export interface WorkspaceUser {
    * How `role` is governed. `faculty_designations` means admins cannot change it
    * manually — it is synced from active employ-designation assignable roles.
    */
-  roleSource?: 'faculty_designations' | 'manual';
+  roleSource?: "faculty_designations" | "manual";
   status: UserStatus;
   twoFactorEnabled: boolean;
   lastLogin: string;
@@ -93,15 +97,15 @@ export function filterActiveUsers<T extends { deletedAt?: string | null }>(users
 export const DEFAULT_WORKSPACE_USERS: WorkspaceUser[] = [];
 
 /** Types of actions recorded in the activity log. */
-import { z } from 'zod';
+import { z } from "zod";
 
 export const ACTIVITY_ACTION_VALUES = [
-  'login',
-  'login_failed',
-  'create',
-  'update',
-  'delete',
-  'role_change',
+  "login",
+  "login_failed",
+  "create",
+  "update",
+  "delete",
+  "role_change",
 ] as const;
 
 export type ActivityAction = (typeof ACTIVITY_ACTION_VALUES)[number];
@@ -126,9 +130,9 @@ export const activityLogInsertSchema = z
     userName: z.string().optional(),
     action: z.enum(ACTIVITY_ACTION_VALUES),
     module: z.string(),
-    detail: z.string().default(''),
+    detail: z.string().default(""),
     ts: z.string(),
-    ip: z.string().default(''),
+    ip: z.string().default(""),
   })
   .strict();
 

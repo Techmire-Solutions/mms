@@ -1,5 +1,5 @@
-import { AxeBuilder } from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { AxeBuilder } from "@axe-core/playwright";
+import { expect, test, type Page } from "@playwright/test";
 
 /**
  * Accessibility assertions for the E2E suite.
@@ -20,10 +20,10 @@ import { expect, test, type Page } from '@playwright/test';
  *    which is exactly why this lives in Playwright rather than a jsdom unit test.
  */
 
-export type Impact = 'minor' | 'moderate' | 'serious' | 'critical';
+export type Impact = "minor" | "moderate" | "serious" | "critical";
 
 /** Impacts that fail the test. */
-const BLOCKING_IMPACTS: readonly Impact[] = ['serious', 'critical'];
+const BLOCKING_IMPACTS: readonly Impact[] = ["serious", "critical"];
 
 /**
  * Accepted-at-adoption baseline, keyed by axe rule id.
@@ -76,7 +76,7 @@ export const A11Y_BASELINE: Record<string, string> = {};
  * When set, prints every violation as a JSON array and never fails. Used to
  * regenerate the baseline after a deliberate UI change.
  */
-const COLLECT_MODE = process.env.A11Y_COLLECT === '1';
+const COLLECT_MODE = process.env.A11Y_COLLECT === "1";
 
 export interface A11yAuditOptions {
   /** Human-readable label used in failure messages, e.g. "dashboard @ 375px". */
@@ -96,7 +96,7 @@ export interface A11yAuditOptions {
 }
 
 /** Result shape derived from the builder, so `axe-core` need not be a direct dep. */
-type AxeResults = Awaited<ReturnType<InstanceType<typeof AxeBuilder>['analyze']>>;
+type AxeResults = Awaited<ReturnType<InstanceType<typeof AxeBuilder>["analyze"]>>;
 
 interface AxeViolationSummary {
   id: string;
@@ -117,7 +117,7 @@ interface AxeViolationSummary {
   contrast: { fg: string; bg: string; ratio: string }[];
 }
 
-function summarize(violations: AxeResults['violations']): AxeViolationSummary[] {
+function summarize(violations: AxeResults["violations"]): AxeViolationSummary[] {
   return violations.map((violation) => ({
     id: violation.id,
     impact: (violation.impact as Impact | null) ?? null,
@@ -128,16 +128,15 @@ function summarize(violations: AxeResults['violations']): AxeViolationSummary[] 
     // like `.card > .child[aria-hidden]` that looked like one CSS selector but
     // was actually two different elements — which sent me chasing the wrong
     // component. Keep the steps visually distinct so the target is unambiguous.
-    sampleTargets: violation.nodes.slice(0, 3).map((node) => node.target.join(' >> ')),
-    sampleHtml: (violation.nodes[0]?.html ?? '').replace(/\s+/g, ' ').slice(0, 300),
+    sampleTargets: violation.nodes.slice(0, 3).map((node) => node.target.join(" >> ")),
+    sampleHtml: (violation.nodes[0]?.html ?? "").replace(/\s+/g, " ").slice(0, 300),
     contrast: violation.nodes
       .slice(0, 3)
       .map((node) => {
         const data = node.any?.find((check) => check.data)?.data as
-          | { fgColor?: string; bgColor?: string; contrastRatio?: number }
-          | undefined;
+          { fgColor?: string; bgColor?: string; contrastRatio?: number } | undefined;
         if (!data?.fgColor || !data?.bgColor) return null;
-        const ratio = typeof data.contrastRatio === 'number' ? data.contrastRatio.toFixed(2) : '?';
+        const ratio = typeof data.contrastRatio === "number" ? data.contrastRatio.toFixed(2) : "?";
         return { fg: data.fgColor, bg: data.bgColor, ratio };
       })
       .filter((entry): entry is { fg: string; bg: string; ratio: string } => entry !== null),
@@ -148,14 +147,14 @@ function renderSummary(summaries: AxeViolationSummary[]): string {
   return summaries
     .map(
       (v) =>
-        `  • [${v.impact}] ${v.id} — ${v.help} (${v.nodes} node${v.nodes === 1 ? '' : 's'})\n` +
-        v.sampleTargets.map((t) => `      ${t}`).join('\n') +
+        `  • [${v.impact}] ${v.id} — ${v.help} (${v.nodes} node${v.nodes === 1 ? "" : "s"})\n` +
+        v.sampleTargets.map((t) => `      ${t}`).join("\n") +
         (v.contrast.length > 0
-          ? `\n      measured: ${v.contrast.map((c) => `${c.fg} on ${c.bg} = ${c.ratio}:1`).join(' | ')}`
-          : '') +
-        (v.sampleHtml ? `\n      html: ${v.sampleHtml}` : ''),
+          ? `\n      measured: ${v.contrast.map((c) => `${c.fg} on ${c.bg} = ${c.ratio}:1`).join(" | ")}`
+          : "") +
+        (v.sampleHtml ? `\n      html: ${v.sampleHtml}` : ""),
     )
-    .join('\n');
+    .join("\n");
 }
 
 /**
@@ -183,16 +182,16 @@ export async function assertNoSeriousA11yViolations(
     .catch(() => undefined);
 
   let builder = new AxeBuilder({ page }).withTags([
-    'wcag2a',
-    'wcag2aa',
-    'wcag21a',
-    'wcag21aa',
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
     // WCAG 2.2 AA. The set was previously pinned to 2.1, which silently excluded
     // every 2.2 success criterion — notably `target-size` (2.5.8, the 24x24
     // minimum). The app targets 44px by construction, so this should hold; it is
     // added so that a regression in the touch-target floor is caught rather than
     // unchecked.
-    'wcag22aa',
+    "wcag22aa",
   ]);
 
   for (const selector of options.exclude ?? []) {
@@ -244,8 +243,8 @@ export async function assertNoSeriousA11yViolations(
 
   expect(
     blocking,
-    `Accessibility violations (${BLOCKING_IMPACTS.join('/')}) at ${options.context}:\n` +
+    `Accessibility violations (${BLOCKING_IMPACTS.join("/")}) at ${options.context}:\n` +
       `${renderSummary(blocking)}\n\n` +
-      'Fix the markup, or disable the specific rule with a documented reason.',
+      "Fix the markup, or disable the specific rule with a documented reason.",
   ).toEqual([]);
 }

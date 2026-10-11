@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { deepSanitizeStrings } from './sanitize.js';
+import { z } from "zod";
+import { deepSanitizeStrings } from "./sanitize.js";
 
 export const CSV_IMPORT_MAX_BATCH_DEFAULT = 500;
 
@@ -27,7 +27,7 @@ export function csvImportBodySchema<TRowSchema extends z.ZodTypeAny>(
     .strict();
 
   return z.preprocess((raw) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
     return deepSanitizeStrings(raw);
   }, base);
 }

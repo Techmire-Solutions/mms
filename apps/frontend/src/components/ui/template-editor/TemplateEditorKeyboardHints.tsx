@@ -62,7 +62,10 @@ export function TemplateEditorKeyboardHints({
         </div>
         <ul role="list" className="flex items-center gap-3 shrink-0 m-0 p-0 list-none">
           {shortcuts.map(([shortcutKey, shortcutLabel]) => (
-            <li key={shortcutKey} className="text-muted-foreground flex items-center gap-1 whitespace-nowrap">
+            <li
+              key={shortcutKey}
+              className="text-muted-foreground flex items-center gap-1 whitespace-nowrap"
+            >
               <kbd
                 dir="ltr"
                 className="px-1.5 py-0.5 rounded border border-border/80 bg-muted/60 text-foreground font-mono text-3xs font-medium shadow-2xs"

@@ -6,10 +6,10 @@ export {
   countSubordinatesBatch,
   reassignSubordinates,
   resolveSupervisorPrimaryPositionId,
-} from './facultyRepositorySubordinateCounts.js';
+} from "./facultyRepositorySubordinateCounts.js";
 
 export {
   findSubordinates,
   findDirectSupervisorsBatch,
   findAncestorChain,
-} from './facultyRepositoryAncestors.js';
+} from "./facultyRepositoryAncestors.js";

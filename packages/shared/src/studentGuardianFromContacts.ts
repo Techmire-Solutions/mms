@@ -1,7 +1,10 @@
-import type { ContactRelationship, RelationshipContact } from './contactEntityTypes.js';
-import type { ContactLike } from './contactLinkPolicy.js';
-import { isAllowedRelationshipLabel } from './contactRelationshipRules.js';
-import { DEFAULT_RELATIONSHIP_PAIRS, normalizeRelationshipTerm } from './contactRelationshipPairUtils.js';
+import type { ContactRelationship, RelationshipContact } from "./contactEntityTypes.js";
+import type { ContactLike } from "./contactLinkPolicy.js";
+import { isAllowedRelationshipLabel } from "./contactRelationshipRules.js";
+import {
+  DEFAULT_RELATIONSHIP_PAIRS,
+  normalizeRelationshipTerm,
+} from "./contactRelationshipPairUtils.js";
 
 function pairForwardLabel(pairId: string): string {
   const pair = DEFAULT_RELATIONSHIP_PAIRS.find((entry) => entry.id === pairId);
@@ -9,9 +12,9 @@ function pairForwardLabel(pairId: string): string {
 }
 
 /** Catalog forward label for Parent (system pair `parent_child`). */
-export const STUDENT_PARENT_RELATIONSHIP_LABEL = pairForwardLabel('parent_child');
+export const STUDENT_PARENT_RELATIONSHIP_LABEL = pairForwardLabel("parent_child");
 /** Catalog forward label for Guardian (system pair `guardian_dependent`). */
-export const STUDENT_GUARDIAN_RELATIONSHIP_LABEL = pairForwardLabel('guardian_dependent');
+export const STUDENT_GUARDIAN_RELATIONSHIP_LABEL = pairForwardLabel("guardian_dependent");
 
 export type StudentContactRelationshipLink = {
   contactId?: string;
@@ -49,7 +52,7 @@ export type ContactWithRelationships = ContactLike & {
   relationships?: ContactRelationship[];
 };
 
-const RESPONSIBLE_ADULT_LABELS = new Set(['parent', 'guardian']);
+const RESPONSIBLE_ADULT_LABELS = new Set(["parent", "guardian"]);
 
 /** Merge relationshipContacts + legacy relationships; prefer non-inferred when both exist. */
 export function collectContactRelationshipLinks(
@@ -59,11 +62,11 @@ export function collectContactRelationshipLinks(
   const byKey = new Map<string, RelationshipLinkLike>();
 
   const add = (entry: RelationshipLinkLike) => {
-    const contactId = entry.contactId == null ? '' : String(entry.contactId).trim();
-    const name = (entry.name || '').trim();
-    const phone = (entry.phone || '').trim();
-    const email = (entry.email || '').trim();
-    const gender = (entry.gender || '').trim();
+    const contactId = entry.contactId == null ? "" : String(entry.contactId).trim();
+    const name = (entry.name || "").trim();
+    const phone = (entry.phone || "").trim();
+    const email = (entry.email || "").trim();
+    const gender = (entry.gender || "").trim();
     if (!contactId && !name && !phone) return;
 
     const key = contactId || (name ? `name:${name.toLowerCase()}` : `phone:${phone}`);
@@ -96,10 +99,10 @@ export function listStudentContactRelationships(
   if (!contact) return [];
   const links: StudentContactRelationshipLink[] = [];
   for (const link of collectContactRelationshipLinks(contact)) {
-    const relationship = (link.relationship || '').trim();
+    const relationship = (link.relationship || "").trim();
     if (!relationship || !isAllowedRelationshipLabel(relationship)) continue;
-    const contactId = link.contactId == null ? '' : String(link.contactId).trim();
-    const name = (link.name || '').trim();
+    const contactId = link.contactId == null ? "" : String(link.contactId).trim();
+    const name = (link.name || "").trim();
     if (!contactId && !name) continue;
     links.push({
       ...(contactId ? { contactId } : {}),
@@ -117,8 +120,12 @@ export function listStudentContactRelationships(
 export function hasResponsibleAdultLink(contact?: ContactWithRelationships | null): boolean {
   if (!contact) return false;
   return collectContactRelationshipLinks(contact).some((link) => {
-    const rel = (link.relationship || '').trim();
-    return Boolean(rel && isAllowedRelationshipLabel(rel) && RESPONSIBLE_ADULT_LABELS.has(normalizeRelationshipTerm(rel)));
+    const rel = (link.relationship || "").trim();
+    return Boolean(
+      rel &&
+      isAllowedRelationshipLabel(rel) &&
+      RESPONSIBLE_ADULT_LABELS.has(normalizeRelationshipTerm(rel)),
+    );
   });
 }
 
@@ -126,15 +133,21 @@ export function hasResponsibleAdultLink(contact?: ContactWithRelationships | nul
 export function pickPrimaryResponsibleAdult(
   links: readonly StudentContactRelationshipLink[],
 ): StudentContactRelationshipLink | undefined {
-  return links.find((l) => normalizeRelationshipTerm(l.relationship) === 'parent')
-    ?? links.find((l) => normalizeRelationshipTerm(l.relationship) === 'guardian');
+  return (
+    links.find((l) => normalizeRelationshipTerm(l.relationship) === "parent") ??
+    links.find((l) => normalizeRelationshipTerm(l.relationship) === "guardian")
+  );
 }
 
 /** Display name for list/export: Father, else Mother, else Guardian. */
 export function primaryResponsibleAdultDisplayName(
-  student?: { fatherName?: string | null; motherName?: string | null; guardianName?: string | null } | null,
+  student?: {
+    fatherName?: string | null;
+    motherName?: string | null;
+    guardianName?: string | null;
+  } | null,
 ): string {
-  return (student?.fatherName || student?.motherName || student?.guardianName || '').trim();
+  return (student?.fatherName || student?.motherName || student?.guardianName || "").trim();
 }
 
 /**
@@ -160,11 +173,11 @@ export function resolveStudentGuardianLinks(
 
   for (const link of links) {
     const relTerm = normalizeRelationshipTerm(link.relationship);
-    if (relTerm === 'parent') {
+    if (relTerm === "parent") {
       parentLinks.push(link);
-      if (!explicitFatherLink && link.gender === 'male') explicitFatherLink = link;
-      else if (!explicitMotherLink && link.gender === 'female') explicitMotherLink = link;
-    } else if (!guardian && relTerm === 'guardian') {
+      if (!explicitFatherLink && link.gender === "male") explicitFatherLink = link;
+      else if (!explicitMotherLink && link.gender === "female") explicitMotherLink = link;
+    } else if (!guardian && relTerm === "guardian") {
       guardian = link;
     }
   }
@@ -173,8 +186,11 @@ export function resolveStudentGuardianLinks(
   let fatherLink = explicitFatherLink;
   let motherLink: typeof explicitMotherLink;
   if (explicitFatherLink || explicitMotherLink) {
-    fatherLink = explicitFatherLink ?? parentLinks.find((l) => l !== explicitMotherLink && l.gender !== 'female');
-    motherLink = explicitMotherLink ?? parentLinks.find((l) => l !== fatherLink && l.gender !== 'male');
+    fatherLink =
+      explicitFatherLink ??
+      parentLinks.find((l) => l !== explicitMotherLink && l.gender !== "female");
+    motherLink =
+      explicitMotherLink ?? parentLinks.find((l) => l !== fatherLink && l.gender !== "male");
   } else {
     [fatherLink, motherLink] = parentLinks;
   }

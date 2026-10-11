@@ -1,9 +1,9 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
-import { type Session } from '@mms/shared';
-import { sessions, sessionClasses } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { hydrateSessionsList, hydrateSessionsListSummary } from './sessionRepositoryHydrate.js';
-import { getPreparedSessionById } from '../preparedStatements.js';
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import { type Session } from "@mms/shared";
+import { sessions, sessionClasses } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { hydrateSessionsList, hydrateSessionsListSummary } from "./sessionRepositoryHydrate.js";
+import { getPreparedSessionById } from "../preparedStatements.js";
 
 export const sessionSelectColumns = {
   id: sessions.id,
@@ -50,9 +50,12 @@ export async function listSessionsByWorkspace(
 export async function findSessionById(tenant: string, id: string): Promise<Session | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    if (!tx || typeof (tx as { select?: unknown }).select !== 'function') return null;
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return null;
     let rows: (typeof sessions.$inferSelect)[];
-    if (process.env.MMS_USE_PREPARED_STATEMENTS !== 'false' && typeof (tx as { execute?: unknown }).execute === 'function') {
+    if (
+      process.env.MMS_USE_PREPARED_STATEMENTS !== "false" &&
+      typeof (tx as { execute?: unknown }).execute === "function"
+    ) {
       try {
         const stmt = getPreparedSessionById(tx);
         rows = await stmt.execute({ subdomain, id });
@@ -79,7 +82,7 @@ export async function findSessionsByIds(tenant: string, ids: string[]): Promise<
   if (ids.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    if (!tx || typeof (tx as { select?: unknown }).select !== 'function') return [];
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return [];
     const rows = await tx
       .select(sessionSelectColumns)
       .from(sessions)
@@ -88,10 +91,7 @@ export async function findSessionsByIds(tenant: string, ids: string[]): Promise<
   });
 }
 
-export async function findSessionsSummaryByIds(
-  tenant: string,
-  ids: string[],
-): Promise<Session[]> {
+export async function findSessionsSummaryByIds(tenant: string, ids: string[]): Promise<Session[]> {
   if (ids.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
@@ -110,7 +110,7 @@ export async function findClassesOrSessionsByIds(
   if (ids.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    if (!tx || typeof (tx as { select?: unknown }).select !== 'function') return [];
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return [];
     const sessionRows = await tx
       .select({ id: sessions.id, deletedAt: sessions.deletedAt })
       .from(sessions)
@@ -133,7 +133,12 @@ export async function findClassesOrSessionsByIds(
           eq(sessions.id, sessionClasses.sessionId),
         ),
       )
-      .where(and(eq(sessionClasses.workspaceSubdomain, subdomain), inArray(sessionClasses.id, missingIds)));
+      .where(
+        and(
+          eq(sessionClasses.workspaceSubdomain, subdomain),
+          inArray(sessionClasses.id, missingIds),
+        ),
+      );
 
     return [...sessionRows, ...classRows];
   });

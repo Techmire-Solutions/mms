@@ -1,40 +1,42 @@
-import React, { useState } from 'react';
-import { Mail, User, UserPlus, ShieldPlus } from 'lucide-react';
-import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformAdminPermissions } from '@mms/shared';
-import { PasswordInput } from '@/components/ui/PasswordInput';
-import { Button } from '@/components/ui/button';
-import { LeadingIconInput } from '@/components/ui/LeadingIconInput';
-import { FormModal } from '@/components/ui/FormModal';
-import { Field } from '@/components/ui/FormField';
-import { SectionCard } from '@/components/ui/SectionCard';
-import { useTranslation } from '@/hooks/useTranslation';
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
-import { getPlatformRegisterError } from '@/platform/lib/platformValidation';
-import { useAddPlatformAdmin } from '@/platform/hooks/usePlatformAdmins';
-import { PlatformAdminPermissionsFields } from '@/platform/components/PlatformAdminPermissionsFields';
-import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
+import React, { useState } from "react";
+import { Mail, User, UserPlus, ShieldPlus } from "lucide-react";
+import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformAdminPermissions } from "@mms/shared";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { Button } from "@/components/ui/button";
+import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { FormModal } from "@/components/ui/FormModal";
+import { Field } from "@/components/ui/FormField";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { getPlatformRegisterError } from "@/platform/lib/platformValidation";
+import { useAddPlatformAdmin } from "@/platform/hooks/usePlatformAdmins";
+import { PlatformAdminPermissionsFields } from "@/platform/components/PlatformAdminPermissionsFields";
+import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
 
-export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?: boolean } = {}): React.JSX.Element {
+export function PlatformAddAdminForm({
+  asTriggerOnly = false,
+}: { asTriggerOnly?: boolean } = {}): React.JSX.Element {
   const { t } = useTranslation();
   const addAdmin = useAddPlatformAdmin();
   const [open, setOpen] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return new URLSearchParams(window.location.search).get('create') === 'true';
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("create") === "true";
   });
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [permissions, setPermissions] = useState<PlatformAdminPermissions>(
     DEFAULT_PLATFORM_ADMIN_PERMISSIONS,
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const resetForm = (): void => {
-    setName('');
-    setEmail('');
-    setPassword('');
-    setCurrentPassword('');
+    setName("");
+    setEmail("");
+    setPassword("");
+    setCurrentPassword("");
     setPermissions(DEFAULT_PLATFORM_ADMIN_PERMISSIONS);
     setSubmitError(null);
   };
@@ -43,10 +45,10 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
     setOpen(next);
     if (!next) {
       resetForm();
-      if (typeof window !== 'undefined' && window.location.search.includes('create=')) {
+      if (typeof window !== "undefined" && window.location.search.includes("create=")) {
         const url = new URL(window.location.href);
-        url.searchParams.delete('create');
-        window.history.replaceState({}, '', `${url.pathname}${url.search}`);
+        url.searchParams.delete("create");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}`);
       }
     }
   };
@@ -60,7 +62,7 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
       return;
     }
     if (!currentPassword.trim()) {
-      setSubmitError(t('platform.validationConfirmPlatformPassword'));
+      setSubmitError(t("platform.validationConfirmPlatformPassword"));
       return;
     }
 
@@ -83,21 +85,21 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
       <Button
         variant="primary"
         icon={UserPlus}
-        className={asTriggerOnly ? undefined : 'w-full'}
+        className={asTriggerOnly ? undefined : "w-full"}
         onClick={() => setOpen(true)}
       >
-        {t('platform.addAdmin')}
+        {t("platform.addAdmin")}
       </Button>
 
       <FormModal
         open={open}
         onClose={() => handleOpenChange(false)}
-        title={t('platform.addAdmin')}
+        title={t("platform.addAdmin")}
         icon={UserPlus}
         size="md"
         error={submitError ?? undefined}
-        cancelLabel={t('common.cancel')}
-        saveLabel={t('platform.addAdmin')}
+        cancelLabel={t("common.cancel")}
+        saveLabel={t("platform.addAdmin")}
         onSave={handleSave}
         saving={addAdmin.isPending}
         dir="ltr"
@@ -114,7 +116,7 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
           className="space-y-4 text-start"
         >
           {/* Full Name Field */}
-          <Field label={t('platform.adminName')} required id="admin-name">
+          <Field label={t("platform.adminName")} required id="admin-name">
             <LeadingIconInput
               id="admin-name"
               name="adminName"
@@ -128,12 +130,12 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
               }}
               className="min-h-11 rounded-xl"
               disabled={addAdmin.isPending}
-              placeholder={t('platform.setupFullName')}
+              placeholder={t("platform.setupFullName")}
             />
           </Field>
 
           {/* Email Address Field */}
-          <Field label={t('platform.adminEmail')} required id="admin-email">
+          <Field label={t("platform.adminEmail")} required id="admin-email">
             <LeadingIconInput
               id="admin-email"
               name="adminEmail"
@@ -147,7 +149,7 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
               }}
               className="min-h-11 rounded-xl"
               disabled={addAdmin.isPending}
-              placeholder={t('auth.emailPlaceholder')}
+              placeholder={t("auth.emailPlaceholder")}
             />
           </Field>
 
@@ -156,7 +158,7 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
             <PasswordInput
               id="admin-password"
               name="adminPassword"
-              label={t('platform.adminPassword')}
+              label={t("platform.adminPassword")}
               autoComplete="new-password"
               required
               value={password}
@@ -173,7 +175,7 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
           <PasswordInput
             id="admin-operator-password"
             name="platformPassword"
-            label={t('platform.confirmPlatformPassword')}
+            label={t("platform.confirmPlatformPassword")}
             autoComplete="current-password"
             required
             value={currentPassword}
@@ -182,7 +184,7 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
               if (submitError) setSubmitError(null);
             }}
             disabled={addAdmin.isPending}
-            placeholder={t('platform.confirmPlatformPasswordHint')}
+            placeholder={t("platform.confirmPlatformPasswordHint")}
           />
 
           {/* Capability Flags */}
@@ -202,14 +204,14 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
 
   return (
     <SectionCard
-      title={t('platform.addAdmin')}
-      subtitle={t('platform.addAdminSubtitle')}
+      title={t("platform.addAdmin")}
+      subtitle={t("platform.addAdminSubtitle")}
       icon={ShieldPlus}
       accentColor="primary"
     >
       <div className="space-y-4">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          {t('platform.addAdminCardDesc')}
+          {t("platform.addAdminCardDesc")}
         </p>
         {content}
       </div>

@@ -2,10 +2,7 @@ import type { ReactNode } from "react";
 import type { SystemUser } from "@mms/shared";
 import { Badge } from "@/components/ui/badge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import {
-  UserRoleBadge,
-  UserStatusBadge,
-} from "@/tenant/features/users/components/UserBadges";
+import { UserRoleBadge, UserStatusBadge } from "@/tenant/features/users/components/UserBadges";
 
 /** Render a Users Work column value (non-face system columns). */
 export function renderUserWorkColumnValue(

@@ -24,7 +24,11 @@ describe("BulkSelectionStatusAction", () => {
     const handleSelectStatus = vi.fn();
     const config = {
       active: { label: "Active", tone: "success" as const, cls: "bg-success/10 text-success" },
-      inactive: { label: "Inactive", tone: "neutral" as const, cls: "bg-muted text-muted-foreground" },
+      inactive: {
+        label: "Inactive",
+        tone: "neutral" as const,
+        cls: "bg-muted text-muted-foreground",
+      },
     };
 
     await act(async () => {
@@ -34,7 +38,7 @@ describe("BulkSelectionStatusAction", () => {
           statuses={["active", "inactive"]}
           statusBadgeConfig={config}
           onSelectStatus={handleSelectStatus}
-        />
+        />,
       );
     });
 

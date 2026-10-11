@@ -1,18 +1,15 @@
-import {
-  normalizeUserModulePreferences,
-  type UserModulePreferences,
-} from '@mms/shared';
+import { normalizeUserModulePreferences, type UserModulePreferences } from "@mms/shared";
 import {
   getUserModulePreferencesByWorkspace,
   upsertUserModulePreferences,
-} from '../db/repositories/userModulePreferencesRepository.js';
-import { requireTenant } from '../lib/tenantContext.js';
-import { broadcastCollection } from '../lib/livePush.js';
-import { mergeWorkspaceRolesForPrefsSave } from '../faculty/use-cases/facultyManagedRolesPrefs.js';
+} from "../db/repositories/userModulePreferencesRepository.js";
+import { requireTenant } from "../lib/tenantContext.js";
+import { broadcastCollection } from "../lib/livePush.js";
+import { mergeWorkspaceRolesForPrefsSave } from "../faculty/use-cases/facultyManagedRolesPrefs.js";
 
 export async function loadUserModulePreferences(): Promise<UserModulePreferences | null> {
   const raw = await getUserModulePreferencesByWorkspace(requireTenant());
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   return normalizeUserModulePreferences(raw);
 }
 
@@ -33,6 +30,6 @@ export async function saveUserModulePreferences(
   );
   const normalized: UserModulePreferences = { ...incoming, workspaceRoles };
   await upsertUserModulePreferences(tenant, Object.assign({}, normalized));
-  await broadcastCollection('users');
+  await broadcastCollection("users");
   return normalized;
 }

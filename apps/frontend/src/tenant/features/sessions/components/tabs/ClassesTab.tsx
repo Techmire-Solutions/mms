@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { Plus, GraduationCap } from "lucide-react";
-import { type Session, type Class } from '@/lib/data/sessionsData';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useFacultyByIds } from '@/tenant/hooks/collections/faculty';
-import { collectFacultyIdsFromClasses } from '@/lib/registryResolve';
-import { assignClassFaculty, resolveClassFacultyId, resolveClassFacultyName } from '@/lib/faculty/facultyAssignment';
+import { type Session, type Class } from "@/lib/data/sessionsData";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useFacultyByIds } from "@/tenant/hooks/collections/faculty";
+import { collectFacultyIdsFromClasses } from "@/lib/registryResolve";
+import {
+  assignClassFaculty,
+  resolveClassFacultyId,
+  resolveClassFacultyName,
+} from "@/lib/faculty/facultyAssignment";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -13,7 +17,9 @@ import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
 import { ClassCard } from "@/tenant/features/sessions/components/tabs/ClassCard";
 import { ClassModal } from "@/tenant/features/sessions/components/tabs/ClassModal";
 
-const MessageComposer = React.lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
+const MessageComposer = React.lazy(
+  () => import("@/tenant/components/messaging/TenantMessageComposer"),
+);
 
 interface ClassesTabProps {
   session: Session;
@@ -37,14 +43,17 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
   const [saving, setSaving] = useState(false);
   const deletePendingRef = React.useRef(false);
 
-  const handleClassMessage = (channel: 'sms' | 'whatsapp' | 'email', sessionClass: Class) => {
+  const handleClassMessage = (channel: "sms" | "whatsapp" | "email", sessionClass: Class) => {
     const assignedFacultyId = resolveClassFacultyId(sessionClass);
     const assignedFaculty = facultyMembers.find((f) => f.id === assignedFacultyId);
     const fallbackName = resolveClassFacultyName(sessionClass) || sessionClass.name;
-    const recipientName = (assignedFaculty ? assignedFaculty.name : fallbackName) || t("sessions.classes.fallbackName");
+    const recipientName =
+      (assignedFaculty ? assignedFaculty.name : fallbackName) || t("sessions.classes.fallbackName");
     const phoneStr: string = assignedFaculty?.phone ?? "";
     const emailStr: string | undefined = assignedFaculty?.email ?? undefined;
-    openComposer(channel, [{ id: sessionClass.id, name: recipientName, phone: phoneStr, email: emailStr }]);
+    openComposer(channel, [
+      { id: sessionClass.id, name: recipientName, phone: phoneStr, email: emailStr },
+    ]);
   };
 
   const handleSave = async (sessionClass: Class) => {
@@ -55,7 +64,7 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
     const classes = session.classes || [];
     const existing = classes.find((classItem) => classItem.id === updatedClass.id);
     const updatedClasses = existing
-      ? classes.map((classItem) => classItem.id === updatedClass.id ? updatedClass : classItem)
+      ? classes.map((classItem) => (classItem.id === updatedClass.id ? updatedClass : classItem))
       : [...classes, updatedClass];
     setSaving(true);
     try {
@@ -71,14 +80,20 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
     if (!deleteTarget) return;
     deletePendingRef.current = true;
     try {
-      await onUpdate({ ...session, classes: session.classes.filter((classItem) => classItem.id !== deleteTarget.id) });
+      await onUpdate({
+        ...session,
+        classes: session.classes.filter((classItem) => classItem.id !== deleteTarget.id),
+      });
       setDeleteTarget(null);
     } finally {
       deletePendingRef.current = false;
     }
   };
 
-  const handleEdit = (sessionClass: Class) => { setClassBeingEdited(sessionClass); setShowModal(true); };
+  const handleEdit = (sessionClass: Class) => {
+    setClassBeingEdited(sessionClass);
+    setShowModal(true);
+  };
 
   return (
     <section aria-label={t("sessions.classes.ariaLabel")} className="space-y-4">
@@ -88,7 +103,10 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
         actions={
           canWrite && (
             <Button
-              onClick={() => { setClassBeingEdited(null); setShowModal(true); }}
+              onClick={() => {
+                setClassBeingEdited(null);
+                setShowModal(true);
+              }}
               className="flex h-auto w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
             >
               <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {t("sessions.classes.add")}
@@ -97,7 +115,7 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
         }
       />
 
-      {(!session.classes || session.classes.length === 0) ? (
+      {!session.classes || session.classes.length === 0 ? (
         <EmptyState
           variant="dashed"
           icon={GraduationCap}
@@ -107,7 +125,15 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {session.classes.map((sessionClass) => (
-            <ClassCard key={sessionClass.id} sessionClass={sessionClass} faculty={facultyMembers} onEdit={handleEdit} onDelete={() => setDeleteTarget(sessionClass)} onMessage={handleClassMessage} canWrite={canWrite} />
+            <ClassCard
+              key={sessionClass.id}
+              sessionClass={sessionClass}
+              faculty={facultyMembers}
+              onEdit={handleEdit}
+              onDelete={() => setDeleteTarget(sessionClass)}
+              onMessage={handleClassMessage}
+              canWrite={canWrite}
+            />
           ))}
         </div>
       )}
@@ -115,7 +141,12 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
       <ClassModal
         open={showModal}
         sessionClass={classBeingEdited}
-        onClose={() => { if (!saving) { setShowModal(false); setClassBeingEdited(null); } }}
+        onClose={() => {
+          if (!saving) {
+            setShowModal(false);
+            setClassBeingEdited(null);
+          }
+        }}
         onSave={handleSave}
         saving={saving}
       />
@@ -131,12 +162,18 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
       )}
       <ConfirmAlertDialog
         open={deleteTarget !== null}
-        onOpenChange={(open) => { if (!open && !deletePendingRef.current) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open && !deletePendingRef.current) setDeleteTarget(null);
+        }}
         title={t("sessions.classes.confirmDeleteTitle")}
-        description={t("sessions.classes.confirmDeleteDescription", { name: deleteTarget?.name ?? "" })}
+        description={t("sessions.classes.confirmDeleteDescription", {
+          name: deleteTarget?.name ?? "",
+        })}
         confirmLabel={t("common.delete")}
         destructive
-        onConfirm={() => { void handleDelete(); }}
+        onConfirm={() => {
+          void handleDelete();
+        }}
       />
     </section>
   );

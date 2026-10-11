@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  hasanatTransferSchema,
-  type HasanatTransferEntity,
-} from "@mms/shared";
+import { hasanatTransferSchema, type HasanatTransferEntity } from "@mms/shared";
 import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface HasanatCsvImportDialogProps {

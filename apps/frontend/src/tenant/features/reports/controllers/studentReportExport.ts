@@ -1,7 +1,15 @@
-import { ENROLLMENTS_MODULE_MANIFEST, formatDate, type Enrollment, type Session } from '@mms/shared';
-import { apiContract } from '@/lib/api';
-import { fetchAllStudentsForQuery } from '@/tenant/hooks/collections/students';
-import { mapStudentRow, type EnrollmentHistoryItem } from '@/components/ui/reports/studentReportTypes';
+import {
+  ENROLLMENTS_MODULE_MANIFEST,
+  formatDate,
+  type Enrollment,
+  type Session,
+} from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { fetchAllStudentsForQuery } from "@/tenant/hooks/collections/students";
+import {
+  mapStudentRow,
+  type EnrollmentHistoryItem,
+} from "@/components/ui/reports/studentReportTypes";
 
 /** Page-walk enrollments for report export (avoids maxPageSize collection dump in the UI). */
 export async function fetchAllEnrollmentsForQuery(params: {
@@ -12,12 +20,24 @@ export async function fetchAllEnrollmentsForQuery(params: {
   const all: Enrollment[] = [];
   let page = 1;
   for (;;) {
-    const res = await apiContract.enrollments.list({ query: { page, limit, search: params.search?.trim(), sessionId: (params.sessionId?.trim() && params.sessionId !== "all") ? params.sessionId.trim() : undefined } });
+    const res = await apiContract.enrollments.list({
+      query: {
+        page,
+        limit,
+        search: params.search?.trim(),
+        sessionId:
+          params.sessionId?.trim() && params.sessionId !== "all"
+            ? params.sessionId.trim()
+            : undefined,
+      },
+    });
     const result = res.body as { enrollments?: Enrollment[]; hasMore?: boolean };
     all.push(...(result.enrollments ?? []));
     if (!result.hasMore) break;
     if (page >= 200) {
-      throw new Error('Enrollment export exceeds the 100,000-record safety limit; narrow the filters.');
+      throw new Error(
+        "Enrollment export exceeds the 100,000-record safety limit; narrow the filters.",
+      );
     }
     page += 1;
   }
@@ -30,7 +50,7 @@ export function mapEnrollmentRow(enrollment: Enrollment): EnrollmentHistoryItem 
     id: enrollment.id,
     studentName: enrollment.studentName,
     session: enrollment.sessionName,
-    class: enrollment.className || '—',
+    class: enrollment.className || "—",
     enrolled: formatDate(enrollment.enrolledDate),
     status: enrollment.status,
   };

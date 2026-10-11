@@ -17,22 +17,12 @@ export interface UseAttendanceSetupPanelStateReturn {
 /** Attendance Setup panel state — encapsulates config, editor draft, dirty check, and save actions. */
 export function useAttendanceSetupPanelState(): UseAttendanceSetupPanelStateReturn {
   const config = useAttendanceConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    saveSettingsAsync,
-  } = useModuleSettingsEditor<AttendanceSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync } =
+    useModuleSettingsEditor<AttendanceSettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useAttendanceSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useAttendanceSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,

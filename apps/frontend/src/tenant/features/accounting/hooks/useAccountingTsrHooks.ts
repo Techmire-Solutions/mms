@@ -2,18 +2,18 @@
  * Phase 7: Contract-driven query/mutation hooks for the Accounting module.
  * Uses tsrClient (@ts-rest/react-query v5) for full contract schema enforcement.
  */
-import { apiContract, tsrClient } from '@/lib/api';
-import { queryOptions, useQueryClient } from '@tanstack/react-query';
-import { invalidateAccountingQueries } from '@/tenant/features/accounting/hooks/invalidateAccountingQueries';
+import { apiContract, tsrClient } from "@/lib/api";
+import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
   ACCOUNTING_ENTRIES_QUERY_KEY,
   ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
-} from '@/tenant/features/accounting/hooks/useAccountingApi';
+} from "@/tenant/features/accounting/hooks/useAccountingApi";
 
 export function accountingAccountsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
-    queryKey: [...ACCOUNTING_ACCOUNTS_QUERY_KEY, 'contract', query] as const,
+    queryKey: [...ACCOUNTING_ACCOUNTS_QUERY_KEY, "contract", query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.accounting.listAccounts({
         query: query as Record<string, string>,
@@ -21,7 +21,7 @@ export function accountingAccountsListQueryOptions(query: Record<string, unknown
         fetchOptions: { signal },
       });
       if (response.status !== 200) {
-        throw new Error('Failed to fetch accounting accounts');
+        throw new Error("Failed to fetch accounting accounts");
       }
       return response.body;
     },
@@ -32,7 +32,7 @@ export function accountingAccountsListQueryOptions(query: Record<string, unknown
 
 export function accountingEntriesListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
-    queryKey: [...ACCOUNTING_ENTRIES_QUERY_KEY, 'contract', query] as const,
+    queryKey: [...ACCOUNTING_ENTRIES_QUERY_KEY, "contract", query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.accounting.listEntries({
         query: query as Record<string, string>,
@@ -40,7 +40,7 @@ export function accountingEntriesListQueryOptions(query: Record<string, unknown>
         fetchOptions: { signal },
       });
       if (response.status !== 200) {
-        throw new Error('Failed to fetch accounting entries');
+        throw new Error("Failed to fetch accounting entries");
       }
       return response.body;
     },
@@ -51,7 +51,7 @@ export function accountingEntriesListQueryOptions(query: Record<string, unknown>
 
 export function accountingFiscalYearsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
-    queryKey: [...ACCOUNTING_FISCAL_YEARS_QUERY_KEY, 'contract', query] as const,
+    queryKey: [...ACCOUNTING_FISCAL_YEARS_QUERY_KEY, "contract", query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.accounting.listFiscalYears({
         query: query as Record<string, string>,
@@ -59,7 +59,7 @@ export function accountingFiscalYearsListQueryOptions(query: Record<string, unkn
         fetchOptions: { signal },
       });
       if (response.status !== 200) {
-        throw new Error('Failed to fetch accounting fiscal years');
+        throw new Error("Failed to fetch accounting fiscal years");
       }
       return response.body;
     },
@@ -71,7 +71,7 @@ export function accountingFiscalYearsListQueryOptions(query: Record<string, unkn
 export function useAccountingContractAccounts(query: Record<string, unknown>, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listAccounts.useQuery({
-    queryKey: [...ACCOUNTING_ACCOUNTS_QUERY_KEY, 'contract', query],
+    queryKey: [...ACCOUNTING_ACCOUNTS_QUERY_KEY, "contract", query],
     queryData: { query },
     staleTime: 15_000,
     enabled,
@@ -81,7 +81,7 @@ export function useAccountingContractAccounts(query: Record<string, unknown>, en
 export function useAccountingContractEntries(query: Record<string, unknown>, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listEntries.useQuery({
-    queryKey: [...ACCOUNTING_ENTRIES_QUERY_KEY, 'contract', query],
+    queryKey: [...ACCOUNTING_ENTRIES_QUERY_KEY, "contract", query],
     queryData: { query },
     staleTime: 15_000,
     enabled,
@@ -91,7 +91,7 @@ export function useAccountingContractEntries(query: Record<string, unknown>, ena
 export function useAccountingContractFiscalYears(query: Record<string, unknown>, enabled = true) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listFiscalYears.useQuery({
-    queryKey: [...ACCOUNTING_FISCAL_YEARS_QUERY_KEY, 'contract', query],
+    queryKey: [...ACCOUNTING_FISCAL_YEARS_QUERY_KEY, "contract", query],
     queryData: { query },
     staleTime: 15_000,
     enabled,

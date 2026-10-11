@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   ZoomIn,
   ZoomOut,
@@ -8,9 +8,9 @@ import {
   Copy,
   Check,
   Download,
-} from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
 
 export interface ErdCanvasToolbarProps {
   zoom: number;
@@ -43,7 +43,7 @@ export function ErdCanvasToolbar({
   return (
     <div
       role="toolbar"
-      aria-label={t('platform.erdDiagram')}
+      aria-label={t("platform.erdDiagram")}
       className="flex flex-wrap items-center justify-between gap-2 border-b border-border/40 pb-3"
     >
       {/* Zoom controls */}
@@ -55,8 +55,8 @@ export function ErdCanvasToolbar({
           onClick={onZoomOut}
           disabled={zoom <= 0.5}
           className="min-w-11 p-0 rounded-lg hover:bg-muted"
-          title={t('platform.erdZoomOut')}
-          aria-label={t('platform.erdZoomOut')}
+          title={t("platform.erdZoomOut")}
+          aria-label={t("platform.erdZoomOut")}
         />
 
         <Button
@@ -64,8 +64,8 @@ export function ErdCanvasToolbar({
           size="sm"
           onClick={onResetZoom}
           className="px-2.5 text-xs font-mono font-bold text-foreground hover:bg-muted/80 rounded-lg transition-colors"
-          title={t('platform.erdResetZoom')}
-          aria-label={t('platform.erdResetZoom')}
+          title={t("platform.erdResetZoom")}
+          aria-label={t("platform.erdResetZoom")}
         >
           {zoomPercent}%
         </Button>
@@ -77,8 +77,8 @@ export function ErdCanvasToolbar({
           onClick={onZoomIn}
           disabled={zoom >= 2.0}
           className="min-w-11 p-0 rounded-lg hover:bg-muted"
-          title={t('platform.erdZoomIn')}
-          aria-label={t('platform.erdZoomIn')}
+          title={t("platform.erdZoomIn")}
+          aria-label={t("platform.erdZoomIn")}
         />
 
         <Button
@@ -87,8 +87,8 @@ export function ErdCanvasToolbar({
           icon={RotateCcw}
           onClick={onResetZoom}
           className="min-w-11 p-0 rounded-lg hover:bg-muted text-muted-foreground"
-          title={t('platform.erdResetZoom')}
-          aria-label={t('platform.erdResetZoom')}
+          title={t("platform.erdResetZoom")}
+          aria-label={t("platform.erdResetZoom")}
         />
       </div>
 
@@ -99,11 +99,11 @@ export function ErdCanvasToolbar({
           size="sm"
           icon={copied ? Check : Copy}
           onClick={onCopySource}
-          title={copied ? t('platform.erdCopied') : t('platform.erdCopySource')}
-          aria-label={copied ? t('platform.erdCopied') : t('platform.erdCopySource')}
-          className={copied ? 'text-success border-success/30' : undefined}
+          title={copied ? t("platform.erdCopied") : t("platform.erdCopySource")}
+          aria-label={copied ? t("platform.erdCopied") : t("platform.erdCopySource")}
+          className={copied ? "text-success border-success/30" : undefined}
         >
-          {copied ? t('platform.erdCopied') : t('platform.erdCopySource')}
+          {copied ? t("platform.erdCopied") : t("platform.erdCopySource")}
         </Button>
 
         <Button
@@ -112,10 +112,10 @@ export function ErdCanvasToolbar({
           icon={Download}
           onClick={onDownloadSvg}
           disabled={!canDownload}
-          title={t('platform.erdDownloadSvg')}
-          aria-label={t('platform.erdDownloadSvg')}
+          title={t("platform.erdDownloadSvg")}
+          aria-label={t("platform.erdDownloadSvg")}
         >
-          {t('platform.erdDownloadSvg')}
+          {t("platform.erdDownloadSvg")}
         </Button>
 
         <Button
@@ -125,8 +125,8 @@ export function ErdCanvasToolbar({
           icon={isFullscreen ? Minimize2 : Maximize2}
           onClick={onToggleFullscreen}
           className="min-w-11"
-          title={isFullscreen ? t('platform.erdExitFullscreen') : t('platform.erdFullscreen')}
-          aria-label={isFullscreen ? t('platform.erdExitFullscreen') : t('platform.erdFullscreen')}
+          title={isFullscreen ? t("platform.erdExitFullscreen") : t("platform.erdFullscreen")}
+          aria-label={isFullscreen ? t("platform.erdExitFullscreen") : t("platform.erdFullscreen")}
         />
       </div>
     </div>

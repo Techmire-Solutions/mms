@@ -4,18 +4,24 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ContactsBulkTagModal } from "./ContactsBulkTagModal";
 
 vi.mock("@/components/ui/FormModal", () => ({
-  FormModal: ({ open, title, children, saveLabel }: {
+  FormModal: ({
+    open,
+    title,
+    children,
+    saveLabel,
+  }: {
     open: boolean;
     title: string;
     children: React.ReactNode;
     saveLabel?: string;
-  }) => (open ? (
-    <div data-testid="modal">
-      <h2>{title}</h2>
-      <div>{children}</div>
-      <button type="button">{saveLabel}</button>
-    </div>
-  ) : null),
+  }) =>
+    open ? (
+      <div data-testid="modal">
+        <h2>{title}</h2>
+        <div>{children}</div>
+        <button type="button">{saveLabel}</button>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -30,12 +36,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 describe("ContactsBulkTagModal Component", () => {
   it("renders modal with tag input and action buttons when open", () => {
     const html = renderToStaticMarkup(
-      <ContactsBulkTagModal
-        open={true}
-        onClose={vi.fn()}
-        selectedCount={4}
-        onConfirm={vi.fn()}
-      />,
+      <ContactsBulkTagModal open={true} onClose={vi.fn()} selectedCount={4} onConfirm={vi.fn()} />,
     );
 
     expect(html).toContain("contacts.bulkTagTitle");
@@ -45,12 +46,7 @@ describe("ContactsBulkTagModal Component", () => {
 
   it("returns null when open is false", () => {
     const html = renderToStaticMarkup(
-      <ContactsBulkTagModal
-        open={false}
-        onClose={vi.fn()}
-        selectedCount={4}
-        onConfirm={vi.fn()}
-      />,
+      <ContactsBulkTagModal open={false} onClose={vi.fn()} selectedCount={4} onConfirm={vi.fn()} />,
     );
 
     expect(html).toBe("");

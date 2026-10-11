@@ -1,12 +1,12 @@
-import { useRef, useState } from 'react';
+import { useRef, useState } from "react";
 import {
   personalizeMessage,
   type MessageTemplate,
   type StandardMessagingRecipient as MessagingRecipient,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { useMessagingMutations } from '@/hooks/useMessaging';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { useMessagingMutations } from "@/hooks/useMessaging";
 import {
   executeRecipientSend,
   findUnknownTokens,
@@ -16,13 +16,13 @@ import {
   type DispatchSpeed,
   type SentDispatchRecord,
   type ValidatedMessagingRecipient,
-} from './messageComposerDispatchService';
-import { formatUnknownTokensLabel } from './messageComposerTokenErrors';
+} from "./messageComposerDispatchService";
+import { formatUnknownTokensLabel } from "./messageComposerTokenErrors";
 
 export type { DispatchSpeed, ValidatedMessagingRecipient };
 
 interface UseMessageComposerDispatchParams {
-  channel: 'sms' | 'whatsapp' | 'email';
+  channel: "sms" | "whatsapp" | "email";
   recipients: MessagingRecipient[];
   activeTemplates: MessageTemplate[];
   templateId: string;
@@ -50,8 +50,11 @@ export function useMessageComposerDispatch({
   const { recordDispatches } = useMessagingMutations();
   const [opening, setOpening] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [dispatchSpeed, setDispatchSpeed] = useState<DispatchSpeed>('normal');
-  const [dispatchProgress, setDispatchProgress] = useState<{ current: number; total: number } | null>(null);
+  const [dispatchSpeed, setDispatchSpeed] = useState<DispatchSpeed>("normal");
+  const [dispatchProgress, setDispatchProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [pendingAudit, setPendingAudit] = useState<SentDispatchRecord[] | null>(null);
   const cancelRef = useRef(false);
@@ -72,7 +75,7 @@ export function useMessageComposerDispatch({
       text,
       subject,
       personalizeOptions,
-      defaultSubject: t('messaging.defaultSubject'),
+      defaultSubject: t("messaging.defaultSubject"),
     });
 
   const saveHistory = (sentRecords: SentDispatchRecord[]): Promise<boolean> =>
@@ -109,9 +112,11 @@ export function useMessageComposerDispatch({
     if (!eligibleRecipients.length || !message.trim()) return;
     const unknownTokens = findUnknownTokens(channel, subject, message);
     if (unknownTokens.length > 0) {
-      notify.error(t('messaging.unknownTokens', {
-        tokens: formatUnknownTokensLabel(unknownTokens),
-      }));
+      notify.error(
+        t("messaging.unknownTokens", {
+          tokens: formatUnknownTokensLabel(unknownTokens),
+        }),
+      );
       return;
     }
     const sentRecords: SentDispatchRecord[] = [];
@@ -120,10 +125,14 @@ export function useMessageComposerDispatch({
         recipientId: recipient.id,
         body: personalizeMessage(message, recipient, personalizeOptions),
         subject:
-          channel === 'email'
-            ? personalizeMessage(subject || t('messaging.defaultSubject'), recipient, personalizeOptions)
+          channel === "email"
+            ? personalizeMessage(
+                subject || t("messaging.defaultSubject"),
+                recipient,
+                personalizeOptions,
+              )
             : undefined,
-        status: success ? 'sent' : 'failed',
+        status: success ? "sent" : "failed",
       });
     };
 

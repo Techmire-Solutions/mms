@@ -13,5 +13,3 @@ export function QuestionBankReportsTier(): React.JSX.Element {
     </ModuleTierMotion>
   );
 }
-
-

@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
-import type { Account, JournalEntry, FiscalYear } from '@/lib/data/accountingData';
+import type { Account, JournalEntry, FiscalYear } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { generateClientEntityId, isJournalEntryBalanced, journalEntryRecordSchema, moneyToCents, todayISO } from "@mms/shared";
+import {
+  generateClientEntityId,
+  isJournalEntryBalanced,
+  journalEntryRecordSchema,
+  moneyToCents,
+  todayISO,
+} from "@mms/shared";
 import { notify } from "@/lib/notify";
 import type { DraftForm, DraftLine } from "./journalEntryFormTypes";
 import type { JournalEntrySave } from "./journalEntriesTypes";
@@ -13,7 +19,13 @@ import {
   isJournalRefUnique,
 } from "./journalEntryFormValidation";
 
-const EMPTY_LINE = (): DraftLine => ({ id: generateClientEntityId("l", "-"), account_id: "", debit: "", credit: "", description: "" });
+const EMPTY_LINE = (): DraftLine => ({
+  id: generateClientEntityId("l", "-"),
+  account_id: "",
+  debit: "",
+  credit: "",
+  description: "",
+});
 
 interface UseJournalEntryFormOptions {
   accounts: Account[];
@@ -23,18 +35,30 @@ interface UseJournalEntryFormOptions {
   fiscalYears: FiscalYear[];
 }
 
-export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscalYears }: UseJournalEntryFormOptions) {
+export function useJournalEntryForm({
+  accounts,
+  entries,
+  onSave,
+  initial,
+  fiscalYears,
+}: UseJournalEntryFormOptions) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const isEdit = !!initial?.id;
-  const activeFiscalYearRecord = (fiscalYears || []).find((fiscalYear) => fiscalYear.status === "active");
+  const activeFiscalYearRecord = (fiscalYears || []).find(
+    (fiscalYear) => fiscalYear.status === "active",
+  );
   const activeFiscalYear = activeFiscalYearRecord?.id || "";
 
   const [form, setForm] = useState<DraftForm>(() => {
     return initial
       ? {
           ...initial,
-          lines: initial.lines.map((entryLine) => ({ ...entryLine, debit: entryLine.debit || "", credit: entryLine.credit || "" }))
+          lines: initial.lines.map((entryLine) => ({
+            ...entryLine,
+            debit: entryLine.debit || "",
+            credit: entryLine.credit || "",
+          })),
         }
       : {
           id: "",
@@ -47,7 +71,7 @@ export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscal
           fiscal_year: activeFiscalYearRecord?.label || "",
           fiscal_year_id: activeFiscalYear,
           lines: [EMPTY_LINE(), EMPTY_LINE()],
-          created_by: user?.name ?? ""
+          created_by: user?.name ?? "",
         };
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -57,7 +81,11 @@ export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscal
     const base: DraftForm = initial
       ? {
           ...initial,
-          lines: initial.lines.map((entryLine) => ({ ...entryLine, debit: entryLine.debit || "", credit: entryLine.credit || "" }))
+          lines: initial.lines.map((entryLine) => ({
+            ...entryLine,
+            debit: entryLine.debit || "",
+            credit: entryLine.credit || "",
+          })),
         }
       : {
           id: "",
@@ -70,7 +98,7 @@ export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscal
           fiscal_year: activeFiscalYearRecord?.label || "",
           fiscal_year_id: activeFiscalYear,
           lines: [EMPTY_LINE(), EMPTY_LINE()],
-          created_by: user?.name ?? ""
+          created_by: user?.name ?? "",
         };
     setForm(base);
     setErrors({});
@@ -79,8 +107,14 @@ export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscal
   // Money is summed through integer cents (and converted once) so the totals
   // shown beside the lines are the same figures the ledger posts, with no float
   // artefacts such as 0.30000000000000004.
-  const totalDebit = moneyToCents(form.lines.reduce((sum, journalLine) => sum + parseJournalLineAmount(journalLine.debit), 0)) / 100;
-  const totalCredit = moneyToCents(form.lines.reduce((sum, journalLine) => sum + parseJournalLineAmount(journalLine.credit), 0)) / 100;
+  const totalDebit =
+    moneyToCents(
+      form.lines.reduce((sum, journalLine) => sum + parseJournalLineAmount(journalLine.debit), 0),
+    ) / 100;
+  const totalCredit =
+    moneyToCents(
+      form.lines.reduce((sum, journalLine) => sum + parseJournalLineAmount(journalLine.credit), 0),
+    ) / 100;
   /**
    * Balanced by the same rule the server enforces (`isJournalEntryBalanced`:
    * exact integer cents, at least two lines, each single-sided) instead of a
@@ -117,12 +151,17 @@ export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscal
   };
   const removeLine = (lineIndex: number) => {
     if (form.lines.length <= 2) return;
-    setForm((prev) => ({ ...prev, lines: prev.lines.filter((_, currentIndex) => currentIndex !== lineIndex) }));
+    setForm((prev) => ({
+      ...prev,
+      lines: prev.lines.filter((_, currentIndex) => currentIndex !== lineIndex),
+    }));
   };
 
   const toggleTag = (tag: string) => {
     setForm((prev) => {
-      const tags = prev.tags?.includes(tag) ? prev.tags.filter((existingTag) => existingTag !== tag) : [...(prev.tags || []), tag];
+      const tags = prev.tags?.includes(tag)
+        ? prev.tags.filter((existingTag) => existingTag !== tag)
+        : [...(prev.tags || []), tag];
       return { ...prev, tags };
     });
   };
@@ -130,7 +169,10 @@ export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscal
   const saveEntry = async (saveAs?: "draft" | "posted") => {
     const targetStatus = saveAs ?? form.status;
     const validationErrors = validateJournalEntryForm(form, entries, targetStatus, isBalanced, t);
-    if (Object.keys(validationErrors).length) { setErrors(validationErrors); return; }
+    if (Object.keys(validationErrors).length) {
+      setErrors(validationErrors);
+      return;
+    }
     const trimmedRef = form.ref?.trim();
     // Blank on create → the server assigns the next voucher number on save.
     const journalReference = trimmedRef || (isEdit ? form.ref : "");
@@ -158,7 +200,8 @@ export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscal
     setSubmitting(true);
     try {
       const saved = await onSave(parsed.data);
-      if (!isEdit && saved?.ref) notify.success(t("accounting.journal.form.voucherAssigned", { number: saved.ref }));
+      if (!isEdit && saved?.ref)
+        notify.success(t("accounting.journal.form.voucherAssigned", { number: saved.ref }));
     } finally {
       setSubmitting(false);
     }
@@ -170,7 +213,7 @@ export function useJournalEntryForm({ accounts, entries, onSave, initial, fiscal
 
   const flattenedAccountOptions = sortedAccounts.map((account) => ({
     value: account.id,
-    label: `${account.type}: ${account.code} – ${account.name}`
+    label: `${account.type}: ${account.code} – ${account.name}`,
   }));
 
   const errorMessages = (() => Object.values(errors).filter(Boolean))();

@@ -11,9 +11,7 @@ const base: StudentsPaginatedParams = { page: 1 };
 
 describe("buildStudentsPageUrl", () => {
   it("builds the base students URL with default page size", () => {
-    expect(buildStudentsPageUrl({ page: 3 })).toBe(
-      "/api/students?page=3&limit=50",
-    );
+    expect(buildStudentsPageUrl({ page: 3 })).toBe("/api/students?page=3&limit=50");
   });
 
   it("appends every optional filter", () => {
@@ -89,11 +87,15 @@ describe("sameStudentsListFilters", () => {
 
   it("returns true for identical params", () => {
     const params = studentsListQueryKeyParams({ page: 1, search: "a" });
-    expect(sameStudentsListFilters(params, studentsListQueryKeyParams({ page: 1, search: "a" }))).toBe(true);
+    expect(
+      sameStudentsListFilters(params, studentsListQueryKeyParams({ page: 1, search: "a" })),
+    ).toBe(true);
   });
 
   it("returns false when a filter differs", () => {
     const params = studentsListQueryKeyParams({ page: 1, search: "a" });
-    expect(sameStudentsListFilters(params, studentsListQueryKeyParams({ page: 1, search: "b" }))).toBe(false);
+    expect(
+      sameStudentsListFilters(params, studentsListQueryKeyParams({ page: 1, search: "b" })),
+    ).toBe(false);
   });
 });

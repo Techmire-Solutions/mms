@@ -60,21 +60,40 @@ export function useObligationCollectionsListModel({
   }, [collections]);
   const contacts = useMergedObligationContacts(contactIds);
 
-  const contactsMap = useMemo(() => new Map(contacts.filter(Boolean).map((c) => [String(c.id), c])), [contacts]);
-  const repsMap = useMemo(() => new Map(reps.filter(Boolean).map((r) => [String(r.id), r])), [reps]);
-  const mujtahidsMap = useMemo(() => new Map(mujtahids.filter(Boolean).map((m) => [String(m.id), m])), [mujtahids]);
-  const obTypesMap = useMemo(() => new Map(obligationTypes.filter(Boolean).map((o) => [String(o.id), o])), [obligationTypes]);
+  const contactsMap = useMemo(
+    () => new Map(contacts.filter(Boolean).map((c) => [String(c.id), c])),
+    [contacts],
+  );
+  const repsMap = useMemo(
+    () => new Map(reps.filter(Boolean).map((r) => [String(r.id), r])),
+    [reps],
+  );
+  const mujtahidsMap = useMemo(
+    () => new Map(mujtahids.filter(Boolean).map((m) => [String(m.id), m])),
+    [mujtahids],
+  );
+  const obTypesMap = useMemo(
+    () => new Map(obligationTypes.filter(Boolean).map((o) => [String(o.id), o])),
+    [obligationTypes],
+  );
 
   const getContact = useCallback(
-    (contactId?: string | number | null) => (contactId != null ? contactsMap.get(String(contactId)) : undefined),
+    (contactId?: string | number | null) =>
+      contactId != null ? contactsMap.get(String(contactId)) : undefined,
     [contactsMap],
   );
   const getRep = useCallback((repId: string) => repsMap.get(repId), [repsMap]);
-  const getMujtahid = useCallback((repId: string) => {
-    const rep = getRep(repId);
-    return rep ? mujtahidsMap.get(rep.mujtahid_id) : null;
-  }, [getRep, mujtahidsMap]);
-  const getObligationType = useCallback((obligationTypeId: string) => obTypesMap.get(obligationTypeId), [obTypesMap]);
+  const getMujtahid = useCallback(
+    (repId: string) => {
+      const rep = getRep(repId);
+      return rep ? mujtahidsMap.get(rep.mujtahid_id) : null;
+    },
+    [getRep, mujtahidsMap],
+  );
+  const getObligationType = useCallback(
+    (obligationTypeId: string) => obTypesMap.get(obligationTypeId),
+    [obTypesMap],
+  );
 
   const filtered = useMemo(() => {
     const query = debouncedSearch.trim().toLowerCase();
@@ -104,14 +123,19 @@ export function useObligationCollectionsListModel({
     onFilteredCountChange?.(filtered.length);
   }, [filtered.length, onFilteredCountChange]);
 
-  const paymentModeConfig = useMemo(() => ({
-    Cash: { label: t("obligations.paymentMode.cash"), cls: SEMANTIC_BADGE.warning },
-    Online: { label: t("obligations.paymentMode.online"), cls: SEMANTIC_BADGE.info },
-  }), [t]) as Record<string, StatusBadgeConfigItem>;
+  const paymentModeConfig = useMemo(
+    () => ({
+      Cash: { label: t("obligations.paymentMode.cash"), cls: SEMANTIC_BADGE.warning },
+      Online: { label: t("obligations.paymentMode.online"), cls: SEMANTIC_BADGE.info },
+    }),
+    [t],
+  ) as Record<string, StatusBadgeConfigItem>;
 
   const selectedSet = new Set(selectedIds);
-  const allVisibleSelected = filtered.length > 0 && filtered.every((col) => selectedSet.has(col.id));
-  const someVisibleSelected = selectedSet.size > 0 && filtered.some((col) => selectedSet.has(col.id));
+  const allVisibleSelected =
+    filtered.length > 0 && filtered.every((col) => selectedSet.has(col.id));
+  const someVisibleSelected =
+    selectedSet.size > 0 && filtered.some((col) => selectedSet.has(col.id));
 
   useEffect(() => {
     onClearSelection?.();

@@ -40,14 +40,16 @@ describe("FacultyFormTabContent Component", () => {
       <FacultyFormTabContent
         {...defaultProps}
         facultyDraft={{ ...defaultProps.facultyDraft, contactId: "cnt-1" }}
-        linkedContact={{
-          id: "cnt-1",
-          name: "Ustadh Umar",
-          phones: [{ number: "+923001234567" }],
-          emails: [{ address: "umar@example.com" }],
-          education: [{ degree: "M.A. Islamic Studies", fieldOfStudy: "Tajweed" }],
-        } as unknown as import("@mms/shared").Contact}
-      />
+        linkedContact={
+          {
+            id: "cnt-1",
+            name: "Ustadh Umar",
+            phones: [{ number: "+923001234567" }],
+            emails: [{ address: "umar@example.com" }],
+            education: [{ degree: "M.A. Islamic Studies", fieldOfStudy: "Tajweed" }],
+          } as unknown as import("@mms/shared").Contact
+        }
+      />,
     );
 
     expect(html).toContain("contact-picker");

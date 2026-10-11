@@ -1,6 +1,6 @@
-import React from 'react';
-import type { PageSizeInfo } from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
+import React from "react";
+import type { PageSizeInfo } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface TemplateEditorCanvasStatusPillProps {
   size: PageSizeInfo;
@@ -22,7 +22,9 @@ export function TemplateEditorCanvasStatusPill({
     >
       <span className="font-semibold text-foreground/80">{size.label}</span>
       <span className="text-border">·</span>
-      <span>{size.width} × {size.height} px</span>
+      <span>
+        {size.width} × {size.height} px
+      </span>
       <span className="text-border">·</span>
       <span className="font-medium text-foreground/90">{Math.round(canvasScale * 100)}%</span>
       {isPreviewMode && (

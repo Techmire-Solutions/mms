@@ -17,7 +17,10 @@ export function ChartGrid({
 }
 
 /** SSOT for the `stroke="hsl(var(--border))"` Recharts polar grid. */
-export function ChartPolarGrid({ stroke = "hsl(var(--border))", ...props }: PolarGridProps): React.JSX.Element {
+export function ChartPolarGrid({
+  stroke = "hsl(var(--border))",
+  ...props
+}: PolarGridProps): React.JSX.Element {
   return <PolarGrid stroke={stroke} {...props} />;
 }
 

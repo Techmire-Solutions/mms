@@ -13,9 +13,10 @@ export function useStudentFormStatusOptions(
   const statusBadgeConfig = studentStatusBadgeConfig(t);
   const resolvedStatuses = resolveStudentStatuses(configStatuses);
   const effectiveStatus = currentStatus || "active";
-  const statusList = effectiveStatus && !resolvedStatuses.includes(effectiveStatus)
-    ? [effectiveStatus, ...resolvedStatuses]
-    : resolvedStatuses;
+  const statusList =
+    effectiveStatus && !resolvedStatuses.includes(effectiveStatus)
+      ? [effectiveStatus, ...resolvedStatuses]
+      : resolvedStatuses;
   const statusSelectOptions: StudentStatusSelectOption[] = statusList.map((status) => ({
     value: status,
     label: studentStatusLabel(t, status),

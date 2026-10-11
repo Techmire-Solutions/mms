@@ -10,8 +10,11 @@ interface PlatformForgotPasswordSentStepProps {
   controller: PlatformForgotPasswordController;
 }
 
-export function PlatformForgotPasswordSentStep({ controller }: PlatformForgotPasswordSentStepProps): React.JSX.Element {
-  const { t, email, resetId, devHint, setSent, setEmail, setDevHint, resetPath, navigate } = controller;
+export function PlatformForgotPasswordSentStep({
+  controller,
+}: PlatformForgotPasswordSentStepProps): React.JSX.Element {
+  const { t, email, resetId, devHint, setSent, setEmail, setDevHint, resetPath, navigate } =
+    controller;
 
   return (
     <PlatformAuthLayout

@@ -84,10 +84,13 @@ export function AccountingSettingsFiscalYearsSection({
                 type="button"
                 variant="link"
                 size="sm"
-                onClick={() => onEditFiscalYear({ label: "", startDate: "", endDate: "", status: "upcoming" })}
+                onClick={() =>
+                  onEditFiscalYear({ label: "", startDate: "", endDate: "", status: "upcoming" })
+                }
                 className="flex shrink-0 items-center gap-1 min-h-11 text-xs font-semibold text-primary hover:text-primary/80 transition-colors self-start sm:self-auto"
               >
-                <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {t("accounting.settings.fy.newTitle")}
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+                {t("accounting.settings.fy.newTitle")}
               </Button>
             )
           }

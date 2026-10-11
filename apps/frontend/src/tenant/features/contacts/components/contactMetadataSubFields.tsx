@@ -10,19 +10,34 @@ export function renderEducationSubField(
   switch (colId) {
     case "education_degree":
     case "educationDegree":
-      return renderJoinedList((contact.education || []).map((e) => e.degree?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.education || []).map((e) => e.degree?.trim()).filter(Boolean),
+        true,
+      );
     case "education_institution":
     case "educationInstitution":
-      return renderJoinedList((contact.education || []).map((e) => e.institution?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.education || []).map((e) => e.institution?.trim()).filter(Boolean),
+        true,
+      );
     case "education_fieldOfStudy":
     case "educationFieldOfStudy":
-      return renderJoinedList((contact.education || []).map((e) => e.fieldOfStudy?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.education || []).map((e) => e.fieldOfStudy?.trim()).filter(Boolean),
+        true,
+      );
     case "education_year":
     case "educationYear":
-      return renderJoinedList((contact.education || []).map((e) => e.year?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.education || []).map((e) => e.year?.trim()).filter(Boolean),
+        true,
+      );
     case "education_grade":
     case "educationGrade":
-      return renderJoinedList((contact.education || []).map((e) => e.grade?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.education || []).map((e) => e.grade?.trim()).filter(Boolean),
+        true,
+      );
     default:
       return null;
   }
@@ -36,16 +51,28 @@ export function renderExperienceSubField(
   switch (colId) {
     case "experience_title":
     case "experienceTitle":
-      return renderJoinedList((contact.experience || []).map((e) => e.title?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.experience || []).map((e) => e.title?.trim()).filter(Boolean),
+        true,
+      );
     case "experience_organization":
     case "experienceOrganization":
-      return renderJoinedList((contact.experience || []).map((e) => e.organization?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.experience || []).map((e) => e.organization?.trim()).filter(Boolean),
+        true,
+      );
     case "experience_employmentType":
     case "experienceEmploymentType":
-      return renderJoinedList((contact.experience || []).map((e) => e.employmentType?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.experience || []).map((e) => e.employmentType?.trim()).filter(Boolean),
+        true,
+      );
     case "experience_location":
     case "experienceLocation":
-      return renderJoinedList((contact.experience || []).map((e) => e.location?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.experience || []).map((e) => e.location?.trim()).filter(Boolean),
+        true,
+      );
     default:
       return null;
   }
@@ -67,16 +94,28 @@ export function renderSkillsSubField({
   switch (colId) {
     case "skills_name":
     case "skillsName":
-      return renderJoinedList((contact.skills || []).map((s) => s.name?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.skills || []).map((s) => s.name?.trim()).filter(Boolean),
+        true,
+      );
     case "skills_category":
     case "skillsCategory":
-      return renderJoinedList((contact.skills || []).map((s) => s.category?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.skills || []).map((s) => s.category?.trim()).filter(Boolean),
+        true,
+      );
     case "skills_proficiency":
     case "skillsProficiency":
-      return renderJoinedList((contact.skills || []).map((s) => s.proficiency?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.skills || []).map((s) => s.proficiency?.trim()).filter(Boolean),
+        true,
+      );
     case "skills_yearsOfExperience":
     case "skillsYearsOfExperience":
-      return renderJoinedList((contact.skills || []).map((s) => s.yearsOfExperience?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.skills || []).map((s) => s.yearsOfExperience?.trim()).filter(Boolean),
+        true,
+      );
     case "skills_isCertified":
     case "skillsIsCertified": {
       const certified = (contact.skills || []).some((s) => s.isCertified);
@@ -90,7 +129,10 @@ export function renderSkillsSubField({
     }
     case "skills_issuer":
     case "skillsIssuer":
-      return renderJoinedList((contact.skills || []).map((s) => s.issuer?.trim()).filter(Boolean), true);
+      return renderJoinedList(
+        (contact.skills || []).map((s) => s.issuer?.trim()).filter(Boolean),
+        true,
+      );
     default:
       return null;
   }

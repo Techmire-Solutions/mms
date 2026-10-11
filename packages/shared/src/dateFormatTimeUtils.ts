@@ -1,4 +1,4 @@
-import { formatDateToIso, parseIsoDate } from './dateFormatIsoUtils.js';
+import { formatDateToIso, parseIsoDate } from "./dateFormatIsoUtils.js";
 
 export interface TimeHHmmParts {
   hours: number;
@@ -31,7 +31,7 @@ export function parseTimeHHmm(value: string): TimeHHmmParts | null {
 
 /** Formats hours/minutes as a zero-padded `HH:mm` storage string. */
 export function formatTimeHHmm(hours: number, minutes: number): string {
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 /**
@@ -40,7 +40,7 @@ export function formatTimeHHmm(hours: number, minutes: number): string {
  */
 export function normalizeTimeHHmm(value: string): string {
   const parsed = parseTimeHHmm(value);
-  if (!parsed) return '';
+  if (!parsed) return "";
   return formatTimeHHmm(parsed.hours, parsed.minutes);
 }
 
@@ -73,7 +73,7 @@ export function combineIsoDateAndTime(date: string, time: string): string | null
   if (!datePart) return null;
   const localDate = parseIsoDate(datePart);
   if (!localDate) return null;
-  const timeParts = parseTimeHHmm(time.trim() || '00:00') ?? { hours: 0, minutes: 0 };
+  const timeParts = parseTimeHHmm(time.trim() || "00:00") ?? { hours: 0, minutes: 0 };
   localDate.setHours(timeParts.hours, timeParts.minutes, 0, 0);
   return localDate.toISOString();
 }

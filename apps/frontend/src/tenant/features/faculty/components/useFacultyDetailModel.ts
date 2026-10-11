@@ -5,7 +5,10 @@ import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { useSessions, useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useFacultyStatusConfig } from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
 import { listFacultyDetailAttributeFields } from "@/tenant/features/faculty/components/facultyDetailFields";
-import { getFacultyAssignedClasses, type FacultyAssignedClassItem } from "@/lib/faculty/facultyAssignment";
+import {
+  getFacultyAssignedClasses,
+  type FacultyAssignedClassItem,
+} from "@/lib/faculty/facultyAssignment";
 
 /** Faculty detail drawer model — mirrors useStudentDetailModel (Students parity). */
 export function useFacultyDetailModel(faculty: Faculty) {
@@ -53,5 +56,3 @@ export function useFacultyDetailModel(faculty: Faculty) {
     sessionsError: sessionsQuery.isError,
   };
 }
-
-

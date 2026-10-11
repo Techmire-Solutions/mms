@@ -1,19 +1,19 @@
-import { and, eq, inArray, isNotNull, isNull, ne } from 'drizzle-orm';
-import { dedupeTrimmedIds, type JournalEntry } from '@mms/shared';
+import { and, eq, inArray, isNotNull, isNull, ne } from "drizzle-orm";
+import { dedupeTrimmedIds, type JournalEntry } from "@mms/shared";
 import {
   accountingEntries,
   accountingJournalLines,
   accountingEntryTags,
   accountingEntryAttachments,
-} from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+} from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type EntryRow = typeof accountingEntries.$inferSelect;
 
 export type JournalLineRow = Pick<
   typeof accountingJournalLines.$inferSelect,
-  'id' | 'accountId'
+  "id" | "accountId"
 > & {
   debit?: string | number | null;
   credit?: string | number | null;
@@ -31,7 +31,7 @@ export function entryRowToRecord(
     date: row.date,
     ref: row.ref,
     description: row.description,
-    status: row.status as JournalEntry['status'],
+    status: row.status as JournalEntry["status"],
     created_by: row.createdBy,
     fiscal_year: row.fiscalYear,
     simple_mode: row.simpleMode,
@@ -40,7 +40,7 @@ export function entryRowToRecord(
       account_id: l.accountId,
       debit: Number(l.debit ?? 0),
       credit: Number(l.credit ?? 0),
-      description: l.description ?? '',
+      description: l.description ?? "",
     })),
     tags,
     attachments,
@@ -48,7 +48,7 @@ export function entryRowToRecord(
   };
 
   if (row.fiscalYearId) entry.fiscal_year_id = row.fiscalYearId;
-  if (row.sourceType) entry.source_type = row.sourceType as JournalEntry['source_type'];
+  if (row.sourceType) entry.source_type = row.sourceType as JournalEntry["source_type"];
   if (row.sourceId) entry.source_id = row.sourceId;
   if (row.transactionType) entry.transaction_type = row.transactionType;
   if (row.reversedRef) entry.reversed_ref = row.reversedRef;
@@ -58,14 +58,19 @@ export function entryRowToRecord(
 
 export async function listEntriesByWorkspace(
   tenant: string,
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean; limit?: number; offset?: number },
+  options?: {
+    deleted?: "active" | "deleted" | "all";
+    includeDeleted?: boolean;
+    limit?: number;
+    offset?: number;
+  },
 ): Promise<JournalEntry[]> {
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
   const offset = Math.max(options?.offset ?? 0, 0);
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(accountingEntries.deletedAt)
       : isAll
@@ -215,7 +220,12 @@ export async function findEntryById(tenant: string, id: string): Promise<Journal
         updatedAt: accountingEntries.updatedAt,
       })
       .from(accountingEntries)
-      .where(and(eq(accountingEntries.workspaceSubdomain, subdomain), eq(accountingEntries.id, trimmedId)))
+      .where(
+        and(
+          eq(accountingEntries.workspaceSubdomain, subdomain),
+          eq(accountingEntries.id, trimmedId),
+        ),
+      )
       .limit(1);
     const row = rows[0];
     if (!row) return null;
@@ -275,14 +285,14 @@ export async function findEntryById(tenant: string, id: string): Promise<Journal
 export async function findEntriesByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<JournalEntry[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(accountingEntries.deletedAt)
       : isAll

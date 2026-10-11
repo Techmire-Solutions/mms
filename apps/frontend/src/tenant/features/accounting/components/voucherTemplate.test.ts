@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { PAGE_SIZES } from "@mms/shared";
-import { buildVoucherTemplate, voucherLayoutCopy } from "@/tenant/features/accounting/components/voucherTemplateLayout";
+import {
+  buildVoucherTemplate,
+  voucherLayoutCopy,
+} from "@/tenant/features/accounting/components/voucherTemplateLayout";
 import { buildVoucherTemplateHtml } from "@/tenant/features/accounting/components/voucherTemplateHtml";
 import {
   voucherTableLines,
@@ -91,10 +94,9 @@ describe("voucher template", () => {
       journalLines: [],
       salary: { staffId: "1", payPeriod: "2026-09" },
     };
-    expect(voucherTableLines(payment, (amount) => String(amount), "Less").map((row) => row.account)).toEqual([
-      "Salaries payable",
-      "Less: Staff Late Deduction",
-    ]);
+    expect(
+      voucherTableLines(payment, (amount) => String(amount), "Less").map((row) => row.account),
+    ).toEqual(["Salaries payable", "Less: Staff Late Deduction"]);
 
     const journal: PaymentVoucherModel = {
       ...payment,

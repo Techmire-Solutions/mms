@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Canonical calendar-date validation for the `YYYY-MM-DD` strings this codebase
@@ -37,7 +37,7 @@ const ISO_DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
  * trip. That is intentional — those are not plausible dates for this domain.
  */
 function isRealCalendarDate(value: string): boolean {
-  const [yearPart, monthPart, dayPart] = value.split('-');
+  const [yearPart, monthPart, dayPart] = value.split("-");
   const year = Number(yearPart);
   const month = Number(monthPart);
   const day = Number(dayPart);
@@ -59,7 +59,7 @@ export function isValidIsoDate(value: string): boolean {
   return ISO_DATE_SHAPE.test(value) && isRealCalendarDate(value);
 }
 
-const MESSAGE = 'Date must be a real calendar date in YYYY-MM-DD format';
+const MESSAGE = "Date must be a real calendar date in YYYY-MM-DD format";
 
 /**
  * A required calendar date.
@@ -70,7 +70,7 @@ const MESSAGE = 'Date must be a real calendar date in YYYY-MM-DD format';
  */
 export const isoDateSchema = z
   .string()
-  .regex(ISO_DATE_SHAPE, 'Date must be in YYYY-MM-DD format')
+  .regex(ISO_DATE_SHAPE, "Date must be in YYYY-MM-DD format")
   .refine(isRealCalendarDate, MESSAGE);
 
 /**
@@ -86,7 +86,7 @@ export const isoDateSchema = z
  */
 export const isoDateOrEmptySchema = z
   .string()
-  .refine((value) => value === '' || isValidIsoDate(value), MESSAGE);
+  .refine((value) => value === "" || isValidIsoDate(value), MESSAGE);
 
 /**
  * Compares two `YYYY-MM-DD` strings chronologically.

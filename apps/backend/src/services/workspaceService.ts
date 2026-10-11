@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { randomBytes } from "node:crypto";
 import {
   type Workspace,
   SYSTEM_MODULES,
@@ -6,13 +6,10 @@ import {
   slugifySubdomain,
   isValidSubdomain,
   isWorkspaceEnabled,
-} from '@mms/shared';
-import {
-  purgeTenantDataBySubdomain,
-  runInTransaction,
-} from '../db/database.js';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { redisGet, redisSet, redisDel, redisKeys } from '../lib/redis.js';
+} from "@mms/shared";
+import { purgeTenantDataBySubdomain, runInTransaction } from "../db/database.js";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { redisGet, redisSet, redisDel, redisKeys } from "../lib/redis.js";
 import {
   deleteWorkspaceRow,
   findWorkspaceRowBySubdomain,
@@ -22,13 +19,13 @@ import {
   updateWorkspaceEnabledRow,
   updateWorkspaceGrantedAndEnabledModulesRepo,
   workspaceSubdomainExists,
-} from '../db/repositories/workspaceRepository.js';
+} from "../db/repositories/workspaceRepository.js";
 import {
   getUserModulePreferencesByWorkspace,
   upsertUserModulePreferences,
-} from '../db/repositories/userModulePreferencesRepository.js';
-import { clearModuleAvailabilityCache } from '../lib/moduleAvailabilityService.js';
-import { broadcastTenantUpdate } from '../lib/livePush.js';
+} from "../db/repositories/userModulePreferencesRepository.js";
+import { clearModuleAvailabilityCache } from "../lib/moduleAvailabilityService.js";
+import { broadcastTenantUpdate } from "../lib/livePush.js";
 
 export {
   fetchPublicBrandingForSubdomain,
@@ -42,7 +39,7 @@ export {
   createWorkspaceAdminUser,
   syncWorkspaceFromBranding,
   upsertWorkspaceBranding,
-} from './workspacePresentationService.js';
+} from "./workspacePresentationService.js";
 
 const WORKSPACE_CACHE_TTL_SECONDS = 300;
 const workspaceCacheKey = (sub: string) => redisKeys.workspace(sub);
@@ -56,8 +53,8 @@ export async function invalidateWorkspaceCache(subdomain: string): Promise<void>
   if (!normalized) return;
   await redisDel(workspaceCacheKey(normalized));
   clearModuleAvailabilityCache(normalized);
-  broadcastTenantUpdate(normalized, 'object', 'workspace');
-  broadcastTenantUpdate(normalized, 'object', 'branding');
+  broadcastTenantUpdate(normalized, "object", "workspace");
+  broadcastTenantUpdate(normalized, "object", "branding");
 }
 
 /** Permanently removes a workspace registry entry and all tenant-scoped data. */
@@ -108,13 +105,16 @@ export async function setWorkspaceEmailVerification(
 export async function assertWorkspaceActive(subdomain: string): Promise<Workspace> {
   const workspace = await getWorkspaceBySubdomain(subdomain);
   if (!workspace) {
-    throw Object.assign(new Error('Workspace not found'), { statusCode: 404 });
+    throw Object.assign(new Error("Workspace not found"), { statusCode: 404 });
   }
   if (!isWorkspaceEnabled(workspace)) {
-    throw Object.assign(new Error('This madrasa workspace has been disabled by the platform administrator.'), {
-      statusCode: 403,
-      type: 'workspace_disabled',
-    });
+    throw Object.assign(
+      new Error("This madrasa workspace has been disabled by the platform administrator."),
+      {
+        statusCode: 403,
+        type: "workspace_disabled",
+      },
+    );
   }
   return workspace;
 }
@@ -154,12 +154,15 @@ export async function isSubdomainAvailable(subdomain: string): Promise<boolean> 
 
 export async function assertSubdomainAvailable(subdomain: string): Promise<void> {
   if (!isValidSubdomain(normalizeSubdomainInput(subdomain))) {
-    throw Object.assign(new Error('Invalid subdomain. Use 2–63 lowercase letters, numbers, and hyphens.'), {
-      statusCode: 400,
-    });
+    throw Object.assign(
+      new Error("Invalid subdomain. Use 2–63 lowercase letters, numbers, and hyphens."),
+      {
+        statusCode: 400,
+      },
+    );
   }
   if (!(await isSubdomainAvailable(subdomain))) {
-    throw Object.assign(new Error('This workspace subdomain is already taken.'), {
+    throw Object.assign(new Error("This workspace subdomain is already taken."), {
       statusCode: 409,
     });
   }
@@ -174,33 +177,37 @@ export async function createWorkspace(workspaceInput: {
 }): Promise<Workspace> {
   const subdomain = normalizeSubdomainInput(workspaceInput.subdomain);
   if (!isValidSubdomain(subdomain)) {
-    throw Object.assign(new Error('Invalid subdomain. Use 2–63 lowercase letters, numbers, and hyphens.'), {
-      statusCode: 400,
-    });
+    throw Object.assign(
+      new Error("Invalid subdomain. Use 2–63 lowercase letters, numbers, and hyphens."),
+      {
+        statusCode: 400,
+      },
+    );
   }
 
   return runInTransaction(async () => {
     const existing = await getWorkspaceBySubdomain(subdomain);
     if (existing) {
-      throw Object.assign(new Error('This workspace subdomain is already taken.'), {
+      throw Object.assign(new Error("This workspace subdomain is already taken."), {
         statusCode: 409,
       });
     }
 
-    const id = randomBytes(8).toString('hex');
+    const id = randomBytes(8).toString("hex");
     const newWs = {
       id,
       subdomain,
       madrasaName: workspaceInput.madrasaName,
       tagline: workspaceInput.tagline || null,
       country: workspaceInput.country || null,
-      industryType: workspaceInput.industryType || 'madrasa',
+      industryType: workspaceInput.industryType || "madrasa",
       enabled: true,
     };
 
     await insertWorkspaceRow(newWs);
 
-    const { syncPlatformSuperUserToTenant } = await import('./platform/platformSuperUserTenantSyncService.js');
+    const { syncPlatformSuperUserToTenant } =
+      await import("./platform/platformSuperUserTenantSyncService.js");
     await syncPlatformSuperUserToTenant(subdomain);
 
     const created: Workspace = {

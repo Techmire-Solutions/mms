@@ -2,9 +2,9 @@
  * @file sessionFormCustomFields.ts
  * @description Helpers for Sessions form custom (non-seed) fields.
  */
-import { INITIAL_SESSIONS_FIELD_SEED } from './moduleFieldSetupAcademic.js';
-import { createFormCustomFieldHelpers } from './createFormCustomFieldHelpers.js';
-import type { FieldDefinition } from './contactFieldSchemaTypes.js';
+import { INITIAL_SESSIONS_FIELD_SEED } from "./moduleFieldSetupAcademic.js";
+import { createFormCustomFieldHelpers } from "./createFormCustomFieldHelpers.js";
+import type { FieldDefinition } from "./contactFieldSchemaTypes.js";
 
 const helpers = createFormCustomFieldHelpers(INITIAL_SESSIONS_FIELD_SEED);
 

@@ -9,9 +9,9 @@ export interface TenantBackgroundJobsTrayProps {
 }
 
 /**
-  * Tenant adapter connecting useBackgroundJobs and downloadBackgroundJobArtifact
-  * to the domain-neutral BackgroundJobsTray presentation component.
-  */
+ * Tenant adapter connecting useBackgroundJobs and downloadBackgroundJobArtifact
+ * to the domain-neutral BackgroundJobsTray presentation component.
+ */
 export function TenantBackgroundJobsTray({
   compact = false,
   className,

@@ -5,16 +5,16 @@
  * Pattern matches existing setup-config migrations (062–067).
  * Idempotent — safe to re-run.
  */
-import { eq } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
-import { mergeBrandingSettings, parseTenantScopedStorageKey } from '@mms/shared';
+import { eq } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
+import { mergeBrandingSettings, parseTenantScopedStorageKey } from "@mms/shared";
 
-const BRANDING_KEY = 'branding';
+const BRANDING_KEY = "branding";
 
 export async function runMigration078(): Promise<void> {
-  console.log('Migrating branding from objects store → workspaces columns...');
+  console.log("Migrating branding from objects store → workspaces columns...");
   const db = getDb();
 
   const rows = await db.select().from(schema.objects);
@@ -26,7 +26,7 @@ export async function runMigration078(): Promise<void> {
     const tenant = parsed.subdomain.trim().toLowerCase();
     if (!tenant) continue;
     if (parsed.logicalKey === BRANDING_KEY) {
-      if (row.data && typeof row.data === 'object' && !Array.isArray(row.data)) {
+      if (row.data && typeof row.data === "object" && !Array.isArray(row.data)) {
         brandingByTenant.set(tenant, row.data as Record<string, unknown>);
       }
     }
@@ -49,28 +49,29 @@ export async function runMigration078(): Promise<void> {
 
       const b = mergeBrandingSettings(raw);
 
-      await tx.update(schema.workspaces)
+      await tx
+        .update(schema.workspaces)
         .set({
-          primaryColor:       b.primaryColor       || null,
-          secondaryColor:     b.secondaryColor     || null,
-          cornerStyle:        b.cornerStyle        || null,
-          logoUrl:            b.logoUrl            || null,
-          faviconUrl:         b.faviconUrl         || null,
-          footerText:         b.footerText         || null,
-          email:              b.email              || null,
-          phone:              b.phone              || null,
-          website:            b.website            || null,
-          legalName:          b.legalName          || null,
+          primaryColor: b.primaryColor || null,
+          secondaryColor: b.secondaryColor || null,
+          cornerStyle: b.cornerStyle || null,
+          logoUrl: b.logoUrl || null,
+          faviconUrl: b.faviconUrl || null,
+          footerText: b.footerText || null,
+          email: b.email || null,
+          phone: b.phone || null,
+          website: b.website || null,
+          legalName: b.legalName || null,
           registrationNumber: b.registrationNumber || null,
-          addressLine1:       b.addressLine1       || null,
-          addressLine2:       b.addressLine2       || null,
-          city:               b.city               || null,
-          region:             b.region             || null,
-          postalCode:         b.postalCode         || null,
-          socialLinks:        b.socialLinks?.length ? b.socialLinks : null,
+          addressLine1: b.addressLine1 || null,
+          addressLine2: b.addressLine2 || null,
+          city: b.city || null,
+          region: b.region || null,
+          postalCode: b.postalCode || null,
+          socialLinks: b.socialLinks?.length ? b.socialLinks : null,
           // Keep name/tagline aligned (branding is source of truth for display values)
-          madrasaName:        b.madrasaName        || undefined,
-          tagline:            b.tagline            || null,
+          madrasaName: b.madrasaName || undefined,
+          tagline: b.tagline || null,
         })
         .where(eq(schema.workspaces.subdomain, tenant));
 

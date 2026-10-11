@@ -3,7 +3,7 @@ import {
   normalizeIdLinkedName,
   resolveEntityName,
   type NamedEntity,
-} from './contactLinkPolicy.js';
+} from "./contactLinkPolicy.js";
 
 export interface HasanatDistributionLike extends Record<string, unknown> {
   id?: string | number;
@@ -27,10 +27,10 @@ export function createHasanatDistributionLookupMap<T extends HasanatDistribution
 export function normalizeHasanatDistribution<T extends HasanatDistributionLike>(row: T): T {
   if (!row || typeof row !== "object") return row;
   if (row.recipientStudentId) {
-    return normalizeIdLinkedName(row, 'recipientStudentId', 'recipientName');
+    return normalizeIdLinkedName(row, "recipientStudentId", "recipientName");
   }
   if (row.recipientFacultyId) {
-    return normalizeIdLinkedName(row, 'recipientFacultyId', 'recipientName');
+    return normalizeIdLinkedName(row, "recipientFacultyId", "recipientName");
   }
   return row;
 }
@@ -68,18 +68,24 @@ export function hydrateHasanatDistributionList<T extends HasanatDistributionLike
   faculty: NamedEntity[] | Map<string, NamedEntity>,
 ): T[] {
   if (!rows || !Array.isArray(rows)) return [];
-  const studentLookup = students instanceof Map
-    ? students
-    : (students.length > 8 ? createNamedEntityLookupMap(students) : students);
-  const facultyLookup = faculty instanceof Map
-    ? faculty
-    : (faculty.length > 8 ? createNamedEntityLookupMap(faculty) : faculty);
+  const studentLookup =
+    students instanceof Map
+      ? students
+      : students.length > 8
+        ? createNamedEntityLookupMap(students)
+        : students;
+  const facultyLookup =
+    faculty instanceof Map
+      ? faculty
+      : faculty.length > 8
+        ? createNamedEntityLookupMap(faculty)
+        : faculty;
   return rows.map((r) => hydrateHasanatDistribution(r, studentLookup, facultyLookup));
 }
 
 export function normalizeHasanatRedemption<T extends Record<string, unknown>>(row: T): T {
   if (!row || typeof row !== "object") return row;
-  return normalizeIdLinkedName(row, 'distributionId', 'studentName');
+  return normalizeIdLinkedName(row, "distributionId", "studentName");
 }
 
 export function hydrateHasanatRedemption<T extends Record<string, unknown>>(
@@ -87,17 +93,19 @@ export function hydrateHasanatRedemption<T extends Record<string, unknown>>(
   distributions: HasanatDistributionLike[] | Map<string, HasanatDistributionLike>,
 ): T {
   if (!row || typeof row !== "object") return row;
-  const distribution = distributions instanceof Map
-    ? distributions.get(String(row.distributionId))
-    : (Array.isArray(distributions)
-        ? (distributions.length > 8
-            ? createHasanatDistributionLookupMap(distributions).get(String(row.distributionId))
-            : distributions.find((d) => String(d.id) === String(row.distributionId)))
-        : undefined);
-  const recipientName = distribution?.recipientName
-    ?? (distribution?.recipientStudentId
+  const distribution =
+    distributions instanceof Map
+      ? distributions.get(String(row.distributionId))
+      : Array.isArray(distributions)
+        ? distributions.length > 8
+          ? createHasanatDistributionLookupMap(distributions).get(String(row.distributionId))
+          : distributions.find((d) => String(d.id) === String(row.distributionId))
+        : undefined;
+  const recipientName =
+    distribution?.recipientName ??
+    (distribution?.recipientStudentId
       ? resolveEntityName(distribution.recipientStudentId, [])
-      : '');
+      : "");
   const current = row.studentName;
   const resolved = recipientName || current;
   if (resolved === current) return row;
@@ -112,15 +120,16 @@ export function hydrateHasanatRedemptionList<T extends Record<string, unknown>>(
   distributions: HasanatDistributionLike[] | Map<string, HasanatDistributionLike>,
 ): T[] {
   if (!rows || !Array.isArray(rows)) return [];
-  const distLookup = distributions instanceof Map
-    ? distributions
-    : createHasanatDistributionLookupMap(distributions);
+  const distLookup =
+    distributions instanceof Map
+      ? distributions
+      : createHasanatDistributionLookupMap(distributions);
   return rows.map((r) => hydrateHasanatRedemption(r, distLookup));
 }
 
 export function normalizeHasanatPayout<T extends Record<string, unknown>>(row: T): T {
   if (!row || typeof row !== "object") return row;
-  return normalizeIdLinkedName(row, 'studentId', 'studentName');
+  return normalizeIdLinkedName(row, "studentId", "studentName");
 }
 
 export function hydrateHasanatPayout<T extends Record<string, unknown>>(
@@ -142,8 +151,11 @@ export function hydrateHasanatPayoutList<T extends Record<string, unknown>>(
   students: NamedEntity[] | Map<string, NamedEntity>,
 ): T[] {
   if (!rows || !Array.isArray(rows)) return [];
-  const studentLookup = students instanceof Map
-    ? students
-    : (students.length > 8 ? createNamedEntityLookupMap(students) : students);
+  const studentLookup =
+    students instanceof Map
+      ? students
+      : students.length > 8
+        ? createNamedEntityLookupMap(students)
+        : students;
   return rows.map((r) => hydrateHasanatPayout(r, studentLookup));
 }

@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { GenerateInvoicesBody, GenerateInvoicesResult } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
-import { FINANCE_INVOICES_QUERY_KEY, FINANCE_METRICS_QUERY_KEY } from "@/tenant/features/finance/hooks/useFinanceApi";
+import {
+  FINANCE_INVOICES_QUERY_KEY,
+  FINANCE_METRICS_QUERY_KEY,
+} from "@/tenant/features/finance/hooks/useFinanceApi";
 
 export function useFinanceInvoiceGeneration() {
   const queryClient = useQueryClient();

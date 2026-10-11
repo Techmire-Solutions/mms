@@ -70,10 +70,7 @@ export function GoogleContactsConnectStep({
         </WarningCallout>
       )}
 
-      <FieldErrorMessage
-        message={!showAuthCode ? error : undefined}
-        className={FORM_ERROR_BOX}
-      />
+      <FieldErrorMessage message={!showAuthCode ? error : undefined} className={FORM_ERROR_BOX} />
     </div>
   );
 }

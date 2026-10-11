@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { getInitials } from "@mms/shared";
 import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
-import { calcAge } from '@/lib/data/studentsData';
-import { type CheckResult, runFullEligibility, suggestClass } from '@/lib/data/enrollmentData';
+import { calcAge } from "@/lib/data/studentsData";
+import { type CheckResult, runFullEligibility, suggestClass } from "@/lib/data/enrollmentData";
 import { Field } from "@/components/ui/FormField";
 import { FormSelect } from "@/components/ui/FormSelect";
 import { WarningCallout } from "@/components/ui/WarningCallout";
@@ -13,7 +13,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 const ICONS: Record<string, React.ReactElement> = {
   pass: <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" aria-hidden="true" />,
-  fail: <XCircle      className="w-4 h-4 text-destructive flex-shrink-0" aria-hidden="true" />,
+  fail: <XCircle className="w-4 h-4 text-destructive flex-shrink-0" aria-hidden="true" />,
   warn: <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0" aria-hidden="true" />,
 };
 
@@ -52,8 +52,12 @@ export function EligibilityCheck(): React.JSX.Element {
   return (
     <article className="max-w-2xl space-y-5" aria-labelledby="eligibility-title">
       <div>
-        <h3 id="eligibility-title" className="text-base font-bold text-foreground">{t("enrollments.eligibility.title")}</h3>
-        <p className="text-sm text-muted-foreground mt-0.5">{t("enrollments.eligibility.description")}</p>
+        <h3 id="eligibility-title" className="text-base font-bold text-foreground">
+          {t("enrollments.eligibility.title")}
+        </h3>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          {t("enrollments.eligibility.description")}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -80,7 +84,10 @@ export function EligibilityCheck(): React.JSX.Element {
       </div>
 
       {student && (
-        <section className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted border border-border" aria-label={t("enrollments.eligibility.studentPreview")}>
+        <section
+          className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted border border-border"
+          aria-label={t("enrollments.eligibility.studentPreview")}
+        >
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-bold text-primary">{getInitials(student.name)}</span>
           </div>
@@ -106,15 +113,23 @@ export function EligibilityCheck(): React.JSX.Element {
 
       {student && session && (
         <>
-          <div className="flex items-center gap-3 flex-wrap" role="status" aria-label={t("enrollments.eligibility.summary")}>
+          <div
+            className="flex items-center gap-3 flex-wrap"
+            role="status"
+            aria-label={t("enrollments.eligibility.summary")}
+          >
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success/10 border border-success/30">
               <CheckCircle2 className="w-3.5 h-3.5 text-success" aria-hidden="true" />
-              <span className="text-xs font-bold text-success">{t("enrollments.eligibility.passed", { count: passCount })}</span>
+              <span className="text-xs font-bold text-success">
+                {t("enrollments.eligibility.passed", { count: passCount })}
+              </span>
             </div>
             {failCount > 0 && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-destructive/10 border border-destructive/30">
                 <XCircle className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
-                <span className="text-xs font-bold text-destructive">{t("enrollments.eligibility.failed", { count: failCount })}</span>
+                <span className="text-xs font-bold text-destructive">
+                  {t("enrollments.eligibility.failed", { count: failCount })}
+                </span>
               </div>
             )}
             {warnCount > 0 && (
@@ -128,7 +143,11 @@ export function EligibilityCheck(): React.JSX.Element {
 
           <div className="space-y-2" role="list" aria-label={t("enrollments.eligibility.details")}>
             {checks.map((check) => (
-              <div key={check.id} className={`flex items-start gap-3 p-3 rounded-xl border ${ROW_BG[check.status]}`} role="listitem">
+              <div
+                key={check.id}
+                className={`flex items-start gap-3 p-3 rounded-xl border ${ROW_BG[check.status]}`}
+                role="listitem"
+              >
                 <div className="mt-0.5">{ICONS[check.status]}</div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-xs font-bold ${LABEL_COL[check.status]}`}>{check.label}</p>

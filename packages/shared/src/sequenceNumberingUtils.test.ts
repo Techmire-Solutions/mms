@@ -9,7 +9,6 @@ import {
   obligationsSettingsToSequenceConfig,
 } from "./sequenceNumberingUtils.js";
 
-
 describe("sequenceNumberingUtils", () => {
   describe("formatTemplateSequence", () => {
     it("formats standard {seq}-{year} template", () => {
@@ -23,29 +22,43 @@ describe("sequenceNumberingUtils", () => {
     });
 
     it("formats month {mm} in template", () => {
-      const result = formatTemplateSequence("{prefix}-{year}-{mm}-{seq}", 7, 3, new Date(2026, 4, 15), "DOC");
+      const result = formatTemplateSequence(
+        "{prefix}-{year}-{mm}-{seq}",
+        7,
+        3,
+        new Date(2026, 4, 15),
+        "DOC",
+      );
       expect(result).toBe("DOC-2026-05-007");
     });
   });
 
   describe("formatDeterministicSequence", () => {
     it("formats standard employee ID with default options", () => {
-      const result = formatDeterministicSequence(1, {
-        prefix: "FAC",
-        yearFormat: "YY",
-        sequenceDigits: 3,
-        delimiter: "",
-      }, new Date(2026, 0, 15));
+      const result = formatDeterministicSequence(
+        1,
+        {
+          prefix: "FAC",
+          yearFormat: "YY",
+          sequenceDigits: 3,
+          delimiter: "",
+        },
+        new Date(2026, 0, 15),
+      );
       expect(result).toBe("FAC26001");
     });
 
     it("formats student GR number with hyphen delimiter and 4 digits", () => {
-      const result = formatDeterministicSequence(42, {
-        prefix: "GR",
-        yearFormat: "YYYY",
-        sequenceDigits: 4,
-        delimiter: "-",
-      }, new Date(2026, 5, 20));
+      const result = formatDeterministicSequence(
+        42,
+        {
+          prefix: "GR",
+          yearFormat: "YYYY",
+          sequenceDigits: 4,
+          delimiter: "-",
+        },
+        new Date(2026, 5, 20),
+      );
       expect(result).toBe("GR-2026-0042");
     });
 
@@ -60,12 +73,16 @@ describe("sequenceNumberingUtils", () => {
     });
 
     it("handles empty prefix cleanly", () => {
-      const result = formatDeterministicSequence(5, {
-        prefix: "",
-        yearFormat: "YYYY",
-        sequenceDigits: 4,
-        delimiter: "-",
-      }, new Date(2026, 1, 1));
+      const result = formatDeterministicSequence(
+        5,
+        {
+          prefix: "",
+          yearFormat: "YYYY",
+          sequenceDigits: 4,
+          delimiter: "-",
+        },
+        new Date(2026, 1, 1),
+      );
       expect(result).toBe("2026-0005");
     });
   });
@@ -160,4 +177,3 @@ describe("sequenceNumberingUtils", () => {
     });
   });
 });
-

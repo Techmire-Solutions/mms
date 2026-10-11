@@ -19,7 +19,11 @@ export interface StudentContactProfileBundle {
   profile: StudentContactProfileData;
 }
 
-function buildStudentPhones(student: Student, studentContact: Contact | null | undefined, t: TranslationFunction): PhoneNumber[] {
+function buildStudentPhones(
+  student: Student,
+  studentContact: Contact | null | undefined,
+  t: TranslationFunction,
+): PhoneNumber[] {
   if (studentContact?.phones && studentContact.phones.length > 0) {
     return studentContact.phones;
   }
@@ -30,7 +34,11 @@ function buildStudentPhones(student: Student, studentContact: Contact | null | u
   return [];
 }
 
-function buildStudentEmails(student: Student, studentContact: Contact | null | undefined, t: TranslationFunction): EmailAddress[] {
+function buildStudentEmails(
+  student: Student,
+  studentContact: Contact | null | undefined,
+  t: TranslationFunction,
+): EmailAddress[] {
   if (studentContact?.emails && studentContact.emails.length > 0) {
     return studentContact.emails;
   }
@@ -41,7 +49,11 @@ function buildStudentEmails(student: Student, studentContact: Contact | null | u
   return [];
 }
 
-function buildStudentAddresses(student: Student, studentContact: Contact | null | undefined, t: TranslationFunction): Address[] {
+function buildStudentAddresses(
+  student: Student,
+  studentContact: Contact | null | undefined,
+  t: TranslationFunction,
+): Address[] {
   if (studentContact?.addresses && studentContact.addresses.length > 0) {
     return studentContact.addresses;
   }
@@ -59,7 +71,14 @@ function buildStudentAddresses(student: Student, studentContact: Contact | null 
     (typeof studentContact?.country === "string" ? studentContact.country : undefined) ||
     (typeof student.country === "string" ? student.country : undefined);
   if (line1 || city || state || country) {
-    const singleAddr: Address = { line1, city, state, country, label: t("students.detail.addressesLabel"), isPrimary: true };
+    const singleAddr: Address = {
+      line1,
+      city,
+      state,
+      country,
+      label: t("students.detail.addressesLabel"),
+      isPrimary: true,
+    };
     return [singleAddr];
   }
   return [];
@@ -81,7 +100,12 @@ export function buildStudentContactProfile(
         tag: typeof student.tag === "string" ? student.tag : undefined,
         tags: Array.isArray(student.tags) ? (student.tags as string[]) : undefined,
       });
-  const isSyed = typeof studentContact?.isSyed === "boolean" ? studentContact.isSyed : typeof student.isSyed === "boolean" ? student.isSyed : undefined;
+  const isSyed =
+    typeof studentContact?.isSyed === "boolean"
+      ? studentContact.isSyed
+      : typeof student.isSyed === "boolean"
+        ? student.isSyed
+        : undefined;
 
   return {
     phones,
@@ -93,7 +117,9 @@ export function buildStudentContactProfile(
       phones,
       emails,
       addresses,
-      cnic: (typeof studentContact?.cnic === "string" ? studentContact.cnic : undefined) || student.cnic,
+      cnic:
+        (typeof studentContact?.cnic === "string" ? studentContact.cnic : undefined) ||
+        student.cnic,
       isSyed,
       tags: rawTags,
     },

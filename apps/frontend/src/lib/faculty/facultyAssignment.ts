@@ -1,5 +1,5 @@
-import type { Session, FacultyMember } from '@mms/shared';
-import { DEFAULT_FACULTY_STATUS } from '@mms/shared';
+import type { Session, FacultyMember } from "@mms/shared";
+import { DEFAULT_FACULTY_STATUS } from "@mms/shared";
 
 export interface FacultyAssignedClassItem {
   sessionId: string;
@@ -17,30 +17,33 @@ export interface FacultyAssignedClassItem {
 }
 
 /** Resolves a faculty display name from the faculty registry. */
-export function facultyNameById(faculty: FacultyMember[] | Map<string, FacultyMember>, id: string): string {
-  if (!id) return '';
-  if (faculty instanceof Map) return faculty.get(id)?.name ?? '';
-  return faculty.find((member) => String(member.id) === id)?.name ?? '';
+export function facultyNameById(
+  faculty: FacultyMember[] | Map<string, FacultyMember>,
+  id: string,
+): string {
+  if (!id) return "";
+  if (faculty instanceof Map) return faculty.get(id)?.name ?? "";
+  return faculty.find((member) => String(member.id) === id)?.name ?? "";
 }
 
 /** Persists only `facultyId` — display name is hydrated from registry. */
 export function assignClassFaculty(facultyId: string): { facultyId: string } {
-  const id = facultyId || '';
+  const id = facultyId || "";
   return { facultyId: id };
 }
 
 export function resolveClassFacultyId(
   sessionClass: { facultyId?: string | null } | null | undefined,
 ): string {
-  if (!sessionClass) return '';
-  return String(sessionClass.facultyId || '');
+  if (!sessionClass) return "";
+  return String(sessionClass.facultyId || "");
 }
 
 export function resolveClassFacultyName(
   sessionClass: { facultyName?: string | null } | null | undefined,
 ): string {
-  if (!sessionClass) return '';
-  return sessionClass.facultyName || '';
+  if (!sessionClass) return "";
+  return sessionClass.facultyName || "";
 }
 
 /** Active faculty eligible for new class assignments. */
@@ -63,7 +66,10 @@ export function facultyOptionsForClass(
 }
 
 /** Extracts all classes assigned to a specific faculty member from the sessions array. */
-export function getFacultyAssignedClasses(facultyId: string | number, sessions: Session[]): FacultyAssignedClassItem[] {
+export function getFacultyAssignedClasses(
+  facultyId: string | number,
+  sessions: Session[],
+): FacultyAssignedClassItem[] {
   const list: FacultyAssignedClassItem[] = [];
   const facultyIdStr = String(facultyId);
   for (const session of sessions) {
@@ -78,11 +84,20 @@ export function getFacultyAssignedClasses(facultyId: string | number, sessions: 
           classId: cls.id,
           className: cls.name,
           room: cls.room,
-          capacity: (cls as { maxStudents?: number; capacity?: number }).maxStudents ?? (cls as { maxStudents?: number; capacity?: number }).capacity ?? 30,
+          capacity:
+            (cls as { maxStudents?: number; capacity?: number }).maxStudents ??
+            (cls as { maxStudents?: number; capacity?: number }).capacity ??
+            30,
           enrolled: cls.enrolled ?? 0,
           gender: cls.gender,
-          ageMin: (cls as { minAge?: number; ageMin?: number }).minAge ?? (cls as { minAge?: number; ageMin?: number }).ageMin ?? 5,
-          ageMax: (cls as { maxAge?: number; ageMax?: number }).maxAge ?? (cls as { maxAge?: number; ageMax?: number }).ageMax ?? 18,
+          ageMin:
+            (cls as { minAge?: number; ageMin?: number }).minAge ??
+            (cls as { minAge?: number; ageMin?: number }).ageMin ??
+            5,
+          ageMax:
+            (cls as { maxAge?: number; ageMax?: number }).maxAge ??
+            (cls as { maxAge?: number; ageMax?: number }).ageMax ??
+            18,
         });
       }
     }

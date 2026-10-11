@@ -26,9 +26,7 @@ export function UserCardMetadata({
   const { t } = useTranslation();
   const descriptor = useUsersEntityDescriptor();
   const visible = isColumnVisible ?? (() => true);
-  const metaColumns = descriptor
-    .getCardFields()
-    .filter((field) => visible(field.key));
+  const metaColumns = descriptor.getCardFields().filter((field) => visible(field.key));
 
   return (
     <EntityCardMetadata

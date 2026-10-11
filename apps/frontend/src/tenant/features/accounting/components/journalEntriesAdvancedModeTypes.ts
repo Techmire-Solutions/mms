@@ -58,7 +58,9 @@ export interface JournalEntriesAdvancedModeProps {
   onToggleSelectAll: (checked: boolean) => void;
   onClearSelection: () => void;
   onSave: JournalEntrySave;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   onCloseModal: () => void;
   onEditSelected: () => void;
   onViewEntry: (entry: JournalEntry) => void;

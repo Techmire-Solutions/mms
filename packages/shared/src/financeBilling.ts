@@ -1,19 +1,19 @@
-import { z } from 'zod';
+import { z } from "zod";
 import {
   formatDeterministicSequence,
   financeSettingsToSequenceConfig,
   type SequenceNumberingConfig,
-} from './sequenceNumberingUtils.js';
-import type { FinanceSettings } from './financeModuleSettings.js';
+} from "./sequenceNumberingUtils.js";
+import type { FinanceSettings } from "./financeModuleSettings.js";
 
 /** Display number `INV-{YEAR}-{SEQ}` (zero-padded to 4). */
-export const INVOICE_NUMBER_PREFIX = 'INV';
+export const INVOICE_NUMBER_PREFIX = "INV";
 
 export const invoiceLineRecordSchema = z
   .object({
     id: z.string(),
     feeItemId: z.string().nullable().optional(),
-    description: z.string().default(''),
+    description: z.string().default(""),
     quantity: z.number().positive().default(1),
     amount: z.number().nonnegative().default(0),
     discountAmt: z.number().nonnegative().default(0),
@@ -53,13 +53,15 @@ export const feeItemRecordSchema = z
   })
   .strict();
 
-export const feeItemInsertSchema = feeItemRecordSchema.extend({ id: z.string().optional() }).strict();
+export const feeItemInsertSchema = feeItemRecordSchema
+  .extend({ id: z.string().optional() })
+  .strict();
 
 export type FeeItem = z.infer<typeof feeItemRecordSchema>;
 export type FeeItemInsert = z.infer<typeof feeItemInsertSchema>;
 
 /** How often a fee structure is billed when invoices are generated. */
-export const FEE_FREQUENCIES = ['monthly', 'term', 'once'] as const;
+export const FEE_FREQUENCIES = ["monthly", "term", "once"] as const;
 export type FeeFrequency = (typeof FEE_FREQUENCIES)[number];
 
 export function isFeeFrequency(value: string): value is FeeFrequency {
@@ -70,9 +72,9 @@ export const feeStructureRecordSchema = z
   .object({
     id: z.string(),
     name: z.string().min(1),
-    session: z.string().default(''),
-    className: z.string().default(''),
-    frequency: z.enum(FEE_FREQUENCIES).default('monthly'),
+    session: z.string().default(""),
+    className: z.string().default(""),
+    frequency: z.enum(FEE_FREQUENCIES).default("monthly"),
     isActive: z.boolean().default(true),
     items: z.array(feeItemRecordSchema).default([]),
     createdAt: z.string().optional(),
@@ -84,9 +86,9 @@ export const feeStructureInsertSchema = z
   .object({
     id: z.string().optional(),
     name: z.string().min(1),
-    session: z.string().optional().default(''),
-    className: z.string().optional().default(''),
-    frequency: z.enum(FEE_FREQUENCIES).optional().default('monthly'),
+    session: z.string().optional().default(""),
+    className: z.string().optional().default(""),
+    frequency: z.enum(FEE_FREQUENCIES).optional().default("monthly"),
     isActive: z.boolean().optional().default(true),
     items: z.array(feeItemInsertSchema).optional().default([]),
   })
@@ -98,13 +100,17 @@ export type FeeStructure = z.infer<typeof feeStructureRecordSchema>;
 export type FeeStructureInsert = z.infer<typeof feeStructureInsertSchema>;
 export type FeeStructureUpdate = z.infer<typeof feeStructureUpdateSchema>;
 
-export function invoiceLineNet(line: Pick<InvoiceLine, 'quantity' | 'amount' | 'discountAmt'>): number {
+export function invoiceLineNet(
+  line: Pick<InvoiceLine, "quantity" | "amount" | "discountAmt">,
+): number {
   const gross = Math.round(line.quantity * line.amount * 100);
   const discount = Math.round(line.discountAmt * 100);
   return Math.max(0, gross - discount) / 100;
 }
 
-export function invoiceTotalsFromLines(lines: readonly Pick<InvoiceLine, 'quantity' | 'amount' | 'discountAmt'>[]): {
+export function invoiceTotalsFromLines(
+  lines: readonly Pick<InvoiceLine, "quantity" | "amount" | "discountAmt">[],
+): {
   baseFee: number;
   discountAmt: number;
   finalAmt: number;
@@ -124,21 +130,22 @@ export function invoiceTotalsFromLines(lines: readonly Pick<InvoiceLine, 'quanti
 export function formatInvoiceNumber(
   year: number,
   sequence: number,
-  prefixOrConfig: string | Partial<FinanceSettings> | Partial<SequenceNumberingConfig> = INVOICE_NUMBER_PREFIX,
+  prefixOrConfig:
+    string | Partial<FinanceSettings> | Partial<SequenceNumberingConfig> = INVOICE_NUMBER_PREFIX,
 ): string {
-  if (typeof prefixOrConfig === 'string') {
+  if (typeof prefixOrConfig === "string") {
     return formatDeterministicSequence(
       sequence,
-      { prefix: prefixOrConfig, delimiter: '-', yearFormat: 'YYYY', sequenceDigits: 4 },
+      { prefix: prefixOrConfig, delimiter: "-", yearFormat: "YYYY", sequenceDigits: 4 },
       new Date(year, 0, 1),
     );
   }
   const isFinanceSettings =
-    'invoicePrefix' in prefixOrConfig ||
-    'autoGenerateInvoice' in prefixOrConfig ||
-    'invoiceDelimiter' in prefixOrConfig ||
-    'invoiceYearFormat' in prefixOrConfig ||
-    'invoiceSequenceDigits' in prefixOrConfig;
+    "invoicePrefix" in prefixOrConfig ||
+    "autoGenerateInvoice" in prefixOrConfig ||
+    "invoiceDelimiter" in prefixOrConfig ||
+    "invoiceYearFormat" in prefixOrConfig ||
+    "invoiceSequenceDigits" in prefixOrConfig;
 
   const config: Partial<SequenceNumberingConfig> = isFinanceSettings
     ? financeSettingsToSequenceConfig(prefixOrConfig as Partial<FinanceSettings>)
@@ -148,7 +155,11 @@ export function formatInvoiceNumber(
 }
 
 /** Next sequence for `{prefix}-{year}-NNNN` among existing display numbers. */
-export function nextInvoiceSequence(existingNumbers: readonly string[], year: number, prefix = INVOICE_NUMBER_PREFIX): number {
+export function nextInvoiceSequence(
+  existingNumbers: readonly string[],
+  year: number,
+  prefix = INVOICE_NUMBER_PREFIX,
+): number {
   const head = `${prefix}-${year}-`.toUpperCase();
   let max = 0;
   for (const raw of existingNumbers) {
@@ -164,6 +175,10 @@ export function nextInvoiceSequence(existingNumbers: readonly string[], year: nu
   return max + 1;
 }
 
-export function nextInvoiceNumber(existingNumbers: readonly string[], year: number, prefix = INVOICE_NUMBER_PREFIX): string {
+export function nextInvoiceNumber(
+  existingNumbers: readonly string[],
+  year: number,
+  prefix = INVOICE_NUMBER_PREFIX,
+): string {
   return formatInvoiceNumber(year, nextInvoiceSequence(existingNumbers, year, prefix), prefix);
 }

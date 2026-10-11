@@ -101,16 +101,17 @@ packages/shared/src/
 | Workspaces + install | pnpm workspace + version catalog | `pnpm-workspace.yaml` |
 | Task orchestration / caching | Turborepo | `turbo.json` |
 | Compiler strictness | TypeScript base | `tsconfig.base.json` |
-| Lint | ESLint (per-package) | `eslint.config.js` (each package) |
+| Lint | ESLint (per-package; defers formatting to Prettier) | `eslint.config.js` (each package) |
+| Format | Prettier | `.prettierrc.json` → `pnpm format` / `pnpm format:check` |
 | Unit/integration tests | Vitest + coverage thresholds | `vitest.config.ts` (each package) |
 | E2E | Playwright (`chromium` + `a11y` projects, 2 CI shards each) | `e2e/playwright.config.ts` |
 | CI | DAG: changes → [typecheck-lint, build (release artifact on main), secret-scan, test-frontend, test-backend-unit, test-backend-db (conditional), e2e] → ci-gate | `.github/workflows/ci.yml` |
 
-**Adopted but not yet enforced (need a coordinated dependency+lockfile change, then a one-time `format:write`):**
-- **Prettier** — `.prettierrc.json` + `.prettierignore` are committed; `pnpm add -D prettier` then
-  run `prettier --write .` (or add a `format` script) to enforce formatting. Add `format:check` to CI.
-
 **In place:**
+- **Prettier** — `.prettierrc.json` + `.prettierignore` are committed; `prettier` and
+  `eslint-config-prettier` are root devDependencies. Run `pnpm format` to write, `pnpm format:check`
+  to verify (enforced in the `typecheck-lint` CI job). ESLint defers all stylistic rules to Prettier
+  (`eslint-config-prettier/flat` is last in every `eslint.config.js`).
 - **ADR journal** — see [`docs/adr/`](adr/) (decision records for structural choices).
 
 ## 6. Where common questions live

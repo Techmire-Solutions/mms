@@ -7,10 +7,7 @@ export interface UseOptimisticSoftDeleteOptions<TData> {
   removeFromSnapshot: (snapshot: TData, id: string) => TData;
   deleteFn: (id: string, reason?: string) => Promise<void>;
   restoreFn: (id: string) => Promise<void>;
-  notifyArchivedWithUndo: (
-    onUndo: () => void | Promise<void>,
-    recordName?: string,
-  ) => void;
+  notifyArchivedWithUndo: (onUndo: () => void | Promise<void>, recordName?: string) => void;
 }
 
 export function useOptimisticSoftDelete<TData>({

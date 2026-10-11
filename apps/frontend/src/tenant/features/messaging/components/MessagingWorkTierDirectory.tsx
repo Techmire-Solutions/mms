@@ -1,19 +1,19 @@
-import React from 'react';
-import { AlertTriangle, MessageSquareOff, RotateCcw } from 'lucide-react';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ModuleTierMotion } from '@/components/ui/ModuleTierMotion';
-import { ModuleWorkDirectoryEmpty } from '@/components/ui/ModuleWorkDirectoryEmpty';
-import { ModuleWorkListStateShell } from '@/components/ui/ModuleWorkListStateShell';
-import { FilterChips } from '@/components/ui/FilterChips';
-import { Button } from '@/components/ui/button';
-import { WarningCallout } from '@/components/ui/WarningCallout';
-import { SEMANTIC_TEXT } from '@/lib/semanticTone';
-import { MessagingDetail } from './MessagingDetail';
-import { MessagingWorkBulkActionBar } from './MessagingWorkBulkActionBar';
-import { MessagingListCards } from './MessagingListCards';
-import { MessagingListDesktopTable } from './MessagingListDesktopTable';
-import { MessagingListFilters } from './MessagingListFilters';
-import type { useMessagingWorkTierController } from './useMessagingWorkTierController';
+import React from "react";
+import { AlertTriangle, MessageSquareOff, RotateCcw } from "lucide-react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ModuleWorkDirectoryEmpty } from "@/components/ui/ModuleWorkDirectoryEmpty";
+import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { FilterChips } from "@/components/ui/FilterChips";
+import { Button } from "@/components/ui/button";
+import { WarningCallout } from "@/components/ui/WarningCallout";
+import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { MessagingDetail } from "./MessagingDetail";
+import { MessagingWorkBulkActionBar } from "./MessagingWorkBulkActionBar";
+import { MessagingListCards } from "./MessagingListCards";
+import { MessagingListDesktopTable } from "./MessagingListDesktopTable";
+import { MessagingListFilters } from "./MessagingListFilters";
+import type { useMessagingWorkTierController } from "./useMessagingWorkTierController";
 
 type MessagingWorkTierDirectoryProps = ReturnType<typeof useMessagingWorkTierController> & {
   canWrite: boolean;
@@ -28,11 +28,14 @@ export function MessagingWorkTierDirectory({
   ...c
 }: MessagingWorkTierDirectoryProps): React.JSX.Element {
   return (
-    <ModuleTierMotion
-      tier="work-messaging"
-      className="space-y-4"
-    >
-      <ErrorBoundary fallback={<div className={`p-4 text-sm ${SEMANTIC_TEXT.destructive}`}>{c.t('errors.toolbar.loadFailed')}</div>}>
+    <ModuleTierMotion tier="work-messaging" className="space-y-4">
+      <ErrorBoundary
+        fallback={
+          <div className={`p-4 text-sm ${SEMANTIC_TEXT.destructive}`}>
+            {c.t("errors.toolbar.loadFailed")}
+          </div>
+        }
+      >
         <MessagingListFilters
           viewMode={c.viewMode}
           onViewModeChange={c.setViewMode}
@@ -62,12 +65,12 @@ export function MessagingWorkTierDirectory({
         />
       </ErrorBoundary>
 
-      {c.status === 'failed' && c.failedLogs.length > 0 && (
+      {c.status === "failed" && c.failedLogs.length > 0 && (
         <WarningCallout
           tone="destructive"
           density="compact"
           icon={AlertTriangle}
-          title={`${c.failedLogs.length} ${c.t('messaging.status.failed')}`}
+          title={`${c.failedLogs.length} ${c.t("messaging.status.failed")}`}
           action={
             canWrite && c.hasBulkResend ? (
               <Button
@@ -77,7 +80,7 @@ export function MessagingWorkTierDirectory({
                 className="h-8 gap-1 text-xs border-destructive/40 text-destructive hover:bg-destructive/20 font-semibold"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                <span>{c.t('messaging.resend')}</span>
+                <span>{c.t("messaging.resend")}</span>
               </Button>
             ) : undefined
           }
@@ -101,8 +104,8 @@ export function MessagingWorkTierDirectory({
         isLoading={c.logsQuery.isPending && c.logsQuery.logs.length === 0}
         isFetching={c.logsQuery.isFetching}
         onRetry={c.logsQuery.refetch}
-        errorTitle={c.t('messaging.loadFailed')}
-        errorHint={c.t('messaging.loadFailedHint')}
+        errorTitle={c.t("messaging.loadFailed")}
+        errorHint={c.t("messaging.loadFailedHint")}
         viewMode={c.viewMode}
         skeletonColumnCount={5}
         useServerWork={true}
@@ -115,20 +118,26 @@ export function MessagingWorkTierDirectory({
         onPageChange={c.setLogsPage}
         i18nNamespace="messaging"
         showPagination={c.logsQuery.logs.length > 0}
-        loadingLabel={c.t('common.loading')}
+        loadingLabel={c.t("common.loading")}
       >
         {c.logsQuery.logs.length === 0 ? (
           <ModuleWorkDirectoryEmpty
             icon={MessageSquareOff}
-            title={c.hasActiveFilters ? c.t('contacts.noContactsMatchFilters') : c.t('messaging.noLogs')}
-            description={c.hasActiveFilters ? c.t('contacts.tryAdjustingFilters') : c.t('messaging.selectRecipientsDesc')}
+            title={
+              c.hasActiveFilters ? c.t("contacts.noContactsMatchFilters") : c.t("messaging.noLogs")
+            }
+            description={
+              c.hasActiveFilters
+                ? c.t("contacts.tryAdjustingFilters")
+                : c.t("messaging.selectRecipientsDesc")
+            }
             hasActiveFilters={c.hasActiveFilters}
             viewingDeleted={false}
             onClearFilters={c.clearFilters}
-            clearFiltersLabel={c.t('common.clearFilters')}
+            clearFiltersLabel={c.t("common.clearFilters")}
             showActiveLabel=""
           />
-        ) : c.viewMode === 'cards' ? (
+        ) : c.viewMode === "cards" ? (
           <MessagingListCards
             logs={c.logsQuery.logs}
             selectedIds={c.selectedById}

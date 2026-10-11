@@ -71,7 +71,9 @@ export function ChartOfAccountsListFilters({
           <ModuleFilterRadioGroup
             label={t("accounting.coa.filterTypeAria")}
             value={typeFilter}
-            onValueChange={(accountTypeValue) => setTypeFilter(accountTypeValue as AccountType | "all")}
+            onValueChange={(accountTypeValue) =>
+              setTypeFilter(accountTypeValue as AccountType | "all")
+            }
             options={[
               { value: "all", label: t("accounting.ledger.allTypes") },
               ...ACCOUNT_TYPES.map((type) => ({
@@ -81,19 +83,26 @@ export function ChartOfAccountsListFilters({
             ]}
           />
           <ModuleFilterDivider />
-          <DropdownMenuCheckboxItem checked={showInactive} onCheckedChange={(checked) => setShowInactive(checked === true)}>
+          <DropdownMenuCheckboxItem
+            checked={showInactive}
+            onCheckedChange={(checked) => setShowInactive(checked === true)}
+          >
             {t("accounting.coa.showInactive")}
           </DropdownMenuCheckboxItem>
         </ModuleFilterDropdown>
       }
       viewModeToggle={{ viewMode, onViewModeChange }}
       primaryAction={undefined}
-      columnCustomizer={columnCustomizer ? {
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      } : undefined}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
     >
       <Button
         type="button"
@@ -101,7 +110,8 @@ export function ChartOfAccountsListFilters({
         onClick={onExportCsv}
         className="flex min-h-11 items-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground"
       >
-        <Download className="w-3.5 h-3.5" aria-hidden="true" /> {t("accounting.journal.dashboard.export")}
+        <Download className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+        {t("accounting.journal.dashboard.export")}
       </Button>
     </ModuleWorkToolbar>
   );

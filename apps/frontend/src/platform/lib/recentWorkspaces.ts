@@ -1,6 +1,6 @@
 /** Persisted recent workspace jumps for Cmd+K and the header switcher. */
 
-export const RECENT_WORKSPACES_STORAGE_KEY = 'mms_platform_recent_workspaces';
+export const RECENT_WORKSPACES_STORAGE_KEY = "mms_platform_recent_workspaces";
 export const MAX_RECENT_WORKSPACES = 5;
 
 export interface RecentWorkspaceRecord {
@@ -9,7 +9,7 @@ export interface RecentWorkspaceRecord {
 }
 
 export function loadRecentWorkspaces(): RecentWorkspaceRecord[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(RECENT_WORKSPACES_STORAGE_KEY);
     if (!raw) return [];
@@ -18,10 +18,10 @@ export function loadRecentWorkspaces(): RecentWorkspaceRecord[] {
     return parsed
       .filter(
         (item): item is RecentWorkspaceRecord =>
-          typeof item === 'object' &&
+          typeof item === "object" &&
           item !== null &&
-          typeof (item as RecentWorkspaceRecord).subdomain === 'string' &&
-          typeof (item as RecentWorkspaceRecord).madrasaName === 'string',
+          typeof (item as RecentWorkspaceRecord).subdomain === "string" &&
+          typeof (item as RecentWorkspaceRecord).madrasaName === "string",
       )
       .slice(0, MAX_RECENT_WORKSPACES);
   } catch {

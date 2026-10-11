@@ -130,7 +130,9 @@ export function DuplicateDetectionModal({
           />
         ) : (
           <>
-            <p className="text-xs text-muted-foreground">{t("contacts.duplicates.dismissSessionHint")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("contacts.duplicates.dismissSessionHint")}
+            </p>
             {activePairs.map((pair) => (
               <DuplicatePairCard
                 key={pair.id}

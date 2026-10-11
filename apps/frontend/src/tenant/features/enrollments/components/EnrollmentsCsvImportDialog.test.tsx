@@ -82,10 +82,7 @@ describe("EnrollmentsCsvImportDialog", () => {
       templateBtn?.click();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "enrollments.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "enrollments.csv");
   });
 
   it("accepts a valid exported enrollment CSV and initiates background import", async () => {

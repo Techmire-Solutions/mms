@@ -1,24 +1,21 @@
-import { useState, useRef } from 'react';
-import {
-  DEFAULT_CHART_PALETTE_ID,
-  getChartPaletteColors,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { useDashboardConfig } from '@/hooks/useDashboardConfig';
-import { METADATA_FIELDS, type VisualizerConfig } from '@/lib/reports/reportMetadata';
+import { useState, useRef } from "react";
+import { DEFAULT_CHART_PALETTE_ID, getChartPaletteColors } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { useDashboardConfig } from "@/hooks/useDashboardConfig";
+import { METADATA_FIELDS, type VisualizerConfig } from "@/lib/reports/reportMetadata";
 import type {
   ChartOperation,
   ChartType,
   CollectionMeta,
   CustomWidget,
   FilterRule,
-} from '@/components/ui/reports/dynamicChartVisualizerTypes';
-import { useDynamicChartVisualizerMetaEffects } from '@/components/ui/reports/useDynamicChartVisualizerEffects';
-import { useDynamicChartVisualizerContainer } from '@/components/ui/reports/useDynamicChartVisualizerContainer';
-import { isVisualizerWidgetPinned } from '@/components/ui/reports/dynamicChartVisualizerPin';
-import { buildDynamicChartVisualizerHandlers } from '@/components/ui/reports/useDynamicChartVisualizerHandlers';
-import { useDynamicChartVisualizerData } from '@/tenant/features/reports/controllers/useDynamicChartVisualizerData';
+} from "@/components/ui/reports/dynamicChartVisualizerTypes";
+import { useDynamicChartVisualizerMetaEffects } from "@/components/ui/reports/useDynamicChartVisualizerEffects";
+import { useDynamicChartVisualizerContainer } from "@/components/ui/reports/useDynamicChartVisualizerContainer";
+import { isVisualizerWidgetPinned } from "@/components/ui/reports/dynamicChartVisualizerPin";
+import { buildDynamicChartVisualizerHandlers } from "@/components/ui/reports/useDynamicChartVisualizerHandlers";
+import { useDynamicChartVisualizerData } from "@/tenant/features/reports/controllers/useDynamicChartVisualizerData";
 
 const METADATA_CONFIGS: Record<string, CollectionMeta> = METADATA_FIELDS;
 
@@ -35,29 +32,34 @@ export function useDynamicChartVisualizer({
   const chartRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
 
-  const [title, setTitle] = useState(() => initialConfig?.title || t('reports.visualizer.defaultTitle'));
-  const [collectionKey, setCollectionKey] = useState<keyof typeof METADATA_CONFIGS>(
-    initialConfig?.collection || 'students',
+  const [title, setTitle] = useState(
+    () => initialConfig?.title || t("reports.visualizer.defaultTitle"),
   );
-  const [chartType, setChartType] = useState<ChartType>(initialConfig?.chartType || 'bar');
-  const [xAxisField, setXAxisField] = useState(initialConfig?.xAxisField || 'status');
-  const [operation, setOperation] = useState<ChartOperation>(initialConfig?.operation || 'count');
-  const [targetField, setTargetField] = useState(initialConfig?.targetField || '');
-  const [activePalette, setActivePalette] = useState(initialConfig?.activePalette || DEFAULT_CHART_PALETTE_ID);
+  const [collectionKey, setCollectionKey] = useState<keyof typeof METADATA_CONFIGS>(
+    initialConfig?.collection || "students",
+  );
+  const [chartType, setChartType] = useState<ChartType>(initialConfig?.chartType || "bar");
+  const [xAxisField, setXAxisField] = useState(initialConfig?.xAxisField || "status");
+  const [operation, setOperation] = useState<ChartOperation>(initialConfig?.operation || "count");
+  const [targetField, setTargetField] = useState(initialConfig?.targetField || "");
+  const [activePalette, setActivePalette] = useState(
+    initialConfig?.activePalette || DEFAULT_CHART_PALETTE_ID,
+  );
 
   const [showGrid, setShowGrid] = useState(true);
   const [showLegend, setShowLegend] = useState(true);
   const [showTooltip, setShowTooltip] = useState(true);
   const [showDataTable, setShowDataTable] = useState(false);
-  const [pdfOrientation, setPdfOrientation] = useState<'p' | 'l'>('p');
-  const [pdfFormat, setPdfFormat] = useState<string>('a4');
+  const [pdfOrientation, setPdfOrientation] = useState<"p" | "l">("p");
+  const [pdfFormat, setPdfFormat] = useState<string>("a4");
   const [showPdfSettings, setShowPdfSettings] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterRule[]>([]);
   const { customWidgets: dashboardWidgets, updateCustomWidgets, canPin } = useDashboardConfig();
   // The visualizer narrows to chart-type widgets; the dashboard store holds the canonical set.
   const visualizerWidgets = dashboardWidgets as CustomWidget[];
 
-  const { containerWidth, axisFontSize, legendFontSize, tickGap } = useDynamicChartVisualizerContainer(chartRef);
+  const { containerWidth, axisFontSize, legendFontSize, tickGap } =
+    useDynamicChartVisualizerContainer(chartRef);
   const activeMeta = METADATA_CONFIGS[collectionKey];
 
   useDynamicChartVisualizerMetaEffects({
@@ -82,7 +84,13 @@ export function useDynamicChartVisualizer({
     filters,
   });
 
-  const isPinned = isVisualizerWidgetPinned(visualizerWidgets, collectionKey, xAxisField, operation, chartType);
+  const isPinned = isVisualizerWidgetPinned(
+    visualizerWidgets,
+    collectionKey,
+    xAxisField,
+    operation,
+    chartType,
+  );
 
   const {
     handleTogglePin,
@@ -113,7 +121,7 @@ export function useDynamicChartVisualizer({
     initialConfig,
     onSave,
     onExportFailed: () => {
-      notify.error(t('reports.visualizer.exportFailed'));
+      notify.error(t("reports.visualizer.exportFailed"));
     },
   });
 

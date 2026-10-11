@@ -38,7 +38,7 @@ describe("ExaminationsPageActions", () => {
           onCreateExam={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

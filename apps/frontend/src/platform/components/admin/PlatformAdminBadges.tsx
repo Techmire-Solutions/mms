@@ -1,15 +1,17 @@
-import { PLATFORM_PERMISSION_CONFIG } from '@/platform/lib/platformPermissionConfig';
-import React from 'react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { useTranslation } from '@/hooks/useTranslation';
-import { SEMANTIC_BADGE } from '@/lib/semanticTone';
-import type { PlatformUserProfile } from '@mms/shared';
+import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionConfig";
+import React from "react";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { useTranslation } from "@/hooks/useTranslation";
+import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import type { PlatformUserProfile } from "@mms/shared";
 
 export interface PlatformAdminStatusBadgesProps {
   admin: PlatformUserProfile;
 }
 
-export function PlatformAdminStatusBadges({ admin }: PlatformAdminStatusBadgesProps): React.JSX.Element {
+export function PlatformAdminStatusBadges({
+  admin,
+}: PlatformAdminStatusBadgesProps): React.JSX.Element {
   const { t } = useTranslation();
   const isDisabled = Boolean(admin.disabledAt);
 
@@ -20,7 +22,7 @@ export function PlatformAdminStatusBadges({ admin }: PlatformAdminStatusBadgesPr
           status="disabled"
           config={{
             disabled: {
-              label: t('platform.adminDisabled'),
+              label: t("platform.adminDisabled"),
               cls: SEMANTIC_BADGE.destructive,
             },
           }}
@@ -31,10 +33,10 @@ export function PlatformAdminStatusBadges({ admin }: PlatformAdminStatusBadgesPr
         status={admin.role}
         config={{
           super_user: {
-            label: t('platform.roleSuperUser'),
+            label: t("platform.roleSuperUser"),
             cls: SEMANTIC_BADGE.primary,
           },
-          admin: { label: t('platform.roleAdmin'), cls: SEMANTIC_BADGE.muted },
+          admin: { label: t("platform.roleAdmin"), cls: SEMANTIC_BADGE.muted },
         }}
         size="sm"
       />
@@ -46,11 +48,12 @@ export interface PlatformAdminPermissionsBadgesProps {
   admin: PlatformUserProfile;
 }
 
-
-export function PlatformAdminPermissionsBadges({ admin }: PlatformAdminPermissionsBadgesProps): React.JSX.Element {
+export function PlatformAdminPermissionsBadges({
+  admin,
+}: PlatformAdminPermissionsBadgesProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  if (admin.role !== 'admin') {
+  if (admin.role !== "admin") {
     return <span className="text-xs text-muted-foreground">—</span>;
   }
 
@@ -58,7 +61,9 @@ export function PlatformAdminPermissionsBadges({ admin }: PlatformAdminPermissio
   const activePerms = PLATFORM_PERMISSION_CONFIG.filter(({ key }) => perms?.[key]);
 
   if (activePerms.length === 0) {
-    return <span className="text-xs text-muted-foreground">{t('platform.adminNoCapabilities')}</span>;
+    return (
+      <span className="text-xs text-muted-foreground">{t("platform.adminNoCapabilities")}</span>
+    );
   }
 
   return (

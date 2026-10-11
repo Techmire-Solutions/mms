@@ -3,19 +3,12 @@ import {
   DEFAULT_CONTACT_PREFERENCES,
   type Contact,
   type ContactPreferences,
-} from './contactTypes.js';
-import { cleanName, getEmails, getPhoneNumbers } from './utils.js';
-import { filterActiveContacts } from './contactSoftDelete.js';
+} from "./contactTypes.js";
+import { cleanName, getEmails, getPhoneNumbers } from "./utils.js";
+import { filterActiveContacts } from "./contactSoftDelete.js";
 
 export type ContactDuplicateReasonKey =
-  | 'cnic'
-  | 'cnicName'
-  | 'phoneEmail'
-  | 'namePhone'
-  | 'phone'
-  | 'nameEmail'
-  | 'email'
-  | 'name';
+  "cnic" | "cnicName" | "phoneEmail" | "namePhone" | "phone" | "nameEmail" | "email" | "name";
 
 export interface ContactDuplicatePair {
   id: string;
@@ -38,14 +31,14 @@ const DEFAULT_DUPLICATE_SCORES = {
 
 type DuplicatePreferences = Pick<
   ContactPreferences,
-  | 'namePrefixesToIgnore'
-  | 'duplicateDetectionScoreDefault'
-  | 'duplicateDetectionScorePhoneEmail'
-  | 'duplicateDetectionScoreNamePhone'
-  | 'duplicateDetectionScoreNameEmail'
-  | 'duplicateDetectionScorePhone'
-  | 'duplicateDetectionScoreEmail'
-  | 'duplicateDetectionScoreName'
+  | "namePrefixesToIgnore"
+  | "duplicateDetectionScoreDefault"
+  | "duplicateDetectionScorePhoneEmail"
+  | "duplicateDetectionScoreNamePhone"
+  | "duplicateDetectionScoreNameEmail"
+  | "duplicateDetectionScorePhone"
+  | "duplicateDetectionScoreEmail"
+  | "duplicateDetectionScoreName"
 >;
 
 function addToIndex<T>(map: Map<string, T[]>, key: string, item: T): void {
@@ -66,9 +59,9 @@ function getContactCleanName(contact: Contact, namePrefixesToIgnore?: string[]):
 }
 
 function getContactCleanCnic(contact: Contact): string {
-  if (!contact.cnic) return '';
-  const digits = contact.cnic.replace(/\D/g, '');
-  return digits.length === 13 ? digits : '';
+  if (!contact.cnic) return "";
+  const digits = contact.cnic.replace(/\D/g, "");
+  return digits.length === 13 ? digits : "";
 }
 
 /**
@@ -106,27 +99,28 @@ function scorePair(
   preferences: DuplicatePreferences,
 ): { confidence: number; reasonKey: ContactDuplicateReasonKey } {
   let confidence = preferences.duplicateDetectionScoreDefault ?? DEFAULT_DUPLICATE_SCORES.default;
-  let reasonKey: ContactDuplicateReasonKey = 'name';
+  let reasonKey: ContactDuplicateReasonKey = "name";
 
   if (cnicMatch) {
     confidence = nameMatch ? DEFAULT_DUPLICATE_SCORES.cnicName : DEFAULT_DUPLICATE_SCORES.cnic;
-    reasonKey = nameMatch ? 'cnicName' : 'cnic';
+    reasonKey = nameMatch ? "cnicName" : "cnic";
   } else if (phoneMatch && emailMatch) {
-    confidence = preferences.duplicateDetectionScorePhoneEmail ?? DEFAULT_DUPLICATE_SCORES.phoneEmail;
-    reasonKey = 'phoneEmail';
+    confidence =
+      preferences.duplicateDetectionScorePhoneEmail ?? DEFAULT_DUPLICATE_SCORES.phoneEmail;
+    reasonKey = "phoneEmail";
   } else if (phoneMatch) {
     confidence = nameMatch
       ? (preferences.duplicateDetectionScoreNamePhone ?? DEFAULT_DUPLICATE_SCORES.namePhone)
       : (preferences.duplicateDetectionScorePhone ?? DEFAULT_DUPLICATE_SCORES.phone);
-    reasonKey = nameMatch ? 'namePhone' : 'phone';
+    reasonKey = nameMatch ? "namePhone" : "phone";
   } else if (emailMatch) {
     confidence = nameMatch
       ? (preferences.duplicateDetectionScoreNameEmail ?? DEFAULT_DUPLICATE_SCORES.nameEmail)
       : (preferences.duplicateDetectionScoreEmail ?? DEFAULT_DUPLICATE_SCORES.email);
-    reasonKey = nameMatch ? 'nameEmail' : 'email';
+    reasonKey = nameMatch ? "nameEmail" : "email";
   } else if (nameMatch) {
     confidence = preferences.duplicateDetectionScoreName ?? DEFAULT_DUPLICATE_SCORES.name;
-    reasonKey = 'name';
+    reasonKey = "name";
   }
 
   return { confidence, reasonKey };
@@ -206,8 +200,10 @@ export function findContactDuplicatePairs(
 
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
-    for (let j = 0; j < entry.keys.phones.length; j++) addToIndex(phoneIndex, entry.keys.phones[j], entry);
-    for (let j = 0; j < entry.keys.emails.length; j++) addToIndex(emailIndex, entry.keys.emails[j], entry);
+    for (let j = 0; j < entry.keys.phones.length; j++)
+      addToIndex(phoneIndex, entry.keys.phones[j], entry);
+    for (let j = 0; j < entry.keys.emails.length; j++)
+      addToIndex(emailIndex, entry.keys.emails[j], entry);
     if (entry.keys.name) addToIndex(nameIndex, entry.keys.name, entry);
     if (entry.keys.cnic) addToIndex(cnicIndex, entry.keys.cnic, entry);
   }
@@ -232,7 +228,13 @@ export function findContactDuplicatePairs(
       const key = pairKey(entry1.contact, entry2.contact);
       if (matchedPairs.has(key)) continue;
 
-      const pair = evaluatePair(entry1.contact, entry2.contact, preferences, entry1.keys, entry2.keys);
+      const pair = evaluatePair(
+        entry1.contact,
+        entry2.contact,
+        preferences,
+        entry1.keys,
+        entry2.keys,
+      );
       if (!pair) continue;
 
       matchedPairs.add(key);
@@ -247,20 +249,31 @@ export function findContactDuplicatePairs(
 export function getDuplicateConfidenceBadgeStyle(
   score: number,
   prefs?: Partial<ContactPreferences>,
-): { colorClass: string; labelTier: 'high' | 'medium' | 'low' } {
-  const highThreshold = prefs?.duplicateDetectionThresholdHigh ?? DEFAULT_CONTACT_PREFERENCES.duplicateDetectionThresholdHigh!;
-  const medThreshold = prefs?.duplicateDetectionThresholdMedium ?? DEFAULT_CONTACT_PREFERENCES.duplicateDetectionThresholdMedium!;
-  const highColor = prefs?.duplicateDetectionColorHigh ?? DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorHigh ?? COLOR_PALETTES.red.bg;
-  const medColor = prefs?.duplicateDetectionColorMedium ?? DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorMedium ?? COLOR_PALETTES.amber.bg;
-  const lowColor = prefs?.duplicateDetectionColorLow ?? DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorLow ?? COLOR_PALETTES.slate.bg;
+): { colorClass: string; labelTier: "high" | "medium" | "low" } {
+  const highThreshold =
+    prefs?.duplicateDetectionThresholdHigh ??
+    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionThresholdHigh!;
+  const medThreshold =
+    prefs?.duplicateDetectionThresholdMedium ??
+    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionThresholdMedium!;
+  const highColor =
+    prefs?.duplicateDetectionColorHigh ??
+    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorHigh ??
+    COLOR_PALETTES.red.bg;
+  const medColor =
+    prefs?.duplicateDetectionColorMedium ??
+    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorMedium ??
+    COLOR_PALETTES.amber.bg;
+  const lowColor =
+    prefs?.duplicateDetectionColorLow ??
+    DEFAULT_CONTACT_PREFERENCES.duplicateDetectionColorLow ??
+    COLOR_PALETTES.slate.bg;
 
   if (score >= highThreshold) {
-    return { colorClass: highColor, labelTier: 'high' };
+    return { colorClass: highColor, labelTier: "high" };
   }
   if (score >= medThreshold) {
-    return { colorClass: medColor, labelTier: 'medium' };
+    return { colorClass: medColor, labelTier: "medium" };
   }
-  return { colorClass: lowColor, labelTier: 'low' };
+  return { colorClass: lowColor, labelTier: "low" };
 }
-
-

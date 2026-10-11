@@ -31,7 +31,8 @@ export function validateJournalEntryForm(
 ): Record<string, string> {
   const validationErrors: Record<string, string> = {};
   if (!form.date) validationErrors.date = t("accounting.journal.form.errorDate");
-  if (!form.description.trim()) validationErrors.description = t("accounting.journal.form.errorNarration");
+  if (!form.description.trim())
+    validationErrors.description = t("accounting.journal.form.errorNarration");
   const trimmedRef = form.ref?.trim();
   if (trimmedRef && !isJournalRefUnique(trimmedRef, entries, form.id)) {
     validationErrors.ref = t("accounting.journal.form.errorRefDuplicate");

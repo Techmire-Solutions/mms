@@ -2,13 +2,7 @@ import type { JSX } from "react";
 import { Settings } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -40,10 +34,7 @@ export function CustomReportBuilderPreviewVisualizer({
         <>
           <div className="space-y-3 p-3 md:hidden">
             {previewData.map((previewRow, rowIndex) => (
-              <article
-                key={rowIndex}
-                className={`${WORK_SURFACE_INNER} space-y-2 p-3`}
-              >
+              <article key={rowIndex} className={`${WORK_SURFACE_INNER} space-y-2 p-3`}>
                 <StatGrid columns="1">
                   {selectedFields.map((selectedField) => {
                     const fieldLabel = resolveFieldLabel(selectedField);
@@ -53,9 +44,11 @@ export function CustomReportBuilderPreviewVisualizer({
                         key={selectedField}
                         label={fieldLabel}
                         value={
-                          cellValue !== undefined && cellValue !== null
-                            ? String(cellValue)
-                            : <span className="text-muted-foreground text-xs italic">—</span>
+                          cellValue !== undefined && cellValue !== null ? (
+                            String(cellValue)
+                          ) : (
+                            <span className="text-muted-foreground text-xs italic">—</span>
+                          )
                         }
                         ddClassName="font-semibold"
                       />
@@ -67,11 +60,18 @@ export function CustomReportBuilderPreviewVisualizer({
           </div>
           <div className="hidden overflow-auto max-h-72 custom-scrollbar md:block">
             <Table>
-              <caption className="sr-only">{t("reports.builder.liveVisualizer", { count: previewData.length })}</caption>
+              <caption className="sr-only">
+                {t("reports.builder.liveVisualizer", { count: previewData.length })}
+              </caption>
               <TableHeader>
                 <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
                   {selectedFields.map((selectedField) => (
-                    <ModuleTableHeaderCell key={selectedField} columnKey={selectedField} noWrap className="px-4 py-3.5">
+                    <ModuleTableHeaderCell
+                      key={selectedField}
+                      columnKey={selectedField}
+                      noWrap
+                      className="px-4 py-3.5"
+                    >
                       {resolveFieldLabel(selectedField)}
                     </ModuleTableHeaderCell>
                   ))}
@@ -84,11 +84,15 @@ export function CustomReportBuilderPreviewVisualizer({
                       const fieldLabel = resolveFieldLabel(selectedField);
                       const cellValue = previewRow[fieldLabel];
                       return (
-                        <TableCell key={selectedField} className="px-4 py-3 text-foreground font-semibold group-hover:text-primary transition-colors">
-                          {cellValue !== undefined && cellValue !== null
-                            ? String(cellValue)
-                            : <span className="text-muted-foreground text-xs italic">—</span>
-                          }
+                        <TableCell
+                          key={selectedField}
+                          className="px-4 py-3 text-foreground font-semibold group-hover:text-primary transition-colors"
+                        >
+                          {cellValue !== undefined && cellValue !== null ? (
+                            String(cellValue)
+                          ) : (
+                            <span className="text-muted-foreground text-xs italic">—</span>
+                          )}
                         </TableCell>
                       );
                     })}

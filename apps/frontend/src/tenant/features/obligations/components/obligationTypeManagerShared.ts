@@ -1,5 +1,5 @@
 import type { AppTranslationKey } from "@mms/shared";
-import { type ObligationType } from '@/lib/data/obligationsData';
+import { type ObligationType } from "@/lib/data/obligationsData";
 
 export type DesignatedFor = "Syed" | "Non-Syed" | "Both" | "None";
 

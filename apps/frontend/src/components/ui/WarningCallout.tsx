@@ -50,7 +50,7 @@ export interface WarningCalloutProps {
   className?: string;
 }
 
-export const WarningCallout = (function WarningCallout({
+export const WarningCallout = function WarningCallout({
   icon: Icon = AlertTriangle,
   title,
   description,
@@ -79,17 +79,15 @@ export const WarningCallout = (function WarningCallout({
     >
       <div className={cn("flex min-w-0 gap-2", isCompact ? "items-start" : "items-center")}>
         <Icon
-          className={cn(
-            "shrink-0",
-            tones.icon,
-            isCompact ? "mt-0.5 h-3.5 w-3.5" : "h-4 w-4",
-          )}
+          className={cn("shrink-0", tones.icon, isCompact ? "mt-0.5 h-3.5 w-3.5" : "h-4 w-4")}
           aria-hidden
         />
         <div className="min-w-0">
           {title ? <p className="m-0 font-semibold">{title}</p> : null}
           {description ? (
-            <p className={cn("m-0", title ? tones.descriptionWithTitle : undefined)}>{description}</p>
+            <p className={cn("m-0", title ? tones.descriptionWithTitle : undefined)}>
+              {description}
+            </p>
           ) : null}
           {children}
         </div>
@@ -97,5 +95,4 @@ export const WarningCallout = (function WarningCallout({
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
   );
-});
-
+};

@@ -1,20 +1,20 @@
 /** Validate Contacts Setup → Preferences drafts before persist. */
-import { toTitleCase } from './titleCaseStringUtils.js';
-import type { ContactPreferences } from './contactFieldSchemaTypes.js';
-import { normalizeContactPreferences } from './contactPreferenceDefaults.js';
+import { toTitleCase } from "./titleCaseStringUtils.js";
+import type { ContactPreferences } from "./contactFieldSchemaTypes.js";
+import { normalizeContactPreferences } from "./contactPreferenceDefaults.js";
 
 export type ContactPreferencesCountryCode = { country: string; code: string };
 
 /** Setup Preferences validation failure codes (map to `contacts.setup.*` i18n). */
 export type ContactPreferencesSetupIssue =
-  | 'invalidProvince'
-  | 'invalidCity'
-  | 'invalidThresholdHigh'
-  | 'invalidThresholdMedium'
-  | 'thresholdOrder'
-  | 'emptyCountryRow'
-  | 'invalidDialCode'
-  | 'duplicateCountry';
+  | "invalidProvince"
+  | "invalidCity"
+  | "invalidThresholdHigh"
+  | "invalidThresholdMedium"
+  | "thresholdOrder"
+  | "emptyCountryRow"
+  | "invalidDialCode"
+  | "duplicateCountry";
 
 /** Normalize a dial-code string to `+…` form (empty → ""). */
 export function normalizeContactDialCode(code: string): string {

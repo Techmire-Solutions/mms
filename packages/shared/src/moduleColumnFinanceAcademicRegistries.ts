@@ -1,5 +1,4 @@
-import { createColumnRegistry, type ModuleColumnRegistryEntry } from './moduleColumnCore.js';
-
+import { createColumnRegistry, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
 
 export interface FinanceInvoiceWorkColumnLabels {
   invoice: string;
@@ -17,7 +16,7 @@ export function buildFinanceInvoiceWorkColumnRegistry(
   labels: FinanceInvoiceWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['invoice', 'student', 'sessionClass', 'baseFee', 'discount', 'final', 'status', 'dueDate'],
+    ["invoice", "student", "sessionClass", "baseFee", "discount", "final", "status", "dueDate"],
     labels,
   );
 }
@@ -37,7 +36,7 @@ export function buildFinancePaymentWorkColumnRegistry(
   labels: FinancePaymentWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['date', 'student', 'invoice', 'amount', 'method', 'receivedBy', 'note'],
+    ["date", "student", "invoice", "amount", "method", "receivedBy", "note"],
     labels,
   );
 }
@@ -58,7 +57,7 @@ export function buildAttendanceWorkColumnRegistry(
   labels: AttendanceWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['date', 'class', 'session', 'student', 'status', 'timeIn', 'timeOut', 'notes'],
+    ["date", "class", "session", "student", "status", "timeIn", "timeOut", "notes"],
     labels,
   );
 }
@@ -82,16 +81,16 @@ export function buildSessionWorkColumnRegistry(
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
     [
-      'name',
-      'type',
-      'startDate',
-      'endDate',
-      'duration',
-      'fee',
-      'currency',
-      'enrolled',
-      'status',
-      'description',
+      "name",
+      "type",
+      "startDate",
+      "endDate",
+      "duration",
+      "fee",
+      "currency",
+      "enrolled",
+      "status",
+      "description",
     ],
     labels,
   );
@@ -113,7 +112,7 @@ export function buildEnrollmentWorkColumnRegistry(
   labels: EnrollmentWorkColumnLabels,
 ): ModuleColumnRegistryEntry[] {
   return createColumnRegistry(
-    ['student', 'session', 'class', 'enrolledDate', 'finalFee', 'status', 'payment', 'notes'],
+    ["student", "session", "class", "enrolledDate", "finalFee", "status", "payment", "notes"],
     labels,
   );
 }

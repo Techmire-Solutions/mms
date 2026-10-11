@@ -78,9 +78,13 @@ export function InvoicesRowActions({
       triggerClassName={triggerClassName}
       extras={
         <>
-          {!showDeleted && canWrite && invoice.status !== "paid" && invoice.status !== "cancelled" ? (
+          {!showDeleted &&
+          canWrite &&
+          invoice.status !== "paid" &&
+          invoice.status !== "cancelled" ? (
             <DropdownMenuItem onClick={() => onRecord(invoice)}>
-              <ReceiptText className="w-3.5 h-3.5 me-2" /> {t("finance.recordPaymentFor", { id: invoice.id })}
+              <ReceiptText className="w-3.5 h-3.5 me-2" />{" "}
+              {t("finance.recordPaymentFor", { id: invoice.id })}
             </DropdownMenuItem>
           ) : null}
           <PersonMessagingRowActionsExtras

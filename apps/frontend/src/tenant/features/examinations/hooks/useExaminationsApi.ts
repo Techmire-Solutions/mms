@@ -1,10 +1,10 @@
-import { useQueryClient } from '@tanstack/react-query';
-import type { MutateOptions } from '@tanstack/react-query';
-import type { Exam, ExamResult, ExaminationsCommandMetricsSnapshot } from '@mms/shared';
-import { EXAMINATIONS_MODULE_MANIFEST } from '@mms/shared';
-import { serverMetricsQueryOptions, useServerMetrics } from '@/hooks/useServerMetrics';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { tsrClient } from '@/lib/api';
+import { useQueryClient } from "@tanstack/react-query";
+import type { MutateOptions } from "@tanstack/react-query";
+import type { Exam, ExamResult, ExaminationsCommandMetricsSnapshot } from "@mms/shared";
+import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { tsrClient } from "@/lib/api";
 
 export function examinationsCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<ExaminationsCommandMetricsSnapshot>({
@@ -13,16 +13,11 @@ export function examinationsCommandMetricsQueryOptions() {
   });
 }
 
-
-
-
-export const EXAMINATIONS_EXAMS_QUERY_KEY = ['examinations', 'exams', 'list'] as const;
-export const EXAMINATIONS_RESULTS_QUERY_KEY = ['examinations', 'results', 'list'] as const;
-export const EXAMINATIONS_METRICS_QUERY_KEY = ['examinations', 'metrics'] as const;
+export const EXAMINATIONS_EXAMS_QUERY_KEY = ["examinations", "exams", "list"] as const;
+export const EXAMINATIONS_RESULTS_QUERY_KEY = ["examinations", "results", "list"] as const;
+export const EXAMINATIONS_METRICS_QUERY_KEY = ["examinations", "metrics"] as const;
 
 export const EXAMINATIONS_API = EXAMINATIONS_MODULE_MANIFEST.restBasePath;
-
-
 
 export function useExaminationsExams(options?: { enabled?: boolean; includeDeleted?: boolean }) {
   const { isAuthenticated } = useAuth();
@@ -30,7 +25,7 @@ export function useExaminationsExams(options?: { enabled?: boolean; includeDelet
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.listExams.useQuery({
     queryKey: [...EXAMINATIONS_EXAMS_QUERY_KEY, { includeDeleted }],
-    queryData: { query: { includeDeleted: includeDeleted ? 'true' : undefined } },
+    queryData: { query: { includeDeleted: includeDeleted ? "true" : undefined } },
     staleTime: 30_000,
   });
 }
@@ -43,13 +38,11 @@ export function useExaminationsExamsCollection(options?: {
   if (!query.data || query.data.status !== 200) return [];
   const body = query.data.body;
   if (Array.isArray(body)) return body as Exam[];
-  if (body && typeof body === 'object' && 'exams' in body && Array.isArray(body.exams)) {
+  if (body && typeof body === "object" && "exams" in body && Array.isArray(body.exams)) {
     return body.exams as Exam[];
   }
   return [];
 }
-
-
 
 export function useExaminationsResults(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
@@ -65,7 +58,7 @@ export function useExaminationsResultsCollection(options?: { enabled?: boolean }
   if (!query.data || query.data.status !== 200) return [];
   const body = query.data.body;
   if (Array.isArray(body)) return body as ExamResult[];
-  if (body && typeof body === 'object' && 'results' in body && Array.isArray(body.results)) {
+  if (body && typeof body === "object" && "results" in body && Array.isArray(body.results)) {
     return body.results as ExamResult[];
   }
   return [];
@@ -130,7 +123,8 @@ export function useExaminationsMutations() {
     },
     replaceExamResults: {
       ...replaceExamResults,
-      mutate: (results: ExamResult[], opts?: MutateOptions) => replaceExamResults.mutate({ body: results }, opts),
+      mutate: (results: ExamResult[], opts?: MutateOptions) =>
+        replaceExamResults.mutate({ body: results }, opts),
       mutateAsync: (results: ExamResult[]) => replaceExamResults.mutateAsync({ body: results }),
     },
     deleteExam: {
@@ -145,12 +139,14 @@ export function useExaminationsMutations() {
     },
     bulkDeleteExams: {
       ...bulkDeleteExams,
-      mutate: (ids: string[], opts?: MutateOptions) => bulkDeleteExams.mutate({ body: { ids } }, opts),
+      mutate: (ids: string[], opts?: MutateOptions) =>
+        bulkDeleteExams.mutate({ body: { ids } }, opts),
       mutateAsync: (ids: string[]) => bulkDeleteExams.mutateAsync({ body: { ids } }),
     },
     bulkRestoreExams: {
       ...bulkRestoreExams,
-      mutate: (ids: string[], opts?: MutateOptions) => bulkRestoreExams.mutate({ body: { ids } }, opts),
+      mutate: (ids: string[], opts?: MutateOptions) =>
+        bulkRestoreExams.mutate({ body: { ids } }, opts),
       mutateAsync: (ids: string[]) => bulkRestoreExams.mutateAsync({ body: { ids } }),
     },
   };

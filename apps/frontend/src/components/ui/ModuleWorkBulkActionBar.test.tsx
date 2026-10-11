@@ -19,7 +19,7 @@ describe("ModuleWorkBulkActionBar", () => {
           label: "Delete selected",
           onClick: () => {},
         }}
-      />
+      />,
     );
 
     expect(html).toContain("3 selected");
@@ -40,7 +40,7 @@ describe("ModuleWorkBulkActionBar", () => {
         restoreLabel="Restore selected"
         onRequestBulkRestore={() => {}}
         onClearSelection={() => {}}
-      />
+      />,
     );
 
     expect(html).toContain("Restore selected");

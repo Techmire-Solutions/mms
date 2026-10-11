@@ -1,9 +1,6 @@
 import { type AppTranslationKey } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  FormFooterEntityChip,
-  FormFooterErrorChip,
-} from "@/components/ui/FormFooterChip";
+import { FormFooterEntityChip, FormFooterErrorChip } from "@/components/ui/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
 
 import type { QuestionFormDraft } from "./questionFormTypes";
@@ -12,15 +9,13 @@ interface QuestionFormFooterSummaryProps {
   questionDraft: QuestionFormDraft;
 }
 
-export function QuestionFormFooterSummary({ questionDraft }: QuestionFormFooterSummaryProps): React.JSX.Element {
+export function QuestionFormFooterSummary({
+  questionDraft,
+}: QuestionFormFooterSummaryProps): React.JSX.Element {
   const { t } = useTranslation();
 
   if (!questionDraft.text) {
-    return (
-      <FormFooterErrorChip>
-        {t("questionBank.validation.textRequired")}
-      </FormFooterErrorChip>
-    );
+    return <FormFooterErrorChip>{t("questionBank.validation.textRequired")}</FormFooterErrorChip>;
   }
 
   return (

@@ -4,8 +4,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { UsersReportsTier } from "./UsersReportsTier";
 
 vi.mock("@/tenant/components/moduleReports", () => ({
-  KPISummary: ({ category }: { category: string }) => <div data-testid="kpi-summary">KPI: {category}</div>,
-  ModuleReports: ({ category }: { category: string }) => <div data-testid="module-reports">Reports: {category}</div>,
+  KPISummary: ({ category }: { category: string }) => (
+    <div data-testid="kpi-summary">KPI: {category}</div>
+  ),
+  ModuleReports: ({ category }: { category: string }) => (
+    <div data-testid="module-reports">Reports: {category}</div>
+  ),
 }));
 
 vi.mock("@/components/ui/ModuleTierMotion", () => ({

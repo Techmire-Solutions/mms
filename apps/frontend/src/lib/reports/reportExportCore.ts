@@ -146,9 +146,10 @@ export async function exportReportExcel({
       moduleId,
       label: exportLabel || title,
       filename,
-      columns: resolvedCols.length > 0
-        ? resolvedCols
-        : (sourceHeaders || Object.keys(rows[0] || {})).map((h) => ({ header: h, key: h })),
+      columns:
+        resolvedCols.length > 0
+          ? resolvedCols
+          : (sourceHeaders || Object.keys(rows[0] || {})).map((h) => ({ header: h, key: h })),
       rows,
     });
     return;

@@ -43,7 +43,9 @@ export interface FacultyEmploymentSectionProps extends FacultySectionBaseProps {
 /**
  * Employment card: Employee Code, lifecycle status, employment start/end dates.
  */
-export function FacultyEmploymentSection(props: FacultyEmploymentSectionProps): React.JSX.Element | null {
+export function FacultyEmploymentSection(
+  props: FacultyEmploymentSectionProps,
+): React.JSX.Element | null {
   const {
     autoGenerateId,
     errors,
@@ -74,7 +76,11 @@ export function FacultyEmploymentSection(props: FacultyEmploymentSectionProps): 
 
   return (
     <div className="space-y-4 text-start">
-      <SectionCard title={t("faculty.form.sectionEmployment")} icon={Briefcase} accentColor="primary">
+      <SectionCard
+        title={t("faculty.form.sectionEmployment")}
+        icon={Briefcase}
+        accentColor="primary"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           {showEmployeeId && (
             <FacultyEmploymentEmployeeIdField
@@ -94,7 +100,12 @@ export function FacultyEmploymentSection(props: FacultyEmploymentSectionProps): 
           )}
 
           {showStatus && (
-            <Field label={lbl("status")} id="status" required={isFieldRequired("status")} error={errors.status}>
+            <Field
+              label={lbl("status")}
+              id="status"
+              required={isFieldRequired("status")}
+              error={errors.status}
+            >
               <FormSelect
                 id="status"
                 name="status"

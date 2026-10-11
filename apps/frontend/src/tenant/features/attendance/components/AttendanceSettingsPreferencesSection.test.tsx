@@ -20,10 +20,7 @@ const mockSettings: AttendanceSettings = {
 describe("AttendanceSettingsPreferencesSection Component", () => {
   it("renders timing rules, qr, alerts, and advanced settings cards", () => {
     const html = renderToStaticMarkup(
-      <AttendanceSettingsPreferencesSection
-        settingsDraft={mockSettings}
-        upd={vi.fn()}
-      />,
+      <AttendanceSettingsPreferencesSection settingsDraft={mockSettings} upd={vi.fn()} />,
     );
 
     expect(html).toContain("attendance.settings.timingRules");

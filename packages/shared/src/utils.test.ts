@@ -1,16 +1,52 @@
 import { describe, expect, it } from "vitest";
 import { calculateSmsSegments } from "./smsUtils.js";
-import { parsePhoneNumber, normalizeToE164, formatPhoneWithCountryCode, getPrimaryPhone, mergeContacts, applyTitleCaseRecursive, applyTitleCaseToContact, formatMoney, formatNumber, formatDateToIso, todayISO, parseIsoDate, parseIsoYear, parseTimeHHmm, formatTimeHHmm, normalizeTimeHHmm, splitIsoDateTime, combineIsoDateAndTime, calcPercentage, calculateDetailedSolarAge, getSolarAgeComponents, formatSolarAgeComponents, getLunarDateString, calculateDetailedLunarAge, parseUtcDateParts, capitalize, getPrimaryAddress, compareByField, paginateArray, personalizeMessage, validateRecipientAddress, getDisplayName, MESSAGING_VARIABLE_TOKENS, formatHijriDate, formatSolarHijriDate } from "./utils.js";
-import { normalizeContactForEdit, syncContactScalarFields, mergeContactEditSavePayload } from "./contactFormNormalize.js";
+import {
+  parsePhoneNumber,
+  normalizeToE164,
+  formatPhoneWithCountryCode,
+  getPrimaryPhone,
+  mergeContacts,
+  applyTitleCaseRecursive,
+  applyTitleCaseToContact,
+  formatMoney,
+  formatNumber,
+  formatDateToIso,
+  todayISO,
+  parseIsoDate,
+  parseIsoYear,
+  parseTimeHHmm,
+  formatTimeHHmm,
+  normalizeTimeHHmm,
+  splitIsoDateTime,
+  combineIsoDateAndTime,
+  calcPercentage,
+  calculateDetailedSolarAge,
+  getSolarAgeComponents,
+  formatSolarAgeComponents,
+  getLunarDateString,
+  calculateDetailedLunarAge,
+  parseUtcDateParts,
+  capitalize,
+  getPrimaryAddress,
+  compareByField,
+  paginateArray,
+  personalizeMessage,
+  validateRecipientAddress,
+  getDisplayName,
+  MESSAGING_VARIABLE_TOKENS,
+  formatHijriDate,
+  formatSolarHijriDate,
+} from "./utils.js";
+import {
+  normalizeContactForEdit,
+  syncContactScalarFields,
+  mergeContactEditSavePayload,
+} from "./contactFormNormalize.js";
 import { cleanContactDraft } from "./contactItemNormalize.js";
 
 import { registerFinanceCurrencyProvider } from "./moneyFormatUtils.js";
 
-
-
-
 import type { Contact } from "./contactTypes.js";
-
 
 describe("parsePhoneNumber", () => {
   it("parses E.164 with space separator", () => {
@@ -261,12 +297,22 @@ describe("formatMoney", () => {
     expect(formatMoney(1500, "PKR", { useSymbol: true })).toBe("₨ 1,500");
 
     // Decimal overriding
-    expect(formatMoney(1234.56, "PKR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })).toBe("PKR 1,234.560");
-    expect(formatMoney(1234.5, "USD", { minimumFractionDigits: 0, maximumFractionDigits: 0 })).toBe("USD 1,235");
+    expect(
+      formatMoney(1234.56, "PKR", { minimumFractionDigits: 3, maximumFractionDigits: 3 }),
+    ).toBe("PKR 1,234.560");
+    expect(formatMoney(1234.5, "USD", { minimumFractionDigits: 0, maximumFractionDigits: 0 })).toBe(
+      "USD 1,235",
+    );
 
     // Exclude currency prefix
     expect(formatMoney(1234.56, "PKR", { excludeCurrency: true })).toBe("1,234.56");
-    expect(formatMoney(1234.56, "PKR", { excludeCurrency: true, minimumFractionDigits: 4, maximumFractionDigits: 4 })).toBe("1,234.5600");
+    expect(
+      formatMoney(1234.56, "PKR", {
+        excludeCurrency: true,
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      }),
+    ).toBe("1,234.5600");
   });
 
   it("resolves the fallback currency from the registered finance provider", () => {
@@ -565,14 +611,16 @@ describe("getPrimaryAddress", () => {
         { line1: "456 Primary Ave", city: "Karachi", isPrimary: true },
       ],
     };
-    expect(getPrimaryAddress(contact)).toEqual({ line1: "456 Primary Ave", city: "Karachi", isPrimary: true });
+    expect(getPrimaryAddress(contact)).toEqual({
+      line1: "456 Primary Ave",
+      city: "Karachi",
+      isPrimary: true,
+    });
   });
 
   it("falls back to first address if none is explicitly primary", () => {
     const contact: Partial<Contact> = {
-      addresses: [
-        { line1: "789 First St", city: "Islamabad" },
-      ],
+      addresses: [{ line1: "789 First St", city: "Islamabad" }],
     };
     expect(getPrimaryAddress(contact)).toEqual({ line1: "789 First St", city: "Islamabad" });
   });
@@ -626,14 +674,17 @@ describe("paginateArray", () => {
 
 describe("personalizeMessage", () => {
   it("replaces {name}, {first_name}, {phone}, {email}, and {date} placeholders case-insensitively", () => {
-    const body = "Dear {NAME}, your first name is {first_name}. Contact: {phone}, {email} on {DATE}.";
+    const body =
+      "Dear {NAME}, your first name is {first_name}. Contact: {phone}, {email} on {DATE}.";
     const recipient = {
       name: "Syed Muhammad Ali",
       phone: "+92 300 1234567",
       email: "ali@example.com",
     };
     const result = personalizeMessage(body, recipient, { date: "2026-07-25" });
-    expect(result).toBe("Dear Syed Muhammad Ali, your first name is Syed. Contact: +92 300 1234567, ali@example.com on 2026-07-25.");
+    expect(result).toBe(
+      "Dear Syed Muhammad Ali, your first name is Syed. Contact: +92 300 1234567, ali@example.com on 2026-07-25.",
+    );
   });
 
   it("replaces extended dynamic placeholders like {due_date}, {amount}, {madrasa_name}, and {salutation}", () => {
@@ -646,7 +697,9 @@ describe("personalizeMessage", () => {
       madrasaName: "Madrasa Anwar-ul-Uloom",
     };
     const result = personalizeMessage(body, recipient);
-    expect(result).toBe("Respected Ahmad Raza, payment of 5,000 PKR is due by 2026-08-01 at Madrasa Anwar-ul-Uloom.");
+    expect(result).toBe(
+      "Respected Ahmad Raza, payment of 5,000 PKR is due by 2026-08-01 at Madrasa Anwar-ul-Uloom.",
+    );
   });
 
   it("handles missing recipient fields gracefully", () => {
@@ -655,10 +708,11 @@ describe("personalizeMessage", () => {
   });
 
   it("supports default fallback syntax {token|default_value} when recipient field is missing", () => {
-    const body = "Dear {name|Valued Parent}, your balance of {amount|0 PKR} is due at {madrasa_name|Madrasa}.";
+    const body =
+      "Dear {name|Valued Parent}, your balance of {amount|0 PKR} is due at {madrasa_name|Madrasa}.";
     const recipientWithoutName = { amount: "1,500 PKR" };
     expect(personalizeMessage(body, recipientWithoutName)).toBe(
-      "Dear Valued Parent, your balance of 1,500 PKR is due at Madrasa."
+      "Dear Valued Parent, your balance of 1,500 PKR is due at Madrasa.",
     );
   });
 
@@ -801,7 +855,9 @@ describe("normalizeContactForEdit", () => {
       relationship: "Guardian",
       defaultPhoneCountryCode: "+1",
     });
-    expect(draft.phones).toEqual([{ label: "Work", number: "", countryCode: "+1", isPrimary: true }]);
+    expect(draft.phones).toEqual([
+      { label: "Work", number: "", countryCode: "+1", isPrimary: true },
+    ]);
     expect(draft.emails).toEqual([{ label: "Office", address: "", isPrimary: true }]);
     expect(draft.addresses).toEqual([
       { label: "Office", line1: "", city: "", state: "", country: "", isPrimary: true },
@@ -820,12 +876,8 @@ describe("normalizeContactForEdit", () => {
       },
       undefined,
     );
-    expect(draft.phones).toEqual([
-      expect.objectContaining({ number: "", isPrimary: true }),
-    ]);
-    expect(draft.emails).toEqual([
-      expect.objectContaining({ address: "", isPrimary: true }),
-    ]);
+    expect(draft.phones).toEqual([expect.objectContaining({ number: "", isPrimary: true })]);
+    expect(draft.emails).toEqual([expect.objectContaining({ address: "", isPrimary: true })]);
   });
 
   it("still hydrates legacy scalar-only contacts into collection rows", () => {
@@ -861,7 +913,16 @@ describe("syncContactScalarFields", () => {
     const synced = syncContactScalarFields({
       phones: [{ label: "Mobile", number: "3001234567", countryCode: "+92", isPrimary: true }],
       emails: [{ label: "Home", address: "a@example.com", isPrimary: true }],
-      addresses: [{ label: "Home", line1: "1 Main", city: "Lahore", state: "Punjab", country: "PK", isPrimary: true }],
+      addresses: [
+        {
+          label: "Home",
+          line1: "1 Main",
+          city: "Lahore",
+          state: "Punjab",
+          country: "PK",
+          isPrimary: true,
+        },
+      ],
     } as Partial<Contact>);
     expect(synced.phone).toBe("+92 3001234567");
     expect(synced.email).toBe("a@example.com");

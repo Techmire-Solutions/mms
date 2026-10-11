@@ -1,4 +1,4 @@
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { ReactNode } from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { moneyToCents } from "@mms/shared";
@@ -45,7 +45,10 @@ export interface JournalEntriesListProps {
  * into `0.30000000000000004` versus `0.3`. Summing cents and dividing once by
  * 100 yields the exact two-decimal ledger figure.
  */
-export function getJournalEntryLineTotals(entry: JournalEntry): { totalDebit: number; totalCredit: number } {
+export function getJournalEntryLineTotals(entry: JournalEntry): {
+  totalDebit: number;
+  totalCredit: number;
+} {
   let debitCents = 0;
   let creditCents = 0;
   for (const journalLine of entry.lines) {

@@ -1,8 +1,5 @@
 /** Contact display helpers — avatar, name, primary channels, email/name normalize. */
-import {
-  type Contact,
-  type Address as ContactAddress,
-} from "./contactTypes.js";
+import { type Contact, type Address as ContactAddress } from "./contactTypes.js";
 import { contactDisplayName } from "./contactLinkPolicy.js";
 import { PuppeteerWhatsAppProvider } from "./whatsappProvider.js";
 import { getPrimaryPhone } from "./phoneUtils.js";
@@ -26,9 +23,12 @@ const AVATAR_COLORS: readonly string[] = [
  * @returns CSS color class
  */
 export function getAvatarColor(id: number | string): string {
-  const numericId = typeof id === "number"
-    ? id
-    : String(id).split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const numericId =
+    typeof id === "number"
+      ? id
+      : String(id)
+          .split("")
+          .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return AVATAR_COLORS[numericId % AVATAR_COLORS.length];
 }
 
@@ -40,13 +40,15 @@ export function getAvatarColor(id: number | string): string {
  */
 export function getInitials(name: string | null | undefined, length = 2): string {
   if (!name) return "?";
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((namePart) => namePart[0])
-    .join("")
-    .slice(0, length)
-    .toUpperCase() || "?";
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((namePart) => namePart[0])
+      .join("")
+      .slice(0, length)
+      .toUpperCase() || "?"
+  );
 }
 
 /**
@@ -57,14 +59,17 @@ export function getInitials(name: string | null | undefined, length = 2): string
 export function getPrimaryEmail(contact?: Partial<Contact> | null): string | null {
   if (!contact) return null;
   const emails = contact.emails || [];
-  const emailObj = emails.find((e) => e.isPrimary && (e.address || "").trim().length > 0)
-    || emails.find((e) => (e.address || "").trim().length > 0)
-    || emails[0];
+  const emailObj =
+    emails.find((e) => e.isPrimary && (e.address || "").trim().length > 0) ||
+    emails.find((e) => (e.address || "").trim().length > 0) ||
+    emails[0];
   if (emailObj && (emailObj.address || "").trim().length > 0) {
     return emailObj.address.trim();
   }
   const scalarEmail = (contact as Record<string, unknown>).email;
-  return typeof scalarEmail === "string" && scalarEmail.trim().length > 0 ? scalarEmail.trim() : null;
+  return typeof scalarEmail === "string" && scalarEmail.trim().length > 0
+    ? scalarEmail.trim()
+    : null;
 }
 
 /**

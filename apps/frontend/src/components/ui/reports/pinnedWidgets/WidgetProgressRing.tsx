@@ -6,7 +6,7 @@ import React from "react";
 export function ProgressRing({
   percentage,
   colorHex,
-  isCompact
+  isCompact,
 }: {
   percentage: number;
   colorHex: string;
@@ -16,10 +16,14 @@ export function ProgressRing({
   const strokeWidth = isCompact ? 4 : 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (Math.min(Math.max(percentage, 0), 100) / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (Math.min(Math.max(percentage, 0), 100) / 100) * circumference;
 
   return (
-    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: size, height: size }}>
+    <div
+      className="relative flex items-center justify-center flex-shrink-0"
+      style={{ width: size, height: size }}
+    >
       <svg className="transform -rotate-90" width={size} height={size}>
         {/* Track circle */}
         <circle
@@ -42,7 +46,9 @@ export function ProgressRing({
           strokeLinecap="round"
         />
       </svg>
-      <span className={`absolute font-black tracking-tight text-foreground ${isCompact ? "text-xs" : "text-xs font-mono"}`}>
+      <span
+        className={`absolute font-black tracking-tight text-foreground ${isCompact ? "text-xs" : "text-xs font-mono"}`}
+      >
         {percentage}%
       </span>
     </div>

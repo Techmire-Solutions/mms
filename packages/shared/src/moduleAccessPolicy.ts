@@ -1,49 +1,51 @@
-import type { Permission } from './permissions.js';
-import { SYSTEM_MODULES, normalizeEnabledModules } from './globalSettingsTypes.js';
-import { ACCOUNTING_MODULE_MANIFEST } from './accountingModuleManifest.js';
-import { ATTENDANCE_MODULE_MANIFEST } from './attendanceModuleManifest.js';
-import { CONTACTS_MODULE_MANIFEST } from './contactsModuleManifest.js';
-import { DASHBOARD_MODULE_MANIFEST } from './dashboardModuleManifest.js';
-import { ENROLLMENTS_MODULE_MANIFEST } from './enrollmentsModuleManifest.js';
-import { EXAMINATIONS_MODULE_MANIFEST } from './examinationsModuleManifest.js';
-import { FACULTY_MODULE_MANIFEST } from './facultyModuleManifest.js';
-import { FINANCE_MODULE_MANIFEST } from './financeModuleManifest.js';
-import { HASANAT_MODULE_MANIFEST } from './hasanatModuleManifest.js';
-import { MESSAGING_MODULE_MANIFEST } from './messagingModuleManifest.js';
-import { OBLIGATIONS_MODULE_MANIFEST } from './obligationsModuleManifest.js';
-import { QUESTION_BANK_MODULE_MANIFEST } from './questionBankModuleManifest.js';
-import { SESSIONS_MODULE_MANIFEST } from './sessionsModuleManifest.js';
-import { STUDENTS_MODULE_MANIFEST } from './studentsModuleManifest.js';
-import { TASKS_MODULE_MANIFEST } from './tasksModuleManifest.js';
-import { USERS_MODULE_MANIFEST } from './usersModuleManifest.js';
+import type { Permission } from "./permissions.js";
+import { SYSTEM_MODULES, normalizeEnabledModules } from "./globalSettingsTypes.js";
+import { ACCOUNTING_MODULE_MANIFEST } from "./accountingModuleManifest.js";
+import { ATTENDANCE_MODULE_MANIFEST } from "./attendanceModuleManifest.js";
+import { CONTACTS_MODULE_MANIFEST } from "./contactsModuleManifest.js";
+import { DASHBOARD_MODULE_MANIFEST } from "./dashboardModuleManifest.js";
+import { ENROLLMENTS_MODULE_MANIFEST } from "./enrollmentsModuleManifest.js";
+import { EXAMINATIONS_MODULE_MANIFEST } from "./examinationsModuleManifest.js";
+import { FACULTY_MODULE_MANIFEST } from "./facultyModuleManifest.js";
+import { FINANCE_MODULE_MANIFEST } from "./financeModuleManifest.js";
+import { HASANAT_MODULE_MANIFEST } from "./hasanatModuleManifest.js";
+import { MESSAGING_MODULE_MANIFEST } from "./messagingModuleManifest.js";
+import { OBLIGATIONS_MODULE_MANIFEST } from "./obligationsModuleManifest.js";
+import { QUESTION_BANK_MODULE_MANIFEST } from "./questionBankModuleManifest.js";
+import { SESSIONS_MODULE_MANIFEST } from "./sessionsModuleManifest.js";
+import { STUDENTS_MODULE_MANIFEST } from "./studentsModuleManifest.js";
+import { TASKS_MODULE_MANIFEST } from "./tasksModuleManifest.js";
+import { USERS_MODULE_MANIFEST } from "./usersModuleManifest.js";
 
 /** Action a request or UI entry point performs inside a module. */
-export type ModulePermissionAction = 'read' | 'write' | 'delete' | 'export' | 'setupWrite';
+export type ModulePermissionAction = "read" | "write" | "delete" | "export" | "setupWrite";
 /**
  * `availability` checks grant + enablement only, for routes whose handler owns a
  * finer permission rule (self-service edits, personal preferences).
  */
-export type ModuleAction = ModulePermissionAction | 'availability';
+export type ModuleAction = ModulePermissionAction | "availability";
 
 /** Stable, machine-readable denial reasons shared by API responses and UI states. */
 export const MODULE_ACCESS_DENIAL_CODES = [
-  'MODULE_NOT_GRANTED',
-  'MODULE_DISABLED',
-  'PERMISSION_DENIED',
-  'MODULE_ACCESS_UNAVAILABLE',
+  "MODULE_NOT_GRANTED",
+  "MODULE_DISABLED",
+  "PERMISSION_DENIED",
+  "MODULE_ACCESS_UNAVAILABLE",
 ] as const;
 export type ModuleAccessDenialCode = (typeof MODULE_ACCESS_DENIAL_CODES)[number];
 
 /** Live-update object keys whose change may alter grants or enablement. */
 export const MODULE_ACCESS_INVALIDATION_KEYS: ReadonlySet<string> = new Set([
-  'workspace',
-  'global_settings',
-  'settings',
+  "workspace",
+  "global_settings",
+  "settings",
 ]);
 
 /** True for 403 bodies produced by the module gate (vs. other `forbidden` errors). */
 export function isModuleAccessDenialCode(value: unknown): value is ModuleAccessDenialCode {
-  return typeof value === 'string' && (MODULE_ACCESS_DENIAL_CODES as readonly string[]).includes(value);
+  return (
+    typeof value === "string" && (MODULE_ACCESS_DENIAL_CODES as readonly string[]).includes(value)
+  );
 }
 
 /** Per-module platform grant and tenant enablement, resolved from server data. */
@@ -54,8 +56,7 @@ export interface ModuleAvailability {
 export type ModuleAvailabilityMap = Record<string, ModuleAvailability>;
 
 export type ModuleAccessDecision =
-  | { allowed: true }
-  | { allowed: false; code: ModuleAccessDenialCode };
+  { allowed: true } | { allowed: false; code: ModuleAccessDenialCode };
 
 interface ModulePermissionSource {
   readonly permissions: {
@@ -96,8 +97,8 @@ export const ACCESS_CONTROLLED_MODULE_IDS = Object.keys(
 
 /** Manifest / legacy ids that differ from the system module id. */
 const MODULE_ID_ALIASES: Readonly<Record<string, AccessControlledModuleId>> = {
-  enrollments: 'enrollment',
-  examinations: 'examination',
+  enrollments: "enrollment",
+  examinations: "examination",
 };
 
 /** Canonical system module id for a system, manifest, or legacy id; `undefined` when unknown. */
@@ -113,18 +114,18 @@ export function getModuleActionPermission(
   moduleId: AccessControlledModuleId,
   action: ModulePermissionAction,
 ): Permission {
-  const p: ModulePermissionSource['permissions'] = MODULE_PERMISSION_SOURCES[moduleId].permissions;
+  const p: ModulePermissionSource["permissions"] = MODULE_PERMISSION_SOURCES[moduleId].permissions;
   const write = p.write ?? p.read;
   switch (action) {
-    case 'read':
+    case "read":
       return p.read;
-    case 'write':
+    case "write":
       return write;
-    case 'delete':
+    case "delete":
       return p.delete ?? write;
-    case 'export':
+    case "export":
       return p.export ?? p.read;
-    case 'setupWrite':
+    case "setupWrite":
       return p.setupWrite;
   }
 }
@@ -154,11 +155,11 @@ export function getModuleAvailabilityDenial(
   availability: ModuleAvailabilityMap | null | undefined,
   moduleId: string,
 ): ModuleAccessDenialCode | null {
-  if (!availability) return 'MODULE_ACCESS_UNAVAILABLE';
+  if (!availability) return "MODULE_ACCESS_UNAVAILABLE";
   const canonical = resolveAccessModuleId(moduleId);
   const entry = canonical ? availability[canonical] : undefined;
-  if (!entry || !entry.granted) return 'MODULE_NOT_GRANTED';
-  if (!entry.enabled) return 'MODULE_DISABLED';
+  if (!entry || !entry.granted) return "MODULE_NOT_GRANTED";
+  if (!entry.enabled) return "MODULE_DISABLED";
   return null;
 }
 
@@ -174,11 +175,11 @@ export function evaluateModuleAccess(input: {
 }): ModuleAccessDecision {
   const moduleDenial = getModuleAvailabilityDenial(input.availability, input.moduleId);
   if (moduleDenial) return { allowed: false, code: moduleDenial };
-  const action = input.action ?? 'read';
-  if (action === 'availability') return { allowed: true };
+  const action = input.action ?? "read";
+  if (action === "availability") return { allowed: true };
   const canonical = resolveAccessModuleId(input.moduleId) as AccessControlledModuleId;
   const permission = getModuleActionPermission(canonical, action);
-  return input.can(permission) ? { allowed: true } : { allowed: false, code: 'PERMISSION_DENIED' };
+  return input.can(permission) ? { allowed: true } : { allowed: false, code: "PERMISSION_DENIED" };
 }
 
 /** Collapses availability to the `enabledModules`-shaped flags used by legacy helpers. */

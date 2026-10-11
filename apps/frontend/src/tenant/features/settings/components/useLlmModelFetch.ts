@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { apiContract } from '@/lib/api';
-import { getLlmProviderDefaultModel, type LlmConfig, type LlmProviderType } from '@mms/shared';
+import { useEffect, useState } from "react";
+import { apiContract } from "@/lib/api";
+import { getLlmProviderDefaultModel, type LlmConfig, type LlmProviderType } from "@mms/shared";
 
 interface UseLlmModelFetchOptions {
   formApiKey: string;
@@ -50,7 +50,7 @@ export function useLlmModelFetch({
             const models = body.models;
             setFetchedModels(models);
             setShowCustomModelInput(false);
-            if (formModel.trim() === '' || !models.includes(formModel)) {
+            if (formModel.trim() === "" || !models.includes(formModel)) {
               const defaultModel = getLlmProviderDefaultModel(formProvider);
               if (models.includes(defaultModel)) {
                 setFormModel(defaultModel);
@@ -74,5 +74,11 @@ export function useLlmModelFetch({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formApiKey, formProvider, formBaseUrl, modalOpen]);
 
-  return { fetchedModels, fetchingModels, showCustomModelInput, setShowCustomModelInput, clearFetchedModels: () => setFetchedModels([]) };
+  return {
+    fetchedModels,
+    fetchingModels,
+    showCustomModelInput,
+    setShowCustomModelInput,
+    clearFetchedModels: () => setFetchedModels([]),
+  };
 }

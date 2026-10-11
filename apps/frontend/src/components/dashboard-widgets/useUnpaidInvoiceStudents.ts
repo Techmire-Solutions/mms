@@ -10,9 +10,13 @@ import { uniqueRegistryIds } from "@/lib/registryResolve";
  * and overdue-obligations widgets.
  */
 export function useUnpaidInvoiceStudents() {
-  const invoices = useFinanceInvoicesPaginated({ page: 1, limit: FINANCE_MODULE_MANIFEST.maxPageSize }).data?.invoices ?? [];
-  const unpaidInvoices = (() => invoices.filter((invoice) => isOpenInvoiceStatus(invoice.status)))();
-  const studentIds = (() => uniqueRegistryIds(unpaidInvoices.map((invoice) => invoice.studentId)))();
+  const invoices =
+    useFinanceInvoicesPaginated({ page: 1, limit: FINANCE_MODULE_MANIFEST.maxPageSize }).data
+      ?.invoices ?? [];
+  const unpaidInvoices = (() =>
+    invoices.filter((invoice) => isOpenInvoiceStatus(invoice.status)))();
+  const studentIds = (() =>
+    uniqueRegistryIds(unpaidInvoices.map((invoice) => invoice.studentId)))();
   const { data: students = [] } = useStudentsByIds(studentIds);
   const studentMap = (() => new Map(students.map((student) => [String(student.id), student])))();
   return { invoices, unpaidInvoices, students, studentMap };

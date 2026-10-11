@@ -1,8 +1,8 @@
-import type { JobsOptions } from 'bullmq';
+import type { JobsOptions } from "bullmq";
 
-export const QUEUE_PDF_RENDERING = 'pdf-rendering';
-export const QUEUE_BULK_EXPORT = 'bulk-export';
-export const QUEUE_MESSAGING_BROADCAST = 'messaging-broadcast';
+export const QUEUE_PDF_RENDERING = "pdf-rendering";
+export const QUEUE_BULK_EXPORT = "bulk-export";
+export const QUEUE_MESSAGING_BROADCAST = "messaging-broadcast";
 
 export interface QueueConcurrencyAndPriority {
   concurrency: number;
@@ -24,7 +24,7 @@ export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
   },
 };
 
-export { getBullMQConnectionOptions } from '../../lib/redis.js';
+export { getBullMQConnectionOptions } from "../../lib/redis.js";
 
 export const WORKER_HEAP_LIMIT_BYTES =
   (Number(process.env.WORKER_HEAP_LIMIT_MB) || 512) * 1024 * 1024;
@@ -32,12 +32,12 @@ export const WORKER_HEAP_LIMIT_BYTES =
 export const WORKER_SUBPROCESS_MEMORY_LIMIT_MB = 512;
 export const JOB_EXECUTION_TIMEOUT_MS = 60_000;
 
-import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 
 export function resolveProcessorPath(processorBaseName: string): string {
-  const dir = fileURLToPath(new URL('../processors', import.meta.url));
+  const dir = fileURLToPath(new URL("../processors", import.meta.url));
   const tsPath = join(dir, `${processorBaseName}.ts`);
   const jsPath = join(dir, `${processorBaseName}.js`);
   if (existsSync(tsPath)) return tsPath;
@@ -45,12 +45,12 @@ export function resolveProcessorPath(processorBaseName: string): string {
   return jsPath;
 }
 
-export const SANDBOXED_PDF_PROCESSOR_PATH = resolveProcessorPath('sandboxedPdfProcessor');
-export const SANDBOXED_EXPORT_PROCESSOR_PATH = resolveProcessorPath('sandboxedExportProcessor');
+export const SANDBOXED_PDF_PROCESSOR_PATH = resolveProcessorPath("sandboxedPdfProcessor");
+export const SANDBOXED_EXPORT_PROCESSOR_PATH = resolveProcessorPath("sandboxedExportProcessor");
 
 export const WORKER_FORK_OPTIONS = {
   execArgv: [
-    ...process.execArgv.filter((arg) => !arg.startsWith('--max-old-space-size')),
+    ...process.execArgv.filter((arg) => !arg.startsWith("--max-old-space-size")),
     `--max-old-space-size=${WORKER_SUBPROCESS_MEMORY_LIMIT_MB}`,
   ],
 };
@@ -64,7 +64,7 @@ export const TENANT_PRIORITY_BANDS = {
 export const DEFAULT_JOB_OPTIONS: JobsOptions = {
   attempts: 3,
   backoff: {
-    type: 'exponential',
+    type: "exponential",
     delay: 1000,
   },
   removeOnComplete: {
@@ -76,4 +76,3 @@ export const DEFAULT_JOB_OPTIONS: JobsOptions = {
     age: 86400, // 24 hours
   },
 };
-

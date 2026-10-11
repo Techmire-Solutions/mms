@@ -3,11 +3,11 @@ import {
   ATTENDANCE_LOOKUP_LEGACY_COLLECTION_KEYS,
   isAttendanceLookupLegacyCollectionKey,
   type AttendanceLookupKind,
-} from '@mms/shared';
-import { and, eq } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
+} from "@mms/shared";
+import { and, eq } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
 
 type NormalizedAttendanceItem = {
   id: string;
@@ -24,20 +24,23 @@ function normalizeAttendanceItems(raw: unknown): NormalizedAttendanceItem[] {
   if (!Array.isArray(raw)) return [];
   const out: NormalizedAttendanceItem[] = [];
   for (const entry of raw) {
-    if (entry && typeof entry === 'object') {
+    if (entry && typeof entry === "object") {
       const record = entry as Record<string, unknown>;
-      const candidateId = typeof record.id === 'string' ? record.id : undefined;
-      const candidateLabel = typeof record.label === 'string' ? record.label : undefined;
+      const candidateId = typeof record.id === "string" ? record.id : undefined;
+      const candidateLabel = typeof record.label === "string" ? record.label : undefined;
       if (candidateId && candidateLabel) {
         out.push({
           id: candidateId,
           label: candidateLabel,
-          short: typeof record.short === 'string' ? record.short : candidateLabel.charAt(0).toUpperCase(),
-          color: typeof record.color === 'string' ? record.color : 'muted',
-          bg: typeof record.bg === 'string' ? record.bg : 'bg-muted',
-          text: typeof record.text === 'string' ? record.text : 'text-muted-foreground',
-          border: typeof record.border === 'string' ? record.border : 'border-border',
-          dot: typeof record.dot === 'string' ? record.dot : 'bg-muted-foreground',
+          short:
+            typeof record.short === "string"
+              ? record.short
+              : candidateLabel.charAt(0).toUpperCase(),
+          color: typeof record.color === "string" ? record.color : "muted",
+          bg: typeof record.bg === "string" ? record.bg : "bg-muted",
+          text: typeof record.text === "string" ? record.text : "text-muted-foreground",
+          border: typeof record.border === "string" ? record.border : "border-border",
+          dot: typeof record.dot === "string" ? record.dot : "bg-muted-foreground",
         });
       }
     }
@@ -109,7 +112,7 @@ export async function runMigration070(): Promise<void> {
 
   if (migratedTenants === 0) {
     console.log(
-      `[Migration 070] No attendance lookup collections to migrate (legacy: ${Object.keys(ATTENDANCE_LOOKUP_LEGACY_COLLECTION_KEYS).join(', ')}).`,
+      `[Migration 070] No attendance lookup collections to migrate (legacy: ${Object.keys(ATTENDANCE_LOOKUP_LEGACY_COLLECTION_KEYS).join(", ")}).`,
     );
   } else {
     console.log(

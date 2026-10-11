@@ -1,4 +1,4 @@
-import { useState, useEffect, useDeferredValue, useMemo } from 'react';
+import { useState, useEffect, useDeferredValue, useMemo } from "react";
 
 export interface UseCommandPaletteSearchOptions<T> {
   filterItems: (query: string) => readonly T[];
@@ -14,7 +14,7 @@ export function useCommandPaletteSearch<T>({
   onSelect,
   onClose,
 }: UseCommandPaletteSearchOptions<T>) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [requestedIndex, setSelectedIndex] = useState(0);
   const items = useMemo(() => filterItems(deferredQuery), [filterItems, deferredQuery]);
@@ -25,20 +25,20 @@ export function useCommandPaletteSearch<T>({
   }, [query]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex(() => (items.length > 0 ? (selectedIndex + 1) % items.length : 0));
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex(() =>
         items.length > 0 ? (selectedIndex - 1 + items.length) % items.length : 0,
       );
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       e.preventDefault();
       if (items[selectedIndex]) {
         onSelect(items[selectedIndex]);
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       e.preventDefault();
       onClose();
     }

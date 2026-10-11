@@ -1,9 +1,9 @@
-import { execFile } from 'node:child_process';
-import { join, resolve } from 'node:path';
-import { promisify } from 'node:util';
-import { resolveBackendRoot } from '../../config/loadEnv.js';
-import { initDb } from '../../db/dbInit.js';
-import { logger } from '../../lib/logger.js';
+import { execFile } from "node:child_process";
+import { join, resolve } from "node:path";
+import { promisify } from "node:util";
+import { resolveBackendRoot } from "../../config/loadEnv.js";
+import { initDb } from "../../db/dbInit.js";
+import { logger } from "../../lib/logger.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -11,10 +11,10 @@ const execFileAsync = promisify(execFile);
 export const MIGRATE_RESTART_DELAY_MS = 1_500;
 
 /** PM2 app name from repo-root `ecosystem.config.cjs` — never take from request input. */
-const PM2_APP_NAME = 'mmsv2-backend';
+const PM2_APP_NAME = "mmsv2-backend";
 
 /** Hardcoded ecosystem filename relative to monorepo root. */
-const ECOSYSTEM_FILE = 'ecosystem.config.cjs';
+const ECOSYSTEM_FILE = "ecosystem.config.cjs";
 
 // NOTE: this latch is per-process. In a multi-instance (PM2 cluster) deployment
 // each instance has its own latch, so two instances could each schedule a
@@ -24,7 +24,7 @@ let migrateRestartInFlight = false;
 
 /** Opt-in gate — remote migrate/reload is disabled unless explicitly enabled. */
 export function isRemoteMigrateRestartEnabled(): boolean {
-  return process.env.PLATFORM_ALLOW_REMOTE_MIGRATE_RESTART === 'true';
+  return process.env.PLATFORM_ALLOW_REMOTE_MIGRATE_RESTART === "true";
 }
 
 export function isMigrateRestartInFlight(): boolean {
@@ -51,9 +51,9 @@ export interface ReloadBackendResult {
  * Command paths/args are hardcoded — never interpolate request data.
  */
 export async function runMigrateAndReload(): Promise<{ ok: true }> {
-  logger.info('Applying pending database migrations via initDb...');
+  logger.info("Applying pending database migrations via initDb...");
   await initDb();
-  logger.info('Database migrations applied');
+  logger.info("Database migrations applied");
   const { reloaded } = await reloadBackendProcess();
   if (!reloaded) {
     // Process survived (local/dev) — allow another attempt after manual restart.
@@ -74,12 +74,12 @@ export function scheduleMigrateAndRestart(meta: MigrateRestartAuditMeta): boolea
 
   logger.error(
     {
-      action: 'migrate_and_restart_scheduled',
+      action: "migrate_and_restart_scheduled",
       userId: meta.userId,
       delayMs: MIGRATE_RESTART_DELAY_MS,
       at: new Date().toISOString(),
     },
-    'audit',
+    "audit",
   );
 
   const timer = setTimeout(() => {
@@ -88,21 +88,21 @@ export function scheduleMigrateAndRestart(meta: MigrateRestartAuditMeta): boolea
         await runMigrateAndReload();
         logger.error(
           {
-            action: 'migrate_and_restart_completed',
+            action: "migrate_and_restart_completed",
             userId: meta.userId,
             at: new Date().toISOString(),
           },
-          'audit',
+          "audit",
         );
       } catch (error) {
-        logger.error({ err: error }, 'migrate-and-restart failed');
+        logger.error({ err: error }, "migrate-and-restart failed");
         logger.error(
           {
-            action: 'migrate_and_restart_failed',
+            action: "migrate_and_restart_failed",
             userId: meta.userId,
             at: new Date().toISOString(),
           },
-          'audit',
+          "audit",
         );
         migrateRestartInFlight = false;
       }
@@ -119,24 +119,20 @@ export function scheduleMigrateAndRestart(meta: MigrateRestartAuditMeta): boolea
  * supervising unit can restart us. Skips exit in local/dev to avoid killing node --strip-types.
  */
 export async function reloadBackendProcess(): Promise<ReloadBackendResult> {
-  const repoRoot = resolve(resolveBackendRoot(), '..', '..');
+  const repoRoot = resolve(resolveBackendRoot(), "..", "..");
   const ecosystemPath = join(repoRoot, ECOSYSTEM_FILE);
 
   try {
-    logger.info({ app: PM2_APP_NAME, ecosystem: ecosystemPath }, 'Reloading PM2 app');
-    await execFileAsync(
-      'pm2',
-      ['reload', ecosystemPath, '--only', PM2_APP_NAME, '--update-env'],
-      {
-        cwd: repoRoot,
-        env: process.env,
-        timeout: 60_000,
-        maxBuffer: 1024 * 1024,
-      },
-    );
+    logger.info({ app: PM2_APP_NAME, ecosystem: ecosystemPath }, "Reloading PM2 app");
+    await execFileAsync("pm2", ["reload", ecosystemPath, "--only", PM2_APP_NAME, "--update-env"], {
+      cwd: repoRoot,
+      env: process.env,
+      timeout: 60_000,
+      maxBuffer: 1024 * 1024,
+    });
     return { reloaded: true };
   } catch (error) {
-    logger.warn({ err: error }, 'pm2 reload failed; considering process.exit fallback');
+    logger.warn({ err: error }, "pm2 reload failed; considering process.exit fallback");
   }
 
   if (shouldExitProcessForReloadFallback()) {
@@ -147,12 +143,14 @@ export async function reloadBackendProcess(): Promise<ReloadBackendResult> {
     return { reloaded: true };
   }
 
-  logger.warn('Migrations applied but process reload skipped (not production/PM2). Restart the backend manually.');
+  logger.warn(
+    "Migrations applied but process reload skipped (not production/PM2). Restart the backend manually.",
+  );
   return { reloaded: false };
 }
 
 function shouldExitProcessForReloadFallback(): boolean {
-  if (process.env.NODE_ENV === 'production') return true;
+  if (process.env.NODE_ENV === "production") return true;
   if (process.env.PM2_HOME || process.env.pm_id) return true;
   return false;
 }

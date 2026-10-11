@@ -3,8 +3,8 @@ import {
   extractDominantWeightedSwatchesFromRgba,
   type LogoBrandColors,
   type LogoPaletteSamplingOptions,
-} from '@mms/shared';
-import { apiFetch, resolveApiUrl } from '@/lib/apiClient';
+} from "@mms/shared";
+import { apiFetch, resolveApiUrl } from "@/lib/apiClient";
 
 export type ExtractLogoBrandColorsOptions = LogoPaletteSamplingOptions & {
   /** Longest canvas edge when downsampling before pixel read (performance vs accuracy). */
@@ -13,7 +13,7 @@ export type ExtractLogoBrandColorsOptions = LogoPaletteSamplingOptions & {
   signal?: AbortSignal;
 };
 
-const DEFAULT_OPTIONS: Required<Pick<ExtractLogoBrandColorsOptions, 'sampleSize'>> &
+const DEFAULT_OPTIONS: Required<Pick<ExtractLogoBrandColorsOptions, "sampleSize">> &
   LogoPaletteSamplingOptions = {
   sampleSize: 96,
   maxSwatches: 12,
@@ -22,18 +22,18 @@ const DEFAULT_OPTIONS: Required<Pick<ExtractLogoBrandColorsOptions, 'sampleSize'
   minChromaSaturation: 8,
   minLightness: 8,
   maxLightness: 92,
-  flattenOnto: '#ffffff',
+  flattenOnto: "#ffffff",
   centerWeight: 0.35,
   minSwatchDistance: 42,
 };
 
 function isInlineImageSource(src: string): boolean {
-  return src.startsWith('data:') || src.startsWith('blob:');
+  return src.startsWith("data:") || src.startsWith("blob:");
 }
 
 function normalizeImageSource(src: string): string {
   const trimmed = src.trim();
-  if (!trimmed) return '';
+  if (!trimmed) return "";
   if (/^https?:\/\//i.test(trimmed) || isInlineImageSource(trimmed)) {
     return trimmed;
   }
@@ -41,20 +41,20 @@ function normalizeImageSource(src: string): string {
 }
 
 function inferImageMimeFromUrl(url: string): string | null {
-  const path = url.split('?')[0]?.toLowerCase() ?? '';
-  if (path.endsWith('.avif')) return 'image/avif';
-  if (path.endsWith('.webp')) return 'image/webp';
-  if (path.endsWith('.png')) return 'image/png';
-  if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'image/jpeg';
-  if (path.endsWith('.svg')) return 'image/svg+xml';
+  const path = url.split("?")[0]?.toLowerCase() ?? "";
+  if (path.endsWith(".avif")) return "image/avif";
+  if (path.endsWith(".webp")) return "image/webp";
+  if (path.endsWith(".png")) return "image/png";
+  if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
+  if (path.endsWith(".svg")) return "image/svg+xml";
   return null;
 }
 
 function normalizeFetchedImageBlob(blob: Blob, url: string): Blob {
-  if (blob.type.startsWith('image/')) return blob;
+  if (blob.type.startsWith("image/")) return blob;
   const inferred = inferImageMimeFromUrl(url);
   if (!inferred) {
-    throw new Error('Invalid image payload');
+    throw new Error("Invalid image payload");
   }
   return new Blob([blob], { type: inferred });
 }
@@ -66,7 +66,7 @@ async function resolveImageLoadSource(
 ): Promise<{ src: string; revoke?: () => void }> {
   const normalized = normalizeImageSource(src);
   if (!normalized) {
-    throw new Error('empty_image_source');
+    throw new Error("empty_image_source");
   }
 
   if (isInlineImageSource(normalized)) {
@@ -75,7 +75,7 @@ async function resolveImageLoadSource(
 
   const response = await apiFetch(normalized, { signal });
   if (!response.ok) {
-    throw new Error('Failed to fetch image for colour extraction');
+    throw new Error("Failed to fetch image for colour extraction");
   }
 
   const blob = normalizeFetchedImageBlob(await response.blob(), normalized);
@@ -86,27 +86,27 @@ async function resolveImageLoadSource(
 function loadImage(src: string, signal?: AbortSignal): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
-      return reject(new DOMException('Aborted', 'AbortError'));
+      return reject(new DOMException("Aborted", "AbortError"));
     }
     const image = new Image();
-    image.decoding = 'async';
+    image.decoding = "async";
 
     const onAbort = () => {
-      image.src = '';
-      reject(new DOMException('Aborted', 'AbortError'));
+      image.src = "";
+      reject(new DOMException("Aborted", "AbortError"));
     };
 
     if (signal) {
-      signal.addEventListener('abort', onAbort);
+      signal.addEventListener("abort", onAbort);
     }
 
     image.onload = () => {
-      if (signal) signal.removeEventListener('abort', onAbort);
+      if (signal) signal.removeEventListener("abort", onAbort);
       resolve(image);
     };
     image.onerror = () => {
-      if (signal) signal.removeEventListener('abort', onAbort);
-      reject(new Error('Failed to load image for colour extraction'));
+      if (signal) signal.removeEventListener("abort", onAbort);
+      reject(new Error("Failed to load image for colour extraction"));
     };
     image.src = src;
   });
@@ -132,7 +132,7 @@ export async function extractLogoBrandColors(
 
   try {
     if (signal?.aborted) {
-      throw new DOMException('Aborted', 'AbortError');
+      throw new DOMException("Aborted", "AbortError");
     }
 
     const loadSource = await resolveImageLoadSource(imageSource, signal);
@@ -144,26 +144,31 @@ export async function extractLogoBrandColors(
     const width = Math.max(1, Math.round(image.naturalWidth * scale));
     const height = Math.max(1, Math.round(image.naturalHeight * scale));
 
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
 
-    const context = canvas.getContext('2d', { willReadFrequently: true });
+    const context = canvas.getContext("2d", { willReadFrequently: true });
     if (!context) return null;
 
     if (signal?.aborted) {
-      throw new DOMException('Aborted', 'AbortError');
+      throw new DOMException("Aborted", "AbortError");
     }
 
     context.drawImage(image, 0, 0, width, height);
     const { data } = context.getImageData(0, 0, width, height);
-    const weightedSwatches = extractDominantWeightedSwatchesFromRgba(data, width, height, samplingOptions);
+    const weightedSwatches = extractDominantWeightedSwatchesFromRgba(
+      data,
+      width,
+      height,
+      samplingOptions,
+    );
     const swatches = weightedSwatches.map((s) => s.hex);
     const proportions = weightedSwatches.map((s) => ({ hex: s.hex, percentage: s.percentage }));
 
     return deriveBrandColorsFromPalette(swatches, { proportions });
   } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
+    if (error && typeof error === "object" && "name" in error && error.name === "AbortError") {
       throw error;
     }
     return null;

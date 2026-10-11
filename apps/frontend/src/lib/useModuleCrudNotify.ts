@@ -21,39 +21,43 @@ export function useModuleCrudNotify({
 }: UseModuleCrudNotifyOptions) {
   const { t } = useTranslation();
 
-  const handleError = ((err: unknown, scope: string, messageKey: AppTranslationKey = defaultErrorKey) => {
-      const validationMessage = getApiValidationMessage(err);
-      notify.error(t(messageKey), validationMessage ? { description: validationMessage } : undefined);
-      reportClientError(err, { scope });
-    });
+  const handleError = (
+    err: unknown,
+    scope: string,
+    messageKey: AppTranslationKey = defaultErrorKey,
+  ) => {
+    const validationMessage = getApiValidationMessage(err);
+    notify.error(t(messageKey), validationMessage ? { description: validationMessage } : undefined);
+    reportClientError(err, { scope });
+  };
 
   const saveFailed = useCallback(() => {
     notify.error(t(saveFailedKey));
   }, [t, saveFailedKey]);
 
-  const notifyBulkResult = ((
-      succeeded: number,
-      failed: number,
-      singleSuccessKey: AppTranslationKey,
-      multiSuccessKey: AppTranslationKey,
-      conflictDetail?: string,
-    ) => {
-      if (succeeded > 0 && failed === 0) {
-        notify.success(
-          succeeded === 1 ? t(singleSuccessKey) : t(multiSuccessKey, { count: succeeded }),
-        );
-      } else if (succeeded > 0 && failed > 0) {
-        notify.warning(t(bulkPartialFailureKey, { succeeded, failed }), {
-          description: conflictDetail,
-        });
-      } else if (conflictDetail) {
-        notify.error(t(messageKeyForBulkFailure(singleSuccessKey)), {
-          description: conflictDetail,
-        });
-      } else {
-        saveFailed();
-      }
-    });
+  const notifyBulkResult = (
+    succeeded: number,
+    failed: number,
+    singleSuccessKey: AppTranslationKey,
+    multiSuccessKey: AppTranslationKey,
+    conflictDetail?: string,
+  ) => {
+    if (succeeded > 0 && failed === 0) {
+      notify.success(
+        succeeded === 1 ? t(singleSuccessKey) : t(multiSuccessKey, { count: succeeded }),
+      );
+    } else if (succeeded > 0 && failed > 0) {
+      notify.warning(t(bulkPartialFailureKey, { succeeded, failed }), {
+        description: conflictDetail,
+      });
+    } else if (conflictDetail) {
+      notify.error(t(messageKeyForBulkFailure(singleSuccessKey)), {
+        description: conflictDetail,
+      });
+    } else {
+      saveFailed();
+    }
+  };
 
   const notifyArchivedWithUndo = useCallback(
     (

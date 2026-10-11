@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { phoneNumberSchema, emailAddressSchema } from '../contactNestedSchemas.js';
-import { deepSanitizeStrings } from './sanitize.js';
+import { z } from "zod";
+import { phoneNumberSchema, emailAddressSchema } from "../contactNestedSchemas.js";
+import { deepSanitizeStrings } from "./sanitize.js";
 
 const changePasswordBodyBaseSchema = z
   .object({
@@ -10,7 +10,7 @@ const changePasswordBodyBaseSchema = z
   .strict();
 
 export const changePasswordBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, changePasswordBodyBaseSchema);
 
@@ -22,7 +22,7 @@ const verifyPasswordBodyBaseSchema = z
   .strict();
 
 export const verifyPasswordBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, verifyPasswordBodyBaseSchema);
 
@@ -34,7 +34,7 @@ const requestLoginEmailChangeBodyBaseSchema = z
   .strict();
 
 export const requestLoginEmailChangeBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, requestLoginEmailChangeBodyBaseSchema);
 
@@ -46,7 +46,7 @@ const confirmLoginEmailChangeBodyBaseSchema = z
   .strict();
 
 export const confirmLoginEmailChangeBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, confirmLoginEmailChangeBodyBaseSchema);
 
@@ -73,6 +73,6 @@ const ownContactPatchBodyBaseSchema = z
   .strict();
 
 export const ownContactPatchBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, ownContactPatchBodyBaseSchema);

@@ -1,11 +1,14 @@
-import {
-  FACULTY_MODULE_MANIFEST,
-  type FacultyWidgetQuery,
-} from '@mms/shared';
+import { FACULTY_MODULE_MANIFEST, type FacultyWidgetQuery } from "@mms/shared";
 
-export const FACULTY_QUERY_KEY = [FACULTY_MODULE_MANIFEST.collectionKey, 'list'] as const;
-export const FACULTY_METRICS_QUERY_KEY = [FACULTY_MODULE_MANIFEST.collectionKey, 'metrics'] as const;
-export const FACULTY_WIDGET_AGGREGATES_QUERY_KEY = [FACULTY_MODULE_MANIFEST.collectionKey, 'widget-aggregates'] as const;
+export const FACULTY_QUERY_KEY = [FACULTY_MODULE_MANIFEST.collectionKey, "list"] as const;
+export const FACULTY_METRICS_QUERY_KEY = [
+  FACULTY_MODULE_MANIFEST.collectionKey,
+  "metrics",
+] as const;
+export const FACULTY_WIDGET_AGGREGATES_QUERY_KEY = [
+  FACULTY_MODULE_MANIFEST.collectionKey,
+  "widget-aggregates",
+] as const;
 
 export const FACULTY_API = FACULTY_MODULE_MANIFEST.restBasePath;
 
@@ -15,12 +18,12 @@ export {
   facultyListQueryKeyParams,
   facultyPaginatedQueryKey,
   sameFacultyListFilters,
-} from './facultyListQueryBuilders.js';
+} from "./facultyListQueryBuilders.js";
 export type {
   FacultyRecord,
   FacultyListPageResult,
   FacultyPaginatedParams,
-} from './facultyListQueryBuilders.js';
+} from "./facultyListQueryBuilders.js";
 
 export interface FacultyNextEmployeeIdParams {
   prefix?: string;
@@ -35,4 +38,3 @@ export interface FacultyNextEmployeeIdParams {
 export type FacultyWidgetAggregateWidgetInput = FacultyWidgetQuery & {
   collection: string;
 };
-

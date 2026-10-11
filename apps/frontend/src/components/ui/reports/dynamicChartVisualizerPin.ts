@@ -1,7 +1,12 @@
-import { generateClientEntityId } from '@mms/shared';
-import type { ChartOperation, ChartType, CustomWidget, FilterRule } from './dynamicChartVisualizerTypes';
-import { resolveWidgetPinColor } from './dynamicChartVisualizerHelpers';
-import type { CollectionMeta } from './dynamicChartVisualizerTypes';
+import { generateClientEntityId } from "@mms/shared";
+import type {
+  ChartOperation,
+  ChartType,
+  CustomWidget,
+  FilterRule,
+} from "./dynamicChartVisualizerTypes";
+import { resolveWidgetPinColor } from "./dynamicChartVisualizerHelpers";
+import type { CollectionMeta } from "./dynamicChartVisualizerTypes";
 
 export function computeAxisFontSize(containerWidth: number): number {
   return Math.max(9, Math.min(13, Math.round(containerWidth / 60)));
@@ -15,8 +20,8 @@ export function computeTickGap(containerWidth: number): number {
   return Math.max(10, Math.min(30, Math.round(containerWidth / 25)));
 }
 
-export function normalizePinOperation(operation: ChartOperation): 'count' | 'sum' | 'avg' {
-  return operation === 'min' || operation === 'max' ? 'count' : operation;
+export function normalizePinOperation(operation: ChartOperation): "count" | "sum" | "avg" {
+  return operation === "min" || operation === "max" ? "count" : operation;
 }
 
 export function isVisualizerWidgetPinned(
@@ -38,8 +43,8 @@ export function isVisualizerWidgetPinned(
 }
 
 export function resolveWidgetCategory(collectionKey: string): string {
-  if (collectionKey === 'finance_invoices') return 'financial';
-  if (collectionKey === 'attendance_records') return 'attendance';
+  if (collectionKey === "finance_invoices") return "financial";
+  if (collectionKey === "attendance_records") return "attendance";
   return String(collectionKey);
 }
 
@@ -70,17 +75,17 @@ export function toggleVisualizerWidgetPin(input: {
     };
   } else {
     const newWidget: CustomWidget = {
-      id: generateClientEntityId('widget', '-'),
+      id: generateClientEntityId("widget", "-"),
       title: input.title,
       category: resolveWidgetCategory(input.collectionKey),
-      collection: input.collectionKey as CustomWidget['collection'],
+      collection: input.collectionKey as CustomWidget["collection"],
       chartType: input.chartType,
       xAxisField: input.xAxisField,
       operation: normalizedOperation,
       targetField: input.targetField,
       color: resolveWidgetPinColor(input.activePalette),
       isPinnedToDashboard: true,
-      filterOperator: 'equals',
+      filterOperator: "equals",
     };
     nextWidgets.push(newWidget);
   }
@@ -90,10 +95,10 @@ export function toggleVisualizerWidgetPin(input: {
 
 export function createFilterRule(defaultField: string): FilterRule {
   return {
-    id: generateClientEntityId('filter', '-'),
+    id: generateClientEntityId("filter", "-"),
     field: defaultField,
-    operator: 'equals',
-    value: '',
+    operator: "equals",
+    value: "",
   };
 }
 
@@ -110,5 +115,5 @@ export function deleteFilterRule(filters: FilterRule[], id: string): FilterRule[
 }
 
 export function getDefaultCollectionField(meta: CollectionMeta | undefined): string {
-  return meta?.fields[0]?.value || '';
+  return meta?.fields[0]?.value || "";
 }

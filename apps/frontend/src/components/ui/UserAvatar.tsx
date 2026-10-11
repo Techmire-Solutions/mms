@@ -27,7 +27,7 @@ export interface UserAvatarProps {
   fallbackClassName?: string;
 }
 
-export const UserAvatar = (function UserAvatar({
+export const UserAvatar = function UserAvatar({
   id,
   name,
   avatar,
@@ -51,7 +51,7 @@ export const UserAvatar = (function UserAvatar({
           size === "xl" && "h-16 w-16",
           size === "2xl" && "h-20 w-20",
           (!size || size === "md") && "h-9 w-9",
-          className
+          className,
         )}
         aria-hidden="true"
       />
@@ -65,12 +65,7 @@ export const UserAvatar = (function UserAvatar({
   return (
     <div className="relative inline-flex shrink-0" title={tooltipText}>
       <Avatar size={size} className={className}>
-        {avatar && (
-          <AvatarImage
-            src={avatar}
-            alt={name || "Avatar"}
-          />
-        )}
+        {avatar && <AvatarImage src={avatar} alt={name || "Avatar"} />}
         <AvatarFallback className={cn(colorClass, fallbackClassName)}>
           {initials && initials !== "?" ? (
             initials
@@ -86,7 +81,7 @@ export const UserAvatar = (function UserAvatar({
             className={cn(
               "absolute -bottom-0.5 -end-0.5 rounded-full ring-2 ring-card shrink-0",
               STATUS_COLORS[status],
-              size === "sm" ? "h-2 w-2" : "h-2.5 w-2.5"
+              size === "sm" ? "h-2 w-2" : "h-2.5 w-2.5",
             )}
             aria-hidden="true"
           />
@@ -97,5 +92,4 @@ export const UserAvatar = (function UserAvatar({
       ) : null}
     </div>
   );
-});
-
+};

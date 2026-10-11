@@ -49,7 +49,7 @@ export default function SavedReports({
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const handleSave = (async () => {
+  const handleSave = async () => {
     const trimmedName = name.trim();
     if (!trimmedName) return;
 
@@ -68,37 +68,35 @@ export default function SavedReports({
     } finally {
       setSaving(false);
     }
-  });
+  };
 
-  const handleRun = (async (report: GenericSavedReport) => {
-      if (!onApplyFilters) return;
+  const handleRun = async (report: GenericSavedReport) => {
+    if (!onApplyFilters) return;
 
-      try {
-        await runReport(report.id);
-        onApplyFilters(report.filters);
-        notify.success(t("reports.saved.runSuccess"));
-      } catch {
-        notify.error(t("reports.saved.staleWarningTitle"));
-      }
-    });
+    try {
+      await runReport(report.id);
+      onApplyFilters(report.filters);
+      notify.success(t("reports.saved.runSuccess"));
+    } catch {
+      notify.error(t("reports.saved.staleWarningTitle"));
+    }
+  };
 
-  const handleDelete = (async (id: string) => {
-      try {
-        await deleteReport(id);
-        notify.info(t("reports.saved.deleteSuccess"));
-      } catch {
-        notify.error(t("reports.saved.delete"));
-      }
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteReport(id);
+      notify.info(t("reports.saved.deleteSuccess"));
+    } catch {
+      notify.error(t("reports.saved.delete"));
+    }
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 text-start">
           <h3 className="text-sm font-semibold text-foreground">{t("reports.saved.title")}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {t("reports.saved.subtitle")}
-          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t("reports.saved.subtitle")}</p>
         </div>
         {onApplyFilters && (
           <Button

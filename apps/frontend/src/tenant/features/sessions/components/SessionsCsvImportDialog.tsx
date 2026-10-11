@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  sessionsTransferSchema,
-  type SessionTransferEntity,
-} from "@mms/shared";
+import { sessionsTransferSchema, type SessionTransferEntity } from "@mms/shared";
 import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface SessionsCsvImportDialogProps {

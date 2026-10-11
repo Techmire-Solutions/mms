@@ -14,7 +14,9 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 
-const WIDGET_TYPE_LABEL_KEYS: Partial<Record<NonNullable<CustomWidget["widgetType"]>, AppTranslationKey>> = {
+const WIDGET_TYPE_LABEL_KEYS: Partial<
+  Record<NonNullable<CustomWidget["widgetType"]>, AppTranslationKey>
+> = {
   kpi: "reports.widgets.builder.typeKpi",
   card: "reports.widgets.builder.typeCard",
   progress: "reports.widgets.builder.typeProgress",
@@ -76,9 +78,16 @@ export function PinnedWidgetsGrid({
           >
             <div className="flex min-w-0 items-start justify-between gap-2">
               <div className="min-w-0 flex-1 space-y-0.5">
-                <span className="block truncate text-xs font-black uppercase leading-none tracking-widest text-foreground">{resolveWidgetTitle(widget, t)}</span>
+                <span className="block truncate text-xs font-black uppercase leading-none tracking-widest text-foreground">
+                  {resolveWidgetTitle(widget, t)}
+                </span>
                 <SectionLabel as="p" weight="bold" tracking="wider" className="truncate">
-                  {typeLabelKey ? t(typeLabelKey) : (widget.widgetType || "kpi")} • {getCollectionLabel(widget.collection, METADATA_FIELDS[widget.collection]?.name || widget.collection.replace("_", " "), t)}
+                  {typeLabelKey ? t(typeLabelKey) : widget.widgetType || "kpi"} •{" "}
+                  {getCollectionLabel(
+                    widget.collection,
+                    METADATA_FIELDS[widget.collection]?.name || widget.collection.replace("_", " "),
+                    t,
+                  )}
                 </SectionLabel>
               </div>
 
@@ -93,9 +102,17 @@ export function PinnedWidgetsGrid({
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:text-foreground"
                   }`}
-                  title={widget.isPinnedToDashboard ? t("reports.widgets.pinnedToDashboard") : t("reports.widgets.pinToDashboard")}
+                  title={
+                    widget.isPinnedToDashboard
+                      ? t("reports.widgets.pinnedToDashboard")
+                      : t("reports.widgets.pinToDashboard")
+                  }
                 >
-                  {widget.isPinnedToDashboard ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+                  {widget.isPinnedToDashboard ? (
+                    <PinOff className="w-3.5 h-3.5" />
+                  ) : (
+                    <Pin className="w-3.5 h-3.5" />
+                  )}
                 </Button>
                 <Button
                   type="button"
@@ -120,9 +137,7 @@ export function PinnedWidgetsGrid({
               </div>
             </div>
 
-            <ErrorBoundary>
-              {renderWidget(widget, collections)}
-            </ErrorBoundary>
+            <ErrorBoundary>{renderWidget(widget, collections)}</ErrorBoundary>
           </motion.div>
         );
       })}

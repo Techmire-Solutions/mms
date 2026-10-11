@@ -35,17 +35,14 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
 }));
 
 vi.mock("@/components/ui/SearchBar", () => ({
-  SearchBar: ({ placeholder }: { placeholder?: string }) => <div data-testid="search-bar">{placeholder}</div>,
+  SearchBar: ({ placeholder }: { placeholder?: string }) => (
+    <div data-testid="search-bar">{placeholder}</div>
+  ),
 }));
 
 describe("Step1SelectStudent Component", () => {
   it("renders student selection options", () => {
-    const html = renderToStaticMarkup(
-      <Step1SelectStudent
-        value={null}
-        onChange={vi.fn()}
-      />,
-    );
+    const html = renderToStaticMarkup(<Step1SelectStudent value={null} onChange={vi.fn()} />);
 
     expect(html).toContain("enrollments.wizard.step1Title");
     expect(html).toContain("Bilal Ahmad");

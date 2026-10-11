@@ -6,10 +6,7 @@ import type {
   HasanatReportComparison,
 } from "@mms/shared";
 
-import {
-  COMPARISON_MONTH_NAMES,
-  getComparisonMonthIndex,
-} from "./comparisonModeDateHelpers";
+import { COMPARISON_MONTH_NAMES, getComparisonMonthIndex } from "./comparisonModeDateHelpers";
 import type { DateRange, DateRangeDataItem } from "./comparisonModeTypes";
 
 export function computeDynamicDateRangeComparison(
@@ -92,14 +89,20 @@ export function computeDynamicDateRangeComparison(
 
   const dateRangeData: DateRangeDataItem[] = [];
   for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
-    const hasData = countA[monthIndex] > 0 || countB[monthIndex] > 0 || bucketA[monthIndex] > 0 || bucketB[monthIndex] > 0;
+    const hasData =
+      countA[monthIndex] > 0 ||
+      countB[monthIndex] > 0 ||
+      bucketA[monthIndex] > 0 ||
+      bucketB[monthIndex] > 0;
     if (hasData) {
       let valueA = bucketA[monthIndex];
       let valueB = bucketB[monthIndex];
 
       if (lowerCat === "attendance" || lowerCat === "examinations") {
-        valueA = countA[monthIndex] > 0 ? Math.round((bucketA[monthIndex] / countA[monthIndex]) * 100) : 0;
-        valueB = countB[monthIndex] > 0 ? Math.round((bucketB[monthIndex] / countB[monthIndex]) * 100) : 0;
+        valueA =
+          countA[monthIndex] > 0 ? Math.round((bucketA[monthIndex] / countA[monthIndex]) * 100) : 0;
+        valueB =
+          countB[monthIndex] > 0 ? Math.round((bucketB[monthIndex] / countB[monthIndex]) * 100) : 0;
       }
 
       dateRangeData.push({
@@ -130,8 +133,10 @@ export function buildContactsDateRangeComparison(
 ): DateRangeDataItem[] {
   const yearA = rangeA.from.slice(0, 4);
   const yearB = rangeB.from.slice(0, 4);
-  const seriesA = monthlyByYear?.find((monthlySeries) => String(monthlySeries.year) === yearA)?.months ?? [];
-  const seriesB = monthlyByYear?.find((monthlySeries) => String(monthlySeries.year) === yearB)?.months ?? [];
+  const seriesA =
+    monthlyByYear?.find((monthlySeries) => String(monthlySeries.year) === yearA)?.months ?? [];
+  const seriesB =
+    monthlyByYear?.find((monthlySeries) => String(monthlySeries.year) === yearB)?.months ?? [];
   return seriesA.map((monthBucket, index) => ({
     month: monthBucket.month,
     a: monthBucket.count,

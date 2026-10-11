@@ -1,23 +1,23 @@
-import { useRef } from 'react';
+import { useRef } from "react";
 import {
   getMessageCategoryLabelKey,
   insertVariableTokenAt,
   type MessageTemplate,
-} from '@mms/shared';
-import { FormSelect } from '@/components/ui/FormSelect';
-import { Field } from '@/components/ui/FormPrimitives';
-import { FORM_INPUT_ERROR } from '@/components/ui/formStyles';
-import { Input } from '@/components/ui/input';
-import { MessagingMessageBodyField } from '@/components/ui/MessagingMessageBodyField';
-import { MessagingVariableTokensBar } from '@/components/ui/MessagingVariableTokensBar';
-import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { ValidatedMessagingRecipient } from './useMessageComposerDispatch';
-import { MessageComposerLivePreview } from './MessageComposerLivePreview';
-import { MessageComposerSmsCostFooter } from './MessageComposerSmsCostFooter';
+} from "@mms/shared";
+import { FormSelect } from "@/components/ui/FormSelect";
+import { Field } from "@/components/ui/FormPrimitives";
+import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
+import { Input } from "@/components/ui/input";
+import { MessagingMessageBodyField } from "@/components/ui/MessagingMessageBodyField";
+import { MessagingVariableTokensBar } from "@/components/ui/MessagingVariableTokensBar";
+import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";
+import { MessageComposerLivePreview } from "./MessageComposerLivePreview";
+import { MessageComposerSmsCostFooter } from "./MessageComposerSmsCostFooter";
 
 interface MessageComposerFormBodyProps {
-  channel: 'sms' | 'whatsapp' | 'email';
+  channel: "sms" | "whatsapp" | "email";
   channelTemplates: MessageTemplate[];
   templateId: string;
   subject: string;
@@ -54,8 +54,8 @@ export function MessageComposerFormBody({
   onPreviewIndexChange,
 }: MessageComposerFormBodyProps): React.JSX.Element {
   const { t } = useTranslation();
-  const isEmail = channel === 'email';
-  const isSms = channel === 'sms';
+  const isEmail = channel === "email";
+  const isSms = channel === "sms";
   const previewRecipient = eligibleRecipients[previewIndex] || eligibleRecipients[0];
   const subjectRef = useRef<HTMLInputElement>(null);
 
@@ -76,7 +76,7 @@ export function MessageComposerFormBody({
   return (
     <div className="space-y-3">
       {isEmail && (
-        <Field id="emailSubject" label={t('messaging.subject')} required error={subjectError}>
+        <Field id="emailSubject" label={t("messaging.subject")} required error={subjectError}>
           <MessagingVariableTokensBar onSelectToken={insertSubjectToken} className="mb-2" />
           <Input
             ref={subjectRef}
@@ -85,7 +85,7 @@ export function MessageComposerFormBody({
             value={subject}
             onChange={(event) => onSubjectChange(event.target.value)}
             onBlur={onSubjectBlur}
-            placeholder={t('messaging.subjectPlaceholder')}
+            placeholder={t("messaging.subjectPlaceholder")}
             required
             aria-invalid={subjectError ? true : undefined}
             className={cn(subjectError && FORM_INPUT_ERROR)}
@@ -94,7 +94,7 @@ export function MessageComposerFormBody({
       )}
 
       {channelTemplates.length > 0 && (
-        <Field id="messageTemplate" label={t('messaging.messageTemplate')}>
+        <Field id="messageTemplate" label={t("messaging.messageTemplate")}>
           <FormSelect
             id="messageTemplate"
             name="messageTemplate"
@@ -102,7 +102,7 @@ export function MessageComposerFormBody({
             onChange={onTemplateChange}
             options={channelTemplates.map((template) => ({
               value: template.id,
-              label: `${template.labelKey ? t(template.labelKey as Parameters<typeof t>[0]) : template.label} [${t(getMessageCategoryLabelKey(template.category || 'general'))}]`,
+              label: `${template.labelKey ? t(template.labelKey as Parameters<typeof t>[0]) : template.label} [${t(getMessageCategoryLabelKey(template.category || "general"))}]`,
             }))}
           />
         </Field>
@@ -113,7 +113,7 @@ export function MessageComposerFormBody({
         value={message}
         onChange={onMessageChange}
         onBlur={onMessageBlur}
-        placeholder={t('messaging.templateBodyPlaceholder')}
+        placeholder={t("messaging.templateBodyPlaceholder")}
         required
         error={messageError}
         footer={
@@ -126,7 +126,7 @@ export function MessageComposerFormBody({
           ) : (
             <div className="mt-1 flex justify-end font-mono text-xs text-muted-foreground">
               <span>
-                {message.length} {t('messaging.chars')}
+                {message.length} {t("messaging.chars")}
               </span>
             </div>
           )

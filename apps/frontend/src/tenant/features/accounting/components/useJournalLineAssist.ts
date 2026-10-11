@@ -9,7 +9,13 @@ interface TemplateLock {
   sides: Record<string, JournalAmountSide>;
 }
 
-const blankLine = (): DraftLine => ({ id: generateClientEntityId("l", "-"), account_id: "", debit: "", credit: "", description: "" });
+const blankLine = (): DraftLine => ({
+  id: generateClientEntityId("l", "-"),
+  account_id: "",
+  debit: "",
+  credit: "",
+  description: "",
+});
 
 /** First non-empty amount on the voucher, so applying a template keeps what was typed. */
 function carriedAmount(lines: readonly DraftLine[]): string | number {
@@ -24,12 +30,25 @@ function carriedAmount(lines: readonly DraftLine[]): string | number {
  * Puts the template's heads on the first two lines (debit then credit), carrying
  * the amount over; later lines are left as they are.
  */
-export function applyTemplateToLines(lines: readonly DraftLine[], template: JournalTemplate): DraftLine[] {
+export function applyTemplateToLines(
+  lines: readonly DraftLine[],
+  template: JournalTemplate,
+): DraftLine[] {
   const amount = carriedAmount(lines);
   const [first = blankLine(), second = blankLine(), ...rest] = lines;
   return [
-    { ...first, account_id: template.debitAccountId || first.account_id, debit: amount, credit: "" },
-    { ...second, account_id: template.creditAccountId || second.account_id, debit: "", credit: amount },
+    {
+      ...first,
+      account_id: template.debitAccountId || first.account_id,
+      debit: amount,
+      credit: "",
+    },
+    {
+      ...second,
+      account_id: template.creditAccountId || second.account_id,
+      debit: "",
+      credit: amount,
+    },
     ...rest,
   ];
 }
@@ -47,7 +66,13 @@ interface UseJournalLineAssistOptions {
  * fills its heads and locks each templated line to its side, and with exactly
  * two lines an amount typed on one side can be mirrored onto the other line.
  */
-export function useJournalLineAssist({ form, setForm, updateLine, toggleTag, templates }: UseJournalLineAssistOptions) {
+export function useJournalLineAssist({
+  form,
+  setForm,
+  updateLine,
+  toggleTag,
+  templates,
+}: UseJournalLineAssistOptions) {
   const [lock, setLock] = useState<TemplateLock | null>(null);
   const [mirrorAmounts, setMirrorAmounts] = useState(true);
   const canMirror = form.lines.length === 2;
@@ -63,10 +88,17 @@ export function useJournalLineAssist({ form, setForm, updateLine, toggleTag, tem
     if (!template || (!template.debitAccountId && !template.creditAccountId)) return;
     const nextLines = applyTemplateToLines(form.lines, template);
     setForm((prev) => ({ ...prev, lines: nextLines }));
-    setLock({ templateName: tag, sides: { [nextLines[0].id]: "debit", [nextLines[1].id]: "credit" } });
+    setLock({
+      templateName: tag,
+      sides: { [nextLines[0].id]: "debit", [nextLines[1].id]: "credit" },
+    });
   };
 
-  const updateLineAssisted = (lineIndex: number, field: keyof DraftLine, fieldValue: string | number) => {
+  const updateLineAssisted = (
+    lineIndex: number,
+    field: keyof DraftLine,
+    fieldValue: string | number,
+  ) => {
     updateLine(lineIndex, field, fieldValue);
     if (!mirrorAmounts || !canMirror || (field !== "debit" && field !== "credit")) return;
     updateLine(lineIndex === 0 ? 1 : 0, field === "debit" ? "credit" : "debit", fieldValue);

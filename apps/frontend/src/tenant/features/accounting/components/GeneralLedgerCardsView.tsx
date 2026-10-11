@@ -33,7 +33,9 @@ export function GeneralLedgerCardsView({
           title={
             <>
               <p className="text-xs text-muted-foreground m-0">{formatDate(line.date)}</p>
-              <p className="truncate font-mono text-xs font-bold text-primary m-0 mt-0.5">{line.ref}</p>
+              <p className="truncate font-mono text-xs font-bold text-primary m-0 mt-0.5">
+                {line.ref}
+              </p>
             </>
           }
           end={

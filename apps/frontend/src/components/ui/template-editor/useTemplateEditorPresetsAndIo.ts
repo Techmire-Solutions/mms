@@ -4,11 +4,7 @@
  */
 
 import { useCallback, type Dispatch, type SetStateAction } from "react";
-import type {
-  DocumentTemplate,
-  DocumentTemplatePreset,
-  TemplateElement,
-} from "@mms/shared";
+import type { DocumentTemplate, DocumentTemplatePreset, TemplateElement } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { downloadTemplateJson, newId, readTemplateJsonFile } from "./templateEditorUtils";
 import { notify } from "@/lib/notify";
@@ -36,7 +32,7 @@ export function useTemplateEditorPresetsAndIo<TPayload = Record<string, unknown>
 }: UseTemplateEditorPresetsAndIoOptions<TPayload>) {
   const exportTemplateJson = useCallback(
     () => downloadTemplateJson(template, documentType),
-    [template, documentType]
+    [template, documentType],
   );
 
   const importTemplateJson = useCallback(
@@ -45,7 +41,9 @@ export function useTemplateEditorPresetsAndIo<TPayload = Record<string, unknown>
         file,
         (parsed) => {
           pushHistory(template);
-          const sanitizedElements: TemplateElement<keyof TPayload & string>[] = (parsed.elements || []).map((el) => ({
+          const sanitizedElements: TemplateElement<keyof TPayload & string>[] = (
+            parsed.elements || []
+          ).map((el) => ({
             ...el,
             id: typeof el.id === "string" && el.id.trim().length > 0 ? el.id : newId(),
             type: typeof el.type === "string" ? el.type : "text",
@@ -70,10 +68,10 @@ export function useTemplateEditorPresetsAndIo<TPayload = Record<string, unknown>
         (err) => {
           console.error(err);
           notify.error(t("templateEditor.importFailed"));
-        }
+        },
       );
     },
-    [pushHistory, setTemplate, setSelectedIds, t, template]
+    [pushHistory, setTemplate, setSelectedIds, t, template],
   );
 
   const applyPreset = useCallback(
@@ -81,13 +79,14 @@ export function useTemplateEditorPresetsAndIo<TPayload = Record<string, unknown>
       const match = presets.find((p) => p.key === presetKey);
       if (!match) return;
       pushHistory(template);
-      const clonedElements: TemplateElement<keyof TPayload & string>[] = match.template.elements.map((el) => ({
-        ...el,
-        id: newId(),
-        style: el.style ? { ...el.style } : undefined,
-        columns: el.columns ? el.columns.map((col) => ({ ...col })) : undefined,
-        tableConfig: el.tableConfig ? { ...el.tableConfig } : undefined,
-      }));
+      const clonedElements: TemplateElement<keyof TPayload & string>[] =
+        match.template.elements.map((el) => ({
+          ...el,
+          id: newId(),
+          style: el.style ? { ...el.style } : undefined,
+          columns: el.columns ? el.columns.map((col) => ({ ...col })) : undefined,
+          tableConfig: el.tableConfig ? { ...el.tableConfig } : undefined,
+        }));
       setTemplate({
         ...match.template,
         elements: clonedElements,
@@ -95,7 +94,7 @@ export function useTemplateEditorPresetsAndIo<TPayload = Record<string, unknown>
       setSelectedIds([]);
       setActivePresetKey(presetKey);
     },
-    [presets, pushHistory, setActivePresetKey, setSelectedIds, setTemplate, template]
+    [presets, pushHistory, setActivePresetKey, setSelectedIds, setTemplate, template],
   );
 
   return {

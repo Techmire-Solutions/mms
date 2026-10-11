@@ -1,17 +1,17 @@
-import type { ReactNode } from 'react';
-import { UserAvatar } from '@/components/ui/UserAvatar';
-import { BiDiText } from '@/components/ui/BiDiText';
-import { Card } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { CARD_STRIPE_INSET, type CardAccentColor } from '@/lib/semanticTone';
-import { getGenderCardAccent } from '@/lib/genderUi';
+import type { ReactNode } from "react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { BiDiText } from "@/components/ui/BiDiText";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { CARD_STRIPE_INSET, type CardAccentColor } from "@/lib/semanticTone";
+import { getGenderCardAccent } from "@/lib/genderUi";
 
 export interface PersonDetailHeroCardProps {
   id: string | number;
   displayName: string;
   avatar?: string | null;
   gender?: string | null;
-  accentColor?: CardAccentColor | 'none' | false | null;
+  accentColor?: CardAccentColor | "none" | false | null;
   className?: string;
   /** Meta row (badges / identity chips) rendered under the title. */
   children?: ReactNode;
@@ -59,7 +59,9 @@ export function PersonDetailHeroCard({
         >
           {displayName}
         </BiDiText>
-        {children ? <div className="flex flex-wrap gap-1.5 mt-2 items-center">{children}</div> : null}
+        {children ? (
+          <div className="flex flex-wrap gap-1.5 mt-2 items-center">{children}</div>
+        ) : null}
       </div>
     </Card>
   );

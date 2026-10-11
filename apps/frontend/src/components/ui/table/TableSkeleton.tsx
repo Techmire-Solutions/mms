@@ -61,7 +61,7 @@ export function TableSkeleton({
                   <div
                     className={cn(
                       "h-4 rounded-md bg-muted animate-pulse",
-                      colIdx === 0 ? "w-3/4" : colIdx === resolvedCols - 1 ? "w-1/2" : "w-full"
+                      colIdx === 0 ? "w-3/4" : colIdx === resolvedCols - 1 ? "w-1/2" : "w-full",
                     )}
                   />
                 </td>

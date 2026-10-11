@@ -1,7 +1,4 @@
-import {
-  hydrateContactRelationshipFields,
-  type Contact,
-} from '@mms/shared';
+import { hydrateContactRelationshipFields, type Contact } from "@mms/shared";
 import {
   type contacts,
   type contactTags,
@@ -16,8 +13,8 @@ import {
   type contactActivities,
   type contactAttachments,
   type contactBankDetails,
-} from '../schema.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+} from "../schema.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 import {
   mapChildPhones,
   mapChildEmails,
@@ -30,7 +27,7 @@ import {
   mapChildActivities,
   mapChildAttachments,
   mapChildBankDetails,
-} from './contactChildRowMappers.js';
+} from "./contactChildRowMappers.js";
 
 type ContactRow = typeof contacts.$inferSelect;
 type PhoneRow = typeof contactPhones.$inferSelect;
@@ -67,8 +64,8 @@ export function contactRowToRecord(
     name: row.name,
     isSyed: row.isSyed,
     tags: tagsRows.map((t) => t.name),
-    tag: tagsRows.map((t) => t.name).join(', '),
-    whatsappStatus: (row.whatsappStatus as Contact['whatsappStatus']) ?? 'unknown',
+    tag: tagsRows.map((t) => t.name).join(", "),
+    whatsappStatus: (row.whatsappStatus as Contact["whatsappStatus"]) ?? "unknown",
     phones: mapChildPhones(phones),
     emails: mapChildEmails(emails),
     addresses: mapChildAddresses(addresses),
@@ -84,13 +81,16 @@ export function contactRowToRecord(
   };
 
   if (row.lastName) contact.lastName = row.lastName;
-  if (row.gender) contact.gender = row.gender as Contact['gender'];
+  if (row.gender) contact.gender = row.gender as Contact["gender"];
   if (row.dob) contact.dob = row.dob;
   if (row.cnic) contact.cnic = row.cnic;
   if (row.avatar) contact.avatar = row.avatar;
   if (row.notes) contact.notes = row.notes;
   if (row.lastCheckedAt) {
-    contact.lastCheckedAt = row.lastCheckedAt instanceof Date ? row.lastCheckedAt.toISOString() : String(row.lastCheckedAt);
+    contact.lastCheckedAt =
+      row.lastCheckedAt instanceof Date
+        ? row.lastCheckedAt.toISOString()
+        : String(row.lastCheckedAt);
   }
   if (row.aiSummary) contact.aiSummary = row.aiSummary;
 

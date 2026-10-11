@@ -22,7 +22,11 @@ export interface TopBarActionsProps {
 /**
  * Notifications, sync status, and user session menu — shared across desktop and mobile headers.
  */
-export default function TopBarActions({ compact = false, onOpenCommandPalette, className }: TopBarActionsProps): React.JSX.Element {
+export default function TopBarActions({
+  compact = false,
+  onOpenCommandPalette,
+  className,
+}: TopBarActionsProps): React.JSX.Element {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
 

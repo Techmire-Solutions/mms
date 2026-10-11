@@ -63,12 +63,19 @@ export function getEntryAmount(
     }
   }
   if (type === "in") {
-    return moneyToCents(entry.lines.reduce((sum, journalLine) => sum + journalLine.credit, 0)) / 100;
+    return (
+      moneyToCents(entry.lines.reduce((sum, journalLine) => sum + journalLine.credit, 0)) / 100
+    );
   }
   if (type === "out") {
     return moneyToCents(entry.lines.reduce((sum, journalLine) => sum + journalLine.debit, 0)) / 100;
   }
-  return moneyToCents(
-    entry.lines.reduce((largestDebit, journalLine) => Math.max(largestDebit, journalLine.debit), 0),
-  ) / 100;
+  return (
+    moneyToCents(
+      entry.lines.reduce(
+        (largestDebit, journalLine) => Math.max(largestDebit, journalLine.debit),
+        0,
+      ),
+    ) / 100
+  );
 }

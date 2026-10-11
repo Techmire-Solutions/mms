@@ -12,23 +12,23 @@ import {
   type FacultyEmployDesignationWriteRow,
   type FacultyMember,
   type FacultyProfileStatus,
-} from '@mms/shared';
-import { listFacultyDesignations } from '../../db/repositories/facultyDesignationRepository.js';
+} from "@mms/shared";
+import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import {
   findTenantUserRowByContactId,
   upsertTenantUserRow,
-} from '../../db/repositories/tenantUserRepository.js';
-import { invalidateTenantRbac } from '../../services/rbacService.js';
-import { getTenantUsersSettings } from '../../services/users/usersSettingsService.js';
-import { broadcastCollection } from '../../lib/livePush.js';
+} from "../../db/repositories/tenantUserRepository.js";
+import { invalidateTenantRbac } from "../../services/rbacService.js";
+import { getTenantUsersSettings } from "../../services/users/usersSettingsService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import {
   removeFacultyManagedWorkspaceRole,
   upsertFacultyManagedWorkspaceRole,
-} from './facultyManagedRolesPrefs.js';
+} from "./facultyManagedRolesPrefs.js";
 
 function resolveTenureStatus(status: string | null | undefined): FacultyProfileStatus {
   if (isFacultyProfileStatus(status)) return status;
-  return 'active';
+  return "active";
 }
 
 function tenureRowsFromFaculty(member: FacultyMember): FacultyEmployDesignationWriteRow[] {
@@ -37,15 +37,17 @@ function tenureRowsFromFaculty(member: FacultyMember): FacultyEmployDesignationW
   }
   const designationId = member.designationId?.trim();
   if (!designationId) return [];
-  return [{
-    designationId,
-    designationStartDate: member.designationStartDate ?? null,
-    designationEndDate: member.designationEndDate ?? null,
-    employDesignationStatus: resolveTenureStatus(
-      member.employDesignationStatus ?? member.profileStatus,
-    ),
-    employDesignationId: member.employDesignationId ?? null,
-  }];
+  return [
+    {
+      designationId,
+      designationStartDate: member.designationStartDate ?? null,
+      designationEndDate: member.designationEndDate ?? null,
+      employDesignationStatus: resolveTenureStatus(
+        member.employDesignationStatus ?? member.profileStatus,
+      ),
+      employDesignationId: member.employDesignationId ?? null,
+    },
+  ];
 }
 
 /**
@@ -57,10 +59,20 @@ function tenureRowsFromFaculty(member: FacultyMember): FacultyEmployDesignationW
  */
 export async function syncFacultyLinkedUserRole(
   tenant: string,
-  facultyMember: Pick<FacultyMember, 'contactId' | 'employDesignations' | 'designationId' | 'designationStartDate' | 'designationEndDate' | 'employDesignationStatus' | 'profileStatus' | 'employDesignationId'>,
+  facultyMember: Pick<
+    FacultyMember,
+    | "contactId"
+    | "employDesignations"
+    | "designationId"
+    | "designationStartDate"
+    | "designationEndDate"
+    | "employDesignationStatus"
+    | "profileStatus"
+    | "employDesignationId"
+  >,
 ): Promise<{ updated: boolean; roleId?: string }> {
   const subdomain = tenant.trim().toLowerCase();
-  const contactId = facultyMember.contactId != null ? String(facultyMember.contactId).trim() : '';
+  const contactId = facultyMember.contactId != null ? String(facultyMember.contactId).trim() : "";
   if (!subdomain || !contactId) return { updated: false };
 
   const linked = await findTenantUserRowByContactId(subdomain, contactId);
@@ -79,18 +91,18 @@ export async function syncFacultyLinkedUserRole(
     designations,
     roleCatalog,
   );
-  if (assignment.kind === 'none' || !assignment.roleId) return { updated: false };
+  if (assignment.kind === "none" || !assignment.roleId) return { updated: false };
 
   const managedId = buildFacultyManagedRoleId(contactId);
 
-  if (assignment.kind === 'composite' && assignment.composite) {
+  if (assignment.kind === "composite" && assignment.composite) {
     await upsertFacultyManagedWorkspaceRole(subdomain, assignment.composite);
   } else if (isFacultyManagedRoleId(linked.role) || linked.role === managedId) {
     await removeFacultyManagedWorkspaceRole(subdomain, managedId);
   }
 
   const nextRole = assignment.roleId;
-  const roleSource = 'faculty_designations' as const;
+  const roleSource = "faculty_designations" as const;
   if (linked.role === nextRole && linked.roleSource === roleSource) {
     return { updated: false, roleId: nextRole };
   }
@@ -101,6 +113,6 @@ export async function syncFacultyLinkedUserRole(
     roleSource,
   });
   await invalidateTenantRbac(subdomain);
-  await broadcastCollection('users');
+  await broadcastCollection("users");
   return { updated: true, roleId: nextRole };
 }

@@ -14,23 +14,16 @@ export {
   useStudentsMetrics,
   useStudentsWidgetAggregates,
   type StudentRecord,
-} from '@/tenant/features/students/hooks/useStudents';
+} from "@/tenant/features/students/hooks/useStudents";
+export { useStudentLookupsQuery } from "@/tenant/features/students/hooks/useStudentLookups";
 export {
-  useStudentLookupsQuery,
-} from '@/tenant/features/students/hooks/useStudentLookups';
-export {
-  
   STUDENTS_PREFERENCES_QUERY_KEY,
-  
   useStudentPreferencesMutation,
   useComposedStudentsSettings,
-} from '@/tenant/features/students/hooks/useStudentSetupConfig';
-export {
-  
-  setStudentPreferencesMemory,
-} from '@/tenant/features/students/hooks/studentSetupConfigApi';
-export { applyStudentsWorkDrillDown } from '@/tenant/features/students/hooks/studentsWorkDrillDown';
-export { invalidateStudentsQueries } from '@/tenant/features/students/hooks/invalidateStudentsQueries';
+} from "@/tenant/features/students/hooks/useStudentSetupConfig";
+export { setStudentPreferencesMemory } from "@/tenant/features/students/hooks/studentSetupConfigApi";
+export { applyStudentsWorkDrillDown } from "@/tenant/features/students/hooks/studentsWorkDrillDown";
+export { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   studentsListQueryOptions,
@@ -44,4 +37,4 @@ export {
   useStudentsContractBulkEnroll,
   useStudentsContractNextGrNumber,
   useStudentsContractDuplicateCheck,
-} from '@/tenant/features/students/hooks/useStudentsTsrHooks';
+} from "@/tenant/features/students/hooks/useStudentsTsrHooks";

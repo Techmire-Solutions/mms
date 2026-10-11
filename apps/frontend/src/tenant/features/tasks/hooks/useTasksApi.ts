@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   type TaskRecord,
   type TaskListQuery,
@@ -6,8 +6,8 @@ import {
   type TaskUpdate,
   type TaskStatus,
   type TaskSettings,
-} from '@mms/shared';
-import { apiJson } from '@/lib/apiClient';
+} from "@mms/shared";
+import { apiJson } from "@/lib/apiClient";
 import {
   TASKS_QUERY_KEY,
   TASKS_LIST_QUERY_KEY,
@@ -15,7 +15,7 @@ import {
   TASK_DETAIL_QUERY_KEY,
   TASKS_ELIGIBLE_ASSIGNEES_QUERY_KEY,
   TASKS_SETTINGS_QUERY_KEY,
-} from './tasksQueryKeys';
+} from "./tasksQueryKeys";
 
 export interface TasksListResponse {
   tasks: TaskRecord[];
@@ -46,18 +46,19 @@ export function invalidateTasksQueries(queryClient: ReturnType<typeof useQueryCl
 export function useTasks(query?: Partial<TaskListQuery>, options: { enabled?: boolean } = {}) {
   const queryParams = new URLSearchParams();
   if (query) {
-    if (query.status) queryParams.set('status', query.status);
-    if (query.priority) queryParams.set('priority', query.priority);
-    if (query.assignedToFacultyId) queryParams.set('assignedToFacultyId', query.assignedToFacultyId);
-    if (query.assignedToUserId) queryParams.set('assignedToUserId', query.assignedToUserId);
-    if (query.createdById) queryParams.set('createdById', query.createdById);
-    if (query.search) queryParams.set('search', query.search);
-    if (query.includeDeleted) queryParams.set('includeDeleted', 'true');
-    if (query.limit) queryParams.set('limit', String(query.limit));
-    if (query.offset) queryParams.set('offset', String(query.offset));
+    if (query.status) queryParams.set("status", query.status);
+    if (query.priority) queryParams.set("priority", query.priority);
+    if (query.assignedToFacultyId)
+      queryParams.set("assignedToFacultyId", query.assignedToFacultyId);
+    if (query.assignedToUserId) queryParams.set("assignedToUserId", query.assignedToUserId);
+    if (query.createdById) queryParams.set("createdById", query.createdById);
+    if (query.search) queryParams.set("search", query.search);
+    if (query.includeDeleted) queryParams.set("includeDeleted", "true");
+    if (query.limit) queryParams.set("limit", String(query.limit));
+    if (query.offset) queryParams.set("offset", String(query.offset));
   }
   const queryString = queryParams.toString();
-  const url = queryString ? `/api/tasks?${queryString}` : '/api/tasks';
+  const url = queryString ? `/api/tasks?${queryString}` : "/api/tasks";
 
   return useQuery({
     queryKey: TASKS_LIST_QUERY_KEY(query as Record<string, unknown>),
@@ -70,7 +71,7 @@ export function useTasks(query?: Partial<TaskListQuery>, options: { enabled?: bo
 export function useTaskMetrics(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: TASKS_METRICS_QUERY_KEY,
-    queryFn: ({ signal }) => apiJson<TaskMetricsResponse>('/api/tasks/metrics', { signal }),
+    queryFn: ({ signal }) => apiJson<TaskMetricsResponse>("/api/tasks/metrics", { signal }),
     enabled: options.enabled ?? true,
     staleTime: 30_000,
   });
@@ -89,8 +90,8 @@ export function useCreateTask() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: TaskInsert) =>
-      apiJson<TaskRecord>('/api/tasks', {
-        method: 'POST',
+      apiJson<TaskRecord>("/api/tasks", {
+        method: "POST",
         body: JSON.stringify(data),
       }),
     onSuccess: () => {
@@ -104,7 +105,7 @@ export function useUpdateTask() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: TaskUpdate }) =>
       apiJson<TaskRecord>(`/api/tasks/${id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify(data),
       }),
     onSuccess: (_data, variables) => {
@@ -119,7 +120,7 @@ export function useUpdateTaskStatus() {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: TaskStatus }) =>
       apiJson<TaskRecord>(`/api/tasks/${id}/status`, {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify({ status }),
       }),
     onSuccess: (_data, variables) => {
@@ -134,7 +135,7 @@ export function useDeleteTask() {
   return useMutation({
     mutationFn: (id: string) =>
       apiJson<{ success: boolean }>(`/api/tasks/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       }),
     onSuccess: () => {
       void invalidateTasksQueries(queryClient);
@@ -147,7 +148,7 @@ export function useRestoreTask() {
   return useMutation({
     mutationFn: (id: string) =>
       apiJson<{ success: boolean; task: TaskRecord }>(`/api/tasks/${id}/restore`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({}),
       }),
     onSuccess: () => {
@@ -169,7 +170,8 @@ export interface EligibleAssigneeItem {
 export function useEligibleTaskAssignees(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: TASKS_ELIGIBLE_ASSIGNEES_QUERY_KEY,
-    queryFn: ({ signal }) => apiJson<EligibleAssigneeItem[]>('/api/tasks/eligible-assignees', { signal }),
+    queryFn: ({ signal }) =>
+      apiJson<EligibleAssigneeItem[]>("/api/tasks/eligible-assignees", { signal }),
     enabled: options.enabled ?? true,
     staleTime: 30_000,
   });
@@ -178,7 +180,7 @@ export function useEligibleTaskAssignees(options: { enabled?: boolean } = {}) {
 export function useTaskSettings(options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: TASKS_SETTINGS_QUERY_KEY,
-    queryFn: ({ signal }) => apiJson<TaskSettings>('/api/tasks/settings', { signal }),
+    queryFn: ({ signal }) => apiJson<TaskSettings>("/api/tasks/settings", { signal }),
     enabled: options.enabled ?? true,
     staleTime: 60_000,
   });
@@ -188,8 +190,8 @@ export function useUpdateTaskSettings() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (settings: TaskSettings) =>
-      apiJson<TaskSettings>('/api/tasks/settings', {
-        method: 'PUT',
+      apiJson<TaskSettings>("/api/tasks/settings", {
+        method: "PUT",
         body: JSON.stringify(settings),
       }),
     onSuccess: () => {
@@ -197,4 +199,3 @@ export function useUpdateTaskSettings() {
     },
   });
 }
-

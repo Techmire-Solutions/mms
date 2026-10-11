@@ -20,7 +20,7 @@ export interface FacultyFormProps {
   priority?: boolean;
 }
 
-export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React.JSX.Element {
+export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.JSX.Element {
   const { faculty, onClose, onSave, priority = false } = props;
   const {
     t,
@@ -87,7 +87,13 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
         onTabChange={setActiveTab}
         saveOnTabChange={false}
         cancelLabel={t("common.cancel")}
-        saveLabel={saving ? t("faculty.form.saving") : faculty ? t("faculty.form.saveUpdate") : t("faculty.form.saveCreate")}
+        saveLabel={
+          saving
+            ? t("faculty.form.saving")
+            : faculty
+              ? t("faculty.form.saveUpdate")
+              : t("faculty.form.saveCreate")
+        }
         onSave={onSaveWithTabFocus}
         isDirty={isDirty}
         saving={saving}
@@ -97,8 +103,7 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
         discardCancelLabel={t("faculty.form.keepEditing")}
         error={validationErrorSummary}
         saveDisabled={
-          (requireContactLink && !facultyDraft.contactId)
-          || (Boolean(faculty?.id) && !isDirty)
+          (requireContactLink && !facultyDraft.contactId) || (Boolean(faculty?.id) && !isDirty)
         }
         footerStart={
           <FacultyFormFooter
@@ -116,7 +121,10 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            if (!((requireContactLink && !facultyDraft.contactId) || (Boolean(faculty?.id) && !isDirty))) {
+            if (!(
+              (requireContactLink && !facultyDraft.contactId) ||
+              (Boolean(faculty?.id) && !isDirty)
+            )) {
               void onSaveWithTabFocus();
             }
           }}
@@ -150,18 +158,20 @@ export const FacultyForm = (function FacultyForm(props: FacultyFormProps): React
         open={duplicateConfirmOpen}
         onOpenChange={handleDuplicateDialogOpenChange}
         title={faculty ? t("faculty.form.editTitle") : t("faculty.form.addTitle")}
-        description={typedDuplicateReason
-          ? t("faculty.form.duplicateSaveWarning", { message: t(duplicateErrorKeys[typedDuplicateReason]) })
-          : ""}
+        description={
+          typedDuplicateReason
+            ? t("faculty.form.duplicateSaveWarning", {
+                message: t(duplicateErrorKeys[typedDuplicateReason]),
+              })
+            : ""
+        }
         confirmLabel={t("faculty.form.saveAnyway")}
         cancelLabel={t("faculty.form.reviewDuplicate")}
         onConfirm={confirmDuplicateSave}
       />
     </>
   );
-});
-
-export {
-  FacultyForm as FacultyFormModal,
 };
+
+export { FacultyForm as FacultyFormModal };
 export default FacultyForm;

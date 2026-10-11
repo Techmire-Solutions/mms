@@ -1,7 +1,7 @@
-import { z } from 'zod';
-import type { WorkspaceUser } from './userEntityTypes.js';
-import { baseListQuerySchema, LIST_PAGE_MAX_LIMIT } from './apiSchemas.js';
-import { compareByField, paginateArray } from './utils.js';
+import { z } from "zod";
+import type { WorkspaceUser } from "./userEntityTypes.js";
+import { baseListQuerySchema, LIST_PAGE_MAX_LIMIT } from "./apiSchemas.js";
+import { compareByField, paginateArray } from "./utils.js";
 
 export interface UsersListQuery {
   page?: number;
@@ -12,7 +12,7 @@ export interface UsersListQuery {
   /** Workspace role id filter. */
   role?: string;
   sortField?: string;
-  sortDir?: 'asc' | 'desc' | '';
+  sortDir?: "asc" | "desc" | "";
   /** When true, SQL list returns deleted-only rows (Work trash). */
   includeDeleted?: boolean;
   /** Comma-separated ids for bounded relationship/actor resolution. */
@@ -40,25 +40,38 @@ export function userMatchesSearch(user: WorkspaceUser, search: string): boolean 
   const normalizedSearch = search.trim().toLowerCase();
   if (!normalizedSearch) return true;
   return (
-    (user.name ?? '').toLowerCase().includes(normalizedSearch) ||
-    (user.email ?? '').toLowerCase().includes(normalizedSearch) ||
-    (user.loginEmail ?? '').toLowerCase().includes(normalizedSearch)
+    (user.name ?? "").toLowerCase().includes(normalizedSearch) ||
+    (user.email ?? "").toLowerCase().includes(normalizedSearch) ||
+    (user.loginEmail ?? "").toLowerCase().includes(normalizedSearch)
   );
 }
 
-export function filterUsersForQuery(users: WorkspaceUser[], query: UsersListQuery): WorkspaceUser[] {
+export function filterUsersForQuery(
+  users: WorkspaceUser[],
+  query: UsersListQuery,
+): WorkspaceUser[] {
   let rows = users;
   if (query.ids?.trim()) {
-    const ids = new Set(query.ids.split(',').map((id) => id.trim()).filter(Boolean));
+    const ids = new Set(
+      query.ids
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean),
+    );
     rows = rows.filter((user) => ids.has(String(user.id)));
   }
-  if (query.role?.trim() && query.role !== 'all') {
+  if (query.role?.trim() && query.role !== "all") {
     rows = rows.filter((user) => user.role === query.role);
   }
   if (query.status?.trim()) {
-    const statuses = new Set(query.status.split(',').map((s) => s.trim()).filter(Boolean));
+    const statuses = new Set(
+      query.status
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
     if (statuses.size > 0) {
-      rows = rows.filter((user) => statuses.has(String(user.status ?? 'active')));
+      rows = rows.filter((user) => statuses.has(String(user.status ?? "active")));
     }
   }
   if (query.search?.trim()) {
@@ -74,10 +87,8 @@ export function paginateUsers(users: WorkspaceUser[], query: UsersListQuery): Us
 
   const sortField = query.sortField?.trim();
   if (sortField) {
-    const sortDirection = query.sortDir === 'desc' ? 'desc' : 'asc';
-    rows = [...rows].sort((left, right) =>
-      compareByField(left, right, sortField, sortDirection),
-    );
+    const sortDirection = query.sortDir === "desc" ? "desc" : "asc";
+    rows = [...rows].sort((left, right) => compareByField(left, right, sortField, sortDirection));
   }
 
   const result = paginateArray(rows, query.page ?? 1, query.limit ?? 50, LIST_PAGE_MAX_LIMIT);

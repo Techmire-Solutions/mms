@@ -1,10 +1,10 @@
-import { INITIAL_FIELD_SEED, type FieldDefinition } from './contactTypes.js';
-import { canViewContactField } from './contactFieldAccess.js';
+import { INITIAL_FIELD_SEED, type FieldDefinition } from "./contactTypes.js";
+import { canViewContactField } from "./contactFieldAccess.js";
 import {
   isRelationshipContactColumnKey,
   isRelationshipTypeColumnKey,
   resolveRelationshipFieldsTabId,
-} from './contactEmergencyTabMigration.js';
+} from "./contactEmergencyTabMigration.js";
 
 export interface ContactColumnFieldContext {
   fields: Record<string, FieldDefinition[]>;
@@ -30,78 +30,78 @@ export function resolveContactColumnField(
 ): FieldDefinition | null {
   const { fields, enabledTabIds, isTabFieldEnabled } = columnFieldContext;
 
-  if (columnKey === 'name') {
-    return isTabFieldEnabled('basic', 'firstName') ? findField(fields, 'basic', 'firstName') : null;
+  if (columnKey === "name") {
+    return isTabFieldEnabled("basic", "firstName") ? findField(fields, "basic", "firstName") : null;
   }
-  if (columnKey === 'phone') {
-    return enabledTabIds.has('phones') && isTabFieldEnabled('phones', 'number')
-      ? findField(fields, 'phones', 'number')
+  if (columnKey === "phone") {
+    return enabledTabIds.has("phones") && isTabFieldEnabled("phones", "number")
+      ? findField(fields, "phones", "number")
       : null;
   }
-  if (columnKey === 'whatsapp') {
-    return enabledTabIds.has('phones') && isTabFieldEnabled('phones', 'whatsapp')
-      ? findField(fields, 'phones', 'whatsapp')
+  if (columnKey === "whatsapp") {
+    return enabledTabIds.has("phones") && isTabFieldEnabled("phones", "whatsapp")
+      ? findField(fields, "phones", "whatsapp")
       : null;
   }
-  if (columnKey === 'email') {
-    return enabledTabIds.has('emails') && isTabFieldEnabled('emails', 'address')
-      ? findField(fields, 'emails', 'address')
+  if (columnKey === "email") {
+    return enabledTabIds.has("emails") && isTabFieldEnabled("emails", "address")
+      ? findField(fields, "emails", "address")
       : null;
   }
-  if (columnKey === 'city') {
-    return enabledTabIds.has('addresses') && isTabFieldEnabled('addresses', 'city')
-      ? findField(fields, 'addresses', 'city')
+  if (columnKey === "city") {
+    return enabledTabIds.has("addresses") && isTabFieldEnabled("addresses", "city")
+      ? findField(fields, "addresses", "city")
       : null;
   }
-  if (columnKey === 'state') {
-    return enabledTabIds.has('addresses') && isTabFieldEnabled('addresses', 'state')
-      ? findField(fields, 'addresses', 'state')
+  if (columnKey === "state") {
+    return enabledTabIds.has("addresses") && isTabFieldEnabled("addresses", "state")
+      ? findField(fields, "addresses", "state")
       : null;
   }
-  if (columnKey === 'country') {
-    return enabledTabIds.has('addresses') && isTabFieldEnabled('addresses', 'country')
-      ? findField(fields, 'addresses', 'country')
+  if (columnKey === "country") {
+    return enabledTabIds.has("addresses") && isTabFieldEnabled("addresses", "country")
+      ? findField(fields, "addresses", "country")
       : null;
   }
-  if (columnKey === 'line1') {
-    return enabledTabIds.has('addresses') && isTabFieldEnabled('addresses', 'line1')
-      ? findField(fields, 'addresses', 'line1')
+  if (columnKey === "line1") {
+    return enabledTabIds.has("addresses") && isTabFieldEnabled("addresses", "line1")
+      ? findField(fields, "addresses", "line1")
       : null;
   }
-  if (columnKey === 'gender') {
-    return isTabFieldEnabled('basic', 'gender') ? findField(fields, 'basic', 'gender') : null;
+  if (columnKey === "gender") {
+    return isTabFieldEnabled("basic", "gender") ? findField(fields, "basic", "gender") : null;
   }
-  if (columnKey === 'dob') {
-    return isTabFieldEnabled('basic', 'dob') ? findField(fields, 'basic', 'dob') : null;
+  if (columnKey === "dob") {
+    return isTabFieldEnabled("basic", "dob") ? findField(fields, "basic", "dob") : null;
   }
-  if (columnKey === 'isSyed') {
-    return isTabFieldEnabled('basic', 'isSyed') ? findField(fields, 'basic', 'isSyed') : null;
+  if (columnKey === "isSyed") {
+    return isTabFieldEnabled("basic", "isSyed") ? findField(fields, "basic", "isSyed") : null;
   }
-  if (columnKey === 'socials_platform') {
-    return enabledTabIds.has('socials') && isTabFieldEnabled('socials', 'platform')
-      ? findField(fields, 'socials', 'platform')
+  if (columnKey === "socials_platform") {
+    return enabledTabIds.has("socials") && isTabFieldEnabled("socials", "platform")
+      ? findField(fields, "socials", "platform")
       : null;
   }
-  if (columnKey === 'socials_url') {
-    return enabledTabIds.has('socials') && isTabFieldEnabled('socials', 'url')
-      ? findField(fields, 'socials', 'url')
+  if (columnKey === "socials_url") {
+    return enabledTabIds.has("socials") && isTabFieldEnabled("socials", "url")
+      ? findField(fields, "socials", "url")
       : null;
   }
   if (isRelationshipContactColumnKey(columnKey)) {
     const tabId = resolveRelationshipFieldsTabId(fields, enabledTabIds);
-    return tabId && isTabFieldEnabled(tabId, 'contactId')
-      ? findField(fields, tabId, 'contactId')
+    return tabId && isTabFieldEnabled(tabId, "contactId")
+      ? findField(fields, tabId, "contactId")
       : null;
   }
   if (isRelationshipTypeColumnKey(columnKey)) {
     const tabId = resolveRelationshipFieldsTabId(fields, enabledTabIds);
-    return tabId && isTabFieldEnabled(tabId, 'relationship')
-      ? findField(fields, tabId, 'relationship')
+    return tabId && isTabFieldEnabled(tabId, "relationship")
+      ? findField(fields, tabId, "relationship")
       : null;
   }
 
   for (const [tabId, tabFields] of Object.entries(fields)) {
-    const tabEnabled = tabId === 'basic' || enabledTabIds.has(tabId);
+    const tabEnabled = tabId === "basic" || enabledTabIds.has(tabId);
     if (!tabEnabled) continue;
     const field = tabFields.find((tabField) => tabField.key === columnKey);
     if (field) return field;

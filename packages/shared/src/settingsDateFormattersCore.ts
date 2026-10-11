@@ -1,10 +1,5 @@
-import {
-  formatDateParts,
-  formatDatePartsWithMonthName,
-} from "./dateFormatUtils.js";
-import {
-  getIntlLocaleForLanguage,
-} from "./languageUtils.js";
+import { formatDateParts, formatDatePartsWithMonthName } from "./dateFormatUtils.js";
+import { getIntlLocaleForLanguage } from "./languageUtils.js";
 import { getStoredGlobalSettings } from "./settingsDateProvider.js";
 
 /**
@@ -44,8 +39,12 @@ export function formatDate(
     year: "numeric",
   }).formatToParts(parsedDate);
   const dayNum = Number(parts.find((part) => part.type === "day")?.value ?? parsedDate.getDate());
-  const monthNum = Number(parts.find((part) => part.type === "month")?.value ?? parsedDate.getMonth() + 1);
-  const yearNum = Number(parts.find((part) => part.type === "year")?.value ?? parsedDate.getFullYear());
+  const monthNum = Number(
+    parts.find((part) => part.type === "month")?.value ?? parsedDate.getMonth() + 1,
+  );
+  const yearNum = Number(
+    parts.find((part) => part.type === "year")?.value ?? parsedDate.getFullYear(),
+  );
 
   if (actualShowMonthName) {
     const month =
@@ -190,7 +189,10 @@ export function formatLongDate(date: string | Date | null | undefined): string {
  * Formats a Date object or date string as a Hijri date using active global settings.
  * Supports lunar Hijri with Umm al-Qura calendar extension when available.
  */
-export function formatHijriDate(date: string | Date | null | undefined, options?: { calendar?: 'islamic' | 'islamic-umalqura' }): string {
+export function formatHijriDate(
+  date: string | Date | null | undefined,
+  options?: { calendar?: "islamic" | "islamic-umalqura" },
+): string {
   if (!date) return "—";
   const parsedDate = typeof date === "string" ? new Date(date) : date;
   if (isNaN(parsedDate.getTime())) return "";
@@ -200,7 +202,7 @@ export function formatHijriDate(date: string | Date | null | undefined, options?
   const language = stored.language;
 
   const intlLocale = getIntlLocaleForLanguage(language);
-  const calendarType = options?.calendar ?? 'islamic-umalqura';
+  const calendarType = options?.calendar ?? "islamic-umalqura";
   try {
     return new Intl.DateTimeFormat(`${intlLocale}-u-ca-${calendarType}`, {
       timeZone: timezone,
@@ -225,14 +227,17 @@ export function formatHijriDate(date: string | Date | null | undefined, options?
 /**
  * Formats a Date object or date string as a Solar Hijri (Persian / Shamsi) date.
  */
-export function formatSolarHijriDate(date: string | Date | null | undefined, localeOverride?: string): string {
+export function formatSolarHijriDate(
+  date: string | Date | null | undefined,
+  localeOverride?: string,
+): string {
   if (!date) return "—";
   const parsedDate = typeof date === "string" ? new Date(date) : date;
   if (isNaN(parsedDate.getTime())) return "";
 
   const stored = getStoredGlobalSettings();
   const timezone = stored.timezone;
-  const language = localeOverride ?? (stored.language === 'fa' ? 'fa' : 'fa-IR');
+  const language = localeOverride ?? (stored.language === "fa" ? "fa" : "fa-IR");
 
   try {
     return new Intl.DateTimeFormat(`${language}-u-ca-persian`, {

@@ -1,22 +1,22 @@
-import { createHmac, randomBytes, randomInt, scryptSync, timingSafeEqual } from 'node:crypto';
-import type { FastifyReply, FastifyRequest } from 'fastify';
-import { secureCookieBase } from '../../lib/cookieOptions.js';
+import { createHmac, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { secureCookieBase } from "../../lib/cookieOptions.js";
 
-const ACCESS_COOKIE = 'mms_access';
-const REFRESH_COOKIE = 'mms_refresh';
-const CSRF_COOKIE = 'csrf_token';
+const ACCESS_COOKIE = "mms_access";
+const REFRESH_COOKIE = "mms_refresh";
+const CSRF_COOKIE = "csrf_token";
 
 const ACCESS_TTL_SEC = 15 * 60;
 const REFRESH_TTL_SEC = 7 * 24 * 60 * 60;
 const CSRF_TTL_SEC = 7 * 24 * 60 * 60;
 
 export function generateCsrfToken(): string {
-  return randomBytes(32).toString('hex');
+  return randomBytes(32).toString("hex");
 }
 
 function extractBearerToken(request: FastifyRequest): string | null {
   const header = request.headers.authorization;
-  if (header?.startsWith('Bearer ')) {
+  if (header?.startsWith("Bearer ")) {
     return header.slice(7).trim() || null;
   }
   const cookies = request.cookies as Record<string, string | undefined> | undefined;
@@ -34,10 +34,10 @@ export function setCsrfCookie(reply: FastifyReply, token?: string): string {
   const csrfToken = token || generateCsrfToken();
   const base = secureCookieBase();
   reply.setCookie(CSRF_COOKIE, csrfToken, {
-    path: '/',
+    path: "/",
     httpOnly: false, // Required for double-submit client read
     secure: base.secure,
-    sameSite: 'lax',
+    sameSite: "lax",
     maxAge: CSRF_TTL_SEC,
   });
   return csrfToken;
@@ -51,17 +51,17 @@ export function setAuthCookies(
 ): void {
   const base = secureCookieBase();
   reply.setCookie(ACCESS_COOKIE, accessToken, {
-    path: '/',
+    path: "/",
     httpOnly: true,
     secure: base.secure,
-    sameSite: 'lax',
+    sameSite: "lax",
     maxAge: ACCESS_TTL_SEC,
   });
   reply.setCookie(REFRESH_COOKIE, refreshToken, {
-    path: '/',
+    path: "/",
     httpOnly: true,
     secure: base.secure,
-    sameSite: 'lax',
+    sameSite: "lax",
     maxAge: REFRESH_TTL_SEC,
   });
   setCsrfCookie(reply, csrfToken);
@@ -71,7 +71,7 @@ export function clearAuthCookies(reply: FastifyReply): void {
   const base = secureCookieBase();
   reply.clearCookie(ACCESS_COOKIE, base);
   reply.clearCookie(REFRESH_COOKIE, base);
-  reply.clearCookie(CSRF_COOKIE, { path: '/', secure: base.secure, sameSite: 'lax' });
+  reply.clearCookie(CSRF_COOKIE, { path: "/", secure: base.secure, sameSite: "lax" });
 }
 
 /**
@@ -90,21 +90,21 @@ function getAuthArtifactSecret(): string {
     // forgeable. JWT_SECRET is mandatory to boot, so this only fires on
     // genuinely broken configuration.
     throw new Error(
-      'No auth artifact secret configured. Set AUTH_ARTIFACT_SECRET (preferred) or JWT_SECRET.',
+      "No auth artifact secret configured. Set AUTH_ARTIFACT_SECRET (preferred) or JWT_SECRET.",
     );
   }
 
-  return createHmac('sha256', 'mms-auth-artifact-v1').update(jwtSecret).digest('hex');
+  return createHmac("sha256", "mms-auth-artifact-v1").update(jwtSecret).digest("hex");
 }
 
 export function hashOtpCode(code: string): string {
-  return createHmac('sha256', getAuthArtifactSecret()).update(code).digest('hex');
+  return createHmac("sha256", getAuthArtifactSecret()).update(code).digest("hex");
 }
 
 export function verifyOtpCode(code: string, hash: string): boolean {
   const computed = hashOtpCode(code);
   try {
-    return timingSafeEqual(Buffer.from(computed, 'hex'), Buffer.from(hash, 'hex'));
+    return timingSafeEqual(Buffer.from(computed, "hex"), Buffer.from(hash, "hex"));
   } catch {
     return false;
   }
@@ -115,12 +115,11 @@ export function generateOtpCode(): string {
 }
 
 export function hashRefreshToken(token: string): string {
-  return scryptSync(token, getAuthArtifactSecret(), 32).toString('hex');
+  return scryptSync(token, getAuthArtifactSecret(), 32).toString("hex");
 }
 
 export function createRefreshTokenValue(): string {
-  return randomBytes(32).toString('hex');
+  return randomBytes(32).toString("hex");
 }
 
 export { ACCESS_COOKIE, REFRESH_COOKIE, CSRF_COOKIE };
-

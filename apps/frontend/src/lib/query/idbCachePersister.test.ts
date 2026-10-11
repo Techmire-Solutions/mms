@@ -1,22 +1,22 @@
-import { describe, it, expect } from 'vitest';
-import { createIdbCachePersister } from './idbCachePersister';
-import type { DehydratedState } from '@tanstack/react-query';
+import { describe, it, expect } from "vitest";
+import { createIdbCachePersister } from "./idbCachePersister";
+import type { DehydratedState } from "@tanstack/react-query";
 
-describe('createIdbCachePersister', () => {
-  it('instantiates with restore, persist, and remove interfaces', () => {
+describe("createIdbCachePersister", () => {
+  it("instantiates with restore, persist, and remove interfaces", () => {
     const persister = createIdbCachePersister({ maxAgeMs: 3600000 });
-    expect(typeof persister.persistClient).toBe('function');
-    expect(typeof persister.restoreClient).toBe('function');
-    expect(typeof persister.removeClient).toBe('function');
+    expect(typeof persister.persistClient).toBe("function");
+    expect(typeof persister.restoreClient).toBe("function");
+    expect(typeof persister.removeClient).toBe("function");
   });
 
-  it('handles restoreClient gracefully when indexedDB is unavailable', async () => {
+  it("handles restoreClient gracefully when indexedDB is unavailable", async () => {
     const persister = createIdbCachePersister();
     const restored = await persister.restoreClient();
     expect(restored).toBeUndefined();
   });
 
-  it('handles persistClient and removeClient gracefully without throwing', async () => {
+  it("handles persistClient and removeClient gracefully without throwing", async () => {
     const persister = createIdbCachePersister();
     const dummyState: DehydratedState = {
       mutations: [],
@@ -26,14 +26,17 @@ describe('createIdbCachePersister', () => {
     await expect(persister.removeClient()).resolves.not.toThrow();
   });
 
-  it('correctly persists and restores state through IndexedDB transactions', async () => {
+  it("correctly persists and restores state through IndexedDB transactions", async () => {
     const memoryStore = new Map<string, unknown>();
     const mockDb = {
       transaction: () => ({
         objectStore: () => ({
           put: (val: unknown, key: string) => {
             memoryStore.set(key, val);
-            const req = { onsuccess: null as (() => void) | null, onerror: null as (() => void) | null };
+            const req = {
+              onsuccess: null as (() => void) | null,
+              onerror: null as (() => void) | null,
+            };
             setTimeout(() => req.onsuccess?.(), 0);
             return req;
           },
@@ -48,7 +51,10 @@ describe('createIdbCachePersister', () => {
           },
           delete: (key: string) => {
             memoryStore.delete(key);
-            const req = { onsuccess: null as (() => void) | null, onerror: null as (() => void) | null };
+            const req = {
+              onsuccess: null as (() => void) | null,
+              onerror: null as (() => void) | null,
+            };
             setTimeout(() => req.onsuccess?.(), 0);
             return req;
           },
@@ -76,9 +82,9 @@ describe('createIdbCachePersister', () => {
         mutations: [],
         queries: [
           {
-            queryKey: ['test-key'],
+            queryKey: ["test-key"],
             queryHash: '["test-key"]',
-            state: { data: 'sample-data', dataUpdatedAt: Date.now(), status: 'success' } as any,
+            state: { data: "sample-data", dataUpdatedAt: Date.now(), status: "success" } as any,
             dehydratedAt: Date.now(),
           },
         ],
@@ -87,7 +93,7 @@ describe('createIdbCachePersister', () => {
       await persister.persistClient(testState);
       const restored = await persister.restoreClient();
       expect(restored).toBeDefined();
-      expect(restored?.queries[0].queryKey).toEqual(['test-key']);
+      expect(restored?.queries[0].queryKey).toEqual(["test-key"]);
 
       await persister.removeClient();
       const afterRemove = await persister.restoreClient();
@@ -97,7 +103,7 @@ describe('createIdbCachePersister', () => {
     }
   });
 
-  it('rejects expired cache payloads when maxAgeMs is exceeded', async () => {
+  it("rejects expired cache payloads when maxAgeMs is exceeded", async () => {
     const memoryStore = new Map<string, unknown>();
     const mockDb = {
       transaction: () => ({
@@ -135,7 +141,7 @@ describe('createIdbCachePersister', () => {
     try {
       const persister = createIdbCachePersister({ maxAgeMs: 100 });
       // Store payload with timestamp 500ms in the past
-      memoryStore.set('mms_dehydrated_state', {
+      memoryStore.set("mms_dehydrated_state", {
         timestamp: Date.now() - 500,
         clientState: { mutations: [], queries: [] },
       });

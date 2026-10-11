@@ -14,7 +14,7 @@ import { COUNTRY_CODES } from "./contactPreferenceConstants.js";
 export function parsePhoneNumber(
   rawNumber: unknown,
   defaultCode = "",
-  knownCodes: string[] = []
+  knownCodes: string[] = [],
 ): { countryCode: string; number: string } {
   if (!rawNumber) return { countryCode: defaultCode, number: "" };
   let clean = String(rawNumber).trim();
@@ -118,12 +118,16 @@ export function formatPhoneWithCountryCode(
  * @param defaultCountryCode - Optional fallback country code if configured by the tenant.
  * @returns The formatted primary phone number with country code or null.
  */
-export function getPrimaryPhone(contact?: Partial<Contact> | null, defaultCountryCode = ""): string | null {
+export function getPrimaryPhone(
+  contact?: Partial<Contact> | null,
+  defaultCountryCode = "",
+): string | null {
   if (!contact) return null;
   const phones = contact.phones || [];
-  const phoneObj = phones.find((p) => p.isPrimary && (p.number || "").trim().length > 0)
-    || phones.find((p) => (p.number || "").trim().length > 0)
-    || phones[0];
+  const phoneObj =
+    phones.find((p) => p.isPrimary && (p.number || "").trim().length > 0) ||
+    phones.find((p) => (p.number || "").trim().length > 0) ||
+    phones[0];
 
   if (phoneObj && (phoneObj.number || "").trim().length > 0) {
     const rawNumber = (phoneObj.number || "").trim();

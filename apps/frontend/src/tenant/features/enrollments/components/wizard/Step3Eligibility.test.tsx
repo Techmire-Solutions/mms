@@ -27,11 +27,7 @@ const mockSession = {
 describe("Step3Eligibility Component", () => {
   it("renders eligibility evaluation and passed badge", () => {
     const html = renderToStaticMarkup(
-      <Step3Eligibility
-        student={mockStudent}
-        session={mockSession}
-        suggestedClass={null}
-      />,
+      <Step3Eligibility student={mockStudent} session={mockSession} suggestedClass={null} />,
     );
 
     expect(html).toContain("enrollments.wizard.step3Title");

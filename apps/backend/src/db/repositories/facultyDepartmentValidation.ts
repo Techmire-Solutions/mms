@@ -1,17 +1,17 @@
-import { sql } from 'drizzle-orm';
-import { slugifyFacultyCatalogCode } from '@mms/shared';
-import type { TenantTransaction } from '../tenant-context.js';
-import { lockFacultyHierarchy } from './facultyAssignmentValidation.js';
+import { sql } from "drizzle-orm";
+import { slugifyFacultyCatalogCode } from "@mms/shared";
+import type { TenantTransaction } from "../tenant-context.js";
+import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 
 /** Raised when a catalog write collides with an existing live row (maps to HTTP 409). */
 export class FacultyCatalogConflictError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'FacultyCatalogConflictError';
+    this.name = "FacultyCatalogConflictError";
   }
 }
 
-type Executor = Pick<TenantTransaction, 'execute'>;
+type Executor = Pick<TenantTransaction, "execute">;
 
 /**
  * Faculty Management model: a department is identified by its name, which must
@@ -19,15 +19,18 @@ type Executor = Pick<TenantTransaction, 'execute'>;
  * cannot be overwritten through save — they must be restored first.
  */
 export async function validateFacultyDepartment(
-  tx: Executor, tenant: string, input: { id: string; name: string },
+  tx: Executor,
+  tenant: string,
+  input: { id: string; name: string },
 ): Promise<void> {
   await lockFacultyHierarchy(tx, tenant);
-  if (!input.name.trim()) throw new Error('Department name is required');
+  if (!input.name.trim()) throw new Error("Department name is required");
   const existing = await tx.execute<{ deleted_at: Date | null }>(sql`
     SELECT deleted_at FROM faculty_departments WHERE workspace_subdomain = ${tenant}
       AND id = ${input.id} FOR UPDATE
   `);
-  if (existing.rows.some((row) => row.deleted_at !== null)) throw new Error('Department is archived');
+  if (existing.rows.some((row) => row.deleted_at !== null))
+    throw new Error("Department is archived");
   const duplicate = await tx.execute<{ id: string }>(sql`
     SELECT id FROM faculty_departments
     WHERE workspace_subdomain = ${tenant}
@@ -37,7 +40,7 @@ export async function validateFacultyDepartment(
     LIMIT 1
   `);
   if (duplicate.rows.length) {
-    throw new FacultyCatalogConflictError('A department with this name already exists');
+    throw new FacultyCatalogConflictError("A department with this name already exists");
   }
 }
 
@@ -61,14 +64,19 @@ export async function resolveFacultyCatalogCode(
   `);
   const existingCode = current.rows[0]?.code?.trim();
   if (existingCode) return existingCode;
-  const base = slugifyFacultyCatalogCode(name, maxLength) || table.replace('faculty_', '').slice(0, 4);
+  const base =
+    slugifyFacultyCatalogCode(name, maxLength) || table.replace("faculty_", "").slice(0, 4);
   const taken = await tx.execute<{ code: string }>(sql`
     SELECT code FROM ${relation}
     WHERE workspace_subdomain = ${tenant} AND deleted_at IS NULL AND id <> ${id} AND code = ${base}
     LIMIT 1
   `);
   if (!taken.rows.length) return base;
-  const suffix = id.replace(/[^a-z0-9]/gi, '').slice(-6).toLowerCase() || Date.now().toString(36);
+  const suffix =
+    id
+      .replace(/[^a-z0-9]/gi, "")
+      .slice(-6)
+      .toLowerCase() || Date.now().toString(36);
   return `${base.slice(0, maxLength - suffix.length - 1)}-${suffix}`;
 }
 
@@ -83,6 +91,6 @@ export async function validateDepartmentDeletion(tx: Executor, tenant: string, i
       AND department_id = ${id} AND deleted_at IS NULL LIMIT 1
   `);
   if (dependents.rows.length) {
-    throw new FacultyCatalogConflictError('Department has active designations or assignments');
+    throw new FacultyCatalogConflictError("Department has active designations or assignments");
   }
 }

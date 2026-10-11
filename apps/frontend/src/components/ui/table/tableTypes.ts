@@ -29,7 +29,10 @@ export interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement>
   isFocusable?: boolean;
 }
 
-export interface TableHeadProps extends Omit<React.ThHTMLAttributes<HTMLTableCellElement>, "align"> {
+export interface TableHeadProps extends Omit<
+  React.ThHTMLAttributes<HTMLTableCellElement>,
+  "align"
+> {
   noWrap?: boolean;
   truncate?: boolean;
   align?: TableCellAlign;
@@ -47,7 +50,10 @@ export interface TableHeadProps extends Omit<React.ThHTMLAttributes<HTMLTableCel
 
 export type TableHeadCellProps = TableHeadProps;
 
-export interface TableCellProps extends Omit<React.TdHTMLAttributes<HTMLTableCellElement>, "align"> {
+export interface TableCellProps extends Omit<
+  React.TdHTMLAttributes<HTMLTableCellElement>,
+  "align"
+> {
   noWrap?: boolean;
   truncate?: boolean;
   align?: TableCellAlign;

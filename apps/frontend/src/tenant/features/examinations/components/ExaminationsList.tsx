@@ -86,10 +86,16 @@ export default function ExaminationsList(props: ExaminationsListProps): React.JS
   const statusConfig = resolveExaminationStatusConfig(statusLabels);
   const canBulkTrash = canDelete && Boolean(showDeleted ? onBulkRestore : onBulkDelete);
   const isInitialLoading = query.examsPageQuery.isPending && !query.examsPageQuery.data;
-  const isError = query.examsPageQuery.isError || (query.examsPageQuery.data != null && query.examsPageQuery.data.status !== 200);
+  const isError =
+    query.examsPageQuery.isError ||
+    (query.examsPageQuery.data != null && query.examsPageQuery.data.status !== 200);
 
   return (
-    <section className="space-y-4" aria-label={t("examinations.exams")} aria-busy={query.examsPageQuery.isFetching}>
+    <section
+      className="space-y-4"
+      aria-label={t("examinations.exams")}
+      aria-busy={query.examsPageQuery.isFetching}
+    >
       <ExaminationsListFilters
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -122,7 +128,9 @@ export default function ExaminationsList(props: ExaminationsListProps): React.JS
         isError={isError}
         isLoading={isInitialLoading}
         isFetching={query.examsPageQuery.isFetching}
-        onRetry={() => { void query.examsPageQuery.refetch(); }}
+        onRetry={() => {
+          void query.examsPageQuery.refetch();
+        }}
         errorTitle={t("examinations.loadFailed")}
         errorHint={t("examinations.loadFailedHint")}
         viewMode={viewMode}

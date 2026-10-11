@@ -3,18 +3,18 @@ import {
   normalizeHasanatModulePreferences,
   normalizeHasanatSettings,
   type HasanatModulePreferences,
-  type HasanatSettings
-} from '@mms/shared';
-import { createModuleSetupConfigHooks } from '@/lib/query/createModuleSetupConfigHooks';
+  type HasanatSettings,
+} from "@mms/shared";
+import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchHasanatPreferences,
   saveHasanatPreferencesAsync,
   setHasanatPreferencesMemory,
-} from '@/tenant/features/hasanat/hooks/hasanatSetupConfigApi';
+} from "@/tenant/features/hasanat/hooks/hasanatSetupConfigApi";
 
 export const HASANAT_PREFERENCES_QUERY_KEY = [
   HASANAT_MODULE_MANIFEST.collectionKey,
-  'preferences',
+  "preferences",
 ] as const;
 
 const setupConfigHooks = createModuleSetupConfigHooks<HasanatModulePreferences>({
@@ -28,7 +28,7 @@ const setupConfigHooks = createModuleSetupConfigHooks<HasanatModulePreferences>(
 export const useHasanatPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useHasanatPreferencesMutation = setupConfigHooks.usePreferencesMutation;
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 /** Composed HasanatSettings from preferences queries. */
 export function useComposedHasanatSettings(): HasanatSettings {

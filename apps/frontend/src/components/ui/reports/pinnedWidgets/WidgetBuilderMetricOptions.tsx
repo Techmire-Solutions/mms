@@ -4,7 +4,12 @@ import { FORM_INPUT_BUILDER } from "@/components/ui/formStyles";
 import { FormSelect } from "@/components/ui/FormSelect";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
-import { METADATA_FIELDS, COLLECTION_OPTIONS, getFieldLabel, getCollectionLabel } from "@/lib/reports/reportMetadata";
+import {
+  METADATA_FIELDS,
+  COLLECTION_OPTIONS,
+  getFieldLabel,
+  getCollectionLabel,
+} from "@/lib/reports/reportMetadata";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 
 interface WidgetBuilderMetricOptionsProps {

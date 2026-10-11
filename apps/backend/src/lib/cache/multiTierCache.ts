@@ -1,6 +1,6 @@
-import { LRUCache } from 'lru-cache';
-import { redisGet, redisSet } from '../redis.js';
-import { logger } from '../logger.js';
+import { LRUCache } from "lru-cache";
+import { redisGet, redisSet } from "../redis.js";
+import { logger } from "../logger.js";
 
 export interface MultiTierCacheOptions {
   /** Time-to-live in seconds for L1 and L2 (default: 300s = 5m) */
@@ -40,8 +40,8 @@ export const l1LruCache = new LRUCache<string, CacheValue>({
   sizeCalculation: (value, key) => {
     try {
       if (value === null || value === undefined) return 64;
-      if (typeof value === 'string') return value.length * 2 + key.length * 2;
-      if (typeof value === 'number' || typeof value === 'boolean') return 64;
+      if (typeof value === "string") return value.length * 2 + key.length * 2;
+      if (typeof value === "number" || typeof value === "boolean") return 64;
       if (Buffer.isBuffer(value)) return value.byteLength + key.length * 2;
       return JSON.stringify(value).length * 2 + key.length * 2;
     } catch {
@@ -49,7 +49,7 @@ export const l1LruCache = new LRUCache<string, CacheValue>({
     }
   },
   dispose: (_value, _key, reason) => {
-    if (reason === 'evict') {
+    if (reason === "evict") {
       metrics.evictions++;
     }
   },
@@ -83,7 +83,7 @@ const metrics: MultiTierCacheMetrics = {
  * Format: `tenant:<tenantId>:<domain>:<key>`
  */
 export function buildCacheKey(tenantId: string, domain: string, key: string): string {
-  if (key.startsWith('mms:') || key.startsWith('tenant:')) {
+  if (key.startsWith("mms:") || key.startsWith("tenant:")) {
     return key;
   }
   const normalizedTenant = tenantId.trim().toLowerCase();
@@ -94,7 +94,7 @@ export function buildCacheKey(tenantId: string, domain: string, key: string): st
 
 /**
  * Multi-Tier Cache Getter with Cache Stampede Protection (Promise Coalescing).
- * 
+ *
  * Flow:
  * 1. L1 LRU in-process lookup (0ms event loop latency, 0 I/O)
  * 2. L2 Redis lookup (sub-millisecond distributed cache)
@@ -129,14 +129,14 @@ export async function getOrSetMultiTier<T>(
         l1LruCache.set(cacheKey, parsed as CacheValue, { ttl: ttlSeconds * 1000 });
         return parsed;
       } catch (err) {
-        logger.warn({ err, cacheKey }, 'Failed to parse JSON from L2 Redis cache; refreshing');
+        logger.warn({ err, cacheKey }, "Failed to parse JSON from L2 Redis cache; refreshing");
       }
     } else {
       metrics.l2Misses++;
     }
   } catch (err) {
     metrics.l2Misses++;
-    logger.warn({ err, cacheKey }, 'L2 Redis cache read error; bypassing to database fetcher');
+    logger.warn({ err, cacheKey }, "L2 Redis cache read error; bypassing to database fetcher");
   }
 
   // 3. Cache Stampede Protection: Coalesce concurrent in-flight fetches for the same key
@@ -157,7 +157,7 @@ export async function getOrSetMultiTier<T>(
       try {
         await redisSet(cacheKey, JSON.stringify(freshValue), ttlSeconds);
       } catch (err) {
-        logger.warn({ err, cacheKey }, 'Failed to populate L2 Redis cache');
+        logger.warn({ err, cacheKey }, "Failed to populate L2 Redis cache");
       }
 
       metrics.sets++;

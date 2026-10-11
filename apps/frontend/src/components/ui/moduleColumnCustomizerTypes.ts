@@ -1,6 +1,6 @@
-import type React from 'react';
-import type { ModuleColumnRegistryEntry } from '@mms/shared';
-import type { EntityDescriptor } from '@/types/entityRegistry';
+import type React from "react";
+import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { EntityDescriptor } from "@/types/entityRegistry";
 
 export interface ModuleColumnCustomizerLabels {
   trigger: string;
@@ -40,7 +40,7 @@ export interface ModuleColumnCustomizerListProps {
   handleDragOver: (event: React.DragEvent<HTMLDivElement>, columnKey: string) => void;
   handleDrop: (event: React.DragEvent<HTMLDivElement>, targetColumnKey: string) => void;
   clearDrag: () => void;
-  onMoveColumn?: (columnKey: string, direction: 'up' | 'down') => void;
+  onMoveColumn?: (columnKey: string, direction: "up" | "down") => void;
   showAll?: () => void;
   hideAll?: () => void;
   hasNonFixedHidden?: boolean;

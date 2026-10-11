@@ -1,15 +1,15 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
-import type { QuestionBankReportAggregates } from '@mms/shared';
+import { and, eq, isNull, sql } from "drizzle-orm";
+import type { QuestionBankReportAggregates } from "@mms/shared";
 import {
   questions,
   questionCategories,
   tests,
   assessmentResults,
   assessmentAnswers,
-} from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+} from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
-const VALID_DIFFICULTIES_SET = new Set(['easy', 'medium', 'hard']);
+const VALID_DIFFICULTIES_SET = new Set(["easy", "medium", "hard"]);
 
 export type QuestionBankReportQuery = {
   dateFrom?: string;
@@ -47,12 +47,7 @@ export async function aggregateQuestionBankReport(
     const [testsRow] = await tx
       .select({ count: sql<number>`count(*)::int` })
       .from(tests)
-      .where(
-        and(
-          eq(tests.workspaceSubdomain, subdomain),
-          isNull(tests.deletedAt),
-        ),
-      );
+      .where(and(eq(tests.workspaceSubdomain, subdomain), isNull(tests.deletedAt)));
 
     const activeResults = and(
       eq(assessmentResults.workspaceSubdomain, subdomain),
@@ -79,12 +74,12 @@ export async function aggregateQuestionBankReport(
         tx
           .select({
             resultId: assessmentAnswers.resultId,
-            total_score: sql<number>`sum(${assessmentAnswers.score})`.as('total_score'),
+            total_score: sql<number>`sum(${assessmentAnswers.score})`.as("total_score"),
           })
           .from(assessmentAnswers)
           .where(eq(assessmentAnswers.workspaceSubdomain, subdomain))
           .groupBy(assessmentAnswers.resultId)
-          .as('sub'),
+          .as("sub"),
       );
 
     // Pass rate: percentage of tests where student score >= test.totalMarks * 0.5
@@ -100,16 +95,15 @@ export async function aggregateQuestionBankReport(
           .select({
             resultId: assessmentResults.id,
             testId: assessmentResults.testId,
-            total_score: sql<number>`coalesce(sum(${assessmentAnswers.score}), 0)`.as('total_score'),
+            total_score: sql<number>`coalesce(sum(${assessmentAnswers.score}), 0)`.as(
+              "total_score",
+            ),
           })
           .from(assessmentResults)
-          .leftJoin(
-            assessmentAnswers,
-            eq(assessmentResults.id, assessmentAnswers.resultId),
-          )
+          .leftJoin(assessmentAnswers, eq(assessmentResults.id, assessmentAnswers.resultId))
           .where(activeResults)
           .groupBy(assessmentResults.id, assessmentResults.testId)
-          .as('sub'),
+          .as("sub"),
       )
       .leftJoin(tests, eq(sql`sub.test_id`, tests.id));
 
@@ -157,12 +151,12 @@ export async function aggregateQuestionBankReport(
         tx
           .select({
             resultId: assessmentAnswers.resultId,
-            total_score: sql<number>`sum(${assessmentAnswers.score})`.as('total_score'),
+            total_score: sql<number>`sum(${assessmentAnswers.score})`.as("total_score"),
           })
           .from(assessmentAnswers)
           .where(eq(assessmentAnswers.workspaceSubdomain, subdomain))
           .groupBy(assessmentAnswers.resultId)
-          .as('ans_sub'),
+          .as("ans_sub"),
         eq(assessmentResults.id, sql`ans_sub.result_id`),
       )
       .where(
@@ -193,14 +187,14 @@ export async function aggregateQuestionBankReport(
       averageScore: Number(avgRow?.avgScore ?? 0),
       passRate,
       categoryBreakdown: categoryRows.map((r) => ({
-        categoryId: r.categoryId ?? '',
-        categoryName: r.categoryName ?? r.categoryId ?? 'Uncategorized',
+        categoryId: r.categoryId ?? "",
+        categoryName: r.categoryName ?? r.categoryId ?? "Uncategorized",
         questionCount: Number(r.count),
       })),
       difficultyBreakdown: difficultyRows.map((r) => ({
-        difficulty: VALID_DIFFICULTIES_SET.has(r.difficulty ?? '')
-          ? (r.difficulty as 'easy' | 'medium' | 'hard')
-          : 'unset',
+        difficulty: VALID_DIFFICULTIES_SET.has(r.difficulty ?? "")
+          ? (r.difficulty as "easy" | "medium" | "hard")
+          : "unset",
         questionCount: Number(r.count),
       })),
       monthlyResults,

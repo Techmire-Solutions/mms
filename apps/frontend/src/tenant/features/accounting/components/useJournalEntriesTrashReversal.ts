@@ -1,5 +1,9 @@
 import { useRef, useState } from "react";
-import { isManuallyReversibleJournalSource, type AppTranslationKey, type JournalReversalRequest } from "@mms/shared";
+import {
+  isManuallyReversibleJournalSource,
+  type AppTranslationKey,
+  type JournalReversalRequest,
+} from "@mms/shared";
 import { hasReversalEntry, type JournalEntry } from "@/lib/data/accountingData";
 import { notify } from "@/lib/notify";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";

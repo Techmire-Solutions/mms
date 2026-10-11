@@ -6,20 +6,20 @@ import {
   tenantCollectionKey,
   tenantObjectKey,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,
   listCollectionStorageNames,
   saveCollection,
   saveObject,
-} from '../database.js';
+} from "../database.js";
 
-const STUDENTS_COLLECTION = 'students';
-const TEACHERS_COLLECTION = 'teachers';
-const CONTACTS_COLLECTION = 'contacts';
-const STUDENTS_SETTINGS_KEY = 'students_settings';
-const TEACHERS_SETTINGS_KEY = 'teachers_settings';
+const STUDENTS_COLLECTION = "students";
+const TEACHERS_COLLECTION = "teachers";
+const CONTACTS_COLLECTION = "contacts";
+const STUDENTS_SETTINGS_KEY = "students_settings";
+const TEACHERS_SETTINGS_KEY = "teachers_settings";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -97,7 +97,7 @@ export async function runMigration011(): Promise<void> {
         TEACHERS_SETTINGS_KEY,
       )
     ) {
-      console.log('[Migration 011] Initialized roster storage (legacy storage)');
+      console.log("[Migration 011] Initialized roster storage (legacy storage)");
       changed = true;
     }
   } else {
@@ -118,6 +118,6 @@ export async function runMigration011(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 011] Roster storage migration completed.');
+    console.log("[Migration 011] Roster storage migration completed.");
   }
 }

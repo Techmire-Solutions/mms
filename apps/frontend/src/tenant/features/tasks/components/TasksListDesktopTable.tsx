@@ -3,17 +3,17 @@
  * @description WorkBatchTable desktop list for Tasks Work tier.
  */
 
-import React, { useMemo } from 'react';
-import { Pencil, Trash2, RotateCcw } from 'lucide-react';
-import type { TaskRecord, TaskStatus } from '@mms/shared';
-import { WorkBatchTable } from '@/components/common/work/WorkBatchTable';
-import { DataTableRowActions } from '@/components/common/data-table';
-import { ModuleTableFooterCount } from '@/components/ui/ModuleTableFooterCount';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { useTranslation } from '@/hooks/useTranslation';
-import { formatDirectoryPageCountLabel } from '@/lib/formatDirectoryPageCountLabel';
-import { getDirectoryPageSelection } from '@/lib/directorySelection';
-import { buildTasksWorkBatchColumns, TASK_NEXT_STATUS } from './tasksWorkBatchColumns';
+import React, { useMemo } from "react";
+import { Pencil, Trash2, RotateCcw } from "lucide-react";
+import type { TaskRecord, TaskStatus } from "@mms/shared";
+import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
+import { DataTableRowActions } from "@/components/common/data-table";
+import { ModuleTableFooterCount } from "@/components/ui/ModuleTableFooterCount";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { useTranslation } from "@/hooks/useTranslation";
+import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
+import { getDirectoryPageSelection } from "@/lib/directorySelection";
+import { buildTasksWorkBatchColumns, TASK_NEXT_STATUS } from "./tasksWorkBatchColumns";
 
 export interface TasksListDesktopTableProps {
   tasks: TaskRecord[];
@@ -61,7 +61,7 @@ export function TasksListDesktopTable({
 
   const handleCycleStatus = (task: TaskRecord) => {
     if (viewingDeleted) return;
-    onUpdateStatus(task.id, TASK_NEXT_STATUS[task.status] || 'todo');
+    onUpdateStatus(task.id, TASK_NEXT_STATUS[task.status] || "todo");
   };
 
   const columns = useMemo(
@@ -74,8 +74,8 @@ export function TasksListDesktopTable({
   );
 
   const pageCountLabel = formatDirectoryPageCountLabel(tasks.length, t, {
-    singular: 'tasks.singular',
-    plural: 'nav.tasks',
+    singular: "tasks.singular",
+    plural: "nav.tasks",
   });
 
   return (
@@ -86,9 +86,7 @@ export function TasksListDesktopTable({
         isLoading={isLoading}
         stickyColumnId="title"
         columnResize={
-          getColumnWidth || onColumnResize
-            ? { getColumnWidth, onColumnResize }
-            : undefined
+          getColumnWidth || onColumnResize ? { getColumnWidth, onColumnResize } : undefined
         }
         selection={{
           selectedIds: selectedSet,
@@ -96,7 +94,7 @@ export function TasksListDesktopTable({
           onSelectAll: () => onToggleSelectAll(!allSelected, pageIds),
           allSelected,
           someSelected,
-          selectAllAriaLabel: allSelected ? t('common.deselect') : t('common.selectAll'),
+          selectAllAriaLabel: allSelected ? t("common.deselect") : t("common.selectAll"),
           selectRowAriaLabel: (task) => task.title,
         }}
         onRowClick={onView}
@@ -104,26 +102,26 @@ export function TasksListDesktopTable({
           const actions = [];
           if (viewingDeleted && canDelete && onRestore) {
             actions.push({
-              id: 'restore',
-              label: t('tasks.restore'),
+              id: "restore",
+              label: t("tasks.restore"),
               icon: RotateCcw,
               onClick: () => onRestore(task.id),
             });
           } else {
             if (canWrite) {
               actions.push({
-                id: 'edit',
-                label: t('common.edit'),
+                id: "edit",
+                label: t("common.edit"),
                 icon: Pencil,
                 onClick: () => onEdit(task),
               });
             }
             if (canDelete) {
               actions.push({
-                id: 'delete',
-                label: t('common.delete'),
+                id: "delete",
+                label: t("common.delete"),
                 icon: Trash2,
-                tone: 'destructive' as const,
+                tone: "destructive" as const,
                 onClick: () => onDelete(task.id),
               });
             }
@@ -132,9 +130,9 @@ export function TasksListDesktopTable({
         }}
         emptyState={
           <EmptyState
-            title={viewingDeleted ? t('tasks.trashEmptyTitle') : t('tasks.emptyTitle')}
+            title={viewingDeleted ? t("tasks.trashEmptyTitle") : t("tasks.emptyTitle")}
             description={
-              viewingDeleted ? t('tasks.trashEmptyDescription') : t('tasks.emptyDescription')
+              viewingDeleted ? t("tasks.trashEmptyDescription") : t("tasks.emptyDescription")
             }
             action={!viewingDeleted ? emptyAction : undefined}
           />
@@ -142,7 +140,7 @@ export function TasksListDesktopTable({
       />
       <ModuleTableFooterCount
         selectedCount={selectedIds.length}
-        selectedCountLabel={t('tasks.selectedCount', { count: selectedIds.length })}
+        selectedCountLabel={t("tasks.selectedCount", { count: selectedIds.length })}
         pageCountLabel={pageCountLabel}
       />
     </>

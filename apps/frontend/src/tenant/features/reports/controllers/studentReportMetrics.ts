@@ -1,15 +1,15 @@
-import { TrendingUp, UserCheck, UserPlus, UserX, Users } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import type { StudentsCommandMetricsSnapshot } from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { notify } from '@/lib/notify';
-import { applyStudentsWorkDrillDown } from '@/tenant/hooks/collections/students';
+import { TrendingUp, UserCheck, UserPlus, UserX, Users } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { StudentsCommandMetricsSnapshot } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { notify } from "@/lib/notify";
+import { applyStudentsWorkDrillDown } from "@/tenant/hooks/collections/students";
 
 export interface StudentReportMetricItem {
   icon: LucideIcon;
   label: string;
   value: string | number;
-  accent: 'primary' | 'success' | 'destructive' | 'info' | 'secondary';
+  accent: "primary" | "success" | "destructive" | "info" | "secondary";
   isActive?: boolean;
   onClick?: () => void;
 }
@@ -19,7 +19,7 @@ export function applyStudentsReportDrillDown(
   t: TranslationFunction,
   status: string | undefined,
 ): void {
-  notify.message(t('students.drillDownApplied'));
+  notify.message(t("students.drillDownApplied"));
   applyStudentsWorkDrillDown(status ? { status } : {});
 }
 
@@ -51,9 +51,9 @@ export function buildStudentReportMetricItems(input: {
   return [
     {
       icon: Users,
-      label: t('students.report.totalStudents'),
+      label: t("students.report.totalStudents"),
       value: metrics?.total ?? 0,
-      accent: 'primary',
+      accent: "primary",
       isActive: !reportStatusFilter,
       onClick: () => {
         onStatusFilterChange(null);
@@ -62,38 +62,38 @@ export function buildStudentReportMetricItems(input: {
     },
     {
       icon: UserCheck,
-      label: t('students.report.active'),
+      label: t("students.report.active"),
       value: metrics?.active ?? 0,
-      accent: 'success',
-      isActive: reportStatusFilter === 'active',
+      accent: "success",
+      isActive: reportStatusFilter === "active",
       onClick: () => {
-        toggleStatus('active');
-        onDrillDown('active');
+        toggleStatus("active");
+        onDrillDown("active");
       },
     },
     {
       icon: UserX,
-      label: t('students.report.inactive'),
+      label: t("students.report.inactive"),
       value: metrics?.inactive ?? 0,
-      accent: 'destructive',
-      isActive: reportStatusFilter === 'inactive',
+      accent: "destructive",
+      isActive: reportStatusFilter === "inactive",
       onClick: () => {
-        toggleStatus('inactive');
-        onDrillDown('inactive');
+        toggleStatus("inactive");
+        onDrillDown("inactive");
       },
     },
     {
       icon: UserPlus,
-      label: t('students.metrics.newThisPeriod'),
+      label: t("students.metrics.newThisPeriod"),
       value: metrics?.newThisPeriod ?? 0,
-      accent: 'secondary',
+      accent: "secondary",
       onClick: () => onDrillDown(undefined),
     },
     {
       icon: TrendingUp,
-      label: t('students.report.genderSplit'),
-      value: t('students.report.genderSplitValue', { male, female }),
-      accent: 'info',
+      label: t("students.report.genderSplit"),
+      value: t("students.report.genderSplitValue", { male, female }),
+      accent: "info",
       onClick: onListFocus,
     },
   ];

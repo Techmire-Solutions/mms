@@ -3,7 +3,10 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { resolveWidgetTitle } from "@/lib/dashboardWidgets";
 import { getWidgetSubtitle } from "@/components/ui/reports/pinnedWidgets/customWidgetLayoutHelpers";
-import { ComposedDashboardWidget, isComposedWidgetType } from "@/components/dashboard-widgets/registry";
+import {
+  ComposedDashboardWidget,
+  isComposedWidgetType,
+} from "@/components/dashboard-widgets/registry";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { SectionLabel } from "@/components/ui/SectionLabel";
@@ -18,7 +21,9 @@ import type { ReportCollectionsSnapshot } from "@/lib/reports/useReportCollectio
 import type { computeCustomCard } from "@/lib/reports/reportMetadata";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
-const CustomWidgetChartFallback = React.lazy(() => import("@/components/ui/reports/pinnedWidgets/CustomWidgetChartFallback"));
+const CustomWidgetChartFallback = React.lazy(
+  () => import("@/components/ui/reports/pinnedWidgets/CustomWidgetChartFallback"),
+);
 
 type AlertScheme = {
   bg: string;
@@ -97,18 +102,23 @@ export function CustomWidgetComfortableLayout({
         className={cn(
           CARD_STRIPE_BASE,
           "transition-colors duration-300",
-          isAlert
-            ? "bg-destructive/60 group-hover:bg-destructive"
-            : `${colorTheme.bar}/60`
+          isAlert ? "bg-destructive/60 group-hover:bg-destructive" : `${colorTheme.bar}/60`,
         )}
       />
-      <div className={`absolute -end-8 -top-8 w-24 h-24 rounded-full ${colorTheme.glow} transition-all duration-500`} />
+      <div
+        className={`absolute -end-8 -top-8 w-24 h-24 rounded-full ${colorTheme.glow} transition-all duration-500`}
+      />
       <div className="flex min-w-0 items-center justify-between gap-2">
         <div className="min-w-0 space-y-0.5 text-start">
           <SectionLabel tone="foreground" className="block truncate leading-none">
             {resolveWidgetTitle(widget, t)}
           </SectionLabel>
-          <p className={cn("truncate text-xs font-bold uppercase tracking-wider", alertScheme ? "text-foreground" : "text-muted-foreground")}>
+          <p
+            className={cn(
+              "truncate text-xs font-bold uppercase tracking-wider",
+              alertScheme ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
             {getWidgetSubtitle(widget, resolvedWidgetType, t)}
           </p>
         </div>
@@ -117,7 +127,12 @@ export function CustomWidgetComfortableLayout({
           <StatusBadge
             status="alert"
             size="sm"
-            config={{ alert: { label: t("reports.widgets.alertLevel"), cls: SEMANTIC_BADGE.destructiveSolid } }}
+            config={{
+              alert: {
+                label: t("reports.widgets.alertLevel"),
+                cls: SEMANTIC_BADGE.destructiveSolid,
+              },
+            }}
           />
         )}
       </div>
@@ -131,11 +146,18 @@ export function CustomWidgetComfortableLayout({
             variant="ghost"
           >
             <span className="block">
-              <h4 className={`text-3xl font-black tracking-tight font-mono flex items-baseline gap-1.5 ${alertScheme ? alertScheme.text : "text-foreground"}`}>
+              <h4
+                className={`text-3xl font-black tracking-tight font-mono flex items-baseline gap-1.5 ${alertScheme ? alertScheme.text : "text-foreground"}`}
+              >
                 {formattedValue}
                 <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/35 transition-all group-hover/kpi:translate-x-0.5 group-hover/kpi:-translate-y-0.5 group-hover/kpi:text-primary rtl:-scale-x-100 rtl:group-hover/kpi:-translate-x-0.5" />
               </h4>
-              <p className={cn("text-xs font-bold uppercase tracking-wider mt-1", alertScheme ? "text-foreground" : "text-muted-foreground")}>
+              <p
+                className={cn(
+                  "text-xs font-bold uppercase tracking-wider mt-1",
+                  alertScheme ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
                 {t("reports.widgets.clickToViewRecords")}
               </p>
             </span>
@@ -155,7 +177,12 @@ export function CustomWidgetComfortableLayout({
                   {t("reports.widgets.progression")}
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-transform group-hover/prog:translate-x-0.5 rtl:rotate-180 rtl:group-hover/prog:-translate-x-0.5" />
                 </h4>
-                <p className={cn("text-xs font-semibold mt-1", alertScheme ? "text-foreground" : "text-muted-foreground")}>
+                <p
+                  className={cn(
+                    "text-xs font-semibold mt-1",
+                    alertScheme ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
                   {t("reports.widgets.progressionDesc")}
                 </p>
               </span>
@@ -167,10 +194,17 @@ export function CustomWidgetComfortableLayout({
         {resolvedWidgetType === "switch" && (
           <div className="flex items-center justify-between w-full">
             <div className="text-start">
-              <span className={`text-base font-black uppercase tracking-wider ${isSwitchOn ? "text-primary" : "text-muted-foreground"}`}>
+              <span
+                className={`text-base font-black uppercase tracking-wider ${isSwitchOn ? "text-primary" : "text-muted-foreground"}`}
+              >
                 {switchLabel}
               </span>
-              <p className={cn("text-xs font-semibold mt-1", alertScheme ? "text-foreground" : "text-muted-foreground")}>
+              <p
+                className={cn(
+                  "text-xs font-semibold mt-1",
+                  alertScheme ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
                 {t("reports.widgets.clickToToggle")}
               </p>
             </div>
@@ -186,7 +220,9 @@ export function CustomWidgetComfortableLayout({
 
         {resolvedWidgetType === "chart" && (
           <div className="w-full h-20 -mb-2">
-            <React.Suspense fallback={<div className="w-full h-full bg-muted/20 animate-pulse rounded-xl" />}>
+            <React.Suspense
+              fallback={<div className="w-full h-full bg-muted/20 animate-pulse rounded-xl" />}
+            >
               <CustomWidgetChartFallback widget={widget} collections={collections} />
             </React.Suspense>
           </div>

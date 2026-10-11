@@ -49,7 +49,7 @@ export interface ModuleWorkBulkActionBarProps {
 }
 
 /** Shared Work bulk selection chrome — Contacts/Students compose labels + slots. */
-export const ModuleWorkBulkActionBar = (function ModuleWorkBulkActionBar({
+export const ModuleWorkBulkActionBar = function ModuleWorkBulkActionBar({
   selectedCount,
   viewingDeleted = false,
   countLabel,
@@ -65,8 +65,8 @@ export const ModuleWorkBulkActionBar = (function ModuleWorkBulkActionBar({
   deleteAction,
 }: ModuleWorkBulkActionBarProps): JSX.Element {
   const trailingNode = (() => (
-      <BulkSelectionClearAction label={deselectLabel} onClick={onClearSelection} />
-    ))();
+    <BulkSelectionClearAction label={deselectLabel} onClick={onClearSelection} />
+  ))();
 
   return (
     <BulkActionDock
@@ -84,7 +84,6 @@ export const ModuleWorkBulkActionBar = (function ModuleWorkBulkActionBar({
           <BulkSelectionRestoreAction label={restoreLabel} onClick={onRequestBulkRestore} />
         )
       ) : (
-
         <>
           {messaging && (
             <BulkSelectionMessagingActions
@@ -115,4 +114,4 @@ export const ModuleWorkBulkActionBar = (function ModuleWorkBulkActionBar({
       )}
     </BulkActionDock>
   );
-});
+};

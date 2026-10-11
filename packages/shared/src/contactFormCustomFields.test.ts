@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  listEnabledCustomContactFormFields,
-} from "./contactFormCustomFields.js";
+import { listEnabledCustomContactFormFields } from "./contactFormCustomFields.js";
 import type { FieldDefinition } from "./contactFieldSchemaTypes.js";
 
 function field(partial: Partial<FieldDefinition> & { key: string }): FieldDefinition {
@@ -20,10 +18,7 @@ function field(partial: Partial<FieldDefinition> & { key: string }): FieldDefini
 describe("listEnabledCustomContactFormFields", () => {
   it("scopes non-seed fields to the requested tab", () => {
     const fields = {
-      basic: [
-        field({ key: "firstName", order: 0 }),
-        field({ key: "loyaltyNotes", order: 10 }),
-      ],
+      basic: [field({ key: "firstName", order: 0 }), field({ key: "loyaltyNotes", order: 10 })],
       custom: [field({ key: "extraNote", order: 0 })],
     };
 

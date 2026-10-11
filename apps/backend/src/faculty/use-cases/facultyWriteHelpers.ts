@@ -1,15 +1,15 @@
-import type { FacultyRecord } from '@mms/shared';
+import type { FacultyRecord } from "@mms/shared";
 import {
   closeAssignment,
   findPrimaryFacultyAssignment,
   saveFacultyAssignment,
-} from '../../db/repositories/facultyAssignmentRepository.js';
-import { ValidationError } from '../../lib/httpErrors.js';
-import { prepareFacultyRecord } from './facultyNormalizeUseCases.js';
+} from "../../db/repositories/facultyAssignmentRepository.js";
+import { ValidationError } from "../../lib/httpErrors.js";
+import { prepareFacultyRecord } from "./facultyNormalizeUseCases.js";
 import {
   validateFacultyContactLink,
   validateFacultyDesignationLink,
-} from './facultyWriteGuards.js';
+} from "./facultyWriteGuards.js";
 
 /** Injectable guard seam so unit tests run against in-memory repositories. */
 export interface FacultyWriteGuards {
@@ -46,19 +46,26 @@ export async function syncPrimaryAppointment(
 
   if (current && current.startDate >= today) {
     await saveFacultyAssignment(tenant, {
-      ...current, workspaceSubdomain: tenant, departmentId, designationId, status: 'active', updatedBy: record.updatedBy ?? null,
+      ...current,
+      workspaceSubdomain: tenant,
+      departmentId,
+      designationId,
+      status: "active",
+      updatedBy: record.updatedBy ?? null,
     });
     return;
   }
   if (current) {
-    await closeAssignment(tenant, current.id, shiftIsoDate(today, -1), record.updatedBy ?? undefined);
+    await closeAssignment(
+      tenant,
+      current.id,
+      shiftIsoDate(today, -1),
+      record.updatedBy ?? undefined,
+    );
   }
-  const designationStart = typeof record.designationStartDate === 'string'
-    ? record.designationStartDate.trim()
-    : '';
-  const startDate = current
-    ? today
-    : (designationStart.length > 0 ? designationStart : today);
+  const designationStart =
+    typeof record.designationStartDate === "string" ? record.designationStartDate.trim() : "";
+  const startDate = current ? today : designationStart.length > 0 ? designationStart : today;
   await saveFacultyAssignment(tenant, {
     id: `fa-${facultyId}-${Date.now().toString(36)}`,
     workspaceSubdomain: tenant,
@@ -66,9 +73,9 @@ export async function syncPrimaryAppointment(
     departmentId,
     designationId,
     startDate: startDate > today ? today : startDate,
-    endDate: typeof record.designationEndDate === 'string' ? record.designationEndDate : null,
+    endDate: typeof record.designationEndDate === "string" ? record.designationEndDate : null,
     isPrimary: true,
-    status: 'active',
+    status: "active",
     notes: null,
     updatedBy: record.updatedBy ?? null,
   });
@@ -92,13 +99,17 @@ export async function applyFacultyWriteGuards(
   options: { excludeFacultyId?: string; designationChanged: boolean; contactChanged: boolean },
 ): Promise<{ record: FacultyRecord; departmentId: string | null }> {
   let next = record;
-  const contactId = record.contactId != null ? String(record.contactId).trim() : '';
+  const contactId = record.contactId != null ? String(record.contactId).trim() : "";
   if (contactId && options.contactChanged) {
-    const { userId } = await guards.validateContactLink(tenant, contactId, options.excludeFacultyId);
+    const { userId } = await guards.validateContactLink(
+      tenant,
+      contactId,
+      options.excludeFacultyId,
+    );
     if (userId && !next.userId) next = { ...next, userId };
   }
-  const designationId = record.designationId?.trim() ?? '';
-  if (!designationId) throw new ValidationError('Selected designation is required');
+  const designationId = record.designationId?.trim() ?? "";
+  if (!designationId) throw new ValidationError("Selected designation is required");
   if (!options.designationChanged) return { record: next, departmentId: null };
   const { departmentId } = await guards.validateDesignationLink(tenant, designationId);
   return { record: next, departmentId };

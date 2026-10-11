@@ -33,7 +33,12 @@ export function renderQuestionMetaChip(
       const category = getCategory(categoryId);
       if (!category) return null;
       return (
-        <CategoryColorChip key={categoryId} name={category.name} color={category.color} icon={category.icon} />
+        <CategoryColorChip
+          key={categoryId}
+          name={category.name}
+          color={category.color}
+          icon={category.icon}
+        />
       );
     });
   }
@@ -50,7 +55,14 @@ export function renderQuestionMetaChip(
     );
   }
   if (fieldId === "difficulty") {
-    return <StatusBadge key="difficulty" status={question.difficulty} config={difficultyConfig} size="sm" />;
+    return (
+      <StatusBadge
+        key="difficulty"
+        status={question.difficulty}
+        config={difficultyConfig}
+        size="sm"
+      />
+    );
   }
   if (fieldId === "type") {
     return <StatusBadge key="type" status={question.type} config={typeConfig} size="sm" />;

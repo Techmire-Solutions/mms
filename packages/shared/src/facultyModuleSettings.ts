@@ -1,14 +1,14 @@
 import type { TabDefinition, ColumnRegistryEntry, FieldDefinition } from "./contactTypes.js";
-import type { ModuleFieldDef } from './moduleFieldSchema.js';
+import type { ModuleFieldDef } from "./moduleFieldSchema.js";
 import { INITIAL_FACULTY_FIELD_SEED } from "./moduleFieldSetupPersons.js";
-import { DEFAULT_FACULTY_SPECIALIZATION } from './facultyTypes.js';
-import { facultyFieldLabelKey } from './facultyDirectoryColumns.js';
+import { DEFAULT_FACULTY_SPECIALIZATION } from "./facultyTypes.js";
+import { facultyFieldLabelKey } from "./facultyDirectoryColumns.js";
 import {
   cloneFacultyFieldSeed,
   listEnabledCustomFacultyFormFields,
   listFacultySystemFormFieldKeys,
   resolveFacultyFieldsMapForColumnSync,
-} from './facultyFormCustomFields.js';
+} from "./facultyFormCustomFields.js";
 
 // ─── Faculty Module Settings ──────────────────────────────────────────────────
 
@@ -42,7 +42,7 @@ export interface FacultySettings {
   idStartSeq?: number;
   idRestartAnnually?: boolean;
   employeeIdPrefix?: string;
-  employeeIdYearFormat?: 'YYYY' | 'YY';
+  employeeIdYearFormat?: "YYYY" | "YY";
   employeeIdSequenceDigits?: number;
   employeeIdDelimiter?: string;
   employeeIdLastYear?: number;

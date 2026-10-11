@@ -77,7 +77,7 @@ describe("ObligationCollectionsListDesktopTable", () => {
       <ObligationCollectionsListDesktopTable
         {...baseProps}
         collections={[mockCollectionWithResolvedUser]}
-      />
+      />,
     );
 
     expect(html).toContain("Molana Ali");
@@ -89,7 +89,7 @@ describe("ObligationCollectionsListDesktopTable", () => {
       <ObligationCollectionsListDesktopTable
         {...baseProps}
         collections={[mockCollectionWithUnknownUser]}
-      />
+      />,
     );
 
     expect(html).toContain("unknown-uuid-456");
@@ -100,7 +100,7 @@ describe("ObligationCollectionsListDesktopTable", () => {
       <ObligationCollectionsListDesktopTable
         {...baseProps}
         collections={[mockCollectionWithResolvedUser]}
-      />
+      />,
     );
 
     expect(html).toContain("common.actions");

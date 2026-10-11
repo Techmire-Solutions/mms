@@ -1,10 +1,7 @@
 import type React from "react";
 import { getDisplayName, type AppTranslationKey, type Contact } from "@mms/shared";
 import type { useContactFormDraft } from "@/tenant/features/contacts/hooks/useContactFormDraft";
-import {
-  FormFooterEntityChip,
-  FormFooterErrorChip,
-} from "@/components/ui/FormFooterChip";
+import { FormFooterEntityChip, FormFooterErrorChip } from "@/components/ui/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
 
 type FormDraft = ReturnType<typeof useContactFormDraft>;
@@ -21,11 +18,7 @@ export function ContactFormFooterStart({
   t,
 }: ContactFormFooterStartProps): React.JSX.Element {
   if (!contactDraft.firstName?.trim()) {
-    return (
-      <FormFooterErrorChip>
-        {t("contacts.form.firstNameRequired")}
-      </FormFooterErrorChip>
-    );
+    return <FormFooterErrorChip>{t("contacts.form.firstNameRequired")}</FormFooterErrorChip>;
   }
 
   return (

@@ -1,18 +1,18 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from "@tanstack/react-query";
 import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
   type Message,
   type MessageLogCreateDto,
   type MessageTemplate,
-} from '@mms/shared';
-import { tsrClient } from '@/lib/api';
-import { notifyApiFailure } from '@/lib/apiErrorNotify';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { useTranslation } from '@/hooks/useTranslation';
+} from "@mms/shared";
+import { tsrClient } from "@/lib/api";
+import { notifyApiFailure } from "@/lib/apiErrorNotify";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
-export const MESSAGING_TEMPLATES_QUERY_KEY = ['messaging', 'templates'] as const;
-export const MESSAGING_LOGS_QUERY_KEY = ['messaging', 'logs'] as const;
-export const MESSAGING_METRICS_QUERY_KEY = ['messaging', 'metrics'] as const;
+export const MESSAGING_TEMPLATES_QUERY_KEY = ["messaging", "templates"] as const;
+export const MESSAGING_LOGS_QUERY_KEY = ["messaging", "logs"] as const;
+export const MESSAGING_METRICS_QUERY_KEY = ["messaging", "metrics"] as const;
 
 export interface MessageLogsPageResult {
   logs: Message[];
@@ -37,9 +37,12 @@ export function useMessageTemplates(options?: { enabled?: boolean }) {
     staleTime: 30_000,
     enabled: options?.enabled !== false && isAuthenticated,
   });
-  
-  const templates = (query.data?.status === 200) ? ((query.data.body as { templates?: MessageTemplate[] } | null)?.templates ?? []) : [];
-  
+
+  const templates =
+    query.data?.status === 200
+      ? ((query.data.body as { templates?: MessageTemplate[] } | null)?.templates ?? [])
+      : [];
+
   return { ...query, templates };
 }
 
@@ -56,9 +59,8 @@ export function useMessageLogs(options?: {
 }) {
   const { isAuthenticated } = useAuth();
   const page = options?.page && options.page > 0 ? options.page : 1;
-  const pageSize = options?.pageSize && options.pageSize > 0
-    ? options.pageSize
-    : MESSAGE_LOGS_DEFAULT_PAGE_SIZE;
+  const pageSize =
+    options?.pageSize && options.pageSize > 0 ? options.pageSize : MESSAGE_LOGS_DEFAULT_PAGE_SIZE;
 
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.messaging.listLogs.useQuery({
@@ -77,13 +79,13 @@ export function useMessageLogs(options?: {
       query: {
         page,
         pageSize,
-        ...(options?.channel && options.channel !== 'all' ? { channel: options.channel } : {}),
-        ...(options?.category && options.category !== 'all' ? { category: options.category } : {}),
+        ...(options?.channel && options.channel !== "all" ? { channel: options.channel } : {}),
+        ...(options?.category && options.category !== "all" ? { category: options.category } : {}),
         ...(options?.search?.trim() ? { search: options.search.trim() } : {}),
-        ...(options?.status && options.status !== 'all' ? { status: options.status } : {}),
+        ...(options?.status && options.status !== "all" ? { status: options.status } : {}),
         ...(options?.startDate?.trim() ? { startDate: options.startDate.trim() } : {}),
         ...(options?.endDate?.trim() ? { endDate: options.endDate.trim() } : {}),
-      }
+      },
     },
     staleTime: 15_000,
     enabled: options?.enabled !== false && isAuthenticated,
@@ -97,7 +99,7 @@ export function useMessageLogs(options?: {
     pageSize?: number;
     hasMore?: boolean;
   };
-  
+
   return {
     ...query,
     logs: res.logs ?? [],
@@ -121,7 +123,7 @@ export function useMessagingMetrics(options?: {
       query: {
         startDate: options?.startDate?.trim() || undefined,
         endDate: options?.endDate?.trim() || undefined,
-      }
+      },
     },
     staleTime: 15_000,
     enabled: options?.enabled !== false && isAuthenticated,
@@ -171,11 +173,9 @@ export function useMessagingMutations() {
     deleteTemplate: {
       ...deleteTemplate,
       mutateAsync: (id: string) =>
-        (
-          deleteTemplate.mutateAsync as (arg: {
-            params: { id: string };
-          }) => Promise<unknown>
-        )({ params: { id } }),
+        (deleteTemplate.mutateAsync as (arg: { params: { id: string } }) => Promise<unknown>)({
+          params: { id },
+        }),
     },
     recordDispatches,
     clearLogs: {

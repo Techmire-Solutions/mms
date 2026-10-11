@@ -5,12 +5,12 @@ import {
   type FacultyDuplicateCheckInput,
   type FacultyEmployeeIdSettings,
   type FacultyDuplicateReason,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { loadFacultyModulePreferences } from './facultyPreferencesService.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import type { FacultyRepository } from '../repository/facultyRepository.js';
-import { facultyRepository } from '../repository/facultyRepositoryAdapter.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { loadFacultyModulePreferences } from "./facultyPreferencesService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import type { FacultyRepository } from "../repository/facultyRepository.js";
+import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
 
 /** Active duplicate probe (contact / employeeId) before save — server authoritative. */
 export async function checkFacultyRegistrationDuplicate(
@@ -36,7 +36,7 @@ export async function bulkUpdateFacultyStatus(
 
   const succeeded = await repo.bulkUpdateStatusSql(tenant, uniqueIds, status);
   if (succeeded > 0) {
-    await broadcastCollection('faculty');
+    await broadcastCollection("faculty");
   }
   return { succeeded, failed: uniqueIds.length - succeeded };
 }
@@ -54,7 +54,7 @@ export async function bulkUpdateFacultySpecialization(
 
   const succeeded = await repo.bulkUpdateSpecializationSql(tenant, uniqueIds, specialization);
   if (succeeded > 0) {
-    await broadcastCollection('faculty');
+    await broadcastCollection("faculty");
   }
   return { succeeded, failed: uniqueIds.length - succeeded };
 }
@@ -72,9 +72,7 @@ export async function computeNextFacultyEmployeeIdForSettings(
   const settings: FacultyEmployeeIdSettings = {
     ...savedPrefs,
     idPrefix:
-      settingsInput?.idPrefix?.trim() ||
-      savedPrefs.idPrefix ||
-      DEFAULT_FACULTY_SETTINGS.idPrefix,
+      settingsInput?.idPrefix?.trim() || savedPrefs.idPrefix || DEFAULT_FACULTY_SETTINGS.idPrefix,
     employeeIdPrefix:
       settingsInput?.employeeIdPrefix?.trim() ||
       settingsInput?.idPrefix?.trim() ||
@@ -84,10 +82,7 @@ export async function computeNextFacultyEmployeeIdForSettings(
       settingsInput?.idTemplate?.trim() ||
       savedPrefs.idTemplate ||
       DEFAULT_FACULTY_SETTINGS.idTemplate,
-    idDigits:
-      settingsInput?.idDigits ??
-      savedPrefs.idDigits ??
-      DEFAULT_FACULTY_SETTINGS.idDigits,
+    idDigits: settingsInput?.idDigits ?? savedPrefs.idDigits ?? DEFAULT_FACULTY_SETTINGS.idDigits,
     employeeIdSequenceDigits:
       settingsInput?.employeeIdSequenceDigits ??
       settingsInput?.idDigits ??
@@ -96,9 +91,7 @@ export async function computeNextFacultyEmployeeIdForSettings(
     employeeIdYearFormat: settingsInput?.employeeIdYearFormat ?? savedPrefs.employeeIdYearFormat,
     employeeIdDelimiter: settingsInput?.employeeIdDelimiter ?? savedPrefs.employeeIdDelimiter,
     idStartSeq:
-      settingsInput?.idStartSeq ??
-      savedPrefs.idStartSeq ??
-      DEFAULT_FACULTY_SETTINGS.idStartSeq,
+      settingsInput?.idStartSeq ?? savedPrefs.idStartSeq ?? DEFAULT_FACULTY_SETTINGS.idStartSeq,
     idRestartAnnually:
       settingsInput?.idRestartAnnually ??
       savedPrefs.idRestartAnnually ??
@@ -127,7 +120,7 @@ export async function computeNextFacultyEmployeeIdForSettings(
     let attempts = 0;
     while (attempts < 10) {
       const conflict = await repo.findRegistrationConflict(tenant, { employeeId: candidateId });
-      if (conflict !== 'employeeId') break;
+      if (conflict !== "employeeId") break;
       candidateSeq += 1;
       candidateId = formatFacultyEmployeeId(candidateSeq, settings, now);
       attempts += 1;
@@ -135,7 +128,7 @@ export async function computeNextFacultyEmployeeIdForSettings(
     if (attempts === 10) {
       throw new Error(
         `Cannot generate a unique employee ID after 10 attempts. ` +
-        `Check the prefix ("${settings.idPrefix}") and starting sequence configuration.`,
+          `Check the prefix ("${settings.idPrefix}") and starting sequence configuration.`,
       );
     }
   }
@@ -164,6 +157,6 @@ export async function migrateFacultyMissingEmployeeIds(
     updated += 1;
   }
 
-  await broadcastCollection('faculty');
+  await broadcastCollection("faculty");
   return { updated };
 }

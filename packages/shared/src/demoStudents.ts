@@ -2,9 +2,9 @@ import {
   buildDemoStudentContacts,
   buildDemoStudentParentContacts,
   buildDemoStudents,
-} from './demoSeedBuilders.js';
+} from "./demoSeedBuilders.js";
 
-export { DEMO_STUDENT_COUNT } from './demoSeedBuilders.js';
+export { DEMO_STUDENT_COUNT } from "./demoSeedBuilders.js";
 
 /** Student contact profiles (ids 1001…). */
 const DEMO_STUDENT_CONTACTS = buildDemoStudentContacts();

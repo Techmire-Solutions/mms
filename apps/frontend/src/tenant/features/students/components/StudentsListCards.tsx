@@ -11,7 +11,6 @@ export type { StudentsListCardsProps };
 import { StudentCard } from "@/tenant/features/students/components/StudentCard";
 export type { StudentCardComponentProps } from "@/tenant/features/students/components/StudentCard";
 
-
 export function StudentsListCards({
   paginatedStudents,
   sessions: _sessions,
@@ -78,4 +77,3 @@ export function StudentsListCards({
     />
   );
 }
-

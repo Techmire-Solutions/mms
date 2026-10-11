@@ -35,13 +35,7 @@ vi.mock("@/hooks/useStandardModuleConfig", () => ({
 }));
 
 vi.mock("@/components/ui/DatePicker", () => ({
-  DatePicker: ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (val: string) => void;
-  }) => (
+  DatePicker: ({ value, onChange }: { value: string; onChange: (val: string) => void }) => (
     <input
       data-testid="datepicker"
       value={value || ""}
@@ -99,13 +93,7 @@ describe("SessionForm Component", () => {
 
   it("renders form inputs with inputMode=decimal on baseFee", async () => {
     await act(async () => {
-      root.render(
-        <SessionForm
-          open={true}
-          onClose={vi.fn()}
-          onSave={vi.fn()}
-        />,
-      );
+      root.render(<SessionForm open={true} onClose={vi.fn()} onSave={vi.fn()} />);
     });
 
     const feeInput = container.querySelector("input[placeholder='0.00']") as HTMLInputElement;
@@ -117,16 +105,12 @@ describe("SessionForm Component", () => {
     const onSave = vi.fn();
 
     await act(async () => {
-      root.render(
-        <SessionForm
-          open={true}
-          onClose={vi.fn()}
-          onSave={onSave}
-        />,
-      );
+      root.render(<SessionForm open={true} onClose={vi.fn()} onSave={onSave} />);
     });
 
-    const saveBtn = container.querySelector("[data-testid='save-session-btn']") as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      "[data-testid='save-session-btn']",
+    ) as HTMLButtonElement;
 
     await act(async () => {
       saveBtn.click();
@@ -140,19 +124,15 @@ describe("SessionForm Component", () => {
     const onSave = vi.fn();
 
     await act(async () => {
-      root.render(
-        <SessionForm
-          open={true}
-          onClose={vi.fn()}
-          onSave={onSave}
-        />,
-      );
+      root.render(<SessionForm open={true} onClose={vi.fn()} onSave={onSave} />);
     });
 
     const nameInput = container.querySelector("input[class*='ps-10']") as HTMLInputElement;
     const datePickers = container.querySelectorAll("[data-testid='datepicker']");
     const feeInput = container.querySelector("input[placeholder='0.00']") as HTMLInputElement;
-    const saveBtn = container.querySelector("[data-testid='save-session-btn']") as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      "[data-testid='save-session-btn']",
+    ) as HTMLButtonElement;
 
     await act(async () => {
       setInputValue(nameInput, "Academic Year 2026");
@@ -180,18 +160,14 @@ describe("SessionForm Component", () => {
     const onSave = vi.fn();
 
     await act(async () => {
-      root.render(
-        <SessionForm
-          open={true}
-          onClose={vi.fn()}
-          onSave={onSave}
-        />,
-      );
+      root.render(<SessionForm open={true} onClose={vi.fn()} onSave={onSave} />);
     });
 
     const nameInput = container.querySelector("input[class*='ps-10']") as HTMLInputElement;
     const datePickers = container.querySelectorAll("[data-testid='datepicker']");
-    const saveBtn = container.querySelector("[data-testid='save-session-btn']") as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      "[data-testid='save-session-btn']",
+    ) as HTMLButtonElement;
 
     await act(async () => {
       setInputValue(nameInput, "Summer Session");

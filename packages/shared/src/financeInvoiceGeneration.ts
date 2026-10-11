@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { type FeeFrequency } from './financeBilling.js';
+import { z } from "zod";
+import { type FeeFrequency } from "./financeBilling.js";
 
 const PERIOD_RE = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
@@ -7,7 +7,7 @@ const PERIOD_RE = /^(\d{4})-(0[1-9]|1[0-2])$/;
 export function billingPeriodFromDate(isoDate: string): string {
   const match = /^(\d{4})-(\d{2})/.exec(isoDate.trim());
   if (!match) {
-    throw new Error('Date must be YYYY-MM-DD to derive a billing period');
+    throw new Error("Date must be YYYY-MM-DD to derive a billing period");
   }
   return `${match[1]}-${match[2]}`;
 }
@@ -20,13 +20,13 @@ export function isBillingPeriod(value: string): boolean {
 /** Day-of-month from `dueDays`, clamped to the last day of `period`. */
 export function dueDateForPeriod(period: string, dueDays: number): string {
   if (!isBillingPeriod(period)) {
-    throw new Error('Billing period must be YYYY-MM');
+    throw new Error("Billing period must be YYYY-MM");
   }
   const year = Number(period.slice(0, 4));
   const month = Number(period.slice(5, 7));
   const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const day = Math.min(Math.max(1, dueDays), lastDay);
-  return `${period}-${String(day).padStart(2, '0')}`;
+  return `${period}-${String(day).padStart(2, "0")}`;
 }
 
 export interface EnrollmentBillingSource {
@@ -57,7 +57,7 @@ export interface GeneratedInvoiceDraft {
   discountValue: number;
   discountAmt: number;
   finalAmt: number;
-  status: 'pending';
+  status: "pending";
   dueDate: string;
   paidAmt: number;
   billingPeriod: string;
@@ -82,11 +82,14 @@ export function buildInvoiceDraftFromEnrollment(
     class: enrollment.className,
     session: enrollment.sessionName,
     baseFee,
-    discountType: enrollment.discountType && enrollment.discountType !== 'none' ? enrollment.discountType : null,
+    discountType:
+      enrollment.discountType && enrollment.discountType !== "none"
+        ? enrollment.discountType
+        : null,
     discountValue: enrollment.discountPct ?? 0,
     discountAmt,
     finalAmt: Math.max(0, finalAmt),
-    status: 'pending',
+    status: "pending",
     dueDate: dueDateForPeriod(billingPeriod, dueDays),
     paidAmt: 0,
     billingPeriod,
@@ -95,8 +98,8 @@ export function buildInvoiceDraftFromEnrollment(
 }
 
 /** Pending and confirmed enrollments are in the billing cycle. */
-export function isEnrollmentBillable(enrollment: Pick<EnrollmentBillingSource, 'status'>): boolean {
-  return enrollment.status === 'pending' || enrollment.status === 'confirmed';
+export function isEnrollmentBillable(enrollment: Pick<EnrollmentBillingSource, "status">): boolean {
+  return enrollment.status === "pending" || enrollment.status === "confirmed";
 }
 
 /**
@@ -108,14 +111,14 @@ export function shouldSkipGeneratedInvoice(input: {
   alreadyBilledThisPeriod: boolean;
   enrollmentHasAnyInvoice: boolean;
 }): boolean {
-  if (input.frequency === 'once') return input.enrollmentHasAnyInvoice;
+  if (input.frequency === "once") return input.enrollmentHasAnyInvoice;
   return input.alreadyBilledThisPeriod;
 }
 
 /** POST /api/finance/invoices/generate */
 export const generateInvoicesBodySchema = z
   .object({
-    billingPeriod: z.string().regex(PERIOD_RE, 'Billing period must be YYYY-MM'),
+    billingPeriod: z.string().regex(PERIOD_RE, "Billing period must be YYYY-MM"),
     sessionId: z.string().max(64).optional(),
     classId: z.string().max(64).optional(),
     enrollmentIds: z.array(z.string().min(1)).max(100).optional(),

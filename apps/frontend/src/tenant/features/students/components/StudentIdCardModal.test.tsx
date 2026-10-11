@@ -25,7 +25,11 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
 }));
 
 vi.mock("@/components/ui/Modal", () => ({
-  Modal: ({ title, children, footer }: {
+  Modal: ({
+    title,
+    children,
+    footer,
+  }: {
     title: string;
     children: React.ReactNode;
     footer?: React.ReactNode;

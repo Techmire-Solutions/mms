@@ -43,7 +43,7 @@ export interface TypographyResolvedStates {
 export function resolveTypographyStates(
   elStyle: Partial<ElementStyle>,
   selectedElements?: TemplateElement[],
-  isRtl = false
+  isRtl = false,
 ): TypographyResolvedStates {
   const isMulti = Boolean(selectedElements && selectedElements.length > 1);
   const textElements = isMulti
@@ -60,11 +60,13 @@ export function resolveTypographyStates(
     : elStyle.fontStyle === "italic";
 
   const allUnderline = isMulti
-    ? targetElements.length > 0 && targetElements.every((el) => el.style?.textDecoration === "underline")
+    ? targetElements.length > 0 &&
+      targetElements.every((el) => el.style?.textDecoration === "underline")
     : elStyle.textDecoration === "underline";
 
   const allStrikethrough = isMulti
-    ? targetElements.length > 0 && targetElements.every((el) => el.style?.textDecoration === "line-through")
+    ? targetElements.length > 0 &&
+      targetElements.every((el) => el.style?.textDecoration === "line-through")
     : elStyle.textDecoration === "line-through";
 
   const hasRtl = isMulti && targetElements.some((el) => el.style?.direction === "rtl");
@@ -79,28 +81,26 @@ export function resolveTypographyStates(
   const allAlignStart = isMulti
     ? targetElements.length > 0 &&
       targetElements.every((el) => (el.style?.textAlign || startAlign) === startAlign)
-    : (elStyle.textAlign === startAlign || !elStyle.textAlign);
+    : elStyle.textAlign === startAlign || !elStyle.textAlign;
 
   const allAlignCenter = isMulti
-    ? targetElements.length > 0 &&
-      targetElements.every((el) => el.style?.textAlign === "center")
+    ? targetElements.length > 0 && targetElements.every((el) => el.style?.textAlign === "center")
     : elStyle.textAlign === "center";
 
   const allAlignEnd = isMulti
-    ? targetElements.length > 0 &&
-      targetElements.every((el) => el.style?.textAlign === endAlign)
+    ? targetElements.length > 0 && targetElements.every((el) => el.style?.textAlign === endAlign)
     : elStyle.textAlign === endAlign;
 
   const allAlignJustify = isMulti
-    ? targetElements.length > 0 &&
-      targetElements.every((el) => el.style?.textAlign === "justify")
+    ? targetElements.length > 0 && targetElements.every((el) => el.style?.textAlign === "justify")
     : elStyle.textAlign === "justify";
 
   const effectiveColor = normalizeHexColor(elStyle.color, PRINT_NEUTRAL.text).toLowerCase();
   const allSameColor = isMulti
     ? targetElements.length > 0 &&
       targetElements.every(
-        (el) => normalizeHexColor(el.style?.color, PRINT_NEUTRAL.text).toLowerCase() === effectiveColor
+        (el) =>
+          normalizeHexColor(el.style?.color, PRINT_NEUTRAL.text).toLowerCase() === effectiveColor,
       )
     : true;
 

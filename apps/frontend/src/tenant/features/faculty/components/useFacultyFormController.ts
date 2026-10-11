@@ -4,9 +4,15 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useUsersContractList } from "@/tenant/hooks/collections/users";
 import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
 import { facultyStatusOptions } from "@/lib/faculty/facultyStatusUi";
-import { useFacultyStatusConfig, useFacultyLookupOptions } from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
+import {
+  useFacultyStatusConfig,
+  useFacultyLookupOptions,
+} from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
 import { useFacultyDesignations } from "@/tenant/features/faculty/hooks/useFacultyDesignations";
-import { useFacultyDepartments, departmentEntitiesToNames } from "@/tenant/features/faculty/hooks/useFacultyDepartments";
+import {
+  useFacultyDepartments,
+  departmentEntitiesToNames,
+} from "@/tenant/features/faculty/hooks/useFacultyDepartments";
 import {
   DEFAULT_FACULTY_SETTINGS,
   resolveFacultyEnabledTabIds,
@@ -44,8 +50,12 @@ export function useFacultyFormController({
   const departmentEntities = departmentsQuery.data ?? [];
   const departmentOptions = departmentEntitiesToNames(departmentEntities);
 
-  const defaultSpecialization = settings.defaultSpecialization || specializationOptions[0] || DEFAULT_FACULTY_SETTINGS.defaultSpecialization;
-  const idPrefix = settings.employeeIdPrefix || settings.idPrefix || DEFAULT_FACULTY_SETTINGS.idPrefix;
+  const defaultSpecialization =
+    settings.defaultSpecialization ||
+    specializationOptions[0] ||
+    DEFAULT_FACULTY_SETTINGS.defaultSpecialization;
+  const idPrefix =
+    settings.employeeIdPrefix || settings.idPrefix || DEFAULT_FACULTY_SETTINGS.idPrefix;
   const autoGenerateId = settings.autoGenerateId !== false;
   const requireContactLink = true;
   const fieldsMap = resolveFacultyFieldsMapForColumnSync(settings.fields);
@@ -81,15 +91,27 @@ export function useFacultyFormController({
   const enabledTabs = useMemo(() => new Set(resolveFacultyEnabledTabIds(settings)), [settings]);
 
   const usersQuery = useUsersContractList({ limit: 100 }, Boolean(facultyDraft.contactId));
-  const existingUsers = (usersQuery.data as { users?: Array<{ id: string; contactId?: string | number; email?: string; role?: string; status?: string }> })?.users;
+  const existingUsers = (
+    usersQuery.data as {
+      users?: Array<{
+        id: string;
+        contactId?: string | number;
+        email?: string;
+        role?: string;
+        status?: string;
+      }>;
+    }
+  )?.users;
 
   const linkedUser = useMemo(() => {
     if (!facultyDraft.contactId && !facultyDraft.userId) return null;
-    return existingUsers?.find(
-      (u) =>
-        (facultyDraft.userId && u.id === facultyDraft.userId) ||
-        (facultyDraft.contactId && String(u.contactId) === String(facultyDraft.contactId)),
-    ) ?? null;
+    return (
+      existingUsers?.find(
+        (u) =>
+          (facultyDraft.userId && u.id === facultyDraft.userId) ||
+          (facultyDraft.contactId && String(u.contactId) === String(facultyDraft.contactId)),
+      ) ?? null
+    );
   }, [existingUsers, facultyDraft.contactId, facultyDraft.userId]);
 
   useFacultyAssignableRolesSync({

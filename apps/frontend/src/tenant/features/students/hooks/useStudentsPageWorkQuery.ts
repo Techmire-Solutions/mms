@@ -38,22 +38,26 @@ export function useStudentsPageWorkQuery({
 }: StudentsPageWorkQueryInput) {
   const workLimit = STUDENTS_MODULE_MANIFEST.defaultPageSize;
 
-  const workPageQuery = useStudentsContractList({
-    page: listPage,
-    limit: workLimit,
-    search: debouncedSearch,
-    status: studentFilterStatus.length > 0 ? studentFilterStatus.join(",") : undefined,
-    gender: studentFilterGender || undefined,
-    quickFilter: quickFilter === "all" ? undefined : quickFilter,
-    sortField: sortField ? SORT_FIELD_TO_API[sortField] : undefined,
-    sortDir: sortField ? sortDir : undefined,
-    includeDeleted: viewingDeleted,
-  }, enabled);
+  const workPageQuery = useStudentsContractList(
+    {
+      page: listPage,
+      limit: workLimit,
+      search: debouncedSearch,
+      status: studentFilterStatus.length > 0 ? studentFilterStatus.join(",") : undefined,
+      gender: studentFilterGender || undefined,
+      quickFilter: quickFilter === "all" ? undefined : quickFilter,
+      sortField: sortField ? SORT_FIELD_TO_API[sortField] : undefined,
+      sortDir: sortField ? sortDir : undefined,
+      includeDeleted: viewingDeleted,
+    },
+    enabled,
+  );
 
   const workStudents = (() => (workPageQuery.data?.body?.students ?? []) as Student[])();
   const shownCount = workPageQuery.data?.body?.total ?? 0;
-  
-  const isWorkError = workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
+
+  const isWorkError =
+    workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
 
   // Return a modified query object that patches .data to be the body and incorporates status checking into .isError
   const workPageQueryPatched = {

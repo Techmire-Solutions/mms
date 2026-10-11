@@ -1,6 +1,6 @@
-import type { FastifyReply, FastifyRequest } from 'fastify';
-import type { RequestValidationError } from '@ts-rest/fastify';
-import { replyValidationError } from './zodRequest.js';
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { RequestValidationError } from "@ts-rest/fastify";
+import { replyValidationError } from "./zodRequest.js";
 
 /**
  * Standard `requestValidationErrorHandler` for every ts-rest router.

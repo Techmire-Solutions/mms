@@ -30,9 +30,7 @@ export function useDropdownListbox<T = string>({
       onOpenChange?.(nextOpen);
 
       if (nextOpen) {
-        const initialIndex = Array.isArray(value)
-          ? 0
-          : options.findIndex((opt) => opt === value);
+        const initialIndex = Array.isArray(value) ? 0 : options.findIndex((opt) => opt === value);
         setHighlightedIndex(initialIndex >= 0 ? initialIndex : 0);
       } else {
         setHighlightedIndex(-1);

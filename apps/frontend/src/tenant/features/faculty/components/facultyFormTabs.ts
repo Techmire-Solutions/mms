@@ -1,10 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import {
-  Award,
-  Briefcase,
-  User,
-  type LucideIcon,
-} from "lucide-react";
+import { Award, Briefcase, User, type LucideIcon } from "lucide-react";
 import type {
   Contact,
   FacultyMember,
@@ -20,12 +15,7 @@ import type {
   LinkedUserInfo,
 } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
-export type FacultyFormTabKey =
-  | "contact"
-  | "employment"
-  | "designation"
-  | "account"
-  | "notes";
+export type FacultyFormTabKey = "contact" | "employment" | "designation" | "account" | "notes";
 
 export const FACULTY_FIELD_TAB_MAP: Record<string, FacultyFormTabKey> = {
   contactId: "contact",
@@ -121,8 +111,10 @@ export function useFacultyFormTabs(input: {
     ];
 
     if (
-      isFieldEnabled("designation") || isFieldEnabled("department") ||
-      isFieldEnabled("designationId") || isFieldEnabled("departmentId")
+      isFieldEnabled("designation") ||
+      isFieldEnabled("department") ||
+      isFieldEnabled("designationId") ||
+      isFieldEnabled("departmentId")
     ) {
       list.push({
         key: "designation",
@@ -150,7 +142,9 @@ export function useFacultyFormTabs(input: {
   useEffect(() => {
     const errorKeys = Object.keys(errors).filter((key) => Boolean(errors[key]));
     if (errorKeys.length === 0) return;
-    const firstInvalidTab = visibleTabs.find((vt) => Boolean(tabErrors[vt.key] && tabErrors[vt.key] > 0));
+    const firstInvalidTab = visibleTabs.find((vt) =>
+      Boolean(tabErrors[vt.key] && tabErrors[vt.key] > 0),
+    );
     if (firstInvalidTab && firstInvalidTab.key !== activeTab) {
       setActiveTab(firstInvalidTab.key);
     }

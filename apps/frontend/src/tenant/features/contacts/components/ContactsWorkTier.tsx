@@ -58,11 +58,14 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
 }: ContactsWorkTierProps): React.JSX.Element {
   const { t } = useTranslation();
   const descriptor = useContactEntityDescriptor();
-  
-  const activeFilters = useMemo(() => ({
-    gender: filterGender || undefined,
-    quickFilter: quickFilter !== "all" ? quickFilter : undefined,
-  }), [filterGender, quickFilter]);
+
+  const activeFilters = useMemo(
+    () => ({
+      gender: filterGender || undefined,
+      quickFilter: quickFilter !== "all" ? quickFilter : undefined,
+    }),
+    [filterGender, quickFilter],
+  );
 
   const filterChips = useDescriptorFilterChips(descriptor, activeFilters, (key) => {
     if (key === "gender") onGenderChange("");
@@ -71,7 +74,11 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
 
   return (
     <ModuleTierMotion tier="work" className="space-y-4" aria-busy={isWorkFetching}>
-      <ErrorBoundary fallback={<div className="p-4 text-sm text-destructive">{t('errors.toolbar.loadFailed')}</div>}>
+      <ErrorBoundary
+        fallback={
+          <div className="p-4 text-sm text-destructive">{t("errors.toolbar.loadFailed")}</div>
+        }
+      >
         <ContactsListFilters
           search={search}
           onSearchChange={onSearchChange}

@@ -1,81 +1,155 @@
 import type { AppTranslationKey } from "@mms/shared";
-import {
-  buildContactsReportFieldCatalog,
-  resolveContactReportFieldLabel,
-} from "@mms/shared";
+import { buildContactsReportFieldCatalog, resolveContactReportFieldLabel } from "@mms/shared";
 
 /** Data source keys available in the custom report builder. */
-export type DataSource = "students" | "contacts" | "attendance" | "financial" | "academic" | "hasanat" | "sessions" | "faculty";
+export type DataSource =
+  | "students"
+  | "contacts"
+  | "attendance"
+  | "financial"
+  | "academic"
+  | "hasanat"
+  | "sessions"
+  | "faculty";
 
 /** Map of all selectable fields grouped by data source (non-contacts legacy labels). */
 export const ALL_FIELDS: Record<Exclude<DataSource, "contacts">, readonly string[]> = {
-  students:   ["Name", "Gender", "Class", "Session", "City", "Age", "Status", "Registration Date", "CNIC", "Discount Type", "Discount %", "Roll No"],
-  attendance: ["Student Name", "Class", "Status", "Present", "Absent", "Late", "Excused", "Total Days", "Rate %", "Last Marked"],
-  financial:  ["Invoice ID", "Student Name", "Class", "Base Fee", "Discount", "Tax", "Final Amount", "Status", "Due Date", "Payment Method", "Issued Date"],
-  academic:   ["Student Name", "Class", "Subject", "Marks", "Total", "Grade", "Rank", "Exam Name", "Date"],
-  hasanat:    ["Student Name", "Class", "Faculty", "Distributed", "Redeemed", "Balance", "Reason", "Last Awarded"],
-  sessions:   ["Session", "Class", "Type", "Faculty", "Room", "Time", "Days", "Enrolled", "Capacity", "Utilisation %", "Status", "Start Date", "End Date"],
-  faculty:    ["Faculty Name", "Classes", "Sessions", "Total Students", "Specialization"],
+  students: [
+    "Name",
+    "Gender",
+    "Class",
+    "Session",
+    "City",
+    "Age",
+    "Status",
+    "Registration Date",
+    "CNIC",
+    "Discount Type",
+    "Discount %",
+    "Roll No",
+  ],
+  attendance: [
+    "Student Name",
+    "Class",
+    "Status",
+    "Present",
+    "Absent",
+    "Late",
+    "Excused",
+    "Total Days",
+    "Rate %",
+    "Last Marked",
+  ],
+  financial: [
+    "Invoice ID",
+    "Student Name",
+    "Class",
+    "Base Fee",
+    "Discount",
+    "Tax",
+    "Final Amount",
+    "Status",
+    "Due Date",
+    "Payment Method",
+    "Issued Date",
+  ],
+  academic: [
+    "Student Name",
+    "Class",
+    "Subject",
+    "Marks",
+    "Total",
+    "Grade",
+    "Rank",
+    "Exam Name",
+    "Date",
+  ],
+  hasanat: [
+    "Student Name",
+    "Class",
+    "Faculty",
+    "Distributed",
+    "Redeemed",
+    "Balance",
+    "Reason",
+    "Last Awarded",
+  ],
+  sessions: [
+    "Session",
+    "Class",
+    "Type",
+    "Faculty",
+    "Room",
+    "Time",
+    "Days",
+    "Enrolled",
+    "Capacity",
+    "Utilisation %",
+    "Status",
+    "Start Date",
+    "End Date",
+  ],
+  faculty: ["Faculty Name", "Classes", "Sessions", "Total Students", "Specialization"],
 };
 
 /** Map of legacy selectable fields to translation keys. */
 export const FIELD_KEY_MAP: Record<string, string> = {
-  "Name": "reports.fields.name",
-  "Gender": "reports.fields.gender",
-  "Class": "reports.fields.className",
-  "Session": "reports.fields.sessionName",
-  "City": "reports.fields.city",
-  "Age": "reports.fields.age",
-  "Status": "reports.fields.status",
+  Name: "reports.fields.name",
+  Gender: "reports.fields.gender",
+  Class: "reports.fields.className",
+  Session: "reports.fields.sessionName",
+  City: "reports.fields.city",
+  Age: "reports.fields.age",
+  Status: "reports.fields.status",
   "Registration Date": "reports.fields.registeredDate",
-  "CNIC": "reports.fields.cnic",
+  CNIC: "reports.fields.cnic",
   "Discount Type": "reports.fields.discountType",
   "Discount %": "reports.fields.discountPct",
   "Roll No": "reports.fields.rollNo",
   "Student Name": "reports.fields.studentName",
-  "Present": "reports.fields.present",
-  "Absent": "reports.fields.absent",
-  "Late": "reports.fields.late",
-  "Excused": "reports.fields.excused",
+  Present: "reports.fields.present",
+  Absent: "reports.fields.absent",
+  Late: "reports.fields.late",
+  Excused: "reports.fields.excused",
   "Total Days": "reports.fields.totalDays",
   "Rate %": "reports.fields.rate",
   "Last Marked": "reports.fields.lastMarked",
   "Invoice ID": "reports.fields.invoiceId",
   "Base Fee": "reports.fields.baseFee",
-  "Discount": "reports.fields.discountAmt",
-  "Tax": "reports.fields.tax",
+  Discount: "reports.fields.discountAmt",
+  Tax: "reports.fields.tax",
   "Final Amount": "reports.fields.finalAmt",
   "Due Date": "reports.fields.dueDate",
   "Payment Method": "reports.fields.paymentMethod",
   "Issued Date": "reports.fields.issuedDate",
-  "Subject": "reports.fields.subject",
-  "Marks": "reports.fields.marks",
-  "Total": "reports.fields.total",
-  "Grade": "reports.fields.grade",
-  "Rank": "reports.fields.rank",
+  Subject: "reports.fields.subject",
+  Marks: "reports.fields.marks",
+  Total: "reports.fields.total",
+  Grade: "reports.fields.grade",
+  Rank: "reports.fields.rank",
   "Exam Name": "reports.fields.examName",
-  "Date": "reports.fields.date",
-  "Faculty": "reports.fields.faculty",
-  "Distributed": "reports.fields.distributed",
-  "Redeemed": "reports.fields.redeemed",
-  "Balance": "reports.fields.balance",
-  "Reason": "reports.fields.reason",
+  Date: "reports.fields.date",
+  Faculty: "reports.fields.faculty",
+  Distributed: "reports.fields.distributed",
+  Redeemed: "reports.fields.redeemed",
+  Balance: "reports.fields.balance",
+  Reason: "reports.fields.reason",
   "Last Awarded": "reports.fields.lastAwarded",
-  "Type": "reports.fields.type",
-  "Room": "reports.fields.room",
-  "Time": "reports.fields.time",
-  "Days": "reports.fields.days",
-  "Enrolled": "reports.fields.enrolled",
-  "Capacity": "reports.fields.capacity",
+  Type: "reports.fields.type",
+  Room: "reports.fields.room",
+  Time: "reports.fields.time",
+  Days: "reports.fields.days",
+  Enrolled: "reports.fields.enrolled",
+  Capacity: "reports.fields.capacity",
   "Utilisation %": "reports.fields.utilisationPct",
   "Start Date": "reports.fields.startDate",
   "End Date": "reports.fields.endDate",
   "Faculty Name": "reports.fields.facultyName",
-  "Classes": "reports.fields.classes",
-  "Sessions": "reports.fields.sessions",
+  Classes: "reports.fields.classes",
+  Sessions: "reports.fields.sessions",
   "Total Students": "reports.fields.totalStudents",
   "Hours/Week": "reports.fields.classes",
-  "Specialization": "reports.fields.specialization"
+  Specialization: "reports.fields.specialization",
 };
 
 /** Available aggregate function options. */
@@ -107,10 +181,12 @@ export function normalizeCustomReportSelectedFields(fields: readonly string[]): 
 
 export function getInitialSelectedFields(initialSource?: string): string[] {
   if (initialSource === "contacts") return ["fullName", "gender", "city"];
-  if (initialSource === "financial") return ["Student Name", "Class", "Base Fee", "Discount", "Final Amount", "Status"];
+  if (initialSource === "financial")
+    return ["Student Name", "Class", "Base Fee", "Discount", "Final Amount", "Status"];
   if (initialSource === "attendance") return ["Student Name", "Class", "Status", "Rate %"];
   if (initialSource === "academic") return ["Student Name", "Class", "Subject", "Marks", "Grade"];
-  if (initialSource === "hasanat") return ["Student Name", "Class", "Faculty", "Distributed", "Balance"];
+  if (initialSource === "hasanat")
+    return ["Student Name", "Class", "Faculty", "Distributed", "Balance"];
   if (initialSource === "sessions") return ["Session", "Class", "Faculty", "Enrolled", "Capacity"];
   if (initialSource === "faculty") return ["Faculty Name", "Classes", "Sessions", "Total Students"];
   return ["Name", "Class", "Session", "Status"];
@@ -134,7 +210,9 @@ export function buildCustomReportFieldCatalog(
 ): string[] {
   const selectedSet = new Set(selectedFields);
   if (source === "contacts") {
-    return contactsFieldCatalog.map((contactField) => contactField.id).filter((fieldId) => !selectedSet.has(fieldId));
+    return contactsFieldCatalog
+      .map((contactField) => contactField.id)
+      .filter((fieldId) => !selectedSet.has(fieldId));
   }
   return ALL_FIELDS[source].filter((fieldName) => !selectedSet.has(fieldName));
 }
@@ -146,7 +224,9 @@ export function resolveCustomReportFieldLabel(
   translate: (key: AppTranslationKey) => string,
 ): string {
   if (source === "contacts") {
-    return resolveContactReportFieldLabel(field, contactFields, (key) => translate(key as AppTranslationKey));
+    return resolveContactReportFieldLabel(field, contactFields, (key) =>
+      translate(key as AppTranslationKey),
+    );
   }
   const fieldTranslationKey = FIELD_KEY_MAP[field];
   if (fieldTranslationKey) {
@@ -193,4 +273,3 @@ export function getAggregateFunctionOptions(
     return { value: aggregateName, label };
   });
 }
-

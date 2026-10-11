@@ -52,7 +52,9 @@ export function SubTabBarUnderlineVariant<K extends string>({
                 />
               )}
               <span>{tab.label}</span>
-              {tab.badge !== undefined && <SubTabBarBadge badge={tab.badge} active={active} interactive />}
+              {tab.badge !== undefined && (
+                <SubTabBarBadge badge={tab.badge} active={active} interactive />
+              )}
               {active && (
                 <motion.div
                   layoutId={`${panelIdPrefix}-underline`}
@@ -126,7 +128,10 @@ export function SubTabBarPillVariant<K extends string>({
             >
               {t.icon && (
                 <t.icon
-                  className={cn("h-3.5 w-3.5 transition-colors", active ? "text-primary" : "text-muted-foreground")}
+                  className={cn(
+                    "h-3.5 w-3.5 transition-colors",
+                    active ? "text-primary" : "text-muted-foreground",
+                  )}
                   aria-hidden
                 />
               )}

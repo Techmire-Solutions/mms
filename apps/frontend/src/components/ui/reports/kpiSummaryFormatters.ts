@@ -1,16 +1,16 @@
-import { Users, type LucideIcon } from 'lucide-react';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { resolveWidgetSubText, resolveWidgetTitle } from '@/lib/dashboardWidgets';
-import type { CustomCard } from '@/lib/reports/reportMetadata';
-import type { AggregateCardValue, CategorizedKPIItem, KPIItem } from './kpiSummaryTypes';
-import { KPI_ICONS } from './kpiSummaryIcons';
+import { Users, type LucideIcon } from "lucide-react";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { resolveWidgetSubText, resolveWidgetTitle } from "@/lib/dashboardWidgets";
+import type { CustomCard } from "@/lib/reports/reportMetadata";
+import type { AggregateCardValue, CategorizedKPIItem, KPIItem } from "./kpiSummaryTypes";
+import { KPI_ICONS } from "./kpiSummaryIcons";
 
-export { KPI_ICONS } from './kpiSummaryIcons';
+export { KPI_ICONS } from "./kpiSummaryIcons";
 export {
   getDefaultCardConfig,
   getDefaultKPICollection,
   getCategoryLabelKey,
-} from './kpiDefaultCardConfig';
+} from "./kpiDefaultCardConfig";
 
 export function normalizeStoredCardIds(
   storedValues: string[],
@@ -33,11 +33,10 @@ export function formatAggregateCardValue(
   aggregate: AggregateCardValue,
 ): { finalValue: string | number; totalCount: number } {
   return {
-    finalValue: card.operation === 'percentage' ? `${aggregate.value}%` : aggregate.value,
+    finalValue: card.operation === "percentage" ? `${aggregate.value}%` : aggregate.value,
     totalCount: aggregate.totalCount,
   };
 }
-
 
 export function buildAggregateCustomCard(
   card: CustomCard,
@@ -50,10 +49,12 @@ export function buildAggregateCustomCard(
     id: card.id,
     label: resolveWidgetTitle(card, t),
     value: String(aggregateValue.finalValue),
-    sub: resolveWidgetSubText(card, t) || t('reports.widgets.totalCountText', { count: aggregateValue.totalCount }),
+    sub:
+      resolveWidgetSubText(card, t) ||
+      t("reports.widgets.totalCountText", { count: aggregateValue.totalCount }),
     icon: (KPI_ICONS[card.icon] || Users) as LucideIcon,
-    color: (card.color === 'emerald' ? 'green' : card.color) as KPIItem['color'],
-    trend: 'flat',
+    color: (card.color === "emerald" ? "green" : card.color) as KPIItem["color"],
+    trend: "flat",
     isAvailable: aggregateValue.totalCount > 0,
     categories: [category],
   };

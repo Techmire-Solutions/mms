@@ -10,10 +10,19 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("./ContactSubListCards", () => ({
-  ContactSubListShell: ({ children, isEmpty, emptyMessage }: { children: React.ReactNode; isEmpty?: boolean; emptyMessage?: React.ReactNode }) => (
-    <div data-testid="sublist-shell">{isEmpty ? <div>{emptyMessage}</div> : children}</div>
-  ),
-  FormListFieldCard: ({ children, typeSelect }: {
+  ContactSubListShell: ({
+    children,
+    isEmpty,
+    emptyMessage,
+  }: {
+    children: React.ReactNode;
+    isEmpty?: boolean;
+    emptyMessage?: React.ReactNode;
+  }) => <div data-testid="sublist-shell">{isEmpty ? <div>{emptyMessage}</div> : children}</div>,
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
@@ -49,9 +58,14 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
     <div data-testid="editable-select">{value}</div>
   ),
   FormCheckboxCard: ({ label, checked }: { label: string; checked: boolean }) => (
-    <div data-testid="checkbox-card">{label}: {checked ? "yes" : "no"}</div>
+    <div data-testid="checkbox-card">
+      {label}: {checked ? "yes" : "no"}
+    </div>
   ),
-  FormListFieldCard: ({ children, typeSelect }: {
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
@@ -63,7 +77,9 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
 }));
 
 vi.mock("@/components/ui/textarea", () => ({
-  Textarea: ({ value }: { value?: string }) => <textarea data-testid="textarea" value={value || ""} readOnly />,
+  Textarea: ({ value }: { value?: string }) => (
+    <textarea data-testid="textarea" value={value || ""} readOnly />
+  ),
 }));
 
 describe("ContactSkillsTab Component", () => {

@@ -1,12 +1,12 @@
-import React from 'react';
-import { Mail, MessageSquare, MessageCircle } from 'lucide-react';
-import { getChannelBadgeStyle, getChannelLabelKey } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Mail, MessageSquare, MessageCircle } from "lucide-react";
+import { getChannelBadgeStyle, getChannelLabelKey } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export interface ChannelBadgeProps {
-  channel: 'sms' | 'whatsapp' | 'email' | string;
+  channel: "sms" | "whatsapp" | "email" | string;
   className?: string;
   showIcon?: boolean;
 }
@@ -16,12 +16,12 @@ export interface ChannelBadgeProps {
  */
 export function ChannelBadge({
   channel,
-  className = '',
+  className = "",
   showIcon = true,
 }: ChannelBadgeProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const Icon = channel === 'email' ? Mail : channel === 'sms' ? MessageSquare : MessageCircle;
+  const Icon = channel === "email" ? Mail : channel === "sms" ? MessageSquare : MessageCircle;
   const labelKey = getChannelLabelKey(channel);
 
   return (
@@ -29,7 +29,7 @@ export function ChannelBadge({
       as="span"
       size="sm"
       className={cn(
-        'font-black uppercase border-transparent',
+        "font-black uppercase border-transparent",
         getChannelBadgeStyle(channel),
         className,
       )}

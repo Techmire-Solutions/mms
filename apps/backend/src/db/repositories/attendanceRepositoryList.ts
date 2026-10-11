@@ -1,4 +1,17 @@
-import { and, eq, ilike, inArray, isNotNull, isNull, or, type SQL, type AnyColumn, asc, desc, sql } from 'drizzle-orm';
+import {
+  and,
+  eq,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+  type SQL,
+  type AnyColumn,
+  asc,
+  desc,
+  sql,
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -7,13 +20,13 @@ import {
   type AttendanceCommandMetricsSnapshot,
   type AttendanceListQuery,
   type AttendanceListPageResult,
-} from '@mms/shared';
-import { attendance, sessionClasses, sessions } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+} from "@mms/shared";
+import { attendance, sessionClasses, sessions } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 import {
   attendanceRowToRecord as rowToRecord,
   type AttendanceRow,
-} from './attendanceRepositoryMappers.js';
+} from "./attendanceRepositoryMappers.js";
 
 function buildAttendanceListConditions(subdomain: string, query: AttendanceListQuery): SQL[] {
   const conditions: SQL[] = [eq(attendance.workspaceSubdomain, subdomain)];
@@ -29,10 +42,7 @@ function buildAttendanceListConditions(subdomain: string, query: AttendanceListQ
   if (search) {
     const pattern = toSqlSearchPattern(search);
     conditions.push(
-      or(
-        ilike(attendance.studentName, pattern),
-        ilike(attendance.rollNo, pattern),
-      ) as SQL,
+      or(ilike(attendance.studentName, pattern), ilike(attendance.rollNo, pattern)) as SQL,
     );
   }
 
@@ -81,26 +91,26 @@ function buildAttendanceListConditions(subdomain: string, query: AttendanceListQ
   return conditions;
 }
 
-const ATTENDANCE_SORT_FIELDS = new Set(['date', 'studentName', 'rollNo', 'status', 'updatedAt']);
+const ATTENDANCE_SORT_FIELDS = new Set(["date", "studentName", "rollNo", "status", "updatedAt"]);
 
-function buildAttendanceOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
+function buildAttendanceOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
   const field = sortField?.trim();
   let column: AnyColumn;
   if (field && ATTENDANCE_SORT_FIELDS.has(field)) {
     switch (field) {
-      case 'updatedAt':
+      case "updatedAt":
         column = attendance.updatedAt;
         break;
-      case 'date':
+      case "date":
         column = attendance.date;
         break;
-      case 'studentName':
+      case "studentName":
         column = attendance.studentName;
         break;
-      case 'rollNo':
+      case "rollNo":
         column = attendance.rollNo;
         break;
-      case 'status':
+      case "status":
         column = attendance.status;
         break;
       default:
@@ -109,9 +119,8 @@ function buildAttendanceOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | '
   } else {
     column = attendance.updatedAt;
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }
-
 
 export async function listAttendancePage(
   tenant: string,
@@ -181,10 +190,13 @@ export async function listAttendancePage(
       })
       .from(attendance)
       .leftJoin(sessionClasses, and(...classJoinConditions))
-      .leftJoin(sessions, and(
-        eq(sessionClasses.workspaceSubdomain, sessions.workspaceSubdomain),
-        eq(sessionClasses.sessionId, sessions.id)
-      ))
+      .leftJoin(
+        sessions,
+        and(
+          eq(sessionClasses.workspaceSubdomain, sessions.workspaceSubdomain),
+          eq(sessionClasses.sessionId, sessions.id),
+        ),
+      )
       .where(whereClause)
       .orderBy(orderBy)
       .limit(limit)
@@ -192,9 +204,9 @@ export async function listAttendancePage(
 
     const records = rows.map((r) => {
       const rec = rowToRecord(r.attendance as AttendanceRow);
-      rec.sessionId = r.sessionId ?? '';
-      rec.sessionName = r.sessionName ?? '';
-      rec.facultyId = r.facultyId ?? '';
+      rec.sessionId = r.sessionId ?? "";
+      rec.sessionName = r.sessionName ?? "";
+      rec.facultyId = r.facultyId ?? "";
       return rec;
     });
 
@@ -204,7 +216,9 @@ export async function listAttendancePage(
       page,
       limit,
       hasMore: isCursorPaging ? rows.length === limit : page * limit < total,
-      ...(isCursorPaging && rows.length > 0 ? { nextCursor: rows[rows.length - 1].attendance.id } : {}),
+      ...(isCursorPaging && rows.length > 0
+        ? { nextCursor: rows[rows.length - 1].attendance.id }
+        : {}),
     };
   });
 }
@@ -216,12 +230,7 @@ export async function countAttendanceActiveByWorkspace(tenant: string): Promise<
     const rows = await tx
       .select({ count: sql<number>`count(*)::int` })
       .from(attendance)
-      .where(
-        and(
-          eq(attendance.workspaceSubdomain, subdomain),
-          isNull(attendance.deletedAt),
-        ),
-      );
+      .where(and(eq(attendance.workspaceSubdomain, subdomain), isNull(attendance.deletedAt)));
     return Number(rows[0]?.count ?? 0);
   });
 }
@@ -243,15 +252,10 @@ export async function aggregateAttendanceCommandMetrics(
     options?.selectedDate && DATE_RE.test(options.selectedDate)
       ? options.selectedDate
       : new Date().toISOString().slice(0, 10);
-  const periodStart = new Date(Date.now() - periodDays * 86_400_000)
-    .toISOString()
-    .slice(0, 10);
+  const periodStart = new Date(Date.now() - periodDays * 86_400_000).toISOString().slice(0, 10);
 
   return withTenantRead(subdomain, async (tx) => {
-    const active = and(
-      eq(attendance.workspaceSubdomain, subdomain),
-      isNull(attendance.deletedAt),
-    );
+    const active = and(eq(attendance.workspaceSubdomain, subdomain), isNull(attendance.deletedAt));
 
     const [row] = await tx
       .select({

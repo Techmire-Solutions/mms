@@ -62,9 +62,7 @@ export type StudentsWorkTierSource = {
 };
 
 /** Builds Work-tier prop bag from controller/work source (Contacts-shaped composition). */
-export function buildStudentsWorkTierProps(
-  source: StudentsWorkTierSource,
-): StudentsWorkTierProps {
+export function buildStudentsWorkTierProps(source: StudentsWorkTierSource): StudentsWorkTierProps {
   return {
     studentSearch: source.studentSearch,
     studentFilterStatus: source.studentFilterStatus,
@@ -121,4 +119,3 @@ export function buildStudentsWorkTierProps(
     workOverlays: source.workOverlays,
   };
 }
-

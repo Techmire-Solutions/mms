@@ -3,24 +3,22 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from '@mms/shared';
-import { getMinimalCollectionsForSeed, getMinimalObjects } from '../minimalSeeds.js';
+} from "@mms/shared";
+import { getMinimalCollectionsForSeed, getMinimalObjects } from "../minimalSeeds.js";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,
   listCollectionStorageNames,
   saveCollection,
   saveObject,
-} from '../database.js';
+} from "../database.js";
 
 const STUDENT_CONFIG_COLLECTIONS = [] as const;
 
-const STUDENT_CONFIG_OBJECTS = [
-  'students_settings',
-] as const;
+const STUDENT_CONFIG_OBJECTS = ["students_settings"] as const;
 
 function mergeStudentSettingsDefaults(existing: unknown, defaults: unknown): unknown {
-  if (!existing || typeof existing !== 'object' || !defaults || typeof defaults !== 'object') {
+  if (!existing || typeof existing !== "object" || !defaults || typeof defaults !== "object") {
     return defaults;
   }
   const current = existing as Record<string, unknown>;
@@ -32,7 +30,9 @@ function mergeStudentSettingsDefaults(existing: unknown, defaults: unknown): unk
       ...((fallback.fields as Record<string, unknown> | undefined) ?? {}),
       ...((current.fields as Record<string, unknown> | undefined) ?? {}),
     },
-    customFields: Array.isArray(current.customFields) ? current.customFields : fallback.customFields,
+    customFields: Array.isArray(current.customFields)
+      ? current.customFields
+      : fallback.customFields,
     fieldOrder: Array.isArray(current.fieldOrder) ? current.fieldOrder : fallback.fieldOrder,
   };
 }
@@ -72,7 +72,7 @@ async function seedStudentConfigForPrefix(
   for (const key of STUDENT_CONFIG_OBJECTS) {
     const storageKey = prefix ? `${prefix}${key}` : key;
     const existing = await getObjectByStorageKey(storageKey);
-    if (key === 'students_settings' && existing !== null && existing !== undefined) {
+    if (key === "students_settings" && existing !== null && existing !== undefined) {
       const merged = mergeStudentSettingsDefaults(existing, objects[key] ?? {});
       if (JSON.stringify(merged) === JSON.stringify(existing)) continue;
       await saveObject(storageKey, merged);
@@ -99,11 +99,11 @@ export async function runMigration014(): Promise<void> {
 
   let changed = false;
   if (subdomains.size === 0) {
-    changed = await seedStudentConfigForPrefix('', collections, objects);
+    changed = await seedStudentConfigForPrefix("", collections, objects);
   } else {
     for (const subdomain of subdomains) {
       const didChange = await seedStudentConfigForPrefix(
-        tenantCollectionKey(subdomain, ''),
+        tenantCollectionKey(subdomain, ""),
         collections,
         objects,
       );
@@ -112,6 +112,6 @@ export async function runMigration014(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 014] Seeded database-owned student configuration defaults.');
+    console.log("[Migration 014] Seeded database-owned student configuration defaults.");
   }
 }

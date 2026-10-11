@@ -3,7 +3,7 @@ import {
   normalizeIdLinkedName,
   resolveEntityName,
   type NamedEntity,
-} from './contactLinkPolicy.js';
+} from "./contactLinkPolicy.js";
 
 /** Strips a denormalized actor label when the workspace user id is set. */
 export function normalizeUserActorField<T extends Record<string, unknown>>(
@@ -23,9 +23,12 @@ export function hydrateUserActorField<T extends Record<string, unknown>>(
   users: NamedEntity[] | Map<string, NamedEntity>,
 ): T {
   if (!row || typeof row !== "object") return row;
-  const lookup = users instanceof Map
-    ? users
-    : (Array.isArray(users) && users.length > 8 ? createNamedEntityLookupMap(users) : users);
+  const lookup =
+    users instanceof Map
+      ? users
+      : Array.isArray(users) && users.length > 8
+        ? createNamedEntityLookupMap(users)
+        : users;
   const current = row[labelField];
   const resolved = resolveEntityName(row[userIdField] as string | number, lookup) || current;
   if (resolved === current) return row;

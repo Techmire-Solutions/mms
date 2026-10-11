@@ -35,7 +35,10 @@ export function DensityToggle({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className={cn("flex items-center gap-0.5 rounded-lg border border-border/60 bg-muted/40 p-0.5", className)}
+      className={cn(
+        "flex items-center gap-0.5 rounded-lg border border-border/60 bg-muted/40 p-0.5",
+        className,
+      )}
     >
       {MODES.map(({ value }) => {
         const isSelected = density === value;

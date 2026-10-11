@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/StatCard";
 import { apiFetch } from "@/lib/apiClient";
 import { formatDateTime } from "@/lib/utils";
-import { containerVariantsConsole as containerVariants, itemVariants as cardVariants } from "@/platform/lib/animations";
+import {
+  containerVariantsConsole as containerVariants,
+  itemVariants as cardVariants,
+} from "@/platform/lib/animations";
 import { PlatformMigrateRestartCard } from "@/platform/pages/account/PlatformMigrateRestartCard";
 import { PlatformLatencySparkline } from "@/platform/components/system/PlatformLatencySparkline";
 import { usePlatformTelemetry } from "@/platform/hooks/usePlatformTelemetry";
@@ -20,7 +23,7 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
   const [probing, setProbing] = useState(false);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [latencyHistory, setLatencyHistory] = useState<number[]>([]);
-  const [redisStatus, setRedisStatus] = useState<string>('connected');
+  const [redisStatus, setRedisStatus] = useState<string>("connected");
   const [lastChecked, setLastChecked] = useState<string | null>(null);
 
   const runHealthProbe = useCallback(async () => {
@@ -31,16 +34,16 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
       const elapsed = Math.round(performance.now() - start);
       if (res.ok) {
         const body = (await res.json()) as { redis?: string; database?: string };
-        setRedisStatus(body.redis ?? 'connected');
+        setRedisStatus(body.redis ?? "connected");
         setLatencyMs(elapsed);
         setLatencyHistory((prev) => [...prev.slice(-7), elapsed]);
       } else {
         setLatencyMs(null);
-        setRedisStatus('disconnected');
+        setRedisStatus("disconnected");
       }
     } catch {
       setLatencyMs(null);
-      setRedisStatus('disconnected');
+      setRedisStatus("disconnected");
     } finally {
       setProbing(false);
       setLastChecked(formatDateTime(new Date().toISOString()));
@@ -64,7 +67,10 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
       className="space-y-6 text-start"
     >
       {/* System Maintenance Header Metrics */}
-      <motion.div variants={cardVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <motion.div
+        variants={cardVariants}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+      >
         <StatCard
           variant="compact"
           label={t("platform.dbEngine")}
@@ -93,15 +99,15 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
           variant="compact"
           label={t("platform.maintenance.queueEngine")}
           value={
-            redisStatus === 'connected'
+            redisStatus === "connected"
               ? t("platform.maintenance.bullmqActive")
-              : redisStatus === 'optional'
+              : redisStatus === "optional"
                 ? t("platform.maintenance.bullmqStandalone")
                 : t("platform.maintenance.bullmqOffline")
           }
           sub={t("platform.maintenance.queueEngineSub")}
           icon={Layers}
-          accent={redisStatus === 'connected' ? "success" : "warning"}
+          accent={redisStatus === "connected" ? "success" : "warning"}
         />
         <StatCard
           variant="compact"
@@ -124,7 +130,9 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
         <div className="p-4 rounded-xl border border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="flex h-2.5 w-2.5 rounded-full bg-success animate-pulse shrink-0" />
-            <span className="font-bold text-foreground">{t("platform.maintenance.preflightCheck")}</span>
+            <span className="font-bold text-foreground">
+              {t("platform.maintenance.preflightCheck")}
+            </span>
             <span className="text-muted-foreground">{t("platform.maintenance.systemsReady")}</span>
           </div>
 
@@ -140,7 +148,7 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
             </span>
             <span className="bg-card px-2 py-0.5 rounded border border-border/50 flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3 text-success" />
-              {redisStatus === 'connected'
+              {redisStatus === "connected"
                 ? t("platform.maintenance.bullmqRedis")
                 : t("platform.maintenance.bullmqInMemory")}
             </span>
@@ -156,16 +164,15 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
               title={t("platform.maintenance.runDiagnostics")}
               aria-label={t("platform.maintenance.runDiagnostics")}
             >
-              {probing ? t("platform.maintenance.diagnosticsRunning") : t("platform.maintenance.runDiagnostics")}
+              {probing
+                ? t("platform.maintenance.diagnosticsRunning")
+                : t("platform.maintenance.runDiagnostics")}
             </Button>
           </div>
         </div>
 
         {/* Database Telemetry (Platform DB separated from Tenant DB) */}
-        <PlatformDatabaseTelemetryCard
-          telemetry={telemetry}
-          isLoading={telemetryLoading}
-        />
+        <PlatformDatabaseTelemetryCard telemetry={telemetry} isLoading={telemetryLoading} />
 
         <div className="grid grid-cols-1 max-w-xl gap-8 items-start">
           <PlatformMigrateRestartCard />
@@ -174,4 +181,3 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
     </motion.div>
   );
 }
-

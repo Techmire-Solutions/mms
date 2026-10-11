@@ -27,7 +27,7 @@ interface ImageUploadFieldProps {
   /** When set, dominant logo colours are extracted after a successful upload. */
   onBrandColorsExtracted?: (colors: LogoBrandColors) => void;
   purpose?: ImageUploadPurpose;
-  previewSize?: 'logo' | 'favicon';
+  previewSize?: "logo" | "favicon";
 }
 
 export function ImageUploadField({
@@ -39,7 +39,7 @@ export function ImageUploadField({
   onClear,
   onBrandColorsExtracted,
   purpose,
-  previewSize = 'logo',
+  previewSize = "logo",
 }: ImageUploadFieldProps): React.JSX.Element {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,15 +50,15 @@ export function ImageUploadField({
   const errorId = `${id}-error`;
 
   const resolvedPurpose: ImageUploadPurpose =
-    purpose ?? (previewSize === 'favicon' ? 'favicon' : 'logo');
+    purpose ?? (previewSize === "favicon" ? "favicon" : "logo");
 
-  const processFile = (async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setError(t('branding.imageErrorType'));
+  const processFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setError(t("branding.imageErrorType"));
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
-      setError(t('branding.imageErrorSize'));
+      setError(t("branding.imageErrorSize"));
       return;
     }
 
@@ -80,15 +80,14 @@ export function ImageUploadField({
       const url = await uploadImageFile(optimized, resolvedPurpose);
       onChange(url);
     } catch {
-      setError(t('branding.imageErrorUpload'));
+      setError(t("branding.imageErrorUpload"));
     } finally {
       setUploading(false);
-      if (inputRef.current) inputRef.current.value = '';
+      if (inputRef.current) inputRef.current.value = "";
     }
-  });
+  };
 
-  const previewClass =
-    previewSize === 'favicon' ? 'h-14 w-14 rounded-lg' : 'h-20 w-20 rounded-xl';
+  const previewClass = previewSize === "favicon" ? "h-14 w-14 rounded-lg" : "h-20 w-20 rounded-xl";
 
   return (
     <div className="space-y-2">
@@ -99,7 +98,7 @@ export function ImageUploadField({
         aria-labelledby={id}
         aria-describedby={error ? `${hintId} ${errorId}` : hintId}
         onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
+          if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
             inputRef.current?.click();
           }
@@ -117,14 +116,16 @@ export function ImageUploadField({
         }}
         onClick={() => !uploading && inputRef.current?.click()}
         className={cn(
-          'flex items-center gap-4 rounded-xl border border-dashed p-4 transition-colors cursor-pointer',
-          dragging ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:border-primary/40 hover:bg-muted/30',
-          uploading && 'pointer-events-none opacity-70',
+          "flex items-center gap-4 rounded-xl border border-dashed p-4 transition-colors cursor-pointer",
+          dragging
+            ? "border-primary bg-primary/5"
+            : "border-border bg-muted/20 hover:border-primary/40 hover:bg-muted/30",
+          uploading && "pointer-events-none opacity-70",
         )}
       >
         <div
           className={cn(
-            'relative flex shrink-0 items-center justify-center overflow-hidden border border-border bg-background',
+            "relative flex shrink-0 items-center justify-center overflow-hidden border border-border bg-background",
             previewClass,
           )}
         >
@@ -139,7 +140,7 @@ export function ImageUploadField({
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-foreground">
-            {value ? t('branding.imageReplace') : t('branding.imageDropBrowse')}
+            {value ? t("branding.imageReplace") : t("branding.imageDropBrowse")}
           </p>
           <FieldHint id={hintId}>{hint}</FieldHint>
         </div>
@@ -150,7 +151,7 @@ export function ImageUploadField({
             variant="ghost"
             size="icon"
             className="shrink-0"
-            aria-label={t('branding.imageRemoveAria', { label })}
+            aria-label={t("branding.imageRemoveAria", { label })}
             onClick={(event) => {
               event.stopPropagation();
               onClear();
@@ -174,10 +175,7 @@ export function ImageUploadField({
           disabled={uploading}
         />
       </div>
-      {error && (
-        <FieldErrorMessage id={errorId} message={error} />
-      )}
+      {error && <FieldErrorMessage id={errorId} message={error} />}
     </div>
   );
 }
-

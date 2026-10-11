@@ -65,21 +65,19 @@ export function buildContactFormVisibleTabs({
     bankDetails: collectionCounts.filledBankDetails,
   };
 
-  return DEFAULT_FORM_TABS
-    .filter((sys) => enabledTabIds.has(sys.key))
-    .map((sys) => {
-      const count = countMap[sys.key];
-      const errorCount = tabErrorCounts[sys.key];
-      const hasErrors = Boolean(errorCount && errorCount > 0);
-      const label = sys.labelKey ? t(sys.labelKey) : (sys.label || sys.key);
-      return {
-        key: sys.key,
-        icon: SYSTEM_TAB_ICONS[sys.key] ?? FolderKanban,
-        label,
-        badge: hasErrors ? errorCount : count && count > 0 ? count : undefined,
-        tone: hasErrors ? ("destructive" as const) : undefined,
-      };
-    });
+  return DEFAULT_FORM_TABS.filter((sys) => enabledTabIds.has(sys.key)).map((sys) => {
+    const count = countMap[sys.key];
+    const errorCount = tabErrorCounts[sys.key];
+    const hasErrors = Boolean(errorCount && errorCount > 0);
+    const label = sys.labelKey ? t(sys.labelKey) : sys.label || sys.key;
+    return {
+      key: sys.key,
+      icon: SYSTEM_TAB_ICONS[sys.key] ?? FolderKanban,
+      label,
+      badge: hasErrors ? errorCount : count && count > 0 ? count : undefined,
+      tone: hasErrors ? ("destructive" as const) : undefined,
+    };
+  });
 }
 
 export function buildContactValidationErrorSummary(

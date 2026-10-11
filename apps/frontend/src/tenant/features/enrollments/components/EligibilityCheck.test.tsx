@@ -13,9 +13,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/tenant/hooks/collections/sessions", () => ({
-  useSessionsCollection: () => [
-    { id: "ses-1", name: "Spring 2025" },
-  ],
+  useSessionsCollection: () => [{ id: "ses-1", name: "Spring 2025" }],
 }));
 
 vi.mock("@/tenant/hooks/collections/students", () => ({

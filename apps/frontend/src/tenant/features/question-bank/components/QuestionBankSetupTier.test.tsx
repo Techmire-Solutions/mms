@@ -16,7 +16,9 @@ vi.mock("@/components/ui/ModuleTierMotion", () => ({
 }));
 
 vi.mock("@/components/ui/SetupReadOnlyMessage", () => ({
-  SetupReadOnlyMessage: ({ title }: { title: string }) => <div data-testid="read-only">{title}</div>,
+  SetupReadOnlyMessage: ({ title }: { title: string }) => (
+    <div data-testid="read-only">{title}</div>
+  ),
 }));
 
 let mockCanEditSetup = true;

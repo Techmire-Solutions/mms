@@ -36,7 +36,12 @@ export function OverdueObligationsWidgetMobileList({
 
   if (paginatedStudents.length === 0) {
     return (
-      <EmptyState title={t("finance.report.noInvoicesMatch")} compact icon={null} className="select-none" />
+      <EmptyState
+        title={t("finance.report.noInvoicesMatch")}
+        compact
+        icon={null}
+        className="select-none"
+      />
     );
   }
 
@@ -63,10 +68,17 @@ export function OverdueObligationsWidgetMobileList({
                   className="shrink-0"
                 />
                 <div className="min-w-0">
-                  <h4 className="truncate text-sm font-semibold text-foreground m-0">{overdueStudent.name}</h4>
+                  <h4 className="truncate text-sm font-semibold text-foreground m-0">
+                    {overdueStudent.name}
+                  </h4>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <Scale className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
-                    <p className="truncate text-xs text-muted-foreground m-0">{overdueStudent.obligationType}</p>
+                    <Scale
+                      className="w-3.5 h-3.5 text-muted-foreground shrink-0"
+                      aria-hidden="true"
+                    />
+                    <p className="truncate text-xs text-muted-foreground m-0">
+                      {overdueStudent.obligationType}
+                    </p>
                   </div>
                 </div>
               </div>

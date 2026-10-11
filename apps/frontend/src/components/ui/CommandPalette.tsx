@@ -7,11 +7,7 @@ import { cn } from "@/lib/utils";
 import { COMMAND_ITEMS, type CommandItem } from "@/components/ui/commandPaletteItems";
 import { CommandPaletteModal } from "@/components/ui/CommandPaletteModal";
 import { useCommandPaletteSearch } from "@/components/ui/useCommandPaletteSearch";
-import {
-  getRecents,
-  pushRecent,
-  filterCommandItems,
-} from "@/components/ui/commandPaletteUtils";
+import { getRecents, pushRecent, filterCommandItems } from "@/components/ui/commandPaletteUtils";
 
 export interface CommandPaletteProps {
   open: boolean;
@@ -20,11 +16,16 @@ export interface CommandPaletteProps {
   isPathVisible?: (path: string) => boolean;
 }
 
-export function CommandPalette({ open, onClose, isPathVisible }: CommandPaletteProps): React.JSX.Element | null {
+export function CommandPalette({
+  open,
+  onClose,
+  isPathVisible,
+}: CommandPaletteProps): React.JSX.Element | null {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const items = useMemo(
-    () => (isPathVisible ? COMMAND_ITEMS.filter((item) => isPathVisible(item.path)) : COMMAND_ITEMS),
+    () =>
+      isPathVisible ? COMMAND_ITEMS.filter((item) => isPathVisible(item.path)) : COMMAND_ITEMS,
     [isPathVisible],
   );
 
@@ -113,9 +114,7 @@ export function CommandPalette({ open, onClose, isPathVisible }: CommandPaletteP
       onKeyDown={handleKeyDown}
       listboxId="tenant-command-listbox"
       activeDescendantId={
-        flatItems[selectedIndex]
-          ? `tenant-cmd-item-${flatItems[selectedIndex].id}`
-          : undefined
+        flatItems[selectedIndex] ? `tenant-cmd-item-${flatItems[selectedIndex].id}` : undefined
       }
       footerTitle="MMS"
     >
@@ -184,4 +183,3 @@ export function CommandPalette({ open, onClose, isPathVisible }: CommandPaletteP
     </CommandPaletteModal>
   );
 }
-

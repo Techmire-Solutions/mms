@@ -1,36 +1,36 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Modern Database Audit Trail Standards (RFC 8785 / 5-Dimension Architecture)
 // ---------------------------------------------------------------------------
 
 export const AUDIT_ACTION_TYPES = [
-  'CREATE',
-  'UPDATE',
-  'DELETE',
-  'VIEW',
-  'LOGIN',
-  'REDACT',
-  'RESTORE',
+  "CREATE",
+  "UPDATE",
+  "DELETE",
+  "VIEW",
+  "LOGIN",
+  "REDACT",
+  "RESTORE",
 ] as const;
 export const auditActionTypeSchema = z.enum(AUDIT_ACTION_TYPES);
 export type AuditActionType = z.infer<typeof auditActionTypeSchema>;
 
 export const AUDIT_VERIFICATION_STATUSES = [
-  'VERIFIED',
-  'PENDING',
-  'BROKEN_CHAIN',
-  'SEQUENCE_GAP',
-  'TAMPERED',
+  "VERIFIED",
+  "PENDING",
+  "BROKEN_CHAIN",
+  "SEQUENCE_GAP",
+  "TAMPERED",
 ] as const;
 export const auditVerificationStatusSchema = z.enum(AUDIT_VERIFICATION_STATUSES);
 export type AuditVerificationStatus = z.infer<typeof auditVerificationStatusSchema>;
 
-export const AUDIT_STORAGE_TIERS = ['HOT', 'WARM', 'COLD'] as const;
+export const AUDIT_STORAGE_TIERS = ["HOT", "WARM", "COLD"] as const;
 export const auditStorageTierSchema = z.enum(AUDIT_STORAGE_TIERS);
 export type AuditStorageTier = z.infer<typeof auditStorageTierSchema>;
 
-export const AUDIT_RETENTION_REGIMES = ['HIPAA', 'SOX', 'PCI_DSS', 'GDPR'] as const;
+export const AUDIT_RETENTION_REGIMES = ["HIPAA", "SOX", "PCI_DSS", "GDPR"] as const;
 export const auditRetentionRegimeSchema = z.enum(AUDIT_RETENTION_REGIMES);
 export type AuditRetentionRegime = z.infer<typeof auditRetentionRegimeSchema>;
 
@@ -57,7 +57,7 @@ export const modernAuditEventSchema = z
     newState: z.string().nullable().optional(),
     hashPrevious: z.string(),
     hashCurrent: z.string(),
-    verificationStatus: auditVerificationStatusSchema.default('VERIFIED'),
+    verificationStatus: auditVerificationStatusSchema.default("VERIFIED"),
     transactionTimestamp: z.string(),
   })
   .strict();
@@ -73,7 +73,7 @@ export const modernAuditEventInsertSchema = modernAuditEventSchema
   })
   .extend({
     id: z.union([z.string(), z.number()]).optional(),
-    verificationStatus: auditVerificationStatusSchema.default('VERIFIED').optional(),
+    verificationStatus: auditVerificationStatusSchema.default("VERIFIED").optional(),
   })
   .strict();
 
@@ -118,8 +118,8 @@ export const cryptoShreddingKeySchema = z
     id: z.string(),
     subjectId: z.string(),
     encryptedKey: z.string(),
-    algorithm: z.literal('AES-256-GCM').default('AES-256-GCM'),
-    status: z.enum(['ACTIVE', 'SHREDDED']).default('ACTIVE'),
+    algorithm: z.literal("AES-256-GCM").default("AES-256-GCM"),
+    status: z.enum(["ACTIVE", "SHREDDED"]).default("ACTIVE"),
     createdAt: z.string(),
     destroyedAt: z.string().nullable().optional(),
   })
@@ -135,18 +135,18 @@ export const auditErasureRequestSchema = z
     id: z.string(),
     subjectId: z.string(),
     regime: auditRetentionRegimeSchema,
-    erasureType: z.enum(['CRYPTO_SHRED', 'REDACT_APPEND']),
+    erasureType: z.enum(["CRYPTO_SHRED", "REDACT_APPEND"]),
     requestedBy: z.string(),
     requestedAt: z.string(),
     completedAt: z.string().nullable().optional(),
-    redactionMarker: z.string().default('[REDACTED_PER_REQUEST]'),
+    redactionMarker: z.string().default("[REDACTED_PER_REQUEST]"),
   })
   .strict();
 
 export type AuditErasureRequest = z.infer<typeof auditErasureRequestSchema>;
 
 /** Genesis hash used as hashPrevious for the first event in a shard chain. */
-export const GENESIS_AUDIT_HASH = '0'.repeat(64);
+export const GENESIS_AUDIT_HASH = "0".repeat(64);
 
 /**
  * Constructs the canonical raw input string to be hashed with SHA-256:
@@ -175,9 +175,9 @@ export const AUDIT_RETENTION_FLOORS: Record<AuditRetentionRegime, number> = {
 };
 
 export const AUDIT_ANOMALY_TYPES = [
-  'VOLUME_SPIKE',
-  'AFTER_HOURS_ACTIVITY',
-  'MULTI_IP_ACCESS',
+  "VOLUME_SPIKE",
+  "AFTER_HOURS_ACTIVITY",
+  "MULTI_IP_ACCESS",
 ] as const;
 export const auditAnomalyTypeSchema = z.enum(AUDIT_ANOMALY_TYPES);
 export type AuditAnomalyType = z.infer<typeof auditAnomalyTypeSchema>;
@@ -185,7 +185,7 @@ export type AuditAnomalyType = z.infer<typeof auditAnomalyTypeSchema>;
 export const auditAnomalyItemSchema = z
   .object({
     type: auditAnomalyTypeSchema,
-    severity: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
+    severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
     description: z.string(),
     userId: z.string().optional(),
     ipAddress: z.string().optional(),
@@ -204,7 +204,7 @@ export const auditAnomalyReportSchema = z
   .strict();
 export type AuditAnomalyReport = z.infer<typeof auditAnomalyReportSchema>;
 
-export { calculateStateDelta } from './auditStateDelta.js';
+export { calculateStateDelta } from "./auditStateDelta.js";
 
 /** Paginated audit event list query schema. */
 export const listAuditEventsQuerySchema = z
@@ -233,7 +233,7 @@ export const executeErasureBodySchema = z
   .object({
     subjectId: z.string().min(1),
     regime: auditRetentionRegimeSchema,
-    erasureType: z.enum(['CRYPTO_SHRED', 'REDACT_APPEND']),
+    erasureType: z.enum(["CRYPTO_SHRED", "REDACT_APPEND"]),
     reason: z.string().optional(),
   })
   .strict();
@@ -249,4 +249,3 @@ export const retentionEvaluateBodySchema = z
   .strict();
 
 export type RetentionEvaluateBody = z.infer<typeof retentionEvaluateBodySchema>;
-

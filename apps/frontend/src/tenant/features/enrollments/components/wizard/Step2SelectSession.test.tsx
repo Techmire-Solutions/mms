@@ -47,11 +47,7 @@ const mockSessions: Session[] = [
 describe("Step2SelectSession Component", () => {
   it("renders session card with spots and fee", () => {
     const html = renderToStaticMarkup(
-      <Step2SelectSession
-        value={null}
-        onChange={vi.fn()}
-        sessions={mockSessions}
-      />,
+      <Step2SelectSession value={null} onChange={vi.fn()} sessions={mockSessions} />,
     );
 
     expect(html).toContain("Spring 2025");

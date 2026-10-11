@@ -1,6 +1,6 @@
-import React from 'react';
-import { ReportDataGridContainer } from '@/components/ui/reports/ReportDataGridContainer';
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
+import React from "react";
+import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
+import type { ExportColumn } from "@/components/ui/ExportToolbar";
 import {
   Table,
   TableBody,
@@ -8,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { getSolidBgClass } from '@/lib/semanticTone';
+} from "@/components/ui/table";
+import { getSolidBgClass } from "@/lib/semanticTone";
 
 export interface ChannelSummaryRow extends Record<string, unknown> {
   id: string;
@@ -47,8 +47,12 @@ export function MessagingReportSummaryTable({
           <TableHeader>
             <TableRow>
               <TableHead className="px-4 py-2.5 font-bold">{title}</TableHead>
-              <TableHead variant="badge" className="px-4 py-2.5 font-bold">{detailsHeader}</TableHead>
-              <TableHead variant="number" className="px-4 py-2.5 font-bold">{growthRateHeader}</TableHead>
+              <TableHead variant="badge" className="px-4 py-2.5 font-bold">
+                {detailsHeader}
+              </TableHead>
+              <TableHead variant="number" className="px-4 py-2.5 font-bold">
+                {growthRateHeader}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -60,8 +64,12 @@ export function MessagingReportSummaryTable({
                     {row.channel}
                   </div>
                 </TableCell>
-                <TableCell variant="badge" noWrap className="px-4 py-2.5 font-bold">{row.count}</TableCell>
-                <TableCell variant="number" noWrap className="px-4 py-2.5 text-primary font-bold">{row.rate}</TableCell>
+                <TableCell variant="badge" noWrap className="px-4 py-2.5 font-bold">
+                  {row.count}
+                </TableCell>
+                <TableCell variant="number" noWrap className="px-4 py-2.5 text-primary font-bold">
+                  {row.rate}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -5,7 +5,6 @@ import {
   type DetailAttributeRowVariant,
 } from "@/components/ui/DetailAttributeRow";
 
-
 export interface FacultyDetailAttributeRowProps {
   icon: LucideIcon;
   iconClassName?: string;
@@ -32,4 +31,3 @@ export function FacultyDetailAttributeRow({
     />
   );
 }
-

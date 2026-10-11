@@ -79,7 +79,11 @@ export function MessageComposerRecipientsList({
         <EmptyState title={t("messaging.noRecipientsFound")} compact icon={null} />
       ) : isListVirtualized ? (
         <div
-          style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: "100%", position: "relative" }}
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: "100%",
+            position: "relative",
+          }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const recipient = displayedRecipients[virtualRow.index];

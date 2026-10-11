@@ -2,18 +2,15 @@
  * Deletes orphan document-store Teachers lookup collections after typed backfill (054).
  * Safe to re-run: skips delete when typed `teacher_lookups` has no rows for that tenant+kind.
  */
-import { parseTenantScopedStorageKey } from '@mms/shared';
-import { and, eq } from 'drizzle-orm';
-import * as schema from '../schema.js';
-import {
-  deleteCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
-import { withGlobalTenant } from '../tenant-context.js';
+import { parseTenantScopedStorageKey } from "@mms/shared";
+import { and, eq } from "drizzle-orm";
+import * as schema from "../schema.js";
+import { deleteCollectionByStorageName, listCollectionStorageNames } from "../database.js";
+import { withGlobalTenant } from "../tenant-context.js";
 
 const TEACHER_LOOKUP_LEGACY_COLLECTION_KEYS = {
-  teacherStatuses: 'statuses',
-  teacherSpecializations: 'specializations',
+  teacherStatuses: "statuses",
+  teacherSpecializations: "specializations",
 } as const;
 
 type LegacyTeacherLookupKey = keyof typeof TEACHER_LOOKUP_LEGACY_COLLECTION_KEYS;
@@ -24,10 +21,7 @@ function isTeacherLookupLegacyCollectionKey(key: string): key is LegacyTeacherLo
 
 type TeacherLookupKind = (typeof TEACHER_LOOKUP_LEGACY_COLLECTION_KEYS)[LegacyTeacherLookupKey];
 
-async function tenantHasTypedLookupKind(
-  tenant: string,
-  kind: TeacherLookupKind,
-): Promise<boolean> {
+async function tenantHasTypedLookupKind(tenant: string, kind: TeacherLookupKind): Promise<boolean> {
   return withGlobalTenant(async (tx) => {
     const [row] = await tx
       .select({ id: schema.facultyLookups.id })
@@ -72,7 +66,7 @@ export async function runMigration055(): Promise<void> {
   }
 
   if (removed === 0 && skipped === 0) {
-    console.log('[Migration 055] No legacy teacher lookup collections to clear.');
+    console.log("[Migration 055] No legacy teacher lookup collections to clear.");
   } else {
     console.log(`[Migration 055] Removed ${removed} key(s); skipped ${skipped} unsafe key(s).`);
   }

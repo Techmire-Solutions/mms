@@ -1,4 +1,4 @@
-import { tenantUsers, contacts, sessions } from './schema.js';
+import { tenantUsers, contacts, sessions } from "./schema.js";
 
 export const preparedTenantUserColumns = {
   id: tenantUsers.id,
@@ -49,7 +49,7 @@ export const preparedContactColumns = {
   updatedBy: contacts.updatedBy,
 };
 
-import { STUDENT_COLUMNS } from './repositories/studentRepositoryColumns.js';
+import { STUDENT_COLUMNS } from "./repositories/studentRepositoryColumns.js";
 
 export const preparedStudentColumns = STUDENT_COLUMNS;
 

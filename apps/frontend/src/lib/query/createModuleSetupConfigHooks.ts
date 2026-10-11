@@ -48,7 +48,6 @@ export function createModuleSetupConfigHooks<
   setPreferencesMemory,
   preferencesPlaceholder,
 }: CreateModuleSetupConfigHooksOptions<TPreferences, TPreferencesInput>) {
-
   function usePreferencesQuery() {
     const auth = useSafeAuth();
     const queryClient = useSafeQueryClient();
@@ -63,7 +62,7 @@ export function createModuleSetupConfigHooks<
         staleTime: SETUP_STALE_TIME,
         gcTime: 10 * 60_000,
       },
-      queryClient
+      queryClient,
     );
   }
 
@@ -78,7 +77,7 @@ export function createModuleSetupConfigHooks<
           void queryClient.invalidateQueries({ queryKey: preferencesQueryKey });
         },
       },
-      queryClient
+      queryClient,
     );
   }
 

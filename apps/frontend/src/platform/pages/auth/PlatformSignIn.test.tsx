@@ -12,7 +12,15 @@ let mockIsSubmitting = false;
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
-  Link: ({ to, children, className }: { to: string; children: React.ReactNode; className?: string }) => (
+  Link: ({
+    to,
+    children,
+    className,
+  }: {
+    to: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
     <a href={to} className={className}>
       {children}
     </a>
@@ -66,7 +74,15 @@ vi.mock("@/hooks/useReducedMotion", () => ({
 }));
 
 vi.mock("@/platform/components/PlatformAuthLayout", () => ({
-  default: ({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) => (
+  default: ({
+    title,
+    subtitle,
+    children,
+  }: {
+    title: string;
+    subtitle: string;
+    children: React.ReactNode;
+  }) => (
     <div data-testid="platform-auth-layout">
       <h1>{title}</h1>
       <h2>{subtitle}</h2>
@@ -96,11 +112,11 @@ describe("PlatformSignIn", () => {
   const changeInput = (input: HTMLInputElement, value: string) => {
     const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
       window.HTMLInputElement.prototype,
-      'value',
+      "value",
     )?.set;
     nativeInputValueSetter?.call(input, value);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
   it("renders credentials step by default", async () => {
@@ -225,7 +241,9 @@ describe("PlatformSignIn", () => {
       form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
-    const otpInputs = Array.from(container.querySelectorAll('input[inputmode="numeric"]')) as HTMLInputElement[];
+    const otpInputs = Array.from(
+      container.querySelectorAll('input[inputmode="numeric"]'),
+    ) as HTMLInputElement[];
     expect(otpInputs.length).toBe(6);
 
     await act(async () => {

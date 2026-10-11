@@ -1,15 +1,15 @@
-import type { Student } from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { activeDb, runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import type { StudentsRepository } from '../repository/studentsRepository.js';
-import { studentsRepository } from '../repository/studentsRepositoryAdapter.js';
-import { StudentRestoreConflictError } from './studentNormalizeUseCases.js';
-import { isUniqueViolation } from '../../lib/pgErrors.js';
-import { recordRestoreEvents } from './studentAuditEvents.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
-import { buildRestoredRecord, enableIncludeDeleted } from '../../lib/softDeleteHelpers.js';
-import { restoreCascadedEnrollmentsForStudents } from '../../db/repositories/studentEnrollmentCascade.js';
+import type { Student } from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { activeDb, runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import type { StudentsRepository } from "../repository/studentsRepository.js";
+import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
+import { StudentRestoreConflictError } from "./studentNormalizeUseCases.js";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
+import { recordRestoreEvents } from "./studentAuditEvents.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { buildRestoredRecord, enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
 
 interface StudentBulkRestoreConflict {
   id: string;
@@ -22,7 +22,11 @@ interface StudentBulkRestoreResult {
 }
 
 const isPgUnique = (err: unknown): boolean =>
-  isUniqueViolation(err) || (typeof err === 'object' && err !== null && 'code' in err && (err as { code: unknown }).code === '23505');
+  isUniqueViolation(err) ||
+  (typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code: unknown }).code === "23505");
 
 export async function restoreStudentById(
   id: string,
@@ -42,16 +46,24 @@ export async function restoreStudentById(
       grNumber: existing.grNumber,
       contactId: existing.contactId,
     });
-    if (conflict === 'grNumber') throw new StudentRestoreConflictError();
-    if (conflict === 'contact') {
-      throw new StudentRestoreConflictError('A student with this contact already exists', 'contact');
+    if (conflict === "grNumber") throw new StudentRestoreConflictError();
+    if (conflict === "contact") {
+      throw new StudentRestoreConflictError(
+        "A student with this contact already exists",
+        "contact",
+      );
     }
     if (existing.studentId?.trim() && repo.findActiveStudentIdOwners) {
-      const activeOwners = await repo.findActiveStudentIdOwners(tenant, [existing.studentId.trim()]);
+      const activeOwners = await repo.findActiveStudentIdOwners(tenant, [
+        existing.studentId.trim(),
+      ]);
       const normalizedSid = existing.studentId.trim().toLowerCase();
       const activeOwner = activeOwners.get(normalizedSid);
       if (activeOwner && activeOwner !== String(id)) {
-        throw new StudentRestoreConflictError('A student with this Student ID already exists', 'studentId');
+        throw new StudentRestoreConflictError(
+          "A student with this Student ID already exists",
+          "studentId",
+        );
       }
     }
 
@@ -60,9 +72,12 @@ export async function restoreStudentById(
       await repo.save(tenant, next);
     } catch (err: unknown) {
       if (isPgUnique(err)) {
-        const msg = String((err as { message?: unknown })?.message ?? '').toLowerCase();
-        if (msg.includes('student_id')) {
-          throw new StudentRestoreConflictError('A student with this Student ID already exists', 'studentId');
+        const msg = String((err as { message?: unknown })?.message ?? "").toLowerCase();
+        if (msg.includes("student_id")) {
+          throw new StudentRestoreConflictError(
+            "A student with this Student ID already exists",
+            "studentId",
+          );
         }
         throw new StudentRestoreConflictError();
       }
@@ -82,8 +97,8 @@ export async function restoreStudentById(
   });
   if (restored) {
     const tenant = getRequestTenant();
-    if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: 'students' });
-    await broadcastCollection('students');
+    if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
+    await broadcastCollection("students");
   }
   return restored;
 }
@@ -107,12 +122,18 @@ export async function bulkRestoreStudents(
     const acceptedGrNumbers = new Set<string>();
     const acceptedContactIds = new Set<string>();
     const acceptedStudentIds = new Set<string>();
-    const candidateGrs = existingStudents.filter((s) => s.deletedAt && s.grNumber?.trim()).map((s) => String(s.grNumber));
-    const candidateStudentIds = existingStudents.filter((s) => s.deletedAt && s.studentId?.trim()).map((s) => String(s.studentId));
+    const candidateGrs = existingStudents
+      .filter((s) => s.deletedAt && s.grNumber?.trim())
+      .map((s) => String(s.grNumber));
+    const candidateStudentIds = existingStudents
+      .filter((s) => s.deletedAt && s.studentId?.trim())
+      .map((s) => String(s.studentId));
     const [activeGrOwners, activeContactsList, activeStudentIdOwners] = await Promise.all([
       repo.findActiveGrNumberOwners(tenant, candidateGrs),
       repo.listLinkedContactIds ? repo.listLinkedContactIds(tenant) : Promise.resolve([]),
-      repo.findActiveStudentIdOwners ? repo.findActiveStudentIdOwners(tenant, candidateStudentIds) : Promise.resolve(new Map<string, string>()),
+      repo.findActiveStudentIdOwners
+        ? repo.findActiveStudentIdOwners(tenant, candidateStudentIds)
+        : Promise.resolve(new Map<string, string>()),
     ]);
     const activeContactIds = new Set(activeContactsList.map(String));
 
@@ -125,23 +146,40 @@ export async function bulkRestoreStudents(
       const contactId = existing.contactId ? String(existing.contactId).trim() : null;
       if (contactId && (acceptedContactIds.has(contactId) || activeContactIds.has(contactId))) {
         failed += 1;
-        conflicts.push({ id: String(id), errors: [{ field: 'contact', message: 'A student with this contact already exists' }] });
+        conflicts.push({
+          id: String(id),
+          errors: [{ field: "contact", message: "A student with this contact already exists" }],
+        });
         continue;
       }
 
       const normalizedGr = existing.grNumber ? existing.grNumber.trim().toLowerCase() : null;
       const activeOwner = normalizedGr ? activeGrOwners.get(normalizedGr) : undefined;
-      if ((normalizedGr && acceptedGrNumbers.has(normalizedGr)) || Boolean(activeOwner && activeOwner !== String(id))) {
+      if (
+        (normalizedGr && acceptedGrNumbers.has(normalizedGr)) ||
+        Boolean(activeOwner && activeOwner !== String(id))
+      ) {
         failed += 1;
-        conflicts.push({ id: String(id), errors: [{ field: 'grNumber', message: 'A student with this GR number already exists' }] });
+        conflicts.push({
+          id: String(id),
+          errors: [{ field: "grNumber", message: "A student with this GR number already exists" }],
+        });
         continue;
       }
 
       const normalizedSid = existing.studentId ? existing.studentId.trim().toLowerCase() : null;
       const activeSidOwner = normalizedSid ? activeStudentIdOwners.get(normalizedSid) : undefined;
-      if ((normalizedSid && acceptedStudentIds.has(normalizedSid)) || Boolean(activeSidOwner && activeSidOwner !== String(id))) {
+      if (
+        (normalizedSid && acceptedStudentIds.has(normalizedSid)) ||
+        Boolean(activeSidOwner && activeSidOwner !== String(id))
+      ) {
         failed += 1;
-        conflicts.push({ id: String(id), errors: [{ field: 'studentId', message: 'A student with this Student ID already exists' }] });
+        conflicts.push({
+          id: String(id),
+          errors: [
+            { field: "studentId", message: "A student with this Student ID already exists" },
+          ],
+        });
         continue;
       }
 
@@ -169,7 +207,13 @@ export async function bulkRestoreStudents(
       }
 
       const restoredAt = new Date().toISOString();
-      await restoreCascadedEnrollmentsForStudents(activeDb(), tenant, toSave.map((s) => String(s.id)), userId, new Date(restoredAt));
+      await restoreCascadedEnrollmentsForStudents(
+        activeDb(),
+        tenant,
+        toSave.map((s) => String(s.id)),
+        userId,
+        new Date(restoredAt),
+      );
       for (const s of toSave) {
         await recordRestoreEvents(tenant, s, restoredAt, userId);
       }
@@ -178,10 +222,10 @@ export async function bulkRestoreStudents(
   });
   if (result.succeeded > 0) {
     const tenant = getRequestTenant();
-    if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: 'students' });
-    await broadcastCollection('students');
+    if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
+    await broadcastCollection("students");
   }
   return result;
 }
 
-export { recordRestoreEvents } from './studentAuditEvents.js';
+export { recordRestoreEvents } from "./studentAuditEvents.js";

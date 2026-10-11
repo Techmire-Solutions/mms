@@ -1,17 +1,23 @@
-import { z } from 'zod';
-import { baseListQueryFields } from './apiSchemas.js';
-import type { Account, JournalEntry, FiscalYear } from './accountingModuleManifest.js';
+import { z } from "zod";
+import { baseListQueryFields } from "./apiSchemas.js";
+import type { Account, JournalEntry, FiscalYear } from "./accountingModuleManifest.js";
 
 /** Account types accepted by the chart-of-accounts type filter. */
-export const ACCOUNTING_ACCOUNT_TYPES = ['Asset', 'Liability', 'Equity', 'Revenue', 'Expense'] as const;
+export const ACCOUNTING_ACCOUNT_TYPES = [
+  "Asset",
+  "Liability",
+  "Equity",
+  "Revenue",
+  "Expense",
+] as const;
 export type AccountingAccountType = (typeof ACCOUNTING_ACCOUNT_TYPES)[number];
 
 export const ACCOUNT_SUBTYPES: Record<AccountingAccountType, string[]> = {
-  Asset:     ['Current Asset', 'Fixed Asset', 'Contra Asset', 'Other Asset'],
-  Liability: ['Current Liability', 'Long-term Liability', 'Other Liability'],
-  Equity:    ["Owner's Equity", 'Retained Earnings', 'Other Equity'],
-  Revenue:   ['Operating Revenue', 'Non-operating Revenue', 'Other Revenue'],
-  Expense:   ['Operating Expense', 'Administrative Expense', 'Financial Expense', 'Other Expense'],
+  Asset: ["Current Asset", "Fixed Asset", "Contra Asset", "Other Asset"],
+  Liability: ["Current Liability", "Long-term Liability", "Other Liability"],
+  Equity: ["Owner's Equity", "Retained Earnings", "Other Equity"],
+  Revenue: ["Operating Revenue", "Non-operating Revenue", "Other Revenue"],
+  Expense: ["Operating Expense", "Administrative Expense", "Financial Expense", "Other Expense"],
 };
 
 export interface AccountingListQuery {
@@ -28,7 +34,7 @@ export interface AccountingListQuery {
   tag?: string;
   accountType?: string;
   sortField?: string;
-  sortDir?: 'asc' | 'desc' | '';
+  sortDir?: "asc" | "desc" | "";
   includeDeleted?: boolean;
 }
 
@@ -47,7 +53,7 @@ export interface AccountingListQuery {
 export const accountingEntriesListQuerySchema = z
   .object({
     ...baseListQueryFields,
-    status: z.enum(['posted', 'draft']).optional(),
+    status: z.enum(["posted", "draft"]).optional(),
     dateFrom: z.string().max(32).optional(),
     dateTo: z.string().max(32).optional(),
     accountId: z.string().max(64).optional(),

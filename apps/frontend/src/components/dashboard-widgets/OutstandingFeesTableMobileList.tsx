@@ -27,7 +27,12 @@ export function OutstandingFeesTableMobileList({
 }: OutstandingFeesTableMobileListProps) {
   if (rows.length === 0) {
     return (
-      <EmptyState title={t("finance.report.noInvoicesMatch")} compact icon={null} className="select-none" />
+      <EmptyState
+        title={t("finance.report.noInvoicesMatch")}
+        compact
+        icon={null}
+        className="select-none"
+      />
     );
   }
 
@@ -50,18 +55,28 @@ export function OutstandingFeesTableMobileList({
                 className="shrink-0"
               />
               <div className="min-w-0">
-                <h4 className="truncate text-sm font-semibold text-foreground m-0">{outstandingFee.student}</h4>
+                <h4 className="truncate text-sm font-semibold text-foreground m-0">
+                  {outstandingFee.student}
+                </h4>
                 {outstandingFee.class ? (
-                  <p className="truncate text-xs text-muted-foreground m-0">{outstandingFee.class}</p>
+                  <p className="truncate text-xs text-muted-foreground m-0">
+                    {outstandingFee.class}
+                  </p>
                 ) : null}
               </div>
             </div>
-            <span className="shrink-0 text-sm font-bold text-destructive tabular-nums">{formatCurrency(outstandingFee.amount)}</span>
+            <span className="shrink-0 text-sm font-bold text-destructive tabular-nums">
+              {formatCurrency(outstandingFee.amount)}
+            </span>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2">
             <OutstandingFeeOverdueBadge months={outstandingFee.months} t={t} />
             {canWriteMessaging && (
-              <OutstandingFeeMessagingActions row={outstandingFee} openComposer={openComposer} t={t} />
+              <OutstandingFeeMessagingActions
+                row={outstandingFee}
+                openComposer={openComposer}
+                t={t}
+              />
             )}
           </div>
         </motion.article>

@@ -1,24 +1,24 @@
-import React, { useMemo } from 'react';
-import { Building2, Globe, Ban, PlusCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import { usePlatformWorkspaceMetrics } from '@/platform/hooks/usePlatformWorkspaceMetrics';
-import { usePlatformActivityTrend } from '@/platform/hooks/usePlatformTelemetry';
-import { ModuleCommandMetricsGrid } from '@/components/ui/ModuleCommandMetricsGrid';
-import { StatsSkeleton } from '@/components/ui/LoadingState';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { Button } from '@/components/ui/button';
-import { containerVariantsConsole, itemVariants } from '@/platform/lib/animations';
-import { PlatformDashboardBanner } from './dashboard/PlatformDashboardBanner';
-import { PlatformDashboardTelemetry } from './dashboard/PlatformDashboardTelemetry';
-import { PlatformDashboardCharts } from './dashboard/PlatformDashboardCharts';
-import { PlatformDashboardQuickActions } from './dashboard/PlatformDashboardQuickActions';
-import { PlatformDashboardFleet } from './dashboard/PlatformDashboardFleet';
-import { ROUTES } from '@/lib/config/routes';
+import React, { useMemo } from "react";
+import { Building2, Globe, Ban, PlusCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { usePlatformWorkspaceMetrics } from "@/platform/hooks/usePlatformWorkspaceMetrics";
+import { usePlatformActivityTrend } from "@/platform/hooks/usePlatformTelemetry";
+import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { StatsSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/button";
+import { containerVariantsConsole, itemVariants } from "@/platform/lib/animations";
+import { PlatformDashboardBanner } from "./dashboard/PlatformDashboardBanner";
+import { PlatformDashboardTelemetry } from "./dashboard/PlatformDashboardTelemetry";
+import { PlatformDashboardCharts } from "./dashboard/PlatformDashboardCharts";
+import { PlatformDashboardQuickActions } from "./dashboard/PlatformDashboardQuickActions";
+import { PlatformDashboardFleet } from "./dashboard/PlatformDashboardFleet";
+import { ROUTES } from "@/lib/config/routes";
 
 export function PlatformDashboard(): React.JSX.Element {
   const { t } = useTranslation();
@@ -38,10 +38,7 @@ export function PlatformDashboard(): React.JSX.Element {
   const disabledWorkspaces = metrics?.inactive ?? 0;
   const metricsReady = !metricsLoading && !metricsError && metrics !== undefined;
 
-  const sparkline = useMemo(
-    () => (activityTrend ?? []).map((d) => d.ops ?? 0),
-    [activityTrend],
-  );
+  const sparkline = useMemo(() => (activityTrend ?? []).map((d) => d.ops ?? 0), [activityTrend]);
   const trendDelta = useMemo(() => {
     if (sparkline.length < 2) return undefined;
     const prev = sparkline[sparkline.length - 2] ?? 0;
@@ -53,7 +50,7 @@ export function PlatformDashboard(): React.JSX.Element {
   return (
     <motion.div
       variants={reducedMotion ? undefined : containerVariantsConsole}
-      initial={reducedMotion ? false : 'hidden'}
+      initial={reducedMotion ? false : "hidden"}
       animate="show"
       className="space-y-8 text-start"
     >
@@ -67,20 +64,20 @@ export function PlatformDashboard(): React.JSX.Element {
       <motion.div variants={reducedMotion ? undefined : itemVariants}>
         {metricsError ? (
           <ErrorState
-            title={t('platform.loadFailed')}
-            description={t('platform.loadFailedHint')}
+            title={t("platform.loadFailed")}
+            description={t("platform.loadFailedHint")}
             onRetry={() => void refetch()}
           />
         ) : metricsReady && totalWorkspaces === 0 && canOnboard ? (
           <EmptyState
             icon={Building2}
-            title={t('apex.noMadrasasYet')}
-            description={t('platform.superConsoleDesc')}
+            title={t("apex.noMadrasasYet")}
+            description={t("platform.superConsoleDesc")}
             action={
               <Button asChild className="min-h-11 rounded-xl font-bold px-5 cursor-pointer">
                 <Link to={ROUTES.onboarding}>
                   <PlusCircle className="w-4 h-4 me-1.5" aria-hidden />
-                  {t('auth.createMadrasa')}
+                  {t("auth.createMadrasa")}
                 </Link>
               </Button>
             }
@@ -90,24 +87,24 @@ export function PlatformDashboard(): React.JSX.Element {
             items={[
               {
                 icon: Building2,
-                label: t('platform.manageMadrasas'),
+                label: t("platform.manageMadrasas"),
                 value: totalWorkspaces,
-                accent: 'primary',
+                accent: "primary",
                 sparklineData: sparkline.length > 1 ? sparkline : undefined,
                 trend: trendDelta,
-                trendLabel: t('platform.vsPriorPeriod'),
+                trendLabel: t("platform.vsPriorPeriod"),
               },
               {
                 icon: Globe,
-                label: t('platform.workspaceActive'),
+                label: t("platform.workspaceActive"),
                 value: activeWorkspaces,
-                accent: 'success',
+                accent: "success",
               },
               {
                 icon: Ban,
-                label: t('platform.workspaceInactive'),
+                label: t("platform.workspaceInactive"),
                 value: disabledWorkspaces,
-                accent: 'destructive',
+                accent: "destructive",
               },
             ]}
           />

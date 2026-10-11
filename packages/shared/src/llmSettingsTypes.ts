@@ -1,60 +1,63 @@
 /** Registry metadata and default settings for supported AI completion providers. */
 export const LLM_PROVIDERS_META = {
   gemini: {
-    value: 'gemini',
-    label: 'Google Gemini',
-    defaultModel: 'gemini-2.5-flash',
-    defaultUrl: '',
-    modelsUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
+    value: "gemini",
+    label: "Google Gemini",
+    defaultModel: "gemini-2.5-flash",
+    defaultUrl: "",
+    modelsUrl: "https://generativelanguage.googleapis.com/v1beta/models",
   },
   openai: {
-    value: 'openai',
-    label: 'OpenAI GPT',
-    defaultModel: 'gpt-4o-mini',
-    defaultUrl: 'https://api.openai.com/v1/chat/completions',
-    modelsUrl: 'https://api.openai.com/v1/models',
+    value: "openai",
+    label: "OpenAI GPT",
+    defaultModel: "gpt-4o-mini",
+    defaultUrl: "https://api.openai.com/v1/chat/completions",
+    modelsUrl: "https://api.openai.com/v1/models",
   },
   anthropic: {
-    value: 'anthropic',
-    label: 'Anthropic Claude',
-    defaultModel: 'claude-3-5-haiku-20241022',
-    defaultUrl: 'https://api.anthropic.com/v1/messages',
-    modelsUrl: 'https://api.anthropic.com/v1/models',
+    value: "anthropic",
+    label: "Anthropic Claude",
+    defaultModel: "claude-3-5-haiku-20241022",
+    defaultUrl: "https://api.anthropic.com/v1/messages",
+    modelsUrl: "https://api.anthropic.com/v1/models",
   },
   deepseek: {
-    value: 'deepseek',
-    label: 'DeepSeek Chat (Ultra-Low Cost)',
-    defaultModel: 'deepseek-chat',
-    defaultUrl: 'https://api.deepseek.com/chat/completions',
-    modelsUrl: 'https://api.deepseek.com/models',
+    value: "deepseek",
+    label: "DeepSeek Chat (Ultra-Low Cost)",
+    defaultModel: "deepseek-chat",
+    defaultUrl: "https://api.deepseek.com/chat/completions",
+    modelsUrl: "https://api.deepseek.com/models",
   },
   openrouter: {
-    value: 'openrouter',
-    label: 'OpenRouter (Flexible / Free Models)',
-    defaultModel: 'google/gemini-2.5-flash',
-    defaultUrl: 'https://openrouter.ai/api/v1/chat/completions',
-    modelsUrl: 'https://openrouter.ai/api/v1/models',
+    value: "openrouter",
+    label: "OpenRouter (Flexible / Free Models)",
+    defaultModel: "google/gemini-2.5-flash",
+    defaultUrl: "https://openrouter.ai/api/v1/chat/completions",
+    modelsUrl: "https://openrouter.ai/api/v1/models",
   },
   groq: {
-    value: 'groq',
-    label: 'Groq (Ultra-Fast / High Efficiency)',
-    defaultModel: 'llama3-8b-8192',
-    defaultUrl: 'https://api.groq.com/openai/v1/chat/completions',
-    modelsUrl: 'https://api.groq.com/openai/v1/models',
+    value: "groq",
+    label: "Groq (Ultra-Fast / High Efficiency)",
+    defaultModel: "llama3-8b-8192",
+    defaultUrl: "https://api.groq.com/openai/v1/chat/completions",
+    modelsUrl: "https://api.groq.com/openai/v1/models",
   },
   alibaba: {
-    value: 'alibaba',
-    label: 'Alibaba Cloud Qwen (High Performance)',
-    defaultModel: 'qwen-plus',
-    defaultUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
-    modelsUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/models',
+    value: "alibaba",
+    label: "Alibaba Cloud Qwen (High Performance)",
+    defaultModel: "qwen-plus",
+    defaultUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    modelsUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1/models",
   },
 } as const;
 
 export type LlmProviderType = keyof typeof LLM_PROVIDERS_META;
 
 /** Authoritative key array of all supported AI providers. */
-export const LLM_PROVIDER_KEYS = Object.keys(LLM_PROVIDERS_META) as [LlmProviderType, ...LlmProviderType[]];
+export const LLM_PROVIDER_KEYS = Object.keys(LLM_PROVIDERS_META) as [
+  LlmProviderType,
+  ...LlmProviderType[],
+];
 
 /** Configuration interface for tenant AI provider connections. */
 export interface LlmConfig {
@@ -93,7 +96,7 @@ export interface LlmTestResult {
  * @returns Formatted speed string (e.g., '14.2 W/s' or 'N/A').
  */
 export function formatLlmSpeed(wordCount: number, latencyMs: number): string {
-  if (latencyMs <= 0) return 'N/A';
+  if (latencyMs <= 0) return "N/A";
   return `${(wordCount / (latencyMs / 1000)).toFixed(1)} W/s`;
 }
 
@@ -103,7 +106,7 @@ export function formatLlmSpeed(wordCount: number, latencyMs: number): string {
  * @returns Default model identifier string.
  */
 export function getLlmProviderDefaultModel(provider: LlmProviderType): string {
-  return LLM_PROVIDERS_META[provider]?.defaultModel ?? '';
+  return LLM_PROVIDERS_META[provider]?.defaultModel ?? "";
 }
 
 /**
@@ -117,7 +120,7 @@ export function getLlmProviderModelsUrl(provider: LlmProviderType, baseUrl?: str
   if (customBase) {
     return `${customBase}/models`;
   }
-  return LLM_PROVIDERS_META[provider]?.modelsUrl ?? '';
+  return LLM_PROVIDERS_META[provider]?.modelsUrl ?? "";
 }
 
 /**
@@ -126,10 +129,10 @@ export function getLlmProviderModelsUrl(provider: LlmProviderType, baseUrl?: str
  * @param provider Target LLM provider.
  * @returns Non-empty model identifier.
  */
-export function resolveLlmModel(model: string | undefined | null, provider: LlmProviderType): string {
+export function resolveLlmModel(
+  model: string | undefined | null,
+  provider: LlmProviderType,
+): string {
   const trimmed = model?.trim();
   return trimmed || getLlmProviderDefaultModel(provider);
 }
-
-
-

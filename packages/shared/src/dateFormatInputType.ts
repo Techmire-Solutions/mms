@@ -1,4 +1,4 @@
-import { normalizeDateFormat } from './dateFormatPresets.js';
+import { normalizeDateFormat } from "./dateFormatPresets.js";
 
 /**
  * Auto-formats a date input string as the user types, automatically inserting
@@ -11,13 +11,13 @@ import { normalizeDateFormat } from './dateFormatPresets.js';
 export function formatDateInputAsYouType(
   input: string | null | undefined,
   formatId: string,
-  previousValue = '',
+  previousValue = "",
 ): string {
-  if (!input || !input.trim()) return '';
+  if (!input || !input.trim()) return "";
 
   const id = normalizeDateFormat(formatId);
-  const sep = id.includes('/') ? '/' : id.includes('.') ? '.' : '-';
-  const isYearFirst = id.startsWith('YYYY');
+  const sep = id.includes("/") ? "/" : id.includes(".") ? "." : "-";
+  const isYearFirst = id.startsWith("YYYY");
   const maxLens = isYearFirst ? [4, 2, 2] : [2, 2, 4];
   const maxDigits = maxLens[0] + maxLens[1] + maxLens[2];
 
@@ -41,7 +41,7 @@ export function formatDateInputAsYouType(
 
     for (let i = 0; i < Math.min(rawSegments.length, 3); i++) {
       const maxLen = effectiveMaxLens[i]!;
-      const digits = (rawSegments[i] || '').replace(/\D/g, '').slice(0, maxLen);
+      const digits = (rawSegments[i] || "").replace(/\D/g, "").slice(0, maxLen);
       cleanedSegments.push(digits);
     }
 
@@ -74,8 +74,8 @@ export function formatDateInputAsYouType(
   }
 
   // Input does NOT contain separators: format purely by digits
-  const digits = input.replace(/\D/g, '').slice(0, maxDigits);
-  if (!digits) return '';
+  const digits = input.replace(/\D/g, "").slice(0, maxDigits);
+  if (!digits) return "";
 
   if (isYearFirst) {
     if (digits.length < 4) {

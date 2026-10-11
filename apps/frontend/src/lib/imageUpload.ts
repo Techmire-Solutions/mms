@@ -4,31 +4,31 @@ import {
   imageExtensionForMime,
   type ImageUploadPurpose,
   type ImageUploadResponse,
-} from '@mms/shared';
-import { canvasToOptimizedBlob, prepareImageForUpload } from '@/lib/imageOptimization';
-import { apiJson, resolveApiUrl } from '@/lib/apiClient';
+} from "@mms/shared";
+import { canvasToOptimizedBlob, prepareImageForUpload } from "@/lib/imageOptimization";
+import { apiJson, resolveApiUrl } from "@/lib/apiClient";
 
 function assertImageFile(file: File): void {
-  if (!file.type.startsWith('image/')) {
-    throw new Error('invalid_image_type');
+  if (!file.type.startsWith("image/")) {
+    throw new Error("invalid_image_type");
   }
   if (file.size > IMAGE_UPLOAD_MAX_INPUT_BYTES) {
-    throw new Error('image_too_large');
+    throw new Error("image_too_large");
   }
 }
 
 /** Uploads an already-encoded AVIF/WebP file to the MMS image API. */
 export async function uploadImageFile(
   file: File,
-  purpose: ImageUploadPurpose = 'general',
+  purpose: ImageUploadPurpose = "general",
 ): Promise<string> {
   const form = new FormData();
-  form.append('image', file, file.name);
+  form.append("image", file, file.name);
 
   const { url } = await apiJson<ImageUploadResponse>(
     `/api/uploads/image?purpose=${encodeURIComponent(purpose)}`,
     {
-      method: 'POST',
+      method: "POST",
       body: form,
     },
   );
@@ -42,7 +42,7 @@ export async function uploadImageFile(
  */
 export async function uploadUserImage(
   file: File,
-  purpose: ImageUploadPurpose = 'general',
+  purpose: ImageUploadPurpose = "general",
 ): Promise<string> {
   assertImageFile(file);
   const optimized = await prepareImageForUpload(file, purpose);
@@ -52,12 +52,12 @@ export async function uploadUserImage(
 /** Encodes a canvas (e.g. avatar crop) to AVIF/WebP and uploads it. */
 export async function uploadCanvasImage(
   canvas: HTMLCanvasElement,
-  purpose: ImageUploadPurpose = 'avatar',
+  purpose: ImageUploadPurpose = "avatar",
 ): Promise<string> {
   const preset = IMAGE_UPLOAD_PRESETS[purpose];
   const encoded = await canvasToOptimizedBlob(canvas, preset.quality, preset.formats);
   if (!encoded) {
-    throw new Error('image_encode_failed');
+    throw new Error("image_encode_failed");
   }
 
   const ext = imageExtensionForMime(encoded.type);

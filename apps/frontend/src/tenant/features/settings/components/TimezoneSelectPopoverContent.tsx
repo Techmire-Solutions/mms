@@ -1,10 +1,10 @@
-import React from 'react';
-import { Check, Loader2, LocateFixed, MapPin, Search } from 'lucide-react';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PopoverContent } from '@/components/ui/popover';
+import React from "react";
+import { Check, Loader2, LocateFixed, MapPin, Search } from "lucide-react";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PopoverContent } from "@/components/ui/popover";
 
 interface TimezoneSelectPopoverContentProps {
   t: TranslationFunction;
@@ -13,7 +13,7 @@ interface TimezoneSelectPopoverContentProps {
   query: string;
   setQuery: (query: string) => void;
   detecting: boolean;
-  filtered: ReturnType<typeof import('@mms/shared').groupTimezoneOptions>;
+  filtered: ReturnType<typeof import("@mms/shared").groupTimezoneOptions>;
   onLocationDetect: () => Promise<void>;
   onDeviceTimezone: () => void;
   onSelectTimezone: (timezone: string) => void;
@@ -38,12 +38,16 @@ export function TimezoneSelectPopoverContent({
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder={t('global.timezoneSearch')}
+          placeholder={t("global.timezoneSearch")}
           className="h-9 border-0 bg-transparent px-0 text-xs shadow-none focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground/70"
-          aria-label={t('global.timezoneSearch')}
+          aria-label={t("global.timezoneSearch")}
         />
       </div>
-      <div className="max-h-popover-scroll overflow-y-auto p-1.5 space-y-1" role="listbox" aria-label={t('global.timezone')}>
+      <div
+        className="max-h-popover-scroll overflow-y-auto p-1.5 space-y-1"
+        role="listbox"
+        aria-label={t("global.timezone")}
+      >
         <div className="grid grid-cols-1 gap-1 pb-1 border-b border-border/50">
           <Button
             type="button"
@@ -57,7 +61,9 @@ export function TimezoneSelectPopoverContent({
             ) : (
               <MapPin className="h-4 w-4 text-primary shrink-0" aria-hidden />
             )}
-            <span className="truncate">{detecting ? t('global.timezoneDetecting') : t('global.timezoneDetectLocation')}</span>
+            <span className="truncate">
+              {detecting ? t("global.timezoneDetecting") : t("global.timezoneDetectLocation")}
+            </span>
           </Button>
           <Button
             type="button"
@@ -66,18 +72,20 @@ export function TimezoneSelectPopoverContent({
             onClick={onDeviceTimezone}
           >
             <LocateFixed className="h-4 w-4 text-primary shrink-0" aria-hidden />
-            <span className="truncate">{t('global.timezoneUseDevice')}</span>
+            <span className="truncate">{t("global.timezoneUseDevice")}</span>
           </Button>
         </div>
 
         {filtered.length === 0 ? (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            {t('global.timezoneNoResults')}
+            {t("global.timezoneNoResults")}
           </p>
         ) : (
           filtered.map(({ region, options: regionOptions }) => (
             <div key={region} className="pt-1">
-              <p className="px-2.5 py-1 text-3xs font-bold uppercase tracking-wider text-muted-foreground/80">{region}</p>
+              <p className="px-2.5 py-1 text-3xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                {region}
+              </p>
               {regionOptions.map((timezoneOption) => {
                 const isSelected = normalizedValue === timezoneOption.value;
                 return (
@@ -88,15 +96,15 @@ export function TimezoneSelectPopoverContent({
                     aria-selected={isSelected}
                     variant="ghost"
                     className={cn(
-                      'min-h-11 w-full justify-start items-center gap-2 rounded-lg px-2.5 py-2 text-start font-normal transition-colors hover:bg-accent hover:text-accent-foreground',
-                      isSelected && 'bg-accent/80 font-medium text-accent-foreground',
+                      "min-h-11 w-full justify-start items-center gap-2 rounded-lg px-2.5 py-2 text-start font-normal transition-colors hover:bg-accent hover:text-accent-foreground",
+                      isSelected && "bg-accent/80 font-medium text-accent-foreground",
                     )}
                     onClick={() => onSelectTimezone(timezoneOption.value)}
                   >
                     <Check
                       className={cn(
-                        'h-4 w-4 shrink-0',
-                        isSelected ? 'opacity-100 text-primary' : 'opacity-0',
+                        "h-4 w-4 shrink-0",
+                        isSelected ? "opacity-100 text-primary" : "opacity-0",
                       )}
                       aria-hidden
                     />

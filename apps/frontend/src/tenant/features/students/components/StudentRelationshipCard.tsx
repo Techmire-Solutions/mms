@@ -1,12 +1,20 @@
 import React from "react";
 import { ArrowUpRight, FileText, IdCard } from "lucide-react";
-import type { Contact, EmailAddress, PhoneNumber, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type {
+  Contact,
+  EmailAddress,
+  PhoneNumber,
+  StandardMessagingRecipient as MessagingRecipient,
+} from "@mms/shared";
 import { toMessagingRecipient } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { MESSAGING_ICON_BTN, MESSAGING_ICON_BTN_TONES } from "@/components/ui/messagingActionStyles";
+import {
+  MESSAGING_ICON_BTN,
+  MESSAGING_ICON_BTN_TONES,
+} from "@/components/ui/messagingActionStyles";
 import { StudentRelationshipContactList } from "./StudentRelationshipContactList";
 
 export interface StudentRelationshipCardData {
@@ -102,7 +110,12 @@ export function StudentRelationshipCard({
           />
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold uppercase tracking-wider", badgeTone)}>
+              <span
+                className={cn(
+                  "inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold uppercase tracking-wider",
+                  badgeTone,
+                )}
+              >
                 {badgeCode || relationshipLabel}
               </span>
               {inferred && (
@@ -111,7 +124,9 @@ export function StudentRelationshipCard({
                 </span>
               )}
             </div>
-            <h5 className="text-sm font-bold text-foreground truncate mt-0.5" title={name}>{name}</h5>
+            <h5 className="text-sm font-bold text-foreground truncate mt-0.5" title={name}>
+              {name}
+            </h5>
           </div>
         </div>
 
@@ -157,7 +172,9 @@ export function StudentRelationshipCard({
           {notes && (
             <div className="flex items-center gap-1.5 truncate max-w-full">
               <FileText className="w-3.5 h-3.5 shrink-0" aria-hidden />
-              <span className="truncate italic" title={notes}>{notes}</span>
+              <span className="truncate italic" title={notes}>
+                {notes}
+              </span>
             </div>
           )}
         </div>

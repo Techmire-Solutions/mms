@@ -1,5 +1,11 @@
 import { Sparkles, Tags } from "lucide-react";
-import { buildSeedJournalTemplates, generateClientEntityId, type Account, type AccountingSettings, type JournalTemplate } from "@mms/shared";
+import {
+  buildSeedJournalTemplates,
+  generateClientEntityId,
+  type Account,
+  type AccountingSettings,
+  type JournalTemplate,
+} from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/FormPrimitives";
 import { FormCollectionShell } from "@/components/ui/FormCollectionShell";
@@ -46,11 +52,21 @@ export function AccountingSettingsTemplatesSection({
 
   const setTemplates = (next: JournalTemplate[]) => upd("journalTemplates", next);
   const patch = (index: number, change: Partial<JournalTemplate>) =>
-    setTemplates(templates.map((template, current) => (current === index ? { ...template, ...change } : template)));
+    setTemplates(
+      templates.map((template, current) =>
+        current === index ? { ...template, ...change } : template,
+      ),
+    );
 
   return (
-    <SectionCard title={t("accounting.templates.title")} icon={Tags} className={SETUP_SECTION_CARD_CLASS}>
-      <p className="m-0 mb-3 text-xs text-muted-foreground">{t("accounting.templates.description")}</p>
+    <SectionCard
+      title={t("accounting.templates.title")}
+      icon={Tags}
+      className={SETUP_SECTION_CARD_CLASS}
+    >
+      <p className="m-0 mb-3 text-xs text-muted-foreground">
+        {t("accounting.templates.description")}
+      </p>
       {templates.length === 0 && (
         <Button
           type="button"
@@ -65,7 +81,17 @@ export function AccountingSettingsTemplatesSection({
         isEmpty={templates.length === 0}
         emptyMessage={t("accounting.templates.empty")}
         addLabel={t("accounting.templates.add")}
-        onAdd={() => setTemplates([...templates, { id: generateClientEntityId("tpl", "-"), name: "", debitAccountId: "", creditAccountId: "" }])}
+        onAdd={() =>
+          setTemplates([
+            ...templates,
+            {
+              id: generateClientEntityId("tpl", "-"),
+              name: "",
+              debitAccountId: "",
+              creditAccountId: "",
+            },
+          ])
+        }
         listKey="accounting-journal-templates"
       >
         {templates.map((template, index) => (
@@ -87,7 +113,10 @@ export function AccountingSettingsTemplatesSection({
                   onChange={(event) => patch(index, { name: event.target.value })}
                 />
               </Field>
-              <Field id={`template-${template.id}-debit`} label={t("accounting.templates.debitHead")}>
+              <Field
+                id={`template-${template.id}-debit`}
+                label={t("accounting.templates.debitHead")}
+              >
                 <FormSelect
                   id={`template-${template.id}-debit`}
                   value={template.debitAccountId}
@@ -96,7 +125,10 @@ export function AccountingSettingsTemplatesSection({
                   options={accountOptions}
                 />
               </Field>
-              <Field id={`template-${template.id}-credit`} label={t("accounting.templates.creditHead")}>
+              <Field
+                id={`template-${template.id}-credit`}
+                label={t("accounting.templates.creditHead")}
+              >
                 <FormSelect
                   id={`template-${template.id}-credit`}
                   value={template.creditAccountId}
@@ -109,7 +141,9 @@ export function AccountingSettingsTemplatesSection({
           </FormListFieldCard>
         ))}
       </FormCollectionShell>
-      {hasInvalidNames(templates) && <WarningCallout density="compact" description={t("accounting.templates.duplicateName")} />}
+      {hasInvalidNames(templates) && (
+        <WarningCallout density="compact" description={t("accounting.templates.duplicateName")} />
+      )}
       <ModuleSetupSaveFooter
         dirty={Boolean(isPrefsDirty) && !hasInvalidNames(templates)}
         saving={Boolean(saving)}

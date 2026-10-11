@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import type { QuestionBankQuestion as Question } from '@mms/shared';
-import type { QuestionBankConfig } from '@/tenant/features/question-bank/hooks/useQuestionBankConfig';
+import { useEffect, useState } from "react";
+import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { QuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import {
   buildQuestionsListMetaFields,
   shouldShowQuestionSourceCitation,
   useQuestionBankDisplayConfig,
-} from '@/tenant/features/question-bank/components/useQuestionBankDisplayConfig';
+} from "@/tenant/features/question-bank/components/useQuestionBankDisplayConfig";
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 
@@ -51,13 +51,16 @@ export function useQuestionBankWorkController({
   isColumnVisible,
 }: UseQuestionBankWorkControllerOptions) {
   const selectedSet = new Set(selectedIds);
-  const allVisibleSelected = pageQuestions.length > 0
-    && pageQuestions.every((q) => selectedSet.has(q.id));
-  const someVisibleSelected = selectedSet.size > 0
-    && pageQuestions.some((q) => selectedSet.has(q.id));
+  const allVisibleSelected =
+    pageQuestions.length > 0 && pageQuestions.every((q) => selectedSet.has(q.id));
+  const someVisibleSelected =
+    selectedSet.size > 0 && pageQuestions.some((q) => selectedSet.has(q.id));
 
   const handleToggleSelectAll = (checked: boolean) => {
-    onToggleSelectAll?.(checked, pageQuestions.map((q) => q.id));
+    onToggleSelectAll?.(
+      checked,
+      pageQuestions.map((q) => q.id),
+    );
   };
 
   const [pendingTrashId, setPendingTrashId] = useState<string | null>(null);
@@ -79,7 +82,7 @@ export function useQuestionBankWorkController({
   };
 
   const columnVisible = isColumnVisible ?? ALWAYS_COLUMN_VISIBLE;
-  const showSource = columnVisible('source');
+  const showSource = columnVisible("source");
   const listMetaFields = buildQuestionsListMetaFields(config, columnVisible);
   const showSourceCitation = shouldShowQuestionSourceCitation(config, showSource);
 

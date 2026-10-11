@@ -56,15 +56,12 @@ export function InvoiceTemplateEditor({
   const branding = useBranding();
   const { handleExportTypst, handleExportZoho } = useInvoiceTemplateExports();
 
-  const translate = useCallback<TemplateTranslate>(
-    (key) => t(key as Parameters<typeof t>[0]),
-    [t],
-  );
+  const translate = useCallback<TemplateTranslate>((key) => t(key as Parameters<typeof t>[0]), [t]);
 
   const contactIds = useMemo(() => {
     if (!collection) return [];
     const ids = [collection.sender_id, collection.reference_id].filter(
-      (id): id is string => id != null && id !== ""
+      (id): id is string => id != null && id !== "",
     );
     return Array.from(new Set(ids));
   }, [collection]);
@@ -80,7 +77,7 @@ export function InvoiceTemplateEditor({
 
   const defaultTemplate = useMemo<InvoiceTemplate>(
     () => getDefaultTemplate(branding, translate),
-    [branding, translate]
+    [branding, translate],
   );
 
   const availableFields = useMemo(
@@ -89,7 +86,7 @@ export function InvoiceTemplateEditor({
         ...field,
         label: t(`${INVOICE_TEMPLATE_FIELD_KEY_PREFIX}${field.field}` as Parameters<typeof t>[0]),
       })),
-    [t]
+    [t],
   );
 
   const sampleData = useInvoiceTemplateSampleData({

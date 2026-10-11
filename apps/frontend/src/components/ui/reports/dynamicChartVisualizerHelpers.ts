@@ -1,14 +1,11 @@
-import { getDenominationPoints } from '@mms/shared';
-import type { AggregatedItem, ChartOperation, FilterRule } from './dynamicChartVisualizerTypes';
+import { getDenominationPoints } from "@mms/shared";
+import type { AggregatedItem, ChartOperation, FilterRule } from "./dynamicChartVisualizerTypes";
 
 export function isDateDimensionField(fieldName: string): boolean {
   return /date|time|created|updated|issued|registered/i.test(fieldName);
 }
 
-export function matchesFilterRule(
-  row: Record<string, unknown>,
-  rule: FilterRule,
-): boolean {
+export function matchesFilterRule(row: Record<string, unknown>, rule: FilterRule): boolean {
   if (!rule.field || !rule.value) return true;
   const fieldValue = row[rule.field];
   if (fieldValue === undefined || fieldValue === null) return false;
@@ -17,15 +14,15 @@ export function matchesFilterRule(
   const ruleValue = String(rule.value).toLowerCase();
 
   switch (rule.operator) {
-    case 'equals':
+    case "equals":
       return stringValue === ruleValue;
-    case 'contains':
+    case "contains":
       return stringValue.includes(ruleValue);
-    case 'startsWith':
+    case "startsWith":
       return stringValue.startsWith(ruleValue);
-    case 'gt':
+    case "gt":
       return Number(fieldValue) > Number(rule.value);
-    case 'lt':
+    case "lt":
       return Number(fieldValue) < Number(rule.value);
     default:
       return true;
@@ -49,7 +46,9 @@ export function sortAndCapAggregatedItems(
     return sortedRows.length > 20 ? sortedRows.slice(-20) : sortedRows;
   }
 
-  const sortedRows = [...aggregatedRows].sort((firstItem, secondItem) => secondItem.value - firstItem.value);
+  const sortedRows = [...aggregatedRows].sort(
+    (firstItem, secondItem) => secondItem.value - firstItem.value,
+  );
   if (sortedRows.length <= 10) return sortedRows;
 
   const topRows = sortedRows.slice(0, 9);
@@ -57,18 +56,18 @@ export function sortAndCapAggregatedItems(
   const othersCount = remainingRows.reduce((sum, remainingRow) => sum + remainingRow.count, 0);
 
   let finalOthersValue = remainingRows.reduce((sum, remainingRow) => sum + remainingRow.value, 0);
-  if (operation === 'avg') {
+  if (operation === "avg") {
     const totalCount = remainingRows.reduce((sum, remainingRow) => sum + remainingRow.count, 0);
     if (totalCount > 0) {
       const weightedSum = remainingRows.reduce(
-        (sum, remainingRow) => sum + (remainingRow.value * remainingRow.count),
+        (sum, remainingRow) => sum + remainingRow.value * remainingRow.count,
         0,
       );
       finalOthersValue = Math.round(weightedSum / totalCount);
     }
-  } else if (operation === 'min') {
+  } else if (operation === "min") {
     finalOthersValue = Math.min(...remainingRows.map((remainingRow) => remainingRow.value));
-  } else if (operation === 'max') {
+  } else if (operation === "max") {
     finalOthersValue = Math.max(...remainingRows.map((remainingRow) => remainingRow.value));
   }
 
@@ -110,8 +109,8 @@ export function aggregateVisualizerRows(options: {
   filteredRows.forEach((filteredRow) => {
     const xAxisValue = filteredRow[xAxisField];
     const groupKey =
-      xAxisValue === undefined || xAxisValue === null || xAxisValue === ''
-        ? 'Unknown / Null'
+      xAxisValue === undefined || xAxisValue === null || xAxisValue === ""
+        ? "Unknown / Null"
         : String(xAxisValue);
     if (!groups[groupKey]) groups[groupKey] = [];
     groups[groupKey].push(filteredRow);
@@ -121,14 +120,14 @@ export function aggregateVisualizerRows(options: {
     let finalValue = 0;
     const count = groupItems.length;
 
-    if (operation === 'count') {
+    if (operation === "count") {
       finalValue = count;
     } else {
-      const targetMetricField = targetField || '';
+      const targetMetricField = targetField || "";
       const values: number[] = [];
 
       groupItems.forEach((groupItem) => {
-        if (collectionKey === 'hasanat_distributions' && targetMetricField === 'points') {
+        if (collectionKey === "hasanat_distributions" && targetMetricField === "points") {
           const points = getDenominationPoints(
             groupItem.denominationId as string,
             groupItem.denominationName as string,
@@ -145,16 +144,16 @@ export function aggregateVisualizerRows(options: {
 
       if (values.length > 0) {
         switch (operation) {
-          case 'sum':
+          case "sum":
             finalValue = values.reduce((sum, value) => sum + value, 0);
             break;
-          case 'avg':
+          case "avg":
             finalValue = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
             break;
-          case 'min':
+          case "min":
             finalValue = Math.min(...values);
             break;
-          case 'max':
+          case "max":
             finalValue = Math.max(...values);
             break;
           default:
@@ -170,15 +169,15 @@ export function aggregateVisualizerRows(options: {
 }
 
 export function resolveWidgetPinColor(activePalette: string): string {
-  if (activePalette === 'emeraldForest' || activePalette.startsWith('tol')) return 'emerald';
-  if (activePalette === 'oceanBreeze' || activePalette === 'accessibleColorblind') return 'blue';
-  if (activePalette === 'cosmicViolet') return 'violet';
-  return 'amber';
+  if (activePalette === "emeraldForest" || activePalette.startsWith("tol")) return "emerald";
+  if (activePalette === "oceanBreeze" || activePalette === "accessibleColorblind") return "blue";
+  if (activePalette === "cosmicViolet") return "violet";
+  return "amber";
 }
 
 export function getPdfPageDimensions(
   pdfFormat: string,
-  pdfOrientation: 'p' | 'l',
+  pdfOrientation: "p" | "l",
 ): { formatWidth: number; formatHeight: number } {
   const SIZES: Record<string, [number, number]> = {
     a3: [297, 420],
@@ -186,7 +185,7 @@ export function getPdfPageDimensions(
     letter: [215.9, 279.4],
   };
   const [w, h] = SIZES[pdfFormat] ?? [210, 297];
-  return pdfOrientation === 'l'
+  return pdfOrientation === "l"
     ? { formatWidth: h, formatHeight: w }
     : { formatWidth: w, formatHeight: h };
 }

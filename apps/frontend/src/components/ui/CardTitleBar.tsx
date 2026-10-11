@@ -43,7 +43,10 @@ export function CardTitleBar({
         )}
         <div className="min-w-0">
           {title && (
-            <HeadingTag id={headingId} className="m-0 min-w-0 truncate text-sm font-bold text-foreground">
+            <HeadingTag
+              id={headingId}
+              className="m-0 min-w-0 truncate text-sm font-bold text-foreground"
+            >
               {title}
             </HeadingTag>
           )}

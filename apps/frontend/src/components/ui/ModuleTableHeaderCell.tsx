@@ -26,7 +26,7 @@ export interface ModuleTableHeaderCellProps {
   variant?: TableCellVariant;
 }
 
-export const ModuleTableHeaderCell = (function ModuleTableHeaderCell({
+export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
   columnKey,
   width,
   onResize,
@@ -44,7 +44,8 @@ export const ModuleTableHeaderCell = (function ModuleTableHeaderCell({
   const sortable = Boolean(sortKey);
   const isSorted = sortable && activeSortField === sortKey;
   const ariaSort = isSorted ? (sortDir === "asc" ? "ascending" : "descending") : "none";
-  const isEnd = align === "end" || align === "right" || variant === "number" || variant === "currency";
+  const isEnd =
+    align === "end" || align === "right" || variant === "number" || variant === "currency";
   const isCenter = align === "center" || variant === "badge" || variant === "action";
 
   return (
@@ -65,7 +66,11 @@ export const ModuleTableHeaderCell = (function ModuleTableHeaderCell({
           onClick={() => onSort(sortKey as string)}
           className={cn(
             "flex w-full items-center gap-1 cursor-pointer select-none hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
-            isEnd ? "justify-end text-end" : isCenter ? "justify-center text-center" : "justify-start text-start",
+            isEnd
+              ? "justify-end text-end"
+              : isCenter
+                ? "justify-center text-center"
+                : "justify-start text-start",
           )}
         >
           {children}
@@ -84,4 +89,4 @@ export const ModuleTableHeaderCell = (function ModuleTableHeaderCell({
       )}
     </ResizableTableHead>
   );
-});
+};

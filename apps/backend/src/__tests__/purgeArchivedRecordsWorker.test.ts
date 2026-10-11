@@ -1,40 +1,40 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { purgeExpiredArchivedRecords } from '../worker/purgeArchivedRecordsJob.js';
-import { executeGdprErasure } from '../services/gdprErasureService.js';
-import { getMsUntilNextUtcHour, runRetentionPurgeCycle } from '../worker/index.js';
-import type { DbClient } from '../db/dbConnection.js';
-import { recordModernAuditEvent } from '../services/auditTrailService.js';
-import { executeSubjectErasure } from '../services/cryptoShreddingService.js';
-import { messageLogs } from '../db/schema.js';
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { purgeExpiredArchivedRecords } from "../worker/purgeArchivedRecordsJob.js";
+import { executeGdprErasure } from "../services/gdprErasureService.js";
+import { getMsUntilNextUtcHour, runRetentionPurgeCycle } from "../worker/index.js";
+import type { DbClient } from "../db/dbConnection.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { executeSubjectErasure } from "../services/cryptoShreddingService.js";
+import { messageLogs } from "../db/schema.js";
 
-vi.mock('../services/auditTrailService.js', () => ({
+vi.mock("../services/auditTrailService.js", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({
     id: 1,
-    hashPrevious: '0'.repeat(64),
-    hashCurrent: '1'.repeat(64),
-    canonicalPayload: '{}',
+    hashPrevious: "0".repeat(64),
+    hashCurrent: "1".repeat(64),
+    canonicalPayload: "{}",
   }),
 }));
 
-vi.mock('../services/cryptoShreddingService.js', () => ({
+vi.mock("../services/cryptoShreddingService.js", () => ({
   executeSubjectErasure: vi.fn().mockResolvedValue({
-    erasureRequestId: 'era-test-123',
-    subjectId: 'contact-subject-456',
-    erasureType: 'CRYPTO_SHRED',
-    status: 'COMPLETED',
+    erasureRequestId: "era-test-123",
+    subjectId: "contact-subject-456",
+    erasureType: "CRYPTO_SHRED",
+    status: "COMPLETED",
   }),
 }));
 
-vi.mock('../services/outboxEventService.js', () => ({
+vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
+describe("Purge Archived Records Worker & GDPR Article 17 Erasure", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('Verify chunked purge deletes records in batches of 500 without deadlocks', async () => {
+  it("Verify chunked purge deletes records in batches of 500 without deadlocks", async () => {
     // Generate 750 candidate IDs (Chunk 1: 500, Chunk 2: 250)
     const chunk1 = Array.from({ length: 500 }, (_, i) => ({ id: `msg-chunk1-${i}` }));
     const chunk2 = Array.from({ length: 250 }, (_, i) => ({ id: `msg-chunk2-${i}` }));
@@ -43,11 +43,13 @@ describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
     const executedSqlStatements: string[] = [];
     const deletedBatches: string[][] = [];
 
-    const executeMock = vi.fn().mockImplementation(async (query: { queryChunks?: Array<{ value?: string[] }> }) => {
-      // Track executed SQL strings (e.g. SET LOCAL app.allow_hard_purge = 'true')
-      executedSqlStatements.push(JSON.stringify(query));
-      return undefined;
-    });
+    const executeMock = vi
+      .fn()
+      .mockImplementation(async (query: { queryChunks?: Array<{ value?: string[] }> }) => {
+        // Track executed SQL strings (e.g. SET LOCAL app.allow_hard_purge = 'true')
+        executedSqlStatements.push(JSON.stringify(query));
+        return undefined;
+      });
 
     const deleteMock = vi.fn().mockImplementation((_table) => ({
       where: vi.fn().mockImplementation((_pred) => {
@@ -61,20 +63,22 @@ describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
           limit: vi.fn().mockImplementation((limitVal: number) => {
             expect(limitVal).toBe(500);
             return {
-              for: vi.fn().mockImplementation((lockMode: string, options: { skipLocked: boolean }) => {
-                expect(lockMode).toBe('update');
-                expect(options.skipLocked).toBe(true);
-                callCount++;
-                if (callCount === 1) {
-                  deletedBatches.push(chunk1.map((c) => c.id));
-                  return Promise.resolve(chunk1);
-                }
-                if (callCount === 2) {
-                  deletedBatches.push(chunk2.map((c) => c.id));
-                  return Promise.resolve(chunk2);
-                }
-                return Promise.resolve([]);
-              }),
+              for: vi
+                .fn()
+                .mockImplementation((lockMode: string, options: { skipLocked: boolean }) => {
+                  expect(lockMode).toBe("update");
+                  expect(options.skipLocked).toBe(true);
+                  callCount++;
+                  if (callCount === 1) {
+                    deletedBatches.push(chunk1.map((c) => c.id));
+                    return Promise.resolve(chunk1);
+                  }
+                  if (callCount === 2) {
+                    deletedBatches.push(chunk2.map((c) => c.id));
+                    return Promise.resolve(chunk2);
+                  }
+                  return Promise.resolve([]);
+                }),
             };
           }),
         }),
@@ -91,13 +95,15 @@ describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
     };
 
     const mockDb = {
-      transaction: vi.fn().mockImplementation(async (cb: (tx: typeof txMock) => Promise<unknown>) => {
-        return cb(txMock);
-      }),
+      transaction: vi
+        .fn()
+        .mockImplementation(async (cb: (tx: typeof txMock) => Promise<unknown>) => {
+          return cb(txMock);
+        }),
     } as unknown as DbClient;
 
-    const result = await purgeExpiredArchivedRecords(mockDb, 'demo-tenant', false, {
-      targetTables: [{ name: 'message_logs', table: messageLogs }],
+    const result = await purgeExpiredArchivedRecords(mockDb, "demo-tenant", false, {
+      targetTables: [{ name: "message_logs", table: messageLogs }],
     });
 
     // Verify chunking behavior
@@ -113,24 +119,24 @@ describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
     expect(recordModernAuditEvent).toHaveBeenCalledWith(
       txMock,
       expect.objectContaining({
-        actionType: 'DELETE',
-        apiEndpoint: 'entity.hard_purge',
-        tableName: 'message_logs',
-        workspaceSubdomain: 'demo-tenant',
+        actionType: "DELETE",
+        apiEndpoint: "entity.hard_purge",
+        tableName: "message_logs",
+        workspaceSubdomain: "demo-tenant",
       }),
     );
   });
 
-  it('Verify purge transactions without SET LOCAL app.allow_hard_purge = \'true\' fail trigger checks', async () => {
+  it("Verify purge transactions without SET LOCAL app.allow_hard_purge = 'true' fail trigger checks", async () => {
     // Simulates the PostgreSQL forbid_hard_delete() trigger contract:
     // IF current_setting('app.allow_hard_purge', true) != 'true' THEN RAISE EXCEPTION ...
     class SimulatedTriggerViolationError extends Error {
-      code = '23514';
+      code = "23514";
       constructor() {
         super(
           'Hard delete forbidden on table "students", use soft-delete (UPDATE ... SET deleted_at = NOW()) or set app.allow_hard_purge = true in maintenance transactions.',
         );
-        this.name = 'SimulatedTriggerViolationError';
+        this.name = "SimulatedTriggerViolationError";
       }
     }
 
@@ -138,7 +144,7 @@ describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
 
     const simulatedTx = {
       execute: vi.fn().mockImplementation(async (query: { strings?: string[] }) => {
-        const sqlText = query?.strings ? query.strings.join('') : String(query);
+        const sqlText = query?.strings ? query.strings.join("") : String(query);
         if (sqlText.includes("app.allow_hard_purge = 'true'")) {
           sessionAllowHardPurge = true;
         }
@@ -166,9 +172,9 @@ describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
     }).not.toThrow();
   });
 
-  it('Verify GDPR pseudonymization scrubs plain PII and preserves relational ID continuity', async () => {
-    const contactId = 'contact-subject-456';
-    const tenant = 'demo-tenant';
+  it("Verify GDPR pseudonymization scrubs plain PII and preserves relational ID continuity", async () => {
+    const contactId = "contact-subject-456";
+    const tenant = "demo-tenant";
 
     const executeMock = vi.fn().mockResolvedValue(undefined);
     const updateMock = vi.fn().mockReturnValue({
@@ -197,9 +203,9 @@ describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
       expect.objectContaining({
         subjectId: contactId,
         workspaceSubdomain: tenant,
-        regime: 'GDPR',
-        erasureType: 'CRYPTO_SHRED',
-        reason: 'GDPR Article 17 Erasure Request',
+        regime: "GDPR",
+        erasureType: "CRYPTO_SHRED",
+        reason: "GDPR Article 17 Erasure Request",
       }),
     );
 
@@ -208,40 +214,40 @@ describe('Purge Archived Records Worker & GDPR Article 17 Erasure', () => {
     expect(result.pseudonymizedRecord.id).toBe(contactId);
 
     // 3. Plain PII attributes are pseudonymized and scrubbed in place
-    expect(result.pseudonymizedRecord.firstName).toBe('Anonymized');
-    expect(result.pseudonymizedRecord.lastName).toBe('Subject');
-    expect(result.pseudonymizedRecord.name).toBe('Anonymized Subject');
+    expect(result.pseudonymizedRecord.firstName).toBe("Anonymized");
+    expect(result.pseudonymizedRecord.lastName).toBe("Subject");
+    expect(result.pseudonymizedRecord.name).toBe("Anonymized Subject");
     expect(result.pseudonymizedRecord.email).toBe(`erased-${contactId}@deleted.local`);
     expect(result.pseudonymizedRecord.phone).toBeNull();
     expect(result.pseudonymizedRecord.customData).toEqual({});
 
     // 4. Soft-delete markers are applied
     expect(result.pseudonymizedRecord.deletedAt).toBeInstanceOf(Date);
-    expect(result.pseudonymizedRecord.deletionReason).toBe('GDPR Article 17 Erasure Request');
+    expect(result.pseudonymizedRecord.deletionReason).toBe("GDPR Article 17 Erasure Request");
 
     // 5. Audit event emitted with REDACT action
     expect(recordModernAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceSubdomain: tenant,
-        tableName: 'contacts',
+        tableName: "contacts",
         recordId: contactId,
-        actionType: 'REDACT',
-        apiEndpoint: 'gdpr.article17.erasure',
+        actionType: "REDACT",
+        apiEndpoint: "gdpr.article17.erasure",
       }),
     );
   });
 
-  it('calculates scheduled delay to 02:00 UTC correctly', () => {
+  it("calculates scheduled delay to 02:00 UTC correctly", () => {
     const delayMs = getMsUntilNextUtcHour(2);
     expect(delayMs).toBeGreaterThan(0);
     // At most 24 hours
     expect(delayMs).toBeLessThanOrEqual(24 * 60 * 60 * 1000);
   });
 
-  it('runs retention purge cycle across active workspaces', async () => {
+  it("runs retention purge cycle across active workspaces", async () => {
     const mockDb = {
       select: vi.fn().mockReturnValue({
-        from: vi.fn().mockResolvedValue([{ subdomain: 'tenant-a' }, { subdomain: 'tenant-b' }]),
+        from: vi.fn().mockResolvedValue([{ subdomain: "tenant-a" }, { subdomain: "tenant-b" }]),
       }),
     } as unknown as DbClient;
 

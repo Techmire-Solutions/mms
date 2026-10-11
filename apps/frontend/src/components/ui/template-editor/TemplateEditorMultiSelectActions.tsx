@@ -1,7 +1,7 @@
-import React from 'react';
-import { Copy, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
+import React from "react";
+import { Copy, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface TemplateEditorMultiSelectActionsProps {
   selectedCount: number;
@@ -17,7 +17,11 @@ export function TemplateEditorMultiSelectActions({
   t,
 }: TemplateEditorMultiSelectActionsProps): React.JSX.Element {
   return (
-    <div role="group" aria-label={t("common.actions")} className="flex gap-2 pt-2 border-t border-border">
+    <div
+      role="group"
+      aria-label={t("common.actions")}
+      className="flex gap-2 pt-2 border-t border-border"
+    >
       <Button
         type="button"
         variant="outline"

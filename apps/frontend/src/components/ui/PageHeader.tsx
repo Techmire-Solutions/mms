@@ -14,7 +14,7 @@ export interface PageHeaderProps {
  * @param {PageHeaderProps} props - The component props.
  * @returns {React.ReactElement} The rendered PageHeader component.
  */
-export const PageHeader = (function PageHeader({
+export const PageHeader = function PageHeader({
   icon: Icon = null,
   title,
   subtitle = "",
@@ -31,14 +31,17 @@ export const PageHeader = (function PageHeader({
         )}
         <div className="min-w-0">
           {breadcrumb && (
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">{breadcrumb}</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
+              {breadcrumb}
+            </p>
           )}
           <h1 className="text-xl font-bold text-foreground leading-tight break-words">{title}</h1>
-          {subtitle && <p className="text-sm text-muted-foreground mt-0.5 break-words">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-sm text-muted-foreground mt-0.5 break-words">{subtitle}</p>
+          )}
         </div>
       </div>
       {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
     </div>
   );
-});
-
+};

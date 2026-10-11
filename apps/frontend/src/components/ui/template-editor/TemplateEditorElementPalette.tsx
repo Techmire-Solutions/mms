@@ -1,5 +1,16 @@
 import React, { useMemo, useState } from "react";
-import { Minus, QrCode, Type, Search, Database, Plus, Heading1, Image as ImageIcon, Table, X } from "lucide-react";
+import {
+  Minus,
+  QrCode,
+  Type,
+  Search,
+  Database,
+  Plus,
+  Heading1,
+  Image as ImageIcon,
+  Table,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AppTranslationKey, TemplateFieldDefinition } from "@mms/shared";
@@ -60,9 +71,9 @@ export function TemplateEditorElementPalette<TPayload = Record<string, unknown>>
       availableFields.filter(
         (f) =>
           f.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          String(f.field).toLowerCase().includes(searchQuery.toLowerCase())
+          String(f.field).toLowerCase().includes(searchQuery.toLowerCase()),
       ),
-    [availableFields, searchQuery]
+    [availableFields, searchQuery],
   );
 
   const primitive = (
@@ -117,13 +128,18 @@ export function TemplateEditorElementPalette<TPayload = Record<string, unknown>>
               <span>{t("templateEditor.addFields")}</span>
             </p>
             <span className="text-3xs bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full">
-              {searchQuery ? `${filteredFields.length} / ${availableFields.length}` : availableFields.length}
+              {searchQuery
+                ? `${filteredFields.length} / ${availableFields.length}`
+                : availableFields.length}
             </span>
           </div>
 
           {availableFields.length >= FIELD_SEARCH_THRESHOLD && (
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-muted-foreground absolute start-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+              <Search
+                className="w-3.5 h-3.5 text-muted-foreground absolute start-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                aria-hidden="true"
+              />
               <Input
                 type="text"
                 value={searchQuery}
@@ -170,13 +186,18 @@ export function TemplateEditorElementPalette<TPayload = Record<string, unknown>>
                     </span>
                   </p>
                 </div>
-                <Plus className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary shrink-0" aria-hidden="true" />
+                <Plus
+                  className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary shrink-0"
+                  aria-hidden="true"
+                />
               </Button>
             ))}
             {filteredFields.length === 0 && (
               <div className="flex flex-col items-center justify-center py-4 text-center">
                 <Search className="w-4 h-4 text-muted-foreground/40 mb-1" aria-hidden="true" />
-                <p className="text-xs text-muted-foreground m-0">{t("templateEditor.noFieldsMatched")}</p>
+                <p className="text-xs text-muted-foreground m-0">
+                  {t("templateEditor.noFieldsMatched")}
+                </p>
               </div>
             )}
           </div>

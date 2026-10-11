@@ -5,7 +5,10 @@ import type { Contact } from "@mms/shared";
 import { ContactDetailOverviewQuickActions } from "./ContactDetailOverviewQuickActions";
 
 vi.mock("@/components/ui/EntityMessagingActions", () => ({
-  EntityMessagingActions: ({ primaryPhone, primaryEmail }: {
+  EntityMessagingActions: ({
+    primaryPhone,
+    primaryEmail,
+  }: {
     primaryPhone: string | null;
     primaryEmail: string | null;
   }) => (

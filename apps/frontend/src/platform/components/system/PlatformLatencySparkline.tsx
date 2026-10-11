@@ -1,5 +1,5 @@
-import React from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PlatformLatencySparklineProps {
   history: number[];
@@ -20,11 +20,11 @@ export function PlatformLatencySparkline({
   return (
     <div
       role="region"
-      aria-label={t('platform.maintenance.recentPings')}
+      aria-label={t("platform.maintenance.recentPings")}
       className="flex items-center gap-2 bg-card px-2.5 py-1 rounded-lg border border-border/50 text-xs"
     >
       <span className="text-3xs font-semibold text-muted-foreground uppercase tracking-wider">
-        {t('platform.maintenance.recentPings')}:
+        {t("platform.maintenance.recentPings")}:
       </span>
 
       {/* Mini-sparkline bars */}
@@ -32,11 +32,7 @@ export function PlatformLatencySparkline({
         {history.map((latency, idx) => {
           const heightPercent = Math.max(15, Math.min(100, Math.round((latency / maxVal) * 100)));
           const colorClass =
-            latency < 100
-              ? 'bg-success'
-              : latency < 250
-                ? 'bg-primary'
-                : 'bg-warning';
+            latency < 100 ? "bg-success" : latency < 250 ? "bg-primary" : "bg-warning";
 
           return (
             <div
@@ -51,7 +47,7 @@ export function PlatformLatencySparkline({
 
       {avgLatency !== null ? (
         <span className="text-3xs font-mono font-bold text-foreground ps-1 border-s border-border/50">
-          {t('platform.maintenance.avgLatency')}: {avgLatency} ms
+          {t("platform.maintenance.avgLatency")}: {avgLatency} ms
         </span>
       ) : null}
     </div>

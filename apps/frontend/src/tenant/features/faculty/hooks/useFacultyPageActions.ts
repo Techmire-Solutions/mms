@@ -1,7 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { notify } from "@/lib/notify";
-import type { Faculty } from '@mms/shared';
+import type { Faculty } from "@mms/shared";
 import { useFacultyMutations } from "@/tenant/features/faculty/hooks/useFaculty";
 import { useFacultyCrudNotify } from "@/tenant/features/faculty/hooks/useFacultyCrudNotify";
 import { type FacultyRecord, toMessagingRecipient } from "@mms/shared";
@@ -10,9 +10,7 @@ export interface UseFacultyPageActionsParams {
   editFaculty?: Faculty | null;
 }
 
-export function useFacultyPageActions({
-  editFaculty,
-}: UseFacultyPageActionsParams) {
+export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsParams) {
   const effectiveEditTarget = editFaculty ?? null;
   const { t } = useTranslation();
   const { handleError, notifyBulkResult, notifyArchivedWithUndo } = useFacultyCrudNotify();
@@ -27,10 +25,10 @@ export function useFacultyPageActions({
     bulkUpdateFacultySpecialization,
     isBulkSpecializationPending,
   } = useFacultyMutations();
-  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } = useMessageComposerState();
+  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
+    useMessageComposerState();
 
-  const toRecipients = (list: Faculty[]) =>
-    list.map((item) => toMessagingRecipient(item));
+  const toRecipients = (list: Faculty[]) => list.map((item) => toMessagingRecipient(item));
 
   const handleWhatsApp = (list: Faculty[]) => {
     if (!canWriteMessaging) return;
@@ -177,4 +175,3 @@ export function useFacultyPageActions({
     isBulkSpecializationPending,
   };
 }
-

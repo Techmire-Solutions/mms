@@ -37,7 +37,7 @@ export interface ReportDataGridContainerProps {
  * Integrates ExportToolbar at the top, scrollable table content in the middle,
  * and ListPagination at the bottom.
  */
-export const ReportDataGridContainer = (function ReportDataGridContainer({
+export const ReportDataGridContainer = function ReportDataGridContainer({
   children,
   title,
   columns,
@@ -63,7 +63,11 @@ export const ReportDataGridContainer = (function ReportDataGridContainer({
   isLoading = false,
 }: ReportDataGridContainerProps): React.JSX.Element {
   const showExport = !hideExport && Boolean(title && (columns || rows || data || resolveRows));
-  const showPagination = typeof page === "number" && typeof total === "number" && typeof onPageChange === "function" && total > 0;
+  const showPagination =
+    typeof page === "number" &&
+    typeof total === "number" &&
+    typeof onPageChange === "function" &&
+    total > 0;
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -86,12 +90,7 @@ export const ReportDataGridContainer = (function ReportDataGridContainer({
             <TableSkeleton rows={limit > 10 ? 10 : limit} />
           </div>
         ) : empty && emptyTitle ? (
-          <EmptyState
-            icon={emptyIcon}
-            title={emptyTitle}
-            description={emptyDescription}
-            compact
-          />
+          <EmptyState icon={emptyIcon} title={emptyTitle} description={emptyDescription} compact />
         ) : (
           children
         )}
@@ -110,6 +109,6 @@ export const ReportDataGridContainer = (function ReportDataGridContainer({
       )}
     </div>
   );
-});
+};
 
 export default ReportDataGridContainer;

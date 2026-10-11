@@ -1,5 +1,5 @@
-import type { Contact, FieldDefinition, TabDefinition } from './contactTypes.js';
-import { canViewContactField, canViewContactTab } from './contactFieldAccess.js';
+import type { Contact, FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { canViewContactField, canViewContactTab } from "./contactFieldAccess.js";
 
 export interface ContactFieldConfigSnapshot {
   fields: Record<string, FieldDefinition[]>;
@@ -7,12 +7,12 @@ export interface ContactFieldConfigSnapshot {
 }
 
 const TAB_COLLECTION_KEYS: Record<string, (keyof Contact)[]> = {
-  phones: ['phones', 'phone'],
-  emails: ['emails', 'email'],
-  addresses: ['addresses', 'city', 'state', 'country'],
-  socials: ['socials'],
-  relationship: ['relationshipContacts'],
-  relationships: ['relationships'],
+  phones: ["phones", "phone"],
+  emails: ["emails", "email"],
+  addresses: ["addresses", "city", "state", "country"],
+  socials: ["socials"],
+  relationship: ["relationshipContacts"],
+  relationships: ["relationships"],
 };
 
 function fieldVisible(viewerRole: string, field: FieldDefinition | undefined): boolean {
@@ -57,13 +57,21 @@ export function resolveContactKeysToStripForViewer(
       }
       continue;
     }
-    if (tabId === 'phones' && fields.phones?.length && !fieldVisible(viewerRole, fieldLookup.get('phones:number'))) {
-      toStrip.add('phones');
-      toStrip.add('phone');
+    if (
+      tabId === "phones" &&
+      fields.phones?.length &&
+      !fieldVisible(viewerRole, fieldLookup.get("phones:number"))
+    ) {
+      toStrip.add("phones");
+      toStrip.add("phone");
     }
-    if (tabId === 'emails' && fields.emails?.length && !fieldVisible(viewerRole, fieldLookup.get('emails:address'))) {
-      toStrip.add('emails');
-      toStrip.add('email');
+    if (
+      tabId === "emails" &&
+      fields.emails?.length &&
+      !fieldVisible(viewerRole, fieldLookup.get("emails:address"))
+    ) {
+      toStrip.add("emails");
+      toStrip.add("email");
     }
   }
 
@@ -84,12 +92,12 @@ export function resolveContactKeysToStripForViewer(
     }
   }
 
-  if (!fieldVisible(viewerRole, fieldLookup.get('basic:firstName'))) {
-    toStrip.add('firstName');
-    toStrip.add('name');
+  if (!fieldVisible(viewerRole, fieldLookup.get("basic:firstName"))) {
+    toStrip.add("firstName");
+    toStrip.add("name");
   }
-  if (!fieldVisible(viewerRole, fieldLookup.get('basic:lastName'))) {
-    toStrip.add('lastName');
+  if (!fieldVisible(viewerRole, fieldLookup.get("basic:lastName"))) {
+    toStrip.add("lastName");
   }
 
   return Array.from(toStrip);
@@ -128,7 +136,7 @@ export function sanitizeContactsForViewer(
 
 /** Summarises changed top-level keys for audit (globle1 §1.3). */
 export function summarizeContactFieldChanges(before: Contact, after: Contact): string {
-  const skip = new Set(['updatedAt', 'activities']);
+  const skip = new Set(["updatedAt", "activities"]);
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
   const changed: string[] = [];
   for (const key of keys) {
@@ -139,7 +147,9 @@ export function summarizeContactFieldChanges(before: Contact, after: Contact): s
       changed.push(key);
     }
   }
-  if (changed.length === 0) return 'Updated contact (no field diff)';
-  const preview = changed.slice(0, 8).join(', ');
-  return changed.length > 8 ? `Changed: ${preview}, +${changed.length - 8} more` : `Changed: ${preview}`;
+  if (changed.length === 0) return "Updated contact (no field diff)";
+  const preview = changed.slice(0, 8).join(", ");
+  return changed.length > 8
+    ? `Changed: ${preview}, +${changed.length - 8} more`
+    : `Changed: ${preview}`;
 }

@@ -12,10 +12,7 @@ interface SimpleTransactionHeaderProps {
   onChangeType?: () => void;
 }
 
-export function SimpleTransactionHeader({
-  type,
-  onChangeType,
-}: SimpleTransactionHeaderProps) {
+export function SimpleTransactionHeader({ type, onChangeType }: SimpleTransactionHeaderProps) {
   const { t } = useTranslation();
 
   return (
@@ -28,7 +25,9 @@ export function SimpleTransactionHeader({
           {createElement(type.icon, { className: "w-5 h-5" })}
         </div>
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-foreground truncate m-0">{quickActionLabel(type, t)}</h3>
+          <h3 className="text-sm font-bold text-foreground truncate m-0">
+            {quickActionLabel(type, t)}
+          </h3>
           <p className="text-xs text-muted-foreground truncate m-0">{t(type.groupKey)}</p>
         </div>
       </div>

@@ -1,18 +1,15 @@
-import { Trash2 } from 'lucide-react';
-import type { AppTranslationKey } from '@mms/shared';
-import {
-  ACCOUNT_TYPE_META,
-  type Account,
-} from '@/lib/data/accountingData';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { FieldErrorMessage } from '@/components/ui/FormField';
-import { FormSelectWithQuickCreate } from '@/components/ui/FormPrimitives';
-import { Input } from '@/components/ui/input';
-import { TableCell, TableRow } from '@/components/ui/table';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { DraftLine } from './journalEntryFormTypes';
-import type { JournalAmountSide } from './useJournalLineAssist';
+import { Trash2 } from "lucide-react";
+import type { AppTranslationKey } from "@mms/shared";
+import { ACCOUNT_TYPE_META, type Account } from "@/lib/data/accountingData";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { FieldErrorMessage } from "@/components/ui/FormField";
+import { FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { Input } from "@/components/ui/input";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { DraftLine } from "./journalEntryFormTypes";
+import type { JournalAmountSide } from "./useJournalLineAssist";
 
 interface JournalEntryLineRowProps {
   line: DraftLine;
@@ -45,7 +42,9 @@ export function JournalEntryLineRow({
   lockTemplateName,
 }: JournalEntryLineRowProps) {
   const { t } = useTranslation();
-  const lockHint = lockedSide ? t("accounting.journal.form.amountLocked", { name: lockTemplateName ?? "" }) : undefined;
+  const lockHint = lockedSide
+    ? t("accounting.journal.form.amountLocked", { name: lockTemplateName ?? "" })
+    : undefined;
 
   return (
     <TableRow className="hover:bg-muted/10">
@@ -64,8 +63,15 @@ export function JournalEntryLineRow({
           addAriaLabel={t("accounting.coa.addAccount")}
         />
         {account && (
-          <Badge pill variant="outline" className={`mt-0.5 px-1.5 font-bold ${ACCOUNT_TYPE_META[account.type]?.color}`}>
-            {t(`accounting.type.${account.type}` as AppTranslationKey)} · {ACCOUNT_TYPE_META[account.type]?.normalBalance === "debit" ? t("accounting.journal.form.drNormal") : t("accounting.journal.form.crNormal")}
+          <Badge
+            pill
+            variant="outline"
+            className={`mt-0.5 px-1.5 font-bold ${ACCOUNT_TYPE_META[account.type]?.color}`}
+          >
+            {t(`accounting.type.${account.type}` as AppTranslationKey)} ·{" "}
+            {ACCOUNT_TYPE_META[account.type]?.normalBalance === "debit"
+              ? t("accounting.journal.form.drNormal")
+              : t("accounting.journal.form.crNormal")}
           </Badge>
         )}
         <FieldErrorMessage message={errorMessage} className="m-0" />

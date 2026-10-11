@@ -1,8 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
-import type { MutateOptions } from '@tanstack/react-query';
-import { tsrClient } from '@/lib/api';
-import type { Session } from '@/lib/data/sessionsData';
-import { invalidateSessionsQueries } from '@/tenant/features/sessions/hooks/invalidateSessionsQueries';
+import { useQueryClient } from "@tanstack/react-query";
+import type { MutateOptions } from "@tanstack/react-query";
+import { tsrClient } from "@/lib/api";
+import type { Session } from "@/lib/data/sessionsData";
+import { invalidateSessionsQueries } from "@/tenant/features/sessions/hooks/invalidateSessionsQueries";
 
 export function useSessionMutations() {
   const queryClient = useQueryClient();
@@ -116,10 +116,10 @@ export function useSessionMutations() {
     logExportAudit: {
       ...logExportAudit,
       mutate: (
-        payload: { count: number; scope: 'all' | 'filtered' | 'selection' },
+        payload: { count: number; scope: "all" | "filtered" | "selection" },
         opts?: MutateOptions,
       ) => logExportAudit.mutate({ body: payload }, opts),
-      mutateAsync: (payload: { count: number; scope: 'all' | 'filtered' | 'selection' }) =>
+      mutateAsync: (payload: { count: number; scope: "all" | "filtered" | "selection" }) =>
         logExportAudit.mutateAsync({ body: payload }),
     },
   };

@@ -2,9 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
-import {
-  ContactDetailHeroCard,
-} from "./ContactDetailHeroCard";
+import { ContactDetailHeroCard } from "./ContactDetailHeroCard";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -36,9 +34,7 @@ const mockContact: Contact = {
 
 describe("ContactDetailHeroCard Component", () => {
   it("renders hero card with display name, Syed badge, tags, AI summary, and notes", () => {
-    const html = renderToStaticMarkup(
-      <ContactDetailHeroCard contact={mockContact} />,
-    );
+    const html = renderToStaticMarkup(<ContactDetailHeroCard contact={mockContact} />);
 
     expect(html).toContain("Dr. Hassan Reza");
     expect(html).toContain("Male");
@@ -60,9 +56,7 @@ describe("ContactDetailHeroCard Component", () => {
       updatedAt: "2024-01-01T00:00:00Z",
     };
 
-    const html = renderToStaticMarkup(
-      <ContactDetailHeroCard contact={minimalContact} />,
-    );
+    const html = renderToStaticMarkup(<ContactDetailHeroCard contact={minimalContact} />);
 
     expect(html).toContain("Simple Contact");
     expect(html).not.toContain("AI Intelligence");

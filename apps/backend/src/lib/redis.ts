@@ -1,5 +1,5 @@
-import { Redis } from 'ioredis';
-import { logger } from './logger.js';
+import { Redis } from "ioredis";
+import { logger } from "./logger.js";
 
 let redisInstance: Redis | null = null;
 let isRedisConnected = false;
@@ -16,12 +16,12 @@ export function getRedisClient(): Redis | null {
   if (redisInstance) return redisInstance;
 
   const redisUrl = process.env.REDIS_URL;
-  if (!redisUrl && (process.env.NODE_ENV === 'test' || process.env.VITEST)) {
+  if (!redisUrl && (process.env.NODE_ENV === "test" || process.env.VITEST)) {
     return null;
   }
 
   try {
-    const url = redisUrl || 'redis://127.0.0.1:6379';
+    const url = redisUrl || "redis://127.0.0.1:6379";
     const client = new Redis(url, {
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
@@ -39,22 +39,22 @@ export function getRedisClient(): Redis | null {
         return Math.min(times * 150 + Math.floor(Math.random() * 75), 30_000);
       },
       reconnectOnError(err: Error) {
-        return err.message.includes('READONLY');
+        return err.message.includes("READONLY");
       },
     });
 
-    client.on('ready', () => {
+    client.on("ready", () => {
       isRedisConnected = true;
     });
 
-    client.on('close', () => {
+    client.on("close", () => {
       isRedisConnected = false;
     });
 
-    client.on('error', (err: Error) => {
+    client.on("error", (err: Error) => {
       isRedisConnected = false;
-      if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
-        logger.warn({ err: err.message }, 'Redis connection warning');
+      if (!process.env.VITEST && process.env.NODE_ENV !== "test") {
+        logger.warn({ err: err.message }, "Redis connection warning");
       }
     });
 
@@ -81,12 +81,12 @@ export function getRateLimitRedisClient(): Redis | null {
   if (redisRateLimitInstance) return redisRateLimitInstance;
 
   const redisUrl = process.env.REDIS_URL;
-  if (!redisUrl && (process.env.NODE_ENV === 'test' || process.env.VITEST)) {
+  if (!redisUrl && (process.env.NODE_ENV === "test" || process.env.VITEST)) {
     return null;
   }
 
   try {
-    const url = redisUrl || 'redis://127.0.0.1:6379';
+    const url = redisUrl || "redis://127.0.0.1:6379";
     const client = new Redis(url, {
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
@@ -101,18 +101,18 @@ export function getRateLimitRedisClient(): Redis | null {
       },
     });
 
-    client.on('ready', () => {
+    client.on("ready", () => {
       isRateLimitRedisConnected = true;
     });
 
-    client.on('close', () => {
+    client.on("close", () => {
       isRateLimitRedisConnected = false;
     });
 
-    client.on('error', (err: Error) => {
+    client.on("error", (err: Error) => {
       isRateLimitRedisConnected = false;
-      if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
-        logger.warn({ err: err.message }, 'Redis rate-limit connection warning');
+      if (!process.env.VITEST && process.env.NODE_ENV !== "test") {
+        logger.warn({ err: err.message }, "Redis rate-limit connection warning");
       }
     });
 
@@ -134,12 +134,12 @@ export function getRedisSubscriberClient(): Redis | null {
   if (redisSubscriberInstance) return redisSubscriberInstance;
 
   const redisUrl = process.env.REDIS_URL;
-  if (!redisUrl && (process.env.NODE_ENV === 'test' || process.env.VITEST)) {
+  if (!redisUrl && (process.env.NODE_ENV === "test" || process.env.VITEST)) {
     return null;
   }
 
   try {
-    const url = redisUrl || 'redis://127.0.0.1:6379';
+    const url = redisUrl || "redis://127.0.0.1:6379";
     const client = new Redis(url, {
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
@@ -158,9 +158,9 @@ export function getRedisSubscriberClient(): Redis | null {
       },
     });
 
-    client.on('error', (err: Error) => {
-      if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
-        logger.warn({ err: err.message }, 'Redis subscriber connection warning');
+    client.on("error", (err: Error) => {
+      if (!process.env.VITEST && process.env.NODE_ENV !== "test") {
+        logger.warn({ err: err.message }, "Redis subscriber connection warning");
       }
     });
 
@@ -197,7 +197,7 @@ export async function redisSet(key: string, value: string, ttlSeconds?: number):
   if (client && isRedisConnected) {
     try {
       if (ttlSeconds && ttlSeconds > 0) {
-        await client.set(key, value, 'EX', ttlSeconds);
+        await client.set(key, value, "EX", ttlSeconds);
       } else {
         await client.set(key, value);
       }
@@ -265,7 +265,7 @@ export async function redisDecr(key: string, ttlSeconds?: number): Promise<numbe
           return val
         end
       `;
-      const result = await client.eval(luaScript, 1, key, ttlSeconds ? String(ttlSeconds) : '0');
+      const result = await client.eval(luaScript, 1, key, ttlSeconds ? String(ttlSeconds) : "0");
       return Number(result) || 0;
     } catch {
       // Fallback to in-memory on error
@@ -289,7 +289,7 @@ export async function redisDecr(key: string, ttlSeconds?: number): Promise<numbe
 }
 
 export async function redisDel(key: string): Promise<void> {
-  if (key.includes('*')) {
+  if (key.includes("*")) {
     return redisDelPattern(key);
   }
   const client = getRedisClient();
@@ -307,22 +307,22 @@ export async function redisDelPattern(pattern: string): Promise<void> {
   const client = getRedisClient();
   if (client && isRedisConnected) {
     try {
-      let cursor = '0';
+      let cursor = "0";
       do {
-        const [nextCursor, keys] = await client.scan(cursor, 'MATCH', pattern, 'COUNT', 200);
+        const [nextCursor, keys] = await client.scan(cursor, "MATCH", pattern, "COUNT", 200);
         cursor = nextCursor;
         if (keys.length > 0) {
           await client.del(...keys);
         }
-      } while (cursor !== '0');
+      } while (cursor !== "0");
     } catch {
       // Fallback to in-memory
     }
   }
 
-  if (!pattern.includes('*')) {
+  if (!pattern.includes("*")) {
     inMemoryStore.delete(pattern);
-  } else if (pattern.endsWith('*') && !pattern.slice(0, -1).includes('*')) {
+  } else if (pattern.endsWith("*") && !pattern.slice(0, -1).includes("*")) {
     const prefix = pattern.slice(0, -1);
     for (const key of inMemoryStore.keys()) {
       if (key.startsWith(prefix)) {
@@ -330,7 +330,7 @@ export async function redisDelPattern(pattern: string): Promise<void> {
       }
     }
   } else {
-    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
     const regex = new RegExp(`^${escaped}$`);
     for (const key of inMemoryStore.keys()) {
       if (regex.test(key)) {
@@ -360,20 +360,18 @@ export async function redisExists(key: string): Promise<boolean> {
   return true;
 }
 
-export type RedisBatchOp =
-  | { key: string; type: 'exists' }
-  | { key: string; type: 'get' };
+export type RedisBatchOp = { key: string; type: "exists" } | { key: string; type: "get" };
 
 export type RedisBatchResult = Array<boolean | string | null>;
 
 function inMemoryBatchOp(op: RedisBatchOp): boolean | string | null {
   const entry = inMemoryStore.get(op.key);
-  if (!entry) return op.type === 'exists' ? false : null;
+  if (!entry) return op.type === "exists" ? false : null;
   if (entry.expiresAt && Date.now() > entry.expiresAt) {
     inMemoryStore.delete(op.key);
-    return op.type === 'exists' ? false : null;
+    return op.type === "exists" ? false : null;
   }
-  return op.type === 'exists' ? true : entry.value;
+  return op.type === "exists" ? true : entry.value;
 }
 
 /**
@@ -388,7 +386,7 @@ export async function redisBatch(ops: RedisBatchOp[]): Promise<RedisBatchResult>
     try {
       const pipeline = client.pipeline();
       for (const op of ops) {
-        if (op.type === 'exists') pipeline.exists(op.key);
+        if (op.type === "exists") pipeline.exists(op.key);
         else pipeline.get(op.key);
       }
       const results = await pipeline.exec();
@@ -396,7 +394,7 @@ export async function redisBatch(ops: RedisBatchOp[]): Promise<RedisBatchResult>
         return results.map(([err, res], i) => {
           if (err) return inMemoryBatchOp(ops[i]);
           const op = ops[i];
-          if (op.type === 'exists') return (res as number) > 0;
+          if (op.type === "exists") return (res as number) > 0;
           return res as string | null;
         });
       }
@@ -419,7 +417,7 @@ export async function disconnectRedis(): Promise<void> {
     try {
       let timeoutId: NodeJS.Timeout;
       const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error('Redis quit timeout')), 2000);
+        timeoutId = setTimeout(() => reject(new Error("Redis quit timeout")), 2000);
       });
       try {
         await Promise.race([client.quit(), timeoutPromise]);
@@ -466,11 +464,11 @@ export interface BullMQConnectionOptions {
  * Enforces `maxRetriesPerRequest: null` and aggressive reconnect backoff.
  */
 export function getBullMQConnectionOptions(): BullMQConnectionOptions {
-  const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+  const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
   try {
     const url = new URL(redisUrl);
     return {
-      host: url.hostname || '127.0.0.1',
+      host: url.hostname || "127.0.0.1",
       port: url.port ? Number.parseInt(url.port, 10) : 6379,
       password: url.password || undefined,
       username: url.username || undefined,
@@ -485,7 +483,7 @@ export function getBullMQConnectionOptions(): BullMQConnectionOptions {
     };
   } catch {
     return {
-      host: '127.0.0.1',
+      host: "127.0.0.1",
       port: 6379,
       maxRetriesPerRequest: null,
       enableReadyCheck: true,
@@ -505,20 +503,30 @@ export function getBullMQConnectionOptions(): BullMQConnectionOptions {
 export const redisKeys = {
   workspace: (subdomain: string) => `mms:workspace:${subdomain.trim().toLowerCase()}`,
   globalSettings: (tenant: string) => `mms:${tenant.trim().toLowerCase()}:global_settings`,
-  userActive: (tenant: string, userId: string, role: string) => `mms:${tenant.trim().toLowerCase()}:user_active:${userId}:${role}`,
+  userActive: (tenant: string, userId: string, role: string) =>
+    `mms:${tenant.trim().toLowerCase()}:user_active:${userId}:${role}`,
   userActivePattern: (userId: string) => `mms:*:user_active:${userId}:*`,
   sessionPattern: (userId: string) => `mms:session:${userId}:*`,
-  setupSingleton: (tenant: string, tableName: string, jsonColumn: string) => `mms:${tenant.trim().toLowerCase()}:setup:${tableName}:${jsonColumn}`,
-  setupLookupsAll: (tenant: string, tableName: string) => `mms:${tenant.trim().toLowerCase()}:setup:${tableName}:all`,
-  setupLookupsKind: (tenant: string, tableName: string, kind: string) => `mms:${tenant.trim().toLowerCase()}:setup:${tableName}:kind:${kind}`,
-  setupPattern: (tenant: string, tableName: string) => `mms:${tenant.trim().toLowerCase()}:setup:${tableName}:*`,
-  metrics: (tenant: string, collection: string) => `mms:${tenant.trim().toLowerCase()}:${collection}:metrics`,
-  metricsPattern: (tenant: string, collection: string) => `mms:${tenant.trim().toLowerCase()}:${collection}*:metrics`,
-  dashboardSummary: (tenant: string, date?: string) => `mms:${tenant.trim().toLowerCase()}:dashboard:summary:${date ?? 'today'}`,
-  dashboardSummaryPattern: (tenant: string) => `mms:${tenant.trim().toLowerCase()}:dashboard:summary:*`,
-  searchVersion: (tenant: string, entityType: string, entityId: string) => `mms:${tenant.trim().toLowerCase()}:search:version:${entityType}:${entityId}`,
-  entityPattern: (tenant: string, entityType: string) => `mms:${tenant.trim().toLowerCase()}:${entityType}:*`,
-  wsInvalidationChannel: 'mms:ws-invalidation' as const,
-  jobEventChannel: 'mms:job-event' as const,
+  setupSingleton: (tenant: string, tableName: string, jsonColumn: string) =>
+    `mms:${tenant.trim().toLowerCase()}:setup:${tableName}:${jsonColumn}`,
+  setupLookupsAll: (tenant: string, tableName: string) =>
+    `mms:${tenant.trim().toLowerCase()}:setup:${tableName}:all`,
+  setupLookupsKind: (tenant: string, tableName: string, kind: string) =>
+    `mms:${tenant.trim().toLowerCase()}:setup:${tableName}:kind:${kind}`,
+  setupPattern: (tenant: string, tableName: string) =>
+    `mms:${tenant.trim().toLowerCase()}:setup:${tableName}:*`,
+  metrics: (tenant: string, collection: string) =>
+    `mms:${tenant.trim().toLowerCase()}:${collection}:metrics`,
+  metricsPattern: (tenant: string, collection: string) =>
+    `mms:${tenant.trim().toLowerCase()}:${collection}*:metrics`,
+  dashboardSummary: (tenant: string, date?: string) =>
+    `mms:${tenant.trim().toLowerCase()}:dashboard:summary:${date ?? "today"}`,
+  dashboardSummaryPattern: (tenant: string) =>
+    `mms:${tenant.trim().toLowerCase()}:dashboard:summary:*`,
+  searchVersion: (tenant: string, entityType: string, entityId: string) =>
+    `mms:${tenant.trim().toLowerCase()}:search:version:${entityType}:${entityId}`,
+  entityPattern: (tenant: string, entityType: string) =>
+    `mms:${tenant.trim().toLowerCase()}:${entityType}:*`,
+  wsInvalidationChannel: "mms:ws-invalidation" as const,
+  jobEventChannel: "mms:job-event" as const,
 };
-

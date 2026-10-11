@@ -2,15 +2,15 @@
  * Phase 7: Contract-driven query/mutation hooks for the Messaging module.
  * Uses tsrClient (@ts-rest/react-query v5) for contract schema enforcement.
  */
-import { apiContract, tsrClient } from '@/lib/api';
-import { queryOptions, useQueryClient } from '@tanstack/react-query';
-import { serverMetricsQueryOptions } from '@/hooks/useServerMetrics';
-import { MESSAGING_MODULE_MANIFEST, type MessagingMetricsDto } from '@mms/shared';
+import { apiContract, tsrClient } from "@/lib/api";
+import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { serverMetricsQueryOptions } from "@/hooks/useServerMetrics";
+import { MESSAGING_MODULE_MANIFEST, type MessagingMetricsDto } from "@mms/shared";
 import {
   MESSAGING_TEMPLATES_QUERY_KEY,
   MESSAGING_LOGS_QUERY_KEY,
-} from '@/tenant/features/messaging/hooks/useMessaging';
-import { invalidateMessagingQueries } from '@/tenant/features/messaging/hooks/invalidateMessagingQueries';
+} from "@/tenant/features/messaging/hooks/useMessaging";
+import { invalidateMessagingQueries } from "@/tenant/features/messaging/hooks/invalidateMessagingQueries";
 
 export function messagingLogsListQueryOptions(
   query: {
@@ -26,7 +26,7 @@ export function messagingLogsListQueryOptions(
   } = {},
 ) {
   return queryOptions({
-    queryKey: [...MESSAGING_LOGS_QUERY_KEY, 'contract', query] as const,
+    queryKey: [...MESSAGING_LOGS_QUERY_KEY, "contract", query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.messaging.listLogs({
         query: query as Record<string, string>,
@@ -34,7 +34,7 @@ export function messagingLogsListQueryOptions(
         fetchOptions: { signal },
       });
       if (response.status !== 200) {
-        throw new Error('Failed to fetch message logs');
+        throw new Error("Failed to fetch message logs");
       }
       return response.body;
     },
@@ -50,7 +50,9 @@ export function messagingCommandMetricsQueryOptions(options?: {
   return serverMetricsQueryOptions<MessagingMetricsDto>({
     moduleId: MESSAGING_MODULE_MANIFEST.moduleId,
     apiPath: MESSAGING_MODULE_MANIFEST.restBasePath,
-    extraParam: options?.startDate ? `startDate=${encodeURIComponent(options.startDate)}` : undefined,
+    extraParam: options?.startDate
+      ? `startDate=${encodeURIComponent(options.startDate)}`
+      : undefined,
   });
 }
 
@@ -60,7 +62,7 @@ export function useMessagingContractListLogs(
 ) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.listLogs.useQuery({
-    queryKey: [...MESSAGING_LOGS_QUERY_KEY, 'contract', query],
+    queryKey: [...MESSAGING_LOGS_QUERY_KEY, "contract", query],
     queryData: { query },
     staleTime: 15_000,
     enabled,
@@ -73,7 +75,7 @@ export function useMessagingContractListTemplates(
 ) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.listTemplates.useQuery({
-    queryKey: [...MESSAGING_TEMPLATES_QUERY_KEY, 'contract', query],
+    queryKey: [...MESSAGING_TEMPLATES_QUERY_KEY, "contract", query],
     queryData: { query },
     staleTime: 30_000,
     enabled,
@@ -86,7 +88,7 @@ export function useMessagingContractListRecipients(
 ) {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.listRecipients.useQuery({
-    queryKey: ['messaging', 'recipients', 'contract', query],
+    queryKey: ["messaging", "recipients", "contract", query],
     queryData: { query },
     staleTime: 30_000,
     enabled,

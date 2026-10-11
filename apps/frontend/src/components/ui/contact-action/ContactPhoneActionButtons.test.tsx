@@ -50,6 +50,6 @@ describe("ContactPhoneActionButtons Component", () => {
     expect(html).not.toContain("tel:");
     expect(html).not.toContain("wa.me");
     expect(html).not.toContain("sms:");
-    expect(html).not.toContain("aria-label=\"Copy\"");
+    expect(html).not.toContain('aria-label="Copy"');
   });
 });

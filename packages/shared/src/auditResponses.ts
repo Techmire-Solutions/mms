@@ -3,11 +3,7 @@
  * @description API response envelope types for audit trail endpoints (events list, integrity verification, export).
  */
 
-import type {
-  AuditMerkleRoot,
-  AuditVerificationStatus,
-  ModernAuditEvent,
-} from './auditTypes.js';
+import type { AuditMerkleRoot, AuditVerificationStatus, ModernAuditEvent } from "./auditTypes.js";
 
 /** Paginated audit event list API response envelope. */
 export interface AuditListResponse {
@@ -49,6 +45,6 @@ export interface AuditMerkleRootsResponse {
 export interface AuditErasureResponse {
   erasureRequestId: string;
   subjectId: string;
-  erasureType: 'CRYPTO_SHRED' | 'REDACT_APPEND';
-  status: 'COMPLETED';
+  erasureType: "CRYPTO_SHRED" | "REDACT_APPEND";
+  status: "COMPLETED";
 }

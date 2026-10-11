@@ -1,6 +1,6 @@
 import { runGridCsvExportJob } from "@/lib/backgroundJobs/runGridCsvExportJob";
 import type { AppTranslationKey } from "@mms/shared";
-import type { Account } from '@/lib/data/accountingData';
+import type { Account } from "@/lib/data/accountingData";
 import type { GeneralLedgerLineWithRunning } from "./useGeneralLedger";
 
 type TranslateFn = (key: AppTranslationKey, args?: Record<string, string | number>) => string;

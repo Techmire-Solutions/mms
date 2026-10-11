@@ -1,21 +1,21 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Field } from '@/components/ui/FormPrimitives';
+import React from "react";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/FormPrimitives";
 import {
   countFillBlankMarkers,
   joinQuestionCompoundAnswer,
   splitQuestionCompoundAnswer,
   type AppTranslationKey,
   type QuestionBankQuestion as Question,
-} from '@mms/shared';
-import { FORM_INPUT, FORM_LABEL } from '@/components/ui/formStyles';
-import { QuestionMatchingFields } from './QuestionMatchingFields';
-import { QuestionOrderingFields } from './QuestionOrderingFields';
+} from "@mms/shared";
+import { FORM_INPUT, FORM_LABEL } from "@/components/ui/formStyles";
+import { QuestionMatchingFields } from "./QuestionMatchingFields";
+import { QuestionOrderingFields } from "./QuestionOrderingFields";
 
 type TranslateFn = (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 
 interface QuestionTypeAnswerFieldsProps {
-  questionType: Question['type'];
+  questionType: Question["type"];
   text: string;
   options: string[];
   answer: string;
@@ -26,7 +26,7 @@ interface QuestionTypeAnswerFieldsProps {
 
 function ensureSize(items: string[], size: number): string[] {
   const sizedItems = [...items];
-  while (sizedItems.length < size) sizedItems.push('');
+  while (sizedItems.length < size) sizedItems.push("");
   return sizedItems.slice(0, Math.max(size, 0));
 }
 
@@ -39,17 +39,21 @@ export function QuestionTypeAnswerFields({
   onAnswerChange,
   t,
 }: QuestionTypeAnswerFieldsProps): React.JSX.Element | null {
-  if (questionType === 'fill_blank') {
+  if (questionType === "fill_blank") {
     const blankCount = Math.max(countFillBlankMarkers(text), 1);
     const blanks = ensureSize(splitQuestionCompoundAnswer(answer), blankCount);
 
     return (
       <div className="space-y-3 sm:col-span-2">
-        <p className="text-xs text-muted-foreground">{t('questionBank.fillBlankHint')}</p>
-        <p className={FORM_LABEL}>{t('questionBank.blankAnswers')}</p>
+        <p className="text-xs text-muted-foreground">{t("questionBank.fillBlankHint")}</p>
+        <p className={FORM_LABEL}>{t("questionBank.blankAnswers")}</p>
         <div className="space-y-2">
           {blanks.map((blank, index) => (
-            <Field key={index} id={`qb-blank-${index}`} label={t('questionBank.blankAnswerN', { n: index + 1 })}>
+            <Field
+              key={index}
+              id={`qb-blank-${index}`}
+              label={t("questionBank.blankAnswerN", { n: index + 1 })}
+            >
               <Input
                 id={`qb-blank-${index}`}
                 name={`blank-${index}`}
@@ -68,7 +72,7 @@ export function QuestionTypeAnswerFields({
     );
   }
 
-  if (questionType === 'matching') {
+  if (questionType === "matching") {
     return (
       <QuestionMatchingFields
         options={options}
@@ -80,7 +84,7 @@ export function QuestionTypeAnswerFields({
     );
   }
 
-  if (questionType === 'ordering') {
+  if (questionType === "ordering") {
     return (
       <QuestionOrderingFields
         options={options}
@@ -91,12 +95,12 @@ export function QuestionTypeAnswerFields({
     );
   }
 
-  if (questionType === 'numeric') {
-    const tolerance = options[0] ?? '';
+  if (questionType === "numeric") {
+    const tolerance = options[0] ?? "";
 
     return (
       <div className="grid grid-cols-1 gap-4 sm:col-span-2 sm:grid-cols-2">
-        <Field id="qb-numeric-answer" label={t('questionBank.numericAnswer')} required>
+        <Field id="qb-numeric-answer" label={t("questionBank.numericAnswer")} required>
           <Input
             id="qb-numeric-answer"
             name="numericAnswer"
@@ -107,7 +111,7 @@ export function QuestionTypeAnswerFields({
             onChange={(e) => onAnswerChange(e.target.value)}
           />
         </Field>
-        <Field id="qb-numeric-tolerance" label={t('questionBank.numericTolerance')}>
+        <Field id="qb-numeric-tolerance" label={t("questionBank.numericTolerance")}>
           <Input
             id="qb-numeric-tolerance"
             name="numericTolerance"

@@ -25,11 +25,7 @@ export function DistributeRecipientTypeField({
         {t("hasanat.form.recipientType")}
         <RequiredMark />
       </span>
-      <div
-        role="radiogroup"
-        aria-labelledby="recipient-type-label"
-        className="flex gap-2"
-      >
+      <div role="radiogroup" aria-labelledby="recipient-type-label" className="flex gap-2">
         {[
           {
             id: "student" as const,
@@ -71,8 +67,7 @@ export function DistributeRecipientTypeField({
                   : "border-border text-muted-foreground hover:bg-muted"
               }`}
             >
-              <Icon className="h-3.5 w-3.5" aria-hidden="true" />{" "}
-              {recipientTypeOption.label}
+              <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {recipientTypeOption.label}
             </Button>
           );
         })}

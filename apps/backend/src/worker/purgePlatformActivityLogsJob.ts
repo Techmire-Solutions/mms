@@ -1,8 +1,8 @@
-import { logger } from '../lib/logger.js';
+import { logger } from "../lib/logger.js";
 import {
   countPlatformActivityLogsOlderThan,
   deletePlatformActivityLogsOlderThan,
-} from '../db/repositories/platformActivityLogsRepository.js';
+} from "../db/repositories/platformActivityLogsRepository.js";
 
 export const DEFAULT_PLATFORM_ACTIVITY_LOG_RETENTION_DAYS = 180;
 const CHUNK_SIZE = 500;
@@ -12,7 +12,7 @@ const INTER_CHUNK_PAUSE_MS = 50;
 export function resolvePlatformActivityLogRetentionDays(
   envValue = process.env.PLATFORM_ACTIVITY_LOG_RETENTION_DAYS,
 ): number {
-  if (envValue === undefined || envValue.trim() === '') {
+  if (envValue === undefined || envValue.trim() === "") {
     return DEFAULT_PLATFORM_ACTIVITY_LOG_RETENTION_DAYS;
   }
   const parsed = Number.parseInt(envValue, 10);
@@ -34,7 +34,7 @@ export function platformActivityLogCutoff(
  * bounded chunks (500 rows, 50ms pause). Honors `DRY_RUN=true` (count only).
  */
 export async function purgeExpiredPlatformActivityLogs(
-  dryRun = process.env.DRY_RUN === 'true',
+  dryRun = process.env.DRY_RUN === "true",
 ): Promise<{ deleted: number; dryRun: boolean; retentionDays: number }> {
   const retentionDays = resolvePlatformActivityLogRetentionDays();
   const cutoff = platformActivityLogCutoff(new Date(), retentionDays);
@@ -43,7 +43,7 @@ export async function purgeExpiredPlatformActivityLogs(
     const count = await countPlatformActivityLogsOlderThan(cutoff);
     logger.info(
       { count, cutoff: cutoff.toISOString(), retentionDays },
-      '[PlatformActivityPurge] Dry-run count of expired rows',
+      "[PlatformActivityPurge] Dry-run count of expired rows",
     );
     return { deleted: count, dryRun: true, retentionDays };
   }
@@ -58,7 +58,7 @@ export async function purgeExpiredPlatformActivityLogs(
 
   logger.info(
     { deleted, cutoff: cutoff.toISOString(), retentionDays },
-    '[PlatformActivityPurge] Completed platform activity log purge',
+    "[PlatformActivityPurge] Completed platform activity log purge",
   );
   return { deleted, dryRun: false, retentionDays };
 }

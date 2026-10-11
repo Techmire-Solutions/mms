@@ -61,7 +61,11 @@ export function TenantForgotPasswordResetStep({
             clearError();
           }}
         />
-        <AuthSubmitButton busy={loading} busyLabel={t("auth.settingPassword")} label={t("auth.setPassword")} />
+        <AuthSubmitButton
+          busy={loading}
+          busyLabel={t("auth.settingPassword")}
+          label={t("auth.setPassword")}
+        />
       </fieldset>
     </AuthStepForm>
   );

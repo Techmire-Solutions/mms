@@ -10,7 +10,7 @@ import type {
   StudentsWidgetQuery,
   RepositoryListOptions,
   StudentGrNumberSettings,
-} from '@mms/shared';
+} from "@mms/shared";
 
 export type ListStudentsOptions = RepositoryListOptions;
 
@@ -62,10 +62,7 @@ export interface StudentsRepository {
   ): Promise<Record<string, StudentsWidgetAggregateResult>>;
   listLinkedContactIds(tenant: string, excludeStudentId?: string): Promise<Array<string | number>>;
 
-  countNextGrNumber(
-    tenant: string,
-    input: StudentGrSequenceInput,
-  ): Promise<number>;
+  countNextGrNumber(tenant: string, input: StudentGrSequenceInput): Promise<number>;
   previewNextGrNumber?(
     tenant: string,
     input: { regDate: string; settings: StudentGrNumberSettings },
@@ -95,7 +92,7 @@ export interface StudentsRepository {
     tenant: string,
     studentIds: string[],
     sessionIds: string[],
-    mode?: 'add' | 'replace' | 'remove',
+    mode?: "add" | "replace" | "remove",
   ): Promise<{ succeeded: number; failed: number }>;
   bulkSoftDelete?(
     tenant: string,
@@ -110,4 +107,3 @@ export interface StudentsRepository {
   ): Promise<{ succeeded: number; failed: number }>;
   guardDeleteDependents?(tenant: string, ids: string[]): Promise<void>;
 }
-

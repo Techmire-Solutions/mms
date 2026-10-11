@@ -12,7 +12,10 @@ import type { Account } from "@/lib/data/accountingData";
 import type { QuickActionType, WizardFormState } from "./simpleTransactionWizardTypes";
 import { formatDate } from "@mms/shared";
 import { parseMoneyInput } from "./simpleTransactionMoney";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
 
 interface StepReviewProps {
   type: QuickActionType;
@@ -53,8 +56,14 @@ export function StepReview({
   // Preserve invalid amounts as unknown, rather than displaying a real zero.
   const amount = parseMoneyInput(form.amount);
   const amountLabel = amount === null ? "—" : formatCurrency(amount);
-  const debitAccount = useMemo(() => accounts.find((account) => account.id === form.debitAcc), [accounts, form.debitAcc]);
-  const creditAccount = useMemo(() => accounts.find((account) => account.id === form.creditAcc), [accounts, form.creditAcc]);
+  const debitAccount = useMemo(
+    () => accounts.find((account) => account.id === form.debitAcc),
+    [accounts, form.debitAcc],
+  );
+  const creditAccount = useMemo(
+    () => accounts.find((account) => account.id === form.creditAcc),
+    [accounts, form.creditAcc],
+  );
 
   const formatAccountName = (account?: Account) => {
     if (!account) return "—";
@@ -65,8 +74,14 @@ export function StepReview({
     const accountRows: ReviewRow[] =
       type.groupKey === "accounting.journal.dashboard.group.moneyIn"
         ? [
-            { label: t("accounting.journal.dashboard.wizard.receivedIntoLabel"), value: formatAccountName(debitAccount) },
-            { label: t("accounting.journal.dashboard.wizard.incomeCategory"), value: formatAccountName(creditAccount) },
+            {
+              label: t("accounting.journal.dashboard.wizard.receivedIntoLabel"),
+              value: formatAccountName(debitAccount),
+            },
+            {
+              label: t("accounting.journal.dashboard.wizard.incomeCategory"),
+              value: formatAccountName(creditAccount),
+            },
           ]
         : type.groupKey === "accounting.journal.dashboard.group.transfers"
           ? [
@@ -75,32 +90,62 @@ export function StepReview({
                 value: (
                   <span className="inline-flex items-center gap-1.5 flex-wrap">
                     <span>{formatAccountName(creditAccount)}</span>
-                    <span className="inline-block rtl:rotate-180 text-muted-foreground" aria-hidden="true">→</span>
+                    <span
+                      className="inline-block rtl:rotate-180 text-muted-foreground"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
                     <span>{formatAccountName(debitAccount)}</span>
                   </span>
                 ),
               },
             ]
           : [
-              { label: t("accounting.journal.dashboard.wizard.paidFromLabel"), value: formatAccountName(creditAccount) },
-              { label: t("accounting.journal.dashboard.wizard.expenseCategory"), value: formatAccountName(debitAccount) },
+              {
+                label: t("accounting.journal.dashboard.wizard.paidFromLabel"),
+                value: formatAccountName(creditAccount),
+              },
+              {
+                label: t("accounting.journal.dashboard.wizard.expenseCategory"),
+                value: formatAccountName(debitAccount),
+              },
             ];
 
     return [
-      { label: t("accounting.journal.dashboard.wizard.transactionType"), value: quickActionLabel(type, t) },
+      {
+        label: t("accounting.journal.dashboard.wizard.transactionType"),
+        value: quickActionLabel(type, t),
+      },
       { label: t("accounting.columns.journal.date"), value: formatDate(form.date) },
-      form.fiscal_year ? { label: t("accounting.journal.form.financialYear"), value: form.fiscal_year } : null,
-      { label: t("accounting.journal.dashboard.wizard.amountLabel"), value: amountLabel, editable: true },
+      form.fiscal_year
+        ? { label: t("accounting.journal.form.financialYear"), value: form.fiscal_year }
+        : null,
+      {
+        label: t("accounting.journal.dashboard.wizard.amountLabel"),
+        value: amountLabel,
+        editable: true,
+      },
       ...accountRows,
-      { label: t("accounting.columns.journal.description"), value: form.description || "—", editable: true },
-      form.ref ? { label: t("accounting.journal.dashboard.wizard.referenceLabel"), value: form.ref } : null,
+      {
+        label: t("accounting.columns.journal.description"),
+        value: form.description || "—",
+        editable: true,
+      },
+      form.ref
+        ? { label: t("accounting.journal.dashboard.wizard.referenceLabel"), value: form.ref }
+        : null,
       form.tags && form.tags.length > 0
         ? {
             label: t("accounting.columns.journal.tags"),
             value: (
               <span className="inline-flex flex-wrap gap-1">
                 {form.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="px-2 py-0.5 text-xs font-semibold">
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="px-2 py-0.5 text-xs font-semibold"
+                  >
                     {tag}
                   </Badge>
                 ))}
@@ -135,13 +180,29 @@ export function StepReview({
 
       {/* R1: Status banner prominently outside the data table */}
       {amount === null ? (
-        <WarningCallout tone="destructive" role="alert" title={t("accounting.journal.dashboard.wizard.errorAmountInvalid")} />
+        <WarningCallout
+          tone="destructive"
+          role="alert"
+          title={t("accounting.journal.dashboard.wizard.errorAmountInvalid")}
+        />
       ) : !debitAccount || !creditAccount ? (
-        <WarningCallout tone="destructive" role="alert" title={t("accounting.journal.dashboard.wizard.errorSource")} />
+        <WarningCallout
+          tone="destructive"
+          role="alert"
+          title={t("accounting.journal.dashboard.wizard.errorSource")}
+        />
       ) : debitAccount.id === creditAccount.id ? (
-        <WarningCallout tone="destructive" role="alert" title={t("accounting.journal.dashboard.wizard.errorSameAccount")} />
+        <WarningCallout
+          tone="destructive"
+          role="alert"
+          title={t("accounting.journal.dashboard.wizard.errorSameAccount")}
+        />
       ) : (
-        <WarningCallout tone="success" icon={CheckCircle2} title={t("accounting.journal.dashboard.wizard.postMessage")} />
+        <WarningCallout
+          tone="success"
+          icon={CheckCircle2}
+          title={t("accounting.journal.dashboard.wizard.postMessage")}
+        />
       )}
 
       <div className="rounded-xl border border-border overflow-hidden">
@@ -154,8 +215,14 @@ export function StepReview({
           className="w-full h-auto flex items-center justify-between px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors"
         >
           {/* R2: non-jargon label for non-accountant staff */}
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{t("accounting.journal.dashboard.wizard.showAdvanced")}</span>
-          {showAdvanced ? <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />}
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+            {t("accounting.journal.dashboard.wizard.showAdvanced")}
+          </span>
+          {showAdvanced ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+          )}
         </Button>
         {showAdvanced && (
           <div id="wizard-advanced-panel" className="p-4 space-y-2">
@@ -172,7 +239,9 @@ export function StepReview({
                 amountLabel={amountLabel}
               />
             )}
-            <p className="text-xs text-muted-foreground m-0">{t("accounting.journal.dashboard.wizard.linesAutoGenerated")}</p>
+            <p className="text-xs text-muted-foreground m-0">
+              {t("accounting.journal.dashboard.wizard.linesAutoGenerated")}
+            </p>
           </div>
         )}
       </div>

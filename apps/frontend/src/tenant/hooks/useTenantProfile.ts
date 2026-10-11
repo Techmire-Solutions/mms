@@ -1,8 +1,8 @@
-import { tsrClient } from '@/lib/api';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import type { Contact } from '@mms/shared';
+import { tsrClient } from "@/lib/api";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import type { Contact } from "@mms/shared";
 
-export const TENANT_PROFILE_KEY = ['tenant', 'profile'] as const;
+export const TENANT_PROFILE_KEY = ["tenant", "profile"] as const;
 
 /** Own-account profile payload: user flags plus the linked Contact record. */
 export interface TenantProfileData {
@@ -22,6 +22,7 @@ export function useTenantProfile(enabled = true) {
     queryKey: TENANT_PROFILE_KEY,
     enabled: isAuthenticated && enabled,
     staleTime: 30_000,
-    select: (data: unknown) => (data as { body?: { profile?: TenantProfileData } } | null)?.body?.profile,
+    select: (data: unknown) =>
+      (data as { body?: { profile?: TenantProfileData } } | null)?.body?.profile,
   });
 }

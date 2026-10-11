@@ -50,8 +50,10 @@ export type InsertAssessmentAnswerRow = typeof assessmentAnswers.$inferInsert;
 export type ExaminationsFieldConfigsRow = typeof examinationsFieldConfigs.$inferSelect;
 export type InsertExaminationsFieldConfigsRow = typeof examinationsFieldConfigs.$inferInsert;
 export type ExaminationsModulePreferencesRow = typeof examinationsModulePreferences.$inferSelect;
-export type InsertExaminationsModulePreferencesRow = typeof examinationsModulePreferences.$inferInsert;
+export type InsertExaminationsModulePreferencesRow =
+  typeof examinationsModulePreferences.$inferInsert;
 export type QuestionBankFieldConfigsRow = typeof questionBankFieldConfigs.$inferSelect;
 export type InsertQuestionBankFieldConfigsRow = typeof questionBankFieldConfigs.$inferInsert;
 export type QuestionBankModulePreferencesRow = typeof questionBankModulePreferences.$inferSelect;
-export type InsertQuestionBankModulePreferencesRow = typeof questionBankModulePreferences.$inferInsert;
+export type InsertQuestionBankModulePreferencesRow =
+  typeof questionBankModulePreferences.$inferInsert;

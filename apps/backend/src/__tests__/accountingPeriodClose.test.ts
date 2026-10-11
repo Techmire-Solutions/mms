@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockAccountingRepo = vi.hoisted(() => ({
   findEntryIdBySource: vi.fn(),
@@ -18,95 +18,112 @@ const mockPrefs = vi.hoisted(() => ({
   getAccountingPreferencesService: vi.fn(),
 }));
 const mockAccounts = vi.hoisted(() => ({ findAccountById: vi.fn() }));
-vi.mock('../db/repositories/accountingAccountsRepository.js', () => mockAccounts);
+vi.mock("../db/repositories/accountingAccountsRepository.js", () => mockAccounts);
 
-vi.mock('../db/repositories/accountingRepository.js', () => mockAccountingRepo);
-vi.mock('../db/repositories/accountingFiscalYearsRepository.js', () => mockFiscalYearsRepo);
-vi.mock('../db/repositories/accountingRepositoryReport.js', () => mockReportRepo);
-vi.mock('../services/accountingPreferencesService.js', () => mockPrefs);
+vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
+vi.mock("../db/repositories/accountingFiscalYearsRepository.js", () => mockFiscalYearsRepo);
+vi.mock("../db/repositories/accountingRepositoryReport.js", () => mockReportRepo);
+vi.mock("../services/accountingPreferencesService.js", () => mockPrefs);
 
-import { closeFiscalYearForTenant } from '../accounting/use-cases/accountingPeriodClose.js';
+import { closeFiscalYearForTenant } from "../accounting/use-cases/accountingPeriodClose.js";
 
-describe('accountingPeriodClose', () => {
+describe("accountingPeriodClose", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAccounts.findAccountById.mockResolvedValue({ id: 'acc-re', type: 'Equity', isActive: true });
+    mockAccounts.findAccountById.mockResolvedValue({
+      id: "acc-re",
+      type: "Equity",
+      isActive: true,
+    });
   });
 
-  it('throws 404 if fiscal year is not found', async () => {
+  it("throws 404 if fiscal year is not found", async () => {
     mockFiscalYearsRepo.listFiscalYearsByWorkspace.mockResolvedValue([]);
 
-    await expect(closeFiscalYearForTenant('t-1', 'fy-missing', 'admin')).rejects.toThrow(/Fiscal year not found/);
+    await expect(closeFiscalYearForTenant("t-1", "fy-missing", "admin")).rejects.toThrow(
+      /Fiscal year not found/,
+    );
   });
 
-  it('throws 422 if fiscal year is already closed', async () => {
+  it("throws 422 if fiscal year is already closed", async () => {
     mockFiscalYearsRepo.listFiscalYearsByWorkspace.mockResolvedValue([
-      { id: 'fy-1', label: '2025-2026', status: 'closed' },
+      { id: "fy-1", label: "2025-2026", status: "closed" },
     ]);
 
-    await expect(closeFiscalYearForTenant('t-1', 'fy-1', 'admin')).rejects.toThrow(/Fiscal year is already closed/);
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin")).rejects.toThrow(
+      /Fiscal year is already closed/,
+    );
   });
 
-  it('throws 422 if retained earnings account is not specified or configured', async () => {
+  it("throws 422 if retained earnings account is not specified or configured", async () => {
     mockFiscalYearsRepo.listFiscalYearsByWorkspace.mockResolvedValue([
-      { id: 'fy-1', label: '2025-2026', status: 'open' },
+      { id: "fy-1", label: "2025-2026", status: "open" },
     ]);
     mockPrefs.getAccountingPreferencesService.mockResolvedValue(null);
 
-    await expect(closeFiscalYearForTenant('t-1', 'fy-1', 'admin')).rejects.toThrow(
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin")).rejects.toThrow(
       /Retained earnings account is required/,
     );
   });
 
-  it('closes fiscal year, generates closing entry, and marks year closed', async () => {
+  it("closes fiscal year, generates closing entry, and marks year closed", async () => {
     const year = {
-      id: 'fy-1',
-      label: '2025-2026',
-      status: 'open',
-      startDate: '2025-01-01',
-      endDate: '2025-12-31',
+      id: "fy-1",
+      label: "2025-2026",
+      status: "open",
+      startDate: "2025-01-01",
+      endDate: "2025-12-31",
     };
     mockFiscalYearsRepo.listFiscalYearsByWorkspace.mockResolvedValue([year]);
-    mockPrefs.getAccountingPreferencesService.mockResolvedValue({ retainedEarningsAccount: 'acc-re' });
+    mockPrefs.getAccountingPreferencesService.mockResolvedValue({
+      retainedEarningsAccount: "acc-re",
+    });
     mockReportRepo.aggregateAccountingReport.mockResolvedValue({
       trialBalance: [
-        { id: 'acc-rev', type: 'Revenue', balance: 1000 },
-        { id: 'acc-exp', type: 'Expense', balance: 600 },
+        { id: "acc-rev", type: "Revenue", balance: 1000 },
+        { id: "acc-exp", type: "Expense", balance: 600 },
       ],
     });
     mockAccountingRepo.findEntryIdBySource.mockResolvedValue(null);
     mockAccountingRepo.saveEntry.mockResolvedValue(undefined);
     mockFiscalYearsRepo.saveFiscalYear.mockResolvedValue(undefined);
 
-    const result = await closeFiscalYearForTenant('t-1', 'fy-1', 'admin-user');
+    const result = await closeFiscalYearForTenant("t-1", "fy-1", "admin-user");
 
-    expect(result.status).toBe('closed');
-    expect(result.closedBy).toBe('admin-user');
-    expect(mockAccountingRepo.saveEntry).toHaveBeenCalledWith('t-1', expect.objectContaining({
-      source_type: 'closing',
-      source_id: 'fy-1',
-      status: 'posted',
-    }));
-    expect(mockFiscalYearsRepo.saveFiscalYear).toHaveBeenCalledWith('t-1', expect.objectContaining({
-      id: 'fy-1',
-      status: 'closed',
-    }));
+    expect(result.status).toBe("closed");
+    expect(result.closedBy).toBe("admin-user");
+    expect(mockAccountingRepo.saveEntry).toHaveBeenCalledWith(
+      "t-1",
+      expect.objectContaining({
+        source_type: "closing",
+        source_id: "fy-1",
+        status: "posted",
+      }),
+    );
+    expect(mockFiscalYearsRepo.saveFiscalYear).toHaveBeenCalledWith(
+      "t-1",
+      expect.objectContaining({
+        id: "fy-1",
+        status: "closed",
+      }),
+    );
   });
 
   it.each([
     null,
-    { type: 'Asset', isActive: true },
-    { type: 'Expense', isActive: true },
-    { type: 'Equity', isActive: false },
-    { type: 'Equity', isActive: true, deletedAt: '2026-01-01T00:00:00Z' },
-  ])('rejects an unavailable or non-equity retained earnings account: %j', async (account) => {
+    { type: "Asset", isActive: true },
+    { type: "Expense", isActive: true },
+    { type: "Equity", isActive: false },
+    { type: "Equity", isActive: true, deletedAt: "2026-01-01T00:00:00Z" },
+  ])("rejects an unavailable or non-equity retained earnings account: %j", async (account) => {
     mockFiscalYearsRepo.listFiscalYearsByWorkspace.mockResolvedValue([
-      { id: 'fy-1', status: 'active', startDate: '2025-01-01', endDate: '2025-12-31' },
+      { id: "fy-1", status: "active", startDate: "2025-01-01", endDate: "2025-12-31" },
     ]);
     mockAccounts.findAccountById.mockResolvedValue(account);
-    await expect(closeFiscalYearForTenant('t-1', 'fy-1', 'admin', 'acc-invalid'))
-      .rejects.toThrow('active Equity account');
-    expect(mockAccounts.findAccountById).toHaveBeenCalledWith('t-1', 'acc-invalid');
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin", "acc-invalid")).rejects.toThrow(
+      "active Equity account",
+    );
+    expect(mockAccounts.findAccountById).toHaveBeenCalledWith("t-1", "acc-invalid");
     expect(mockAccountingRepo.saveEntry).not.toHaveBeenCalled();
     expect(mockFiscalYearsRepo.saveFiscalYear).not.toHaveBeenCalled();
   });

@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  Globe,
-  Info,
-  Key, ChevronDown, ChevronUp,
-} from "lucide-react";
+import { Globe, Info, Key, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -54,7 +50,9 @@ export function GoogleContactsPanel({
       className="flex min-h-11 shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:text-foreground"
     >
       <Key className="h-3 w-3" />
-      <span>{sync.isConfigured ? t("contacts.sync.editCredentials") : t("contacts.sync.setup")}</span>
+      <span>
+        {sync.isConfigured ? t("contacts.sync.editCredentials") : t("contacts.sync.setup")}
+      </span>
       {sync.showSetup ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
     </Button>
   ) : undefined;
@@ -71,9 +69,7 @@ export function GoogleContactsPanel({
           />
         )}
 
-        {!sync.isConfigured && !sync.showSetup && canWrite && (
-          <GoogleContactsSetupHint t={t} />
-        )}
+        {!sync.isConfigured && !sync.showSetup && canWrite && <GoogleContactsSetupHint t={t} />}
 
         {canWrite && sync.showSetup && (
           <GoogleContactsSetupForm
@@ -81,7 +77,9 @@ export function GoogleContactsPanel({
             clientSecret={sync.form.clientSecret}
             error={sync.error}
             onClientIdChange={(value) => sync.setForm((form) => ({ ...form, clientId: value }))}
-            onClientSecretChange={(value) => sync.setForm((form) => ({ ...form, clientSecret: value }))}
+            onClientSecretChange={(value) =>
+              sync.setForm((form) => ({ ...form, clientSecret: value }))
+            }
             onSave={() => void sync.handleSaveCredentials()}
             onCancel={() => {
               sync.setShowSetup(false);

@@ -1,15 +1,15 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext } from "react";
 import {
   BRANDING_IDENTITY_FIELD_KEYS,
   BRANDING_THEME_FIELD_KEYS,
   isBrandingFieldsDirty,
   type BrandingSettings,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   useBrandingDraft,
   type UseBrandingDraftOptions,
   type UseBrandingDraftResult,
-} from '@/tenant/features/settings/hooks/useBrandingDraft';
+} from "@/tenant/features/settings/hooks/useBrandingDraft";
 
 export interface SettingsBrandingDraftContextValue extends UseBrandingDraftResult {
   isIdentityDirty: boolean;
@@ -41,14 +41,16 @@ export function SettingsBrandingDraftProvider({
   })();
 
   return (
-    <SettingsBrandingDraftContext.Provider value={value}>{children}</SettingsBrandingDraftContext.Provider>
+    <SettingsBrandingDraftContext.Provider value={value}>
+      {children}
+    </SettingsBrandingDraftContext.Provider>
   );
 }
 
 export function useSettingsBrandingDraft(): SettingsBrandingDraftContextValue {
   const settingsBrandingDraft = useContext(SettingsBrandingDraftContext);
   if (!settingsBrandingDraft) {
-    throw new Error('useSettingsBrandingDraft must be used within SettingsBrandingDraftProvider');
+    throw new Error("useSettingsBrandingDraft must be used within SettingsBrandingDraftProvider");
   }
   return settingsBrandingDraft;
 }

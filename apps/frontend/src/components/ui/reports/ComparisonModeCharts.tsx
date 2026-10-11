@@ -3,14 +3,7 @@ import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { ReportChartCard } from "./ReportChartCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatNumber } from "@mms/shared";
-import {
-  Bar,
-  BarChart,
-  Legend,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, Legend, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
 import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
 
@@ -18,13 +11,7 @@ import type { ComparisonDataItem, DateRangeDataItem } from "./comparisonModeType
 import { WORK_SURFACE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/ui/StatGrid";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 
 type ComparisonModeChartData = Array<ComparisonDataItem | DateRangeDataItem>;
 
@@ -109,13 +96,21 @@ export function ComparisonModeCharts({
                   <h4 className="text-sm font-bold text-foreground m-0">{row.metric}</h4>
                   <StatGrid>
                     <StatRow
-                      label={isContacts ? t("reports.comparison.targetA") : t("reports.comparison.sessionA")}
+                      label={
+                        isContacts
+                          ? t("reports.comparison.targetA")
+                          : t("reports.comparison.sessionA")
+                      }
                       value={formatVal(row.a, row.metricKey)}
                       dtClassName="text-primary"
                       ddClassName="font-bold text-primary"
                     />
                     <StatRow
-                      label={isContacts ? t("reports.comparison.targetB") : t("reports.comparison.sessionB")}
+                      label={
+                        isContacts
+                          ? t("reports.comparison.targetB")
+                          : t("reports.comparison.sessionB")
+                      }
                       value={formatVal(row.b, row.metricKey)}
                       dtClassName="text-warning"
                       ddClassName="font-bold text-warning"
@@ -136,10 +131,22 @@ export function ComparisonModeCharts({
               <caption className="sr-only">{t("reports.comparison.title")}</caption>
               <TableHeader>
                 <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
-                  <ModuleTableHeaderCell columnKey="metric" className="px-3 py-2.5">{t("reports.comparison.metric")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="a" className="px-3 py-2.5 text-primary">{isContacts ? t("reports.comparison.targetA") : t("reports.comparison.sessionA")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="b" className="px-3 py-2.5 text-warning">{isContacts ? t("reports.comparison.targetB") : t("reports.comparison.sessionB")}</ModuleTableHeaderCell>
-                  <ModuleTableHeaderCell columnKey="diff" className="px-3 py-2.5">{t("reports.comparison.diff")}</ModuleTableHeaderCell>
+                  <ModuleTableHeaderCell columnKey="metric" className="px-3 py-2.5">
+                    {t("reports.comparison.metric")}
+                  </ModuleTableHeaderCell>
+                  <ModuleTableHeaderCell columnKey="a" className="px-3 py-2.5 text-primary">
+                    {isContacts
+                      ? t("reports.comparison.targetA")
+                      : t("reports.comparison.sessionA")}
+                  </ModuleTableHeaderCell>
+                  <ModuleTableHeaderCell columnKey="b" className="px-3 py-2.5 text-warning">
+                    {isContacts
+                      ? t("reports.comparison.targetB")
+                      : t("reports.comparison.sessionB")}
+                  </ModuleTableHeaderCell>
+                  <ModuleTableHeaderCell columnKey="diff" className="px-3 py-2.5">
+                    {t("reports.comparison.diff")}
+                  </ModuleTableHeaderCell>
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-border/50">
@@ -148,10 +155,18 @@ export function ComparisonModeCharts({
 
                   return (
                     <TableRow key={row.metric} className="hover:bg-muted/20 transition-colors">
-                      <TableCell className="px-3 py-2.5 font-bold text-foreground">{row.metric}</TableCell>
-                      <TableCell className="px-3 py-2.5 text-primary font-bold">{formatVal(row.a, row.metricKey)}</TableCell>
-                      <TableCell className="px-3 py-2.5 text-warning font-bold">{formatVal(row.b, row.metricKey)}</TableCell>
-                      <TableCell className={`px-3 py-2.5 text-xs font-black ${diff > 0 ? "text-success" : diff < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                      <TableCell className="px-3 py-2.5 font-bold text-foreground">
+                        {row.metric}
+                      </TableCell>
+                      <TableCell className="px-3 py-2.5 text-primary font-bold">
+                        {formatVal(row.a, row.metricKey)}
+                      </TableCell>
+                      <TableCell className="px-3 py-2.5 text-warning font-bold">
+                        {formatVal(row.b, row.metricKey)}
+                      </TableCell>
+                      <TableCell
+                        className={`px-3 py-2.5 text-xs font-black ${diff > 0 ? "text-success" : diff < 0 ? "text-destructive" : "text-muted-foreground"}`}
+                      >
                         {formatDiff(diff, row.metricKey)}
                       </TableCell>
                     </TableRow>

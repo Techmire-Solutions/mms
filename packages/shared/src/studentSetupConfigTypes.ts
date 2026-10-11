@@ -1,12 +1,10 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import {
-  type StudentsSettings,
-} from './studentsModuleSettings.js';
-import { STUDENT_TAB_REGISTRY, STUDENT_LOCKED_ENABLED_TABS } from './moduleFieldSetupPersons.js';
-import { normalizeStudentsSettings } from './studentSettingsUtils.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { type StudentsSettings } from "./studentsModuleSettings.js";
+import { STUDENT_TAB_REGISTRY, STUDENT_LOCKED_ENABLED_TABS } from "./moduleFieldSetupPersons.js";
+import { normalizeStudentsSettings } from "./studentSettingsUtils.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 
 /** PUT /api/students/field-config — field registry JSON without formTabs SSOT. */
 const studentFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
@@ -17,23 +15,25 @@ const studentFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
   .strict();
 
 export const studentFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, studentFieldConfigPutBodyBaseSchema);
 
 /** PUT /api/students/preferences — GR / auto-id prefs only. */
-export const studentPreferencesPutBodySchema = z.object({
-  autoGenerateId: z.boolean().optional(),
-  grNumberTemplate: z.string().optional(),
-  grNumberDigits: z.number().optional(),
-  grNumberRestartAnnually: z.boolean().optional(),
-}).passthrough();
+export const studentPreferencesPutBodySchema = z
+  .object({
+    autoGenerateId: z.boolean().optional(),
+    grNumberTemplate: z.string().optional(),
+    grNumberDigits: z.number().optional(),
+    grNumberRestartAnnually: z.boolean().optional(),
+  })
+  .passthrough();
 
 import {
   type StudentModulePreferences,
   STUDENT_MODULE_PREFERENCE_KEYS,
   normalizeStudentModulePreferences,
-} from './studentPreferencesNormalization.js';
+} from "./studentPreferencesNormalization.js";
 
 export {
   type StudentModulePreferences,
@@ -75,7 +75,7 @@ export function composeStudentsSettings(
     preferences as Partial<StudentModulePreferences> | null,
   );
   const merged = normalizeStudentsSettings({
-    ...(fieldConfig && typeof fieldConfig === 'object' && !Array.isArray(fieldConfig)
+    ...(fieldConfig && typeof fieldConfig === "object" && !Array.isArray(fieldConfig)
       ? (fieldConfig as Record<string, unknown>)
       : {}),
     ...prefs,
@@ -94,9 +94,7 @@ export function mergeStudentsFormTabsFromApi(
   _fields?: Record<string, FieldDefinition[]> | undefined,
 ): TabDefinition[] {
   const documentOrDefault =
-    documentFormTabs && documentFormTabs.length > 0
-      ? documentFormTabs
-      : [...STUDENT_TAB_REGISTRY];
+    documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [...STUDENT_TAB_REGISTRY];
 
   const merged =
     apiTabs.length === 0
@@ -140,14 +138,10 @@ function withStudentLockedEnabledTabs(tabIds: Iterable<string>): string[] {
  * Otherwise falls back to non-empty `enabledTabs`, then registry defaults.
  * Locked tabs ({@link STUDENT_LOCKED_ENABLED_TABS}) are always included.
  */
-export function resolveStudentEnabledTabIds(
-  settings?: StudentEnabledTabsInput | null,
-): string[] {
+export function resolveStudentEnabledTabIds(settings?: StudentEnabledTabsInput | null): string[] {
   const formTabs = settings?.formTabs;
   if (formTabs && formTabs.length > 0) {
-    const fromFormTabs = formTabs
-      .filter((tab) => tab.enabled !== false)
-      .map((tab) => tab.key);
+    const fromFormTabs = formTabs.filter((tab) => tab.enabled !== false).map((tab) => tab.key);
     return withStudentLockedEnabledTabs(fromFormTabs);
   }
 

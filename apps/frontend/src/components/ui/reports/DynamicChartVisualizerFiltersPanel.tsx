@@ -26,16 +26,15 @@ export function DynamicChartVisualizerFiltersPanel({
             <Filter className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <SectionLabel as="h4" tone="foreground" className="leading-none truncate">{t("reports.visualizer.queryFilters")}</SectionLabel>
-            <SectionLabel as="p" weight="bold" tracking="wider" className="mt-0.5 truncate">{t("reports.visualizer.filtersSubtitle")}</SectionLabel>
+            <SectionLabel as="h4" tone="foreground" className="leading-none truncate">
+              {t("reports.visualizer.queryFilters")}
+            </SectionLabel>
+            <SectionLabel as="p" weight="bold" tracking="wider" className="mt-0.5 truncate">
+              {t("reports.visualizer.filtersSubtitle")}
+            </SectionLabel>
           </div>
         </div>
-        <Button
-          type="button"
-          variant="capsOutline"
-          size="caps"
-          onClick={onAddFilter}
-        >
+        <Button type="button" variant="capsOutline" size="caps" onClick={onAddFilter}>
           <Plus className="w-3 h-3" />
           {t("reports.visualizer.addRule")}
         </Button>
@@ -52,7 +51,10 @@ export function DynamicChartVisualizerFiltersPanel({
           />
         ) : (
           filters.map((rule) => (
-            <div key={rule.id} className="flex flex-col gap-2 rounded-2xl border border-border bg-card/30 p-2.5 sm:flex-row sm:items-center">
+            <div
+              key={rule.id}
+              className="flex flex-col gap-2 rounded-2xl border border-border bg-card/30 p-2.5 sm:flex-row sm:items-center"
+            >
               <FormSelect
                 value={rule.field}
                 onChange={(val) => onUpdateFilter(rule.id, { field: val })}
@@ -66,7 +68,9 @@ export function DynamicChartVisualizerFiltersPanel({
 
               <FormSelect
                 value={rule.operator}
-                onChange={(val) => onUpdateFilter(rule.id, { operator: val as FilterRule["operator"] })}
+                onChange={(val) =>
+                  onUpdateFilter(rule.id, { operator: val as FilterRule["operator"] })
+                }
                 className="w-full font-medium sm:w-24"
                 aria-label={t("reports.widgets.builder.operator")}
                 options={[

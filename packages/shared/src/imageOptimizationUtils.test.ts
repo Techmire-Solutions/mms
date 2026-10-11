@@ -14,8 +14,10 @@ describe("imageOptimizationUtils", () => {
 
   it("keeps every upload preset on the canonical format order", () => {
     expect(IMAGE_ENCODE_FORMATS).toEqual(["image/avif", "image/webp"]);
-    expect(Object.values(IMAGE_UPLOAD_PRESETS).every(
-      (preset) => preset.formats === IMAGE_ENCODE_FORMATS,
-    )).toBe(true);
+    expect(
+      Object.values(IMAGE_UPLOAD_PRESETS).every(
+        (preset) => preset.formats === IMAGE_ENCODE_FORMATS,
+      ),
+    ).toBe(true);
   });
 });

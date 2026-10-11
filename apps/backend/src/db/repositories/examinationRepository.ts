@@ -8,7 +8,7 @@ export {
   replaceExamsForWorkspace,
   bulkSoftDeleteExams,
   bulkRestoreExams,
-} from './examinationExamsRepository.js';
+} from "./examinationExamsRepository.js";
 export {
   listExamResultsByWorkspace,
   findExamResultById,
@@ -17,4 +17,4 @@ export {
   bulkSaveExamResults,
   replaceExamResultsForWorkspace,
   deleteExaminationsByWorkspace,
-} from './examinationResultsRepository.js';
+} from "./examinationResultsRepository.js";

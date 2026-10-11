@@ -16,7 +16,7 @@ import { WidgetDrilldownModalRecords } from "@/components/ui/reports/pinnedWidge
  */
 export function WidgetDrilldownModal({
   widget,
-  onClose
+  onClose,
 }: {
   widget: CustomWidget;
   onClose: () => void;
@@ -74,11 +74,7 @@ export function WidgetDrilldownModal({
       }
     >
       {filteredRecords.length === 0 ? (
-        <EmptyState
-          title={t("reports.widgets.noRecords")}
-          icon={EyeOff}
-          compact
-        />
+        <EmptyState title={t("reports.widgets.noRecords")} icon={EyeOff} compact />
       ) : (
         <WidgetDrilldownModalRecords
           t={t}

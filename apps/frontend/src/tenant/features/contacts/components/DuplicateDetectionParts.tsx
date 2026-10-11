@@ -4,10 +4,7 @@ import type { Contact, ContactPreferences } from "@mms/shared";
 import { getDuplicateConfidenceBadgeStyle } from "@mms/shared";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  getDuplicateFieldLabel,
-  getDuplicateFieldValue,
-} from "@/lib/contacts/contactI18n";
+import { getDuplicateFieldLabel, getDuplicateFieldValue } from "@/lib/contacts/contactI18n";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,10 +14,7 @@ export interface ConfidenceBadgeProps {
   prefs: Partial<ContactPreferences>;
 }
 
-export function ConfidenceBadge({
-  score,
-  prefs,
-}: ConfidenceBadgeProps): React.JSX.Element {
+export function ConfidenceBadge({ score, prefs }: ConfidenceBadgeProps): React.JSX.Element {
   const { t } = useTranslation();
   const { colorClass } = getDuplicateConfidenceBadgeStyle(score, prefs);
   return (

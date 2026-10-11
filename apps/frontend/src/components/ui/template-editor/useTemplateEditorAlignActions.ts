@@ -17,8 +17,8 @@ export interface UseTemplateEditorAlignActionsOptions<TPayload = Record<string, 
   selectedIds: string[];
   commitUpdate: (
     updateFn: (
-      elements: TemplateElement<keyof TPayload & string>[]
-    ) => TemplateElement<keyof TPayload & string>[]
+      elements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
   size: PageSizeInfo;
 }
@@ -33,7 +33,7 @@ export function useTemplateEditorAlignActions<TPayload = Record<string, unknown>
       if (selectedIds.length < 2) return;
       commitUpdate((els) => alignElements(els, selectedIds, alignType));
     },
-    [commitUpdate, selectedIds]
+    [commitUpdate, selectedIds],
   );
 
   const distributeSelected = useCallback(
@@ -41,7 +41,7 @@ export function useTemplateEditorAlignActions<TPayload = Record<string, unknown>
       if (selectedIds.length < 2) return;
       commitUpdate((els) => distributeElements(els, selectedIds, axis));
     },
-    [commitUpdate, selectedIds]
+    [commitUpdate, selectedIds],
   );
 
   const centerSelected = useCallback(
@@ -49,10 +49,12 @@ export function useTemplateEditorAlignActions<TPayload = Record<string, unknown>
       if (selectedIds.length === 0) return;
       const idSet = new Set(selectedIds);
       commitUpdate((els) =>
-        els.map((el) => (idSet.has(el.id) ? centerElementOnPage(el, size.width, size.height, axis) : el))
+        els.map((el) =>
+          idSet.has(el.id) ? centerElementOnPage(el, size.width, size.height, axis) : el,
+        ),
       );
     },
-    [commitUpdate, selectedIds, size.height, size.width]
+    [commitUpdate, selectedIds, size.height, size.width],
   );
 
   /** Snaps all selected elements to one of the four page edges conforming to the grid. */
@@ -64,15 +66,19 @@ export function useTemplateEditorAlignActions<TPayload = Record<string, unknown>
         els.map((el) => {
           if (!idSet.has(el.id)) return el;
           switch (edge) {
-            case "top":    return { ...el, y: 0 };
-            case "bottom": return { ...el, y: snap(Math.max(0, size.height - el.h)) };
-            case "left":   return { ...el, x: 0 };
-            case "right":  return { ...el, x: snap(Math.max(0, size.width - el.w)) };
+            case "top":
+              return { ...el, y: 0 };
+            case "bottom":
+              return { ...el, y: snap(Math.max(0, size.height - el.h)) };
+            case "left":
+              return { ...el, x: 0 };
+            case "right":
+              return { ...el, x: snap(Math.max(0, size.width - el.w)) };
           }
-        })
+        }),
       );
     },
-    [commitUpdate, selectedIds, size.height, size.width]
+    [commitUpdate, selectedIds, size.height, size.width],
   );
 
   /** Equalizes width, height, or both across selected elements to match the largest in the selection. */
@@ -97,7 +103,7 @@ export function useTemplateEditorAlignActions<TPayload = Record<string, unknown>
         });
       });
     },
-    [commitUpdate, selectedIds, size.height, size.width]
+    [commitUpdate, selectedIds, size.height, size.width],
   );
 
   return {

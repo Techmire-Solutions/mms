@@ -1,21 +1,18 @@
-import type { ColumnRegistryEntry, FieldDefinition } from './contactTypes.js';
-import type { StudentsSettings } from './settingsTypes.js';
+import type { ColumnRegistryEntry, FieldDefinition } from "./contactTypes.js";
+import type { StudentsSettings } from "./settingsTypes.js";
 import {
   DEFAULT_STUDENT_COLUMN_REGISTRY,
   STUDENT_COLUMN_FIELD_MAPPING,
-} from './moduleFieldSetupPersons.js';
+} from "./moduleFieldSetupPersons.js";
 import {
   listEnabledCustomStudentFormFields,
   resolveStudentFieldsMapForColumnSync,
-} from './studentFormCustomFields.js';
-import { resolveStudentEnabledTabIds } from './studentSetupConfigTypes.js';
-import { syncModuleColumnRegistryWithFields } from './moduleColumnRegistrySync.js';
-import {
-  customFieldKeyFromColumnKey,
-  type ModuleColumnRegistryEntry,
-} from './moduleColumnCore.js';
+} from "./studentFormCustomFields.js";
+import { resolveStudentEnabledTabIds } from "./studentSetupConfigTypes.js";
+import { syncModuleColumnRegistryWithFields } from "./moduleColumnRegistrySync.js";
+import { customFieldKeyFromColumnKey, type ModuleColumnRegistryEntry } from "./moduleColumnCore.js";
 
-const STUDENT_LOCKED_ENABLED_TABS = ['basic'] as const;
+const STUDENT_LOCKED_ENABLED_TABS = ["basic"] as const;
 
 /**
  * Aligns Students `columnRegistry.enabled` with Setup Fields tab/field enablement.
@@ -60,7 +57,9 @@ export function buildStudentWorkColumnRegistry(
 ): ModuleColumnRegistryEntry[] {
   const fields = resolveStudentFieldsMapForColumnSync(settings?.fields);
   const enabledTabs = resolveStudentEnabledTabIds(settings);
-  const storedRegistry = Array.isArray(settings?.columnRegistry) ? settings.columnRegistry : undefined;
+  const storedRegistry = Array.isArray(settings?.columnRegistry)
+    ? settings.columnRegistry
+    : undefined;
   const synced = syncStudentColumnRegistryWithFields(
     storedRegistry ?? DEFAULT_STUDENT_COLUMN_REGISTRY,
     fields,
@@ -103,7 +102,7 @@ export function buildStudentWorkColumnRegistry(
       enabled: col.enabled !== false,
       order: col.order,
       width: col.width,
-      fixed: col.fixed || col.key === 'name',
+      fixed: col.fixed || col.key === "name",
     };
   });
 }

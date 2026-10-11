@@ -1,20 +1,13 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveWidgetTitle, resolveWidgetSubText } from "@/lib/dashboardWidgets";
-import {
-  COMPOSED_WIDGET_TYPES,
-} from "@/components/dashboard-widgets/registry";
+import { COMPOSED_WIDGET_TYPES } from "@/components/dashboard-widgets/registry";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { resolveThresholdChartHex, resolveWidgetChartHex } from "@/lib/brandingChartPalette";
 import { computeCustomCard, type CustomCard } from "@/lib/reports/reportMetadata";
 import { readDashboardSwitchState } from "@/tenant/features/reports/components/pinnedWidgets/useDashboardSectionSettings";
-import {
-  type ReportCollectionsSnapshot,
-} from "@/lib/reports/useReportCollections";
-import {
-  type CustomWidget,
-  ALERT_COLOR_MAP,
-} from "@/lib/reports/pinnedWidgetTypes";
+import { type ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";
+import { type CustomWidget, ALERT_COLOR_MAP } from "@/lib/reports/pinnedWidgetTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
   computeWidgetSingleValue,
@@ -38,7 +31,7 @@ export function CustomWidgetRenderer({
   isCompact,
   isEditMode = false,
   onSwitchToggle,
-  onMetricClick
+  onMetricClick,
 }: {
   widget: CustomWidget;
   collections: ReportCollectionsSnapshot;
@@ -49,16 +42,16 @@ export function CustomWidgetRenderer({
 }): React.JSX.Element {
   const { t } = useTranslation();
   const palette = useBrandPalette();
-  
+
   const resolvedWidgetType = (() => {
     const type = widget.widgetType || "";
-    if (["bar", "line", "area", "pie", "radar"].includes(type) || ["bar", "line", "area", "pie", "radar"].includes(widget.chartType || "")) {
+    if (
+      ["bar", "line", "area", "pie", "radar"].includes(type) ||
+      ["bar", "line", "area", "pie", "radar"].includes(widget.chartType || "")
+    ) {
       return "chart";
     }
-    const knownTypes = [
-      "kpi", "progress", "switch", "card",
-      ...COMPOSED_WIDGET_TYPES,
-    ];
+    const knownTypes = ["kpi", "progress", "switch", "card", ...COMPOSED_WIDGET_TYPES];
     if (knownTypes.includes(type)) {
       return type;
     }
@@ -94,15 +87,21 @@ export function CustomWidgetRenderer({
   const computedCard = (() => {
     if (resolvedWidgetType !== "card") return null;
 
-    const card: CustomCard = Object.assign({ operation: "count" as const, color: "blue", icon: "star", subTextType: "dynamic" as const }, widget);
+    const card: CustomCard = Object.assign(
+      { operation: "count" as const, color: "blue", icon: "star", subTextType: "dynamic" as const },
+      widget,
+    );
     const serverComputed = computeServerBackedCard(card, t);
 
-    return serverComputed ?? computeCustomCard(card, {
-      ...collections,
-      students: [],
-      faculty: [],
-      contacts: [],
-    });
+    return (
+      serverComputed ??
+      computeCustomCard(card, {
+        ...collections,
+        students: [],
+        faculty: [],
+        contacts: [],
+      })
+    );
   })();
 
   const colorHex = isAlert
@@ -112,8 +111,12 @@ export function CustomWidgetRenderer({
   const alertScheme = isAlert ? ALERT_COLOR_MAP[widget.thresholdColor || "red"] : null;
 
   const switchLabel = isSwitchOn
-    ? (widget.switchLabelOnKey ? t(widget.switchLabelOnKey) : (widget.switchLabelOn || t("reports.widgets.statusOn")))
-    : (widget.switchLabelOffKey ? t(widget.switchLabelOffKey) : (widget.switchLabelOff || t("reports.widgets.statusOff")));
+    ? widget.switchLabelOnKey
+      ? t(widget.switchLabelOnKey)
+      : widget.switchLabelOn || t("reports.widgets.statusOn")
+    : widget.switchLabelOffKey
+      ? t(widget.switchLabelOffKey)
+      : widget.switchLabelOff || t("reports.widgets.statusOff");
 
   if (isCompact && resolvedWidgetType !== "chart") {
     return (
@@ -166,7 +169,10 @@ const SERVER_CARD_COMPUTERS = {
   enrollments: computeEnrollmentsCustomCardValue,
 } as const;
 
-function computeServerBackedCard(card: CustomCard, t: TranslationFunction): ComputedCustomCard | null {
+function computeServerBackedCard(
+  card: CustomCard,
+  t: TranslationFunction,
+): ComputedCustomCard | null {
   const aggregateValue = getServerCardAggregate(card);
   if (!aggregateValue) return null;
 
@@ -174,7 +180,9 @@ function computeServerBackedCard(card: CustomCard, t: TranslationFunction): Comp
     id: card.id,
     title: resolveWidgetTitle(card, t),
     value: String(aggregateValue.finalValue),
-    sub: resolveWidgetSubText(card, t) || t("reports.widgets.totalCountText", { count: aggregateValue.totalCount }),
+    sub:
+      resolveWidgetSubText(card, t) ||
+      t("reports.widgets.totalCountText", { count: aggregateValue.totalCount }),
     icon: card.icon,
     color: card.color,
     trend: card.trend || 0,

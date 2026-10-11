@@ -14,9 +14,7 @@ describe("UserAvatar Component", () => {
   });
 
   it("renders User icon fallback when name is not provided or empty", () => {
-    const html = renderToStaticMarkup(
-      <UserAvatar id="usr-2" name="" gender="male" />,
-    );
+    const html = renderToStaticMarkup(<UserAvatar id="usr-2" name="" gender="male" />);
 
     expect(html).toContain("lucide-user");
     expect(html).toContain("text-info");
@@ -24,12 +22,7 @@ describe("UserAvatar Component", () => {
 
   it("renders presence indicator and sr-only label when status is provided", () => {
     const html = renderToStaticMarkup(
-      <UserAvatar
-        id="usr-3"
-        name="Ali Raza"
-        status="online"
-        statusAriaLabel="Active now"
-      />,
+      <UserAvatar id="usr-3" name="Ali Raza" status="online" statusAriaLabel="Active now" />,
     );
 
     expect(html).toContain("bg-success");
@@ -38,11 +31,7 @@ describe("UserAvatar Component", () => {
 
   it("renders custom badgeNode when provided", () => {
     const html = renderToStaticMarkup(
-      <UserAvatar
-        id="usr-4"
-        name="Zainab"
-        badgeNode={<span id="test-badge">★</span>}
-      />,
+      <UserAvatar id="usr-4" name="Zainab" badgeNode={<span id="test-badge">★</span>} />,
     );
 
     expect(html).toContain("test-badge");
@@ -50,9 +39,7 @@ describe("UserAvatar Component", () => {
   });
 
   it("renders skeleton loader when isLoading is true", () => {
-    const html = renderToStaticMarkup(
-      <UserAvatar id="usr-5" isLoading={true} size="lg" />,
-    );
+    const html = renderToStaticMarkup(<UserAvatar id="usr-5" isLoading={true} size="lg" />);
 
     expect(html).toContain("animate-pulse");
     expect(html).toContain("h-11 w-11");
@@ -60,9 +47,7 @@ describe("UserAvatar Component", () => {
   });
 
   it("adds tooltip title when showTooltip is true", () => {
-    const html = renderToStaticMarkup(
-      <UserAvatar id="usr-6" name="Hassan" showTooltip={true} />,
-    );
+    const html = renderToStaticMarkup(<UserAvatar id="usr-6" name="Hassan" showTooltip={true} />);
 
     expect(html).toContain('title="Hassan"');
   });

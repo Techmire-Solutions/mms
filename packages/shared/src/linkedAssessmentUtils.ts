@@ -3,11 +3,11 @@ import {
   normalizeIdLinkedName,
   resolveEntityName,
   type NamedEntity,
-} from './contactLinkPolicy.js';
+} from "./contactLinkPolicy.js";
 
 export function normalizeAssessmentResult<T extends Record<string, unknown>>(row: T): T {
   if (!row || typeof row !== "object") return row;
-  return normalizeIdLinkedName(row, 'studentId', 'studentName');
+  return normalizeIdLinkedName(row, "studentId", "studentName");
 }
 
 export function hydrateAssessmentResult<T extends Record<string, unknown>>(
@@ -29,8 +29,11 @@ export function hydrateAssessmentResultList<T extends Record<string, unknown>>(
   students: NamedEntity[] | Map<string, NamedEntity>,
 ): T[] {
   if (!rows || !Array.isArray(rows)) return [];
-  const studentLookup = students instanceof Map
-    ? students
-    : (students.length > 8 ? createNamedEntityLookupMap(students) : students);
+  const studentLookup =
+    students instanceof Map
+      ? students
+      : students.length > 8
+        ? createNamedEntityLookupMap(students)
+        : students;
   return rows.map((r) => hydrateAssessmentResult(r, studentLookup));
 }

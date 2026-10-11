@@ -1,12 +1,17 @@
-import { eq, inArray, getTableName } from 'drizzle-orm';
-import type { PgColumn, PgTable } from 'drizzle-orm/pg-core';
-import { getRootDb } from '../database.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { redisDel, redisKeys } from '../../lib/redis.js';
-import { getOrSetMultiTier, invalidateMultiTierCache } from '../../lib/cache/index.js';
+import { eq, inArray, getTableName } from "drizzle-orm";
+import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
+import { getRootDb } from "../database.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { redisDel, redisKeys } from "../../lib/redis.js";
+import { getOrSetMultiTier, invalidateMultiTierCache } from "../../lib/cache/index.js";
 
 type WorkspaceCol = PgColumn;
 type UpdatedAtCol = PgColumn;
+
+// Drizzle table params need dynamic column access on top of the typed columns
+// declared at each call site.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic column lookup
+type DynamicPgTable = PgTable & Record<string, any>;
 
 const SETUP_SINGLETON_CACHE_TTL_SECONDS = 300;
 
@@ -15,12 +20,11 @@ const SETUP_SINGLETON_CACHE_TTL_SECONDS = 300;
  * `jsonColumn` is the Drizzle property name on the table (`config` or `preferences`).
  */
 export function createWorkspaceSingletonJsonRepo(options: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  table: PgTable & Record<string, any> & {
+  table: DynamicPgTable & {
     workspaceSubdomain: WorkspaceCol;
     updatedAt: UpdatedAtCol;
   };
-  jsonColumn: 'config' | 'preferences';
+  jsonColumn: "config" | "preferences";
 }) {
   const { table, jsonColumn } = options;
   const tableName = getTableName(table);
@@ -46,7 +50,7 @@ export function createWorkspaceSingletonJsonRepo(options: {
             .limit(1);
           const row = rows[0] as Record<string, unknown> | undefined;
           const value = row?.[jsonColumn];
-          return value && typeof value === 'object' && !Array.isArray(value)
+          return value && typeof value === "object" && !Array.isArray(value)
             ? (value as Record<string, unknown>)
             : null;
         });
@@ -82,19 +86,17 @@ export function createWorkspaceSingletonJsonRepo(options: {
       .from(table)
       .where(inArray(table.workspaceSubdomain, subdomains));
     for (const row of rows as Record<string, unknown>[]) {
-      const sub = typeof row?.workspaceSubdomain === 'string' ? row.workspaceSubdomain.toLowerCase() : '';
+      const sub =
+        typeof row?.workspaceSubdomain === "string" ? row.workspaceSubdomain.toLowerCase() : "";
       const value = row?.[jsonColumn];
-      if (sub && value && typeof value === 'object' && !Array.isArray(value)) {
+      if (sub && value && typeof value === "object" && !Array.isArray(value)) {
         result.set(sub, value as Record<string, unknown>);
       }
     }
     return result;
   }
 
-  async function upsert(
-    workspaceSubdomain: string,
-    json: Record<string, unknown>,
-  ): Promise<void> {
+  async function upsert(workspaceSubdomain: string, json: Record<string, unknown>): Promise<void> {
     const subdomain = workspaceSubdomain.trim().toLowerCase();
     const now = new Date();
     await withTenant(subdomain, async (tx) => {
@@ -141,7 +143,7 @@ export function createWorkspaceSingletonJsonRepo(options: {
       if (!first) return;
       const nested = first[jsonColumn];
       const json =
-        nested && typeof nested === 'object' && !Array.isArray(nested)
+        nested && typeof nested === "object" && !Array.isArray(nested)
           ? (nested as Record<string, unknown>)
           : first;
       await tx.insert(table).values({
@@ -163,5 +165,12 @@ export function createWorkspaceSingletonJsonRepo(options: {
     await redisDel(key);
   }
 
-  return { getByWorkspace, getByWorkspaces, upsert, evictCache, listAllByWorkspace, replaceForWorkspace };
+  return {
+    getByWorkspace,
+    getByWorkspaces,
+    upsert,
+    evictCache,
+    listAllByWorkspace,
+    replaceForWorkspace,
+  };
 }

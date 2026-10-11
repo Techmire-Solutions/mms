@@ -3,9 +3,7 @@ import type { Contact, FacultyMember } from "@mms/shared";
 import { resolveFacultyStatus } from "@mms/shared";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 import { WarningCallout } from "@/components/ui/WarningCallout";
-import {
-  FormFooterEntityChip,
-} from "@/components/ui/FormFooterChip";
+import { FormFooterEntityChip } from "@/components/ui/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { extractEmployeeId } from "@/tenant/features/faculty/components/facultyFormDraft";

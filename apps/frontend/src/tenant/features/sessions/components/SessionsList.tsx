@@ -141,12 +141,16 @@ export function SessionsList({
           <EmptyState
             icon={BookOpen}
             title={showDeleted ? t("sessions.empty.trashTitle") : t("sessions.empty.title")}
-            description={showDeleted ? t("sessions.empty.trashSubtitle") : t("sessions.empty.subtitle")}
-            action={!showDeleted && canWrite ? (
-              <Button variant="primary" icon={Plus} onClick={onCreateSession}>
-                {t("sessions.action.new")}
-              </Button>
-            ) : undefined}
+            description={
+              showDeleted ? t("sessions.empty.trashSubtitle") : t("sessions.empty.subtitle")
+            }
+            action={
+              !showDeleted && canWrite ? (
+                <Button variant="primary" icon={Plus} onClick={onCreateSession}>
+                  {t("sessions.action.new")}
+                </Button>
+              ) : undefined
+            }
           />
         ) : viewMode === "table" ? (
           <SessionsListDesktopTable

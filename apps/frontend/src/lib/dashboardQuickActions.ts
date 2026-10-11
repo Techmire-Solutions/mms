@@ -1,4 +1,4 @@
-import type { AppTranslationKey, Permission } from '@mms/shared';
+import type { AppTranslationKey, Permission } from "@mms/shared";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   ATTENDANCE_MODULE_MANIFEST,
@@ -6,7 +6,7 @@ import {
   FINANCE_MODULE_MANIFEST,
   HASANAT_MODULE_MANIFEST,
   SESSIONS_MODULE_MANIFEST,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   UserPlus,
   CalendarPlus,
@@ -17,11 +17,11 @@ import {
   BarChart3,
   UserCheck,
   type LucideIcon,
-} from 'lucide-react';
-import { ROUTES } from '@/lib/config/routes';
-import type { DashboardRole } from '@/lib/dashboardRole';
+} from "lucide-react";
+import { ROUTES } from "@/lib/config/routes";
+import type { DashboardRole } from "@/lib/dashboardRole";
 
-export type QuickActionColor = 'emerald' | 'blue' | 'amber' | 'violet' | 'slate';
+export type QuickActionColor = "emerald" | "blue" | "amber" | "violet" | "slate";
 
 export interface DashboardQuickAction {
   id: string;
@@ -42,95 +42,99 @@ export interface DashboardQuickAction {
  */
 export const DASHBOARD_QUICK_ACTIONS: readonly DashboardQuickAction[] = [
   {
-    id: 'add-student',
-    labelKey: 'action.addStudent',
-    descKey: 'action.addStudentDesc',
+    id: "add-student",
+    labelKey: "action.addStudent",
+    descKey: "action.addStudentDesc",
     icon: UserPlus,
-    color: 'emerald',
-    moduleId: 'enrollment',
+    color: "emerald",
+    moduleId: "enrollment",
     permission: ENROLLMENTS_MODULE_MANIFEST.permissions.write,
     route: ROUTES.enrollments,
-    roles: ['admin', 'faculty'],
+    roles: ["admin", "faculty"],
   },
   {
-    id: 'create-session',
-    labelKey: 'action.createSession',
-    descKey: 'action.createSessionDesc',
+    id: "create-session",
+    labelKey: "action.createSession",
+    descKey: "action.createSessionDesc",
     icon: CalendarPlus,
-    color: 'blue',
-    moduleId: 'sessions',
+    color: "blue",
+    moduleId: "sessions",
     permission: SESSIONS_MODULE_MANIFEST.permissions.write,
     route: ROUTES.sessions,
-    roles: ['admin', 'faculty'],
+    roles: ["admin", "faculty"],
   },
   {
-    id: 'record-payment',
-    labelKey: 'action.recordPayment',
-    descKey: 'action.recordPaymentDesc',
+    id: "record-payment",
+    labelKey: "action.recordPayment",
+    descKey: "action.recordPaymentDesc",
     icon: DollarSign,
-    color: 'amber',
-    moduleId: 'finance',
+    color: "amber",
+    moduleId: "finance",
     permission: FINANCE_MODULE_MANIFEST.permissions.write,
     route: ROUTES.finance,
-    roles: ['admin', 'accountant'],
+    roles: ["admin", "accountant"],
   },
   {
-    id: 'take-attendance',
-    labelKey: 'action.takeAttendance',
-    descKey: 'action.takeAttendanceDesc',
+    id: "take-attendance",
+    labelKey: "action.takeAttendance",
+    descKey: "action.takeAttendanceDesc",
     icon: UserCheck,
-    color: 'violet',
-    moduleId: 'attendance',
+    color: "violet",
+    moduleId: "attendance",
     permission: ATTENDANCE_MODULE_MANIFEST.permissions.write,
     route: ROUTES.attendance,
-    roles: ['admin', 'faculty'],
+    roles: ["admin", "faculty"],
   },
   {
-    id: 'award-hasanat',
-    labelKey: 'action.awardHasanat',
-    descKey: 'action.awardHasanatDesc',
+    id: "award-hasanat",
+    labelKey: "action.awardHasanat",
+    descKey: "action.awardHasanatDesc",
     icon: Star,
-    color: 'amber',
-    moduleId: 'hasanat',
+    color: "amber",
+    moduleId: "hasanat",
     permission: HASANAT_MODULE_MANIFEST.permissions.write,
     route: ROUTES.hasanatCards,
-    roles: ['admin', 'faculty'],
+    roles: ["admin", "faculty"],
   },
   {
-    id: 'view-accounting',
-    labelKey: 'action.generateReport',
-    descKey: 'action.generateReportDesc',
+    id: "view-accounting",
+    labelKey: "action.generateReport",
+    descKey: "action.generateReportDesc",
     icon: BarChart3,
-    color: 'slate',
-    moduleId: 'accounting',
+    color: "slate",
+    moduleId: "accounting",
     permission: ACCOUNTING_MODULE_MANIFEST.permissions.reports,
     route: ROUTES.accounting,
-    roles: ['admin', 'accountant'],
+    roles: ["admin", "accountant"],
   },
   {
-    id: 'print-receipt',
-    labelKey: 'action.printReceipt',
-    descKey: 'action.printReceiptDesc',
+    id: "print-receipt",
+    labelKey: "action.printReceipt",
+    descKey: "action.printReceiptDesc",
     icon: Printer,
-    color: 'amber',
-    moduleId: 'finance',
+    color: "amber",
+    moduleId: "finance",
     permission: FINANCE_MODULE_MANIFEST.permissions.write,
     route: ROUTES.finance,
-    roles: ['accountant'],
+    roles: ["accountant"],
   },
   {
-    id: 'view-ledger',
-    labelKey: 'action.viewLedger',
-    descKey: 'action.viewLedgerDesc',
+    id: "view-ledger",
+    labelKey: "action.viewLedger",
+    descKey: "action.viewLedgerDesc",
     icon: FileText,
-    color: 'violet',
-    moduleId: 'accounting',
+    color: "violet",
+    moduleId: "accounting",
     permission: ACCOUNTING_MODULE_MANIFEST.permissions.write,
     route: ROUTES.accounting,
-    roles: ['accountant'],
+    roles: ["accountant"],
   },
 ] as const;
 
-export function getQuickActionsForRole(dashboardRole: DashboardRole | string): DashboardQuickAction[] {
-  return DASHBOARD_QUICK_ACTIONS.filter((action) => action.roles.includes(dashboardRole as DashboardRole));
+export function getQuickActionsForRole(
+  dashboardRole: DashboardRole | string,
+): DashboardQuickAction[] {
+  return DASHBOARD_QUICK_ACTIONS.filter((action) =>
+    action.roles.includes(dashboardRole as DashboardRole),
+  );
 }

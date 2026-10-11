@@ -54,7 +54,12 @@ export function FacultyContactSection(props: FacultyContactSectionProps): React.
   if (!showContact && !hasProfilePills && !linkedContact) return null;
 
   return (
-    <SectionCard title={t("faculty.form.tab.contact")} icon={User} accentColor="primary" className="z-sticky">
+    <SectionCard
+      title={t("faculty.form.tab.contact")}
+      icon={User}
+      accentColor="primary"
+      className="z-sticky"
+    >
       <div className="space-y-3">
         {showContact && (
           <ContactPicker
@@ -62,7 +67,9 @@ export function FacultyContactSection(props: FacultyContactSectionProps): React.
             name="contactId"
             label={resolveFacultyFieldLabel(fields, "basic", "contactId", t)}
             value={facultyDraft.contactId ? String(facultyDraft.contactId) : null}
-            onChange={(contactId) => onDraftChange({ contactId: contactId ? String(contactId) : "" })}
+            onChange={(contactId) =>
+              onDraftChange({ contactId: contactId ? String(contactId) : "" })
+            }
             excludeIds={linkedFacultyContactIds.map(String)}
             searchPlaceholder={t("faculty.form.searchContact")}
             emptyTitle={t("faculty.form.noContacts")}

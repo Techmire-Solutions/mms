@@ -7,10 +7,7 @@ import { SETTINGS_PREVIEW_EVENT } from "@/lib/settingsPreview";
 import { isTenantHost } from "@/platform/lib/themeScope";
 import { ROUTES, isEntryPath } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  applyPlatformDocumentFavicon,
-  applyTenantDocumentFavicon,
-} from "@/lib/documentFavicon";
+import { applyPlatformDocumentFavicon, applyTenantDocumentFavicon } from "@/lib/documentFavicon";
 
 /**
  * Custom React hook to load and track real-time changes to the institution's branding settings.
@@ -40,7 +37,13 @@ export function useBranding(): BrandingSettings {
 
   useEffect(() => {
     applyAppTheme();
-  }, [branding.primaryColor, branding.secondaryColor, branding.cornerStyle, branding.logoUrl, branding.faviconUrl]);
+  }, [
+    branding.primaryColor,
+    branding.secondaryColor,
+    branding.cornerStyle,
+    branding.logoUrl,
+    branding.faviconUrl,
+  ]);
 
   useEffect(() => {
     const pathname = location.pathname;
@@ -58,7 +61,7 @@ export function useBranding(): BrandingSettings {
       pageLabel = t("nav.dashboard");
     } else {
       const matchedKey = Object.keys(ROUTES).find(
-        (key) => ROUTES[key as keyof typeof ROUTES] === pathname
+        (key) => ROUTES[key as keyof typeof ROUTES] === pathname,
       );
       if (matchedKey) {
         if (matchedKey === "hasanatCards") {

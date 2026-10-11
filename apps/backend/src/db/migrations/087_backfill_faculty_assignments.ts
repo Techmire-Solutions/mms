@@ -1,15 +1,18 @@
-import { backfillFacultyReporting } from './facultyReportingBackfill.js';
-import { sql } from 'drizzle-orm';
-import { withGlobalTenant, withTenant } from '../tenant-context.js';
-import { lockFacultyHierarchy } from '../repositories/facultyAssignmentValidation.js';
+import { backfillFacultyReporting } from "./facultyReportingBackfill.js";
+import { sql } from "drizzle-orm";
+import { withGlobalTenant, withTenant } from "../tenant-context.js";
+import { lockFacultyHierarchy } from "../repositories/facultyAssignmentValidation.js";
 
 // Teachers are already renamed by 0112; preserve their original IDs and contact links.
 // Each workspace commits independently, making interruption and replay safe.
 export async function runMigration087(): Promise<void> {
-  const tenants = await withGlobalTenant(async (tx) =>
-    (await tx.execute<{ workspace_subdomain: string }>(sql`
+  const tenants = await withGlobalTenant(
+    async (tx) =>
+      (
+        await tx.execute<{ workspace_subdomain: string }>(sql`
       SELECT DISTINCT workspace_subdomain FROM faculty ORDER BY workspace_subdomain
-    `)).rows,
+    `)
+      ).rows,
   );
   for (const { workspace_subdomain: tenant } of tenants) await backfillFacultyAssignments(tenant);
 }

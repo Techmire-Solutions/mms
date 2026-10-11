@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const attendanceReportComparisonSessionSchema = z.object({
   sessionId: z.string(),
@@ -65,7 +65,9 @@ export const attendanceReportAggregatesSchema = z.object({
   comparison: attendanceReportComparisonSchema.optional(),
 });
 
-export type AttendanceReportComparisonSession = z.infer<typeof attendanceReportComparisonSessionSchema>;
+export type AttendanceReportComparisonSession = z.infer<
+  typeof attendanceReportComparisonSessionSchema
+>;
 export type AttendanceReportComparisonMonth = z.infer<typeof attendanceReportComparisonMonthSchema>;
 export type AttendanceReportComparison = z.infer<typeof attendanceReportComparisonSchema>;
 export type AttendanceReportOverview = z.infer<typeof attendanceReportOverviewSchema>;
@@ -75,7 +77,7 @@ import {
   type BaseReportComparisonQuery,
   normalizeReportComparisonQuery,
   reportComparisonQueryActive,
-} from './reportComparisonQuery.js';
+} from "./reportComparisonQuery.js";
 
 /** Optional ComparisonMode params for GET /attendance/report-aggregates. */
 export type AttendanceReportComparisonQuery = BaseReportComparisonQuery;

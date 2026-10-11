@@ -44,7 +44,7 @@ const DEFAULT_CLS: Record<string, string> = {
   skipped: SEMANTIC_BADGE.muted,
 };
 
-export const StatusBadge = (function StatusBadge({
+export const StatusBadge = function StatusBadge({
   status,
   config = {},
   size = "md",
@@ -89,7 +89,10 @@ export const StatusBadge = (function StatusBadge({
   const content = (
     <>
       {badgeConfig.dot && (
-        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", badgeConfig.dot)} aria-hidden="true" />
+        <span
+          className={cn("w-1.5 h-1.5 rounded-full shrink-0", badgeConfig.dot)}
+          aria-hidden="true"
+        />
       )}
       {badgeConfig.label}
     </>
@@ -112,4 +115,4 @@ export const StatusBadge = (function StatusBadge({
       {content}
     </Badge>
   );
-});
+};

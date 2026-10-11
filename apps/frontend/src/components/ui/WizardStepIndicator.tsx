@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils";
 export interface WizardStepItem {
   id: string | number;
   label: string;
-  icon?: LucideIcon | React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  icon?:
+    | LucideIcon
+    | React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
   disabled?: boolean;
 }
 
@@ -41,11 +43,12 @@ export function WizardStepIndicator({
   isStepClickable,
 }: WizardStepIndicatorProps): React.JSX.Element {
   // Resolve current index whether `current` is a 1-based/0-based number or an id string
-  const currentIndex = typeof current === "number"
-    ? (steps.some((step) => typeof step.id === "number" && step.id === current)
+  const currentIndex =
+    typeof current === "number"
+      ? steps.some((step) => typeof step.id === "number" && step.id === current)
         ? steps.findIndex((step) => step.id === current)
-        : current)
-    : steps.findIndex((step) => step.id === current);
+        : current
+      : steps.findIndex((step) => step.id === current);
 
   return (
     <div
@@ -59,8 +62,8 @@ export function WizardStepIndicator({
         const Icon = step.icon;
         const isClickable = Boolean(
           onStepClick &&
-            !step.disabled &&
-            (isStepClickable ? isStepClickable(step, index) : index <= currentIndex),
+          !step.disabled &&
+          (isStepClickable ? isStepClickable(step, index) : index <= currentIndex),
         );
         const stateText = isDone
           ? stepStateLabels.completed

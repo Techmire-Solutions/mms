@@ -15,7 +15,8 @@ export function isUsableWizardAccount(account: Account): boolean {
   return account.isActive !== false && !account.deletedAt;
 }
 
-const NON_CASH_ASSET_RE = /receiv|prepaid|accumulated|contra|deposit|advance|equipment|building|furniture|vehicle|land/i;
+const NON_CASH_ASSET_RE =
+  /receiv|prepaid|accumulated|contra|deposit|advance|equipment|building|furniture|vehicle|land/i;
 
 export function isLiquidAsset(account: Account): boolean {
   if (account.type !== "Asset") return false;
@@ -34,13 +35,22 @@ export function wizardCashAccounts(accounts: readonly Account[]): Account[] {
   const liquidAssets = usableAccounts.filter(isLiquidAsset);
   const assetAccounts = usableAccounts.filter((account) => account.type === "Asset");
   const candidateAccounts =
-    liquidAssets.length > 0 ? liquidAssets : assetAccounts.length > 0 ? assetAccounts : usableAccounts;
-  return [...candidateAccounts].sort((firstAccount, secondAccount) => firstAccount.code.localeCompare(secondAccount.code));
+    liquidAssets.length > 0
+      ? liquidAssets
+      : assetAccounts.length > 0
+        ? assetAccounts
+        : usableAccounts;
+  return [...candidateAccounts].sort((firstAccount, secondAccount) =>
+    firstAccount.code.localeCompare(secondAccount.code),
+  );
 }
 
 export function calculateAccountBalanceCents(
   accountId: string,
-  entries: readonly { lines: Array<{ account_id: string; debit: number; credit: number }>; status: string }[],
+  entries: readonly {
+    lines: Array<{ account_id: string; debit: number; credit: number }>;
+    status: string;
+  }[],
 ): number {
   let balanceCents = 0;
   for (const entry of entries) {
@@ -56,7 +66,10 @@ export function calculateAccountBalanceCents(
 
 export function wizardAccountOptions(
   accounts: readonly Account[],
-  entries?: readonly { lines: Array<{ account_id: string; debit: number; credit: number }>; status: string }[],
+  entries?: readonly {
+    lines: Array<{ account_id: string; debit: number; credit: number }>;
+    status: string;
+  }[],
   formatCurrency?: (amount: number) => string,
 ): WizardAccountOption[] {
   return wizardCashAccounts(accounts).map((account) => {
@@ -67,7 +80,9 @@ export function wizardAccountOptions(
     }
     return {
       value: account.id,
-      label: account.code ? `${account.code} — ${account.name}${balanceSuffix}` : `${account.name}${balanceSuffix}`,
+      label: account.code
+        ? `${account.code} — ${account.name}${balanceSuffix}`
+        : `${account.name}${balanceSuffix}`,
     };
   });
 }
@@ -97,7 +112,9 @@ function firstAccountIdOfType(
   excludedAccountIds: readonly string[],
 ): string {
   for (const preferredType of preferredTypes) {
-    const match = usableAccounts.find((account) => account.type === preferredType && !excludedAccountIds.includes(account.id));
+    const match = usableAccounts.find(
+      (account) => account.type === preferredType && !excludedAccountIds.includes(account.id),
+    );
     if (match) return match.id;
   }
   return usableAccounts.find((account) => !excludedAccountIds.includes(account.id))?.id ?? "";
@@ -113,7 +130,8 @@ export function resolveSimpleTransactionAccounts(
   const usableAccounts = accounts.filter(isUsableWizardAccount);
   const cashAccounts = wizardCashAccounts(accounts);
   const fallbackDebitAcc = cashAccounts[0]?.id ?? "";
-  const fallbackCreditAcc = cashAccounts.find((account) => account.id !== fallbackDebitAcc)?.id ?? "";
+  const fallbackCreditAcc =
+    cashAccounts.find((account) => account.id !== fallbackDebitAcc)?.id ?? "";
 
   if (!prefillType) return { debitAcc: fallbackDebitAcc, creditAcc: fallbackCreditAcc };
 
@@ -127,10 +145,13 @@ export function resolveSimpleTransactionAccounts(
   if (prefillType.groupKey === "accounting.journal.dashboard.group.transfers") {
     const debitAcc = resolveCashAccountId(prefillType.debitAcc, fallbackDebitAcc);
     const resolvedCreditAcc =
-      prefillType.creditAcc === "" ? "" : resolveCashAccountId(prefillType.creditAcc, fallbackCreditAcc);
-    const creditAcc = resolvedCreditAcc === debitAcc
-      ? cashAccounts.find((account) => account.id !== debitAcc)?.id ?? ""
-      : resolvedCreditAcc;
+      prefillType.creditAcc === ""
+        ? ""
+        : resolveCashAccountId(prefillType.creditAcc, fallbackCreditAcc);
+    const creditAcc =
+      resolvedCreditAcc === debitAcc
+        ? (cashAccounts.find((account) => account.id !== debitAcc)?.id ?? "")
+        : resolvedCreditAcc;
     return { debitAcc, creditAcc };
   }
 
@@ -138,13 +159,19 @@ export function resolveSimpleTransactionAccounts(
     const debitAcc = resolveCashAccountId(prefillType.debitAcc, fallbackDebitAcc);
     return {
       debitAcc,
-      creditAcc: resolveAnyAccountId(prefillType.creditAcc, firstAccountIdOfType(usableAccounts, ["Revenue"], [debitAcc])),
+      creditAcc: resolveAnyAccountId(
+        prefillType.creditAcc,
+        firstAccountIdOfType(usableAccounts, ["Revenue"], [debitAcc]),
+      ),
     };
   }
 
   const creditAcc = resolveCashAccountId(prefillType.creditAcc, fallbackCreditAcc);
   return {
-    debitAcc: resolveAnyAccountId(prefillType.debitAcc, firstAccountIdOfType(usableAccounts, ["Expense"], [creditAcc])),
+    debitAcc: resolveAnyAccountId(
+      prefillType.debitAcc,
+      firstAccountIdOfType(usableAccounts, ["Expense"], [creditAcc]),
+    ),
     creditAcc,
   };
 }
@@ -163,7 +190,9 @@ export function buildWizardFormState(
     date: defaults.date,
     amount: initialValues?.amount ?? "",
     ...resolveSimpleTransactionAccounts(prefillType, accounts),
-    description: initialValues?.description ?? (prefillType ? quickActionDescription(prefillType, translate) : ""),
+    description:
+      initialValues?.description ??
+      (prefillType ? quickActionDescription(prefillType, translate) : ""),
     ref: "",
     receipt: "",
     fiscal_year: defaults.fiscalYearLabel,
@@ -174,16 +203,28 @@ export function buildWizardFormState(
 /**
  * Validate a simple transaction before it is turned into journal lines.
  */
-export function validateWizardForm(form: WizardFormState, accounts: readonly Account[]): WizardValidationResult {
-  if (form.amount.trim() === "") return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorAmount" };
+export function validateWizardForm(
+  form: WizardFormState,
+  accounts: readonly Account[],
+): WizardValidationResult {
+  if (form.amount.trim() === "")
+    return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorAmount" };
   const amount = parseMoneyInput(form.amount);
-  if (amount === null || amount <= 0) return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorAmountInvalid" };
-  if (!form.debitAcc || !form.creditAcc) return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorSource" };
+  if (amount === null || amount <= 0)
+    return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorAmountInvalid" };
+  if (!form.debitAcc || !form.creditAcc)
+    return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorSource" };
 
-  const debitAccount = accounts.find((account) => account.id === form.debitAcc && isUsableWizardAccount(account));
-  const creditAccount = accounts.find((account) => account.id === form.creditAcc && isUsableWizardAccount(account));
-  if (!debitAccount || !creditAccount) return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorSource" };
-  if (debitAccount.id === creditAccount.id) return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorSameAccount" };
+  const debitAccount = accounts.find(
+    (account) => account.id === form.debitAcc && isUsableWizardAccount(account),
+  );
+  const creditAccount = accounts.find(
+    (account) => account.id === form.creditAcc && isUsableWizardAccount(account),
+  );
+  if (!debitAccount || !creditAccount)
+    return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorSource" };
+  if (debitAccount.id === creditAccount.id)
+    return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorSameAccount" };
   if (!form.date) return { ok: false, errorKey: "accounting.journal.dashboard.wizard.errorDate" };
 
   return { ok: true, amount, debitAccount, creditAccount };

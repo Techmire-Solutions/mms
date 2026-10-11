@@ -66,7 +66,10 @@ export function useIdleTimer({
 
     const handleEvent = (): void => {
       const currentNow = Date.now();
-      if (deadlineRef.current - currentNow <= warnBeforeMs || currentNow - lastResetRef.current >= 2000) {
+      if (
+        deadlineRef.current - currentNow <= warnBeforeMs ||
+        currentNow - lastResetRef.current >= 2000
+      ) {
         reset();
       }
     };
@@ -104,9 +107,10 @@ export function useIdleTimer({
       };
     }
 
-    const timeUntilWarn = warnBeforeMs > 0
-      ? Math.max(0, deadlineRef.current - warnBeforeMs - Date.now())
-      : Math.max(0, deadlineRef.current - Date.now());
+    const timeUntilWarn =
+      warnBeforeMs > 0
+        ? Math.max(0, deadlineRef.current - warnBeforeMs - Date.now())
+        : Math.max(0, deadlineRef.current - Date.now());
 
     const timerId = window.setTimeout(() => {
       setNow(Date.now());

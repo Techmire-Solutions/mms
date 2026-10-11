@@ -1,16 +1,12 @@
-import React, { useState } from 'react';
-import { FileSpreadsheet, FileText, Printer, Settings as SettingsIcon } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
-import { ExportPdfSettingsPopover } from '@/components/ui/ExportPdfSettingsPopover';
-import {
-  exportExcel,
-  exportPdf,
-  type ExportColumn,
-} from '@/components/ui/exportToolbarUtils';
-import { ExportToolbarCompact } from '@/components/ui/ExportToolbarCompact';
+import React, { useState } from "react";
+import { FileSpreadsheet, FileText, Printer, Settings as SettingsIcon } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { ExportPdfSettingsPopover } from "@/components/ui/ExportPdfSettingsPopover";
+import { exportExcel, exportPdf, type ExportColumn } from "@/components/ui/exportToolbarUtils";
+import { ExportToolbarCompact } from "@/components/ui/ExportToolbarCompact";
 
-export type { ExportColumn } from '@/components/ui/exportToolbarUtils';
+export type { ExportColumn } from "@/components/ui/exportToolbarUtils";
 
 export interface ExportToolbarProps {
   title: string;
@@ -22,7 +18,7 @@ export interface ExportToolbarProps {
   onPrint?: () => void;
   data?: unknown[];
   headers?: string[];
-  variant?: 'default' | 'compact';
+  variant?: "default" | "compact";
   /** When set, Excel/PDF resolve rows at click time (full filtered export). */
   resolveRows?: () => Promise<Record<string, unknown>[]>;
 }
@@ -41,23 +37,23 @@ export function ExportToolbar({
   resolveRows,
 }: ExportToolbarProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [orientation, setOrientation] = useState<'p' | 'l'>('p');
-  const [formatSize, setFormatSize] = useState<string>('a4');
+  const [orientation, setOrientation] = useState<"p" | "l">("p");
+  const [formatSize, setFormatSize] = useState<string>("a4");
   const [showPdfSettings, setShowPdfSettings] = useState<boolean>(false);
-  const [compactFormat, setCompactFormat] = useState<'excel' | 'pdf'>('excel');
+  const [compactFormat, setCompactFormat] = useState<"excel" | "pdf">("excel");
   const [exporting, setExporting] = useState(false);
 
-  const resolvedVariant = variant || (rows || data || resolveRows ? 'default' : 'compact');
-  const resolvedFilename = (() => filename || title.toLowerCase().replace(/\s+/g, '_'))();
+  const resolvedVariant = variant || (rows || data || resolveRows ? "default" : "compact");
+  const resolvedFilename = (() => filename || title.toLowerCase().replace(/\s+/g, "_"))();
 
   const [titlePrefix, titleSuffix] = (() => {
-    const parts = t('reports.export.title', { name: '||TITLE||' }).split('||TITLE||');
-    return [parts[0] || '', parts[1] || ''];
+    const parts = t("reports.export.title", { name: "||TITLE||" }).split("||TITLE||");
+    return [parts[0] || "", parts[1] || ""];
   })();
 
-
   const finalRows = (() => rows || (data as Record<string, unknown>[]) || [])();
-  const finalColumns = (() => columns || (headers ? headers.map((h) => ({ header: h, key: h })) : []))();
+  const finalColumns = (() =>
+    columns || (headers ? headers.map((h) => ({ header: h, key: h })) : []))();
   const canExport = Boolean(resolveRows) || finalRows.length > 0;
 
   const handlePrint = (): void => {
@@ -111,12 +107,14 @@ export function ExportToolbar({
     }
   };
 
-  if (resolvedVariant === 'compact') {
+  if (resolvedVariant === "compact") {
     return (
       <ExportToolbarCompact
         compactFormat={compactFormat}
         onCompactFormatChange={setCompactFormat}
-        onExport={() => { void (compactFormat === 'excel' ? handleExcelExport() : handlePdfExport()); }}
+        onExport={() => {
+          void (compactFormat === "excel" ? handleExcelExport() : handlePdfExport());
+        }}
       />
     );
   }
@@ -147,10 +145,12 @@ export function ExportToolbar({
           type="button"
         >
           <Printer className="w-3.5 h-3.5" aria-hidden="true" />
-          {t('reports.export.print')}
+          {t("reports.export.print")}
         </Button>
         <Button
-          onClick={() => { void handleExcelExport(); }}
+          onClick={() => {
+            void handleExcelExport();
+          }}
           disabled={!canExport || exporting}
           variant="outline"
           className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
@@ -158,12 +158,14 @@ export function ExportToolbar({
           aria-busy={exporting}
         >
           <FileSpreadsheet className="w-3.5 h-3.5 text-success" aria-hidden="true" />
-          {t('reports.export.excel')}
+          {t("reports.export.excel")}
         </Button>
 
         <div className="flex min-h-11 overflow-x-auto rounded-lg border border-border bg-card">
           <Button
-            onClick={() => { void handlePdfExport(); }}
+            onClick={() => {
+              void handlePdfExport();
+            }}
             disabled={!canExport || exporting}
             variant="ghost"
             className="flex min-h-11 items-center gap-1.5 px-3 py-2 border-e border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 rounded-none"
@@ -171,13 +173,13 @@ export function ExportToolbar({
             aria-busy={exporting}
           >
             <FileText className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
-            {t('reports.export.pdf')}
+            {t("reports.export.pdf")}
           </Button>
           <Button
             onClick={() => setShowPdfSettings(!showPdfSettings)}
             variant="ghost"
-            className={`min-h-11 min-w-11 px-2 py-2 hover:bg-muted transition-colors rounded-none ${showPdfSettings ? 'text-primary bg-primary/5' : 'text-muted-foreground'}`}
-            title={t('reports.export.settings')}
+            className={`min-h-11 min-w-11 px-2 py-2 hover:bg-muted transition-colors rounded-none ${showPdfSettings ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+            title={t("reports.export.settings")}
             type="button"
           >
             <SettingsIcon className="w-3.5 h-3.5" aria-hidden="true" />

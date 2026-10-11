@@ -1,18 +1,18 @@
-import { buildCsvContent } from './csvUtils.js';
-import type { FacultyDepartmentEntity } from './facultyDepartmentTypes.js';
-import type { FacultyDesignationDefinition } from './facultyDesignationTypes.js';
+import { buildCsvContent } from "./csvUtils.js";
+import type { FacultyDepartmentEntity } from "./facultyDepartmentTypes.js";
+import type { FacultyDesignationDefinition } from "./facultyDesignationTypes.js";
 
 export const FACULTY_DEPARTMENT_CSV_COLUMNS = [
-  { id: 'name', label: 'name' },
-  { id: 'description', label: 'description' },
-  { id: 'status', label: 'status' },
+  { id: "name", label: "name" },
+  { id: "description", label: "description" },
+  { id: "status", label: "status" },
 ] as const;
 
 export const FACULTY_DESIGNATION_CSV_COLUMNS = [
-  { id: 'department', label: 'department' },
-  { id: 'name', label: 'name' },
-  { id: 'parentDesignation', label: 'parentDesignation' },
-  { id: 'status', label: 'status' },
+  { id: "department", label: "department" },
+  { id: "name", label: "name" },
+  { id: "parentDesignation", label: "parentDesignation" },
+  { id: "status", label: "status" },
 ] as const;
 
 export function buildFacultyDepartmentExportRows(
@@ -21,7 +21,7 @@ export function buildFacultyDepartmentExportRows(
   const header = FACULTY_DEPARTMENT_CSV_COLUMNS.map((column) => column.label);
   const rows = departments.map((department) => [
     department.name,
-    department.description ?? '',
+    department.description ?? "",
     department.status,
   ]);
   return [header, ...rows];
@@ -33,9 +33,9 @@ export function buildFacultyDesignationExportRows(
   const nameById = new Map(designations.map((designation) => [designation.id, designation.name]));
   const header = FACULTY_DESIGNATION_CSV_COLUMNS.map((column) => column.label);
   const rows = designations.map((designation) => [
-    designation.departmentName ?? '',
+    designation.departmentName ?? "",
     designation.name,
-    designation.parentDesignationId ? (nameById.get(designation.parentDesignationId) ?? '') : '',
+    designation.parentDesignationId ? (nameById.get(designation.parentDesignationId) ?? "") : "",
     designation.status,
   ]);
   return [header, ...rows];

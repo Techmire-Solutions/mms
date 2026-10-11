@@ -110,7 +110,9 @@ describe("accounting ledger ops hooks", () => {
   it("keeps the previous year's opening balances visible while the next year loads", async () => {
     mocks.apiJson.mockImplementation(async (url: string) => {
       if (url.includes("fiscalYearId=fy1")) {
-        return { balances: [{ id: "ob-1", fiscalYearId: "fy1", accountId: "acc-1", debit: 10, credit: 0 }] };
+        return {
+          balances: [{ id: "ob-1", fiscalYearId: "fy1", accountId: "acc-1", debit: 10, credit: 0 }],
+        };
       }
       return new Promise(() => {}) as Promise<{ balances: OpeningBalance[] }>;
     });

@@ -8,7 +8,7 @@ export function computeResizedElement<TPayload = Record<string, unknown>>(
   deltaX: number,
   deltaY: number,
   size: PageSizeInfo,
-  shiftKey: boolean
+  shiftKey: boolean,
 ): TemplateElement<keyof TPayload & string> {
   if (templateElement.id !== currentResize.id) return templateElement;
 

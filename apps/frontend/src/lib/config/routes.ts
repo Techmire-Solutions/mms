@@ -101,18 +101,11 @@ export function isPlatformEntryPath(pathname: string): boolean {
  * Platform apex English is host-level via `shouldForcePlatformEnglish` — do not
  * overload this helper to cover the authenticated platform console.
  */
-export function isEntryPath(
-  pathname: string,
-  options?: { isApex?: boolean }
-): boolean {
+export function isEntryPath(pathname: string, options?: { isApex?: boolean }): boolean {
   if (options?.isApex) {
     return isPlatformEntryPath(pathname);
   }
-  if (
-    ENTRY_PATHS.some(
-      (path) => pathname === path || pathname.startsWith(`${path}/`)
-    )
-  ) {
+  if (ENTRY_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     return true;
   }
   if (pathname === ROUTES.onboarding) {
@@ -170,7 +163,5 @@ export const TENANT_APP_PATHS: readonly string[] = [
 ];
 
 export function isTenantAppPath(pathname: string): boolean {
-  return TENANT_APP_PATHS.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`)
-  );
+  return TENANT_APP_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }

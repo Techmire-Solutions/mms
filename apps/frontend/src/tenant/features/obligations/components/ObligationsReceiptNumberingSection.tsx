@@ -19,7 +19,7 @@ export function ObligationsReceiptNumberingSection(): React.JSX.Element {
 
   const isDirty = useMemo(
     () => JSON.stringify(draft) !== JSON.stringify(settings),
-    [draft, settings]
+    [draft, settings],
   );
 
   useEffect(() => {
@@ -28,10 +28,7 @@ export function ObligationsReceiptNumberingSection(): React.JSX.Element {
     }
   }, [settings, isDirty]);
 
-  const config = useMemo(
-    () => obligationsSettingsToSequenceConfig(draft),
-    [draft]
-  );
+  const config = useMemo(() => obligationsSettingsToSequenceConfig(draft), [draft]);
 
   const handleChange = useCallback((next: SequenceNumberingConfig) => {
     setDraft((prev) => ({

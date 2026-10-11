@@ -1,8 +1,8 @@
-import React, { useId } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { FormCheckboxCard } from '@/components/ui/FormCheckboxCard';
-import { Badge } from '@/components/ui/badge';
-import { useTranslation } from '@/hooks/useTranslation';
+import React, { useId } from "react";
+import type { LucideIcon } from "lucide-react";
+import { FormCheckboxCard } from "@/components/ui/FormCheckboxCard";
+import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PlatformPermissionCheckboxItemProps {
   name: string;
@@ -40,12 +40,12 @@ export function PlatformPermissionCheckboxItem({
           <span className="text-xs font-bold text-foreground">{label}</span>
           <Badge
             as="span"
-            tone={checked ? 'success' : 'muted'}
+            tone={checked ? "success" : "muted"}
             size="sm"
             pill
             className="ms-auto uppercase tracking-wider text-2xs font-bold"
           >
-            {checked ? t('platform.workspaceActive') : t('platform.workspaceInactive')}
+            {checked ? t("platform.workspaceActive") : t("platform.workspaceInactive")}
           </Badge>
         </span>
       }

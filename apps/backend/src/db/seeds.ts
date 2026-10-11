@@ -1,9 +1,9 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import zlib from 'node:zlib';
-import { fileURLToPath } from 'node:url';
-import { sanitizeContactSeedObjects } from '@mms/shared';
-import { hashPassword } from '../services/auth/passwordService.js';
+import fs from "node:fs";
+import path from "node:path";
+import zlib from "node:zlib";
+import { fileURLToPath } from "node:url";
+import { sanitizeContactSeedObjects } from "@mms/shared";
+import { hashPassword } from "../services/auth/passwordService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,14 +42,14 @@ let cachedSeeds: SeedsData | null = null;
  */
 function loadSeeds(): SeedsData {
   if (!cachedSeeds) {
-    const gzPath = path.join(__dirname, 'seeds.json.gz');
+    const gzPath = path.join(__dirname, "seeds.json.gz");
     if (fs.existsSync(gzPath)) {
       const compressed = fs.readFileSync(gzPath);
       const decompressed = zlib.gunzipSync(compressed);
-      cachedSeeds = JSON.parse(decompressed.toString('utf8')) as SeedsData;
+      cachedSeeds = JSON.parse(decompressed.toString("utf8")) as SeedsData;
     } else {
-      const jsonPath = path.join(__dirname, 'seeds.json');
-      const raw = fs.readFileSync(jsonPath, 'utf8');
+      const jsonPath = path.join(__dirname, "seeds.json");
+      const raw = fs.readFileSync(jsonPath, "utf8");
       cachedSeeds = JSON.parse(raw) as SeedsData;
     }
   }
@@ -63,22 +63,20 @@ function loadSeeds(): SeedsData {
  * @returns {Promise<StoredSeedUser[]>} Canonical users with password hashes.
  */
 async function normalizeSeedUsers(rawUsers: unknown[]): Promise<StoredSeedUser[]> {
-  const needsGeneratedPassword = rawUsers.some(
-    (entry) => !(entry as LegacySeedUser).passwordHash,
-  );
+  const needsGeneratedPassword = rawUsers.some((entry) => !(entry as LegacySeedUser).passwordHash);
   const seedPassword = process.env.SEED_DEV_PASSWORD?.trim();
 
   if (needsGeneratedPassword && !seedPassword) {
     throw new Error(
-      'SEED_DEV_PASSWORD is required when legacy seed users do not include password hashes',
+      "SEED_DEV_PASSWORD is required when legacy seed users do not include password hashes",
     );
   }
 
-  const generatedPasswordHash = seedPassword ? await hashPassword(seedPassword) : '';
+  const generatedPasswordHash = seedPassword ? await hashPassword(seedPassword) : "";
 
   return rawUsers.map((entry) => {
     const user = entry as LegacySeedUser;
-    const role = user.role ?? user.roles?.[0] ?? 'assistant_teacher';
+    const role = user.role ?? user.roles?.[0] ?? "assistant_teacher";
     const createdAt = user.createdAt ?? user.createdDate ?? new Date().toISOString();
 
     return {

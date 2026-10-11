@@ -1,20 +1,20 @@
-import type { Dispatch, SetStateAction } from 'react';
-import type { Account, JournalEntry } from '@/lib/data/accountingData';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { JournalEntriesChange } from '@/tenant/features/accounting/components/journalEntriesTypes';
-import type { QuickActionType } from '@/tenant/features/accounting/components/journalEntriesQuickActions';
+import type { Dispatch, SetStateAction } from "react";
+import type { Account, JournalEntry } from "@/lib/data/accountingData";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { JournalEntriesChange } from "@/tenant/features/accounting/components/journalEntriesTypes";
+import type { QuickActionType } from "@/tenant/features/accounting/components/journalEntriesQuickActions";
 import {
   createJournalPostHandler,
   createJournalSaveHandler,
   exportJournalEntriesCsv,
   formatJournalAmount,
-} from '@/tenant/features/accounting/components/journalEntriesControllerActions';
-import { useJournalEntriesTrashReversal } from '@/tenant/features/accounting/components/useJournalEntriesTrashReversal';
-import { createJournalEntryActionsRenderer } from '@/tenant/features/accounting/components/journalEntriesControllerSelection';
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from '@/components/ui/entityCardChrome';
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from '@/components/ui/ModuleRowActionsMenu';
-import { isVoucherPrintable } from '@/tenant/features/accounting/components/paymentVoucherKind';
-import { usePaymentVoucherPrint } from '@/tenant/features/accounting/hooks/usePaymentVoucherPrint';
+} from "@/tenant/features/accounting/components/journalEntriesControllerActions";
+import { useJournalEntriesTrashReversal } from "@/tenant/features/accounting/components/useJournalEntriesTrashReversal";
+import { createJournalEntryActionsRenderer } from "@/tenant/features/accounting/components/journalEntriesControllerSelection";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { isVoucherPrintable } from "@/tenant/features/accounting/components/paymentVoucherKind";
+import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
 
 export interface UseJournalEntriesActionsOptions {
   entries: JournalEntry[];
@@ -33,7 +33,7 @@ export interface UseJournalEntriesActionsOptions {
   onRestore?: (id: string) => void | Promise<void>;
   onBulkDelete?: (ids: string[]) => void | Promise<void>;
   onBulkRestore?: (ids: string[]) => void | Promise<void>;
-  setModal: Dispatch<SetStateAction<'new' | 'edit' | 'view' | null>>;
+  setModal: Dispatch<SetStateAction<"new" | "edit" | "view" | null>>;
   setSelected: Dispatch<SetStateAction<JournalEntry | null>>;
   setSimpleModal: Dispatch<
     SetStateAction<{
@@ -135,7 +135,7 @@ export function useJournalEntriesActions({
     renderEntryActions,
     renderEntryActionsCards,
     formatAmount: (amount: number) => formatJournalAmount(amount, formatCurrency),
-    pageScopeLabel: t('accounting.journal.pageScope', {
+    pageScopeLabel: t("accounting.journal.pageScope", {
       count: entries.length,
       total: pagingTotal,
     }),

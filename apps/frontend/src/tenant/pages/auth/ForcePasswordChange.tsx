@@ -61,12 +61,13 @@ export default function ForcePasswordChange(): React.ReactElement {
     setBusy(true);
     try {
       const { status, body } = await apiContract.auth.changePassword({
-        body: { currentPassword, newPassword }
+        body: { currentPassword, newPassword },
       });
       if (status !== 200) {
-        const message = (body as { message?: string; error?: string })?.message
-          || (body as { message?: string; error?: string })?.error
-          || t("account.wrongPassword");
+        const message =
+          (body as { message?: string; error?: string })?.message ||
+          (body as { message?: string; error?: string })?.error ||
+          t("account.wrongPassword");
         throw new Error(message);
       }
       logout(false);
@@ -84,7 +85,12 @@ export default function ForcePasswordChange(): React.ReactElement {
     <>
       <EntryPageHead title={pageTitle} description={t("account.forcePasswordBody")} />
       <AuthLayout title={t("account.forcePasswordTitle")}>
-        <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4" noValidate aria-busy={busy}>
+        <form
+          onSubmit={(event) => void handleSubmit(event)}
+          className="space-y-4"
+          noValidate
+          aria-busy={busy}
+        >
           <AuthStatusBanner variant="warning" message={t("account.forcePasswordBody")} />
           {error ? <AuthStatusBanner message={error} /> : null}
 

@@ -71,10 +71,8 @@ export function ContactDetailOverview({
   const showRelationships =
     isContactRelationshipTabEnabled(enabledTabIds) &&
     visibleCollectionFields.relationship.length > 0;
-  const showPhoneSection =
-    enabledTabIds.has("phones") && visibleCollectionFields.phones.length > 0;
-  const showEmailSection =
-    enabledTabIds.has("emails") && visibleCollectionFields.emails.length > 0;
+  const showPhoneSection = enabledTabIds.has("phones") && visibleCollectionFields.phones.length > 0;
+  const showEmailSection = enabledTabIds.has("emails") && visibleCollectionFields.emails.length > 0;
   // Per-row channel actions cover Call/WA/SMS/Email when those sections render.
   const showQuickActions = !showPhoneSection && !showEmailSection;
   const basicGroups = useMemo(

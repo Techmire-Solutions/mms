@@ -15,27 +15,18 @@ export interface FinanceSettingsProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const FinanceSettings = (function FinanceSettings({
+export const FinanceSettings = function FinanceSettings({
   onPrefsDirtyChange,
 }: FinanceSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useFinanceSetupPanelState();
+  const { settings, settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useFinanceSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
   }, [isPrefsDirty, onPrefsDirtyChange]);
 
-  const unsavedWarning = isPrefsDirty
-    ? t("finance.setup.unsavedPreferencesWarning")
-    : undefined;
+  const unsavedWarning = isPrefsDirty ? t("finance.setup.unsavedPreferencesWarning") : undefined;
 
   return (
     <ModuleSetupContent>
@@ -45,11 +36,7 @@ export const FinanceSettings = (function FinanceSettings({
         title={t("finance.settings.title")}
         className={SETUP_SECTION_CARD_CLASS}
       >
-        <FinancePreferencesSection
-          settings={settings}
-          settingsDraft={settingsDraft}
-          upd={upd}
-        />
+        <FinancePreferencesSection settings={settings} settingsDraft={settingsDraft} upd={upd} />
         <ModuleSetupSaveFooter
           dirty={isPrefsDirty}
           saving={saving}
@@ -84,6 +71,6 @@ export const FinanceSettings = (function FinanceSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default FinanceSettings;

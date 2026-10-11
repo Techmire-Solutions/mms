@@ -1,7 +1,7 @@
-import { slugifyLookupLabel } from './slugifyLookupLabel.js';
-import { getRequestTenant } from './tenantContext.js';
-import { broadcastCollection } from './livePush.js';
-import { getOrSetMultiTier, invalidateMultiTierCache } from './cache/index.js';
+import { slugifyLookupLabel } from "./slugifyLookupLabel.js";
+import { getRequestTenant } from "./tenantContext.js";
+import { broadcastCollection } from "./livePush.js";
+import { getOrSetMultiTier, invalidateMultiTierCache } from "./cache/index.js";
 
 type StringLookupRow = { kind: string; label: string };
 
@@ -49,7 +49,7 @@ export function createModuleStringListLookupsService<
 
     return getOrSetMultiTier(
       tenant,
-      'lookups',
+      "lookups",
       `${broadcastKey}:map`,
       async () => {
         const rows = await listByWorkspace(tenant);
@@ -76,7 +76,7 @@ export function createModuleStringListLookupsService<
     if (!tenant) return defaultItems(kind);
     return getOrSetMultiTier(
       tenant,
-      'lookups',
+      "lookups",
       `${broadcastKey}:${kind}`,
       async () => {
         const rows = await listByKind(tenant, kind);
@@ -92,7 +92,7 @@ export function createModuleStringListLookupsService<
     items: string[],
     tenant = getRequestTenant(),
   ): Promise<string[]> {
-    if (!tenant) throw new Error('Tenant context required');
+    if (!tenant) throw new Error("Tenant context required");
 
     const labels = items.map((label) => label.trim()).filter(Boolean);
     const rowsToSave: Array<{
@@ -113,7 +113,7 @@ export function createModuleStringListLookupsService<
       rowsToSave.push({
         id: `${tenant}:${kind}:__empty__`,
         kind,
-        label: '',
+        label: "",
         meta: { empty: true },
         sortOrder: 0,
       });
@@ -122,12 +122,12 @@ export function createModuleStringListLookupsService<
     await replaceForKind(tenant, kind, rowsToSave);
     await invalidateMultiTierCache({
       tenantId: tenant,
-      domain: 'lookups',
+      domain: "lookups",
       key: `${broadcastKey}:${kind}`,
     });
     await invalidateMultiTierCache({
       tenantId: tenant,
-      domain: 'lookups',
+      domain: "lookups",
       key: `${broadcastKey}:map`,
     });
     await broadcastCollection(broadcastKey);

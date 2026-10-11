@@ -5,10 +5,13 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
 import { GeneralLedgerCardsView } from "./GeneralLedgerCardsView";
-import { type Account } from '@/lib/data/accountingData';
+import { type Account } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
 import type { GeneralLedgerLineWithRunning } from "./useGeneralLedger";
 
 interface GeneralLedgerEntriesProps {
@@ -115,7 +118,11 @@ export function GeneralLedgerEntries({
     return (
       <EmptyState
         variant="dashed"
-        title={dateFrom || dateTo ? t("accounting.ledger.noPostedTransactionsPeriod") : t("accounting.ledger.noPostedTransactions")}
+        title={
+          dateFrom || dateTo
+            ? t("accounting.ledger.noPostedTransactionsPeriod")
+            : t("accounting.ledger.noPostedTransactions")
+        }
         compact
       />
     );
@@ -158,7 +165,8 @@ export function GeneralLedgerEntries({
         className: "px-3 py-2.5 text-end font-mono font-bold text-foreground",
         content: (
           <>
-            {formatCurrency(Math.abs(balance))} {balance >= 0 ? t("accounting.ledger.dr") : t("accounting.ledger.cr")}
+            {formatCurrency(Math.abs(balance))}{" "}
+            {balance >= 0 ? t("accounting.ledger.dr") : t("accounting.ledger.cr")}
           </>
         ),
       },

@@ -40,13 +40,7 @@ vi.mock("@/tenant/components/selectors/UserActorSelect", () => ({
     id: string;
     value: string;
     onChange: (val: string) => void;
-  }) => (
-    <input
-      data-testid={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  ),
+  }) => <input data-testid={id} value={value} onChange={(e) => onChange(e.target.value)} />,
 }));
 
 vi.mock("@/components/ui/DatePicker", () => ({
@@ -132,12 +126,7 @@ describe("PaymentForm Component", () => {
   it("renders invoice info, balance, and inputMode=decimal amount input", async () => {
     await act(async () => {
       root.render(
-        <PaymentForm
-          open={true}
-          invoice={mockInvoice}
-          onClose={vi.fn()}
-          onSave={vi.fn()}
-        />,
+        <PaymentForm open={true} invoice={mockInvoice} onClose={vi.fn()} onSave={vi.fn()} />,
       );
     });
 
@@ -154,12 +143,7 @@ describe("PaymentForm Component", () => {
   it("shows partial payment warning when amount is less than total balance", async () => {
     await act(async () => {
       root.render(
-        <PaymentForm
-          open={true}
-          invoice={mockInvoice}
-          onClose={vi.fn()}
-          onSave={vi.fn()}
-        />,
+        <PaymentForm open={true} invoice={mockInvoice} onClose={vi.fn()} onSave={vi.fn()} />,
       );
     });
 
@@ -177,17 +161,14 @@ describe("PaymentForm Component", () => {
 
     await act(async () => {
       root.render(
-        <PaymentForm
-          open={true}
-          invoice={mockInvoice}
-          onClose={vi.fn()}
-          onSave={onSave}
-        />,
+        <PaymentForm open={true} invoice={mockInvoice} onClose={vi.fn()} onSave={onSave} />,
       );
     });
 
     const amountInput = container.querySelector("#payment-amount-input") as HTMLInputElement;
-    const saveBtn = container.querySelector("[data-testid='save-payment-btn']") as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      "[data-testid='save-payment-btn']",
+    ) as HTMLButtonElement;
 
     // Test exceeding balance: 500 > 300 balance
     await act(async () => {
@@ -219,17 +200,14 @@ describe("PaymentForm Component", () => {
 
     await act(async () => {
       root.render(
-        <PaymentForm
-          open={true}
-          invoice={mockInvoice}
-          onClose={vi.fn()}
-          onSave={onSave}
-        />,
+        <PaymentForm open={true} invoice={mockInvoice} onClose={vi.fn()} onSave={onSave} />,
       );
     });
 
     const amountInput = container.querySelector("#payment-amount-input") as HTMLInputElement;
-    const saveBtn = container.querySelector("[data-testid='save-payment-btn']") as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      "[data-testid='save-payment-btn']",
+    ) as HTMLButtonElement;
 
     await act(async () => {
       setInputValue(amountInput, "250.50");

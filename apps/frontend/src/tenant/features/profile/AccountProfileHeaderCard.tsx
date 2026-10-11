@@ -57,7 +57,11 @@ export function AccountProfileHeaderCard({
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />
               ) : (
-                <span>{profile.contact?.name ? getInitials(profile.contact.name) : getInitials(profile.name || "U")}</span>
+                <span>
+                  {profile.contact?.name
+                    ? getInitials(profile.contact.name)
+                    : getInitials(profile.name || "U")}
+                </span>
               )}
 
               {profile.contact && (
@@ -69,7 +73,9 @@ export function AccountProfileHeaderCard({
           </div>
 
           <div className="space-y-1">
-            <h1 className="text-xl font-bold text-foreground tracking-tight">{name || profile.name}</h1>
+            <h1 className="text-xl font-bold text-foreground tracking-tight">
+              {name || profile.name}
+            </h1>
             <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">
               <Badge pill tone="primary" className="capitalize">
                 {profile.role}

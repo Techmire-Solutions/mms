@@ -1,9 +1,9 @@
-import React from 'react';
-import { CommandPaletteModal } from '@/components/ui/CommandPaletteModal';
+import React from "react";
+import { CommandPaletteModal } from "@/components/ui/CommandPaletteModal";
 import {
   useCommandPaletteSearch,
   type UseCommandPaletteSearchOptions,
-} from '@/components/ui/useCommandPaletteSearch';
+} from "@/components/ui/useCommandPaletteSearch";
 
 export interface CommandPaletteShellRenderCtx<T> {
   query: string;
@@ -16,8 +16,8 @@ export interface CommandPaletteShellRenderCtx<T> {
 export interface CommandPaletteShellProps<T> {
   open: boolean;
   onClose: () => void;
-  filterItems: UseCommandPaletteSearchOptions<T>['filterItems'];
-  onSelect: UseCommandPaletteSearchOptions<T>['onSelect'];
+  filterItems: UseCommandPaletteSearchOptions<T>["filterItems"];
+  onSelect: UseCommandPaletteSearchOptions<T>["onSelect"];
   ariaLabel: string;
   searchPlaceholder: string;
   listboxId: string;
@@ -46,18 +46,12 @@ export function CommandPaletteShell<T>({
   dialogClassName,
   children,
 }: CommandPaletteShellProps<T>): React.JSX.Element | null {
-  const {
-    query,
-    setQuery,
-    filteredItems,
-    selectedIndex,
-    setSelectedIndex,
-    handleKeyDown,
-  } = useCommandPaletteSearch<T>({
-    filterItems,
-    onSelect,
-    onClose,
-  });
+  const { query, setQuery, filteredItems, selectedIndex, setSelectedIndex, handleKeyDown } =
+    useCommandPaletteSearch<T>({
+      filterItems,
+      onSelect,
+      onClose,
+    });
 
   const activeItem = filteredItems[selectedIndex];
 

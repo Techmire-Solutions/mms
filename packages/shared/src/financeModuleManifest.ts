@@ -1,27 +1,29 @@
-import type { Permission } from './permissions.js';
-import { z } from 'zod';
+import type { Permission } from "./permissions.js";
+import { z } from "zod";
 import {
-  invoiceLineInsertSchema, invoiceLineRecordSchema,
-  paymentAllocationInsertSchema, paymentAllocationRecordSchema,
-} from './financeBilling.js';
-import { isoDateSchema } from './isoDateSchema.js';
+  invoiceLineInsertSchema,
+  invoiceLineRecordSchema,
+  paymentAllocationInsertSchema,
+  paymentAllocationRecordSchema,
+} from "./financeBilling.js";
+import { isoDateSchema } from "./isoDateSchema.js";
 
-export const INVOICE_STATUSES = ['paid', 'pending', 'overdue', 'partial', 'cancelled'] as const;
+export const INVOICE_STATUSES = ["paid", "pending", "overdue", "partial", "cancelled"] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 
 export const invoiceRecordSchema = z
   .object({
     id: z.string(),
     studentId: z.string(),
-    studentName: z.string().default(''),
-    class: z.string().default(''),
-    session: z.string().default(''),
+    studentName: z.string().default(""),
+    class: z.string().default(""),
+    session: z.string().default(""),
     baseFee: z.number().nonnegative().default(0),
     discountType: z.string().nullable().optional(),
     discountValue: z.number().nonnegative().default(0),
     discountAmt: z.number().nonnegative().default(0),
     finalAmt: z.number().nonnegative().default(0),
-    status: z.enum(INVOICE_STATUSES).default('pending'),
+    status: z.enum(INVOICE_STATUSES).default("pending"),
     dueDate: z.string(),
     paidDate: z.string().nullable().optional(),
     method: z.string().nullable().optional(),
@@ -44,21 +46,22 @@ export const invoiceRecordSchema = z
     deletedWithCascade: z.boolean().nullable().optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
-  }).strict();
+  })
+  .strict();
 
 export const invoiceRecordInsertSchema = z
   .object({
     id: z.string().optional(),
-    studentId: z.string().min(1, 'Student ID is required'),
-    studentName: z.string().optional().default(''),
-    class: z.string().optional().default(''),
-    session: z.string().optional().default(''),
+    studentId: z.string().min(1, "Student ID is required"),
+    studentName: z.string().optional().default(""),
+    class: z.string().optional().default(""),
+    session: z.string().optional().default(""),
     baseFee: z.number().nonnegative().default(0),
     discountType: z.string().nullable().optional(),
     discountValue: z.number().nonnegative().optional().default(0),
     discountAmt: z.number().nonnegative().optional().default(0),
     finalAmt: z.number().nonnegative().default(0),
-    status: z.enum(INVOICE_STATUSES).optional().default('pending'),
+    status: z.enum(INVOICE_STATUSES).optional().default("pending"),
     dueDate: isoDateSchema,
     paidDate: z.string().nullable().optional(),
     method: z.string().nullable().optional(),
@@ -73,7 +76,8 @@ export const invoiceRecordInsertSchema = z
     lastRemindedAt: z.string().nullable().optional(),
     reminderCount: z.number().int().nonnegative().optional(),
     lines: z.array(invoiceLineInsertSchema).optional(),
-  }).strict();
+  })
+  .strict();
 
 export const invoiceRecordUpdateSchema = invoiceRecordInsertSchema.partial().strict();
 
@@ -103,15 +107,15 @@ export function filterActiveInvoices<T extends { deletedAt?: string | null }>(in
  */
 export const invoicesBulkStatusSchema = z
   .object({
-    ids: z.array(z.string().min(1)).min(1, 'At least one invoice ID is required'),
-    status: z.enum(['pending', 'overdue', 'partial']),
+    ids: z.array(z.string().min(1)).min(1, "At least one invoice ID is required"),
+    status: z.enum(["pending", "overdue", "partial"]),
   })
   .strict();
 
 export type InvoicesBulkStatusBody = z.infer<typeof invoicesBulkStatusSchema>;
 
 /** Invoice statuses that still carry an unpaid balance (shared finance/dashboard SSOT). */
-export const OPEN_INVOICE_STATUSES = ['pending', 'overdue', 'partial'] as const;
+export const OPEN_INVOICE_STATUSES = ["pending", "overdue", "partial"] as const;
 export type OpenInvoiceStatus = (typeof OPEN_INVOICE_STATUSES)[number];
 
 const OPEN_INVOICE_STATUS_SET = new Set<string>(OPEN_INVOICE_STATUSES);
@@ -128,10 +132,10 @@ export const paymentRecordSchema = z
     studentName: z.string().nullable().optional(),
     amount: z.number().positive(),
     date: z.string(),
-    method: z.string().default('cash'),
+    method: z.string().default("cash"),
     receivedByUserId: z.string().nullable().optional(),
     receivedBy: z.string().nullable().optional(),
-    note: z.string().default(''),
+    note: z.string().default(""),
     allocations: z.array(paymentAllocationRecordSchema).optional(),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
@@ -147,15 +151,15 @@ export const paymentRecordSchema = z
 export const paymentRecordInsertSchema = z
   .object({
     id: z.string().optional(),
-    invoiceId: z.string().min(1, 'Invoice ID is required'),
+    invoiceId: z.string().min(1, "Invoice ID is required"),
     studentId: z.string().nullable().optional(),
     studentName: z.string().nullable().optional(),
-    amount: z.number().positive('Amount must be greater than 0'),
+    amount: z.number().positive("Amount must be greater than 0"),
     date: isoDateSchema,
-    method: z.string().optional().default('cash'),
+    method: z.string().optional().default("cash"),
     receivedByUserId: z.string().nullable().optional(),
     receivedBy: z.string().nullable().optional(),
-    note: z.string().optional().default(''),
+    note: z.string().optional().default(""),
     allocations: z.array(paymentAllocationInsertSchema).optional(),
   })
   .strict();
@@ -178,17 +182,17 @@ export function filterActivePayments<T extends { deletedAt?: string | null }>(pa
 
 /** Finance module manifest — aligns with globle1 universal module architecture. */
 export const FINANCE_MODULE_MANIFEST = {
-  moduleId: 'finance',
-  entityType: 'Invoice',
-  collectionKey: 'finance_invoices',
-  paymentCollectionKey: 'finance_payments',
-  settingsObjectKey: 'finance_settings',
-  invoiceColumnPreferencesObjectKey: 'finance_invoice_user_column_preferences',
-  paymentColumnPreferencesObjectKey: 'finance_payment_user_column_preferences',
-  restBasePath: '/api/finance',
-  analyticsCategory: 'financial',
-  tiers: ['work', 'reports', 'setup'] as const,
-  setupSubTabs: ['preferences', 'templates'] as const,
+  moduleId: "finance",
+  entityType: "Invoice",
+  collectionKey: "finance_invoices",
+  paymentCollectionKey: "finance_payments",
+  settingsObjectKey: "finance_settings",
+  invoiceColumnPreferencesObjectKey: "finance_invoice_user_column_preferences",
+  paymentColumnPreferencesObjectKey: "finance_payment_user_column_preferences",
+  restBasePath: "/api/finance",
+  analyticsCategory: "financial",
+  tiers: ["work", "reports", "setup"] as const,
+  setupSubTabs: ["preferences", "templates"] as const,
   softDelete: {
     workExcludesDeleted: true,
     reportsIncludeDeleted: false,
@@ -197,17 +201,17 @@ export const FINANCE_MODULE_MANIFEST = {
     retentionDays: null,
   },
   permissions: {
-    read: 'finance.write',
-    write: 'finance.write',
-    delete: 'finance.write',
-    setupView: 'configuration.view',
-    setupWrite: 'settings.global.write',
-    export: 'finance.write',
-    reports: 'finance.write',
+    read: "finance.write",
+    write: "finance.write",
+    delete: "finance.write",
+    setupView: "configuration.view",
+    setupWrite: "settings.global.write",
+    export: "finance.write",
+    reports: "finance.write",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ['invoices', 'payments'] as const,
-    bulkActions: ['delete', 'status', 'receipts', 'export'] as const,
+    directoryViews: ["invoices", "payments"] as const,
+    bulkActions: ["delete", "status", "receipts", "export"] as const,
   },
   defaultPageSize: 10,
   maxPageSize: 100,
@@ -257,7 +261,11 @@ export function getOutstandingAmountForInvoice(invoice: Invoice): number {
  * @param month - The month index (0-11, e.g. 0 for January).
  * @returns The total collected amount.
  */
-export function getCollectedAmountForMonth(invoices: Invoice[], year: number, month: number): number {
+export function getCollectedAmountForMonth(
+  invoices: Invoice[],
+  year: number,
+  month: number,
+): number {
   let sum = 0;
   invoices.forEach((inv) => {
     if (!inv || inv.status === "cancelled") return;
@@ -280,7 +288,11 @@ export function getCollectedAmountForMonth(invoices: Invoice[], year: number, mo
  * @param month - The month index (0-11, e.g. 0 for January).
  * @returns The total outstanding amount.
  */
-export function getOutstandingAmountForMonth(invoices: Invoice[], year: number, month: number): number {
+export function getOutstandingAmountForMonth(
+  invoices: Invoice[],
+  year: number,
+  month: number,
+): number {
   let sum = 0;
   invoices.forEach((inv) => {
     if (!inv || inv.status === "cancelled" || inv.status === "paid") return;
@@ -294,5 +306,3 @@ export function getOutstandingAmountForMonth(invoices: Invoice[], year: number, 
   });
   return sum;
 }
-
-

@@ -52,12 +52,7 @@ export function getFlatFieldsConfig(
   for (const list of Object.values(fields)) {
     if (Array.isArray(list)) {
       for (const field of list) {
-        if (
-          field
-          && typeof field === "object"
-          && "key" in field
-          && typeof field.key === "string"
-        ) {
+        if (field && typeof field === "object" && "key" in field && typeof field.key === "string") {
           result[field.key] = {
             enabled: !("enabled" in field) || field.enabled !== false,
             required: "required" in field && Boolean(field.required),

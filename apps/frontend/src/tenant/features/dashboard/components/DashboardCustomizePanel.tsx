@@ -1,15 +1,15 @@
-import React from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { WidgetBuilder } from '@/lib/reports/pinnedWidgets';
-import { CustomWidgetRenderer } from '@/tenant/components/reports';
-import { useTranslation } from '@/hooks/useTranslation';
-import { resolveDefaultDashboardWidgetScope } from '@/lib/dashboardRole';
-import { CustomizeItemRow } from '@/tenant/features/dashboard/components/CustomizeItemRow';
-import { DashboardCustomizeWidgetsSection } from '@/tenant/features/dashboard/components/DashboardCustomizeWidgetsSection';
-import { DashboardAlertThresholdsSection } from '@/tenant/features/dashboard/components/DashboardAlertThresholdsSection';
-import { SectionCard } from '@/components/ui/SectionCard';
-import { Button } from '@/components/ui/button';
-import type { DashboardCustomizePanelProps } from '@/tenant/features/dashboard/components/dashboardCustomizePanelTypes';
+import React from "react";
+import { AnimatePresence } from "framer-motion";
+import { WidgetBuilder } from "@/lib/reports/pinnedWidgets";
+import { CustomWidgetRenderer } from "@/tenant/components/reports";
+import { useTranslation } from "@/hooks/useTranslation";
+import { resolveDefaultDashboardWidgetScope } from "@/lib/dashboardRole";
+import { CustomizeItemRow } from "@/tenant/features/dashboard/components/CustomizeItemRow";
+import { DashboardCustomizeWidgetsSection } from "@/tenant/features/dashboard/components/DashboardCustomizeWidgetsSection";
+import { DashboardAlertThresholdsSection } from "@/tenant/features/dashboard/components/DashboardAlertThresholdsSection";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { Button } from "@/components/ui/button";
+import type { DashboardCustomizePanelProps } from "@/tenant/features/dashboard/components/dashboardCustomizePanelTypes";
 
 export type { DashboardCustomizePanelProps };
 
@@ -29,7 +29,7 @@ export function DashboardCustomizePanel({
   widgetBuilderType,
   lowAttendanceThreshold,
   urgentAttendanceThreshold,
-  gridMode = 'comfortable',
+  gridMode = "comfortable",
   onUpdateThreshold,
   onUpdateGridMode,
   onCloseBuilder,
@@ -43,8 +43,8 @@ export function DashboardCustomizePanel({
   const { t } = useTranslation();
   const widgetScope = resolveDefaultDashboardWidgetScope(can);
   const disabledSet = new Set(disabledCardIds);
-  const metricTitle = t('dashboard.metricCardsSettings');
-  const densityTitle = t('dashboard.layoutDensity');
+  const metricTitle = t("dashboard.metricCardsSettings");
+  const densityTitle = t("dashboard.layoutDensity");
 
   return (
     <div className="space-y-5 pb-1">
@@ -62,7 +62,7 @@ export function DashboardCustomizePanel({
               renderWidget={(widget, isCompact) => (
                 <CustomWidgetRenderer
                   widget={widget}
-                  collections={{} as Parameters<typeof CustomWidgetRenderer>[0]['collections']}
+                  collections={{} as Parameters<typeof CustomWidgetRenderer>[0]["collections"]}
                   isCompact={isCompact}
                   onSwitchToggle={() => {}}
                   onMetricClick={() => {}}
@@ -76,7 +76,7 @@ export function DashboardCustomizePanel({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-start">
         <SectionCard
           title={metricTitle}
-          subtitle={t('dashboard.metricCardsSettingsDesc')}
+          subtitle={t("dashboard.metricCardsSettingsDesc")}
           padding="p-6"
           accentColor="primary"
         >
@@ -84,7 +84,7 @@ export function DashboardCustomizePanel({
             <legend className="sr-only">{metricTitle}</legend>
             <div className="text-xs border-b border-border/45 pb-3">
               <p className="font-bold text-foreground">
-                {t('dashboard.selectedCards', { count: selectedDashboardCardCount })}
+                {t("dashboard.selectedCards", { count: selectedDashboardCardCount })}
               </p>
             </div>
             <div className="space-y-2 max-h-preview-tall overflow-y-auto pe-1">
@@ -102,7 +102,7 @@ export function DashboardCustomizePanel({
         </SectionCard>
 
         <DashboardCustomizeWidgetsSection
-          customWidgets={customWidgets.filter((widget) => widget.widgetType !== 'card')}
+          customWidgets={customWidgets.filter((widget) => widget.widgetType !== "card")}
           pinnedDashboardWidgetCount={pinnedDashboardWidgetCount}
           onEditWidget={onEditWidget}
           onDeleteWidget={onDeleteWidget}
@@ -114,7 +114,7 @@ export function DashboardCustomizePanel({
         {onUpdateGridMode && (
           <SectionCard
             title={densityTitle}
-            subtitle={t('dashboard.layoutDensityDesc')}
+            subtitle={t("dashboard.layoutDensityDesc")}
             padding="p-6"
             accentColor="primary"
           >
@@ -124,21 +124,21 @@ export function DashboardCustomizePanel({
                 <div className="flex items-center gap-3 pt-2">
                   <Button
                     type="button"
-                    variant={gridMode === 'comfortable' ? 'default' : 'outline'}
+                    variant={gridMode === "comfortable" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => onUpdateGridMode('comfortable')}
+                    onClick={() => onUpdateGridMode("comfortable")}
                     className="flex-1 cursor-pointer font-bold"
                   >
-                    {t('dashboard.densityComfortable')}
+                    {t("dashboard.densityComfortable")}
                   </Button>
                   <Button
                     type="button"
-                    variant={gridMode === 'compact' ? 'default' : 'outline'}
+                    variant={gridMode === "compact" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => onUpdateGridMode('compact')}
+                    onClick={() => onUpdateGridMode("compact")}
                     className="flex-1 cursor-pointer font-bold"
                   >
-                    {t('dashboard.densityCompact')}
+                    {t("dashboard.densityCompact")}
                   </Button>
                 </div>
               </div>

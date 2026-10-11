@@ -9,7 +9,7 @@ export interface EntityCardMetaTileProps {
 }
 
 /** Shared metadata tile for Work directory entity cards. */
-export const EntityCardMetaTile = (function EntityCardMetaTile({
+export const EntityCardMetaTile = function EntityCardMetaTile({
   label,
   children,
   className,
@@ -24,8 +24,9 @@ export const EntityCardMetaTile = (function EntityCardMetaTile({
       <span className="text-xs font-bold text-muted-foreground uppercase tracking-tight text-wrap break-words leading-none">
         {label}
       </span>
-      <div className="text-xs font-semibold text-foreground text-wrap break-words mt-0.5">{children}</div>
+      <div className="text-xs font-semibold text-foreground text-wrap break-words mt-0.5">
+        {children}
+      </div>
     </div>
   );
-});
-
+};

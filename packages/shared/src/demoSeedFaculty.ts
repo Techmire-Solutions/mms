@@ -1,6 +1,6 @@
-import type { Contact } from './contactTypes.js';
-import type { FacultyMember } from './facultyTypes.js';
-import { FACULTY_SPECIALIZATION_VALUES } from './facultyTypes.js';
+import type { Contact } from "./contactTypes.js";
+import type { FacultyMember } from "./facultyTypes.js";
+import { FACULTY_SPECIALIZATION_VALUES } from "./facultyTypes.js";
 import {
   DEMO_CITIES,
   DEMO_FACULTY_COUNT,
@@ -17,7 +17,7 @@ import {
   demoPhoneSuffix,
   demoPick,
   demoSlug,
-} from './demoSeedConstants.js';
+} from "./demoSeedConstants.js";
 
 /** Builds faculty contact profiles (ids 1…{@link DEMO_FACULTY_COUNT}). */
 export function buildDemoFacultyContacts(): Contact[] {
@@ -25,7 +25,9 @@ export function buildDemoFacultyContacts(): Contact[] {
   for (let index = 1; index <= DEMO_FACULTY_COUNT; index += 1) {
     const female = index % 5 === 0 || index % 7 === 0;
     const firstPool = female ? DEMO_FEMALE_FIRST : DEMO_MALE_FIRST;
-    const title = female ? demoPick(DEMO_FACULTY_FEMALE_TITLES, index) : demoPick(DEMO_FACULTY_MALE_TITLES, index);
+    const title = female
+      ? demoPick(DEMO_FACULTY_FEMALE_TITLES, index)
+      : demoPick(DEMO_FACULTY_MALE_TITLES, index);
     const firstName = demoPick(firstPool, index);
     const lastName = demoPick(DEMO_LAST_NAMES, index + 3);
     const name = `${title} ${firstName} ${lastName}`;
@@ -38,17 +40,17 @@ export function buildDemoFacultyContacts(): Contact[] {
       name,
       firstName: title,
       lastName: `${firstName} ${lastName}`,
-      gender: female ? 'female' : 'male',
+      gender: female ? "female" : "male",
       dob: demoFacultyDob(index),
       email,
       phone,
       city,
-      state: 'Sindh',
-      country: 'Pakistan',
+      state: "Sindh",
+      country: "Pakistan",
       createdAt: DEMO_FACULTY_DATE,
       updatedAt: DEMO_FACULTY_DATE,
-      phones: [{ label: 'Mobile', number: phone }],
-      emails: [{ label: 'Work', address: email }],
+      phones: [{ label: "Mobile", number: phone }],
+      emails: [{ label: "Work", address: email }],
       relationships: [],
       activities: [],
     });
@@ -60,8 +62,8 @@ export function buildDemoFacultyContacts(): Contact[] {
 export function buildDemoFaculty(): FacultyMember[] {
   const facultyMembers: FacultyMember[] = [];
   for (let index = 1; index <= DEMO_FACULTY_COUNT; index += 1) {
-    const status: FacultyMember['status'] =
-      index % 11 === 0 ? 'inactive' : index % 9 === 0 ? 'on_leave' : 'active';
+    const status: FacultyMember["status"] =
+      index % 11 === 0 ? "inactive" : index % 9 === 0 ? "on_leave" : "active";
     facultyMembers.push({
       id: `tch${index}`,
       contactId: index,

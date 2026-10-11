@@ -6,7 +6,7 @@ export function parseCsvRows(csvText: string): string[][] {
   const text = csvText.charCodeAt(0) === 0xfeff ? csvText.slice(1) : csvText;
   const rows: string[][] = [];
   let currentRow: string[] = [];
-  let currentField = '';
+  let currentField = "";
   let inQuotes = false;
   let i = 0;
   const len = text.length;
@@ -36,19 +36,19 @@ export function parseCsvRows(csvText: string): string[][] {
       continue;
     }
 
-    if (char === ',') {
+    if (char === ",") {
       currentRow.push(currentField);
-      currentField = '';
+      currentField = "";
       i++;
       continue;
     }
 
-    if (char === '\r' || char === '\n') {
-      if (char === '\r' && i + 1 < len && text[i + 1] === '\n') {
+    if (char === "\r" || char === "\n") {
+      if (char === "\r" && i + 1 < len && text[i + 1] === "\n") {
         i++;
       }
       currentRow.push(currentField);
-      currentField = '';
+      currentField = "";
       if (currentRow.some((field) => field.trim().length > 0)) {
         rows.push(currentRow);
       }

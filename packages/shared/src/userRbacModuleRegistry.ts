@@ -3,52 +3,52 @@
  * @description Single source of truth for RBAC permission modules and system-settings integration.
  */
 
-import { SYSTEM_MODULES_BY_ID, normalizeEnabledModules } from './settingsTypes.js';
-import type { RbacModuleDef } from './userEntityTypes.js';
+import { SYSTEM_MODULES_BY_ID, normalizeEnabledModules } from "./settingsTypes.js";
+import type { RbacModuleDef } from "./userEntityTypes.js";
 
 /** Canonical tuple of all 19 RBAC module identifiers (includes Tasks elevate capability). */
 export const RBAC_MODULE_IDS = [
-  'dashboard',
-  'contacts',
-  'faculty',
-  'messaging',
-  'tasks',
-  'tasks.assign_anywhere',
-  'students',
-  'sessions',
-  'attendance',
-  'enrollments',
-  'hasanat',
-  'examinations',
-  'questionBank',
-  'finance',
-  'accounting',
-  'obligations',
-  'users',
-  'settings',
+  "dashboard",
+  "contacts",
+  "faculty",
+  "messaging",
+  "tasks",
+  "tasks.assign_anywhere",
+  "students",
+  "sessions",
+  "attendance",
+  "enrollments",
+  "hasanat",
+  "examinations",
+  "questionBank",
+  "finance",
+  "accounting",
+  "obligations",
+  "users",
+  "settings",
 ] as const;
 
 export type RbacModuleId = (typeof RBAC_MODULE_IDS)[number];
 
 export const RBAC_MODULE_REGISTRY: readonly RbacModuleDef[] = [
-  { id: 'dashboard', labelKey: 'nav.dashboard' },
-  { id: 'contacts', labelKey: 'nav.contacts' },
-  { id: 'faculty', labelKey: 'nav.faculty' },
-  { id: 'messaging', labelKey: 'nav.messaging' },
-  { id: 'tasks', labelKey: 'nav.tasks' },
-  { id: 'tasks.assign_anywhere', labelKey: 'users.rbac.tasksAssignAnywhere' },
-  { id: 'students', labelKey: 'nav.students' },
-  { id: 'sessions', labelKey: 'nav.sessions' },
-  { id: 'attendance', labelKey: 'nav.attendance' },
-  { id: 'enrollments', labelKey: 'nav.enrollments' },
-  { id: 'hasanat', labelKey: 'nav.hasanatCards' },
-  { id: 'examinations', labelKey: 'nav.examinations' },
-  { id: 'questionBank', labelKey: 'nav.questionBank' },
-  { id: 'finance', labelKey: 'nav.finance' },
-  { id: 'accounting', labelKey: 'nav.accounting' },
-  { id: 'obligations', labelKey: 'nav.obligations' },
-  { id: 'users', labelKey: 'nav.users' },
-  { id: 'settings', labelKey: 'nav.settings' },
+  { id: "dashboard", labelKey: "nav.dashboard" },
+  { id: "contacts", labelKey: "nav.contacts" },
+  { id: "faculty", labelKey: "nav.faculty" },
+  { id: "messaging", labelKey: "nav.messaging" },
+  { id: "tasks", labelKey: "nav.tasks" },
+  { id: "tasks.assign_anywhere", labelKey: "users.rbac.tasksAssignAnywhere" },
+  { id: "students", labelKey: "nav.students" },
+  { id: "sessions", labelKey: "nav.sessions" },
+  { id: "attendance", labelKey: "nav.attendance" },
+  { id: "enrollments", labelKey: "nav.enrollments" },
+  { id: "hasanat", labelKey: "nav.hasanatCards" },
+  { id: "examinations", labelKey: "nav.examinations" },
+  { id: "questionBank", labelKey: "nav.questionBank" },
+  { id: "finance", labelKey: "nav.finance" },
+  { id: "accounting", labelKey: "nav.accounting" },
+  { id: "obligations", labelKey: "nav.obligations" },
+  { id: "users", labelKey: "nav.users" },
+  { id: "settings", labelKey: "nav.settings" },
 ] as const;
 
 /** Fast O(1) module definition lookup map. */
@@ -75,7 +75,7 @@ export function getRbacModuleDef(id: string): RbacModuleDef | undefined {
 
 /** Type guard verifying if a string is a valid canonical RbacModuleId. */
 export function isValidRbacModuleId(id: unknown): id is RbacModuleId {
-  return typeof id === 'string' && Object.prototype.hasOwnProperty.call(RBAC_MODULES_BY_ID, id);
+  return typeof id === "string" && Object.prototype.hasOwnProperty.call(RBAC_MODULES_BY_ID, id);
 }
 
 /**
@@ -83,9 +83,9 @@ export function isValidRbacModuleId(id: unknown): id is RbacModuleId {
  * (e.g. RBAC `enrollments` ↔ system module `enrollment`.)
  */
 export const RBAC_SYSTEM_MODULE_ID: Readonly<Record<string, string>> = Object.freeze({
-  enrollments: 'enrollment',
-  examinations: 'examination',
-  'tasks.assign_anywhere': 'tasks',
+  enrollments: "enrollment",
+  examinations: "examination",
+  "tasks.assign_anywhere": "tasks",
 } satisfies Partial<Record<RbacModuleId, string>>);
 
 /** Resolves the system-modules settings key for an RBAC permission row. */
@@ -99,7 +99,7 @@ function isNormalizedModuleEnabled(
   rbacModuleId: string,
   normalized: Record<string, boolean>,
 ): boolean {
-  if (rbacModuleId === 'settings') return true;
+  if (rbacModuleId === "settings") return true;
   const systemId = rbacModuleSystemId(rbacModuleId);
   if (!SYSTEM_MODULES_BY_ID[systemId]) return true;
   return normalized[systemId] !== false;
@@ -124,4 +124,3 @@ export function filterRbacModulesForSettings(
   const normalized = normalizeEnabledModules(enabledModules);
   return RBAC_MODULE_REGISTRY.filter((m) => isNormalizedModuleEnabled(m.id, normalized));
 }
-

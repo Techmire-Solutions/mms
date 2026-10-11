@@ -1,8 +1,6 @@
 import React from "react";
 import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/shared";
-import {
-  type ContactCreateDefaults,
-} from "./ContactCreateModal";
+import { type ContactCreateDefaults } from "./ContactCreateModal";
 import { ContactPickerSearchInput } from "./ContactPickerSearchInput";
 import { ContactPickerSelected } from "./ContactPickerSelected";
 import { useContactPickerState } from "./useContactPickerState";
@@ -76,7 +74,8 @@ export default function ContactPicker({
   const resolvedEmptyHint = emptyHint ?? picker.t("contacts.picker.emptyHint");
   const resolvedCreateLabel = createLabel ?? picker.t("contacts.picker.createLabel");
   const createActionLabel = picker.query.trim()
-    ? (createWithQueryLabel?.(picker.query.trim()) ?? picker.t("contacts.picker.createWithQuery", { query: picker.query.trim() }))
+    ? (createWithQueryLabel?.(picker.query.trim()) ??
+      picker.t("contacts.picker.createWithQuery", { query: picker.query.trim() }))
     : resolvedCreateLabel;
 
   if (picker.selected) {
@@ -92,7 +91,9 @@ export default function ContactPicker({
         fileInputRef={picker.fileInputRef}
         onAvatarChange={onAvatarChange}
         onClear={() => onChange(null)}
-        onFileChange={(event) => { void picker.handleFileChange(event); }}
+        onFileChange={(event) => {
+          void picker.handleFileChange(event);
+        }}
       />
     );
   }

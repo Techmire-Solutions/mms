@@ -6,7 +6,7 @@ import type {
   SessionsWidgetQuery,
   SessionsWidgetAggregateResult,
   SessionsReportAggregates,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the sessions module.
@@ -39,11 +39,7 @@ export interface SessionsRepository {
     deletedBy?: string,
     deletionReason?: string,
   ): Promise<boolean>;
-  restoreSessionWithCascade(
-    tenant: string,
-    sessionId: string,
-    userId?: string,
-  ): Promise<boolean>;
+  restoreSessionWithCascade(tenant: string, sessionId: string, userId?: string): Promise<boolean>;
   bulkSoftDeleteSessionsWithCascade(
     tenant: string,
     sessionIds: string[],

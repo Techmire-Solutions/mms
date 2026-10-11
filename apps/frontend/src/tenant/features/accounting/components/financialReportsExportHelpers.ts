@@ -124,7 +124,8 @@ export function buildFinancialReportExportRows({
     rows.push({
       section: "",
       code: "",
-      account: netSurplus >= 0 ? t("accounting.reports.netSurplus") : t("accounting.reports.netDeficit"),
+      account:
+        netSurplus >= 0 ? t("accounting.reports.netSurplus") : t("accounting.reports.netDeficit"),
       amount: formatCurrency(Math.abs(netSurplus)),
     });
   } else if (view === "balance") {

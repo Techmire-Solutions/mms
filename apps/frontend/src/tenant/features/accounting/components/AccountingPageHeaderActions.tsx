@@ -3,7 +3,7 @@ import { Download, Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { FiscalYear } from '@/lib/data/accountingData';
+import type { FiscalYear } from "@/lib/data/accountingData";
 
 interface AccountingPageHeaderActionsProps {
   canWrite: boolean;
@@ -61,4 +61,3 @@ export function AccountingPageHeaderActions({
     </div>
   );
 }
-

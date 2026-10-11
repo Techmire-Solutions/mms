@@ -1,4 +1,4 @@
-import { LIST_PAGE_MAX_LIMIT } from './apiSchemas.js';
+import { LIST_PAGE_MAX_LIMIT } from "./apiSchemas.js";
 
 /** Pagination result container metadata interface. */
 export interface PageResult<T> {
@@ -17,13 +17,21 @@ export interface PageResult<T> {
  * @param dir Sorting direction ('asc' or 'desc').
  * @returns Numeric comparison result (-1, 0, or 1).
  */
-export function compareByField<T>(left: T, right: T, field: keyof T | string, dir: 'asc' | 'desc' = 'asc'): number {
+export function compareByField<T>(
+  left: T,
+  right: T,
+  field: keyof T | string,
+  dir: "asc" | "desc" = "asc",
+): number {
   const leftValue = (left as Record<string, unknown>)[field as string];
   const rightValue = (right as Record<string, unknown>)[field as string];
-  const leftText = leftValue == null ? '' : String(leftValue);
-  const rightText = rightValue == null ? '' : String(rightValue);
-  const comparison = leftText.localeCompare(rightText, undefined, { numeric: true, sensitivity: 'base' });
-  return dir === 'desc' ? -comparison : comparison;
+  const leftText = leftValue == null ? "" : String(leftValue);
+  const rightText = rightValue == null ? "" : String(rightValue);
+  const comparison = leftText.localeCompare(rightText, undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+  return dir === "desc" ? -comparison : comparison;
 }
 
 /**
@@ -34,7 +42,12 @@ export function compareByField<T>(left: T, right: T, field: keyof T | string, di
  * @param maxLimit Upper cap on limit to prevent memory spikes (defaults to 100).
  * @returns PageResult container with sliced items, total count, page, limit, and hasMore status.
  */
-export function paginateArray<T>(items: T[], page = 1, limit = 50, maxLimit = LIST_PAGE_MAX_LIMIT): PageResult<T> {
+export function paginateArray<T>(
+  items: T[],
+  page = 1,
+  limit = 50,
+  maxLimit = LIST_PAGE_MAX_LIMIT,
+): PageResult<T> {
   const safePage = Math.max(1, page);
   const safeLimit = Math.min(Math.max(1, limit), maxLimit);
   const total = items.length;
@@ -57,9 +70,9 @@ export function paginateArray<T>(items: T[], page = 1, limit = 50, maxLimit = LI
  */
 export function isQueryFlagTrue(value: unknown): boolean {
   if (value === true || value === 1) return true;
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const trimmed = value.trim().toLowerCase();
-    return trimmed === 'true' || trimmed === '1' || trimmed === 'yes';
+    return trimmed === "true" || trimmed === "1" || trimmed === "yes";
   }
   return false;
 }
@@ -71,10 +84,10 @@ export function isQueryFlagTrue(value: unknown): boolean {
  */
 export function dedupeTrimmedIds(
   ids: string | readonly (string | number)[] | undefined | null,
-  delimiter = ',',
+  delimiter = ",",
 ): string[] {
   if (!ids) return [];
-  const list = typeof ids === 'string' ? ids.split(delimiter) : ids;
+  const list = typeof ids === "string" ? ids.split(delimiter) : ids;
   if (list.length === 0) return [];
   const result: string[] = [];
   const seen = new Set<string>();
@@ -89,4 +102,3 @@ export function dedupeTrimmedIds(
   }
   return result;
 }
-

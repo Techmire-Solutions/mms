@@ -1,4 +1,4 @@
-import type { Contact } from './contactTypes.js';
+import type { Contact } from "./contactTypes.js";
 
 /** Auth-owned fields on a workspace user row (never stripped by contact-first normalize). */
 export interface TenantAuthFields {
@@ -51,7 +51,7 @@ export function resolveTenantLoginEmail(
   const fromAuth = user.loginEmail?.trim() || user.email?.trim();
   if (fromAuth) return fromAuth.toLowerCase();
   if (hydratedEmail?.trim()) return hydratedEmail.trim().toLowerCase();
-  return '';
+  return "";
 }
 
 /** Session + profile payload for tenant account page. */
@@ -72,14 +72,14 @@ export interface TenantUserProfile {
  * Single source of truth across frontend error mappers and backend login routes.
  */
 export const TENANT_AUTH_ERROR_TYPES = [
-  'invalid_credentials',
-  'auth_required',
-  'connection_error',
-  'user_not_registered',
-  'workspace_disabled',
-  'email_not_verified',
-  'validation_error',
-  'rate_limit_exceeded',
+  "invalid_credentials",
+  "auth_required",
+  "connection_error",
+  "user_not_registered",
+  "workspace_disabled",
+  "email_not_verified",
+  "validation_error",
+  "rate_limit_exceeded",
 ] as const;
 
 export type TenantAuthErrorType = (typeof TENANT_AUTH_ERROR_TYPES)[number];

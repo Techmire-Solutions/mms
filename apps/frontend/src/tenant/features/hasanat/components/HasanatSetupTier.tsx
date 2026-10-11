@@ -9,16 +9,13 @@ import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspense
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 import { useTranslation } from "@/hooks/useTranslation";
 
-const DenominationsManager = lazy(
-  () =>
-    import("@/tenant/features/hasanat/components/DenominationsManager").then(
-      (m) => ({ default: m.DenominationsManager }),
-    ),
+const DenominationsManager = lazy(() =>
+  import("@/tenant/features/hasanat/components/DenominationsManager").then((m) => ({
+    default: m.DenominationsManager,
+  })),
 );
 
-const HasanatSettings = lazy(
-  () => import("@/tenant/features/hasanat/components/HasanatSettings"),
-);
+const HasanatSettings = lazy(() => import("@/tenant/features/hasanat/components/HasanatSettings"));
 
 const HasanatTemplateEditor = lazy(
   () => import("@/tenant/features/hasanat/components/HasanatTemplateEditor"),
@@ -41,7 +38,7 @@ export interface HasanatSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const HasanatSetupTier = (function HasanatSetupTier({
+export const HasanatSetupTier = function HasanatSetupTier({
   tabs,
   activeTab,
   canEditSetup,
@@ -97,9 +94,7 @@ export const HasanatSetupTier = (function HasanatSetupTier({
               {subTabs.sub === "preferences" && (
                 <HasanatSettings onPrefsDirtyChange={handlePrefsDirtyChange} />
               )}
-              {subTabs.sub === "templates" && (
-                <HasanatTemplateEditor />
-              )}
+              {subTabs.sub === "templates" && <HasanatTemplateEditor />}
             </Suspense>
           )}
 
@@ -119,6 +114,6 @@ export const HasanatSetupTier = (function HasanatSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default HasanatSetupTier;

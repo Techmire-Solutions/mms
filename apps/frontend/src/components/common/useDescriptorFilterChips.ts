@@ -69,8 +69,5 @@ function chipLabel<T>(field: FieldDefinition<T>, stringValue: string): string {
 /** Fields eligible for chip generation. */
 function isFilterableField<T>(field: FieldDefinition<T>): boolean {
   if (field.filterable !== undefined) return field.filterable;
-  return (
-    (field.type === "badge" || field.type === "status") &&
-    field.badgeVariantMap !== undefined
-  );
+  return (field.type === "badge" || field.type === "status") && field.badgeVariantMap !== undefined;
 }

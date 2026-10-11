@@ -43,7 +43,16 @@ const template: DocumentTemplate = {
   orientation: "portrait",
   elements: [
     { id: "el_1", type: "static", label: "Invoice Title", x: 20, y: 20, w: 200, h: 20 },
-    { id: "el_2", type: "field", field: "studentName", label: "Student Name", x: 20, y: 50, w: 200, h: 20 },
+    {
+      id: "el_2",
+      type: "field",
+      field: "studentName",
+      label: "Student Name",
+      x: 20,
+      y: 50,
+      w: 200,
+      h: 20,
+    },
   ],
 };
 
@@ -67,15 +76,17 @@ function keydown(target: HTMLElement, key: string, init: KeyboardEventInit = {})
 }
 
 function canvasRegion(): HTMLElement {
-  const region = container.querySelector<HTMLElement>('[aria-label="templateEditor.canvasViewport"]');
+  const region = container.querySelector<HTMLElement>(
+    '[aria-label="templateEditor.canvasViewport"]',
+  );
   if (!region) throw new Error("canvas region not found");
   return region;
 }
 
 function elementByLabel(label: string): HTMLElement {
-  const el = Array.from(container.querySelectorAll<HTMLElement>("[role='button'][aria-label]")).find(
-    (node) => node.getAttribute("aria-label") === label
-  );
+  const el = Array.from(
+    container.querySelectorAll<HTMLElement>("[role='button'][aria-label]"),
+  ).find((node) => node.getAttribute("aria-label") === label);
   if (!el) throw new Error(`canvas element "${label}" not found`);
   return el;
 }
@@ -127,7 +138,7 @@ describe("TemplateEditor keyboard interactions", () => {
     await mountEditor();
 
     const guidesToggle = Array.from(container.querySelectorAll<HTMLElement>("button")).find(
-      (button) => button.getAttribute("aria-label") === "templateEditor.toggleGuides"
+      (button) => button.getAttribute("aria-label") === "templateEditor.toggleGuides",
     );
     expect(guidesToggle).toBeTruthy();
 
@@ -159,7 +170,7 @@ describe("TemplateEditor keyboard interactions", () => {
 
     const panel = container.querySelector<HTMLElement>('[aria-label="templateEditor.properties"]');
     const deleteButton = Array.from(panel?.querySelectorAll<HTMLElement>("button") ?? []).find(
-      (button) => button.getAttribute("aria-label") === "templateEditor.delete"
+      (button) => button.getAttribute("aria-label") === "templateEditor.delete",
     );
     expect(deleteButton).toBeTruthy();
 
@@ -170,8 +181,8 @@ describe("TemplateEditor keyboard interactions", () => {
     // The element is gone...
     expect(
       Array.from(container.querySelectorAll("[aria-label]")).some(
-        (node) => node.getAttribute("aria-label") === "Invoice Title (static)"
-      )
+        (node) => node.getAttribute("aria-label") === "Invoice Title (static)",
+      ),
     ).toBe(false);
 
     /*
@@ -181,9 +192,11 @@ describe("TemplateEditor keyboard interactions", () => {
      */
     expect(document.activeElement).toBe(canvasRegion());
     const statusMessages = Array.from(container.querySelectorAll('[role="status"]')).map(
-      (node) => node.textContent ?? ""
+      (node) => node.textContent ?? "",
     );
-    expect(statusMessages.some((text) => text.includes("templateEditor.elementDeleted"))).toBe(true);
+    expect(statusMessages.some((text) => text.includes("templateEditor.elementDeleted"))).toBe(
+      true,
+    );
   });
 
   it("treats a burst of typing as one undo step", async () => {
@@ -195,7 +208,7 @@ describe("TemplateEditor keyboard interactions", () => {
 
     const nativeValueSetter = Object.getOwnPropertyDescriptor(
       window.HTMLInputElement.prototype,
-      "value"
+      "value",
     )!.set!;
 
     // Three keystrokes, as React sees them.

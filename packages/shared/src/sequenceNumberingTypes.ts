@@ -3,11 +3,7 @@ import { z } from "zod";
 export const sequenceYearFormatSchema = z.enum(["YYYY", "YY", "NONE"]);
 export type SequenceYearFormat = z.infer<typeof sequenceYearFormatSchema>;
 
-export const sequenceRolloverPolicySchema = z.enum([
-  "annual_calendar",
-  "annual_fiscal",
-  "never",
-]);
+export const sequenceRolloverPolicySchema = z.enum(["annual_calendar", "annual_fiscal", "never"]);
 export type SequenceRolloverPolicy = z.infer<typeof sequenceRolloverPolicySchema>;
 
 export const sequenceNumberingConfigSchema = z

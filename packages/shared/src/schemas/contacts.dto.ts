@@ -1,9 +1,9 @@
-import { z } from 'zod';
-import { deepSanitizeStrings } from './sanitize.js';
-import type { FieldConfig } from '../contactTypes.js';
-import { isContactCustomCollectionTab } from '../contactEnabledTabs.js';
-import { stripContactClientSoftDeleteFields } from '../contactSoftDelete.js';
-import { hydrateContactRelationshipFields } from '../contactRelationshipHydrate.js';
+import { z } from "zod";
+import { deepSanitizeStrings } from "./sanitize.js";
+import type { FieldConfig } from "../contactTypes.js";
+import { isContactCustomCollectionTab } from "../contactEnabledTabs.js";
+import { stripContactClientSoftDeleteFields } from "../contactSoftDelete.js";
+import { hydrateContactRelationshipFields } from "../contactRelationshipHydrate.js";
 import {
   activitySchema,
   attachmentSchema,
@@ -18,18 +18,18 @@ import {
   relationshipSchema,
   socialLinkSchema,
   whatsappStatusOptionalSchema,
-} from '../contactNestedSchemas.js';
+} from "../contactNestedSchemas.js";
 
 const LIST_TAB_WRITE_KEYS: Record<string, string> = {
-  phones: 'phones',
-  emails: 'emails',
-  addresses: 'addresses',
-  socials: 'socials',
-  education: 'education',
-  experience: 'experience',
-  skills: 'skills',
-  bankDetails: 'bankDetails',
-  relationship: 'relationshipContacts',
+  phones: "phones",
+  emails: "emails",
+  addresses: "addresses",
+  socials: "socials",
+  education: "education",
+  experience: "experience",
+  skills: "skills",
+  bankDetails: "bankDetails",
+  relationship: "relationshipContacts",
 };
 
 /**
@@ -37,46 +37,46 @@ const LIST_TAB_WRITE_KEYS: Record<string, string> = {
  * Soft-delete keys are intentionally omitted — stripped before validation.
  */
 const CONTACT_WRITE_SYSTEM_KEYS = [
-  'id',
-  '_blueprintId',
-  'firstName',
-  'lastName',
-  'name',
-  'gender',
-  'dob',
-  'cnic',
-  'isSyed',
-  'tag',
-  'tags',
-  'avatar',
-  'notes',
-  'createdAt',
-  'updatedAt',
-  'createdBy',
-  'updatedBy',
-  'whatsappStatus',
-  'lastCheckedAt',
-  'phones',
-  'emails',
-  'addresses',
-  'socials',
-  'education',
-  'experience',
-  'skills',
-  'bankDetails',
-  'relationshipContacts',
-  'emergencyContacts',
-  'relationships',
-  'activities',
-  'attachments',
-  'phone',
-  'email',
-  'line1',
-  'address',
-  'city',
-  'state',
-  'country',
-  'aiSummary',
+  "id",
+  "_blueprintId",
+  "firstName",
+  "lastName",
+  "name",
+  "gender",
+  "dob",
+  "cnic",
+  "isSyed",
+  "tag",
+  "tags",
+  "avatar",
+  "notes",
+  "createdAt",
+  "updatedAt",
+  "createdBy",
+  "updatedBy",
+  "whatsappStatus",
+  "lastCheckedAt",
+  "phones",
+  "emails",
+  "addresses",
+  "socials",
+  "education",
+  "experience",
+  "skills",
+  "bankDetails",
+  "relationshipContacts",
+  "emergencyContacts",
+  "relationships",
+  "activities",
+  "attachments",
+  "phone",
+  "email",
+  "line1",
+  "address",
+  "city",
+  "state",
+  "country",
+  "aiSummary",
 ] as const;
 
 const CONTACT_WRITE_SYSTEM_KEY_SET = new Set<string>(CONTACT_WRITE_SYSTEM_KEYS);
@@ -108,50 +108,49 @@ export function collectContactWriteExtraFieldKeys(
   return [...keys];
 }
 
-const contactWriteRawObjectSchema = z
-  .object({
-    id: z.union([z.string(), z.number()]).optional(),
-    _blueprintId: z.union([z.string(), z.number()]).optional(),
-    firstName: z.string().min(1),
-    lastName: z.string().optional(),
-    name: z.string().optional(),
-    gender: z.string().optional(),
-    dob: z.string().optional(),
-    cnic: z.string().optional(),
-    isSyed: z.boolean().optional(),
-    tag: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    avatar: z.string().nullable().optional(),
-    notes: z.string().optional(),
-    createdAt: z.string().optional(),
-    updatedAt: z.string().optional(),
-    createdBy: z.string().optional(),
-    updatedBy: z.string().optional(),
-    whatsappStatus: whatsappStatusOptionalSchema,
-    lastCheckedAt: z.string().nullable().optional(),
-    phones: z.array(phoneNumberSchema).optional(),
-    emails: z.array(emailAddressSchema).optional(),
-    addresses: z.array(addressSchema).optional(),
-    socials: z.array(socialLinkSchema).optional(),
-    education: z.array(contactEducationSchema).optional(),
-    experience: z.array(contactExperienceSchema).optional(),
-    skills: z.array(contactSkillSchema).optional(),
-    bankDetails: z.array(contactBankDetailSchema).optional(),
-    relationshipContacts: z.array(relationshipContactSchema).optional(),
-    emergencyContacts: z.array(relationshipContactSchema).optional(),
-    relationships: z.array(relationshipSchema).optional(),
-    activities: z.array(activitySchema).optional(),
-    attachments: z.array(attachmentSchema).optional(),
-    aiSummary: z.string().optional(),
-    // Scalar mirrors (legacy compat + write payloads derived from collections)
-    phone: z.string().optional(),
-    email: z.string().optional(),
-    line1: z.string().optional(),
-    address: z.string().optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
-    country: z.string().optional(),
-  });
+const contactWriteRawObjectSchema = z.object({
+  id: z.union([z.string(), z.number()]).optional(),
+  _blueprintId: z.union([z.string(), z.number()]).optional(),
+  firstName: z.string().min(1),
+  lastName: z.string().optional(),
+  name: z.string().optional(),
+  gender: z.string().optional(),
+  dob: z.string().optional(),
+  cnic: z.string().optional(),
+  isSyed: z.boolean().optional(),
+  tag: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  avatar: z.string().nullable().optional(),
+  notes: z.string().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  createdBy: z.string().optional(),
+  updatedBy: z.string().optional(),
+  whatsappStatus: whatsappStatusOptionalSchema,
+  lastCheckedAt: z.string().nullable().optional(),
+  phones: z.array(phoneNumberSchema).optional(),
+  emails: z.array(emailAddressSchema).optional(),
+  addresses: z.array(addressSchema).optional(),
+  socials: z.array(socialLinkSchema).optional(),
+  education: z.array(contactEducationSchema).optional(),
+  experience: z.array(contactExperienceSchema).optional(),
+  skills: z.array(contactSkillSchema).optional(),
+  bankDetails: z.array(contactBankDetailSchema).optional(),
+  relationshipContacts: z.array(relationshipContactSchema).optional(),
+  emergencyContacts: z.array(relationshipContactSchema).optional(),
+  relationships: z.array(relationshipSchema).optional(),
+  activities: z.array(activitySchema).optional(),
+  attachments: z.array(attachmentSchema).optional(),
+  aiSummary: z.string().optional(),
+  // Scalar mirrors (legacy compat + write payloads derived from collections)
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  line1: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().optional(),
+});
 
 const contactWriteBaseObjectSchema = contactWriteRawObjectSchema.strict();
 
@@ -170,7 +169,7 @@ export function buildContactWriteSchema(extraFieldKeys: string[] = []): z.ZodTyp
       : contactWriteBaseObjectSchema;
 
   return z.preprocess((raw) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
     const stripped = stripContactClientSoftDeleteFields(raw as Record<string, unknown>);
     const hydrated = hydrateContactRelationshipFields(stripped);
     return deepSanitizeStrings(hydrated);
@@ -185,111 +184,129 @@ export const contactWriteSchema = buildContactWriteSchema();
  * Used at the @ts-rest contract gateway boundary.
  */
 export const contactWireWriteSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   const stripped = stripContactClientSoftDeleteFields(raw as Record<string, unknown>);
   const hydrated = hydrateContactRelationshipFields(stripped);
   return deepSanitizeStrings(hydrated);
 }, contactWriteRawObjectSchema.passthrough());
 
 export function buildContactMergeBodySchema(extraFieldKeys: string[] = []) {
-  const base = z.object({
-    keepId: z.union([z.string(), z.number()]),
-    deleteId: z.union([z.string(), z.number()]),
-    merged: buildContactWriteSchema(extraFieldKeys).optional(),
-  }).strict();
+  const base = z
+    .object({
+      keepId: z.union([z.string(), z.number()]),
+      deleteId: z.union([z.string(), z.number()]),
+      merged: buildContactWriteSchema(extraFieldKeys).optional(),
+    })
+    .strict();
   return z.preprocess((raw) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
     return deepSanitizeStrings(raw);
   }, base);
 }
 
-export const contactsWorkDrillDownSchema = z.object({
-  gender: z.string().optional(),
-  search: z.string().max(500).optional(),
-}).strict();
+export const contactsWorkDrillDownSchema = z
+  .object({
+    gender: z.string().optional(),
+    search: z.string().max(500).optional(),
+  })
+  .strict();
 
-const contactsSavedReportCreateBaseSchema = z.object({
-  name: z.string().min(1).max(200),
-  drillDown: contactsWorkDrillDownSchema,
-  shareScope: z.enum(['private', 'roles', 'users', 'global']).optional(),
-  sharedWithRoles: z.array(z.string()).optional(),
-  sharedWithUserIds: z.array(z.string()).optional(),
-}).strict();
+const contactsSavedReportCreateBaseSchema = z
+  .object({
+    name: z.string().min(1).max(200),
+    drillDown: contactsWorkDrillDownSchema,
+    shareScope: z.enum(["private", "roles", "users", "global"]).optional(),
+    sharedWithRoles: z.array(z.string()).optional(),
+    sharedWithUserIds: z.array(z.string()).optional(),
+  })
+  .strict();
 
 export const contactsSavedReportCreateSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, contactsSavedReportCreateBaseSchema);
 
-const contactGoogleSyncConfigBaseSchema = z.object({
-  clientId: z.string().optional(),
-  clientSecret: z.string().optional(),
-  accessToken: z.string().optional(),
-  refreshToken: z.string().optional(),
-  clearTokens: z.boolean().optional(),
-}).strict();
+const contactGoogleSyncConfigBaseSchema = z
+  .object({
+    clientId: z.string().optional(),
+    clientSecret: z.string().optional(),
+    accessToken: z.string().optional(),
+    refreshToken: z.string().optional(),
+    clearTokens: z.boolean().optional(),
+  })
+  .strict();
 
 export const contactGoogleSyncConfigSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, contactGoogleSyncConfigBaseSchema);
 
-const contactGoogleSyncAuditBaseSchema = z.object({
-  action: z.enum(['credentials_saved', 'disconnected']),
-}).strict();
+const contactGoogleSyncAuditBaseSchema = z
+  .object({
+    action: z.enum(["credentials_saved", "disconnected"]),
+  })
+  .strict();
 
 export const contactGoogleSyncAuditSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, contactGoogleSyncAuditBaseSchema);
 
-const contactGoogleSyncExchangeBaseSchema = z.object({
-  code: z.string().min(1),
-  redirectUri: z.string().url(),
-}).strict();
+const contactGoogleSyncExchangeBaseSchema = z
+  .object({
+    code: z.string().min(1),
+    redirectUri: z.string().url(),
+  })
+  .strict();
 
 export const contactGoogleSyncExchangeSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, contactGoogleSyncExchangeBaseSchema);
 
-const contactsVcfExportBodyBaseSchema = z.object({
-  filename: z.string().min(1).max(200).optional(),
-  label: z.string().min(1).max(500).optional(),
-  idempotencyKey: z
-    .string()
-    .min(8)
-    .max(128)
-    .regex(/^[a-zA-Z0-9_-]+$/)
-    .optional(),
-}).strict();
+const contactsVcfExportBodyBaseSchema = z
+  .object({
+    filename: z.string().min(1).max(200).optional(),
+    label: z.string().min(1).max(500).optional(),
+    idempotencyKey: z
+      .string()
+      .min(8)
+      .max(128)
+      .regex(/^[a-zA-Z0-9_-]+$/)
+      .optional(),
+  })
+  .strict();
 
 export const contactsVcfExportBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, contactsVcfExportBodyBaseSchema);
 
-const contactsDuplicateScanBodyBaseSchema = z.object({
-  label: z.string().min(1).max(500).optional(),
-  idempotencyKey: z
-    .string()
-    .min(8)
-    .max(128)
-    .regex(/^[a-zA-Z0-9_-]+$/)
-    .optional(),
-}).strict();
+const contactsDuplicateScanBodyBaseSchema = z
+  .object({
+    label: z.string().min(1).max(500).optional(),
+    idempotencyKey: z
+      .string()
+      .min(8)
+      .max(128)
+      .regex(/^[a-zA-Z0-9_-]+$/)
+      .optional(),
+  })
+  .strict();
 
 export const contactsDuplicateScanBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, contactsDuplicateScanBodyBaseSchema);
 
 export function buildContactDuplicateCheckBodySchema(extraFieldKeys: string[] = []) {
-  const base = z.object({
-    contact: buildContactWriteSchema(extraFieldKeys),
-  }).strict();
+  const base = z
+    .object({
+      contact: buildContactWriteSchema(extraFieldKeys),
+    })
+    .strict();
   return z.preprocess((raw) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
     return deepSanitizeStrings(raw);
   }, base);
 }

@@ -166,19 +166,23 @@ describe("useJournalEntriesController", () => {
     });
 
     expect(latest?.selectedIds).toHaveLength(0);
-    expect(onShortcutStateChange).toHaveBeenLastCalledWith(expect.objectContaining({
-      mode: "simple",
-      selectedCount: 0,
-      clearSelection: expect.any(Function),
-    }));
+    expect(onShortcutStateChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        mode: "simple",
+        selectedCount: 0,
+        clearSelection: expect.any(Function),
+      }),
+    );
 
     await act(async () => {
       latest?.toggleSelectedEntry("entry-1", true);
     });
     expect(latest?.selectedIds).toContain("entry-1");
-    expect(onShortcutStateChange).toHaveBeenLastCalledWith(expect.objectContaining({
-      selectedCount: 1,
-    }));
+    expect(onShortcutStateChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        selectedCount: 1,
+      }),
+    );
 
     await act(async () => {
       latest?.clearSelection();

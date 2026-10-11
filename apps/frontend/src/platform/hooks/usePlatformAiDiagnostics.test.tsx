@@ -1,17 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
-import { usePlatformAiDiagnostics } from './usePlatformAiDiagnostics';
-import * as apiClient from '@/lib/apiClient';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { MemoryRouter } from "react-router-dom";
+import { usePlatformAiDiagnostics } from "./usePlatformAiDiagnostics";
+import * as apiClient from "@/lib/apiClient";
 
-vi.mock('@/lib/apiClient', () => ({
+vi.mock("@/lib/apiClient", () => ({
   apiJson: vi.fn(),
 }));
 
-function renderHook(path = '/platform/dashboard') {
+function renderHook(path = "/platform/dashboard") {
   let hookResult!: ReturnType<typeof usePlatformAiDiagnostics>;
-  const container = document.createElement('div');
+  const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
 
@@ -37,65 +37,65 @@ function renderHook(path = '/platform/dashboard') {
   };
 }
 
-describe('usePlatformAiDiagnostics', () => {
+describe("usePlatformAiDiagnostics", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('provides route-specific quick prompts', () => {
-    const dash = renderHook('/platform/dashboard');
-    expect(dash.getResult().quickPrompts).toContain('Check BullMQ queue health');
+  it("provides route-specific quick prompts", () => {
+    const dash = renderHook("/platform/dashboard");
+    expect(dash.getResult().quickPrompts).toContain("Check BullMQ queue health");
     dash.cleanup();
 
-    const sys = renderHook('/platform/system');
-    expect(sys.getResult().quickPrompts).toContain('Explain connection pool saturation');
+    const sys = renderHook("/platform/system");
+    expect(sys.getResult().quickPrompts).toContain("Explain connection pool saturation");
     sys.cleanup();
 
-    const ws = renderHook('/platform/workspaces');
-    expect(ws.getResult().quickPrompts).toContain('Identify inactive workspaces');
+    const ws = renderHook("/platform/workspaces");
+    expect(ws.getResult().quickPrompts).toContain("Identify inactive workspaces");
     ws.cleanup();
   });
 
-  it('dispatches prompt and appends assistant response', async () => {
+  it("dispatches prompt and appends assistant response", async () => {
     vi.mocked(apiClient.apiJson).mockResolvedValueOnce({
       success: true,
-      analysis: 'DB pool is operating at 25% utilization.',
+      analysis: "DB pool is operating at 25% utilization.",
       suggestions: [
-        { id: '1', label: 'Inspect System', actionType: 'navigate', target: '/platform/system' },
+        { id: "1", label: "Inspect System", actionType: "navigate", target: "/platform/system" },
       ],
       latencyMs: 14,
     });
 
-    const { getResult, cleanup } = renderHook('/platform/system');
+    const { getResult, cleanup } = renderHook("/platform/system");
 
     await act(async () => {
-      await getResult().askCopilot('Analyze database health');
+      await getResult().askCopilot("Analyze database health");
     });
 
     const messages = getResult().messages;
     expect(messages.length).toBe(2);
-    expect(messages[0].role).toBe('user');
-    expect(messages[0].content).toBe('Analyze database health');
-    expect(messages[1].role).toBe('assistant');
-    expect(messages[1].content).toContain('DB pool is operating');
+    expect(messages[0].role).toBe("user");
+    expect(messages[0].content).toBe("Analyze database health");
+    expect(messages[1].role).toBe("assistant");
+    expect(messages[1].content).toContain("DB pool is operating");
     expect(messages[1].suggestions?.length).toBe(1);
 
     cleanup();
   });
 
-  it('surfaces error without inventing assistant health on API failure', async () => {
-    vi.mocked(apiClient.apiJson).mockRejectedValueOnce(new Error('Network error'));
+  it("surfaces error without inventing assistant health on API failure", async () => {
+    vi.mocked(apiClient.apiJson).mockRejectedValueOnce(new Error("Network error"));
 
-    const { getResult, cleanup } = renderHook('/platform/dashboard');
+    const { getResult, cleanup } = renderHook("/platform/dashboard");
 
     await act(async () => {
-      await getResult().askCopilot('Status report');
+      await getResult().askCopilot("Status report");
     });
 
     const messages = getResult().messages;
     expect(messages.length).toBe(1);
-    expect(messages[0].role).toBe('user');
-    expect(getResult().error).toBe('Network error');
+    expect(messages[0].role).toBe("user");
+    expect(getResult().error).toBe("Network error");
 
     act(() => {
       getResult().clearHistory();

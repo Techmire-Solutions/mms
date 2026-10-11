@@ -1,5 +1,5 @@
-import { parseTenantScopedStorageKey } from './tenantStorage.js';
-import { slugifySubdomain } from './tenantUtils.js';
+import { parseTenantScopedStorageKey } from "./tenantStorage.js";
+import { slugifySubdomain } from "./tenantUtils.js";
 import {
   BACKUP_FORMAT_ID,
   BACKUP_FORMAT_VERSION,
@@ -8,7 +8,7 @@ import {
   type WorkspaceBackupEnvelope,
   type WorkspaceBackupStats,
   workspaceBackupEnvelopeSchema,
-} from './backupSchemas.js';
+} from "./backupSchemas.js";
 
 /** Formats byte size for backup history display. */
 export function formatBackupSize(bytes: number): string {
@@ -22,16 +22,16 @@ export function buildBackupFileName(
   date: Date,
   options?: { tenantSlug?: string | null; suffix?: string; encrypted?: boolean },
 ): string {
-  const slug = slugifySubdomain(options?.tenantSlug?.trim() || 'workspace') || 'workspace';
+  const slug = slugifySubdomain(options?.tenantSlug?.trim() || "workspace") || "workspace";
   const day = date.toISOString().slice(0, 10);
-  const suffix = options?.suffix ? `_${slugifySubdomain(options.suffix)}` : '';
-  const ext = options?.encrypted ? '.mmsbak' : '.json';
+  const suffix = options?.suffix ? `_${slugifySubdomain(options.suffix)}` : "";
+  const ext = options?.encrypted ? ".mmsbak" : ".json";
   return `mms_backup_${slug}_${day}${suffix}${ext}`;
 }
 
 /** Extracts logical storage key from an exported localStorage key. */
 function extractLogicalStorageKey(key: string): string | null {
-  if (!key.startsWith('mms_')) return null;
+  if (!key.startsWith("mms_")) return null;
   const stripped = key.slice(4);
   const tenantParsed = parseTenantScopedStorageKey(stripped);
   if (tenantParsed) return tenantParsed.logicalKey;
@@ -56,12 +56,12 @@ export function remapBackupKeysToPrefix(
 async function computeSha256Hex(data: string): Promise<string> {
   const subtle = globalThis.crypto?.subtle;
   if (!subtle) {
-    throw new Error('backup.cryptoUnavailable');
+    throw new Error("backup.cryptoUnavailable");
   }
   const encoded = new TextEncoder().encode(data);
-  const hashBuffer = await subtle.digest('SHA-256', encoded);
+  const hashBuffer = await subtle.digest("SHA-256", encoded);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /** Computes a deterministic SHA-256 checksum across all keys in the backup. */
@@ -69,7 +69,7 @@ export async function computeBackupChecksum(keys: Record<string, string>): Promi
   const sortedEntries = Object.keys(keys)
     .sort()
     .map((k) => `${k}:${keys[k]}`)
-    .join('\n');
+    .join("\n");
   return computeSha256Hex(sortedEntries);
 }
 
@@ -106,7 +106,7 @@ export function computeBackupStats(keys: Record<string, string>): WorkspaceBacku
 }
 
 export function extractBackupRawKeys(parsed: unknown): Record<string, string> | null {
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
     return null;
   }
 
@@ -120,7 +120,7 @@ export function extractBackupRawKeys(parsed: unknown): Record<string, string> | 
 
   const raw: Record<string, string> = {};
   for (const [key, value] of Object.entries(record)) {
-    if (typeof value !== 'string') return null;
+    if (typeof value !== "string") return null;
     raw[key] = value;
   }
   return Object.keys(raw).length > 0 ? raw : null;
@@ -146,7 +146,7 @@ export function buildStorageKeysFromSnapshot(
     }
   }
 
-  if (snapshot.assets && typeof snapshot.assets === 'object') {
+  if (snapshot.assets && typeof snapshot.assets === "object") {
     keys[`${prefix}__assets__`] = JSON.stringify(snapshot.assets);
   }
 
@@ -202,10 +202,10 @@ export function parseStorageKeysToSnapshot(
   for (const [key, value] of Object.entries(keys)) {
     if (!key.startsWith(prefix)) continue;
     const logicalKey = key.slice(prefix.length);
-    if (logicalKey === '__assets__') {
+    if (logicalKey === "__assets__") {
       try {
         const parsedAssets = JSON.parse(value) as unknown;
-        if (parsedAssets && typeof parsedAssets === 'object' && !Array.isArray(parsedAssets)) {
+        if (parsedAssets && typeof parsedAssets === "object" && !Array.isArray(parsedAssets)) {
           assets = parsedAssets as Record<string, string>;
         }
       } catch {

@@ -37,8 +37,8 @@ export function ContactsPreferencesDuplicateSection({
   const { t } = useTranslation();
   const detectionFields = prefs.duplicateDetectionFields ?? ["name", "phone", "email", "cnic"];
 
-  const [namePrefixesDraft, setNamePrefixesDraft] = useState(
-    () => (prefs.namePrefixesToIgnore ?? []).join(", "),
+  const [namePrefixesDraft, setNamePrefixesDraft] = useState(() =>
+    (prefs.namePrefixesToIgnore ?? []).join(", "),
   );
 
   useEffect(() => {
@@ -61,7 +61,9 @@ export function ContactsPreferencesDuplicateSection({
       className={SETUP_SECTION_CARD_CLASS}
     >
       <div className="space-y-4">
-        <p className="text-xs text-muted-foreground">{t("contacts.setup.duplicateDetectionDesc")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("contacts.setup.duplicateDetectionDesc")}
+        </p>
         <fieldset className="space-y-2">
           <legend className={FORM_LABEL}>{t("contacts.setup.duplicateFields")}</legend>
           <div className="flex flex-wrap gap-3">
@@ -145,7 +147,9 @@ export function ContactsPreferencesDuplicateSection({
                 const parsed = Number(e.target.value);
                 onUpdatePreference(
                   "duplicateDetectionThresholdMedium",
-                  Number.isFinite(parsed) ? parsed : (prefs.duplicateDetectionThresholdMedium ?? 75),
+                  Number.isFinite(parsed)
+                    ? parsed
+                    : (prefs.duplicateDetectionThresholdMedium ?? 75),
                 );
               }}
             />

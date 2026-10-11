@@ -34,13 +34,7 @@ const badgeVariants = cva(
 );
 
 export type BadgeTone =
-  | "primary"
-  | "success"
-  | "destructive"
-  | "warning"
-  | "info"
-  | "secondary"
-  | "muted";
+  "primary" | "success" | "destructive" | "warning" | "info" | "secondary" | "muted";
 
 const BADGE_TONES: Record<BadgeTone, string> = {
   primary: "bg-primary/10 text-primary border-primary/20",
@@ -53,8 +47,7 @@ const BADGE_TONES: Record<BadgeTone, string> = {
 };
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLElement>,
-    VariantProps<typeof badgeVariants> {
+  extends React.HTMLAttributes<HTMLElement>, VariantProps<typeof badgeVariants> {
   /** Soft semantic tone — wins over `variant` when set. */
   tone?: BadgeTone;
   /** Rounded-full pill shape. */
@@ -108,17 +101,15 @@ const Badge = React.forwardRef<HTMLElement, BadgeProps>(function Badge(
         badgeVariants({ variant, size }),
         tone && BADGE_TONES[tone],
         pill && "rounded-full",
-        isInteractive && "cursor-pointer select-none active:scale-95 hover:opacity-90 transition-transform",
+        isInteractive &&
+          "cursor-pointer select-none active:scale-95 hover:opacity-90 transition-transform",
         className,
       )}
       {...props}
     >
       {dot && (
         <span
-          className={cn(
-            "h-1.5 w-1.5 rounded-full bg-current shrink-0",
-            pulse && "animate-pulse",
-          )}
+          className={cn("h-1.5 w-1.5 rounded-full bg-current shrink-0", pulse && "animate-pulse")}
           aria-hidden="true"
         />
       )}

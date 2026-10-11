@@ -1,10 +1,10 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
-import { FORM_INPUT } from "@/components/ui/formStyles"
+import { cn } from "@/lib/utils";
+import { FORM_INPUT } from "@/components/ui/formStyles";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  ref?: React.Ref<HTMLInputElement>
+  ref?: React.Ref<HTMLInputElement>;
 }
 
 /**
@@ -23,8 +23,8 @@ function Input({ className, type, id, name, ref, ...props }: InputProps) {
       ref={ref}
       {...props}
     />
-  )
+  );
 }
-Input.displayName = "Input"
+Input.displayName = "Input";
 
-export { Input }
+export { Input };

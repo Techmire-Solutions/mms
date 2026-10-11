@@ -1,34 +1,31 @@
-import {
-  DEFAULT_SESSIONS_SETTINGS,
-  type SessionsSettings,
-} from './sessionsModuleSettings.js';
-import { normalizeSessionsViewLayout } from './sessionsExportUtils.js';
+import { DEFAULT_SESSIONS_SETTINGS, type SessionsSettings } from "./sessionsModuleSettings.js";
+import { normalizeSessionsViewLayout } from "./sessionsExportUtils.js";
 
 export type SessionModulePreferences = Pick<
   SessionsSettings,
-  | 'defaultDuration'
-  | 'defaultSessionType'
-  | 'allowOverlap'
-  | 'archiveOldSessions'
-  | 'requireBudget'
-  | 'timetableConflictCheck'
-  | 'notifyOnSessionStart'
-  | 'academicYear'
-  | 'sessionStart'
-  | 'defaultViewLayout'
+  | "defaultDuration"
+  | "defaultSessionType"
+  | "allowOverlap"
+  | "archiveOldSessions"
+  | "requireBudget"
+  | "timetableConflictCheck"
+  | "notifyOnSessionStart"
+  | "academicYear"
+  | "sessionStart"
+  | "defaultViewLayout"
 >;
 
 const PREF_KEYS = [
-  'defaultDuration',
-  'defaultSessionType',
-  'allowOverlap',
-  'archiveOldSessions',
-  'requireBudget',
-  'timetableConflictCheck',
-  'notifyOnSessionStart',
-  'academicYear',
-  'sessionStart',
-  'defaultViewLayout',
+  "defaultDuration",
+  "defaultSessionType",
+  "allowOverlap",
+  "archiveOldSessions",
+  "requireBudget",
+  "timetableConflictCheck",
+  "notifyOnSessionStart",
+  "academicYear",
+  "sessionStart",
+  "defaultViewLayout",
 ] as const;
 
 /** Normalize Sessions module preferences (typed `session_module_preferences`). */
@@ -47,43 +44,43 @@ export function normalizeSessionModulePreferences(
     sessionStart: DEFAULT_SESSIONS_SETTINGS.sessionStart,
     defaultViewLayout: DEFAULT_SESSIONS_SETTINGS.defaultViewLayout,
   };
-  if (!partial || typeof partial !== 'object') return { ...defaults };
+  if (!partial || typeof partial !== "object") return { ...defaults };
 
   return {
     defaultDuration:
-      typeof partial.defaultDuration === 'string' && partial.defaultDuration.trim()
+      typeof partial.defaultDuration === "string" && partial.defaultDuration.trim()
         ? partial.defaultDuration.trim()
         : defaults.defaultDuration,
     defaultSessionType:
-      typeof partial.defaultSessionType === 'string' && partial.defaultSessionType.trim()
+      typeof partial.defaultSessionType === "string" && partial.defaultSessionType.trim()
         ? partial.defaultSessionType.trim()
         : defaults.defaultSessionType,
     allowOverlap:
-      typeof partial.allowOverlap === 'boolean' ? partial.allowOverlap : defaults.allowOverlap,
+      typeof partial.allowOverlap === "boolean" ? partial.allowOverlap : defaults.allowOverlap,
     archiveOldSessions:
-      typeof partial.archiveOldSessions === 'boolean'
+      typeof partial.archiveOldSessions === "boolean"
         ? partial.archiveOldSessions
         : defaults.archiveOldSessions,
     requireBudget:
-      typeof partial.requireBudget === 'boolean' ? partial.requireBudget : defaults.requireBudget,
+      typeof partial.requireBudget === "boolean" ? partial.requireBudget : defaults.requireBudget,
     timetableConflictCheck:
-      typeof partial.timetableConflictCheck === 'boolean'
+      typeof partial.timetableConflictCheck === "boolean"
         ? partial.timetableConflictCheck
         : defaults.timetableConflictCheck,
     notifyOnSessionStart:
-      typeof partial.notifyOnSessionStart === 'boolean'
+      typeof partial.notifyOnSessionStart === "boolean"
         ? partial.notifyOnSessionStart
         : defaults.notifyOnSessionStart,
     academicYear:
-      typeof partial.academicYear === 'string' && partial.academicYear.trim()
+      typeof partial.academicYear === "string" && partial.academicYear.trim()
         ? partial.academicYear.trim()
         : defaults.academicYear,
     sessionStart:
-      typeof partial.sessionStart === 'string' && partial.sessionStart.trim()
+      typeof partial.sessionStart === "string" && partial.sessionStart.trim()
         ? partial.sessionStart.trim()
         : defaults.sessionStart,
     defaultViewLayout: normalizeSessionsViewLayout(
-      typeof partial.defaultViewLayout === 'string'
+      typeof partial.defaultViewLayout === "string"
         ? partial.defaultViewLayout
         : defaults.defaultViewLayout,
     ),

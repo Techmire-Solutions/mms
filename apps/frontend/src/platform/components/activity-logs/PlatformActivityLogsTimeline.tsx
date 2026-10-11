@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { ActivityLogRow } from './ActivityLogRow';
-import type { PlatformActivityLogItem } from '@/platform/hooks/usePlatformActivityLogs';
+import React, { useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { ActivityLogRow } from "./ActivityLogRow";
+import type { PlatformActivityLogItem } from "@/platform/hooks/usePlatformActivityLogs";
 
 export interface PlatformActivityLogsTimelineProps {
   logs: PlatformActivityLogItem[];
@@ -45,8 +45,8 @@ export function PlatformActivityLogsTimeline({
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
-          position: 'relative',
-          width: '100%',
+          position: "relative",
+          width: "100%",
         }}
       >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -57,10 +57,10 @@ export function PlatformActivityLogsTimeline({
               ref={rowVirtualizer.measureElement}
               data-index={virtualRow.index}
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: 0,
                 insetInlineStart: 0,
-                width: '100%',
+                width: "100%",
                 transform: `translateY(${virtualRow.start}px)`,
               }}
               className="pb-4"

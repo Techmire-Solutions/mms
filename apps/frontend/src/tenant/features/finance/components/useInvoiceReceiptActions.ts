@@ -1,14 +1,17 @@
-import { useCallback, type RefObject } from 'react';
-import type { Invoice } from '@/lib/data/financeData';
-import { useTranslation } from '@/hooks/useTranslation';
-import { getCollectedAmountForInvoice, getOutstandingAmountForInvoice } from '@mms/shared';
-import { mapToTypstFeeReceipt, mapToZohoInvoice } from '@/components/ui/template-editor/templatePayloadMappers';
-import { notify } from '@/lib/notify';
+import { useCallback, type RefObject } from "react";
+import type { Invoice } from "@/lib/data/financeData";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getCollectedAmountForInvoice, getOutstandingAmountForInvoice } from "@mms/shared";
+import {
+  mapToTypstFeeReceipt,
+  mapToZohoInvoice,
+} from "@/components/ui/template-editor/templatePayloadMappers";
+import { notify } from "@/lib/notify";
 import {
   buildPrintBodyStyle,
   PRINT_NEUTRAL_PALETTE,
   PRINT_COLORS,
-} from '@/lib/printTemplateStyles';
+} from "@/lib/printTemplateStyles";
 
 export function useInvoiceReceiptActions(
   invoices: Invoice[],
@@ -20,13 +23,13 @@ export function useInvoiceReceiptActions(
   const handlePrint = useCallback(() => {
     const content = printRef.current;
     if (!content) return;
-    const win = window.open('', '_blank', 'width=800,height=900');
+    const win = window.open("", "_blank", "width=800,height=900");
     if (!win) return;
     win.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>${t('finance.receipt.title')}</title>
+          <title>${t("finance.receipt.title")}</title>
           <style>
             ${buildPrintBodyStyle()}
             .receipt-voucher { border: 1px solid ${PRINT_COLORS.borderLight}; border-radius: 12px; padding: 24px; margin-bottom: 20px; page-break-after: always; }
@@ -68,7 +71,7 @@ export function useInvoiceReceiptActions(
         className: `${inv.class} · ${inv.session}`,
         feeItems: [
           {
-            description: 'Tuition Fee',
+            description: "Tuition Fee",
             amount: String(inv.finalAmt),
             paid: String(collected),
           },
@@ -76,12 +79,12 @@ export function useInvoiceReceiptActions(
         totalAmount: String(inv.finalAmt),
         paidAmount: String(collected),
         balance: String(outstanding),
-        paymentMethod: inv.method ?? 'Cash',
+        paymentMethod: inv.method ?? "Cash",
         transactionRef: inv.id,
       });
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `typst-fee-receipt-${inv.id}.json`;
       a.click();
@@ -90,7 +93,7 @@ export function useInvoiceReceiptActions(
     notify.success(
       invoices.length > 1
         ? `${invoices.length} Typst fee-receipt payloads exported`
-        : 'Typst fee-receipt payload exported',
+        : "Typst fee-receipt payload exported",
     );
   }, [invoices, madrasaName]);
 
@@ -98,7 +101,7 @@ export function useInvoiceReceiptActions(
     const inv = invoices[0];
     if (!inv) return;
     if (invoices.length > 1) {
-      notify.info(t('finance.receipt.zohoSingleInvoiceNote'));
+      notify.info(t("finance.receipt.zohoSingleInvoiceNote"));
     }
     const outstanding = getOutstandingAmountForInvoice(inv);
     const payload = mapToZohoInvoice({
@@ -109,7 +112,7 @@ export function useInvoiceReceiptActions(
       customer_id: inv.studentId,
       line_items: [
         {
-          name: 'Tuition Fee',
+          name: "Tuition Fee",
           rate: inv.finalAmt,
           quantity: 1,
           item_total: inv.finalAmt,
@@ -118,14 +121,14 @@ export function useInvoiceReceiptActions(
       total: inv.finalAmt,
       balance: outstanding,
     });
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `zoho-invoice-${inv.id}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    notify.success('Zoho invoice payload exported');
+    notify.success("Zoho invoice payload exported");
   }, [invoices, t]);
 
   return {

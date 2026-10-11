@@ -4,7 +4,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ContactsTableHeader } from "./ContactsTableHeader";
 
 vi.mock("@/components/ui/ModuleWorkTableHeader", () => ({
-  ModuleWorkTableHeader: ({ columns, actionsLabel }: {
+  ModuleWorkTableHeader: ({
+    columns,
+    actionsLabel,
+  }: {
     columns: Array<{ id: string; label: string }>;
     actionsLabel: string;
   }) => (

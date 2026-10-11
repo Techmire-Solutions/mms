@@ -3,7 +3,10 @@ import { CheckCircle2, XCircle, Clock, Award } from "lucide-react";
 import type { QuestionBankQuestion as Question, QuestionBankTest } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { testTotalMarks, type StatsSummary } from "@/tenant/features/question-bank/components/autoGradingShared";
+import {
+  testTotalMarks,
+  type StatsSummary,
+} from "@/tenant/features/question-bank/components/autoGradingShared";
 
 interface AutoGradingStatsProps {
   stats: StatsSummary;
@@ -12,17 +15,42 @@ interface AutoGradingStatsProps {
   submittedCount: number;
 }
 
-export function AutoGradingStats({ stats, test, questions, submittedCount }: AutoGradingStatsProps): React.ReactElement {
+export function AutoGradingStats({
+  stats,
+  test,
+  questions,
+  submittedCount,
+}: AutoGradingStatsProps): React.ReactElement {
   const { t } = useTranslation();
   const totalMarks = testTotalMarks(test, questions) || 100;
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" role="status">
       {[
-        { label: t("questionBank.grading.submitted"), value: submittedCount, icon: Clock, cls: "text-primary" },
-        { label: t("questionBank.grading.classAvg"), value: `${stats.avg}%`, icon: Award, cls: "text-warning" },
-        { label: t("questionBank.grading.highest"), value: `${stats.highest}/${totalMarks}`, icon: CheckCircle2, cls: "text-success" },
-        { label: t("questionBank.grading.lowest"), value: `${stats.lowest}/${totalMarks}`, icon: XCircle, cls: "text-destructive" },
+        {
+          label: t("questionBank.grading.submitted"),
+          value: submittedCount,
+          icon: Clock,
+          cls: "text-primary",
+        },
+        {
+          label: t("questionBank.grading.classAvg"),
+          value: `${stats.avg}%`,
+          icon: Award,
+          cls: "text-warning",
+        },
+        {
+          label: t("questionBank.grading.highest"),
+          value: `${stats.highest}/${totalMarks}`,
+          icon: CheckCircle2,
+          cls: "text-success",
+        },
+        {
+          label: t("questionBank.grading.lowest"),
+          value: `${stats.lowest}/${totalMarks}`,
+          icon: XCircle,
+          cls: "text-destructive",
+        },
       ].map((statCard) => {
         const Icon = statCard.icon;
         return (

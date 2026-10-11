@@ -16,7 +16,10 @@ export interface DashboardCustomizePanelProps {
   lowAttendanceThreshold?: number;
   urgentAttendanceThreshold?: number;
   gridMode?: "comfortable" | "compact";
-  onUpdateThreshold?: (key: "lowAttendanceThreshold" | "urgentAttendanceThreshold", value: number) => void;
+  onUpdateThreshold?: (
+    key: "lowAttendanceThreshold" | "urgentAttendanceThreshold",
+    value: number,
+  ) => void;
   onUpdateGridMode?: (mode: "comfortable" | "compact") => void;
   onCloseBuilder: () => void;
   onSaveWidget: (widget: CustomWidget) => void;

@@ -1,9 +1,9 @@
-import { z } from 'zod';
-import type { AppTranslationKey } from './appTranslations.js';
-import type { BackupCryptoCredentials } from './backupTypes.js';
+import { z } from "zod";
+import type { AppTranslationKey } from "./appTranslations.js";
+import type { BackupCryptoCredentials } from "./backupTypes.js";
 
 /** Encrypted on-disk backup wrapper (plaintext is a workspace backup envelope). */
-export const ENCRYPTED_BACKUP_FORMAT_ID = 'mms-encrypted-workspace-backup' as const;
+export const ENCRYPTED_BACKUP_FORMAT_ID = "mms-encrypted-workspace-backup" as const;
 
 export const ENCRYPTED_BACKUP_VERSION = 1;
 
@@ -23,9 +23,9 @@ export interface EncryptedWorkspaceBackupFile {
   subdomain: string | null;
   tenantLabel: string | null;
   adminEmail: string;
-  kdf: 'PBKDF2';
-  hash: 'SHA-256';
-  cipher: 'AES-GCM';
+  kdf: "PBKDF2";
+  hash: "SHA-256";
+  cipher: "AES-GCM";
   iterations: number;
   salt: string;
   iv: string;
@@ -38,9 +38,9 @@ const encryptedWorkspaceBackupFileSchema = z.object({
   subdomain: z.string().nullable(),
   tenantLabel: z.string().nullable(),
   adminEmail: z.string(),
-  kdf: z.literal('PBKDF2'),
-  hash: z.literal('SHA-256'),
-  cipher: z.literal('AES-GCM'),
+  kdf: z.literal("PBKDF2"),
+  hash: z.literal("SHA-256"),
+  cipher: z.literal("AES-GCM"),
   iterations: z.number().int().min(BACKUP_KDF_MIN_ITERATIONS).max(BACKUP_KDF_MAX_ITERATIONS),
   salt: z.string().min(1).max(MAX_SALT_BASE64_LENGTH),
   iv: z.string().min(1).max(MAX_IV_BASE64_LENGTH),
@@ -53,7 +53,7 @@ export type BackupDecryptResult =
 
 function getSubtle(): SubtleCrypto {
   const subtle = globalThis.crypto?.subtle;
-  if (!subtle) throw new Error('backup.cryptoUnavailable');
+  if (!subtle) throw new Error("backup.cryptoUnavailable");
   return subtle;
 }
 
@@ -62,7 +62,7 @@ function randomBytes(length: number): Uint8Array {
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
+  let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary);
 }
@@ -112,19 +112,19 @@ async function deriveBackupKey(
 ): Promise<CryptoKey> {
   const subtle = getSubtle();
   const keyMaterial = await subtle.importKey(
-    'raw',
+    "raw",
     new TextEncoder().encode(normalizeBackupPrincipal(email, password)),
-    'PBKDF2',
+    "PBKDF2",
     false,
-    ['deriveKey'],
+    ["deriveKey"],
   );
 
   return subtle.deriveKey(
-    { name: 'PBKDF2', salt: asArrayBuffer(salt), iterations, hash: 'SHA-256' },
+    { name: "PBKDF2", salt: asArrayBuffer(salt), iterations, hash: "SHA-256" },
     keyMaterial,
-    { name: 'AES-GCM', length: 256 },
+    { name: "AES-GCM", length: 256 },
     false,
-    ['encrypt', 'decrypt'],
+    ["encrypt", "decrypt"],
   );
 }
 
@@ -144,7 +144,7 @@ export async function encryptWorkspaceBackup(
   );
 
   const ciphertext = await getSubtle().encrypt(
-    { name: 'AES-GCM', iv: asArrayBuffer(iv) },
+    { name: "AES-GCM", iv: asArrayBuffer(iv) },
     key,
     new TextEncoder().encode(plaintext),
   );
@@ -155,9 +155,9 @@ export async function encryptWorkspaceBackup(
     subdomain: meta?.subdomain ?? null,
     tenantLabel: meta?.tenantLabel ?? null,
     adminEmail: credentials.adminEmail.trim().toLowerCase(),
-    kdf: 'PBKDF2',
-    hash: 'SHA-256',
-    cipher: 'AES-GCM',
+    kdf: "PBKDF2",
+    hash: "SHA-256",
+    cipher: "AES-GCM",
     iterations: BACKUP_KDF_ITERATIONS,
     salt: bytesToBase64(salt),
     iv: bytesToBase64(iv),
@@ -173,11 +173,11 @@ export async function decryptWorkspaceBackup(
   credentials: BackupCryptoCredentials,
 ): Promise<BackupDecryptResult> {
   const parsed = parseEncryptedBackupFile(fileJson);
-  if (!parsed) return { ok: false, errorKey: 'backup.invalidFormat' };
+  if (!parsed) return { ok: false, errorKey: "backup.invalidFormat" };
 
   const email = credentials.adminEmail.trim().toLowerCase();
   if (email !== parsed.adminEmail.trim().toLowerCase()) {
-    return { ok: false, errorKey: 'backup.decryptEmailMismatch' };
+    return { ok: false, errorKey: "backup.decryptEmailMismatch" };
   }
 
   try {
@@ -185,13 +185,13 @@ export async function decryptWorkspaceBackup(
     const iv = base64ToBytes(parsed.iv);
     const key = await deriveBackupKey(email, credentials.password, salt, parsed.iterations);
     const plainBuffer = await getSubtle().decrypt(
-      { name: 'AES-GCM', iv: asArrayBuffer(iv) },
+      { name: "AES-GCM", iv: asArrayBuffer(iv) },
       key,
       asArrayBuffer(base64ToBytes(parsed.ciphertext)),
     );
     const plaintext = new TextDecoder().decode(plainBuffer);
     return { ok: true, plaintext, meta: parsed };
   } catch {
-    return { ok: false, errorKey: 'backup.decryptFailed' };
+    return { ok: false, errorKey: "backup.decryptFailed" };
   }
 }

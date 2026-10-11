@@ -1,8 +1,8 @@
-import type { FinanceCommandMetricsSnapshot } from '@mms/shared';
-import { FINANCE_MODULE_MANIFEST } from '@mms/shared';
-import { serverMetricsQueryOptions, useServerMetrics } from '@/hooks/useServerMetrics';
+import type { FinanceCommandMetricsSnapshot } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST } from "@mms/shared";
+import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 
-export const FINANCE_METRICS_QUERY_KEY = [FINANCE_MODULE_MANIFEST.moduleId, 'metrics'] as const;
+export const FINANCE_METRICS_QUERY_KEY = [FINANCE_MODULE_MANIFEST.moduleId, "metrics"] as const;
 
 export function financeCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<FinanceCommandMetricsSnapshot>({

@@ -7,7 +7,10 @@ import {
   resolveTableRows,
   visibleTableRowCount,
 } from "@/components/ui/template-editor/templateDataResolution";
-import type { VoucherPrintPayload, VoucherTemplate } from "@/tenant/features/accounting/components/voucherTemplateModel";
+import type {
+  VoucherPrintPayload,
+  VoucherTemplate,
+} from "@/tenant/features/accounting/components/voucherTemplateModel";
 
 function payloadRecord(data: VoucherPrintPayload): Record<string, unknown> {
   return {
@@ -63,7 +66,9 @@ function boxStyle(el: TemplateElement, textAlign: string): string {
     `text-align:${textAlign}`,
     `color:${cssColor(s.color, PRINT_COLORS.black)}`,
     s.backgroundColor ? `background:${cssColor(s.backgroundColor, PRINT_COLORS.white)}` : "",
-    s.borderWidth ? `border:${s.borderWidth}px solid ${cssColor(s.borderColor, PRINT_COLORS.borderGray)}` : "",
+    s.borderWidth
+      ? `border:${s.borderWidth}px solid ${cssColor(s.borderColor, PRINT_COLORS.borderGray)}`
+      : "",
     s.borderRadius != null ? `border-radius:${s.borderRadius}px` : "",
     "overflow:hidden",
   ]);
@@ -74,18 +79,35 @@ function tableHtml(el: TemplateElement, data: VoucherPrintPayload): string {
   const columns = el.columns ?? [];
   const border = cssColor(el.tableConfig?.borderColor, PRINT_COLORS.borderGray);
   const headerBg = cssColor(el.tableConfig?.headerBackground, PRINT_COLORS.borderLighter);
-  const header = el.tableConfig?.showHeader === false ? "" : `<tr>${columns.map((col) => {
-    const align = col.align === "right" || col.align === "center" ? col.align : "left";
-    return `<th style="text-align:${align};width:${col.width ? `${col.width}px` : "auto"};background:${headerBg};border:1px solid ${border};padding:2px 4px">${escapeHtml(col.header)}</th>`;
-  }).join("")}</tr>`;
-  const body = rows.map((row) => `<tr>${columns.map((col) => {
-    const align = col.align === "right" || col.align === "center" ? col.align : "left";
-    return `<td style="text-align:${align};border:1px solid ${border};padding:2px 4px">${escapeHtml(String(row[col.field] ?? ""))}</td>`;
-  }).join("")}</tr>`).join("");
+  const header =
+    el.tableConfig?.showHeader === false
+      ? ""
+      : `<tr>${columns
+          .map((col) => {
+            const align = col.align === "right" || col.align === "center" ? col.align : "left";
+            return `<th style="text-align:${align};width:${col.width ? `${col.width}px` : "auto"};background:${headerBg};border:1px solid ${border};padding:2px 4px">${escapeHtml(col.header)}</th>`;
+          })
+          .join("")}</tr>`;
+  const body = rows
+    .map(
+      (row) =>
+        `<tr>${columns
+          .map((col) => {
+            const align = col.align === "right" || col.align === "center" ? col.align : "left";
+            return `<td style="text-align:${align};border:1px solid ${border};padding:2px 4px">${escapeHtml(String(row[col.field] ?? ""))}</td>`;
+          })
+          .join("")}</tr>`,
+    )
+    .join("");
   return `<table style="width:100%;height:100%;border-collapse:collapse;font-size:inherit"><thead>${header}</thead><tbody>${body}</tbody></table>`;
 }
 
-function elementHtml(el: TemplateElement, data: VoucherPrintPayload, logoUrl: string, direction: "ltr" | "rtl"): string {
+function elementHtml(
+  el: TemplateElement,
+  data: VoucherPrintPayload,
+  logoUrl: string,
+  direction: "ltr" | "rtl",
+): string {
   const text = resolveElementText(el, payloadRecord(data), "print", (label) => label);
   const geometry = resolveElementGeometry(el, direction, text);
   const style = boxStyle(el, geometry.textAlign);
@@ -109,7 +131,10 @@ export function buildVoucherTemplateHtml(options: {
   logoUrl: string;
   direction: "ltr" | "rtl";
 }): string {
-  const size = getPageDimensions(options.template.pageSize, options.template.orientation ?? "portrait");
+  const size = getPageDimensions(
+    options.template.pageSize,
+    options.template.orientation ?? "portrait",
+  );
   const body = options.template.elements
     .map((el) => elementHtml(el, options.data, options.logoUrl, options.direction))
     .join("");

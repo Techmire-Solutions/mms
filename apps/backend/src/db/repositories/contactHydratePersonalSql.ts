@@ -1,5 +1,11 @@
-import { sql } from 'drizzle-orm';
-import type { ContactChildMaps, PhoneRow, EmailRow, AddressRow, TagRow } from './contactRepositoryHydrateTypes.js';
+import { sql } from "drizzle-orm";
+import type {
+  ContactChildMaps,
+  PhoneRow,
+  EmailRow,
+  AddressRow,
+  TagRow,
+} from "./contactRepositoryHydrateTypes.js";
 
 export function buildPhonesAggSql(subdomain: string) {
   return sql`COALESCE((
@@ -72,9 +78,14 @@ export function buildTagsAggSql(subdomain: string) {
   ), '[]'::json) AS tags`;
 }
 
-export function assignPersonalChildRows(result: ContactChildMaps, contactId: string, row: Record<string, unknown>) {
+export function assignPersonalChildRows(
+  result: ContactChildMaps,
+  contactId: string,
+  row: Record<string, unknown>,
+) {
   if (Array.isArray(row.phones)) result.phonesMap.set(contactId, row.phones as PhoneRow[]);
   if (Array.isArray(row.emails)) result.emailsMap.set(contactId, row.emails as EmailRow[]);
-  if (Array.isArray(row.addresses)) result.addressesMap.set(contactId, row.addresses as AddressRow[]);
+  if (Array.isArray(row.addresses))
+    result.addressesMap.set(contactId, row.addresses as AddressRow[]);
   if (Array.isArray(row.tags)) result.tagsMap.set(contactId, row.tags as TagRow[]);
 }

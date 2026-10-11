@@ -1,7 +1,14 @@
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
 
-export function WorkspaceAdminDialogFooter({ complete, pending, confirmLabel, onClose, onConfirm, form }: {
+export function WorkspaceAdminDialogFooter({
+  complete,
+  pending,
+  confirmLabel,
+  onClose,
+  onConfirm,
+  form,
+}: {
   complete: boolean;
   pending: boolean;
   confirmLabel: string;
@@ -10,12 +17,19 @@ export function WorkspaceAdminDialogFooter({ complete, pending, confirmLabel, on
   form?: string;
 }): React.JSX.Element {
   const { t } = useTranslation();
-  if (complete) return <Button variant="primary" onClick={onClose}>{t('common.close')}</Button>;
+  if (complete)
+    return (
+      <Button variant="primary" onClick={onClose}>
+        {t("common.close")}
+      </Button>
+    );
   return (
     <div className="flex flex-wrap items-center justify-end gap-2.5 w-full">
-      <Button variant="outline" onClick={onClose} disabled={pending}>{t('common.cancel')}</Button>
+      <Button variant="outline" onClick={onClose} disabled={pending}>
+        {t("common.cancel")}
+      </Button>
       <Button
-        type={form ? 'submit' : 'button'}
+        type={form ? "submit" : "button"}
         form={form}
         variant="primary"
         onClick={onConfirm}

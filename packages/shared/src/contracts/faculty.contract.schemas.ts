@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { facultyRecordSchema } from '../facultyModuleManifest.js';
+import { z } from "zod";
+import { facultyRecordSchema } from "../facultyModuleManifest.js";
 
 export const facultyWidgetAggregateResultSchema = z.object({
   value: z.number(),

@@ -3,13 +3,10 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
-import { bulkSaveSessions } from '../repositories/sessionRepository.js';
-import type { SessionRecord } from '@mms/shared';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
+import { bulkSaveSessions } from "../repositories/sessionRepository.js";
+import type { SessionRecord } from "@mms/shared";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -33,7 +30,7 @@ export async function runMigration024(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const sessionsKey = `${tenantCollectionKey(subdomain, '')}sessions`;
+    const sessionsKey = `${tenantCollectionKey(subdomain, "")}sessions`;
     const legacySessions = await getCollectionByStorageName(sessionsKey);
     if (!Array.isArray(legacySessions) || legacySessions.length === 0) continue;
 
@@ -46,6 +43,6 @@ export async function runMigration024(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 024] No legacy sessions to import.');
+    console.log("[Migration 024] No legacy sessions to import.");
   }
 }

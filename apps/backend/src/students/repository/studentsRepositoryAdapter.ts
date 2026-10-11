@@ -8,14 +8,14 @@ import {
   bulkEnrollStudents,
   bulkSoftDeleteStudentsSql,
   bulkRestoreStudentsSql,
-} from '../../db/repositories/studentRepository.js';
-import type { Student } from '@mms/shared';
+} from "../../db/repositories/studentRepository.js";
+import type { Student } from "@mms/shared";
 import {
   listStudentsPage,
   aggregateStudentsCommandMetrics,
   listActiveStudentsMissingGrNumber,
   bulkUpdateStudentsStatusSql,
-} from '../../db/repositories/studentRepositoryList.js';
+} from "../../db/repositories/studentRepositoryList.js";
 import {
   aggregateStudentsWidgetQueries,
   listStudentLinkedContactIdsSql,
@@ -24,14 +24,14 @@ import {
   findActiveGrNumberOwnersSql,
   findActiveStudentIdOwnersSql,
   findSoftDeletedStudentByContactIdSql,
-} from '../../db/repositories/studentRepositoryWidgets.js';
-import { guardStudentSoftDelete } from '../../db/repositories/studentDeleteGuard.js';
+} from "../../db/repositories/studentRepositoryWidgets.js";
+import { guardStudentSoftDelete } from "../../db/repositories/studentDeleteGuard.js";
 import {
   generateNextGrNumberSql,
   generateNextGrNumberBatchSql,
   previewNextGrNumberSql,
-} from '../../db/repositories/studentRepositorySequence.js';
-import type { StudentsRepository } from './studentsRepository.js';
+} from "../../db/repositories/studentRepositorySequence.js";
+import type { StudentsRepository } from "./studentsRepository.js";
 
 /**
  * Drizzle adapter for `StudentsRepository`.
@@ -60,10 +60,8 @@ function createStudentsRepository(): StudentsRepository {
     generateNextGrNumber: (tenant, input) => generateNextGrNumberSql(tenant, input),
     generateNextGrNumberBatch: (tenant, count, input) =>
       generateNextGrNumberBatchSql(tenant, count, input),
-    findRegistrationConflict: (tenant, input) =>
-      findStudentRegistrationConflictSql(tenant, input),
-    findActiveGrNumberOwners: (tenant, grNumbers) =>
-      findActiveGrNumberOwnersSql(tenant, grNumbers),
+    findRegistrationConflict: (tenant, input) => findStudentRegistrationConflictSql(tenant, input),
+    findActiveGrNumberOwners: (tenant, grNumbers) => findActiveGrNumberOwnersSql(tenant, grNumbers),
     findActiveStudentIdOwners: (tenant, studentIds) =>
       findActiveStudentIdOwnersSql(tenant, studentIds),
     findSoftDeletedByContactId: (tenant, contactId) =>
@@ -75,8 +73,7 @@ function createStudentsRepository(): StudentsRepository {
       bulkEnrollStudents(tenant, studentIds, sessionIds, mode),
     bulkSoftDelete: (tenant, ids, deletedBy, deletionReason) =>
       bulkSoftDeleteStudentsSql(tenant, ids, deletedBy, deletionReason),
-    bulkRestore: (tenant, ids, userId) =>
-      bulkRestoreStudentsSql(tenant, ids, userId),
+    bulkRestore: (tenant, ids, userId) => bulkRestoreStudentsSql(tenant, ids, userId),
     guardDeleteDependents: (tenant, ids) => guardStudentSoftDelete(tenant, ids),
   };
 }

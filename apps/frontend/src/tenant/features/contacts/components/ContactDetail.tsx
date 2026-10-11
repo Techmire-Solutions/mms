@@ -1,5 +1,5 @@
 import React from "react";
-import { Drawer } from '@/components/ui/Drawer';
+import { Drawer } from "@/components/ui/Drawer";
 import { getDisplayName, type Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactDetailAttachments } from "@/tenant/features/contacts/hooks/useContactDetailAttachments";
@@ -170,5 +170,3 @@ export function ContactDetail({
 
 export const ContactDrawer = ContactDetail;
 export default ContactDetail;
-
-

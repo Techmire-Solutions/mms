@@ -3,8 +3,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-export interface LeadingIconInputProps
-  extends React.ComponentPropsWithoutRef<typeof Input> {
+export interface LeadingIconInputProps extends React.ComponentPropsWithoutRef<typeof Input> {
   /** Icon rendered at the start of the input. */
   icon: LucideIcon;
   /** Padding override for the leading icon (default: `ps-10`). */

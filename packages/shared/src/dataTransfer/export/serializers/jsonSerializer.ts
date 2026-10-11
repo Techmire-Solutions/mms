@@ -8,18 +8,18 @@
  *
  * Auto-registered on import.
  */
-import { registerSerializer, type ExportSerializer } from '../exportSerializerRegistry.js';
+import { registerSerializer, type ExportSerializer } from "../exportSerializerRegistry.js";
 
 export const jsonSerializer: ExportSerializer = {
-  format: 'json',
-  contentType: 'application/json; charset=utf-8',
-  fileExtension: '.json',
+  format: "json",
+  contentType: "application/json; charset=utf-8",
+  fileExtension: ".json",
   serialize(grid: unknown[][]): string {
-    if (grid.length < 1) return '[]';
+    if (grid.length < 1) return "[]";
 
     const [headerRow, ...dataRows] = grid as unknown[][];
 
-    if (!Array.isArray(headerRow) || headerRow.length === 0) return '[]';
+    if (!Array.isArray(headerRow) || headerRow.length === 0) return "[]";
 
     const headers = headerRow.map(String);
 
@@ -28,7 +28,7 @@ export const jsonSerializer: ExportSerializer = {
       const obj: Record<string, unknown> = {};
       for (let i = 0; i < headers.length; i++) {
         const cell = rowArr[i];
-        obj[headers[i]] = cell === '' || cell === undefined ? null : cell;
+        obj[headers[i]] = cell === "" || cell === undefined ? null : cell;
       }
       return obj;
     });

@@ -1,4 +1,4 @@
-import { formatDateToIso, parseIsoDate } from './dateFormatBounds.js';
+import { formatDateToIso, parseIsoDate } from "./dateFormatBounds.js";
 
 export interface TimeHHmmParts {
   hours: number;
@@ -10,7 +10,7 @@ export interface TimeHHmmParts {
  * Returns `null` when the string is missing or not a valid clock time.
  */
 export function parseTimeHHmm(value?: string | null): TimeHHmmParts | null {
-  if (!value || typeof value !== 'string') return null;
+  if (!value || typeof value !== "string") return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
   const match = /^(\d{1,2}):(\d{1,2})(?::\d{1,2})?$/.exec(trimmed);
@@ -32,7 +32,7 @@ export function parseTimeHHmm(value?: string | null): TimeHHmmParts | null {
 
 /** Formats hours/minutes as a zero-padded `HH:mm` storage string. */
 export function formatTimeHHmm(hours: number, minutes: number): string {
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 /**
@@ -41,7 +41,7 @@ export function formatTimeHHmm(hours: number, minutes: number): string {
  */
 export function normalizeTimeHHmm(value?: string | null): string {
   const parsed = parseTimeHHmm(value);
-  if (!parsed) return '';
+  if (!parsed) return "";
   return formatTimeHHmm(parsed.hours, parsed.minutes);
 }
 
@@ -55,7 +55,7 @@ export interface IsoDateTimeParts {
  * Returns `null` when the value cannot be parsed as a valid Date.
  */
 export function splitIsoDateTime(iso?: string | null): IsoDateTimeParts | null {
-  if (!iso || typeof iso !== 'string') return null;
+  if (!iso || typeof iso !== "string") return null;
   const trimmed = iso.trim();
   if (!trimmed) return null;
   const parsed = new Date(trimmed);
@@ -71,12 +71,12 @@ export function splitIsoDateTime(iso?: string | null): IsoDateTimeParts | null {
  * Empty date returns `null`. Missing/invalid time defaults to `00:00`.
  */
 export function combineIsoDateAndTime(date?: string | null, time?: string | null): string | null {
-  if (!date || typeof date !== 'string') return null;
+  if (!date || typeof date !== "string") return null;
   const datePart = date.trim();
   if (!datePart) return null;
   const localDate = parseIsoDate(datePart);
   if (!localDate) return null;
-  const timeStr = typeof time === 'string' && time.trim() ? time.trim() : '00:00';
+  const timeStr = typeof time === "string" && time.trim() ? time.trim() : "00:00";
   const timeParts = parseTimeHHmm(timeStr) ?? { hours: 0, minutes: 0 };
   localDate.setHours(timeParts.hours, timeParts.minutes, 0, 0);
   return localDate.toISOString();

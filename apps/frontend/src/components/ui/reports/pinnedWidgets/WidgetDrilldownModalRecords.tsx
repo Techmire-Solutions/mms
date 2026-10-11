@@ -38,13 +38,14 @@ export function WidgetDrilldownModalRecords({
       <div className="space-y-3 p-3 md:hidden">
         {paginatedItems.map((recordSource, index) => {
           const { recordId, name, detailText, status, hasAction } = getWidgetRecordDisplay(
-            recordSource, index, widget, studentNameMap, t,
+            recordSource,
+            index,
+            widget,
+            studentNameMap,
+            t,
           );
           return (
-            <article
-              key={recordId}
-              className={`${WORK_SURFACE_INNER} space-y-3 p-3`}
-            >
+            <article key={recordId} className={`${WORK_SURFACE_INNER} space-y-3 p-3`}>
               <div className="flex min-w-0 items-start justify-between gap-3">
                 <p className="min-w-0 truncate text-sm font-bold text-foreground">{name}</p>
                 <StatusBadge status={status.toLowerCase()} size="sm" config={statusConfig} />
@@ -87,22 +88,38 @@ export function WidgetDrilldownModalRecords({
         <Table className="w-full text-xs">
           <TableHeader>
             <TableRow className="border-b border-border text-muted-foreground uppercase font-black text-xs tracking-wider text-start hover:bg-transparent">
-              <TableHead className="pb-3 text-muted-foreground h-auto">{t("reports.widgets.refName")}</TableHead>
-              <TableHead className="pb-3 text-muted-foreground h-auto">{t("reports.widgets.primaryInfo")}</TableHead>
-              <TableHead className="pb-3 text-muted-foreground h-auto">{t("reports.widgets.currentStatus")}</TableHead>
-              <TableHead className="pb-3 text-end text-muted-foreground h-auto">{t("reports.widgets.microAction")}</TableHead>
+              <TableHead className="pb-3 text-muted-foreground h-auto">
+                {t("reports.widgets.refName")}
+              </TableHead>
+              <TableHead className="pb-3 text-muted-foreground h-auto">
+                {t("reports.widgets.primaryInfo")}
+              </TableHead>
+              <TableHead className="pb-3 text-muted-foreground h-auto">
+                {t("reports.widgets.currentStatus")}
+              </TableHead>
+              <TableHead className="pb-3 text-end text-muted-foreground h-auto">
+                {t("reports.widgets.microAction")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-border/50">
             {paginatedItems.map((recordSource, index) => {
               const { recordId, name, detailText, status, hasAction } = getWidgetRecordDisplay(
-                recordSource, index, widget, studentNameMap, t,
+                recordSource,
+                index,
+                widget,
+                studentNameMap,
+                t,
               );
 
               return (
                 <TableRow key={recordId} className="hover:bg-muted/10">
-                  <TableCell className="py-3.5 pe-2 font-bold text-foreground max-w-cell-md truncate">{name}</TableCell>
-                  <TableCell className="py-3.5 text-muted-foreground font-semibold">{detailText}</TableCell>
+                  <TableCell className="py-3.5 pe-2 font-bold text-foreground max-w-cell-md truncate">
+                    {name}
+                  </TableCell>
+                  <TableCell className="py-3.5 text-muted-foreground font-semibold">
+                    {detailText}
+                  </TableCell>
                   <TableCell className="py-3.5">
                     <StatusBadge status={status.toLowerCase()} size="sm" config={statusConfig} />
                   </TableCell>

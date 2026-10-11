@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import type { NotificationChannel } from './globalSettingsNotificationUtils.js';
+import { z } from "zod";
+import type { NotificationChannel } from "./globalSettingsNotificationUtils.js";
 
 export interface PlatformSettings {
   id: string;
@@ -11,34 +11,38 @@ export interface PlatformSettings {
   updatedAt?: string;
 }
 
-export const platformSettingsUpdateSchema = z.object({
-  syncTlsOnCreate: z.boolean().optional(),
-  tlsExtraSans: z.string().optional(),
-  certbotEmail: z.string().email('Valid email address required').or(z.literal('')).optional(),
-  emailNotifications: z.boolean().optional(),
-  smsNotifications: z.boolean().optional(),
-}).strict();
+export const platformSettingsUpdateSchema = z
+  .object({
+    syncTlsOnCreate: z.boolean().optional(),
+    tlsExtraSans: z.string().optional(),
+    certbotEmail: z.string().email("Valid email address required").or(z.literal("")).optional(),
+    emailNotifications: z.boolean().optional(),
+    smsNotifications: z.boolean().optional(),
+  })
+  .strict();
 
 export type PlatformSettingsUpdateInput = z.infer<typeof platformSettingsUpdateSchema>;
 
 export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
-  id: 'global',
+  id: "global",
   syncTlsOnCreate: true,
-  tlsExtraSans: '',
-  certbotEmail: '',
+  tlsExtraSans: "",
+  certbotEmail: "",
   emailNotifications: true,
   smsNotifications: false,
 };
 
 /** Primary outbound channel for platform 2FA/alerts — email wins when both are on. */
-export function resolvePlatformNotificationChannel(settings: PlatformSettings): NotificationChannel {
-  if (settings.emailNotifications) return 'email';
-  if (settings.smsNotifications) return 'sms';
-  return 'none';
+export function resolvePlatformNotificationChannel(
+  settings: PlatformSettings,
+): NotificationChannel {
+  if (settings.emailNotifications) return "email";
+  if (settings.smsNotifications) return "sms";
+  return "none";
 }
 
 /** Confirmation token for platform super-user migrate + process reload. */
-export const MIGRATE_AND_RESTART_CONFIRM = 'MIGRATE_AND_RESTART' as const;
+export const MIGRATE_AND_RESTART_CONFIRM = "MIGRATE_AND_RESTART" as const;
 
 /**
  * Body for `POST /api/platform/admin/system/migrate-and-restart`.
@@ -62,4 +66,3 @@ export interface MigrateAndRestartAccepted {
   message: string;
   delayMs: number;
 }
-

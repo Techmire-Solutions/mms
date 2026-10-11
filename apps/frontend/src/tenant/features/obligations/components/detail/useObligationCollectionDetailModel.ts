@@ -70,7 +70,10 @@ export function useObligationCollectionDetailModel({
     [contacts, collection.sender_id],
   );
   const reference = useMemo(
-    () => (collection.reference_id ? contacts.find((c) => String(c.id) === String(collection.reference_id)) : null),
+    () =>
+      collection.reference_id
+        ? contacts.find((c) => String(c.id) === String(collection.reference_id))
+        : null,
     [contacts, collection.reference_id],
   );
   const currency = useMemo(

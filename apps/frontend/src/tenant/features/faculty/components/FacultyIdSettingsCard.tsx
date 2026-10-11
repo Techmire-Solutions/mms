@@ -28,10 +28,7 @@ export function FacultyIdSettingsCard({
 }: FacultyIdSettingsCardProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const config = useMemo(
-    () => facultySettingsToSequenceConfig(settingsDraft),
-    [settingsDraft]
-  );
+  const config = useMemo(() => facultySettingsToSequenceConfig(settingsDraft), [settingsDraft]);
 
   const handleChange = useCallback(
     (next: SequenceNumberingConfig) => {
@@ -46,7 +43,7 @@ export function FacultyIdSettingsCard({
       upd("idRestartAnnually", next.rolloverPolicy !== "never");
       upd("idTemplate", buildSequenceFormulaTemplate(next));
     },
-    [upd]
+    [upd],
   );
 
   return (

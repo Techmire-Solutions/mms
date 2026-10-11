@@ -1,4 +1,4 @@
-import { type PAYMENT_METHODS } from '@/lib/data/financeData';
+import { type PAYMENT_METHODS } from "@/lib/data/financeData";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { type AppTranslationKey, todayISO, type PaymentCreateInput } from "@mms/shared";
 
@@ -38,7 +38,10 @@ export function validatePaymentFormDraft(
   return newErrors;
 }
 
-export function buildInitialPaymentDraft(balance: number, receivedByUserId: string): PaymentFormDraft {
+export function buildInitialPaymentDraft(
+  balance: number,
+  receivedByUserId: string,
+): PaymentFormDraft {
   return {
     amount: balance > 0 ? String(balance) : "",
     method: "Cash",
@@ -65,7 +68,10 @@ export function buildPaymentCreatePayload(
   };
 }
 
-export const PAYMENT_METHOD_LABEL_KEYS: Record<(typeof PAYMENT_METHODS)[number], AppTranslationKey> = {
+export const PAYMENT_METHOD_LABEL_KEYS: Record<
+  (typeof PAYMENT_METHODS)[number],
+  AppTranslationKey
+> = {
   Cash: "finance.paymentMethod.cash",
   "Bank Transfer": "finance.paymentMethod.bank_transfer",
   Online: "finance.paymentMethod.online",

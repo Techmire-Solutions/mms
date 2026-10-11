@@ -1,14 +1,14 @@
-import { FilterChips } from '@/components/ui/FilterChips';
-import { type ModuleColumnCustomizerProps } from '@/components/ui/ModuleColumnCustomizer';
+import { FilterChips } from "@/components/ui/FilterChips";
+import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
 import { WorkTaskToolbar } from "@/components/common/work";
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { Distribution } from '@/lib/data/hasanatData';
-import { HasanatFiltersMenuButton } from '@/tenant/features/hasanat/components/HasanatFiltersMenuButton';
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { Distribution } from "@/lib/data/hasanatData";
+import { HasanatFiltersMenuButton } from "@/tenant/features/hasanat/components/HasanatFiltersMenuButton";
 
-type DistributionStatus = Distribution['status'];
+type DistributionStatus = Distribution["status"];
 
-export const HASANAT_WORK_SEARCH_INPUT_ID = 'hasanat-work-search';
+export const HASANAT_WORK_SEARCH_INPUT_ID = "hasanat-work-search";
 
 interface DistributionsListFiltersProps {
   viewMode: WorkDirectoryViewMode;
@@ -45,27 +45,28 @@ export function DistributionsListFilters({
 }: DistributionsListFiltersProps): JSX.Element {
   const { t } = useTranslation();
 
-  const filterChips = filterStatus.length > 0 ? (
-    <FilterChips
-      chips={filterStatus.map((status) => ({
-        key: `status:${status}`,
-        label: statusLabels[status],
-        onRemove: () => onToggleStatus(status),
-      }))}
-      onClearAll={onClearStatuses}
-    />
-  ) : null;
+  const filterChips =
+    filterStatus.length > 0 ? (
+      <FilterChips
+        chips={filterStatus.map((status) => ({
+          key: `status:${status}`,
+          label: statusLabels[status],
+          onRemove: () => onToggleStatus(status),
+        }))}
+        onClearAll={onClearStatuses}
+      />
+    ) : null;
 
   return (
     <WorkTaskToolbar
-      regionLabel={t('hasanat.tabs.distribute')}
+      regionLabel={t("hasanat.tabs.distribute")}
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('hasanat.searchDistributions')}
+      searchPlaceholder={t("hasanat.searchDistributions")}
       searchId={HASANAT_WORK_SEARCH_INPUT_ID}
       hasActiveFilters={filterStatus.length > 0}
       onClearFilters={onClearStatuses}
-      clearFiltersLabel={t('hasanat.clearFilters')}
+      clearFiltersLabel={t("hasanat.clearFilters")}
       filterChips={filterChips}
       filterButton={
         <HasanatFiltersMenuButton
@@ -83,8 +84,8 @@ export function DistributionsListFilters({
               canViewDeleted: canDelete,
               viewingDeleted: showDeleted,
               onToggle: onToggleDeleted,
-              activeLabel: t('hasanat.trash.showActive'),
-              deletedLabel: t('hasanat.trash.showDeleted'),
+              activeLabel: t("hasanat.trash.showActive"),
+              deletedLabel: t("hasanat.trash.showDeleted"),
             }
           : undefined
       }
@@ -92,12 +93,16 @@ export function DistributionsListFilters({
         viewMode,
         onViewModeChange,
       }}
-      columnCustomizer={columnCustomizer ? {
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      } : undefined}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
     />
   );
 }

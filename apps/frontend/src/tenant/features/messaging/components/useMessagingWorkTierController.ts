@@ -1,31 +1,35 @@
-import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
   type Message,
   type StandardMessagingRecipient as MessagingRecipient,
-} from '@mms/shared';
-import { useDescriptorFilterChips } from '@/components/common/useDescriptorFilterChips';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { formatDirectoryPageCountLabel } from '@/lib/formatDirectoryPageCountLabel';
-import { useMessageLogs } from '@/hooks/useMessaging';
-import { useMessagingHistoryColumnLayout } from '../hooks/useMessagingColumnLayouts';
-import { useMessagingEntityDescriptor } from '../hooks/useMessagingEntityDescriptor';
-import { useMessagingPageOptions } from '../hooks/useMessagingPageOptions';
-import { useMessagingWorkFilters } from './useMessagingWorkFilters';
-import { useMessagingWorkTierBulkActions } from './useMessagingWorkTierBulkActions';
-import { useMessagingWorkTierKeyboardNav } from './useMessagingWorkTierKeyboardNav';
-import { useMessagingWorkTierSelection } from './useMessagingWorkTierSelection';
-import { useMessagingWorkTierDetail } from './useMessagingWorkTierDetail';
+} from "@mms/shared";
+import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilterChips";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
+import { useMessageLogs } from "@/hooks/useMessaging";
+import { useMessagingHistoryColumnLayout } from "../hooks/useMessagingColumnLayouts";
+import { useMessagingEntityDescriptor } from "../hooks/useMessagingEntityDescriptor";
+import { useMessagingPageOptions } from "../hooks/useMessagingPageOptions";
+import { useMessagingWorkFilters } from "./useMessagingWorkFilters";
+import { useMessagingWorkTierBulkActions } from "./useMessagingWorkTierBulkActions";
+import { useMessagingWorkTierKeyboardNav } from "./useMessagingWorkTierKeyboardNav";
+import { useMessagingWorkTierSelection } from "./useMessagingWorkTierSelection";
+import { useMessagingWorkTierDetail } from "./useMessagingWorkTierDetail";
 
 export interface MessagingWorkTierControllerProps {
   canWrite: boolean;
   onClearLogsRequest: () => void;
   onResend: (log: Message, recipient: MessagingRecipient) => void;
-  onBulkResend?: (logs: Message[], recipients: MessagingRecipient[], targetChannel?: 'whatsapp' | 'sms' | 'email') => void;
-  channel?: 'all' | 'sms' | 'whatsapp' | 'email';
-  onChannelChange?: (channel: 'all' | 'sms' | 'whatsapp' | 'email') => void;
+  onBulkResend?: (
+    logs: Message[],
+    recipients: MessagingRecipient[],
+    targetChannel?: "whatsapp" | "sms" | "email",
+  ) => void;
+  channel?: "all" | "sms" | "whatsapp" | "email";
+  onChannelChange?: (channel: "all" | "sms" | "whatsapp" | "email") => void;
 }
 
 export function useMessagingWorkTierController({
@@ -37,7 +41,8 @@ export function useMessagingWorkTierController({
 }: MessagingWorkTierControllerProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { categorySelectOptions, channelSelectOptions, statusOptions, logStatusConfig } = useMessagingPageOptions();
+  const { categorySelectOptions, channelSelectOptions, statusOptions, logStatusConfig } =
+    useMessagingPageOptions();
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
 
   const filters = useMessagingWorkFilters({
@@ -92,10 +97,10 @@ export function useMessagingWorkTierController({
     toggleAllVisible,
   } = useMessagingWorkTierSelection({ logs: logsQuery.logs });
 
-  const selectedCountLabel = t('messaging.selectedCount', { count: selectedCount });
+  const selectedCountLabel = t("messaging.selectedCount", { count: selectedCount });
   const pageCountLabel = formatDirectoryPageCountLabel(logsQuery.logs.length, t, {
-    singular: 'messaging.item.recipient',
-    plural: 'messaging.item.recipients',
+    singular: "messaging.item.recipient",
+    plural: "messaging.item.recipients",
   });
 
   useMessagingWorkTierKeyboardNav({
@@ -119,11 +124,11 @@ export function useMessagingWorkTierController({
     onBulkResend,
   });
 
-  const handleBulkResend = (targetChannel?: 'whatsapp' | 'sms' | 'email'): void => {
+  const handleBulkResend = (targetChannel?: "whatsapp" | "sms" | "email"): void => {
     handleBulkResendLogs(selectedList, targetChannel);
   };
 
-  const failedLogs = logsQuery.logs.filter((l: Message) => l.status === 'failed');
+  const failedLogs = logsQuery.logs.filter((l: Message) => l.status === "failed");
 
   const handleFilterContact = (contactName: string): void => {
     filters.setSearch(contactName);
@@ -134,9 +139,9 @@ export function useMessagingWorkTierController({
   const activeFilters = useMemo(
     () => ({
       search: filters.debouncedSearch.trim() || undefined,
-      channel: filters.channel !== 'all' ? filters.channel : undefined,
-      status: filters.status !== 'all' ? filters.status : undefined,
-      category: filters.category !== 'all' ? filters.category : undefined,
+      channel: filters.channel !== "all" ? filters.channel : undefined,
+      status: filters.status !== "all" ? filters.status : undefined,
+      category: filters.category !== "all" ? filters.category : undefined,
       startDate: filters.queryStartDate || undefined,
       endDate: filters.endDate || undefined,
     }),
@@ -152,28 +157,28 @@ export function useMessagingWorkTierController({
 
   const onRemoveChip = useCallback(
     (fieldKey: string) => {
-      if (fieldKey === 'search') {
-        filters.setSearch('');
+      if (fieldKey === "search") {
+        filters.setSearch("");
         return;
       }
-      if (fieldKey === 'channel') {
-        filters.setChannel('all');
+      if (fieldKey === "channel") {
+        filters.setChannel("all");
         return;
       }
-      if (fieldKey === 'status') {
-        filters.setStatus('all');
+      if (fieldKey === "status") {
+        filters.setStatus("all");
         return;
       }
-      if (fieldKey === 'category') {
-        filters.setCategory('all');
+      if (fieldKey === "category") {
+        filters.setCategory("all");
         return;
       }
-      if (fieldKey === 'startDate') {
-        filters.setStartDate('');
+      if (fieldKey === "startDate") {
+        filters.setStartDate("");
         return;
       }
-      if (fieldKey === 'endDate') {
-        filters.setEndDate('');
+      if (fieldKey === "endDate") {
+        filters.setEndDate("");
       }
     },
     [filters],

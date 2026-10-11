@@ -2,7 +2,12 @@ import React, { act } from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { createRoot } from "react-dom/client";
 import { ObligationCollectionsList } from "./ObligationCollectionsList";
-import type { ObligationCollection, ObligationType, MujtahidRep, Mujtahid } from "@/lib/data/obligationsData";
+import type {
+  ObligationCollection,
+  ObligationType,
+  MujtahidRep,
+  Mujtahid,
+} from "@/lib/data/obligationsData";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -31,7 +36,13 @@ vi.mock("@/tenant/features/obligations/hooks/useObligationLookups", () => ({
 }));
 
 vi.mock("@/tenant/features/obligations/components/ObligationCollectionsListFilters", () => ({
-  ObligationCollectionsListFilters: ({ search, onSearchChange }: { search: string; onSearchChange: (v: string) => void }) => (
+  ObligationCollectionsListFilters: ({
+    search,
+    onSearchChange,
+  }: {
+    search: string;
+    onSearchChange: (v: string) => void;
+  }) => (
     <div data-testid="filters">
       <input
         data-testid="search-input"

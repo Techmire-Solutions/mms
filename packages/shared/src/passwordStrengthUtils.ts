@@ -14,11 +14,11 @@ export interface PasswordStrengthEstimate {
 }
 
 const KEYBOARD_SEQUENCES = [
-  'abcdefghijklmnopqrstuvwxyz',
-  'qwertyuiop',
-  'asdfghjkl',
-  'zxcvbnm',
-  '0123456789',
+  "abcdefghijklmnopqrstuvwxyz",
+  "qwertyuiop",
+  "asdfghjkl",
+  "zxcvbnm",
+  "0123456789",
 ];
 
 /** Counts the distinct character classes present in the password. */
@@ -64,7 +64,7 @@ export function estimatePasswordStrength(password: string): PasswordStrengthEsti
   }
 
   const rounded = Math.round(bits);
-  const score: PasswordStrengthEstimate['score'] =
+  const score: PasswordStrengthEstimate["score"] =
     rounded < 28 ? 1 : rounded < 36 ? 2 : rounded < 60 ? 3 : rounded < 96 ? 4 : 5;
   return { score, entropyBits: rounded };
 }

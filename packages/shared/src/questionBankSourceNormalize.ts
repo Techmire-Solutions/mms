@@ -1,13 +1,13 @@
-import { normalizeAppLanguage } from './languageUtils.js';
-import { normalizeQuestionTypePayload } from './questionBankAnswerUtils.js';
-import { getQuestionCategoryIds } from './questionBankCategoryUtils.js';
-import type { QuestionDifficulty, QuestionType } from './questionBankCore.js';
+import { normalizeAppLanguage } from "./languageUtils.js";
+import { normalizeQuestionTypePayload } from "./questionBankAnswerUtils.js";
+import { getQuestionCategoryIds } from "./questionBankCategoryUtils.js";
+import type { QuestionDifficulty, QuestionType } from "./questionBankCore.js";
 import type {
   QuestionBankQuestion,
   QuestionBookCitation,
   QuestionSourceBook,
   QuestionSourceReference,
-} from './questionBankEntities.js';
+} from "./questionBankEntities.js";
 
 /** Question shape accepted by source merge helpers. */
 export type QuestionSourceRef = {
@@ -23,7 +23,7 @@ export function compactQuestionSource(
   if (!source) return undefined;
   const compactSource: QuestionSourceReference = {};
   for (const [key, value] of Object.entries(source)) {
-    const trimmed = typeof value === 'string' ? value.trim() : '';
+    const trimmed = typeof value === "string" ? value.trim() : "";
     if (trimmed) {
       (compactSource as Record<string, string>)[key] = trimmed;
     }
@@ -35,7 +35,7 @@ function lookupBook(
   books: readonly QuestionSourceBook[] | ReadonlyMap<string, QuestionSourceBook>,
   bookId: string,
 ): QuestionSourceBook | undefined {
-  if ('get' in books && typeof books.get === 'function') {
+  if ("get" in books && typeof books.get === "function") {
     return books.get(bookId);
   }
   return (books as readonly QuestionSourceBook[]).find((entry) => entry.id === bookId);
@@ -76,7 +76,7 @@ export function getQuestionSources(
   let bookLookup: readonly QuestionSourceBook[] | ReadonlyMap<string, QuestionSourceBook>;
   if (!books) {
     bookLookup = [];
-  } else if ('get' in books) {
+  } else if ("get" in books) {
     bookLookup = books;
   } else if (books.length > 3) {
     bookLookup = new Map(books.map((b) => [b.id, b]));
@@ -123,28 +123,28 @@ export function normalizeQuestionBankQuestion(
     raw.sourceCitations as QuestionBookCitation[] | undefined,
   );
   const compactedSources = compactQuestionSources(getQuestionSources(raw));
-  const type = (raw.type as QuestionType) ?? 'mcq';
+  const type = (raw.type as QuestionType) ?? "mcq";
   const typePayload = normalizeQuestionTypePayload({
     type,
-    text: String(raw.text ?? ''),
+    text: String(raw.text ?? ""),
     options: Array.isArray(raw.options) ? (raw.options as string[]) : [],
-    answer: String(raw.answer ?? ''),
+    answer: String(raw.answer ?? ""),
   });
   return {
     ...raw,
-    id: String(raw.id ?? ''),
+    id: String(raw.id ?? ""),
     categoryIds,
-    categoryId: categoryIds[0] ?? '',
+    categoryId: categoryIds[0] ?? "",
     type,
-    difficulty: (raw.difficulty as QuestionDifficulty) ?? 'easy',
+    difficulty: (raw.difficulty as QuestionDifficulty) ?? "easy",
     questionLanguage: normalizeAppLanguage(raw.questionLanguage as string | undefined),
-    text: String(raw.text ?? ''),
+    text: String(raw.text ?? ""),
     options: typePayload.options,
     answer: typePayload.answer,
     marks:
       raw.marks === undefined || raw.marks === null
         ? 1
-        : typeof raw.marks === 'number'
+        : typeof raw.marks === "number"
           ? raw.marks
           : Number(raw.marks) || 1,
     tags: Array.isArray(raw.tags) ? (raw.tags as string[]) : undefined,

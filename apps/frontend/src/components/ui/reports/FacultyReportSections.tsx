@@ -1,15 +1,17 @@
 import React from "react";
 import type { TooltipContentProps } from "recharts";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
 import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
 import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
 import type { FacultyWorkloadItem } from "@/components/ui/reports/facultyReportTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
-function FacultyWorkloadTooltip({ active = false, payload = [], label }: Partial<TooltipContentProps>) {
+function FacultyWorkloadTooltip({
+  active = false,
+  payload = [],
+  label,
+}: Partial<TooltipContentProps>) {
   if (!active || !payload?.length) return null;
   return (
     <ChartTooltip active={active} payload={payload} label={label}>
@@ -33,7 +35,11 @@ interface FacultyReportChartSectionProps {
   onBarClick: (faculty: string) => void;
 }
 
-export const FacultyReportChartSection = (function FacultyReportChartSection({ t, facultyWorkload, onBarClick }: FacultyReportChartSectionProps): React.JSX.Element {
+export const FacultyReportChartSection = function FacultyReportChartSection({
+  t,
+  facultyWorkload,
+  onBarClick,
+}: FacultyReportChartSectionProps): React.JSX.Element {
   return (
     <ReportChartCard
       title={t("faculty.report.workloadOverview")}
@@ -56,10 +62,19 @@ export const FacultyReportChartSection = (function FacultyReportChartSection({ t
         <XAxis type="number" tick={chartAxisTick(11)} />
         <YAxis dataKey="faculty" type="category" tick={chartAxisTick(11)} width={120} />
         <Tooltip content={<FacultyWorkloadTooltip />} />
-        <Bar dataKey="totalStudents" fill="hsl(var(--primary))" name={t("faculty.report.studentsLabel")} radius={[0, 4, 4, 0]} />
-        <Bar dataKey="classes" fill="hsl(var(--chart-2))" name={t("faculty.report.colClasses")} radius={[0, 4, 4, 0]} />
+        <Bar
+          dataKey="totalStudents"
+          fill="hsl(var(--primary))"
+          name={t("faculty.report.studentsLabel")}
+          radius={[0, 4, 4, 0]}
+        />
+        <Bar
+          dataKey="classes"
+          fill="hsl(var(--chart-2))"
+          name={t("faculty.report.colClasses")}
+          radius={[0, 4, 4, 0]}
+        />
       </BarChart>
     </ReportChartCard>
   );
-});
-
+};

@@ -15,9 +15,9 @@ describe("imageOptimization (client canvas encoders)", () => {
   });
 
   it("falls through unsupported data URL encoders to WebP", () => {
-    const toDataURL = vi.fn((type?: string) => (
-      type === "image/avif" ? "data:image/png;base64,png" : `data:${type};base64,webp`
-    ));
+    const toDataURL = vi.fn((type?: string) =>
+      type === "image/avif" ? "data:image/png;base64,png" : `data:${type};base64,webp`,
+    );
     const canvas = { toDataURL } as unknown as HTMLCanvasElement;
 
     expect(canvasToOptimizedDataUrl(canvas)).toBe("data:image/webp;base64,webp");

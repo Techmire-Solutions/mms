@@ -1,22 +1,22 @@
-import { describe, expect, it, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
-import { PermissionMatrixRow } from './PermissionMatrixRow';
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import React from "react";
+import { PermissionMatrixRow } from "./PermissionMatrixRow";
 
 // Mock useTranslation
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (k: string) => k,
-    locale: 'en',
-    dir: 'ltr',
+    locale: "en",
+    dir: "ltr",
   }),
 }));
 
-describe('PermissionMatrixRow', () => {
+describe("PermissionMatrixRow", () => {
   const defaultProps = {
-    mod: { id: 'students', labelKey: 'nav.students' as const },
+    mod: { id: "students", labelKey: "nav.students" as const },
     perms: {
-      students: ['read', 'update'] as ('read' | 'update')[],
+      students: ["read", "update"] as ("read" | "update")[],
     },
     readOnly: false,
     inGroup: false,
@@ -25,36 +25,36 @@ describe('PermissionMatrixRow', () => {
     onClearAll: vi.fn(),
   };
 
-  it('renders module title and count badge', () => {
+  it("renders module title and count badge", () => {
     const html = renderToStaticMarkup(
       <table>
         <tbody>
           <PermissionMatrixRow {...defaultProps} />
         </tbody>
-      </table>
+      </table>,
     );
-    expect(html).toContain('nav.students');
-    expect(html).toContain('2/4');
+    expect(html).toContain("nav.students");
+    expect(html).toContain("2/4");
   });
 
-  it('renders indented cell when inGroup is true', () => {
+  it("renders indented cell when inGroup is true", () => {
     const html = renderToStaticMarkup(
       <table>
         <tbody>
           <PermissionMatrixRow {...defaultProps} inGroup={true} />
         </tbody>
-      </table>
+      </table>,
     );
-    expect(html).toContain('ps-8');
+    expect(html).toContain("ps-8");
   });
 
-  it('renders accessible status indicators in read-only mode', () => {
+  it("renders accessible status indicators in read-only mode", () => {
     const html = renderToStaticMarkup(
       <table>
         <tbody>
           <PermissionMatrixRow {...defaultProps} readOnly={true} />
         </tbody>
-      </table>
+      </table>,
     );
     expect(html).toContain('role="status"');
   });

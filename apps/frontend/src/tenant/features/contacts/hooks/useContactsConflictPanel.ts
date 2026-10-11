@@ -4,13 +4,11 @@ import { useContactsSyncOutbox } from "@/tenant/features/contacts/hooks/useConta
 /**
  * Sync outbox counts plus auto-open of the conflict review panel when new conflicts appear.
  */
-export function useContactsConflictPanel(
-  setConflictPanelOpen: Dispatch<SetStateAction<boolean>>,
-) {
+export function useContactsConflictPanel(setConflictPanelOpen: Dispatch<SetStateAction<boolean>>) {
   const { pendingCount, conflictCount, flushing, flush } = useContactsSyncOutbox();
   const prevConflictCount = useRef(conflictCount);
 
-  const openConflictReview = (() => setConflictPanelOpen(true));
+  const openConflictReview = () => setConflictPanelOpen(true);
 
   useEffect(() => {
     if (prevConflictCount.current === 0 && conflictCount > 0) {

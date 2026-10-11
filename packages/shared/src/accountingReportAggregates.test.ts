@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
   accountingReportAggregatesSchema,
   EMPTY_ACCOUNTING_REPORT_AGGREGATES,
-} from './accountingReportAggregates.js';
+} from "./accountingReportAggregates.js";
 
-describe('accountingReportAggregates', () => {
-  it('parses valid accounting report aggregates', () => {
+describe("accountingReportAggregates", () => {
+  it("parses valid accounting report aggregates", () => {
     const parsed = accountingReportAggregatesSchema.parse({
       revenue: 50000,
       expenses: 30000,
@@ -15,10 +15,10 @@ describe('accountingReportAggregates', () => {
       equity: 80000,
       trialBalance: [
         {
-          id: 'acc-1',
-          code: '1000',
-          name: 'Cash',
-          type: 'Asset',
+          id: "acc-1",
+          code: "1000",
+          name: "Cash",
+          type: "Asset",
           totalDebit: 50000,
           totalCredit: 10000,
           balance: 40000,
@@ -29,7 +29,7 @@ describe('accountingReportAggregates', () => {
     expect(parsed.trialBalance).toHaveLength(1);
   });
 
-  it('provides sensible empty defaults', () => {
+  it("provides sensible empty defaults", () => {
     const parsed = accountingReportAggregatesSchema.parse({});
     expect(parsed.revenue).toBe(0);
     expect(parsed.trialBalance).toEqual([]);

@@ -1,23 +1,21 @@
-import { dedupeTrimmedIds, type Contact } from '@mms/shared';
-import { invalidateDuplicateScanCache } from './contactDuplicateScanUseCases.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import type { ContactsRepository } from '../repository/contactsRepository.js';
+import { dedupeTrimmedIds, type Contact } from "@mms/shared";
+import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import type { ContactsRepository } from "../repository/contactsRepository.js";
 
-import { contactsRepository } from '../repository/contactsRepositoryAdapter.js';
-import { emitOutboxEvent } from '../../services/outboxEventService.js';
-import { recordModernAuditEvent } from '../../services/auditTrailService.js';
-import { buildContactForensicSnapshot } from '../../services/forensicSnapshotService.js';
-
+import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
+import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { buildContactForensicSnapshot } from "../../services/forensicSnapshotService.js";
 
 export {
   type ContactBulkRestoreConflict,
   type ContactBulkRestoreResult,
   restoreContactById,
   bulkRestoreContacts,
-} from './contactRestoreUseCases.js';
-
+} from "./contactRestoreUseCases.js";
 
 export async function softDeleteContactById(
   id: string,
@@ -84,8 +82,8 @@ export async function bulkSoftDeleteContacts(
       // Emit CDC outbox + audit for each archived contact within the same tx
       if (toDeleteContacts.length > 0) {
         for (const c of toDeleteContacts) {
-          await emitOutboxEvent('entity.soft_deleted', {
-            entityType: 'contacts',
+          await emitOutboxEvent("entity.soft_deleted", {
+            entityType: "contacts",
             entityId: String(c.id),
             tenantId: tenant,
             deletedAt: (c.deletedAt as string | undefined) ?? now,
@@ -96,9 +94,9 @@ export async function bulkSoftDeleteContacts(
           });
           await recordModernAuditEvent({
             workspaceSubdomain: tenant,
-            tableName: 'contacts',
+            tableName: "contacts",
             recordId: String(c.id),
-            actionType: 'DELETE',
+            actionType: "DELETE",
             oldState: c,
             minimizeDelta: false,
           });
@@ -106,8 +104,8 @@ export async function bulkSoftDeleteContacts(
       } else {
         // Fallback for mocked repos where findByIds is not populated
         for (const id of uniqueIds) {
-          await emitOutboxEvent('entity.soft_deleted', {
-            entityType: 'contacts',
+          await emitOutboxEvent("entity.soft_deleted", {
+            entityType: "contacts",
             entityId: String(id),
             tenantId: tenant,
             deletedAt: now,
@@ -122,6 +120,6 @@ export async function bulkSoftDeleteContacts(
     return outcome;
   });
 
-  if (result.succeeded > 0) await broadcastCollection('contacts');
+  if (result.succeeded > 0) await broadcastCollection("contacts");
   return result;
 }

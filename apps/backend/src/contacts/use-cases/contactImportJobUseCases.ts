@@ -1,12 +1,11 @@
+import { CONTACTS_MODULE_MANIFEST, type Contact, type ContactsImportJobPayload } from "@mms/shared";
+import { roleHasPermission } from "@mms/shared";
+import { upsertContact } from "./contactWriteUseCases.js";
+import { logger } from "../../lib/logger.js";
 import {
-  CONTACTS_MODULE_MANIFEST,
-  type Contact,
-  type ContactsImportJobPayload,
-} from '@mms/shared';
-import { roleHasPermission } from '@mms/shared';
-import { upsertContact } from './contactWriteUseCases.js';
-import { logger } from '../../lib/logger.js';
-import { mapActionStringToAuditType, recordModernAuditEvent } from '../../services/auditTrailService.js';
+  mapActionStringToAuditType,
+  recordModernAuditEvent,
+} from "../../services/auditTrailService.js";
 
 /** Per-item failure detail captured for the job label / logs (bounded). */
 const MAX_RECORDED_FAILURES = 5;
@@ -40,9 +39,9 @@ export async function runContactsImportJob(
   const total = contacts.length;
   const canRestore = Boolean(
     payload.viewerRole &&
-      roleHasPermission(payload.viewerRole, CONTACTS_MODULE_MANIFEST.permissions.delete),
+    roleHasPermission(payload.viewerRole, CONTACTS_MODULE_MANIFEST.permissions.delete),
   );
-  const language = payload.language || 'en';
+  const language = payload.language || "en";
   const failures: string[] = [];
   let imported = 0;
 
@@ -81,20 +80,20 @@ async function recordContactsImportAudit(
       workspaceSubdomain: context.tenant,
       tableName: CONTACTS_MODULE_MANIFEST.moduleId,
       recordId: context.jobId,
-      actionType: mapActionStringToAuditType('contact.import'),
+      actionType: mapActionStringToAuditType("contact.import"),
       realUserId: context.userId,
       newState: {
         summary:
           failed > 0
             ? `Imported ${imported}/${total} contact(s) (${failed} failed)`
             : `Imported ${imported} contact(s)`,
-        action: 'contact.import',
+        action: "contact.import",
       },
     });
   } catch (error) {
     logger.error(
       { err: error instanceof Error ? error.message : String(error) },
-      'contacts import audit event append failed',
+      "contacts import audit event append failed",
     );
   }
 }

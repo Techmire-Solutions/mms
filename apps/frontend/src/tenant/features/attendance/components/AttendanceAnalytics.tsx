@@ -4,8 +4,8 @@ import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGr
 import { Skeleton } from "@/components/ui/skeleton";
 import { AttendanceAnalyticsInsights } from "@/tenant/features/attendance/components/AttendanceAnalyticsInsights";
 import { useAttendanceAnalyticsModel } from "@/tenant/features/attendance/components/useAttendanceAnalyticsModel";
-import { StatsSkeleton } from '@/components/ui/LoadingState';
-import { ErrorState } from '@/components/ui/ErrorState';
+import { StatsSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 const AttendanceAnalyticsChartPanels = lazy(() =>
   import("@/tenant/features/attendance/components/AttendanceAnalyticsChartPanels").then((mod) => ({
@@ -27,8 +27,8 @@ export function AttendanceAnalytics({ filters }: AttendanceAnalyticsProps): Reac
   if (model.isError) {
     return (
       <ErrorState
-        title={model.t('attendance.toast.loadFailed')}
-        description={model.t('attendance.loadFailedHint')}
+        title={model.t("attendance.toast.loadFailed")}
+        description={model.t("attendance.loadFailedHint")}
         onRetry={() => void model.refetch()}
       />
     );

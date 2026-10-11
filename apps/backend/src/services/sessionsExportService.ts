@@ -10,16 +10,16 @@ import {
   type SessionExportColumn,
   type SessionsListQuery,
   type SessionsSettings,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleExportService,
   type ModuleExportQueryInput,
   type ModuleExportOptions,
   type ModuleExportResult,
-} from '../lib/createModuleExportService.js';
-import { normalizeIncludeDeletedFlag } from '../lib/csvExportStreamFactory.js';
-import { loadSessionsSettingsCombined } from './sessionConfigService.js';
-import { loadSessionsByIds, loadSessionsPage } from './sessionService.js';
+} from "../lib/createModuleExportService.js";
+import { normalizeIncludeDeletedFlag } from "../lib/csvExportStreamFactory.js";
+import { loadSessionsSettingsCombined } from "./sessionConfigService.js";
+import { loadSessionsByIds, loadSessionsPage } from "./sessionService.js";
 
 export type SessionsExportQueryInput = ModuleExportQueryInput<SessionsListQuery>;
 export type SessionsExportOptions = ModuleExportOptions<SessionExportColumn>;
@@ -80,7 +80,7 @@ const sessionsCsv = createModuleExportService<
         const chunkExportRows = buildSessionsExportRows(chunk, columns);
         const dataRows = chunkExportRows.slice(1);
         if (dataRows.length > 0) {
-          yield '\n' + buildCsvContent(dataRows);
+          yield "\n" + buildCsvContent(dataRows);
         }
       }
     }

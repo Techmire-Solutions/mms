@@ -1,13 +1,18 @@
-import { ModuleTierMotion } from '@/components/ui/ModuleTierMotion';
-import type { ActivityLog, ModuleColumnRegistryEntry, SystemUser, UsersListPageResult } from '@mms/shared';
-import { SubTabBar } from '@/components/ui/SubTabBar';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { CardSkeleton } from '@/components/ui/LoadingState';
-import type { ModuleColumnCustomizerLabels } from '@/components/ui/ModuleColumnCustomizer';
-import type { DataTableColumnLayout } from '@/components/common/data-table';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ActivityLogs } from '@/tenant/features/users/components/ActivityLogs';
-import { UsersList } from '@/tenant/features/users/components/UsersList';
+import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import type {
+  ActivityLog,
+  ModuleColumnRegistryEntry,
+  SystemUser,
+  UsersListPageResult,
+} from "@mms/shared";
+import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { CardSkeleton } from "@/components/ui/LoadingState";
+import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import type { DataTableColumnLayout } from "@/components/common/data-table";
+import { useTranslation } from "@/hooks/useTranslation";
+import { ActivityLogs } from "@/tenant/features/users/components/ActivityLogs";
+import { UsersList } from "@/tenant/features/users/components/UsersList";
 
 export interface UsersWorkSubTab {
   id: string;
@@ -59,7 +64,7 @@ export interface UsersWorkTierProps {
   onResetPassword: (user: SystemUser) => void;
   onAddUser: () => void;
   onInviteUser: () => void;
-  onMessageUsers: (channel: 'sms' | 'whatsapp' | 'email', users: SystemUser[]) => void;
+  onMessageUsers: (channel: "sms" | "whatsapp" | "email", users: SystemUser[]) => void;
   onToggleDeleted: (next: boolean) => void;
 }
 
@@ -124,9 +129,9 @@ export function UsersWorkTier({
       <ModuleTierMotion
         tier={`work-${activeSubTab}`}
         className="space-y-4"
-        aria-busy={activeSubTab === 'users' && isWorkPageFetching ? true : undefined}
+        aria-busy={activeSubTab === "users" && isWorkPageFetching ? true : undefined}
       >
-        {activeSubTab === 'users' && (
+        {activeSubTab === "users" && (
           <UsersList
             users={users}
             workPageData={workPageData}
@@ -168,19 +173,19 @@ export function UsersWorkTier({
           />
         )}
 
-        {activeSubTab === 'activity' && logsLoadFailed && (
+        {activeSubTab === "activity" && logsLoadFailed && (
           <ErrorState
-            title={t('users.loadFailed')}
-            description={t('users.loadFailedHint')}
+            title={t("users.loadFailed")}
+            description={t("users.loadFailedHint")}
             onRetry={onRetryLogs}
           />
         )}
 
-        {activeSubTab === 'activity' && !logsLoadFailed && isLogsLoading && (
+        {activeSubTab === "activity" && !logsLoadFailed && isLogsLoading && (
           <CardSkeleton count={3} />
         )}
 
-        {activeSubTab === 'activity' && !logsLoadFailed && !isLogsLoading && (
+        {activeSubTab === "activity" && !logsLoadFailed && !isLogsLoading && (
           <ActivityLogs
             logs={logs}
             users={activityUsers ?? users}

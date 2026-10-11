@@ -48,7 +48,10 @@ export interface StudentsWorkTierProps {
   onEdit: (student: Student) => void;
   onRestore: (studentId: string) => void | Promise<void>;
   onBulkStatusChange: (studentIds: string[], status: string) => void | Promise<void>;
-  onBulkEnroll?: (payload: { sessionIds: string[]; mode: import("@mms/shared").StudentsBulkEnrollBody["mode"] }) => void | Promise<void>;
+  onBulkEnroll?: (payload: {
+    sessionIds: string[];
+    mode: import("@mms/shared").StudentsBulkEnrollBody["mode"];
+  }) => void | Promise<void>;
   bulkEnrollPending?: boolean;
   onBulkPrintIdCards?: () => void;
   onBulkExport: () => void | Promise<void>;

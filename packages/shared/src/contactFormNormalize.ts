@@ -104,9 +104,10 @@ export function normalizeContactForEdit(
     ? merged.phones.map((item, idx) => normalizePhoneItem(item, idx, dialDefault, defaults))
     : [];
 
-  const scalarPhone = typeof (merged as Record<string, unknown>).phone === "string"
-    ? String((merged as Record<string, unknown>).phone).trim()
-    : "";
+  const scalarPhone =
+    typeof (merged as Record<string, unknown>).phone === "string"
+      ? String((merged as Record<string, unknown>).phone).trim()
+      : "";
   if (scalarPhone && !sourceHasPhonesArray) {
     const e164Scalar = normalizeToE164("", scalarPhone);
     const exists = phones.some((p) => {
@@ -120,25 +121,28 @@ export function normalizeContactForEdit(
   }
 
   if (phones.length === 0) {
-    phones = [{
-      label: defaults.phoneLabel || "Mobile",
-      number: "",
-      countryCode: dialDefault,
-      isPrimary: true,
-    }];
+    phones = [
+      {
+        label: defaults.phoneLabel || "Mobile",
+        number: "",
+        countryCode: dialDefault,
+        isPrimary: true,
+      },
+    ];
   }
 
   let emails: ContactEmail[] = Array.isArray(merged.emails)
     ? merged.emails.map((item, idx) => normalizeEmailItem(item, idx, defaults))
     : [];
 
-  const scalarEmail = typeof (merged as Record<string, unknown>).email === "string"
-    ? String((merged as Record<string, unknown>).email).trim()
-    : "";
+  const scalarEmail =
+    typeof (merged as Record<string, unknown>).email === "string"
+      ? String((merged as Record<string, unknown>).email).trim()
+      : "";
   if (
-    scalarEmail
-    && !sourceHasEmailsArray
-    && !emails.some((e) => (e.address || "").trim().toLowerCase() === scalarEmail.toLowerCase())
+    scalarEmail &&
+    !sourceHasEmailsArray &&
+    !emails.some((e) => (e.address || "").trim().toLowerCase() === scalarEmail.toLowerCase())
   ) {
     emails.unshift(normalizeEmailItem(scalarEmail, 0, defaults));
   }
@@ -153,23 +157,27 @@ export function normalizeContactForEdit(
       )
     : [];
 
-  const scalarAddress = typeof (merged as Record<string, unknown>).address === "string"
-    ? String((merged as Record<string, unknown>).address).trim()
-    : "";
-  const scalarCity = typeof (merged as Record<string, unknown>).city === "string"
-    ? String((merged as Record<string, unknown>).city).trim()
-    : defaultCity;
-  const scalarState = typeof (merged as Record<string, unknown>).state === "string"
-    ? String((merged as Record<string, unknown>).state).trim()
-    : defaultProvince;
-  const scalarCountry = typeof (merged as Record<string, unknown>).country === "string"
-    ? String((merged as Record<string, unknown>).country).trim()
-    : defaultCountry;
+  const scalarAddress =
+    typeof (merged as Record<string, unknown>).address === "string"
+      ? String((merged as Record<string, unknown>).address).trim()
+      : "";
+  const scalarCity =
+    typeof (merged as Record<string, unknown>).city === "string"
+      ? String((merged as Record<string, unknown>).city).trim()
+      : defaultCity;
+  const scalarState =
+    typeof (merged as Record<string, unknown>).state === "string"
+      ? String((merged as Record<string, unknown>).state).trim()
+      : defaultProvince;
+  const scalarCountry =
+    typeof (merged as Record<string, unknown>).country === "string"
+      ? String((merged as Record<string, unknown>).country).trim()
+      : defaultCountry;
 
   if (
-    scalarAddress
-    && !sourceHasAddressesArray
-    && !addresses.some((a) => (a.line1 || "").trim() === scalarAddress)
+    scalarAddress &&
+    !sourceHasAddressesArray &&
+    !addresses.some((a) => (a.line1 || "").trim() === scalarAddress)
   ) {
     addresses.unshift({
       label: defaults.addressLabel || "Home",
@@ -182,14 +190,16 @@ export function normalizeContactForEdit(
   }
 
   if (addresses.length === 0) {
-    addresses = [{
-      label: defaults.addressLabel || "Home",
-      line1: "",
-      city: defaultCity,
-      state: defaultProvince,
-      country: defaultCountry,
-      isPrimary: true,
-    }];
+    addresses = [
+      {
+        label: defaults.addressLabel || "Home",
+        line1: "",
+        city: defaultCity,
+        state: defaultProvince,
+        country: defaultCountry,
+        isPrimary: true,
+      },
+    ];
   }
 
   let socials: ContactSocial[] = Array.isArray(merged.socials)
@@ -205,7 +215,15 @@ export function normalizeContactForEdit(
     : [];
 
   if (education.length === 0) {
-    education = [{ degree: defaults.educationDegree || "Matric / Secondary", institution: "", fieldOfStudy: "", year: "", grade: "" }];
+    education = [
+      {
+        degree: defaults.educationDegree || "Matric / Secondary",
+        institution: "",
+        fieldOfStudy: "",
+        year: "",
+        grade: "",
+      },
+    ];
   }
 
   let experience: ContactExperience[] = Array.isArray(merged.experience)
@@ -213,16 +231,18 @@ export function normalizeContactForEdit(
     : [];
 
   if (experience.length === 0) {
-    experience = [{
-      title: "",
-      organization: "",
-      employmentType: defaults.employmentType || "Full-time",
-      location: "",
-      startDate: "",
-      endDate: "",
-      isCurrent: false,
-      description: "",
-    }];
+    experience = [
+      {
+        title: "",
+        organization: "",
+        employmentType: defaults.employmentType || "Full-time",
+        location: "",
+        startDate: "",
+        endDate: "",
+        isCurrent: false,
+        description: "",
+      },
+    ];
   }
 
   let skills: ContactSkill[] = Array.isArray(merged.skills)
@@ -230,15 +250,18 @@ export function normalizeContactForEdit(
     : [];
 
   if (skills.length === 0) {
-    skills = [{
-      name: "",
-      category: defaults.skillCategory || DEFAULT_SKILL_CATEGORY_LABELS[0] || "Islamic Studies",
-      proficiency: defaults.skillProficiency || DEFAULT_SKILL_PROFICIENCY_LABELS[1] || "Intermediate",
-      yearsOfExperience: "",
-      isCertified: false,
-      issuer: "",
-      description: "",
-    }];
+    skills = [
+      {
+        name: "",
+        category: defaults.skillCategory || DEFAULT_SKILL_CATEGORY_LABELS[0] || "Islamic Studies",
+        proficiency:
+          defaults.skillProficiency || DEFAULT_SKILL_PROFICIENCY_LABELS[1] || "Intermediate",
+        yearsOfExperience: "",
+        isCertified: false,
+        issuer: "",
+        description: "",
+      },
+    ];
   }
 
   let bankDetails: ContactBankDetail[] = Array.isArray(merged.bankDetails)
@@ -246,11 +269,13 @@ export function normalizeContactForEdit(
     : [];
 
   if (bankDetails.length === 0) {
-    bankDetails = [{
-      bankName: "",
-      accountTitle: "",
-      accountNumber: "",
-    }];
+    bankDetails = [
+      {
+        bankName: "",
+        accountTitle: "",
+        accountNumber: "",
+      },
+    ];
   }
 
   let relationshipContacts: RelationshipContact[] = Array.isArray(merged.relationshipContacts)
@@ -294,27 +319,27 @@ export function syncContactScalarFields<T extends Partial<Contact>>(contact: T):
   if (Array.isArray(contact.phones)) {
     const primary = contact.phones.find((p) => p.isPrimary) ?? contact.phones[0];
     if (primary) {
-      const { countryCode = '', number = '' } = primary;
+      const { countryCode = "", number = "" } = primary;
       result.phone = countryCode ? `${countryCode} ${number}`.trim() : number.trim();
     } else {
-      result.phone = '';
+      result.phone = "";
     }
   }
 
   // Email scalar
   if (Array.isArray(contact.emails)) {
     const primary = contact.emails.find((e) => e.isPrimary) ?? contact.emails[0];
-    result.email = primary?.address ?? '';
+    result.email = primary?.address ?? "";
   }
 
   // Address scalars
   if (Array.isArray(contact.addresses)) {
     const primary = contact.addresses.find((a) => a.isPrimary) ?? contact.addresses[0];
-    result.line1 = primary?.line1 ?? '';
-    result.city = primary?.city ?? '';
-    result.state = primary?.state ?? '';
-    result.country = primary?.country ?? '';
-    result.address = primary?.line1 ?? '';
+    result.line1 = primary?.line1 ?? "";
+    result.city = primary?.city ?? "";
+    result.state = primary?.state ?? "";
+    result.country = primary?.country ?? "";
+    result.address = primary?.line1 ?? "";
   }
 
   return result as T;
@@ -346,8 +371,8 @@ export function mergeContactEditSavePayload(
   };
   const synced = syncContactScalarFields(withCollections);
   const clearLegacyRelationships =
-    Array.isArray(withCollections.relationshipContacts)
-    && withCollections.relationshipContacts.length === 0;
+    Array.isArray(withCollections.relationshipContacts) &&
+    withCollections.relationshipContacts.length === 0;
 
   return {
     ...existingClean,

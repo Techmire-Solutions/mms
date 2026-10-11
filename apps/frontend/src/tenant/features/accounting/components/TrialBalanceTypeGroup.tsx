@@ -1,5 +1,5 @@
 import React from "react";
-import { ACCOUNT_TYPE_META, type AccountType } from '@/lib/data/accountingData';
+import { ACCOUNT_TYPE_META, type AccountType } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
@@ -8,7 +8,10 @@ import { StatGrid, StatRow } from "@/components/ui/StatGrid";
 import { ReportMoneyCard } from "@/components/ui/reports/ReportMoneyCard";
 import { ReportMoneyCardsGrid } from "@/components/ui/reports/ReportMoneyCardsGrid";
 import { ReportMoneySummaryTile } from "@/components/ui/reports/ReportMoneySummaryTile";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
 import { type AppTranslationKey } from "@mms/shared";
 
 /** ReportMoneyCard tile (report) — not DirectoryCard. */
@@ -43,17 +46,41 @@ export function TrialBalanceTypeGroup({
 
   const typeMeta = ACCOUNT_TYPE_META[type];
 
-  const groupDebit = accountTypeRows.reduce((sum, trialBalanceRow) => sum + trialBalanceRow.totalDebit, 0);
-  const groupCredit = accountTypeRows.reduce((sum, trialBalanceRow) => sum + trialBalanceRow.totalCredit, 0);
-  const sortedRows = [...accountTypeRows].sort((firstRow, secondRow) => firstRow.code.localeCompare(secondRow.code));
+  const groupDebit = accountTypeRows.reduce(
+    (sum, trialBalanceRow) => sum + trialBalanceRow.totalDebit,
+    0,
+  );
+  const groupCredit = accountTypeRows.reduce(
+    (sum, trialBalanceRow) => sum + trialBalanceRow.totalCredit,
+    0,
+  );
+  const sortedRows = [...accountTypeRows].sort((firstRow, secondRow) =>
+    firstRow.code.localeCompare(secondRow.code),
+  );
 
   return (
-    <section key={type} aria-label={t("accounting.coa.typeCaption", { type: t(`accounting.type.${type}` as AppTranslationKey) })}>
-      <header className={`px-4 py-2 border-b border-border ${typeMeta?.color} flex min-w-0 items-center justify-between gap-2`}>
-        <SectionLabel as="h3" weight="bold" tracking="wide" tone="inherit" className="min-w-0 truncate m-0">
-          {typeMeta?.icon} {t(`accounting.type.${type}` as AppTranslationKey)} — {t(`accounting.reports.views.${typeMeta?.group}` as AppTranslationKey)}
+    <section
+      key={type}
+      aria-label={t("accounting.coa.typeCaption", {
+        type: t(`accounting.type.${type}` as AppTranslationKey),
+      })}
+    >
+      <header
+        className={`px-4 py-2 border-b border-border ${typeMeta?.color} flex min-w-0 items-center justify-between gap-2`}
+      >
+        <SectionLabel
+          as="h3"
+          weight="bold"
+          tracking="wide"
+          tone="inherit"
+          className="min-w-0 truncate m-0"
+        >
+          {typeMeta?.icon} {t(`accounting.type.${type}` as AppTranslationKey)} —{" "}
+          {t(`accounting.reports.views.${typeMeta?.group}` as AppTranslationKey)}
         </SectionLabel>
-        <span className="shrink-0 text-xs font-semibold text-muted-foreground">{t("accounting.tb.accountsCount", { count: accountTypeRows.length })}</span>
+        <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+          {t("accounting.tb.accountsCount", { count: accountTypeRows.length })}
+        </span>
       </header>
       {viewMode === "cards" ? (
         <ReportMoneyCardsGrid>
@@ -62,14 +89,22 @@ export function TrialBalanceTypeGroup({
               key={trialBalanceRow.id}
               title={
                 <>
-                  <p className="font-mono text-xs font-bold text-muted-foreground m-0">{trialBalanceRow.code}</p>
-                  <h4 className="truncate text-sm font-medium text-foreground m-0 mt-0.5">{trialBalanceRow.name}</h4>
+                  <p className="font-mono text-xs font-bold text-muted-foreground m-0">
+                    {trialBalanceRow.code}
+                  </p>
+                  <h4 className="truncate text-sm font-medium text-foreground m-0 mt-0.5">
+                    {trialBalanceRow.name}
+                  </h4>
                 </>
               }
               end={
                 <div className="text-end">
-                  <p className="font-mono text-xs font-semibold text-info m-0">{formatPositiveNumber(trialBalanceRow.totalDebit)}</p>
-                  <p className="font-mono text-xs font-semibold text-success m-0">{formatPositiveNumber(trialBalanceRow.totalCredit)}</p>
+                  <p className="font-mono text-xs font-semibold text-info m-0">
+                    {formatPositiveNumber(trialBalanceRow.totalDebit)}
+                  </p>
+                  <p className="font-mono text-xs font-semibold text-success m-0">
+                    {formatPositiveNumber(trialBalanceRow.totalCredit)}
+                  </p>
                 </div>
               }
             >
@@ -145,7 +180,9 @@ export function TrialBalanceTypeGroup({
               render: (row) => formatPositiveNumber(row.totalCredit),
             },
           ]}
-          caption={t("accounting.tb.typeCaption", { type: t(`accounting.type.${type}` as AppTranslationKey) })}
+          caption={t("accounting.tb.typeCaption", {
+            type: t(`accounting.type.${type}` as AppTranslationKey),
+          })}
           className="border-t-0"
           rowClassName={() => "hover:bg-muted/20 transition-colors"}
           footerRow={{

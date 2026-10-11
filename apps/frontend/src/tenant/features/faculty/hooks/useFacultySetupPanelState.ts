@@ -7,22 +7,12 @@ import { useFacultySetupSaveActions } from "@/tenant/features/faculty/hooks/useF
 /** Faculty Setup panel state */
 export function useFacultySetupPanelState() {
   const config = useFacultyConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    discardDrafts,
-  } = useModuleSettingsEditor<FacultySettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, discardDrafts } =
+    useModuleSettingsEditor<FacultySettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useFacultySetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useFacultySetupSaveActions({
     settings,
     settingsDraft,
     setSaved,
@@ -53,4 +43,3 @@ export function useFacultySetupPanelState() {
     discardSetupDrafts,
   };
 }
-

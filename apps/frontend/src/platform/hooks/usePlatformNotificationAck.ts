@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-const STORAGE_KEY = 'mms_platform_notif_ack';
+const STORAGE_KEY = "mms_platform_notif_ack";
 
 function readAckedIds(): Set<string> {
   try {
@@ -31,14 +31,14 @@ interface UsePlatformNotificationAckResult {
 export function usePlatformNotificationAck(): UsePlatformNotificationAckResult {
   const [ackedIds, setAckedIds] = useState<Set<string>>(() => readAckedIds());
 
-  const ackAll = ((ids: string[]) => {
+  const ackAll = (ids: string[]) => {
     setAckedIds((prev) => {
       const next = new Set(prev);
       for (const id of ids) next.add(id);
       writeAckedIds(next);
       return next;
     });
-  });
+  };
 
   return { ackedIds, ackAll };
 }

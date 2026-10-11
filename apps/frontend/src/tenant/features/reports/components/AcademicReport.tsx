@@ -1,17 +1,19 @@
-import React, { lazy, Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { useAcademicReportController } from '../controllers/useAcademicReportController';
+import React, { lazy, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { useAcademicReportController } from "../controllers/useAcademicReportController";
 
 const AcademicReportCharts = lazy(() =>
-  import("@/components/ui/reports/AcademicReportCharts").then((mod) => ({ default: mod.AcademicReportCharts })),
+  import("@/components/ui/reports/AcademicReportCharts").then((mod) => ({
+    default: mod.AcademicReportCharts,
+  })),
 );
 import { AcademicReportClassRankings } from "@/components/ui/reports/AcademicReportClassRankings";
 import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
 import { AcademicReportResultsTable } from "@/components/ui/reports/AcademicReportResultsBody";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
-import type { AcademicReportProps } from '@/components/ui/reports/academicReportTypes';
+import type { AcademicReportProps } from "@/components/ui/reports/academicReportTypes";
 
 export type {
   AcademicReportFilters,
@@ -23,8 +25,23 @@ export type {
 /**
  * Renders the academic/exam reports including summary charts, class rankings cards, and a filterable exam-results table.
  */
-const AcademicReport = (function AcademicReport({ filters }: AcademicReportProps): React.JSX.Element {
-  const { t, examsQuery, resultsQuery, aggregatesQuery, selectedStudent, selectedClass, setSelectedStudent, setSelectedClass, filteredAcademicResultsData, filteredClassRankings, toggleClassFilter, toggleStudentFilter } = useAcademicReportController({ filters });
+const AcademicReport = function AcademicReport({
+  filters,
+}: AcademicReportProps): React.JSX.Element {
+  const {
+    t,
+    examsQuery,
+    resultsQuery,
+    aggregatesQuery,
+    selectedStudent,
+    selectedClass,
+    setSelectedStudent,
+    setSelectedClass,
+    filteredAcademicResultsData,
+    filteredClassRankings,
+    toggleClassFilter,
+    toggleStudentFilter,
+  } = useAcademicReportController({ filters });
 
   if (examsQuery.isError || resultsQuery.isError || aggregatesQuery.isError) {
     return (
@@ -86,6 +103,6 @@ const AcademicReport = (function AcademicReport({ filters }: AcademicReportProps
       <PinnedWidgets category="examinations" />
     </div>
   );
-});
+};
 
 export default AcademicReport;

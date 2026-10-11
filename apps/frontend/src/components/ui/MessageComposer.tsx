@@ -1,21 +1,24 @@
-import { FormModal } from '@/components/ui/FormModal';
-import { WarningCallout } from '@/components/ui/WarningCallout';
-import { useTranslation } from '@/hooks/useTranslation';
+import { FormModal } from "@/components/ui/FormModal";
+import { WarningCallout } from "@/components/ui/WarningCallout";
+import { useTranslation } from "@/hooks/useTranslation";
 import type {
   MessageTemplate,
   StandardMessagingRecipient as MessagingRecipient,
-} from '@mms/shared';
-import { MessageComposerDispatchControls } from './messageComposer/MessageComposerDispatchControls';
-import { MessageComposerFormBody } from './messageComposer/MessageComposerFormBody';
-import { MessageComposerRecipients, type RecipientPickerSlotProps } from './messageComposer/MessageComposerRecipients';
-import { useMessageComposerModel } from './messageComposer/useMessageComposerModel';
+} from "@mms/shared";
+import { MessageComposerDispatchControls } from "./messageComposer/MessageComposerDispatchControls";
+import { MessageComposerFormBody } from "./messageComposer/MessageComposerFormBody";
+import {
+  MessageComposerRecipients,
+  type RecipientPickerSlotProps,
+} from "./messageComposer/MessageComposerRecipients";
+import { useMessageComposerModel } from "./messageComposer/useMessageComposerModel";
 
 export type { RecipientPickerSlotProps };
 
-const COMPOSER_FORM_ID = 'message-composer-form';
+const COMPOSER_FORM_ID = "message-composer-form";
 
 export interface MessageComposerProps {
-  channel: 'sms' | 'whatsapp' | 'email';
+  channel: "sms" | "whatsapp" | "email";
   recipients: MessagingRecipient[];
   onClose: () => void;
   templates?: MessageTemplate[];
@@ -31,7 +34,7 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
   const { t } = useTranslation();
   const model = useMessageComposerModel(props);
   const { step, dispatch, isEmail, isSms, isBulk, Icon } = model;
-  const canGoPrevious = step === 'compose' && props.recipients.length === 0;
+  const canGoPrevious = step === "compose" && props.recipients.length === 0;
 
   /** FormModal onClose after discard confirm, or immediate close when clean. */
   const handleClose = () => {
@@ -39,35 +42,35 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
       if (model.isDirty) {
         model.discardDraftAndGoBack();
       } else {
-        model.setStep('pick');
+        model.setStep("pick");
       }
       return;
     }
     model.discardDraftAndClose();
   };
 
-  const cancelLabel = canGoPrevious ? t('common.previous') : t('common.cancel');
+  const cancelLabel = canGoPrevious ? t("common.previous") : t("common.cancel");
 
   return (
     <FormModal
       open
       priority
-      size={step === 'pick' ? '2xl' : 'xl'}
+      size={step === "pick" ? "2xl" : "xl"}
       onClose={handleClose}
       title={model.title}
       subtitle={model.subtitle}
       icon={Icon}
       cancelLabel={cancelLabel}
       saveLabel={model.saveLabel}
-      saving={step === 'compose' && (dispatch.opening || dispatch.saving)}
+      saving={step === "compose" && (dispatch.opening || dispatch.saving)}
       onSave={model.handleSave}
       saveDisabled={model.saveDisabled}
       formId={COMPOSER_FORM_ID}
       isDirty={model.isDirty}
-      discardUnsavedTitle={t('settings.unsavedChanges')}
-      discardUnsavedDescription={t('messaging.discardComposeDraft')}
-      discardConfirmLabel={t('common.yes')}
-      discardCancelLabel={t('common.cancel')}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("messaging.discardComposeDraft")}
+      discardConfirmLabel={t("common.yes")}
+      discardCancelLabel={t("common.cancel")}
     >
       <form
         id={COMPOSER_FORM_ID}
@@ -77,17 +80,17 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
           if (!model.saveDisabled) model.handleSave();
         }}
         onKeyDown={(event) => {
-          if (!(event.metaKey || event.ctrlKey) || event.key !== 'Enter') return;
+          if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
           if (event.nativeEvent.isComposing) return;
           event.preventDefault();
           if (!model.saveDisabled) model.handleSave();
         }}
       >
-        {step === 'compose' && (
+        {step === "compose" && (
           <>
             <p className="text-xs leading-relaxed text-muted-foreground">{model.note}</p>
             {dispatch.pendingAudit ? (
-              <WarningCallout density="compact" description={t('messaging.pendingAuditHint')} />
+              <WarningCallout density="compact" description={t("messaging.pendingAuditHint")} />
             ) : null}
             <MessageComposerDispatchControls
               skippedCount={dispatch.skippedRecipients.length}
@@ -116,8 +119,8 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
               onTemplateChange={model.changeTemplate}
               onSubjectChange={model.setSubject}
               onMessageChange={model.setMessage}
-              onMessageBlur={() => model.syncTokenErrorsOnBlur('body')}
-              onSubjectBlur={() => model.syncTokenErrorsOnBlur('subject')}
+              onMessageBlur={() => model.syncTokenErrorsOnBlur("body")}
+              onSubjectBlur={() => model.syncTokenErrorsOnBlur("subject")}
               onPreviewIndexChange={model.setPreviewIndex}
             />
           </>
@@ -140,7 +143,7 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
           onSendOne={dispatch.executeSend}
           onAdd={model.addRecipient}
           onRemove={model.removeRecipient}
-          isPickStep={step === 'pick'}
+          isPickStep={step === "pick"}
           renderRecipientPicker={props.renderRecipientPicker}
         />
       </form>

@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
   accountingCommandMetricsSnapshotSchema,
   obligationsCommandMetricsSnapshotSchema,
   hasanatCommandMetricsSnapshotSchema,
-} from './moduleCommandMetricsFinance.js';
+} from "./moduleCommandMetricsFinance.js";
 
-describe('Financial Command Metrics Zod Runtime Schemas', () => {
-  describe('accountingCommandMetricsSnapshotSchema', () => {
-    it('successfully parses a valid nominal metrics snapshot', () => {
+describe("Financial Command Metrics Zod Runtime Schemas", () => {
+  describe("accountingCommandMetricsSnapshotSchema", () => {
+    it("successfully parses a valid nominal metrics snapshot", () => {
       const valid = {
         totalEntries: 150,
         posted: 140,
@@ -31,7 +31,7 @@ describe('Financial Command Metrics Zod Runtime Schemas', () => {
       }
     });
 
-    it('successfully parses boundary values with all zeros and negative surplus', () => {
+    it("successfully parses boundary values with all zeros and negative surplus", () => {
       const boundary = {
         totalEntries: 0,
         posted: 0,
@@ -51,7 +51,7 @@ describe('Financial Command Metrics Zod Runtime Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('rejects negative counts for non-negative fields', () => {
+    it("rejects negative counts for non-negative fields", () => {
       const invalid = {
         totalEntries: -1,
         posted: 10,
@@ -71,7 +71,7 @@ describe('Financial Command Metrics Zod Runtime Schemas', () => {
       expect(result.success).toBe(false);
     });
 
-    it('rejects floating point values for integer fields', () => {
+    it("rejects floating point values for integer fields", () => {
       const invalid = {
         totalEntries: 10.5,
         posted: 10,
@@ -91,7 +91,7 @@ describe('Financial Command Metrics Zod Runtime Schemas', () => {
       expect(result.success).toBe(false);
     });
 
-    it('rejects extra unrecognized fields due to .strict() constraint', () => {
+    it("rejects extra unrecognized fields due to .strict() constraint", () => {
       const invalid = {
         totalEntries: 10,
         posted: 10,
@@ -105,7 +105,7 @@ describe('Financial Command Metrics Zod Runtime Schemas', () => {
         surplus: 50,
         assets: 100,
         liabilities: 50,
-        unrecognizedField: 'malicious-data',
+        unrecognizedField: "malicious-data",
       };
 
       const result = accountingCommandMetricsSnapshotSchema.safeParse(invalid);
@@ -113,8 +113,8 @@ describe('Financial Command Metrics Zod Runtime Schemas', () => {
     });
   });
 
-  describe('obligationsCommandMetricsSnapshotSchema', () => {
-    it('validates nominal obligations snapshot', () => {
+  describe("obligationsCommandMetricsSnapshotSchema", () => {
+    it("validates nominal obligations snapshot", () => {
       const valid = {
         total: 50,
         totalAmount: 12500.75,
@@ -127,7 +127,7 @@ describe('Financial Command Metrics Zod Runtime Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('rejects unrecognized extra fields on obligations schema', () => {
+    it("rejects unrecognized extra fields on obligations schema", () => {
       const invalid = {
         total: 50,
         totalAmount: 12500.75,
@@ -142,8 +142,8 @@ describe('Financial Command Metrics Zod Runtime Schemas', () => {
     });
   });
 
-  describe('hasanatCommandMetricsSnapshotSchema', () => {
-    it('validates nominal hasanat snapshot', () => {
+  describe("hasanatCommandMetricsSnapshotSchema", () => {
+    it("validates nominal hasanat snapshot", () => {
       const valid = {
         totalStock: 1000,
         available: 800,

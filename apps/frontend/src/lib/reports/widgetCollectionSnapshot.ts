@@ -38,7 +38,8 @@ export function getWidgetCollections(): ReportCollectionsSnapshot {
   const attendance = readQueryCollection<AttendanceRecord>(ATTENDANCE_QUERY_KEY) ?? [];
   const distributions = readQueryCollection<Distribution>(HASANAT_DISTRIBUTIONS_QUERY_KEY) ?? [];
   const denominations = readQueryCollection<Denomination>(HASANAT_DENOMS_QUERY_KEY) ?? [];
-  const questions = readQueryCollection<QuestionBankQuestion>(QUESTION_BANK_QUESTIONS_QUERY_KEY) ?? [];
+  const questions =
+    readQueryCollection<QuestionBankQuestion>(QUESTION_BANK_QUESTIONS_QUERY_KEY) ?? [];
   const tests = readQueryCollection<QuestionBankTest>(QUESTION_BANK_TESTS_QUERY_KEY) ?? [];
   const assessmentResults =
     readQueryCollection<QuestionBankResult>(QUESTION_BANK_RESULTS_QUERY_KEY) ?? [];
@@ -73,6 +74,6 @@ export function getFilteredRecords(
       widget.filterField,
       widget.filterOperator,
       widget.filterValue,
-    )
+    ),
   );
 }

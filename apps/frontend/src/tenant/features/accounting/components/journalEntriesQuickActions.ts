@@ -87,11 +87,31 @@ const OTHER_EXPENSE: QuickActionType = {
 };
 
 export const QUICK_ACTIONS: QuickAction[] = [
-  { labelKey: "accounting.journal.dashboard.action.collectFee", icon: BookOpen, type: FEE_COLLECTION },
-  { labelKey: "accounting.journal.dashboard.action.paySalary", icon: UserCheck, type: SALARY_PAYMENT },
-  { labelKey: "accounting.journal.dashboard.action.recordDonation", icon: Heart, type: DONATION_RECEIVED },
-  { labelKey: "accounting.journal.dashboard.action.payUtility", icon: Zap, type: UTILITIES_PAYMENT },
-  { labelKey: "accounting.journal.dashboard.action.addExpense", icon: TrendingUp, type: OTHER_EXPENSE },
+  {
+    labelKey: "accounting.journal.dashboard.action.collectFee",
+    icon: BookOpen,
+    type: FEE_COLLECTION,
+  },
+  {
+    labelKey: "accounting.journal.dashboard.action.paySalary",
+    icon: UserCheck,
+    type: SALARY_PAYMENT,
+  },
+  {
+    labelKey: "accounting.journal.dashboard.action.recordDonation",
+    icon: Heart,
+    type: DONATION_RECEIVED,
+  },
+  {
+    labelKey: "accounting.journal.dashboard.action.payUtility",
+    icon: Zap,
+    type: UTILITIES_PAYMENT,
+  },
+  {
+    labelKey: "accounting.journal.dashboard.action.addExpense",
+    icon: TrendingUp,
+    type: OTHER_EXPENSE,
+  },
 ];
 
 /** Cash-flow direction of a quick action, taken from its own group. */
@@ -129,7 +149,8 @@ export const MONEY_IN_ACTION_TAGS: ReadonlySet<string> = new Set([
 export const MONEY_OUT_ACTION_TAGS: ReadonlySet<string> = new Set([
   ...QUICK_ACTIONS.filter(
     (quickAction) =>
-      quickAction.type.groupKey !== MONEY_IN_GROUP && !MONEY_IN_ACTION_TAGS.has(quickAction.type.tag),
+      quickAction.type.groupKey !== MONEY_IN_GROUP &&
+      !MONEY_IN_ACTION_TAGS.has(quickAction.type.tag),
   ).map((quickAction) => quickAction.type.tag),
   "Rent",
 ]);
@@ -138,14 +159,17 @@ export const MONEY_OUT_ACTION_TAGS: ReadonlySet<string> = new Set([
  * Direction implied by an entry's own tags / transaction type, or `null` when the
  * entry carries no cash-flow signal.
  */
-export function resolveEntryDirection(
-  entry: { tags?: string[] | null; transaction_type?: string | null },
-): QuickActionDirection | null {
+export function resolveEntryDirection(entry: {
+  tags?: string[] | null;
+  transaction_type?: string | null;
+}): QuickActionDirection | null {
   const transactionDirection = entry.transaction_type
-    ? QUICK_ACTION_DIRECTIONS[entry.transaction_type] ?? null
+    ? (QUICK_ACTION_DIRECTIONS[entry.transaction_type] ?? null)
     : null;
   const tags = entry.tags ?? [];
-  const tagDirection: QuickActionDirection | null = tags.some((tag) => MONEY_IN_ACTION_TAGS.has(tag))
+  const tagDirection: QuickActionDirection | null = tags.some((tag) =>
+    MONEY_IN_ACTION_TAGS.has(tag),
+  )
     ? "in"
     : tags.some((tag) => MONEY_OUT_ACTION_TAGS.has(tag))
       ? "out"
@@ -158,7 +182,8 @@ export function resolveEntryDirection(
 export function parseNaturalLanguage(text: string): QuickActionType | null {
   const normalizedText = text.toLowerCase();
   if (normalizedText.includes("fee") || normalizedText.includes("collect")) return FEE_COLLECTION;
-  if (normalizedText.includes("salary") || normalizedText.includes("pay staff")) return SALARY_PAYMENT;
+  if (normalizedText.includes("salary") || normalizedText.includes("pay staff"))
+    return SALARY_PAYMENT;
   if (normalizedText.includes("donat")) return DONATION_RECEIVED;
   if (
     normalizedText.includes("electric") ||

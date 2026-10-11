@@ -18,9 +18,20 @@ import {
 } from "./contactItemNormalizeKeys.js";
 
 const CONTACT_ENTITY_ARRAY_KEYS = new Set([
-  "phones", "emails", "addresses", "socials", "education", "experience",
-  "skills", "bankDetails", "relationshipContacts", "relationships",
-  "activities", "attachments", "emergencyContacts", "tags",
+  "phones",
+  "emails",
+  "addresses",
+  "socials",
+  "education",
+  "experience",
+  "skills",
+  "bankDetails",
+  "relationshipContacts",
+  "relationships",
+  "activities",
+  "attachments",
+  "emergencyContacts",
+  "tags",
 ]);
 
 function valueHasContent(value: unknown): boolean {
@@ -72,7 +83,9 @@ export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
     result.cnic = trimmed ? formatCnic(trimmed) : "";
   }
   if (typeof (result as Record<string, unknown>).email === "string") {
-    (result as Record<string, unknown>).email = String((result as Record<string, unknown>).email).trim().toLowerCase();
+    (result as Record<string, unknown>).email = String((result as Record<string, unknown>).email)
+      .trim()
+      .toLowerCase();
   }
 
   if (result.tags !== undefined || result.tag !== undefined) {
@@ -87,7 +100,8 @@ export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
         .map((phone) => ({
           ...phone,
           number: (phone.number || "").trim(),
-          countryCode: typeof phone.countryCode === "string" ? phone.countryCode.trim() : phone.countryCode,
+          countryCode:
+            typeof phone.countryCode === "string" ? phone.countryCode.trim() : phone.countryCode,
         })),
     );
   }
@@ -100,15 +114,25 @@ export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
   }
   if (Array.isArray(result.addresses)) {
     result.addresses = ensureSinglePrimaryFlag(
-      result.addresses.filter((a) => !isBlankContactListRow(a, ["line1", "city", "state", "country"], ADDRESS_SYSTEM_KEYS)),
+      result.addresses.filter(
+        (a) =>
+          !isBlankContactListRow(a, ["line1", "city", "state", "country"], ADDRESS_SYSTEM_KEYS),
+      ),
     );
   }
   if (Array.isArray(result.socials)) {
-    result.socials = result.socials.filter((s) => !isBlankContactListRow(s, ["url"], SOCIAL_SYSTEM_KEYS));
+    result.socials = result.socials.filter(
+      (s) => !isBlankContactListRow(s, ["url"], SOCIAL_SYSTEM_KEYS),
+    );
   }
   if (Array.isArray(result.education)) {
     result.education = result.education.filter(
-      (edu) => !isBlankContactListRow(edu, ["institution", "degree", "fieldOfStudy"], EDUCATION_SYSTEM_KEYS),
+      (edu) =>
+        !isBlankContactListRow(
+          edu,
+          ["institution", "degree", "fieldOfStudy"],
+          EDUCATION_SYSTEM_KEYS,
+        ),
     );
   }
   if (Array.isArray(result.experience)) {
@@ -117,25 +141,46 @@ export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
     );
   }
   if (Array.isArray(result.skills)) {
-    result.skills = result.skills.filter((sk) => !isBlankContactListRow(sk, ["name"], SKILL_SYSTEM_KEYS));
+    result.skills = result.skills.filter(
+      (sk) => !isBlankContactListRow(sk, ["name"], SKILL_SYSTEM_KEYS),
+    );
   }
   if (Array.isArray(result.bankDetails)) {
     result.bankDetails = result.bankDetails
-      .filter((b) => !isBlankContactListRow(b, ["bankName", "accountTitle", "accountNumber"], BANK_DETAIL_SYSTEM_KEYS))
+      .filter(
+        (b) =>
+          !isBlankContactListRow(
+            b,
+            ["bankName", "accountTitle", "accountNumber"],
+            BANK_DETAIL_SYSTEM_KEYS,
+          ),
+      )
       .map((b) => ({
         ...b,
         bankName: typeof b.bankName === "string" ? b.bankName.trim() : (b.bankName ?? ""),
-        accountTitle: typeof b.accountTitle === "string" ? b.accountTitle.trim() : ((b as Record<string, unknown>).title as string ?? ""),
-        accountNumber: typeof b.accountNumber === "string" ? b.accountNumber.trim() : ((b as Record<string, unknown>).iban as string ?? (b.accountNumber ?? "")),
+        accountTitle:
+          typeof b.accountTitle === "string"
+            ? b.accountTitle.trim()
+            : (((b as Record<string, unknown>).title as string) ?? ""),
+        accountNumber:
+          typeof b.accountNumber === "string"
+            ? b.accountNumber.trim()
+            : (((b as Record<string, unknown>).iban as string) ?? b.accountNumber ?? ""),
       }));
   }
   if (Array.isArray(result.relationshipContacts)) {
     result.relationshipContacts = result.relationshipContacts
-      .filter((link) => !isBlankContactListRow(link, ["contactId", "name"], RELATIONSHIP_SYSTEM_KEYS))
+      .filter(
+        (link) => !isBlankContactListRow(link, ["contactId", "name"], RELATIONSHIP_SYSTEM_KEYS),
+      )
       .map((link) => ({
         ...link,
-        contactId: link.contactId !== undefined && link.contactId !== null && String(link.contactId).trim() ? String(link.contactId).trim() : undefined,
-        relationship: typeof link.relationship === "string" ? link.relationship.trim() : link.relationship,
+        contactId:
+          link.contactId !== undefined && link.contactId !== null && String(link.contactId).trim()
+            ? String(link.contactId).trim()
+            : undefined,
+        relationship:
+          typeof link.relationship === "string" ? link.relationship.trim() : link.relationship,
       }));
     if (result.relationshipContacts.length === 0) result.relationships = [];
   }
@@ -149,5 +194,5 @@ export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
   return result;
 }
 
-export * from './contactItemNormalizeRows.js';
-export * from './contactItemNormalizeBankRows.js';
+export * from "./contactItemNormalizeRows.js";
+export * from "./contactItemNormalizeBankRows.js";

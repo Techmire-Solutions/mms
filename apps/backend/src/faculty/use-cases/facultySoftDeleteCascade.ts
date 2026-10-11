@@ -2,12 +2,12 @@
  * @file facultySoftDeleteCascade.ts
  * @description Cascade soft-delete of assignments, employ-designations, employments + parent outbox.
  */
-import type { Faculty } from '@mms/shared';
-import { emitOutboxEvent } from '../../services/outboxEventService.js';
-import { cascadeSoftDeleteFacultyAssignments } from '../../db/repositories/facultyAssignmentCascade.js';
-import { cascadeSoftDeleteFacultyEmployments } from '../../db/repositories/facultyEmploymentRepository.js';
-import { cascadeSoftDeleteFacultyEmployDesignations } from '../../db/repositories/facultyEmployDesignationRepository.js';
-import { revokeFacultySessions } from './facultySoftDeleteSessions.js';
+import type { Faculty } from "@mms/shared";
+import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { cascadeSoftDeleteFacultyAssignments } from "../../db/repositories/facultyAssignmentCascade.js";
+import { cascadeSoftDeleteFacultyEmployments } from "../../db/repositories/facultyEmploymentRepository.js";
+import { cascadeSoftDeleteFacultyEmployDesignations } from "../../db/repositories/facultyEmployDesignationRepository.js";
+import { revokeFacultySessions } from "./facultySoftDeleteSessions.js";
 
 /** Cascade children then emit faculty soft-delete outbox + revoke sessions. */
 export async function cascadeFacultySoftDeleteSideEffects(
@@ -23,8 +23,8 @@ export async function cascadeFacultySoftDeleteSideEffects(
   await cascadeSoftDeleteFacultyEmployments(tenant, ids, deletedBy, trimmedReason);
   for (const f of toSave) {
     const deletedAt = f.deletedAt ?? now;
-    await emitOutboxEvent('entity.soft_deleted', {
-      entityType: 'faculty',
+    await emitOutboxEvent("entity.soft_deleted", {
+      entityType: "faculty",
       entityId: String(f.id),
       tenantId: tenant,
       deletedAt,

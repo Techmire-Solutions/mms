@@ -31,9 +31,7 @@ vi.mock("@/tenant/features/enrollments/hooks/useEnrollmentsApi", () => ({
 
 describe("EnrollmentsCommandMetrics Component", () => {
   it("renders metrics grid cards", () => {
-    const html = renderToStaticMarkup(
-      <EnrollmentsCommandMetrics total={100} shown={50} />,
-    );
+    const html = renderToStaticMarkup(<EnrollmentsCommandMetrics total={100} shown={50} />);
 
     expect(html).toContain("enrollments.metrics.total");
     expect(html).toContain("100");

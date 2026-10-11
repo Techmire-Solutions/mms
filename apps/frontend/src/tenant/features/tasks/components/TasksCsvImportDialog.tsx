@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  tasksTransferSchema,
-  type TaskTransferEntity,
-} from "@mms/shared";
+import { tasksTransferSchema, type TaskTransferEntity } from "@mms/shared";
 import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
 
 export interface TasksCsvImportDialogProps {

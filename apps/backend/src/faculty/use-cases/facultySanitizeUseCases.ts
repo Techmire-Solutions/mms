@@ -4,13 +4,13 @@ import {
   type FieldDefinition,
   type Faculty,
   type FacultySettings,
-} from '@mms/shared';
-import { loadFacultyFieldConfig } from './facultyConfigService.js';
+} from "@mms/shared";
+import { loadFacultyFieldConfig } from "./facultyConfigService.js";
 
 function settingsSnapshot(settings: FacultySettings | null) {
   if (!settings) return null;
   const fields =
-    settings.fields && typeof settings.fields === 'object' && !Array.isArray(settings.fields)
+    settings.fields && typeof settings.fields === "object" && !Array.isArray(settings.fields)
       ? (settings.fields as Record<string, FieldDefinition[]>)
       : undefined;
   if (!fields) return null;

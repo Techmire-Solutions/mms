@@ -78,7 +78,11 @@ export function useWidgetBuilderHydration({
       setBuilderColor(editWidgetConfig.color || "emerald");
       setThresholdEnabled(!!editWidgetConfig.thresholdEnabled);
       setThresholdCondition(editWidgetConfig.thresholdCondition || "lt");
-      setThresholdValue(editWidgetConfig.thresholdValue !== undefined ? String(editWidgetConfig.thresholdValue) : "");
+      setThresholdValue(
+        editWidgetConfig.thresholdValue !== undefined
+          ? String(editWidgetConfig.thresholdValue)
+          : "",
+      );
       setThresholdColor(editWidgetConfig.thresholdColor || "red");
       setSwitchActionType(editWidgetConfig.switchActionType || "app_setting");
       setSwitchStateKey(editWidgetConfig.switchStateKey || "app_setting_attendance_lock");

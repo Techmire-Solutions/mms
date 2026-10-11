@@ -2,25 +2,23 @@ import {
   LOCAL_DEV_APP_DOMAIN,
   isValidSubdomain,
   parseTenantFromHost,
-} from './tenantSubdomainUtils.js';
+} from "./tenantSubdomainUtils.js";
 
 /**
  * Derive the apex app domain from a browser/API host when env is unset.
  * e.g. `{slug}.platform.example.com` → `platform.example.com`
  */
-const APEX_3PART_LABELS = new Set([
-  'platform',
-  'mms',
-  'mmsv2',
-  'app',
-  'staging',
-  'dev',
-  'www',
-]);
+const APEX_3PART_LABELS = new Set(["platform", "mms", "mmsv2", "app", "staging", "dev", "www"]);
 
 export function inferAppDomainFromHostname(hostname: string): string | null {
   const host = hostname.toLowerCase().split(":")[0];
-  if (!host || host === "localhost" || host.endsWith(".localhost") || host === "127.0.0.1" || /^127\.\d+\.\d+\.\d+$/.test(host)) {
+  if (
+    !host ||
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host === "127.0.0.1" ||
+    /^127\.\d+\.\d+\.\d+$/.test(host)
+  ) {
     return "localhost";
   }
 
@@ -62,10 +60,7 @@ export function inferAppDomainFromHostname(hostname: string): string | null {
 }
 
 /** Configured domain wins; else infer from host; else localhost (dev only). */
-export function resolveAppDomain(
-  hostname: string,
-  configuredDomain?: string | null,
-): string {
+export function resolveAppDomain(hostname: string, configuredDomain?: string | null): string {
   const trimmed = configuredDomain?.trim();
   if (trimmed) {
     return trimmed;
@@ -85,7 +80,7 @@ export function misconfiguredAppDomainHint(
   hostname: string,
   configuredAppDomain: string,
 ): string | null {
-  const host = hostname.toLowerCase().split(':')[0];
+  const host = hostname.toLowerCase().split(":")[0];
   const configured = configuredAppDomain.toLowerCase().trim();
   if (!configured || host === configured || host === `www.${configured}`) {
     return null;
@@ -94,8 +89,8 @@ export function misconfiguredAppDomainHint(
   const tenant = parseTenantFromHost(host, configured);
   if (!tenant) return null;
 
-  const hostLabels = host.split('.');
-  const configLabels = configured.split('.');
+  const hostLabels = host.split(".");
+  const configLabels = configured.split(".");
   if (hostLabels.length !== configLabels.length + 1 || !host.endsWith(`.${configured}`)) {
     return null;
   }
@@ -106,8 +101,8 @@ export function misconfiguredAppDomainHint(
   }
 
   return (
-      `MMS_APP_DOMAIN is "${configured}" but "${host}" is treated as tenant "${tenant}". ` +
-      `Set MMS_APP_DOMAIN=${host}.`
+    `MMS_APP_DOMAIN is "${configured}" but "${host}" is treated as tenant "${tenant}". ` +
+    `Set MMS_APP_DOMAIN=${host}.`
   );
 }
 
@@ -118,7 +113,7 @@ export function resolveAppDomainForRequest(
   hostname: string,
   configuredDomain?: string | null,
 ): string {
-  const host = hostname.toLowerCase().split(':')[0];
+  const host = hostname.toLowerCase().split(":")[0];
   const configured = configuredDomain?.trim();
   if (configured) {
     if (configured === LOCAL_DEV_APP_DOMAIN || configured.endsWith(`.${LOCAL_DEV_APP_DOMAIN}`)) {
@@ -126,23 +121,19 @@ export function resolveAppDomainForRequest(
     }
 
     const hint = misconfiguredAppDomainHint(host, configured);
-    if (hint && host.split('.').length === configured.split('.').length + 1) {
+    if (hint && host.split(".").length === configured.split(".").length + 1) {
       return host;
     }
 
     // Configured apex is too short for multi-label tenants
     // (e.g. dar-ul-quran.mmsv2.example.com + example.com → no tenant parsed).
     if (
-      parseTenantFromHost(host, configured) === null
-      && host !== configured
-      && host !== `www.${configured}`
+      parseTenantFromHost(host, configured) === null &&
+      host !== configured &&
+      host !== `www.${configured}`
     ) {
       const inferred = inferAppDomainFromHostname(host);
-      if (
-        inferred
-        && inferred !== configured
-        && parseTenantFromHost(host, inferred) !== null
-      ) {
+      if (inferred && inferred !== configured && parseTenantFromHost(host, inferred) !== null) {
         return inferred;
       }
     }

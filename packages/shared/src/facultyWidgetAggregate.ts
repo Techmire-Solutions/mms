@@ -1,8 +1,8 @@
-import { matchesWidgetFilter } from './utils.js';
-import type { WidgetQuery, WidgetAggregateResult, WidgetFilter } from './widgetAggregateTypes.js';
+import { matchesWidgetFilter } from "./utils.js";
+import type { WidgetQuery, WidgetAggregateResult, WidgetFilter } from "./widgetAggregateTypes.js";
 
-export type FacultyWidgetOperation = 'count' | 'sum' | 'avg' | 'percentage';
-export type FacultyWidgetFilterOperator = 'equals' | 'contains' | 'startsWith' | 'gt' | 'lt';
+export type FacultyWidgetOperation = "count" | "sum" | "avg" | "percentage";
+export type FacultyWidgetFilterOperator = "equals" | "contains" | "startsWith" | "gt" | "lt";
 export type FacultyWidgetFilter = WidgetFilter;
 export type FacultyWidgetQuery = WidgetQuery;
 export type FacultyWidgetAggregateResult = WidgetAggregateResult;
@@ -13,7 +13,10 @@ function facultyFieldValue(faculty: FacultyRow, field: string): unknown {
   return faculty[field];
 }
 
-function filterFacultyForWidget(facultyList: FacultyRow[], query: FacultyWidgetQuery): FacultyRow[] {
+function filterFacultyForWidget(
+  facultyList: FacultyRow[],
+  query: FacultyWidgetQuery,
+): FacultyRow[] {
   return facultyList.filter((faculty) =>
     matchesWidgetFilter(faculty, query.filterField, query.filterOperator, query.filterValue),
   );
@@ -21,7 +24,7 @@ function filterFacultyForWidget(facultyList: FacultyRow[], query: FacultyWidgetQ
 
 function aggregateNumericField(
   items: FacultyRow[],
-  operation: 'sum' | 'avg',
+  operation: "sum" | "avg",
   targetField: string,
 ): number {
   let sum = 0;
@@ -33,20 +36,26 @@ function aggregateNumericField(
       count += 1;
     }
   }
-  if (operation === 'sum') return sum;
+  if (operation === "sum") return sum;
   return count > 0 ? Math.round(sum / count) : 0;
 }
 
-function buildChartData(items: FacultyRow[], query: FacultyWidgetQuery): { name: string; value: number }[] {
-  const xAxisField = query.xAxisField || 'status';
-  const isNumeric = query.operation === 'sum' || query.operation === 'avg';
-  const targetField = query.targetField || '';
+function buildChartData(
+  items: FacultyRow[],
+  query: FacultyWidgetQuery,
+): { name: string; value: number }[] {
+  const xAxisField = query.xAxisField || "status";
+  const isNumeric = query.operation === "sum" || query.operation === "avg";
+  const targetField = query.targetField || "";
   const groupStats = new Map<string, { sum: number; count: number }>();
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     const groupValue = facultyFieldValue(item, xAxisField);
-    const groupKey = groupValue === undefined || groupValue === null || groupValue === '' ? 'Unknown' : String(groupValue);
+    const groupKey =
+      groupValue === undefined || groupValue === null || groupValue === ""
+        ? "Unknown"
+        : String(groupValue);
     let stat = groupStats.get(groupKey);
     if (!stat) {
       stat = { sum: 0, count: 0 };
@@ -66,13 +75,19 @@ function buildChartData(items: FacultyRow[], query: FacultyWidgetQuery): { name:
   const chartData: { name: string; value: number }[] = [];
   for (const [groupName, stat] of groupStats) {
     const aggregateValue = isNumeric
-      ? (query.operation === 'sum' ? stat.sum : (stat.count > 0 ? Math.round(stat.sum / stat.count) : 0))
+      ? query.operation === "sum"
+        ? stat.sum
+        : stat.count > 0
+          ? Math.round(stat.sum / stat.count)
+          : 0
       : stat.count;
     chartData.push({ name: groupName, value: aggregateValue });
   }
 
   const limit = Math.max(1, query.chartLimit ?? 8);
-  return chartData.sort((leftPoint, rightPoint) => rightPoint.value - leftPoint.value).slice(0, limit);
+  return chartData
+    .sort((leftPoint, rightPoint) => rightPoint.value - leftPoint.value)
+    .slice(0, limit);
 }
 
 /**
@@ -87,12 +102,12 @@ export function computeFacultyWidgetAggregate(
   const filtered = filterFacultyForWidget(facultyList, query);
 
   let value = 0;
-  if (query.operation === 'count') {
+  if (query.operation === "count") {
     value = filtered.length;
-  } else if (query.operation === 'percentage') {
+  } else if (query.operation === "percentage") {
     value = totalCount > 0 ? Math.round((filtered.length / totalCount) * 100) : 0;
-  } else if (query.operation === 'sum' || query.operation === 'avg') {
-    value = aggregateNumericField(filtered, query.operation, query.targetField || '');
+  } else if (query.operation === "sum" || query.operation === "avg") {
+    value = aggregateNumericField(filtered, query.operation, query.targetField || "");
   }
 
   return {

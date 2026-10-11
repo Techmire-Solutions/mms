@@ -37,7 +37,7 @@ describe("AccountingPageHeaderActions", () => {
           onCreateJournal={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

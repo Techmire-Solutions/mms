@@ -8,11 +8,11 @@ import {
   isSessionLookupLegacyCollectionKey,
   SESSION_LOOKUP_LEGACY_COLLECTION_KEYS,
   type SessionLookupKind,
-} from '@mms/shared';
-import { and, eq, inArray } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
+} from "@mms/shared";
+import { and, eq, inArray } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
 
 export async function runMigration069(): Promise<void> {
   const db = getDb();
@@ -27,11 +27,15 @@ export async function runMigration069(): Promise<void> {
     if (!isSessionLookupLegacyCollectionKey(parsed.logicalKey)) continue;
     const tenant = parsed.subdomain.trim().toLowerCase();
     if (!tenant) continue;
-    candidates.push({ name: r.name, tenant, kind: SESSION_LOOKUP_LEGACY_COLLECTION_KEYS[parsed.logicalKey] });
+    candidates.push({
+      name: r.name,
+      tenant,
+      kind: SESSION_LOOKUP_LEGACY_COLLECTION_KEYS[parsed.logicalKey],
+    });
   }
 
   if (candidates.length === 0) {
-    console.log('[Migration 069] No legacy session lookup collections found to delete.');
+    console.log("[Migration 069] No legacy session lookup collections found to delete.");
     return;
   }
 
@@ -47,7 +51,12 @@ export async function runMigration069(): Promise<void> {
       const [row] = await tx
         .select({ id: schema.sessionLookups.id })
         .from(schema.sessionLookups)
-        .where(and(eq(schema.sessionLookups.workspaceSubdomain, tenant), eq(schema.sessionLookups.kind, kind)))
+        .where(
+          and(
+            eq(schema.sessionLookups.workspaceSubdomain, tenant),
+            eq(schema.sessionLookups.kind, kind),
+          ),
+        )
         .limit(1);
       const value = Boolean(row);
       cache.set(cacheKey, value);

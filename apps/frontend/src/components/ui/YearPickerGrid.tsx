@@ -1,23 +1,23 @@
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-import { useTranslation } from "@/hooks/useTranslation"
+import * as React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface YearPickerGridProps {
-  selectedYear?: number
-  yearPageStart: number
-  minYear: number
-  maxYear: number
-  onSelectYear: (year: number) => void
-  onPreviousPage: () => void
-  onNextPage: () => void
-  onClear: (event?: React.MouseEvent) => void
-  onSelectThisYear: () => void
-  isThisYearAllowed: boolean
-  hasValue: boolean
-  disabled?: boolean
-  className?: string
+  selectedYear?: number;
+  yearPageStart: number;
+  minYear: number;
+  maxYear: number;
+  onSelectYear: (year: number) => void;
+  onPreviousPage: () => void;
+  onNextPage: () => void;
+  onClear: (event?: React.MouseEvent) => void;
+  onSelectThisYear: () => void;
+  isThisYearAllowed: boolean;
+  hasValue: boolean;
+  disabled?: boolean;
+  className?: string;
 }
 
 export function YearPickerGrid({
@@ -35,20 +35,20 @@ export function YearPickerGrid({
   disabled,
   className,
 }: YearPickerGridProps) {
-  const { t } = useTranslation()
-  const currentYear = new Date().getFullYear()
-  const pageEndYear = yearPageStart + 11
+  const { t } = useTranslation();
+  const currentYear = new Date().getFullYear();
+  const pageEndYear = yearPageStart + 11;
 
-  const canGoPrevious = yearPageStart > minYear
-  const canGoNext = pageEndYear < maxYear
+  const canGoPrevious = yearPageStart > minYear;
+  const canGoNext = pageEndYear < maxYear;
 
   const years = (() => {
-    const list: number[] = []
+    const list: number[] = [];
     for (let y = yearPageStart; y <= pageEndYear; y++) {
-      list.push(y)
+      list.push(y);
     }
-    return list
-  })()
+    return list;
+  })();
 
   return (
     <div className={cn("w-68 sm:w-72 p-3 select-none", className)}>
@@ -86,11 +86,15 @@ export function YearPickerGrid({
       </div>
 
       {/* 3x4 Year Grid */}
-      <div className="grid grid-cols-3 gap-2 py-1" role="grid" aria-label={t("datePicker.openYearAria")}>
+      <div
+        className="grid grid-cols-3 gap-2 py-1"
+        role="grid"
+        aria-label={t("datePicker.openYearAria")}
+      >
         {years.map((year) => {
-          const isSelected = selectedYear === year
-          const isCurrent = currentYear === year
-          const isYearDisabled = year < minYear || year > maxYear || disabled
+          const isSelected = selectedYear === year;
+          const isCurrent = currentYear === year;
+          const isYearDisabled = year < minYear || year > maxYear || disabled;
 
           return (
             <button
@@ -122,7 +126,7 @@ export function YearPickerGrid({
             >
               {year}
             </button>
-          )
+          );
         })}
       </div>
 
@@ -146,5 +150,5 @@ export function YearPickerGrid({
         </button>
       </div>
     </div>
-  )
+  );
 }

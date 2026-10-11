@@ -1,6 +1,6 @@
-import type { AppTranslationKey } from './appTranslations.js';
-import type { ColumnRegistryEntry } from './contactFieldSchemaTypes.js';
-import { FACULTY_DIRECTORY_COLUMN_SURFACES } from './facultyDirectoryColumnSurfaces.js';
+import type { AppTranslationKey } from "./appTranslations.js";
+import type { ColumnRegistryEntry } from "./contactFieldSchemaTypes.js";
+import { FACULTY_DIRECTORY_COLUMN_SURFACES } from "./facultyDirectoryColumnSurfaces.js";
 
 export { FACULTY_DIRECTORY_COLUMN_SURFACES };
 
@@ -21,23 +21,22 @@ export interface FacultyWorkColumnLabels {
   performanceRating: string;
 }
 
-export type FacultyDirectoryColumnKey =
-  (typeof FACULTY_DIRECTORY_COLUMN_SURFACES)[number]['key'];
+export type FacultyDirectoryColumnKey = (typeof FACULTY_DIRECTORY_COLUMN_SURFACES)[number]["key"];
 
 export const FACULTY_WORK_COLUMN_KEYS = [
-  'employeeId',
-  'designation',
-  'department',
-  'employDesignationStatus',
-  'designationStartDate',
-  'designationEndDate',
-  'status',
-  'employmentStartDate',
-  'employmentEndDate',
-  'specialization',
-  'qualification',
-  'notes',
-  'performanceRating',
+  "employeeId",
+  "designation",
+  "department",
+  "employDesignationStatus",
+  "designationStartDate",
+  "designationEndDate",
+  "status",
+  "employmentStartDate",
+  "employmentEndDate",
+  "specialization",
+  "qualification",
+  "notes",
+  "performanceRating",
 ] as const;
 
 export type FacultyWorkColumnKey = (typeof FACULTY_WORK_COLUMN_KEYS)[number];
@@ -46,7 +45,7 @@ export type FacultyWorkColumnKey = (typeof FACULTY_WORK_COLUMN_KEYS)[number];
 export function facultyWorkColumnLabelsFrom(
   resolveLabel: (key: string) => string,
 ): FacultyWorkColumnLabels {
-  const keys = ['name', ...FACULTY_WORK_COLUMN_KEYS] as const;
+  const keys = ["name", ...FACULTY_WORK_COLUMN_KEYS] as const;
   const labels = {} as FacultyWorkColumnLabels;
   for (const key of keys) {
     labels[key as keyof FacultyWorkColumnLabels] = resolveLabel(key);
@@ -56,8 +55,7 @@ export function facultyWorkColumnLabelsFrom(
 
 /** Default Work column registry (before tenant Fields sync / user overlay). */
 export const DEFAULT_FACULTY_COLUMN_REGISTRY: ColumnRegistryEntry[] =
-  FACULTY_DIRECTORY_COLUMN_SURFACES
-    .filter((surface) => surface.work)
+  FACULTY_DIRECTORY_COLUMN_SURFACES.filter((surface) => surface.work)
     .slice()
     .sort((left, right) => left.workOrder - right.workOrder)
     .map((surface) => ({
@@ -85,7 +83,7 @@ export const FACULTY_COLUMN_FIELD_MAPPING: Record<
 > = (() => {
   const mapping = {} as Record<FacultyWorkColumnKey, { tabId: string; fieldId: string }>;
   for (const surface of FACULTY_DIRECTORY_COLUMN_SURFACES) {
-    if (!surface.work || !('mapping' in surface) || !surface.mapping) continue;
+    if (!surface.work || !("mapping" in surface) || !surface.mapping) continue;
     mapping[surface.key as FacultyWorkColumnKey] = {
       tabId: surface.mapping.tabId,
       fieldId: surface.mapping.fieldId,
@@ -96,29 +94,30 @@ export const FACULTY_COLUMN_FIELD_MAPPING: Record<
 
 /** Work-list / SQL sort keys for faculty (FE + BE SSOT). */
 export const FACULTY_SORT_FIELDS = [
-  'name',
-  'employeeId',
-  'department',
-  'designation',
-  'specialization',
-  'qualification',
-  'status',
-  'profileStatus',
-  'employDesignationStatus',
-  'employmentStartDate',
-  'employmentEndDate',
-  'designationStartDate',
-  'designationEndDate',
-  'performanceRating',
-  'updatedAt',
+  "name",
+  "employeeId",
+  "department",
+  "designation",
+  "specialization",
+  "qualification",
+  "status",
+  "profileStatus",
+  "employDesignationStatus",
+  "employmentStartDate",
+  "employmentEndDate",
+  "designationStartDate",
+  "designationEndDate",
+  "performanceRating",
+  "updatedAt",
 ] as const;
 
 export type FacultySortField = (typeof FACULTY_SORT_FIELDS)[number];
 export const FACULTY_SORT_FIELD_SET: ReadonlySet<string> = new Set(FACULTY_SORT_FIELDS);
 
 /** Default CSV export columns (English labels; FE may re-label via `t()`). */
-export const DEFAULT_FACULTY_EXPORT_COLUMNS = FACULTY_DIRECTORY_COLUMN_SURFACES
-  .filter((surface) => surface.export)
+export const DEFAULT_FACULTY_EXPORT_COLUMNS = FACULTY_DIRECTORY_COLUMN_SURFACES.filter(
+  (surface) => surface.export,
+)
   .slice()
   .sort((left, right) => left.exportOrder - right.exportOrder)
   .map((surface) => ({

@@ -1,13 +1,11 @@
-import { z } from 'zod';
-import { contactRecordSchema } from '../contactsModuleManifest.js';
-import { WHATSAPP_STATUS_VALUES } from '../contactEntityTypes.js';
-import { deepSanitizeStrings } from './sanitize.js';
+import { z } from "zod";
+import { contactRecordSchema } from "../contactsModuleManifest.js";
+import { WHATSAPP_STATUS_VALUES } from "../contactEntityTypes.js";
+import { deepSanitizeStrings } from "./sanitize.js";
 
 /** Parsed contacts may still carry the pre-verification `unknown` WhatsApp state. */
 const importContactRecordSchema = contactRecordSchema.extend({
-  whatsappStatus: z
-    .union([z.enum(WHATSAPP_STATUS_VALUES), z.literal('unknown')])
-    .optional(),
+  whatsappStatus: z.union([z.enum(WHATSAPP_STATUS_VALUES), z.literal("unknown")]).optional(),
 });
 
 /**
@@ -32,16 +30,19 @@ const importIdempotencyKeySchema = z
  * of rejecting the whole batch: `parseVCard` already drops nameless cards, so `firstName`
  * is guaranteed by the client, and any record-level rejection is counted as a failure.
  */
-export const contactsImportBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, z
-  .object({
-    contacts: z.array(importContactRecordSchema).min(1).max(CONTACTS_IMPORT_MAX_BATCH),
-    label: z.string().min(1).max(200).optional(),
-    idempotencyKey: importIdempotencyKeySchema,
-  })
-  .strict());
+export const contactsImportBodySchema = z.preprocess(
+  (raw) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+    return deepSanitizeStrings(raw);
+  },
+  z
+    .object({
+      contacts: z.array(importContactRecordSchema).min(1).max(CONTACTS_IMPORT_MAX_BATCH),
+      label: z.string().min(1).max(200).optional(),
+      idempotencyKey: importIdempotencyKeySchema,
+    })
+    .strict(),
+);
 
 export type ContactsImportBody = z.infer<typeof contactsImportBodySchema>;
 

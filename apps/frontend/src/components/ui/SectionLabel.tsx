@@ -45,7 +45,11 @@ export function SectionLabel({
       className={cn(
         "text-xs uppercase",
         weight === "semibold" ? "font-semibold" : weight === "bold" ? "font-bold" : "font-black",
-        tracking === "widest" ? "tracking-widest" : tracking === "wider" ? "tracking-wider" : "tracking-wide",
+        tracking === "widest"
+          ? "tracking-widest"
+          : tracking === "wider"
+            ? "tracking-wider"
+            : "tracking-wide",
         toneClassName ?? TONE_CLASSES[tone],
         className,
       )}

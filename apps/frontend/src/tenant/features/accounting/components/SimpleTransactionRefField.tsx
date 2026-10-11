@@ -26,7 +26,9 @@ export function SimpleTransactionRefField({
     <Field
       id={`${prefix}-ref`}
       label={t("accounting.journal.dashboard.wizard.refNo")}
-      error={isDuplicateRef ? t("accounting.journal.dashboard.wizard.errorRefDuplicate") : undefined}
+      error={
+        isDuplicateRef ? t("accounting.journal.dashboard.wizard.errorRefDuplicate") : undefined
+      }
       errorId={isDuplicateRef ? `${prefix}-ref-error` : undefined}
       hint={refValue.trim() ? t("accounting.journal.dashboard.wizard.optional") : undefined}
     >
@@ -46,7 +48,13 @@ export function SimpleTransactionRefField({
         }}
         placeholder={t("accounting.journal.dashboard.wizard.refPlaceholder")}
         aria-invalid={isDuplicateRef}
-        aria-describedby={isDuplicateRef ? `${prefix}-ref-error` : refValue.trim() ? undefined : `${prefix}-ref-next`}
+        aria-describedby={
+          isDuplicateRef
+            ? `${prefix}-ref-error`
+            : refValue.trim()
+              ? undefined
+              : `${prefix}-ref-next`
+        }
       />
       {!isDuplicateRef && !refValue.trim() && (
         <NextVoucherNumberHint id={`${prefix}-ref-next`} date={date} />

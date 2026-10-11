@@ -37,11 +37,7 @@ vi.mock("@/tenant/features/contacts/components/DuplicateDetectionModal", () => (
 describe("DuplicateDetection Component", () => {
   it("renders duplicate detection modal container", () => {
     const html = renderToStaticMarkup(
-      <DuplicateDetection
-        onClose={vi.fn()}
-        onMerge={vi.fn()}
-        canWrite={true}
-      />,
+      <DuplicateDetection onClose={vi.fn()} onMerge={vi.fn()} canWrite={true} />,
     );
 
     expect(html).toContain("Duplicate Modal");

@@ -1,10 +1,10 @@
-import React, { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from '@/hooks/useTranslation';
-import { CommandPaletteShell } from '@/components/ui/CommandPaletteShell';
-import type { PlatformCommandItem } from '@/platform/components/platformCommandItems';
-import { PlatformCommandResultsList } from '@/platform/components/command/PlatformCommandResultsList';
-import { useOmniCommandRegistry } from '@/platform/components/command/useOmniCommandRegistry';
+import React, { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "@/hooks/useTranslation";
+import { CommandPaletteShell } from "@/components/ui/CommandPaletteShell";
+import type { PlatformCommandItem } from "@/platform/components/platformCommandItems";
+import { PlatformCommandResultsList } from "@/platform/components/command/PlatformCommandResultsList";
+import { useOmniCommandRegistry } from "@/platform/components/command/useOmniCommandRegistry";
 
 export interface PlatformCommandPaletteProps {
   open: boolean;
@@ -15,7 +15,11 @@ export interface PlatformCommandPaletteProps {
 /**
  * Platform command palette — thin adapter over shared CommandPaletteShell.
  */
-export function PlatformCommandPalette({ open, onClose, onOpenAi }: PlatformCommandPaletteProps): React.JSX.Element | null {
+export function PlatformCommandPalette({
+  open,
+  onClose,
+  onOpenAi,
+}: PlatformCommandPaletteProps): React.JSX.Element | null {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { filterItems, recordRecent } = useOmniCommandRegistry();
@@ -23,11 +27,15 @@ export function PlatformCommandPalette({ open, onClose, onOpenAi }: PlatformComm
   const handleSelect = useCallback(
     (item: PlatformCommandItem) => {
       onClose();
-      if (item.id === 'ai-copilot') {
+      if (item.id === "ai-copilot") {
         onOpenAi?.();
         return;
       }
-      if (item.customSubtitle && (item.category === 'platform.manageMadrasas' || item.category === 'platform.commandCategory.recent')) {
+      if (
+        item.customSubtitle &&
+        (item.category === "platform.manageMadrasas" ||
+          item.category === "platform.commandCategory.recent")
+      ) {
         recordRecent({
           subdomain: item.customSubtitle,
           madrasaName: item.customLabel ?? item.customSubtitle,
@@ -48,16 +56,16 @@ export function PlatformCommandPalette({ open, onClose, onOpenAi }: PlatformComm
       onClose={onClose}
       filterItems={filterItems}
       onSelect={handleSelect}
-      ariaLabel={t('platform.openSearchAria')}
-      searchPlaceholder={t('platform.searchConsolePlaceholder')}
+      ariaLabel={t("platform.openSearchAria")}
+      searchPlaceholder={t("platform.searchConsolePlaceholder")}
       listboxId="platform-command-listbox"
       getActiveDescendantId={(item) => `platform-cmd-item-${item.id}`}
       getScreenReaderAnnouncement={(query, items) =>
         items.length === 0
-          ? t('platform.noMatchingConsolePages', { query })
-          : t('platform.searchResultsCount', { count: String(items.length) })
+          ? t("platform.noMatchingConsolePages", { query })
+          : t("platform.searchResultsCount", { count: String(items.length) })
       }
-      footerTitle={t('platform.consoleTitle')}
+      footerTitle={t("platform.consoleTitle")}
       dialogClassName="rounded-2xl text-start"
     >
       {({ query, setQuery, filteredItems, selectedIndex, setSelectedIndex }) => (
@@ -70,7 +78,7 @@ export function PlatformCommandPalette({ open, onClose, onOpenAi }: PlatformComm
               handleSelect(item);
             } else {
               onClose();
-              setQuery('');
+              setQuery("");
               navigate(_path);
             }
           }}

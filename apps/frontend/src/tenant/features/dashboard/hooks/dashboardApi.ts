@@ -1,12 +1,12 @@
-import { apiContract } from '@/lib/api';
-import { ApiError } from '@/lib/apiClient';
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import {
   normalizeDashboardWidgets,
   type DashboardPreferences,
   type DashboardPreferencesPutBody,
   type DashboardWidgetDto,
   type DashboardWidgetsPutBody,
-} from '@mms/shared';
+} from "@mms/shared";
 
 export async function fetchDashboardPreferences(
   signal?: AbortSignal,
@@ -30,7 +30,7 @@ export async function saveDashboardPreferencesAsync(
   if (res.status === 200) {
     return (res.body as { preferences: DashboardPreferences }).preferences;
   }
-  throw new Error('Failed to save dashboard preferences');
+  throw new Error("Failed to save dashboard preferences");
 }
 
 export async function fetchDashboardWidgets(signal?: AbortSignal): Promise<DashboardWidgetDto[]> {
@@ -52,7 +52,7 @@ export async function saveDashboardWidgetsAsync(
   if (res.status === 200) {
     return (res.body as { widgets: DashboardWidgetDto[] }).widgets;
   }
-  throw new Error('Failed to save dashboard widgets');
+  throw new Error("Failed to save dashboard widgets");
 }
 
 export async function deleteDashboardWidgetAsync(id: string, signal?: AbortSignal): Promise<void> {
@@ -70,7 +70,7 @@ export async function reorderDashboardWidgetsAsync(
     body: { order },
   });
   if (res.status !== 200) {
-    throw new Error('Failed to reorder dashboard widgets');
+    throw new Error("Failed to reorder dashboard widgets");
   }
 }
 

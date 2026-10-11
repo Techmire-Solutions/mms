@@ -6,18 +6,26 @@ import { cn } from "@/lib/utils";
 /**
  * A full-page loading spinner with the app's branding.
  */
-export const PageLoader = (function PageLoader(): React.ReactElement {
+export const PageLoader = function PageLoader(): React.ReactElement {
   return (
-    <div className="flex items-center justify-center min-h-viewport-half" role="status" aria-live="polite" aria-busy="true">
+    <div
+      className="flex items-center justify-center min-h-viewport-half"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
           <span className="text-primary font-display text-xl font-bold">م</span>
         </div>
-        <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" aria-hidden="true" />
+        <div
+          className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"
+          aria-hidden="true"
+        />
       </div>
     </div>
   );
-});
+};
 
 interface CardSkeletonProps {
   count?: number;
@@ -27,7 +35,10 @@ interface CardSkeletonProps {
 /**
  * A skeleton loader for card-based layouts.
  */
-export const CardSkeleton = (function CardSkeleton({ count = 3, className = "" }: CardSkeletonProps): React.ReactElement {
+export const CardSkeleton = function CardSkeleton({
+  count = 3,
+  className = "",
+}: CardSkeletonProps): React.ReactElement {
   return (
     <div className={cn("grid gap-4", className)} role="status" aria-live="polite" aria-busy="true">
       {Array.from({ length: count }).map((_, i) => (
@@ -45,7 +56,7 @@ export const CardSkeleton = (function CardSkeleton({ count = 3, className = "" }
       ))}
     </div>
   );
-});
+};
 
 interface StatsSkeletonProps {
   count?: number;
@@ -54,9 +65,16 @@ interface StatsSkeletonProps {
 /**
  * A skeleton loader for dashboard stat grids.
  */
-export const StatsSkeleton = (function StatsSkeleton({ count = 4 }: StatsSkeletonProps): React.ReactElement {
+export const StatsSkeleton = function StatsSkeleton({
+  count = 4,
+}: StatsSkeletonProps): React.ReactElement {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" role="status" aria-live="polite" aria-busy="true">
+    <div
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="rounded-xl border border-border bg-card p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -69,7 +87,7 @@ export const StatsSkeleton = (function StatsSkeleton({ count = 4 }: StatsSkeleto
       ))}
     </div>
   );
-});
+};
 
 /**
  * @deprecated Import `TableSkeleton` from `@/components/ui/table` directly.
@@ -85,7 +103,7 @@ export interface ChartSkeletonProps {
   heightClassName?: string;
 }
 
-export const ChartSkeleton = (function ChartSkeleton({
+export const ChartSkeleton = function ChartSkeleton({
   className = "",
   heightClassName = "h-chart-md",
 }: ChartSkeletonProps): React.ReactElement {
@@ -116,12 +134,12 @@ export const ChartSkeleton = (function ChartSkeleton({
       </div>
     </div>
   );
-});
+};
 
 /**
  * Skeleton loader matching Three-Tier Module layout to eliminate Cumulative Layout Shift (CLS).
  */
-export const ModuleViewSkeleton = (function ModuleViewSkeleton(): React.ReactElement {
+export const ModuleViewSkeleton = function ModuleViewSkeleton(): React.ReactElement {
   return (
     <div className="space-y-6 animate-pulse" role="status" aria-live="polite" aria-busy="true">
       {/* Module Header Skeleton */}
@@ -140,6 +158,4 @@ export const ModuleViewSkeleton = (function ModuleViewSkeleton(): React.ReactEle
       <TableSkeleton rows={6} cols={5} />
     </div>
   );
-});
-
-
+};

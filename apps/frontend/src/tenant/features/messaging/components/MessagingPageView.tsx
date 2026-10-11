@@ -19,8 +19,12 @@ import { MessagingPageHeaderActions } from "./MessagingPageHeaderActions";
 import { MessagingWorkTier } from "./MessagingWorkTier";
 import { MessagingCsvImportDialog } from "./MessagingCsvImportDialog";
 
-const MessagingReportsTier = lazy(() => import("./MessagingReportsTier").then((m) => ({ default: m.MessagingReportsTier })));
-const MessagingSetupTier = lazy(() => import("./MessagingSetupTier").then((m) => ({ default: m.MessagingSetupTier })));
+const MessagingReportsTier = lazy(() =>
+  import("./MessagingReportsTier").then((m) => ({ default: m.MessagingReportsTier })),
+);
+const MessagingSetupTier = lazy(() =>
+  import("./MessagingSetupTier").then((m) => ({ default: m.MessagingSetupTier })),
+);
 
 const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
 
@@ -46,7 +50,11 @@ export interface MessagingPageViewProps {
   setConfirmClearLogsOpen: (open: boolean) => void;
   startCampaign: (channel: "whatsapp" | "sms" | "email") => void;
   resend: (log: Message, recipient: MessagingRecipient) => void;
-  handleBulkResend: (logs: Message[], recipients: MessagingRecipient[], targetChannel?: "whatsapp" | "sms" | "email") => void;
+  handleBulkResend: (
+    logs: Message[],
+    recipients: MessagingRecipient[],
+    targetChannel?: "whatsapp" | "sms" | "email",
+  ) => void;
   confirmDeleteTemplate: () => Promise<void>;
   confirmClearLogs: () => Promise<void>;
   handleDispatchSent: () => void;
@@ -58,8 +66,8 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
   const { t } = useTranslation();
   const [importOpen, setImportOpen] = useState(false);
   const { handleExport, isExporting } = useGenericModuleExport({
-    path: '/api/messaging/export/csv',
-    filename: 'messaging-logs.csv',
+    path: "/api/messaging/export/csv",
+    filename: "messaging-logs.csv",
     columns: messagingTransferSchema.exportColumns,
     canExport: p.canWrite,
   });

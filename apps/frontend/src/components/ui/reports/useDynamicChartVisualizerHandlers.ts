@@ -1,20 +1,24 @@
-import type { RefObject } from 'react';
-import type { FilterRule, CustomWidget } from '@/components/ui/reports/dynamicChartVisualizerTypes';
-import type { VisualizerConfig } from '@/lib/reports/reportMetadata';
+import type { RefObject } from "react";
+import type { FilterRule, CustomWidget } from "@/components/ui/reports/dynamicChartVisualizerTypes";
+import type { VisualizerConfig } from "@/lib/reports/reportMetadata";
 import {
   createFilterRule,
   deleteFilterRule,
   getDefaultCollectionField,
   toggleVisualizerWidgetPin,
   updateFilterRules,
-} from '@/components/ui/reports/dynamicChartVisualizerPin';
+} from "@/components/ui/reports/dynamicChartVisualizerPin";
 import {
   exportVisualizerExcel,
   exportVisualizerPdf,
   exportVisualizerPng,
-} from '@/components/ui/reports/dynamicChartVisualizerExports';
-import type { AggregatedItem, ChartOperation, ChartType } from '@/components/ui/reports/dynamicChartVisualizerTypes';
-import type { CollectionMeta } from '@/components/ui/reports/dynamicChartVisualizerTypes';
+} from "@/components/ui/reports/dynamicChartVisualizerExports";
+import type {
+  AggregatedItem,
+  ChartOperation,
+  ChartType,
+} from "@/components/ui/reports/dynamicChartVisualizerTypes";
+import type { CollectionMeta } from "@/components/ui/reports/dynamicChartVisualizerTypes";
 
 interface BuildVisualizerHandlersOptions {
   chartRef: RefObject<HTMLDivElement | null>;
@@ -32,7 +36,7 @@ interface BuildVisualizerHandlersOptions {
   persistWidgets: (widgets: CustomWidget[]) => void;
   processedData: AggregatedItem[];
   pdfFormat: string;
-  pdfOrientation: 'p' | 'l';
+  pdfOrientation: "p" | "l";
   initialConfig?: VisualizerConfig;
   onSave?: (config: VisualizerConfig) => void;
   onExportFailed: () => void;
@@ -118,9 +122,9 @@ export function buildDynamicChartVisualizerHandlers({
   const handleSaveVisual = onSave
     ? () => {
         onSave({
-          id: initialConfig?.id || 'visual-' + Date.now(),
+          id: initialConfig?.id || "visual-" + Date.now(),
           title,
-          collection: collectionKey as VisualizerConfig['collection'],
+          collection: collectionKey as VisualizerConfig["collection"],
           chartType,
           xAxisField,
           operation,

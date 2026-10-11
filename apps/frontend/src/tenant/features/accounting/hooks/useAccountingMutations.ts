@@ -1,17 +1,23 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { MutateOptions } from '@tanstack/react-query';
-import type { Account, JournalEntry, FiscalYear, SpecializedEntryInput, SpecializedEntryResult } from '@mms/shared';
-import { ACCOUNTING_MODULE_MANIFEST, FINANCE_MODULE_MANIFEST } from '@mms/shared';
-import { tsrClient } from '@/lib/api';
-import { apiJson } from '@/lib/apiClient';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { MutateOptions } from "@tanstack/react-query";
+import type {
+  Account,
+  JournalEntry,
+  FiscalYear,
+  SpecializedEntryInput,
+  SpecializedEntryResult,
+} from "@mms/shared";
+import { ACCOUNTING_MODULE_MANIFEST, FINANCE_MODULE_MANIFEST } from "@mms/shared";
+import { tsrClient } from "@/lib/api";
+import { apiJson } from "@/lib/apiClient";
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
   ACCOUNTING_ENTRIES_QUERY_KEY,
   ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
   ACCOUNTING_METRICS_QUERY_KEY,
   ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
-} from './useAccountingQueries';
-import { VOUCHER_NUMBERING_QUERY_KEY } from './useVoucherNumbering';
+} from "./useAccountingQueries";
+import { VOUCHER_NUMBERING_QUERY_KEY } from "./useVoucherNumbering";
 
 export function useAccountingMutations() {
   const queryClient = useQueryClient();
@@ -31,31 +37,41 @@ export function useAccountingMutations() {
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const upsertEntries = tsrClient.accounting.upsertEntries.useMutation({ onSuccess: invalidate });
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  const upsertFiscalYears = tsrClient.accounting.upsertFiscalYears.useMutation({ onSuccess: invalidate });
+  const upsertFiscalYears = tsrClient.accounting.upsertFiscalYears.useMutation({
+    onSuccess: invalidate,
+  });
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteEntry = tsrClient.accounting.deleteEntry.useMutation({ onSuccess: invalidate });
   // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreEntry = tsrClient.accounting.restoreEntry.useMutation({ onSuccess: invalidate });
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  const bulkDeleteEntries = tsrClient.accounting.bulkDeleteEntries.useMutation({ onSuccess: invalidate });
+  const bulkDeleteEntries = tsrClient.accounting.bulkDeleteEntries.useMutation({
+    onSuccess: invalidate,
+  });
   // @ts-expect-error - TS union discrimination limit with ts-rest
-  const bulkRestoreEntries = tsrClient.accounting.bulkRestoreEntries.useMutation({ onSuccess: invalidate });
+  const bulkRestoreEntries = tsrClient.accounting.bulkRestoreEntries.useMutation({
+    onSuccess: invalidate,
+  });
 
   return {
     upsertAccounts: {
       ...upsertAccounts,
-      mutate: (accounts: Account[], opts?: MutateOptions) => upsertAccounts.mutate({ body: accounts }, opts),
+      mutate: (accounts: Account[], opts?: MutateOptions) =>
+        upsertAccounts.mutate({ body: accounts }, opts),
       mutateAsync: (accounts: Account[]) => upsertAccounts.mutateAsync({ body: accounts }),
     },
     upsertEntries: {
       ...upsertEntries,
-      mutate: (entries: JournalEntry[], opts?: MutateOptions) => upsertEntries.mutate({ body: entries }, opts),
+      mutate: (entries: JournalEntry[], opts?: MutateOptions) =>
+        upsertEntries.mutate({ body: entries }, opts),
       mutateAsync: (entries: JournalEntry[]) => upsertEntries.mutateAsync({ body: entries }),
     },
     upsertFiscalYears: {
       ...upsertFiscalYears,
-      mutate: (fiscalYears: FiscalYear[], opts?: MutateOptions) => upsertFiscalYears.mutate({ body: fiscalYears }, opts),
-      mutateAsync: (fiscalYears: FiscalYear[]) => upsertFiscalYears.mutateAsync({ body: fiscalYears }),
+      mutate: (fiscalYears: FiscalYear[], opts?: MutateOptions) =>
+        upsertFiscalYears.mutate({ body: fiscalYears }, opts),
+      mutateAsync: (fiscalYears: FiscalYear[]) =>
+        upsertFiscalYears.mutateAsync({ body: fiscalYears }),
     },
     deleteEntry: {
       ...deleteEntry,
@@ -69,12 +85,14 @@ export function useAccountingMutations() {
     },
     bulkDeleteEntries: {
       ...bulkDeleteEntries,
-      mutate: (ids: string[], opts?: MutateOptions) => bulkDeleteEntries.mutate({ body: { ids } }, opts),
+      mutate: (ids: string[], opts?: MutateOptions) =>
+        bulkDeleteEntries.mutate({ body: { ids } }, opts),
       mutateAsync: (ids: string[]) => bulkDeleteEntries.mutateAsync({ body: { ids } }),
     },
     bulkRestoreEntries: {
       ...bulkRestoreEntries,
-      mutate: (ids: string[], opts?: MutateOptions) => bulkRestoreEntries.mutate({ body: { ids } }, opts),
+      mutate: (ids: string[], opts?: MutateOptions) =>
+        bulkRestoreEntries.mutate({ body: { ids } }, opts),
       mutateAsync: (ids: string[]) => bulkRestoreEntries.mutateAsync({ body: { ids } }),
     },
   };
@@ -89,10 +107,13 @@ export function useProcessSpecializedEntryMutation() {
 
   return useMutation({
     mutationFn: (input: SpecializedEntryInput) =>
-      apiJson<SpecializedEntryResult>(`${ACCOUNTING_MODULE_MANIFEST.restBasePath}/specialized-entries`, {
-        method: 'POST',
-        body: JSON.stringify(input),
-      }),
+      apiJson<SpecializedEntryResult>(
+        `${ACCOUNTING_MODULE_MANIFEST.restBasePath}/specialized-entries`,
+        {
+          method: "POST",
+          body: JSON.stringify(input),
+        },
+      ),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [ACCOUNTING_MODULE_MANIFEST.moduleId] });
       void queryClient.invalidateQueries({ queryKey: [FINANCE_MODULE_MANIFEST.moduleId] });

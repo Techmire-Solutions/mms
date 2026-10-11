@@ -1,15 +1,5 @@
 import React from "react";
-import {
-  Area,
-  AreaChart,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, AreaChart, Cell, Legend, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
 import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -44,7 +34,7 @@ interface FinancialReportChartsProps {
   onToggleMonthFilter: (month: string) => void;
 }
 
-export const FinancialReportCharts = (function FinancialReportCharts({
+export const FinancialReportCharts = function FinancialReportCharts({
   monthlyFeeCollection,
   discountUsageByType,
   pieColors,
@@ -124,7 +114,9 @@ export const FinancialReportCharts = (function FinancialReportCharts({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card accentColor="primary" className={cn("p-4 space-y-3", CARD_STRIPE_INSET)}>
-          <h3 className="text-sm font-bold text-foreground">{t("finance.report.collectionRateTitle")}</h3>
+          <h3 className="text-sm font-bold text-foreground">
+            {t("finance.report.collectionRateTitle")}
+          </h3>
           <div className="space-y-2">
             {monthlyFeeCollection.map((monthTotals) => (
               <Button
@@ -137,7 +129,9 @@ export const FinancialReportCharts = (function FinancialReportCharts({
                   selectedMonth === monthTotals.month ? "bg-primary/10 text-primary" : ""
                 }`}
               >
-                <span className="text-xs text-muted-foreground w-20 shrink-0 text-start">{monthTotals.month}</span>
+                <span className="text-xs text-muted-foreground w-20 shrink-0 text-start">
+                  {monthTotals.month}
+                </span>
                 <ProgressBar
                   className="flex-1 gap-3"
                   value={monthTotals.rate}
@@ -191,7 +185,4 @@ export const FinancialReportCharts = (function FinancialReportCharts({
       </div>
     </>
   );
-});
-
-
-
+};

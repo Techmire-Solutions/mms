@@ -63,11 +63,7 @@ export default function PlatformAccount(): React.JSX.Element {
           />
         ) : (
           <div className="space-y-6">
-            <SubTabBar
-              tabs={tabs}
-              value={activeTab}
-              onChange={(key) => handleTabChange(key)}
-            />
+            <SubTabBar tabs={tabs} value={activeTab} onChange={(key) => handleTabChange(key)} />
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -89,7 +85,10 @@ export default function PlatformAccount(): React.JSX.Element {
                     </motion.div>
 
                     <motion.div variants={cardVariants} className="lg:col-span-2">
-                      <PlatformProfileNameForm initialName={profile.name ?? ""} initialPhone={profile.phone} />
+                      <PlatformProfileNameForm
+                        initialName={profile.name ?? ""}
+                        initialPhone={profile.phone}
+                      />
                     </motion.div>
                   </motion.div>
                 )}

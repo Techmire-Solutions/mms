@@ -2,7 +2,7 @@
  * @file sessionTypes.ts
  * @description Domain types and strict Zod schemas for Academic Sessions Management (Model 6).
  */
-import { z } from 'zod';
+import { z } from "zod";
 
 // ============================================================================
 // 1. Session Management (Faculty Assigned to Session)
@@ -12,9 +12,9 @@ export const SessionFacultySchema = z
     id: z.string(),
     sessionId: z.string(),
     facultyId: z.string(),
-    facultyName: z.string().optional().default(''),
-    role: z.string().min(1, 'Role is required'), // dynamic roles: e.g., 'coordinator', 'supervisor', 'head'
-    status: z.enum(['active', 'inactive']).default('active'),
+    facultyName: z.string().optional().default(""),
+    role: z.string().min(1, "Role is required"), // dynamic roles: e.g., 'coordinator', 'supervisor', 'head'
+    status: z.enum(["active", "inactive"]).default("active"),
     createdAt: z.string().optional(),
   })
   .strict();
@@ -23,10 +23,10 @@ export const SessionFacultyInsertSchema = z
   .object({
     id: z.string().optional(),
     sessionId: z.string().optional(),
-    facultyId: z.string().min(1, 'Faculty is required'),
-    facultyName: z.string().optional().default(''),
-    role: z.string().min(1, 'Role is required'),
-    status: z.enum(['active', 'inactive']).default('active'),
+    facultyId: z.string().min(1, "Faculty is required"),
+    facultyName: z.string().optional().default(""),
+    role: z.string().min(1, "Role is required"),
+    status: z.enum(["active", "inactive"]).default("active"),
   })
   .strict();
 
@@ -40,8 +40,8 @@ export const SessionClassFeeSchema = z
   .object({
     id: z.string(),
     classId: z.string().optional(),
-    feeType: z.string().min(1, 'Fee type is required'), // dynamic: admission, monthly, one_time, exam, material
-    amount: z.coerce.number().nonnegative('Amount must be non-negative').default(0),
+    feeType: z.string().min(1, "Fee type is required"), // dynamic: admission, monthly, one_time, exam, material
+    amount: z.coerce.number().nonnegative("Amount must be non-negative").default(0),
   })
   .strict();
 
@@ -49,8 +49,8 @@ export const SessionClassFeeInsertSchema = z
   .object({
     id: z.string().optional(),
     classId: z.string().optional(),
-    feeType: z.string().min(1, 'Fee type is required'),
-    amount: z.coerce.number().nonnegative('Amount must be non-negative').default(0),
+    feeType: z.string().min(1, "Fee type is required"),
+    amount: z.coerce.number().nonnegative("Amount must be non-negative").default(0),
   })
   .strict();
 
@@ -64,9 +64,9 @@ export const SessionClassScheduleSchema = z
   .object({
     id: z.string(),
     classId: z.string().optional(),
-    scheduleType: z.string().min(1, 'Schedule type is required'), // dynamic: daily, weekly, monthly, weekend
-    startDate: z.string().min(1, 'Start date is required'),
-    endDate: z.string().min(1, 'End date is required'),
+    scheduleType: z.string().min(1, "Schedule type is required"), // dynamic: daily, weekly, monthly, weekend
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
   })
   .strict();
 
@@ -74,9 +74,9 @@ export const SessionClassScheduleInsertSchema = z
   .object({
     id: z.string().optional(),
     classId: z.string().optional(),
-    scheduleType: z.string().min(1, 'Schedule type is required'),
-    startDate: z.string().min(1, 'Start date is required'),
-    endDate: z.string().min(1, 'End date is required'),
+    scheduleType: z.string().min(1, "Schedule type is required"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
   })
   .strict();
 
@@ -90,9 +90,9 @@ export const SessionClassBudgetSchema = z
   .object({
     id: z.string(),
     classId: z.string().optional(),
-    budgetType: z.enum(['income', 'expense']),
-    detail: z.string().min(1, 'Budget detail is required'),
-    amount: z.coerce.number().nonnegative('Amount must be non-negative').default(0),
+    budgetType: z.enum(["income", "expense"]),
+    detail: z.string().min(1, "Budget detail is required"),
+    amount: z.coerce.number().nonnegative("Amount must be non-negative").default(0),
   })
   .strict();
 
@@ -100,9 +100,9 @@ export const SessionClassBudgetInsertSchema = z
   .object({
     id: z.string().optional(),
     classId: z.string().optional(),
-    budgetType: z.enum(['income', 'expense']),
-    detail: z.string().min(1, 'Budget detail is required'),
-    amount: z.coerce.number().nonnegative('Amount must be non-negative').default(0),
+    budgetType: z.enum(["income", "expense"]),
+    detail: z.string().min(1, "Budget detail is required"),
+    amount: z.coerce.number().nonnegative("Amount must be non-negative").default(0),
   })
   .strict();
 
@@ -116,12 +116,12 @@ export const SessionClassDiscountSchema = z
   .object({
     id: z.string(),
     classId: z.string().optional(),
-    discountType: z.string().min(1, 'Discount type is required'), // sibling, date_based, academic_achievement, etc.
-    percentage: z.coerce.number().min(0).max(100, 'Percentage must be 0-100').default(0),
-    startDate: z.string().optional().default(''),
-    endDate: z.string().optional().default(''),
+    discountType: z.string().min(1, "Discount type is required"), // sibling, date_based, academic_achievement, etc.
+    percentage: z.coerce.number().min(0).max(100, "Percentage must be 0-100").default(0),
+    startDate: z.string().optional().default(""),
+    endDate: z.string().optional().default(""),
     eligibilityCriteria: z.record(z.string(), z.unknown()).optional().default({}),
-    status: z.enum(['active', 'expired', 'inactive']).default('active'),
+    status: z.enum(["active", "expired", "inactive"]).default("active"),
   })
   .strict();
 
@@ -129,12 +129,12 @@ export const SessionClassDiscountInsertSchema = z
   .object({
     id: z.string().optional(),
     classId: z.string().optional(),
-    discountType: z.string().min(1, 'Discount type is required'),
-    percentage: z.coerce.number().min(0).max(100, 'Percentage must be 0-100').default(0),
-    startDate: z.string().optional().default(''),
-    endDate: z.string().optional().default(''),
+    discountType: z.string().min(1, "Discount type is required"),
+    percentage: z.coerce.number().min(0).max(100, "Percentage must be 0-100").default(0),
+    startDate: z.string().optional().default(""),
+    endDate: z.string().optional().default(""),
     eligibilityCriteria: z.record(z.string(), z.unknown()).optional().default({}),
-    status: z.enum(['active', 'expired', 'inactive']).default('active'),
+    status: z.enum(["active", "expired", "inactive"]).default("active"),
   })
   .strict();
 
@@ -148,11 +148,11 @@ export const SessionClassTimetablePeriodSchema = z
   .object({
     id: z.string(),
     timetableId: z.string().optional(),
-    startTime: z.string().min(1, 'Start time is required'),
-    endTime: z.string().min(1, 'End time is required'),
-    subject: z.string().min(1, 'Subject is required'),
-    facultyId: z.string().optional().default(''),
-    facultyName: z.string().optional().default(''),
+    startTime: z.string().min(1, "Start time is required"),
+    endTime: z.string().min(1, "End time is required"),
+    subject: z.string().min(1, "Subject is required"),
+    facultyId: z.string().optional().default(""),
+    facultyName: z.string().optional().default(""),
   })
   .strict();
 
@@ -160,22 +160,24 @@ export const SessionClassTimetablePeriodInsertSchema = z
   .object({
     id: z.string().optional(),
     timetableId: z.string().optional(),
-    startTime: z.string().min(1, 'Start time is required'),
-    endTime: z.string().min(1, 'End time is required'),
-    subject: z.string().min(1, 'Subject is required'),
-    facultyId: z.string().optional().default(''),
-    facultyName: z.string().optional().default(''),
+    startTime: z.string().min(1, "Start time is required"),
+    endTime: z.string().min(1, "End time is required"),
+    subject: z.string().min(1, "Subject is required"),
+    facultyId: z.string().optional().default(""),
+    facultyName: z.string().optional().default(""),
   })
   .strict();
 
 export type SessionClassTimetablePeriod = z.infer<typeof SessionClassTimetablePeriodSchema>;
-export type SessionClassTimetablePeriodInsert = z.infer<typeof SessionClassTimetablePeriodInsertSchema>;
+export type SessionClassTimetablePeriodInsert = z.infer<
+  typeof SessionClassTimetablePeriodInsertSchema
+>;
 
 export const SessionClassTimetableSchema = z
   .object({
     id: z.string(),
     classId: z.string().optional(),
-    date: z.string().min(1, 'Timetable date or day is required'), // filtered from schedule
+    date: z.string().min(1, "Timetable date or day is required"), // filtered from schedule
     periods: z.array(SessionClassTimetablePeriodSchema).default([]),
   })
   .strict();
@@ -184,7 +186,7 @@ export const SessionClassTimetableInsertSchema = z
   .object({
     id: z.string().optional(),
     classId: z.string().optional(),
-    date: z.string().min(1, 'Timetable date or day is required'),
+    date: z.string().min(1, "Timetable date or day is required"),
     periods: z.array(SessionClassTimetablePeriodInsertSchema).default([]),
   })
   .strict();
@@ -199,11 +201,11 @@ export const SessionClassRefreshmentSchema = z
   .object({
     id: z.string(),
     classId: z.string().optional(),
-    date: z.string().min(1, 'Date is required'),
-    item: z.string().min(1, 'Item name is required'),
-    quantity: z.coerce.number().int().nonnegative('Quantity must be non-negative').default(0),
-    pricePerUnit: z.coerce.number().nonnegative('Unit price must be non-negative').default(0),
-    paidAmount: z.coerce.number().nonnegative('Paid amount must be non-negative').default(0),
+    date: z.string().min(1, "Date is required"),
+    item: z.string().min(1, "Item name is required"),
+    quantity: z.coerce.number().int().nonnegative("Quantity must be non-negative").default(0),
+    pricePerUnit: z.coerce.number().nonnegative("Unit price must be non-negative").default(0),
+    paidAmount: z.coerce.number().nonnegative("Paid amount must be non-negative").default(0),
   })
   .strict();
 
@@ -211,11 +213,11 @@ export const SessionClassRefreshmentInsertSchema = z
   .object({
     id: z.string().optional(),
     classId: z.string().optional(),
-    date: z.string().min(1, 'Date is required'),
-    item: z.string().min(1, 'Item name is required'),
-    quantity: z.coerce.number().int().nonnegative('Quantity must be non-negative').default(0),
-    pricePerUnit: z.coerce.number().nonnegative('Unit price must be non-negative').default(0),
-    paidAmount: z.coerce.number().nonnegative('Paid amount must be non-negative').default(0),
+    date: z.string().min(1, "Date is required"),
+    item: z.string().min(1, "Item name is required"),
+    quantity: z.coerce.number().int().nonnegative("Quantity must be non-negative").default(0),
+    pricePerUnit: z.coerce.number().nonnegative("Unit price must be non-negative").default(0),
+    paidAmount: z.coerce.number().nonnegative("Paid amount must be non-negative").default(0),
   })
   .strict();
 
@@ -235,7 +237,7 @@ export const ScholarshipEligibilitySchema = z
     familyMembers: z.coerce.number().int().nonnegative().default(0),
     onJobMembers: z.coerce.number().int().nonnegative().default(0),
     schoolGoingSiblings: z.coerce.number().int().nonnegative().default(0),
-    residence: z.string().default('rental'), // dynamic: rental, property/owned, etc.
+    residence: z.string().default("rental"), // dynamic: rental, property/owned, etc.
     notes: z.string().optional(),
   })
   .strict();
@@ -250,7 +252,7 @@ export const ScholarshipEligibilityInsertSchema = z
     familyMembers: z.coerce.number().int().nonnegative().default(0),
     onJobMembers: z.coerce.number().int().nonnegative().default(0),
     schoolGoingSiblings: z.coerce.number().int().nonnegative().default(0),
-    residence: z.string().default('rental'),
+    residence: z.string().default("rental"),
     notes: z.string().optional(),
   })
   .strict();
@@ -264,8 +266,8 @@ export const SessionClassScholarshipSchema = z
     classId: z.string().optional(),
     scholarshipEligibilityId: z.string().optional(),
     eligibility: ScholarshipEligibilitySchema.optional(),
-    percentage: z.coerce.number().min(0).max(100, 'Percentage must be 0-100').default(0),
-    expiryDate: z.string().optional().default(''),
+    percentage: z.coerce.number().min(0).max(100, "Percentage must be 0-100").default(0),
+    expiryDate: z.string().optional().default(""),
   })
   .strict();
 
@@ -275,8 +277,8 @@ export const SessionClassScholarshipInsertSchema = z
     classId: z.string().optional(),
     scholarshipEligibilityId: z.string().optional(),
     eligibility: ScholarshipEligibilityInsertSchema.optional(),
-    percentage: z.coerce.number().min(0).max(100, 'Percentage must be 0-100').default(0),
-    expiryDate: z.string().optional().default(''),
+    percentage: z.coerce.number().min(0).max(100, "Percentage must be 0-100").default(0),
+    expiryDate: z.string().optional().default(""),
   })
   .strict();
 
@@ -290,18 +292,18 @@ export const ClassSchema = z
   .object({
     id: z.string(),
     sessionId: z.string().optional(),
-    name: z.string().min(1, 'Class name is required'),
-    gender: z.enum(['male', 'female', 'mixed']).default('mixed'),
-    ageCalculationDate: z.string().optional().default(''),
+    name: z.string().min(1, "Class name is required"),
+    gender: z.enum(["male", "female", "mixed"]).default("mixed"),
+    ageCalculationDate: z.string().optional().default(""),
     minAge: z.coerce.number().int().min(0).max(120).default(0),
     maxAge: z.coerce.number().int().min(0).max(120).default(0),
     maxStudents: z.coerce.number().int().min(0).default(0), // Maximum Student Count / Capacity
     enrolled: z.coerce.number().int().nonnegative().default(0),
-    enrollmentDeadline: z.string().optional().default(''),
-    status: z.enum(['active', 'inactive']).default('active'),
-    facultyId: z.string().optional().default(''),
-    facultyName: z.string().optional().default(''),
-    room: z.string().optional().default(''),
+    enrollmentDeadline: z.string().optional().default(""),
+    status: z.enum(["active", "inactive"]).default("active"),
+    facultyId: z.string().optional().default(""),
+    facultyName: z.string().optional().default(""),
+    room: z.string().optional().default(""),
     // Model 6 Child sub-entities
     fees: z.array(SessionClassFeeSchema).default([]),
     schedules: z.array(SessionClassScheduleSchema).default([]),
@@ -317,18 +319,18 @@ export const ClassInsertSchema = z
   .object({
     id: z.string().optional(),
     sessionId: z.string().optional(),
-    name: z.string().min(1, 'Class name is required'),
-    gender: z.enum(['male', 'female', 'mixed']).default('mixed'),
-    ageCalculationDate: z.string().optional().default(''),
+    name: z.string().min(1, "Class name is required"),
+    gender: z.enum(["male", "female", "mixed"]).default("mixed"),
+    ageCalculationDate: z.string().optional().default(""),
     minAge: z.coerce.number().int().min(0).max(120).default(0),
     maxAge: z.coerce.number().int().min(0).max(120).default(0),
     maxStudents: z.coerce.number().int().min(0).default(0),
     enrolled: z.coerce.number().int().nonnegative().default(0),
-    enrollmentDeadline: z.string().optional().default(''),
-    status: z.enum(['active', 'inactive']).default('active'),
-    facultyId: z.string().optional().default(''),
-    facultyName: z.string().optional().default(''),
-    room: z.string().optional().default(''),
+    enrollmentDeadline: z.string().optional().default(""),
+    status: z.enum(["active", "inactive"]).default("active"),
+    facultyId: z.string().optional().default(""),
+    facultyName: z.string().optional().default(""),
+    room: z.string().optional().default(""),
     fees: z.array(SessionClassFeeInsertSchema).default([]),
     schedules: z.array(SessionClassScheduleInsertSchema).default([]),
     budgets: z.array(SessionClassBudgetInsertSchema).default([]),
@@ -348,13 +350,13 @@ export type ClassInsert = z.infer<typeof ClassInsertSchema>;
 export const SessionSchema = z
   .object({
     id: z.string(),
-    name: z.string().min(1, 'Session name is required'),
-    status: z.enum(['active', 'inactive']).default('active'),
-    type: z.string().optional().default('academic'),
-    startDate: z.string().optional().default(''),
-    endDate: z.string().optional().default(''),
+    name: z.string().min(1, "Session name is required"),
+    status: z.enum(["active", "inactive"]).default("active"),
+    type: z.string().optional().default("academic"),
+    startDate: z.string().optional().default(""),
+    endDate: z.string().optional().default(""),
     description: z.string().optional(),
-    currency: z.string().optional().default('PKR'),
+    currency: z.string().optional().default("PKR"),
     baseFee: z.coerce.number().nonnegative().default(0),
     // Model 6 components
     faculty: z.array(SessionFacultySchema).default([]),
@@ -374,13 +376,13 @@ export const SessionSchema = z
 export const SessionInsertSchema = z
   .object({
     id: z.string().optional(),
-    name: z.string().min(1, 'Session name is required'),
-    status: z.enum(['active', 'inactive']).default('active'),
-    type: z.string().optional().default('academic'),
-    startDate: z.string().optional().default(''),
-    endDate: z.string().optional().default(''),
+    name: z.string().min(1, "Session name is required"),
+    status: z.enum(["active", "inactive"]).default("active"),
+    type: z.string().optional().default("academic"),
+    startDate: z.string().optional().default(""),
+    endDate: z.string().optional().default(""),
     description: z.string().optional(),
-    currency: z.string().optional().default('PKR'),
+    currency: z.string().optional().default("PKR"),
     baseFee: z.coerce.number().nonnegative().default(0),
     faculty: z.array(SessionFacultyInsertSchema).default([]),
     classes: z.array(ClassInsertSchema).default([]),

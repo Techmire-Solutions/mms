@@ -24,9 +24,9 @@
  * });
  * studentsImport.registerJobRunner();
  */
-import type { ImportSpec, ImportResult } from '@mms/shared';
-import { runImportPipeline, type ImportBatchFn, type ImportPipelineContext } from '@mms/shared';
-import { registerModuleCsvImportJobRunner } from './registerModuleCsvImportJobRunner.js';
+import type { ImportSpec, ImportResult } from "@mms/shared";
+import { runImportPipeline, type ImportBatchFn, type ImportPipelineContext } from "@mms/shared";
+import { registerModuleCsvImportJobRunner } from "./registerModuleCsvImportJobRunner.js";
 
 // ---------------------------------------------------------------------------
 // Options

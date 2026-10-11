@@ -1,15 +1,15 @@
-import { useRef, useState, type ChangeEvent } from 'react';
-import { calculateProfileCompleteness, type FieldConfig } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useTenantProfile } from '@/tenant/hooks/useTenantProfile';
-import { genderAvatarGradient } from '@/lib/semanticTone';
-import { useAccountProfileContactActions } from '@/tenant/features/profile/hooks/useAccountProfileContactActions';
-import { useAccountProfileSecurityActions } from '@/tenant/features/profile/hooks/useAccountProfileSecurityActions';
+import { useRef, useState, type ChangeEvent } from "react";
+import { calculateProfileCompleteness, type FieldConfig } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useTenantProfile } from "@/tenant/hooks/useTenantProfile";
+import { genderAvatarGradient } from "@/lib/semanticTone";
+import { useAccountProfileContactActions } from "@/tenant/features/profile/hooks/useAccountProfileContactActions";
+import { useAccountProfileSecurityActions } from "@/tenant/features/profile/hooks/useAccountProfileSecurityActions";
 
 export function useAccountProfilePageController() {
   const { t } = useTranslation();
   const { data: profile, isLoading, isError, refetch } = useTenantProfile();
-    const contact = useAccountProfileContactActions();
+  const contact = useAccountProfileContactActions();
   const security = useAccountProfileSecurityActions();
 
   const [showCropper, setShowCropper] = useState<string | null>(null);
@@ -19,11 +19,16 @@ export function useAccountProfilePageController() {
 
   const completeness = (() => {
     if (!profile?.contact) return 0;
-    return calculateProfileCompleteness(profile.contact, { fields: {}, version: 1, enabledTabs: [], requiredTabs: [] } satisfies FieldConfig);
+    return calculateProfileCompleteness(profile.contact, {
+      fields: {},
+      version: 1,
+      enabledTabs: [],
+      requiredTabs: [],
+    } satisfies FieldConfig);
   })();
 
   const avatarGradient = (() => {
-    return genderAvatarGradient(profile?.contact?.gender ?? '');
+    return genderAvatarGradient(profile?.contact?.gender ?? "");
   })();
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {

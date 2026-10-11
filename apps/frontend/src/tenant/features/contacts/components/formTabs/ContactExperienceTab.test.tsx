@@ -27,9 +27,7 @@ describe("ContactExperienceTab Component", () => {
     const html = renderToStaticMarkup(
       <ContactExperienceTab
         contactDraft={{
-          experience: [
-            { title: "Senior Lead", organization: "Tech Systems" },
-          ],
+          experience: [{ title: "Senior Lead", organization: "Tech Systems" }],
         }}
         getLocalId={() => "loc-1"}
         employmentTypeOptions={["Full-time", "Contract"]}

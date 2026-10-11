@@ -151,14 +151,16 @@ describe("useAttendance Hook suite", () => {
       root.render(React.createElement(TestComponent));
     });
 
-    expect(attendanceApiMocks.listUseQuery).toHaveBeenCalledWith(expect.objectContaining({
-      queryData: {
-        query: expect.objectContaining({
-          page: 2,
-          sessionId: "session-1",
-          facultyId: "faculty-1",
-        }),
-      },
-    }));
+    expect(attendanceApiMocks.listUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryData: {
+          query: expect.objectContaining({
+            page: 2,
+            sessionId: "session-1",
+            facultyId: "faculty-1",
+          }),
+        },
+      }),
+    );
   });
 });

@@ -36,7 +36,9 @@ describe("formatStudentsListContentCustomValue", () => {
   });
 
   it("formats date/datetime strings via regex detection", () => {
-    expect(formatStudentsListContentCustomValue("2020-01-02", t)).toBe(formatDate("2020-01-02", true));
+    expect(formatStudentsListContentCustomValue("2020-01-02", t)).toBe(
+      formatDate("2020-01-02", true),
+    );
     expect(formatStudentsListContentCustomValue("2020-01-02T10:00:00", t)).toBe(
       formatDateTime("2020-01-02T10:00:00", true),
     );

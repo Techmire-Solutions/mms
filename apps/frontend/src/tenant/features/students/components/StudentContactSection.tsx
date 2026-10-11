@@ -3,12 +3,7 @@ import ContactPicker from "@/components/contactLink/ContactPicker";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
-import {
-  getPrimaryEmail,
-  getPrimaryPhone,
-  type Contact,
-  type FieldDefinition,
-} from "@mms/shared";
+import { getPrimaryEmail, getPrimaryPhone, type Contact, type FieldDefinition } from "@mms/shared";
 import {
   ContactProfileValue,
   resolveStudentFieldLabel,
@@ -54,14 +49,21 @@ export function StudentContactSection({
   const showDob = isFieldEnabled("dob");
   const primaryPhone = linkedContact ? getPrimaryPhone(linkedContact) : null;
   const primaryEmail = linkedContact ? getPrimaryEmail(linkedContact) : null;
-  const showProfileRow = Boolean(contactId) && (showGender || showDob || Boolean(primaryPhone) || Boolean(primaryEmail));
+  const showProfileRow =
+    Boolean(contactId) && (showGender || showDob || Boolean(primaryPhone) || Boolean(primaryEmail));
 
   if (!showContact && !showProfileRow) {
     return null;
   }
 
   const GenderGlyph = getGenderIcon(linkedGenderRaw);
-  const contactLabel = resolveStudentFieldLabel(fields, "basic", "contactId", "students.form.contactLabel", t);
+  const contactLabel = resolveStudentFieldLabel(
+    fields,
+    "basic",
+    "contactId",
+    "students.form.contactLabel",
+    t,
+  );
   const genderLabel = resolveStudentFieldLabel(fields, "basic", "gender", "students.gender", t);
   const dobLabel = resolveStudentFieldLabel(fields, "basic", "dob", "students.form.fieldDob", t);
 

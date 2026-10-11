@@ -2,8 +2,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { Student } from '@/lib/data/studentsData';
-import type { Session } from '@/lib/data/sessionsData';
+import type { Student } from "@/lib/data/studentsData";
+import type { Session } from "@/lib/data/sessionsData";
 
 export interface EnrollmentWizardSuccessProps {
   t: TranslationFunction;
@@ -11,7 +11,11 @@ export interface EnrollmentWizardSuccessProps {
   session: Session | null;
 }
 
-export function EnrollmentWizardSuccess({ t, student, session }: EnrollmentWizardSuccessProps): React.JSX.Element {
+export function EnrollmentWizardSuccess({
+  t,
+  student,
+  session,
+}: EnrollmentWizardSuccessProps): React.JSX.Element {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
@@ -30,7 +34,9 @@ export function EnrollmentWizardSuccess({ t, student, session }: EnrollmentWizar
           session: session?.name || "",
         })}
       </p>
-      <p className="text-xs text-muted-foreground mt-0.5">{t("enrollments.wizard.submittedHint")}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">
+        {t("enrollments.wizard.submittedHint")}
+      </p>
     </motion.div>
   );
 }

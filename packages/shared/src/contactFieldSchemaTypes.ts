@@ -1,7 +1,6 @@
 /** Contact field/tab/column schema types and preference contracts. */
-import type { AppTranslationKey } from './appTranslations.js';
-import type { RelationshipPair } from './contactEntityTypes.js';
-
+import type { AppTranslationKey } from "./appTranslations.js";
+import type { RelationshipPair } from "./contactEntityTypes.js";
 
 /** Schema metadata for dynamic custom and standard contact fields. */
 export interface FieldDefinition {
@@ -9,7 +8,24 @@ export interface FieldDefinition {
   label: string;
   /** i18n key for system fields; custom fields use `label` directly. */
   labelKey?: AppTranslationKey;
-  type: "text" | "textarea" | "number" | "date" | "datetime" | "select" | "multiselect" | "single_select" | "multi_select" | "tags" | "boolean" | "url" | "email" | "file" | "location" | "ai_summary" | "currency";
+  type:
+    | "text"
+    | "textarea"
+    | "number"
+    | "date"
+    | "datetime"
+    | "select"
+    | "multiselect"
+    | "single_select"
+    | "multi_select"
+    | "tags"
+    | "boolean"
+    | "url"
+    | "email"
+    | "file"
+    | "location"
+    | "ai_summary"
+    | "currency";
   enabled: boolean;
   order: number;
   options?: string[];
@@ -54,8 +70,8 @@ export interface ColumnRegistryEntry {
   enabled: boolean;
   order: number;
   sortable?: boolean;
-  width?: number;        // px, 0 = auto
-  sortField?: string;    // field key to sort by
+  width?: number; // px, 0 = auto
+  sortField?: string; // field key to sort by
   fixed?: boolean;
 }
 
@@ -105,7 +121,6 @@ export type ContactPreferences = {
   /** Preferred Relationship-type dropdown order (subset of pair-derived labels). */
   relationshipOptionOrder?: string[];
 };
-
 
 /** WhatsApp quick template preset for campaign messaging. */
 export interface WhatsAppTemplate {

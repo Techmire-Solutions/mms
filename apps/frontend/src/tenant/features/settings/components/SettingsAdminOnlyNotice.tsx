@@ -1,8 +1,8 @@
-import React from 'react';
-import { ShieldAlert, type LucideIcon } from 'lucide-react';
-import type { AppTranslationKey } from '@mms/shared';
-import { SectionCard } from '@/components/ui/SectionCard';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import { ShieldAlert, type LucideIcon } from "lucide-react";
+import type { AppTranslationKey } from "@mms/shared";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SettingsAdminOnlyNoticeProps {
   titleKey?: AppTranslationKey;
@@ -12,8 +12,8 @@ interface SettingsAdminOnlyNoticeProps {
 
 /** Shown in place of an admin-only settings section for a non-admin viewer. */
 export function SettingsAdminOnlyNotice({
-  titleKey = 'settings.adminOnlyTitle',
-  descKey = 'settings.adminOnlyDesc',
+  titleKey = "settings.adminOnlyTitle",
+  descKey = "settings.adminOnlyDesc",
   icon = ShieldAlert,
 }: SettingsAdminOnlyNoticeProps): React.JSX.Element {
   const { t } = useTranslation();

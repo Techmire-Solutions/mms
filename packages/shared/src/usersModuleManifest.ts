@@ -1,18 +1,18 @@
-import { z } from 'zod';
-import type { Permission } from './permissions.js';
+import { z } from "zod";
+import type { Permission } from "./permissions.js";
 
 /** Allowed workspace user status states. */
-export const userStatusSchema = z.enum(['active', 'inactive', 'suspended']);
+export const userStatusSchema = z.enum(["active", "inactive", "suspended"]);
 
 const userFormContactIdSchema = z.union([
-  z.string().trim().min(1, 'users.addErrorContact'),
+  z.string().trim().min(1, "users.addErrorContact"),
   z.number(),
 ]);
 
 /** Shared form contract for editing a workspace user. */
 export const editWorkspaceUserSchema = z.object({
   contactId: userFormContactIdSchema,
-  role: z.string().min(1, 'users.errorRoleRequired'),
+  role: z.string().min(1, "users.errorRoleRequired"),
   status: userStatusSchema,
   twoFactorEnabled: z.boolean(),
 });
@@ -23,19 +23,17 @@ export type EditWorkspaceUserInput = z.infer<typeof editWorkspaceUserSchema>;
 /** Admin-issued temporary password for an existing workspace user. */
 export const resetWorkspaceUserPasswordSchema = z
   .object({
-    temporaryPassword: z.string().min(1, 'users.resetPasswordRequired'),
+    temporaryPassword: z.string().min(1, "users.resetPasswordRequired"),
   })
   .strict();
 
 /** Values accepted by the admin-issued temporary password reset action. */
-export type ResetWorkspaceUserPasswordInput = z.infer<
-  typeof resetWorkspaceUserPasswordSchema
->;
+export type ResetWorkspaceUserPasswordInput = z.infer<typeof resetWorkspaceUserPasswordSchema>;
 
 /** Shared form contract for inviting a workspace user. */
 export const inviteWorkspaceUserSchema = z.object({
   contactId: userFormContactIdSchema,
-  role: z.string().min(1, 'users.errorRoleRequired'),
+  role: z.string().min(1, "users.errorRoleRequired"),
   status: userStatusSchema,
   sendEmail: z.boolean(),
 });
@@ -52,7 +50,7 @@ export const TENANT_OTP_MAX_ATTEMPTS = 5;
 /** Step 1 — request a one-time code (used for both forgot-password and first-time activation). */
 export const requestTenantPasswordResetSchema = z
   .object({
-    email: z.string().trim().min(1, 'auth.emailRequired'),
+    email: z.string().trim().min(1, "auth.emailRequired"),
   })
   .strict();
 
@@ -61,8 +59,8 @@ export type RequestTenantPasswordResetInput = z.infer<typeof requestTenantPasswo
 /** Step 2 — verify the emailed code before showing the new-password fields. */
 export const verifyTenantPasswordResetSchema = z
   .object({
-    email: z.string().trim().min(1, 'auth.emailRequired'),
-    code: z.string().min(1, 'auth.otpIncomplete'),
+    email: z.string().trim().min(1, "auth.emailRequired"),
+    code: z.string().min(1, "auth.otpIncomplete"),
   })
   .strict();
 
@@ -71,9 +69,9 @@ export type VerifyTenantPasswordResetInput = z.infer<typeof verifyTenantPassword
 /** Step 3 — re-submit the code with the chosen password to actually set it. */
 export const resetTenantPasswordSchema = z
   .object({
-    email: z.string().trim().min(1, 'auth.emailRequired'),
-    code: z.string().min(1, 'auth.otpIncomplete'),
-    password: z.string().min(1, 'users.resetPasswordRequired'),
+    email: z.string().trim().min(1, "auth.emailRequired"),
+    code: z.string().min(1, "auth.otpIncomplete"),
+    password: z.string().min(1, "users.resetPasswordRequired"),
   })
   .strict();
 
@@ -83,11 +81,11 @@ export type ResetTenantPasswordInput = z.infer<typeof resetTenantPasswordSchema>
 export const createWorkspaceUserSchema = z
   .object({
     contactId: userFormContactIdSchema,
-    role: z.string().min(1, 'users.errorRoleRequired'),
+    role: z.string().min(1, "users.errorRoleRequired"),
     status: userStatusSchema,
     temporaryRole: z.boolean().optional(),
     roleExpiry: z.string().optional(),
-    setupMethod: z.enum(['invite', 'password']),
+    setupMethod: z.enum(["invite", "password"]),
     password: z.string().optional(),
     forceReset: z.boolean().optional(),
     twoFactorEnabled: z.boolean(),
@@ -107,15 +105,15 @@ export const workspaceUserRecordSchema = z
     loginEmail: z.string().optional(),
     mustChangePassword: z.boolean().optional(),
     temporaryPassword: z.string().optional(),
-    phone: z.string().optional().default(''),
+    phone: z.string().optional().default(""),
     role: z.string(),
-    status: userStatusSchema.optional().default('active'),
+    status: userStatusSchema.optional().default("active"),
     twoFactorEnabled: z.boolean().optional().default(false),
-    lastLogin: z.string().optional().default(''),
-    createdDate: z.string().optional().default(''),
+    lastLogin: z.string().optional().default(""),
+    createdDate: z.string().optional().default(""),
     failedLoginAttempts: z.number().optional().default(0),
     activeSessions: z.number().optional().default(0),
-    avatarInitials: z.string().optional().default(''),
+    avatarInitials: z.string().optional().default(""),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
     emailVerifiedAt: z.string().nullable().optional(),
@@ -127,12 +125,12 @@ export const workspaceUserListSchema = z.array(workspaceUserRecordSchema);
 
 /** Allowed user activity log action codes. */
 export const activityActionSchema = z.enum([
-  'login',
-  'login_failed',
-  'create',
-  'update',
-  'delete',
-  'role_change',
+  "login",
+  "login_failed",
+  "create",
+  "update",
+  "delete",
+  "role_change",
 ]);
 
 /** Validates single user activity log entries. */
@@ -152,18 +150,18 @@ export const activityLogListSchema = z.array(activityLogRecordSchema);
 
 /** Users module manifest — aligns with globle1 universal module architecture. */
 export const USERS_MODULE_MANIFEST = {
-  moduleId: 'users',
-  entityType: 'User',
-  collectionKey: 'users',
+  moduleId: "users",
+  entityType: "User",
+  collectionKey: "users",
   /** Legacy remap / backup key — typed field-config lives on `user_field_configs`. */
-  settingsObjectKey: 'users_settings',
-  configObjectKey: 'user_field_config',
-  preferencesObjectKey: 'user_module_preferences',
-  columnPreferencesObjectKey: 'users_user_column_preferences',
-  restBasePath: '/api/users',
-  analyticsCategory: 'users',
-  tiers: ['work', 'reports', 'setup'] as const,
-  setupSubTabs: ['permissions', 'preferences'] as const,
+  settingsObjectKey: "users_settings",
+  configObjectKey: "user_field_config",
+  preferencesObjectKey: "user_module_preferences",
+  columnPreferencesObjectKey: "users_user_column_preferences",
+  restBasePath: "/api/users",
+  analyticsCategory: "users",
+  tiers: ["work", "reports", "setup"] as const,
+  setupSubTabs: ["permissions", "preferences"] as const,
   /** Soft-delete via tenant_users.deleted_at; status remains invite/suspend lifecycle. */
   softDelete: {
     workExcludesDeleted: true,
@@ -173,21 +171,21 @@ export const USERS_MODULE_MANIFEST = {
     retentionDays: null,
   },
   permissions: {
-    read: 'users.manage',
-    write: 'users.manage',
-    delete: 'users.manage',
-    setupView: 'configuration.view',
-    setupWrite: 'settings.global.write',
-    export: 'users.manage',
-    reports: 'users.manage',
+    read: "users.manage",
+    write: "users.manage",
+    delete: "users.manage",
+    setupView: "configuration.view",
+    setupWrite: "settings.global.write",
+    export: "users.manage",
+    reports: "users.manage",
   } satisfies Record<string, Permission>,
   work: {
-    directoryViews: ['table', 'cards'] as const,
-    bulkActions: ['whatsapp', 'sms', 'email', 'delete'] as const,
+    directoryViews: ["table", "cards"] as const,
+    bulkActions: ["whatsapp", "sms", "email", "delete"] as const,
   },
   defaultPageSize: 50,
   maxPageSize: 100,
-  defaultExportFilename: 'users.csv',
+  defaultExportFilename: "users.csv",
   exportChunkSize: 100,
 } as const;
 

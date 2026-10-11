@@ -1,8 +1,8 @@
-import React from 'react';
-import { MessageComposer, type MessageComposerProps } from '@/components/ui/MessageComposer';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { useBranding } from '@/tenant/hooks/useBranding';
-import { TenantMessageComposerRecipientPicker } from './TenantMessageComposerRecipientPicker';
+import React from "react";
+import { MessageComposer, type MessageComposerProps } from "@/components/ui/MessageComposer";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useBranding } from "@/tenant/hooks/useBranding";
+import { TenantMessageComposerRecipientPicker } from "./TenantMessageComposerRecipientPicker";
 
 export type { MessageComposerProps };
 
@@ -18,7 +18,7 @@ export function TenantMessageComposer(props: MessageComposerProps): React.JSX.El
       renderRecipientPicker={(pickerProps) => (
         <TenantMessageComposerRecipientPicker
           {...pickerProps}
-          kind={props.channel === 'email' ? 'email' : 'phone'}
+          kind={props.channel === "email" ? "email" : "phone"}
         />
       )}
     />

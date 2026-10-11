@@ -6,7 +6,9 @@ import { cn } from "@/lib/utils";
 
 export function CardTypeLabel({ children }: { children: ReactNode }): React.JSX.Element {
   return (
-    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{children}</span>
+    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+      {children}
+    </span>
   );
 }
 
@@ -86,9 +88,11 @@ export function CardPrimaryButton({
       title={resolvedTitle}
       aria-label={resolvedAriaLabel}
     >
-      <Star className={cn("w-3 h-3", isPrimary && "fill-primary text-primary")} aria-hidden="true" />
+      <Star
+        className={cn("w-3 h-3", isPrimary && "fill-primary text-primary")}
+        aria-hidden="true"
+      />
       <span>{resolvedLabel}</span>
     </Button>
   );
 }
-

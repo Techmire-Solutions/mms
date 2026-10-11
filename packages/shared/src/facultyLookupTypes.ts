@@ -1,26 +1,23 @@
-import { z } from 'zod';
-import { GENDERS } from './contactPreferenceConstants.js';
-import {
-  resolveFacultySpecializations,
-  resolveFacultyStatuses,
-} from './facultyTypes.js';
+import { z } from "zod";
+import { GENDERS } from "./contactPreferenceConstants.js";
+import { resolveFacultySpecializations, resolveFacultyStatuses } from "./facultyTypes.js";
 
 /** Faculty Setup option-list kinds (org catalogs own departments/designations). */
-export const FACULTY_LOOKUP_KINDS = ['statuses', 'specializations', 'genderFilters'] as const;
+export const FACULTY_LOOKUP_KINDS = ["statuses", "specializations", "genderFilters"] as const;
 
 export type FacultyLookupKind = (typeof FACULTY_LOOKUP_KINDS)[number];
 
 /** Legacy document-store collection key → typed lookup kind. */
 export const FACULTY_LOOKUP_LEGACY_COLLECTION_KEYS = {
-  facultyStatuses: 'statuses',
-  facultySpecializations: 'specializations',
+  facultyStatuses: "statuses",
+  facultySpecializations: "specializations",
 } as const satisfies Record<string, FacultyLookupKind>;
 
 export type FacultyLookupLegacyCollectionKey = keyof typeof FACULTY_LOOKUP_LEGACY_COLLECTION_KEYS;
 
 export const facultyLookupKindSchema = z.enum(FACULTY_LOOKUP_KINDS);
 
-import { facultyLookupStringItemsSchema } from './schemas/facultyLookup.dto.js';
+import { facultyLookupStringItemsSchema } from "./schemas/facultyLookup.dto.js";
 
 export const facultyLookupsMapSchema = z.object({
   statuses: facultyLookupStringItemsSchema,
@@ -34,7 +31,7 @@ export const facultyLookupKindParamsSchema = z.object({
   kind: facultyLookupKindSchema,
 });
 
-export * from './schemas/facultyLookup.dto.js';
+export * from "./schemas/facultyLookup.dto.js";
 
 const FACULTY_LOOKUP_KINDS_SET = new Set<string>(FACULTY_LOOKUP_KINDS);
 
@@ -50,11 +47,11 @@ export function isFacultyLookupLegacyCollectionKey(
 
 export function defaultFacultyLookupItems(kind: FacultyLookupKind): string[] {
   switch (kind) {
-    case 'statuses':
+    case "statuses":
       return [...resolveFacultyStatuses()];
-    case 'specializations':
+    case "specializations":
       return [...resolveFacultySpecializations()];
-    case 'genderFilters':
+    case "genderFilters":
       return [...GENDERS];
     default: {
       const _exhaustive: never = kind;
@@ -65,8 +62,8 @@ export function defaultFacultyLookupItems(kind: FacultyLookupKind): string[] {
 
 export function emptyFacultyLookupsMap(): FacultyLookupsMap {
   return {
-    statuses: defaultFacultyLookupItems('statuses'),
-    specializations: defaultFacultyLookupItems('specializations'),
-    genderFilters: defaultFacultyLookupItems('genderFilters'),
+    statuses: defaultFacultyLookupItems("statuses"),
+    specializations: defaultFacultyLookupItems("specializations"),
+    genderFilters: defaultFacultyLookupItems("genderFilters"),
   };
 }

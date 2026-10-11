@@ -120,17 +120,17 @@ export function computeWidgetSingleValue(
   if (widget.operation === "count") {
     computedValue = filteredRecords.length;
   } else if (widget.operation === "percentage") {
-    computedValue = totalInCollection > 0 ? Math.round((filteredRecords.length / totalInCollection) * 100) : 0;
+    computedValue =
+      totalInCollection > 0 ? Math.round((filteredRecords.length / totalInCollection) * 100) : 0;
   } else {
     const targetField = widget.targetField || "";
     let numericTotal = 0;
     let numericRecordCount = 0;
     filteredRecords.forEach((filteredRecord) => {
       if (widget.collection === "hasanat_distributions" && targetField === "points") {
-        numericTotal += Number(filteredRecord.quantity || 1) * resolveHasanatPoints(
-          filteredRecord,
-          collections.hasanat_denoms,
-        );
+        numericTotal +=
+          Number(filteredRecord.quantity || 1) *
+          resolveHasanatPoints(filteredRecord, collections.hasanat_denoms);
         numericRecordCount++;
       } else {
         const numericValue = Number(filteredRecord[targetField]);
@@ -140,7 +140,12 @@ export function computeWidgetSingleValue(
         }
       }
     });
-    computedValue = widget.operation === "sum" ? numericTotal : (numericRecordCount > 0 ? Math.round(numericTotal / numericRecordCount) : 0);
+    computedValue =
+      widget.operation === "sum"
+        ? numericTotal
+        : numericRecordCount > 0
+          ? Math.round(numericTotal / numericRecordCount)
+          : 0;
   }
 
   return formatGenericWidgetValue(widget, { value: computedValue, totalCount: totalInCollection });

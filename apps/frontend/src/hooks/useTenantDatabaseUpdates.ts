@@ -1,21 +1,22 @@
-import { useEffect, useCallback, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { connectTenantDatabaseSocket } from '@/lib/tenantWebSocket';
-import { MODULE_ACCESS_INVALIDATION_KEYS, type BackgroundJobEventMessage } from '@mms/shared';
-import { MODULE_ACCESS_QUERY_KEY } from '@/lib/query/moduleAccessQuery';
+import { useEffect, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { connectTenantDatabaseSocket } from "@/lib/tenantWebSocket";
+import { MODULE_ACCESS_INVALIDATION_KEYS, type BackgroundJobEventMessage } from "@mms/shared";
+import { MODULE_ACCESS_QUERY_KEY } from "@/lib/query/moduleAccessQuery";
 import {
   patchLocalBackgroundJobOnly,
   upsertLocalBackgroundJob,
-} from '@/lib/backgroundJobs/backgroundJobStore';
-import { fetchBackgroundJob } from '@/lib/backgroundJobs/pollBackgroundJob';
-import { reportClientError } from '@/lib/clientErrorReporting';
+} from "@/lib/backgroundJobs/backgroundJobStore";
+import { fetchBackgroundJob } from "@/lib/backgroundJobs/pollBackgroundJob";
+import { reportClientError } from "@/lib/clientErrorReporting";
 
-let invalidateModulePromise: Promise<typeof import('@/lib/tenant/invalidateModuleQueries')> | null = null;
+let invalidateModulePromise: Promise<typeof import("@/lib/tenant/invalidateModuleQueries")> | null =
+  null;
 
 function getInvalidateModuleQueries() {
   if (!invalidateModulePromise) {
-    invalidateModulePromise = import('@/lib/tenant/invalidateModuleQueries').catch((err) => {
+    invalidateModulePromise = import("@/lib/tenant/invalidateModuleQueries").catch((err) => {
       invalidateModulePromise = null;
       throw err;
     });
@@ -51,28 +52,31 @@ export function useTenantDatabaseUpdates(): void {
         }
       })
       .catch((err) => {
-        reportClientError(err, { context: 'useTenantDatabaseUpdates.dispatch' });
+        reportClientError(err, { context: "useTenantDatabaseUpdates.dispatch" });
       });
   }, [queryClient]);
 
-  const scheduleInvalidate = useCallback((key: string) => {
-    pendingKeysRef.current.add(key);
-    if (cancelScheduleRef.current === null) {
-      if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
-        const id = window.requestAnimationFrame(() => {
-          cancelScheduleRef.current = null;
-          flushInvalidations();
-        });
-        cancelScheduleRef.current = () => window.cancelAnimationFrame(id);
-      } else {
-        const id = setTimeout(() => {
-          cancelScheduleRef.current = null;
-          flushInvalidations();
-        }, 16);
-        cancelScheduleRef.current = () => clearTimeout(id);
+  const scheduleInvalidate = useCallback(
+    (key: string) => {
+      pendingKeysRef.current.add(key);
+      if (cancelScheduleRef.current === null) {
+        if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+          const id = window.requestAnimationFrame(() => {
+            cancelScheduleRef.current = null;
+            flushInvalidations();
+          });
+          cancelScheduleRef.current = () => window.cancelAnimationFrame(id);
+        } else {
+          const id = setTimeout(() => {
+            cancelScheduleRef.current = null;
+            flushInvalidations();
+          }, 16);
+          cancelScheduleRef.current = () => clearTimeout(id);
+        }
       }
-    }
-  }, [flushInvalidations]);
+    },
+    [flushInvalidations],
+  );
 
   useEffect(() => {
     return () => {
@@ -87,18 +91,23 @@ export function useTenantDatabaseUpdates(): void {
 
     return connectTenantDatabaseSocket({
       onDatabaseUpdate: (message) => {
-        if (message.type === 'object' && MODULE_ACCESS_INVALIDATION_KEYS.has(message.key)) {
+        if (message.type === "object" && MODULE_ACCESS_INVALIDATION_KEYS.has(message.key)) {
           void queryClient.invalidateQueries({ queryKey: MODULE_ACCESS_QUERY_KEY });
           return;
         }
-        if (message.type !== 'collection') return;
+        if (message.type !== "collection") return;
         scheduleInvalidate(message.key);
       },
 
       onJobEvent: (message: BackgroundJobEventMessage) => {
         // Optimistically patch local job state to avoid hammering the backend on rapid progress events
         const patched = patchLocalBackgroundJobOnly(message.jobId, {
-          status: message.event === 'job-progress' ? 'running' : message.event === 'job-failed' ? 'failed' : 'completed',
+          status:
+            message.event === "job-progress"
+              ? "running"
+              : message.event === "job-failed"
+                ? "failed"
+                : "completed",
           progress: message.progress,
           hasDownload: message.hasDownload,
           error: message.error,
@@ -106,14 +115,14 @@ export function useTenantDatabaseUpdates(): void {
         });
 
         // Only fetch if missing locally or if it's the final event (to ensure we don't miss final DB state)
-        if (!patched || message.event !== 'job-progress') {
+        if (!patched || message.event !== "job-progress") {
           void fetchBackgroundJob(message.jobId)
             .then((job) => {
               if (job) upsertLocalBackgroundJob(job);
             })
             .catch((err) => {
               reportClientError(err, {
-                context: 'useTenantDatabaseUpdates.fetchJob',
+                context: "useTenantDatabaseUpdates.fetchJob",
                 jobId: message.jobId,
               });
             });
@@ -121,7 +130,7 @@ export function useTenantDatabaseUpdates(): void {
 
         // On completion, invalidate the relevant module collection so directory
         // refreshes automatically (e.g. after a CSV import or bulk operation).
-        if (message.event === 'job-completed' && message.moduleId) {
+        if (message.event === "job-completed" && message.moduleId) {
           scheduleInvalidate(message.moduleId);
         }
       },

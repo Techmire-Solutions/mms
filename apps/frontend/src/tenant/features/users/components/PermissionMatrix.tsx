@@ -1,19 +1,22 @@
-import React, { useDeferredValue, useMemo, useState } from 'react';
+import React, { useDeferredValue, useMemo, useState } from "react";
 import {
   groupRbacModulesForPermissionsNav,
   PERMISSION_ACTIONS,
   type PermissionAction,
   type PermissionMap,
   type RbacModuleDef,
-} from '@mms/shared';
-import { WORK_SURFACE } from '@/components/ui/formStyles';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { PermissionMatrixToolbar } from '@/tenant/features/users/components/PermissionMatrixToolbar';
-import { PermissionMatrixMobileList } from '@/tenant/features/users/components/PermissionMatrixMobileList';
-import { PermissionMatrixDesktopTable } from '@/tenant/features/users/components/PermissionMatrixDesktopTable';
+} from "@mms/shared";
+import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
+import { PermissionMatrixToolbar } from "@/tenant/features/users/components/PermissionMatrixToolbar";
+import { PermissionMatrixMobileList } from "@/tenant/features/users/components/PermissionMatrixMobileList";
+import { PermissionMatrixDesktopTable } from "@/tenant/features/users/components/PermissionMatrixDesktopTable";
 
 interface PermissionMatrixProps {
   modules: readonly RbacModuleDef[];
@@ -37,16 +40,21 @@ export function PermissionMatrix({
   const { t } = useTranslation();
   const { viewMode: hookViewMode } = useWorkDirectoryViewMode();
   const viewMode = propViewMode ?? hookViewMode;
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const deferredSearch = useDeferredValue(searchQuery);
 
   const filteredModules = useMemo(() => {
     if (!deferredSearch.trim()) return modules;
     const q = deferredSearch.trim().toLowerCase();
-    return modules.filter((m) => t(m.labelKey).toLowerCase().includes(q) || m.id.toLowerCase().includes(q));
+    return modules.filter(
+      (m) => t(m.labelKey).toLowerCase().includes(q) || m.id.toLowerCase().includes(q),
+    );
   }, [modules, deferredSearch, t]);
 
-  const groups = useMemo(() => groupRbacModulesForPermissionsNav(filteredModules), [filteredModules]);
+  const groups = useMemo(
+    () => groupRbacModulesForPermissionsNav(filteredModules),
+    [filteredModules],
+  );
   const colSpan = PERMISSION_ACTIONS.length + 1 + (readOnly ? 0 : 1);
   const matrixActions = { perms, readOnly, onToggle, onSelectAll, onClearAll };
 
@@ -76,7 +84,7 @@ export function PermissionMatrix({
   if (modules.length === 0) {
     return (
       <div className={WORK_SURFACE}>
-        <EmptyState title={t('users.permissions.emptyRoles')} compact />
+        <EmptyState title={t("users.permissions.emptyRoles")} compact />
       </div>
     );
   }
@@ -97,23 +105,23 @@ export function PermissionMatrix({
       {filteredModules.length === 0 ? (
         <div className="p-6">
           <EmptyState
-            title={t('common.columns.noMatches')}
-            description={t('common.clearFilters')}
+            title={t("common.columns.noMatches")}
+            description={t("common.clearFilters")}
             action={
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setSearchQuery('')}
+                onClick={() => setSearchQuery("")}
                 className="mt-2 text-xs"
               >
-                {t('common.clearSearch')}
+                {t("common.clearSearch")}
               </Button>
             }
             compact
           />
         </div>
-      ) : viewMode === 'cards' ? (
+      ) : viewMode === "cards" ? (
         <PermissionMatrixMobileList groups={groups} {...matrixActions} />
       ) : (
         <PermissionMatrixDesktopTable
@@ -133,8 +141,8 @@ export function PermissionMatrix({
   );
 }
 
-export { PermissionMatrixRow } from '@/tenant/features/users/components/PermissionMatrixRow';
-export { PermissionMatrixMobileRow } from '@/tenant/features/users/components/PermissionMatrixMobileRow';
-export { PermissionMatrixToolbar } from '@/tenant/features/users/components/PermissionMatrixToolbar';
-export { PermissionMatrixMobileList } from '@/tenant/features/users/components/PermissionMatrixMobileList';
-export { PermissionMatrixDesktopTable } from '@/tenant/features/users/components/PermissionMatrixDesktopTable';
+export { PermissionMatrixRow } from "@/tenant/features/users/components/PermissionMatrixRow";
+export { PermissionMatrixMobileRow } from "@/tenant/features/users/components/PermissionMatrixMobileRow";
+export { PermissionMatrixToolbar } from "@/tenant/features/users/components/PermissionMatrixToolbar";
+export { PermissionMatrixMobileList } from "@/tenant/features/users/components/PermissionMatrixMobileList";
+export { PermissionMatrixDesktopTable } from "@/tenant/features/users/components/PermissionMatrixDesktopTable";

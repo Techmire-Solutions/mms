@@ -4,7 +4,7 @@ import { reportClientError } from "@/lib/clientErrorReporting";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const LazyErrorState = React.lazy(() =>
-  import("@/components/ui/ErrorState").then((m) => ({ default: m.ErrorState }))
+  import("@/components/ui/ErrorState").then((m) => ({ default: m.ErrorState })),
 );
 
 interface ErrorBoundaryProps {
@@ -27,7 +27,11 @@ function ErrorBoundaryFallback({
   const { t } = useTranslation();
   return (
     <div className={`${WORK_SURFACE} p-6 my-4`}>
-      <React.Suspense fallback={<div className="p-4 text-center text-muted-foreground">{t("common.loading")}</div>}>
+      <React.Suspense
+        fallback={
+          <div className="p-4 text-center text-muted-foreground">{t("common.loading")}</div>
+        }
+      >
         <LazyErrorState
           title={t("errors.boundary.title")}
           description={error?.message || t("errors.boundary.description")}
@@ -65,9 +69,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       if (this.props.fallback) {
         return this.props.fallback;
       }
-      return (
-        <ErrorBoundaryFallback error={this.state.error} onRetry={this.handleRetry} />
-      );
+      return <ErrorBoundaryFallback error={this.state.error} onRetry={this.handleRetry} />;
     }
 
     return this.props.children;

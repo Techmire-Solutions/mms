@@ -3,16 +3,16 @@
  */
 
 const SOCIAL_BASE_URLS: Record<string, string> = {
-  twitter: 'https://x.com/',
-  x: 'https://x.com/',
-  facebook: 'https://facebook.com/',
-  instagram: 'https://instagram.com/',
-  linkedin: 'https://linkedin.com/in/',
-  youtube: 'https://youtube.com/@',
-  github: 'https://github.com/',
-  tiktok: 'https://tiktok.com/@',
-  whatsapp: 'https://wa.me/',
-  telegram: 'https://t.me/',
+  twitter: "https://x.com/",
+  x: "https://x.com/",
+  facebook: "https://facebook.com/",
+  instagram: "https://instagram.com/",
+  linkedin: "https://linkedin.com/in/",
+  youtube: "https://youtube.com/@",
+  github: "https://github.com/",
+  tiktok: "https://tiktok.com/@",
+  whatsapp: "https://wa.me/",
+  telegram: "https://t.me/",
 };
 
 /**
@@ -21,13 +21,13 @@ const SOCIAL_BASE_URLS: Record<string, string> = {
  */
 export function formatSocialPlatformUrl(platform: string, input: string): string {
   const trimmed = input.trim();
-  if (!trimmed) return '';
+  if (!trimmed) return "";
 
   if (
-    trimmed.startsWith('http://') ||
-    trimmed.startsWith('https://') ||
-    trimmed.startsWith('mailto:') ||
-    trimmed.startsWith('tel:')
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("mailto:") ||
+    trimmed.startsWith("tel:")
   ) {
     return trimmed;
   }
@@ -42,11 +42,11 @@ export function formatSocialPlatformUrl(platform: string, input: string): string
     return trimmed;
   }
 
-  const cleanHandle = trimmed.replace(/^[@/]+/, '');
-  if (!cleanHandle) return '';
+  const cleanHandle = trimmed.replace(/^[@/]+/, "");
+  if (!cleanHandle) return "";
 
   // If handle already contains domain part (e.g. linkedin.com/in/foo)
-  if (cleanHandle.includes('.')) {
+  if (cleanHandle.includes(".")) {
     return `https://${cleanHandle}`;
   }
 

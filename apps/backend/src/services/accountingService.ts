@@ -1,4 +1,4 @@
-import { accountingUseCases } from '../accounting/use-cases/accountingUseCases.js';
+import { accountingUseCases } from "../accounting/use-cases/accountingUseCases.js";
 
 /**
  * Thin re-export of the accounting use-cases facade.

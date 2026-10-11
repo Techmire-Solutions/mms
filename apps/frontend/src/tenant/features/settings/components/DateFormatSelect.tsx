@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Check, ChevronsUpDown, Languages } from 'lucide-react';
+import React, { useState } from "react";
+import { Check, ChevronsUpDown, Languages } from "lucide-react";
 import {
   DEFAULT_GLOBAL_SETTINGS,
   detectLocaleDateFormat,
@@ -8,12 +8,12 @@ import {
   type AppLanguageCode,
   type AppTranslationKey,
   type DateFormatId,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { cn } from '@/lib/utils';
-import { notify } from '@/lib/notify';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+import { notify } from "@/lib/notify";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface DateFormatSelectProps {
   id?: string;
@@ -41,15 +41,17 @@ export default function DateFormatSelect({
     DEFAULT_GLOBAL_SETTINGS.dateFormat as DateFormatId,
   );
   const options = (() => getDateFormatOptions(language))();
-  const selected = options.find((dateFormatOption) => dateFormatOption.value === normalizedValue) ?? options[0];
+  const selected =
+    options.find((dateFormatOption) => dateFormatOption.value === normalizedValue) ?? options[0];
 
   const applyLocaleFormat = (): void => {
     const detected = detectLocaleDateFormat(language);
     onChange(detected);
     setOpen(false);
-    const sample = options.find((dateFormatOption) => dateFormatOption.value === detected)?.sample ?? detected;
-    notify.success(t('global.dateFormatMatchSuccess'), {
-      description: t('global.dateFormatMatchSuccessDesc', { pattern: detected, sample }),
+    const sample =
+      options.find((dateFormatOption) => dateFormatOption.value === detected)?.sample ?? detected;
+    notify.success(t("global.dateFormatMatchSuccess"), {
+      description: t("global.dateFormatMatchSuccessDesc", { pattern: detected, sample }),
     });
   };
 
@@ -64,11 +66,9 @@ export default function DateFormatSelect({
             role="combobox"
             aria-expanded={open}
             aria-haspopup="listbox"
-            aria-label={t('global.dateFormat')}
+            aria-label={t("global.dateFormat")}
             disabled={disabled}
-            className={cn(
-              'h-auto min-h-11 w-full justify-between px-3 py-2 font-normal sm:flex-1',
-            )}
+            className={cn("h-auto min-h-11 w-full justify-between px-3 py-2 font-normal sm:flex-1")}
           >
             <span className="truncate text-start text-sm">
               <span className="font-mono">{selected.pattern}</span>
@@ -79,7 +79,11 @@ export default function DateFormatSelect({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-popover-md p-1 shadow-surface-lg" align="start">
-          <div className="max-h-popover-scroll-sm overflow-y-auto" role="listbox" aria-label={t('global.dateFormat')}>
+          <div
+            className="max-h-popover-scroll-sm overflow-y-auto"
+            role="listbox"
+            aria-label={t("global.dateFormat")}
+          >
             {options.map((dateFormatOption) => {
               const isSelected = normalizedValue === dateFormatOption.value;
               return (
@@ -90,8 +94,8 @@ export default function DateFormatSelect({
                   aria-selected={isSelected}
                   variant="ghost"
                   className={cn(
-                    'min-h-11 h-auto w-full justify-start items-start gap-2 rounded-lg px-2.5 py-2 text-start font-normal transition-colors hover:bg-accent hover:text-accent-foreground',
-                    isSelected && 'bg-accent/80 font-medium text-accent-foreground',
+                    "min-h-11 h-auto w-full justify-start items-start gap-2 rounded-lg px-2.5 py-2 text-start font-normal transition-colors hover:bg-accent hover:text-accent-foreground",
+                    isSelected && "bg-accent/80 font-medium text-accent-foreground",
                   )}
                   onClick={() => {
                     onChange(dateFormatOption.value);
@@ -100,14 +104,18 @@ export default function DateFormatSelect({
                 >
                   <Check
                     className={cn(
-                      'mt-0.5 h-4 w-4 shrink-0',
-                      isSelected ? 'opacity-100 text-primary' : 'opacity-0',
+                      "mt-0.5 h-4 w-4 shrink-0",
+                      isSelected ? "opacity-100 text-primary" : "opacity-0",
                     )}
                     aria-hidden
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block font-mono text-xs font-semibold">{dateFormatOption.pattern}</span>
-                    <span className="block text-muted-foreground text-start text-xs">{dateFormatOption.sample}</span>
+                    <span className="block font-mono text-xs font-semibold">
+                      {dateFormatOption.pattern}
+                    </span>
+                    <span className="block text-muted-foreground text-start text-xs">
+                      {dateFormatOption.sample}
+                    </span>
                     <span className="block text-start text-3xs text-muted-foreground">
                       {t(dateFormatOption.hintKey as AppTranslationKey)}
                     </span>
@@ -125,10 +133,10 @@ export default function DateFormatSelect({
         disabled={disabled}
         onClick={applyLocaleFormat}
         className="min-h-11 shrink-0 gap-2 px-3.5"
-        aria-label={t('global.dateFormatMatchLanguage')}
+        aria-label={t("global.dateFormatMatchLanguage")}
       >
         <Languages className="h-4 w-4 text-muted-foreground" aria-hidden />
-        <span>{t('global.dateFormatMatchLanguage')}</span>
+        <span>{t("global.dateFormatMatchLanguage")}</span>
       </Button>
     </div>
   );

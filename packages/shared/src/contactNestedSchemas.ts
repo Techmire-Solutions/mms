@@ -1,18 +1,22 @@
-import { z } from 'zod';
-import { WHATSAPP_STATUS_VALUES } from './contactEntityTypes.js';
+import { z } from "zod";
+import { WHATSAPP_STATUS_VALUES } from "./contactEntityTypes.js";
 
 export const whatsappStatusSchema = z.enum(WHATSAPP_STATUS_VALUES);
 
 export const whatsappStatusOptionalSchema = z
   .union([
     whatsappStatusSchema,
-    z.literal('unknown'),
-    z.literal('Unknown'),
-    z.literal(''),
+    z.literal("unknown"),
+    z.literal("Unknown"),
+    z.literal(""),
     z.null(),
   ])
   .optional()
-  .transform((val) => (val && val !== 'unknown' && val !== 'Unknown' ? (val as (typeof WHATSAPP_STATUS_VALUES)[number]) : undefined))
+  .transform((val) =>
+    val && val !== "unknown" && val !== "Unknown"
+      ? (val as (typeof WHATSAPP_STATUS_VALUES)[number])
+      : undefined,
+  )
   .optional();
 
 export const phoneNumberSchema = z
@@ -130,7 +134,7 @@ export const relationshipSchema = z
 export const activitySchema = z
   .object({
     id: z.string(),
-    type: z.enum(['note', 'stage_change', 'whatsapp', 'email', 'system', 'task', 'call']),
+    type: z.enum(["note", "stage_change", "whatsapp", "email", "system", "task", "call"]),
     content: z.string(),
     date: z.string(),
     by: z.string().optional(),

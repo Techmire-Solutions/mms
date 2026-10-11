@@ -1,9 +1,9 @@
-import { dashboardPreferences } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { dashboardPreferences } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: dashboardPreferences,
-  jsonColumn: 'preferences',
+  jsonColumn: "preferences",
 });
 
 export const getDashboardPreferencesByWorkspace = repo.getByWorkspace;

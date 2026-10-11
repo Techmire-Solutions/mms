@@ -4,30 +4,25 @@ import {
   type FetchWithTimeoutOptions,
   isTenantSessionRequest,
   sanitizeColumnPreferencesBody,
-} from '@/lib/apiClientHelpers';
-import {
-  ApiError,
-  isApiError,
-  parseRetryAfterSeconds,
-  type ApiErrorBody,
-} from './apiError';
+} from "@/lib/apiClientHelpers";
+import { ApiError, isApiError, parseRetryAfterSeconds, type ApiErrorBody } from "./apiError";
 
 export { ApiError, isApiError, type ApiErrorBody };
-export { resolveApiUrl } from '@/lib/apiClientHelpers';
+export { resolveApiUrl } from "@/lib/apiClientHelpers";
 
-const JSON_CONTENT_TYPE = 'application/json';
+const JSON_CONTENT_TYPE = "application/json";
 
 let refreshPromise: Promise<boolean> | null = null;
 let lastRefreshedAt = 0;
 const REFRESH_GRACE_PERIOD_MS = 5_000;
 
 // Set for O(1) lookup — avoids a per-call array allocation in the hot CSRF path.
-const CSRF_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'] as const);
+const CSRF_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"] as const);
 
-export const SESSION_EXPIRED_EVENT = 'mms:session-expired';
+export const SESSION_EXPIRED_EVENT = "mms:session-expired";
 
 export function notifySessionExpired(reason?: string): void {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, { detail: { reason } }));
   }
 }
@@ -41,12 +36,12 @@ async function refreshSession(): Promise<boolean> {
   if (!refreshPromise) {
     const headers = new Headers();
     const csrf = getCsrfCookieValue();
-    if (csrf) headers.set('X-CSRF-Token', csrf);
-    headers.set('X-Request-Id', crypto.randomUUID());
+    if (csrf) headers.set("X-CSRF-Token", csrf);
+    headers.set("X-Request-Id", crypto.randomUUID());
 
     refreshPromise = executeFetchWithTimeout(API_REFRESH_PATH, {
-      method: 'POST',
-      credentials: 'include',
+      method: "POST",
+      credentials: "include",
       headers,
       timeout: 10_000,
     } satisfies FetchWithTimeoutOptions)
@@ -56,11 +51,11 @@ async function refreshSession(): Promise<boolean> {
             lastRefreshedAt = Date.now();
             return true;
           }
-          notifySessionExpired('refresh_failed');
+          notifySessionExpired("refresh_failed");
           return false;
         },
         (): boolean => {
-          notifySessionExpired('refresh_failed');
+          notifySessionExpired("refresh_failed");
           return false;
         },
       )
@@ -74,12 +69,13 @@ async function refreshSession(): Promise<boolean> {
 
 async function isAuthenticationRequired(response: Response): Promise<boolean> {
   if (response.status !== 401) return false;
-  const raw = await response.clone().json().catch((): null => null);
+  const raw = await response
+    .clone()
+    .json()
+    .catch((): null => null);
   const body: ApiErrorBody | null =
-    raw !== null && typeof raw === 'object' && !Array.isArray(raw)
-      ? (raw as ApiErrorBody)
-      : null;
-  if (body?.type === 'session_idle_expired' || body?.type === 'session_absolute_expired') {
+    raw !== null && typeof raw === "object" && !Array.isArray(raw) ? (raw as ApiErrorBody) : null;
+  if (body?.type === "session_idle_expired" || body?.type === "session_absolute_expired") {
     notifySessionExpired(body.type);
     return false;
   }
@@ -87,14 +83,14 @@ async function isAuthenticationRequired(response: Response): Promise<boolean> {
 }
 
 function getCsrfCookieValue(): string | null {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === "undefined") return null;
   const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
   return match && match[1] ? decodeURIComponent(match[1]) : null;
 }
 
 function throwIfAborted(signal: AbortSignal | null | undefined): void {
   if (signal?.aborted) {
-    throw signal.reason ?? new DOMException('The user aborted a request.', 'AbortError');
+    throw signal.reason ?? new DOMException("The user aborted a request.", "AbortError");
   }
 }
 
@@ -102,36 +98,39 @@ function throwIfAborted(signal: AbortSignal | null | undefined): void {
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers ?? {});
   const isFormData = init.body instanceof FormData;
-  if (!headers.has('Content-Type') && init.body && !isFormData) {
-    headers.set('Content-Type', JSON_CONTENT_TYPE);
+  if (!headers.has("Content-Type") && init.body && !isFormData) {
+    headers.set("Content-Type", JSON_CONTENT_TYPE);
   }
 
-  if (!headers.has('X-Request-Id')) {
-    headers.set('X-Request-Id', crypto.randomUUID());
+  if (!headers.has("X-Request-Id")) {
+    headers.set("X-Request-Id", crypto.randomUUID());
   }
 
-  const method = (init.method || 'GET').toUpperCase();
-  if (CSRF_METHODS.has(method as 'POST' | 'PUT' | 'PATCH' | 'DELETE') && !headers.has('X-CSRF-Token')) {
+  const method = (init.method || "GET").toUpperCase();
+  if (
+    CSRF_METHODS.has(method as "POST" | "PUT" | "PATCH" | "DELETE") &&
+    !headers.has("X-CSRF-Token")
+  ) {
     const csrf = getCsrfCookieValue();
-    if (csrf) headers.set('X-CSRF-Token', csrf);
+    if (csrf) headers.set("X-CSRF-Token", csrf);
   }
 
   const sanitizedInit = sanitizeColumnPreferencesBody(path, init);
 
   const requestInit: RequestInit = {
     ...sanitizedInit,
-    credentials: 'include',
+    credentials: "include",
     headers,
   };
 
   const response = await executeFetchWithTimeout(path, requestInit);
 
-  if (isTenantSessionRequest(path) && await isAuthenticationRequired(response)) {
+  if (isTenantSessionRequest(path) && (await isAuthenticationRequired(response))) {
     const buildRetryRequestInit = (): RequestInit => {
       const retryHeaders = new Headers(headers);
-      if (CSRF_METHODS.has(method as 'POST' | 'PUT' | 'PATCH' | 'DELETE')) {
+      if (CSRF_METHODS.has(method as "POST" | "PUT" | "PATCH" | "DELETE")) {
         const newCsrf = getCsrfCookieValue();
-        if (newCsrf) retryHeaders.set('X-CSRF-Token', newCsrf);
+        if (newCsrf) retryHeaders.set("X-CSRF-Token", newCsrf);
       }
       return { ...requestInit, headers: retryHeaders };
     };
@@ -151,7 +150,7 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
 
 export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await apiFetch(path, init);
-  const text = await res.text().catch((): string => '');
+  const text = await res.text().catch((): string => "");
 
   if (!res.ok) {
     let errorBody: ApiErrorBody = {};
@@ -160,16 +159,18 @@ export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
         errorBody = JSON.parse(text) as ApiErrorBody;
       }
     } catch {
-      errorBody = { message: text.substring(0, 100) || res.statusText || `Request failed (${res.status})` };
+      errorBody = {
+        message: text.substring(0, 100) || res.statusText || `Request failed (${res.status})`,
+      };
     }
-    const requestId = res.headers.get('x-request-id') ?? undefined;
+    const requestId = res.headers.get("x-request-id") ?? undefined;
     throw new ApiError(
       res.status,
       errorBody.message ?? `Request failed (${res.status})`,
       errorBody.type,
       requestId,
       errorBody.errors,
-      parseRetryAfterSeconds(res.headers.get('retry-after')),
+      parseRetryAfterSeconds(res.headers.get("retry-after")),
       errorBody.code,
     );
   }

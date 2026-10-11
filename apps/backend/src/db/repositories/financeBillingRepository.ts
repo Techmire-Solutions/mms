@@ -1,4 +1,4 @@
-import { and, desc, eq, like } from 'drizzle-orm';
+import { and, desc, eq, like } from "drizzle-orm";
 import {
   formatInvoiceNumber,
   isFeeFrequency,
@@ -7,15 +7,15 @@ import {
   type FeeStructure,
   type InvoiceLine,
   type PaymentAllocation,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   financeFeeItems,
   financeFeeStructures,
   financeInvoiceLines,
   financeInvoices,
   financePaymentAllocations,
-} from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+} from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 function feeStructureFromRows(
   structure: typeof financeFeeStructures.$inferSelect,
@@ -26,7 +26,7 @@ function feeStructureFromRows(
     name: structure.name,
     session: structure.session,
     className: structure.className,
-    frequency: isFeeFrequency(structure.frequency) ? structure.frequency : 'monthly',
+    frequency: isFeeFrequency(structure.frequency) ? structure.frequency : "monthly",
     isActive: structure.isActive,
     items: items
       .filter((item) => item.structureId === structure.id)
@@ -110,9 +110,9 @@ export async function saveFeeStructure(tenant: string, record: FeeStructure): Pr
         id: record.id,
         workspaceSubdomain: subdomain,
         name: record.name,
-        session: record.session ?? '',
-        className: record.className ?? '',
-        frequency: record.frequency ?? 'monthly',
+        session: record.session ?? "",
+        className: record.className ?? "",
+        frequency: record.frequency ?? "monthly",
         isActive: record.isActive ?? true,
         updatedAt: new Date(),
       })
@@ -120,9 +120,9 @@ export async function saveFeeStructure(tenant: string, record: FeeStructure): Pr
         target: [financeFeeStructures.workspaceSubdomain, financeFeeStructures.id],
         set: {
           name: record.name,
-          session: record.session ?? '',
-          className: record.className ?? '',
-          frequency: record.frequency ?? 'monthly',
+          session: record.session ?? "",
+          className: record.className ?? "",
+          frequency: record.frequency ?? "monthly",
           isActive: record.isActive ?? true,
           updatedAt: new Date(),
         },
@@ -130,7 +130,10 @@ export async function saveFeeStructure(tenant: string, record: FeeStructure): Pr
     await tx
       .delete(financeFeeItems)
       .where(
-        and(eq(financeFeeItems.workspaceSubdomain, subdomain), eq(financeFeeItems.structureId, record.id)),
+        and(
+          eq(financeFeeItems.workspaceSubdomain, subdomain),
+          eq(financeFeeItems.structureId, record.id),
+        ),
       );
     if (record.items.length > 0) {
       await tx.insert(financeFeeItems).values(
@@ -153,7 +156,12 @@ export async function deleteFeeStructure(tenant: string, id: string): Promise<vo
   await withTenant(subdomain, async (tx) => {
     await tx
       .delete(financeFeeStructures)
-      .where(and(eq(financeFeeStructures.workspaceSubdomain, subdomain), eq(financeFeeStructures.id, id)));
+      .where(
+        and(
+          eq(financeFeeStructures.workspaceSubdomain, subdomain),
+          eq(financeFeeStructures.id, id),
+        ),
+      );
   });
 }
 
@@ -174,7 +182,10 @@ export async function listInvoiceLines(tenant: string, invoiceId: string): Promi
       })
       .from(financeInvoiceLines)
       .where(
-        and(eq(financeInvoiceLines.workspaceSubdomain, subdomain), eq(financeInvoiceLines.invoiceId, invoiceId)),
+        and(
+          eq(financeInvoiceLines.workspaceSubdomain, subdomain),
+          eq(financeInvoiceLines.invoiceId, invoiceId),
+        ),
       );
     return rows.map(invoiceLineRowToRecord);
   });
@@ -190,7 +201,10 @@ export async function replaceInvoiceLines(
     await tx
       .delete(financeInvoiceLines)
       .where(
-        and(eq(financeInvoiceLines.workspaceSubdomain, subdomain), eq(financeInvoiceLines.invoiceId, invoiceId)),
+        and(
+          eq(financeInvoiceLines.workspaceSubdomain, subdomain),
+          eq(financeInvoiceLines.invoiceId, invoiceId),
+        ),
       );
     if (lines.length === 0) return;
     await tx.insert(financeInvoiceLines).values(
@@ -199,7 +213,7 @@ export async function replaceInvoiceLines(
         workspaceSubdomain: subdomain,
         invoiceId,
         feeItemId: line.feeItemId ?? null,
-        description: line.description ?? '',
+        description: line.description ?? "",
         quantity: String(line.quantity ?? 1),
         amount: String(line.amount ?? 0),
         discountAmt: String(line.discountAmt ?? 0),
@@ -240,8 +254,8 @@ export async function replacePaymentAllocations(
 export async function allocateNextInvoiceNumber(
   tenant: string,
   year: number,
-  prefix = 'INV',
-  delimiter = '-',
+  prefix = "INV",
+  delimiter = "-",
 ): Promise<string> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
@@ -268,12 +282,13 @@ export async function allocateInvoiceNumberBatch(
   tenant: string,
   year: number,
   count: number,
-  prefix = 'INV',
-  delimiter = '-',
+  prefix = "INV",
+  delimiter = "-",
 ): Promise<string[]> {
   if (count <= 0) return [];
   const first = await allocateNextInvoiceNumber(tenant, year, prefix, delimiter);
   const start = nextInvoiceSequence([first], year, prefix) - 1;
-  return Array.from({ length: count }, (_, index) => formatInvoiceNumber(year, start + index, prefix));
+  return Array.from({ length: count }, (_, index) =>
+    formatInvoiceNumber(year, start + index, prefix),
+  );
 }
-

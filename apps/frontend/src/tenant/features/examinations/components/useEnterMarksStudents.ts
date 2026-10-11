@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
-import type { Exam } from '@/lib/data/examinationData';
-import type { Student } from '@/lib/data/studentsData';
-import { useSessionsCollection } from '@/tenant/hooks/collections/sessions';
-import { useEnrollmentsCollection } from '@/tenant/hooks/collections/enrollments';
-import { useStudentsByIds } from '@/tenant/hooks/collections/students';
+import { useMemo } from "react";
+import type { Exam } from "@/lib/data/examinationData";
+import type { Student } from "@/lib/data/studentsData";
+import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
+import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
+import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 
 export type ExamStudent = Student & { classId: string; rollNo: string };
 
@@ -58,7 +58,7 @@ export function useEnterMarksStudents(exam?: Exam) {
         result.push({
           ...student,
           classId: enrollment.classId,
-          rollNo: student.grNumber ?? '',
+          rollNo: student.grNumber ?? "",
         });
       }
     }

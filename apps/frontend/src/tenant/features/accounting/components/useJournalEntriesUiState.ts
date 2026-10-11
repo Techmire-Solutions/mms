@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import type { JournalEntry } from '@/lib/data/accountingData';
-import type { QuickActionType } from '@/tenant/features/accounting/components/journalEntriesQuickActions';
+import { useEffect, useState } from "react";
+import type { JournalEntry } from "@/lib/data/accountingData";
+import type { QuickActionType } from "@/tenant/features/accounting/components/journalEntriesQuickActions";
 
 export interface UseJournalEntriesUiStateOptions {
   showDeleted?: boolean;
@@ -13,27 +13,27 @@ export function useJournalEntriesUiState({
   createRequestKey = 0,
   canWrite = true,
 }: UseJournalEntriesUiStateOptions) {
-  const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
-  const [tab, setTab] = useState<'transactions' | 'cashbook'>('transactions');
+  const [mode, setMode] = useState<"simple" | "advanced">("simple");
+  const [tab, setTab] = useState<"transactions" | "cashbook">("transactions");
   const [simpleModal, setSimpleModal] = useState<{
     prefillType: QuickActionType | null;
     initialAmount?: string;
     initialDescription?: string;
   } | null>(null);
-  const [nlInput, setNlInput] = useState('');
+  const [nlInput, setNlInput] = useState("");
   const [nlSuggestion, setNlSuggestion] = useState<QuickActionType | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [modal, setModal] = useState<'new' | 'edit' | 'view' | null>(null);
+  const [modal, setModal] = useState<"new" | "edit" | "view" | null>(null);
   const [selected, setSelected] = useState<JournalEntry | null>(null);
 
   useEffect(() => {
-    if (showDeleted) setMode('advanced');
+    if (showDeleted) setMode("advanced");
   }, [showDeleted]);
 
   useEffect(() => {
     if (createRequestKey > 0 && canWrite && !showDeleted) {
-      setMode('advanced');
-      setModal('new');
+      setMode("advanced");
+      setModal("new");
       setSelected(null);
     }
   }, [createRequestKey, canWrite, showDeleted]);

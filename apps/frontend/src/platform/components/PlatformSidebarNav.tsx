@@ -1,21 +1,18 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
-import {
-  type PlatformNavSection,
-  type PlatformNavItem,
-} from '@/platform/lib/platformNav';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { AppTranslationKey } from '@mms/shared';
-import { SidebarNavItem } from '@/components/ui/SidebarNavItem';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
-import { isNavPathActive } from '@/lib/config/routes';
+import React from "react";
+import { useLocation } from "react-router-dom";
+import { type PlatformNavSection, type PlatformNavItem } from "@/platform/lib/platformNav";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { AppTranslationKey } from "@mms/shared";
+import { SidebarNavItem } from "@/components/ui/SidebarNavItem";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { isNavPathActive } from "@/lib/config/routes";
 
 const SECTION_LABEL_KEYS: Record<PlatformNavSection, AppTranslationKey | null> = {
-  overview: 'platform.nav.sectionOverview',
-  workspaces: 'platform.nav.sectionWorkspaces',
-  access: 'platform.nav.sectionAccess',
-  ops: 'platform.nav.sectionOps',
+  overview: "platform.nav.sectionOverview",
+  workspaces: "platform.nav.sectionWorkspaces",
+  access: "platform.nav.sectionAccess",
+  ops: "platform.nav.sectionOps",
   account: null,
 };
 
@@ -42,7 +39,7 @@ export function PlatformSidebarNav({
   const location = useLocation();
 
   return (
-    <nav className="flex-1 py-3 px-3 space-y-4 overflow-y-auto" aria-label={t('platform.navAria')}>
+    <nav className="flex-1 py-3 px-3 space-y-4 overflow-y-auto" aria-label={t("platform.navAria")}>
       {sections.map(({ section, items }, sIndex) => {
         const sectionTitleKey = SECTION_LABEL_KEYS[section];
         const showHeader = !collapsed || isMobile;
@@ -52,8 +49,8 @@ export function PlatformSidebarNav({
             {showHeader && sectionTitleKey ? (
               <div
                 className={cn(
-                  'px-3 pb-1 text-2xs uppercase tracking-wider font-mono text-sidebar-muted-foreground/80 font-bold',
-                  sIndex > 0 ? 'pt-2' : '',
+                  "px-3 pb-1 text-2xs uppercase tracking-wider font-mono text-sidebar-muted-foreground/80 font-bold",
+                  sIndex > 0 ? "pt-2" : "",
                 )}
               >
                 {t(sectionTitleKey)}
@@ -86,7 +83,7 @@ export function PlatformSidebarNav({
                   <Tooltip key={item.id}>
                     <TooltipTrigger asChild>{linkNode}</TooltipTrigger>
                     <TooltipContent
-                      side={dir === 'rtl' ? 'left' : 'right'}
+                      side={dir === "rtl" ? "left" : "right"}
                       sideOffset={12}
                       className="font-semibold text-xs bg-sidebar-accent text-sidebar-accent-foreground border border-sidebar-border shadow-md"
                     >

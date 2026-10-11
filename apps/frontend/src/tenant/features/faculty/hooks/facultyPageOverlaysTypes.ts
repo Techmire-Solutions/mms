@@ -55,4 +55,3 @@ export type FacultyWorkOverlayInteractions = Pick<
   | "openIdCardsModal"
   | "closeIdCardsModal"
 >;
-

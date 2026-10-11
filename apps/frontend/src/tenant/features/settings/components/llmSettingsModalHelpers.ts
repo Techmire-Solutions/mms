@@ -1,5 +1,5 @@
-import { apiContract } from '@/lib/api';
-import type { LlmConfig, LlmTestResult } from '@mms/shared';
+import { apiContract } from "@/lib/api";
+import type { LlmConfig, LlmTestResult } from "@mms/shared";
 
 export function computeNextLlmConfigs(
   configs: LlmConfig[],
@@ -13,7 +13,9 @@ export function computeNextLlmConfigs(
   }
 
   if (isEditing) {
-    updatedConfigs = updatedConfigs.map((config) => (config.id === nextConfig.id ? nextConfig : config));
+    updatedConfigs = updatedConfigs.map((config) =>
+      config.id === nextConfig.id ? nextConfig : config,
+    );
   } else {
     updatedConfigs.push(nextConfig);
   }
@@ -32,14 +34,14 @@ export async function testLlmConnectivity(
   try {
     const res = await apiContract.ai.test({
       body: {
-        prompt: 'Test connectivity check',
+        prompt: "Test connectivity check",
         customConfig,
       },
     });
     const status = res.status;
     const body = res.body as LlmTestResult;
     if (status !== 200) {
-      throw new Error(body.message || 'Failed to test connection');
+      throw new Error(body.message || "Failed to test connection");
     }
     return body;
   } catch (err: unknown) {

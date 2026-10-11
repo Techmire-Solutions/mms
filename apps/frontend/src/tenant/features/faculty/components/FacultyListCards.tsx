@@ -22,7 +22,6 @@ export interface FacultyListCardsProps extends Omit<
   faculty?: FacultyListContentProps["faculty"];
 }
 
-
 export function FacultyListCards(props: FacultyListCardsProps): React.JSX.Element {
   const {
     faculty,

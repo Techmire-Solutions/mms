@@ -1,60 +1,52 @@
-import { desc, asc, eq, inArray, isNotNull, isNull, notInArray, sql, type SQL } from 'drizzle-orm';
-import {
-  isQueryFlagTrue,
-  type ContactsListQuery,
-} from '@mms/shared';
-import { contacts, contactAddresses } from '../schema.js';
-import {
-  hasEmailSql,
-  hasPhoneSql,
-  hasWhatsAppSql,
-} from './contactRepositorySql.js';
+import { desc, asc, eq, inArray, isNotNull, isNull, notInArray, sql, type SQL } from "drizzle-orm";
+import { isQueryFlagTrue, type ContactsListQuery } from "@mms/shared";
+import { contacts, contactAddresses } from "../schema.js";
+import { hasEmailSql, hasPhoneSql, hasWhatsAppSql } from "./contactRepositorySql.js";
 import {
   existsActiveStudentLinkSql,
   existsActiveFacultyLinkSql,
   existsActiveStaffLinkSql,
-} from './contactRepositoryList.js';
-import {
-  isSyedSql,
-  buildSearchSql,
-} from './contactRepositoryListSql.js';
-
+} from "./contactRepositoryList.js";
+import { isSyedSql, buildSearchSql } from "./contactRepositoryListSql.js";
 
 export const CONTACT_SORT_FIELDS = new Set([
-  'name',
-  'firstName',
-  'lastName',
-  'city',
-  'gender',
-  'createdAt',
-  'updatedAt',
+  "name",
+  "firstName",
+  "lastName",
+  "city",
+  "gender",
+  "createdAt",
+  "updatedAt",
 ]);
 
-export function buildOrderBy(sortField: string | undefined, sortDir: 'asc' | 'desc' | '' | undefined): SQL {
-  const dir = sortDir === 'desc' ? 'desc' : 'asc';
+export function buildOrderBy(
+  sortField: string | undefined,
+  sortDir: "asc" | "desc" | "" | undefined,
+): SQL {
+  const dir = sortDir === "desc" ? "desc" : "asc";
   const field = sortField?.trim();
   if (!field || !CONTACT_SORT_FIELDS.has(field)) {
     return sql`${contacts.id} asc`;
   }
-  if (field === 'updatedAt') {
-    return dir === 'desc' ? desc(contacts.updatedAt) : asc(contacts.updatedAt);
+  if (field === "updatedAt") {
+    return dir === "desc" ? desc(contacts.updatedAt) : asc(contacts.updatedAt);
   }
-  if (field === 'createdAt') {
-    return dir === 'desc' ? desc(contacts.createdAt) : asc(contacts.createdAt);
+  if (field === "createdAt") {
+    return dir === "desc" ? desc(contacts.createdAt) : asc(contacts.createdAt);
   }
-  if (field === 'name') {
-    return dir === 'desc' ? desc(contacts.name) : asc(contacts.name);
+  if (field === "name") {
+    return dir === "desc" ? desc(contacts.name) : asc(contacts.name);
   }
-  if (field === 'firstName') {
-    return dir === 'desc' ? desc(contacts.firstName) : asc(contacts.firstName);
+  if (field === "firstName") {
+    return dir === "desc" ? desc(contacts.firstName) : asc(contacts.firstName);
   }
-  if (field === 'lastName') {
-    return dir === 'desc' ? desc(contacts.lastName) : asc(contacts.lastName);
+  if (field === "lastName") {
+    return dir === "desc" ? desc(contacts.lastName) : asc(contacts.lastName);
   }
-  if (field === 'gender') {
-    return dir === 'desc' ? desc(contacts.gender) : asc(contacts.gender);
+  if (field === "gender") {
+    return dir === "desc" ? desc(contacts.gender) : asc(contacts.gender);
   }
-  if (field === 'city') {
+  if (field === "city") {
     const cityExpr = sql`(
       SELECT a.city FROM ${contactAddresses} a
       WHERE a.workspace_subdomain = ${contacts.workspaceSubdomain}
@@ -62,7 +54,7 @@ export function buildOrderBy(sortField: string | undefined, sortDir: 'asc' | 'de
       ORDER BY CASE WHEN a.is_primary THEN 0 ELSE 1 END, a.sort_order ASC
       LIMIT 1
     )`;
-    return dir === 'desc' ? desc(cityExpr) : asc(cityExpr);
+    return dir === "desc" ? desc(cityExpr) : asc(cityExpr);
   }
   return sql`${contacts.id} asc`;
 }
@@ -83,7 +75,7 @@ export function buildListConditions(
 
   if (query.gender?.trim()) {
     const genderFilter = query.gender.trim().toLowerCase();
-    if (genderFilter === 'unspecified') {
+    if (genderFilter === "unspecified") {
       conditions.push(sql`(
         NULLIF(trim(lower(COALESCE(${contacts.gender}, ''))), '') IS NULL
         OR lower(trim(${contacts.gender})) = 'unspecified'
@@ -104,12 +96,12 @@ export function buildListConditions(
   }
 
   const quick = query.quickFilter;
-  if (quick && quick !== 'all') {
-    if (quick === 'whatsapp') conditions.push(hasWhatsAppSql());
-    else if (quick === 'syed') conditions.push(isSyedSql());
-    else if (quick === 'missingInfo') {
+  if (quick && quick !== "all") {
+    if (quick === "whatsapp") conditions.push(hasWhatsAppSql());
+    else if (quick === "syed") conditions.push(isSyedSql());
+    else if (quick === "missingInfo") {
       conditions.push(sql`(NOT ${hasPhoneSql()} OR NOT ${hasEmailSql()})`);
-    } else if (quick === 'recent') {
+    } else if (quick === "recent") {
       conditions.push(sql`${contacts.createdAt} >= (NOW() - INTERVAL '30 days')`);
     }
   }
@@ -122,21 +114,21 @@ export function buildListConditions(
   }
 
   const linkFilter = query.moduleLinkFilter;
-  if (linkFilter === 'students') {
+  if (linkFilter === "students") {
     conditions.push(existsActiveStudentLinkSql(subdomain));
-  } else if (linkFilter === 'faculty') {
+  } else if (linkFilter === "faculty") {
     conditions.push(existsActiveFacultyLinkSql(subdomain));
-  } else if (linkFilter === 'staff') {
+  } else if (linkFilter === "staff") {
     conditions.push(existsActiveStaffLinkSql(subdomain));
-  } else if (linkFilter === 'unlinked') {
+  } else if (linkFilter === "unlinked") {
     conditions.push(sql`NOT ${existsActiveStudentLinkSql(subdomain)}`);
     conditions.push(sql`NOT ${existsActiveFacultyLinkSql(subdomain)}`);
   }
 
-  if (query.excludeLinkedModules?.includes('students')) {
+  if (query.excludeLinkedModules?.includes("students")) {
     conditions.push(sql`NOT ${existsActiveStudentLinkSql(subdomain)}`);
   }
-  if (query.excludeLinkedModules?.includes('faculty')) {
+  if (query.excludeLinkedModules?.includes("faculty")) {
     conditions.push(sql`NOT ${existsActiveFacultyLinkSql(subdomain)}`);
   }
 

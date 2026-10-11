@@ -86,16 +86,13 @@ describe("useGenericModuleExport", () => {
         filename: "demo_test.csv",
       }),
     });
-    expect(jobApi.downloadBackgroundJobArtifact).toHaveBeenCalledWith(
-      "job-1",
-      "demo_test.csv"
-    );
+    expect(jobApi.downloadBackgroundJobArtifact).toHaveBeenCalledWith("job-1", "demo_test.csv");
     expect(notify.success).toHaveBeenCalled();
   });
 
   it("handles failure gracefully and notifies error", async () => {
     vi.mocked(exportModule.startServerModuleCsvExport).mockRejectedValueOnce(
-      new Error("Network error")
+      new Error("Network error"),
     );
 
     renderTestHook();

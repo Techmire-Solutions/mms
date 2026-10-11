@@ -1,10 +1,15 @@
-import { and, asc, eq, getTableName } from 'drizzle-orm';
-import type { PgColumn, PgTable } from 'drizzle-orm/pg-core';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { redisDelPattern, redisKeys } from '../../lib/redis.js';
-import { getOrSetMultiTier, invalidateMultiTierCache } from '../../lib/cache/index.js';
+import { and, asc, eq, getTableName } from "drizzle-orm";
+import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { redisDelPattern, redisKeys } from "../../lib/redis.js";
+import { getOrSetMultiTier, invalidateMultiTierCache } from "../../lib/cache/index.js";
 
 type WorkspaceCol = PgColumn;
+
+// Drizzle table params need dynamic column access on top of the typed columns
+// declared at each call site.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic column lookup
+type DynamicPgTable = PgTable & Record<string, any>;
 
 const SETUP_LOOKUPS_CACHE_TTL_SECONDS = 300;
 
@@ -28,8 +33,7 @@ export interface ModuleLookupDbRow {
 
 /** Module Setup lookup option lists (contact_lookups / student_lookups). */
 export function createModuleLookupsRepo(options: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  table: PgTable & Record<string, any> & {
+  table: DynamicPgTable & {
     id: PgColumn;
     workspaceSubdomain: WorkspaceCol;
     kind: PgColumn;
@@ -42,7 +46,8 @@ export function createModuleLookupsRepo(options: {
   const { table } = options;
   const tableName = getTableName(table);
   const allCacheKey = (sub: string) => redisKeys.setupLookupsAll(sub, tableName);
-  const kindCacheKey = (sub: string, kind: string) => redisKeys.setupLookupsKind(sub, tableName, kind);
+  const kindCacheKey = (sub: string, kind: string) =>
+    redisKeys.setupLookupsKind(sub, tableName, kind);
 
   async function listByWorkspace(workspaceSubdomain: string): Promise<ModuleLookupDbRow[]> {
     const subdomain = workspaceSubdomain.trim().toLowerCase();
@@ -73,7 +78,10 @@ export function createModuleLookupsRepo(options: {
     );
   }
 
-  async function listByKind(workspaceSubdomain: string, kind: string): Promise<ModuleLookupDbRow[]> {
+  async function listByKind(
+    workspaceSubdomain: string,
+    kind: string,
+  ): Promise<ModuleLookupDbRow[]> {
     const subdomain = workspaceSubdomain.trim().toLowerCase();
     const key = kindCacheKey(subdomain, kind);
     return getOrSetMultiTier(
@@ -93,12 +101,7 @@ export function createModuleLookupsRepo(options: {
               updatedAt: table.updatedAt,
             })
             .from(table)
-            .where(
-              and(
-                eq(table.workspaceSubdomain, subdomain),
-                eq(table.kind, kind),
-              ),
-            )
+            .where(and(eq(table.workspaceSubdomain, subdomain), eq(table.kind, kind)))
             .orderBy(asc(table.sortOrder));
         });
         return rows as ModuleLookupDbRow[];
@@ -117,12 +120,7 @@ export function createModuleLookupsRepo(options: {
     await withTenant(subdomain, async (tx) => {
       await tx
         .delete(table)
-        .where(
-          and(
-            eq(table.workspaceSubdomain, subdomain),
-            eq(table.kind, kind),
-          ),
-        );
+        .where(and(eq(table.workspaceSubdomain, subdomain), eq(table.kind, kind)));
       if (rows.length === 0) return;
       await tx.insert(table).values(
         rows.map((row) => ({
@@ -157,10 +155,10 @@ export function createModuleLookupsRepo(options: {
         records.map((record, index) => ({
           id: String(record.id ?? `${subdomain}:lookup:${index}`),
           workspaceSubdomain: subdomain,
-          kind: String(record.kind ?? ''),
-          label: String(record.label ?? ''),
+          kind: String(record.kind ?? ""),
+          label: String(record.label ?? ""),
           meta: (record.meta as Record<string, unknown> | null | undefined) ?? null,
-          sortOrder: typeof record.sortOrder === 'number' ? record.sortOrder : index,
+          sortOrder: typeof record.sortOrder === "number" ? record.sortOrder : index,
           updatedAt: now,
         })) as never,
       );

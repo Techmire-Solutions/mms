@@ -1,4 +1,4 @@
-import { hasanatUseCases } from '../hasanat/use-cases/hasanatUseCases.js';
+import { hasanatUseCases } from "../hasanat/use-cases/hasanatUseCases.js";
 
 /**
  * Thin re-export of the hasanat use-cases facade.

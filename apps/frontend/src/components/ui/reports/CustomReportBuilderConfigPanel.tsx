@@ -128,7 +128,12 @@ export function CustomReportBuilderConfigPanel({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-start">
         <div className="space-y-1.5">
-          <SectionLabel as="label" htmlFor="report-builder-aggregate" weight="bold" className="block">
+          <SectionLabel
+            as="label"
+            htmlFor="report-builder-aggregate"
+            weight="bold"
+            className="block"
+          >
             {t("reports.builder.aggregatorFunction")}
           </SectionLabel>
           <FormSelect
@@ -141,7 +146,12 @@ export function CustomReportBuilderConfigPanel({
           />
         </div>
         <div className="space-y-1.5">
-          <SectionLabel as="label" htmlFor="report-builder-group-by" weight="bold" className="block">
+          <SectionLabel
+            as="label"
+            htmlFor="report-builder-group-by"
+            weight="bold"
+            className="block"
+          >
             {t("reports.builder.groupCategory")}
           </SectionLabel>
           <FormSelect
@@ -177,7 +187,12 @@ export function CustomReportBuilderConfigPanel({
           />
         </div>
         <div className="space-y-1.5">
-          <SectionLabel as="label" htmlFor="report-builder-page-size" weight="bold" className="block">
+          <SectionLabel
+            as="label"
+            htmlFor="report-builder-page-size"
+            weight="bold"
+            className="block"
+          >
             {t("reports.builder.exportLayoutFormat")}
           </SectionLabel>
           <FormSelect

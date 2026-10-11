@@ -1,13 +1,13 @@
-import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import type { PageSizeInfo, TemplateElement } from '@mms/shared';
-import { newId, snap } from './templateEditorUtils';
+import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
+import type { PageSizeInfo, TemplateElement } from "@mms/shared";
+import { newId, snap } from "./templateEditorUtils";
 
 export interface UseTemplateEditorDuplicateActionsOptions<TPayload> {
   elementsRef: MutableRefObject<TemplateElement<keyof TPayload & string>[]>;
   commitUpdate: (
     updateFn: (
-      elements: TemplateElement<keyof TPayload & string>[]
-    ) => TemplateElement<keyof TPayload & string>[]
+      elements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
   size: PageSizeInfo;
   onElementAdded?: (elementId: string) => void;

@@ -13,10 +13,15 @@ export default function PageNotFound(): React.JSX.Element {
   const { t } = useTranslation();
 
   const primaryLink = isAuthenticated ? ROUTES.home : ROUTES.login;
-  const primaryLabel = isAuthenticated ? t("page.notFound.goDashboard") : t("page.notFound.goSignIn");
+  const primaryLabel = isAuthenticated
+    ? t("page.notFound.goDashboard")
+    : t("page.notFound.goSignIn");
 
   return (
-    <main id="main-content" className="min-h-screen flex items-center justify-center p-6 bg-background">
+    <main
+      id="main-content"
+      className="min-h-screen flex items-center justify-center p-6 bg-background"
+    >
       <div className="max-w-md w-full">
         <div className="text-center space-y-6">
           <div className="space-y-2">

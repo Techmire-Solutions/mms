@@ -1,5 +1,5 @@
-import { scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
-import { promisify } from 'node:util';
+import { scrypt, randomBytes, timingSafeEqual } from "node:crypto";
+import { promisify } from "node:util";
 
 const scryptAsync = promisify(scrypt);
 
@@ -10,9 +10,9 @@ const scryptAsync = promisify(scrypt);
  * @returns {Promise<string>} Encoded "salt:hash" string (hex).
  */
 export async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString('hex');
-  const derivedKey = await scryptAsync(password, salt, 64) as Buffer;
-  return `${salt}:${derivedKey.toString('hex')}`;
+  const salt = randomBytes(16).toString("hex");
+  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${derivedKey.toString("hex")}`;
 }
 
 /**
@@ -23,10 +23,10 @@ export async function hashPassword(password: string): Promise<string> {
  * @returns {Promise<boolean>} True if the password matches.
  */
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
-  const [salt, hash] = storedHash.split(':');
+  const [salt, hash] = storedHash.split(":");
   if (!salt || !hash) return false;
-  const derivedKey = await scryptAsync(password, salt, 64) as Buffer;
-  const hashBuffer = Buffer.from(hash, 'hex');
+  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+  const hashBuffer = Buffer.from(hash, "hex");
   if (derivedKey.length !== hashBuffer.length) return false;
   return timingSafeEqual(derivedKey, hashBuffer);
 }
@@ -36,4 +36,4 @@ export async function verifyPassword(password: string, storedHash: string): Prom
  * does not exist, so login timing does not reveal which emails are registered.
  * 16-byte hex salt + 64-byte (128 hex chars) scrypt output — matches hashPassword output shape.
  */
-export const DUMMY_PASSWORD_HASH = `${'0'.repeat(32)}:${'0'.repeat(128)}`;
+export const DUMMY_PASSWORD_HASH = `${"0".repeat(32)}:${"0".repeat(128)}`;

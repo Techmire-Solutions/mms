@@ -20,7 +20,9 @@ vi.mock("@/components/ui/DatePicker", () => ({
 }));
 
 vi.mock("@/components/ui/textarea", () => ({
-  Textarea: ({ value }: { value?: string }) => <textarea data-testid="textarea" value={value || ""} readOnly />,
+  Textarea: ({ value }: { value?: string }) => (
+    <textarea data-testid="textarea" value={value || ""} readOnly />
+  ),
 }));
 
 vi.mock("@/components/ui/FormPrimitives", () => ({
@@ -47,9 +49,14 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
     <div data-testid="editable-select">{value}</div>
   ),
   FormCheckboxCard: ({ label, checked }: { label: string; checked: boolean }) => (
-    <div data-testid="checkbox-card">{label}: {checked ? "yes" : "no"}</div>
+    <div data-testid="checkbox-card">
+      {label}: {checked ? "yes" : "no"}
+    </div>
   ),
-  FormListFieldCard: ({ children, typeSelect }: {
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (

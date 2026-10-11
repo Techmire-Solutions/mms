@@ -22,9 +22,7 @@ describe("ContactsSyncConflictDiffBody Component", () => {
         local={mockContact}
         serverContact={mockContact}
         serverLoading={false}
-        diffs={[
-          { field: "firstName", local: "Zayd", server: "Zaid" },
-        ]}
+        diffs={[{ field: "firstName", local: "Zayd", server: "Zaid" }]}
         fieldPicks={{ firstName: "local" }}
         applying={false}
         onTogglePick={vi.fn()}
@@ -49,9 +47,7 @@ describe("ContactsSyncConflictDiffBody Component", () => {
         local={mockContact}
         serverContact={mockContact}
         serverLoading={false}
-        diffs={[
-          { field: "firstName", local: "Zayd", server: "Zaid" },
-        ]}
+        diffs={[{ field: "firstName", local: "Zayd", server: "Zaid" }]}
         fieldPicks={{ firstName: "local" }}
         applying={false}
         onTogglePick={vi.fn()}

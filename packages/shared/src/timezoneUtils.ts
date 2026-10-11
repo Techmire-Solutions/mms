@@ -1,5 +1,5 @@
 /** IANA timezone detection, formatting, and picker options. */
-export type { TimezoneOption } from './timezoneCore.js';
+export type { TimezoneOption } from "./timezoneCore.js";
 export {
   getIanaTimeZoneIds,
   detectBrowserTimezone,
@@ -7,5 +7,5 @@ export {
   formatTimezoneLabel,
   isValidIanaTimezone,
   normalizeTimezone,
-} from './timezoneCore.js';
-export { getTimezoneOptions, groupTimezoneOptions } from './timezoneOptions.js';
+} from "./timezoneCore.js";
+export { getTimezoneOptions, groupTimezoneOptions } from "./timezoneOptions.js";

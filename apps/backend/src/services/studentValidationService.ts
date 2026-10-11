@@ -1,4 +1,4 @@
-import { type z } from 'zod';
+import { type z } from "zod";
 import {
   buildDynamicStudentSchema,
   verifyBlueprintVersion,
@@ -7,17 +7,17 @@ import {
   resolveStudentGuardianLinks,
   type Contact,
   type FieldDefinition,
-} from '@mms/shared';
-import { loadStudentsSettingsCombined } from './studentConfigService.js';
-import { loadContactsSummaryByIdsForTenant } from './contactService.js';
-import { validateOrThrow } from '../lib/zodRequest.js';
+} from "@mms/shared";
+import { loadStudentsSettingsCombined } from "./studentConfigService.js";
+import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
+import { validateOrThrow } from "../lib/zodRequest.js";
 
 // Cache compiled schema by tenant and config version: `${tenant}:${configVersion}:${language}`
 const schemaCache = new Map<string, z.ZodTypeAny>();
 const SCHEMA_CACHE_MAX_ENTRIES = 100;
 
 function getSubmittedBlueprintId(student: unknown): unknown {
-  if (!student || typeof student !== 'object' || Array.isArray(student)) {
+  if (!student || typeof student !== "object" || Array.isArray(student)) {
     return undefined;
   }
   return (student as Record<string, unknown>)._blueprintId;
@@ -27,13 +27,13 @@ async function hydrateStudentValidationSubject(
   student: unknown,
   getContactMap: () => Promise<Map<string, Contact>>,
 ): Promise<unknown> {
-  if (!student || typeof student !== 'object' || Array.isArray(student)) {
+  if (!student || typeof student !== "object" || Array.isArray(student)) {
     return student;
   }
 
   const studentRecord = student as Record<string, unknown>;
   const contactId = studentRecord.contactId;
-  if (contactId == null || contactId === '') {
+  if (contactId == null || contactId === "") {
     return studentRecord;
   }
 
@@ -73,7 +73,7 @@ async function hydrateStudentValidationSubject(
 export async function validateStudentDynamic(
   tenant: string,
   student: unknown,
-  language = 'en',
+  language = "en",
 ): Promise<void> {
   const settings = await loadStudentsSettingsCombined();
   if (!settings) return;
@@ -90,13 +90,7 @@ export async function validateStudentDynamic(
     const requiredTabIds = new Set(settings.requiredTabs || []);
     const fields = (settings.fields || {}) as Record<string, FieldDefinition[]>;
 
-    schema = buildDynamicStudentSchema(
-      settings,
-      enabledTabIds,
-      requiredTabIds,
-      fields,
-      language,
-    );
+    schema = buildDynamicStudentSchema(settings, enabledTabIds, requiredTabIds, fields, language);
     if (schemaCache.size >= SCHEMA_CACHE_MAX_ENTRIES) {
       const oldestKey = schemaCache.keys().next().value;
       if (oldestKey) schemaCache.delete(oldestKey);
@@ -112,11 +106,11 @@ export async function validateStudentDynamic(
         ...new Set(
           subjects
             .map((item) =>
-              item && typeof item === 'object' && !Array.isArray(item)
+              item && typeof item === "object" && !Array.isArray(item)
                 ? (item as Record<string, unknown>).contactId
                 : undefined,
             )
-            .filter((id): id is string | number => id != null && id !== '')
+            .filter((id): id is string | number => id != null && id !== "")
             .map(String),
         ),
       ];

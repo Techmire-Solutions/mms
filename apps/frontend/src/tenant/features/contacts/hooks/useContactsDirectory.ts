@@ -34,23 +34,27 @@ export function useContactsDirectory({
     isError: isWorkErrorTsr,
     refetch: refetchWork,
     isFetching: isWorkFetching,
-  } = useContactsContractList({
-    page: filters.listPage,
-    limit: workLimit,
-    search: filters.debouncedSearch,
-    gender: filters.filterGender,
-    includeDeleted: filters.viewingDeleted,
-    sortField: filters.sortField,
-    sortDir: filters.sortDir,
-    quickFilter: filters.quickFilter,
-  }, useServerWork);
+  } = useContactsContractList(
+    {
+      page: filters.listPage,
+      limit: workLimit,
+      search: filters.debouncedSearch,
+      gender: filters.filterGender,
+      includeDeleted: filters.viewingDeleted,
+      sortField: filters.sortField,
+      sortDir: filters.sortDir,
+      quickFilter: filters.quickFilter,
+    },
+    useServerWork,
+  );
 
   const workContacts = useMemo(
     () => (workPageDataResponse?.body?.contacts ?? []) as Contact[],
     [workPageDataResponse?.body?.contacts],
   );
   const shownCount = workPageDataResponse?.body?.total ?? 0;
-  const isWorkError = isWorkErrorTsr || (workPageDataResponse != null && workPageDataResponse.status !== 200);
+  const isWorkError =
+    isWorkErrorTsr || (workPageDataResponse != null && workPageDataResponse.status !== 200);
   const workPageData = workPageDataResponse?.status === 200 ? workPageDataResponse.body : undefined;
 
   const allContactsForLinks = useContactsDirectoryLinks({

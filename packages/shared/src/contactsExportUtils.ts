@@ -1,26 +1,32 @@
-import type { FieldConfig, FieldDefinition, TabDefinition } from './contactTypes.js';
-import { canViewContactColumn, resolveContactColumnField, type ContactColumnFieldContext } from './contactColumnAccess.js';
-import { COLUMN_FIELD_MAPPING, DEFAULT_COLUMN_REGISTRY, DEFAULT_FORM_TABS } from './contactTabRegistry.js';
-import { INITIAL_FIELD_SEED } from './contactFieldSeed.js';
-import { canViewContactTab } from './contactFieldAccess.js';
+import type { FieldConfig, FieldDefinition, TabDefinition } from "./contactTypes.js";
 import {
-  isContactLockedEnabledTab,
-  resolveContactEnabledTabIds,
-} from './contactEnabledTabs.js';
-import { listEnabledCustomContactFormFields } from './contactFormCustomFields.js';
-import type { ContactExportColumn } from './contactExportColumns.js';
-import { DEFAULT_CONTACT_EXPORT_COLUMNS } from './contactExportColumns.js';
+  canViewContactColumn,
+  resolveContactColumnField,
+  type ContactColumnFieldContext,
+} from "./contactColumnAccess.js";
+import {
+  COLUMN_FIELD_MAPPING,
+  DEFAULT_COLUMN_REGISTRY,
+  DEFAULT_FORM_TABS,
+} from "./contactTabRegistry.js";
+import { INITIAL_FIELD_SEED } from "./contactFieldSeed.js";
+import { canViewContactTab } from "./contactFieldAccess.js";
+import { isContactLockedEnabledTab, resolveContactEnabledTabIds } from "./contactEnabledTabs.js";
+import { listEnabledCustomContactFormFields } from "./contactFormCustomFields.js";
+import type { ContactExportColumn } from "./contactExportColumns.js";
+import { DEFAULT_CONTACT_EXPORT_COLUMNS } from "./contactExportColumns.js";
 
-export * from './contactExportColumns.js';
-export * from './contactExportExtractors.js';
+export * from "./contactExportColumns.js";
+export * from "./contactExportExtractors.js";
 
 /**
  * Sanitizer snapshot for a tenant, falling back to the default seed when the tenant has no
  * stored field config.
  */
-export function resolveContactFieldConfigSnapshot(
-  fieldConfig: FieldConfig | null | undefined,
-): { fields: Record<string, FieldDefinition[]>; tabs: TabDefinition[] } {
+export function resolveContactFieldConfigSnapshot(fieldConfig: FieldConfig | null | undefined): {
+  fields: Record<string, FieldDefinition[]>;
+  tabs: TabDefinition[];
+} {
   if (fieldConfig?.fields) {
     return { fields: fieldConfig.fields, tabs: fieldConfig.formTabs ?? [] };
   }
@@ -162,9 +168,9 @@ export function filterContactExportColumnsForViewer(
 ): ContactExportColumn[] {
   const source =
     columns.length > 0
-      ? (columns.length >= DEFAULT_CONTACT_EXPORT_COLUMNS.length
-          ? mergeCustomContactExportColumns(columns, fieldConfig)
-          : columns)
+      ? columns.length >= DEFAULT_CONTACT_EXPORT_COLUMNS.length
+        ? mergeCustomContactExportColumns(columns, fieldConfig)
+        : columns
       : resolveAllContactExportColumns(fieldConfig);
   const columnFieldContext = fieldConfig?.fields
     ? buildColumnFieldContext(fieldConfig, viewerRole)

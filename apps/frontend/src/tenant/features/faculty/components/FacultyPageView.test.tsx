@@ -107,9 +107,7 @@ describe("FacultyPageView Component", () => {
   };
 
   it("shows dashboard IO without duplicate tab IO on faculties", () => {
-    const html = renderToStaticMarkup(
-      <FacultyPageView {...baseProps} activeTab="faculties" />,
-    );
+    const html = renderToStaticMarkup(<FacultyPageView {...baseProps} activeTab="faculties" />);
 
     expect(html).toContain("Faculty Team");
     expect(html).toContain("Dashboard IO");
@@ -119,9 +117,7 @@ describe("FacultyPageView Component", () => {
   });
 
   it("shows dashboard IO without duplicate tab IO on designations", () => {
-    const html = renderToStaticMarkup(
-      <FacultyPageView {...baseProps} activeTab="designations" />,
-    );
+    const html = renderToStaticMarkup(<FacultyPageView {...baseProps} activeTab="designations" />);
 
     expect(html).toContain("Dashboard IO");
     expect(html).not.toContain("Tab IO");
@@ -130,12 +126,9 @@ describe("FacultyPageView Component", () => {
   });
 
   it("keeps dashboard IO on reports without scoped tab IO", () => {
-    const html = renderToStaticMarkup(
-      <FacultyPageView {...baseProps} activeTab="reports" />,
-    );
+    const html = renderToStaticMarkup(<FacultyPageView {...baseProps} activeTab="reports" />);
 
     expect(html).toContain("Dashboard IO");
     expect(html).not.toContain("Tab IO");
   });
 });
-

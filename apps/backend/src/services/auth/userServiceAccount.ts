@@ -1,25 +1,25 @@
-import { resolveTenantLoginEmail, type Contact } from '@mms/shared';
-import { findTenantUserRowById } from '../../db/repositories/tenantUserRepository.js';
-import { updateContactById } from '../contactService.js';
-import { assertPasswordMeetsPolicy } from '../globalSettingsService.js';
-import { hashPassword, verifyPassword } from './passwordService.js';
+import { resolveTenantLoginEmail, type Contact } from "@mms/shared";
+import { findTenantUserRowById } from "../../db/repositories/tenantUserRepository.js";
+import { updateContactById } from "../contactService.js";
+import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
+import { hashPassword, verifyPassword } from "./passwordService.js";
 import {
   getRawUsers,
   requireTenantSubdomain,
   type PersistedUser,
   type PublicUser,
-} from './userServiceShared.js';
-import { getLinkedContactId, saveUsers } from './userServiceList.js';
-import { getPublicUserById } from './userServiceAuth.js';
+} from "./userServiceShared.js";
+import { getLinkedContactId, saveUsers } from "./userServiceList.js";
+import { getPublicUserById } from "./userServiceAuth.js";
 
 export async function verifyUserPassword(userId: string, password: string): Promise<boolean> {
   const row = await findTenantUserRowById(requireTenantSubdomain(), userId);
   if (row?.deletedAt) return false;
-  const passwordHash = typeof row?.passwordHash === 'string' ? row.passwordHash : '';
+  const passwordHash = typeof row?.passwordHash === "string" ? row.passwordHash : "";
   if (!passwordHash) {
     const users = await getRawUsers();
     const legacy = users.find((u) => u.id === userId);
-    const legacyHash = typeof legacy?.passwordHash === 'string' ? legacy.passwordHash : '';
+    const legacyHash = typeof legacy?.passwordHash === "string" ? legacy.passwordHash : "";
     if (!legacyHash) return false;
     return verifyPassword(password, legacyHash);
   }
@@ -33,17 +33,17 @@ export async function changeTenantUserPassword(
 ): Promise<void> {
   const users = await getRawUsers();
   const index = users.findIndex((u) => u.id === userId);
-  if (index < 0) throw new Error('User not found');
+  if (index < 0) throw new Error("User not found");
 
   const row = users[index];
-  const passwordHash = typeof row.passwordHash === 'string' ? row.passwordHash : '';
+  const passwordHash = typeof row.passwordHash === "string" ? row.passwordHash : "";
   if (!passwordHash || !(await verifyPassword(currentPassword, passwordHash))) {
-    const err = new Error('Current password is incorrect') as Error & {
+    const err = new Error("Current password is incorrect") as Error & {
       statusCode?: number;
       type?: string;
     };
     err.statusCode = 401;
-    err.type = 'invalid_credentials';
+    err.type = "invalid_credentials";
     throw err;
   }
 
@@ -66,9 +66,7 @@ export async function setTenantLoginEmail(
   if (index < 0) return null;
 
   const subdomain =
-    typeof users[index].workspaceSubdomain === 'string'
-      ? users[index].workspaceSubdomain!
-      : '';
+    typeof users[index].workspaceSubdomain === "string" ? users[index].workspaceSubdomain! : "";
   const conflict = users.some(
     (u, i) =>
       i !== index &&
@@ -76,12 +74,12 @@ export async function setTenantLoginEmail(
       resolveTenantLoginEmail(u) === normalized,
   );
   if (conflict) {
-    const err = new Error('Login email is already in use') as Error & {
+    const err = new Error("Login email is already in use") as Error & {
       statusCode?: number;
       type?: string;
     };
     err.statusCode = 409;
-    err.type = 'conflict';
+    err.type = "conflict";
     throw err;
   }
 
@@ -121,12 +119,12 @@ export async function updateOwnLinkedContact(
 ): Promise<Contact | null> {
   const contactId = await getLinkedContactId(userId);
   if (contactId == null) {
-    const err = new Error('No linked contact for this account') as Error & {
+    const err = new Error("No linked contact for this account") as Error & {
       statusCode?: number;
       type?: string;
     };
     err.statusCode = 400;
-    err.type = 'no_contact_link';
+    err.type = "no_contact_link";
     throw err;
   }
   // Own-profile updates never rewrite peer relationship graphs.

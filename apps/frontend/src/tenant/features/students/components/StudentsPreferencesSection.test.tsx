@@ -13,10 +13,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 describe("StudentsPreferencesSection Component", () => {
   it("renders student GR number sequence configuration with live preview", () => {
     const html = renderToStaticMarkup(
-      <StudentsPreferencesSection
-        settingsDraft={DEFAULT_STUDENTS_SETTINGS}
-        upd={vi.fn()}
-      />,
+      <StudentsPreferencesSection settingsDraft={DEFAULT_STUDENTS_SETTINGS} upd={vi.fn()} />,
     );
 
     expect(html).toContain("students.settings.grSectionTitle");
@@ -27,4 +24,3 @@ describe("StudentsPreferencesSection Component", () => {
     expect(html).toContain("common.sequenceNumbering.lastIssued");
   });
 });
-

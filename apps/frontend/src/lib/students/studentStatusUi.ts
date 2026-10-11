@@ -1,17 +1,17 @@
-import { resolveStudentStatuses } from '@mms/shared';
-import { SEMANTIC_BADGE } from '@/lib/semanticTone';
-import { createModuleStatusUi } from '@/lib/moduleStatusUi';
+import { resolveStudentStatuses } from "@mms/shared";
+import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { createModuleStatusUi } from "@/lib/moduleStatusUi";
 
 /** Badge / chip tone classes for a student status (tenant-added statuses fall back to muted). */
 function studentStatusTone(status: string): string {
   switch (status) {
-    case 'active':
+    case "active":
       return SEMANTIC_BADGE.success;
-    case 'suspended':
+    case "suspended":
       return SEMANTIC_BADGE.warning;
-    case 'graduated':
+    case "graduated":
       return SEMANTIC_BADGE.info;
-    case 'transferred':
+    case "transferred":
       return SEMANTIC_BADGE.infoStrong;
     default:
       return SEMANTIC_BADGE.muted;
@@ -19,7 +19,7 @@ function studentStatusTone(status: string): string {
 }
 
 const studentStatusUi = createModuleStatusUi({
-  translationPrefix: 'students.form.status',
+  translationPrefix: "students.form.status",
   resolveStatuses: resolveStudentStatuses,
   toneForStatus: studentStatusTone,
 });

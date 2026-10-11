@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import type { Account } from '@/lib/data/accountingData';
+import { useState } from "react";
+import type { Account } from "@/lib/data/accountingData";
 
 export type AccountQuickCreateTarget =
-  | { kind: 'line'; lineIndex: number }
-  | { kind: 'field'; field: 'debitAcc' | 'creditAcc' };
+  { kind: "line"; lineIndex: number } | { kind: "field"; field: "debitAcc" | "creditAcc" };
 
 export interface UseAccountQuickCreateArgs {
   accounts: readonly Account[];
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   onSelectAccount: (target: AccountQuickCreateTarget, accountId: string) => void;
 }
 
@@ -20,7 +21,7 @@ export function useAccountQuickCreate({
   const [open, setOpen] = useState(false);
   const [target, setTarget] = useState<AccountQuickCreateTarget | null>(null);
 
-  const canAdd = typeof onAccountsChange === 'function';
+  const canAdd = typeof onAccountsChange === "function";
 
   function openCreate(nextTarget: AccountQuickCreateTarget): void {
     if (!canAdd) return;

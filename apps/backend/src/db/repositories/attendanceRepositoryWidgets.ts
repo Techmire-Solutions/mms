@@ -1,45 +1,45 @@
-import { and, eq, isNull, sql, type SQL } from 'drizzle-orm';
-import type { WidgetAggregateResult, WidgetQuery } from '@mms/shared';
-import { attendance } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
+import type { WidgetAggregateResult, WidgetQuery } from "@mms/shared";
+import { attendance } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(attendance.workspaceSubdomain, subdomain), isNull(attendance.deletedAt))!;
 }
 
 const FIELD_TO_SQL_COLUMN: Record<string, string> = {
-  status: 'status',
-  classId: 'class_id',
-  studentId: 'student_id',
-  date: 'date',
+  status: "status",
+  classId: "class_id",
+  studentId: "student_id",
+  date: "date",
 };
 
 function resolveSqlColumn(field: string): SQL {
-  const col = FIELD_TO_SQL_COLUMN[field] ?? 'status';
+  const col = FIELD_TO_SQL_COLUMN[field] ?? "status";
   return sql.raw(`"attendance"."${col}"`);
 }
 
 function singleFilterSql(
   field: string | undefined,
-  operator: WidgetQuery['filterOperator'],
+  operator: WidgetQuery["filterOperator"],
   value: string | undefined,
 ): SQL | null {
   const trimmedField = field?.trim();
-  if (!trimmedField || value == null || value === '') return null;
+  if (!trimmedField || value == null || value === "") return null;
   const colSql = resolveSqlColumn(trimmedField);
-  const op = operator ?? 'equals';
-  if (op === 'equals') {
+  const op = operator ?? "equals";
+  if (op === "equals") {
     return sql`lower(trim(${colSql}::text)) = ${value.trim().toLowerCase()}`;
   }
-  if (op === 'contains') {
+  if (op === "contains") {
     return sql`lower(${colSql}::text) LIKE ${`%${value.trim().toLowerCase()}%`}`;
   }
-  if (op === 'gt') {
+  if (op === "gt") {
     const num = Number(value);
     if (!Number.isFinite(num)) return null;
     return sql`${colSql}::numeric > ${num}`;
   }
-  if (op === 'lt') {
+  if (op === "lt") {
     const num = Number(value);
     if (!Number.isFinite(num)) return null;
     return sql`${colSql}::numeric < ${num}`;
@@ -75,7 +75,7 @@ export async function aggregateAttendanceWidgetQueries(
         const chartLimit = Math.max(1, Math.min(query.chartLimit ?? 8, 50));
 
         let value = 0;
-        if (query.operation === 'count' || query.operation === 'percentage') {
+        if (query.operation === "count" || query.operation === "percentage") {
           // A no-filter widget's whereClause equals activeWorkspaceWhere, so its
           // count is exactly totalCount (already computed above) — reuse it
           // instead of re-running an identical aggregate.
@@ -90,14 +90,14 @@ export async function aggregateAttendanceWidgetQueries(
               )
             : totalCount;
           value =
-            query.operation === 'percentage'
+            query.operation === "percentage"
               ? totalCount > 0
                 ? Math.round((filteredCount / totalCount) * 100)
                 : 0
               : filteredCount;
         }
 
-        const xAxis = query.xAxisField?.trim() || 'status';
+        const xAxis = query.xAxisField?.trim() || "status";
         const xAxisColSql = resolveSqlColumn(xAxis);
         const groupExpr = sql<string>`COALESCE(NULLIF(trim(${xAxisColSql}::text), ''), 'Unknown')`;
 

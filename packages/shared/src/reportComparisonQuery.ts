@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const reportComparisonQuerySchema = z.object({
   sessionIds: z.string().max(200).optional(),
@@ -38,8 +38,12 @@ export function normalizeReportComparisonQuery<T extends BaseReportComparisonQue
   const rangeBTo = input.rangeBTo?.trim();
 
   const hasSessions = sessionIds.length > 0;
-  const hasRangeA = Boolean(rangeAFrom && rangeATo && DATE_PARAM_RE.test(rangeAFrom) && DATE_PARAM_RE.test(rangeATo));
-  const hasRangeB = Boolean(rangeBFrom && rangeBTo && DATE_PARAM_RE.test(rangeBFrom) && DATE_PARAM_RE.test(rangeBTo));
+  const hasRangeA = Boolean(
+    rangeAFrom && rangeATo && DATE_PARAM_RE.test(rangeAFrom) && DATE_PARAM_RE.test(rangeATo),
+  );
+  const hasRangeB = Boolean(
+    rangeBFrom && rangeBTo && DATE_PARAM_RE.test(rangeBFrom) && DATE_PARAM_RE.test(rangeBTo),
+  );
 
   if (!hasSessions && !hasRangeA && !hasRangeB) return undefined;
 
@@ -52,13 +56,11 @@ export function normalizeReportComparisonQuery<T extends BaseReportComparisonQue
 }
 
 /** True when any comparison SQL slice should run. */
-export function reportComparisonQueryActive(
-  query: BaseReportComparisonQuery | undefined,
-): boolean {
+export function reportComparisonQueryActive(query: BaseReportComparisonQuery | undefined): boolean {
   return Boolean(
-    (query?.sessionIds && query.sessionIds.length > 0)
-    || (query?.rangeAFrom && query.rangeATo)
-    || (query?.rangeBFrom && query.rangeBTo),
+    (query?.sessionIds && query.sessionIds.length > 0) ||
+    (query?.rangeAFrom && query.rangeATo) ||
+    (query?.rangeBFrom && query.rangeBTo),
   );
 }
 
@@ -68,7 +70,10 @@ export function parseComparisonQueryParams(
 ): BaseReportComparisonQuery {
   return {
     sessionIds: raw.sessionIds
-      ? raw.sessionIds.split(',').map((id) => id.trim()).filter(Boolean)
+      ? raw.sessionIds
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean)
       : undefined,
     rangeAFrom: raw.rangeAFrom,
     rangeATo: raw.rangeATo,
@@ -96,4 +101,3 @@ export function ensureAllSessionsInComparison<T extends { sessionId: string }>(
   }
   return result;
 }
-

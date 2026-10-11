@@ -1,4 +1,4 @@
-import type { FieldDefinition } from './contactFieldSchemaTypes.js';
+import type { FieldDefinition } from "./contactFieldSchemaTypes.js";
 
 export interface ModuleFormCustomFieldHelpers {
   listSystemFormFieldKeys: () => ReadonlySet<string>;
@@ -47,8 +47,16 @@ export function createFormCustomFieldHelpers(
     }
 
     return [...byKey.values()].sort((left, right) => {
-      const leftOrder = Number((left as { order?: number; sortOrder?: number }).sortOrder ?? (left as { order?: number }).order ?? 0);
-      const rightOrder = Number((right as { order?: number; sortOrder?: number }).sortOrder ?? (right as { order?: number }).order ?? 0);
+      const leftOrder = Number(
+        (left as { order?: number; sortOrder?: number }).sortOrder ??
+          (left as { order?: number }).order ??
+          0,
+      );
+      const rightOrder = Number(
+        (right as { order?: number; sortOrder?: number }).sortOrder ??
+          (right as { order?: number }).order ??
+          0,
+      );
       const orderDelta = leftOrder - rightOrder;
       return orderDelta !== 0 ? orderDelta : left.key.localeCompare(right.key);
     });

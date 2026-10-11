@@ -1,8 +1,8 @@
-import pg from 'pg';
-import { loadBackendEnv } from '../config/loadEnv.js';
-import { loadServerConfig } from '../config/serverConfig.js';
-import { logger } from '../lib/logger.js';
-import { initializeDatabaseConnection, closeDatabase } from '../db/dbConnection.js';
+import pg from "pg";
+import { loadBackendEnv } from "../config/loadEnv.js";
+import { loadServerConfig } from "../config/serverConfig.js";
+import { logger } from "../lib/logger.js";
+import { initializeDatabaseConnection, closeDatabase } from "../db/dbConnection.js";
 
 loadBackendEnv();
 
@@ -31,8 +31,8 @@ loadBackendEnv();
  * to inject arbitrary SQL by accident.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 interface ParsedArgs {
   file?: string;
@@ -47,7 +47,7 @@ interface ParsedArgs {
 
 /** Conservative identifier check: letters, digits, underscore; not empty. */
 const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
-const ALLOWED_INDEX_METHODS = new Set(['btree', 'brin', 'gin', 'gist', 'hash']);
+const ALLOWED_INDEX_METHODS = new Set(["btree", "brin", "gin", "gist", "hash"]);
 
 function parseArgs(argv: string[]): ParsedArgs {
   const get = (flag: string): string | undefined => {
@@ -55,7 +55,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     return index >= 0 ? argv[index + 1] : undefined;
   };
 
-  const file = get('--file');
+  const file = get("--file");
   if (file) {
     return {
       file,
@@ -63,14 +63,14 @@ function parseArgs(argv: string[]): ParsedArgs {
     };
   }
 
-  const table = get('--table');
-  const columnsRaw = get('--columns');
+  const table = get("--table");
+  const columnsRaw = get("--columns");
 
   if (!table || !columnsRaw) {
     console.error(
-      'Usage: tsx src/scripts/create-index-concurrently.ts --table <table> ' +
+      "Usage: tsx src/scripts/create-index-concurrently.ts --table <table> " +
         '--columns <col1,col2> [--name <index_name>] [--unique] [--using <method>] [--include <col1,col2>] [--where "<predicate>"]\n' +
-        '   OR: tsx src/scripts/create-index-concurrently.ts --file <path/to/script.sql>',
+        "   OR: tsx src/scripts/create-index-concurrently.ts --file <path/to/script.sql>",
     );
     process.exit(1);
   }
@@ -81,7 +81,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   }
 
   const columns = columnsRaw
-    .split(',')
+    .split(",")
     .map((c) => c.trim())
     .filter(Boolean);
   if (columns.length === 0 || columns.some((c) => !IDENTIFIER.test(c))) {
@@ -89,11 +89,11 @@ function parseArgs(argv: string[]): ParsedArgs {
     process.exit(1);
   }
 
-  const includeRaw = get('--include');
+  const includeRaw = get("--include");
   let include: string[] | undefined;
   if (includeRaw) {
     include = includeRaw
-      .split(',')
+      .split(",")
       .map((c) => c.trim())
       .filter(Boolean);
     if (include.length === 0 || include.some((c) => !IDENTIFIER.test(c))) {
@@ -102,13 +102,15 @@ function parseArgs(argv: string[]): ParsedArgs {
     }
   }
 
-  const using = get('--using')?.toLowerCase();
+  const using = get("--using")?.toLowerCase();
   if (using && !ALLOWED_INDEX_METHODS.has(using)) {
-    console.error(`Invalid index method: ${using}. Allowed: ${Array.from(ALLOWED_INDEX_METHODS).join(', ')}`);
+    console.error(
+      `Invalid index method: ${using}. Allowed: ${Array.from(ALLOWED_INDEX_METHODS).join(", ")}`,
+    );
     process.exit(1);
   }
 
-  const name = get('--name');
+  const name = get("--name");
   if (name !== undefined && !IDENTIFIER.test(name)) {
     console.error(`Invalid index name: ${name}`);
     process.exit(1);
@@ -117,9 +119,9 @@ function parseArgs(argv: string[]): ParsedArgs {
   // `--where` is a raw predicate by necessity (partial-index predicates are not
   // parameterizable). It is quoted-and-rejected rather than sanitized: the
   // operator running this is a deployer, but we still refuse obvious injection.
-  const where = get('--where');
+  const where = get("--where");
   if (where !== undefined && /;|--|\/\*/.test(where)) {
-    console.error('Refusing --where containing statement terminators or comments.');
+    console.error("Refusing --where containing statement terminators or comments.");
     process.exit(1);
   }
 
@@ -128,8 +130,8 @@ function parseArgs(argv: string[]): ParsedArgs {
     columns,
     include,
     using,
-    name: name ?? `${table}_${columns.join('_')}_cix`,
-    unique: argv.includes('--unique'),
+    name: name ?? `${table}_${columns.join("_")}_cix`,
+    unique: argv.includes("--unique"),
     where,
   };
 }
@@ -151,22 +153,24 @@ async function main(): Promise<void> {
       if (!fs.existsSync(resolvedPath)) {
         throw new Error(`File not found: ${resolvedPath}`);
       }
-      const rawSql = fs.readFileSync(resolvedPath, 'utf8');
+      const rawSql = fs.readFileSync(resolvedPath, "utf8");
       const strippedSql = rawSql
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .split('\n')
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .split("\n")
         .map((line) => {
-          const commentIdx = line.indexOf('--');
+          const commentIdx = line.indexOf("--");
           return commentIdx >= 0 ? line.slice(0, commentIdx) : line;
         })
-        .join('\n');
+        .join("\n");
 
       const statements = strippedSql
-        .split(';')
+        .split(";")
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
-      console.log(`[create-index-concurrently] Executing ${statements.length} statements from ${args.file}...`);
+      console.log(
+        `[create-index-concurrently] Executing ${statements.length} statements from ${args.file}...`,
+      );
       for (const statement of statements) {
         console.log(`[create-index-concurrently] > ${statement.slice(0, 120)}...`);
         await client.query(statement);
@@ -175,18 +179,21 @@ async function main(): Promise<void> {
       return;
     }
 
-    const usingClause = args.using ? `USING ${args.using} ` : '';
-    const includeClause = args.include ? ` INCLUDE (${args.include.map((c) => `"${c}"`).join(', ')})` : '';
-    const concurrent = `CREATE ${args.unique ? 'UNIQUE ' : ''}INDEX CONCURRENTLY IF NOT EXISTS ` +
-      `"${args.name}" ON "${args.table}" ${usingClause}(${args.columns!.map((c) => `"${c}"`).join(', ')})` +
+    const usingClause = args.using ? `USING ${args.using} ` : "";
+    const includeClause = args.include
+      ? ` INCLUDE (${args.include.map((c) => `"${c}"`).join(", ")})`
+      : "";
+    const concurrent =
+      `CREATE ${args.unique ? "UNIQUE " : ""}INDEX CONCURRENTLY IF NOT EXISTS ` +
+      `"${args.name}" ON "${args.table}" ${usingClause}(${args.columns!.map((c) => `"${c}"`).join(", ")})` +
       includeClause +
-      (args.where ? ` WHERE ${args.where}` : '') +
-      ';';
+      (args.where ? ` WHERE ${args.where}` : "") +
+      ";";
 
     console.log(`[create-index-concurrently] ${concurrent}`);
     console.log(
-      '[create-index-concurrently] Note: CONCURRENTLY cannot run inside a transaction; ' +
-        'this runs in autocommit mode and is safe on a live table (slower than a plain build).',
+      "[create-index-concurrently] Note: CONCURRENTLY cannot run inside a transaction; " +
+        "this runs in autocommit mode and is safe on a live table (slower than a plain build).",
     );
 
     // `CREATE INDEX CONCURRENTLY` can leave an INVALID index behind if it fails;
@@ -212,7 +219,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  logger.error({ err: error }, 'create-index-concurrently failed');
-  console.error('✗ Failed:', error instanceof Error ? error.message : String(error));
+  logger.error({ err: error }, "create-index-concurrently failed");
+  console.error("✗ Failed:", error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

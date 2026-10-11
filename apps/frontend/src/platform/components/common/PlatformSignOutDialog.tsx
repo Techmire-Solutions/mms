@@ -1,5 +1,5 @@
-import { ConfirmAlertDialog } from '@/components/ui/ConfirmAlertDialog';
-import { useTranslation } from '@/hooks/useTranslation';
+import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface PlatformSignOutDialogProps {
   open: boolean;
@@ -12,9 +12,9 @@ export function PlatformSignOutDialog(props: PlatformSignOutDialogProps) {
   return (
     <ConfirmAlertDialog
       {...props}
-      title={t('platform.signOut')}
-      description={t('platform.signOutConfirm')}
-      confirmLabel={t('platform.signOut')}
+      title={t("platform.signOut")}
+      description={t("platform.signOutConfirm")}
+      confirmLabel={t("platform.signOut")}
       destructive
     />
   );

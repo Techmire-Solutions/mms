@@ -63,13 +63,31 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
       <p className="m-0 mb-3 text-xs text-muted-foreground">{t("finance.feeStructures.hint")}</p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field id="fee-struct-name" label={t("finance.feeStructures.name")}>
-          <Input id="fee-struct-name" name="name" className={FORM_INPUT} value={name} onChange={(event) => setName(event.target.value)} />
+          <Input
+            id="fee-struct-name"
+            name="name"
+            className={FORM_INPUT}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
         </Field>
         <Field id="fee-struct-session" label={t("finance.feeStructures.session")}>
-          <Input id="fee-struct-session" name="session" className={FORM_INPUT} value={session} onChange={(event) => setSession(event.target.value)} />
+          <Input
+            id="fee-struct-session"
+            name="session"
+            className={FORM_INPUT}
+            value={session}
+            onChange={(event) => setSession(event.target.value)}
+          />
         </Field>
         <Field id="fee-struct-class" label={t("finance.feeStructures.class")}>
-          <Input id="fee-struct-class" name="className" className={FORM_INPUT} value={className} onChange={(event) => setClassName(event.target.value)} />
+          <Input
+            id="fee-struct-class"
+            name="className"
+            className={FORM_INPUT}
+            value={className}
+            onChange={(event) => setClassName(event.target.value)}
+          />
         </Field>
         <Field id="fee-struct-frequency" label={t("finance.feeStructures.frequency")}>
           <FormSelect
@@ -86,7 +104,13 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
         </Field>
         <Field id="fee-struct-item-name" label={t("finance.feeStructures.item")}>
           <div className="flex gap-2">
-            <Input id="fee-struct-item-name" name="itemName" className={FORM_INPUT} value={itemName} onChange={(event) => setItemName(event.target.value)} />
+            <Input
+              id="fee-struct-item-name"
+              name="itemName"
+              className={FORM_INPUT}
+              value={itemName}
+              onChange={(event) => setItemName(event.target.value)}
+            />
             <Input
               id="fee-struct-item-amount"
               name="itemAmount"
@@ -126,7 +150,9 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
                     ? t("finance.feeStructures.frequencyTerm")
                     : t("finance.feeStructures.frequencyMonthly")
               }`}
-              {structure.items.length > 0 ? ` · ${structure.items.length} ${t("finance.feeStructures.items")}` : ""}
+              {structure.items.length > 0
+                ? ` · ${structure.items.length} ${t("finance.feeStructures.items")}`
+                : ""}
             </p>
           </FormListFieldCard>
         ))}

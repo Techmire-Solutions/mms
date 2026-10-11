@@ -7,7 +7,10 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 export interface DashboardAlertThresholdsSectionProps {
   lowAttendanceThreshold?: number;
   urgentAttendanceThreshold?: number;
-  onUpdateThreshold: (key: "lowAttendanceThreshold" | "urgentAttendanceThreshold", value: number) => void;
+  onUpdateThreshold: (
+    key: "lowAttendanceThreshold" | "urgentAttendanceThreshold",
+    value: number,
+  ) => void;
   hasGridMode: boolean;
   t: TranslationFunction;
 }

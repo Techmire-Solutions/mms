@@ -2,10 +2,7 @@ import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { User } from "lucide-react";
-import {
-  Step6ConfirmationRow,
-  Step6ConfirmationSection,
-} from "./step6ConfirmationLayout";
+import { Step6ConfirmationRow, Step6ConfirmationSection } from "./step6ConfirmationLayout";
 
 describe("step6ConfirmationLayout Components", () => {
   it("renders Step6ConfirmationRow with label and value", () => {

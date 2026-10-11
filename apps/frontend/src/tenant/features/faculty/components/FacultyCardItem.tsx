@@ -13,7 +13,6 @@ import type { useFacultyEntityDescriptor } from "@/tenant/features/faculty/hooks
 import type { FacultyListContentProps } from "@/tenant/features/faculty/components/facultyListContentShared";
 import type { Faculty } from "@mms/shared";
 
-
 export interface FacultyCardItemProps {
   faculty: Faculty;
   selectedSet: Set<string>;
@@ -78,9 +77,7 @@ export function FacultyCardItem(props: FacultyCardItemProps): React.JSX.Element 
       onEdit={onEdit}
       reducedMotion={reducedMotion}
       accentClassName={
-        isColumnVisible("gender")
-          ? getGenderAccentBarClass(isSelected, faculty.gender)
-          : undefined
+        isColumnVisible("gender") ? getGenderAccentBarClass(isSelected, faculty.gender) : undefined
       }
       header={{
         displayName,

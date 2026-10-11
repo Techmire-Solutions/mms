@@ -1,8 +1,8 @@
-import type { JournalEntriesServerQueryProps } from './journalEntriesControllerFilters';
+import type { JournalEntriesServerQueryProps } from "./journalEntriesControllerFilters";
 
 export function useJournalEntriesFilterBridge(
-  filters: JournalEntriesServerQueryProps['filters'],
-  onFiltersChange: JournalEntriesServerQueryProps['onFiltersChange'],
+  filters: JournalEntriesServerQueryProps["filters"],
+  onFiltersChange: JournalEntriesServerQueryProps["onFiltersChange"],
 ) {
   return {
     search: filters.search,

@@ -31,7 +31,16 @@ describe("TemplateEditor Component", () => {
     orientation: "portrait",
     elements: [
       { id: "el_1", type: "static", label: "Invoice Title", x: 20, y: 20, w: 200, h: 20 },
-      { id: "el_2", type: "field", field: "studentName", label: "Student Name", x: 20, y: 50, w: 200, h: 20 },
+      {
+        id: "el_2",
+        type: "field",
+        field: "studentName",
+        label: "Student Name",
+        x: 20,
+        y: 50,
+        w: 200,
+        h: 20,
+      },
     ],
   };
 
@@ -42,7 +51,7 @@ describe("TemplateEditor Component", () => {
         template={sampleTemplate}
         onClose={vi.fn()}
         availableFields={[{ field: "studentName", label: "Student Name" }]}
-      />
+      />,
     );
 
     expect(html).toContain("Custom Invoice Editor");
@@ -58,7 +67,7 @@ describe("TemplateEditor Component", () => {
         onClose={vi.fn()}
         onExportTypst={vi.fn()}
         onExportZoho={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Typst");
@@ -67,10 +76,7 @@ describe("TemplateEditor Component", () => {
 
   it("renders zoom controls, preview button, and template file export", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("templateEditor.switchToPreview");
@@ -85,7 +91,7 @@ describe("TemplateEditor Component", () => {
         template={sampleTemplate}
         sampleData={{ studentName: "Muhammad Ali" }}
         onClose={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Muhammad Ali");
@@ -93,10 +99,7 @@ describe("TemplateEditor Component", () => {
 
   it("renders keyboard shortcut hints and localized footer controls", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("templateEditor.shortcuts");
@@ -118,7 +121,7 @@ describe("TemplateEditor Component", () => {
           onChange={onChange}
           onDirtyChange={onDirtyChange}
           onClose={vi.fn()}
-        />
+        />,
       );
     });
 
@@ -126,7 +129,7 @@ describe("TemplateEditor Component", () => {
       expect.objectContaining({
         pageSize: "A5",
         elements: expect.any(Array),
-      })
+      }),
     );
     expect(onDirtyChange).toHaveBeenCalledWith(false);
 
@@ -138,10 +141,7 @@ describe("TemplateEditor Component", () => {
 
   it("renders enhanced primitives including heading, logo, and table in element palette", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("templateEditor.heading");
@@ -154,10 +154,7 @@ describe("TemplateEditor Component", () => {
 
   it("renders printable safe margins guide when guides are active", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("templateEditor.safeMargins");
@@ -165,10 +162,7 @@ describe("TemplateEditor Component", () => {
 
   it("renders copy, paste, space-pan, and alt-resize hints in the footer shortcuts list", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     // Copy/cut and paste are separate entries now, and the cut shortcut (which the
@@ -181,10 +175,7 @@ describe("TemplateEditor Component", () => {
 
   it("renders browser print / PDF export action in toolbar", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("templateEditor.print");
@@ -197,7 +188,7 @@ describe("TemplateEditor Component", () => {
         documentType="receipt"
         fullscreen={true}
         onClose={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain('role="dialog"');
@@ -214,10 +205,7 @@ describe("TemplateEditor Component", () => {
 
   it("exposes labelled control groups instead of a half-implemented toolbar role", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     /*
@@ -236,10 +224,7 @@ describe("TemplateEditor Component", () => {
 
   it("makes exactly one canvas element a tab stop (roving tabindex)", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     // With 20+ absolutely positioned elements, one tab stop per element put the
@@ -250,10 +235,7 @@ describe("TemplateEditor Component", () => {
 
   it("labels the page size in pixels, the unit the editor actually stores", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     // PAGE_SIZES are CSS pixels at 96dpi; the status pill used to claim "pt".
@@ -263,10 +245,7 @@ describe("TemplateEditor Component", () => {
 
   it("makes the scrollable canvas region keyboard focusable", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} onClose={vi.fn()} />,
     );
 
     expect(html).toContain('aria-label="templateEditor.canvasViewport"');
@@ -275,11 +254,7 @@ describe("TemplateEditor Component", () => {
 
   it("renders role='region' without aria-modal when fullscreen is false", () => {
     const html = renderToStaticMarkup(
-      <TemplateEditor
-        template={sampleTemplate}
-        fullscreen={false}
-        onClose={vi.fn()}
-      />
+      <TemplateEditor template={sampleTemplate} fullscreen={false} onClose={vi.fn()} />,
     );
 
     expect(html).toContain('role="region"');
@@ -299,7 +274,7 @@ describe("TemplateElementRenderer Component", () => {
         onMouseDownResize={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     // 8-point handles
@@ -325,7 +300,7 @@ describe("TemplateElementRenderer Component", () => {
         onMouseDownResize={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).not.toContain("cursor-se-resize");
@@ -359,7 +334,7 @@ describe("TemplateElementRenderer Component", () => {
         onMouseDownResize={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("text-decoration:underline");
@@ -395,7 +370,7 @@ describe("TemplateElementRenderer Component", () => {
         onMouseDownResize={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("Items Table (table)");
@@ -423,7 +398,7 @@ describe("TemplateElementRenderer Component", () => {
         onMouseDownResize={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain('dir="rtl"');
@@ -450,7 +425,7 @@ describe("TemplateElementRenderer Component", () => {
         onMouseDownResize={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("Invoice for Ali Raza (ID: STD-99)");
@@ -480,7 +455,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
         onDuplicateElement={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("templateEditor.appearance");
@@ -501,16 +476,14 @@ describe("TemplateEditorPropertiesPanel Component", () => {
           y: 20,
           w: 300,
           h: 120,
-          columns: [
-            { id: "c1", header: "Item", field: "item", width: 70, align: "left" },
-          ],
+          columns: [{ id: "c1", header: "Item", field: "item", width: 70, align: "left" }],
         }}
         onPatchElement={vi.fn()}
         onPatchStyle={vi.fn()}
         onDuplicateElement={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("templateEditor.table");
@@ -532,7 +505,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
         onDuplicateElement={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("templateEditor.typography");
@@ -556,7 +529,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
         onDuplicateElement={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("templateEditor.layerList");
@@ -586,7 +559,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
         onDuplicateElement={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("templateEditor.dataField");
@@ -603,7 +576,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
         onDuplicateElement={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("templateEditor.labelStaticHint");
@@ -618,7 +591,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
         onDuplicateElement={vi.fn()}
         onDeleteElement={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     expect(html).toContain("templateEditor.emptyHint");
@@ -640,7 +613,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
         onPatchSelectedStyles={vi.fn()}
         onSnapSelected={vi.fn()}
         t={mockT}
-      />
+      />,
     );
 
     // Bounding box from (10,10) to (140, 90) => 130 × 80 px
@@ -661,7 +634,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
           onExportZoho={vi.fn()}
           onPrint={vi.fn()}
           t={mockT}
-        />
+        />,
       );
 
       expect(html).toContain('role="group"');
@@ -686,7 +659,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
           onPrint={vi.fn()}
           isExporting={true}
           t={mockT}
-        />
+        />,
       );
 
       expect(html).toContain("disabled");
@@ -704,7 +677,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
           onToggle={vi.fn()}
           onPatchStyle={vi.fn()}
           t={mockT}
-        />
+        />,
       );
 
       expect(html).toContain('aria-label="templateEditor.decreaseFontSize"');
@@ -714,8 +687,26 @@ describe("TemplateEditorPropertiesPanel Component", () => {
 
     it("evaluates allBold across multiple selected elements", () => {
       const mixedElements: TemplateElement[] = [
-        { id: "el_1", type: "static", label: "A", x: 0, y: 0, w: 10, h: 10, style: { fontWeight: "bold" } },
-        { id: "el_2", type: "static", label: "B", x: 0, y: 0, w: 10, h: 10, style: { fontWeight: "normal" } },
+        {
+          id: "el_1",
+          type: "static",
+          label: "A",
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 10,
+          style: { fontWeight: "bold" },
+        },
+        {
+          id: "el_2",
+          type: "static",
+          label: "B",
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 10,
+          style: { fontWeight: "normal" },
+        },
       ];
 
       const html = renderToStaticMarkup(
@@ -726,7 +717,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
           onToggle={vi.fn()}
           onPatchStyle={vi.fn()}
           t={mockT}
-        />
+        />,
       );
 
       // In mixed state, allBold is false, so aria-pressed should be false
@@ -736,8 +727,26 @@ describe("TemplateEditorPropertiesPanel Component", () => {
 
     it("renders indeterminate state on RTL checkbox when direction is mixed across elements", () => {
       const mixedElements: TemplateElement[] = [
-        { id: "el_1", type: "static", label: "A", x: 0, y: 0, w: 10, h: 10, style: { direction: "rtl" } },
-        { id: "el_2", type: "static", label: "B", x: 0, y: 0, w: 10, h: 10, style: { direction: "ltr" } },
+        {
+          id: "el_1",
+          type: "static",
+          label: "A",
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 10,
+          style: { direction: "rtl" },
+        },
+        {
+          id: "el_2",
+          type: "static",
+          label: "B",
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 10,
+          style: { direction: "ltr" },
+        },
       ];
 
       const html = renderToStaticMarkup(
@@ -748,7 +757,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
           onToggle={vi.fn()}
           onPatchStyle={vi.fn()}
           t={mockT}
-        />
+        />,
       );
 
       expect(html).toContain('data-state="indeterminate"');
@@ -756,8 +765,26 @@ describe("TemplateEditorPropertiesPanel Component", () => {
 
     it("evaluates mixed alignment and mixed colors across multiple selected elements", () => {
       const mixedElements: TemplateElement[] = [
-        { id: "el_1", type: "static", label: "A", x: 0, y: 0, w: 10, h: 10, style: { textAlign: "left", color: "#10b981" } },
-        { id: "el_2", type: "static", label: "B", x: 0, y: 0, w: 10, h: 10, style: { textAlign: "center", color: "#ef4444" } },
+        {
+          id: "el_1",
+          type: "static",
+          label: "A",
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 10,
+          style: { textAlign: "left", color: "#10b981" },
+        },
+        {
+          id: "el_2",
+          type: "static",
+          label: "B",
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 10,
+          style: { textAlign: "center", color: "#ef4444" },
+        },
       ];
 
       const html = renderToStaticMarkup(
@@ -768,7 +795,7 @@ describe("TemplateEditorPropertiesPanel Component", () => {
           onToggle={vi.fn()}
           onPatchStyle={vi.fn()}
           t={mockT}
-        />
+        />,
       );
 
       // In mixed alignment, start alignment is not active across all elements
@@ -962,7 +989,9 @@ describe("TemplateEditorPropertiesPanel Component", () => {
       expect(capturedActions[0].deleteElement).toBe(capturedActions[1].deleteElement);
       expect(capturedActions[0].snapSelected).toBe(capturedActions[1].snapSelected);
       expect(capturedActions[0].addStaticText).toBe(capturedActions[1].addStaticText);
-      expect(capturedActions[0].equalizeSelectedDimensions).toBe(capturedActions[1].equalizeSelectedDimensions);
+      expect(capturedActions[0].equalizeSelectedDimensions).toBe(
+        capturedActions[1].equalizeSelectedDimensions,
+      );
 
       await act(async () => {
         root.unmount();
@@ -1071,4 +1100,3 @@ describe("TemplateEditorPropertiesPanel Component", () => {
     });
   });
 });
-

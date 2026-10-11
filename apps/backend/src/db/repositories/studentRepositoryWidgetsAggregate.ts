@@ -1,17 +1,14 @@
-import { and, eq, sql } from 'drizzle-orm';
-import type {
-  StudentsWidgetAggregateResult,
-  StudentsWidgetQuery,
-} from '@mms/shared';
-import { students, contacts } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, sql } from "drizzle-orm";
+import type { StudentsWidgetAggregateResult, StudentsWidgetQuery } from "@mms/shared";
+import { students, contacts } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 import {
   activeWorkspaceWhere,
   resolveChartLimit,
   resolveStudentFieldExpr,
   widgetFilterSql,
   widgetNeedsContactsJoin,
-} from './studentRepositoryWidgetsSql.js';
+} from "./studentRepositoryWidgetsSql.js";
 
 /** SQL widget aggregates for students (Contacts parity). */
 export async function aggregateStudentsWidgetQueries(
@@ -44,7 +41,7 @@ export async function aggregateStudentsWidgetQueries(
         const chartLimit = resolveChartLimit(query);
 
         let value = 0;
-        if (query.operation === 'count' || query.operation === 'percentage') {
+        if (query.operation === "count" || query.operation === "percentage") {
           const countRows = useJoined
             ? await tx
                 .select({ count: sql<number>`count(*)::int` })
@@ -57,13 +54,13 @@ export async function aggregateStudentsWidgetQueries(
                 .where(whereClause);
           const filteredCount = Number(countRows[0]?.count ?? 0);
           value =
-            query.operation === 'percentage'
+            query.operation === "percentage"
               ? totalCount > 0
                 ? Math.round((filteredCount / totalCount) * 100)
                 : 0
               : filteredCount;
-        } else if (query.operation === 'sum' || query.operation === 'avg') {
-          const target = query.targetField?.trim() || '';
+        } else if (query.operation === "sum" || query.operation === "avg") {
+          const target = query.targetField?.trim() || "";
           if (target) {
             const targetExpr = resolveStudentFieldExpr(target, useJoined);
             const aggFields = {
@@ -71,24 +68,28 @@ export async function aggregateStudentsWidgetQueries(
               count: sql<number>`count(*) FILTER (WHERE ${targetExpr}::text ~ '^-?[0-9]+(\.[0-9]+)?$')::int`,
             };
             const aggRows = useJoined
-              ? await tx.select(aggFields).from(students).leftJoin(contacts, contactsJoinOn).where(whereClause)
+              ? await tx
+                  .select(aggFields)
+                  .from(students)
+                  .leftJoin(contacts, contactsJoinOn)
+                  .where(whereClause)
               : await tx.select(aggFields).from(students).where(whereClause);
             const sum = Number(aggRows[0]?.sum ?? 0);
             const count = Number(aggRows[0]?.count ?? 0);
-            value = query.operation === 'sum' ? sum : count > 0 ? Math.round(sum / count) : 0;
+            value = query.operation === "sum" ? sum : count > 0 ? Math.round(sum / count) : 0;
           }
         }
 
-        const xAxis = query.xAxisField?.trim() || 'status';
+        const xAxis = query.xAxisField?.trim() || "status";
         const xAxisExpr = resolveStudentFieldExpr(xAxis, useJoined);
         const groupExpr = sql<string>`COALESCE(NULLIF(trim(${xAxisExpr}::text), ''), 'Unknown')`;
 
         // For sum/avg with a target the count-based chart is discarded by the
         // numeric chart, so only run the count chart for the other operations.
         const target =
-          (query.operation === 'sum' || query.operation === 'avg')
-            ? (query.targetField?.trim() || '')
-            : '';
+          query.operation === "sum" || query.operation === "avg"
+            ? query.targetField?.trim() || ""
+            : "";
 
         let chartData: { name: string; value: number }[];
         if (target) {
@@ -118,7 +119,7 @@ export async function aggregateStudentsWidgetQueries(
               const count = Number(row.count ?? 0);
               return {
                 name: row.name,
-                value: query.operation === 'sum' ? sum : count > 0 ? Math.round(sum / count) : 0,
+                value: query.operation === "sum" ? sum : count > 0 ? Math.round(sum / count) : 0,
               };
             })
             .sort((a, b) => b.value - a.value)

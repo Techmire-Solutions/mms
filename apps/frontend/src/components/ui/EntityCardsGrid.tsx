@@ -107,18 +107,13 @@ export function EntityCardsGrid<T = unknown>({
           selectLabel={selectAllLabel}
           deselectLabel={deselectAllLabel}
           selectedCount={selectedIds?.length ?? 0}
-          selectedCountLabel={
-            selectedCountLabel || `${selectedIds?.length ?? 0} selected`
-          }
+          selectedCountLabel={selectedCountLabel || `${selectedIds?.length ?? 0} selected`}
           pageCountLabel={pageCountLabel}
         />
       ) : null}
 
       {isVirtualized ? (
-        <div
-          ref={parentRef}
-          className="w-full max-h-drawer overflow-y-auto overflow-x-hidden pe-1"
-        >
+        <div ref={parentRef} className="w-full max-h-drawer overflow-y-auto overflow-x-hidden pe-1">
           <div
             style={{
               height: `${rowVirtualizer.getTotalSize()}px`,

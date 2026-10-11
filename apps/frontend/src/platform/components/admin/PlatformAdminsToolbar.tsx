@@ -1,11 +1,11 @@
-import React from 'react';
-import { Download } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { SubTabBar } from '@/components/ui/SubTabBar';
-import { Button } from '@/components/ui/button';
-import { WorkTaskToolbar } from '@/components/common/work';
-import type { AdminRoleFilter } from '@/platform/pages/PlatformAdminsList';
-import { toColumnCustomizer, type DataTableColumnLayout } from '@/components/common/data-table';
+import React from "react";
+import { Download } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { SubTabBar } from "@/components/ui/SubTabBar";
+import { Button } from "@/components/ui/button";
+import { WorkTaskToolbar } from "@/components/common/work";
+import type { AdminRoleFilter } from "@/platform/pages/PlatformAdminsList";
+import { toColumnCustomizer, type DataTableColumnLayout } from "@/components/common/data-table";
 
 export interface PlatformAdminsToolbarProps {
   shownCount: number;
@@ -19,8 +19,8 @@ export interface PlatformAdminsToolbarProps {
   onClearFilters: () => void;
   roleFilter: AdminRoleFilter;
   onRoleFilterChange: (role: AdminRoleFilter) => void;
-  viewMode: 'table' | 'cards';
-  onViewModeChange: (viewMode: 'table' | 'cards') => void;
+  viewMode: "table" | "cards";
+  onViewModeChange: (viewMode: "table" | "cards") => void;
   onExportCsv: () => void;
   columnLayout?: DataTableColumnLayout;
 }
@@ -46,16 +46,16 @@ export function PlatformAdminsToolbar({
 
   return (
     <WorkTaskToolbar
-      regionLabel={t('platform.manageAdmins')}
-      shownCountLabel={t('platform.shownCountOfTotal', { shown: shownCount, total: totalCount })}
+      regionLabel={t("platform.manageAdmins")}
+      shownCountLabel={t("platform.shownCountOfTotal", { shown: shownCount, total: totalCount })}
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('platform.searchAdminsPlaceholder')}
+      searchPlaceholder={t("platform.searchAdminsPlaceholder")}
       searchId="platform-admins-search"
       isSearching={isSearching}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={onClearFilters}
-      clearFiltersLabel={t('common.clearFilters')}
+      clearFiltersLabel={t("common.clearFilters")}
       viewModeToggle={{
         viewMode,
         onViewModeChange,
@@ -67,17 +67,17 @@ export function PlatformAdminsToolbar({
           icon={Download}
           onClick={onExportCsv}
           disabled={shownCount === 0}
-          title={t('platform.exportAdminsCsv')}
+          title={t("platform.exportAdminsCsv")}
         >
-          {t('platform.exportAdminsCsv')}
+          {t("platform.exportAdminsCsv")}
         </Button>
       }
     >
       <SubTabBar
         tabs={[
-          { key: 'all', label: `${t('platform.roleAll')} (${totalCount})` },
-          { key: 'super_user', label: `${t('platform.roleSuperUser')} (${superUserCount})` },
-          { key: 'admin', label: `${t('platform.roleAdmin')} (${adminCount})` },
+          { key: "all", label: `${t("platform.roleAll")} (${totalCount})` },
+          { key: "super_user", label: `${t("platform.roleSuperUser")} (${superUserCount})` },
+          { key: "admin", label: `${t("platform.roleAdmin")} (${adminCount})` },
         ]}
         value={roleFilter}
         onChange={(k) => onRoleFilterChange(k as AdminRoleFilter)}

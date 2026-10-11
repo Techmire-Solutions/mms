@@ -1,18 +1,18 @@
-import React from 'react';
-import { PlatformWorkspaceDeleteDialog } from '@/platform/components/PlatformWorkspaceDeleteDialog';
-import { PlatformWorkspaceModulesDialog } from '@/platform/components/PlatformWorkspaceModulesDialog';
-import { PlatformWorkspaceResetPasswordDialog } from '@/platform/components/PlatformWorkspaceResetPasswordDialog';
-import { PlatformWorkspaceCreateAdminDialog } from '@/platform/components/PlatformWorkspaceCreateAdminDialog';
+import React from "react";
+import { PlatformWorkspaceDeleteDialog } from "@/platform/components/PlatformWorkspaceDeleteDialog";
+import { PlatformWorkspaceModulesDialog } from "@/platform/components/PlatformWorkspaceModulesDialog";
+import { PlatformWorkspaceResetPasswordDialog } from "@/platform/components/PlatformWorkspaceResetPasswordDialog";
+import { PlatformWorkspaceCreateAdminDialog } from "@/platform/components/PlatformWorkspaceCreateAdminDialog";
 import {
   useResetWorkspaceAdminPassword,
   useCreateWorkspaceAdmin,
-} from '@/platform/hooks/usePlatformWorkspaces';
-import { Drawer } from '@/components/ui/Drawer';
-import { EntityDescriptorSections } from '@/components/ui/EntityDescriptorSections';
-import type { EntityDescriptor } from '@/types/entityRegistry';
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
-import type { useWorkspaceDeleteState } from '@/platform/components/workspace/useWorkspaceDeleteState';
-import type { usePlatformWorkspaceModalState } from '@/platform/components/workspace/usePlatformWorkspaceModalState';
+} from "@/platform/hooks/usePlatformWorkspaces";
+import { Drawer } from "@/components/ui/Drawer";
+import { EntityDescriptorSections } from "@/components/ui/EntityDescriptorSections";
+import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { useWorkspaceDeleteState } from "@/platform/components/workspace/useWorkspaceDeleteState";
+import type { usePlatformWorkspaceModalState } from "@/platform/components/workspace/usePlatformWorkspaceModalState";
 
 export interface PlatformWorkspaceDialogsProps {
   appDomain: string;
@@ -103,7 +103,11 @@ export function PlatformWorkspaceDialogs({
           createPending={createAdminMutation.isPending}
           onConfirm={async (subdomain, data) => {
             const res = await createAdminMutation.mutateAsync({ subdomain, ...data });
-            return { initialPassword: res.initialPassword, adminEmail: res.adminEmail, name: res.name };
+            return {
+              initialPassword: res.initialPassword,
+              adminEmail: res.adminEmail,
+              name: res.name,
+            };
           }}
         />
       ) : null}
@@ -111,7 +115,7 @@ export function PlatformWorkspaceDialogs({
       <Drawer
         open={Boolean(inspect)}
         onClose={modalState.handleCloseInspect}
-        title={inspect?.madrasaName ?? 'Workspace'}
+        title={inspect?.madrasaName ?? "Workspace"}
       >
         {inspect ? (
           <EntityDescriptorSections

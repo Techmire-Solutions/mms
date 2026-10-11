@@ -17,14 +17,14 @@ import {
   type NamedEntity,
   type SessionLike,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,
   saveCollection,
-} from '../database.js';
+} from "../database.js";
 /** Historical document-store collection key (pre-faculty rename). */
-const LEGACY_COLLECTION_KEY = 'teachers';
+const LEGACY_COLLECTION_KEY = "teachers";
 
 type Row = Record<string, unknown>;
 
@@ -58,9 +58,9 @@ function linkHasanatRecipient(
   facultyMembers: NamedEntity[],
 ): HasanatDistributionLike {
   if (row.recipientStudentId || row.recipientFacultyId) return row;
-  const name = String(row.recipientName ?? '').trim();
+  const name = String(row.recipientName ?? "").trim();
   if (!name) return row;
-  if (row.recipientType === 'faculty') {
+  if (row.recipientType === "faculty") {
     const faculty = facultyMembers.find((entry) => entry.name === name);
     if (faculty) return { ...row, recipientFacultyId: String(faculty.id) };
   } else {
@@ -77,16 +77,17 @@ function linkUserActor(
   labelField: string,
 ): Row {
   if (row[userIdField]) return row;
-  const label = String(row[labelField] ?? '').trim();
+  const label = String(row[labelField] ?? "").trim();
   if (!label) return row;
   const user = users.find((entry) => entry.name === label);
   if (!user) return row;
   return { ...row, [userIdField]: String(user.id) };
 }
 
-function normalizeTenantCollections(
-  collections: Record<string, Row[]>,
-): { next: Record<string, Row[]>; changed: boolean } {
+function normalizeTenantCollections(collections: Record<string, Row[]>): {
+  next: Record<string, Row[]>;
+  changed: boolean;
+} {
   const students = asNamed(collections.students ?? []);
   const facultyMembers = asNamed(collections.faculty ?? collections[LEGACY_COLLECTION_KEY] ?? []);
   const users = asNamed(collections.users ?? []);
@@ -95,81 +96,83 @@ function normalizeTenantCollections(
   const apply = (key: string, rows: Row[]): Row[] => {
     let next: Row[];
     switch (key) {
-      case 'students':
+      case "students":
         next = rows.map((row) => normalizeStoredStudent(row));
         break;
-      case 'faculty':
+      case "faculty":
       case LEGACY_COLLECTION_KEY:
         next = rows.map((row) => normalizeStoredFaculty(row));
         break;
-      case 'enrollments':
-      case 'attendance_records':
-      case 'finance_invoices':
+      case "enrollments":
+      case "attendance_records":
+      case "finance_invoices":
         next = normalizeStudentLinkedRows(rows);
         break;
-      case 'finance_payments':
-        next = normalizeStudentLinkedRows(rows, 'studentId', 'studentName').map((row) =>
+      case "finance_payments":
+        next = normalizeStudentLinkedRows(rows, "studentId", "studentName").map((row) =>
           normalizeUserActorField(
-            linkUserActor(row, users, 'receivedByUserId', 'receivedBy'),
-            'receivedByUserId',
-            'receivedBy',
+            linkUserActor(row, users, "receivedByUserId", "receivedBy"),
+            "receivedByUserId",
+            "receivedBy",
           ),
         );
         break;
-      case 'sessions':
+      case "sessions":
         next = normalizeSessionsCollection(rows as SessionLike[]) as Row[];
         break;
-      case 'users':
+      case "users":
         next = rows.map((row) => stripWorkspaceUserProfileFields(row));
         break;
-      case 'user_activity_logs':
+      case "user_activity_logs":
         next = rows.map((row) => normalizeActivityLog(row));
         break;
-      case 'hasanat_distributions':
+      case "hasanat_distributions":
         next = rows
-          .map((row) => linkHasanatRecipient(row as HasanatDistributionLike, students, facultyMembers))
-          .map((row) => linkUserActor(row, users, 'issuedByUserId', 'issuedBy'))
+          .map((row) =>
+            linkHasanatRecipient(row as HasanatDistributionLike, students, facultyMembers),
+          )
+          .map((row) => linkUserActor(row, users, "issuedByUserId", "issuedBy"))
           .map((row) =>
             normalizeUserActorField(
               normalizeHasanatDistribution(row as HasanatDistributionLike),
-              'issuedByUserId',
-              'issuedBy',
+              "issuedByUserId",
+              "issuedBy",
             ),
           );
         break;
-      case 'hasanat_redemptions':
+      case "hasanat_redemptions":
         next = rows
           .map((row) => normalizeHasanatRedemption(row))
           .map((row) =>
             normalizeUserActorField(
-              linkUserActor(row, users, 'approvedByUserId', 'approvedBy'),
-              'approvedByUserId',
-              'approvedBy',
+              linkUserActor(row, users, "approvedByUserId", "approvedBy"),
+              "approvedByUserId",
+              "approvedBy",
             ),
           );
         break;
-      case 'hasanat_batches':
+      case "hasanat_batches":
         next = rows.map((row) =>
           normalizeUserActorField(
-            linkUserActor(row, users, 'addedByUserId', 'addedBy'),
-            'addedByUserId',
-            'addedBy',
+            linkUserActor(row, users, "addedByUserId", "addedBy"),
+            "addedByUserId",
+            "addedBy",
           ),
         );
         break;
-      case 'hasanat_payouts':
+      case "hasanat_payouts":
         next = rows
           .map((row) => normalizeHasanatPayout(row))
           .map((row) =>
             normalizeUserActorField(
-              linkUserActor(row, users, 'approvedByUserId', 'approvedBy'),
-              'approvedByUserId',
-              'approvedBy',
+              linkUserActor(row, users, "approvedByUserId", "approvedBy"),
+              "approvedByUserId",
+              "approvedBy",
             ),
           );
         break;
-      case 'assessment_results':
-      case 'exam_results':
+      case "assessment_results":
+      case "exam_results":
         next = rows.map((row) => normalizeAssessmentResult(row));
         break;
       default:
@@ -187,9 +190,7 @@ function normalizeTenantCollections(
   return { next: nextCollections, changed };
 }
 
-async function loadTenantCollections(
-  prefix: string,
-): Promise<Record<string, Row[]>> {
+async function loadTenantCollections(prefix: string): Promise<Record<string, Row[]>> {
   const names = await listCollectionStorageNames();
   const collections: Record<string, Row[]> = {};
   for (const storageName of names) {
@@ -197,7 +198,7 @@ async function loadTenantCollections(
     if (prefix) {
       if (!storageName.startsWith(prefix)) continue;
       logical = storageName.slice(prefix.length);
-    } else if (!storageName.startsWith('t:')) {
+    } else if (!storageName.startsWith("t:")) {
       logical = storageName;
     }
     if (!logical) continue;
@@ -222,12 +223,12 @@ export async function runMigration007(): Promise<void> {
     changed = true;
   };
 
-  await migrateStorage('');
+  await migrateStorage("");
   for (const subdomain of subdomains) {
-    await migrateStorage(tenantCollectionKey(subdomain, ''));
+    await migrateStorage(tenantCollectionKey(subdomain, ""));
   }
 
   if (changed) {
-    console.log('[Migration 007] Contact-linked actor fields and collections normalized.');
+    console.log("[Migration 007] Contact-linked actor fields and collections normalized.");
   }
 }

@@ -1,7 +1,5 @@
 import { SessionCard } from "@/tenant/features/sessions/components/SessionCard";
-import type {
-  SessionsWorkViewProps,
-} from "@/tenant/features/sessions/components/sessionsWorkListViewsShared";
+import type { SessionsWorkViewProps } from "@/tenant/features/sessions/components/sessionsWorkListViewsShared";
 import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -77,42 +77,70 @@ function findFirstInputLike(node: React.ReactNode): InputLikeProps | undefined {
 }
 
 export function RequiredMark(): React.JSX.Element {
-  return <span className="text-destructive ms-0.5" aria-hidden="true">*</span>;
+  return (
+    <span className="text-destructive ms-0.5" aria-hidden="true">
+      *
+    </span>
+  );
 }
 
-export function Field({ label, required = false, hint = undefined, error = undefined, id, errorId: customErrorId, aiHint, children }: FieldProps): React.JSX.Element {
+export function Field({
+  label,
+  required = false,
+  hint = undefined,
+  error = undefined,
+  id,
+  errorId: customErrorId,
+  aiHint,
+  children,
+}: FieldProps): React.JSX.Element {
   const [aiOpen, setAiOpen] = React.useState(false);
   const fallbackId = React.useId();
   const instanceIdSuffix = React.useId().replace(/:/g, "");
-  const slugified = typeof label === "string"
-    ? label.toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/[-\s]+/g, "-")
-    : "";
+  const slugified =
+    typeof label === "string"
+      ? label
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "")
+          .trim()
+          .replace(/[-\s]+/g, "-")
+      : "";
   const baseId = id || slugified || fallbackId;
-  const existingControl = React.Children.toArray(children)
-    .map(findFirstInputLike)
-    .find(Boolean);
+  const existingControl = React.Children.toArray(children).map(findFirstInputLike).find(Boolean);
   const resolvedId = id || existingControl?.id || `${baseId}-${instanceIdSuffix}`;
   const resolvedName = existingControl?.name || id || baseId;
   const errorId = customErrorId || `${resolvedId}-error`;
   const hintId = `${resolvedId}-hint`;
-  const describedBy = error ? errorId : (hint ? hintId : undefined);
+  const describedBy = error ? errorId : hint ? hintId : undefined;
 
   let injectedCount = 0;
   const injectIdAndName = (node: React.ReactNode): React.ReactNode => {
     if (!React.isValidElement(node)) return node;
 
-    const props = node.props as { id?: string; name?: string; children?: React.ReactNode; "aria-invalid"?: boolean; "aria-describedby"?: string };
+    const props = node.props as {
+      id?: string;
+      name?: string;
+      children?: React.ReactNode;
+      "aria-invalid"?: boolean;
+      "aria-describedby"?: string;
+    };
     const isNativeInput =
       typeof node.type === "string" && ["input", "textarea", "select"].includes(node.type);
-    const isInputLike =
-      isNativeInput ||
-      ("onChange" in props || "onCheckedChange" in props);
+    const isInputLike = isNativeInput || "onChange" in props || "onCheckedChange" in props;
 
-    const element = node as React.ReactElement<{ id?: string; name?: string; children?: React.ReactNode; "aria-invalid"?: boolean; "aria-describedby"?: string }>;
+    const element = node as React.ReactElement<{
+      id?: string;
+      name?: string;
+      children?: React.ReactNode;
+      "aria-invalid"?: boolean;
+      "aria-describedby"?: string;
+    }>;
 
     if (isInputLike) {
-      const assignedId = props.id || (injectedCount === 0 ? resolvedId : `${resolvedId}-${injectedCount}`);
-      const assignedName = props.name || (injectedCount === 0 ? resolvedName : `${resolvedName}-${injectedCount}`);
+      const assignedId =
+        props.id || (injectedCount === 0 ? resolvedId : `${resolvedId}-${injectedCount}`);
+      const assignedName =
+        props.name || (injectedCount === 0 ? resolvedName : `${resolvedName}-${injectedCount}`);
       injectedCount++;
       return React.cloneElement(element, {
         id: assignedId,
@@ -123,11 +151,7 @@ export function Field({ label, required = false, hint = undefined, error = undef
     }
 
     if (props.children) {
-      return React.cloneElement(
-        element,
-        {},
-        React.Children.map(props.children, injectIdAndName)
-      );
+      return React.cloneElement(element, {}, React.Children.map(props.children, injectIdAndName));
     }
 
     return node;
@@ -172,7 +196,11 @@ export function Field({ label, required = false, hint = undefined, error = undef
       {error ? (
         <FieldErrorMessage message={error} id={errorId} />
       ) : (
-        hint && <p id={hintId} className="text-xs text-muted-foreground mt-1">{hint}</p>
+        hint && (
+          <p id={hintId} className="text-xs text-muted-foreground mt-1">
+            {hint}
+          </p>
+        )
       )}
     </div>
   );

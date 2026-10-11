@@ -1,4 +1,4 @@
-import type { QueryClient } from '@tanstack/react-query';
+import type { QueryClient } from "@tanstack/react-query";
 import {
   HASANAT_BATCHES_QUERY_KEY,
   HASANAT_DENOMS_QUERY_KEY,
@@ -6,7 +6,7 @@ import {
   HASANAT_METRICS_QUERY_KEY,
   HASANAT_REDEMPTIONS_QUERY_KEY,
   HASANAT_REPORT_AGGREGATES_QUERY_KEY,
-} from '@/tenant/features/hasanat/hooks/useHasanatApi';
+} from "@/tenant/features/hasanat/hooks/useHasanatApi";
 
 /** Invalidate Hasanat denoms/batches/distributions/redemptions/metrics/report-aggregates Query keys. */
 export function invalidateHasanatQueries(queryClient: QueryClient): void {

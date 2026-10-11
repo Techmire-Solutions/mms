@@ -1,4 +1,4 @@
-import { resolveAccentTone, withAccentAliases } from '@/lib/accentTone';
+import { resolveAccentTone, withAccentAliases } from "@/lib/accentTone";
 import {
   type CardAccentColor,
   getCardStripeClass,

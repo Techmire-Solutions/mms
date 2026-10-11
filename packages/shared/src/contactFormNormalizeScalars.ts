@@ -14,27 +14,27 @@ export function syncContactScalarFields<T extends Partial<Contact>>(contact: T):
   if (Array.isArray(contact.phones)) {
     const primary = contact.phones.find((p) => p.isPrimary) ?? contact.phones[0];
     if (primary) {
-      const { countryCode = '', number = '' } = primary;
+      const { countryCode = "", number = "" } = primary;
       result.phone = countryCode ? `${countryCode} ${number}`.trim() : number.trim();
     } else {
-      result.phone = '';
+      result.phone = "";
     }
   }
 
   // Email scalar
   if (Array.isArray(contact.emails)) {
     const primary = contact.emails.find((e) => e.isPrimary) ?? contact.emails[0];
-    result.email = primary?.address ?? '';
+    result.email = primary?.address ?? "";
   }
 
   // Address scalars
   if (Array.isArray(contact.addresses)) {
     const primary = contact.addresses.find((a) => a.isPrimary) ?? contact.addresses[0];
-    result.line1 = primary?.line1 ?? '';
-    result.city = primary?.city ?? '';
-    result.state = primary?.state ?? '';
-    result.country = primary?.country ?? '';
-    result.address = primary?.line1 ?? '';
+    result.line1 = primary?.line1 ?? "";
+    result.city = primary?.city ?? "";
+    result.state = primary?.state ?? "";
+    result.country = primary?.country ?? "";
+    result.address = primary?.line1 ?? "";
   }
 
   return result as T;
@@ -67,8 +67,8 @@ export function mergeContactEditSavePayload(
   };
   const synced = syncContactScalarFields(withCollections);
   const clearLegacyRelationships =
-    Array.isArray(withCollections.relationshipContacts)
-    && withCollections.relationshipContacts.length === 0;
+    Array.isArray(withCollections.relationshipContacts) &&
+    withCollections.relationshipContacts.length === 0;
 
   return {
     ...existingClean,

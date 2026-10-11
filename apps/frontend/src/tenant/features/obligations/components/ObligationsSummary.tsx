@@ -23,7 +23,9 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { ObligationsRepDuesSection } from "./ObligationsRepDuesSection";
 
 const ObligationsSummaryChartsSection = lazy(() =>
-  import("./ObligationsSummaryChartsSection").then((mod) => ({ default: mod.ObligationsSummaryChartsSection })),
+  import("./ObligationsSummaryChartsSection").then((mod) => ({
+    default: mod.ObligationsSummaryChartsSection,
+  })),
 );
 import { ObligationsTypeBreakdownSection } from "./ObligationsTypeBreakdownSection";
 import { ObligationsWakalaSummarySection } from "./ObligationsWakalaSummarySection";
@@ -53,7 +55,12 @@ export function ObligationsSummary() {
   };
 
   const model = useObligationsSummaryModel(
-    collections, obligationTypes, reps, mujtahids, wakalaTypes, distributions,
+    collections,
+    obligationTypes,
+    reps,
+    mujtahids,
+    wakalaTypes,
+    distributions,
   );
 
   const isError =
@@ -110,10 +117,30 @@ export function ObligationsSummary() {
       <section aria-label={model.t("obligations.summary.kpi.aria")}>
         <ModuleCommandMetricsGrid
           items={[
-            { icon: Receipt, label: model.t("obligations.summary.kpi.totalCollections"), value: model.totalRecords, accent: "primary" },
-            { icon: TrendingUp, label: model.t("obligations.summary.kpi.totalAmountReceived"), value: formatCurrency(model.totalAmount), accent: "success" },
-            { icon: Users, label: model.t("obligations.summary.kpi.activeReps"), value: model.uniqueReps, accent: "info" },
-            { icon: Layers, label: model.t("obligations.summary.kpi.obligationTypes"), value: model.typeBreakdown.length, accent: "warning" },
+            {
+              icon: Receipt,
+              label: model.t("obligations.summary.kpi.totalCollections"),
+              value: model.totalRecords,
+              accent: "primary",
+            },
+            {
+              icon: TrendingUp,
+              label: model.t("obligations.summary.kpi.totalAmountReceived"),
+              value: formatCurrency(model.totalAmount),
+              accent: "success",
+            },
+            {
+              icon: Users,
+              label: model.t("obligations.summary.kpi.activeReps"),
+              value: model.uniqueReps,
+              accent: "info",
+            },
+            {
+              icon: Layers,
+              label: model.t("obligations.summary.kpi.obligationTypes"),
+              value: model.typeBreakdown.length,
+              accent: "warning",
+            },
           ]}
         />
       </section>

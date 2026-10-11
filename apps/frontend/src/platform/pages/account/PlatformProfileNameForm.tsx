@@ -54,11 +54,7 @@ export function PlatformProfileNameForm({
   const unchanged = name === platformUser?.name && phone === (platformUser?.phone ?? "");
 
   return (
-    <SectionCard
-      title={t("platform.profileName")}
-      icon={User}
-      accentColor="info"
-    >
+    <SectionCard title={t("platform.profileName")} icon={User} accentColor="info">
       <form onSubmit={(event) => void handleSaveName(event)} className="space-y-4 text-start">
         <Field
           label={t("platform.profileName")}

@@ -5,8 +5,16 @@ import { AttendanceRecordRowActions } from "./AttendanceRecordRowActions";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
-  DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-    <button type="button" onClick={onClick}>{children}</button>
+  DropdownMenuItem: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
   ),
 }));
 

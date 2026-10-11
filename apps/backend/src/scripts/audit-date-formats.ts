@@ -1,8 +1,8 @@
-import { sql } from 'drizzle-orm';
-import { isValidIsoDate } from '@mms/shared';
-import { loadBackendEnv } from '../config/loadEnv.js';
-import { activeDb, closeDatabase, initializeDatabaseConnection } from '../db/dbConnection.js';
-import { logger } from '../lib/logger.js';
+import { sql } from "drizzle-orm";
+import { isValidIsoDate } from "@mms/shared";
+import { loadBackendEnv } from "../config/loadEnv.js";
+import { activeDb, closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
+import { logger } from "../lib/logger.js";
 
 loadBackendEnv();
 
@@ -34,7 +34,8 @@ loadBackendEnv();
  */
 
 /** Columns whose NAME looks like a calendar date. */
-const DATE_COLUMN_NAME = /^(date|.*_date|.*_dates|dob|date_of_birth|period_start|period_end|from_date|to_date)$/i;
+const DATE_COLUMN_NAME =
+  /^(date|.*_date|.*_dates|dob|date_of_birth|period_start|period_end|from_date|to_date)$/i;
 
 /** Cap on distinct values pulled per column for calendar validation. */
 const SAMPLE_LIMIT = 5000;
@@ -75,7 +76,8 @@ async function auditColumn(table: string, column: string): Promise<ColumnReport 
   const qualified = `${ident(table)}.${ident(column)}`;
 
   try {
-    const counts = await db.execute(sql.raw(`
+    const counts = await db.execute(
+      sql.raw(`
       SELECT
         COUNT(*) FILTER (WHERE ${qualified} IS NOT NULL AND btrim(${qualified}) <> '') AS non_empty,
         COUNT(*) FILTER (
@@ -84,7 +86,8 @@ async function auditColumn(table: string, column: string): Promise<ColumnReport 
             AND ${qualified} !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
         ) AS wrong_shape
       FROM ${ident(table)}
-    `));
+    `),
+    );
     const row = (counts.rows?.[0] ?? {}) as { non_empty?: string; wrong_shape?: string };
     const nonEmpty = Number(row.non_empty ?? 0);
     const wrongShape = Number(row.wrong_shape ?? 0);
@@ -94,12 +97,14 @@ async function auditColumn(table: string, column: string): Promise<ColumnReport 
     let impossibleDates = 0;
     const samples: string[] = [];
 
-    const candidates = await db.execute(sql.raw(`
+    const candidates = await db.execute(
+      sql.raw(`
       SELECT DISTINCT ${qualified} AS value
       FROM ${ident(table)}
       WHERE ${qualified} IS NOT NULL AND btrim(${qualified}) <> ''
       LIMIT ${SAMPLE_LIMIT}
-    `));
+    `),
+    );
 
     for (const candidate of (candidates.rows ?? []) as Array<{ value: string }>) {
       const value = String(candidate.value);
@@ -133,9 +138,13 @@ async function main(): Promise<void> {
 
   const problematic = reports.filter((r) => r.wrongShape > 0 || r.impossibleDates > 0);
 
-  console.log(`${'table.column'.padEnd(56)} ${'rows'.padStart(9)} ${'bad shape'.padStart(10)} ${'impossible'.padStart(11)}`);
-  console.log('-'.repeat(90));
-  for (const r of reports.sort((a, b) => (b.wrongShape + b.impossibleDates) - (a.wrongShape + a.impossibleDates))) {
+  console.log(
+    `${"table.column".padEnd(56)} ${"rows".padStart(9)} ${"bad shape".padStart(10)} ${"impossible".padStart(11)}`,
+  );
+  console.log("-".repeat(90));
+  for (const r of reports.sort(
+    (a, b) => b.wrongShape + b.impossibleDates - (a.wrongShape + a.impossibleDates),
+  )) {
     const name = `${r.table}.${r.column}`;
     console.log(
       `${name.padEnd(56)} ${String(r.nonEmpty).padStart(9)} ${String(r.wrongShape).padStart(10)} ${String(r.impossibleDates).padStart(11)}`,
@@ -143,17 +152,21 @@ async function main(): Promise<void> {
   }
 
   if (problematic.length === 0) {
-    console.log('\n✓ Every stored date is a real ISO calendar date. Reconciliation is not required.');
+    console.log(
+      "\n✓ Every stored date is a real ISO calendar date. Reconciliation is not required.",
+    );
   } else {
-    console.log('\n⚠  Values the canonical schema would reject:');
+    console.log("\n⚠  Values the canonical schema would reject:");
     for (const r of problematic) {
-      console.log(`\n  ${r.table}.${r.column} — ${r.wrongShape} wrong shape, ${r.impossibleDates} impossible`);
+      console.log(
+        `\n  ${r.table}.${r.column} — ${r.wrongShape} wrong shape, ${r.impossibleDates} impossible`,
+      );
       for (const sample of r.samples) console.log(`      ${JSON.stringify(sample)}`);
     }
     console.log(
-      '\n  Reconcile these before relying on the tightened validation: correctness\n' +
-        '  issues are most likely in READ paths, where a bad value makes a record\n' +
-        '  unreadable rather than merely hard to write.',
+      "\n  Reconcile these before relying on the tightened validation: correctness\n" +
+        "  issues are most likely in READ paths, where a bad value makes a record\n" +
+        "  unreadable rather than merely hard to write.",
     );
     process.exitCode = 1;
   }
@@ -162,8 +175,8 @@ async function main(): Promise<void> {
 }
 
 main().catch(async (error: unknown) => {
-  logger.error({ err: error }, 'audit:dates failed');
-  console.error('✗ Failed:', error instanceof Error ? error.message : String(error));
+  logger.error({ err: error }, "audit:dates failed");
+  console.error("✗ Failed:", error instanceof Error ? error.message : String(error));
   await closeDatabase().catch(() => undefined);
   process.exit(1);
 });

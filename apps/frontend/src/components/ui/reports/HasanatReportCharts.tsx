@@ -40,7 +40,7 @@ interface HasanatReportChartsProps {
   onToggleFacultyFilter: (faculty: string) => void;
 }
 
-export const HasanatReportCharts = (function HasanatReportCharts({
+export const HasanatReportCharts = function HasanatReportCharts({
   facultyChartData,
   redemptionPieData,
   pieColors,
@@ -70,8 +70,18 @@ export const HasanatReportCharts = (function HasanatReportCharts({
           <XAxis dataKey="faculty" tick={chartAxisTick(11)} />
           <YAxis tick={chartAxisTick(11)} />
           <Tooltip content={<HasanatBarTooltip />} />
-          <Bar dataKey="distributed" fill="hsl(var(--primary))" name={t("hasanat.report.distributed")} radius={[4, 4, 0, 0]} />
-          <Bar dataKey="redeemed" fill="hsl(var(--chart-2))" name={t("hasanat.report.redeemed")} radius={[4, 4, 0, 0]} />
+          <Bar
+            dataKey="distributed"
+            fill="hsl(var(--primary))"
+            name={t("hasanat.report.distributed")}
+            radius={[4, 4, 0, 0]}
+          />
+          <Bar
+            dataKey="redeemed"
+            fill="hsl(var(--chart-2))"
+            name={t("hasanat.report.redeemed")}
+            radius={[4, 4, 0, 0]}
+          />
         </BarChart>
       </ReportChartCard>
 
@@ -93,7 +103,15 @@ export const HasanatReportCharts = (function HasanatReportCharts({
         }
       >
         <PieChart>
-          <Pie data={redemptionPieData} cx="50%" cy="50%" innerRadius={35} outerRadius={65} paddingAngle={3} dataKey="value">
+          <Pie
+            data={redemptionPieData}
+            cx="50%"
+            cy="50%"
+            innerRadius={35}
+            outerRadius={65}
+            paddingAngle={3}
+            dataKey="value"
+          >
             {redemptionPieData.map((_, index) => (
               <Cell key={index} fill={pieColors[index % pieColors.length]} />
             ))}
@@ -103,6 +121,4 @@ export const HasanatReportCharts = (function HasanatReportCharts({
       </ReportChartCard>
     </div>
   );
-});
-
-
+};

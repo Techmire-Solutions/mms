@@ -1,7 +1,7 @@
-import type { ReactElement } from 'react';
-import { BookOpenText } from 'lucide-react';
-import { ACCOUNTING_MODULE_MANIFEST } from '@mms/shared';
-import { ModuleUniversalBulkActionBar } from '@/components/ui/ModuleUniversalBulkActionBar';
+import type { ReactElement } from "react";
+import { BookOpenText } from "lucide-react";
+import { ACCOUNTING_MODULE_MANIFEST } from "@mms/shared";
+import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
 
 export interface AccountingBulkActionBarProps {
   selectedCount: number;

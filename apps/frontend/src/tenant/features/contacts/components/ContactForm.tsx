@@ -93,7 +93,8 @@ export function ContactForm({
     : (visibleTabs[0]?.key ?? "basic");
 
   const validationErrorSummary = useMemo(
-    () => buildContactValidationErrorSummary(Boolean(draft.lookupsError), draft.validationErrors, t),
+    () =>
+      buildContactValidationErrorSummary(Boolean(draft.lookupsError), draft.validationErrors, t),
     [draft.lookupsError, draft.validationErrors, t],
   );
 

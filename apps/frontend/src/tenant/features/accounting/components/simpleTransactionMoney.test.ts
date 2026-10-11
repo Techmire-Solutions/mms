@@ -91,8 +91,20 @@ describe("parsed simple-transaction amounts satisfy the ledger contract", () => 
       simple_mode: true,
       transaction_type: "fee_collection",
       lines: [
-        { id: "l-1", account_id: "a1000", debit: amount as number, credit: 0, description: "Fee collection" },
-        { id: "l-2", account_id: "a4000", debit: 0, credit: amount as number, description: "Fee collection" },
+        {
+          id: "l-1",
+          account_id: "a1000",
+          debit: amount as number,
+          credit: 0,
+          description: "Fee collection",
+        },
+        {
+          id: "l-2",
+          account_id: "a4000",
+          debit: 0,
+          credit: amount as number,
+          description: "Fee collection",
+        },
       ],
     };
     expect(journalEntryRecordSchema.safeParse(entry).success).toBe(true);
@@ -103,9 +115,11 @@ describe("parsed simple-transaction amounts satisfy the ledger contract", () => 
     const amount = parseMoneyInput("12,50") as number;
     expect(amount).toBe(12.5);
     expect(amount).not.toBe(12);
-    expect(isJournalEntryBalanced([
-      { debit: amount, credit: 0 },
-      { debit: 0, credit: amount },
-    ])).toBe(true);
+    expect(
+      isJournalEntryBalanced([
+        { debit: amount, credit: 0 },
+        { debit: 0, credit: amount },
+      ]),
+    ).toBe(true);
   });
 });

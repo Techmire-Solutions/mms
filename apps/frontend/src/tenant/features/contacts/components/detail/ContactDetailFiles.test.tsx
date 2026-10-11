@@ -5,9 +5,7 @@ import type { Contact } from "@mms/shared";
 import { ContactDetailFiles } from "./ContactDetailFiles";
 
 vi.mock("@/components/ui/DashedFileDropZone", () => ({
-  DashedFileDropZone: ({ title }: { title: string }) => (
-    <div data-testid="drop-zone">{title}</div>
-  ),
+  DashedFileDropZone: ({ title }: { title: string }) => <div data-testid="drop-zone">{title}</div>,
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({

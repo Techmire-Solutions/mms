@@ -7,10 +7,7 @@ import { FinanceInvoiceNumberingSection } from "./FinanceInvoiceNumberingSection
 describe("FinanceInvoiceNumberingSection Component", () => {
   it("renders fee invoice sequence numbering card with live preview and default values", () => {
     const html = renderToStaticMarkup(
-      <FinanceInvoiceNumberingSection
-        settingsDraft={DEFAULT_FINANCE_SETTINGS}
-        upd={vi.fn()}
-      />
+      <FinanceInvoiceNumberingSection settingsDraft={DEFAULT_FINANCE_SETTINGS} upd={vi.fn()} />,
     );
 
     expect(html).toContain("finance.invoiceNumbering.title");
@@ -20,4 +17,3 @@ describe("FinanceInvoiceNumberingSection Component", () => {
     expect(html).toContain("INV-");
   });
 });
-

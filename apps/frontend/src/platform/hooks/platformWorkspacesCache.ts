@@ -1,12 +1,15 @@
-import type { PlatformWorkspaceRow } from '@mms/shared';
+import type { PlatformWorkspaceRow } from "@mms/shared";
 
 export function updateWorkspacesCache(
   old: unknown,
   subdomain: string,
   patch: Partial<PlatformWorkspaceRow>,
 ): unknown {
-  if (!old || typeof old !== 'object') return old;
-  const asTsr = old as { body?: { workspaces?: PlatformWorkspaceRow[] }; workspaces?: PlatformWorkspaceRow[] };
+  if (!old || typeof old !== "object") return old;
+  const asTsr = old as {
+    body?: { workspaces?: PlatformWorkspaceRow[] };
+    workspaces?: PlatformWorkspaceRow[];
+  };
   if (asTsr.body && Array.isArray(asTsr.body.workspaces)) {
     return {
       ...asTsr,
@@ -21,9 +24,7 @@ export function updateWorkspacesCache(
   if (Array.isArray(asTsr.workspaces)) {
     return {
       ...asTsr,
-      workspaces: asTsr.workspaces.map((w) =>
-        w.subdomain === subdomain ? { ...w, ...patch } : w,
-      ),
+      workspaces: asTsr.workspaces.map((w) => (w.subdomain === subdomain ? { ...w, ...patch } : w)),
     };
   }
   if (Array.isArray(old)) {

@@ -60,19 +60,10 @@ export function FinancePageHeaderActions({
       >
         {t("finance.collect.action")}
       </Button>
-      <Button
-        variant="outline"
-        icon={Bell}
-        loading={remindPending}
-        onClick={onRemindInvoices}
-      >
+      <Button variant="outline" icon={Bell} loading={remindPending} onClick={onRemindInvoices}>
         {t("finance.collect.remindAction")}
       </Button>
-      <Button
-        variant="outline"
-        icon={CalendarRange}
-        onClick={onGenerateInvoices}
-      >
+      <Button variant="outline" icon={CalendarRange} onClick={onGenerateInvoices}>
         {t("finance.generate.action")}
       </Button>
       <Button variant="primary" icon={Plus} onClick={onCreateInvoice}>

@@ -49,7 +49,9 @@ describe("AccountingVoucherTemplateEditor", () => {
 
   it("given fullscreen, should render a modal dialog landmark", () => {
     // Act
-    const html = renderToStaticMarkup(<AccountingVoucherTemplateEditor fullscreen onClose={vi.fn()} />);
+    const html = renderToStaticMarkup(
+      <AccountingVoucherTemplateEditor fullscreen onClose={vi.fn()} />,
+    );
 
     // Assert
     expect(html).toContain('role="dialog"');

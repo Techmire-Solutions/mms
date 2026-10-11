@@ -11,9 +11,7 @@ import type {
   StudentsListContentSortField,
   StudentsListContentTableProps,
 } from "@/tenant/features/students/components/studentsListTypes";
-import {
-  getStudentVisibleWorkColumns,
-} from "@/tenant/features/students/components/studentsListVisibleColumns";
+import { getStudentVisibleWorkColumns } from "@/tenant/features/students/components/studentsListVisibleColumns";
 
 export type StudentsListDesktopTableProps = Pick<
   StudentsListContentTableProps,
@@ -77,7 +75,7 @@ export function StudentsListDesktopTable({
     singular: "students.form.student",
     plural: "students.table.students",
   });
-  
+
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   const batchColumns = useMemo<WorkBatchTableColumn<Student>[]>(() => {
@@ -125,7 +123,8 @@ export function StudentsListDesktopTable({
           allSelected,
           someSelected,
           selectAllAriaLabel: allSelected ? t("common.deselect") : t("students.table.selectAll"),
-          selectRowAriaLabel: (student) => t("students.table.selectStudent", { name: student.name ?? "Student" }),
+          selectRowAriaLabel: (student) =>
+            t("students.table.selectStudent", { name: student.name ?? "Student" }),
         }}
         sort={{
           field: sortField ?? undefined,

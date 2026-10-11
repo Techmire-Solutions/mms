@@ -6,8 +6,14 @@
  * of per-file counts, unchanged files contribute the same amount, so the total can
  * only rise if some changed file rose. Baseline lowering stays with the full scan.
  */
-import { changeBase, changedFiles, readAtBase, readCurrent } from './changed-files.mjs';
-import { HARD_LIMIT, isScannedCss, isScannedSource, measureCss, measureSource } from './code-norms-measure.mjs';
+import { changeBase, changedFiles, readAtBase, readCurrent } from "./changed-files.mjs";
+import {
+  HARD_LIMIT,
+  isScannedCss,
+  isScannedSource,
+  measureCss,
+  measureSource,
+} from "./code-norms-measure.mjs";
 
 const EMPTY = { anySites: [], arbitrarySites: [], hasHex: false, lineCount: 0 };
 
@@ -19,10 +25,12 @@ function sourceRegressions(rel) {
   const before = previous === null ? EMPTY : measureSource(rel, previous);
   const found = [];
   if (now.anySites.length > before.anySites.length) {
-    found.push(`Explicit \`any\` (${before.anySites.length} → ${now.anySites.length}): ${now.anySites.slice(0, 3).join(', ')}`);
+    found.push(
+      `Explicit \`any\` (${before.anySites.length} → ${now.anySites.length}): ${now.anySites.slice(0, 3).join(", ")}`,
+    );
   }
   if (now.arbitrarySites.length > before.arbitrarySites.length) {
-    found.push(`Tailwind arbitrary colour: ${now.arbitrarySites.slice(0, 3).join(', ')}`);
+    found.push(`Tailwind arbitrary colour: ${now.arbitrarySites.slice(0, 3).join(", ")}`);
   }
   if (now.hasHex && !before.hasHex) found.push(`Raw hex colour added to ${rel}`);
   const overNow = now.lineCount > HARD_LIMIT && !/\.(test|spec)\.(ts|tsx)$/.test(rel);
@@ -34,7 +42,9 @@ function sourceRegressions(rel) {
 
 function cssRegressions(rel) {
   const current = readCurrent(rel);
-  return current === null ? [] : measureCss(rel, current).map((site) => `Inert @theme token: ${site}`);
+  return current === null
+    ? []
+    : measureCss(rel, current).map((site) => `Inert @theme token: ${site}`);
 }
 
 /** Prints per-file regressions; returns the process exit code. */
@@ -48,10 +58,12 @@ export function runChangedCheck() {
     for (const regression of regressions) console.log(`✗ ${regression}`);
     console.error(
       `\n💥 ${regressions.length} code-norm regression(s) in changed files (vs ${changeBase.slice(0, 9)}). ` +
-        'Fix the new sites — see scripts/check-code-norms.mjs for the norms.',
+        "Fix the new sites — see scripts/check-code-norms.mjs for the norms.",
     );
     return 1;
   }
-  console.log(`✅ No code-norm regressions in ${scanned} changed file(s) (vs ${changeBase.slice(0, 9)}).`);
+  console.log(
+    `✅ No code-norm regressions in ${scanned} changed file(s) (vs ${changeBase.slice(0, 9)}).`,
+  );
   return 0;
 }

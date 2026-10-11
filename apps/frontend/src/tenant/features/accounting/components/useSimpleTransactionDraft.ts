@@ -39,9 +39,7 @@ export function useSimpleTransactionDraft({
   const activeFiscalYearLabel =
     (fiscalYears || []).find((fiscalYear) => fiscalYear.status === "active")?.label || "";
   const [step, setStep] = useState(() => (prefillType ? 2 : 1));
-  const [selectedType, setSelectedType] = useState<QuickActionType | null>(
-    prefillType || null,
-  );
+  const [selectedType, setSelectedType] = useState<QuickActionType | null>(prefillType || null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [amountTouched, setAmountTouched] = useState(false);
 
@@ -87,7 +85,12 @@ export function useSimpleTransactionDraft({
 
   useEffect(() => {
     if (open && !wasOpenRef.current) {
-      const { accounts: liveAccounts, fiscalYearLabel, translate, transactionGroups: liveGroups } = resetContextRef.current;
+      const {
+        accounts: liveAccounts,
+        fiscalYearLabel,
+        translate,
+        transactionGroups: liveGroups,
+      } = resetContextRef.current;
 
       const draft = draftRef.current;
       if (

@@ -89,11 +89,7 @@ export function AppShell({
           role="banner"
           className={cn(
             "hidden lg:block fixed top-0 end-0 z-sticky transition-[start,left,right] duration-300",
-            sidebar
-              ? sidebarCollapsed
-                ? "start-sidebar-collapsed"
-                : "start-sidebar"
-              : "start-0",
+            sidebar ? (sidebarCollapsed ? "start-sidebar-collapsed" : "start-sidebar") : "start-0",
           )}
         >
           {topBar}
@@ -122,11 +118,7 @@ export function AppShell({
         className={cn(
           "flex min-h-screen min-w-0 max-w-full flex-col transition-[padding] duration-150 ease-out",
           topBar || mobileHeader ? "pt-14 lg:pt-16" : "",
-          sidebar
-            ? sidebarCollapsed
-              ? "lg:ps-sidebar-collapsed"
-              : "lg:ps-sidebar"
-            : "",
+          sidebar ? (sidebarCollapsed ? "lg:ps-sidebar-collapsed" : "lg:ps-sidebar") : "",
           className,
         )}
       >

@@ -1,11 +1,11 @@
-import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { usePlatformAuth } from '@/platform/lib/PlatformAuthContext';
-import { usePlatformSetupStatus } from '@/platform/hooks/usePlatformSetupStatus';
-import { ROUTES } from '@/lib/config/routes';
-import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformSetupStatus } from "@/platform/hooks/usePlatformSetupStatus";
+import { ROUTES } from "@/lib/config/routes";
+import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /**
  * When the platform has no users yet, force first-run super-user setup on `/`.
@@ -14,7 +14,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 export function PlatformFirstRunGate(): React.JSX.Element {
   const { t } = useTranslation();
   const location = useLocation();
-  const { isPlatformAuthenticated, platformAuthChecked, isCheckingPlatformAuth } = usePlatformAuth();
+  const { isPlatformAuthenticated, platformAuthChecked, isCheckingPlatformAuth } =
+    usePlatformAuth();
   const { setupStatus, isLoadingSetup, isError, refetch } = usePlatformSetupStatus();
 
   if (!platformAuthChecked || isCheckingPlatformAuth || isLoadingSetup) {
@@ -25,8 +26,8 @@ export function PlatformFirstRunGate(): React.JSX.Element {
     return (
       <div className="flex min-h-dvh items-center justify-center p-6">
         <ErrorState
-          title={t('platform.loadFailed')}
-          description={t('platform.loadFailedHint')}
+          title={t("platform.loadFailed")}
+          description={t("platform.loadFailedHint")}
           onRetry={() => void refetch()}
         />
       </div>

@@ -1,8 +1,8 @@
 /**
  * Topological delete ordering and row count queries for module reset.
  */
-import type { Pool } from 'pg';
-import { PROTECTED_TABLES, quoteIdent } from './resetAllModulesTables.js';
+import type { Pool } from "pg";
+import { PROTECTED_TABLES, quoteIdent } from "./resetAllModulesTables.js";
 
 interface ColumnRow {
   table_name: string;
@@ -15,7 +15,9 @@ interface FkRow {
 }
 
 /** Compute topological delete order for all non-protected tenant-scoped tables */
-export async function computeTopologicalDeleteOrder(pool: Pool): Promise<Array<{ table: string; column: string }>> {
+export async function computeTopologicalDeleteOrder(
+  pool: Pool,
+): Promise<Array<{ table: string; column: string }>> {
   const colRes = await pool.query<ColumnRow>(`
     SELECT DISTINCT table_name, column_name 
     FROM information_schema.columns 
@@ -51,7 +53,11 @@ export async function computeTopologicalDeleteOrder(pool: Pool): Promise<Array<{
   }
 
   for (const r of fkRes.rows) {
-    if (r.table_name !== r.foreign_table_name && scopedTables.has(r.table_name) && scopedTables.has(r.foreign_table_name)) {
+    if (
+      r.table_name !== r.foreign_table_name &&
+      scopedTables.has(r.table_name) &&
+      scopedTables.has(r.foreign_table_name)
+    ) {
       childToParents.get(r.table_name)?.add(r.foreign_table_name);
     }
   }
@@ -70,7 +76,7 @@ export async function computeTopologicalDeleteOrder(pool: Pool): Promise<Array<{
   const remaining = new Set(moduleTables);
 
   while (remaining.size > 0) {
-    const ready = Array.from(remaining).filter(t => {
+    const ready = Array.from(remaining).filter((t) => {
       const children = parentToChildren.get(t) || new Set();
       for (const c of children) {
         if (remaining.has(c)) return false;
@@ -81,11 +87,14 @@ export async function computeTopologicalDeleteOrder(pool: Pool): Promise<Array<{
     if (ready.length === 0) {
       const fallback = remaining.values().next().value;
       if (!fallback) break;
-      deleteOrder.push({ table: fallback, column: scopedTables.get(fallback) ?? 'workspace_subdomain' });
+      deleteOrder.push({
+        table: fallback,
+        column: scopedTables.get(fallback) ?? "workspace_subdomain",
+      });
       remaining.delete(fallback);
     } else {
       for (const t of ready) {
-        deleteOrder.push({ table: t, column: scopedTables.get(t) ?? 'workspace_subdomain' });
+        deleteOrder.push({ table: t, column: scopedTables.get(t) ?? "workspace_subdomain" });
         remaining.delete(t);
       }
     }
@@ -94,7 +103,12 @@ export async function computeTopologicalDeleteOrder(pool: Pool): Promise<Array<{
   return deleteOrder;
 }
 
-export async function countTenantTableRows(pool: Pool, table: string, column: string, tenant: string): Promise<number> {
+export async function countTenantTableRows(
+  pool: Pool,
+  table: string,
+  column: string,
+  tenant: string,
+): Promise<number> {
   const query = `SELECT COUNT(*)::int AS count FROM ${quoteIdent(table)} WHERE ${quoteIdent(column)} = $1`;
   const res = await pool.query<{ count: number }>(query, [tenant]);
   return Number(res.rows[0]?.count ?? 0);

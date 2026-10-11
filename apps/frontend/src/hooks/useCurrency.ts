@@ -11,8 +11,7 @@ export function useCurrency({ currencyCode, decimalPlaces }: UseCurrencyOptions 
   const activeCurrency = (() => {
     return (
       DEFAULT_CURRENCIES.find((c) => c.code === currencyCode) ||
-      DEFAULT_CURRENCIES[0] ||
-      { symbol: "$", code: "USD", name: "US Dollar" }
+      DEFAULT_CURRENCIES[0] || { symbol: "$", code: "USD", name: "US Dollar" }
     );
   })();
 
@@ -73,4 +72,3 @@ export function useAccountingCurrency() {
     settings,
   };
 }
-

@@ -3,10 +3,10 @@
  * This prevents bidirectional text spoofing (RTLO attacks).
  */
 export function sanitizeUnicode(value: string): string {
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return value;
   }
-  return value.replace(/[\u202A-\u202E\u2066-\u2069]/g, '');
+  return value.replace(/[\u202A-\u202E\u2066-\u2069]/g, "");
 }
 
 /**
@@ -14,16 +14,14 @@ export function sanitizeUnicode(value: string): string {
  * Useful for Zod preprocess steps to sanitize entire DTO payloads.
  */
 export function deepSanitizeStrings(obj: unknown): unknown {
-  if (typeof obj === 'string') {
+  if (typeof obj === "string") {
     return sanitizeUnicode(obj);
   }
   if (Array.isArray(obj)) {
     return obj.map(deepSanitizeStrings);
   }
-  if (obj !== null && typeof obj === 'object') {
-    return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [k, deepSanitizeStrings(v)])
-    );
+  if (obj !== null && typeof obj === "object") {
+    return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, deepSanitizeStrings(v)]));
   }
   return obj;
 }

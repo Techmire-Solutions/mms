@@ -1,1 +1,1 @@
-export * from '../students/use-cases/studentLookupsService.js';
+export * from "../students/use-cases/studentLookupsService.js";

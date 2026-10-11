@@ -37,7 +37,7 @@ export function DetailDrawerHeader({
         onPointerDown={(e) => {
           const target = e.target as HTMLElement | null;
           const isInteractive = target?.closest(
-            'button, input, select, textarea, a, [role="tab"], [data-no-drag]'
+            'button, input, select, textarea, a, [role="tab"], [data-no-drag]',
           );
           if (!isDesktop && !isInteractive) {
             onPointerDragStart(e);
@@ -52,10 +52,7 @@ export function DetailDrawerHeader({
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <h2
-                id={titleId}
-                className="text-sm font-bold text-foreground leading-tight truncate"
-              >
+              <h2 id={titleId} className="text-sm font-bold text-foreground leading-tight truncate">
                 {title}
               </h2>
               {badge}

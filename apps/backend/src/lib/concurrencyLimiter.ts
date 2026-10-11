@@ -18,20 +18,17 @@ export async function mapWithConcurrency<T, R>(
   const results: Array<PromiseSettledResult<R>> = new Array(items.length);
   let cursor = 0;
 
-  const runners = Array.from(
-    { length: Math.max(1, Math.min(limit, items.length)) },
-    async () => {
-      while (cursor < items.length) {
-        const index = cursor;
-        cursor += 1;
-        try {
-          results[index] = { status: 'fulfilled', value: await worker(items[index]!) };
-        } catch (reason) {
-          results[index] = { status: 'rejected', reason };
-        }
+  const runners = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      try {
+        results[index] = { status: "fulfilled", value: await worker(items[index]!) };
+      } catch (reason) {
+        results[index] = { status: "rejected", reason };
       }
-    },
-  );
+    }
+  });
 
   await Promise.all(runners);
   return results;

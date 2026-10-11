@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useGlobalSettings } from '@/tenant/hooks/useGlobalSettings';
-import { useFinanceCurrency } from '@/hooks/useCurrency';
-import { useSessionConfig } from '@/hooks/useStandardModuleConfig';
-import { notify } from '@/lib/notify';
-import { type Session, SESSION_TYPES } from '@/lib/data/sessionsData';
-import { SessionSchema, toTitleCase, type AppTranslationKey } from '@mms/shared';
-import { mapZodFormErrors } from '@/lib/forms/mapZodFormErrors';
-import type { SessionSelectOption } from '@/tenant/features/sessions/components/SessionFormSections';
+import { useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { useFinanceCurrency } from "@/hooks/useCurrency";
+import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
+import { notify } from "@/lib/notify";
+import { type Session, SESSION_TYPES } from "@/lib/data/sessionsData";
+import { SessionSchema, toTitleCase, type AppTranslationKey } from "@mms/shared";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import type { SessionSelectOption } from "@/tenant/features/sessions/components/SessionFormSections";
 import {
   SESSION_CURRENCIES,
   SESSION_STATUSES,
@@ -15,7 +15,7 @@ import {
   buildSessionDraftFromRecord,
   sessionFormDraftSnapshot,
   type SessionFormDraft,
-} from '@/tenant/features/sessions/components/sessionFormShared';
+} from "@/tenant/features/sessions/components/sessionFormShared";
 
 export interface UseSessionFormControllerProps {
   session?: Session | null;
@@ -23,7 +23,11 @@ export interface UseSessionFormControllerProps {
   onSave: (session: Session) => void | Promise<void>;
 }
 
-export function useSessionFormController({ session, onClose, onSave }: UseSessionFormControllerProps) {
+export function useSessionFormController({
+  session,
+  onClose,
+  onSave,
+}: UseSessionFormControllerProps) {
   const { t } = useTranslation();
   const { language } = useGlobalSettings();
   const { settings, types, statuses } = useSessionConfig();
@@ -34,7 +38,7 @@ export function useSessionFormController({ session, onClose, onSave }: UseSessio
   const statusValues = statuses.length > 0 ? statuses : [...SESSION_STATUSES];
   const defaultType = typeOptions.includes(settings.defaultSessionType)
     ? settings.defaultSessionType
-    : (typeOptions[0] || 'Hifz');
+    : typeOptions[0] || "Hifz";
 
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -63,23 +67,23 @@ export function useSessionFormController({ session, onClose, onSave }: UseSessio
     const newErrors: Record<string, string> = {};
 
     if (!sessionDraft.name?.trim()) {
-      newErrors.name = t('sessions.form.nameRequired');
+      newErrors.name = t("sessions.form.nameRequired");
     }
     if (!sessionDraft.startDate) {
-      newErrors.startDate = t('sessions.form.startDateRequired');
+      newErrors.startDate = t("sessions.form.startDateRequired");
     }
     if (!sessionDraft.endDate) {
-      newErrors.endDate = t('sessions.form.endDateRequired');
+      newErrors.endDate = t("sessions.form.endDateRequired");
     } else if (sessionDraft.startDate && sessionDraft.endDate < sessionDraft.startDate) {
-      newErrors.endDate = t('sessions.form.endDateAfterStartDate');
+      newErrors.endDate = t("sessions.form.endDateAfterStartDate");
     }
     if (sessionDraft.baseFee && Number(sessionDraft.baseFee) < 0) {
-      newErrors.baseFee = t('common.formPleaseFixErrors');
+      newErrors.baseFee = t("common.formPleaseFixErrors");
     }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      notify.error(t('common.formPleaseFixErrors'));
+      notify.error(t("common.formPleaseFixErrors"));
       return false;
     }
 
@@ -87,14 +91,14 @@ export function useSessionFormController({ session, onClose, onSave }: UseSessio
     try {
       const payload: Session = {
         id: session?.id || crypto.randomUUID(),
-        name: toTitleCase(sessionDraft.name || ''),
+        name: toTitleCase(sessionDraft.name || ""),
         type: sessionDraft.type || defaultType,
-        status: (sessionDraft.status as Session['status']) || 'active',
-        startDate: sessionDraft.startDate || '',
-        endDate: sessionDraft.endDate || '',
+        status: (sessionDraft.status as Session["status"]) || "active",
+        startDate: sessionDraft.startDate || "",
+        endDate: sessionDraft.endDate || "",
         baseFee: Number(sessionDraft.baseFee || 0),
         currency: sessionDraft.currency || defaultCurrency,
-        description: sessionDraft.description || '',
+        description: sessionDraft.description || "",
         faculty: sessionDraft.faculty || session?.faculty || [],
         classes: sessionDraft.classes || session?.classes || [],
       };
@@ -105,7 +109,7 @@ export function useSessionFormController({ session, onClose, onSave }: UseSessio
           ...prev,
           ...mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)),
         }));
-        notify.error(t('common.formPleaseFixErrors'));
+        notify.error(t("common.formPleaseFixErrors"));
         return false;
       }
 
@@ -116,7 +120,7 @@ export function useSessionFormController({ session, onClose, onSave }: UseSessio
       }
       return true;
     } catch {
-      notify.error(t('sessions.toast.saveFailed'));
+      notify.error(t("sessions.toast.saveFailed"));
       return false;
     } finally {
       setSaving(false);

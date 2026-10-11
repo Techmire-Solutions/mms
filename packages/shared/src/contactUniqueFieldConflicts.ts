@@ -49,11 +49,7 @@ export function findContactUniqueFieldConflicts(
     defaultPhoneCountryCode: options?.defaultPhoneCountryCode,
   };
 
-  const candidateValues = collectUniqueContactFieldValues(
-    candidate,
-    uniqueFields,
-    collectOptions,
-  );
+  const candidateValues = collectUniqueContactFieldValues(candidate, uniqueFields, collectOptions);
   if (candidateValues.length === 0) return [];
 
   const errors: ValidationError[] = [];

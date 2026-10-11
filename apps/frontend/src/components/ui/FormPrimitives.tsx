@@ -19,16 +19,16 @@ export {
   FormAddAnotherButton,
   type FormAddAnotherButtonProps,
 } from "@/components/ui/FormAddAnotherButton";
-export {
-  FormListFieldCard,
-  type FormListFieldCardProps,
-} from "@/components/ui/FormListFieldCard";
+export { FormListFieldCard, type FormListFieldCardProps } from "@/components/ui/FormListFieldCard";
 export {
   FormCollectionShell,
   type FormCollectionShellProps,
 } from "@/components/ui/FormCollectionShell";
 export { EditableSelect } from "@/components/ui/EditableSelect";
-export { EditableMultiSelect, type EditableMultiSelectProps } from "@/components/ui/EditableMultiSelect";
+export {
+  EditableMultiSelect,
+  type EditableMultiSelectProps,
+} from "@/components/ui/EditableMultiSelect";
 export { Field, FieldErrorMessage, RequiredMark } from "@/components/ui/FormField";
 
 export { FormSelect, type FormSelectOption } from "@/components/ui/FormSelect";
@@ -37,4 +37,3 @@ export {
   type FormSelectWithQuickCreateProps,
 } from "@/components/ui/FormSelectWithQuickCreate";
 export { FormCheckboxCard, type FormCheckboxCardProps } from "@/components/ui/FormCheckboxCard";
-

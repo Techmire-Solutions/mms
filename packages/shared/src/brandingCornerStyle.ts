@@ -1,20 +1,20 @@
-import type { AppTranslationKey } from './appTranslations.js';
+import type { AppTranslationKey } from "./appTranslations.js";
 
 /** Tenant-selectable UI corner roundness — maps to CSS `--radius`. */
-export const BRANDING_CORNER_STYLE_VALUES = ['sharp', 'subtle', 'rounded', 'soft'] as const;
+export const BRANDING_CORNER_STYLE_VALUES = ["sharp", "subtle", "rounded", "soft"] as const;
 
 export type BrandingCornerPreset = (typeof BRANDING_CORNER_STYLE_VALUES)[number];
 
 export type BrandingCornerStyle = string;
 
-export const DEFAULT_BRANDING_CORNER_STYLE: BrandingCornerStyle = 'rounded';
+export const DEFAULT_BRANDING_CORNER_STYLE: BrandingCornerStyle = "rounded";
 
 /** Base `--radius` token per style (drives `rounded-*` across shadcn/Tailwind). */
 export const BRANDING_CORNER_RADIUS: Record<BrandingCornerPreset, string> = {
-  sharp: '0.125rem',
-  subtle: '0.375rem',
-  rounded: '0.625rem',
-  soft: '1rem',
+  sharp: "0.125rem",
+  subtle: "0.375rem",
+  rounded: "0.625rem",
+  soft: "1rem",
 };
 
 export interface BrandingCornerStyleOption {
@@ -25,24 +25,24 @@ export interface BrandingCornerStyleOption {
 
 export const BRANDING_CORNER_STYLE_OPTIONS: readonly BrandingCornerStyleOption[] = [
   {
-    value: 'sharp',
-    labelKey: 'theme.cornerSharp',
-    descriptionKey: 'theme.cornerSharpDesc',
+    value: "sharp",
+    labelKey: "theme.cornerSharp",
+    descriptionKey: "theme.cornerSharpDesc",
   },
   {
-    value: 'subtle',
-    labelKey: 'theme.cornerSubtle',
-    descriptionKey: 'theme.cornerSubtleDesc',
+    value: "subtle",
+    labelKey: "theme.cornerSubtle",
+    descriptionKey: "theme.cornerSubtleDesc",
   },
   {
-    value: 'rounded',
-    labelKey: 'theme.cornerRounded',
-    descriptionKey: 'theme.cornerRoundedDesc',
+    value: "rounded",
+    labelKey: "theme.cornerRounded",
+    descriptionKey: "theme.cornerRoundedDesc",
   },
   {
-    value: 'soft',
-    labelKey: 'theme.cornerSoft',
-    descriptionKey: 'theme.cornerSoftDesc',
+    value: "soft",
+    labelKey: "theme.cornerSoft",
+    descriptionKey: "theme.cornerSoftDesc",
   },
 ] as const;
 
@@ -52,7 +52,7 @@ const BRANDING_CORNER_STYLE_VALUES_SET = new Set<string>(BRANDING_CORNER_STYLE_V
  * Coerces stored branding values to a supported corner style.
  */
 export function normalizeBrandingCornerStyle(value: unknown): BrandingCornerStyle {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const trimmed = value.trim();
     if (BRANDING_CORNER_STYLE_VALUES_SET.has(trimmed)) {
       return trimmed;
@@ -78,5 +78,5 @@ export function resolveBrandingCornerRadius(style: BrandingCornerStyle): string 
 /** Translation key for the active corner style label. */
 export function cornerStyleLabelKey(style: BrandingCornerStyle): AppTranslationKey {
   const found = BRANDING_CORNER_STYLE_OPTIONS.find((option) => option.value === style);
-  return found ? found.labelKey : 'theme.cornerCustom';
+  return found ? found.labelKey : "theme.cornerCustom";
 }

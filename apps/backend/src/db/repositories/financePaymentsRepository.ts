@@ -1,5 +1,5 @@
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Payment, type RepositoryListOptions } from '@mms/shared';
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Payment, type RepositoryListOptions } from "@mms/shared";
 import {
   financeFeeItems,
   financeFeeStructures,
@@ -7,10 +7,10 @@ import {
   financeInvoices,
   financePaymentAllocations,
   financePayments,
-} from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+} from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type PaymentRow = typeof financePayments.$inferSelect;
 
@@ -42,7 +42,7 @@ export async function listPaymentsByWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
   const offset = Math.max(options?.offset ?? 0, 0);
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     const conditions = buildTenantSoftDeleteConditions(financePayments, subdomain, deletedFilter);
     const rows = await tx
@@ -103,7 +103,9 @@ export async function findPaymentById(tenant: string, id: string): Promise<Payme
         updatedAt: financePayments.updatedAt,
       })
       .from(financePayments)
-      .where(and(eq(financePayments.workspaceSubdomain, subdomain), eq(financePayments.id, trimmedId)))
+      .where(
+        and(eq(financePayments.workspaceSubdomain, subdomain), eq(financePayments.id, trimmedId)),
+      )
       .limit(1);
     const row = rows[0];
     return row ? paymentRowToRecord(row) : null;
@@ -167,10 +169,10 @@ export async function savePayment(tenant: string, record: Payment): Promise<void
         studentName: record.studentName ?? null,
         amount: String(record.amount ?? 0),
         date: record.date,
-        method: record.method ?? 'cash',
+        method: record.method ?? "cash",
         receivedByUserId: record.receivedByUserId ?? null,
         receivedBy: record.receivedBy ?? null,
-        note: record.note ?? '',
+        note: record.note ?? "",
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
         deletionReason: record.deletionReason ?? null,
@@ -184,10 +186,10 @@ export async function savePayment(tenant: string, record: Payment): Promise<void
           studentName: record.studentName ?? null,
           amount: String(record.amount ?? 0),
           date: record.date,
-          method: record.method ?? 'cash',
+          method: record.method ?? "cash",
           receivedByUserId: record.receivedByUserId ?? null,
           receivedBy: record.receivedBy ?? null,
-          note: record.note ?? '',
+          note: record.note ?? "",
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
           deletionReason: record.deletionReason ?? null,
@@ -202,7 +204,7 @@ export async function bulkSavePayments(tenant: string, records: Payment[]): Prom
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Payment>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -220,10 +222,10 @@ export async function bulkSavePayments(tenant: string, records: Payment[]): Prom
           studentName: r.studentName ?? null,
           amount: String(r.amount ?? 0),
           date: r.date,
-          method: r.method ?? 'cash',
+          method: r.method ?? "cash",
           receivedByUserId: r.receivedByUserId ?? null,
           receivedBy: r.receivedBy ?? null,
-          note: r.note ?? '',
+          note: r.note ?? "",
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
@@ -251,11 +253,14 @@ export async function bulkSavePayments(tenant: string, records: Payment[]): Prom
   });
 }
 
-export async function replacePaymentsForWorkspace(tenant: string, records: Payment[]): Promise<void> {
+export async function replacePaymentsForWorkspace(
+  tenant: string,
+  records: Payment[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Payment>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -272,10 +277,10 @@ export async function replacePaymentsForWorkspace(tenant: string, records: Payme
           studentName: r.studentName ?? null,
           amount: String(r.amount ?? 0),
           date: r.date,
-          method: r.method ?? 'cash',
+          method: r.method ?? "cash",
           receivedByUserId: r.receivedByUserId ?? null,
           receivedBy: r.receivedBy ?? null,
-          note: r.note ?? '',
+          note: r.note ?? "",
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
@@ -367,11 +372,17 @@ export async function bulkRestorePayments(
 export async function deleteFinanceByWorkspace(workspaceSubdomain: string): Promise<void> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(financePaymentAllocations).where(eq(financePaymentAllocations.workspaceSubdomain, subdomain));
-    await tx.delete(financeInvoiceLines).where(eq(financeInvoiceLines.workspaceSubdomain, subdomain));
+    await tx
+      .delete(financePaymentAllocations)
+      .where(eq(financePaymentAllocations.workspaceSubdomain, subdomain));
+    await tx
+      .delete(financeInvoiceLines)
+      .where(eq(financeInvoiceLines.workspaceSubdomain, subdomain));
     await tx.delete(financePayments).where(eq(financePayments.workspaceSubdomain, subdomain));
     await tx.delete(financeInvoices).where(eq(financeInvoices.workspaceSubdomain, subdomain));
     await tx.delete(financeFeeItems).where(eq(financeFeeItems.workspaceSubdomain, subdomain));
-    await tx.delete(financeFeeStructures).where(eq(financeFeeStructures.workspaceSubdomain, subdomain));
+    await tx
+      .delete(financeFeeStructures)
+      .where(eq(financeFeeStructures.workspaceSubdomain, subdomain));
   });
 }

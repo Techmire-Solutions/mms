@@ -1,18 +1,18 @@
-import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
+import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
 import {
   canSendEmailNotifications,
   getEmailProviderPreset,
   type EmailIntegrationConfig,
   type GlobalSettings,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   loadEmailIntegrationConfig,
   loadEmailIntegrationSecrets,
-} from './emailIntegrationService.js';
-import { loadGlobalSettings as loadTenantGlobalSettings } from '../globalSettingsService.js';
-import { isBlockedHostname } from '../../lib/outboundUrl.js';
-import { SMTP_TIMEOUT_OPTIONS } from '../../lib/outboundTimeouts.js';
+} from "./emailIntegrationService.js";
+import { loadGlobalSettings as loadTenantGlobalSettings } from "../globalSettingsService.js";
+import { isBlockedHostname } from "../../lib/outboundUrl.js";
+import { SMTP_TIMEOUT_OPTIONS } from "../../lib/outboundTimeouts.js";
 
 export interface SendEmailInput {
   to: string;
@@ -23,7 +23,7 @@ export interface SendEmailInput {
 
 export interface SendEmailResult {
   sent: boolean;
-  reason?: 'notifications_disabled' | 'not_configured' | 'transport_error';
+  reason?: "notifications_disabled" | "not_configured" | "transport_error";
   message?: string;
 }
 
@@ -34,18 +34,13 @@ function resolveSmtpOptions(
   if (!config.smtpUsername || !password || !config.fromAddress) return null;
 
   const preset = getEmailProviderPreset(config.providerId);
-  const host =
-    config.providerId === 'custom_smtp'
-      ? config.smtpHost?.trim()
-      : preset.smtp.host;
+  const host = config.providerId === "custom_smtp" ? config.smtpHost?.trim() : preset.smtp.host;
   const port =
-    config.providerId === 'custom_smtp'
+    config.providerId === "custom_smtp"
       ? Number(config.smtpPort ?? preset.smtp.port)
       : preset.smtp.port;
   const secure =
-    config.providerId === 'custom_smtp'
-      ? config.smtpSecure === true
-      : preset.smtp.secure;
+    config.providerId === "custom_smtp" ? config.smtpSecure === true : preset.smtp.secure;
 
   if (!host || !Number.isFinite(port) || port < 1) return null;
 
@@ -63,11 +58,9 @@ function resolveSmtpOptions(
   };
 }
 
-async function createTransporter(
-  config: EmailIntegrationConfig,
-): Promise<Transporter | null> {
+async function createTransporter(config: EmailIntegrationConfig): Promise<Transporter | null> {
   const secrets = await loadEmailIntegrationSecrets();
-  const password = secrets.smtpPassword ?? '';
+  const password = secrets.smtpPassword ?? "";
   const smtp = resolveSmtpOptions(config, password);
   if (!smtp) return null;
 
@@ -91,29 +84,27 @@ export async function sendTenantEmail(
 ): Promise<SendEmailResult> {
   const globalSettings = settings ?? (await loadTenantGlobalSettings());
   if (!canSendEmailNotifications(globalSettings)) {
-    return { sent: false, reason: 'notifications_disabled' };
+    return { sent: false, reason: "notifications_disabled" };
   }
 
   const config = await loadEmailIntegrationConfig();
   const transporter = await createTransporter(config);
   if (!transporter) {
-    return { sent: false, reason: 'not_configured' };
+    return { sent: false, reason: "not_configured" };
   }
 
   try {
     await transporter.sendMail({
-      from: config.fromName
-        ? `"${config.fromName}" <${config.fromAddress}>`
-        : config.fromAddress,
+      from: config.fromName ? `"${config.fromName}" <${config.fromAddress}>` : config.fromAddress,
       to: input.to,
       subject: input.subject,
       text: input.text,
-      html: input.html ?? `<p>${input.text.replace(/\n/g, '<br/>')}</p>`,
+      html: input.html ?? `<p>${input.text.replace(/\n/g, "<br/>")}</p>`,
     });
     return { sent: true };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to send email';
-    return { sent: false, reason: 'transport_error', message };
+    const message = error instanceof Error ? error.message : "Failed to send email";
+    return { sent: false, reason: "transport_error", message };
   }
 }
 
@@ -122,15 +113,13 @@ export async function verifyEmailTransport(): Promise<SendEmailResult> {
   const config = await loadEmailIntegrationConfig();
   const transporter = await createTransporter(config);
   if (!transporter) {
-    return { sent: false, reason: 'not_configured' };
+    return { sent: false, reason: "not_configured" };
   }
   try {
     await transporter.verify();
     return { sent: true };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'SMTP verification failed';
-    return { sent: false, reason: 'transport_error', message };
+    const message = error instanceof Error ? error.message : "SMTP verification failed";
+    return { sent: false, reason: "transport_error", message };
   }
 }
-
-

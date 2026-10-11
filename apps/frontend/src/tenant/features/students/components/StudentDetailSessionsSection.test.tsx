@@ -26,7 +26,6 @@ const mockSession: Session = {
   currency: "USD",
   faculty: [],
   classes: [
-
     {
       id: "cls-1",
       name: "Class A",
@@ -47,9 +46,7 @@ const mockSession: Session = {
 
 describe("StudentDetailSessionsSection Component", () => {
   it("renders enrolled session cards with class details", () => {
-    const html = renderToStaticMarkup(
-      <StudentDetailSessionsSection sessions={[mockSession]} />,
-    );
+    const html = renderToStaticMarkup(<StudentDetailSessionsSection sessions={[mockSession]} />);
 
     expect(html).toContain("Quran Hifz Morning 2024");
     expect(html).toContain("Class A (Ustadh Umar)");
@@ -57,17 +54,13 @@ describe("StudentDetailSessionsSection Component", () => {
   });
 
   it("renders empty state when sessions list is empty", () => {
-    const html = renderToStaticMarkup(
-      <StudentDetailSessionsSection sessions={[]} />,
-    );
+    const html = renderToStaticMarkup(<StudentDetailSessionsSection sessions={[]} />);
 
     expect(html).toContain("students.detail.notEnrolled");
   });
 
   it("renders error state when error is true", () => {
-    const html = renderToStaticMarkup(
-      <StudentDetailSessionsSection sessions={[]} error={true} />,
-    );
+    const html = renderToStaticMarkup(<StudentDetailSessionsSection sessions={[]} error={true} />);
 
     expect(html).toContain("students.loadFailed");
   });

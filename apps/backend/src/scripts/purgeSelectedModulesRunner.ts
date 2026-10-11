@@ -1,14 +1,14 @@
-import { inArray, sql } from 'drizzle-orm';
-import { withTenant } from '../db/tenant-context.js';
-import { getQueryRows } from '../db/documentStoreKeys.js';
-import * as schema from '../db/schema.js';
+import { inArray, sql } from "drizzle-orm";
+import { withTenant } from "../db/tenant-context.js";
+import { getQueryRows } from "../db/documentStoreKeys.js";
+import * as schema from "../db/schema.js";
 import {
   PURGE_DOCUMENT_STORE_SUFFIXES,
   PURGE_MODULE_TABLES,
   PURGE_SELF_FK_NULLS,
   assertPurgeAllowlistSafe,
   quoteIdent,
-} from './purgeSelectedModulesAllowlist.js';
+} from "./purgeSelectedModulesAllowlist.js";
 
 export type TableCount = { table: string; count: number };
 export type TenantPurgeReport = {
@@ -57,12 +57,8 @@ async function countDocumentStore(tenant: string): Promise<number> {
 export async function listWorkspaceSubdomains(
   query: (sqlText: string) => Promise<{ rows: Array<{ subdomain: string }> }>,
 ): Promise<string[]> {
-  const result = await query(
-    `SELECT subdomain FROM workspaces ORDER BY subdomain ASC`,
-  );
-  return result.rows
-    .map((row) => String(row.subdomain).trim().toLowerCase())
-    .filter(Boolean);
+  const result = await query(`SELECT subdomain FROM workspaces ORDER BY subdomain ASC`);
+  return result.rows.map((row) => String(row.subdomain).trim().toLowerCase()).filter(Boolean);
 }
 
 export async function collectTenantReport(tenant: string): Promise<TenantPurgeReport> {

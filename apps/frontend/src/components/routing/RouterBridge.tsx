@@ -15,13 +15,14 @@ import { queryClientInstance } from "@/lib/queryClient";
 export default function RouterBridge(): null {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isApex, workspace, workspaceLoading, workspaceMissing, workspaceLookupFailed } = useTenant();
+  const { isApex, workspace, workspaceLoading, workspaceMissing, workspaceLookupFailed } =
+    useTenant();
   useScrollToTopOnNavigate();
 
   const previousSegmentRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const currentSegment = location.pathname.split('/').filter(Boolean)[0] ?? '';
+    const currentSegment = location.pathname.split("/").filter(Boolean)[0] ?? "";
     if (previousSegmentRef.current !== null && previousSegmentRef.current !== currentSegment) {
       void queryClientInstance.cancelQueries();
     }

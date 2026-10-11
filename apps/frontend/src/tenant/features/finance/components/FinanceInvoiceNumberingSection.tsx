@@ -27,10 +27,7 @@ export function FinanceInvoiceNumberingSection({
 }: FinanceInvoiceNumberingSectionProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const config = useMemo(
-    () => financeSettingsToSequenceConfig(settingsDraft),
-    [settingsDraft]
-  );
+  const config = useMemo(() => financeSettingsToSequenceConfig(settingsDraft), [settingsDraft]);
 
   const handleChange = useCallback(
     (next: SequenceNumberingConfig) => {
@@ -42,7 +39,7 @@ export function FinanceInvoiceNumberingSection({
       upd("invoiceStartingSequence", next.startingSequence);
       upd("invoiceRolloverPolicy", next.rolloverPolicy);
     },
-    [upd]
+    [upd],
   );
 
   return (

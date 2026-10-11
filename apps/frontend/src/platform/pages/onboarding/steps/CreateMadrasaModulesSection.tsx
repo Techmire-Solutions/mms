@@ -10,7 +10,9 @@ interface CreateMadrasaModulesSectionProps {
   controller: CreateMadrasaController;
 }
 
-export function CreateMadrasaModulesSection({ controller }: CreateMadrasaModulesSectionProps): React.JSX.Element {
+export function CreateMadrasaModulesSection({
+  controller,
+}: CreateMadrasaModulesSectionProps): React.JSX.Element {
   const { t, data, onChange } = controller;
 
   const toggleModule = (moduleId: string, checked: boolean) => {

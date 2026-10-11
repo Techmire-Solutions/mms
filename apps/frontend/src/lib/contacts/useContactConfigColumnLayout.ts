@@ -21,7 +21,10 @@ export function useContactConfigColumnLayout({
   enabledTabs,
 }: ContactConfigColumnLayoutOptions) {
   const prefKey = `${CONTACTS_MODULE_MANIFEST.moduleId}.table.columns`;
-  const [userOverlayRaw, setUserOverlayRaw] = useUiPreference<ColumnRegistryEntry[] | null>(prefKey, null);
+  const [userOverlayRaw, setUserOverlayRaw] = useUiPreference<ColumnRegistryEntry[] | null>(
+    prefKey,
+    null,
+  );
 
   const columnRegistry = React.useMemo(() => {
     if (userOverlayRaw && userOverlayRaw.length > 0) {
@@ -34,7 +37,9 @@ export function useContactConfigColumnLayout({
     return syncContactColumnRegistryWithFields(
       columnRegistry,
       resolvedFields,
-      enabledTabs.length > 0 ? enabledTabs : DEFAULT_FORM_TABS.filter((t) => t.enabled).map((t) => t.key),
+      enabledTabs.length > 0
+        ? enabledTabs
+        : DEFAULT_FORM_TABS.filter((t) => t.enabled).map((t) => t.key),
     );
   }, [columnRegistry, resolvedFields, enabledTabs]);
 

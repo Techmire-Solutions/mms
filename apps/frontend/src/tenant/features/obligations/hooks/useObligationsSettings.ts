@@ -25,9 +25,7 @@ export function saveObligationsSettings(settings: ObligationsSettings): void {
   cachedSettings = settings;
   notifyListeners();
   if (typeof window !== "undefined") {
-    window.dispatchEvent(
-      new CustomEvent(OBLIGATIONS_SETTINGS_CHANGED_EVENT, { detail: settings })
-    );
+    window.dispatchEvent(new CustomEvent(OBLIGATIONS_SETTINGS_CHANGED_EVENT, { detail: settings }));
   }
 }
 
@@ -80,7 +78,7 @@ export function useObligationsSettings(): UseObligationsSettingsReturn {
   const settings = useSyncExternalStore(
     subscribeSettings,
     getSettingsSnapshot,
-    () => DEFAULT_OBLIGATIONS_SETTINGS
+    () => DEFAULT_OBLIGATIONS_SETTINGS,
   );
 
   const updateSettings = useCallback((next: ObligationsSettings) => {

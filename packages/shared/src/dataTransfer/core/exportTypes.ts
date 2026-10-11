@@ -22,7 +22,7 @@ export interface ExportColumn {
 // ---------------------------------------------------------------------------
 
 /** Supported serialisation targets for module exports. */
-export type ExportFormat = 'csv' | 'json' | 'xlsx';
+export type ExportFormat = "csv" | "json" | "xlsx";
 
 // ---------------------------------------------------------------------------
 // Cell extractor

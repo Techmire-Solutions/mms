@@ -78,17 +78,17 @@ describe("health routes", () => {
     const res = await app.inject({ method: "GET", url: "/api/openapi.json" });
     expect(res.statusCode).toBe(200);
     const json = res.json();
-    expect(typeof json.openapi).toBe('string');
+    expect(typeof json.openapi).toBe("string");
     expect(json.openapi).toMatch(/^3\./);
-    expect(json.info.title).toBe('MMS API');
-    expect(typeof json.paths).toBe('object');
+    expect(json.info.title).toBe("MMS API");
+    expect(typeof json.paths).toBe("object");
     expect(Object.keys(json.paths).length).toBeGreaterThan(0);
     // Paths carry operations and named parameters (types are the known gap above).
-    const students = json.paths['/api/students']?.get;
+    const students = json.paths["/api/students"]?.get;
     expect(students).toBeDefined();
     expect(Array.isArray(students.parameters)).toBe(true);
     expect(students.parameters.length).toBeGreaterThan(0);
-    expect(students.parameters[0].name).toBe('page');
+    expect(students.parameters[0].name).toBe("page");
     await app.close();
   });
 });

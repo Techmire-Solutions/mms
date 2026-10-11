@@ -45,8 +45,12 @@ export interface ModalProps<K extends string = string> {
 }
 
 const SIZE = {
-  sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl",
-  xl: "max-w-4xl", "2xl": "max-w-6xl", "3xl": "max-w-modal-3xl",
+  sm: "max-w-sm",
+  md: "max-w-lg",
+  lg: "max-w-2xl",
+  xl: "max-w-4xl",
+  "2xl": "max-w-6xl",
+  "3xl": "max-w-modal-3xl",
 };
 
 /**
@@ -88,7 +92,8 @@ export function Modal<K extends string = string>({
   const { t } = useTranslation();
   const titleId = useId();
   const hasTabs = Boolean(tabs && tabs.length > 1 && activeTab !== undefined);
-  const effectiveSize = size === "xl" || size === "2xl" || size === "3xl" ? size : hasTabs ? "xl" : size;
+  const effectiveSize =
+    size === "xl" || size === "2xl" || size === "3xl" ? size : hasTabs ? "xl" : size;
 
   const errors = (() => {
     if (!error) return [];
@@ -167,12 +172,7 @@ export function Modal<K extends string = string>({
             )}
           >
             {tabs && activeTab !== undefined && onTabChange ? (
-              <FormModalTabs
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={onTabChange}
-                dir={dir}
-              >
+              <FormModalTabs tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} dir={dir}>
                 {children}
               </FormModalTabs>
             ) : (

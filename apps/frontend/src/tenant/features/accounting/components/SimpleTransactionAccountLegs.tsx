@@ -79,7 +79,11 @@ export function SimpleTransactionAccountLegs({
 
       {isSameAccount && (
         <div className="sm:col-span-2">
-          <p id={`${prefix}-account-same-error`} className="text-xs text-destructive m-0" role="alert">
+          <p
+            id={`${prefix}-account-same-error`}
+            className="text-xs text-destructive m-0"
+            role="alert"
+          >
             {t("accounting.journal.dashboard.wizard.errorSameAccount")}
           </p>
         </div>

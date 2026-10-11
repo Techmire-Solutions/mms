@@ -1,8 +1,4 @@
-import {
-  type FacultyMember,
-  getPrimaryEmail,
-  normalizeStoredFaculty,
-} from "@mms/shared";
+import { type FacultyMember, getPrimaryEmail, normalizeStoredFaculty } from "@mms/shared";
 import { notify } from "@/lib/notify";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { extractEmployeeId } from "@/tenant/features/faculty/components/facultyFormDraft";
@@ -54,7 +50,8 @@ export function buildFacultySavePayload(input: FacultySavePayloadInput): Partial
   const entity = input.faculty;
   const rawEmployeeId = extractEmployeeId(draft.employeeId);
   const rawNextEmployeeId = extractEmployeeId(input.nextEmployeeId);
-  const resolvedEmployeeId = rawEmployeeId || (input.autoGenerateId && !entity?.id ? rawNextEmployeeId : undefined);
+  const resolvedEmployeeId =
+    rawEmployeeId || (input.autoGenerateId && !entity?.id ? rawNextEmployeeId : undefined);
 
   const base = pickDraftKeys(draft, FACULTY_PERSIST_KEYS);
 
@@ -63,7 +60,9 @@ export function buildFacultySavePayload(input: FacultySavePayloadInput): Partial
     employeeId: resolvedEmployeeId,
     contactId: String(draft.contactId || ""),
     designationId: draft.designationId ? String(draft.designationId) : null,
-    designationStartDate: draft.designationStartDate ? String(draft.designationStartDate) : undefined,
+    designationStartDate: draft.designationStartDate
+      ? String(draft.designationStartDate)
+      : undefined,
     designationEndDate: draft.designationEndDate ? String(draft.designationEndDate) : null,
     employmentEndDate: draft.employmentEndDate ? String(draft.employmentEndDate) : null,
     ...(entity?.id != null ? { id: entity.id } : {}),

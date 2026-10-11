@@ -14,7 +14,10 @@ export function useVoucherNumbering(date?: string, enabled = true) {
     queryKey: [...VOUCHER_NUMBERING_QUERY_KEY, validDate ?? "today"],
     queryFn: async ({ signal }) => {
       const search = validDate ? `?${new URLSearchParams({ date: validDate })}` : "";
-      const body = await apiJson<{ numbering: VoucherNumbering }>(`/api/accounting/voucher-numbering${search}`, { signal });
+      const body = await apiJson<{ numbering: VoucherNumbering }>(
+        `/api/accounting/voucher-numbering${search}`,
+        { signal },
+      );
       return body.numbering;
     },
     enabled,
@@ -25,11 +28,14 @@ export function useSaveVoucherNumbering() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (update: VoucherNumberingUpdate) => {
-      const body = await apiJson<{ numbering: VoucherNumbering }>("/api/accounting/voucher-numbering", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(update),
-      });
+      const body = await apiJson<{ numbering: VoucherNumbering }>(
+        "/api/accounting/voucher-numbering",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(update),
+        },
+      );
       return body.numbering;
     },
     onSuccess: () => {

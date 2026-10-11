@@ -16,14 +16,14 @@ describe("WizardStepIndicator", () => {
 
   it("renders all steps and marks current step with aria-current", () => {
     const html = renderToStaticMarkup(
-      <WizardStepIndicator steps={steps} current={2} ariaLabel="Setup steps" />
+      <WizardStepIndicator steps={steps} current={2} ariaLabel="Setup steps" />,
     );
 
     expect(html).toContain('role="list"');
     expect(html).toContain('aria-label="Setup steps"');
-    expect(html).toContain('Profile');
-    expect(html).toContain('Security');
-    expect(html).toContain('Confirm');
+    expect(html).toContain("Profile");
+    expect(html).toContain("Security");
+    expect(html).toContain("Confirm");
     expect(html).toContain('aria-current="step"');
   });
 
@@ -34,16 +34,16 @@ describe("WizardStepIndicator", () => {
     ];
 
     const html = renderToStaticMarkup(
-      <WizardStepIndicator steps={stringSteps} current="personal" />
+      <WizardStepIndicator steps={stringSteps} current="personal" />,
     );
-    expect(html).toContain('Personal');
-    expect(html).toContain('Details');
+    expect(html).toContain("Personal");
+    expect(html).toContain("Details");
     expect(html).toContain('aria-current="step"');
   });
 
   it("only renders interactive buttons for reached steps by default", () => {
     const html = renderToStaticMarkup(
-      <WizardStepIndicator steps={steps} current={2} onStepClick={vi.fn()} />
+      <WizardStepIndicator steps={steps} current={2} onStepClick={vi.fn()} />,
     );
 
     // current index 1 => steps 0 and 1 clickable, step 2 is not.
@@ -63,7 +63,7 @@ describe("WizardStepIndicator", () => {
           current={1}
           onStepClick={onStepClick}
           isStepClickable={() => true}
-        />
+        />,
       );
     });
 

@@ -1,5 +1,5 @@
 import { Send } from "lucide-react";
-import type { AppTranslationKey } from '@mms/shared';
+import type { AppTranslationKey } from "@mms/shared";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
 import { useTranslation } from "@/hooks/useTranslation";

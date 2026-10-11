@@ -12,7 +12,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { Session } from "@/lib/data/sessionsData";
 import type { SessionFormDraft } from "@/tenant/features/sessions/components/sessionFormShared";
 
-
 export interface SessionSelectOption {
   value: string;
   label: string;
@@ -78,14 +77,19 @@ export function SessionDetailsSection({
               id="session-status"
               name="status"
               value={sessionDraft.status || "active"}
-              onChange={(val) => onDraftChange({ status: val as Session['status'] })}
+              onChange={(val) => onDraftChange({ status: val as Session["status"] })}
               options={statusOptions}
             />
           </Field>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label={t("sessions.form.startDate")} required error={errors.startDate} id="session-start-date">
+          <Field
+            label={t("sessions.form.startDate")}
+            required
+            error={errors.startDate}
+            id="session-start-date"
+          >
             <DatePicker
               id="session-start-date"
               name="startDate"
@@ -96,7 +100,12 @@ export function SessionDetailsSection({
             />
           </Field>
 
-          <Field label={t("sessions.form.endDate")} required error={errors.endDate} id="session-end-date">
+          <Field
+            label={t("sessions.form.endDate")}
+            required
+            error={errors.endDate}
+            id="session-end-date"
+          >
             <DatePicker
               id="session-end-date"
               name="endDate"

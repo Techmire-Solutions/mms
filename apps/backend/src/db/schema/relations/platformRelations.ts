@@ -1,5 +1,10 @@
 import { relations } from "drizzle-orm";
-import { workspaces, platformUsers, platformUserPermissions, platformActivityLogs } from "../platform.js";
+import {
+  workspaces,
+  platformUsers,
+  platformUserPermissions,
+  platformActivityLogs,
+} from "../platform.js";
 import { backgroundJobs, savedReports, userActivityLogs } from "../system.js";
 import { auditTrailEvents, auditVerificationRuns } from "../auditTrail.js";
 import { tenantUsers } from "../contacts.js";

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   SYSTEM_MODULE_NAV,
   SYSTEM_MODULES,
@@ -7,13 +7,13 @@ import {
   translateSystemModuleLabel,
   type ModuleDefinition,
   type SystemModuleNavEntry,
-} from '@mms/shared';
-import { resolveModuleIcon } from '@/lib/config/moduleIcons';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Switch } from '@/components/ui/switch';
+} from "@mms/shared";
+import { resolveModuleIcon } from "@/lib/config/moduleIcons";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Switch } from "@/components/ui/switch";
 
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface ModuleToggleCardProps {
   module: ModuleDefinition;
@@ -39,16 +39,16 @@ function ModuleToggleCard({
   return (
     <div
       className={cn(
-        'flex items-start gap-3.5 rounded-xl border p-3.5 transition-all duration-200',
+        "flex items-start gap-3.5 rounded-xl border p-3.5 transition-all duration-200",
         enabled
-          ? 'border-border/80 bg-card shadow-sm hover:border-border'
-          : 'border-border/40 bg-muted/20 opacity-80 hover:opacity-100',
+          ? "border-border/80 bg-card shadow-sm hover:border-border"
+          : "border-border/40 bg-muted/20 opacity-80 hover:opacity-100",
       )}
     >
       <div
         className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors',
-          enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+          enabled ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
         )}
       >
         <Icon className="h-4 w-4" aria-hidden />
@@ -56,13 +56,20 @@ function ModuleToggleCard({
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2.5">
           <div className="min-w-0">
-            <label htmlFor={toggleId} className="block truncate text-sm font-semibold text-foreground cursor-pointer">
+            <label
+              htmlFor={toggleId}
+              className="block truncate text-sm font-semibold text-foreground cursor-pointer"
+            >
               {label}
             </label>
-            <p id={descId} className="mt-0.5 text-xs leading-snug text-muted-foreground">{description}</p>
+            <p id={descId} className="mt-0.5 text-xs leading-snug text-muted-foreground">
+              {description}
+            </p>
           </div>
           {module.required ? (
-            <Badge as="span" tone="muted" size="sm">{requiredLabel}</Badge>
+            <Badge as="span" tone="muted" size="sm">
+              {requiredLabel}
+            </Badge>
           ) : (
             <Switch
               id={toggleId}
@@ -92,7 +99,7 @@ export default function ModuleSettingsNavGrid({
 }: ModuleSettingsNavGridProps): React.JSX.Element {
   const { t, language } = useTranslation();
 
-  const requiredLabel = t('module.system.required');
+  const requiredLabel = t("module.system.required");
 
   const blocks = (() => {
     const moduleLabel = (mod: ModuleDefinition): string =>
@@ -126,19 +133,22 @@ export default function ModuleSettingsNavGrid({
       const moduleIds = [...standaloneBatch];
       standaloneBatch = [];
       nodes.push(
-        <div key={`standalone-${moduleIds.join('-')}`} className="grid gap-3 sm:grid-cols-2">
+        <div key={`standalone-${moduleIds.join("-")}`} className="grid gap-3 sm:grid-cols-2">
           {moduleIds.map(renderCard)}
         </div>,
       );
     };
 
-    const renderGroup = (entry: Extract<SystemModuleNavEntry, { type: 'group' }>): void => {
+    const renderGroup = (entry: Extract<SystemModuleNavEntry, { type: "group" }>): void => {
       const children = entry.moduleIds.map(renderCard).filter(Boolean);
       if (children.length === 0) return;
 
       const GroupIcon = resolveModuleIcon(entry.icon);
       nodes.push(
-        <div key={entry.labelKey} className="space-y-3 rounded-2xl border border-border/70 bg-muted/20 p-4">
+        <div
+          key={entry.labelKey}
+          className="space-y-3 rounded-2xl border border-border/70 bg-muted/20 p-4"
+        >
           <div className="flex items-center gap-2 border-b border-border/50 pb-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
               <GroupIcon className="h-3.5 w-3.5 text-primary" aria-hidden />
@@ -151,7 +161,7 @@ export default function ModuleSettingsNavGrid({
     };
 
     for (const entry of SYSTEM_MODULE_NAV) {
-      if (entry.type === 'module') {
+      if (entry.type === "module") {
         standaloneBatch.push(entry.moduleId);
         if (standaloneBatch.length === 2) flushStandalone();
       } else {
@@ -165,9 +175,13 @@ export default function ModuleSettingsNavGrid({
   })();
 
   const moduleStats = (() => {
-    const availableModules = SYSTEM_MODULES.filter(mod => !grantedModules || grantedModules[mod.id] !== false);
+    const availableModules = SYSTEM_MODULES.filter(
+      (mod) => !grantedModules || grantedModules[mod.id] !== false,
+    );
     const total = availableModules.length;
-    const enabled = availableModules.filter((moduleDefinition) => enabledModules[moduleDefinition.id] !== false).length;
+    const enabled = availableModules.filter(
+      (moduleDefinition) => enabledModules[moduleDefinition.id] !== false,
+    ).length;
     return { total, enabled };
   })();
 
@@ -175,13 +189,13 @@ export default function ModuleSettingsNavGrid({
     <>
       <div className="flex flex-wrap items-center gap-2 text-xs font-medium" aria-live="polite">
         <Badge as="span" tone="primary" size="sm">
-          {t('module.system.stats', {
+          {t("module.system.stats", {
             enabled: moduleStats.enabled,
             total: moduleStats.total,
           })}
         </Badge>
       </div>
-      <p className="text-xs text-muted-foreground">{t('module.system.hint')}</p>
+      <p className="text-xs text-muted-foreground">{t("module.system.hint")}</p>
       <div className="space-y-4">{blocks}</div>
     </>
   );

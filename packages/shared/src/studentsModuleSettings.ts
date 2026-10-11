@@ -1,5 +1,5 @@
 import type { TabDefinition, ColumnRegistryEntry, FieldDefinition } from "./contactTypes.js";
-import type { ModuleFieldDef } from './moduleFieldSchema.js';
+import type { ModuleFieldDef } from "./moduleFieldSchema.js";
 import type { SequenceYearFormat } from "./sequenceNumberingTypes.js";
 
 // ─── Students Module Settings ─────────────────────────────────────────────────

@@ -20,8 +20,6 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-
-
 const mockContact: Contact = {
   id: "cnt-1",
   name: "Zayd Harith",

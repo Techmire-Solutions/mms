@@ -1,8 +1,8 @@
 /** Tenant RBAC collection/object permission maps and can* helpers. */
-export * from '../lib/rbacPermissionMaps.js';
-export * from '../lib/rbacCanHelpers.js';
+export * from "../lib/rbacPermissionMaps.js";
+export * from "../lib/rbacCanHelpers.js";
 
-import { getOrSetMultiTier, invalidateMultiTierCache } from '../lib/cache/index.js';
+import { getOrSetMultiTier, invalidateMultiTierCache } from "../lib/cache/index.js";
 
 export interface TenantRoleMatrix {
   [userId: string]: { role: string; deletedAt: string | null };
@@ -15,18 +15,19 @@ export interface TenantRoleMatrix {
 export async function getTenantRoleMatrix(tenantId: string): Promise<TenantRoleMatrix> {
   return getOrSetMultiTier(
     tenantId,
-    'rbac',
-    'matrix',
+    "rbac",
+    "matrix",
     async () => {
-      const { listAllTenantUsersByWorkspace } = await import('../db/repositories/tenantUserRepositoryHydrate.js');
+      const { listAllTenantUsersByWorkspace } =
+        await import("../db/repositories/tenantUserRepositoryHydrate.js");
       const users = await listAllTenantUsersByWorkspace(tenantId);
       const matrix: TenantRoleMatrix = {};
       for (const u of users) {
-        matrix[u.id] = { role: u.role ?? 'user', deletedAt: u.deletedAt ?? null };
+        matrix[u.id] = { role: u.role ?? "user", deletedAt: u.deletedAt ?? null };
       }
       return matrix;
     },
-    { ttlSeconds: 3600 }
+    { ttlSeconds: 3600 },
   );
 }
 
@@ -35,5 +36,5 @@ export async function getTenantRoleMatrix(tenantId: string): Promise<TenantRoleM
  * Should be called when a user's role is updated or a user is soft-deleted/restored.
  */
 export async function invalidateTenantRbac(tenantId: string): Promise<void> {
-  await invalidateMultiTierCache({ tenantId, domain: 'rbac', key: 'matrix' });
+  await invalidateMultiTierCache({ tenantId, domain: "rbac", key: "matrix" });
 }

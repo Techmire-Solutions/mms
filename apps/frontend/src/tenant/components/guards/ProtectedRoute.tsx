@@ -20,10 +20,7 @@ export default function ProtectedRoute(): React.JSX.Element {
   const settings = useGlobalSettings();
   const location = useLocation();
   const returnTo = `${location.pathname}${location.search}${location.hash}`;
-  const canCompleteInstitutionSetup = roleHasPermission(
-    user?.role,
-    'settings.branding.write',
-  );
+  const canCompleteInstitutionSetup = roleHasPermission(user?.role, "settings.branding.write");
   const institutionSetupStatus = useInstitutionSetupStatus(
     isAuthenticated && canCompleteInstitutionSetup && !user?.mustChangePassword,
   );
@@ -42,13 +39,7 @@ export default function ProtectedRoute(): React.JSX.Element {
   }
 
   if (requiresTwoFactor(settings, user) && !is2FAVerified()) {
-    return (
-      <Navigate
-        to={ROUTES.twoFactor}
-        replace
-        state={{ from: returnTo }}
-      />
-    );
+    return <Navigate to={ROUTES.twoFactor} replace state={{ from: returnTo }} />;
   }
 
   if (user?.mustChangePassword) {
@@ -65,10 +56,7 @@ export default function ProtectedRoute(): React.JSX.Element {
   if (canCompleteInstitutionSetup && institutionSetupStatus.isError) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-6">
-        <ErrorState
-          type="network"
-          onRetry={() => void institutionSetupStatus.refetch()}
-        />
+        <ErrorState type="network" onRetry={() => void institutionSetupStatus.refetch()} />
       </div>
     );
   }

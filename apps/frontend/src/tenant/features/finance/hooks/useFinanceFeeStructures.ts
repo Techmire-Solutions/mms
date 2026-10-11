@@ -8,7 +8,9 @@ export function useFinanceFeeStructures(enabled = true) {
   return useQuery({
     queryKey: FINANCE_FEE_STRUCTURES_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      const body = await apiJson<{ structures: FeeStructure[] }>("/api/finance/fee-structures", { signal });
+      const body = await apiJson<{ structures: FeeStructure[] }>("/api/finance/fee-structures", {
+        signal,
+      });
       return body.structures;
     },
     enabled,
@@ -17,7 +19,8 @@ export function useFinanceFeeStructures(enabled = true) {
 
 export function useFinanceFeeStructureMutations() {
   const queryClient = useQueryClient();
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: FINANCE_FEE_STRUCTURES_QUERY_KEY });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: FINANCE_FEE_STRUCTURES_QUERY_KEY });
 
   const save = useMutation({
     mutationFn: (structure: FeeStructureInsert) =>

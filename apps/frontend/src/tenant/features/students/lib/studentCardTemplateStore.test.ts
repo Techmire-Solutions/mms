@@ -116,4 +116,3 @@ describe("studentCardTemplateStore", () => {
     expect(fields).toContain("expiry_date");
   });
 });
-

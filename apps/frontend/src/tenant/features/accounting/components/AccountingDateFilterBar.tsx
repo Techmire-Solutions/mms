@@ -42,10 +42,7 @@ export function AccountingDateFilterBar({
         onDateToChange={onDateToChange}
         fromLabel={t("accounting.ledger.from")}
         toLabel={t("accounting.ledger.to")}
-        className={cn(
-          variant === "bordered" &&
-            "rounded-xl border border-border bg-muted/20 p-4",
-        )}
+        className={cn(variant === "bordered" && "rounded-xl border border-border bg-muted/20 p-4")}
       >
         {activeFiscalYear ? (
           <Button
@@ -82,7 +79,8 @@ export function AccountingDateFilterBar({
             onClick={onExportCSV}
             className="ms-auto flex min-h-11 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
           >
-            <Download className="h-3.5 w-3.5" aria-hidden="true" /> {t("accounting.ledger.exportCsv")}
+            <Download className="h-3.5 w-3.5" aria-hidden="true" />{" "}
+            {t("accounting.ledger.exportCsv")}
           </Button>
         ) : null}
       </DateRangeFilterBar>

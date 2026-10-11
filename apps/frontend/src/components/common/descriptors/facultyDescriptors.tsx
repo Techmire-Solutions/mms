@@ -28,11 +28,11 @@ const directoryFields: FieldDefinition<Faculty>[] = FACULTY_DIRECTORY_COLUMN_SUR
     type: SURFACE_FIELD_TYPE[surface.key] ?? "text",
     sortable: surface.sortable,
     filterable:
-      surface.key === "status"
-      || surface.key === "specialization"
-      || surface.key === "department"
-      || surface.key === "designation"
-      || surface.key === "reportingFacultyName",
+      surface.key === "status" ||
+      surface.key === "specialization" ||
+      surface.key === "department" ||
+      surface.key === "designation" ||
+      surface.key === "reportingFacultyName",
     defaultVisibleInTable: surface.work,
     tableOrder: (index + 1) * 10,
     fixed: surface.fixed || undefined,

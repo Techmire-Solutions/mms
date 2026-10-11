@@ -13,7 +13,7 @@ export interface ModuleTableFooterCountProps {
  * Work table footer count bar shared by Contacts, Students, and Faculty.
  * Shows the selected-count + page-count combo, or just the page count when nothing is selected.
  */
-export const ModuleTableFooterCount = (function ModuleTableFooterCount({
+export const ModuleTableFooterCount = function ModuleTableFooterCount({
   selectedCount,
   selectedCountLabel,
   pageCountLabel,
@@ -35,5 +35,4 @@ export const ModuleTableFooterCount = (function ModuleTableFooterCount({
       </p>
     </div>
   );
-});
-
+};

@@ -14,10 +14,10 @@ import {
 export interface QuestionBankSettings {
   aiGrading: boolean;
   defaultTestDuration: number;
-  categories: import('./questionBankTypes.js').QuestionCategory[];
-  sourceBooks?: import('./questionBankTypes.js').QuestionSourceBook[];
-  questionTypes?: import('./questionBankTypes.js').QuestionTypeRegistryEntry[];
-  difficultyLevels?: import('./questionBankTypes.js').QuestionDifficultyRegistryEntry[];
+  categories: import("./questionBankTypes.js").QuestionCategory[];
+  sourceBooks?: import("./questionBankTypes.js").QuestionSourceBook[];
+  questionTypes?: import("./questionBankTypes.js").QuestionTypeRegistryEntry[];
+  difficultyLevels?: import("./questionBankTypes.js").QuestionDifficultyRegistryEntry[];
   defaultViewLayout?: string;
   fields?: Record<string, unknown>;
   customFields?: [];
@@ -33,72 +33,72 @@ export const DEFAULT_QUESTION_BANK_SETTINGS: QuestionBankSettings = {
   categories: [],
   sourceBooks: [],
   questionTypes: [
-    { id: 'mcq', enabled: true },
-    { id: 'true_false', enabled: true },
-    { id: 'short', enabled: true },
-    { id: 'fill_blank', enabled: true },
-    { id: 'matching', enabled: true },
-    { id: 'numeric', enabled: true },
-    { id: 'ordering', enabled: true },
+    { id: "mcq", enabled: true },
+    { id: "true_false", enabled: true },
+    { id: "short", enabled: true },
+    { id: "fill_blank", enabled: true },
+    { id: "matching", enabled: true },
+    { id: "numeric", enabled: true },
+    { id: "ordering", enabled: true },
   ],
   difficultyLevels: [
-    { id: 'easy', enabled: true },
-    { id: 'medium', enabled: true },
-    { id: 'hard', enabled: true },
+    { id: "easy", enabled: true },
+    { id: "medium", enabled: true },
+    { id: "hard", enabled: true },
   ],
-  defaultViewLayout: 'list',
+  defaultViewLayout: "list",
   fields: {
     basic: INITIAL_QUESTION_BANK_FIELD_SEED.basic.map((f) => ({ ...f })),
     options: INITIAL_QUESTION_BANK_FIELD_SEED.options.map((f) => ({ ...f })),
   },
   fieldOrder: [
-    'text',
-    'categoryId',
-    'questionLanguage',
-    'type',
-    'difficulty',
-    'options',
-    'answer',
+    "text",
+    "categoryId",
+    "questionLanguage",
+    "type",
+    "difficulty",
+    "options",
+    "answer",
     ...QUESTION_SOURCE_FIELD_IDS,
   ],
 };
 
 export const DEFAULT_QUESTION_BANK_FIELD_DEFS: ModuleFieldDef[] = [
-  { id: 'text', label: 'Question text', type: 'textarea', required: true },
-  { id: 'categoryId', label: 'Category', type: 'select', required: true },
-  { id: 'questionLanguage', label: 'Question language', type: 'select', required: true },
-  { id: 'type', label: 'Question type', type: 'select', required: true },
-  { id: 'difficulty', label: 'Difficulty', type: 'select', required: true },
-  { id: 'options', label: 'Options', type: 'options' },
-  { id: 'answer', label: 'Answer', type: 'answer' },
-  { id: 'sourceBookName', label: 'Book name', type: 'text' },
-  { id: 'sourceSeries', label: 'Book series', type: 'text' },
-  { id: 'sourceBookVolume', label: 'Book volume', type: 'text' },
-  { id: 'sourceVolumePart', label: 'Volume part', type: 'text' },
-  { id: 'sourceEdition', label: 'Edition', type: 'text' },
-  { id: 'sourceIsbn', label: 'ISBN', type: 'text' },
-  { id: 'sourceAuthor', label: 'Author', type: 'text' },
-  { id: 'sourceEditor', label: 'Editor', type: 'text' },
-  { id: 'sourceTranslator', label: 'Translator', type: 'text' },
-  { id: 'sourcePublisher', label: 'Publisher', type: 'text' },
-  { id: 'sourceCityOfPublication', label: 'City of publication', type: 'text' },
-  { id: 'sourcePublishDate', label: 'Publishing date', type: 'date' },
-  { id: 'sourceYearHijri', label: 'Hijri year', type: 'text' },
-  { id: 'sourceLanguage', label: 'Source language', type: 'text' },
-  { id: 'sourceChapter', label: 'Chapter / section', type: 'text' },
-  { id: 'sourcePageNumber', label: 'Page number', type: 'text' },
-  { id: 'sourceParagraph', label: 'Paragraph', type: 'text' },
-  { id: 'sourceFootnote', label: 'Footnote', type: 'text' },
-  { id: 'sourceSurah', label: 'Surah', type: 'text' },
-  { id: 'sourceAyah', label: 'Ayah / verse', type: 'text' },
-  { id: 'sourceJuz', label: 'Juz', type: 'text' },
-  { id: 'sourceHizb', label: 'Hizb / rub', type: 'text' },
-  { id: 'sourceHadithCollection', label: 'Hadith collection', type: 'text' },
-  { id: 'sourceHadithNumber', label: 'Hadith number', type: 'text' },
-  { id: 'sourceManuscript', label: 'Manuscript', type: 'text' },
-  { id: 'sourceCatalogNumber', label: 'Catalog / shelf number', type: 'text' },
-  { id: 'sourceQuote', label: 'Quoted excerpt', type: 'textarea' },
-  { id: 'sourceNotes', label: 'Source notes', type: 'textarea' },
+  { id: "text", label: "Question text", type: "textarea", required: true },
+  { id: "categoryId", label: "Category", type: "select", required: true },
+  { id: "questionLanguage", label: "Question language", type: "select", required: true },
+  { id: "type", label: "Question type", type: "select", required: true },
+  { id: "difficulty", label: "Difficulty", type: "select", required: true },
+  { id: "options", label: "Options", type: "options" },
+  { id: "answer", label: "Answer", type: "answer" },
+  { id: "sourceBookName", label: "Book name", type: "text" },
+  { id: "sourceSeries", label: "Book series", type: "text" },
+  { id: "sourceBookVolume", label: "Book volume", type: "text" },
+  { id: "sourceVolumePart", label: "Volume part", type: "text" },
+  { id: "sourceEdition", label: "Edition", type: "text" },
+  { id: "sourceIsbn", label: "ISBN", type: "text" },
+  { id: "sourceAuthor", label: "Author", type: "text" },
+  { id: "sourceEditor", label: "Editor", type: "text" },
+  { id: "sourceTranslator", label: "Translator", type: "text" },
+  { id: "sourcePublisher", label: "Publisher", type: "text" },
+  { id: "sourceCityOfPublication", label: "City of publication", type: "text" },
+  { id: "sourcePublishDate", label: "Publishing date", type: "date" },
+  { id: "sourceYearHijri", label: "Hijri year", type: "text" },
+  { id: "sourceLanguage", label: "Source language", type: "text" },
+  { id: "sourceChapter", label: "Chapter / section", type: "text" },
+  { id: "sourcePageNumber", label: "Page number", type: "text" },
+  { id: "sourceParagraph", label: "Paragraph", type: "text" },
+  { id: "sourceFootnote", label: "Footnote", type: "text" },
+  { id: "sourceSurah", label: "Surah", type: "text" },
+  { id: "sourceAyah", label: "Ayah / verse", type: "text" },
+  { id: "sourceJuz", label: "Juz", type: "text" },
+  { id: "sourceHizb", label: "Hizb / rub", type: "text" },
+  { id: "sourceHadithCollection", label: "Hadith collection", type: "text" },
+  { id: "sourceHadithNumber", label: "Hadith number", type: "text" },
+  { id: "sourceManuscript", label: "Manuscript", type: "text" },
+  { id: "sourceCatalogNumber", label: "Catalog / shelf number", type: "text" },
+  { id: "sourceQuote", label: "Quoted excerpt", type: "textarea" },
+  { id: "sourceNotes", label: "Source notes", type: "textarea" },
 ];
 
 function isTabbedQuestionBankFields(fields: Record<string, unknown> | undefined): boolean {
@@ -106,13 +106,15 @@ function isTabbedQuestionBankFields(fields: Record<string, unknown> | undefined)
   return Object.values(fields).some(Array.isArray);
 }
 
-function questionBankFieldTypeForEditor(type: ModuleFieldDef['type'] | undefined): FieldDefinition['type'] {
-  if (type === 'textarea') return 'textarea';
-  if (type === 'number') return 'number';
-  if (type === 'date') return 'date';
-  if (type === 'select') return 'select';
-  if (type === 'boolean') return 'boolean';
-  return 'text';
+function questionBankFieldTypeForEditor(
+  type: ModuleFieldDef["type"] | undefined,
+): FieldDefinition["type"] {
+  if (type === "textarea") return "textarea";
+  if (type === "number") return "number";
+  if (type === "date") return "date";
+  if (type === "select") return "select";
+  if (type === "boolean") return "boolean";
+  return "text";
 }
 
 function readQuestionBankFlatFieldConfig(
@@ -124,7 +126,7 @@ function readQuestionBankFlatFieldConfig(
     ...(storedFields ?? {}),
   };
   for (const [fieldId, config] of Object.entries(fields)) {
-    if (config && typeof config === 'object' && !Array.isArray(config)) {
+    if (config && typeof config === "object" && !Array.isArray(config)) {
       result[fieldId] = {
         enabled: (config as { enabled?: boolean }).enabled !== false,
         required: !!(config as { required?: boolean }).required,
@@ -196,7 +198,8 @@ function normalizeQuestionBankFieldsForEditor(
         label: fieldDef?.label ?? fieldId,
         type: questionBankFieldTypeForEditor(fieldDef?.type),
         enabled: (storedFields?.[fieldId] as { enabled?: boolean } | undefined)?.enabled ?? true,
-        required: (storedFields?.[fieldId] as { required?: boolean } | undefined)?.required ?? false,
+        required:
+          (storedFields?.[fieldId] as { required?: boolean } | undefined)?.required ?? false,
         order: normalized.options?.length ?? 0,
       },
     ];
@@ -236,7 +239,10 @@ export function normalizeQuestionBankSettings(
   }));
 
   const diffById = new Map(
-    (stored?.difficultyLevels ?? []).map((difficultyLevel) => [difficultyLevel.id, difficultyLevel]),
+    (stored?.difficultyLevels ?? []).map((difficultyLevel) => [
+      difficultyLevel.id,
+      difficultyLevel,
+    ]),
   );
   merged.difficultyLevels = QUESTION_DIFFICULTY_IDS.map((difficultyLevelId) => ({
     id: difficultyLevelId,
@@ -248,7 +254,9 @@ export function normalizeQuestionBankSettings(
   const storedOrder =
     stored?.fieldOrder && stored.fieldOrder.length > 0 ? stored.fieldOrder : defaultOrder;
   const storedOrderSet = new Set(storedOrder);
-  const missingSource = QUESTION_SOURCE_FIELD_IDS.filter((sourceFieldId) => !storedOrderSet.has(sourceFieldId));
+  const missingSource = QUESTION_SOURCE_FIELD_IDS.filter(
+    (sourceFieldId) => !storedOrderSet.has(sourceFieldId),
+  );
   merged.fieldOrder = [...storedOrder, ...missingSource];
 
   return merged;

@@ -1,14 +1,14 @@
-import React, { Suspense, type JSX } from 'react';
-import { User } from 'lucide-react';
-import { ModulePageShell } from '@/components/ui/ModulePageShell';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AccountProfileHeaderCard } from '@/tenant/features/profile/AccountProfileHeaderCard';
-import { AccountProfileSettingsTabs } from '@/tenant/features/profile/AccountProfileSettingsTabs';
-import { useAccountProfilePageController } from '@/tenant/features/profile/hooks/useAccountProfilePageController';
+import React, { Suspense, type JSX } from "react";
+import { User } from "lucide-react";
+import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AccountProfileHeaderCard } from "@/tenant/features/profile/AccountProfileHeaderCard";
+import { AccountProfileSettingsTabs } from "@/tenant/features/profile/AccountProfileSettingsTabs";
+import { useAccountProfilePageController } from "@/tenant/features/profile/hooks/useAccountProfilePageController";
 
 const AvatarCropper = React.lazy(() =>
-  import('@/components/ui/AvatarCropper').then((m) => ({ default: m.AvatarCropper })),
+  import("@/components/ui/AvatarCropper").then((m) => ({ default: m.AvatarCropper })),
 );
 
 export default function AccountProfile(): JSX.Element {
@@ -16,11 +16,11 @@ export default function AccountProfile(): JSX.Element {
 
   return (
     <ModulePageShell
-      seoTitle={`MMS - ${c.t('account.title')}`}
-      seoDescription={c.t('account.subtitle')}
+      seoTitle={`MMS - ${c.t("account.title")}`}
+      seoDescription={c.t("account.subtitle")}
       headerIcon={User}
-      headerTitle={c.t('account.title')}
-      headerSubtitle={c.t('account.subtitle')}
+      headerTitle={c.t("account.title")}
+      headerSubtitle={c.t("account.subtitle")}
     >
       {c.isLoading ? (
         <div className="space-y-6 animate-pulse" role="status" aria-live="polite" aria-busy="true">
@@ -48,9 +48,11 @@ export default function AccountProfile(): JSX.Element {
         </div>
       ) : c.isError ? (
         <ErrorState
-          title={c.t('account.loadFailed')}
-          description={c.t('account.loadFailedHint')}
-          onRetry={() => { void c.refetch(); }}
+          title={c.t("account.loadFailed")}
+          description={c.t("account.loadFailedHint")}
+          onRetry={() => {
+            void c.refetch();
+          }}
         />
       ) : c.profile ? (
         <div className="space-y-6 animate-in fade-in-50 duration-200">
@@ -105,7 +107,13 @@ export default function AccountProfile(): JSX.Element {
       ) : null}
 
       {c.showCropper && (
-        <Suspense fallback={<div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs"><Skeleton className="w-full max-w-md h-96 rounded-2xl" /></div>}>
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+              <Skeleton className="w-full max-w-md h-96 rounded-2xl" />
+            </div>
+          }
+        >
           <AvatarCropper
             src={c.showCropper}
             onCrop={c.handleAvatarCrop}

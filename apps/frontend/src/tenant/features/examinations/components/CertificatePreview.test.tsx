@@ -70,11 +70,7 @@ const mockResult: StudentResultItem = {
 describe("CertificatePreview Component", () => {
   it("renders certificate layout with student details", () => {
     const html = renderToStaticMarkup(
-      <CertificatePreview
-        result={mockResult}
-        exam={mockExam}
-        onClose={vi.fn()}
-      />,
+      <CertificatePreview result={mockResult} exam={mockExam} onClose={vi.fn()} />,
     );
 
     expect(html).toContain("Zaid Khan");

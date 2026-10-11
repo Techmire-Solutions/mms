@@ -1,5 +1,5 @@
-import { formatDate, formatDateTime } from './settingsDateFormatters.js';
-import { DEFAULT_FACULTY_STATUS } from './facultyTypes.js';
+import { formatDate, formatDateTime } from "./settingsDateFormatters.js";
+import { DEFAULT_FACULTY_STATUS } from "./facultyTypes.js";
 
 export type FormatFacultyFieldCellOptions = {
   /** Setup field type (`date` | `datetime` | `boolean` | …). */
@@ -27,15 +27,15 @@ export function formatFacultyFieldCellValue(
   const {
     fieldType,
     propKey,
-    statusDefault = propKey === 'status',
+    statusDefault = propKey === "status",
     booleanLabels,
-    arraySeparator = ', ',
+    arraySeparator = ", ",
   } = options;
 
-  if (value === undefined || value === null || value === '') {
+  if (value === undefined || value === null || value === "") {
     return statusDefault ? DEFAULT_FACULTY_STATUS : undefined;
   }
-  if (typeof value === 'string' && !value.trim()) {
+  if (typeof value === "string" && !value.trim()) {
     return statusDefault ? DEFAULT_FACULTY_STATUS : undefined;
   }
 
@@ -44,26 +44,26 @@ export function formatFacultyFieldCellValue(
     return joined || (statusDefault ? DEFAULT_FACULTY_STATUS : undefined);
   }
 
-  if (typeof value === 'boolean') {
+  if (typeof value === "boolean") {
     if (booleanLabels) {
       return value ? booleanLabels.yes : booleanLabels.no;
     }
-    return value ? 'true' : 'false';
+    return value ? "true" : "false";
   }
 
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     return undefined;
   }
 
-  if (typeof value === 'string') {
-    if (fieldType === 'datetime') {
+  if (typeof value === "string") {
+    if (fieldType === "datetime") {
       return formatDateTime(value, true);
     }
-    if (fieldType === 'date') {
+    if (fieldType === "date") {
       return formatDate(value, true);
     }
     if (!fieldType && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-      return value.includes('T') ? formatDateTime(value, true) : formatDate(value, true);
+      return value.includes("T") ? formatDateTime(value, true) : formatDate(value, true);
     }
   }
 

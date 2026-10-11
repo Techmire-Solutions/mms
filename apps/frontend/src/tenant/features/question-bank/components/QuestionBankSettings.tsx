@@ -17,18 +17,12 @@ export interface QuestionBankSettingsProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const QuestionBankSettings = (function QuestionBankSettings({
+export const QuestionBankSettings = function QuestionBankSettings({
   onPrefsDirtyChange,
 }: QuestionBankSettingsProps = {}): React.JSX.Element {
   const { t } = useTranslation();
-  const {
-    settingsDraft,
-    saved,
-    saving,
-    isPrefsDirty,
-    upd,
-    handleSave,
-  } = useQuestionBankSetupPanelState();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useQuestionBankSetupPanelState();
 
   useEffect(() => {
     onPrefsDirtyChange?.(isPrefsDirty);
@@ -79,9 +73,7 @@ export const QuestionBankSettings = (function QuestionBankSettings({
               min={5}
               className={FORM_INPUT}
               value={settingsDraft.defaultTestDuration}
-              onChange={(event) =>
-                upd("defaultTestDuration", Number(event.target.value) || 30)
-              }
+              onChange={(event) => upd("defaultTestDuration", Number(event.target.value) || 30)}
             />
           </Field>
 
@@ -120,6 +112,6 @@ export const QuestionBankSettings = (function QuestionBankSettings({
       />
     </ModuleSetupContent>
   );
-});
+};
 
 export default QuestionBankSettings;

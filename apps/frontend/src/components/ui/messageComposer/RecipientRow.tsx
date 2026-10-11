@@ -36,9 +36,7 @@ export const RecipientRow = memo(function RecipientRow({
   sendLabel,
 }: RecipientRowProps): React.JSX.Element {
   const displayAddress =
-    recipient.address ||
-    (isEmail ? recipient.email : recipient.phone) ||
-    missingAddressLabel;
+    recipient.address || (isEmail ? recipient.email : recipient.phone) || missingAddressLabel;
 
   const isPreviewActive = recipient.isValid && previewIndex === eligibleIndex;
   const previewDisabled = eligibleIndex < 0;

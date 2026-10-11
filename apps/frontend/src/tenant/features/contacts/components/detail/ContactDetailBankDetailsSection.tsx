@@ -19,14 +19,20 @@ export function ContactDetailBankDetailsSection({
 
   if (bankDetails.length === 0) {
     return (
-      <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.bankDetails")}>
+      <DetailSectionCard
+        className={COLLECTION_CONTAINER_CLASS}
+        title={t("contacts.detail.bankDetails")}
+      >
         <EmptyState compact icon={Landmark} title={t("contacts.detail.emptyBankDetails")} />
       </DetailSectionCard>
     );
   }
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.bankDetails")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.detail.bankDetails")}
+    >
       {bankDetails.map((bank, idx) => {
         const copySummary = [bank.bankName, bank.accountTitle, bank.accountNumber]
           .filter(Boolean)
@@ -48,7 +54,8 @@ export function ContactDetailBankDetailsSection({
                 </div>
                 {bank.accountTitle ? (
                   <div className="text-muted-foreground font-medium">
-                    {t("contacts.fields.bankAccountTitle")}: <span className="text-foreground">{bank.accountTitle}</span>
+                    {t("contacts.fields.bankAccountTitle")}:{" "}
+                    <span className="text-foreground">{bank.accountTitle}</span>
                   </div>
                 ) : null}
               </div>

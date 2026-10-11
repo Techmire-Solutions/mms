@@ -1,23 +1,19 @@
-import { useEffect, useState } from 'react';
-import { useSavedFlash } from '@/tenant/hooks/useSavedFlash';
-import {
-  isBrandingFieldsDirty,
-  mergeBrandingSettings,
-  type BrandingSettings,
-} from '@mms/shared';
-import { getBrandingSettings, saveBrandingSettings } from '@/lib/db';
-import { clearBrandingSettingsPreview, previewBrandingSettings } from '@/lib/settingsPreview';
-import { buildBrandingPreviewPatch } from '@/lib/brandingPreviewPatch';
+import { useEffect, useState } from "react";
+import { useSavedFlash } from "@/tenant/hooks/useSavedFlash";
+import { isBrandingFieldsDirty, mergeBrandingSettings, type BrandingSettings } from "@mms/shared";
+import { getBrandingSettings, saveBrandingSettings } from "@/lib/db";
+import { clearBrandingSettingsPreview, previewBrandingSettings } from "@/lib/settingsPreview";
+import { buildBrandingPreviewPatch } from "@/lib/brandingPreviewPatch";
 import {
   mergeBrandingIdentityForSave,
   retainThemeDraftAfterIdentitySave,
   sanitizeBrandingSocialLinks,
   resetBrandingIdentityFields,
-} from '@/lib/brandingIdentityDraft';
-import { loadBranding } from '@/components/branding/BrandingShared';
-import { serverSyncErrorKey } from '@/lib/serverSyncErrors';
-import { notify } from '@/lib/notify';
-import { useTranslation } from '@/hooks/useTranslation';
+} from "@/lib/brandingIdentityDraft";
+import { loadBranding } from "@/components/branding/BrandingShared";
+import { serverSyncErrorKey } from "@/lib/serverSyncErrors";
+import { notify } from "@/lib/notify";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface UseBrandingDraftSaveOptions {
   skipToast?: boolean;
@@ -42,7 +38,10 @@ export interface UseBrandingDraftResult {
   saved: boolean;
   saving: boolean;
   upd: <K extends keyof BrandingSettings>(field: K, value: BrandingSettings[K]) => void;
-  handleSave: (toast?: UseBrandingDraftSaveToast, options?: UseBrandingDraftSaveOptions) => Promise<boolean>;
+  handleSave: (
+    toast?: UseBrandingDraftSaveToast,
+    options?: UseBrandingDraftSaveOptions,
+  ) => Promise<boolean>;
   handleSaveIdentity: (toast?: UseBrandingDraftSaveToast) => Promise<boolean>;
   handleDiscardIdentity: () => void;
   applyPersisted: (brandingSettings: BrandingSettings) => void;
@@ -86,8 +85,8 @@ export function useBrandingDraft({
       setData(persistedBranding);
       clearSaved();
     };
-    window.addEventListener('local-database-update', sync);
-    return () => window.removeEventListener('local-database-update', sync);
+    window.addEventListener("local-database-update", sync);
+    return () => window.removeEventListener("local-database-update", sync);
   }, [isDirty, clearSaved]);
 
   useEffect(() => {
@@ -95,79 +94,79 @@ export function useBrandingDraft({
     previewBrandingSettings(buildBrandingPreviewPatch(merged, trackKeys));
   }, [data, trackKeys]);
 
-  const applyPersisted = ((brandingSettings: BrandingSettings): void => {
+  const applyPersisted = (brandingSettings: BrandingSettings): void => {
     const merged = mergeBrandingSettings(brandingSettings);
     setBaseline(merged);
     setData(merged);
     clearBrandingSettingsPreview();
     clearSaved();
-  });
+  };
 
-  const upd = (<K extends keyof BrandingSettings>(field: K, value: BrandingSettings[K]): void => {
+  const upd = <K extends keyof BrandingSettings>(field: K, value: BrandingSettings[K]): void => {
     setData((current) => ({ ...current, [field]: value }));
     clearSaved();
-  });
+  };
 
-  const handleSave = (async (
-      toast?: UseBrandingDraftSaveToast,
-      options?: UseBrandingDraftSaveOptions,
-    ): Promise<boolean> => {
-      setSaving(true);
-      try {
-        const cleanedData = sanitizeBrandingSocialLinks(data);
-        const merged = mergeBrandingSettings(cleanedData);
-        const result = await saveBrandingSettings(merged);
-        if (!result.ok) {
-          notify.error(t('settings.serverSaveFailed'), {
-            description: t(serverSyncErrorKey(result.status)),
-          });
-          return false;
-        }
-        setBaseline(merged);
-        setData(merged);
-        clearBrandingSettingsPreview();
-        flashSaved();
-        if (!options?.skipToast) {
-          notify.success(toast?.saveSuccessMessage ?? saveSuccessMessage, {
-            description: toast?.saveSuccessDescription ?? saveSuccessDescription,
-          });
-        }
-        return true;
-      } finally {
-        setSaving(false);
+  const handleSave = async (
+    toast?: UseBrandingDraftSaveToast,
+    options?: UseBrandingDraftSaveOptions,
+  ): Promise<boolean> => {
+    setSaving(true);
+    try {
+      const cleanedData = sanitizeBrandingSocialLinks(data);
+      const merged = mergeBrandingSettings(cleanedData);
+      const result = await saveBrandingSettings(merged);
+      if (!result.ok) {
+        notify.error(t("settings.serverSaveFailed"), {
+          description: t(serverSyncErrorKey(result.status)),
+        });
+        return false;
       }
-    });
-
-  const handleSaveIdentity = (async (toast?: UseBrandingDraftSaveToast): Promise<boolean> => {
-      setSaving(true);
-      try {
-        const cleanedData = sanitizeBrandingSocialLinks(data);
-        const persisted = mergeBrandingIdentityForSave(cleanedData, baseline);
-        const result = await saveBrandingSettings(persisted);
-        if (!result.ok) {
-          notify.error(t('settings.serverSaveFailed'), {
-            description: t(serverSyncErrorKey(result.status)),
-          });
-          return false;
-        }
-        const nextData = retainThemeDraftAfterIdentitySave(persisted, cleanedData);
-        setBaseline(persisted);
-        setData(nextData);
-        previewBrandingSettings(buildBrandingPreviewPatch(nextData, trackKeys));
-        flashSaved();
+      setBaseline(merged);
+      setData(merged);
+      clearBrandingSettingsPreview();
+      flashSaved();
+      if (!options?.skipToast) {
         notify.success(toast?.saveSuccessMessage ?? saveSuccessMessage, {
           description: toast?.saveSuccessDescription ?? saveSuccessDescription,
         });
-        return true;
-      } finally {
-        setSaving(false);
       }
-    });
+      return true;
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  const handleDiscardIdentity = ((): void => {
+  const handleSaveIdentity = async (toast?: UseBrandingDraftSaveToast): Promise<boolean> => {
+    setSaving(true);
+    try {
+      const cleanedData = sanitizeBrandingSocialLinks(data);
+      const persisted = mergeBrandingIdentityForSave(cleanedData, baseline);
+      const result = await saveBrandingSettings(persisted);
+      if (!result.ok) {
+        notify.error(t("settings.serverSaveFailed"), {
+          description: t(serverSyncErrorKey(result.status)),
+        });
+        return false;
+      }
+      const nextData = retainThemeDraftAfterIdentitySave(persisted, cleanedData);
+      setBaseline(persisted);
+      setData(nextData);
+      previewBrandingSettings(buildBrandingPreviewPatch(nextData, trackKeys));
+      flashSaved();
+      notify.success(toast?.saveSuccessMessage ?? saveSuccessMessage, {
+        description: toast?.saveSuccessDescription ?? saveSuccessDescription,
+      });
+      return true;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDiscardIdentity = (): void => {
     setData((current) => resetBrandingIdentityFields(current, baseline));
     clearSaved();
-  });
+  };
 
   return {
     data,

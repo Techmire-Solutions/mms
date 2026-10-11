@@ -8,7 +8,6 @@ export const DASHBOARD_LOW_ATTENDANCE_THRESHOLD = 75;
 /** Mark low-attendance notification urgent below this percent. */
 export const DASHBOARD_URGENT_ATTENDANCE_THRESHOLD = 60;
 
-
 export interface DashboardPreferences {
   disabledCardIds: string[];
   gridMode: "comfortable" | "compact";
@@ -111,10 +110,7 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
-function isOneOf<T extends readonly string[]>(
-  value: unknown,
-  options: T,
-): value is (T)[number] {
+function isOneOf<T extends readonly string[]>(value: unknown, options: T): value is T[number] {
   return typeof value === "string" && (options as readonly string[]).includes(value);
 }
 
@@ -231,13 +227,7 @@ export type HasanatChartType = "pie" | "bar" | "radar";
 
 /** Color-token values selectable across dashboard charts. */
 export type ChartColorOption =
-  | "emerald"
-  | "blue"
-  | "violet"
-  | "amber"
-  | "red"
-  | "semantic"
-  | "mixed";
+  "emerald" | "blue" | "violet" | "amber" | "red" | "semantic" | "mixed";
 
 export {
   type ChartOption,
@@ -248,4 +238,4 @@ export {
   ENROLLMENT_CHART_COLOR_OPTIONS,
   REVENUE_CHART_COLOR_OPTIONS,
   HASANAT_CHART_COLOR_OPTIONS,
-} from './dashboardPreferencesChartOptions.js';
+} from "./dashboardPreferencesChartOptions.js";

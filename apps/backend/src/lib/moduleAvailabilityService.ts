@@ -1,5 +1,5 @@
-import { buildModuleAvailability, type ModuleAvailabilityMap } from '@mms/shared';
-import { getWorkspaceModuleAccessRow } from '../db/repositories/workspaceModuleAccessRepository.js';
+import { buildModuleAvailability, type ModuleAvailabilityMap } from "@mms/shared";
+import { getWorkspaceModuleAccessRow } from "../db/repositories/workspaceModuleAccessRepository.js";
 
 /**
  * Short backstop TTL only: every grant/enablement write calls
@@ -15,7 +15,7 @@ const cache = new Map<string, { expiresAt: number; availability: ModuleAvailabil
 export class ModuleAvailabilityUnavailableError extends Error {
   constructor(tenant: string, cause?: unknown) {
     super(`Module availability could not be loaded for tenant "${tenant}"`, { cause });
-    this.name = 'ModuleAvailabilityUnavailableError';
+    this.name = "ModuleAvailabilityUnavailableError";
   }
 }
 
@@ -24,7 +24,7 @@ function normalizeTenant(tenant: string): string {
 }
 
 function isTestRuntime(): boolean {
-  return process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST);
+  return process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
 }
 
 /** Platform grants + tenant enablement for a workspace, from the workspace row. */
@@ -36,7 +36,7 @@ export async function loadModuleAvailability(tenant: string): Promise<ModuleAvai
   let availability: ModuleAvailabilityMap;
   try {
     const row = await getWorkspaceModuleAccessRow(key);
-    if (!row) throw new Error('Workspace row not found');
+    if (!row) throw new Error("Workspace row not found");
     availability = buildModuleAvailability(row.grantedModules, row.enabledModules);
   } catch (error) {
     // Mocked unit suites run without a database and expect default-enabled

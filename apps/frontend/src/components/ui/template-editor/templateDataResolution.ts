@@ -40,7 +40,8 @@ export function resolveElementGeometry(
 ): ElementGeometry {
   const st = (el.style || {}) as ElementStyle;
   const isArabicScript = isRtlText(text || el.label || "");
-  const direction = (st.direction as "ltr" | "rtl" | undefined) || (isArabicScript ? "rtl" : appDir);
+  const direction =
+    (st.direction as "ltr" | "rtl" | undefined) || (isArabicScript ? "rtl" : appDir);
   const textAlign =
     (st.textAlign as "left" | "center" | "right" | undefined) ||
     (direction === "rtl" ? "right" : "left");
@@ -131,4 +132,3 @@ export function resolveQrPayload(
   if (el.label && el.label !== qrCodeLabel && el.label !== "QR Code") return el.label;
   return placeholder;
 }
-

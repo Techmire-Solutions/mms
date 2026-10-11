@@ -22,7 +22,7 @@ export interface VisualizerConfig {
 export function getFieldLabel(
   fieldValue: string,
   defaultLabel: string,
-  t: (key: AppTranslationKey, params?: Record<string, string | number>) => string
+  t: (key: AppTranslationKey, params?: Record<string, string | number>) => string,
 ): string {
   const transKey = `reports.fields.${fieldValue}`;
   const translated = t(transKey as AppTranslationKey);
@@ -39,7 +39,7 @@ export function getFieldLabel(
 export function getCollectionLabel(
   collectionValue: string,
   defaultLabel: string,
-  t: (key: AppTranslationKey, params?: Record<string, string | number>) => string
+  t: (key: AppTranslationKey, params?: Record<string, string | number>) => string,
 ): string {
   const transKey = `reports.collections.${collectionValue}`;
   const translated = t(transKey as AppTranslationKey);

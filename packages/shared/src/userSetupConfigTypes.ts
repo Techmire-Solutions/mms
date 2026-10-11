@@ -1,19 +1,13 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import {
-  DEFAULT_USERS_SETTINGS,
-  type UsersSettings,
-} from './usersModuleSettings.js';
-import {
-  USERS_TAB_REGISTRY,
-  INITIAL_USERS_FIELD_SEED,
-} from './moduleFieldSetupPersons.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
-import type { WorkspaceRole } from './userEntityTypes.js';
-import { DEFAULT_WORKSPACE_ROLES_MAP } from './userRbacRegistry.js';
-import { isSuperAdminRole } from './userRoleUtils.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { DEFAULT_USERS_SETTINGS, type UsersSettings } from "./usersModuleSettings.js";
+import { USERS_TAB_REGISTRY, INITIAL_USERS_FIELD_SEED } from "./moduleFieldSetupPersons.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
+import type { WorkspaceRole } from "./userEntityTypes.js";
+import { DEFAULT_WORKSPACE_ROLES_MAP } from "./userRbacRegistry.js";
+import { isSuperAdminRole } from "./userRoleUtils.js";
 
 /** Deep clone {@link INITIAL_USERS_FIELD_SEED} for default and Setup states. */
 export function cloneUsersFieldSeed(): Record<string, FieldDefinition[]> {
@@ -36,7 +30,7 @@ export function isUsersSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Account Info Setup tab). */
 export function isUsersLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -46,7 +40,7 @@ export function isUsersLockedEnabledTab(tabKey: string): boolean {
 export function resolveUsersFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneUsersFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -96,7 +90,7 @@ const userFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
   .strict();
 
 export const userFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, userFieldConfigPutBodyBaseSchema);
 
@@ -112,30 +106,33 @@ export const userPreferencesPutBodySchema = z
 
 export type UserModulePreferences = Pick<
   UsersSettings,
-  | 'allowSelfRegistration'
-  | 'requireEmailVerification'
-  | 'defaultViewLayout'
-  | 'workspaceRoles'
+  "allowSelfRegistration" | "requireEmailVerification" | "defaultViewLayout" | "workspaceRoles"
 >;
 
 const PREF_KEYS = [
-  'allowSelfRegistration',
-  'requireEmailVerification',
-  'defaultViewLayout',
-  'workspaceRoles',
+  "allowSelfRegistration",
+  "requireEmailVerification",
+  "defaultViewLayout",
+  "workspaceRoles",
 ] as const;
 
-export function normalizeWorkspaceRoles(raw: unknown, actorRole?: string): WorkspaceRole[] | undefined {
+export function normalizeWorkspaceRoles(
+  raw: unknown,
+  actorRole?: string,
+): WorkspaceRole[] | undefined {
   if (!Array.isArray(raw)) return undefined;
   let roles = raw.filter(
     (role): role is WorkspaceRole =>
-      !!role && typeof role === 'object' && !Array.isArray(role) && typeof (role as { id?: unknown }).id === 'string',
+      !!role &&
+      typeof role === "object" &&
+      !Array.isArray(role) &&
+      typeof (role as { id?: unknown }).id === "string",
   );
   if (roles.length === 0) return undefined;
 
   // When actor is not Super Admin, preserve Super Admin role definition and full permissions
   if (actorRole && !isSuperAdminRole(actorRole)) {
-    const defaultSuperAdmin = DEFAULT_WORKSPACE_ROLES_MAP['super_admin'];
+    const defaultSuperAdmin = DEFAULT_WORKSPACE_ROLES_MAP["super_admin"];
     if (defaultSuperAdmin) {
       const hasSuperAdmin = roles.some((r) => isSuperAdminRole(r.id));
       if (!hasSuperAdmin) {
@@ -160,21 +157,21 @@ export function normalizeUserModulePreferences(
     defaultViewLayout: DEFAULT_USERS_SETTINGS.defaultViewLayout,
     workspaceRoles: DEFAULT_USERS_SETTINGS.workspaceRoles,
   };
-  if (!partial || typeof partial !== 'object') return { ...defaults };
+  if (!partial || typeof partial !== "object") return { ...defaults };
 
   const workspaceRoles = normalizeWorkspaceRoles(partial.workspaceRoles, actorRole);
 
   return {
     allowSelfRegistration:
-      typeof partial.allowSelfRegistration === 'boolean'
+      typeof partial.allowSelfRegistration === "boolean"
         ? partial.allowSelfRegistration
         : defaults.allowSelfRegistration,
     requireEmailVerification:
-      typeof partial.requireEmailVerification === 'boolean'
+      typeof partial.requireEmailVerification === "boolean"
         ? partial.requireEmailVerification
         : defaults.requireEmailVerification,
     defaultViewLayout:
-      typeof partial.defaultViewLayout === 'string' && partial.defaultViewLayout.trim()
+      typeof partial.defaultViewLayout === "string" && partial.defaultViewLayout.trim()
         ? partial.defaultViewLayout.trim()
         : defaults.defaultViewLayout,
     workspaceRoles: workspaceRoles ?? defaults.workspaceRoles,
@@ -199,7 +196,7 @@ export function stripUserFieldConfigForPersist(
 /** Normalize UsersSettings from typed REST or legacy document blobs. */
 export function normalizeUsersSettings(config: unknown): UsersSettings {
   const defaults = { ...DEFAULT_USERS_SETTINGS, formTabs: [...USERS_TAB_REGISTRY] };
-  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
     return { ...defaults };
   }
   const raw = config as Record<string, unknown>;
@@ -209,14 +206,10 @@ export function normalizeUsersSettings(config: unknown): UsersSettings {
     ...(raw as Partial<UsersSettings>),
     ...prefs,
     customFields: Array.isArray(raw.customFields)
-      ? (raw.customFields as UsersSettings['customFields'])
+      ? (raw.customFields as UsersSettings["customFields"])
       : defaults.customFields,
-    fieldOrder: Array.isArray(raw.fieldOrder)
-      ? (raw.fieldOrder as string[])
-      : defaults.fieldOrder,
-    formTabs: Array.isArray(raw.formTabs)
-      ? (raw.formTabs as TabDefinition[])
-      : defaults.formTabs,
+    fieldOrder: Array.isArray(raw.fieldOrder) ? (raw.fieldOrder as string[]) : defaults.fieldOrder,
+    formTabs: Array.isArray(raw.formTabs) ? (raw.formTabs as TabDefinition[]) : defaults.formTabs,
     enabledTabs: Array.isArray(raw.enabledTabs)
       ? (raw.enabledTabs as string[])
       : (raw.enabledTabs as string[] | undefined),
@@ -224,7 +217,7 @@ export function normalizeUsersSettings(config: unknown): UsersSettings {
       ? (raw.requiredTabs as string[])
       : (raw.requiredTabs as string[] | undefined),
     fields: resolveUsersFieldsMap(
-      raw.fields && typeof raw.fields === 'object' && !Array.isArray(raw.fields)
+      raw.fields && typeof raw.fields === "object" && !Array.isArray(raw.fields)
         ? (raw.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -253,7 +246,7 @@ export function composeUsersSettings(
     preferences as Partial<UserModulePreferences> | null,
   );
   return normalizeUsersSettings({
-    ...(fieldConfig && typeof fieldConfig === 'object' && !Array.isArray(fieldConfig)
+    ...(fieldConfig && typeof fieldConfig === "object" && !Array.isArray(fieldConfig)
       ? (fieldConfig as Record<string, unknown>)
       : {}),
     ...prefs,
@@ -270,9 +263,7 @@ export function mergeUsersFormTabsFromApi(
   _fields?: Record<string, FieldDefinition[]> | undefined,
 ): TabDefinition[] {
   const documentOrDefault =
-    documentFormTabs && documentFormTabs.length > 0
-      ? documentFormTabs
-      : [...USERS_TAB_REGISTRY];
+    documentFormTabs && documentFormTabs.length > 0 ? documentFormTabs : [...USERS_TAB_REGISTRY];
 
   const merged =
     apiTabs.length === 0

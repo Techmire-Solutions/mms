@@ -1,11 +1,11 @@
-import React from 'react';
-import { User, Calendar, Code2 } from 'lucide-react';
-import { formatDate } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { getActionMeta } from './activityLogMeta';
-import type { PlatformActivityLogItem } from '@/platform/hooks/usePlatformActivityLogs';
+import React from "react";
+import { User, Calendar, Code2 } from "lucide-react";
+import { formatDate } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { getActionMeta } from "./activityLogMeta";
+import type { PlatformActivityLogItem } from "@/platform/hooks/usePlatformActivityLogs";
 
 interface ActivityLogRowProps {
   log: PlatformActivityLogItem;
@@ -29,12 +29,13 @@ export function ActivityLogRow({ log, onInspect }: ActivityLogRowProps): React.J
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge tone={tone} pill size="md" className="uppercase tracking-wider font-bold">
-              {log.action.replace(/_/g, ' ')}
+              {log.action.replace(/_/g, " ")}
             </Badge>
 
             {log.targetResource && (
               <Badge tone="muted" size="sm" className="font-medium">
-                {log.targetResource}{log.targetId ? `: ${log.targetId}` : ''}
+                {log.targetResource}
+                {log.targetId ? `: ${log.targetId}` : ""}
               </Badge>
             )}
 
@@ -62,8 +63,8 @@ export function ActivityLogRow({ log, onInspect }: ActivityLogRowProps): React.J
               icon={Code2}
               onClick={() => onInspect(log)}
               className="min-w-11 text-muted-foreground hover:text-foreground"
-              title={t('platform.logs.inspectJson')}
-              aria-label={t('platform.logs.inspectJson')}
+              title={t("platform.logs.inspectJson")}
+              aria-label={t("platform.logs.inspectJson")}
             />
           </div>
         </div>

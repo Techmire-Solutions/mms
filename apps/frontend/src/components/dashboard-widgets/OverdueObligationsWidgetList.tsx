@@ -9,13 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { ListPagination } from "@/components/ui/ListPagination";
 import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import {
   OverdueUrgencyBadge,
   OverdueRemindButton,
@@ -94,14 +88,29 @@ export function OverdueObligationsWidgetList({
               <ModuleTableHeaderCell columnKey="dueDate" noWrap className="px-3 py-3 select-none">
                 {t("finance.columns.dueDate")}
               </ModuleTableHeaderCell>
-              <ModuleTableHeaderCell columnKey="amount" noWrap variant="currency" className="px-3 py-3 select-none">
+              <ModuleTableHeaderCell
+                columnKey="amount"
+                noWrap
+                variant="currency"
+                className="px-3 py-3 select-none"
+              >
                 {t("finance.columns.amount")}
               </ModuleTableHeaderCell>
-              <ModuleTableHeaderCell columnKey="status" noWrap variant="badge" className="px-3 py-3 select-none">
+              <ModuleTableHeaderCell
+                columnKey="status"
+                noWrap
+                variant="badge"
+                className="px-3 py-3 select-none"
+              >
                 {t("hasanat.columns.distribution.status")}
               </ModuleTableHeaderCell>
               {canWriteMessaging && (
-                <ModuleTableHeaderCell columnKey="actions" noWrap variant="action" className="px-3 py-3 select-none">
+                <ModuleTableHeaderCell
+                  columnKey="actions"
+                  noWrap
+                  variant="action"
+                  className="px-3 py-3 select-none"
+                >
                   {t("hasanat.columns.actions")}
                 </ModuleTableHeaderCell>
               )}
@@ -111,7 +120,12 @@ export function OverdueObligationsWidgetList({
             {paginatedStudents.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={canWriteMessaging ? 6 : 5} className="p-0">
-                  <EmptyState title={t("finance.report.noInvoicesMatch")} compact icon={null} className="select-none" />
+                  <EmptyState
+                    title={t("finance.report.noInvoicesMatch")}
+                    compact
+                    icon={null}
+                    className="select-none"
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -120,7 +134,10 @@ export function OverdueObligationsWidgetList({
                 const student = studentsById.get(String(overdueStudent.id));
                 const hasPhone = Boolean(student?.phone);
                 return (
-                  <TableRow key={`${overdueStudent.id}-${overdueStudent.dueDate}-${overdueStudent.amount}`} className="hover:bg-muted/20 transition-colors">
+                  <TableRow
+                    key={`${overdueStudent.id}-${overdueStudent.dueDate}-${overdueStudent.amount}`}
+                    className="hover:bg-muted/20 transition-colors"
+                  >
                     <TableCell className="px-5 py-3">
                       <div className="flex items-center gap-2 min-w-0">
                         <UserAvatar
@@ -129,26 +146,40 @@ export function OverdueObligationsWidgetList({
                           size="sm"
                           className="shrink-0"
                         />
-                        <span className="font-semibold text-foreground text-xs truncate">{overdueStudent.name}</span>
+                        <span className="font-semibold text-foreground text-xs truncate">
+                          {overdueStudent.name}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell truncate className="px-3 py-3">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <Scale className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
-                        <span className="text-xs text-foreground font-medium truncate max-w-36">{overdueStudent.obligationType}</span>
+                        <Scale
+                          className="w-3.5 h-3.5 text-muted-foreground shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="text-xs text-foreground font-medium truncate max-w-36">
+                          {overdueStudent.obligationType}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell noWrap className="px-3 py-3">
                       <div>
-                        <p className="text-xs text-foreground font-semibold m-0 tabular-nums">{formatDate(overdueStudent.dueDate)}</p>
+                        <p className="text-xs text-foreground font-semibold m-0 tabular-nums">
+                          {formatDate(overdueStudent.dueDate)}
+                        </p>
                         <p className="text-xs text-destructive font-bold mt-0.5 m-0 uppercase tracking-wide tabular-nums">
-                          {t("dashboard.widgets.daysOverdue", { count: overdueStudent.daysOverdue })}
+                          {t("dashboard.widgets.daysOverdue", {
+                            count: overdueStudent.daysOverdue,
+                          })}
                         </p>
                       </div>
                     </TableCell>
                     <TableCell variant="currency" noWrap className="px-3 py-3">
                       <span className="text-xs font-bold text-foreground">
-                        {formatMoney(overdueStudent.amount, overdueStudent.currency || activeCurrencyCode)}
+                        {formatMoney(
+                          overdueStudent.amount,
+                          overdueStudent.currency || activeCurrencyCode,
+                        )}
                       </span>
                     </TableCell>
                     <TableCell variant="badge" noWrap className="px-3 py-3">
@@ -176,7 +207,8 @@ export function OverdueObligationsWidgetList({
       <footer className="px-5 py-3.5 border-t border-border/45 flex flex-wrap items-center justify-between gap-2 bg-muted/10 select-none">
         <div className="flex flex-wrap items-center gap-4">
           <p className="text-xs font-bold text-success/90 uppercase tracking-wider m-0">
-            {remindedIds.size > 0 && t("dashboard.widgets.remindersSent", { count: remindedIds.size })}
+            {remindedIds.size > 0 &&
+              t("dashboard.widgets.remindersSent", { count: remindedIds.size })}
           </p>
           <ListPagination
             variant="compact"
@@ -186,7 +218,10 @@ export function OverdueObligationsWidgetList({
             onPageChange={onPageChange}
           />
         </div>
-        <Link to={ROUTES.finance} className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline">
+        <Link
+          to={ROUTES.finance}
+          className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline"
+        >
           {t("dashboard.widgets.viewAllOutstanding")}
         </Link>
       </footer>

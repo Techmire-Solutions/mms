@@ -1,37 +1,37 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import TenantScopedProviders from './TenantScopedProviders';
-import { useContactConfig } from '@/lib/contexts/ContactConfigContext';
+import React from "react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import TenantScopedProviders from "./TenantScopedProviders";
+import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 
-vi.mock('@/lib/host/useIsTenantHost', () => ({
+vi.mock("@/lib/host/useIsTenantHost", () => ({
   useIsTenantHost: vi.fn(),
 }));
 
-vi.mock('@/hooks/useTenantDatabaseUpdates', () => ({
+vi.mock("@/hooks/useTenantDatabaseUpdates", () => ({
   useTenantDatabaseUpdates: vi.fn(),
 }));
 
-vi.mock('@/lib/contexts/AuthContext', () => ({
+vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: vi.fn(),
 }));
 
-vi.mock('@/tenant/hooks/useBranding', () => ({
+vi.mock("@/tenant/hooks/useBranding", () => ({
   useBranding: vi.fn(),
 }));
 
-vi.mock('@mms/shared', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@mms/shared')>();
+vi.mock("@mms/shared", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/shared")>();
   return {
     ...actual,
     isInstitutionSetupComplete: vi.fn(),
   };
 });
 
-import { useIsTenantHost } from '@/lib/host/useIsTenantHost';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { isInstitutionSetupComplete } from '@mms/shared';
+import { useIsTenantHost } from "@/lib/host/useIsTenantHost";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { isInstitutionSetupComplete } from "@mms/shared";
 
 function TestContactConsumer(): React.JSX.Element {
   const { formTabsReady, fields } = useContactConfig();
@@ -43,12 +43,12 @@ function TestContactConsumer(): React.JSX.Element {
   );
 }
 
-describe('TenantScopedProviders', () => {
+describe("TenantScopedProviders", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders children directly when not on tenant host', () => {
+  it("renders children directly when not on tenant host", () => {
     vi.mocked(useIsTenantHost).mockReturnValue(false);
     vi.mocked(useAuth).mockReturnValue({
       isAuthenticated: false,
@@ -62,10 +62,10 @@ describe('TenantScopedProviders', () => {
       </TenantScopedProviders>,
     );
 
-    expect(html).toContain('Child Content');
+    expect(html).toContain("Child Content");
   });
 
-  it('mounts ContactConfigProvider on tenant host even when unauthenticated or setup incomplete', () => {
+  it("mounts ContactConfigProvider on tenant host even when unauthenticated or setup incomplete", () => {
     vi.mocked(useIsTenantHost).mockReturnValue(true);
     vi.mocked(useAuth).mockReturnValue({
       isAuthenticated: false,
@@ -75,7 +75,7 @@ describe('TenantScopedProviders', () => {
     vi.mocked(isInstitutionSetupComplete).mockReturnValue(false);
 
     const queryClient = new QueryClient();
-    let html = '';
+    let html = "";
     expect(() => {
       html = renderToStaticMarkup(
         <QueryClientProvider client={queryClient}>
@@ -86,17 +86,17 @@ describe('TenantScopedProviders', () => {
       );
     }).not.toThrow();
 
-    expect(html).toContain('ready');
-    expect(html).toContain('true');
+    expect(html).toContain("ready");
+    expect(html).toContain("true");
   });
 
-  it('useContactConfig gracefully degrades outside provider without throwing', () => {
-    let html = '';
+  it("useContactConfig gracefully degrades outside provider without throwing", () => {
+    let html = "";
     expect(() => {
       html = renderToStaticMarkup(<TestContactConsumer />);
     }).not.toThrow();
 
-    expect(html).toContain('ready');
-    expect(html).toContain('true');
+    expect(html).toContain("ready");
+    expect(html).toContain("true");
   });
 });

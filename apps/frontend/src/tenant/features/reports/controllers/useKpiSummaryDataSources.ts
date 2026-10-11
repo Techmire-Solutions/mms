@@ -1,23 +1,23 @@
-import { todayISO } from '@mms/shared';
-import { useAttendanceMetrics } from '@/tenant/hooks/collections/attendance';
-import { useFinanceMetrics } from '@/tenant/hooks/collections/finance';
-import { useAccountingMetrics } from '@/tenant/hooks/collections/accounting';
-import { useObligationsMetrics } from '@/tenant/hooks/collections/obligations';
-import { useUsersMetrics } from '@/tenant/hooks/collections/users';
-import { useMessagingMetrics } from '@/tenant/hooks/collections/messaging';
-import { useExaminationsMetrics } from '@/tenant/hooks/collections/examinations';
-import { useHasanatMetrics } from '@/tenant/hooks/collections/hasanat';
+import { todayISO } from "@mms/shared";
+import { useAttendanceMetrics } from "@/tenant/hooks/collections/attendance";
+import { useFinanceMetrics } from "@/tenant/hooks/collections/finance";
+import { useAccountingMetrics } from "@/tenant/hooks/collections/accounting";
+import { useObligationsMetrics } from "@/tenant/hooks/collections/obligations";
+import { useUsersMetrics } from "@/tenant/hooks/collections/users";
+import { useMessagingMetrics } from "@/tenant/hooks/collections/messaging";
+import { useExaminationsMetrics } from "@/tenant/hooks/collections/examinations";
+import { useHasanatMetrics } from "@/tenant/hooks/collections/hasanat";
 import {
   useQuestionBankMetrics,
   useQuestionBankQuestionsCollection,
   useQuestionBankResultsCollection,
   useQuestionBankTestsCollection,
-} from '@/tenant/hooks/collections/questionBank';
-import { useSessionsMetrics } from '@/tenant/hooks/collections/sessions';
-import { useContactsReportAnalytics } from '@/tenant/hooks/collections/contacts';
-import { useStudentsMetrics } from '@/tenant/hooks/collections/students';
-import { useFacultyMetrics } from '@/tenant/hooks/collections/faculty';
-import type { KpiCategoryFlags } from '@/components/ui/reports/kpiSummaryCategoryFlags';
+} from "@/tenant/hooks/collections/questionBank";
+import { useSessionsMetrics } from "@/tenant/hooks/collections/sessions";
+import { useContactsReportAnalytics } from "@/tenant/hooks/collections/contacts";
+import { useStudentsMetrics } from "@/tenant/hooks/collections/students";
+import { useFacultyMetrics } from "@/tenant/hooks/collections/faculty";
+import type { KpiCategoryFlags } from "@/components/ui/reports/kpiSummaryCategoryFlags";
 
 export type KpiSummaryDataSources = ReturnType<typeof useKpiSummaryDataSources>;
 
@@ -38,21 +38,31 @@ export function useKpiSummaryDataSources(category: string, flags: KpiCategoryFla
     needsContactAnalytics,
   } = flags;
 
-  const isAttendance = category === 'attendance';
-  const isFinancial = category === 'financial' || category === 'finance';
-  const isHasanat = category === 'hasanat';
-  const isSessions = category === 'sessions' || category === 'enrollments';
-  const isExaminations = category === 'examinations' || category === 'students';
-  const isQuestionBank = category === 'questionBank';
+  const isAttendance = category === "attendance";
+  const isFinancial = category === "financial" || category === "finance";
+  const isHasanat = category === "hasanat";
+  const isSessions = category === "sessions" || category === "enrollments";
+  const isExaminations = category === "examinations" || category === "students";
+  const isQuestionBank = category === "questionBank";
 
-  const { data: contactsReportData } = useContactsReportAnalytics({ enabled: needsContactAnalytics });
-  const { data: studentMetrics } = useStudentsMetrics({ enabled: isStudentsCategory || category === 'enrollments' });
-  const { data: facultyMetrics } = useFacultyMetrics({ enabled: isFacultyCategory || category === 'enrollments' });
+  const { data: contactsReportData } = useContactsReportAnalytics({
+    enabled: needsContactAnalytics,
+  });
+  const { data: studentMetrics } = useStudentsMetrics({
+    enabled: isStudentsCategory || category === "enrollments",
+  });
+  const { data: facultyMetrics } = useFacultyMetrics({
+    enabled: isFacultyCategory || category === "enrollments",
+  });
   const { data: crossStudentMetrics } = useStudentsMetrics({
-    enabled: !isStudentsCategory && !isContactsCategory && !isFacultyCategory && category !== 'enrollments',
+    enabled:
+      !isStudentsCategory &&
+      !isContactsCategory &&
+      !isFacultyCategory &&
+      category !== "enrollments",
   });
   const { data: crossFacultyMetrics } = useFacultyMetrics({
-    enabled: !isFacultyCategory && category !== 'enrollments',
+    enabled: !isFacultyCategory && category !== "enrollments",
   });
 
   const { data: attendanceMetrics } = useAttendanceMetrics(todayISO(), { enabled: isAttendance });
@@ -71,8 +81,8 @@ export function useKpiSummaryDataSources(category: string, flags: KpiCategoryFla
   const questionBankResults = useQuestionBankResultsCollection({ enabled: isQuestionBank });
 
   const contactAnalytics = contactsReportData?.analytics;
-  const auxiliaryStudentMetrics = category === 'enrollments' ? studentMetrics : crossStudentMetrics;
-  const auxiliaryFacultyMetrics = category === 'enrollments' ? facultyMetrics : crossFacultyMetrics;
+  const auxiliaryStudentMetrics = category === "enrollments" ? studentMetrics : crossStudentMetrics;
+  const auxiliaryFacultyMetrics = category === "enrollments" ? facultyMetrics : crossFacultyMetrics;
 
   return {
     contactAnalytics,

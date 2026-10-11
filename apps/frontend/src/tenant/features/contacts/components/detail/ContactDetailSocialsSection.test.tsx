@@ -9,9 +9,7 @@ const mockContact: Contact = {
   name: "Zayd Harith",
   firstName: "Zayd",
   lastName: "Harith",
-  socials: [
-    { platform: "twitter", url: "zayd_harith" },
-  ],
+  socials: [{ platform: "twitter", url: "zayd_harith" }],
   type: "student",
   status: "active",
   createdAt: "2024-01-01T00:00:00Z",
@@ -21,10 +19,7 @@ const mockContact: Contact = {
 describe("ContactDetailSocialsSection Component", () => {
   it("renders socials section rows correctly", () => {
     const html = renderToStaticMarkup(
-      <ContactDetailSocialsSection
-        contact={mockContact}
-        socialPlatforms={["twitter", "github"]}
-      />,
+      <ContactDetailSocialsSection contact={mockContact} socialPlatforms={["twitter", "github"]} />,
     );
 
     expect(html).toContain("zayd_harith");

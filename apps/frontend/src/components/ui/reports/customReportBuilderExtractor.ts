@@ -1,7 +1,4 @@
-import {
-  compileContactReportCellExtractor,
-  isContactsReportFieldId,
-} from "@mms/shared";
+import { compileContactReportCellExtractor, isContactsReportFieldId } from "@mms/shared";
 import type { DataSource } from "./customReportBuilderFields";
 
 export function toCamelCase(value: string): string {
@@ -9,9 +6,7 @@ export function toCamelCase(value: string): string {
   return cleaned
     .split(" ")
     .map((word, index) =>
-      index === 0
-        ? word.toLowerCase()
-        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+      index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
     )
     .join("");
 }
@@ -47,7 +42,13 @@ export function compilePreviewFieldExtractor(
     return {
       label,
       extract: (sourceRow) =>
-        String(sourceRow.name || sourceRow.studentName || sourceRow.facultyName || sourceRow.faculty || "—"),
+        String(
+          sourceRow.name ||
+            sourceRow.studentName ||
+            sourceRow.facultyName ||
+            sourceRow.faculty ||
+            "—",
+        ),
     };
   }
   if (selectedField === "Status") {
@@ -106,8 +107,8 @@ export function compilePreviewFieldExtractor(
         sourceRow.discountPct !== undefined
           ? `${sourceRow.discountPct}%`
           : sourceRow.discountAmt
-          ? `${currencyCode} ${sourceRow.discountAmt}`
-          : "0",
+            ? `${currencyCode} ${sourceRow.discountAmt}`
+            : "0",
     };
   }
   if (selectedField === "Final Amount") {
@@ -123,8 +124,8 @@ export function compilePreviewFieldExtractor(
         Number(sourceRow.capacity || 0) > 0
           ? `${Math.round((Number(sourceRow.enrolled || 0) / Number(sourceRow.capacity || 1)) * 100)}%`
           : sourceRow.rate
-          ? `${sourceRow.rate}%`
-          : "100%",
+            ? `${sourceRow.rate}%`
+            : "100%",
     };
   }
   if (

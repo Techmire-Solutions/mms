@@ -37,7 +37,7 @@ export interface TemplateElementRendererProps<TPayload = Record<string, unknown>
 }
 
 export const TemplateElementRenderer = React.memo(function TemplateElementRenderer<
-  TPayload = Record<string, unknown>
+  TPayload = Record<string, unknown>,
 >({
   el,
   isSelected,
@@ -73,7 +73,10 @@ export const TemplateElementRenderer = React.memo(function TemplateElementRender
       e.stopPropagation();
       onDeleteElement(el.id);
     } else if (
-      (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown") &&
+      (e.key === "ArrowLeft" ||
+        e.key === "ArrowRight" ||
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown") &&
       !isSelected
     ) {
       e.preventDefault();
@@ -121,7 +124,9 @@ export const TemplateElementRenderer = React.memo(function TemplateElementRender
       className={`group flex items-center overflow-visible px-1 focus-visible:outline-2 focus-visible:outline-ring ${
         !isPreviewMode && !isSelected ? "hover:border-primary/40" : ""
       } ${isNew ? "ring-2 ring-primary ring-offset-2 ring-offset-white" : ""} ${
-        el.h < 14 ? "before:absolute before:-top-2 before:-bottom-2 before:start-0 before:end-0 before:content-[''] print:before:hidden" : ""
+        el.h < 14
+          ? "before:absolute before:-top-2 before:-bottom-2 before:start-0 before:end-0 before:content-[''] print:before:hidden"
+          : ""
       }`}
     >
       <TemplateElementContent

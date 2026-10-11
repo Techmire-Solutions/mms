@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 /** Primary + accent swatches with hex values for theme summary rows. */
 export function SettingsColoursBadge({

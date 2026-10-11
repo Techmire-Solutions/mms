@@ -1,12 +1,12 @@
-import { randomUUID } from 'node:crypto';
-import type { FacultyImportJobPayload } from '@mms/shared';
-import { listFacultyDepartments } from '../../db/repositories/facultyDepartmentRepository.js';
-import { listFacultyDesignations } from '../../db/repositories/facultyDesignationRepository.js';
+import { randomUUID } from "node:crypto";
+import type { FacultyImportJobPayload } from "@mms/shared";
+import { listFacultyDepartments } from "../../db/repositories/facultyDepartmentRepository.js";
+import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import {
   createFaculty,
   loadFacultyPage,
   updateFacultyById,
-} from '../../services/facultyService.js';
+} from "../../services/facultyService.js";
 
 export interface FacultyImportJobContext {
   tenant: string;
@@ -32,7 +32,7 @@ export async function runFacultyMembersImportJob(
 
   const departments = await listFacultyDepartments(context.tenant, { limit: null });
   const designations = await listFacultyDesignations(context.tenant, { limit: null });
-  const norm = (value: string | null | undefined) => (value ?? '').trim().toLowerCase();
+  const norm = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
   const deptByKey = new Map<string, (typeof departments)[number]>();
   for (const d of departments) {
     deptByKey.set(norm(d.name), d);
@@ -40,7 +40,9 @@ export async function runFacultyMembersImportJob(
   }
   const resolveDesignation = (raw: string, deptId: string | undefined) => {
     const key = norm(raw);
-    const matches = designations.filter((d) => norm(d.name) === key || (d.code != null && norm(d.code) === key));
+    const matches = designations.filter(
+      (d) => norm(d.name) === key || (d.code != null && norm(d.code) === key),
+    );
     return matches.find((d) => deptId && d.departmentId === deptId) ?? matches[0];
   };
 
@@ -59,7 +61,7 @@ export async function runFacultyMembersImportJob(
         });
         const match = (page.faculty ?? []).find(
           (f) =>
-            String(f.employeeId ?? '')
+            String(f.employeeId ?? "")
               .trim()
               .toLowerCase() === row.employeeId!.trim().toLowerCase(),
         );
@@ -80,7 +82,7 @@ export async function runFacultyMembersImportJob(
         await updateFacultyById(existingId, patch);
       } else {
         const contactId = row.contactId?.trim();
-        if (!contactId) throw new Error('contactId required to create faculty');
+        if (!contactId) throw new Error("contactId required to create faculty");
         await createFaculty({
           id: randomUUID(),
           contactId,

@@ -26,10 +26,30 @@ export const AcademicReportKpis = React.memo(function AcademicReportKpis({
   return (
     <ModuleCommandMetricsGrid
       items={[
-        { icon: BookOpen, label: t("examinations.report.totalRecords"), value: totalRecords, accent: "primary" },
-        { icon: TrendingUp, label: t("examinations.report.classAvg"), value: `${averageMarks}%`, accent: "blue" },
-        { icon: Trophy, label: t("examinations.report.topScore"), value: `${topScore}%`, accent: "amber" },
-        { icon: Star, label: t("examinations.report.passRate"), value: `${passRate}%`, accent: "green" },
+        {
+          icon: BookOpen,
+          label: t("examinations.report.totalRecords"),
+          value: totalRecords,
+          accent: "primary",
+        },
+        {
+          icon: TrendingUp,
+          label: t("examinations.report.classAvg"),
+          value: `${averageMarks}%`,
+          accent: "blue",
+        },
+        {
+          icon: Trophy,
+          label: t("examinations.report.topScore"),
+          value: `${topScore}%`,
+          accent: "amber",
+        },
+        {
+          icon: Star,
+          label: t("examinations.report.passRate"),
+          value: `${passRate}%`,
+          accent: "green",
+        },
       ]}
     />
   );
@@ -55,18 +75,42 @@ export const AcademicReportFilterBanner = React.memo(function AcademicReportFilt
     <ActiveFilterBanner
       chips={[
         ...(selectedStudent
-          ? [{ key: "student", label: t("examinations.report.studentFilterLabel"), value: selectedStudent }]
+          ? [
+              {
+                key: "student",
+                label: t("examinations.report.studentFilterLabel"),
+                value: selectedStudent,
+              },
+            ]
           : []),
         ...(selectedClass
-          ? [{ key: "class", label: t("examinations.report.classFilterLabel"), value: selectedClass }]
+          ? [
+              {
+                key: "class",
+                label: t("examinations.report.classFilterLabel"),
+                value: selectedClass,
+              },
+            ]
           : []),
       ]}
       actions={[
         ...(selectedStudent
-          ? [{ key: "student", label: t("examinations.report.clearStudentFilter"), onClick: onClearStudent }]
+          ? [
+              {
+                key: "student",
+                label: t("examinations.report.clearStudentFilter"),
+                onClick: onClearStudent,
+              },
+            ]
           : []),
         ...(selectedClass
-          ? [{ key: "class", label: t("examinations.report.clearClassFilter"), onClick: onClearClass }]
+          ? [
+              {
+                key: "class",
+                label: t("examinations.report.clearClassFilter"),
+                onClick: onClearClass,
+              },
+            ]
           : []),
       ]}
     />
@@ -83,18 +127,25 @@ export const AcademicReportResultsTable = React.memo(function AcademicReportResu
   onToggleStudentFilter,
 }: AcademicReportResultsTableProps): React.JSX.Element {
   const { t } = useTranslation();
-  const headers = React.useMemo(() => [
-    t("examinations.report.colRank"),
-    t("examinations.report.colStudent"),
-    t("examinations.report.colClass"),
-    t("examinations.report.colSubject"),
-    t("examinations.report.colMarks"),
-    t("examinations.report.colGrade"),
-  ], [t]);
+  const headers = React.useMemo(
+    () => [
+      t("examinations.report.colRank"),
+      t("examinations.report.colStudent"),
+      t("examinations.report.colClass"),
+      t("examinations.report.colSubject"),
+      t("examinations.report.colMarks"),
+      t("examinations.report.colGrade"),
+    ],
+    [t],
+  );
 
   return (
     <>
-      <ExportToolbar title={t("examinations.report.examResultsTitle")} data={academicResults} headers={headers} />
+      <ExportToolbar
+        title={t("examinations.report.examResultsTitle")}
+        data={academicResults}
+        headers={headers}
+      />
       {academicResults.length === 0 ? (
         <EmptyState icon={BookOpen} title={t("examinations.report.noResultsFound")} compact />
       ) : (

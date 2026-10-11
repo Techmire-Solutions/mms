@@ -3,11 +3,8 @@ import {
   type FacultyRecord,
   type FacultyListPageResult,
   type FacultyListQuery,
-} from '@mms/shared';
-import {
-  FACULTY_API,
-  FACULTY_QUERY_KEY,
-} from '@/tenant/features/faculty/hooks/facultyQueryKeys';
+} from "@mms/shared";
+import { FACULTY_API, FACULTY_QUERY_KEY } from "@/tenant/features/faculty/hooks/facultyQueryKeys";
 
 export type { FacultyRecord, FacultyListPageResult };
 
@@ -19,21 +16,23 @@ export type FacultyPaginatedParams = FacultyListQuery & {
 
 export function buildFacultyPageUrl(params: FacultyPaginatedParams): string {
   const queryParams = new URLSearchParams();
-  queryParams.set('page', String(params.page));
-  queryParams.set('limit', String(params.limit ?? FACULTY_MODULE_MANIFEST.defaultPageSize));
-  if (params.search?.trim()) queryParams.set('search', params.search.trim());
-  if (params.status?.trim()) queryParams.set('status', params.status.trim());
-  if (params.specialization?.trim()) queryParams.set('specialization', params.specialization.trim());
-  if (params.gender?.trim()) queryParams.set('gender', params.gender.trim());
-  if (params.quickFilter && params.quickFilter !== 'all') queryParams.set('quickFilter', params.quickFilter);
-  if (params.sortField?.trim()) queryParams.set('sortField', params.sortField.trim());
-  if (params.sortDir?.trim()) queryParams.set('sortDir', params.sortDir.trim());
-  if (params.department?.trim()) queryParams.set('department', params.department.trim());
-  if (params.designation?.trim()) queryParams.set('designation', params.designation.trim());
+  queryParams.set("page", String(params.page));
+  queryParams.set("limit", String(params.limit ?? FACULTY_MODULE_MANIFEST.defaultPageSize));
+  if (params.search?.trim()) queryParams.set("search", params.search.trim());
+  if (params.status?.trim()) queryParams.set("status", params.status.trim());
+  if (params.specialization?.trim())
+    queryParams.set("specialization", params.specialization.trim());
+  if (params.gender?.trim()) queryParams.set("gender", params.gender.trim());
+  if (params.quickFilter && params.quickFilter !== "all")
+    queryParams.set("quickFilter", params.quickFilter);
+  if (params.sortField?.trim()) queryParams.set("sortField", params.sortField.trim());
+  if (params.sortDir?.trim()) queryParams.set("sortDir", params.sortDir.trim());
+  if (params.department?.trim()) queryParams.set("department", params.department.trim());
+  if (params.designation?.trim()) queryParams.set("designation", params.designation.trim());
   if (params.reportingFacultyId?.trim()) {
-    queryParams.set('reportingFacultyId', params.reportingFacultyId.trim());
+    queryParams.set("reportingFacultyId", params.reportingFacultyId.trim());
   }
-  if (params.includeDeleted) queryParams.set('includeDeleted', 'true');
+  if (params.includeDeleted) queryParams.set("includeDeleted", "true");
   return `${FACULTY_API}?${queryParams.toString()}`;
 }
 
@@ -41,22 +40,22 @@ export function facultyListQueryKeyParams(params: FacultyPaginatedParams) {
   return {
     page: params.page,
     limit: params.limit ?? FACULTY_MODULE_MANIFEST.defaultPageSize,
-    search: params.search?.trim() || '',
-    status: params.status?.trim() || '',
-    specialization: params.specialization?.trim() || '',
-    gender: params.gender?.trim() || '',
-    quickFilter: params.quickFilter && params.quickFilter !== 'all' ? params.quickFilter : 'all',
-    sortField: params.sortField?.trim() || '',
-    sortDir: params.sortDir?.trim() || '',
-    department: params.department?.trim() || '',
-    designation: params.designation?.trim() || '',
-    reportingFacultyId: params.reportingFacultyId?.trim() || '',
+    search: params.search?.trim() || "",
+    status: params.status?.trim() || "",
+    specialization: params.specialization?.trim() || "",
+    gender: params.gender?.trim() || "",
+    quickFilter: params.quickFilter && params.quickFilter !== "all" ? params.quickFilter : "all",
+    sortField: params.sortField?.trim() || "",
+    sortDir: params.sortDir?.trim() || "",
+    department: params.department?.trim() || "",
+    designation: params.designation?.trim() || "",
+    reportingFacultyId: params.reportingFacultyId?.trim() || "",
     includeDeleted: Boolean(params.includeDeleted),
   } as const;
 }
 
 export function facultyPaginatedQueryKey(params: FacultyPaginatedParams) {
-  return [...FACULTY_QUERY_KEY, 'page', facultyListQueryKeyParams(params)] as const;
+  return [...FACULTY_QUERY_KEY, "page", facultyListQueryKeyParams(params)] as const;
 }
 
 /** Keep previous page data only when filters match (avoid stale flash on filter change). */
@@ -80,4 +79,3 @@ export function sameFacultyListFilters(
     previous.limit === next.limit
   );
 }
-

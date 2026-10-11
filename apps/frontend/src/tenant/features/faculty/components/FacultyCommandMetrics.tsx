@@ -11,7 +11,7 @@ export interface FacultyCommandMetricsProps {
   shown: number;
 }
 
-export const FacultyCommandMetrics = (function FacultyCommandMetrics({
+export const FacultyCommandMetrics = function FacultyCommandMetrics({
   total,
   shown,
 }: FacultyCommandMetricsProps): React.JSX.Element {
@@ -29,12 +29,26 @@ export const FacultyCommandMetrics = (function FacultyCommandMetrics({
   }))();
 
   const items = (() => [
-    { icon: School, label: t("faculty.metrics.total"), value: metrics.total, accent: "primary" as const },
+    {
+      icon: School,
+      label: t("faculty.metrics.total"),
+      value: metrics.total,
+      accent: "primary" as const,
+    },
     { icon: Filter, label: t("faculty.metrics.filtered"), value: shown, accent: "info" as const },
-    { icon: UserCheck, label: t("faculty.metrics.active"), value: metrics.active, accent: facultyStatusMetricAccent(activeStatus) },
-    { icon: UserX, label: t("faculty.metrics.inactive"), value: metrics.inactive, accent: facultyStatusMetricAccent(inactiveStatus) },
+    {
+      icon: UserCheck,
+      label: t("faculty.metrics.active"),
+      value: metrics.active,
+      accent: facultyStatusMetricAccent(activeStatus),
+    },
+    {
+      icon: UserX,
+      label: t("faculty.metrics.inactive"),
+      value: metrics.inactive,
+      accent: facultyStatusMetricAccent(inactiveStatus),
+    },
   ])();
 
   return <ModuleCommandMetricsGrid items={items} />;
-});
-
+};

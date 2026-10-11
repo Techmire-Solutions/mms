@@ -1,7 +1,7 @@
-import { and, eq, inArray, desc, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type ActivityLog, type RepositoryListOptions } from '@mms/shared';
-import { userActivityLogs } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
+import { and, eq, inArray, desc, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type ActivityLog, type RepositoryListOptions } from "@mms/shared";
+import { userActivityLogs } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
 
 type ActivityLogRow = typeof userActivityLogs.$inferSelect;
 
@@ -9,7 +9,7 @@ function activityLogRowToRecord(row: ActivityLogRow): ActivityLog {
   return {
     id: row.id,
     userId: row.userId,
-    action: row.action as ActivityLog['action'],
+    action: row.action as ActivityLog["action"],
     module: row.module,
     detail: row.detail,
     ts: row.ts,
@@ -64,7 +64,9 @@ export async function findActivityLogById(tenant: string, id: string): Promise<A
         ip: userActivityLogs.ip,
       })
       .from(userActivityLogs)
-      .where(and(eq(userActivityLogs.workspaceSubdomain, subdomain), eq(userActivityLogs.id, cleanId)))
+      .where(
+        and(eq(userActivityLogs.workspaceSubdomain, subdomain), eq(userActivityLogs.id, cleanId)),
+      )
       .limit(1);
     const row = rows[0];
     return row ? activityLogRowToRecord(row as ActivityLogRow) : null;
@@ -88,7 +90,12 @@ export async function findActivityLogsByIds(tenant: string, ids: string[]): Prom
         ip: userActivityLogs.ip,
       })
       .from(userActivityLogs)
-      .where(and(eq(userActivityLogs.workspaceSubdomain, subdomain), inArray(userActivityLogs.id, cleanIds)));
+      .where(
+        and(
+          eq(userActivityLogs.workspaceSubdomain, subdomain),
+          inArray(userActivityLogs.id, cleanIds),
+        ),
+      );
     return rows.map((r) => activityLogRowToRecord(r as ActivityLogRow));
   });
 }
@@ -104,9 +111,9 @@ export async function saveActivityLog(tenant: string, record: ActivityLog): Prom
         userId: record.userId,
         action: record.action,
         module: record.module,
-        detail: record.detail ?? '',
+        detail: record.detail ?? "",
         ts: record.ts,
-        ip: record.ip ?? '',
+        ip: record.ip ?? "",
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -145,9 +152,9 @@ export async function bulkSaveActivityLogs(tenant: string, records: ActivityLog[
           userId: record.userId,
           action: record.action,
           module: record.module,
-          detail: record.detail ?? '',
+          detail: record.detail ?? "",
           ts: record.ts,
-          ip: record.ip ?? '',
+          ip: record.ip ?? "",
           createdAt: new Date(),
           updatedAt: new Date(),
         })),
@@ -189,9 +196,9 @@ export async function replaceActivityLogsForWorkspace(
           userId: record.userId,
           action: record.action,
           module: record.module,
-          detail: record.detail ?? '',
+          detail: record.detail ?? "",
           ts: record.ts,
-          ip: record.ip ?? '',
+          ip: record.ip ?? "",
           createdAt: new Date(),
           updatedAt: new Date(),
         })),

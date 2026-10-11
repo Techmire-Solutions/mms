@@ -1,22 +1,22 @@
-import React from 'react';
-import { Activity } from 'lucide-react';
-import { formatDate, type ActivityLog } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { type TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { useGlobalSettings } from '@/tenant/hooks/useGlobalSettings';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { ReportDataGridContainer } from '@/tenant/components/moduleReports';
-import { ActivityActionBadge } from '@/tenant/features/users/components/UserBadges';
-import { WorkBatchTable, type WorkBatchTableColumn } from '@/components/common/work/WorkBatchTable';
+import React from "react";
+import { Activity } from "lucide-react";
+import { formatDate, type ActivityLog } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { type TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
+import { ActivityActionBadge } from "@/tenant/features/users/components/UserBadges";
+import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
 import { EntityCard } from "@/components/ui/EntityCard";
-import { StatGrid, StatRow } from '@/components/ui/StatGrid';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import {
   resolveVisibleColumns,
   toColumnResize,
   type DataTableColumnLayout,
-} from '@/components/common/data-table';
+} from "@/components/common/data-table";
 
 /** EntityCard tile (report) — not DirectoryCard. */
 export interface ActivityLogsListProps {
@@ -38,35 +38,35 @@ function useActivityLogColumns(
   return React.useMemo<WorkBatchTableColumn<ActivityLog>[]>(
     () => [
       {
-        id: 'time',
-        label: t('users.activityColTime'),
+        id: "time",
+        label: t("users.activityColTime"),
         noWrap: true,
-        cellClassName: 'px-3 py-2.5 text-xs text-muted-foreground',
+        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
         render: (log) => fmtTs(log.ts),
       },
       {
-        id: 'user',
-        label: t('users.activityColUser'),
-        cellClassName: 'px-3 py-2.5 text-xs font-semibold text-foreground',
+        id: "user",
+        label: t("users.activityColUser"),
+        cellClassName: "px-3 py-2.5 text-xs font-semibold text-foreground",
         render: (log) => userNameFor(log),
       },
       {
-        id: 'action',
-        label: t('users.activityColAction'),
-        cellClassName: 'px-3 py-2.5',
+        id: "action",
+        label: t("users.activityColAction"),
+        cellClassName: "px-3 py-2.5",
         render: (log) => <ActivityActionBadge action={log.action} />,
       },
       {
-        id: 'detail',
-        label: t('users.activityColDetail'),
-        cellClassName: 'px-3 py-2.5 text-xs text-muted-foreground',
+        id: "detail",
+        label: t("users.activityColDetail"),
+        cellClassName: "px-3 py-2.5 text-xs text-muted-foreground",
         render: (log) => log.detail,
       },
       {
-        id: 'ip',
-        label: t('users.activityColIp'),
+        id: "ip",
+        label: t("users.activityColIp"),
         noWrap: true,
-        cellClassName: 'px-3 py-2.5 font-mono text-xs text-muted-foreground',
+        cellClassName: "px-3 py-2.5 font-mono text-xs text-muted-foreground",
         render: (log) => log.ip,
       },
     ],
@@ -95,11 +95,11 @@ export function ActivityLogsList({
 
   const exportColumns = React.useMemo(
     () => [
-      { key: 'time', header: t('users.activityColTime') },
-      { key: 'user', header: t('users.activityColUser') },
-      { key: 'action', header: t('users.activityColAction') },
-      { key: 'detail', header: t('users.activityColDetail') },
-      { key: 'ip', header: t('users.activityColIp') },
+      { key: "time", header: t("users.activityColTime") },
+      { key: "user", header: t("users.activityColUser") },
+      { key: "action", header: t("users.activityColAction") },
+      { key: "detail", header: t("users.activityColDetail") },
+      { key: "ip", header: t("users.activityColIp") },
     ],
     [t],
   );
@@ -117,14 +117,12 @@ export function ActivityLogsList({
   );
 
   if (paginated.length === 0) {
-    return (
-      <EmptyState variant="dashed" title={t('users.activityEmpty')} icon={Activity} compact />
-    );
+    return <EmptyState variant="dashed" title={t("users.activityEmpty")} icon={Activity} compact />;
   }
 
   return (
     <ReportDataGridContainer
-      title={t('users.activity')}
+      title={t("users.activity")}
       columns={exportColumns}
       rows={exportRows}
       moduleId="users"
@@ -135,7 +133,7 @@ export function ActivityLogsList({
       i18nNamespace="users"
       paginationVariant="range"
     >
-      {viewMode === 'cards' ? (
+      {viewMode === "cards" ? (
         <EntityCardsGrid className="p-3">
           {paginated.map((log) => (
             <EntityCard key={log.id} className="space-y-3 p-4">
@@ -148,12 +146,12 @@ export function ActivityLogsList({
               </div>
               <StatGrid columns="1">
                 <StatRow
-                  label={t('users.activityColDetail')}
+                  label={t("users.activityColDetail")}
                   value={log.detail}
                   ddClassName="text-xs text-muted-foreground"
                 />
                 <StatRow
-                  label={t('users.activityColIp')}
+                  label={t("users.activityColIp")}
                   value={log.ip}
                   ddClassName="font-mono text-xs text-muted-foreground"
                 />
@@ -164,7 +162,9 @@ export function ActivityLogsList({
       ) : (
         <WorkBatchTable<ActivityLog>
           data={paginated}
-          columns={columnLayout ? resolveVisibleColumns(columns, columnLayout.columnRegistry) : columns}
+          columns={
+            columnLayout ? resolveVisibleColumns(columns, columnLayout.columnRegistry) : columns
+          }
           columnResize={toColumnResize(columnLayout)}
           bordered={false}
         />

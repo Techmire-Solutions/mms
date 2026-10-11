@@ -1,16 +1,13 @@
-import { UserCheck, UserMinus, UserPlus, UserX, Users } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import type {
-  FacultyCommandMetricsSnapshot,
-  FacultyQuickFilter,
-} from '@mms/shared';
-import { resolveFacultyStatusRoles } from '@mms/shared';
-import type { AccentColor } from '@/components/ui/statCardAccent';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { notify } from '@/lib/notify';
-import { applyFacultyWorkDrillDown } from '@/tenant/hooks/collections/faculty';
-import { resolveClassFacultyId, resolveClassFacultyName } from '@/lib/faculty/facultyAssignment';
-import type { FacultyWorkloadItem } from '@/components/ui/reports/facultyReportTypes';
+import { UserCheck, UserMinus, UserPlus, UserX, Users } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { FacultyCommandMetricsSnapshot, FacultyQuickFilter } from "@mms/shared";
+import { resolveFacultyStatusRoles } from "@mms/shared";
+import type { AccentColor } from "@/components/ui/statCardAccent";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { notify } from "@/lib/notify";
+import { applyFacultyWorkDrillDown } from "@/tenant/hooks/collections/faculty";
+import { resolveClassFacultyId, resolveClassFacultyName } from "@/lib/faculty/facultyAssignment";
+import type { FacultyWorkloadItem } from "@/components/ui/reports/facultyReportTypes";
 
 export interface FacultyReportMetricItem {
   icon: LucideIcon;
@@ -26,7 +23,7 @@ export function applyFacultyReportDrillDown(
   t: TranslationFunction,
   quickFilter: FacultyQuickFilter | undefined,
 ): void {
-  notify.message(t('faculty.drillDownApplied'));
+  notify.message(t("faculty.drillDownApplied"));
   applyFacultyWorkDrillDown(quickFilter ? { quickFilter } : {});
 }
 
@@ -38,15 +35,12 @@ export function buildFacultyReportMetricItems(input: {
   onStatusFilterChange: (status: string | null) => void;
   onDrillDown: (quickFilter: FacultyQuickFilter | undefined) => void;
 }): FacultyReportMetricItem[] {
+  const { t, metrics, reportStatusFilter, onStatusFilterChange, onDrillDown } = input;
   const {
-    t,
-    metrics,
-    reportStatusFilter,
-    onStatusFilterChange,
-    onDrillDown,
-  } = input;
-  const { active: activeStatus, inactive: inactiveStatus, onLeave: onLeaveStatus } =
-    resolveFacultyStatusRoles();
+    active: activeStatus,
+    inactive: inactiveStatus,
+    onLeave: onLeaveStatus,
+  } = resolveFacultyStatusRoles();
 
   const toggleStatus = (status: string): void =>
     onStatusFilterChange(reportStatusFilter === status ? null : status);
@@ -54,53 +48,53 @@ export function buildFacultyReportMetricItems(input: {
   return [
     {
       icon: Users,
-      label: t('faculty.report.totalFaculty'),
+      label: t("faculty.report.totalFaculty"),
       value: metrics?.total ?? 0,
-      accent: 'primary',
+      accent: "primary",
       isActive: !reportStatusFilter,
       onClick: () => {
         onStatusFilterChange(null);
-        onDrillDown('all');
+        onDrillDown("all");
       },
     },
     {
       icon: UserCheck,
-      label: t('faculty.metrics.active'),
+      label: t("faculty.metrics.active"),
       value: metrics?.active ?? 0,
-      accent: 'success',
+      accent: "success",
       isActive: reportStatusFilter === activeStatus,
       onClick: () => {
         toggleStatus(activeStatus);
-        onDrillDown('active');
+        onDrillDown("active");
       },
     },
     {
       icon: UserX,
-      label: t('faculty.metrics.inactive'),
+      label: t("faculty.metrics.inactive"),
       value: metrics?.inactive ?? 0,
-      accent: 'destructive',
+      accent: "destructive",
       isActive: reportStatusFilter === inactiveStatus,
       onClick: () => {
         toggleStatus(inactiveStatus);
-        onDrillDown('inactive');
+        onDrillDown("inactive");
       },
     },
     {
       icon: UserMinus,
-      label: t('faculty.metrics.onLeave'),
+      label: t("faculty.metrics.onLeave"),
       value: metrics?.onLeave ?? 0,
-      accent: 'warning',
+      accent: "warning",
       isActive: reportStatusFilter === onLeaveStatus,
       onClick: () => {
         toggleStatus(onLeaveStatus);
-        onDrillDown('onLeave');
+        onDrillDown("onLeave");
       },
     },
     {
       icon: UserPlus,
-      label: t('faculty.metrics.newThisPeriod'),
+      label: t("faculty.metrics.newThisPeriod"),
       value: metrics?.newThisPeriod ?? 0,
-      accent: 'secondary',
+      accent: "secondary",
       onClick: () => onDrillDown(undefined),
     },
   ];
@@ -120,7 +114,10 @@ export function computeFacultyWorkload(
   }>,
   resolveClassFaculty: (facultyId: string, facultyName: string) => string,
 ): FacultyWorkloadItem[] {
-  const workloadByFacultyName: Record<string, { classes: Set<string>; sessions: Set<string>; students: number }> = {};
+  const workloadByFacultyName: Record<
+    string,
+    { classes: Set<string>; sessions: Set<string>; students: number }
+  > = {};
   filteredSessions.forEach((session) => {
     (session.classes || []).forEach((sessionClass) => {
       const facultyName = resolveClassFaculty(
@@ -128,7 +125,11 @@ export function computeFacultyWorkload(
         resolveClassFacultyName(sessionClass),
       );
       if (!workloadByFacultyName[facultyName]) {
-        workloadByFacultyName[facultyName] = { classes: new Set(), sessions: new Set(), students: 0 };
+        workloadByFacultyName[facultyName] = {
+          classes: new Set(),
+          sessions: new Set(),
+          students: 0,
+        };
       }
       workloadByFacultyName[facultyName].classes.add(sessionClass.id);
       workloadByFacultyName[facultyName].sessions.add(session.id);
@@ -143,11 +144,15 @@ export function computeFacultyWorkload(
       sessions: workload.sessions.size,
       totalStudents: workload.students,
     }))
-    .sort((firstFaculty, secondFaculty) => secondFaculty.totalStudents - firstFaculty.totalStudents);
+    .sort(
+      (firstFaculty, secondFaculty) => secondFaculty.totalStudents - firstFaculty.totalStudents,
+    );
 }
 
 /** Summarizes total faculty, students, classes, and average students per faculty. */
-export function summarizeFacultyWorkload(workload: Array<{ classes: number; totalStudents: number }>) {
+export function summarizeFacultyWorkload(
+  workload: Array<{ classes: number; totalStudents: number }>,
+) {
   const totalFaculty = workload.length;
   const totalStudents = workload.reduce((total, faculty) => total + faculty.totalStudents, 0);
   const totalClasses = workload.reduce((total, faculty) => total + faculty.classes, 0);

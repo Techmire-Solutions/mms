@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiJson } from '@/lib/apiClient';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
+import { useQuery } from "@tanstack/react-query";
+import { apiJson } from "@/lib/apiClient";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 
 export interface PlatformTelemetryData {
   platformDb?: {
@@ -14,7 +14,7 @@ export interface PlatformTelemetryData {
     hasReplica: boolean;
   };
   tenantDb?: {
-    rlsIsolation: 'enforced';
+    rlsIsolation: "enforced";
     activeTenantsCount: number;
     totalTenantTransactions: number;
     tenantCapLimit: number;
@@ -49,8 +49,8 @@ export interface PlatformActivityTrendResponse {
   trend: PlatformActivityTrendItem[];
 }
 
-export const PLATFORM_TELEMETRY_QUERY_KEY = ['platform', 'telemetry'] as const;
-export const PLATFORM_ACTIVITY_TREND_QUERY_KEY = ['platform', 'activity-trend'] as const;
+export const PLATFORM_TELEMETRY_QUERY_KEY = ["platform", "telemetry"] as const;
+export const PLATFORM_ACTIVITY_TREND_QUERY_KEY = ["platform", "activity-trend"] as const;
 
 export interface UsePlatformTelemetryOptions {
   refetchInterval?: number | false;
@@ -69,7 +69,7 @@ export function usePlatformTelemetry(options?: UsePlatformTelemetryOptions): {
   const query = useQuery({
     queryKey: PLATFORM_TELEMETRY_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      return apiJson<PlatformTelemetryData>('/api/platform/admin/system/telemetry', {
+      return apiJson<PlatformTelemetryData>("/api/platform/admin/system/telemetry", {
         signal,
       });
     },
@@ -100,7 +100,7 @@ export function usePlatformActivityTrend(): {
     queryKey: PLATFORM_ACTIVITY_TREND_QUERY_KEY,
     queryFn: async ({ signal }) => {
       const res = await apiJson<PlatformActivityTrendResponse>(
-        '/api/platform/admin/system/activity-trend',
+        "/api/platform/admin/system/activity-trend",
         {
           signal,
         },

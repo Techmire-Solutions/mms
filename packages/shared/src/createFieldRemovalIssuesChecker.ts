@@ -1,4 +1,4 @@
-import type { ColumnRegistryEntry } from './contactTypes.js';
+import type { ColumnRegistryEntry } from "./contactTypes.js";
 
 export interface ModuleFieldRemovalIssuesOptions {
   systemFieldKeys: ReadonlySet<string>;
@@ -15,7 +15,7 @@ export interface ModuleFieldDependencyInput {
 }
 
 export interface ModuleFieldDependencyIssue {
-  area: 'systemField' | 'column';
+  area: "systemField" | "column";
   /** i18n key — FE passes to t() with optional { count }. */
   messageKey: string;
   count?: number;
@@ -49,19 +49,17 @@ export function createFieldRemovalIssuesChecker(options: ModuleFieldRemovalIssue
 
     if (isSeedFieldKey(fieldKey)) {
       issues.push({
-        area: 'systemField',
+        area: "systemField",
         messageKey: options.messageKeys.systemField,
       });
       return issues;
     }
 
     const columnKeys = new Set(columnKeysForField(fieldKey));
-    const column = columnRegistry.find(
-      (col) => columnKeys.has(col.key) && col.enabled !== false,
-    );
+    const column = columnRegistry.find((col) => columnKeys.has(col.key) && col.enabled !== false);
     if (column) {
       issues.push({
-        area: 'column',
+        area: "column",
         messageKey: options.messageKeys.fieldUsedInColumn,
       });
     }

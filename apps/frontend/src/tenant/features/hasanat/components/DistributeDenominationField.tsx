@@ -29,7 +29,12 @@ export function DistributeDenominationField({
 
   return (
     <div className="sm:col-span-2">
-      <Field id="denom" label={t("hasanat.form.denomination")} required error={errors?.denominationId}>
+      <Field
+        id="denom"
+        label={t("hasanat.form.denomination")}
+        required
+        error={errors?.denominationId}
+      >
         <FormSelectWithQuickCreate
           id="denom"
           name="denominationId"

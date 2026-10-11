@@ -22,7 +22,15 @@ export interface TemplateEditorProps<TPayload = Record<string, unknown>> {
   defaultTemplate?: DocumentTemplate<TPayload>;
   availableFields?: TemplateFieldDefinition<TPayload>[];
   presets?: DocumentTemplatePreset<TPayload>[];
-  documentType?: "invoice" | "receipt" | "report-card" | "student-card" | "ledger" | "certificate" | "voucher" | string;
+  documentType?:
+    | "invoice"
+    | "receipt"
+    | "report-card"
+    | "student-card"
+    | "ledger"
+    | "certificate"
+    | "voucher"
+    | string;
   sampleData?: TPayload;
   fullscreen?: boolean;
   onSave?: (template: DocumentTemplate<TPayload>) => void | Promise<void>;

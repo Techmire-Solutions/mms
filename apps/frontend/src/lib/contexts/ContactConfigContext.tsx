@@ -19,10 +19,23 @@ import {
   type ContactConfigContextType,
   type ContactsColumnConfig,
 } from "@/lib/contacts/contactConfigContextTypes";
-import { useContactPreferencesQuery, useContactPreferencesMutation } from "@/tenant/features/contacts/hooks/useContactSetupConfig";
-import { useContactLookupsQuery, useContactLookupMutation } from "@/tenant/features/contacts/hooks/useContactLookups";
-import { useContactsContractFieldConfig, useContactsContractUpdateFieldConfig } from "@/tenant/features/contacts/hooks/useContactsTsrHooks";
-import { DEFAULT_CONTACT_PREFERENCES, type ContactPreferences, type FieldConfig } from "@mms/shared";
+import {
+  useContactPreferencesQuery,
+  useContactPreferencesMutation,
+} from "@/tenant/features/contacts/hooks/useContactSetupConfig";
+import {
+  useContactLookupsQuery,
+  useContactLookupMutation,
+} from "@/tenant/features/contacts/hooks/useContactLookups";
+import {
+  useContactsContractFieldConfig,
+  useContactsContractUpdateFieldConfig,
+} from "@/tenant/features/contacts/hooks/useContactsTsrHooks";
+import {
+  DEFAULT_CONTACT_PREFERENCES,
+  type ContactPreferences,
+  type FieldConfig,
+} from "@mms/shared";
 import { useContactConfigProviderValue } from "@/lib/contacts/useContactConfigProviderValue";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -46,22 +59,30 @@ export function ContactConfigProvider({ children }: { children: ReactNode }) {
   const updatePrefs = (newPrefs: Partial<ContactPreferences>) => {
     const fullPrefs: ContactPreferences = {
       ...(prefsData || DEFAULT_CONTACT_PREFERENCES),
-      ...newPrefs
+      ...newPrefs,
     };
-    updatePrefsAsync(fullPrefs).catch((error) => reportClientError(error, { context: 'contacts.updatePrefs' }));
+    updatePrefsAsync(fullPrefs).catch((error) =>
+      reportClientError(error, { context: "contacts.updatePrefs" }),
+    );
   };
 
-  const { data: lookupsData, isLoading: lookupsLoading, error: lookupsError } = useContactLookupsQuery();
+  const {
+    data: lookupsData,
+    isLoading: lookupsLoading,
+    error: lookupsError,
+  } = useContactLookupsQuery();
   const { mutateAsync: updateLookupKind } = useContactLookupMutation();
 
   const { data: fieldConfigResponse } = useContactsContractFieldConfig(isAuthenticated);
   const { mutateAsync: updateFieldConfig } = useContactsContractUpdateFieldConfig();
-  
+
   const updateConfigAsync = async (nextConfig: FieldConfig) => {
     await updateFieldConfig({ body: nextConfig });
   };
   const updateConfig = (nextConfig: FieldConfig) => {
-    updateConfigAsync(nextConfig).catch((error) => reportClientError(error, { context: 'contacts.updateConfig' }));
+    updateConfigAsync(nextConfig).catch((error) =>
+      reportClientError(error, { context: "contacts.updateConfig" }),
+    );
   };
 
   const config = {
@@ -84,17 +105,28 @@ export function ContactConfigProvider({ children }: { children: ReactNode }) {
     updatePrefs,
     updatePrefsAsync,
     updateGenders: (genders: string[]) => updateLookupKind({ kind: "genders", items: genders }),
-    updateSocialPlatforms: (socialPlatforms: string[]) => updateLookupKind({ kind: "socialPlatforms", items: socialPlatforms }),
-    updateRelationships: (relationships: string[]) => updateLookupKind({ kind: "relationships", items: relationships }),
-    updatePhoneLabels: (phoneLabels: string[]) => updateLookupKind({ kind: "phoneLabels", items: phoneLabels }),
-    updateEmailLabels: (emailLabels: string[]) => updateLookupKind({ kind: "emailLabels", items: emailLabels }),
-    updateAddressLabels: (addressLabels: string[]) => updateLookupKind({ kind: "addressLabels", items: addressLabels }),
-    updateCountryCodes: (countryCodes: Array<{ country: string; code: string }>) => updateLookupKind({ kind: "countryCodes", items: countryCodes }),
-    updateEducationDegrees: (educationDegrees: string[]) => updateLookupKind({ kind: "educationDegrees", items: educationDegrees }),
-    updateEmploymentTypes: (employmentTypes: string[]) => updateLookupKind({ kind: "employmentTypes", items: employmentTypes }),
-    updateSkillCategories: (skillCategories: string[]) => updateLookupKind({ kind: "skillCategories", items: skillCategories }),
-    updateSkillProficiencies: (skillProficiencies: string[]) => updateLookupKind({ kind: "skillProficiencies", items: skillProficiencies }),
-    updateBankNames: (bankNames: string[]) => updateLookupKind({ kind: "bankNames", items: bankNames }),
+    updateSocialPlatforms: (socialPlatforms: string[]) =>
+      updateLookupKind({ kind: "socialPlatforms", items: socialPlatforms }),
+    updateRelationships: (relationships: string[]) =>
+      updateLookupKind({ kind: "relationships", items: relationships }),
+    updatePhoneLabels: (phoneLabels: string[]) =>
+      updateLookupKind({ kind: "phoneLabels", items: phoneLabels }),
+    updateEmailLabels: (emailLabels: string[]) =>
+      updateLookupKind({ kind: "emailLabels", items: emailLabels }),
+    updateAddressLabels: (addressLabels: string[]) =>
+      updateLookupKind({ kind: "addressLabels", items: addressLabels }),
+    updateCountryCodes: (countryCodes: Array<{ country: string; code: string }>) =>
+      updateLookupKind({ kind: "countryCodes", items: countryCodes }),
+    updateEducationDegrees: (educationDegrees: string[]) =>
+      updateLookupKind({ kind: "educationDegrees", items: educationDegrees }),
+    updateEmploymentTypes: (employmentTypes: string[]) =>
+      updateLookupKind({ kind: "employmentTypes", items: employmentTypes }),
+    updateSkillCategories: (skillCategories: string[]) =>
+      updateLookupKind({ kind: "skillCategories", items: skillCategories }),
+    updateSkillProficiencies: (skillProficiencies: string[]) =>
+      updateLookupKind({ kind: "skillProficiencies", items: skillProficiencies }),
+    updateBankNames: (bankNames: string[]) =>
+      updateLookupKind({ kind: "bankNames", items: bankNames }),
     updateTags: (tags: string[]) => updateLookupKind({ kind: "tags", items: tags }),
     ...(fieldConfigResponse?.body ?? {}),
     updateConfig,
@@ -103,11 +135,7 @@ export function ContactConfigProvider({ children }: { children: ReactNode }) {
 
   const value: ContactConfigContextType = useContactConfigProviderValue(config);
 
-  return (
-    <ContactConfigContext value={value}>
-      {children}
-    </ContactConfigContext>
-  );
+  return <ContactConfigContext value={value}>{children}</ContactConfigContext>;
 }
 
 /**
@@ -130,4 +158,3 @@ export function useContactConfig(): ContactConfigContextType {
 export function useContactColumns(): ContactsColumnConfig[] {
   return useContactConfig().visibleColumns;
 }
-

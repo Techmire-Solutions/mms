@@ -17,7 +17,12 @@ export interface StudentRelationshipInput {
   student: Student;
   studentContact: Contact | null | undefined;
   contactList: Contact[];
-  guardians: { fatherContactId?: string; guardianContactId?: string; fatherName?: string; guardianName?: string };
+  guardians: {
+    fatherContactId?: string;
+    guardianContactId?: string;
+    fatherName?: string;
+    guardianName?: string;
+  };
   t: TranslationFunction;
   emptyDash: string;
 }
@@ -64,24 +69,32 @@ export function buildStudentRelationships({
     relationshipKeySet.add(key);
 
     const resolvedGender = target?.gender;
-    const { display, label } = formatLocalizedRelationshipParts(
-      relationshipStr,
-      resolvedGender,
-      t,
-    );
+    const { display, label } = formatLocalizedRelationshipParts(relationshipStr, resolvedGender, t);
 
     const targetPhones: PhoneNumber[] =
       target?.phones && target.phones.length > 0
         ? target.phones
         : target?.phone || phoneHint
-          ? [{ number: (target?.phone || phoneHint)!, label: t("contacts.fields.phoneNumber"), isPrimary: true }]
+          ? [
+              {
+                number: (target?.phone || phoneHint)!,
+                label: t("contacts.fields.phoneNumber"),
+                isPrimary: true,
+              },
+            ]
           : [];
 
     const targetEmails: EmailAddress[] =
       target?.emails && target.emails.length > 0
         ? target.emails
         : target?.email || emailHint
-          ? [{ address: (target?.email || emailHint)!, label: t("contacts.fields.emailAddress"), isPrimary: true }]
+          ? [
+              {
+                address: (target?.email || emailHint)!,
+                label: t("contacts.fields.emailAddress"),
+                isPrimary: true,
+              },
+            ]
           : [];
 
     results.push({
@@ -106,7 +119,10 @@ export function buildStudentRelationships({
 
   function edgeIsInferred(targetId?: string, subject?: Contact | null): boolean {
     if (!targetId || !subject?.relationshipContacts) return false;
-    const found = subject.relationshipContacts.find((r: { contactId?: string | number; inferred?: boolean }) => String(r.contactId) === String(targetId));
+    const found = subject.relationshipContacts.find(
+      (r: { contactId?: string | number; inferred?: boolean }) =>
+        String(r.contactId) === String(targetId),
+    );
     return found?.inferred === true;
   }
 
@@ -121,24 +137,34 @@ export function buildStudentRelationships({
     );
   }
 
-  if (guardians.fatherContactId || guardians.fatherName || student.fatherName || student.fatherContactId) {
-    const fatherId = guardians.fatherContactId ? String(guardians.fatherContactId) : (student.fatherContactId ? String(student.fatherContactId) : undefined);
+  if (
+    guardians.fatherContactId ||
+    guardians.fatherName ||
+    student.fatherName ||
+    student.fatherContactId
+  ) {
+    const fatherId = guardians.fatherContactId
+      ? String(guardians.fatherContactId)
+      : student.fatherContactId
+        ? String(student.fatherContactId)
+        : undefined;
     const fatherName = guardians.fatherName || student.fatherName || undefined;
-    addRelationshipItem(
-      fatherId,
-      fatherName,
-      STUDENT_PARENT_RELATIONSHIP_LABEL,
-    );
+    addRelationshipItem(fatherId, fatherName, STUDENT_PARENT_RELATIONSHIP_LABEL);
   }
 
-  if (guardians.guardianContactId || guardians.guardianName || student.guardianName || student.guardianContactId) {
-    const guardianId = guardians.guardianContactId ? String(guardians.guardianContactId) : (student.guardianContactId ? String(student.guardianContactId) : undefined);
+  if (
+    guardians.guardianContactId ||
+    guardians.guardianName ||
+    student.guardianName ||
+    student.guardianContactId
+  ) {
+    const guardianId = guardians.guardianContactId
+      ? String(guardians.guardianContactId)
+      : student.guardianContactId
+        ? String(student.guardianContactId)
+        : undefined;
     const guardianName = guardians.guardianName || student.guardianName || undefined;
-    addRelationshipItem(
-      guardianId,
-      guardianName,
-      STUDENT_GUARDIAN_RELATIONSHIP_LABEL,
-    );
+    addRelationshipItem(guardianId, guardianName, STUDENT_GUARDIAN_RELATIONSHIP_LABEL);
   }
 
   return results;

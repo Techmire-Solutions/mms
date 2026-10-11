@@ -1,9 +1,9 @@
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type StoredTenantUser } from '@mms/shared';
-import { withTenantRead, withGlobalTenant } from '../tenant-context.js';
-import { tenantUsers } from '../schema.js';
-import { mapAuditTimestamps, toIsoString } from './repositoryMappers.js';
-import { getPreparedTenantUserById } from '../preparedStatements.js';
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type StoredTenantUser } from "@mms/shared";
+import { withTenantRead, withGlobalTenant } from "../tenant-context.js";
+import { tenantUsers } from "../schema.js";
+import { mapAuditTimestamps, toIsoString } from "./repositoryMappers.js";
+import { getPreparedTenantUserById } from "../preparedStatements.js";
 
 export type TenantUserRow = StoredTenantUser & Record<string, unknown>;
 
@@ -18,7 +18,9 @@ export function rowToTenantUser(row: typeof tenantUsers.$inferSelect): TenantUse
     passwordHash: row.passwordHash,
     name: row.name,
     role: row.role,
-    createdAt: audit.createdAt ?? (row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt)),
+    createdAt:
+      audit.createdAt ??
+      (row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt)),
     mustChangePassword: row.mustChangePassword,
     deletedAt: audit.deletedAt ?? null,
     deletedBy: audit.deletedBy ?? null,
@@ -82,10 +84,7 @@ export async function listTenantUsersByIds(
       .select(tenantUserColumns)
       .from(tenantUsers)
       .where(
-        and(
-          eq(tenantUsers.workspaceSubdomain, subdomain),
-          inArray(tenantUsers.id, uniqueIds),
-        ),
+        and(eq(tenantUsers.workspaceSubdomain, subdomain), inArray(tenantUsers.id, uniqueIds)),
       );
     return rows.map(rowToTenantUser);
   });
@@ -115,7 +114,7 @@ export async function countTenantUsersByWorkspace(workspaceSubdomain: string): P
       .select({ count: sql<string>`count(*)` })
       .from(tenantUsers)
       .where(and(eq(tenantUsers.workspaceSubdomain, subdomain), isNull(tenantUsers.deletedAt)));
-    return parseInt(rows[0]?.count ?? '0', 10);
+    return parseInt(rows[0]?.count ?? "0", 10);
   });
 }
 
@@ -133,7 +132,10 @@ export async function listTenantUsersByWorkspace(
       .from(tenantUsers)
       .where(
         includeDeleted
-          ? and(eq(tenantUsers.workspaceSubdomain, subdomain), sql`${tenantUsers.deletedAt} is not null`)
+          ? and(
+              eq(tenantUsers.workspaceSubdomain, subdomain),
+              sql`${tenantUsers.deletedAt} is not null`,
+            )
           : and(eq(tenantUsers.workspaceSubdomain, subdomain), isNull(tenantUsers.deletedAt)),
       )
       .limit(limit)
@@ -172,13 +174,13 @@ export async function findTenantUserRowById(
   return withTenantRead(subdomain, async (tx) => {
     let row: typeof tenantUsers.$inferSelect | undefined;
     if (
-      process.env.MMS_USE_PREPARED_STATEMENTS !== 'false' &&
-      typeof (tx as { execute?: unknown }).execute === 'function' &&
+      process.env.MMS_USE_PREPARED_STATEMENTS !== "false" &&
+      typeof (tx as { execute?: unknown }).execute === "function" &&
       (tx as { dialect?: unknown }).dialect !== undefined
     ) {
       try {
         const stmt = getPreparedTenantUserById(tx);
-        if (stmt && typeof stmt.execute === 'function') {
+        if (stmt && typeof stmt.execute === "function") {
           const rows = await stmt.execute({ subdomain, id: cleanId });
           row = rows[0];
         }
@@ -190,12 +192,7 @@ export async function findTenantUserRowById(
       const rows = await tx
         .select(tenantUserColumns)
         .from(tenantUsers)
-        .where(
-          and(
-            eq(tenantUsers.workspaceSubdomain, subdomain),
-            eq(tenantUsers.id, cleanId),
-          ),
-        );
+        .where(and(eq(tenantUsers.workspaceSubdomain, subdomain), eq(tenantUsers.id, cleanId)));
       row = rows[0];
     }
     return row ? rowToTenantUser(row) : null;

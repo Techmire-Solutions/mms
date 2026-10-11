@@ -23,7 +23,16 @@ export const DEFAULT_HASANAT_SETTINGS: HasanatSettings = {
   fields: {
     basic: INITIAL_HASANAT_FIELD_SEED.basic.map((f) => ({ ...f })),
   },
-  fieldOrder: ["denominationId", "recipientType", "recipientName", "recipientClass", "quantity", "issuedDate", "reason", "issuedBy"],
+  fieldOrder: [
+    "denominationId",
+    "recipientType",
+    "recipientName",
+    "recipientClass",
+    "quantity",
+    "issuedDate",
+    "reason",
+    "issuedBy",
+  ],
 };
 
 export const DEFAULT_HASANAT_FIELD_DEFS: ModuleFieldDef[] = [

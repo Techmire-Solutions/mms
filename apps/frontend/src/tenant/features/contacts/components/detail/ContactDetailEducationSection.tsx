@@ -23,7 +23,10 @@ export function ContactDetailEducationSection({
 
   if (educationList.length === 0) {
     return (
-      <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.education")}>
+      <DetailSectionCard
+        className={COLLECTION_CONTAINER_CLASS}
+        title={t("contacts.detail.education")}
+      >
         <div className="p-3 text-xs text-muted-foreground italic">
           {t("contacts.detail.emptyEducation")}
         </div>
@@ -32,10 +35,15 @@ export function ContactDetailEducationSection({
   }
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.education")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.detail.education")}
+    >
       {educationList.map((edu, idx) => {
         const fullDetails = [
-          edu.fieldOfStudy ? `${t("contacts.fields.educationFieldOfStudy")}: ${edu.fieldOfStudy}` : null,
+          edu.fieldOfStudy
+            ? `${t("contacts.fields.educationFieldOfStudy")}: ${edu.fieldOfStudy}`
+            : null,
           edu.year ? `${t("contacts.fields.educationYear")}: ${edu.year}` : null,
           edu.grade ? `${t("contacts.fields.educationGrade")}: ${edu.grade}` : null,
         ]

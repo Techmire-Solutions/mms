@@ -1,15 +1,15 @@
-import type { JSX } from 'react';
-import { Filter } from 'lucide-react';
+import type { JSX } from "react";
+import { Filter } from "lucide-react";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDropdown,
-} from '@/components/ui/ModuleFiltersMenuButton';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { Distribution } from '@/lib/data/hasanatData';
+} from "@/components/ui/ModuleFiltersMenuButton";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { Distribution } from "@/lib/data/hasanatData";
 
-type DistributionStatus = Distribution['status'];
+type DistributionStatus = Distribution["status"];
 
-const DISTRIBUTION_STATUSES: DistributionStatus[] = ['active', 'redeemed', 'returned'];
+const DISTRIBUTION_STATUSES: DistributionStatus[] = ["active", "redeemed", "returned"];
 
 interface HasanatFiltersMenuButtonProps {
   filterStatus: DistributionStatus[];
@@ -31,14 +31,14 @@ export function HasanatFiltersMenuButton({
 
   return (
     <ModuleFilterDropdown
-      label={t('hasanat.filters')}
+      label={t("hasanat.filters")}
       activeCount={activeFilterCount}
       icon={Filter}
-      clearLabel={t('hasanat.clearFilters')}
+      clearLabel={t("hasanat.clearFilters")}
       onClear={onClearFilters}
     >
       <ModuleFilterCheckboxGroup
-        label={t('hasanat.filter.status')}
+        label={t("hasanat.filter.status")}
         options={DISTRIBUTION_STATUSES.map((status) => ({
           value: status,
           label: statusLabels[status],

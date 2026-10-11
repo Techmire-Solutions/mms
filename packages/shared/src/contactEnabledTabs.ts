@@ -1,20 +1,17 @@
-import type { FieldConfig, TabDefinition } from './contactFieldSchemaTypes.js';
-import { canViewContactTab } from './contactFieldAccess.js';
-import { DEFAULT_ENABLED_TABS } from './contactPreferenceDefaults.js';
-import {
-  CONTACT_LEGACY_CUSTOM_FORM_TAB_KEY,
-  DEFAULT_FORM_TABS,
-} from './contactTabRegistry.js';
+import type { FieldConfig, TabDefinition } from "./contactFieldSchemaTypes.js";
+import { canViewContactTab } from "./contactFieldAccess.js";
+import { DEFAULT_ENABLED_TABS } from "./contactPreferenceDefaults.js";
+import { CONTACT_LEGACY_CUSTOM_FORM_TAB_KEY, DEFAULT_FORM_TABS } from "./contactTabRegistry.js";
 
 /** Form tabs Setup cannot disable; the form always treats them as on. */
-export const CONTACT_LOCKED_ENABLED_TABS = ['basic'] as const;
+export const CONTACT_LOCKED_ENABLED_TABS = ["basic"] as const;
 
 /**
  * Field keys Setup cannot disable or un-require (write schema always needs firstName).
  * Tab id → locked field keys.
  */
 export const CONTACT_LOCKED_FIELD_KEYS: Readonly<Record<string, readonly string[]>> = {
-  basic: ['firstName'],
+  basic: ["firstName"],
 };
 
 /** True when `tabKey` is a locked always-on Contacts form tab. */
@@ -67,10 +64,7 @@ export function withContactLockedEnabledTabs(tabIds: Iterable<string>): string[]
   return [...set];
 }
 
-function tabVisibleIgnoringEnabledFlag(
-  viewerRole: string,
-  tab: TabDefinition,
-): boolean {
+function tabVisibleIgnoringEnabledFlag(viewerRole: string, tab: TabDefinition): boolean {
   if (!tab.permissions?.length) return true;
   return tab.permissions.includes(viewerRole);
 }
@@ -81,7 +75,7 @@ function tabVisibleIgnoringEnabledFlag(
  * Otherwise falls back to {@link DEFAULT_ENABLED_TABS} ∪ `enabledTabs`.
  */
 export function resolveContactEnabledTabIds(
-  fieldConfig: Pick<FieldConfig, 'formTabs' | 'enabledTabs'>,
+  fieldConfig: Pick<FieldConfig, "formTabs" | "enabledTabs">,
   viewerRole: string,
 ): Set<string> {
   const formTabs = fieldConfig.formTabs;
@@ -98,9 +92,6 @@ export function resolveContactEnabledTabIds(
   }
 
   return new Set(
-    withContactLockedEnabledTabs([
-      ...DEFAULT_ENABLED_TABS,
-      ...(fieldConfig.enabledTabs || []),
-    ]),
+    withContactLockedEnabledTabs([...DEFAULT_ENABLED_TABS, ...(fieldConfig.enabledTabs || [])]),
   );
 }

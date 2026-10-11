@@ -3,10 +3,7 @@ import type { EntityDescriptor, FieldDefinition } from "@/types/entityRegistry";
 import { createEntityDescriptor } from "./entityDescriptorFactory";
 import type { CreateEntityDescriptorOptions } from "@/types/entityRegistry";
 
-export type StaticDescriptorInput<T> = Omit<
-  CreateEntityDescriptorOptions<T>,
-  "fields"
-> & {
+export type StaticDescriptorInput<T> = Omit<CreateEntityDescriptorOptions<T>, "fields"> & {
   fields: (FieldDefinition<T> & { labelKey?: string })[];
 };
 

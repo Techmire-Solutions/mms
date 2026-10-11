@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const hasanatReportComparisonSessionSchema = z.object({
   sessionId: z.string(),
@@ -32,7 +32,7 @@ import {
   type BaseReportComparisonQuery,
   normalizeReportComparisonQuery,
   reportComparisonQueryActive,
-} from './reportComparisonQuery.js';
+} from "./reportComparisonQuery.js";
 
 /** Optional ComparisonMode params for GET /hasanat/report-aggregates. */
 export type HasanatReportComparisonQuery = BaseReportComparisonQuery;

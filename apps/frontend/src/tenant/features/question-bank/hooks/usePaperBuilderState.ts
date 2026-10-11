@@ -48,31 +48,41 @@ export function usePaperBuilderState({
   const filteredQuestions = (() => {
     const normalizedSearch = search.trim().toLowerCase();
     return questions.filter((question) => {
-      const matchesSearch = !normalizedSearch || question.text.toLowerCase().includes(normalizedSearch);
+      const matchesSearch =
+        !normalizedSearch || question.text.toLowerCase().includes(normalizedSearch);
       const matchesCategory =
         categoryFilter === ALL_FILTER || getQuestionCategoryIds(question).includes(categoryFilter);
-      const matchesDifficulty = difficultyFilter === ALL_FILTER || question.difficulty === difficultyFilter;
+      const matchesDifficulty =
+        difficultyFilter === ALL_FILTER || question.difficulty === difficultyFilter;
       return matchesSearch && matchesCategory && matchesDifficulty;
     });
   })();
 
   const markDirty = () => setSaved(false);
 
-  const updateConfig = <Field extends keyof PaperConfig>(field: Field, value: PaperConfig[Field]) => {
+  const updateConfig = <Field extends keyof PaperConfig>(
+    field: Field,
+    value: PaperConfig[Field],
+  ) => {
     setConfig((draftConfig) => ({ ...draftConfig, [field]: value }));
     markDirty();
   };
 
   const updateSection = (sectionId: string, patch: Partial<PaperSection>) => {
     setSections((currentSections) =>
-      currentSections.map((section) => (section.id === sectionId ? { ...section, ...patch } : section)),
+      currentSections.map((section) =>
+        section.id === sectionId ? { ...section, ...patch } : section,
+      ),
     );
     markDirty();
   };
 
   const addSection = () => {
     const nextSectionNumber = sections.length + 1;
-    const nextSection = createPaperSection(nextSectionNumber, defaultSectionTitle(nextSectionNumber));
+    const nextSection = createPaperSection(
+      nextSectionNumber,
+      defaultSectionTitle(nextSectionNumber),
+    );
     setSections((currentSections) => [...currentSections, nextSection]);
     setActiveSectionId(nextSection.id);
     markDirty();
@@ -81,9 +91,7 @@ export function usePaperBuilderState({
   const removeSection = (sectionId: string) => {
     const nextSections = sections.filter((section) => section.id !== sectionId);
     const fallbackSections =
-      nextSections.length > 0
-        ? nextSections
-        : [createPaperSection(1, defaultSectionTitle(1))];
+      nextSections.length > 0 ? nextSections : [createPaperSection(1, defaultSectionTitle(1))];
     setSections(fallbackSections);
     if (activeSectionId === sectionId) setActiveSectionId(fallbackSections[0]?.id ?? "");
     markDirty();
@@ -97,7 +105,9 @@ export function usePaperBuilderState({
   const removeQuestionFromSection = (sectionId: string, questionId: string) => {
     const section = sections.find((entry) => entry.id === sectionId);
     if (!section) return;
-    updateSection(sectionId, { questionIds: section.questionIds.filter((entry) => entry !== questionId) });
+    updateSection(sectionId, {
+      questionIds: section.questionIds.filter((entry) => entry !== questionId),
+    });
   };
 
   const loadPaperDraft = (draftConfig: PaperConfig, draftSections: PaperSection[]) => {

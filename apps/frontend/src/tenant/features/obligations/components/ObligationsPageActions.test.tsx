@@ -37,7 +37,7 @@ describe("ObligationsPageActions", () => {
           onCreate={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

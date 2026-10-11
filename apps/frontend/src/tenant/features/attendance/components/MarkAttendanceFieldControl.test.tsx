@@ -15,7 +15,9 @@ vi.mock("./StatusToggle", () => ({
 }));
 
 vi.mock("@/components/ui/TimePicker", () => ({
-  TimePicker: ({ value }: { value: string }) => <input data-testid="time-picker" defaultValue={value} />,
+  TimePicker: ({ value }: { value: string }) => (
+    <input data-testid="time-picker" defaultValue={value} />
+  ),
 }));
 
 const mockRow: AttendanceRow = {

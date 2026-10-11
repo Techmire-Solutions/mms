@@ -20,9 +20,7 @@ let settingsProvider: (() => StoredGlobalSettings) | null = null;
  * The frontend injects reactive/preview settings; `@mms/shared` never reads
  * localStorage itself, so it stays environment-agnostic.
  */
-export function registerSettingsProvider(
-  provider: (() => StoredGlobalSettings) | null,
-): void {
+export function registerSettingsProvider(provider: (() => StoredGlobalSettings) | null): void {
   settingsProvider = provider;
 }
 

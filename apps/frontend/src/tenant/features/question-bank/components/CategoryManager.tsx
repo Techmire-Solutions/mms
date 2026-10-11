@@ -1,30 +1,29 @@
-import React from 'react';
-import { Plus, Trash2 } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { createQuestionCategory, type QuestionCategory } from '@mms/shared';
-import { FORM_INPUT } from '@/components/ui/formStyles';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { SectionLabel } from '@/components/ui/SectionLabel';
-import { CategoryColorChip } from '@/tenant/features/question-bank/components/CategoryColorChip';
+import React from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { createQuestionCategory, type QuestionCategory } from "@mms/shared";
+import { FORM_INPUT } from "@/components/ui/formStyles";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SectionLabel } from "@/components/ui/SectionLabel";
+import { CategoryColorChip } from "@/tenant/features/question-bank/components/CategoryColorChip";
 
 interface CategoryManagerProps {
   categories: QuestionCategory[];
   onChange: (categories: QuestionCategory[]) => void;
 }
 
-export function CategoryManager({
-  categories,
-  onChange,
-}: CategoryManagerProps): React.JSX.Element {
+export function CategoryManager({ categories, onChange }: CategoryManagerProps): React.JSX.Element {
   const { t } = useTranslation();
 
   const update = (id: string, patch: Partial<QuestionCategory>): void => {
-    onChange(categories.map((category) => (category.id === id ? { ...category, ...patch } : category)));
+    onChange(
+      categories.map((category) => (category.id === id ? { ...category, ...patch } : category)),
+    );
   };
 
   const addCategory = (): void => {
-    onChange([...categories, createQuestionCategory(t('questionBank.newCategory'), categories)]);
+    onChange([...categories, createQuestionCategory(t("questionBank.newCategory"), categories)]);
   };
 
   const removeCategory = (id: string): void => {
@@ -35,7 +34,7 @@ export function CategoryManager({
     <div className="space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <SectionLabel as="h4" weight="bold" tracking="wide" className="m-0 min-w-0">
-          {t('questionBank.categoriesTitle')}
+          {t("questionBank.categoriesTitle")}
         </SectionLabel>
         <Button
           type="button"
@@ -44,7 +43,7 @@ export function CategoryManager({
           className="flex min-h-11 w-full items-center justify-center gap-1 rounded-lg border border-border px-2.5 text-xs font-semibold shadow-none hover:bg-muted sm:w-auto"
         >
           <Plus className="h-3.5 w-3.5" aria-hidden />
-          {t('questionBank.addCategory')}
+          {t("questionBank.addCategory")}
         </Button>
       </div>
       <div className="space-y-2">
@@ -60,7 +59,7 @@ export function CategoryManager({
               className="w-12 rounded-lg border border-border bg-background px-2 py-1.5 min-h-11 text-center text-sm shadow-none"
               value={cat.icon}
               onChange={(event) => update(cat.id, { icon: event.target.value })}
-              aria-label={t('questionBank.categoryIcon')}
+              aria-label={t("questionBank.categoryIcon")}
             />
             <Input
               id={`cat-name-${cat.id}`}
@@ -69,7 +68,7 @@ export function CategoryManager({
               className={`${FORM_INPUT} min-h-11 shadow-none`}
               value={cat.name}
               onChange={(event) => update(cat.id, { name: event.target.value })}
-              aria-label={t('questionBank.categoryName')}
+              aria-label={t("questionBank.categoryName")}
             />
             <Input
               id={`cat-color-${cat.id}`}
@@ -78,7 +77,7 @@ export function CategoryManager({
               className="min-h-11 w-full cursor-pointer rounded-lg border border-border bg-background p-0.5 shadow-none"
               value={cat.color}
               onChange={(event) => update(cat.id, { color: event.target.value })}
-              aria-label={t('questionBank.categoryColor')}
+              aria-label={t("questionBank.categoryColor")}
             />
             <CategoryColorChip name={cat.name} color={cat.color} />
             <Button
@@ -87,7 +86,7 @@ export function CategoryManager({
               variant="ghost"
               size="icon"
               className="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive shadow-none"
-              aria-label={t('questionBank.removeCategory')}
+              aria-label={t("questionBank.removeCategory")}
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden />
             </Button>

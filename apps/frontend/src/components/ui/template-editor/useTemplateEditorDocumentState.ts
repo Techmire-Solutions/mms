@@ -30,7 +30,9 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
   onSave,
   t,
 }: UseTemplateEditorDocumentStateOptions<TPayload>) {
-  const [template, setTemplate] = useState<DocumentTemplate<TPayload>>(() => initialTemplate || defaultTemplate);
+  const [template, setTemplate] = useState<DocumentTemplate<TPayload>>(
+    () => initialTemplate || defaultTemplate,
+  );
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [history, setHistory] = useState<DocumentTemplate<TPayload>[]>([]);
@@ -39,7 +41,9 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
 
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastCoalesceRef = useRef<{ key: string; at: number } | null>(null);
-  const lastSavedTemplateJsonRef = useRef<string>(JSON.stringify(initialTemplate || defaultTemplate));
+  const lastSavedTemplateJsonRef = useRef<string>(
+    JSON.stringify(initialTemplate || defaultTemplate),
+  );
   const hasHydratedRef = useRef(false);
 
   useEffect(() => {
@@ -65,7 +69,10 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
   }, []);
 
   const orientation = template.orientation || "portrait";
-  const size = useMemo(() => getPageDimensions(template.pageSize, orientation), [template.pageSize, orientation]);
+  const size = useMemo(
+    () => getPageDimensions(template.pageSize, orientation),
+    [template.pageSize, orientation],
+  );
 
   const pushHistory = useCallback((currentTemplate: DocumentTemplate<TPayload>) => {
     setHistory((historyStack) => [...historyStack.slice(-30), currentTemplate]);
@@ -93,7 +100,7 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
   }, [template]);
 
   type ElementUpdater = (
-    elements: TemplateElement<keyof TPayload & string>[]
+    elements: TemplateElement<keyof TPayload & string>[],
   ) => TemplateElement<keyof TPayload & string>[];
 
   const updateElements = useCallback((updateFn: ElementUpdater) => {
@@ -115,8 +122,7 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
       const nextTemplate = { ...curr, elements: updateFn(curr.elements) };
       const now = Date.now();
       const last = lastCoalesceRef.current;
-      const startsNewStep =
-        !last || last.key !== coalesceKey || now - last.at > COALESCE_WINDOW_MS;
+      const startsNewStep = !last || last.key !== coalesceKey || now - last.at > COALESCE_WINDOW_MS;
       if (startsNewStep) {
         setHistory((historyStack) => [...historyStack.slice(-30), curr]);
         setFuture([]);
@@ -126,15 +132,21 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
     });
   }, []);
 
-  const handlePageSize = useCallback((pageSizeKey: string) => {
-    pushHistory(template);
-    setTemplate((curr) => ({ ...curr, pageSize: pageSizeKey }));
-  }, [pushHistory, template]);
+  const handlePageSize = useCallback(
+    (pageSizeKey: string) => {
+      pushHistory(template);
+      setTemplate((curr) => ({ ...curr, pageSize: pageSizeKey }));
+    },
+    [pushHistory, template],
+  );
 
-  const handleOrientationChange = useCallback((nextOrientation: TemplateOrientation) => {
-    pushHistory(template);
-    setTemplate((curr) => ({ ...curr, orientation: nextOrientation }));
-  }, [pushHistory, template]);
+  const handleOrientationChange = useCallback(
+    (nextOrientation: TemplateOrientation) => {
+      pushHistory(template);
+      setTemplate((curr) => ({ ...curr, orientation: nextOrientation }));
+    },
+    [pushHistory, template],
+  );
 
   const handleSave = useCallback(async () => {
     if (!onSave) return;
@@ -163,7 +175,7 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
 
   const isDirty = useMemo(
     () => JSON.stringify(template) !== lastSavedTemplateJsonRef.current,
-    [template]
+    [template],
   );
 
   return {

@@ -4,21 +4,26 @@ import {
   resolveStudentGuardianLinks,
   type Contact,
   type Student,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   loadContactsByIdsForTenant,
   loadContactsSummaryByIdsForTenant,
-} from '../../services/contactService.js';
+} from "../../services/contactService.js";
 
 type ContactWithRelationships = Contact & {
-  relationshipContacts?: Array<{ contactId?: string | number; relationship?: string; name?: string }>;
+  relationshipContacts?: Array<{
+    contactId?: string | number;
+    relationship?: string;
+    name?: string;
+  }>;
   relationships?: Array<{ contactId?: string | number; relationship?: string; name?: string }>;
 };
 
 function fetchContacts(tenant: string, ids: string[]): Promise<Contact[]> {
-  const fn = typeof loadContactsSummaryByIdsForTenant === 'function'
-    ? loadContactsSummaryByIdsForTenant
-    : loadContactsByIdsForTenant;
+  const fn =
+    typeof loadContactsSummaryByIdsForTenant === "function"
+      ? loadContactsSummaryByIdsForTenant
+      : loadContactsByIdsForTenant;
   return fn(tenant, ids);
 }
 
@@ -38,8 +43,13 @@ export async function hydrateStudentsFromContacts(
 
   const firstPassIds = new Set<string>();
   for (const row of rows) {
-    for (const id of [row.contactId, row.fatherContactId, row.motherContactId, row.guardianContactId]) {
-      if (id != null && id !== '') firstPassIds.add(String(id));
+    for (const id of [
+      row.contactId,
+      row.fatherContactId,
+      row.motherContactId,
+      row.guardianContactId,
+    ]) {
+      if (id != null && id !== "") firstPassIds.add(String(id));
     }
   }
 
@@ -50,7 +60,7 @@ export async function hydrateStudentsFromContacts(
 
   const withDerived = rows.map((row) => {
     const primary =
-      row.contactId != null && row.contactId !== ''
+      row.contactId != null && row.contactId !== ""
         ? contactById.get(String(row.contactId))
         : undefined;
     const guardians = resolveStudentGuardianLinks(row, primary ?? null);
@@ -68,7 +78,7 @@ export async function hydrateStudentsFromContacts(
   const secondPassIds = new Set<string>();
   for (const row of withDerived) {
     for (const id of [row.fatherContactId, row.motherContactId, row.guardianContactId]) {
-      if (id != null && id !== '' && !contactById.has(String(id))) {
+      if (id != null && id !== "" && !contactById.has(String(id))) {
         secondPassIds.add(String(id));
       }
     }

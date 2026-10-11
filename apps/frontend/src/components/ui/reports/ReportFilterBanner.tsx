@@ -1,5 +1,9 @@
 import React from "react";
-import { ActiveFilterBanner, type ActiveFilterBannerAction, type ActiveFilterBannerChip } from '@/components/ui/ActiveFilterBanner';
+import {
+  ActiveFilterBanner,
+  type ActiveFilterBannerAction,
+  type ActiveFilterBannerChip,
+} from "@/components/ui/ActiveFilterBanner";
 
 export interface ReportFilterItem {
   key: string;
@@ -21,20 +25,23 @@ export interface ReportFilterBannerProps {
  * Universal active-filter banner for module reporting tabs.
  * Renders active filter chips and individual or bulk clear buttons.
  */
-export const ReportFilterBanner = (function ReportFilterBanner({
+export const ReportFilterBanner = function ReportFilterBanner({
   label,
   filters = [],
   onClearAll,
   clearAllLabel,
 }: ReportFilterBannerProps): React.JSX.Element | null {
-  const activeFilters = (() => filters.filter((item): item is ReportFilterItem => Boolean(item && item.value && item.value.trim() !== "")))();
+  const activeFilters = (() =>
+    filters.filter((item): item is ReportFilterItem =>
+      Boolean(item && item.value && item.value.trim() !== ""),
+    ))();
 
   const chips = (() =>
-      activeFilters.map((item) => ({
-        key: item.key,
-        label: item.label,
-        value: item.value as string,
-      })))() as ActiveFilterBannerChip[];
+    activeFilters.map((item) => ({
+      key: item.key,
+      label: item.label,
+      value: item.value as string,
+    })))() as ActiveFilterBannerChip[];
 
   const actions = (() => {
     if (onClearAll && clearAllLabel && activeFilters.length > 1) {
@@ -54,6 +61,6 @@ export const ReportFilterBanner = (function ReportFilterBanner({
   }
 
   return <ActiveFilterBanner label={label} chips={chips} actions={actions} />;
-});
+};
 
 export default ReportFilterBanner;

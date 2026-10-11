@@ -11,7 +11,7 @@ import { THEME_PALETTES, type CustomWidget } from "@/lib/reports/pinnedWidgetTyp
 
 export default function CustomWidgetChartFallback({
   widget,
-  collections
+  collections,
 }: {
   widget: CustomWidget;
   collections: ReturnType<typeof getWidgetCollections>;
@@ -39,7 +39,13 @@ export default function CustomWidgetChartFallback({
   if (widget.chartType === "pie") {
     const colors = THEME_PALETTES[widget.color] || THEME_PALETTES.emerald;
     return (
-      <SafeResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} initialDimension={{ width: 1, height: 1 }}>
+      <SafeResponsiveContainer
+        width="100%"
+        height="100%"
+        minWidth={0}
+        minHeight={0}
+        initialDimension={{ width: 1, height: 1 }}
+      >
         <PieChart>
           <Pie
             data={chartData}
@@ -60,7 +66,13 @@ export default function CustomWidgetChartFallback({
   }
 
   return (
-    <SafeResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} initialDimension={{ width: 1, height: 1 }}>
+    <SafeResponsiveContainer
+      width="100%"
+      height="100%"
+      minWidth={0}
+      minHeight={0}
+      initialDimension={{ width: 1, height: 1 }}
+    >
       <BarChart data={chartData} barSize={8} margin={{ top: 2, right: 2, left: -25, bottom: 2 }}>
         <XAxis dataKey="name" tick={false} axisLine={false} tickLine={false} />
         <YAxis tick={chartAxisTick(6)} axisLine={false} tickLine={false} />

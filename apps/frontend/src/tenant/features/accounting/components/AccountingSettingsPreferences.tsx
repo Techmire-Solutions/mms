@@ -27,7 +27,9 @@ interface AccountingSettingsPreferencesProps {
   canEditSetup: boolean;
   onEditFiscalYear: (fiscalYear: Partial<FiscalYear>) => void;
   onRequestCloseFiscalYear?: (fiscalYearId: string) => void;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   isPrefsDirty?: boolean;
   saving?: boolean;
   saved?: boolean;

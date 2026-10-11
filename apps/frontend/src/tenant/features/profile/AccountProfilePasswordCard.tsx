@@ -1,5 +1,5 @@
-import { PasswordStrengthMeter } from '@/components/ui/PasswordStrengthMeter';
-import { FormSubmitActions } from '@/components/ui/FormSubmitActions';
+import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
+import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
 import { useId } from "react";
 import { Lock } from "lucide-react";
 import { PasswordInput } from "@/components/ui/PasswordInput";
@@ -52,7 +52,12 @@ export function AccountProfilePasswordCard({
       <CardContent className={cn("pt-5 space-y-4", CARD_STRIPE_INSET)}>
         {!showPasswordForm ? (
           <div className="pt-1">
-            <Button type="button" variant="outline" onClick={onShowPasswordForm} className="w-full min-h-11">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onShowPasswordForm}
+              className="w-full min-h-11"
+            >
               {t("account.changePassword")}
             </Button>
           </div>
@@ -86,7 +91,9 @@ export function AccountProfilePasswordCard({
                 className="min-h-11"
               />
 
-              <p className="text-xs leading-snug text-muted-foreground">{t("account.passwordRulesHint")}</p>
+              <p className="text-xs leading-snug text-muted-foreground">
+                {t("account.passwordRulesHint")}
+              </p>
               <PasswordStrengthMeter password={newPassword} />
             </div>
             <div className="space-y-1">
@@ -109,9 +116,13 @@ export function AccountProfilePasswordCard({
                 <FieldErrorMessage message={t("account.passwordMismatch")} />
               ) : null}
             </div>
-            <FormSubmitActions submitLabel={t("account.changePassword")} pending={passwordBusy}
-              variant="secondary" disabled={!currentPassword || !newPassword || newPassword !== confirmPassword}
-              cancel={{ label: t("common.cancel"), onClick: onCancelPasswordChange }} />
+            <FormSubmitActions
+              submitLabel={t("account.changePassword")}
+              pending={passwordBusy}
+              variant="secondary"
+              disabled={!currentPassword || !newPassword || newPassword !== confirmPassword}
+              cancel={{ label: t("common.cancel"), onClick: onCancelPasswordChange }}
+            />
           </form>
         )}
       </CardContent>

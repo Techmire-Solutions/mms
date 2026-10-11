@@ -7,7 +7,7 @@ import type { DocumentTemplate } from "@mms/shared";
 
 export function downloadTemplateJson<TPayload = Record<string, unknown>>(
   template: DocumentTemplate<TPayload>,
-  documentType?: string
+  documentType?: string,
 ): void {
   const blob = new Blob([JSON.stringify(template, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -15,7 +15,12 @@ export function downloadTemplateJson<TPayload = Record<string, unknown>>(
   a.href = url;
   const prefix = documentType ? `${documentType.toLowerCase()}-template` : "document-template";
   a.download = `${prefix}-${template.pageSize.toLowerCase()}.json`;
-  if (typeof Node !== "undefined" && a instanceof Node && typeof document !== "undefined" && document.body) {
+  if (
+    typeof Node !== "undefined" &&
+    a instanceof Node &&
+    typeof document !== "undefined" &&
+    document.body
+  ) {
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -29,7 +34,7 @@ export function downloadTemplateJson<TPayload = Record<string, unknown>>(
 export function readTemplateJsonFile<TPayload = Record<string, unknown>>(
   file: File,
   onSuccess: (parsed: DocumentTemplate<TPayload>) => void,
-  onError?: (err: unknown) => void
+  onError?: (err: unknown) => void,
 ): void {
   if (file.size > 5 * 1024 * 1024) {
     onError?.(new Error("File exceeds maximum allowed size of 5MB"));

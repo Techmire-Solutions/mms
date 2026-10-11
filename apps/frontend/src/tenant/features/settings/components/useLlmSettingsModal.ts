@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   LLM_PROVIDERS_META,
   getLlmProviderDefaultModel,
@@ -7,14 +7,14 @@ import {
   type LlmConfig,
   type LlmProviderType,
   type LlmTestResult,
-} from '@mms/shared';
-import { useLlmModelFetch } from './useLlmModelFetch';
+} from "@mms/shared";
+import { useLlmModelFetch } from "./useLlmModelFetch";
 
-import { computeNextLlmConfigs, testLlmConnectivity } from './llmSettingsModalHelpers';
+import { computeNextLlmConfigs, testLlmConnectivity } from "./llmSettingsModalHelpers";
 
 interface UseLlmSettingsModalOptions {
   configs: LlmConfig[];
-  upd: (key: 'llmConfigs', value: LlmConfig[]) => void;
+  upd: (key: "llmConfigs", value: LlmConfig[]) => void;
 }
 
 export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions) {
@@ -22,11 +22,11 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
   const [modalOpen, setModalOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<LlmConfig | null>(null);
 
-  const [formName, setFormName] = useState('');
-  const [formProvider, setFormProvider] = useState<LlmProviderType>('gemini');
-  const [formModel, setFormModel] = useState('');
-  const [formBaseUrl, setFormBaseUrl] = useState('');
-  const [formApiKey, setFormApiKey] = useState('');
+  const [formName, setFormName] = useState("");
+  const [formProvider, setFormProvider] = useState<LlmProviderType>("gemini");
+  const [formModel, setFormModel] = useState("");
+  const [formBaseUrl, setFormBaseUrl] = useState("");
+  const [formApiKey, setFormApiKey] = useState("");
   const [formIsDefaultText, setFormIsDefaultText] = useState(false);
   const [formTemperature, setFormTemperature] = useState(0.7);
   const [formMaxTokens, setFormMaxTokens] = useState(2048);
@@ -34,7 +34,13 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
   const [modalTesting, setModalTesting] = useState(false);
   const [modalTestResult, setModalTestResult] = useState<LlmTestResult | null>(null);
 
-  const { fetchedModels, fetchingModels, showCustomModelInput, setShowCustomModelInput, clearFetchedModels } = useLlmModelFetch({
+  const {
+    fetchedModels,
+    fetchingModels,
+    showCustomModelInput,
+    setShowCustomModelInput,
+    clearFetchedModels,
+  } = useLlmModelFetch({
     formApiKey,
     formProvider,
     formBaseUrl,
@@ -46,11 +52,11 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
 
   const resetFormForAdd = () => {
     setEditingConfig(null);
-    setFormName('');
-    setFormProvider('gemini');
-    setFormModel(getLlmProviderDefaultModel('gemini'));
-    setFormBaseUrl('');
-    setFormApiKey('');
+    setFormName("");
+    setFormProvider("gemini");
+    setFormModel(getLlmProviderDefaultModel("gemini"));
+    setFormBaseUrl("");
+    setFormApiKey("");
     setFormIsDefaultText(configs.length === 0);
     setFormTemperature(0.7);
     setFormMaxTokens(2048);
@@ -70,8 +76,8 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     setFormName(config.name);
     setFormProvider(config.provider);
     setFormModel(config.model);
-    setFormBaseUrl(config.baseUrl ?? '');
-    setFormApiKey('');
+    setFormBaseUrl(config.baseUrl ?? "");
+    setFormApiKey("");
     setFormIsDefaultText(config.isDefaultText);
     setFormTemperature(config.temperature ?? 0.7);
     setFormMaxTokens(config.maxTokens ?? 2048);
@@ -87,13 +93,12 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     setModalTestResult(null);
 
     const targetModel = resolveLlmModel(formModel, formProvider);
-    const targetApiKey = formApiKey.trim() === '' && editingConfig
-      ? editingConfig.apiKey
-      : formApiKey.trim();
+    const targetApiKey =
+      formApiKey.trim() === "" && editingConfig ? editingConfig.apiKey : formApiKey.trim();
 
     const customConfig = {
-      id: editingConfig?.id ?? 'temp-config',
-      name: formName.trim() || t('settings.llmTemporaryConfig'),
+      id: editingConfig?.id ?? "temp-config",
+      name: formName.trim() || t("settings.llmTemporaryConfig"),
       provider: formProvider,
       model: targetModel,
       baseUrl: formBaseUrl.trim() || undefined,
@@ -105,7 +110,7 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     };
 
     try {
-      const result = await testLlmConnectivity(customConfig, t('settings.llmTestConnectionFailed'));
+      const result = await testLlmConnectivity(customConfig, t("settings.llmTestConnectionFailed"));
       setModalTestResult(result);
     } finally {
       setModalTesting(false);
@@ -116,9 +121,8 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     if (!formName.trim()) return;
 
     const targetModel = resolveLlmModel(formModel, formProvider);
-    const targetApiKey = formApiKey.trim() === '' && editingConfig
-      ? editingConfig.apiKey
-      : formApiKey.trim();
+    const targetApiKey =
+      formApiKey.trim() === "" && editingConfig ? editingConfig.apiKey : formApiKey.trim();
 
     const nextConfig: LlmConfig = {
       id: editingConfig?.id ?? crypto.randomUUID(),
@@ -134,7 +138,7 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     };
 
     const updatedConfigs = computeNextLlmConfigs(configs, nextConfig, Boolean(editingConfig));
-    upd('llmConfigs', updatedConfigs);
+    upd("llmConfigs", updatedConfigs);
     setModalOpen(false);
   };
 

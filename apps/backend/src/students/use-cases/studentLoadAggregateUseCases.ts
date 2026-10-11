@@ -2,10 +2,10 @@ import type {
   StudentsCommandMetricsSnapshot,
   StudentsWidgetAggregateResult,
   StudentsWidgetQuery,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import type { StudentsRepository } from '../repository/studentsRepository.js';
-import { studentsRepository } from '../repository/studentsRepositoryAdapter.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import type { StudentsRepository } from "../repository/studentsRepository.js";
+import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
 
 export async function loadStudentsCommandMetrics(
   repo: StudentsRepository = studentsRepository,
@@ -22,8 +22,6 @@ export async function loadStudentsCommandMetrics(
   }
   return repo.aggregateCommandMetrics(tenant);
 }
-
-
 
 export async function loadStudentsWidgetAggregates(
   queries: StudentsWidgetQuery[],

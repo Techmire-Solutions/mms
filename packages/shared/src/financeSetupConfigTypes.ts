@@ -1,13 +1,10 @@
-import { z } from 'zod';
-import type { FieldDefinition, TabDefinition } from './contactTypes.js';
-import { DEFAULT_FINANCE_SETTINGS, type FinanceSettings } from './financeModuleSettings.js';
-import {
-  FINANCE_TAB_REGISTRY,
-  INITIAL_FINANCE_FIELD_SEED,
-} from './moduleFieldSetupFinance.js';
-import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
-import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
-import { deepSanitizeStrings } from './schemas/sanitize.js';
+import { z } from "zod";
+import type { FieldDefinition, TabDefinition } from "./contactTypes.js";
+import { DEFAULT_FINANCE_SETTINGS, type FinanceSettings } from "./financeModuleSettings.js";
+import { FINANCE_TAB_REGISTRY, INITIAL_FINANCE_FIELD_SEED } from "./moduleFieldSetupFinance.js";
+import { getFlatFieldsConfig } from "./moduleFieldConfigUtils.js";
+import { moduleFieldConfigPutBodyBaseSchema } from "./schemas/moduleFieldConfig.dto.js";
+import { deepSanitizeStrings } from "./schemas/sanitize.js";
 
 /** Deep clone {@link INITIAL_FINANCE_FIELD_SEED} for default and Setup states. */
 export function cloneFinanceFieldSeed(): Record<string, FieldDefinition[]> {
@@ -30,7 +27,7 @@ export function isFinanceSeedFormTab(tabKey: string): boolean {
 
 /** True when `tabKey` is locked as enabled (Basic Setup tab). */
 export function isFinanceLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === 'basic';
+  return tabKey.toLowerCase() === "basic";
 }
 
 /**
@@ -40,7 +37,7 @@ export function isFinanceLockedEnabledTab(tabKey: string): boolean {
 export function resolveFinanceFieldsMap(
   fields: Record<string, unknown> | undefined,
 ): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== 'object') {
+  if (!fields || typeof fields !== "object") {
     return cloneFinanceFieldSeed();
   }
   const entries = Object.entries(fields);
@@ -93,7 +90,7 @@ const financeFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
   .strict();
 
 export const financeFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, financeFieldConfigPutBodyBaseSchema);
 
@@ -119,55 +116,55 @@ export const financePreferencesPutBodySchema = z
 
 export type FinanceModulePreferences = Pick<
   FinanceSettings,
-  | 'currency'
-  | 'invoicePrefix'
-  | 'dueDays'
-  | 'lateFeePercent'
-  | 'taxRate'
-  | 'paymentMethods'
-  | 'autoGenerateInvoice'
-  | 'sendInvoiceEmail'
-  | 'allowPartialPayment'
-  | 'requireApproval'
-  | 'overdueReminder'
-  | 'reminderDaysBefore'
-  | 'feeReminders'
-  | 'defaultViewLayout'
+  | "currency"
+  | "invoicePrefix"
+  | "dueDays"
+  | "lateFeePercent"
+  | "taxRate"
+  | "paymentMethods"
+  | "autoGenerateInvoice"
+  | "sendInvoiceEmail"
+  | "allowPartialPayment"
+  | "requireApproval"
+  | "overdueReminder"
+  | "reminderDaysBefore"
+  | "feeReminders"
+  | "defaultViewLayout"
 >;
 
 const PREF_KEYS = [
-  'currency',
-  'invoicePrefix',
-  'dueDays',
-  'lateFeePercent',
-  'taxRate',
-  'paymentMethods',
-  'autoGenerateInvoice',
-  'sendInvoiceEmail',
-  'allowPartialPayment',
-  'requireApproval',
-  'overdueReminder',
-  'reminderDaysBefore',
-  'feeReminders',
-  'defaultViewLayout',
+  "currency",
+  "invoicePrefix",
+  "dueDays",
+  "lateFeePercent",
+  "taxRate",
+  "paymentMethods",
+  "autoGenerateInvoice",
+  "sendInvoiceEmail",
+  "allowPartialPayment",
+  "requireApproval",
+  "overdueReminder",
+  "reminderDaysBefore",
+  "feeReminders",
+  "defaultViewLayout",
 ] as const;
 
 function normalizeViewLayout(value: string | undefined): string {
   const trimmed = value?.trim();
-  if (trimmed === 'table' || trimmed === 'cards' || trimmed === 'list') return trimmed;
-  return DEFAULT_FINANCE_SETTINGS.defaultViewLayout ?? 'list';
+  if (trimmed === "table" || trimmed === "cards" || trimmed === "list") return trimmed;
+  return DEFAULT_FINANCE_SETTINGS.defaultViewLayout ?? "list";
 }
 
 function normalizeStr(v: unknown, def: string): string {
-  return typeof v === 'string' && v.trim() ? v.trim() : def;
+  return typeof v === "string" && v.trim() ? v.trim() : def;
 }
 
 function normalizeBool(v: unknown, def: boolean): boolean {
-  return typeof v === 'boolean' ? v : def;
+  return typeof v === "boolean" ? v : def;
 }
 
 function normalizeStrArr(v: unknown, def: string[]): string[] {
-  return Array.isArray(v) && v.every((x) => typeof x === 'string') ? (v as string[]) : def;
+  return Array.isArray(v) && v.every((x) => typeof x === "string") ? (v as string[]) : def;
 }
 
 /** Normalize Finance module preferences (typed `finance_module_preferences`). */
@@ -191,7 +188,7 @@ export function normalizeFinanceModulePreferences(
     reminderDaysBefore: normalizeStr(p.reminderDaysBefore, d.reminderDaysBefore),
     feeReminders: normalizeBool(p.feeReminders, d.feeReminders),
     defaultViewLayout: normalizeViewLayout(
-      typeof p.defaultViewLayout === 'string' ? p.defaultViewLayout : d.defaultViewLayout,
+      typeof p.defaultViewLayout === "string" ? p.defaultViewLayout : d.defaultViewLayout,
     ),
   };
 }
@@ -208,8 +205,11 @@ export function stripFinanceFieldConfigForPersist(
 
 /** Normalize FinanceSettings from typed REST or legacy document blobs. */
 export function normalizeFinanceSettings(config: unknown): FinanceSettings {
-  const defaults: FinanceSettings = { ...DEFAULT_FINANCE_SETTINGS, formTabs: [...FINANCE_TAB_REGISTRY] };
-  if (!config || typeof config !== 'object' || Array.isArray(config)) return { ...defaults };
+  const defaults: FinanceSettings = {
+    ...DEFAULT_FINANCE_SETTINGS,
+    formTabs: [...FINANCE_TAB_REGISTRY],
+  };
+  if (!config || typeof config !== "object" || Array.isArray(config)) return { ...defaults };
   const raw = config as Record<string, unknown>;
   const prefs = normalizeFinanceModulePreferences(raw);
   return {
@@ -217,12 +217,10 @@ export function normalizeFinanceSettings(config: unknown): FinanceSettings {
     ...(raw as Partial<FinanceSettings>),
     ...prefs,
     customFields: Array.isArray(raw.customFields)
-      ? (raw.customFields as FinanceSettings['customFields'])
+      ? (raw.customFields as FinanceSettings["customFields"])
       : defaults.customFields,
     fieldOrder: Array.isArray(raw.fieldOrder) ? (raw.fieldOrder as string[]) : defaults.fieldOrder,
-    formTabs: Array.isArray(raw.formTabs)
-      ? (raw.formTabs as TabDefinition[])
-      : defaults.formTabs,
+    formTabs: Array.isArray(raw.formTabs) ? (raw.formTabs as TabDefinition[]) : defaults.formTabs,
     enabledTabs: Array.isArray(raw.enabledTabs)
       ? (raw.enabledTabs as string[])
       : (raw.enabledTabs as string[] | undefined),
@@ -230,7 +228,7 @@ export function normalizeFinanceSettings(config: unknown): FinanceSettings {
       ? (raw.requiredTabs as string[])
       : (raw.requiredTabs as string[] | undefined),
     fields: resolveFinanceFieldsMap(
-      raw.fields && typeof raw.fields === 'object' && !Array.isArray(raw.fields)
+      raw.fields && typeof raw.fields === "object" && !Array.isArray(raw.fields)
         ? (raw.fields as Record<string, unknown>)
         : undefined,
     ),
@@ -259,7 +257,7 @@ export function composeFinanceSettings(
     preferences as Partial<FinanceModulePreferences> | null,
   );
   return normalizeFinanceSettings({
-    ...(fieldConfig && typeof fieldConfig === 'object' && !Array.isArray(fieldConfig)
+    ...(fieldConfig && typeof fieldConfig === "object" && !Array.isArray(fieldConfig)
       ? (fieldConfig as Record<string, unknown>)
       : {}),
     ...prefs,

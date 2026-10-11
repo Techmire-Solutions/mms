@@ -44,7 +44,6 @@ export function formatZodIssues(
   fields: Record<string, FieldDefinition[]>,
   language = "en",
 ): ValidationError[] {
-
   return error.issues.map((issue) => {
     const [pathRoot, pathIndex, pathField] = issue.path;
     const listTabId =
@@ -52,11 +51,7 @@ export function formatZodIssues(
         ? (LIST_TAB_TO_TAB_ID[pathRoot] ??
           (isContactCustomCollectionTab(pathRoot) ? pathRoot : undefined))
         : undefined;
-    if (
-      typeof pathRoot === "string" &&
-      listTabId &&
-      typeof pathIndex === "number"
-    ) {
+    if (typeof pathRoot === "string" && listTabId && typeof pathIndex === "number") {
       const prefixKey = LIST_TAB_PREFIX_KEYS[pathRoot] ?? "contacts.validation.itemGeneric";
       const prefix = translateAppParams(prefixKey, language, {
         index: pathIndex + 1,

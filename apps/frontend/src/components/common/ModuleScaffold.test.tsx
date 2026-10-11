@@ -13,11 +13,7 @@ const mockContext = {
 };
 
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <TranslationContext.Provider value={mockContext}>
-      {children}
-    </TranslationContext.Provider>
-  );
+  return <TranslationContext.Provider value={mockContext}>{children}</TranslationContext.Provider>;
 }
 
 describe("ModuleScaffold", () => {
@@ -33,7 +29,7 @@ describe("ModuleScaffold", () => {
         >
           <div id="test-content">Main Directory Content</div>
         </ModuleScaffold>
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     expect(html).toContain("<title>Students Directory | MMS</title>");
@@ -62,7 +58,7 @@ describe("ModuleScaffold", () => {
         >
           <div>Tab Content</div>
         </ModuleScaffold>
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     expect(html).toContain("Directory");
@@ -75,7 +71,7 @@ describe("ModuleScaffold", () => {
     const html = renderToStaticMarkup(
       <TestWrapper>
         <ModuleScaffoldSkeleton />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     expect(html).toContain('role="status"');
@@ -94,7 +90,7 @@ describe("ModuleScaffold", () => {
           showTabs={false}
           showFilterBar={false}
         />
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     expect(html).toContain('role="status"');
@@ -111,7 +107,7 @@ describe("ModuleScaffold", () => {
         >
           <div>Body</div>
         </ModuleScaffold>
-      </TestWrapper>
+      </TestWrapper>,
     );
     expect(busyHtml).toContain('aria-busy="true"');
 
@@ -124,7 +120,7 @@ describe("ModuleScaffold", () => {
         >
           <div>Body</div>
         </ModuleScaffold>
-      </TestWrapper>
+      </TestWrapper>,
     );
     expect(idleHtml).not.toContain('aria-busy="true"');
   });
@@ -139,7 +135,7 @@ describe("ModuleScaffold", () => {
         >
           <div id="test-main-body">Main Grid Content</div>
         </ModuleScaffold>
-      </TestWrapper>
+      </TestWrapper>,
     );
 
     expect(html).toContain("test-drawer-portal");
@@ -152,4 +148,3 @@ describe("ModuleScaffold", () => {
     expect(drawerPortalIndex).toBeGreaterThan(mainBodyIndex);
   });
 });
-

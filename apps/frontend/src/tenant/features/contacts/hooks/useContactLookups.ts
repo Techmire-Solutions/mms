@@ -8,7 +8,10 @@ import { apiContract } from "@/lib/api";
 import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
 import { getContactConfigCollectionDefaults } from "@/lib/contacts/contactConfigSeeds";
 
-export const CONTACTS_LOOKUPS_QUERY_KEY = [CONTACTS_MODULE_MANIFEST.collectionKey, "lookups"] as const;
+export const CONTACTS_LOOKUPS_QUERY_KEY = [
+  CONTACTS_MODULE_MANIFEST.collectionKey,
+  "lookups",
+] as const;
 
 type ContactLookupItems = string[] | ContactLookupCountryCode[];
 
@@ -48,7 +51,7 @@ async function putContactLookupKind(
 ): Promise<ContactLookupItems> {
   const response = await apiContract.contacts.updateLookups({
     params: { kind },
-    body: { items }
+    body: { items },
   });
   if (response.status !== 200) throw new Error("Failed to update contact lookups");
   const body = response.body as { items?: ContactLookupItems } | undefined;

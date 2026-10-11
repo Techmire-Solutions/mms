@@ -1,4 +1,4 @@
-import { examinationsUseCases } from '../examinations/use-cases/examinationsUseCases.js';
+import { examinationsUseCases } from "../examinations/use-cases/examinationsUseCases.js";
 
 /**
  * Thin re-export of the examinations use-cases facade.
@@ -25,5 +25,7 @@ export const restoreExamById = examinationsUseCases.restoreExamById;
 export const bulkSoftDeleteExams = examinationsUseCases.bulkSoftDeleteExams;
 export const bulkRestoreExams = examinationsUseCases.bulkRestoreExams;
 export const loadExaminationsCommandMetrics = examinationsUseCases.loadExaminationsCommandMetrics;
-export const loadExaminationsWidgetAggregates = examinationsUseCases.loadExaminationsWidgetAggregates;
-export const loadExaminationsReportAggregates = examinationsUseCases.loadExaminationsReportAggregates;
+export const loadExaminationsWidgetAggregates =
+  examinationsUseCases.loadExaminationsWidgetAggregates;
+export const loadExaminationsReportAggregates =
+  examinationsUseCases.loadExaminationsReportAggregates;

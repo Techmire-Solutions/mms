@@ -43,8 +43,16 @@ export function ChartTooltip({
       )}
       style={style}
     >
-      {title != null ? title : label != null && <p className={cn("text-muted-foreground text-xs m-0", labelClassName)}>{label}</p>}
-      {value != null ? <p className="font-bold text-foreground m-0 tabular-nums">{value}</p> : children}
+      {title != null
+        ? title
+        : label != null && (
+            <p className={cn("text-muted-foreground text-xs m-0", labelClassName)}>{label}</p>
+          )}
+      {value != null ? (
+        <p className="font-bold text-foreground m-0 tabular-nums">{value}</p>
+      ) : (
+        children
+      )}
     </div>
   );
 }

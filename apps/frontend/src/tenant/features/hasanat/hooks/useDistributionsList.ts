@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import type { Distribution } from '@/lib/data/hasanatData';
-import { HASANAT_MODULE_MANIFEST } from '@mms/shared';
+import type { Distribution } from "@/lib/data/hasanatData";
+import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useHasanatContractList } from "@/tenant/features/hasanat/hooks/useHasanatTsrHooks";
 import { SEMANTIC_BADGE } from "@/lib/semanticTone";
 
 type DistributionStatus = Distribution["status"];
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 
 const DISTRIBUTION_SEARCH_DEBOUNCE_MS = 300;
 
@@ -30,13 +30,13 @@ export function useDistributionsList({
 }: UseDistributionsListStateOptions) {
   const { t } = useTranslation();
   const statusLabels = (() => ({
-      active: t('hasanat.status.active'),
-      redeemed: t('hasanat.status.redeemed'),
-      returned: t('hasanat.status.returned'),
-    }))();
+    active: t("hasanat.status.active"),
+    redeemed: t("hasanat.status.redeemed"),
+    returned: t("hasanat.status.returned"),
+  }))();
   const statusConfig = (() => ({
-    active:   { label: statusLabels.active,   cls: SEMANTIC_BADGE.info },
-    redeemed: { label: statusLabels.redeemed, cls: 'bg-primary/10 text-primary border-primary/20' },
+    active: { label: statusLabels.active, cls: SEMANTIC_BADGE.info },
+    redeemed: { label: statusLabels.redeemed, cls: "bg-primary/10 text-primary border-primary/20" },
     returned: { label: statusLabels.returned, cls: SEMANTIC_BADGE.muted },
   }))() as Record<DistributionStatus, StatusBadgeConfigItem>;
   const [showModal, setShowModal] = useState(false);
@@ -55,11 +55,12 @@ export function useDistributionsList({
     page: listPage,
     limit: HASANAT_MODULE_MANIFEST.defaultPageSize,
     search: debouncedSearch,
-    status: filterStatus.length ? filterStatus.join(',') : undefined,
+    status: filterStatus.length ? filterStatus.join(",") : undefined,
     includeDeleted: showDeleted,
   });
 
-  const pageDistributions: Distribution[] = (pageQuery.data?.body?.distributions ?? []) as Distribution[];
+  const pageDistributions: Distribution[] = (pageQuery.data?.body?.distributions ??
+    []) as Distribution[];
   const serverTotal = pageQuery.data?.body?.total ?? 0;
   const serverPage = pageQuery.data?.body?.page ?? listPage;
   const serverLimit = pageQuery.data?.body?.limit ?? HASANAT_MODULE_MANIFEST.defaultPageSize;
@@ -75,15 +76,16 @@ export function useDistributionsList({
     }
   }, [createRequestKey, canWrite, showDeleted]);
 
-  const toggleStatus = (status: DistributionStatus) => setFilterStatus((selectedStatuses) => {
-    const nextSet = new Set(selectedStatuses);
-    if (nextSet.has(status)) {
-      nextSet.delete(status);
-    } else {
-      nextSet.add(status);
-    }
-    return [...nextSet];
-  });
+  const toggleStatus = (status: DistributionStatus) =>
+    setFilterStatus((selectedStatuses) => {
+      const nextSet = new Set(selectedStatuses);
+      if (nextSet.has(status)) {
+        nextSet.delete(status);
+      } else {
+        nextSet.add(status);
+      }
+      return [...nextSet];
+    });
 
   const handleDistribute = async (dist: Distribution) => {
     await onCreate(dist);

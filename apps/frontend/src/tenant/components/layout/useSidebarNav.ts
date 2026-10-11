@@ -11,8 +11,11 @@ export function useSidebarNav(collapsed: boolean, onToggle: () => void) {
 
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    NAV_ITEMS.forEach(item => {
-      if (item.subItems && item.subItems.some(sub => isNavPathActive(location.pathname, sub.path))) {
+    NAV_ITEMS.forEach((item) => {
+      if (
+        item.subItems &&
+        item.subItems.some((sub) => isNavPathActive(location.pathname, sub.path))
+      ) {
         initial[item.labelKey] = true;
       }
     });
@@ -22,16 +25,19 @@ export function useSidebarNav(collapsed: boolean, onToggle: () => void) {
   const toggleMenu = (labelKey: string) => {
     if (collapsed) {
       onToggle();
-      setOpenMenus(prev => ({ ...prev, [labelKey]: true }));
+      setOpenMenus((prev) => ({ ...prev, [labelKey]: true }));
     } else {
-      setOpenMenus(prev => ({ ...prev, [labelKey]: !prev[labelKey] }));
+      setOpenMenus((prev) => ({ ...prev, [labelKey]: !prev[labelKey] }));
     }
   };
 
   useEffect(() => {
-    NAV_ITEMS.forEach(item => {
-      if (item.subItems && item.subItems.some(sub => isNavPathActive(location.pathname, sub.path))) {
-        setOpenMenus(prev => ({ ...prev, [item.labelKey]: true }));
+    NAV_ITEMS.forEach((item) => {
+      if (
+        item.subItems &&
+        item.subItems.some((sub) => isNavPathActive(location.pathname, sub.path))
+      ) {
+        setOpenMenus((prev) => ({ ...prev, [item.labelKey]: true }));
       }
     });
   }, [location.pathname]);

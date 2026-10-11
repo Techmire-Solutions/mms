@@ -37,10 +37,7 @@ describe("createEntityDescriptorFromFieldConfig", () => {
         f({ key: "gender", type: "select", order: 20, options: ["male", "female"] }),
         f({ key: "disabledField", enabled: false, order: 30 }),
       ],
-      contact: [
-        f({ key: "email", type: "email", order: 10 }),
-        f({ key: "secret", order: 20 }),
-      ],
+      contact: [f({ key: "email", type: "email", order: 10 }), f({ key: "secret", order: 20 })],
     };
     const descriptor = createEntityDescriptorFromFieldConfig<Record<string, unknown>>({
       entityType: "testEntity",

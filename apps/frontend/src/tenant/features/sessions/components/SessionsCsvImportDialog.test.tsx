@@ -82,10 +82,7 @@ describe("SessionsCsvImportDialog", () => {
       templateBtn?.click();
     });
 
-    expect(triggerFileDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "sessions.csv",
-    );
+    expect(triggerFileDownload).toHaveBeenCalledWith(expect.any(Blob), "sessions.csv");
   });
 
   it("accepts a valid exported session CSV and initiates background import", async () => {

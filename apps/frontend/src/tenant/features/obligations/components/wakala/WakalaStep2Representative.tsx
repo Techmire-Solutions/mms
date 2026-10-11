@@ -57,9 +57,7 @@ export function WakalaStep2Representative({
         />
       </Field>
       {availableReps.length === 0 && (
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t("obligations.wakala.noRepYet")}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("obligations.wakala.noRepYet")}</p>
       )}
     </div>
   );

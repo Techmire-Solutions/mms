@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const financeReportComparisonSessionSchema = z.object({
   sessionId: z.string(),
@@ -51,7 +51,7 @@ import {
   type BaseReportComparisonQuery,
   normalizeReportComparisonQuery,
   reportComparisonQueryActive,
-} from './reportComparisonQuery.js';
+} from "./reportComparisonQuery.js";
 
 /** Optional ComparisonMode params for GET /finance/report-aggregates. */
 export type FinanceReportComparisonQuery = BaseReportComparisonQuery;

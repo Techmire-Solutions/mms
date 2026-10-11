@@ -1,6 +1,10 @@
 import React from "react";
 import { AlertTriangle, Bookmark, Clock, Play, Trash2, User, Users } from "lucide-react";
-import type { ContactsSavedReport, ContactsSavedReportShareScope, ContactsWorkDrillDown } from "@mms/shared";
+import type {
+  ContactsSavedReport,
+  ContactsSavedReportShareScope,
+  ContactsWorkDrillDown,
+} from "@mms/shared";
 import { canDeleteContactsSavedReport, validateContactsSavedReportDrillDown } from "@mms/shared";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -9,10 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 
-function formatDrillDownSummary(
-  drillDown: ContactsWorkDrillDown,
-  searchLabel: string,
-): string {
+function formatDrillDownSummary(drillDown: ContactsWorkDrillDown, searchLabel: string): string {
   const parts: string[] = [];
   if (drillDown.gender) parts.push(drillDown.gender);
   if (drillDown.search?.trim()) parts.push(`${searchLabel}: ${drillDown.search.trim()}`);

@@ -20,27 +20,27 @@ function escapeString(str: string): string {
       case '"':
         result += '\\"';
         break;
-      case '\\':
-        result += '\\\\';
+      case "\\":
+        result += "\\\\";
         break;
-      case '\b':
-        result += '\\b';
+      case "\b":
+        result += "\\b";
         break;
-      case '\f':
-        result += '\\f';
+      case "\f":
+        result += "\\f";
         break;
-      case '\n':
-        result += '\\n';
+      case "\n":
+        result += "\\n";
         break;
-      case '\r':
-        result += '\\r';
+      case "\r":
+        result += "\\r";
         break;
-      case '\t':
-        result += '\\t';
+      case "\t":
+        result += "\\t";
         break;
       default:
         if (code < 0x20) {
-          result += `\\u00${code.toString(16).padStart(2, '0')}`;
+          result += `\\u00${code.toString(16).padStart(2, "0")}`;
         } else {
           result += char;
         }
@@ -61,7 +61,7 @@ function serializeNumber(num: number): string {
     throw new TypeError(`RFC 8785 prohibits serializing non-finite numbers: ${num}`);
   }
   if (Object.is(num, -0)) {
-    return '0';
+    return "0";
   }
   return String(num);
 }
@@ -74,47 +74,47 @@ function serializeNumber(num: number): string {
  */
 export function canonicalizeJson(value: unknown): string {
   if (value === null) {
-    return 'null';
+    return "null";
   }
 
   const type = typeof value;
 
-  if (type === 'boolean') {
-    return value ? 'true' : 'false';
+  if (type === "boolean") {
+    return value ? "true" : "false";
   }
 
-  if (type === 'number') {
+  if (type === "number") {
     return serializeNumber(value as number);
   }
 
-  if (type === 'string') {
+  if (type === "string") {
     return escapeString(value as string);
   }
 
-  if (type === 'bigint') {
+  if (type === "bigint") {
     return (value as bigint).toString();
   }
 
-  if (type === 'undefined' || type === 'function' || type === 'symbol') {
-    return '';
+  if (type === "undefined" || type === "function" || type === "symbol") {
+    return "";
   }
 
   if (Array.isArray(value)) {
     const elements: string[] = [];
     for (let i = 0; i < value.length; i++) {
       const item = value[i];
-      if (typeof item === 'undefined' || typeof item === 'function' || typeof item === 'symbol') {
-        elements.push('null');
+      if (typeof item === "undefined" || typeof item === "function" || typeof item === "symbol") {
+        elements.push("null");
       } else {
         elements.push(canonicalizeJson(item));
       }
     }
-    return `[${elements.join(',')}]`;
+    return `[${elements.join(",")}]`;
   }
 
-  if (type === 'object') {
+  if (type === "object") {
     // If value has a toJSON method (like Date), invoke it first
-    if (typeof (value as { toJSON?: unknown }).toJSON === 'function') {
+    if (typeof (value as { toJSON?: unknown }).toJSON === "function") {
       return canonicalizeJson((value as { toJSON: () => unknown }).toJSON());
     }
 
@@ -124,14 +124,14 @@ export function canonicalizeJson(value: unknown): string {
 
     const fields: string[] = [];
     for (const [key, val] of entries) {
-      if (typeof val === 'undefined' || typeof val === 'function' || typeof val === 'symbol') {
+      if (typeof val === "undefined" || typeof val === "function" || typeof val === "symbol") {
         continue;
       }
       fields.push(`${escapeString(key)}:${canonicalizeJson(val)}`);
     }
 
-    return `{${fields.join(',')}}`;
+    return `{${fields.join(",")}}`;
   }
 
-  return '';
+  return "";
 }

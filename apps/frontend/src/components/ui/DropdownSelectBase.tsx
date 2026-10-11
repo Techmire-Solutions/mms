@@ -53,19 +53,14 @@ export function DropdownSelectBase<T = string>({
   const resolvedId = id || fallbackId;
   const listboxId = `${resolvedId}-listbox`;
 
-  const {
-    open,
-    setOpen,
-    highlightedIndex,
-    setHighlightedIndex,
-    handleKeyDown,
-  } = useDropdownListbox({
-    options,
-    value,
-    onSelect,
-    isOpen: controlledOpen,
-    onOpenChange,
-  });
+  const { open, setOpen, highlightedIndex, setHighlightedIndex, handleKeyDown } =
+    useDropdownListbox({
+      options,
+      value,
+      onSelect,
+      isOpen: controlledOpen,
+      onOpenChange,
+    });
 
   const select = (option: T) => {
     onSelect?.(option);
@@ -81,9 +76,7 @@ export function DropdownSelectBase<T = string>({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        {renderTrigger({ open, listboxId, triggerProps })}
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{renderTrigger({ open, listboxId, triggerProps })}</PopoverTrigger>
 
       <PopoverContent
         align="start"

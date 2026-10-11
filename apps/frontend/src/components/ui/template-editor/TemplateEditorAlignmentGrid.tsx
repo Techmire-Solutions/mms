@@ -28,7 +28,11 @@ export function TemplateEditorAlignmentGrid({
   onAlignSelected,
   t,
 }: TemplateEditorAlignmentGridProps): React.JSX.Element {
-  const buttons: { key: AlignmentType; label: string; Icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }> }[] = [
+  const buttons: {
+    key: AlignmentType;
+    label: string;
+    Icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  }[] = [
     { key: "left", label: t("templateEditor.alignLeft"), Icon: AlignStartHorizontal },
     { key: "centerH", label: t("templateEditor.alignCenterH"), Icon: AlignCenterHorizontal },
     { key: "right", label: t("templateEditor.alignRight"), Icon: AlignEndHorizontal },

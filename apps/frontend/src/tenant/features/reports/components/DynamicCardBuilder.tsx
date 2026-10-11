@@ -1,5 +1,8 @@
 import React from "react";
-import { WidgetBuilder, type CustomWidget } from "@/tenant/features/reports/components/PinnedWidgets";
+import {
+  WidgetBuilder,
+  type CustomWidget,
+} from "@/tenant/features/reports/components/PinnedWidgets";
 import { CustomWidgetRenderer } from "@/tenant/features/reports/components/pinnedWidgets/CustomWidgetRenderer";
 import { type CustomCard } from "@/lib/reports/reportMetadata";
 import { getObject, saveObject } from "@/lib/db";
@@ -18,7 +21,7 @@ export default function DynamicCardBuilder({
   mode = "dashboard",
   category = "students",
   editCardConfig = null,
-  onCancelEdit
+  onCancelEdit,
 }: DynamicCardBuilderProps): React.JSX.Element {
   // Convert CustomCard to CustomWidget
   const editWidgetConfig = (() => {
@@ -42,13 +45,13 @@ export default function DynamicCardBuilder({
       fixedSubText: editCardConfig.fixedSubText,
       trend: editCardConfig.trend,
       trendType: editCardConfig.trendType,
-      role: editCardConfig.role
+      role: editCardConfig.role,
     };
   })() as CustomWidget | null;
 
   const { saveWidget } = useDashboardConfig();
 
-  const handleSaveWidget = (async (savedWidget: CustomWidget) => {
+  const handleSaveWidget = async (savedWidget: CustomWidget) => {
     // Convert CustomWidget to CustomCard
     const newCard: CustomCard = {
       id: savedWidget.id,
@@ -65,14 +68,16 @@ export default function DynamicCardBuilder({
       subTextType: savedWidget.subTextType || "dynamic",
       fixedSubText: savedWidget.fixedSubText,
       trend: savedWidget.trend,
-      trendType: savedWidget.trendType
+      trendType: savedWidget.trendType,
     };
 
     if (mode === "kpi") {
       const existingCards = getObject<CustomCard[]>(`kpi_custom_cards_${category}`, []);
       let updatedCards: CustomCard[];
       if (editCardConfig) {
-        updatedCards = existingCards.map((card) => card.id === editCardConfig.id ? newCard : card);
+        updatedCards = existingCards.map((card) =>
+          card.id === editCardConfig.id ? newCard : card,
+        );
       } else {
         updatedCards = [...existingCards, newCard];
       }
@@ -93,11 +98,11 @@ export default function DynamicCardBuilder({
     if (mode === "kpi") {
       window.dispatchEvent(new Event("local-database-update"));
     }
-  });
+  };
 
-  const handleCancelEdit = (() => {
+  const handleCancelEdit = () => {
     onCancelEdit?.();
-  });
+  };
 
   return (
     <WidgetBuilder
@@ -111,7 +116,7 @@ export default function DynamicCardBuilder({
       renderWidget={(widget, isCompact) => (
         <CustomWidgetRenderer
           widget={widget}
-          collections={{} as Parameters<typeof CustomWidgetRenderer>[0]['collections']}
+          collections={{} as Parameters<typeof CustomWidgetRenderer>[0]["collections"]}
           isCompact={isCompact}
           onSwitchToggle={() => {}}
           onMetricClick={() => {}}

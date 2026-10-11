@@ -18,7 +18,7 @@ describe("SimpleTransactionPostingTable", () => {
         debitAccount="1010 - Bank Account"
         creditAccount="4010 - Tuition Revenue"
         amountLabel="$500.00"
-      />
+      />,
     );
 
     expect(html).toContain("1010 - Bank Account");

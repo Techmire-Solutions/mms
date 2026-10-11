@@ -52,13 +52,11 @@ export function PlatformProfilePasswordForm(): React.JSX.Element {
   };
 
   return (
-    <SectionCard
-      title={t("platform.profileChangePassword")}
-      icon={Key}
-      accentColor="success"
-    >
+    <SectionCard title={t("platform.profileChangePassword")} icon={Key} accentColor="success">
       <form onSubmit={(event) => void handleChangePassword(event)} className="space-y-4 text-start">
-        {passwordError ? <FieldErrorMessage id="platform-password-error" message={passwordError} /> : null}
+        {passwordError ? (
+          <FieldErrorMessage id="platform-password-error" message={passwordError} />
+        ) : null}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <PasswordInput
@@ -110,7 +108,10 @@ export function PlatformProfilePasswordForm(): React.JSX.Element {
             pending={updatePassword.isPending}
             disabled={!currentPassword || !newPassword || !confirmPassword}
           />
-          <Link to={ROUTES.platformForgotPassword} className="inline-flex min-h-11 items-center text-xs text-primary font-bold hover:underline">
+          <Link
+            to={ROUTES.platformForgotPassword}
+            className="inline-flex min-h-11 items-center text-xs text-primary font-bold hover:underline"
+          >
             {t("platform.profileForgotLink")}
           </Link>
         </div>

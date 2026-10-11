@@ -39,7 +39,7 @@ describe("StatCard Component", () => {
         sub="+12 this week"
         icon={Users}
         accent="primary"
-      />
+      />,
     );
 
     expect(html).toContain("Total Students");
@@ -50,13 +50,7 @@ describe("StatCard Component", () => {
   });
 
   it("renders trend percentage and indicator", () => {
-    const html = renderToStaticMarkup(
-      <StatCard
-        label="Attendance"
-        value="94%"
-        trend={5}
-      />
-    );
+    const html = renderToStaticMarkup(<StatCard label="Attendance" value="94%" trend={5} />);
 
     expect(html).toContain("5%");
   });
@@ -69,7 +63,7 @@ describe("StatCard Component", () => {
         variant="compact"
         icon={Users}
         accent="secondary"
-      />
+      />,
     );
 
     expect(html).toContain("Compact Metric");
@@ -80,12 +74,7 @@ describe("StatCard Component", () => {
 
   it("supports interactive button mode with aria-pressed", () => {
     const html = renderToStaticMarkup(
-      <StatCard
-        label="Interactive Card"
-        value="100"
-        onClick={() => {}}
-        isActive={true}
-      />
+      <StatCard label="Interactive Card" value="100" onClick={() => {}} isActive={true} />,
     );
 
     expect(html).toContain('aria-pressed="true"');

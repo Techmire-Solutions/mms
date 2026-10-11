@@ -5,10 +5,10 @@
 export function isInputElementFocused(target: HTMLElement | null): boolean {
   return Boolean(
     target &&
-      (target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable ||
-        target.tagName === 'SELECT'),
+    (target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable ||
+      target.tagName === "SELECT"),
   );
 }
 
@@ -18,22 +18,22 @@ export function handleResizeShortcut(
 ): boolean {
   if (!e.altKey) return false;
   const step = e.shiftKey ? 8 : 1;
-  if (e.key === 'ArrowRight') {
+  if (e.key === "ArrowRight") {
     e.preventDefault();
     resizeSelected(step, 0);
     return true;
   }
-  if (e.key === 'ArrowLeft') {
+  if (e.key === "ArrowLeft") {
     e.preventDefault();
     resizeSelected(-step, 0);
     return true;
   }
-  if (e.key === 'ArrowDown') {
+  if (e.key === "ArrowDown") {
     e.preventDefault();
     resizeSelected(0, step);
     return true;
   }
-  if (e.key === 'ArrowUp') {
+  if (e.key === "ArrowUp") {
     e.preventDefault();
     resizeSelected(0, -step);
     return true;
@@ -46,22 +46,22 @@ export function handleNudgeShortcut(
   nudgeSelected: (dx: number, dy: number) => void,
 ): boolean {
   const step = e.shiftKey ? 8 : 1;
-  if (e.key === 'ArrowLeft') {
+  if (e.key === "ArrowLeft") {
     e.preventDefault();
     nudgeSelected(-step, 0);
     return true;
   }
-  if (e.key === 'ArrowRight') {
+  if (e.key === "ArrowRight") {
     e.preventDefault();
     nudgeSelected(step, 0);
     return true;
   }
-  if (e.key === 'ArrowUp') {
+  if (e.key === "ArrowUp") {
     e.preventDefault();
     nudgeSelected(0, -step);
     return true;
   }
-  if (e.key === 'ArrowDown') {
+  if (e.key === "ArrowDown") {
     e.preventDefault();
     nudgeSelected(0, step);
     return true;

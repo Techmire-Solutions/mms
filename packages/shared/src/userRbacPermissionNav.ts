@@ -3,19 +3,19 @@
  * @description Layout grouping and ordering of RBAC module rows for the permissions matrix.
  */
 
-import type { AppTranslationKey } from './appTranslations.js';
-import type { RbacModuleDef } from './userEntityTypes.js';
-import { canonicalizeRbacModuleId, type RbacModuleId } from './userRbacModuleRegistry.js';
+import type { AppTranslationKey } from "./appTranslations.js";
+import type { RbacModuleDef } from "./userEntityTypes.js";
+import { canonicalizeRbacModuleId, type RbacModuleId } from "./userRbacModuleRegistry.js";
 
 /** Standalone RBAC row in the permissions matrix nav layout. */
 export interface RbacPermissionNavModule {
-  type: 'module';
+  type: "module";
   rbacId: RbacModuleId | string;
 }
 
 /** Grouped RBAC rows — mirrors sidebar Academics section. */
 export interface RbacPermissionNavGroup {
-  type: 'group';
+  type: "group";
   groupId: string;
   labelKey: AppTranslationKey;
   rbacIds: readonly (RbacModuleId | string)[];
@@ -28,23 +28,31 @@ export type RbacPermissionNavEntry = RbacPermissionNavModule | RbacPermissionNav
  * (standalone items + Academics group; RBAC ids where they differ from `moduleId`).
  */
 export const RBAC_PERMISSION_NAV: readonly RbacPermissionNavEntry[] = [
-  { type: 'module', rbacId: 'dashboard' },
-  { type: 'module', rbacId: 'contacts' },
-  { type: 'module', rbacId: 'faculty' },
-  { type: 'module', rbacId: 'messaging' },
-  { type: 'module', rbacId: 'tasks' },
-  { type: 'module', rbacId: 'tasks.assign_anywhere' },
+  { type: "module", rbacId: "dashboard" },
+  { type: "module", rbacId: "contacts" },
+  { type: "module", rbacId: "faculty" },
+  { type: "module", rbacId: "messaging" },
+  { type: "module", rbacId: "tasks" },
+  { type: "module", rbacId: "tasks.assign_anywhere" },
   {
-    type: 'group',
-    groupId: 'academics',
-    labelKey: 'nav.academics',
-    rbacIds: ['students', 'sessions', 'attendance', 'enrollments', 'hasanat', 'examinations', 'questionBank'],
+    type: "group",
+    groupId: "academics",
+    labelKey: "nav.academics",
+    rbacIds: [
+      "students",
+      "sessions",
+      "attendance",
+      "enrollments",
+      "hasanat",
+      "examinations",
+      "questionBank",
+    ],
   },
-  { type: 'module', rbacId: 'finance' },
-  { type: 'module', rbacId: 'accounting' },
-  { type: 'module', rbacId: 'obligations' },
-  { type: 'module', rbacId: 'users' },
-  { type: 'module', rbacId: 'settings' },
+  { type: "module", rbacId: "finance" },
+  { type: "module", rbacId: "accounting" },
+  { type: "module", rbacId: "obligations" },
+  { type: "module", rbacId: "users" },
+  { type: "module", rbacId: "settings" },
 ] as const;
 
 /** One render section in the permissions matrix (optional group heading + module rows). */
@@ -64,7 +72,10 @@ export function groupRbacModulesForPermissionsNav(
   visibleModules: readonly RbacModuleDef[],
 ): RbacPermissionMatrixGroup[] {
   const moduleById = new Map(
-    visibleModules.map((moduleDefinition) => [canonicalizeRbacModuleId(moduleDefinition.id), moduleDefinition]),
+    visibleModules.map((moduleDefinition) => [
+      canonicalizeRbacModuleId(moduleDefinition.id),
+      moduleDefinition,
+    ]),
   );
   const placed = new Set<string>();
   const groups: RbacPermissionMatrixGroup[] = [];
@@ -81,7 +92,7 @@ export function groupRbacModulesForPermissionsNav(
   };
 
   for (const entry of RBAC_PERMISSION_NAV) {
-    if (entry.type === 'module') {
+    if (entry.type === "module") {
       pushStandalone(entry.rbacId);
       continue;
     }
@@ -123,4 +134,3 @@ export function flattenRbacPermissionGroups(
 ): RbacModuleDef[] {
   return groups.flatMap((group) => group.modules);
 }
-

@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry-run only — show cert status, no changes'
+        description: "Dry-run only — show cert status, no changes"
         type: boolean
         default: false
       tenant_subdomain:
-        description: 'Tenant subdomain prefix for wildcard verification probe'
+        description: "Tenant subdomain prefix for wildcard verification probe"
         required: false
-        default: 'dq'
+        default: "dq"
         type: string
 
 permissions:

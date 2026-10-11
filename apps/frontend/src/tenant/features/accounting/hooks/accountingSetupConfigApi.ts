@@ -66,7 +66,9 @@ const api = createModuleSetupConfigApi<AccountingModulePreferences>({
     const res = await apiContract.accounting.updatePreferences({ body: prefs });
     return (res.body as { preferences: AccountingModulePreferences }).preferences;
   },
-  normalizePrefs: normalizeAccountingModulePreferences as (prefs: unknown) => AccountingModulePreferences,
+  normalizePrefs: normalizeAccountingModulePreferences as (
+    prefs: unknown,
+  ) => AccountingModulePreferences,
 });
 
 export const setAccountingPreferencesMemory = api.setPreferencesMemory;

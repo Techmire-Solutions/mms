@@ -42,13 +42,21 @@ export function LegendChip({
   return (
     <div className={cn("flex items-center", gap === "md" ? "gap-2" : "gap-1.5", className)}>
       <span
-        className={cn("shrink-0 rounded-full", dotSize === "sm" ? "h-2 w-2" : "h-2.5 w-2.5", dotClassName)}
+        className={cn(
+          "shrink-0 rounded-full",
+          dotSize === "sm" ? "h-2 w-2" : "h-2.5 w-2.5",
+          dotClassName,
+        )}
         style={dotStyle}
         aria-hidden="true"
       />
       <span className={cn("text-xs", labelClassName)}>{label}</span>
       {value != null && (
-        <span className={cn("ms-auto text-xs font-bold text-foreground tabular-nums", valueClassName)}>{value}</span>
+        <span
+          className={cn("ms-auto text-xs font-bold text-foreground tabular-nums", valueClassName)}
+        >
+          {value}
+        </span>
       )}
     </div>
   );

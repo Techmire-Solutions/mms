@@ -1,35 +1,34 @@
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { describe, expect, it, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { SearchBar } from './SearchBar';
-import type { AppTranslationKey } from '@mms/shared';
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { SearchBar } from "./SearchBar";
+import type { AppTranslationKey } from "@mms/shared";
 
 declare global {
-   
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: AppTranslationKey) => {
       const map: Partial<Record<AppTranslationKey, string>> = {
-        'common.searchPlaceholder': 'Search...',
-        'common.clearSearch': 'Clear search',
+        "common.searchPlaceholder": "Search...",
+        "common.clearSearch": "Clear search",
       };
       return map[key] ?? key;
     },
   }),
 }));
 
-describe('SearchBar Component', () => {
-  it('renders default search placeholder when none is provided', () => {
+describe("SearchBar Component", () => {
+  it("renders default search placeholder when none is provided", () => {
     const html = renderToStaticMarkup(<SearchBar value="" onChange={vi.fn()} />);
     expect(html).toContain('placeholder="Search..."');
   });
 
-  it('renders custom placeholder, aria-label, and canonical ID when supplied', () => {
+  it("renders custom placeholder, aria-label, and canonical ID when supplied", () => {
     const html = renderToStaticMarkup(
       <SearchBar
         id="custom-search-id"
@@ -44,21 +43,21 @@ describe('SearchBar Component', () => {
     expect(html).toContain('aria-label="Filter records input"');
   });
 
-  it('renders clear search button only when value is present and not disabled', () => {
+  it("renders clear search button only when value is present and not disabled", () => {
     const emptyHtml = renderToStaticMarkup(<SearchBar value="" onChange={vi.fn()} />);
-    expect(emptyHtml).not.toContain('Clear search');
+    expect(emptyHtml).not.toContain("Clear search");
 
     const filledHtml = renderToStaticMarkup(<SearchBar value="Query" onChange={vi.fn()} />);
-    expect(filledHtml).toContain('Clear search');
+    expect(filledHtml).toContain("Clear search");
 
     const disabledHtml = renderToStaticMarkup(
       <SearchBar value="Query" disabled={true} onChange={vi.fn()} />,
     );
-    expect(disabledHtml).not.toContain('Clear search');
+    expect(disabledHtml).not.toContain("Clear search");
     expect(disabledHtml).toContain('disabled=""');
   });
 
-  it('applies custom className and inputClassName', () => {
+  it("applies custom className and inputClassName", () => {
     const html = renderToStaticMarkup(
       <SearchBar
         value=""
@@ -67,13 +66,13 @@ describe('SearchBar Component', () => {
         inputClassName="input-custom"
       />,
     );
-    expect(html).toContain('wrapper-custom');
-    expect(html).toContain('input-custom');
+    expect(html).toContain("wrapper-custom");
+    expect(html).toContain("input-custom");
   });
 
-  it('triggers onChange with empty string when clear button is clicked', async () => {
+  it("triggers onChange with empty string when clear button is clicked", async () => {
     const onChange = vi.fn();
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     const root = createRoot(container);
 
     await act(async () => {
@@ -84,40 +83,40 @@ describe('SearchBar Component', () => {
     expect(clearButton).not.toBeNull();
 
     await act(async () => {
-      clearButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      clearButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(onChange).toHaveBeenCalledWith('');
+    expect(onChange).toHaveBeenCalledWith("");
 
     await act(async () => {
       root.unmount();
     });
   });
 
-  it('triggers onChange with empty string when Escape key is pressed', async () => {
+  it("triggers onChange with empty string when Escape key is pressed", async () => {
     const onChange = vi.fn();
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     const root = createRoot(container);
 
     await act(async () => {
       root.render(<SearchBar value="Existing query" onChange={onChange} />);
     });
 
-    const input = container.querySelector('input');
+    const input = container.querySelector("input");
     expect(input).not.toBeNull();
 
     await act(async () => {
-      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      input?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     });
 
-    expect(onChange).toHaveBeenCalledWith('');
+    expect(onChange).toHaveBeenCalledWith("");
 
     await act(async () => {
       root.unmount();
     });
   });
 
-  it('renders modern virtual keyboard attributes and search role', () => {
+  it("renders modern virtual keyboard attributes and search role", () => {
     const html = renderToStaticMarkup(<SearchBar value="" onChange={vi.fn()} />);
     expect(html).toContain('type="search"');
     expect(html).toContain('inputMode="search"');
@@ -126,20 +125,20 @@ describe('SearchBar Component', () => {
     expect(html).toContain('aria-keyshortcuts="/"');
   });
 
-  it('renders spinning loader when isSearching is true', () => {
+  it("renders spinning loader when isSearching is true", () => {
     const searchingHtml = renderToStaticMarkup(
       <SearchBar value="query" onChange={vi.fn()} isSearching={true} />,
     );
-    expect(searchingHtml).toContain('animate-spin');
+    expect(searchingHtml).toContain("animate-spin");
 
     const idleHtml = renderToStaticMarkup(
       <SearchBar value="query" onChange={vi.fn()} isSearching={false} />,
     );
-    expect(idleHtml).not.toContain('animate-spin');
+    expect(idleHtml).not.toContain("animate-spin");
   });
 
-  it('forwards ref correctly to the underlying HTMLInputElement', async () => {
-    const container = document.createElement('div');
+  it("forwards ref correctly to the underlying HTMLInputElement", async () => {
+    const container = document.createElement("div");
     const root = createRoot(container);
     let capturedRef: HTMLInputElement | null = null;
 
@@ -157,7 +156,7 @@ describe('SearchBar Component', () => {
 
     expect(capturedRef).not.toBeNull();
     const element = capturedRef as unknown as HTMLInputElement;
-    expect(element.tagName).toBe('INPUT');
+    expect(element.tagName).toBe("INPUT");
 
     await act(async () => {
       root.unmount();

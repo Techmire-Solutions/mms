@@ -1,31 +1,37 @@
-import crypto from 'node:crypto';
-import { desc, eq, sql } from 'drizzle-orm';
+import crypto from "node:crypto";
+import { desc, eq, sql } from "drizzle-orm";
 import {
   canonicalizeJson,
   formatAuditEventHashInput,
   GENESIS_AUDIT_HASH,
   calculateStateDelta,
   type AuditActionType,
-} from '@mms/shared';
-import { activeDb } from '../db/dbConnection.js';
-import { auditTrailEvents } from '../db/schema/auditTrail.js';
-import { getCurrentSpanContext, formatTraceParent } from '../config/telemetry.js';
-import { getRequestUserId, getRequestAuditContext } from '../lib/tenantContext.js';
+} from "@mms/shared";
+import { activeDb } from "../db/dbConnection.js";
+import { auditTrailEvents } from "../db/schema/auditTrail.js";
+import { getCurrentSpanContext, formatTraceParent } from "../config/telemetry.js";
+import { getRequestUserId, getRequestAuditContext } from "../lib/tenantContext.js";
 
 /**
  * Maps an action string to a canonical `AuditActionType`.
  */
 export function mapActionStringToAuditType(action: string): AuditActionType {
   const lower = action.toLowerCase();
-  if (lower.includes('create') || lower.includes('add') || lower.includes('insert')) return 'CREATE';
-  if (lower.includes('delete') || lower.includes('remove') || lower.includes('purge') || lower.includes('archive')) return 'DELETE';
-  if (lower.includes('login') || lower.includes('auth')) return 'LOGIN';
-  if (lower.includes('restore')) return 'RESTORE';
-  if (lower.includes('view') || lower.includes('read') || lower.includes('export')) return 'VIEW';
-  if (lower.includes('redact')) return 'REDACT';
-  return 'UPDATE';
+  if (lower.includes("create") || lower.includes("add") || lower.includes("insert"))
+    return "CREATE";
+  if (
+    lower.includes("delete") ||
+    lower.includes("remove") ||
+    lower.includes("purge") ||
+    lower.includes("archive")
+  )
+    return "DELETE";
+  if (lower.includes("login") || lower.includes("auth")) return "LOGIN";
+  if (lower.includes("restore")) return "RESTORE";
+  if (lower.includes("view") || lower.includes("read") || lower.includes("export")) return "VIEW";
+  if (lower.includes("redact")) return "REDACT";
+  return "UPDATE";
 }
-
 
 export interface RecordModernAuditInput {
   workspaceSubdomain: string;
@@ -46,27 +52,26 @@ export interface RecordModernAuditInput {
   transactionTimestamp?: Date;
 }
 
-
 /** Fields to automatically strip at capture time to minimize PII and avoid secret leakage. */
 const REDACTED_KEYS = new Set([
-  'password',
-  'passwordHash',
-  'password_hash',
-  'salt',
-  'secret',
-  'token',
-  'refreshToken',
-  'refresh_token',
-  'jwt',
-  'apiKey',
-  'api_key',
+  "password",
+  "passwordHash",
+  "password_hash",
+  "salt",
+  "secret",
+  "token",
+  "refreshToken",
+  "refresh_token",
+  "jwt",
+  "apiKey",
+  "api_key",
 ]);
 
 /**
  * Minimizes state payloads at capture time: strips credentials and unneeded heavy secrets.
  */
 export function sanitizeAuditState(state: unknown): unknown {
-  if (state === null || typeof state !== 'object') {
+  if (state === null || typeof state !== "object") {
     return state;
   }
   if (Array.isArray(state)) {
@@ -76,8 +81,8 @@ export function sanitizeAuditState(state: unknown): unknown {
   const sanitized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(state as Record<string, unknown>)) {
     if (REDACTED_KEYS.has(key)) {
-      sanitized[key] = '[REDACTED_SECRET]';
-    } else if (typeof value === 'object' && value !== null) {
+      sanitized[key] = "[REDACTED_SECRET]";
+    } else if (typeof value === "object" && value !== null) {
       sanitized[key] = sanitizeAuditState(value);
     } else {
       sanitized[key] = value;
@@ -103,10 +108,7 @@ export async function getLatestShardHash(
     })
     .from(auditTrailEvents)
     .where(eq(auditTrailEvents.workspaceSubdomain, subdomain))
-    .orderBy(
-      desc(auditTrailEvents.transactionTimestamp),
-      desc(auditTrailEvents.id),
-    )
+    .orderBy(desc(auditTrailEvents.transactionTimestamp), desc(auditTrailEvents.id))
     .limit(1);
 
   return latestRows[0]?.hashCurrent ?? GENESIS_AUDIT_HASH;
@@ -152,10 +154,9 @@ export async function recordModernAuditEvent(
   // both read the same head hash and insert with the same `hash_previous`,
   // forking the chain and making verification report BROKEN_CHAIN. The lock is
   // transaction-scoped and released on commit/rollback.
-  if (typeof tx.execute === 'function') {
+  if (typeof tx.execute === "function") {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`audit:${subdomain}`}))`);
   }
-
 
   // 1. Sharded Hash Resolution: Fetch latest hash in this tenant shard
   const hashPrevious = await getLatestShardHash(subdomain, tx);
@@ -182,9 +183,9 @@ export async function recordModernAuditEvent(
     input.correlationId?.trim() ||
     reqContext?.correlationId ||
     (activeSpan ? formatTraceParent(activeSpan) : null) ||
-    `00-${crypto.randomBytes(16).toString('hex')}-${crypto.randomBytes(8).toString('hex')}-01`;
+    `00-${crypto.randomBytes(16).toString("hex")}-${crypto.randomBytes(8).toString("hex")}-01`;
 
-  const realUserId = input.realUserId?.trim() || getRequestUserId() || 'system';
+  const realUserId = input.realUserId?.trim() || getRequestUserId() || "system";
   const impersonatedUserId = input.impersonatedUserId ?? reqContext?.impersonatedUserId ?? null;
   const ipAddress = input.ipAddress ?? reqContext?.ipAddress ?? null;
   const clientApp = input.clientApp ?? reqContext?.clientApp ?? null;
@@ -210,17 +211,12 @@ export async function recordModernAuditEvent(
     workspaceSubdomain: subdomain,
   };
 
-
   const canonicalPayload = canonicalizeJson(payloadForHashing);
 
   // 5. Cryptographic Hash Construction
   // hash_current = SHA-256(hash_previous + canonical_json(payload) + transaction_timestamp)
-  const hashInput = formatAuditEventHashInput(
-    hashPrevious,
-    canonicalPayload,
-    timestampIso,
-  );
-  const hashCurrent = crypto.hash('sha256', hashInput, 'hex');
+  const hashInput = formatAuditEventHashInput(hashPrevious, canonicalPayload, timestampIso);
+  const hashCurrent = crypto.hash("sha256", hashInput, "hex");
 
   // 6. Atomically Persist Event
   const inserted = await tx
@@ -242,7 +238,7 @@ export async function recordModernAuditEvent(
       newState: newStateCanonical,
       hashPrevious,
       hashCurrent,
-      verificationStatus: 'VERIFIED',
+      verificationStatus: "VERIFIED",
       transactionTimestamp: timestamp,
     })
     .returning({ id: auditTrailEvents.id });

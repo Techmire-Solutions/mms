@@ -1,28 +1,30 @@
-import React, { lazy, Suspense } from 'react';
-import { FACULTY_MODULE_MANIFEST, toTitleCase } from '@mms/shared';
-import { SubTabBar } from '@/components/ui/SubTabBar';
-import { ReportDataGridContainer } from './ReportDataGridContainer';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ReportFilterBanner } from './ReportFilterBanner';
-import { FacultyReportTables } from './FacultyReportTables';
-import type { FacultyReportViewModel } from './reportViewModels';
+import React, { lazy, Suspense } from "react";
+import { FACULTY_MODULE_MANIFEST, toTitleCase } from "@mms/shared";
+import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ReportDataGridContainer } from "./ReportDataGridContainer";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ReportFilterBanner } from "./ReportFilterBanner";
+import { FacultyReportTables } from "./FacultyReportTables";
+import type { FacultyReportViewModel } from "./reportViewModels";
 
 const FacultyReportChartSection = lazy(() =>
-  import('./FacultyReportSections').then((mod) => ({ default: mod.FacultyReportChartSection })),
+  import("./FacultyReportSections").then((mod) => ({ default: mod.FacultyReportChartSection })),
 );
 
-
-export function FacultyReportView({ report, widgets }: {
+export function FacultyReportView({
+  report,
+  widgets,
+}: {
   report: FacultyReportViewModel;
   widgets?: React.ReactNode;
 }): React.JSX.Element {
-  if (report.activeSubTab === 'roster' && report.listError) {
+  if (report.activeSubTab === "roster" && report.listError) {
     return (
       <div className="p-4">
         <ErrorState
-          title={report.t('faculty.report.loadFailed')}
-          description={report.t('faculty.report.loadFailedHint')}
+          title={report.t("faculty.report.loadFailed")}
+          description={report.t("faculty.report.loadFailedHint")}
           onRetry={() => {
             void report.listRefetch();
           }}
@@ -34,19 +36,19 @@ export function FacultyReportView({ report, widgets }: {
   return (
     <div className="space-y-4">
       <ReportFilterBanner
-        label={report.t('faculty.report.filterLabel')}
+        label={report.t("faculty.report.filterLabel")}
         filters={[
           report.reportStatusFilter
             ? {
-                key: 'status',
+                key: "status",
                 value: toTitleCase(report.reportStatusFilter),
                 onClear: () => report.setReportStatusFilter(null),
-                clearLabel: report.t('faculty.report.clearFilter'),
+                clearLabel: report.t("faculty.report.clearFilter"),
               }
             : null,
           report.filters.student
             ? {
-                key: 'faculty',
+                key: "faculty",
                 value: `"${report.filters.student}"`,
               }
             : null,
@@ -60,9 +62,9 @@ export function FacultyReportView({ report, widgets }: {
         panelIdPrefix="faculty-report-subtab"
       />
 
-      {report.activeSubTab === 'roster' ? (
+      {report.activeSubTab === "roster" ? (
         <ReportDataGridContainer
-          title={report.t('faculty.report.rosterTab')}
+          title={report.t("faculty.report.rosterTab")}
           columns={report.rosterExportColumns}
           rows={report.faculty}
           resolveRows={report.resolveRosterExportRows}
@@ -95,7 +97,7 @@ export function FacultyReportView({ report, widgets }: {
             />
           </Suspense>
           <ReportDataGridContainer
-            title={report.t('faculty.report.workloadTab')}
+            title={report.t("faculty.report.workloadTab")}
             columns={report.workloadExportColumns}
             rows={report.filteredFacultyWorkload}
             moduleId="faculty"

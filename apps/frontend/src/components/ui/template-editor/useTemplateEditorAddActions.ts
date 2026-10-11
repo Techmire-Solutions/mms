@@ -4,11 +4,7 @@
  */
 
 import { useCallback, type Dispatch, type RefObject, type SetStateAction } from "react";
-import type {
-  PageSizeInfo,
-  TemplateElement,
-  TemplateFieldDefinition,
-} from "@mms/shared";
+import type { PageSizeInfo, TemplateElement, TemplateFieldDefinition } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
   createDividerElement,
@@ -26,8 +22,8 @@ export interface UseTemplateEditorAddActionsOptions<TPayload = Record<string, un
   setSelectedIds: Dispatch<SetStateAction<string[]>>;
   commitUpdate: (
     updateFn: (
-      elements: TemplateElement<keyof TPayload & string>[]
-    ) => TemplateElement<keyof TPayload & string>[]
+      elements: TemplateElement<keyof TPayload & string>[],
+    ) => TemplateElement<keyof TPayload & string>[],
   ) => void;
   size: PageSizeInfo;
   onElementAdded?: (elementId: string) => void;
@@ -44,7 +40,7 @@ export function useTemplateEditorAddActions<TPayload = Record<string, unknown>>(
 }: UseTemplateEditorAddActionsOptions<TPayload>) {
   const getInsertionPos = useCallback(
     (w: number, h: number) => findInsertionPos(elementsRef.current, w, h, size),
-    [elementsRef, size]
+    [elementsRef, size],
   );
 
   const addElement = useCallback(
@@ -53,19 +49,27 @@ export function useTemplateEditorAddActions<TPayload = Record<string, unknown>>(
       setSelectedIds([el.id]);
       onElementAdded?.(el.id);
     },
-    [commitUpdate, onElementAdded, setSelectedIds]
+    [commitUpdate, onElementAdded, setSelectedIds],
   );
 
   const addStaticText = useCallback(() => {
     const { x, y } = getInsertionPos(200, 18);
-    addElement(createStaticTextElement(x, y, t("templateEditor.newText")) as TemplateElement<keyof TPayload & string>);
+    addElement(
+      createStaticTextElement(x, y, t("templateEditor.newText")) as TemplateElement<
+        keyof TPayload & string
+      >,
+    );
   }, [addElement, getInsertionPos, t]);
 
   const addHeading = useCallback(() => {
     const w = Math.min(320, Math.max(160, size.width - 40));
     const h = 26;
     const { x, y } = getInsertionPos(w, h);
-    addElement(createHeadingElement(x, y, w, t("templateEditor.heading")) as TemplateElement<keyof TPayload & string>);
+    addElement(
+      createHeadingElement(x, y, w, t("templateEditor.heading")) as TemplateElement<
+        keyof TPayload & string
+      >,
+    );
   }, [addElement, getInsertionPos, size.width, t]);
 
   const addDivider = useCallback(() => {
@@ -80,17 +84,23 @@ export function useTemplateEditorAddActions<TPayload = Record<string, unknown>>(
       const { x, y } = getInsertionPos(160, 16);
       addElement(createFieldElement(x, y, fieldDef));
     },
-    [addElement, getInsertionPos]
+    [addElement, getInsertionPos],
   );
 
   const addQrCode = useCallback(() => {
     const { x, y } = getInsertionPos(64, 64);
-    addElement(createQrCodeElement(x, y, t("templateEditor.qrCode")) as TemplateElement<keyof TPayload & string>);
+    addElement(
+      createQrCodeElement(x, y, t("templateEditor.qrCode")) as TemplateElement<
+        keyof TPayload & string
+      >,
+    );
   }, [addElement, getInsertionPos, t]);
 
   const addLogo = useCallback(() => {
     const { x, y } = getInsertionPos(80, 80);
-    addElement(createLogoElement(x, y, t("templateEditor.logo")) as TemplateElement<keyof TPayload & string>);
+    addElement(
+      createLogoElement(x, y, t("templateEditor.logo")) as TemplateElement<keyof TPayload & string>,
+    );
   }, [addElement, getInsertionPos, t]);
 
   const addTable = useCallback(() => {
@@ -103,7 +113,7 @@ export function useTemplateEditorAddActions<TPayload = Record<string, unknown>>(
         columnIndex: t("templateEditor.columnIndex"),
         columnDescription: t("templateEditor.columnDescription"),
         columnAmount: t("templateEditor.columnAmount"),
-      }) as TemplateElement<keyof TPayload & string>
+      }) as TemplateElement<keyof TPayload & string>,
     );
   }, [addElement, getInsertionPos, size.width, t]);
 

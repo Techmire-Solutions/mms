@@ -127,7 +127,12 @@ export function AccountingWorkTier({
       )}
 
       {!listLoadFailed && activeSubTab === "overview" && (
-        <AccountingDashboard accounts={accounts} entries={aggregateEntries} settings={settings} fiscalYears={fiscalYears} />
+        <AccountingDashboard
+          accounts={accounts}
+          entries={aggregateEntries}
+          settings={settings}
+          fiscalYears={fiscalYears}
+        />
       )}
 
       {!listLoadFailed && activeSubTab === "journal" && (

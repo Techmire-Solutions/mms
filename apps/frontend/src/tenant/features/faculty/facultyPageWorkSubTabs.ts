@@ -3,12 +3,7 @@ import { Award, BarChart2, Settings, Users } from "lucide-react";
 import { normalizeModuleTierTabId } from "@mms/shared";
 
 /** Faculty peer tabs (Faculty-only exception to Work | Reports | Setup). */
-export const FACULTY_PAGE_TAB_IDS = [
-  "faculties",
-  "designations",
-  "reports",
-  "setup",
-] as const;
+export const FACULTY_PAGE_TAB_IDS = ["faculties", "designations", "reports", "setup"] as const;
 export type FacultyPageTabId = (typeof FACULTY_PAGE_TAB_IDS)[number];
 
 /** Entity catalogs that support Add / Import / Export on the Faculty page. */
@@ -26,10 +21,7 @@ export const FACULTY_WORK_SUB_TAB_DEFAULT: FacultyIoEntity = "faculties";
 
 export const FACULTY_PAGE_TAB_KEYS: Record<
   FacultyPageTabId,
-  | "faculty.tabs.faculties"
-  | "faculty.tabs.designations"
-  | "module.reports"
-  | "module.setup"
+  "faculty.tabs.faculties" | "faculty.tabs.designations" | "module.reports" | "module.setup"
 > = {
   faculties: "faculty.tabs.faculties",
   designations: "faculty.tabs.designations",
@@ -39,9 +31,7 @@ export const FACULTY_PAGE_TAB_KEYS: Record<
 
 export const FACULTY_PAGE_TAB_HINT_KEYS: Record<
   FacultyPageTabId,
-  | "module.workHint"
-  | "module.reportsHint"
-  | "module.setupHint"
+  "module.workHint" | "module.reportsHint" | "module.setupHint"
 > = {
   faculties: "module.workHint",
   designations: "module.workHint",

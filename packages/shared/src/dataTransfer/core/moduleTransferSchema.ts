@@ -3,16 +3,16 @@
  * @description Standardized, DRY and symmetric import/export schema factory.
  */
 
-import type { ExportColumn, ExportSpec, ExportCellExtractor } from './exportTypes.js';
-import type { CsvImportFieldMapping, CsvImportMapResult } from '../../csvImportMapper.js';
-import type { CsvTemplateColumn } from '../../csvTemplateGenerator.js';
-import type { TransferFieldDefinition, ModuleTransferConfig } from './transferFieldDef.js';
-import { isSystemMetadataKey } from './systemMetadata.js';
-import { generateCsvTemplate } from '../../csvTemplateGenerator.js';
-import { buildExportGrid } from '../export/buildExportGrid.js';
-import { csvSerializer } from '../export/serializers/csvSerializer.js';
-import { parseCsvRows } from '../../csvParserCore.js';
-import { mapCsvGridToObjects } from '../../csvImportMapper.js';
+import type { ExportColumn, ExportSpec, ExportCellExtractor } from "./exportTypes.js";
+import type { CsvImportFieldMapping, CsvImportMapResult } from "../../csvImportMapper.js";
+import type { CsvTemplateColumn } from "../../csvTemplateGenerator.js";
+import type { TransferFieldDefinition, ModuleTransferConfig } from "./transferFieldDef.js";
+import { isSystemMetadataKey } from "./systemMetadata.js";
+import { generateCsvTemplate } from "../../csvTemplateGenerator.js";
+import { buildExportGrid } from "../export/buildExportGrid.js";
+import { csvSerializer } from "../export/serializers/csvSerializer.js";
+import { parseCsvRows } from "../../csvParserCore.js";
+import { mapCsvGridToObjects } from "../../csvImportMapper.js";
 
 export interface ModuleTransferSchema<TEntity = Record<string, unknown>, TSettings = unknown> {
   readonly moduleId: string;
@@ -34,8 +34,8 @@ export interface ModuleTransferSchema<TEntity = Record<string, unknown>, TSettin
 function defaultExtract<TEntity>(entity: TEntity, key: string): unknown {
   const record = entity as Record<string, unknown>;
   const val = record[key];
-  if (val === undefined || val === null) return '';
-  if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+  if (val === undefined || val === null) return "";
+  if (typeof val === "boolean") return val ? "Yes" : "No";
   return val;
 }
 
@@ -46,10 +46,9 @@ function defaultExtract<TEntity>(entity: TEntity, key: string): unknown {
  * 2. Ensure exported headers exactly match accepted import column headers.
  * 3. Consolidate column definitions, labels, and parsing rules into a single SSOT.
  */
-export function createModuleTransferSchema<
-  TEntity = Record<string, unknown>,
-  TSettings = unknown,
->(config: ModuleTransferConfig<TEntity, TSettings>): ModuleTransferSchema<TEntity, TSettings> {
+export function createModuleTransferSchema<TEntity = Record<string, unknown>, TSettings = unknown>(
+  config: ModuleTransferConfig<TEntity, TSettings>,
+): ModuleTransferSchema<TEntity, TSettings> {
   const { moduleId, entityNounPlural, defaultFilename, filterColumns } = config;
   // Enforce Field Whitelist: strip any internal system metadata keys from keys & labels.
   const fields = config.fields.filter(
@@ -117,8 +116,7 @@ export function createModuleTransferSchema<
     templateColumns,
     exportSpec,
     generateTemplate: () => generateCsvTemplate(templateColumns),
-    buildGrid: (entities, cols) =>
-      buildExportGrid(entities, cols ?? exportColumns, extractCell),
+    buildGrid: (entities, cols) => buildExportGrid(entities, cols ?? exportColumns, extractCell),
     toExportCsv: (entities, cols) => {
       const grid = buildExportGrid(entities, cols ?? exportColumns, extractCell);
       return csvSerializer.serialize(grid);

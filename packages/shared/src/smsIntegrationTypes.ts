@@ -1,19 +1,19 @@
-import type { AppTranslationKey } from './appTranslations.js';
+import type { AppTranslationKey } from "./appTranslations.js";
 
 /** Logical object keys for SMS integration storage. */
-export const SMS_INTEGRATION_OBJECT_KEY = 'sms_integration' as const;
+export const SMS_INTEGRATION_OBJECT_KEY = "sms_integration" as const;
 
 /** Backend-only — never synced to the browser. */
-export const SMS_INTEGRATION_SECRETS_KEY = 'sms_integration_secrets' as const;
+export const SMS_INTEGRATION_SECRETS_KEY = "sms_integration_secrets" as const;
 
-const SMS_PROVIDERS = ['twilio', 'vonage', 'msg91', 'infobip', 'telesign', 'logiqueues'] as const;
+const SMS_PROVIDERS = ["twilio", "vonage", "msg91", "infobip", "telesign", "logiqueues"] as const;
 
-export type SmsProviderId = typeof SMS_PROVIDERS[number];
+export type SmsProviderId = (typeof SMS_PROVIDERS)[number];
 
 const SMS_PROVIDERS_SET = new Set<string>(SMS_PROVIDERS);
 
 export function isSmsProviderId(value: unknown): value is SmsProviderId {
-  return typeof value === 'string' && SMS_PROVIDERS_SET.has(value);
+  return typeof value === "string" && SMS_PROVIDERS_SET.has(value);
 }
 
 export interface SmsProviderPreset {
@@ -48,9 +48,9 @@ export interface SmsIntegrationSecrets {
 }
 
 export const DEFAULT_SMS_INTEGRATION: SmsIntegrationConfig = {
-  providerId: 'twilio',
-  accountId: '',
-  senderId: '',
+  providerId: "twilio",
+  accountId: "",
+  senderId: "",
   connected: false,
   hasCredentials: false,
 };
@@ -63,7 +63,7 @@ export function mergeSmsIntegrationConfig(
     ...DEFAULT_SMS_INTEGRATION,
     ...partial,
     providerId: isSmsProviderId(providerId) ? providerId : DEFAULT_SMS_INTEGRATION.providerId,
-    accountId: partial?.accountId?.trim() ?? '',
-    senderId: partial?.senderId?.trim() ?? '',
+    accountId: partial?.accountId?.trim() ?? "",
+    senderId: partial?.senderId?.trim() ?? "",
   };
 }

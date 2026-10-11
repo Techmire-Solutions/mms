@@ -1,13 +1,13 @@
-import { randomUUID } from 'node:crypto';
-import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
+import { randomUUID } from "node:crypto";
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 
-import { attendance, attendanceLeaves } from '../schema.js';
-import { dedupeTrimmedIds, type AttendanceRecord } from '@mms/shared';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+import { attendance, attendanceLeaves } from "../schema.js";
+import { dedupeTrimmedIds, type AttendanceRecord } from "@mms/shared";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 import {
   attendanceRowToRecord as rowToRecord,
   attendanceRecordToInsert as recordToInsert,
-} from './attendanceRepositoryMappers.js';
+} from "./attendanceRepositoryMappers.js";
 
 export async function listAttendanceRecordsByWorkspace(
   tenant: string,
@@ -76,12 +76,7 @@ export async function findAttendanceRecordById(
         updatedAt: attendance.updatedAt,
       })
       .from(attendance)
-      .where(
-        and(
-          eq(attendance.workspaceSubdomain, subdomain),
-          eq(attendance.id, trimmedId),
-        ),
-      )
+      .where(and(eq(attendance.workspaceSubdomain, subdomain), eq(attendance.id, trimmedId)))
       .limit(1);
     const row = rows[0];
     return row ? rowToRecord(row) : null;
@@ -116,12 +111,7 @@ export async function findAttendanceRecordsByIds(
         updatedAt: attendance.updatedAt,
       })
       .from(attendance)
-      .where(
-        and(
-          eq(attendance.workspaceSubdomain, subdomain),
-          inArray(attendance.id, cleanIds),
-        ),
-      );
+      .where(and(eq(attendance.workspaceSubdomain, subdomain), inArray(attendance.id, cleanIds)));
     return rows.map(rowToRecord);
   });
 }
@@ -165,7 +155,7 @@ export async function bulkSaveAttendanceRecords(
   const subdomain = tenant.trim().toLowerCase();
   const recordMap = new Map<string, AttendanceRecord>();
   for (const r of records) {
-    const id = typeof r.id === 'string' && r.id.trim() !== '' ? r.id.trim() : `att-${randomUUID()}`;
+    const id = typeof r.id === "string" && r.id.trim() !== "" ? r.id.trim() : `att-${randomUUID()}`;
     recordMap.set(id, { ...r, id });
   }
   const uniqueRecords = Array.from(recordMap.values());
@@ -195,20 +185,12 @@ export async function bulkSaveAttendanceRecords(
   });
 }
 
-export async function deleteAttendanceRecord(
-  tenant: string,
-  id: string,
-): Promise<boolean> {
+export async function deleteAttendanceRecord(tenant: string, id: string): Promise<boolean> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     const result = await tx
       .delete(attendance)
-      .where(
-        and(
-          eq(attendance.workspaceSubdomain, subdomain),
-          eq(attendance.id, id),
-        ),
-      );
+      .where(and(eq(attendance.workspaceSubdomain, subdomain), eq(attendance.id, id)));
     return Boolean(result.rowCount && result.rowCount > 0);
   });
 }
@@ -220,7 +202,7 @@ export async function replaceAttendanceRecordsForWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const recordMap = new Map<string, AttendanceRecord>();
   for (const r of records) {
-    const id = typeof r.id === 'string' && r.id.trim() !== '' ? r.id.trim() : `att-${randomUUID()}`;
+    const id = typeof r.id === "string" && r.id.trim() !== "" ? r.id.trim() : `att-${randomUUID()}`;
     recordMap.set(id, { ...r, id });
   }
   const uniqueRecords = Array.from(recordMap.values());
@@ -229,7 +211,9 @@ export async function replaceAttendanceRecordsForWorkspace(
     await tx.delete(attendanceLeaves).where(eq(attendanceLeaves.workspaceSubdomain, subdomain));
     await tx.delete(attendance).where(eq(attendance.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
-      await tx.insert(attendance).values(uniqueRecords.map((record) => recordToInsert(subdomain, record)));
+      await tx
+        .insert(attendance)
+        .values(uniqueRecords.map((record) => recordToInsert(subdomain, record)));
     }
   });
 }

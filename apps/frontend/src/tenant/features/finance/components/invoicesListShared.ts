@@ -1,5 +1,5 @@
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { StandardMessagingRecipient } from "@mms/shared";
 import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
 import type { Invoice } from "@/lib/data/financeData";

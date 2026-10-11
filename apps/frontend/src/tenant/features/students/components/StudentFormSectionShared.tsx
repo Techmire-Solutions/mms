@@ -69,7 +69,12 @@ export function ContactProfileValue({
             error ? "text-destructive" : iconClassName || "text-muted-foreground",
           )}
         />
-        <span className={cn("text-sm font-semibold", hasValue ? "text-foreground" : "text-muted-foreground")}>
+        <span
+          className={cn(
+            "text-sm font-semibold",
+            hasValue ? "text-foreground" : "text-muted-foreground",
+          )}
+        >
           {hasValue ? value : t("students.form.notSetOnContact")}
         </span>
       </div>
