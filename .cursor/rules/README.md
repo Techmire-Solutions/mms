@@ -106,17 +106,17 @@ Update this table in the same change that adds or removes a check.
 | Cross-feature import boundary | `mms-boundary/no-cross-feature-imports` (ESLint, error) | lint |
 | Physical directional CSS classes | `mms-bidi/no-physical-directional-classes` (ESLint, error) | lint |
 | Surface/token misuse | `no-restricted-syntax` selectors (ESLint, warn — advisory until promoted) | lint |
-| `any` in frontend source | `pnpm run check:code-norms` ratchet | ratchet |
+| `any` in app/shared source | `@typescript-eslint/no-explicit-any` (ESLint, error — test files exempt) + `pnpm run check:code-norms` ratchet | lint + ratchet |
 | Raw hex colours / file-size bands | `pnpm run check:code-norms` ratchet | ratchet |
 | Wildcard DB projections | `pnpm run check:db-projections` (CI) | ratchet |
 | Write-blocking index in a migration | `pnpm run check:migration-indexes` (CI) | ratchet |
 | Bundle budget | `pnpm run check:bundle` (CI, build-dist job) | ratchet |
-| i18n completeness across en/ar/ur/fa | `pnpm run check:i18n` reports missing/English-equal values; currently does not fail on counts | advisory report |
+| i18n completeness across en/ar/ur/fa | `pnpm run check:i18n` (CI + pre-PR gate) — exits non-zero on any key missing or falling back to English | ratchet |
 | Dependency advisories | `pnpm audit --audit-level=high` + dependency-review (CI) | CI |
 | Secrets in history | gitleaks (CI, full history) | CI |
 | Workflow security (SHA pinning, no credential persistence, no template injection, gated triggers) | `workflow-lint` job: actionlint + zizmor `min-severity: medium` (CI) | CI |
 | Deployed bytes match CI's build of the commit | `actions/attest-build-provenance` in CI + `gh attestation verify` in `deploy.yml` | CI |
-| Rule/skill/mirror integrity | `node scripts/verify-rules-integrity.mjs` + sync drift diff (CI) | CI |
+| Rule/skill/command/agent/mirror integrity (incl. `.agent/workflows` ↔ `.cursor/commands` ↔ `.claude/commands` ↔ `.claude/agents` parity) | `node scripts/verify-rules-integrity.mjs` + sync drift diff (CI) | CI |
 | Local CI before commit (gates + path-aware unit tests) | `.githooks/pre-commit` (secrets + staged-file ESLint); `.githooks/pre-push` (blocks `main`, runs affected-only `pnpm ci:local` / `scripts/ci/local-ci.sh`) | hook + script |
 | `drizzle-kit push` / destructive rm / .env reads | `.cursor/hooks/guard-shell.sh` (Claude + Cursor hooks) | hook |
 | Tenant RLS enablement per table | `mms-schema-migrate/scripts/check-migrations.sh` | skill script |
@@ -125,7 +125,7 @@ Update this table in the same change that adds or removes a check.
 | `@mms/shared` runtime purity | `pnpm run check:shared-purity` (CI, `typecheck-lint`) | CI |
 | a11y serious/critical violations | `e2e/tests/a11y-shell.spec.ts` (CI e2e job) | test |
 | Platform UI ownership (native controls, duplicate exports/JSX, semantic palette classes) | `apps/frontend/src/platform/platformUiArchitecture.test.ts` | test |
-| Coverage floors (FE 41/39, BE 45/27) | vitest thresholds in each workspace | test |
+| Coverage floors (FE 55/50, BE 45/27 lines/branches) | vitest thresholds in each workspace | test |
 | Work directory convergence (selection SSOT, two-layer bulk chrome, no dead adapters) | `pnpm run check:work-directory` | ratchet |
 | Data tables use `DataTable` / `WorkBatchTable` (no hand-rolled `<Table>` outside the report/ledger allowlist) | `pnpm run check:work-directory` | ratchet |
 | Reuse-first / consumer-compatible shared changes (`mms-dry` §1) | none — **advisory** (review discipline) | advisory |

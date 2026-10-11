@@ -6,6 +6,7 @@ import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import pg from 'pg';
+import type { PoolClient } from 'pg';
 import { resolveBackendRoot } from '../config/loadEnv.js';
 import { loadServerConfig } from '../config/serverConfig.js';
 import { purgeExpiredAuthArtifacts } from '../services/auth/authArtifactService.js';
@@ -23,6 +24,12 @@ import * as schema from './schema.js';
 import { logger } from '../lib/logger.js';
 
 const DATA_MIGRATION_LOCK_KEY = 2145836401;
+/**
+ * Serializes the whole boot pipeline across replicas. Every PM2 cluster instance
+ * runs `initDb()`, and only DDL / data migrations were previously lock-serialized;
+ * this covers the unguarded seed / platform-sync / partition steps too.
+ */
+const BOOT_INIT_LOCK_KEY = 2145836403;
 
 
 
@@ -75,8 +82,22 @@ export function initDb(options?: { force?: boolean }): Promise<void> {
   }
 
   initDbPromise = (async () => {
+    // Every PM2 cluster instance runs initDb() at boot. Hold one session advisory
+    // lock for the whole pipeline so concurrent replicas cannot race the seed,
+    // platform-superuser sync, partition provisioning or DDL. The deploy pipeline
+    // runs migrateDb.js before reloading, so this is normally a fast no-op pass.
+    let bootLockClient: PoolClient | null = null;
     try {
-      await applyDrizzleMigrations();
+      initializeDatabaseConnection();
+      bootLockClient = await getPool().connect();
+      await bootLockClient.query('select pg_advisory_lock($1::integer)', [BOOT_INIT_LOCK_KEY]);
+
+      if (process.env.MMS_SKIP_BOOT_MIGRATIONS === 'true') {
+        logger.warn('MMS_SKIP_BOOT_MIGRATIONS=true — skipping DDL + data migrations at boot');
+      } else {
+        await applyDrizzleMigrations();
+        await runDataMigrations();
+      }
 
       // Keep the rolling monthly audit partitions ahead of the clock so the
       // DEFAULT partition stays empty and retention can still detach by month.
@@ -89,7 +110,6 @@ export function initDb(options?: { force?: boolean }): Promise<void> {
         logger.error({ err: error }, 'Audit partition provisioning failed at boot');
       });
 
-      await runDataMigrations();
       await purgeExpiredAuthArtifacts();
       await ensurePlatformSuperUserFromEnv();
       const { syncPlatformSuperUserToTenants } = await import(
@@ -108,6 +128,13 @@ export function initDb(options?: { force?: boolean }): Promise<void> {
       initDbPromise = null;
       logger.error({ err: error }, 'Failed to initialize the database');
       throw error;
+    } finally {
+      if (bootLockClient) {
+        await bootLockClient
+          .query('select pg_advisory_unlock($1::integer)', [BOOT_INIT_LOCK_KEY])
+          .catch(() => undefined);
+        bootLockClient.release();
+      }
     }
   })();
 

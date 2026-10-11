@@ -15,7 +15,7 @@ import { auditFaculty } from './facultyRouteHelpers.js';
 
 /** Faculty Setup lookup option lists (typed `faculty_lookups`). */
 export const facultyLookupRoutes: FastifyPluginAsync = async (fastify) => {
-  registerModuleLookupRoutes<FacultyLookupKind>(fastify, {
+  registerModuleLookupRoutes<FacultyLookupKind, string[]>(fastify, {
     canRead: (user) => canReadCollection(user, 'faculty'),
     setupWritePermission: FACULTY_MODULE_MANIFEST.permissions.setupWrite,
     kindParamsSchema: facultyLookupKindParamsSchema,

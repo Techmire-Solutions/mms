@@ -5,7 +5,7 @@ import { roleHasPermission } from '@mms/shared';
 import { sendDatabaseError, sendForbidden } from './httpErrors.js';
 import { parseRequest, replyValidationError } from './zodRequest.js';
 
-export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TItems = any> = {
+export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TItems = unknown> = {
   canRead: (user: User) => boolean;
   setupWritePermission: Permission;
   kindParamsSchema: ZodTypeAny;
@@ -36,7 +36,7 @@ export type RegisterModuleLookupRoutesOptions<TKind extends string = string, TIt
 /**
  * Register GET `/lookups` + PUT `/lookups/:kind` for module Setup.
  */
-export function registerModuleLookupRoutes<TKind extends string = string, TItems = any>(
+export function registerModuleLookupRoutes<TKind extends string = string, TItems = unknown>(
   fastify: FastifyInstance,
   options: RegisterModuleLookupRoutesOptions<TKind, TItems>,
 ): void {

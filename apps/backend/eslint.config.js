@@ -25,7 +25,7 @@ export default tseslint.config(
           caughtErrors: "none",
         },
       ],
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/ban-ts-comment": [
         "error",
         { "ts-expect-error": "allow-with-description" },
@@ -41,6 +41,14 @@ export default tseslint.config(
       // Type-aware rules: catch unhandled/misused promises (real bug sources).
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",
+    },
+  },
+  {
+    // Tests may use `any` for mocks; the norm guards shipping source only
+    // (mirrors the test-file exemption in scripts/check-code-norms.mjs).
+    files: ["src/__tests__/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 );

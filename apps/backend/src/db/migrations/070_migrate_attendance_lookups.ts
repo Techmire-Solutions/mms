@@ -9,7 +9,7 @@ import { getDb } from '../dbClient.js';
 import * as schema from '../schema.js';
 import { withGlobalTenant } from '../tenant-context.js';
 
-function normalizeAttendanceItems(raw: unknown): Array<{
+type NormalizedAttendanceItem = {
   id: string;
   label: string;
   short: string;
@@ -18,9 +18,11 @@ function normalizeAttendanceItems(raw: unknown): Array<{
   text: string;
   border: string;
   dot: string;
-}> {
+};
+
+function normalizeAttendanceItems(raw: unknown): NormalizedAttendanceItem[] {
   if (!Array.isArray(raw)) return [];
-  const out: Array<any> = [];
+  const out: NormalizedAttendanceItem[] = [];
   for (const entry of raw) {
     if (entry && typeof entry === 'object') {
       const record = entry as Record<string, unknown>;

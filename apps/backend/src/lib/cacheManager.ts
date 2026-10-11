@@ -6,6 +6,7 @@ import {
   getMultiTierCacheMetrics,
   resetMultiTierCacheMetrics,
   L1_MAX_HEAP_BYTES,
+  type CacheValue,
   type MultiTierCacheOptions,
   type MultiTierCacheMetrics,
 } from './cache/multiTierCache.js';
@@ -53,7 +54,7 @@ export async function getCached<T>(key: string): Promise<T | null> {
   if (l2Value !== null && l2Value !== undefined) {
     try {
       const parsed = JSON.parse(l2Value) as T;
-      l1LruCache.set(key, parsed);
+      l1LruCache.set(key, parsed as CacheValue);
       return parsed;
     } catch {
       return null;
@@ -69,7 +70,7 @@ export async function getCached<T>(key: string): Promise<T | null> {
  */
 export async function setCached(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
   const ttlMs = ttlSeconds ? ttlSeconds * 1000 : undefined;
-  l1LruCache.set(key, value, { ttl: ttlMs });
+  l1LruCache.set(key, value as CacheValue, { ttl: ttlMs });
 
   const stringValue = JSON.stringify(value);
   await redisSet(key, stringValue, ttlSeconds);

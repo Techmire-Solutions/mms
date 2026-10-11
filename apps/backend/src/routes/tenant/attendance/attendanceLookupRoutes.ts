@@ -4,6 +4,7 @@ import {
   attendanceLookupKindParamsSchema,
   attendanceLookupPutBodySchema,
   type AttendanceLookupKind,
+  type AttendanceStatus,
 } from '@mms/shared';
 import { registerModuleLookupRoutes } from '../../../lib/registerModuleLookupRoutes.js';
 import { canReadCollection } from '../../../services/rbacService.js';
@@ -16,7 +17,7 @@ import { createCollectionAuditHelper } from '../../../lib/createCollectionAuditH
 const auditAttendance = createCollectionAuditHelper('attendance_records');
 
 export const attendanceLookupRoutes: FastifyPluginAsync = async (fastify) => {
-  registerModuleLookupRoutes<AttendanceLookupKind>(fastify, {
+  registerModuleLookupRoutes<AttendanceLookupKind, AttendanceStatus[]>(fastify, {
     canRead: (user) => canReadCollection(user, 'attendance_records'),
     setupWritePermission: ATTENDANCE_MODULE_MANIFEST.permissions.setupWrite,
     kindParamsSchema: attendanceLookupKindParamsSchema,

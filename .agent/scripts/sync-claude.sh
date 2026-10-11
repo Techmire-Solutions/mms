@@ -116,7 +116,9 @@ for dir in "$ROOT/.agent/skills"/*/; do
   done
 done
 
-[[ "$DRY_RUN" == "1" ]] || cp "$ROOT/.agent/rules/README.md" "$ROOT/.claude/rules/README.md" 2>/dev/null || true
+if [[ "$DRY_RUN" != "1" ]]; then
+  cp "$ROOT/.agent/rules/README.md" "$ROOT/.claude/rules/README.md"
+fi
 if [[ -f "$ROOT/.claude/rules/README.md" ]]; then
   # Tool-specific title/blurb after Agent mirror copy
   # `node -` forces script mode: a bare `node <<` starts the REPL under Git Bash on Windows.
@@ -141,8 +143,10 @@ NODE
 fi
 [[ "$DRY_RUN" == "1" ]] || cp "$ROOT/.agent/skills/README.md" "$ROOT/.claude/skills/README.md"
 
-[[ "$DRY_RUN" == "1" ]] || mkdir -p "$ROOT/.claude/docs/workflows"
-[[ "$DRY_RUN" == "1" ]] || cp "$ROOT/.agent/workflows/"*.md "$ROOT/.claude/docs/workflows/" 2>/dev/null || true
+if [[ "$DRY_RUN" != "1" ]]; then
+  mkdir -p "$ROOT/.claude/docs/workflows"
+  cp "$ROOT/.agent/workflows/"*.md "$ROOT/.claude/docs/workflows/"
+fi
 
 DRY_SUFFIX=""
 if [[ "$DRY_RUN" == "1" ]]; then

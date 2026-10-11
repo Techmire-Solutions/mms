@@ -243,21 +243,41 @@ export async function enqueueBackgroundJob(
 
   // Dispatch to BullMQ Queue
   const enqueued = await dispatchJobToQueue(tenant, userId, pendingJob, payload);
-  
+
   if (!enqueued) {
-    logger.warn(
-      { jobId: job.id, moduleId: job.moduleId, kind: job.kind },
-      'Queue service unavailable (Redis unreachable or timed out); falling back to in-process background job execution',
-    );
-    setImmediate(() => {
-      executeJob(tenant, userId, pendingJob.id, pendingJob.moduleId, pendingJob.kind, payload).catch((err) => {
-        logger.error({ jobId: job.id, err }, 'In-process fallback background job execution failed');
+    // Heavy export/PDF jobs must not run on the API event loop: the sandboxed
+    // worker owns the heap ceiling, execution timeout, retry/backoff and DLQ.
+    // Fail the job and let the caller surface a 503, unless an operator has
+    // explicitly opted into the dev-only in-process fallback.
+    if (process.env.MMS_ALLOW_IN_PROCESS_JOB_FALLBACK === 'true') {
+      logger.warn(
+        { jobId: pendingJob.id, moduleId: pendingJob.moduleId, kind: pendingJob.kind },
+        'Queue service unavailable; MMS_ALLOW_IN_PROCESS_JOB_FALLBACK is set — running in-process (no sandbox, no retry/DLQ)',
+      );
+      setImmediate(() => {
+        executeJob(tenant, userId, pendingJob.id, pendingJob.moduleId, pendingJob.kind, payload).catch((err) => {
+          logger.error({ jobId: pendingJob.id, err }, 'In-process fallback background job execution failed');
+        });
       });
-    });
-    return pendingJob;
+      return pendingJob;
+    }
+
+    logger.error(
+      { jobId: pendingJob.id, moduleId: pendingJob.moduleId, kind: pendingJob.kind },
+      'Queue service unavailable (Redis unreachable or timed out); rejecting background job',
+    );
+    await markJobPermanentlyFailed(
+      tenant,
+      userId,
+      pendingJob.id,
+      pendingJob.moduleId,
+      pendingJob.kind,
+      'Background job queue is unavailable.',
+    );
+    throw new QueueUnavailableError();
   }
 
-  return job;
+  return pendingJob;
 }
 
 export {

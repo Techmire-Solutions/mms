@@ -15,7 +15,7 @@ import { auditStudent } from './studentRouteHelpers.js';
 
 /** Students Setup lookup option lists (typed `student_lookups`). */
 export const studentLookupRoutes: FastifyPluginAsync = async (fastify) => {
-  registerModuleLookupRoutes<StudentLookupKind>(fastify, {
+  registerModuleLookupRoutes<StudentLookupKind, string[]>(fastify, {
     canRead: (user) => canReadCollection(user, 'students'),
     setupWritePermission: STUDENTS_MODULE_MANIFEST.permissions.setupWrite,
     kindParamsSchema: studentLookupKindParamsSchema,

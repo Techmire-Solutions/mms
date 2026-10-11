@@ -4,3 +4,14 @@
 /apps/backend/src/db/migrations_drizzle/   @hasnainwasaya88
 /apps/backend/src/middleware/authenticate*  @hasnainwasaya88
 /apps/backend/src/services/auth/            @hasnainwasaya88
+
+# Ratchets, quality gates, and the agent-standards source/mirror trees.
+# A baseline bump (scripts/check-*.mjs) or a direct mirror edit must be reviewed.
+/scripts/check-*.mjs                        @hasnainwasaya88
+/scripts/lib/                               @hasnainwasaya88
+/scripts/i18n/                              @hasnainwasaya88
+/scripts/verify-rules-integrity.mjs         @hasnainwasaya88
+/scripts/sync-skill-index.mjs               @hasnainwasaya88
+/.agent/                                    @hasnainwasaya88
+/.cursor/                                   @hasnainwasaya88
+/.claude/                                   @hasnainwasaya88
