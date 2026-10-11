@@ -196,7 +196,7 @@ jobs:
       # @mms/shared must stay an environment-agnostic leaf (no DOM/React/Fastify/
       # DB/Redis/Node builtins) so both the browser bundle and the Node backend
       # can safely import it. Comments/strings and test files are ignored.
-      - name: @mms/shared purity & boundaries
+      - name: "@mms/shared purity & boundaries"
         run: pnpm run check:shared-purity
 
       # Guards the retired Teacher / FDA surface and asserts the canonical
