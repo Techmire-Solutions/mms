@@ -49,13 +49,13 @@ const ROOT = process.cwd();
  * expanded 28 files that had been compressed under the ceiling with dense
  * one-liners (e.g. invoiceTemplatePresets.ts 174→863, contactFieldSeed.ts
  * 89→634). That was a one-time formatting normalization; the decomposition work
- * ratchets it back down (currently 70 — several shared setup/manifest modules split).
+ * ratchets it back down (currently 69 — shared setup/manifest/global-settings modules split).
  */
 const BASELINE = {
   anyAnnotations: 0,
   hexColourFiles: 26,
   arbitraryColourExpressions: 0,
-  filesOverHardLimit: 70,
+  filesOverHardLimit: 69,
 };
 
 /**
