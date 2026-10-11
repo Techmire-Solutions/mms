@@ -477,11 +477,15 @@ jobs:
       (needs.changes.outputs.e2e == 'true' || github.event_name != 'pull_request')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    # Two Playwright projects, two shards each (playwright.config.ts). A shard
+    # is a contiguous slice of tests by count, so the long axe sweeps (`a11y`)
+    # get their own runners instead of all landing on shard 1.
     strategy:
       fail-fast: false
       matrix:
-        shardIndex: [1, 2, 3, 4]
-        shardTotal: [4]
+        project: [chromium, a11y]
+        shardIndex: [1, 2]
+        shardTotal: [2]
     services:
       postgres:
         image: postgres:16-alpine
@@ -530,13 +534,20 @@ jobs:
         run: pnpm --filter e2e-tests exec playwright install chromium
 
       - name: Run E2E Tests with Sharding
-        run: pnpm test:e2e --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        env:
+          PROJECT: ${{ matrix.project }}
+          SHARD_INDEX: ${{ matrix.shardIndex }}
+          SHARD_TOTAL: ${{ matrix.shardTotal }}
+          # Unique per leg: the default `report-<shard>.zip` collides across
+          # projects when merge-reports downloads every blob into one folder.
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.project }}-${{ matrix.shardIndex }}.zip
+        run: pnpm test:e2e --project="${PROJECT}" --shard="${SHARD_INDEX}/${SHARD_TOTAL}"
 
       - name: Upload Blob Report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: blob-report-${{ matrix.shardIndex }}
+          name: blob-report-${{ matrix.project }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
