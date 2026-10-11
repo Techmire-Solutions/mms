@@ -49,13 +49,13 @@ const ROOT = process.cwd();
  * expanded 28 files that had been compressed under the ceiling with dense
  * one-liners (e.g. invoiceTemplatePresets.ts 174→863, contactFieldSeed.ts
  * 89→634). That was a one-time formatting normalization; the decomposition work
- * ratchets it back down (currently 76 — ERD, RBAC-registry, and document-template modules split).
+ * ratchets it back down (currently 75 — ERD, RBAC-registry, document-template, and sessions-setup modules split).
  */
 const BASELINE = {
   anyAnnotations: 0,
   hexColourFiles: 26,
   arbitraryColourExpressions: 0,
-  filesOverHardLimit: 76,
+  filesOverHardLimit: 75,
 };
 
 /**
