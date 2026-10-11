@@ -48,18 +48,31 @@ describe('pickShard', () => {
   });
 });
 
+// Keys must match `timingKey()` on CI or every file falls back to the median
+// weight. Deleted or renamed tests may leave a few stale keys (they only
+// unbalance the split), so presence is checked as a share, not per key.
 describe('shard-timings.json', () => {
-  it('given the recorded keys, should name existing test files relative to the frontend root', () => {
+  it('given the recorded keys, should all be POSIX paths relative to the frontend root', () => {
     // Arrange
-    const frontendRoot = path.resolve(import.meta.dirname, '../..');
+    const keys = Object.keys(recorded);
 
     // Act
-    const unmatched = Object.keys(recorded).filter(
-      (key) => key.startsWith('..') || path.isAbsolute(key) || !existsSync(path.join(frontendRoot, key)),
-    );
+    const nonRelative = keys.filter((key) => !key.startsWith('src/') || key.includes('\\'));
 
     // Assert
-    expect(unmatched).toEqual([]);
+    expect(nonRelative).toEqual([]);
+  });
+
+  it('given the recorded keys, should mostly name test files that exist', () => {
+    // Arrange
+    const frontendRoot = path.resolve(import.meta.dirname, '../..');
+    const keys = Object.keys(recorded);
+
+    // Act
+    const present = keys.filter((key) => existsSync(path.join(frontendRoot, key))).length;
+
+    // Assert
+    expect(present / keys.length).toBeGreaterThanOrEqual(0.9);
   });
 });
 
