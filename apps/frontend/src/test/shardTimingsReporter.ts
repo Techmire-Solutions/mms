@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import type { Reporter, TestModule } from 'vitest/node';
-import { SHARD_TIMINGS_FILE, timingKey } from './shardSequencer';
+import { SHARD_TIMINGS_FILE } from './shardSequencer';
 
 /**
  * Writes each test file's wall cost (environment setup, import, collect and
@@ -17,7 +17,9 @@ export default class ShardTimingsReporter implements Reporter {
     const entries = testModules.map((module) => {
       const d = module.diagnostic();
       const ms = d.environmentSetupDuration + d.prepareDuration + d.collectDuration + d.setupDuration + d.duration;
-      return [timingKey(module.project.config.root, module.moduleId), Math.round(ms)] as const;
+      // relativeModuleId is computed where the test ran, so CI blobs merged on
+      // another machine still produce root-relative keys.
+      return [module.relativeModuleId.replaceAll('\\', '/'), Math.round(ms)] as const;
     });
     if (entries.length === 0) return;
     const sorted = Object.fromEntries(entries.toSorted(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
