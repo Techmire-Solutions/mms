@@ -60,7 +60,6 @@ export function useMessagingContractListLogs(
   query: { page?: number; limit?: number; search?: string; [key: string]: unknown },
   enabled = true,
 ) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.listLogs.useQuery({
     queryKey: [...MESSAGING_LOGS_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -73,7 +72,6 @@ export function useMessagingContractListTemplates(
   query: { page?: number; limit?: number; search?: string; [key: string]: unknown } = {},
   enabled = true,
 ) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.listTemplates.useQuery({
     queryKey: [...MESSAGING_TEMPLATES_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -86,7 +84,6 @@ export function useMessagingContractListRecipients(
   query: { page?: number; limit?: number; search?: string; [key: string]: unknown } = {},
   enabled = true,
 ) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.listRecipients.useQuery({
     queryKey: ["messaging", "recipients", "contract", query],
     queryData: { query },
@@ -97,7 +94,6 @@ export function useMessagingContractListRecipients(
 
 export function useMessagingContractSaveTemplate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.saveTemplate.useMutation({
     onSuccess: () => invalidateMessagingQueries(queryClient),
   });
@@ -105,7 +101,6 @@ export function useMessagingContractSaveTemplate() {
 
 export function useMessagingContractDeleteTemplate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.deleteTemplate.useMutation({
     onSuccess: () => invalidateMessagingQueries(queryClient),
   });
@@ -113,7 +108,6 @@ export function useMessagingContractDeleteTemplate() {
 
 export function useMessagingContractRecordLogs() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.recordLogs.useMutation({
     onSuccess: () => invalidateMessagingQueries(queryClient),
   });
@@ -121,7 +115,6 @@ export function useMessagingContractRecordLogs() {
 
 export function useMessagingContractClearLogs() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.clearLogs.useMutation({
     onSuccess: () => invalidateMessagingQueries(queryClient),
   });

@@ -26,7 +26,6 @@ export function useContactColumnPrefs(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.contacts.getColumnPreferences.useQuery({
     queryKey: CONTACT_COLUMN_PREFERENCES_QUERY_KEY,
     queryData: {},
@@ -46,7 +45,6 @@ export function useContactColumnPrefs(options?: { enabled?: boolean }) {
 
 export function useContactColumnPrefsMutation() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const mutation = tsrClient.contacts.updateColumnPreferences.useMutation({
     onSuccess: (response: { body?: { preferences?: ContactColumnPreference[] } }) => {
       queryClient.setQueryData(
@@ -120,7 +118,6 @@ export function useContactColumnPrefsMutation() {
 function useContactsSavedReports() {
   const { isAuthenticated } = useAuth();
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.contacts.getSavedReports.useQuery({
     queryKey: CONTACTS_SAVED_REPORTS_QUERY_KEY,
     queryData: {},
@@ -136,17 +133,14 @@ function useContactsSavedReportMutations() {
     void queryClient.invalidateQueries({ queryKey: CONTACTS_SAVED_REPORTS_QUERY_KEY });
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const createSavedReport = tsrClient.contacts.createSavedReport.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteSavedReport = tsrClient.contacts.deleteSavedReport.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const runSavedReport = tsrClient.contacts.runSavedReport.useMutation({
     onSuccess: invalidate,
   });

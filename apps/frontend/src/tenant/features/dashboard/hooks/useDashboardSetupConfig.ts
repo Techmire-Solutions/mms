@@ -47,7 +47,6 @@ export function useDashboardSummaryQuery(
 
 export function useDashboardPreferencesQuery() {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.dashboard.getPreferences.useQuery({
     queryKey: DASHBOARD_PREFERENCES_QUERY_KEY,
     enabled: isAuthenticated,
@@ -64,7 +63,6 @@ export function useDashboardPreferencesQuery() {
 export function useDashboardPreferencesMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.dashboard.putPreferences.useMutation({
     onSuccess: (res: { status: number; body?: { preferences?: unknown } }) => {
       if (res.status === 200 && res.body?.preferences) {
@@ -78,7 +76,6 @@ export function useDashboardPreferencesMutation() {
 
 export function useDashboardWidgetsQuery() {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.dashboard.getWidgets.useQuery({
     queryKey: DASHBOARD_WIDGETS_QUERY_KEY,
     enabled: isAuthenticated,
@@ -95,7 +92,6 @@ export function useDashboardWidgetsQuery() {
 export function useDashboardWidgetsMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.dashboard.putWidgets.useMutation({
     onSuccess: (res: { status: number; body?: { widgets?: unknown } }) => {
       if (res.status === 200 && res.body?.widgets) {
@@ -110,7 +106,6 @@ export function useDashboardWidgetsMutation() {
 export function useDashboardWidgetDeleteMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.dashboard.deleteWidget.useMutation({
     onSuccess: (_data: unknown, variables: unknown) => {
       const widgetId =
@@ -139,7 +134,6 @@ export function useDashboardWidgetDeleteMutation() {
 export function useDashboardWidgetsReorderMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.dashboard.reorderWidgets.useMutation({
     onMutate: async ({ body }: { body: { order: Array<{ id: string; sortOrder: number }> } }) => {
       await queryClient.cancelQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });

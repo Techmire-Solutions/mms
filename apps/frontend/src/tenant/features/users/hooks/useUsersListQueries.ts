@@ -13,7 +13,6 @@ export function useUsersPaginated(params: UsersPaginatedParams) {
   const { isAuthenticated } = useAuth();
   const enabled = params.enabled ?? true;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.users.list.useQuery({
     queryKey: usersPaginatedQueryKey(params),
     queryData: { query: usersListQueryKeyParams(params) },

@@ -29,7 +29,6 @@ export function useStudentNextGrNumber(params: StudentNextGrNumberParams) {
   const { isAuthenticated } = useAuth();
   const enabled = params.enabled ?? true;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.students.nextGrNumber.useQuery({
     queryKey: [...STUDENTS_QUERY_KEY, "next-gr-number", params] as const,
     queryData: {

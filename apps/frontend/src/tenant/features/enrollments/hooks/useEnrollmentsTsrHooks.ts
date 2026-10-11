@@ -26,7 +26,6 @@ export function enrollmentsListQueryOptions(query: Record<string, unknown> = {})
 }
 
 export function useEnrollmentsContractList(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.list.useQuery({
     queryKey: [...ENROLLMENTS_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -36,7 +35,6 @@ export function useEnrollmentsContractList(query: Record<string, unknown>, enabl
 }
 
 export function useEnrollmentsContractGet(id: string, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.get.useQuery({
     queryKey: [...ENROLLMENTS_QUERY_KEY, "detail", id],
     queryData: { params: { id } },
@@ -47,7 +45,6 @@ export function useEnrollmentsContractGet(id: string, enabled = true) {
 
 export function useEnrollmentsContractCreate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.create.useMutation({
     onSuccess: () => invalidateEnrollmentsQueries(queryClient),
   });
@@ -55,7 +52,6 @@ export function useEnrollmentsContractCreate() {
 
 export function useEnrollmentsContractUpdate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.update.useMutation({
     onSuccess: () => invalidateEnrollmentsQueries(queryClient),
   });
@@ -63,7 +59,6 @@ export function useEnrollmentsContractUpdate() {
 
 export function useEnrollmentsContractDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.delete.useMutation({
     onSuccess: () => invalidateEnrollmentsQueries(queryClient),
   });
@@ -71,7 +66,6 @@ export function useEnrollmentsContractDelete() {
 
 export function useEnrollmentsContractBulkDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.bulkDelete.useMutation({
     onSuccess: () => invalidateEnrollmentsQueries(queryClient),
   });
@@ -79,7 +73,6 @@ export function useEnrollmentsContractBulkDelete() {
 
 export function useEnrollmentsContractBulkRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.enrollments.bulkRestore.useMutation({
     onSuccess: () => invalidateEnrollmentsQueries(queryClient),
   });

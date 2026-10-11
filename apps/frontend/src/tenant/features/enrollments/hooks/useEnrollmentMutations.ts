@@ -8,23 +8,16 @@ export function useEnrollmentMutations() {
   const queryClient = useQueryClient();
   const invalidate = () => invalidateEnrollmentsQueries(queryClient);
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const createEnrollment = tsrClient.enrollments.create.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const updateEnrollment = tsrClient.enrollments.update.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteEnrollment = tsrClient.enrollments.delete.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreEnrollment = tsrClient.enrollments.restore.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkDeleteEnrollments = tsrClient.enrollments.bulkDelete.useMutation({
     onSuccess: invalidate,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkRestoreEnrollments = tsrClient.enrollments.bulkRestore.useMutation({
     onSuccess: invalidate,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const logExportAudit = tsrClient.enrollments.exportAudit.useMutation({});
 
   return {

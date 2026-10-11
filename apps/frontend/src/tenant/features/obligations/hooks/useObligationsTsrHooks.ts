@@ -35,7 +35,6 @@ export function obligationsCollectionsListQueryOptions(query: Record<string, unk
 }
 
 export function useObligationsContractCollections(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listCollections.useQuery({
     queryKey: [...OBLIGATIONS_COLLECTIONS_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -45,7 +44,6 @@ export function useObligationsContractCollections(query: Record<string, unknown>
 }
 
 export function useObligationsContractTypes(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listTypes.useQuery({
     queryKey: [...OBLIGATIONS_TYPES_QUERY_KEY, "contract"],
     queryData: { query: {} },
@@ -55,7 +53,6 @@ export function useObligationsContractTypes(enabled = true) {
 }
 
 export function useObligationsContractMujtahids(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listMujtahids.useQuery({
     queryKey: [...OBLIGATIONS_MUJTAHIDS_QUERY_KEY, "contract"],
     queryData: { query: {} },
@@ -65,7 +62,6 @@ export function useObligationsContractMujtahids(enabled = true) {
 }
 
 export function useObligationsContractDistributions(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listDistributions.useQuery({
     queryKey: [...OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY, "contract"],
     queryData: { query: {} },
@@ -75,7 +71,6 @@ export function useObligationsContractDistributions(enabled = true) {
 }
 
 export function useObligationsContractReps(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listReps.useQuery({
     queryKey: [...OBLIGATIONS_REPS_QUERY_KEY, "contract"],
     queryData: { query: {} },
@@ -85,7 +80,6 @@ export function useObligationsContractReps(enabled = true) {
 }
 
 export function useObligationsContractWakala(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.listWakala.useQuery({
     queryKey: [...OBLIGATIONS_WAKALA_QUERY_KEY, "contract"],
     queryData: { query: {} },
@@ -96,7 +90,6 @@ export function useObligationsContractWakala(enabled = true) {
 
 export function useObligationsContractDeleteCollection() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.deleteCollection.useMutation({
     onSuccess: () => invalidateObligationsQueries(queryClient),
   });
@@ -104,7 +97,6 @@ export function useObligationsContractDeleteCollection() {
 
 export function useObligationsContractRestoreCollection() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.restoreCollection.useMutation({
     onSuccess: () => invalidateObligationsQueries(queryClient),
   });
@@ -112,7 +104,6 @@ export function useObligationsContractRestoreCollection() {
 
 export function useObligationsContractBulkDeleteCollections() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.bulkDeleteCollections.useMutation({
     onSuccess: () => invalidateObligationsQueries(queryClient),
   });
@@ -120,7 +111,6 @@ export function useObligationsContractBulkDeleteCollections() {
 
 export function useObligationsContractBulkRestoreCollections() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.obligations.bulkRestoreCollections.useMutation({
     onSuccess: () => invalidateObligationsQueries(queryClient),
   });

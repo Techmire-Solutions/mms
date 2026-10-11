@@ -32,11 +32,8 @@ export function useAccountProfileSecurityActions() {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const requestLoginEmailMutation = tsrClient.auth.requestLoginEmail.useMutation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const confirmLoginEmailMutation = tsrClient.auth.confirmLoginEmail.useMutation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const changePasswordMutation = tsrClient.auth.changePassword.useMutation();
 
   const handleRequestLoginEmail = async (): Promise<void> => {

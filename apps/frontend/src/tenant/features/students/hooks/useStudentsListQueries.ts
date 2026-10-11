@@ -46,7 +46,6 @@ import { uniqueRegistryIds } from "@/lib/registryResolve";
 export function useStudentLinkedContactIds(excludeId?: string, enabled = true) {
   const { isAuthenticated } = useAuth();
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.students.linkedContactIds.useQuery({
     queryKey: [...STUDENTS_QUERY_KEY, "linked-contact-ids", excludeId ?? ""] as const,
     queryData: { query: { excludeId } },

@@ -2,7 +2,7 @@
  * Phase 7: Contract-driven query/mutation hooks for the Students module.
  * Uses tsrClient (@ts-rest/react-query v5) for full contract schema enforcement.
  */
-import { apiContract, tsr } from "@/lib/api";
+import { apiContract, tsrClient } from "@/lib/api";
 import {
   infiniteQueryOptions,
   queryOptions,
@@ -14,7 +14,7 @@ import { STUDENTS_QUERY_KEY } from "@/tenant/features/students/hooks/studentsQue
 import { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";
 import { SESSIONS_QUERY_KEY } from "@/tenant/hooks/collections/sessions";
 
-const studentsClient = tsr.students;
+const studentsClient = tsrClient.students;
 
 export interface StudentsContractQueryParams {
   page?: number;
@@ -81,7 +81,6 @@ export function useStudentsInfiniteList(query: StudentsContractQueryParams = {},
 }
 
 export function useStudentsContractList(query: StudentsContractQueryParams, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.list.useQuery({
     queryKey: [...STUDENTS_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -92,7 +91,6 @@ export function useStudentsContractList(query: StudentsContractQueryParams, enab
 
 export function useStudentsContractCreate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.create.useMutation({
     onSuccess: () => invalidateStudentsQueries(queryClient),
   });
@@ -100,7 +98,6 @@ export function useStudentsContractCreate() {
 
 export function useStudentsContractUpdate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.update.useMutation({
     onSuccess: () => invalidateStudentsQueries(queryClient),
   });
@@ -108,7 +105,6 @@ export function useStudentsContractUpdate() {
 
 export function useStudentsContractDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.delete.useMutation({
     onSuccess: () => invalidateStudentsQueries(queryClient),
   });
@@ -116,7 +112,6 @@ export function useStudentsContractDelete() {
 
 export function useStudentsContractBulkStatus() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.bulkStatus.useMutation({
     onSuccess: () => invalidateStudentsQueries(queryClient),
   });
@@ -124,7 +119,6 @@ export function useStudentsContractBulkStatus() {
 
 export function useStudentsContractBulkEnroll() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.bulkEnroll.useMutation({
     onSuccess: () => {
       void invalidateStudentsQueries(queryClient);
@@ -142,7 +136,6 @@ export function useStudentsContractNextGrNumber(
   },
   enabled = true,
 ) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.nextGrNumber.useQuery({
     queryKey: [...STUDENTS_QUERY_KEY, "next-gr", query],
     queryData: { query },
@@ -152,13 +145,11 @@ export function useStudentsContractNextGrNumber(
 }
 
 export function useStudentsContractDuplicateCheck() {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.duplicateCheck.useMutation({});
 }
 
 export function useStudentsContractRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.restore.useMutation({
     onSuccess: () => invalidateStudentsQueries(queryClient),
   });
@@ -166,7 +157,6 @@ export function useStudentsContractRestore() {
 
 export function useStudentsContractBulkDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.bulkDelete.useMutation({
     onSuccess: () => invalidateStudentsQueries(queryClient),
   });
@@ -174,18 +164,15 @@ export function useStudentsContractBulkDelete() {
 
 export function useStudentsContractBulkRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.bulkRestore.useMutation({
     onSuccess: () => invalidateStudentsQueries(queryClient),
   });
 }
 
 export function useStudentsContractLogExportAudit() {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.exportAudit.useMutation({});
 }
 
 export function useStudentsContractLogSetupAudit() {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return studentsClient.setupAudit.useMutation({});
 }

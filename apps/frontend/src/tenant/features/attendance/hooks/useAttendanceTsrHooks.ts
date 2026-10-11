@@ -26,7 +26,6 @@ export function attendanceListQueryOptions(query: Record<string, unknown> = {}) 
 }
 
 export function useAttendanceContractList(query: Record<string, unknown>, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.attendance.list.useQuery({
     queryKey: [...ATTENDANCE_QUERY_KEY, "contract", query],
     queryData: { query },
@@ -37,7 +36,6 @@ export function useAttendanceContractList(query: Record<string, unknown>, enable
 
 export function useAttendanceContractCreate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.attendance.create.useMutation({
     onSuccess: () => invalidateAttendanceQueries(queryClient),
   });
@@ -45,7 +43,6 @@ export function useAttendanceContractCreate() {
 
 export function useAttendanceContractBulk() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.attendance.bulk.useMutation({
     onSuccess: () => invalidateAttendanceQueries(queryClient),
   });
@@ -53,7 +50,6 @@ export function useAttendanceContractBulk() {
 
 export function useAttendanceContractBulkDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.attendance.bulkDelete.useMutation({
     onSuccess: () => invalidateAttendanceQueries(queryClient),
   });
@@ -61,7 +57,6 @@ export function useAttendanceContractBulkDelete() {
 
 export function useAttendanceContractBulkRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.attendance.bulkRestore.useMutation({
     onSuccess: () => invalidateAttendanceQueries(queryClient),
   });
@@ -69,7 +64,6 @@ export function useAttendanceContractBulkRestore() {
 
 export function useAttendanceContractUpdate() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.attendance.update.useMutation({
     onSuccess: () => invalidateAttendanceQueries(queryClient),
   });
@@ -77,7 +71,6 @@ export function useAttendanceContractUpdate() {
 
 export function useAttendanceContractDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.attendance.delete.useMutation({
     onSuccess: () => invalidateAttendanceQueries(queryClient),
   });

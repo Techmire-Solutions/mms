@@ -38,7 +38,6 @@ export function questionBankQuestionsListQueryOptions(
 }
 
 export function useQuestionBankContractList(query: Record<string, unknown> = {}, enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.listQuestions.useQuery({
     queryKey: [...QUESTION_BANK_QUESTIONS_QUERY_KEY, "contract-list", query],
     queryData: { query },
@@ -48,7 +47,6 @@ export function useQuestionBankContractList(query: Record<string, unknown> = {},
 }
 
 export function useQuestionBankContractTests(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.listTests.useQuery({
     queryKey: [...QUESTION_BANK_TESTS_QUERY_KEY, "contract-list"],
     queryData: { query: {} },
@@ -58,7 +56,6 @@ export function useQuestionBankContractTests(enabled = true) {
 }
 
 export function useQuestionBankContractResults(enabled = true) {
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.listResults.useQuery({
     queryKey: [...QUESTION_BANK_RESULTS_QUERY_KEY, "contract-list"],
     queryData: { query: {} },
@@ -69,7 +66,6 @@ export function useQuestionBankContractResults(enabled = true) {
 
 export function useQuestionBankContractBulkDelete() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.bulkDeleteQuestions.useMutation({
     onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
@@ -77,7 +73,6 @@ export function useQuestionBankContractBulkDelete() {
 
 export function useQuestionBankContractBulkRestore() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.bulkRestoreQuestions.useMutation({
     onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
@@ -85,7 +80,6 @@ export function useQuestionBankContractBulkRestore() {
 
 export function useQuestionBankContractDeleteQuestion() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.deleteQuestion.useMutation({
     onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
@@ -93,7 +87,6 @@ export function useQuestionBankContractDeleteQuestion() {
 
 export function useQuestionBankContractRestoreQuestion() {
   const queryClient = useQueryClient();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.questionBank.restoreQuestion.useMutation({
     onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });

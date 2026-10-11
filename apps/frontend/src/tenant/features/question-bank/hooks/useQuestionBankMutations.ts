@@ -23,14 +23,12 @@ export function useQuestionBankMutations() {
     void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_RESULTS_QUERY_KEY });
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceQuestions = tsrClient.questionBank.bulkUpdateQuestions.useMutation({
     onSuccess: () => {
       invalidateQuestions();
     },
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceTests = tsrClient.questionBank.bulkUpdateTests.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_TESTS_QUERY_KEY });
@@ -38,7 +36,6 @@ export function useQuestionBankMutations() {
     },
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceResults = tsrClient.questionBank.bulkUpdateResults.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_RESULTS_QUERY_KEY });
@@ -46,22 +43,18 @@ export function useQuestionBankMutations() {
     },
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteQuestion = tsrClient.questionBank.deleteQuestion.useMutation({
     onSuccess: () => invalidateQuestions(),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreQuestion = tsrClient.questionBank.restoreQuestion.useMutation({
     onSuccess: () => invalidateQuestions(),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkDeleteQuestions = tsrClient.questionBank.bulkDeleteQuestions.useMutation({
     onSuccess: () => invalidateQuestions(),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkRestoreQuestions = tsrClient.questionBank.bulkRestoreQuestions.useMutation({
     onSuccess: () => invalidateQuestions(),
   });

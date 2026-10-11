@@ -52,7 +52,6 @@ export function useAccountingAccountsPaginated(
   const { isAuthenticated } = useAuth();
   const enabled = (options?.enabled ?? true) && isAuthenticated;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listAccounts.useQuery({
     queryKey: [...ACCOUNTING_ACCOUNTS_QUERY_KEY, query],
     queryData: {
@@ -78,7 +77,6 @@ export function useAccountingEntriesPaginated(
   const { isAuthenticated } = useAuth();
   const enabled = (options?.enabled ?? true) && isAuthenticated;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listEntries.useQuery({
     queryKey: [...ACCOUNTING_ENTRIES_QUERY_KEY, query],
     queryData: {
@@ -160,7 +158,6 @@ export function useAccountingFiscalYearsPaginated(
   const { isAuthenticated } = useAuth();
   const enabled = (options?.enabled ?? true) && isAuthenticated;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.accounting.listFiscalYears.useQuery({
     queryKey: [...ACCOUNTING_FISCAL_YEARS_QUERY_KEY, query],
     queryData: {

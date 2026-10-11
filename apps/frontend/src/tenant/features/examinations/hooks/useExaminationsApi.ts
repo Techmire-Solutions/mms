@@ -22,7 +22,6 @@ export const EXAMINATIONS_API = EXAMINATIONS_MODULE_MANIFEST.restBasePath;
 export function useExaminationsExams(options?: { enabled?: boolean; includeDeleted?: boolean }) {
   const { isAuthenticated } = useAuth();
   const includeDeleted = options?.includeDeleted ?? false;
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.listExams.useQuery({
     queryKey: [...EXAMINATIONS_EXAMS_QUERY_KEY, { includeDeleted }],
     queryData: { query: { includeDeleted: includeDeleted ? "true" : undefined } },
@@ -46,7 +45,6 @@ export function useExaminationsExamsCollection(options?: {
 
 export function useExaminationsResults(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.examinations.listResults.useQuery({
     queryKey: EXAMINATIONS_RESULTS_QUERY_KEY,
     staleTime: 30_000,
@@ -80,14 +78,12 @@ export function useExaminationsMutations() {
     void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_METRICS_QUERY_KEY });
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceExams = tsrClient.examinations.bulkUpdateExams.useMutation({
     onSuccess: () => {
       invalidateExams();
     },
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceExamResults = tsrClient.examinations.bulkUpdateResults.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_RESULTS_QUERY_KEY });
@@ -95,22 +91,18 @@ export function useExaminationsMutations() {
     },
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteExam = tsrClient.examinations.deleteExam.useMutation({
     onSuccess: () => invalidateExams(),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreExam = tsrClient.examinations.restoreExam.useMutation({
     onSuccess: () => invalidateExams(),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkDeleteExams = tsrClient.examinations.bulkDeleteExams.useMutation({
     onSuccess: () => invalidateExams(),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkRestoreExams = tsrClient.examinations.bulkRestoreExams.useMutation({
     onSuccess: () => invalidateExams(),
   });

@@ -8,27 +8,16 @@ export function useUsersMutations() {
   const queryClient = useQueryClient();
   const invalidate = () => invalidateUsersQueries(queryClient);
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const createUser = tsrClient.users.create.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const updateUser = tsrClient.users.update.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const inviteUser = tsrClient.users.invite.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceUsers = tsrClient.users.bulkUpdate.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceLogs = tsrClient.users.activityBulkUpdate.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteUser = tsrClient.users.delete.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreUser = tsrClient.users.restore.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkDeleteUsers = tsrClient.users.bulkDelete.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkRestoreUsers = tsrClient.users.bulkRestore.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const resetPassword = tsrClient.users.resetPassword.useMutation({ onSuccess: invalidate });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const logExportAudit = tsrClient.users.exportAudit.useMutation();
 
   return {

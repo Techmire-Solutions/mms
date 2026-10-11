@@ -18,7 +18,6 @@ export function useHasanatMutations() {
     void queryClient.invalidateQueries({ queryKey: HASANAT_METRICS_QUERY_KEY });
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceDenoms = tsrClient.hasanat.replaceDenoms.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: HASANAT_DENOMS_QUERY_KEY });
@@ -26,7 +25,6 @@ export function useHasanatMutations() {
     },
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceBatches = tsrClient.hasanat.replaceBatches.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: HASANAT_BATCHES_QUERY_KEY });
@@ -34,32 +32,25 @@ export function useHasanatMutations() {
     },
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const createDistribution = tsrClient.hasanat.createDistribution.useMutation({
     onSuccess: invalidateDistributions,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const updateDistribution = tsrClient.hasanat.updateDistribution.useMutation({
     onSuccess: invalidateDistributions,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteDistribution = tsrClient.hasanat.deleteDistribution.useMutation({
     onSuccess: invalidateDistributions,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreDistribution = tsrClient.hasanat.restoreDistribution.useMutation({
     onSuccess: invalidateDistributions,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkDeleteDistributions = tsrClient.hasanat.bulkDeleteDistributions.useMutation({
     onSuccess: invalidateDistributions,
   });
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkRestoreDistributions = tsrClient.hasanat.bulkRestoreDistributions.useMutation({
     onSuccess: invalidateDistributions,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceRedemptions = tsrClient.hasanat.replaceRedemptions.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: HASANAT_REDEMPTIONS_QUERY_KEY });

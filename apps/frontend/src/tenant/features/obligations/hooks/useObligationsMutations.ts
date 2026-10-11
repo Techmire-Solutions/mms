@@ -34,8 +34,6 @@ export function useObligationsMutations() {
     void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_METRICS_QUERY_KEY });
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
-
   const _replaceTypes = tsrClient.obligations.replaceTypes.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_TYPES_QUERY_KEY });
@@ -49,8 +47,6 @@ export function useObligationsMutations() {
       return assertSuccess(res, "Failed to update obligation types");
     },
   };
-
-  // @ts-expect-error - TS union discrimination limit with ts-rest
 
   const _replaceMujtahids = tsrClient.obligations.replaceMujtahids.useMutation({
     onSuccess: () => {
@@ -66,8 +62,6 @@ export function useObligationsMutations() {
     },
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
-
   const _replaceReps = tsrClient.obligations.replaceReps.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_REPS_QUERY_KEY });
@@ -81,8 +75,6 @@ export function useObligationsMutations() {
       return assertSuccess(res, "Failed to update mujtahid reps");
     },
   };
-
-  // @ts-expect-error - TS union discrimination limit with ts-rest
 
   const _replaceWakala = tsrClient.obligations.replaceWakala.useMutation({
     onSuccess: () => {
@@ -98,8 +90,6 @@ export function useObligationsMutations() {
     },
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
-
   const _replaceDistributions = tsrClient.obligations.replaceDistributions.useMutation({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY });
@@ -114,8 +104,6 @@ export function useObligationsMutations() {
     },
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
-
   const _replaceCollections = tsrClient.obligations.replaceCollections.useMutation({
     onSuccess: () => invalidateCollections(),
   });
@@ -126,8 +114,6 @@ export function useObligationsMutations() {
       return assertSuccess(res, "Failed to update obligation collections");
     },
   };
-
-  // @ts-expect-error - TS union discrimination limit with ts-rest
 
   const _deleteCollection = tsrClient.obligations.deleteCollection.useMutation({
     onSuccess: () => invalidateCollections(),
@@ -140,8 +126,6 @@ export function useObligationsMutations() {
     },
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
-
   const _restoreCollection = tsrClient.obligations.restoreCollection.useMutation({
     onSuccess: () => invalidateCollections(),
   });
@@ -153,8 +137,6 @@ export function useObligationsMutations() {
     },
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
-
   const _bulkDeleteCollections = tsrClient.obligations.bulkDeleteCollections.useMutation({
     onSuccess: () => invalidateCollections(),
   });
@@ -165,8 +147,6 @@ export function useObligationsMutations() {
       return assertSuccess(res, "Failed to bulk delete obligation collections");
     },
   };
-
-  // @ts-expect-error - TS union discrimination limit with ts-rest
 
   const _bulkRestoreCollections = tsrClient.obligations.bulkRestoreCollections.useMutation({
     onSuccess: () => invalidateCollections(),

@@ -11,42 +11,34 @@ export function useSessionMutations() {
     invalidateSessionsQueries(queryClient);
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const createSession = tsrClient.sessions.create.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const updateSession = tsrClient.sessions.update.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteSession = tsrClient.sessions.delete.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreSession = tsrClient.sessions.restore.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkDeleteSessions = tsrClient.sessions.bulkDelete.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkRestoreSessions = tsrClient.sessions.bulkRestore.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkUpdateSessionStatus = tsrClient.sessions.bulkStatus.useMutation({
     onSuccess: invalidate,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const logExportAudit = tsrClient.sessions.exportAudit.useMutation({});
 
   return {

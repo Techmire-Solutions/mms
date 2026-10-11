@@ -30,7 +30,6 @@ export interface RecordDispatchesInput {
 
 export function useMessageTemplates(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.messaging.listTemplates.useQuery({
     queryKey: MESSAGING_TEMPLATES_QUERY_KEY,
     queryData: { query: {} },
@@ -62,7 +61,6 @@ export function useMessageLogs(options?: {
   const pageSize =
     options?.pageSize && options.pageSize > 0 ? options.pageSize : MESSAGE_LOGS_DEFAULT_PAGE_SIZE;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.messaging.listLogs.useQuery({
     queryKey: [
       ...MESSAGING_LOGS_QUERY_KEY,
@@ -116,7 +114,6 @@ export function useMessagingMetrics(options?: {
   endDate?: string;
 }) {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.getMetrics.useQuery({
     queryKey: [...MESSAGING_METRICS_QUERY_KEY, options?.startDate, options?.endDate],
     queryData: {
@@ -144,25 +141,21 @@ export function useMessagingMutations() {
     notifyApiFailure(error, t);
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const saveTemplate = tsrClient.messaging.saveTemplate.useMutation({
     onSuccess: () => invalidate(),
     onError,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteTemplate = tsrClient.messaging.deleteTemplate.useMutation({
     onSuccess: () => invalidate(),
     onError,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const recordDispatches = tsrClient.messaging.recordLogs.useMutation({
     onSuccess: () => invalidate(),
     onError,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const clearLogs = tsrClient.messaging.clearLogs.useMutation({
     onSuccess: () => invalidate(),
     onError,
