@@ -69,7 +69,7 @@ MMS uses React 19 with a strict separation of concerns:
 1. **Server State (SSOT):** Managed exclusively by TanStack Query v5 (`@tanstack/react-query`). Query options factories and tuple query keys ensure predictable cache invalidation and background refetching.
 2. **Local Client State:** Lightweight Zustand 5 stores for transient UI states (sidebar toggles, modal dialogs, search filters).
 3. **Presentation vs Logic Decoupling:**
-   - Source files must remain under the **200-line hard cap**.
+   - Source files must remain under the **300-line hard cap** (ratcheted by `pnpm run check:code-norms`; prefer ≤220 for new shells).
    - UI components receive render props and trigger callbacks; all data queries, cache invalidations, and computations live in custom hooks.
 4. **BiDi & Semantic Styling:** Tailwind CSS v4 design tokens (`bg-primary`, `text-foreground`, `border-success`, `bg-destructive`) and logical spacing (`ms-`, `me-`, `ps-`, `pe-`) support right-to-left (Arabic/Urdu) and left-to-right (English) layouts.
 
@@ -93,7 +93,7 @@ apps/backend/src/{module}/
 - **PostgreSQL 16 & Drizzle ORM:** Normalized 3NF/BCNF schemas, typed columns, foreign keys with referential integrity.
 - **Tenant Isolation:** Transaction-scoped Row Level Security (`SET LOCAL app.current_tenant = ...`).
 - **Soft Deletion:** Tenant entity tables implement `deleted_at timestamp with time zone` with partial indexes (`WHERE deleted_at IS NULL`).
-- **Compiled Prepared Statements & Column Projections:** High-throughput read lookups utilize compiled PostgreSQL prepared statements via modularized descriptors (`preparedStatements.ts` and `preparedColumns.ts`), enforcing strict typing without `any` and adhering to the 200 LOC ceiling.
+- **Compiled Prepared Statements & Column Projections:** High-throughput read lookups utilize compiled PostgreSQL prepared statements via modularized descriptors (`preparedStatements.ts` and `preparedColumns.ts`), enforcing strict typing without `any` and adhering to the 300 LOC ceiling.
 - **Relational Soft-Delete Guardrails:** Dynamic query wrappers in `dbClient.ts` inject soft-delete conditions (`isNull(deletedAt)`) across nested relations with strongly typed helper callbacks.
 - **Asynchronous Workers:** Long-running exports, imports, and bulk message dispatches are executed in background BullMQ 6 worker queues backed by Redis 7.
 

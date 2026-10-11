@@ -2,10 +2,10 @@ import React, { useState, useRef } from "react";
 import { ImageIcon, X, Loader2 } from "lucide-react";
 import {
   IMAGE_UPLOAD_MAX_INPUT_BYTES,
-  prepareImageForUpload,
   type ImageUploadPurpose,
   type LogoBrandColors,
 } from "@mms/shared";
+import { prepareImageForUpload } from "@/lib/imageOptimization";
 import { useTranslation } from "@/hooks/useTranslation";
 import { extractLogoBrandColors } from "@/lib/extractLogoBrandColors";
 import { uploadImageFile } from "@/lib/imageUpload";

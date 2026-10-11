@@ -24,11 +24,13 @@ metadata:
 | API DTOs | `packages/shared/src/schemas/api.dto.ts` (`softDeleteBodySchema`, `bulkIdsBodySchema`) |
 | Soft-delete helpers | `packages/shared/src/softDelete.ts` |
 | Manifests | `packages/shared/src/*ModuleManifest.ts` |
-| Barrel | `packages/shared/src/index.ts` (named exports only; no `@mms/shared/*` subpaths) |
+| Barrel | `packages/shared/src/index.ts` (named exports; extra subpaths only `./tenantUtils` + `./translations/{en,ar,ur,fa}`) |
 
 ## 1. Architectural Boundaries & Purity
 
 - Pure TypeScript only — no React, DOM, Fastify, Drizzle, DB, or `node:*`.
+- Environment-bound helpers (canvas/`document`/`window`/`localStorage`) belong to the consuming app. When shared logic needs runtime data, inject it (see `registerSettingsProvider`, `registerFinanceCurrencyProvider`) instead of reading globals.
+- Enforced by `pnpm run check:shared-purity` in CI (`typecheck-lint`). The scanner ignores comments, strings, and test files.
 - Named exports via `index.ts` only. Erasable syntax: unions + `as const`; no `enum`/`namespace`.
 
 ## 2. Shared Contracts & DTOs
@@ -47,7 +49,7 @@ metadata:
 4. Verify:
 
 ```bash
-bash .agent/skills/mms-shared-package/scripts/check-shared-exports.sh
+bash .agent/skills/mms-shared-package/scripts/check-shared-exports.sh   # = pnpm run check:shared-purity (CI)
 pnpm typecheck
 ```
 

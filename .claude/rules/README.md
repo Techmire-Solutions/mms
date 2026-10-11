@@ -24,7 +24,7 @@ Project rules for the Madrasa Management System. Claude Code loads `.md` files f
 | Rule | Focus / Topic |
 |------|---------------|
 | `mms-dry.md` | DRY — single source of truth, extraction thresholds, `@mms/shared` exports |
-| `mms-structure-naming.md` | Monorepo layout, colocation, **file-size cap (200 lines hard)**, Title Case on save, naming |
+| `mms-structure-naming.md` | Monorepo layout, colocation, **file-size cap (300 lines hard)**, Title Case on save, naming |
 | `mms-dependencies.md` | Latest stable Node, pnpm, and workspace dependency upgrades |
 | `mms-ops-infrastructure.md` | Local dev setup, environment variables, Docker backend ports, health endpoints, Linux compatibility, and CI orchestration |
 | `mms-performance.md` | Performance & resource efficiency (DB, streaming, Redis caching, bundle, virtualization) |
@@ -121,7 +121,8 @@ Update this table in the same change that adds or removes a check.
 | `drizzle-kit push` / destructive rm / .env reads | `.cursor/hooks/guard-shell.sh` (Claude + Cursor hooks) | hook |
 | Tenant RLS enablement per table | `mms-schema-migrate/scripts/check-migrations.sh` | skill script |
 | Faculty hierarchy, temporal primary integrity, and tenant isolation | `facultyAssignmentValidation.test.ts`, `facultyAppointmentsDb.integration.test.ts` | test |
-| `@mms/shared` runtime purity | `mms-shared-package/scripts/check-shared-exports.sh` | skill script |
+| Faculty domain legacy surface (retired Teacher/FDA) + required schema | `pnpm run check:faculty-domain` (CI, `typecheck-lint`) | CI |
+| `@mms/shared` runtime purity | `pnpm run check:shared-purity` (CI, `typecheck-lint`) | CI |
 | a11y serious/critical violations | `e2e/tests/a11y-shell.spec.ts` (CI e2e job) | test |
 | Platform UI ownership (native controls, duplicate exports/JSX, semantic palette classes) | `apps/frontend/src/platform/platformUiArchitecture.test.ts` | test |
 | Coverage floors (FE 41/39, BE 45/27) | vitest thresholds in each workspace | test |
@@ -144,7 +145,7 @@ All rules in this directory apply **equally** to tenant workspace code and platf
 | WCAG AA a11y, RTL, touch targets | ✅ Yes |
 | TanStack Query v5 factories, `AbortSignal` | ✅ Yes |
 | Zod `.strict()` DTOs via `@mms/shared` | ✅ Yes |
-| File size cap (200 lines hard), naming | ✅ Yes |
+| File size cap (300 lines hard), naming | ✅ Yes |
 | `ErrorState` with hint description on list failures | ✅ Yes |
 | `notify.*` for all toasts | ✅ Yes |
 | Fastify layering (routes → services → repository) | ✅ Yes |
@@ -206,7 +207,7 @@ bash .agent/scripts/sync-all.sh
 - [ ] Dashboard/report KPI cards use `/metrics` where available — `mms-reports.md`
 - [ ] Setup Fields / form: tab enablement SSOT + enabled fields render in form **and** drawer — `mms-fields.md` / `mms-form-architecture.md`
 - [ ] Shared logic in `@mms/shared` if cross-app or 2+ modules
-- [ ] Touched app files stay under hard 200 lines; splits keep public import barrels — `mms-structure-naming.md`
+- [ ] Touched app files stay under the hard 300 lines; splits keep public import barrels — `mms-structure-naming.md`
 - [ ] No commit unless user requested
 - [ ] Update **all mirrors** when changing standards: `bash .agent/scripts/sync-all.sh`
 - [ ] Auth/write routes: `mms-auth-security.md` (do not OR entity write with `canEditSetup`)

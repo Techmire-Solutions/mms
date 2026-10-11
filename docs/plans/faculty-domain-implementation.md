@@ -35,7 +35,7 @@ This plan was written before schema or service changes. The exact UUID redesign 
    simultaneous requests cannot create two overlapping primary appointments.
    Serialize reporting-tree mutations and reject cycles or incomplete validation.
 6. Export bidirectional relations through the existing relations barrel. Split
-   definitions into files under 200 lines and retain faculty.ts as the public entry.
+   definitions into files under 300 lines and retain faculty.ts as the public entry.
 7. Generate forward-only SQL, journal and snapshot together. Apply ENABLE and
    FORCE RLS with USING and WITH CHECK using the chosen tenant context. Preserve
    existing platform bypass semantics only where explicitly intended. Add active
@@ -156,7 +156,7 @@ authority. UUID RLS must use NULLIF(current_setting(
 - Department, designation and assignment mutations share a tenant advisory lock.
   Primary appointment overlap checks and audit writes execute in the write
   transaction. Archival emits transactional outbox events.
-- Source files touched by this change stay within 200 lines. Faculty relations
+- Source files touched by this change stay within 300 lines. Faculty relations
   and the data-migration registry are extracted behind the existing barrels.
 - Existing text IDs, workspace_subdomain/app.current_tenant RLS, dynamic employment
   status values, legacy designation history APIs, and compatibility fields remain.
@@ -179,7 +179,7 @@ authority. UUID RLS must use NULLIF(current_setting(
 | Migration-index and DB-projection gates | Passed |
 | Rules mirror synchronization and integrity | Passed |
 | Code-norm ratchet and diff whitespace check | Passed |
-| Touched/new source files | All at most 200 lines |
+| Touched/new source files | All at most 300 lines |
 
 The local pnpm is 11.24.0; verification used `PNPM_CONFIG_PM_ON_FAIL=ignore`
 to run it without changing the repository's package-manager pin. The full test

@@ -30,7 +30,7 @@ Only address these residual gaps when explicitly within task scope:
 - **Reports** (`mms-reports.mdc`): Full-collection dumps for KPIs when `/metrics` exists; widget state via `saveCollection`.
 - **Security & RLS** (`mms-auth-security.mdc`, `mms-data-layer.mdc`): Secrets in unscoped `objects`; omitting `FORCE ROW LEVEL SECURITY` on tenant tables; unbounded backup KDF.
 - **Layout & a11y** (`mms-ui-ux-design.mdc` §4): Horizontal page overflow; touch targets < 44px (`min-h-11 min-w-11`); custom sub-tabs instead of `SubTabBar`.
-- **File Structure** (`mms-structure-naming.mdc` §3): Files > 200 lines without concern split; renaming public barrels during refactors.
+- **File Structure** (`mms-structure-naming.mdc` §3): Files beyond the 300-line cap without concern split; renaming public barrels during refactors.
 - **Audit Trail** (`mms-data-layer.mdc`, `mms-auth-security.mdc`): Bare `UPDATE`/`DELETE` on audit tables; deleting/re-hashing historical rows; uncanonical JSON; un-sharded hash chains.
 - **Performance** (`mms-performance.mdc`): Blocking Redis `KEYS *`; unbuffered heap allocations in worker jobs; write-blocking index builds; unvirtualized client lists > 30 items.
 

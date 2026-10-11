@@ -76,8 +76,7 @@ Response shapes that cross the network are declared locally instead of in
 `@mms/shared`: `AuditListResponse`/`AuditVerificationResult`/`AuditExportPayload`
 (`apps/frontend/src/tenant/hooks/collections/audit.ts:24-57`),
 `AttachmentUploadResponse` (`apps/frontend/src/lib/attachmentUpload.ts:3`),
-`ImageUploadResponse` (`apps/frontend/src/lib/imageUpload.ts:11`),
-`ModuleColumnPreferencesResponse` (`apps/frontend/src/lib/moduleColumnPreferencesApi.ts:3`).
+`ImageUploadResponse` (`apps/frontend/src/lib/imageUpload.ts:11`).
 The audit ones at least compose shared entity types (`ModernAuditEvent`), so drift is
 limited to the envelope.
 

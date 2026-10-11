@@ -105,17 +105,3 @@ export function getLanguageFontStacks(code: string): { sans: string; display: st
   }
 }
 
-/**
- * Applies `lang`, `dir`, and language-specific font CSS variables on `<html>`.
- * Safe to call in SSR/test environments (no-op without `document`).
- */
-export function applyDocumentLanguage(code: string): void {
-  if (typeof document === "undefined") return;
-  const normalized = normalizeAppLanguage(code);
-  const root = document.documentElement;
-  const fonts = getLanguageFontStacks(normalized);
-  root.setAttribute("lang", normalized);
-  root.setAttribute("dir", getLanguageDirection(normalized));
-  root.style.setProperty("--font-sans", fonts.sans);
-  root.style.setProperty("--font-display", fonts.display);
-}

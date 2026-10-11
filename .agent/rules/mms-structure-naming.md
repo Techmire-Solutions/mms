@@ -1,6 +1,6 @@
 ---
 trigger: model_decision
-description: Directory structure, colocation, 200 LOC file limits, and symbol/casing naming conventions
+description: Directory structure, colocation, 300 LOC file limits, and symbol/casing naming conventions
 ---
 
 # MMS File Structure & Naming Conventions
@@ -19,7 +19,7 @@ description: Directory structure, colocation, 200 LOC file limits, and symbol/ca
 - **Banned Symbols:** Never use generic words (`data`, `info`, `helper`, `util`) as sole variable/file names. Ban legacy terms (`persona`/`Persona`) and temporary suffixes (`tmp`, `old`, `new`, `copy`).
 
 ## 3. Code Organization & Splitting Thresholds
-- **Hard Cap 200 Lines:** No source file (`.ts`, `.tsx`, `.js`) may exceed 200 lines (exceptions: translation dictionaries, `schema.ts`, test suites). Proactively split into dedicated sub-components, custom hooks, or utility modules before adding new features.
+- **Hard Cap 300 Lines:** No source file (`.ts`, `.tsx`, `.js`) may exceed **300 lines** (ratcheted by `pnpm run check:code-norms`; prefer ≤220 for new FE shells). Exceptions: translation dictionaries, `schema.ts`, test suites. Proactively split into dedicated sub-components, custom hooks, or utility modules before adding new features.
 - **Preferred Decompositions:**
   - Page/panel logic: `use*PageController` / `use*Controller` (mutations, state, effects).
   - Action clusters: `use*Actions` / `*ActionHandlers` (save, bulk, restore handlers).

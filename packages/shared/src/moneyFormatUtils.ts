@@ -2,6 +2,19 @@
  * Currency list and locale-aware money/number formatting.
  */
 
+type FinanceCurrencyProvider = () => string | null | undefined;
+
+let financeCurrencyProvider: FinanceCurrencyProvider | null = null;
+
+/**
+ * Registers an external source for the active finance currency. The frontend
+ * injects this from settings; `@mms/shared` never reads localStorage itself.
+ * Pass `null` to clear a previously registered provider.
+ */
+export function registerFinanceCurrencyProvider(provider: FinanceCurrencyProvider | null): void {
+  financeCurrencyProvider = provider;
+}
+
 export const DEFAULT_CURRENCIES = [
   { id: "cur1", code: "PKR", name: "Pakistani Rupee", symbol: "₨" },
   { id: "cur2", code: "USD", name: "US Dollar", symbol: "$" },
@@ -13,27 +26,14 @@ export const DEFAULT_CURRENCIES = [
 ];
 
 /**
- * Retrieves the stored finance currency from localStorage if available (client-safe).
+ * Resolves the active finance currency from the registered provider (settings-aware),
+ * defaulting to PKR when none is registered.
  */
 export function getStoredFinanceCurrency(): string {
-  if (typeof window !== "undefined") {
+  if (financeCurrencyProvider) {
     try {
-      let saved = localStorage.getItem("mms_finance_settings");
-      if (!saved) {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key?.endsWith(":finance_settings")) {
-            saved = localStorage.getItem(key);
-            break;
-          }
-        }
-      }
-      if (saved) {
-        const settings = JSON.parse(saved);
-        if (settings?.currency) {
-          return settings.currency;
-        }
-      }
+      const provided = financeCurrencyProvider();
+      if (provided) return provided;
     } catch {
       // Ignored
     }

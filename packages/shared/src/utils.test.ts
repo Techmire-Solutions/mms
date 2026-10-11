@@ -4,6 +4,8 @@ import { parsePhoneNumber, normalizeToE164, formatPhoneWithCountryCode, getPrima
 import { normalizeContactForEdit, syncContactScalarFields, mergeContactEditSavePayload } from "./contactFormNormalize.js";
 import { cleanContactDraft } from "./contactItemNormalize.js";
 
+import { registerFinanceCurrencyProvider } from "./moneyFormatUtils.js";
+
 
 
 
@@ -267,29 +269,12 @@ describe("formatMoney", () => {
     expect(formatMoney(1234.56, "PKR", { excludeCurrency: true, minimumFractionDigits: 4, maximumFractionDigits: 4 })).toBe("1,234.5600");
   });
 
-  it("resolves fallback currency from window.localStorage if available", () => {
-    const originalWindow = (globalThis as any).window;
-    const originalLocalStorage = (globalThis as any).localStorage;
-
+  it("resolves the fallback currency from the registered finance provider", () => {
+    registerFinanceCurrencyProvider(() => "GBP");
     try {
-      const mockStorage: Record<string, string> = {
-        "tenant1:finance_settings": JSON.stringify({ currency: "GBP" }),
-      };
-
-      (globalThis as any).window = {};
-      (globalThis as any).localStorage = {
-        length: 1,
-        key: (_index: number) => "tenant1:finance_settings",
-        getItem: (key: string) => mockStorage[key] || null,
-        setItem: () => {},
-        removeItem: () => {},
-        clear: () => {},
-      };
-
       expect(formatMoney(100)).toBe("GBP 100");
     } finally {
-      (globalThis as any).window = originalWindow;
-      (globalThis as any).localStorage = originalLocalStorage;
+      registerFinanceCurrencyProvider(null);
     }
   });
 });

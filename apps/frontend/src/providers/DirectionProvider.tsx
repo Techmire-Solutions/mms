@@ -3,9 +3,9 @@ import { useTranslation } from '@/hooks/useTranslation';
 import {
   getLanguageDirection,
   isRtlLanguage,
-  applyDocumentLanguage,
   type AppLanguageCode,
 } from '@mms/shared';
+import { applyDocumentLanguage } from '@/lib/documentLanguage';
 import { ensureLocaleFontsLoaded } from '@/lib/localeFonts';
 
 export interface DirectionContextValue {

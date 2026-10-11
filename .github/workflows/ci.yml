@@ -193,6 +193,17 @@ jobs:
       - name: Work Directory convergence
         run: pnpm run check:work-directory
 
+      # @mms/shared must stay an environment-agnostic leaf (no DOM/React/Fastify/
+      # DB/Redis/Node builtins) so both the browser bundle and the Node backend
+      # can safely import it. Comments/strings and test files are ignored.
+      - name: "@mms/shared purity & boundaries"
+        run: pnpm run check:shared-purity
+
+      # Guards the retired Teacher / FDA surface and asserts the canonical
+      # Faculty schema + temporal-designation constraint are present.
+      - name: Faculty domain legacy-surface check
+        run: pnpm run check:faculty-domain
+
       # i18n key parity across en/ar/ur/fa. The script existed but ran in no
       # workflow, so translation drift was never actually gated.
       - name: i18n key parity

@@ -4,14 +4,14 @@ This document records the architectural standards, conventions, and design decis
 
 ---
 
-## ADR-001: 200-Line Code Ceiling and Proactive Modular Decomposition
+## ADR-001: 300-Line Code Ceiling and Proactive Modular Decomposition
 
 - **Status:** Accepted & Enforced
-- **Date:** 2026-09-24
+- **Date:** 2026-09-24 (ceiling revised from 200 to 300 to match the `check:code-norms.mjs` ratchet)
 - **Context:** Large monolithic source files decrease readability, complicate git diffs, impair testability, and increase cognitive load.
 - **Decision:** 
-  1. A strict hard cap of 200 lines of code (LOC) is established for all source files (`.ts`, `.tsx`, `.js`).
-  2. When any file approaches or exceeds 200 LOC, developers and agentic workflows must proactively decompose logic into dedicated sub-components, custom hooks, use-case interactors, or pure utility services before adding new features.
+  1. A strict hard cap of 300 lines of code (LOC) is established for all source files (`.ts`, `.tsx`, `.js`), machine-enforced by `pnpm run check:code-norms`.
+  2. When any file approaches or exceeds 300 LOC, developers and agentic workflows must proactively decompose logic into dedicated sub-components, custom hooks, use-case interactors, or pure utility services before adding new features. New frontend shells should aim for ≤220 LOC.
   3. Stable barrel exports must be maintained so external consumers do not churn.
   4. Exceptions are strictly limited to unified translation dictionaries (`appTranslations*.ts`), `schema.ts`, and large integration test suites.
 - **Consequences:** Highly modular codebase, clear ownership of responsibilities, clean git history with minimal surgical diffs.
@@ -113,8 +113,8 @@ This document records the architectural standards, conventions, and design decis
   1. Decomposed column selections into `apps/backend/src/db/preparedColumns.ts` (102 LOC) to separate projection metadata from statement execution mechanics.
   2. Preserved public column exports in `preparedStatements.ts` as a stable barrel facade to prevent breaking changes in repository consumers.
   3. Eliminated all `any` annotations using strongly typed `PreparedLookupStatement<TRow>` matching table `$inferSelect` types.
-  4. Implemented DRY `getOrCompileStatement` helper, reducing `preparedStatements.ts` from 329 LOC down to 166 LOC (well within the 200 LOC ceiling).
+  4. Implemented DRY `getOrCompileStatement` helper, reducing `preparedStatements.ts` from 329 LOC down to 166 LOC (well within the 300 LOC ceiling).
   5. Eliminated `any` annotations in `dbClient.ts` soft-delete relational guardrails via typed relational callback interfaces.
   6. Ratcheted down repository-wide `any` baseline from 64 to 51 and files over ceiling from 79 to 78.
-- **Consequences:** Strictly typed database read path, zero regressions in hot-path queries, reduced cognitive overhead, and machine-enforced compliance with the 200 LOC hard ceiling.
+- **Consequences:** Strictly typed database read path, zero regressions in hot-path queries, reduced cognitive overhead, and machine-enforced compliance with the 300 LOC hard ceiling.
 

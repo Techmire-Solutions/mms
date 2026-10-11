@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { MODULE_ACCESS_QUERY_KEY } from '@/lib/query/moduleAccessQuery';
 import {
-  applyDocumentLanguage,
   mergeGlobalSettings,
   normalizeEnabledModules,
   type GlobalSettings,
 } from '@mms/shared';
+import { applyDocumentLanguage } from '@/lib/documentLanguage';
 import { getGlobalSettings, saveGlobalSettingsAsync } from '@/lib/db';
 import { clearGlobalSettingsPreview, previewGlobalSettings } from '@/lib/settingsPreview';
 import { serverSyncErrorKey } from '@/lib/serverSyncErrors';
