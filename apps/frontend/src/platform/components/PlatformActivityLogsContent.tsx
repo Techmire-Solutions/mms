@@ -12,7 +12,7 @@ import { WidgetCardHeader } from '@/components/ui/WidgetCardHeader';
 import { CardSkeleton } from '@/components/ui/LoadingState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { ModuleWorkToolbar } from '@/components/ui/ModuleWorkToolbar';
 import { SubTabBar } from '@/components/ui/SubTabBar';
 import { exportActivityLogsCsv } from './activity-logs/exportActivityLogsCsv';
@@ -65,8 +65,8 @@ export function PlatformActivityLogsContent(): React.JSX.Element {
         clearFiltersLabel={t('common.clearFilters')}
         primaryAction={
           <div className="flex items-center gap-2">
-            <ActionButton
-              variant="secondary"
+            <Button
+              variant="outline"
               size="sm"
               icon={RefreshCw}
               loading={isFetching}
@@ -76,15 +76,16 @@ export function PlatformActivityLogsContent(): React.JSX.Element {
               aria-label={t('common.refresh')}
             />
 
-            <ActionButton
-              variant="secondary"
+            <Button
+              variant="outline"
+              size="sm"
               icon={Download}
               onClick={() => exportActivityLogsCsv(items)}
               disabled={items.length === 0}
               title={t('platform.exportCsv')}
             >
               {t('platform.exportCsv')}
-            </ActionButton>
+            </Button>
           </div>
         }
       >
@@ -127,12 +128,12 @@ export function PlatformActivityLogsContent(): React.JSX.Element {
             title={isFiltered ? t('platform.noMatchingLogs') : t('platform.noActivityLogsYet')}
             action={
               isFiltered ? (
-                <ActionButton
-                  variant="secondary"
+                <Button
+                  variant="outline"
                   onClick={handleClearFilters}
                 >
                   {t('common.clearFilters')}
-                </ActionButton>
+                </Button>
               ) : undefined
             }
             compact

@@ -3,7 +3,6 @@ import { Users, BarChart3, Settings, Download, Activity } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ModulePageShell } from '@/components/ui/ModulePageShell';
-import { ActionButton } from '@/components/ui/ActionButton';
 import { Button } from '@/components/ui/button';
 import { PlatformAddAdminForm } from '@/platform/pages/PlatformAddAdminForm';
 import { usePlatformAdmins } from '@/platform/hooks/usePlatformAdmins';
@@ -92,7 +91,7 @@ export default function PlatformUsersPage(): React.JSX.Element {
         </Button>
       ) : null}
       {activeTab === 'work' && admins && admins.length > 0 ? (
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           icon={Download}
@@ -100,7 +99,7 @@ export default function PlatformUsersPage(): React.JSX.Element {
           title={t('users.exportCsv')}
         >
           {t('users.exportCsv')}
-        </ActionButton>
+        </Button>
       ) : null}
       {canAdmins ? <PlatformAddAdminForm asTriggerOnly /> : null}
     </div>

@@ -10,7 +10,7 @@ import {
   Download,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 
 export interface ErdCanvasToolbarProps {
   zoom: number;
@@ -48,7 +48,7 @@ export function ErdCanvasToolbar({
     >
       {/* Zoom controls */}
       <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border/50">
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           icon={ZoomOut}
@@ -59,7 +59,7 @@ export function ErdCanvasToolbar({
           aria-label={t('platform.erdZoomOut')}
         />
 
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           onClick={onResetZoom}
@@ -68,9 +68,9 @@ export function ErdCanvasToolbar({
           aria-label={t('platform.erdResetZoom')}
         >
           {zoomPercent}%
-        </ActionButton>
+        </Button>
 
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           icon={ZoomIn}
@@ -81,7 +81,7 @@ export function ErdCanvasToolbar({
           aria-label={t('platform.erdZoomIn')}
         />
 
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           icon={RotateCcw}
@@ -94,8 +94,8 @@ export function ErdCanvasToolbar({
 
       {/* Action buttons */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <ActionButton
-          variant="secondary"
+        <Button
+          variant="outline"
           size="sm"
           icon={copied ? Check : Copy}
           onClick={onCopySource}
@@ -104,10 +104,10 @@ export function ErdCanvasToolbar({
           className={copied ? 'text-success border-success/30' : undefined}
         >
           {copied ? t('platform.erdCopied') : t('platform.erdCopySource')}
-        </ActionButton>
+        </Button>
 
-        <ActionButton
-          variant="secondary"
+        <Button
+          variant="outline"
           size="sm"
           icon={Download}
           onClick={onDownloadSvg}
@@ -116,11 +116,11 @@ export function ErdCanvasToolbar({
           aria-label={t('platform.erdDownloadSvg')}
         >
           {t('platform.erdDownloadSvg')}
-        </ActionButton>
+        </Button>
 
-        <ActionButton
+        <Button
           type="button"
-          variant="secondary"
+          variant="outline"
           size="sm"
           icon={isFullscreen ? Minimize2 : Maximize2}
           onClick={onToggleFullscreen}

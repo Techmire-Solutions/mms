@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mail, User, UserPlus, ShieldPlus } from 'lucide-react';
 import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformAdminPermissions } from '@mms/shared';
 import { PasswordInput } from '@/components/ui/PasswordInput';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { LeadingIconInput } from '@/components/ui/LeadingIconInput';
 import { FormModal } from '@/components/ui/FormModal';
 import { Field } from '@/components/ui/FormField';
@@ -80,14 +80,14 @@ export function PlatformAddAdminForm({ asTriggerOnly = false }: { asTriggerOnly?
 
   const content = (
     <>
-      <ActionButton
+      <Button
         variant="primary"
         icon={UserPlus}
         className={asTriggerOnly ? undefined : 'w-full'}
         onClick={() => setOpen(true)}
       >
         {t('platform.addAdmin')}
-      </ActionButton>
+      </Button>
 
       <FormModal
         open={open}

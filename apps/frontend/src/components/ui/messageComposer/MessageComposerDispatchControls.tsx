@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Pause, Play, XCircle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { SegmentedPillFilter } from '@/components/ui/SegmentedPillFilter';
+import { CompactSegmentedControl } from '@/components/ui/CompactSegmentedControl';
 import { WarningCallout } from '@/components/ui/WarningCallout';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { DispatchSpeed } from './useMessageComposerDispatch';
@@ -85,7 +85,7 @@ export function MessageComposerDispatchControls({
       {isBulk && !opening && (
         <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/20 p-2 text-xs">
           <span className="flex items-center gap-1.5 font-medium text-muted-foreground"><Zap className="h-3.5 w-3.5 text-primary" />{t('messaging.dispatchSpeed')}:</span>
-          <SegmentedPillFilter
+          <CompactSegmentedControl
             options={[
               { value: 'safe', label: t('messaging.speed.safe') },
               { value: 'normal', label: t('messaging.speed.normal') },
@@ -93,7 +93,6 @@ export function MessageComposerDispatchControls({
             ]}
             value={dispatchSpeed}
             onChange={(value) => onDispatchSpeedChange(value as DispatchSpeed)}
-            size="sm"
           />
         </div>
       )}

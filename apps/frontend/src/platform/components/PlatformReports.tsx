@@ -4,7 +4,7 @@ import { Download } from 'lucide-react';
 import { formatDate } from '@mms/shared';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { ExportToolbar, type ExportColumn } from '@/components/ui/ExportToolbar';
 import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
 import { usePlatformWorkspaces } from '@/platform/hooks/usePlatformWorkspaces';
@@ -78,8 +78,8 @@ export function PlatformReports(): React.JSX.Element {
             rows={exportRows}
             variant="compact"
           />
-          <ActionButton
-            variant="secondary"
+          <Button
+            variant="outline"
             size="sm"
             icon={Download}
             onClick={() =>
@@ -96,7 +96,7 @@ export function PlatformReports(): React.JSX.Element {
             title={t('platform.reports.exportCsv')}
           >
             {t('platform.reports.exportCsv')}
-          </ActionButton>
+          </Button>
         </div>
       </motion.div>
       <motion.div variants={reducedMotion ? undefined : itemVariants}>

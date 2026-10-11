@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { PlatformUserProfile } from '@mms/shared';
 
@@ -31,40 +31,40 @@ export function PlatformAdminActionButtons({
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
       {!admin.emailVerifiedAt && onVerifyEmail ? (
-        <ActionButton
-          variant="secondary"
+        <Button
+          variant="outline"
           size="sm"
           disabled={verifyPending}
           className="border-success/40 bg-success/10 text-success hover:bg-success/20 hover:border-success/60"
           onClick={() => onVerifyEmail(admin.id)}
         >
           {t('users.actionVerifyEmail')}
-        </ActionButton>
+        </Button>
       ) : null}
 
-      <ActionButton
-        variant="secondary"
+      <Button
+        variant="outline"
         size="sm"
         onClick={() => onEditAccess(admin)}
       >
         {t('platform.editAdminAccess')}
-      </ActionButton>
+      </Button>
 
-      <ActionButton
-        variant="secondary"
+      <Button
+        variant="outline"
         size="sm"
         onClick={() => onToggleStatus(admin, isDisabled ? 'enable' : 'disable')}
       >
         {t(isDisabled ? 'platform.enableAdmin' : 'platform.disableAdmin')}
-      </ActionButton>
+      </Button>
 
-      <ActionButton
-        variant="danger"
+      <Button
+        variant="destructive"
         size="sm"
         onClick={() => onDelete(admin)}
       >
         {t('platform.deleteAdmin')}
-      </ActionButton>
+      </Button>
     </div>
   );
 }

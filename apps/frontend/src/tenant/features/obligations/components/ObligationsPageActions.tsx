@@ -1,5 +1,5 @@
 import { Download, Plus, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface ObligationsPageActionsProps {
@@ -28,7 +28,7 @@ export function ObligationsPageActions({
   return (
     <div className="flex items-center gap-2">
       {canExport && onExport ? (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={Download}
           onClick={onExport}
@@ -36,16 +36,16 @@ export function ObligationsPageActions({
           disabled={isExporting}
         >
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
       {onImport ? (
-        <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+        <Button variant="outline" icon={Upload} onClick={onImport}>
           {t("common.import")}
-        </ActionButton>
+        </Button>
       ) : null}
-      <ActionButton variant="primary" icon={Plus} onClick={onCreate}>
+      <Button variant="primary" icon={Plus} onClick={onCreate}>
         {t("obligations.newCollection")}
-      </ActionButton>
+      </Button>
     </div>
   );
 }

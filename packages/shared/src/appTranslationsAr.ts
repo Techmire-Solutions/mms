@@ -7421,6 +7421,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "students.cardTemplate.presetStandard": "بطاقة قياسية (أفقي)",
   "students.cardTemplate.side.back": "الوجه الخلفي",
   "students.cardTemplate.side.front": "الوجه الأمامي",
+  "students.cardTemplate.sideGroup": "جانب البطاقة",
   "students.cardTemplate.title": "نموذج بطاقة هوية الطالب",
   "students.jobs.exportLabelServer": "جاري تصدير الطلاب على الخادم…",
   "students.list.actionEmail": "إرسال بريد إلكتروني",

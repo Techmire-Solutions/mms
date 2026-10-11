@@ -48,7 +48,7 @@ vi.mock('@/components/ui/FormModal', () => ({
 }));
 
 describe('PlatformAddAdminForm', () => {
-  it('renders ActionButton trigger when asTriggerOnly is true', () => {
+  it('renders Button trigger when asTriggerOnly is true', () => {
     const html = renderToStaticMarkup(<PlatformAddAdminForm asTriggerOnly />);
 
     expect(html).toContain('Add Operator');

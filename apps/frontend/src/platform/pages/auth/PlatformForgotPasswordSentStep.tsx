@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowRight } from "lucide-react";
 import PlatformAuthLayout from "@/platform/components/PlatformAuthLayout";
 import { AuthBackLink, AuthCheckEmailSuccess, AuthStatusBanner } from "@/components/entry";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/config/routes";
 import type { PlatformForgotPasswordController } from "@/platform/pages/auth/usePlatformForgotPasswordController";
 
@@ -29,7 +29,7 @@ export function PlatformForgotPasswordSentStep({ controller }: PlatformForgotPas
       >
         {devHint ? <AuthStatusBanner variant="warning" message={devHint} /> : null}
         {resetId ? (
-          <ActionButton
+          <Button
             type="button"
             variant="primary"
             size="md"
@@ -38,7 +38,7 @@ export function PlatformForgotPasswordSentStep({ controller }: PlatformForgotPas
           >
             {t("platform.forgotEnterCode")}
             <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
-          </ActionButton>
+          </Button>
         ) : null}
       </AuthCheckEmailSuccess>
     </PlatformAuthLayout>

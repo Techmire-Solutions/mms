@@ -19,7 +19,7 @@ vi.mock('@/hooks/useTranslation', () => ({
 }));
 
 describe('PlatformWorkspaceSortMenu', () => {
-  it('renders sort button trigger with ActionButton primitive and label', () => {
+  it('renders sort button trigger with Button primitive and label', () => {
     const handleToggleSort = vi.fn();
     const html = renderToStaticMarkup(
       <PlatformWorkspaceSortMenu

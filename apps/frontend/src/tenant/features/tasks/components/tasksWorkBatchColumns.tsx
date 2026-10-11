@@ -10,6 +10,7 @@ import {
   type AppTranslationKey,
 } from '@mms/shared';
 import type { WorkBatchTableColumn } from '@/components/common/work/WorkBatchTable';
+import { TableCellLink } from '@/components/ui/TableCellLink';
 import { TaskPriorityBadge, TaskStatusBadge } from './TaskBadges';
 
 export const TASK_NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
@@ -40,15 +41,13 @@ export function buildTasksWorkBatchColumns(
       label: t('tasks.title'),
       width: widthOf?.('title'),
       render: (task) => (
-        <button
-          type="button"
-          className="min-h-11 w-full text-start"
+        <TableCellLink
+          tap
+          className="text-start font-medium"
           onClick={() => onView(task)}
         >
-          <div className="font-medium text-foreground hover:text-primary transition-colors">
-            {task.title}
-          </div>
-        </button>
+          {task.title}
+        </TableCellLink>
       ),
     },
     {

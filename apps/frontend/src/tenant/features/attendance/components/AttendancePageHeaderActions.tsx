@@ -1,6 +1,6 @@
 import React from "react";
 import { ClipboardEdit, Download, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface AttendancePageHeaderActionsProps {
@@ -29,7 +29,7 @@ export function AttendancePageHeaderActions({
   return (
     <div className="flex items-center gap-2">
       {canExport && onExport ? (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={Download}
           onClick={onExport}
@@ -37,18 +37,18 @@ export function AttendancePageHeaderActions({
           disabled={isExporting}
         >
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
-      <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+      <Button variant="outline" icon={Upload} onClick={onImport}>
         {t("common.import")}
-      </ActionButton>
-      <ActionButton
+      </Button>
+      <Button
         variant="primary"
         icon={ClipboardEdit}
         onClick={onMarkAttendance}
       >
         {t("attendance.tabs.mark")}
-      </ActionButton>
+      </Button>
     </div>
   );
 }

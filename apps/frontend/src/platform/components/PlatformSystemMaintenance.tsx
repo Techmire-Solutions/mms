@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { Database, Activity, Cpu, RefreshCw, CheckCircle2, Zap, Layers } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/StatCard";
-import { ActionButton } from "@/components/ui/ActionButton";
 import { apiFetch } from "@/lib/apiClient";
 import { formatDateTime } from "@/lib/utils";
 import { containerVariantsConsole as containerVariants, itemVariants as cardVariants } from "@/platform/lib/animations";
@@ -148,8 +148,8 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
               <CheckCircle2 className="w-3 h-3 text-success" />
               {t("platform.maintenance.pm2Active")}
             </span>
-            <ActionButton
-              variant="secondary"
+            <Button
+              variant="outline"
               icon={RefreshCw}
               onClick={() => void runHealthProbe()}
               loading={probing}
@@ -157,7 +157,7 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
               aria-label={t("platform.maintenance.runDiagnostics")}
             >
               {probing ? t("platform.maintenance.diagnosticsRunning") : t("platform.maintenance.runDiagnostics")}
-            </ActionButton>
+            </Button>
           </div>
         </div>
 

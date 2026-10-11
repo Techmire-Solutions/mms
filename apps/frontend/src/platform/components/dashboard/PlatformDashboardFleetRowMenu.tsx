@@ -3,7 +3,7 @@ import { MoreHorizontal, Eye, ExternalLink } from 'lucide-react';
 import type { PlatformWorkspaceRow } from '@mms/shared';
 import { useTranslation } from '@/hooks/useTranslation';
 import { usePlatformInspector } from '@/platform/lib/PlatformInspectorContext';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +25,7 @@ export function PlatformDashboardFleetRowMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           icon={MoreHorizontal}

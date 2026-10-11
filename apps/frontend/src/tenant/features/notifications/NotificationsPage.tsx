@@ -1,7 +1,7 @@
 import React from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
@@ -25,14 +25,14 @@ export default function NotificationsPage(): React.JSX.Element {
       headerSubtitle={t("notifications.pageSubtitle")}
       headerActions={
         notifications.length > 0 ? (
-          <ActionButton
-            variant="secondary"
+          <Button
+            variant="outline"
             icon={CheckCheck}
             disabled={unreadCount === 0}
             onClick={markAllRead}
           >
             {t("notifications.markAllRead")}
-          </ActionButton>
+          </Button>
         ) : undefined
       }
     >

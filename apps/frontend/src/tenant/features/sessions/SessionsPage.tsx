@@ -3,7 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { Plus, Calendar, Download, Upload } from 'lucide-react';
 import { ModulePageShell } from '@/components/ui/ModulePageShell';
 import { ResponsiveAccordionTabs } from '@/components/ui/ResponsiveAccordionTabs';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
 import { SessionsDialogLayer } from '@/tenant/features/sessions/components/SessionsDialogLayer';
 import { SessionsWorkTier } from '@/tenant/features/sessions/components/SessionsWorkTier';
@@ -35,19 +35,19 @@ export default function Sessions() {
       headerActions={
         <>
           {c.canExport && !c.showDeleted ? (
-            <ActionButton variant="ghost" icon={Download} onClick={() => void c.handleExportCSV()}>
+            <Button variant="ghost" icon={Download} onClick={() => void c.handleExportCSV()}>
               {c.t('common.export')}
-            </ActionButton>
+            </Button>
           ) : null}
           {c.canWrite && !c.showDeleted ? (
-            <ActionButton variant="secondary" icon={Upload} onClick={() => setImportOpen(true)}>
+            <Button variant="outline" icon={Upload} onClick={() => setImportOpen(true)}>
               {c.t('common.import')}
-            </ActionButton>
+            </Button>
           ) : null}
           {c.canWrite && !c.showDeleted ? (
-            <ActionButton variant="primary" icon={Plus} onClick={c.openCreateForm}>
+            <Button variant="primary" icon={Plus} onClick={c.openCreateForm}>
               {c.t('sessions.action.new')}
-            </ActionButton>
+            </Button>
           ) : null}
         </>
       }

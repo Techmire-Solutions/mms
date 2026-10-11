@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/ui/FormSelect";
 import { ToggleRow } from "@/components/ui/ToggleRow";
 import { Field } from "@/components/ui/FormPrimitives";
-import { SegmentedPillFilter } from "@/components/ui/SegmentedPillFilter";
+import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface SessionsSettingsPreferencesProps {
@@ -110,8 +110,7 @@ export function SessionsSettingsPreferences({
             <p className="m-0 text-sm font-semibold text-foreground">{t("sessions.settings.defaultViewLayout")}</p>
             <p className="mt-0.5 text-xs text-muted-foreground">{t("sessions.settings.defaultViewLayoutHint")}</p>
           </div>
-          <SegmentedPillFilter
-            size="sm"
+          <CompactSegmentedControl
             value={normalizeSessionsViewLayout(settingsDraft.defaultViewLayout)}
             onChange={(value) => upd("defaultViewLayout", value)}
             options={[

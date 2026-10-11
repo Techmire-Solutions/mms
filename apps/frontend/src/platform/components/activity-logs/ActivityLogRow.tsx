@@ -2,7 +2,7 @@ import React from 'react';
 import { User, Calendar, Code2 } from 'lucide-react';
 import { formatDate } from '@mms/shared';
 import { useTranslation } from '@/hooks/useTranslation';
-import { ActionButton } from '@/components/ui/ActionButton';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getActionMeta } from './activityLogMeta';
 import type { PlatformActivityLogItem } from '@/platform/hooks/usePlatformActivityLogs';
@@ -56,7 +56,7 @@ export function ActivityLogRow({ log, onInspect }: ActivityLogRowProps): React.J
               {formattedDate}
             </span>
 
-            <ActionButton
+            <Button
               variant="ghost"
               size="sm"
               icon={Code2}

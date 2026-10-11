@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
 import { Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export interface ActiveFilterBannerChip {
   key: string;
@@ -35,9 +36,9 @@ export function ActiveFilterBanner({
         {chips.map((chip) => (
           <Fragment key={chip.key}>
             {chip.label && <span className="font-medium text-foreground">{chip.label}</span>}
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary font-semibold text-xs border border-primary/20">
+            <Badge tone="primary" size="sm" as="span">
               {chip.value}
-            </span>
+            </Badge>
           </Fragment>
         ))}
       </div>

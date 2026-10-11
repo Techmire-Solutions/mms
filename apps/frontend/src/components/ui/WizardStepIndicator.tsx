@@ -6,6 +6,7 @@ export interface WizardStepItem {
   id: string | number;
   label: string;
   icon?: LucideIcon | React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  disabled?: boolean;
 }
 
 export interface WizardStepIndicatorProps {
@@ -18,6 +19,8 @@ export interface WizardStepIndicatorProps {
     current?: string;
     upcoming?: string;
   };
+  onStepClick?: (step: WizardStepItem, index: number) => void;
+  isStepClickable?: (step: WizardStepItem, index: number) => boolean;
 }
 
 /**
@@ -34,6 +37,8 @@ export function WizardStepIndicator({
     current: "Current",
     upcoming: "Upcoming",
   },
+  onStepClick,
+  isStepClickable,
 }: WizardStepIndicatorProps): React.JSX.Element {
   // Resolve current index whether `current` is a 1-based/0-based number or an id string
   const currentIndex = typeof current === "number"
@@ -52,11 +57,24 @@ export function WizardStepIndicator({
         const isDone = index < currentIndex;
         const isActive = index === currentIndex;
         const Icon = step.icon;
+        const isClickable = Boolean(
+          onStepClick &&
+            !step.disabled &&
+            (isStepClickable ? isStepClickable(step, index) : index <= currentIndex),
+        );
         const stateText = isDone
           ? stepStateLabels.completed
           : isActive
             ? stepStateLabels.current
             : stepStateLabels.upcoming;
+
+        const content = isDone ? (
+          <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
+        ) : Icon ? (
+          <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        ) : (
+          <span className="text-xs font-bold">{index + 1}</span>
+        );
 
         return (
           <React.Fragment key={String(step.id)}>
@@ -65,25 +83,37 @@ export function WizardStepIndicator({
               aria-current={isActive ? "step" : undefined}
               className="flex min-w-20 flex-col items-center gap-1.5"
             >
-              <div
-                className={cn(
-                  "flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full border-2 transition-all",
-                  isDone
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : isActive
-                      ? "border-primary bg-primary/10 text-primary font-bold"
-                      : "border-border bg-muted text-muted-foreground",
-                )}
-                aria-label={`Step ${index + 1}: ${step.label} (${stateText})`}
-              >
-                {isDone ? (
-                  <Check className="h-4 w-4 shrink-0" aria-hidden="true" />
-                ) : Icon ? (
-                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                ) : (
-                  <span className="text-xs font-bold">{index + 1}</span>
-                )}
-              </div>
+              {isClickable ? (
+                <button
+                  type="button"
+                  onClick={() => onStepClick?.(step, index)}
+                  className={cn(
+                    "flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full border-2 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    isDone
+                      ? "border-primary bg-primary text-primary-foreground hover:opacity-90"
+                      : isActive
+                        ? "border-primary bg-primary/10 text-primary font-bold hover:bg-primary/20"
+                        : "border-border bg-muted text-muted-foreground hover:bg-muted/80",
+                  )}
+                  aria-label={`Step ${index + 1}: ${step.label} (${stateText})`}
+                >
+                  {content}
+                </button>
+              ) : (
+                <div
+                  className={cn(
+                    "flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full border-2 transition-all",
+                    isDone
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : isActive
+                        ? "border-primary bg-primary/10 text-primary font-bold"
+                        : "border-border bg-muted text-muted-foreground",
+                  )}
+                  aria-label={`Step ${index + 1}: ${step.label} (${stateText})`}
+                >
+                  {content}
+                </div>
+              )}
               <span
                 className={cn(
                   "text-xs text-center font-semibold leading-tight whitespace-nowrap px-1",

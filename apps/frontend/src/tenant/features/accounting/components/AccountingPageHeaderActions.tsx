@@ -1,6 +1,6 @@
 import React from "react";
 import { Download, Plus, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { FiscalYear } from '@/lib/data/accountingData';
@@ -31,7 +31,7 @@ export function AccountingPageHeaderActions({
   return (
     <div className="flex items-center gap-2">
       {canExport && !showDeleted && onExport ? (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={Download}
           onClick={onExport}
@@ -39,18 +39,18 @@ export function AccountingPageHeaderActions({
           disabled={isExporting}
         >
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
       {canWrite && !showDeleted ? (
         <>
           {onImport ? (
-            <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+            <Button variant="outline" icon={Upload} onClick={onImport}>
               {t("common.import")}
-            </ActionButton>
+            </Button>
           ) : null}
-          <ActionButton variant="primary" icon={Plus} onClick={onCreateJournal}>
+          <Button variant="primary" icon={Plus} onClick={onCreateJournal}>
             {t("accounting.journal.dashboard.newEntry")}
-          </ActionButton>
+          </Button>
         </>
       ) : null}
       {activeFiscalYear && (

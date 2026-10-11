@@ -1,6 +1,6 @@
 import React from "react";
 import { Download, Send, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface HasanatPageHeaderActionsProps {
@@ -29,7 +29,7 @@ export function HasanatPageHeaderActions({
   return (
     <div className="flex items-center gap-2">
       {canExport && onExport ? (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={Download}
           onClick={onExport}
@@ -37,14 +37,14 @@ export function HasanatPageHeaderActions({
           disabled={isExporting}
         >
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
-      <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+      <Button variant="outline" icon={Upload} onClick={onImport}>
         {t("common.import")}
-      </ActionButton>
-      <ActionButton variant="primary" icon={Send} onClick={onDistribute}>
+      </Button>
+      <Button variant="primary" icon={Send} onClick={onDistribute}>
         {t("hasanat.distributeCards")}
-      </ActionButton>
+      </Button>
     </div>
   );
 }

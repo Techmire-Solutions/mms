@@ -2,7 +2,6 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
-import { ActionButton } from '@/components/ui/ActionButton';
 import { Input } from '@/components/ui/input';
 import { LeadingIconInput } from '@/components/ui/LeadingIconInput';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +13,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { WarningCallout } from '@/components/ui/WarningCallout';
-import { SegmentedPillFilter } from '@/components/ui/SegmentedPillFilter';
+import { CompactSegmentedControl } from '@/components/ui/CompactSegmentedControl';
 import { DateRangeFilterBar } from '@/components/ui/DateRangeFilterBar';
 import { DensityToggle, type DensityMode } from '@/components/ui/DensityToggle';
 import { Inbox } from 'lucide-react';
@@ -27,8 +26,8 @@ export function DesignSystemActionsDemo(): React.JSX.Element {
       <Button className="min-h-11 cursor-pointer">Primary</Button>
       <Button variant="outline" className="min-h-11 cursor-pointer">Outline</Button>
       <Button variant="ghost" disabled className="min-h-11">Disabled</Button>
-      <ActionButton variant="primary" size="sm">Action</ActionButton>
-      <ActionButton variant="secondary" size="sm" loading>Loading</ActionButton>
+      <Button variant="default" size="sm">Action</Button>
+      <Button variant="outline" size="sm" loading>Loading</Button>
       <DensityToggle
         density={density}
         onChange={setDensity}
@@ -68,8 +67,7 @@ export function DesignSystemInputsDemo(): React.JSX.Element {
         ]}
         aria-label="Form select"
       />
-      <SegmentedPillFilter
-        size="sm"
+      <CompactSegmentedControl
         value={seg}
         onChange={setSeg}
         options={[

@@ -71,14 +71,16 @@ export function CardPrimaryButton({
   const resolvedAriaLabel = ariaLabel || resolvedTitle;
 
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="sm"
       onClick={onClick}
       className={cn(
-        "cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-2xs font-semibold transition-colors min-h-11 touch-manipulation select-none",
+        "cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-2xs font-semibold transition-colors min-h-11 shadow-none",
         isPrimary
-          ? "bg-primary/10 text-primary border border-primary/30"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent",
+          ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
         className,
       )}
       title={resolvedTitle}
@@ -86,7 +88,7 @@ export function CardPrimaryButton({
     >
       <Star className={cn("w-3 h-3", isPrimary && "fill-primary text-primary")} aria-hidden="true" />
       <span>{resolvedLabel}</span>
-    </button>
+    </Button>
   );
 }
 

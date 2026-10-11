@@ -8,7 +8,7 @@ import { UserNavDropdown } from "@/components/ui/UserNavDropdown";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import SyncStatusBadge from "@/tenant/components/layout/SyncStatusBadge";
+import { SyncStatusBadge } from "@/tenant/components/layout/SyncStatusBadge";
 import { TenantBackgroundJobsTray } from "@/tenant/components/layout/TenantBackgroundJobsTray";
 import { TenantNotificationsPopover } from "@/tenant/components/layout/TenantNotificationsPopover";
 
