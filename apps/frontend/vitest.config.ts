@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
+import { DurationShardSequencer } from './src/test/shardSequencer.ts';
 
 export default defineConfig({
   resolve: {
@@ -36,6 +37,8 @@ export default defineConfig({
         },
       },
     },
+    // CI `--shard` splits by recorded per-file time (src/test/shard-timings.json).
+    sequence: { sequencer: DurationShardSequencer },
     pool: 'threads',
     maxWorkers: process.env.CI ? 4 : undefined,
     fileParallelism: true,
