@@ -14,6 +14,7 @@
  *   8. section citations (§N must resolve to a real heading number)
  *   9. Cursor `globs:` frontmatter validity (existing base dir, non-empty match)
  *  10. freshness metadata (warn-only)
+ *  11. workflow ↔ slash-command ↔ agent mirror parity (.agent/workflows, .cursor/commands, .claude/commands, .claude/agents)
  *
  * Errors fail the run; warnings never do. Exit code 1 on any error.
  */
@@ -587,6 +588,93 @@ if (isFile(skillsReadme)) {
   } else {
     pass(`Skills README index matches disk (${diskSkills.length})`);
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8. Workflow command wrappers + Claude agent definitions
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Markdown basenames (no extension, README excluded) in a directory. */
+const mdBasenames = (dir) => {
+  if (!isDir(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.md') && f !== 'README.md')
+    .map((f) => f.replace(/\.md$/, ''))
+    .sort();
+};
+
+const workflowsDir = path.join(ROOT, '.agent/workflows');
+const cursorCommandsDir = path.join(ROOT, '.cursor/commands');
+const claudeCommandsDir = path.join(ROOT, '.claude/commands');
+const claudeAgentsDir = path.join(ROOT, '.claude/agents');
+
+const workflowNames = mdBasenames(workflowsDir);
+const cursorCommandNames = mdBasenames(cursorCommandsDir);
+const claudeCommandNames = mdBasenames(claudeCommandsDir);
+
+const sameSet = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+
+if (!sameSet(workflowNames, cursorCommandNames)) {
+  fail(
+    `.cursor/commands/*.md must mirror .agent/workflows/*.md — ` +
+      `workflows: [${workflowNames.join(', ')}] vs cursor commands: [${cursorCommandNames.join(', ')}]`,
+  );
+}
+if (!sameSet(workflowNames, claudeCommandNames)) {
+  fail(
+    `.claude/commands/*.md must mirror .agent/workflows/*.md — ` +
+      `workflows: [${workflowNames.join(', ')}] vs claude commands: [${claudeCommandNames.join(', ')}]`,
+  );
+}
+
+for (const [dir, names] of [
+  [cursorCommandsDir, cursorCommandNames],
+  [claudeCommandsDir, claudeCommandNames],
+]) {
+  for (const name of names) {
+    const abs = path.join(dir, `${name}.md`);
+    const rel = path.relative(ROOT, abs).replaceAll(path.sep, '/');
+    const raw = fs.readFileSync(abs, 'utf8');
+    const front = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? '';
+    if (!/^description:/m.test(front)) {
+      fail(`${rel}: command wrapper is missing a frontmatter 'description:'`);
+    }
+    if (!raw.includes(`.agent/workflows/${name}.md`)) {
+      fail(`${rel}: command wrapper must reference its canonical .agent/workflows/${name}.md`);
+    }
+  }
+}
+
+const agentsMdSource = isFile(agentsMdPath) ? fs.readFileSync(agentsMdPath, 'utf8') : '';
+const claudeMdSource = isFile(claudeMdPath) ? fs.readFileSync(claudeMdPath, 'utf8') : '';
+const agentNames = mdBasenames(claudeAgentsDir);
+
+for (const name of agentNames) {
+  const rel = `.claude/agents/${name}.md`;
+  const raw = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+  const front = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? '';
+  if (!front) {
+    fail(`${rel}: missing frontmatter block`);
+    continue;
+  }
+  for (const key of ['name', 'description', 'tools']) {
+    if (!new RegExp(`^${key}:`, 'm').test(front)) fail(`${rel}: frontmatter is missing '${key}:'`);
+  }
+  const declaredName = front.match(/^name:\s*(.+)$/m)?.[1]?.trim();
+  if (declaredName && declaredName !== name) {
+    fail(`${rel}: frontmatter name '${declaredName}' does not match filename '${name}'`);
+  }
+  if (!agentsMdSource.includes(name) && !claudeMdSource.includes(name)) {
+    fail(`${rel}: agent '${name}' is referenced from neither AGENTS.md nor CLAUDE.md`);
+  }
+}
+
+if (workflowNames.length > 0 || agentNames.length > 0) {
+  pass(
+    `Workflow/command/agent mirrors verified (${workflowNames.length} workflows, ` +
+      `${cursorCommandNames.length} Cursor + ${claudeCommandNames.length} Claude commands, ${agentNames.length} agents)`,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

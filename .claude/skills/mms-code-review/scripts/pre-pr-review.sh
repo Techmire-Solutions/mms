@@ -34,6 +34,7 @@ echo "=================================================="
 
 gate "Staged secrets" pnpm run check:secrets
 gate "Rules & skills integrity" node scripts/verify-rules-integrity.mjs
+gate "i18n completeness (en/ar/ur/fa)" pnpm run check:i18n
 gate "@mms/shared purity & boundaries" pnpm run check:shared-purity
 gate "Faculty domain legacy surface" pnpm run check:faculty-domain
 gate "Migration index quality" pnpm run check:migration-indexes

@@ -27,8 +27,14 @@ const DEFAULT_L1_MAX_ITEMS = 5000;
 /** Hard heap-byte ceiling for L1 in-process LRU cache (50 MB) */
 export const L1_MAX_HEAP_BYTES = 50 * 1024 * 1024;
 
+/**
+ * L1 entries are any non-nullish JSON-serialisable payload. `lru-cache`'s value
+ * type parameter is constrained to `{}`, so `unknown` is not permitted here.
+ */
+export type CacheValue = NonNullable<unknown>;
+
 // Shared L1 LRU Cache with item count and heap byte ceilings
-export const l1LruCache = new LRUCache<string, any>({
+export const l1LruCache = new LRUCache<string, CacheValue>({
   max: DEFAULT_L1_MAX_ITEMS,
   maxSize: L1_MAX_HEAP_BYTES,
   sizeCalculation: (value, key) => {
@@ -120,7 +126,7 @@ export async function getOrSetMultiTier<T>(
       try {
         const parsed = JSON.parse(l2Cached) as T;
         // Populate L1 LRU cache
-        l1LruCache.set(cacheKey, parsed, { ttl: ttlSeconds * 1000 });
+        l1LruCache.set(cacheKey, parsed as CacheValue, { ttl: ttlSeconds * 1000 });
         return parsed;
       } catch (err) {
         logger.warn({ err, cacheKey }, 'Failed to parse JSON from L2 Redis cache; refreshing');
@@ -145,7 +151,7 @@ export async function getOrSetMultiTier<T>(
       const freshValue = await fetcher();
 
       // Populate L1 LRU cache
-      l1LruCache.set(cacheKey, freshValue, { ttl: ttlSeconds * 1000 });
+      l1LruCache.set(cacheKey, freshValue as CacheValue, { ttl: ttlSeconds * 1000 });
 
       // Populate L2 Redis cache asynchronously
       try {

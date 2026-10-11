@@ -212,7 +212,7 @@ jobs:
       - name: Verify Agent & Rule Mirrors Sync
         run: |
           bash .agent/scripts/sync-all.sh
-          git diff --exit-code -- .agent .cursor .claude || (echo "Agent rule/skill mirrors out of sync! Run 'bash .agent/scripts/sync-all.sh'" && exit 1)
+          git diff --exit-code -- .agent .cursor .claude AGENTS.md || (echo "Agent rule/skill mirrors out of sync! Run 'bash .agent/scripts/sync-all.sh'" && exit 1)
           node scripts/verify-rules-integrity.mjs
 
   build:

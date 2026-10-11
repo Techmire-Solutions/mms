@@ -5,6 +5,7 @@ import {
   contactLookupPutBodySchema,
   isContactLookupCountryKind,
   type ContactLookupKind,
+  type ContactLookupCountryCode,
 } from '@mms/shared';
 import { registerModuleLookupRoutes } from '../../../lib/registerModuleLookupRoutes.js';
 import { replyValidationError } from '../../../lib/zodRequest.js';
@@ -18,7 +19,7 @@ import { auditContact } from './contactRouteHelpers.js';
 
 /** Contacts Setup lookup option lists (typed `contact_lookups`). */
 export const contactLookupRoutes: FastifyPluginAsync = async (fastify) => {
-  registerModuleLookupRoutes<ContactLookupKind>(fastify, {
+  registerModuleLookupRoutes<ContactLookupKind, string[] | ContactLookupCountryCode[]>(fastify, {
     canRead: canReadContacts,
     setupWritePermission: CONTACTS_MODULE_MANIFEST.permissions.setupWrite,
     kindParamsSchema: contactLookupKindParamsSchema,

@@ -14,7 +14,7 @@ import {
 import { auditSession } from './sessionRouteHelpers.js';
 
 export const sessionLookupRoutes: FastifyPluginAsync = async (fastify) => {
-  registerModuleLookupRoutes<SessionLookupKind>(fastify, {
+  registerModuleLookupRoutes<SessionLookupKind, string[]>(fastify, {
     canRead: (user) => canReadCollection(user, 'sessions'),
     setupWritePermission: SESSIONS_MODULE_MANIFEST.permissions.setupWrite,
     kindParamsSchema: sessionLookupKindParamsSchema,

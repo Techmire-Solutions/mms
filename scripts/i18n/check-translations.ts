@@ -35,7 +35,11 @@ function isInvariantValue(key: string, value: string): boolean {
   if (/^https?:\/\//.test(value)) return true;
   if (/^[\d\s+\-•#]+$/.test(value)) return true;
   if (value.includes('@') && !value.includes(' ')) return true;
-  if (/^\{[a-zA-Z]+\}$/.test(value)) return true;
+  // Template with only placeholders / punctuation left after substituting them
+  // (e.g. "{title} {ref}", "{prefix}…") carries no translatable words.
+  if (/\{[a-zA-Z]+\}/.test(value) && !/[a-zA-Z]/.test(value.replace(/\{[a-zA-Z]+\}/g, ''))) {
+    return true;
+  }
   if (/^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_.-]+$/.test(value)) return true;
   if (
     [
@@ -84,6 +88,7 @@ function isInvariantValue(key: string, value: string): boolean {
       'Telesign',
       'Twilio',
       'Vonage (Nexmo)',
+      'Logiqueues',
     ].includes(value)
   ) {
     return true;
@@ -104,19 +109,33 @@ function isInvariantValue(key: string, value: string): boolean {
   return false;
 }
 
-let arMissing = 0;
-let urMissing = 0;
-let faMissing = 0;
+const locales = ['ar', 'ur', 'fa'] as const;
+const missing: Record<(typeof locales)[number], string[]> = { ar: [], ur: [], fa: [] };
 
 for (const [key, enValue] of Object.entries(en)) {
   const invariant = isInvariantValue(key, enValue);
-  if (!ar[key] || (!invariant && ar[key] === enValue)) arMissing++;
-  if (!ur[key] || (!invariant && ur[key] === enValue)) urMissing++;
-  if (!fa[key] || (!invariant && fa[key] === enValue)) faMissing++;
+  if (!ar[key] || (!invariant && ar[key] === enValue)) missing.ar.push(key);
+  if (!ur[key] || (!invariant && ur[key] === enValue)) missing.ur.push(key);
+  if (!fa[key] || (!invariant && fa[key] === enValue)) missing.fa.push(key);
 }
 
 console.log('=== MMS Translation Completeness Report ===');
 console.log(`Total Keys: ${Object.keys(en).length}`);
-console.log(`Arabic (ar) fallback to EN / missing: ${arMissing}`);
-console.log(`Urdu (ur) fallback to EN / missing: ${urMissing}`);
-console.log(`Farsi (fa) fallback to EN / missing: ${faMissing}`);
+console.log(`Arabic (ar) fallback to EN / missing: ${missing.ar.length}`);
+console.log(`Urdu (ur) fallback to EN / missing: ${missing.ur.length}`);
+console.log(`Farsi (fa) fallback to EN / missing: ${missing.fa.length}`);
+
+const failedLocales = locales.filter((locale) => missing[locale].length > 0);
+if (failedLocales.length > 0) {
+  for (const locale of failedLocales) {
+    console.error(`\n✗ ${locale}: ${missing[locale].length} key(s) missing or falling back to English:`);
+    for (const key of missing[locale]) console.error(`    ${key}`);
+  }
+  console.error(
+    '\n💥 Translation completeness failed. Add the missing keys to appTranslations{Ar,Ur,Fa}.ts, ' +
+      'or extend isInvariantValue() if the value is intentionally language-invariant.',
+  );
+  process.exit(1);
+}
+
+console.log('\n✨ All locales complete (no missing or EN-fallback keys).');

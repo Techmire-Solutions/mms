@@ -60,11 +60,5 @@ ReactDOM.createRoot(rootElement).render(
   import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
 );
 
-// Register Service Worker in production browser environment for offline client resilience
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !import.meta.env.DEV) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // Non-blocking fallback
-    });
-  });
-}
+// The service worker is registered by vite-plugin-pwa (`injectRegister: 'auto'`,
+// which injects `/registerSW.js`). Do not register it a second time here.

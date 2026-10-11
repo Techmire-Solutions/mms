@@ -31,7 +31,7 @@ Agent skills for Cursor, Antigravity, and Claude Code. Cursor/Claude discover th
 | [mms-linux-compatibility](mms-linux-compatibility/SKILL.md) | Preparing a deploy or chasing an error that only reproduces on the server |
 | [mms-messaging](mms-messaging/SKILL.md) | Modifying MessagingPage, MessageComposer, messaging templates/campaigns/logs, MessagingVariableTokensBar, or backend messaging routes/repositories |
 | [mms-migration-fixes](mms-migration-fixes/SKILL.md) | Working an item that is explicitly listed as open debt in that register |
-| [mms-module-page](mms-module-page/SKILL.md) | Adding a module, three-tier page, or aligning an existing module to universal architecture |
+| [mms-module-page](mms-module-page/SKILL.md) | Adding a module page, aligning tab navigation, or aligning an existing module to universal architecture |
 | [mms-module-setup](mms-module-setup/SKILL.md) | Configuring module settings, setup sub-tabs, or module preferences |
 | [mms-module-work](mms-module-work/SKILL.md) | Changing PageHeader command centre, Work directory, trash/restore, bulk actions, detail drawers, filters, or mobile cards |
 | [mms-ops-deploy](mms-ops-deploy/SKILL.md) | Fixing a production server, a failed deploy, or wrong domain routing |
