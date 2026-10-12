@@ -48,6 +48,9 @@ export * from "./backupCrypto.js";
 export * from "./backupTypes.js";
 export * from "./brandingChartPalette.js";
 export * from "./brandingColorContrast.js";
+// Named: the frontend's design-token contrast test enforces this bound and must not
+// restate the number (three copies of it drifted together once already).
+export { MAX_RESTING_TINT_BY_MODE } from "./brandingCssContrast.js";
 export * from "./brandingColorUtils.js";
 export * from "./brandingCornerStyle.js";
 export * from "./brandingCssVariables.js";

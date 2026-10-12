@@ -37,7 +37,7 @@ export function ThemeSettingsPaletteSection({
               variant="outline"
               size="sm"
               onClick={onApplyBestPair}
-              className="h-7 min-h-7 px-2 text-2xs font-bold text-primary border-primary/30 bg-primary/10 hover:bg-primary/20 rounded-md"
+              className="h-7 min-h-7 px-2 text-2xs font-bold text-primary border-primary/30 bg-primary/10 hover:bg-primary/15 rounded-md"
             >
               <Sparkles className="h-3 w-3 me-1" />
               {t("theme.applyLogoPair")}

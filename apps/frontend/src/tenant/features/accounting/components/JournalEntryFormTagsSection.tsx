@@ -59,7 +59,7 @@ export function JournalEntryFormTagsSection({
           canSeedTemplates &&
           onSeedTemplates && (
             <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-primary/30 bg-primary/5 px-3 py-2">
-              <p className="m-0 flex-1 text-xs text-muted-foreground">
+              <p className="m-0 flex-1 text-xs text-foreground/80">
                 {t("accounting.templates.empty")}
               </p>
               <Button

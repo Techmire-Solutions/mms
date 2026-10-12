@@ -202,7 +202,7 @@ export function EnrollmentDetailSections({
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold border transition-colors h-auto cursor-pointer ${
                       isCancel
                         ? "bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/15 hover:text-destructive"
-                        : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 hover:text-primary"
+                        : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 hover:text-primary"
                     }`}
                   >
                     <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />

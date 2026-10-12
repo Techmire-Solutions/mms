@@ -77,7 +77,7 @@ export function MessagingWorkTierDirectory({
                 variant="outline"
                 size="sm"
                 onClick={() => c.handleBulkResendLogs(c.failedLogs)}
-                className="h-8 gap-1 text-xs border-destructive/40 text-destructive hover:bg-destructive/20 font-semibold"
+                className="h-8 gap-1 text-xs border-destructive/40 text-destructive hover:bg-destructive/15 font-semibold"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span>{c.t("messaging.resend")}</span>

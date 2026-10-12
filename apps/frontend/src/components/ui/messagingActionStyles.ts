@@ -4,14 +4,14 @@ export const MESSAGING_QUICK_ACTION_BASE =
   "rounded-xl border text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 touch-manipulation cursor-pointer";
 
 export const MESSAGING_QUICK_ACTION_TONES = {
-  call: "bg-info/10 text-info border-info/20 hover:bg-info/20 hover:border-info/30",
-  whatsapp: "bg-success/10 text-success border-success/30 hover:bg-success/20",
-  sms: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20",
-  email: "bg-secondary/10 text-secondary border-secondary/20 hover:bg-secondary/20",
+  call: "bg-info/10 text-info border-info/20 hover:bg-info/15 hover:border-info/30",
+  whatsapp: "bg-success/10 text-success border-success/30 hover:bg-success/15",
+  sms: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/15",
+  email: "bg-secondary/10 text-secondary border-secondary/20 hover:bg-secondary/15",
   copy: "bg-muted text-muted-foreground border-border/40 hover:bg-muted/80 hover:border-border/60",
   location:
-    "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20 hover:border-warning/30",
-  link: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 hover:border-primary/30",
+    "bg-warning/10 text-warning border-warning/20 hover:bg-warning/15 hover:border-warning/30",
+  link: "bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 hover:border-primary/30",
 } as const;
 
 /** Dense icon-only messaging / contact action buttons (directory cards, table cells, drawers). */

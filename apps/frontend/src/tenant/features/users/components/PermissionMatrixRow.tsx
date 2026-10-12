@@ -106,7 +106,7 @@ export function PermissionMatrixRow({
             aria-label={`${t("users.permissions.colAll")}: ${t(mod.labelKey)}`}
             className={`mx-auto flex min-h-11 min-w-11 items-center justify-center rounded-lg border-2 text-xs font-bold transition-all p-0 shadow-none cursor-pointer ${
               allChecked
-                ? "border-primary bg-primary/15 text-primary hover:bg-primary/25"
+                ? "border-primary bg-primary/15 text-primary hover:bg-primary/15"
                 : "border-primary/30 text-primary/60 hover:bg-primary/10"
             }`}
           >

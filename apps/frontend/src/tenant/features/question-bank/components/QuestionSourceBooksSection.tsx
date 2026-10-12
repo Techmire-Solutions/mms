@@ -142,7 +142,7 @@ export function QuestionSourceBooksSection({
                       variant="outline"
                       onClick={() => fieldId !== "sourceBookName" && onToggleBookField(fieldId)}
                       disabled={fieldId === "sourceBookName"}
-                      className={`min-h-11 rounded-full border px-2.5 text-xs font-semibold ${selected ? "border-primary bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+                      className={`min-h-11 rounded-full border px-2.5 text-xs font-semibold ${selected ? "border-primary bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
                     >
                       {fieldLabel(fieldId)}
                     </Button>

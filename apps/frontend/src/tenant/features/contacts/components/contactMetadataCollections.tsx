@@ -39,7 +39,7 @@ export function renderSocialMetadata({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
-              className="inline-flex items-center min-h-11 gap-1 px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-semibold transition-colors truncate max-w-cell-trunc"
+              className="inline-flex items-center min-h-11 gap-1 px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/15 text-primary border border-primary/20 text-xs font-semibold transition-colors truncate max-w-cell-trunc"
               title={`${platform || t("contacts.form.link")}: ${url}`}
             >
               <Globe className="w-3 h-3 shrink-0 text-primary" />

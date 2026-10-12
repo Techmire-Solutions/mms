@@ -113,7 +113,7 @@ export function YearPickerGrid({
                 // Current year unselected
                 isCurrent &&
                   !isSelected &&
-                  "text-primary font-bold ring-1.5 ring-primary/40 bg-primary/10 hover:bg-primary/20 active:scale-95",
+                  "text-primary font-bold ring-1.5 ring-primary/40 bg-primary/10 hover:bg-primary/15 active:scale-95",
                 // Normal unselected
                 !isSelected &&
                   !isCurrent &&
