@@ -77,6 +77,7 @@ playwright/.cache/
 # 8. Tool, Agent & Model Overrides
 .claude/settings.local.json
 .claude/worktrees/
+.commandcode/
 .wwebjs_auth/
 .wwebjs_cache/
 whatsapp-session/

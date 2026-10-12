@@ -32,7 +32,7 @@ const MODULE_ROUTES = [
   },
   {
     path: "/students",
-    ready: 'button:has-text("Student"), [role="tab"], #main-content',
+    ready: '#main-content button:has-text("Student"), #main-content [role="tab"]',
   },
   {
     path: "/attendance",

@@ -45,58 +45,41 @@ const permanentPassword = "Madrasa@5678";
 const platformEmail = `platform-tpl-${Date.now()}@test.com`;
 const platformPassword = "Pa$$w0rd123";
 
+/**
+ * Activates a section/tier trigger regardless of breakpoint. At `>=lg` the tier and
+ * sub-tab navigation renders as `role="tab"` / sidebar nav buttons; below `lg` it renders
+ * as an accordion whose triggers are plain `button`s (`aria-expanded`). Waits until the
+ * trigger reports itself active.
+ */
+async function activateSectionTrigger(page: Page, name: RegExp): Promise<void> {
+  const trigger = page
+    .getByRole("tab", { name })
+    .or(page.getByRole("button", { name }))
+    .first();
+  await expect(trigger).toBeVisible({ timeout: 30_000 });
+
+  const isActive = async () =>
+    (await trigger.getAttribute("aria-selected")) === "true" ||
+    (await trigger.getAttribute("aria-expanded")) === "true";
+
+  if (!(await isActive())) {
+    await trigger.click();
+    await expect.poll(isActive, { timeout: 15_000 }).toBe(true);
+  }
+}
+
 /** Opens Obligations → Setup → Invoice Template and returns the editor root. */
 async function openInvoiceTemplateEditor(page: Page) {
   await page.goto(`${tenantOrigin}/obligations`);
   await page.waitForLoadState("domcontentloaded");
   await waitForAppShellReady(page);
 
-  const tierContainer = page
-    .locator("div.hidden.lg\\:block, div.space-y-3.lg\\:hidden")
-    .filter({ visible: true })
-    .first();
-  await tierContainer.waitFor({ state: "visible", timeout: 30_000 });
-
-  const setupTrigger = tierContainer
-    .getByRole("tab", { name: /Setup/i })
-    .or(tierContainer.getByRole("button", { name: /Setup/i }))
-    .first();
-  await setupTrigger.waitFor({ state: "visible", timeout: 30_000 });
-
-  const isSetupActive = async () => {
-    const selected = await setupTrigger.getAttribute("aria-selected");
-    const expanded = await setupTrigger.getAttribute("aria-expanded");
-    return selected === "true" || expanded === "true";
-  };
-
-  if (!(await isSetupActive())) {
-    await setupTrigger.click();
-    await expect.poll(isSetupActive, { timeout: 15_000 }).toBe(true);
-  }
-
+  // Tier nav (Work | Reports | Setup): horizontal tabs at >=lg, accordion triggers below.
+  await activateSectionTrigger(page, /^Setup/i);
   await waitForToastsToClear(page);
 
-  const subTabContainer = page
-    .locator('div[role="tablist"]:visible')
-    .filter({ hasText: /Invoice Template/i })
-    .first();
-  await subTabContainer.waitFor({ state: "visible", timeout: 30_000 });
-
-  const invoiceTemplateTrigger = subTabContainer
-    .getByRole("tab", { name: /Invoice Template/i })
-    .or(subTabContainer.getByRole("button", { name: /Invoice Template/i }))
-    .first();
-  await invoiceTemplateTrigger.waitFor({ state: "visible", timeout: 30_000 });
-
-  const isTemplateActive = async () => {
-    const selected = await invoiceTemplateTrigger.getAttribute("aria-selected");
-    return selected === "true";
-  };
-
-  if (!(await isTemplateActive())) {
-    await invoiceTemplateTrigger.click();
-    await expect.poll(isTemplateActive, { timeout: 15_000 }).toBe(true);
-  }
+  // Setup sub-tabs (… | Invoice Template): tabs at >=lg, accordion triggers below.
+  await activateSectionTrigger(page, /Invoice Template/i);
 
   // The editor is embedded (`fullscreen={false}`) here, so it is a labelled region.
   const heading = page.getByRole("heading", { name: /Invoice Template Editor/i });
