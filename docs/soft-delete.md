@@ -62,7 +62,7 @@ MMS prefers **soft-delete** (marking rows as archived in-place) over hard `DELET
 
 ### Mandatory System Invariants
 1. **Pervasive Query Guarding**: A soft-delete that any read path ignores is a critical data leak. `deleted_at IS NULL` must be enforced across all reads, joins, sub-selects, metrics, and background jobs.
-2. **Session Invalidation ("Not deleted until sessions die")**: When a user or staff account (`tenant_users`, `teachers`) is soft-deleted, all active sessions and refresh tokens must be revoked immediately in Redis/auth stores. Authentication resolvers (`authenticateTenant`, `/me`, OAuth) must explicitly verify `deleted_at IS NULL` to prevent zombie sessions and silent resurrection.
+2. **Session Invalidation ("Not deleted until sessions die")**: When a user or staff account (`tenant_users`, `faculty`) is soft-deleted, all active sessions and refresh tokens must be revoked immediately in Redis/auth stores. Authentication resolvers (`authenticateTenant`, `/me`, OAuth) must explicitly verify `deleted_at IS NULL` to prevent zombie sessions and silent resurrection.
 3. **Database RLS Defense-in-Depth**: In addition to application query predicates, PostgreSQL Row-Level Security policies provide a defense-in-depth barrier, automatically hiding soft-deleted rows from standard tenant queries unless `app.include_deleted = 'true'` is explicitly configured.
 4. **Schema-Level Hard-Delete Guard (`BEFORE DELETE` Trigger)**: Application-only discipline fails under operator pressure or errant scripts. PostgreSQL `BEFORE DELETE` triggers forbid physical row deletion on soft-deletable tables unless an explicit session bypass (`app.allow_hard_purge = 'true'`) is initialized by retention workers or workspace teardown.
 5. **GDPR / Right-to-Erasure Boundary**: Soft-delete is for operational recovery, **not** GDPR Article 17 compliance. When Right to Erasure applies, personal data must undergo **crypto-shredding** (key destruction) paired with **in-place pseudonymization/scrubbing**; soft-delete alone does not satisfy erasure.
@@ -211,7 +211,7 @@ index('students_workspace_deleted_records_idx')
 
 > **Production evidence (Lightdash):** Tables with both `WHERE deleted_at IS NULL` and `WHERE deleted_at IS NOT NULL` partial indexes outperform single-predicate indexes by up to 276× on skewed-status tables (17M active vs 3M archived rows).
 
-> **Gap (open):** Non-gold-standard tables (teachers, sessions, enrollments, finance, accounting, obligations, hasanat, examinations) currently have only Category A indexes. Category B and C partial indexes are pending migration `085`.
+> **Gap (open):** Non-gold-standard tables (faculty, sessions, enrollments, finance, accounting, obligations, hasanat, examinations) currently have only Category A indexes. Category B and C partial indexes are pending migration `085`.
 
 ### 2.4 Partial Unique Indexes — Soft-Delete Aware Uniqueness
 
@@ -256,7 +256,7 @@ In Drizzle schema definition:
 |---|---|
 | `contacts` | `email`, `phone` |
 | `students` | `student_id` (if unique), `email` |
-| `teachers` | `employee_id`, `email` |
+| `faculty` | `employee_id`, `email` |
 | `tenant_users` | `email` |
 
 > **Slug uniqueness note:** When natural keys can be reused after archival (e.g., a session code), apply the same partial unique index pattern. If reuse is **not** intended (e.g., audit trail entries), keep the standard `UNIQUE` constraint.
@@ -379,7 +379,7 @@ PostgreSQL 15 introduced `UNIQUE NULLS NOT DISTINCT`, which treats `NULL` values
 | `contacts.ts` | `contacts`, `tenant_users` |
 | `contactTables.ts` | contact-linked lookup tables |
 | `students.ts` | `students` |
-| `teachers.ts` | `teachers` |
+| `faculty.ts` (+ `faculty*` satellites) | `faculty` |
 | `sessions.ts` | `sessions` |
 | `enrollments.ts` | `enrollments` |
 | `attendance.ts` | `attendance_records` |
@@ -490,7 +490,7 @@ export function filterActiveContacts(contacts: Contact[]): Contact[] {
 }
 ```
 
-Each person-module (`students`, `teachers`) has equivalent helpers in its own shared types file.
+Each person-module (`students`, `faculty`) has equivalent helpers in its own shared types file.
 
 ### 3.5 `SoftDeleteListFilter` — Three-Way Scope
 
@@ -747,7 +747,7 @@ softDelete: {
 | Module | `captureDeletionReason` | Reason |
 |---|---|---|
 | contacts | `true` | Person records — reason is audit-critical |
-| teachers | `true` | Person records |
+| faculty | `true` | Person records |
 | students | `true` (implied) | Person records |
 | sessions | `true` | Session closure reason is operationally useful |
 | enrollments | `true` | Dropout/withdrawal reason drives reports |
@@ -1072,7 +1072,7 @@ To avoid ad-hoc decisions, every entity in the database is classified into one o
 
 | Bucket | Deletion Mechanism | Target Entities | Rationale & Lifecycle |
 |---|---|---|---|
-| **1. Soft-Delete (Audit & Recovery)** | `UPDATE SET deleted_at = NOW()` | `contacts`, `students`, `teachers`, `sessions`, `enrollments`, `finance_invoices`, `accounting_accounts` | High referential weight; user self-service restoration required; historical reporting and accounting continuity. |
+| **1. Soft-Delete (Audit & Recovery)** | `UPDATE SET deleted_at = NOW()` | `contacts`, `students`, `faculty`, `sessions`, `enrollments`, `finance_invoices`, `accounting_accounts` | High referential weight; user self-service restoration required; historical reporting and accounting continuity. |
 | **2. Ephemeral Hard-Delete** | Standard SQL `DELETE` | `question_bank_tests`, `assessment_results`, join table edges, draft forms | Scratchpad data without independent lifecycle; no incoming FKs; absence represents desired state. |
 | **3. Sweeper-Driven TTL Purge** | Scheduled background worker (`lte(purge_after, NOW())`) | `message_logs`, temporary upload artifacts, idempotency records, session tokens | Time-bounded operational data; purged after retention window (§13) to prevent storage and index bloat. |
 | **4. Append-Only Immutable (Never Deleted)** | `DELETE` and `UPDATE` forbidden at DB layer | `audit_trail_events`, `accounting_entries`, hash chain partitions | Forensic source of truth; regulatory compliance; tamper-evident immutability. |
@@ -1086,7 +1086,7 @@ Platform tenant workspace teardown (`purgeTenantDataBySubdomain`) executes physi
 
 | Priority | Gap | Status / Resolution |
 |---|---|---|
-| Closed | Partial unique indexes on recyclable natural keys (`students.student_id`, `students.gr_number`, `teachers.employee_id`) — archived rows block re-registration | Resolved: DDL migration `0104_soft_delete_system_complete.sql` created partial unique indexes `WHERE deleted_at IS NULL` |
+| Closed | Partial unique indexes on recyclable natural keys (`students.student_id`, `students.gr_number`, `faculty.employee_id`) — archived rows block re-registration | Resolved: DDL migration `0104_soft_delete_system_complete.sql` created partial unique indexes `WHERE deleted_at IS NULL` |
 | Closed | `WHERE deleted_at IS NULL` partial indexes (Category B) on all soft-deletable tenant tables | Resolved: DDL migration `0104_soft_delete_system_complete.sql` created Category B partial indexes across all soft-deletable tables |
 | Closed | `WHERE deleted_at IS NOT NULL` partial indexes (Category C) on trash-browser tables | Resolved: DDL migration `0104_soft_delete_system_complete.sql` created Category C partial indexes across all soft-deletable tables |
 | Closed | `registerSoftDeletableBulkRoutes` drops `userId` on bulk restore — restore operations not attributed in DB | Resolved: passes `userId` to `bulkRestoreFn` in `crudBulkRouteFactories.ts` and `crudBulkRouteHelpers.ts` |
@@ -1227,7 +1227,7 @@ To prevent lock contention, transaction exhaustion, and WAL spikes, deletions ex
 ```ts
 import type { DbClient } from '@/db';
 import { and, eq, inArray, isNotNull, lte, sql } from 'drizzle-orm';
-import { students, teachers, messageLogs, attendanceRecords } from '@/db/schema';
+import { students, faculty, messageLogs, attendance } from '@/db/schema';
 import { emitAuditEvent } from '@/audit';
 
 const CHUNK_SIZE = 500;
@@ -1326,7 +1326,7 @@ Declared per module in `@mms/shared` manifests:
 |---|---|---|
 | `contacts` | `null` | Audit & financial linkage — keep indefinitely |
 | `students` | `null` | Academic history & certification continuity |
-| `teachers` | `null` | Employment history & payroll continuity |
+| `faculty` | `null` | Employment history & payroll continuity |
 | `attendance_records` | `null` | Regulatory accreditation requirement |
 | `message_logs` | `365` | Operational delivery hygiene — 1-year hard purge |
 

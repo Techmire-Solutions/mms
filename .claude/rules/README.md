@@ -110,10 +110,14 @@ Update this table in the same change that adds or removes a check.
 | Raw hex colours / file-size bands | `pnpm run check:code-norms` ratchet | ratchet |
 | Wildcard DB projections | `pnpm run check:db-projections` (CI) | ratchet |
 | Write-blocking index in a migration | `pnpm run check:migration-indexes` (CI) | ratchet |
+| Applied migrations are immutable (forward-only DDL — new files allowed, edits/deletes fail) | `pnpm run check:migrations-forward-only` (CI `typecheck-lint` `--base HEAD^1` + pre-PR gate) | ratchet |
+| Backend route→use-case→repository boundary (no direct `db/repositories` / `drizzle-orm` import from `routes/**`, static **or** dynamic) | `pnpm run check:backend-boundaries` (CI `typecheck-lint` + pre-PR gate) | ratchet |
+| Canonical date/month schemas have a single definition (`isoDateSchema` / `monthKeySchema` / `billingPeriodSchema`; no re-declared canonical schema) | SSOT idiom guard inside `.agent/skills/mms-shared-package/scripts/check-shared-exports.sh`, via `pnpm run check:shared-purity` | ratchet |
 | Bundle budget | `pnpm run check:bundle` (CI, build-dist job) | ratchet |
 | i18n completeness across en/ar/ur/fa | `pnpm run check:i18n` (CI + pre-PR gate) — exits non-zero on any key missing or falling back to English | ratchet |
 | Dependency advisories | `pnpm audit --audit-level=high` + dependency-review (CI) | CI |
 | Secrets in history | gitleaks (CI, full history) | CI |
+| Sensitive filenames never committed, at any path depth (`.env`, private keys, service-account JSON) | `sensitive-file-guard` CI job (`node scripts/check-staged-secrets.mjs --tracked`) | CI |
 | Workflow security (SHA pinning, no credential persistence, no template injection, gated triggers) | `workflow-lint` job: actionlint + zizmor `min-severity: medium` (CI) | CI |
 | Deployed bytes match CI's build of the commit | `actions/attest-build-provenance` in CI + `gh attestation verify` in `deploy.yml` | CI |
 | Rule/skill/command/agent/mirror integrity (incl. `.agent/workflows` ↔ `.cursor/commands` ↔ `.claude/commands` ↔ `.claude/agents` parity) | `node scripts/verify-rules-integrity.mjs` + sync drift diff (CI) | CI |
