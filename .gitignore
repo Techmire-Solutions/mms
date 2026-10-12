@@ -64,6 +64,10 @@ coverage/
 **/coverage/
 .nyc_output/
 .vitest/
+# Vitest shard blob reports (written by the CI coverage gate: `--reporter=blob
+# --outputFile=.vitest-reports/blob-<n>.json`, merged by test-backend-coverage).
+.vitest-reports/
+**/.vitest-reports/
 test-results/
 playwright-report/
 blob-report/
