@@ -4,10 +4,10 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import {
   listFacultyDesignationAssignments,
   listFacultyDesignations,
+  restoreFacultyDesignation,
   saveFacultyDesignation,
   softDeleteFacultyDesignation,
-} from "../../../db/repositories/facultyDesignationRepository.js";
-import { restoreFacultyDesignation } from "../../../db/repositories/facultyCatalogTrashRepository.js";
+} from "../../../faculty/use-cases/facultyCatalogUseCases.js";
 import { auditFaculty } from "./facultyRouteHelpers.js";
 import {
   authorizeCatalogRoute,

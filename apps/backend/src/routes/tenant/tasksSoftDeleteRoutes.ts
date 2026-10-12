@@ -7,11 +7,11 @@ import type { FastifyInstance } from "fastify";
 import { bulkStringIdsBodySchema, type User } from "@mms/shared";
 import { canPerformTaskAction } from "../../services/taskPermissionService.js";
 import {
+  bulkDeleteTasks,
+  bulkRestoreTasks,
   deleteTask,
   restoreTask,
-  bulkRestoreTasks,
-} from "../../db/repositories/tasksRepository.js";
-import { bulkDeleteTasks } from "../../db/repositories/tasksTrashRepository.js";
+} from "../../tasks/use-cases/tasksUseCases.js";
 
 export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.delete<{ Params: { id: string } }>("/api/tasks/:id", async (request, reply) => {

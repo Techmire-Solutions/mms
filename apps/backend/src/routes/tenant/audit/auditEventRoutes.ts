@@ -1,13 +1,15 @@
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import { desc, eq, and, sql } from "drizzle-orm";
 import { listAuditEventsQuerySchema, roleHasPermission, type User } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
-import { activeDb } from "../../../db/dbConnection.js";
-import { auditTrailEvents, auditVerificationRuns } from "../../../db/schema/auditTrail.js";
 import { recordModernAuditEvent, getLatestShardHash } from "../../../services/auditTrailService.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { formatTraceParent } from "../../../config/telemetry.js";
+import {
+  getLatestVerificationRun,
+  listAuditEvents,
+  listAuditEventsForExport,
+} from "../../../audit/use-cases/auditQueryUseCases.js";
 
 /**
  * Helper to extract W3C traceparent from request context.
@@ -44,52 +46,11 @@ export const auditEventRoutes: FastifyPluginAsync = async (fastify) => {
     }
     const query = parsedQuery.data;
 
-    const conditions = [eq(auditTrailEvents.workspaceSubdomain, tenant)];
-
-    if (query.tableName) {
-      conditions.push(eq(auditTrailEvents.tableName, query.tableName));
-    }
-    if (query.recordId) {
-      conditions.push(eq(auditTrailEvents.recordId, query.recordId));
-    }
-    if (query.actionType) {
-      conditions.push(eq(auditTrailEvents.actionType, query.actionType));
-    }
-
-    const db = activeDb();
-    // Explicit projection: do not dump heavy raw state on directory listings
-    const [events, countResult] = await Promise.all([
-      db
-        .select({
-          id: auditTrailEvents.id,
-          workspaceSubdomain: auditTrailEvents.workspaceSubdomain,
-          tableName: auditTrailEvents.tableName,
-          recordId: auditTrailEvents.recordId,
-          actionType: auditTrailEvents.actionType,
-          realUserId: auditTrailEvents.realUserId,
-          impersonatedUserId: auditTrailEvents.impersonatedUserId,
-          ipAddress: auditTrailEvents.ipAddress,
-          clientApp: auditTrailEvents.clientApp,
-          correlationId: auditTrailEvents.correlationId,
-          hashPrevious: auditTrailEvents.hashPrevious,
-          hashCurrent: auditTrailEvents.hashCurrent,
-          verificationStatus: auditTrailEvents.verificationStatus,
-          transactionTimestamp: auditTrailEvents.transactionTimestamp,
-        })
-        .from(auditTrailEvents)
-        .where(and(...conditions))
-        .orderBy(desc(auditTrailEvents.transactionTimestamp), desc(auditTrailEvents.id))
-        .limit(query.limit)
-        .offset(query.offset),
-      db
-        .select({ count: sql<number>`cast(count(*) as int)` })
-        .from(auditTrailEvents)
-        .where(and(...conditions)),
-    ]);
+    const { items, total } = await listAuditEvents(tenant, query);
 
     // Auditing the auditor: log inspection of audit records (fire-and-forget — must not block the read path).
     const userId = (request.user as User | undefined)?.id || "anonymous";
-    void recordModernAuditEvent(db, {
+    void recordModernAuditEvent({
       workspaceSubdomain: tenant,
       tableName: "audit_trail_events",
       recordId: `query_${Date.now()}`,
@@ -106,8 +67,8 @@ export const auditEventRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     return reply.send({
-      items: events,
-      total: countResult[0]?.count ?? 0,
+      items,
+      total,
       limit: query.limit,
       offset: query.offset,
     });
@@ -127,52 +88,15 @@ export const auditEventRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(403).send({ type: "forbidden", message: "Tenant required" });
     }
 
-    const db = activeDb();
     const [events, headHash, latestRun] = await Promise.all([
-      db
-        .select({
-          id: auditTrailEvents.id,
-          workspaceSubdomain: auditTrailEvents.workspaceSubdomain,
-          tableName: auditTrailEvents.tableName,
-          recordId: auditTrailEvents.recordId,
-          actionType: auditTrailEvents.actionType,
-          realUserId: auditTrailEvents.realUserId,
-          impersonatedUserId: auditTrailEvents.impersonatedUserId,
-          ipAddress: auditTrailEvents.ipAddress,
-          clientApp: auditTrailEvents.clientApp,
-          sessionId: auditTrailEvents.sessionId,
-          correlationId: auditTrailEvents.correlationId,
-          apiEndpoint: auditTrailEvents.apiEndpoint,
-          httpMethod: auditTrailEvents.httpMethod,
-          oldState: auditTrailEvents.oldState,
-          newState: auditTrailEvents.newState,
-          hashPrevious: auditTrailEvents.hashPrevious,
-          hashCurrent: auditTrailEvents.hashCurrent,
-          verificationStatus: auditTrailEvents.verificationStatus,
-          transactionTimestamp: auditTrailEvents.transactionTimestamp,
-        })
-        .from(auditTrailEvents)
-        .where(eq(auditTrailEvents.workspaceSubdomain, tenant))
-        .orderBy(desc(auditTrailEvents.transactionTimestamp))
-        .limit(1000),
+      listAuditEventsForExport(tenant, 1000),
       getLatestShardHash(tenant),
-      db
-        .select({
-          id: auditVerificationRuns.id,
-          status: auditVerificationRuns.status,
-          verifiedAt: auditVerificationRuns.verifiedAt,
-          recordsChecked: auditVerificationRuns.recordsChecked,
-          discrepancies: auditVerificationRuns.discrepancies,
-        })
-        .from(auditVerificationRuns)
-        .where(eq(auditVerificationRuns.workspaceSubdomain, tenant))
-        .orderBy(desc(auditVerificationRuns.verifiedAt))
-        .limit(1),
+      getLatestVerificationRun(tenant),
     ]);
 
     const userId = (request.user as User | undefined)?.id || "anonymous";
     // Auditing the auditor: export is an auditable event (fire-and-forget — must not block the response).
-    void recordModernAuditEvent(db, {
+    void recordModernAuditEvent({
       workspaceSubdomain: tenant,
       tableName: "audit_trail_events",
       recordId: `export_${Date.now()}`,
@@ -189,8 +113,8 @@ export const auditEventRoutes: FastifyPluginAsync = async (fastify) => {
         exportedAt: new Date().toISOString(),
         exportedBy: userId,
         shardHeadHash: headHash,
-        lastVerificationStatus: latestRun[0]?.status ?? "PENDING",
-        lastVerificationAt: latestRun[0]?.verifiedAt ?? null,
+        lastVerificationStatus: latestRun?.status ?? "PENDING",
+        lastVerificationAt: latestRun?.verifiedAt ?? null,
       },
       events,
     });

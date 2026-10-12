@@ -19,6 +19,7 @@ import { consumeAuthArtifact } from "../../../services/auth/authArtifactService.
 import { revokeAllUserSessions, revokeToken } from "../../../services/session.service.js";
 import { getJwtExpiresIn, loadGlobalSettings } from "../../../services/globalSettingsService.js";
 import { tenantSessionScope, touchSession } from "../../../services/sessionClockService.js";
+import { usersRepository } from "../../../users/repository/usersRepositoryAdapter.js";
 import {
   enforceTenantSessionClock,
   SESSION_EXPIRY_RESPONSE,
@@ -88,13 +89,11 @@ export const authSessionRoutes: FastifyPluginAsync = async (fastify) => {
     }
     if (user.id) {
       try {
-        const { findTenantUserRowById } =
-          await import("../../../db/repositories/tenantUserRepositoryHydrate.js");
         // Scope the session check to the caller's workspace — an id-only lookup
         // runs with RLS bypassed and could resolve another tenant's user.
         const sessionTenant = getRequestTenant() ?? user.workspaceSubdomain;
         const userRow = sessionTenant
-          ? await findTenantUserRowById(sessionTenant, String(user.id))
+          ? await usersRepository.findTenantUserRowById(sessionTenant, String(user.id))
           : null;
         if (userRow?.deletedAt) {
           return sendUnauthorized(reply, "Session revoked");

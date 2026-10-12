@@ -16,6 +16,7 @@ vi.mock("../db/repositories/facultyDepartmentRepository.js", () => ({
 
 vi.mock("../db/repositories/facultyCatalogTrashRepository.js", () => ({
   restoreFacultyDepartment: vi.fn(),
+  restoreFacultyDesignation: vi.fn(),
 }));
 
 vi.mock("../routes/tenant/faculty/facultyRouteHelpers.js", () => ({

@@ -5,7 +5,7 @@ import {
   canWriteCollection,
 } from "../../../services/rbacService.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
-import { FacultyCatalogConflictError } from "../../../db/repositories/facultyDepartmentValidation.js";
+import { FacultyCatalogConflictError } from "../../../faculty/errors.js";
 
 export type CatalogForbidden = { status: 403; body: { type: "forbidden"; message: string } };
 export type CatalogAuth = { user: User; tenantId: string };

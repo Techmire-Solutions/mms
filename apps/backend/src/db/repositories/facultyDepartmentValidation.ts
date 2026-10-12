@@ -2,14 +2,10 @@ import { sql } from "drizzle-orm";
 import { slugifyFacultyCatalogCode } from "@mms/shared";
 import type { TenantTransaction } from "../tenant-context.js";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
+import { FacultyCatalogConflictError } from "../../faculty/errors.js";
 
-/** Raised when a catalog write collides with an existing live row (maps to HTTP 409). */
-export class FacultyCatalogConflictError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "FacultyCatalogConflictError";
-  }
-}
+/** Re-exported from the faculty domain so existing importers keep one class identity. */
+export { FacultyCatalogConflictError };
 
 type Executor = Pick<TenantTransaction, "execute">;
 

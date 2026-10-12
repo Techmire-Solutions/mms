@@ -1,16 +1,14 @@
 import type { FastifyPluginAsync } from "fastify";
-import { desc } from "drizzle-orm";
 import { auditAnomaliesQuerySchema, roleHasPermission, type User } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
-import { activeDb } from "../../../db/dbConnection.js";
-import { auditMerkleRoots } from "../../../db/schema/auditTrail.js";
 import {
   verifyTenantAuditChain,
   computeAndPublishMerkleCheckpoint,
 } from "../../../services/auditVerificationService.js";
 import { detectAuditAnomalies } from "../../../services/auditAnomalyService.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { listMerkleRoots } from "../../../audit/use-cases/auditQueryUseCases.js";
 
 export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
   /**
@@ -34,20 +32,7 @@ export const auditIntegrityRoutes: FastifyPluginAsync = async (fastify) => {
    * GET /api/audit/merkle-roots - Retrieve published transparency checkpoints.
    */
   fastify.get("/api/audit/merkle-roots", async (_request, reply) => {
-    const db = activeDb();
-    const roots = await db
-      .select({
-        id: auditMerkleRoots.id,
-        rootHash: auditMerkleRoots.rootHash,
-        periodStart: auditMerkleRoots.periodStart,
-        periodEnd: auditMerkleRoots.periodEnd,
-        shardCount: auditMerkleRoots.shardCount,
-        publishedAt: auditMerkleRoots.publishedAt,
-      })
-      .from(auditMerkleRoots)
-      .orderBy(desc(auditMerkleRoots.publishedAt))
-      .limit(20);
-
+    const roots = await listMerkleRoots(20);
     return reply.send({ items: roots });
   });
 
