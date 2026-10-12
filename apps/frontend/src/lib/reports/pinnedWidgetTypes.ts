@@ -94,19 +94,19 @@ export interface CustomWidget {
 const ALERT_COLOR_MAP: Record<string, { bg: string; text: string; border: string; glow: string }> =
   {
     red: {
-      bg: "bg-destructive/10 dark:bg-destructive/20",
+      bg: "bg-destructive/10 dark:bg-destructive/15",
       text: "text-destructive dark:text-destructive",
       border: "border-destructive/30 dark:border-destructive/20",
       glow: "shadow-glow-destructive",
     },
     amber: {
-      bg: "bg-warning/10 dark:bg-warning/20",
+      bg: "bg-warning/10 dark:bg-warning/15",
       text: "text-warning dark:text-warning",
       border: "border-warning/30 dark:border-warning/20",
       glow: "shadow-glow-warning",
     },
     yellow: {
-      bg: "bg-warning/10 dark:bg-warning/20",
+      bg: "bg-warning/10 dark:bg-warning/15",
       text: "text-warning",
       border: "border-warning/30 dark:border-warning/20",
       glow: "shadow-glow-warning",

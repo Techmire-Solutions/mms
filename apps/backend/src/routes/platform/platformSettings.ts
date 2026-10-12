@@ -12,7 +12,7 @@ import {
   updatePlatformSettings,
 } from "../../services/platform/platformSettingsService.js";
 import { replyValidationError } from "../../lib/zodRequest.js";
-import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
+import { insertPlatformActivityLog } from "../../platform/use-cases/platformUseCases.js";
 
 const s = initServer();
 

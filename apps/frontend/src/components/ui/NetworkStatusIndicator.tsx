@@ -85,11 +85,11 @@ export function NetworkStatusIndicator({
         className={cn(
           "pointer-events-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium shadow-md backdrop-blur-md transition-colors",
           networkState === "offline" &&
-            "bg-destructive/15 text-destructive border border-destructive/25 dark:bg-destructive/20",
+            "bg-destructive/15 text-destructive border border-destructive/25 dark:bg-destructive/15",
           networkState === "reconnecting" &&
-            "bg-warning/15 text-warning border border-warning/25 dark:bg-warning/20",
+            "bg-warning/15 text-warning border border-warning/25 dark:bg-warning/15",
           networkState === "online" &&
-            "bg-success/15 text-success border border-success/25 dark:bg-success/20",
+            "bg-success/15 text-success border border-success/25 dark:bg-success/15",
         )}
       >
         {networkState === "offline" && (

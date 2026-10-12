@@ -39,7 +39,7 @@ export function TemplateEditorViewControls({
         size="icon"
         className={`${iconButtonClassName} ${
           showGuides
-            ? "bg-primary/10 text-primary hover:bg-primary/20"
+            ? "bg-primary/10 text-primary hover:bg-primary/15"
             : "text-muted-foreground hover:bg-muted hover:text-foreground"
         }`}
       >
@@ -65,7 +65,7 @@ export function TemplateEditorViewControls({
           size="icon"
           className={`${iconButtonClassName} ${
             isPreviewMode
-              ? "bg-primary/10 text-primary hover:bg-primary/20"
+              ? "bg-primary/10 text-primary hover:bg-primary/15"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >

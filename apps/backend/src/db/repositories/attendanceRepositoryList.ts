@@ -1,22 +1,6 @@
+import { and, asc, eq, isNull, sql, type SQL } from "drizzle-orm";
 import {
-  and,
-  eq,
-  ilike,
-  inArray,
-  isNotNull,
-  isNull,
-  or,
-  type SQL,
-  type AnyColumn,
-  asc,
-  desc,
-  sql,
-} from "drizzle-orm";
-import {
-  dedupeTrimmedIds,
-  isQueryFlagTrue,
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
-  toSqlSearchPattern,
   type AttendanceCommandMetricsSnapshot,
   type AttendanceListQuery,
   type AttendanceListPageResult,
@@ -27,100 +11,10 @@ import {
   attendanceRowToRecord as rowToRecord,
   type AttendanceRow,
 } from "./attendanceRepositoryMappers.js";
-
-function buildAttendanceListConditions(subdomain: string, query: AttendanceListQuery): SQL[] {
-  const conditions: SQL[] = [eq(attendance.workspaceSubdomain, subdomain)];
-
-  // Manifest softDelete.workExcludesDeleted — Work = active, trash = deleted-only.
-  if (isQueryFlagTrue(query.includeDeleted)) {
-    conditions.push(isNotNull(attendance.deletedAt));
-  } else {
-    conditions.push(isNull(attendance.deletedAt));
-  }
-
-  const search = query.search?.trim();
-  if (search) {
-    const pattern = toSqlSearchPattern(search);
-    conditions.push(
-      or(ilike(attendance.studentName, pattern), ilike(attendance.rollNo, pattern)) as SQL,
-    );
-  }
-
-  if (query.classId?.trim()) {
-    conditions.push(eq(attendance.classId, query.classId.trim()));
-  }
-  const sessionId = query.sessionId?.trim();
-  const facultyId = query.facultyId?.trim();
-  if (sessionId && facultyId) {
-    conditions.push(sql`EXISTS (
-      SELECT 1 FROM ${sessionClasses} sc
-      WHERE sc.workspace_subdomain = ${attendance.workspaceSubdomain}
-        AND sc.id = ${attendance.classId}
-        AND sc.session_id = ${sessionId}
-        AND sc.faculty_id = ${facultyId}
-    )`);
-  } else if (sessionId) {
-    conditions.push(sql`EXISTS (
-      SELECT 1 FROM ${sessionClasses} sc
-      WHERE sc.workspace_subdomain = ${attendance.workspaceSubdomain}
-        AND sc.id = ${attendance.classId}
-        AND sc.session_id = ${sessionId}
-    )`);
-  } else if (facultyId) {
-    conditions.push(sql`EXISTS (
-      SELECT 1 FROM ${sessionClasses} sc
-      WHERE sc.workspace_subdomain = ${attendance.workspaceSubdomain}
-        AND sc.id = ${attendance.classId}
-        AND sc.faculty_id = ${facultyId}
-    )`);
-  }
-  if (query.date?.trim()) {
-    conditions.push(eq(attendance.date, query.date.trim()));
-  }
-  if (query.dateFrom?.trim()) {
-    conditions.push(sql`${attendance.date} >= ${query.dateFrom.trim()}`);
-  }
-  if (query.dateTo?.trim()) {
-    conditions.push(sql`${attendance.date} <= ${query.dateTo.trim()}`);
-  }
-  const statuses = dedupeTrimmedIds(query.status);
-  if (statuses.length) {
-    conditions.push(inArray(attendance.status, statuses));
-  }
-
-  return conditions;
-}
-
-const ATTENDANCE_SORT_FIELDS = new Set(["date", "studentName", "rollNo", "status", "updatedAt"]);
-
-function buildAttendanceOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
-  const field = sortField?.trim();
-  let column: AnyColumn;
-  if (field && ATTENDANCE_SORT_FIELDS.has(field)) {
-    switch (field) {
-      case "updatedAt":
-        column = attendance.updatedAt;
-        break;
-      case "date":
-        column = attendance.date;
-        break;
-      case "studentName":
-        column = attendance.studentName;
-        break;
-      case "rollNo":
-        column = attendance.rollNo;
-        break;
-      case "status":
-        column = attendance.status;
-        break;
-      default:
-        column = attendance.updatedAt;
-    }
-  } else {
-    column = attendance.updatedAt;
-  }
-  return sortDir === "asc" ? asc(column) : desc(column);
-}
+import {
+  buildAttendanceListConditions,
+  buildAttendanceOrderBy,
+} from "./attendanceListQueryBuilders.js";
 
 export async function listAttendancePage(
   tenant: string,

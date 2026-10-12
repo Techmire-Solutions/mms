@@ -1,6 +1,6 @@
 import { DEFAULT_CURRENCIES, formatMoney } from "@mms/shared";
 import { useFinanceConfig, useAccountingConfig } from "./useStandardModuleConfig";
-import { useAccountingPreferencesQuery } from "@/tenant/features/accounting/hooks/useAccountingSetupConfig";
+import { useAccountingPreferencesQuery } from "@/tenant/hooks/collections/accounting";
 
 export interface UseCurrencyOptions {
   currencyCode?: string;

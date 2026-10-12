@@ -1,5 +1,6 @@
 import type { Permission } from "./permissions.js";
 import { z } from "zod";
+import { isoDateSchema } from "./isoDateSchema.js";
 import { normalizeStoredFaculty, stripFacultyWriteNoise } from "./facultyUtils.js";
 import { facultyEmployDesignationsWriteSchema } from "./facultyEmployDesignationTypes.js";
 import { FACULTY_EMPLOYMENT_STATUS_VALUES, FACULTY_PROFILE_STATUS_VALUES } from "./facultyTypes.js";
@@ -10,16 +11,14 @@ import {
 /** Faculty status write bound — matches lookup item max length. */
 export const FACULTY_STATUS_WRITE_MAX = 200;
 
-const isoCalendarDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-
 const facultyEmploymentWireSchema = z
   .object({
     id: z.string().optional(),
     contactId: z.union([z.string().min(1), z.number()]).optional(),
     employeeId: z.string().optional(),
     status: z.enum(FACULTY_EMPLOYMENT_STATUS_VALUES).optional(),
-    employmentStartDate: isoCalendarDate.nullable().optional(),
-    employmentEndDate: isoCalendarDate.nullable().optional(),
+    employmentStartDate: isoDateSchema.nullable().optional(),
+    employmentEndDate: isoDateSchema.nullable().optional(),
   })
   .optional()
   .nullable();
@@ -45,8 +44,8 @@ export const facultyCoreSchema = z
     specialization: z.string().optional(),
     /** Direct FK to the designation catalog (Department + Designation dropdown). */
     designationId: z.string().min(1).max(100).nullable().optional(),
-    designationStartDate: isoCalendarDate.nullable().optional(),
-    designationEndDate: isoCalendarDate.nullable().optional(),
+    designationStartDate: isoDateSchema.nullable().optional(),
+    designationEndDate: isoDateSchema.nullable().optional(),
     /** Read projection of the designation's department — not persisted on faculty. */
     departmentId: z.string().optional(),
     /** Read projection — not persisted on faculty. */
@@ -68,8 +67,8 @@ export const facultyCoreSchema = z
     employDesignationStatus: z.enum(FACULTY_PROFILE_STATUS_VALUES).optional(),
     employDesignationId: z.string().nullable().optional(),
     employDesignations: facultyEmployDesignationsWriteSchema.optional(),
-    employmentStartDate: isoCalendarDate.nullable().optional(),
-    employmentEndDate: isoCalendarDate.nullable().optional(),
+    employmentStartDate: isoDateSchema.nullable().optional(),
+    employmentEndDate: isoDateSchema.nullable().optional(),
     /** Nested employment satellite (optional; flat fields remain dual-write mirrors). */
     employment: facultyEmploymentWireSchema,
     /** Server-computed from evaluation ratings; client writes are ignored. */

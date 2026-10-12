@@ -2,8 +2,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { resolveDashboardRole } from "@/lib/dashboardRole";
-import { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
-import { useDashboardPreferencesQuery } from "@/tenant/hooks/collections/dashboard";
+import {
+  useDashboardData,
+  useDashboardPreferencesQuery,
+} from "@/tenant/hooks/collections/dashboard";
 import {
   buildDashboardNotifications,
   type DashboardNotificationItem,

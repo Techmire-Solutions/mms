@@ -1,7 +1,10 @@
 import type { platformAdminsContract } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../lib/contractRouterTypes.js";
 import type { PlatformAuthenticatedRequest } from "../../middleware/authenticatePlatform.js";
-import { listPlatformUsers } from "../../db/repositories/platformUserRepository.js";
+import {
+  insertPlatformActivityLog,
+  listPlatformUsers,
+} from "../../platform/use-cases/platformUseCases.js";
 import {
   createVerifiedPlatformUser,
   deletePlatformAdmin,
@@ -12,7 +15,6 @@ import {
   verifyPlatformUserEmail,
 } from "../../services/platform/platformUserService.js";
 import { hashPassword } from "../../services/auth/passwordService.js";
-import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
 
 export async function handleListAdmins(): Promise<
   ContractRouteResponse<(typeof platformAdminsContract)["listAdmins"]>

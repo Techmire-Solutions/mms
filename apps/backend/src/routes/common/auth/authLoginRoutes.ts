@@ -23,7 +23,7 @@ import {
 } from "@mms/shared";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendNotFound } from "../../../lib/httpErrors.js";
-import { insertPlatformActivityLog } from "../../../db/repositories/platformActivityLogsRepository.js";
+import { insertPlatformActivityLog } from "../../../platform/use-cases/platformUseCases.js";
 import { verifyPlatformUserPassword } from "../../../services/platform/platformUserService.js";
 
 /** Rate-limited login, onboarding, and two-factor challenge routes. */

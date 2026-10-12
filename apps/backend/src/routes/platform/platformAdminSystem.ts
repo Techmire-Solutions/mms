@@ -17,7 +17,7 @@ import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
 import {
   insertPlatformActivityLog,
   listPlatformActivityLogs,
-} from "../../db/repositories/platformActivityLogsRepository.js";
+} from "../../platform/use-cases/platformUseCases.js";
 import { verifyPlatformUserPassword } from "../../services/platform/platformUserService.js";
 import {
   isRemoteMigrateRestartEnabled,

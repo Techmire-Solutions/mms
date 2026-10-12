@@ -16,12 +16,3 @@ export const manifestSoftDeleteSchema = z
 
 /** Manifest soft-delete configuration structure. */
 export type ManifestSoftDeleteConfig = z.infer<typeof manifestSoftDeleteSchema>;
-
-/** Type alias for module manifest soft-delete configuration. */
-export type ManifestSoftDelete = ManifestSoftDeleteConfig;
-
-/** Alias for manifestSoftDeleteSchema. */
-export const softDeleteManifestSchema = manifestSoftDeleteSchema;
-
-/** Type alias for module soft-delete configuration. */
-export type ModuleSoftDeleteConfig = ManifestSoftDeleteConfig;

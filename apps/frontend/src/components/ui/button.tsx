@@ -27,7 +27,7 @@ const buttonVariants = cva(
         capsDestructive:
           "border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive shadow-none",
         capsAccent:
-          "border border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary shadow-none",
+          "border border-primary/20 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary shadow-none",
       },
       size: {
         default: "min-h-11 h-11 px-4 py-2",

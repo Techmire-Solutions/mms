@@ -29,7 +29,7 @@ import {
   deleteSavedReportByOwner,
   listSavedReportsByOwner,
   touchSavedReportRunByOwner,
-} from "../../db/repositories/savedReportsRepository.js";
+} from "../../savedReports/use-cases/savedReportsUseCases.js";
 
 const s = initServer();
 

@@ -9,7 +9,7 @@ import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 import { synthesizePlatformAiDiagnostics } from "../../services/platform/platformAiService.js";
 import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
 import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
-import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
+import { insertPlatformActivityLog } from "../../platform/use-cases/platformUseCases.js";
 
 export default async function platformAiRoutes(
   fastify: FastifyInstance,

@@ -177,6 +177,21 @@ const ruleFiles = fs
 const knownRuleNames = new Set(ruleFiles.map((f) => f.replace(/\.mdc$/, "")));
 const knownSkillNames = new Set(diskSkills);
 
+/**
+ * A bare `rules/<name>.(md|mdc)` reference must resolve to a real rule file.
+ * The stale `rules/antigravity-global.md` (renamed to `mms-agent-universal`) shipped
+ * for months because only repo-prefixed paths were validated — bare `rules/…` refs
+ * were never checked. README is allowed (the rules index, not a rule).
+ */
+const KNOWN_RULE_BASENAMES = new Set([...knownRuleNames, "README"]);
+function checkRuleReferences(content, ownerLabel) {
+  for (const m of content.matchAll(/rules\/([a-z0-9-]+)\.(?:md|mdc)\b/g)) {
+    if (!KNOWN_RULE_BASENAMES.has(m[1])) {
+      fail(`In ${ownerLabel}: references unknown rule 'rules/${m[1]}'`);
+    }
+  }
+}
+
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const manifestSkillNames = new Set((manifest.skills ?? []).map((s) => s.name));
 
@@ -523,6 +538,7 @@ for (const skill of diskSkills) {
       rel === skill ? `skill ${skill}` : `skill ${skill} (${path.relative(skillDir, file)})`;
 
     checkCitations(content, file, ownerLabel);
+    checkRuleReferences(content, ownerLabel);
 
     // Backticked paths: repo-anchored roots, plus e2e/ (previously excluded —
     // that blind spot let a deleted Playwright spec keep passing).
@@ -614,6 +630,7 @@ for (const skill of diskSkills) {
 for (const file of ruleFiles) {
   const raw = fs.readFileSync(path.join(cursorRulesDir, file), "utf8");
   checkCitations(raw, file, file);
+  checkRuleReferences(raw, file);
 
   const pathMatches = raw.matchAll(
     /`((?:apps|packages|scripts|docs|e2e|\.agent|\.cursor|\.claude|\.github)\/[^`\s]+)`/g,
@@ -774,6 +791,25 @@ if (workflowNames.length > 0 || agentNames.length > 0) {
     `Workflow/command/agent mirrors verified (${workflowNames.length} workflows, ` +
       `${cursorCommandNames.length} Cursor + ${claudeCommandNames.length} Claude commands, ${agentNames.length} agents)`,
   );
+}
+
+// `rules/<name>.md` references inside workflows / command wrappers / agent definitions
+// must resolve to real rules too (this is where the stale ref lived).
+for (const dir of [
+  workflowsDir,
+  path.join(ROOT, ".claude/docs/workflows"),
+  cursorCommandsDir,
+  claudeCommandsDir,
+  claudeAgentsDir,
+]) {
+  if (!isDir(dir)) continue;
+  for (const name of mdBasenames(dir)) {
+    const abs = path.join(dir, `${name}.md`);
+    checkRuleReferences(
+      fs.readFileSync(abs, "utf8"),
+      path.relative(ROOT, abs).replaceAll(path.sep, "/"),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

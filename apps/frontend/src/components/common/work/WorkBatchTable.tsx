@@ -181,8 +181,9 @@ export function WorkBatchTable<TData extends { id: string | number }>({
               </AnimatePresence>
             )}
           </TableBody>
-          {tableFooter ?? (footerRow ? <WorkBatchTableFooter footerRow={footerRow} /> : null)}
+          {footerRow && !tableFooter ? <WorkBatchTableFooter footerRow={footerRow} /> : null}
         </Table>
+        {tableFooter}
       </div>
 
       {footerCount && (

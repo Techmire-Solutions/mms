@@ -41,6 +41,10 @@ export {
   upsertWorkspaceBranding,
 } from "./workspacePresentationService.js";
 
+// Re-exported so tenant routes read branding through the workspace module boundary,
+// not the storage layer.
+export { getWorkspaceBranding } from "../db/repositories/workspaceRepository.js";
+
 const WORKSPACE_CACHE_TTL_SECONDS = 300;
 const workspaceCacheKey = (sub: string) => redisKeys.workspace(sub);
 

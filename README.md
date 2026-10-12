@@ -6,16 +6,16 @@ A full-stack, multi-tenant **Madrasa Management System** built for Islamic educa
 
 ## Stack
 
-| Layer             | Technology                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------------ |
-| **Frontend**      | React 19 · Vite 8 · Tailwind CSS v4 · Radix UI / shadcn · TanStack Query v5 · Framer Motion · Recharts |
-| **Backend**       | Fastify 5 · Node.js ≥ 24.14 (`--experimental-strip-types`) · TypeScript 7 (strict)                     |
-| **Database**      | PostgreSQL 16 · Drizzle ORM · Row-Level Security (RLS) · Forward-only migrations                       |
-| **Cache / Queue** | Redis 7 · BullMQ                                                                                       |
-| **Shared**        | `@mms/shared` — Zod DTOs, types, manifests, pure utils (zero DOM/React/Fastify deps)                   |
-| **Monorepo**      | pnpm workspaces · Turborepo · TypeScript project references                                            |
-| **CI/CD**         | GitHub Actions (typecheck → lint → unit → DB integration → E2E → deploy)                               |
-| **Production**    | Hetzner VPS · PM2 · Apache reverse proxy (PORT 5002)                                                   |
+| Layer             | Technology                                                                                                                                                           |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend**      | React 19 · Vite 8 · Tailwind CSS v4 · Radix UI / shadcn · TanStack Query v5 · Framer Motion · Recharts                                                               |
+| **Backend**       | Fastify 5 · Node.js ≥ 24.14 (`--experimental-strip-types`) · TypeScript 7 (strict)                                                                                   |
+| **Database**      | PostgreSQL 16 · Drizzle ORM · Row-Level Security (RLS) · Forward-only migrations                                                                                     |
+| **Cache / Queue** | Redis 7 · BullMQ                                                                                                                                                     |
+| **Shared**        | `@mms/shared` — Zod DTOs, types, manifests, pure utils (zero DOM/React/Fastify deps)                                                                                 |
+| **Monorepo**      | pnpm workspaces · Turborepo task graph (`^build` ordering)                                                                                                           |
+| **CI/CD**         | GitHub Actions — change-gated parallel jobs (ratchets · build+provenance · unit/coverage · DB · E2E) behind a required "CI Gate"; separate deploy workflow on `main` |
+| **Production**    | Hetzner VPS · PM2 · Apache reverse proxy (PORT 5002)                                                                                                                 |
 
 ---
 
@@ -324,8 +324,13 @@ cd apps/backend && pnpm test:db   # Integration tests against real Postgres
 cd packages/shared && pnpm test   # Shared utility unit tests
 ```
 
-CI runs on every PR and push to `main` via [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
-Typecheck → ESLint → unit tests → DB integration tests → E2E → deploy (on `main` only).
+CI runs on every PR and push to `main` via [`.github/workflows/ci.yml`](.github/workflows/ci.yml): a
+`changes` job selects the scope, then typecheck/lint + ratchets, build (+ provenance attestation),
+secret scan, frontend/backend unit tests + coverage, DB integration tests and E2E run as a parallel
+job graph. The required status is the aggregate **CI Gate (All Checks Passed)**.
+
+Deployment is not part of that workflow — [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
+runs on `workflow_run` after CI succeeds on `main`.
 
 ---
 

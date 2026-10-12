@@ -21,6 +21,7 @@ export {
   useAttendancePreferencesQuery,
   ATTENDANCE_PREFERENCES_QUERY_KEY,
 } from "@/tenant/features/attendance/hooks/useAttendanceSetupConfig";
+export { useAttendanceLookupsQuery } from "@/tenant/features/attendance/hooks/useAttendanceLookups";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   attendanceListQueryOptions,

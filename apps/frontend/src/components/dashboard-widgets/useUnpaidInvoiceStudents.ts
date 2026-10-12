@@ -1,5 +1,5 @@
 import { isOpenInvoiceStatus, FINANCE_MODULE_MANIFEST } from "@mms/shared";
-import { useFinanceInvoicesPaginated } from "@/tenant/features/finance/hooks/useFinanceApi";
+import { useFinanceInvoicesPaginated } from "@/tenant/hooks/collections/finance";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { uniqueRegistryIds } from "@/lib/registryResolve";
 

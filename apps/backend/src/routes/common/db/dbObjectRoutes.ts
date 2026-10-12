@@ -11,10 +11,10 @@ import {
 import type { User } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import {
+  getWorkspaceBranding,
   syncWorkspaceFromBranding,
   upsertWorkspaceBranding,
 } from "../../../services/workspaceService.js";
-import { getWorkspaceBranding } from "../../../db/repositories/workspaceRepository.js";
 import {
   loadGlobalSettings,
   saveGlobalSettings,

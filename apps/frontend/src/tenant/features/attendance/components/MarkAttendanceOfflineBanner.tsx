@@ -46,7 +46,7 @@ export function MarkAttendanceOfflineBanner({
                 onClick={onSync}
                 variant="ghost"
                 size="sm"
-                className="text-xs font-bold px-2.5 py-2 rounded-lg bg-warning/30 hover:bg-warning/40 hover:text-warning transition-colors flex min-h-11 shrink-0 items-center gap-1"
+                className="text-xs font-bold px-2.5 py-2 rounded-lg bg-warning/30 hover:bg-warning/40 transition-colors flex min-h-11 shrink-0 items-center gap-1"
               >
                 <UploadCloud className="w-3 h-3" aria-hidden="true" />{" "}
                 {t("attendance.mark.syncNow")}
@@ -72,7 +72,7 @@ export function MarkAttendanceOfflineBanner({
             onClick={onSync}
             variant="ghost"
             size="sm"
-            className="text-xs font-bold px-2.5 py-2 rounded-lg bg-success/30 hover:bg-success/40 hover:text-success transition-colors flex min-h-11 shrink-0 items-center gap-1"
+            className="text-xs font-bold px-2.5 py-2 rounded-lg bg-success/30 hover:bg-success/40 transition-colors flex min-h-11 shrink-0 items-center gap-1"
           >
             <UploadCloud className="w-3 h-3" aria-hidden="true" /> {t("attendance.mark.syncNow")}
           </Button>

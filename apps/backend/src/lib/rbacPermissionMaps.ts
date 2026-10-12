@@ -28,6 +28,43 @@ export const WRITE_ROLES = new Set([
   "assistant_teacher",
 ]);
 
+/**
+ * Allowed object keys that intentionally ride the staff write-role set instead of a
+ * single permission (frontend-persisted dashboard / template / widget configuration
+ * that staff own). Every other key in `ALLOWED_OBJECTS` MUST be mapped in
+ * `OBJECT_READ_PERMISSION` / `OBJECT_WRITE_PERMISSION`; an allowed key that is neither
+ * mapped nor listed here is denied (fail closed), so adding a new allowed key can no
+ * longer silently widen access to staff roles. `rbacPermissionMapCoverage.test.ts`
+ * enforces this completeness.
+ */
+export const STAFF_WRITE_OBJECT_KEYS: ReadonlySet<string> = new Set([
+  DASHBOARD_PREFERENCES_KEY,
+  INVOICE_TEMPLATE_OBJECT_KEY,
+  STUDENT_CARD_TEMPLATE_OBJECT_KEY,
+  "kpi_custom_widgets",
+  "mms_dashboard_disabled_cards",
+  "dashboard_section_settings",
+  "report_custom_visuals",
+]);
+
+/** Dynamic per-user widget object-key prefixes that likewise use the staff write-role set. */
+const STAFF_WRITE_OBJECT_KEY_PREFIXES = [
+  "kpi_config_",
+  "prev_kpi_titles_",
+  "prev_kpi_ids_",
+  "kpi_custom_cards_",
+] as const;
+
+export function isStaffWriteObjectKey(key: string): boolean {
+  return (
+    STAFF_WRITE_OBJECT_KEYS.has(key) ||
+    STAFF_WRITE_OBJECT_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))
+  );
+}
+
+/** Allowed collections that intentionally ride the staff write-role set (no dedicated permission). */
+export const STAFF_WRITE_COLLECTION_KEYS: ReadonlySet<string> = new Set(["currencies"]);
+
 export const COLLECTION_READ_PERMISSION: Record<string, Permission> = {
   tasks: TASKS_MODULE_MANIFEST.permissions.read,
   contacts: CONTACTS_MODULE_MANIFEST.permissions.read,

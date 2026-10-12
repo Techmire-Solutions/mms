@@ -148,6 +148,53 @@ for (const file of files) {
   }
 }
 
+// Date/month validation must use the canonical schemas. An inline
+// regex re-derives the shape (and drifts from the isoDateSchema
+// real-calendar-date refine); import isoDateSchema / monthKeySchema instead.
+const CANONICAL_DATE_FILES = new Set([
+  "isoDateSchema.ts",
+  "monthKeySchema.ts",
+  "billingPeriodSchema.ts",
+]);
+// Inline date/period validation idioms that drifted from the canonical schemas.
+const INLINE_DATE_IDIOMS = [
+  /\.regex\(\s*\/\^\\d\{4\}-\\d\{2\}\$/,
+  /\.regex\(\s*\/\^\\d\{4\}-\\d\{2\}-\\d\{2\}\$/,
+  /\.regex\(\s*\/\^\\d\{4\}-\(0\[1-9\]\|1\[0-2\]\)\$/,
+];
+for (const file of files) {
+  if (CANONICAL_DATE_FILES.has(path.basename(file))) continue;
+  if (isTestFile(file)) continue;
+  const src = fs.readFileSync(file, "utf8");
+  if (INLINE_DATE_IDIOMS.some((idiom) => idiom.test(src))) {
+    console.error(
+      `✗ SSOT violation in ${path.relative(process.cwd(), file)}: inline YYYY-MM(-DD) validation regex — use isoDateSchema / monthKeySchema / billingPeriodSchema`,
+    );
+    violations++;
+  }
+}
+
+// Canonical schemas must have exactly one definition (SSOT). A contract that
+// re-declares one has drifted into a private copy — import it from
+// schemas/common.dto.ts instead.
+const CANONICAL_SCHEMAS = ["widgetAggregateResultSchema"];
+const contractsDir = path.join(sharedDir, "contracts");
+if (fs.existsSync(contractsDir)) {
+  for (const entry of fs.readdirSync(contractsDir)) {
+    if (!entry.endsWith(".contract.ts")) continue;
+    const rel = path.relative(process.cwd(), path.join(contractsDir, entry));
+    const content = fs.readFileSync(path.join(contractsDir, entry), "utf8");
+    for (const schema of CANONICAL_SCHEMAS) {
+      if (new RegExp(`const\\s+${schema}\\s*=`).test(content)) {
+        console.error(
+          `✗ SSOT violation in ${rel}: re-declares canonical "${schema}" (import it from schemas/common.dto.ts)`,
+        );
+        violations++;
+      }
+    }
+  }
+}
+
 if (violations > 0) {
   console.error(`\nFound ${violations} purity violation(s) in @mms/shared.`);
   console.error("Move runtime-specific logic to apps/frontend or apps/backend instead (mms-shared-package, mms-dry.md).");

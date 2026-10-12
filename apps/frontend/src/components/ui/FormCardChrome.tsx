@@ -81,7 +81,7 @@ export function CardPrimaryButton({
       className={cn(
         "cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-2xs font-semibold transition-colors min-h-11 shadow-none",
         isPrimary
-          ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+          ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/15"
           : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-transparent",
         className,
       )}

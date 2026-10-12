@@ -84,7 +84,7 @@ describe("getGenderAvatarFallbackClass", () => {
   it("returns themed avatar fallback classes for male and female", () => {
     expect(getGenderAvatarFallbackClass("male")).toBe("bg-info/15 text-info ring-1 ring-info/30");
     expect(getGenderAvatarFallbackClass("female")).toBe(
-      "bg-secondary/20 text-secondary ring-1 ring-secondary/35",
+      "bg-secondary/15 text-secondary ring-1 ring-secondary/35",
     );
     expect(getGenderAvatarFallbackClass(undefined, "usr-1")).toContain("bg-");
   });

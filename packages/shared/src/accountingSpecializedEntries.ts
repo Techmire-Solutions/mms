@@ -1,13 +1,9 @@
 import { z } from "zod";
 import { isoDateSchema } from "./isoDateSchema.js";
-
-/** `YYYY-MM` billing/pay period, matching invoice `billingPeriod` convention. */
-const periodSchema = z
-  .string()
-  .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Period must be in YYYY-MM format");
+import { billingPeriodSchema } from "./billingPeriodSchema.js";
 
 /** Decimal money string, per MMS currency convention (never IEEE 754 floats). */
-const moneyAmountSchema = z.string().regex(/^\d+(\.\d{1,2})?$/, "Enter a valid amount");
+const moneyDecimalStringSchema = z.string().regex(/^\d+(\.\d{1,2})?$/, "Enter a valid amount");
 
 export const FEE_ENTRY_PAYMENT_METHODS = ["cash", "bank", "card", "online", "cheque"] as const;
 export type FeeEntryPaymentMethod = (typeof FEE_ENTRY_PAYMENT_METHODS)[number];
@@ -28,8 +24,8 @@ export const feeEntrySchema = specializedEntryBaseSchema
     studentId: z.string().min(1, "Student is required"),
     /** Denormalised display name for the invoice directory, as the invoice form also supplies. */
     studentName: z.string(),
-    feePeriod: periodSchema,
-    amount: moneyAmountSchema,
+    feePeriod: billingPeriodSchema,
+    amount: moneyDecimalStringSchema,
     paymentMethod: z.enum(FEE_ENTRY_PAYMENT_METHODS),
   })
   .strict();
@@ -44,8 +40,8 @@ export const salaryEntrySchema = specializedEntryBaseSchema
   .extend({
     type: z.literal("salary"),
     staffId: z.string().min(1, "Staff member is required"),
-    payPeriod: periodSchema,
-    amount: moneyAmountSchema,
+    payPeriod: billingPeriodSchema,
+    amount: moneyDecimalStringSchema,
     expenseAccountId: z.string().min(1, "Expense account is required"),
     paymentAccountId: z.string().min(1, "Payment account is required"),
   })

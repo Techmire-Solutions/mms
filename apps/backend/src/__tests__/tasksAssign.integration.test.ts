@@ -41,6 +41,12 @@ vi.mock("../db/repositories/tasksRepository.js", () => ({
   findTaskById: (...args: unknown[]) => findTaskById(...args),
   getTaskMetrics: (...args: unknown[]) => getTaskMetrics(...args),
   updateTaskStatus: (...args: unknown[]) => updateTaskStatus(...args),
+  deleteTask: vi.fn(),
+  restoreTask: vi.fn(),
+  bulkRestoreTasks: vi.fn(),
+}));
+vi.mock("../db/repositories/tasksTrashRepository.js", () => ({
+  bulkDeleteTasks: vi.fn(),
 }));
 vi.mock("../services/taskEligibleAssigneesService.js", () => ({
   getEligibleTaskAssignees: (...args: unknown[]) => getEligibleTaskAssignees(...args),

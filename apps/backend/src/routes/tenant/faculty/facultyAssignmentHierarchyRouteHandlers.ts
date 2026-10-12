@@ -1,11 +1,11 @@
 import { canReadCollection } from "../../../services/rbacService.js";
 import type { User, facultyContract } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { findFacultyAssignmentById } from "../../../db/repositories/facultyAssignmentRepository.js";
 import {
-  findAssignmentSubordinateTree,
   findAssignmentManagerChain,
-} from "../../../db/repositories/facultyAssignmentHierarchyRepository.js";
+  findAssignmentSubordinateTree,
+  findFacultyAssignmentById,
+} from "../../../faculty/use-cases/facultyCatalogUseCases.js";
 
 export async function handleGetSubordinates({
   params: { id },

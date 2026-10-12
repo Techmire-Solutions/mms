@@ -13,7 +13,7 @@ import {
   ensureAccessibleFillSurface,
   foregroundForSurface,
 } from "./brandingCssContrast.js";
-import { buildSemanticStatusTokens } from "./brandingCssSemanticTokens.js";
+import { buildSemanticStatusPairs } from "./brandingCssSemanticTokens.js";
 import { buildBrandingSurfaceTokens } from "./brandingCssSurfaceTokens.js";
 
 /**
@@ -49,8 +49,23 @@ export function buildBrandingCssVariables(
   const chart4 = tone(secondaryUi, { s: -Math.round(secondaryUi.s * 0.35), l: -12 });
   const chart5 = tone(primaryUi, { s: -Math.round(primaryUi.s * 0.75), l: 22 });
 
-  const semanticTokens = buildSemanticStatusTokens(mode, primaryBase.h);
-  const surfaceTokens = buildBrandingSurfaceTokens(mode, primaryBase.h, secondaryBase.h);
+  const statusPairs = buildSemanticStatusPairs(mode, primaryBase.h);
+  const semanticTokens = Object.fromEntries(
+    statusPairs.flatMap(({ key, fill, foreground }) => [
+      [key, fill],
+      [`${key}-foreground`, foreground],
+    ]),
+  );
+  // Every fill that can appear *behind* muted text becomes a tint source: the
+  // surface tokens fit `--muted-foreground` against each fill's resting tint, so
+  // `bg-primary/5 text-muted-foreground` (and status callouts) cannot fall below AA.
+  const tintSources = [primaryUi, secondaryUi, ...statusPairs.map((pair) => pair.fillColor)];
+  const surfaceTokens = buildBrandingSurfaceTokens(
+    mode,
+    primaryBase.h,
+    secondaryBase.h,
+    tintSources,
+  );
   const brandTokens = {
     "--primary": primaryToken,
     "--primary-foreground": foregroundForSurface(primaryUi),

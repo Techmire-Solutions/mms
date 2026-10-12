@@ -55,7 +55,7 @@ export const EditableMultiSelectChipRow = React.memo(function EditableMultiSelec
                 onRemoveValue(val, e);
               }
             }}
-            className="relative inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-primary/20 text-primary hover:text-destructive transition-colors cursor-pointer after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']"
+            className="relative inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-primary/15 text-primary hover:text-destructive transition-colors cursor-pointer after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']"
             aria-label={t("contacts.form.removeTag", { tag: val })}
           >
             <X className="w-3 h-3" />

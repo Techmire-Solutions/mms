@@ -55,7 +55,7 @@ const BASELINE = {
   anyAnnotations: 0,
   hexColourFiles: 26,
   arbitraryColourExpressions: 0,
-  filesOverHardLimit: 69,
+  filesOverHardLimit: 62,
 };
 
 /**

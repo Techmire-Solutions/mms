@@ -47,38 +47,198 @@ const MODULE_ROUTE_PREFIXES: Readonly<Record<string, string>> = {
 
 /**
  * Explicitly classified non-module routes and why they are not module-gated.
- * A new route that matches neither table fails this suite.
+ *
+ * `paths` lists every URL served under the prefix (HEAD siblings implied). A new
+ * endpoint under an allowlisted prefix fails this suite until it is added here
+ * and reviewed for authorization — a broad prefix can no longer hide an
+ * ungated route. A listed path that no longer exists also fails, so exemptions
+ * cannot go stale.
  */
-const NON_MODULE_ROUTES: ReadonlyArray<{ prefix: string; reason: string }> = [
-  { prefix: "*", reason: "CORS preflight" },
-  { prefix: "/health", reason: "ops probe" },
-  { prefix: "/ready", reason: "ops probe" },
-  { prefix: "/metrics", reason: "ops metrics" },
-  { prefix: "/ws", reason: "live-update socket (keys only, no data)" },
-  { prefix: "/api/ws", reason: "live-update socket (keys only, no data)" },
-  { prefix: "/api/openapi.json", reason: "public API description" },
-  { prefix: "/api/public/", reason: "unauthenticated deployment config" },
-  { prefix: "/api/auth/", reason: "session, profile, and onboarding" },
-  { prefix: "/api/platform/", reason: "platform console (authenticatePlatform)" },
-  { prefix: "/api/workspace/", reason: "workspace registry and branding" },
-  { prefix: "/api/workspaces/", reason: "workspace registry and branding" },
-  { prefix: "/api/module-access", reason: "the availability snapshot itself" },
+const NON_MODULE_ROUTES: ReadonlyArray<{
+  prefix: string;
+  reason: string;
+  paths: readonly string[];
+}> = [
+  { prefix: "*", reason: "CORS preflight", paths: ["*"] },
+  { prefix: "/health", reason: "ops probe", paths: ["/health"] },
+  { prefix: "/ready", reason: "ops probe", paths: ["/ready"] },
+  { prefix: "/metrics", reason: "ops metrics", paths: ["/metrics"] },
+  {
+    prefix: "/ws",
+    reason: "live-update socket (keys only, no data)",
+    paths: ["/ws"],
+  },
+  {
+    prefix: "/api/ws",
+    reason: "live-update socket (keys only, no data)",
+    paths: ["/api/ws"],
+  },
+  { prefix: "/api/openapi.json", reason: "public API description", paths: ["/api/openapi.json"] },
+  {
+    prefix: "/api/public/",
+    reason: "unauthenticated deployment config",
+    paths: ["/api/public/deployment-config"],
+  },
+  {
+    prefix: "/api/auth/",
+    reason: "session, profile, and onboarding",
+    paths: [
+      "/api/auth/institution-setup-status",
+      "/api/auth/me",
+      "/api/auth/me/ui-state",
+      "/api/auth/me/contact",
+      "/api/auth/onboarding-status",
+      "/api/auth/profile",
+      "/api/auth/2fa/resend",
+      "/api/auth/2fa/verify",
+      "/api/auth/change-password",
+      "/api/auth/forgot-password",
+      "/api/auth/forgot-password/reset",
+      "/api/auth/forgot-password/verify",
+      "/api/auth/handoff",
+      "/api/auth/login",
+      "/api/auth/login-email/confirm",
+      "/api/auth/login-email/request",
+      "/api/auth/logout",
+      "/api/auth/onboard",
+      "/api/auth/refresh",
+      "/api/auth/session/extend",
+      "/api/auth/verify-password",
+    ],
+  },
+  {
+    prefix: "/api/platform/",
+    reason: "platform console (authenticatePlatform)",
+    paths: [
+      "/api/platform/admin/system/activity-logs",
+      "/api/platform/admin/system/activity-trend",
+      "/api/platform/admin/system/telemetry",
+      "/api/platform/admin/system/migrate-and-restart",
+      "/api/platform/ai/query",
+      "/api/platform/auth/me",
+      "/api/platform/auth/session/policy",
+      "/api/platform/auth/setup/status",
+      "/api/platform/auth/setup/register",
+      "/api/platform/auth/2fa/resend",
+      "/api/platform/auth/2fa/verify",
+      "/api/platform/auth/change-password",
+      "/api/platform/auth/login",
+      "/api/platform/auth/logout",
+      "/api/platform/auth/password/forgot",
+      "/api/platform/auth/password/resend",
+      "/api/platform/auth/password/reset",
+      "/api/platform/auth/session/extend",
+      "/api/platform/email/integration",
+      "/api/platform/email/integration/test",
+      "/api/platform/schema/erd",
+      "/api/platform/settings",
+      "/api/platform/sms/integration",
+      "/api/platform/sms/integration/test",
+      "/api/platform/users",
+      "/api/platform/users/:adminId",
+      "/api/platform/users/:adminId/disabled",
+      "/api/platform/users/:adminId/permissions",
+      "/api/platform/users/:adminId/verify-email",
+      "/api/platform/workspaces",
+      "/api/platform/workspaces/:subdomain",
+      "/api/platform/workspaces/:subdomain/modules",
+      "/api/platform/workspaces/:subdomain/email-verification",
+      "/api/platform/workspaces/:subdomain/admin-users",
+      "/api/platform/workspaces/:subdomain/reset-admin-password",
+      "/api/platform/workspaces/:subdomain/users/:userId/verify-email",
+      "/api/platform/workspaces/metrics",
+    ],
+  },
+  {
+    prefix: "/api/workspace/",
+    reason: "workspace registry and branding",
+    paths: [
+      "/api/workspace/by-subdomain/:subdomain",
+      "/api/workspace/current",
+      "/api/workspace/public-branding",
+      "/api/workspace/registry",
+      "/api/workspace/subdomain-available/:subdomain",
+    ],
+  },
+  {
+    prefix: "/api/workspaces/",
+    reason: "workspace registry and branding",
+    paths: [
+      "/api/workspaces/by-subdomain/:subdomain",
+      "/api/workspaces/current",
+      "/api/workspaces/public-branding",
+      "/api/workspaces/registry",
+      "/api/workspaces/subdomain-available/:subdomain",
+    ],
+  },
+  {
+    prefix: "/api/module-access",
+    reason: "the availability snapshot itself",
+    paths: ["/api/module-access"],
+  },
   {
     prefix: "/api/db/",
     reason: "settings objects incl. module management (settings.global.write)",
+    paths: [
+      "/api/db/backup",
+      "/api/db/collections/:name",
+      "/api/db/objects/:key",
+      "/api/db/sync",
+      "/api/db/reset",
+    ],
   },
-  { prefix: "/api/email/", reason: "integration settings (settings.global.write)" },
-  { prefix: "/api/sms/", reason: "integration settings (settings.global.write)" },
-  { prefix: "/api/ai/", reason: "LLM provider settings" },
-  { prefix: "/api/uploads/", reason: "module-agnostic attachment storage" },
-  { prefix: "/api/audit/", reason: "audit governance (own permissions)" },
+  {
+    prefix: "/api/email/",
+    reason: "integration settings (settings.global.write)",
+    paths: [
+      "/api/email/integration",
+      "/api/email/integration/test",
+      "/api/email/verification-code",
+    ],
+  },
+  {
+    prefix: "/api/sms/",
+    reason: "integration settings (settings.global.write)",
+    paths: ["/api/sms/integration", "/api/sms/integration/test"],
+  },
+  {
+    prefix: "/api/ai/",
+    reason: "LLM provider settings",
+    paths: ["/api/ai/models", "/api/ai/test"],
+  },
+  {
+    prefix: "/api/uploads/",
+    reason: "module-agnostic attachment storage",
+    paths: ["/api/uploads/attachment", "/api/uploads/image"],
+  },
+  {
+    prefix: "/api/audit/",
+    reason: "audit governance (own permissions)",
+    paths: [
+      "/api/audit/anomalies",
+      "/api/audit/events",
+      "/api/audit/export",
+      "/api/audit/merkle-roots",
+      "/api/audit/erasure",
+      "/api/audit/retention/evaluate",
+      "/api/audit/verify",
+    ],
+  },
   {
     prefix: "/api/saved-reports",
     reason: "module resolved per request in-handler (getModuleAccessDenial)",
+    paths: ["/api/saved-reports", "/api/saved-reports/:id", "/api/saved-reports/:id/run"],
   },
   {
     prefix: "/api/background-jobs",
     reason: "owner-scoped tray; download gated in-handler, execution in worker",
+    paths: [
+      "/api/background-jobs",
+      "/api/background-jobs/",
+      "/api/background-jobs/:id",
+      "/api/background-jobs/:id/download",
+      "/api/background-jobs/clear-finished",
+    ],
   },
 ];
 
@@ -150,15 +310,24 @@ describe("module access coverage", () => {
           if (access?.moduleId !== expected || !access.action || !guarded) {
             ungated.push(`${key} → stamped ${access?.moduleId ?? "none"}, guard ${guarded}`);
           }
-        } else if (access || !NON_MODULE_ROUTES.some((c) => matchesPrefix(url, c.prefix))) {
-          unclassified.push(key);
+        } else {
+          const entry = NON_MODULE_ROUTES.find((c) => matchesPrefix(url, c.prefix));
+          if (access || !entry || !entry.paths.includes(url)) {
+            unclassified.push(key);
+          }
         }
       }
     }
 
+    // No stale exemptions: every listed non-module path must actually be served.
+    const liveNonModuleUrls = new Set(collected.map((r) => r.url).filter((url) => !moduleFor(url)));
+    const listedPaths = NON_MODULE_ROUTES.flatMap((c) => c.paths).filter((p) => p !== "*");
+    const stale = [...new Set(listedPaths)].filter((p) => !liveNonModuleUrls.has(p));
+
     expect(collected.length).toBeGreaterThan(500);
     expect(ungated).toEqual([]);
     expect(unclassified).toEqual([]);
+    expect(stale).toEqual([]);
     expect([...modulesSeen].sort()).toEqual([...ACCESS_CONTROLLED_MODULE_IDS].sort());
   }, 60_000);
 });

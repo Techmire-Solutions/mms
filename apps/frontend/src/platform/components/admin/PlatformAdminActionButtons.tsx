@@ -35,7 +35,7 @@ export function PlatformAdminActionButtons({
           variant="outline"
           size="sm"
           disabled={verifyPending}
-          className="border-success/40 bg-success/10 text-success hover:bg-success/20 hover:border-success/60"
+          className="border-success/40 bg-success/10 text-success hover:bg-success/15 hover:border-success/60"
           onClick={() => onVerifyEmail(admin.id)}
         >
           {t("users.actionVerifyEmail")}

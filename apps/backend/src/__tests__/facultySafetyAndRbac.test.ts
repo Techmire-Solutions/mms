@@ -56,6 +56,7 @@ vi.mock("../db/repositories/facultyDesignationRepository.js", () => ({
   listFacultyDesignations: vi.fn().mockResolvedValue([]),
   saveFacultyDesignation: (...args: unknown[]) => mockSaveFacultyDesignation(...args),
   listFacultyDesignationAssignments: vi.fn().mockResolvedValue([]),
+  softDeleteFacultyDesignation: vi.fn(),
 }));
 
 describe("Faculty Bulk Soft-Delete Hierarchy Protection", () => {

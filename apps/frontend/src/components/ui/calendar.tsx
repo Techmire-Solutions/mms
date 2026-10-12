@@ -106,7 +106,7 @@ function Calendar({
                 isToday &&
                   !isSelected &&
                   !isRangeMiddle &&
-                  "text-primary font-bold ring-1.5 ring-primary/40 bg-primary/10 hover:bg-primary/20 rounded-lg cursor-pointer active:scale-95",
+                  "text-primary font-bold ring-1.5 ring-primary/40 bg-primary/10 hover:bg-primary/15 rounded-lg cursor-pointer active:scale-95",
                 // Range Start
                 isRangeStart &&
                   !isSingleDayRange &&
@@ -117,7 +117,7 @@ function Calendar({
                   "bg-primary text-primary-foreground font-bold shadow-md shadow-primary/30 hover:bg-primary hover:text-primary-foreground rounded-e-lg rounded-s-none cursor-pointer",
                 // Range Middle
                 isRangeMiddle &&
-                  "bg-primary/15 text-primary font-semibold hover:bg-primary/25 rounded-none cursor-pointer",
+                  "bg-primary/15 text-primary font-semibold rounded-none cursor-pointer",
                 // Selected single day
                 ((isSelected && !isRangeMiddle) || isSingleDayRange) &&
                   "bg-primary text-primary-foreground font-bold shadow-md shadow-primary/30 hover:bg-primary hover:text-primary-foreground rounded-lg cursor-pointer",

@@ -73,7 +73,7 @@ export function getGenderBadgeClass(gender: string | null | undefined): string {
     case "male":
       return "bg-info/10 text-info border-info/25 dark:bg-info/15 dark:border-info/35";
     case "female":
-      return "bg-secondary/15 text-secondary border-secondary/25 dark:bg-secondary/20 dark:border-secondary/35";
+      return "bg-secondary/15 text-secondary border-secondary/25 dark:bg-secondary/15 dark:border-secondary/35";
     default:
       return "bg-muted text-muted-foreground border-border/40";
   }
@@ -112,7 +112,7 @@ export function getGenderAvatarFallbackClass(
     case "male":
       return "bg-info/15 text-info ring-1 ring-info/30";
     case "female":
-      return "bg-secondary/20 text-secondary ring-1 ring-secondary/35";
+      return "bg-secondary/15 text-secondary ring-1 ring-secondary/35";
     default:
       return id ? getAvatarColor(id) : "bg-primary/15 text-primary";
   }

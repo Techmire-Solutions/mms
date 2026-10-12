@@ -422,11 +422,11 @@
   --muted-foreground: 40 15% 60%;
   --accent: 32 8% 16%;
   --accent-foreground: 40 25% 92%;
-  --destructive: 0 72% 66%;
+  --destructive: 0 72% 71%;
   --destructive-foreground: 0 72% 12%;
   --success: 158 65% 42%;
   --success-foreground: 158 65% 12%;
-  --warning: 32 80% 46%;
+  --warning: 32 80% 52%;
   --warning-foreground: 32 80% 12%;
   --info: 217 85% 66%;
   --info-foreground: 217 85% 12%;

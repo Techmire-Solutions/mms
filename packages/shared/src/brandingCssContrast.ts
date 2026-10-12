@@ -1,8 +1,10 @@
 import {
   type BrandingThemeMode,
   type HslColor,
+  WCAG_AA_TEXT_MIN_RATIO,
   clamp,
   getContrastRatio,
+  hexToHslColor,
   hslColorToHex,
   hslColorToToken,
   meetsWcagAaTextContrast,
@@ -14,16 +16,35 @@ function withAbsoluteLightness(color: HslColor, targetLightness: number): HslCol
 }
 
 /**
- * Strongest same-token tint that appears behind same-token text AT REST.
+ * Strongest same-token tint allowed behind same-token text AT REST.
  *
- * Measured from the frontend, not chosen: light mode has
- * `bg-primary/15 text-primary` (calendar, PermissionMatrixRow) alongside ~188
- * `/10` chips, while dark mode only ever uses `dark:bg-<role>/10`.
+ * `0.15` in both modes is the **documented design contract**, stated in
+ * `apps/frontend/src/index.css`: the semantic token values are "solved against a `/15`
+ * tint", and "tints stronger than `/15` (e.g. a resting `bg-primary/20`) must use
+ * `-foreground` or a lighter tint, because no single hue satisfies every step". So
+ * `/15` is the binding constraint on how light a token may be.
+ *
+ * The previous dark value (`0.10`) came from a measurement claiming "dark mode only
+ * ever uses `dark:bg-<role>/10`". That was wrong: `dark:bg-info/15` and
+ * `dark:bg-secondary/20` (`lib/genderUi.ts`) and
+ * `dark:bg-{destructive,warning,success}/20` (`lib/reports/pinnedWidgetTypes.ts`,
+ * `components/ui/NetworkStatusIndicator.tsx`) all exist. The `/20` sites breach the
+ * contract and were lowered to `/15`; `/15` is what the guarantee must cover.
  */
 export const MAX_RESTING_TINT_BY_MODE: Record<BrandingThemeMode, number> = {
   light: 0.15,
-  dark: 0.1,
+  dark: 0.15,
 };
+
+/**
+ * Headroom added to the AA floor when fitting a token.
+ *
+ * The fit evaluates exact HSL; what renders is hex-rounded and antialiased, so a token
+ * accepted at exactly 4.50 can measure 4.46-4.49 — enough to fail axe. Seen twice as real
+ * failures (a `bg-<fill>/10` tint over the dark sidebar accent, and the `bg-primary/15
+ * text-primary` chip), so every fit carries the same margin.
+ */
+export const FIT_MARGIN = 0.15;
 
 /**
  * The two surfaces a semantic token is read against as text.
@@ -49,6 +70,31 @@ function tintHex(tintHex: string, baseHex: string, alpha: number): string {
     Math.round(channel(tintHex, i) * alpha + channel(baseHex, i) * (1 - alpha)),
   );
   return `#${rgb.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * The tinted surfaces a token is read against when it sits inside someone else's
+ * tint — `bg-primary/5 text-muted-foreground`, `bg-secondary/10 …`, status callouts.
+ *
+ * A token tuned only against plain surfaces still fails here, which is exactly how
+ * `muted-foreground` shipped below AA inside a `bg-primary/5` callout. The generator
+ * and the contrast matrix both call this, so the guarantee and its test cannot drift.
+ */
+export function restingTintedSurfaces(
+  mode: BrandingThemeMode,
+  surfaces: readonly HslColor[],
+  tintSources: readonly HslColor[],
+): HslColor[] {
+  const alpha = MAX_RESTING_TINT_BY_MODE[mode];
+  const tinted: HslColor[] = [];
+  for (const surface of surfaces) {
+    const baseHex = hslColorToHex(surface);
+    for (const source of tintSources) {
+      const composited = hexToHslColor(tintHex(hslColorToHex(source), baseHex, alpha));
+      if (composited) tinted.push(composited);
+    }
+  }
+  return tinted;
 }
 
 /** Best contrast the token can achieve as a fill, using whichever text polarity wins. */
@@ -92,6 +138,11 @@ function fitTokenToAllRoles(
   mode: BrandingThemeMode,
   surfaces: HslColor[],
 ): HslColor {
+  // Fit with a small margin above AA, like the muted tokens: a fill accepted at exactly
+  // 4.50 measures just under once rendered (hex rounding, antialiasing), which is how the
+  // `bg-primary/15 text-primary` chip — the sanctioned pattern, used ~188 times — showed
+  // up as a flaky serious `color-contrast` violation in the Playwright axe gate.
+  const required = WCAG_AA_TEXT_MIN_RATIO + FIT_MARGIN;
   const step = mode === "light" ? -2 : 2;
   let best = color;
   let bestScore = -Infinity;
@@ -113,7 +164,7 @@ function fitTokenToAllRoles(
       bestScore = score;
       best = candidate;
     }
-    if (score >= 4.5) return candidate;
+    if (score >= required) return candidate;
   }
 
   // Nothing fully passed (extreme hue): return the best available so the result is
@@ -155,18 +206,26 @@ export function ensureAccessibleFillSurface(
   return fitTokenToAllRoles(color, mode, resolved);
 }
 
-/** Selects the strongest accessible text token across all supplied backgrounds. */
+/**
+ * Selects the strongest accessible text token across all supplied backgrounds.
+ *
+ * `minRatio` defaults to the AA text floor. Callers may raise it slightly: the fit
+ * evaluates exact HSL, but the shipped token is hex-rounded, and the contrast matrix
+ * measures what actually renders — a boundary-equal fit can therefore measure just
+ * under AA (4.46:1 at one such boundary).
+ */
 export function pickAccessibleTextToken(
   hue: number,
   saturation: number,
   backgrounds: readonly HslColor[],
   candidateLightness: readonly number[],
+  minRatio: number = WCAG_AA_TEXT_MIN_RATIO,
 ): string {
   for (const lightness of candidateLightness) {
     const foreground = { h: hue, s: saturation, l: lightness };
     const fgHex = hslColorToHex(foreground);
-    const allPass = backgrounds.every((background) =>
-      meetsWcagAaTextContrast(getContrastRatio(fgHex, hslColorToHex(background))),
+    const allPass = backgrounds.every(
+      (background) => (getContrastRatio(fgHex, hslColorToHex(background)) ?? 0) >= minRatio,
     );
     if (allPass) return hslColorToToken(foreground);
   }

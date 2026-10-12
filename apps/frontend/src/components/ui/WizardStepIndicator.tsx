@@ -95,7 +95,7 @@ export function WizardStepIndicator({
                     isDone
                       ? "border-primary bg-primary text-primary-foreground hover:opacity-90"
                       : isActive
-                        ? "border-primary bg-primary/10 text-primary font-bold hover:bg-primary/20"
+                        ? "border-primary bg-primary/10 text-primary font-bold hover:bg-primary/15"
                         : "border-border bg-muted text-muted-foreground hover:bg-muted/80",
                   )}
                   aria-label={`Step ${index + 1}: ${step.label} (${stateText})`}

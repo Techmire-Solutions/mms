@@ -4,10 +4,10 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import {
   findFacultyDepartmentById,
   listFacultyDepartments,
+  restoreFacultyDepartment,
   saveFacultyDepartment,
   softDeleteFacultyDepartment,
-} from "../../../db/repositories/facultyDepartmentRepository.js";
-import { restoreFacultyDepartment } from "../../../db/repositories/facultyCatalogTrashRepository.js";
+} from "../../../faculty/use-cases/facultyCatalogUseCases.js";
 import {
   authorizeCatalogRoute,
   canArchiveFacultySetup,

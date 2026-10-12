@@ -20,7 +20,7 @@ import {
   getTaskMetrics,
   listTasks,
   updateTaskStatus,
-} from "../../db/repositories/tasksRepository.js";
+} from "../../tasks/use-cases/tasksUseCases.js";
 import { getEligibleTaskAssignees } from "../../services/taskEligibleAssigneesService.js";
 import {
   getTenantTaskSettings,

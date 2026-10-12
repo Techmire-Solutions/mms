@@ -6,7 +6,11 @@ import {
   resetWorkspaceAdminPassword,
 } from "../../services/workspaceService.js";
 import { verifyPlatformUserPassword } from "../../services/platform/platformUserService.js";
-import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
+import {
+  findTenantUserRowById,
+  insertPlatformActivityLog,
+  verifyTenantUserEmailRow,
+} from "../../platform/use-cases/platformUseCases.js";
 
 export async function handleVerifyTenantUserEmail({
   params,
@@ -16,9 +20,6 @@ export async function handleVerifyTenantUserEmail({
 > {
   const { platformUser } = request as PlatformAuthenticatedRequest;
   const { subdomain, userId } = params;
-
-  const { verifyTenantUserEmailRow, findTenantUserRowById } =
-    await import("../../db/repositories/tenantUserRepository.js");
 
   const user = await findTenantUserRowById(subdomain, userId);
   if (!user) {

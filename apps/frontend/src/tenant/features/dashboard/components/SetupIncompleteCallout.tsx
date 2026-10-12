@@ -67,7 +67,7 @@ export function SetupIncompleteCallout({
         className="relative flex items-start gap-4 rounded-2xl border border-warning/30 bg-warning/10 px-5 py-4 shadow-sm"
       >
         {/* Icon */}
-        <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-warning/20 text-warning">
+        <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-warning/15 text-warning">
           <Building2 className="h-4.5 w-4.5" aria-hidden />
         </div>
 

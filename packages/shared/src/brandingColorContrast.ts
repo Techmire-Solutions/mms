@@ -48,12 +48,16 @@ export function getContrastRatio(foregroundHex: string, backgroundHex: string): 
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/** WCAG AA floors: 3:1 for UI components, 4.5:1 for body text. */
+export const WCAG_AA_UI_MIN_RATIO = 3;
+export const WCAG_AA_TEXT_MIN_RATIO = 4.5;
+
 export function meetsWcagAaUiContrast(ratio: number | null): boolean {
-  return ratio !== null && ratio >= 3;
+  return ratio !== null && ratio >= WCAG_AA_UI_MIN_RATIO;
 }
 
 export function meetsWcagAaTextContrast(ratio: number | null): boolean {
-  return ratio !== null && ratio >= 4.5;
+  return ratio !== null && ratio >= WCAG_AA_TEXT_MIN_RATIO;
 }
 
 /**

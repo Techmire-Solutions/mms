@@ -17,7 +17,7 @@ import {
   saveFacultyAssignment,
   closeAssignment,
   softDeleteFacultyAssignment,
-} from "../../../db/repositories/facultyAssignmentRepository.js";
+} from "../../../faculty/use-cases/facultyCatalogUseCases.js";
 
 export {
   handleGetSubordinates,

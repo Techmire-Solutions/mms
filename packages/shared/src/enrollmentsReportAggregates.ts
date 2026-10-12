@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { monthKeySchema } from "./monthKeySchema.js";
 
 /** Cumulative month-end enrollment headcount — `monthKey` is YYYY-MM. */
 export const enrollmentsCumulativeTrendSchema = z.object({
-  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  monthKey: monthKeySchema,
   students: z.number().int().nonnegative(),
 });
 
@@ -33,7 +34,7 @@ export const enrollmentsReportComparisonSessionSchema = z.object({
 });
 
 export const enrollmentsReportComparisonMonthSchema = z.object({
-  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  monthKey: monthKeySchema,
   count: z.number().int().nonnegative(),
 });
 
