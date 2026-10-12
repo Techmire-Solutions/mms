@@ -5,6 +5,7 @@ import {
   COLLECTION_DELETE_PERMISSION,
   COLLECTION_READ_PERMISSION,
   COLLECTION_WRITE_PERMISSION,
+  STAFF_WRITE_COLLECTION_KEYS,
   WRITE_ROLES,
   isAllowedCollectionName,
 } from "./rbacPermissionMaps.js";
@@ -83,7 +84,11 @@ function computeCanReadCollection(user: User, collectionName: string): boolean {
   if (mapped) {
     return roleHasPermission(user.role, mapped);
   }
-  return WRITE_ROLES.has(user.role);
+  if (STAFF_WRITE_COLLECTION_KEYS.has(collectionName)) {
+    return WRITE_ROLES.has(user.role);
+  }
+  // Allowed but unmapped and not an explicit staff collection — deny (fail closed).
+  return false;
 }
 
 /**
@@ -159,7 +164,11 @@ function computeCanWriteCollection(user: User, collectionName: string): boolean 
   if (mapped) {
     return roleHasPermission(user.role, mapped);
   }
-  return WRITE_ROLES.has(user.role);
+  if (STAFF_WRITE_COLLECTION_KEYS.has(collectionName)) {
+    return WRITE_ROLES.has(user.role);
+  }
+  // Allowed but unmapped and not an explicit staff collection — deny (fail closed).
+  return false;
 }
 
 /**

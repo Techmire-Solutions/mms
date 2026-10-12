@@ -126,6 +126,13 @@ export async function authenticateTenant(
         await sendUnauthorized(reply, "Session revoked");
         return;
       }
+      // Replace the (up to ~15-min stale) JWT role with the authoritative matrix
+      // role so every downstream `roleHasPermission(request.user.role, …)` check —
+      // including non-module surfaces like /api/db, /api/email, /api/sms — reflects
+      // role changes immediately, without waiting for a token refresh.
+      if (userStatus.role) {
+        user.role = userStatus.role;
+      }
       if (user.role === "faculty" || user.role === "teacher") {
         const { facultyRepository } =
           await import("../faculty/repository/facultyRepositoryAdapter.js");

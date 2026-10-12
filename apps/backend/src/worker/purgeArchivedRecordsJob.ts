@@ -138,20 +138,21 @@ export async function purgeExpiredArchivedRecords(
           newState: null,
         });
 
-        // 3b. Emit CDC outbox event for each purged entity (cache eviction / tombstoning)
+        // 3b. Emit CDC outbox event for each purged entity (cache eviction / tombstoning).
+        // Emission failures are NOT swallowed: a lost tombstone would leave stale
+        // search/cache entries for a purged entity, so the chunk transaction is
+        // rolled back and retried. A monotonic per-row version lets the CDC
+        // version guard order events even within the same millisecond.
         if ("insert" in tx && typeof tx.insert === "function") {
-          for (const id of ids) {
-            try {
-              await emitOutboxEvent(tx, "entity.hard_purge", {
-                entityType: name,
-                entityId: id,
-                tenantId: normalizedTenant,
-                purgedAt: now.toISOString(),
-                version: Date.now(),
-              });
-            } catch {
-              // outbox event emission is non-fatal if table unavailable in mocks
-            }
+          const versionBase = Date.now();
+          for (let i = 0; i < ids.length; i++) {
+            await emitOutboxEvent(tx, "entity.hard_purge", {
+              entityType: name,
+              entityId: ids[i],
+              tenantId: normalizedTenant,
+              purgedAt: now.toISOString(),
+              version: versionBase + i,
+            });
           }
         }
 

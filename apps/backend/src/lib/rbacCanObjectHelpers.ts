@@ -6,6 +6,7 @@ import {
   OBJECT_WRITE_PERMISSION,
   WRITE_ROLES,
   isAllowedObjectKey,
+  isStaffWriteObjectKey,
 } from "./rbacPermissionMaps.js";
 
 const canReadObjectCache = new LRUCache<string, boolean>({ max: 2048 });
@@ -30,7 +31,11 @@ function computeCanReadObject(user: User, key: string): boolean {
   if (mapped) {
     return roleHasPermission(user.role, mapped);
   }
-  return WRITE_ROLES.has(user.role);
+  if (isStaffWriteObjectKey(key)) {
+    return WRITE_ROLES.has(user.role);
+  }
+  // Allowed but unmapped and not an explicit staff key — deny (fail closed).
+  return false;
 }
 
 /**
@@ -69,7 +74,11 @@ function computeCanWriteObject(user: User, key: string): boolean {
   if (mapped) {
     return roleHasPermission(user.role, mapped);
   }
-  return WRITE_ROLES.has(user.role);
+  if (isStaffWriteObjectKey(key)) {
+    return WRITE_ROLES.has(user.role);
+  }
+  // Allowed but unmapped and not an explicit staff key — deny (fail closed).
+  return false;
 }
 
 /**

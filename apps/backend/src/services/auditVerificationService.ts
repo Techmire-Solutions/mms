@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import {
   canonicalizeJson,
   formatAuditEventHashInput,
@@ -22,6 +22,27 @@ export interface ChainVerificationResult {
   recordsChecked: number;
   discrepancies: string[];
   headHash: string;
+}
+
+/** Projection of an audit event used to recompute the shard hash chain. */
+interface AuditChainEvent {
+  id: number;
+  tableName: string;
+  recordId: string;
+  actionType: string;
+  realUserId: string;
+  impersonatedUserId: string | null;
+  ipAddress: string | null;
+  clientApp: string | null;
+  sessionId: string | null;
+  correlationId: string;
+  apiEndpoint: string | null;
+  httpMethod: string | null;
+  oldState: string | null;
+  newState: string | null;
+  hashPrevious: string;
+  hashCurrent: string;
+  transactionTimestamp: Date;
 }
 
 /**
@@ -62,44 +83,17 @@ export async function verifyTenantAuditChain(
 ): Promise<ChainVerificationResult> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   const runId = `ver_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
-  const limit = options?.limit ?? 5000;
+  const pageSize = Math.max(1, Math.floor(options?.limit ?? 5000));
   const db = activeDb();
-
-  // Retrieve events chronologically
-  const events = await db
-    .select({
-      id: auditTrailEvents.id,
-      workspaceSubdomain: auditTrailEvents.workspaceSubdomain,
-      tableName: auditTrailEvents.tableName,
-      recordId: auditTrailEvents.recordId,
-      actionType: auditTrailEvents.actionType,
-      realUserId: auditTrailEvents.realUserId,
-      impersonatedUserId: auditTrailEvents.impersonatedUserId,
-      ipAddress: auditTrailEvents.ipAddress,
-      clientApp: auditTrailEvents.clientApp,
-      sessionId: auditTrailEvents.sessionId,
-      correlationId: auditTrailEvents.correlationId,
-      apiEndpoint: auditTrailEvents.apiEndpoint,
-      httpMethod: auditTrailEvents.httpMethod,
-      oldState: auditTrailEvents.oldState,
-      newState: auditTrailEvents.newState,
-      hashPrevious: auditTrailEvents.hashPrevious,
-      hashCurrent: auditTrailEvents.hashCurrent,
-      transactionTimestamp: auditTrailEvents.transactionTimestamp,
-    })
-    .from(auditTrailEvents)
-    .where(eq(auditTrailEvents.workspaceSubdomain, subdomain))
-    .orderBy(asc(auditTrailEvents.transactionTimestamp), asc(auditTrailEvents.id))
-    .limit(limit);
 
   let expectedPreviousHash = GENESIS_AUDIT_HASH;
   const discrepancies: string[] = [];
   let status: AuditVerificationStatus = "VERIFIED";
   let headHash = GENESIS_AUDIT_HASH;
   let previousId: number | null = null;
+  let totalChecked = 0;
 
-  for (let i = 0; i < events.length; i++) {
-    const event = events[i];
+  const verifyEvent = (event: AuditChainEvent): void => {
     headHash = event.hashCurrent;
 
     // 1. Check for sequence gap and previous hash linkage
@@ -157,6 +151,51 @@ export async function verifyTenantAuditChain(
 
     expectedPreviousHash = event.hashCurrent;
     previousId = Number(event.id);
+  };
+
+  // Page through the entire shard chain (keyset on transaction_timestamp, id) so
+  // a tampered record past the first page can never be reported as VERIFIED.
+  let cursor: { ts: Date; id: number } | null = null;
+  for (;;) {
+    const events: AuditChainEvent[] = await db
+      .select({
+        id: auditTrailEvents.id,
+        tableName: auditTrailEvents.tableName,
+        recordId: auditTrailEvents.recordId,
+        actionType: auditTrailEvents.actionType,
+        realUserId: auditTrailEvents.realUserId,
+        impersonatedUserId: auditTrailEvents.impersonatedUserId,
+        ipAddress: auditTrailEvents.ipAddress,
+        clientApp: auditTrailEvents.clientApp,
+        sessionId: auditTrailEvents.sessionId,
+        correlationId: auditTrailEvents.correlationId,
+        apiEndpoint: auditTrailEvents.apiEndpoint,
+        httpMethod: auditTrailEvents.httpMethod,
+        oldState: auditTrailEvents.oldState,
+        newState: auditTrailEvents.newState,
+        hashPrevious: auditTrailEvents.hashPrevious,
+        hashCurrent: auditTrailEvents.hashCurrent,
+        transactionTimestamp: auditTrailEvents.transactionTimestamp,
+      })
+      .from(auditTrailEvents)
+      .where(
+        cursor
+          ? and(
+              eq(auditTrailEvents.workspaceSubdomain, subdomain),
+              sql`(${auditTrailEvents.transactionTimestamp}, ${auditTrailEvents.id}) > (${cursor.ts}::timestamptz, ${cursor.id}::bigint)`,
+            )
+          : eq(auditTrailEvents.workspaceSubdomain, subdomain),
+      )
+      .orderBy(asc(auditTrailEvents.transactionTimestamp), asc(auditTrailEvents.id))
+      .limit(pageSize);
+
+    if (events.length === 0) break;
+    for (const event of events) verifyEvent(event);
+    totalChecked += events.length;
+
+    const last = events[events.length - 1];
+    cursor = { ts: last.transactionTimestamp, id: Number(last.id) };
+    if (events.length < pageSize) break;
   }
 
   // 4. Record verification run in append-only table
@@ -164,7 +203,7 @@ export async function verifyTenantAuditChain(
     id: runId,
     workspaceSubdomain: subdomain,
     verifiedAt: new Date(),
-    recordsChecked: events.length,
+    recordsChecked: totalChecked,
     status,
     discrepancies,
   });
@@ -185,7 +224,7 @@ export async function verifyTenantAuditChain(
     runId,
     workspaceSubdomain: subdomain,
     status,
-    recordsChecked: events.length,
+    recordsChecked: totalChecked,
     discrepancies,
     headHash,
   };

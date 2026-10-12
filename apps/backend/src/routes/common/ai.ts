@@ -8,6 +8,7 @@ import {
   getLlmProviderModelsUrl,
   aiModelsBodySchema as modelsBodySchema,
   aiTestBodySchema as testBodySchema,
+  roleHasPermission,
   type User,
   type LlmTestResult,
 } from "@mms/shared";
@@ -29,13 +30,15 @@ export default async function aiRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
-  // Enforce authentication AND admin-only access for all AI configuration routes
+  // Enforce authentication AND global-settings write access for all AI configuration
+  // routes. Uses the shared permission engine (so `super_admin` is allowed and the
+  // role reflects the fresh matrix role bound by authenticateTenant).
   fastify.addHook("preHandler", async (request, reply) => {
     await authenticateTenant(request, reply);
     if (reply.sent) return;
 
     const user = request.user as User | undefined;
-    if (!user || user.role !== "admin") {
+    if (!user || !roleHasPermission(user.role, "settings.global.write")) {
       return sendForbidden(reply, "Admin privilege required to access AI configuration API");
     }
   });
