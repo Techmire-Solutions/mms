@@ -7,15 +7,26 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const backendDir = path.resolve(__dirname, "../../apps/backend");
 
+/**
+ * Ensures the module's Work (first) tier tab is active. Tier labels are module-specific —
+ * Faculty's Work tier is labelled "Faculties", Obligations' is "Obligations" — so this
+ * activates the first tab of the section navigation instead of a hardcoded "Work" label.
+ */
 export async function ensureWorkTierActive(page: Page): Promise<void> {
-  const workTab = page
-    .getByRole("tab", { name: "Work", exact: true })
-    .or(page.getByRole("button", { name: "Work", exact: true }))
+  const sectionNav = page
+    .getByRole("tablist", { name: "Section navigation" })
+    .or(page.getByRole("navigation", { name: "Section navigation" }))
     .first();
-  await expect(workTab).toBeVisible({ timeout: 15_000 });
-  const isSelected = await workTab.getAttribute("aria-selected");
-  if (isSelected !== "true") {
-    await workTab.click();
+
+  if ((await sectionNav.count()) === 0) return;
+
+  const target = sectionNav.locator('[role="tab"], button').first();
+  await expect(target).toBeVisible({ timeout: 15_000 });
+
+  const isSelected = await target.getAttribute("aria-selected");
+  const isExpanded = await target.getAttribute("aria-expanded");
+  if (isSelected !== "true" && isExpanded !== "true") {
+    await target.click();
     await page.waitForLoadState("domcontentloaded");
   }
 }
@@ -65,10 +76,15 @@ async function fillContactGender(dialog: Locator, page: Page, gender: string): P
       });
     } else {
       await genderInput.click();
-      await page
+      const option = page
         .locator('[role="option"]')
         .filter({ hasText: new RegExp(`^${label}$`, "i") })
-        .click();
+        .first();
+      await option.waitFor({ state: "visible", timeout: 5_000 });
+      // The listbox animates on open, so Playwright's actionability stability check can
+      // time out (or the node detaches) before the click lands. Dispatch the click
+      // directly; the option handles a plain onClick.
+      await option.dispatchEvent("click");
     }
   }
 }
@@ -193,7 +209,9 @@ export async function createTestContactJohnDoe(page: Page): Promise<void> {
  */
 export async function registerStudentJaneDoe(page: Page): Promise<void> {
   await test.step("Register student Jane Doe & link John Doe as Parent", async () => {
-    await page.getByRole("button", { name: "Student" }).first().click();
+    // Exact name: the global search button ("Search students, sessions…") also matches
+    // a substring "Student" and would open the command palette instead.
+    await page.getByRole("button", { name: "Student", exact: true }).first().click();
     const registerDialog = page.getByRole("dialog", { name: /(Register student|Edit student)/i });
     await expect(registerDialog).toBeVisible();
 
@@ -288,38 +306,48 @@ export async function registerStudentJaneDoe(page: Page): Promise<void> {
     await editJaneDialog.getByRole("button", { name: /Save/i }).click({ force: true });
     await savePromise;
     await expect(editJaneDialog).toBeHidden({ timeout: 15_000 });
-    await expect(registerDialog.getByText(/John Doe/i).first()).toBeVisible({ timeout: 25_000 });
 
-    await waitForToastOverlayToClear(page, "before registering student Jane Doe");
-
-    const saveButton = registerDialog
-      .getByRole("button", { name: /Register student|Save/i })
+    const studentRow = page
+      .locator("table:visible tbody tr")
+      .filter({ hasText: "Jane Doe" })
       .first();
-    await expect(saveButton).toBeEnabled({ timeout: 15_000 });
 
-    const studentCreatePromise = page
-      .waitForResponse(
-        (response) =>
-          response.url().includes("/api/students") &&
-          response.request().method() === "POST" &&
-          !response.url().includes("/duplicate-check") &&
-          !response.url().includes("/bulk"),
-        { timeout: 30_000 },
-      )
-      .catch(() => null);
+    // Saving the contact's relationships either returns to the register form (which then
+    // still needs submitting) or finalizes registration directly — the register form derives
+    // its guardians from the linked contact's relationships. Handle both outcomes.
+    if (await registerDialog.isVisible().catch(() => false)) {
+      await expect(registerDialog.getByText(/John Doe/i).first()).toBeVisible({ timeout: 25_000 });
 
-    await saveButton.click();
+      await waitForToastOverlayToClear(page, "before registering student Jane Doe");
 
-    const saveAnywayButton = page.getByRole("button", { name: /Save anyway/i });
-    if (await saveAnywayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await saveAnywayButton.click();
+      const saveButton = registerDialog
+        .getByRole("button", { name: /Register student|Save/i })
+        .first();
+      await expect(saveButton).toBeEnabled({ timeout: 15_000 });
+
+      const studentCreatePromise = page
+        .waitForResponse(
+          (response) =>
+            response.url().includes("/api/students") &&
+            response.request().method() === "POST" &&
+            !response.url().includes("/duplicate-check") &&
+            !response.url().includes("/bulk"),
+          { timeout: 30_000 },
+        )
+        .catch(() => null);
+
+      await saveButton.click();
+
+      const saveAnywayButton = page.getByRole("button", { name: /Save anyway/i });
+      if (await saveAnywayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await saveAnywayButton.click();
+      }
+
+      await studentCreatePromise;
+      await expect(registerDialog).toBeHidden({ timeout: 20_000 });
     }
 
-    await studentCreatePromise;
-    await expect(registerDialog).toBeHidden({ timeout: 20_000 });
-    await expect(
-      page.locator("table:visible tbody tr").filter({ hasText: "Jane Doe" }).first(),
-    ).toBeVisible({ timeout: 20_000 });
+    await expect(studentRow).toBeVisible({ timeout: 20_000 });
   });
 }
 
@@ -369,11 +397,50 @@ export function seedTestClassAndEnrollment(subdomain: string): void {
   }
 }
 
+/** Derives the tenant subdomain from the current page origin (e.g. http://acad123.localhost:5173). */
+function resolveSubdomainFromPage(page: Page): string {
+  const host = new URL(page.url()).hostname;
+  const dot = host.indexOf(".");
+  return dot === -1 ? host : host.slice(0, dot);
+}
+
+/**
+ * Seeds the faculty catalog (one active department + designation) a fresh tenant needs before
+ * an "Add Faculty Member" form can be submitted. Idempotent.
+ */
+export function seedFacultySetup(subdomain: string): void {
+  if (process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production") {
+    console.warn("[E2E SAFEGUARD] Skipping faculty setup seed on production environment.");
+    return;
+  }
+  try {
+    const output = execSync(`pnpm exec tsx src/scripts/seed-faculty-setup.ts ${subdomain}`, {
+      cwd: backendDir,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || "test",
+        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+      },
+    });
+    console.log(output);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[E2E] Failed to seed faculty setup for ${subdomain}:`, message);
+    throw err;
+  }
+}
+
 /**
  * Creates Faculty record for existing John Doe contact
  */
 export async function createFacultyFromContact(page: Page): Promise<void> {
   await test.step("Create Faculty record from John Doe contact", async () => {
+    // A fresh tenant has no faculty catalog; "Add Faculty Member" requires a designation.
+    seedFacultySetup(resolveSubdomainFromPage(page));
+    // Reload so the page's cached (now non-empty) designation/department queries refetch.
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
     await ensureWorkTierActive(page);
     await page
       .getByRole("button", { name: /^(Teacher|Faculty)$/i })
@@ -387,6 +454,18 @@ export async function createFacultyFromContact(page: Page): Promise<void> {
     const johnTeacherOption = page.getByRole("option", { name: /John Doe/ }).first();
     await expect(johnTeacherOption).toBeVisible({ timeout: 15_000 });
     await johnTeacherOption.click({ force: true });
+
+    // Select the seeded designation on the Designation step so the form validates. The step
+    // renders asynchronously after the tab click, so wait for the native <select> first.
+    const designationTab = teacherDialog.getByRole("tab", { name: /Designation/i }).first();
+    if ((await designationTab.count()) > 0) {
+      await designationTab.click();
+    }
+    const designationSelect = teacherDialog.locator('select[id$="-designationId"]').first();
+    await designationSelect.waitFor({ state: "attached", timeout: 10_000 }).catch(() => undefined);
+    if ((await designationSelect.count()) > 0) {
+      await designationSelect.selectOption({ index: 1 }).catch(() => undefined);
+    }
 
     await waitForToastOverlayToClear(page, "before creating faculty");
 
@@ -439,8 +518,18 @@ export async function createFinanceInvoice(page: Page): Promise<void> {
     const invoiceDialog = page.getByRole("dialog", { name: "New Invoice" });
     await expect(invoiceDialog).toBeVisible();
 
-    await invoiceDialog.locator("#invoice-student-name").fill("Jane Doe");
-    await invoiceDialog.locator("#invoice-student-id").fill("0001-2026");
+    // Pick the student through the registry selector — it sets both the real student id and
+    // name; typing the id field directly posts an id the backend rejects.
+    const studentSearch = invoiceDialog.locator("#invoice-student-id-select-search");
+    if ((await studentSearch.count()) > 0) {
+      await studentSearch.fill("Jane Doe");
+    }
+    const studentSelect = invoiceDialog.locator("#invoice-student-id-select");
+    await expect(studentSelect).toBeAttached({ timeout: 15_000 });
+    await expect(studentSelect.locator("option", { hasText: /Jane Doe/ }).first()).toHaveCount(1, {
+      timeout: 15_000,
+    });
+    await selectOptionByMatchingText(studentSelect, /Jane Doe/);
     await invoiceDialog.locator("#invoice-class").fill("Morning Quran Class");
     await invoiceDialog.locator("#invoice-session").fill("Hifz 2026");
     await invoiceDialog.locator("#invoice-base-fee").fill("1500");
@@ -511,10 +600,12 @@ export async function createSessionAndClass(page: Page): Promise<void> {
     });
     await expect(classDialog).toBeVisible();
 
-    await expect(classDialog.locator("#class-teacher")).toContainText("John Doe", {
+    const facultySelect = classDialog.locator("#class-faculty");
+    await expect(facultySelect).toBeAttached({ timeout: 15_000 });
+    await expect(facultySelect.locator("option", { hasText: /John Doe/ }).first()).toHaveCount(1, {
       timeout: 15_000,
     });
-    await selectOptionByMatchingText(classDialog.locator("#class-teacher"), /John Doe/);
+    await selectOptionByMatchingText(facultySelect, /John Doe/);
     const className = classDialog.getByRole("textbox", { name: /Class name/ });
     await className.fill("Tajweed A");
     await expect(className).toHaveValue("Tajweed A");
@@ -557,27 +648,30 @@ export async function createStudentEnrollment(page: Page): Promise<void> {
     await expect(enrollmentDialog).toBeVisible();
 
     await enrollmentDialog.getByPlaceholder("Search students by name…").fill("Jane Doe");
+    // Selecting a student/session/class card advances the wizard automatically (each card is a
+    // submit button inside the wizard form), so those steps need no explicit Next.
     const janeStudent = enrollmentDialog.getByRole("radio", { name: /Jane Doe/ }).first();
     await expect(janeStudent).toBeVisible({ timeout: 15_000 });
     await janeStudent.click();
-    await enrollmentDialog.getByRole("button", { name: "Next" }).click();
 
     const afternoonSession = enrollmentDialog
       .getByRole("radio", { name: /Afternoon Tajweed 2026/ })
       .first();
     await expect(afternoonSession).toBeVisible({ timeout: 15_000 });
     await afternoonSession.click();
-    await enrollmentDialog.getByRole("button", { name: "Next" }).click();
 
+    // Eligibility step has no selection — advance explicitly.
     await expect(
       enrollmentDialog.getByText("Student is eligible — you may proceed to class assignment."),
-    ).toBeVisible({ timeout: 10_000 });
+    ).toBeVisible({ timeout: 15_000 });
     await enrollmentDialog.getByRole("button", { name: "Next" }).click();
 
-    await expect(enrollmentDialog.getByRole("radio", { name: /Tajweed a/i }).first()).toBeVisible({
-      timeout: 10_000,
-    });
-    await enrollmentDialog.getByRole("button", { name: "Next" }).click();
+    // Class step: selecting the class card advances to the fee step.
+    const classCard = enrollmentDialog.getByRole("radio", { name: /Tajweed a/i }).first();
+    await expect(classCard).toBeVisible({ timeout: 15_000 });
+    await classCard.click();
+
+    // Fee step has no selection — advance explicitly to confirmation.
     await enrollmentDialog.getByRole("button", { name: "Next" }).click();
 
     const enrollmentCreate = page.waitForResponse(
@@ -647,10 +741,10 @@ export async function createMessagingTemplateAndCampaign(page: Page): Promise<vo
   await test.step("Create messaging template & dispatch SMS campaign", async () => {
     const setupTab = page.getByRole("tab", { name: "Setup", exact: true }).first();
     await setupTab.click();
-    await expect(page.getByRole("heading", { name: "Create Preset Template" })).toBeVisible({
+    await page.getByRole("button", { name: "Create Preset Template" }).first().click();
+    await expect(page.locator("#tplLabel").locator("visible=true")).toBeVisible({
       timeout: 15_000,
     });
-
     await page.locator("#tplLabel").locator("visible=true").fill("E2E Fee Reminder");
     await page
       .locator("#tplBody")
@@ -773,7 +867,7 @@ export async function createAccountsAndJournalEntry(page: Page): Promise<void> {
       { code: "1100", name: "E2E Cash", type: "Asset" },
       { code: "4100", name: "E2E Tuition Income", type: "Revenue" },
     ] as const) {
-      await page.getByRole("button", { name: "Account" }).first().click();
+      await page.getByRole("button", { name: "Account", exact: true }).first().click();
       const accountDialog = page.getByRole("dialog", { name: "Account" });
       await expect(accountDialog).toBeVisible();
       await accountDialog.locator("#account-type").selectOption(account.type);

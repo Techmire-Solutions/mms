@@ -1,5 +1,5 @@
 import React from "react";
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { type AppTranslationKey } from "@mms/shared";
 import {
   ModuleFilterDivider,
@@ -92,7 +92,14 @@ export function ChartOfAccountsListFilters({
         </ModuleFilterDropdown>
       }
       viewModeToggle={{ viewMode, onViewModeChange }}
-      primaryAction={undefined}
+      primaryAction={
+        canWrite ? (
+          <Button type="button" onClick={onAddAccount} className="min-h-11 gap-1.5">
+            <Plus className="h-4 w-4" aria-hidden />
+            {t("accounting.coa.addAccount")}
+          </Button>
+        ) : undefined
+      }
       columnCustomizer={
         columnCustomizer
           ? {

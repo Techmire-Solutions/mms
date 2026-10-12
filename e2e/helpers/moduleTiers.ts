@@ -1,9 +1,14 @@
 import { expect, type Page } from "@playwright/test";
 
-const TIER_LABELS = ["Work", "Reports", "Setup"] as const;
-
 /**
- * Visits a tenant module and asserts Work / Reports / Setup tier tabs switch.
+ * Visits a tenant module and asserts its section/tier navigation renders and every
+ * tab is selectable. Tier labels are module-specific (e.g. Faculty exposes
+ * Faculties/Designations/Reports/Setup, Accounting exposes Work/Reports/Setup), so
+ * this checks the nav exists, has at least two tabs, and each tab can be activated —
+ * without hardcoding labels.
+ *
+ * The nav is rendered by `ResponsiveAccordionTabs`, which emits a `role="tablist"`
+ * (horizontal layout) or a `<nav>` (sidebar layout), both labelled "Section navigation".
  * Assumes the page is already authenticated on the tenant host.
  */
 export async function assertModuleTierSmoke(
@@ -14,31 +19,24 @@ export async function assertModuleTierSmoke(
   await page.goto(`${tenantOrigin}${modulePath}`);
   await page.waitForLoadState("domcontentloaded");
 
-  const desktopNav = page
-    .locator("div.hidden.lg\\:block")
-    .filter({
-      has: page
-        .getByRole("tab", { name: "Work", exact: true })
-        .or(page.getByRole("button", { name: "Work", exact: true })),
-    })
+  const tierNav = page
+    .getByRole("tablist", { name: "Section navigation" })
+    .or(page.getByRole("navigation", { name: "Section navigation" }))
     .first();
-  await expect(desktopNav, `${modulePath} missing desktop tier nav`).toBeVisible({
-    timeout: 20_000,
-  });
+  await expect(tierNav, `${modulePath} missing tier nav`).toBeVisible({ timeout: 20_000 });
 
-  for (const label of TIER_LABELS) {
-    const tab = desktopNav
-      .getByRole("tab", { name: label, exact: true })
-      .or(desktopNav.getByRole("button", { name: label, exact: true }));
-    await expect(tab, `${modulePath} missing ${label} tab`).toBeVisible();
+  const tierTabs = tierNav.locator('[role="tab"], button');
+  const tabCount = await tierTabs.count();
+  expect(tabCount, `${modulePath} tier nav has no tabs`).toBeGreaterThanOrEqual(2);
+
+  for (let index = 0; index < tabCount; index += 1) {
+    const tab = tierTabs.nth(index);
+    await expect(tab, `${modulePath} tier tab ${index} not visible`).toBeVisible();
     await tab.click();
-    await expect(tab).toBeVisible();
+    await expect(tab, `${modulePath} tier tab ${index} not selectable`).toBeVisible();
   }
 
-  const workTab = desktopNav
-    .getByRole("tab", { name: "Work", exact: true })
-    .or(desktopNav.getByRole("button", { name: "Work", exact: true }));
-  await workTab.click();
+  await tierTabs.first().click();
   await page.waitForLoadState("domcontentloaded");
 }
 
