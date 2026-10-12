@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { isoDateSchema } from "./isoDateSchema.js";
 
 export const TASK_STATUSES = [
   "todo",
@@ -74,11 +75,7 @@ export const taskInsertSchema = z
     description: z.string().trim().max(5000).optional(),
     status: z.enum(TASK_STATUSES).default("todo"),
     priority: z.enum(TASK_PRIORITIES).default("medium"),
-    startDate: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/)
-      .nullable()
-      .optional(),
+    startDate: isoDateSchema.nullable().optional(),
     dueAt: z.string().datetime().nullable().optional(),
     parentTaskId: z.string().min(1).nullable().optional(),
     assignees: z.array(taskAssigneeInputSchema).max(100).optional().default([]),

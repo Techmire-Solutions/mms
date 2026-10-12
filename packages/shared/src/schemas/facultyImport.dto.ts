@@ -1,12 +1,10 @@
 import { z } from "zod";
 import { FACULTY_CATALOG_STATUS_VALUES, FACULTY_STATUS_VALUES } from "../facultyTypes.js";
 import { deepSanitizeStrings } from "./sanitize.js";
+import { isoDateSchema } from "../isoDateSchema.js";
 
 export const FACULTY_IMPORT_MAX_BATCH = 500;
-const calendarDate = z
-  .string()
-  .trim()
-  .regex(/^\d{4}-\d{2}-\d{2}$/);
+const calendarDate = z.string().trim().pipe(isoDateSchema);
 
 const importIdempotencyKeySchema = z
   .string()

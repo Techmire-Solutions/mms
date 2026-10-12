@@ -3,6 +3,7 @@ import { contactRecordSchema } from "../contactsModuleManifest.js";
 import { contactIdentityMatchResultSchema } from "../contactIdentityMatch.js";
 import { baseListQuerySchema, includeDeletedQuerySchema } from "../apiSchemas.js";
 import { contactWireWriteSchema } from "../schemas/contacts.dto.js";
+import { widgetAggregateResultSchema } from "../schemas/common.dto.js";
 import {
   contactListPageResponseSchema,
   contactBulkResultResponseSchema,
@@ -11,12 +12,6 @@ import {
 
 const responseWrapper = contactWrappedResponseSchema;
 const bulkResult = contactBulkResultResponseSchema;
-
-const widgetAggregateResultSchema = z.object({
-  value: z.number(),
-  totalCount: z.number(),
-  chartData: z.array(z.object({ name: z.string(), value: z.number() })),
-});
 
 const contactBulkRestoreResponseSchema = z.object({
   success: z.literal(true),

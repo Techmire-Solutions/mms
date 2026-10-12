@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { monthKeySchema } from "./monthKeySchema.js";
 
 /** Per-class capacity row for Sessions Reports. */
 export const sessionsReportCapacityItemSchema = z.object({
@@ -14,7 +15,7 @@ export const sessionsReportCapacityItemSchema = z.object({
 
 /** Enrollment trend bucket — `monthKey` is YYYY-MM; FE localizes display labels. */
 export const sessionsReportEnrollmentTrendSchema = z.object({
-  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  monthKey: monthKeySchema,
   students: z.number().int().nonnegative(),
   sessionName: z.string().nullable(),
 });

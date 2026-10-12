@@ -4,6 +4,7 @@ import {
   sequenceYearFormatSchema,
 } from "./sequenceNumberingTypes.js";
 import { formatDeterministicSequence } from "./sequenceNumberingUtils.js";
+import { isoDateSchema } from "./isoDateSchema.js";
 
 /** Alphanumeric only: the prefix is embedded in a server-side match pattern. */
 export const VOUCHER_PREFIX_PATTERN = /^[A-Za-z0-9]{0,10}$/;
@@ -55,10 +56,7 @@ export const voucherNumberingRecordSchema = voucherNumberingFieldsSchema
 
 export const voucherNumberingQuerySchema = z
   .object({
-    date: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/)
-      .optional(),
+    date: isoDateSchema.optional(),
   })
   .strict();
 

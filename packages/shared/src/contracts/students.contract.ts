@@ -9,6 +9,7 @@ import {
 import { studentRecordSchema } from "../studentsModuleManifest.js";
 import { studentsListQuerySchema, studentsNextGrNumberQuerySchema } from "../studentsListQuery.js";
 import { includeDeletedQuerySchema } from "../apiSchemas.js";
+import { widgetAggregateResultSchema } from "../schemas/common.dto.js";
 
 const c = initContract();
 
@@ -47,12 +48,6 @@ export const studentLookupsResponseSchema = z.object({
   statuses: z.array(z.string()),
   genderFilters: z.array(z.string()),
   discountTypes: z.array(z.string()),
-});
-
-const widgetAggregateResultSchema = z.object({
-  value: z.number(),
-  totalCount: z.number(),
-  chartData: z.array(z.object({ name: z.string(), value: z.number() })),
 });
 
 export const studentCrudRoutes = {

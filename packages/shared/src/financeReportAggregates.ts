@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { monthKeySchema } from "./monthKeySchema.js";
 
 export const financeReportComparisonSessionSchema = z.object({
   sessionId: z.string(),
@@ -6,7 +7,7 @@ export const financeReportComparisonSessionSchema = z.object({
 });
 
 export const financeReportComparisonMonthSchema = z.object({
-  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  monthKey: monthKeySchema,
   collected: z.number().nonnegative(),
 });
 

@@ -8,7 +8,7 @@ import {
 } from "../schemas/attendance.dto.js";
 import { attendanceRecordSchema, attendanceBulkSchema } from "../attendanceModuleManifest.js";
 import { attendanceLookupsMapSchema } from "../attendanceLookupTypes.js";
-import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
+import { widgetAggregateResultSchema, widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
   attendanceFieldConfigPutBodySchema,
   attendancePreferencesPutBodySchema,
@@ -54,12 +54,6 @@ const bulkResultResponseSchema = z.object({
   success: z.literal(true),
   succeeded: z.number(),
   failed: z.number(),
-});
-
-const widgetAggregateResultSchema = z.object({
-  value: z.number(),
-  totalCount: z.number(),
-  chartData: z.array(z.object({ name: z.string(), value: z.number() })),
 });
 
 export const attendanceContract = c.router({

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { monthKeySchema } from "./monthKeySchema.js";
 
 // ---------------------------------------------------------------------------
 // Sub-schemas
@@ -6,7 +7,7 @@ import { z } from "zod";
 
 /** Monthly collection trend — `monthKey` is YYYY-MM. */
 export const obligationsMonthlyTrendItemSchema = z.object({
-  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  monthKey: monthKeySchema,
   count: z.number().int().nonnegative(),
   amount: z.number().nonnegative(),
 });

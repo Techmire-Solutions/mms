@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { type FeeFrequency } from "./financeBilling.js";
-
-const PERIOD_RE = /^(\d{4})-(0[1-9]|1[0-2])$/;
+import { BILLING_PERIOD_PATTERN, billingPeriodSchema } from "./billingPeriodSchema.js";
 
 /** Calendar month key `YYYY-MM` used to prevent double-billing. */
 export function billingPeriodFromDate(isoDate: string): string {
@@ -14,7 +13,7 @@ export function billingPeriodFromDate(isoDate: string): string {
 
 /** True when `value` is a calendar month key `YYYY-MM`. */
 export function isBillingPeriod(value: string): boolean {
-  return PERIOD_RE.test(value.trim());
+  return BILLING_PERIOD_PATTERN.test(value.trim());
 }
 
 /** Day-of-month from `dueDays`, clamped to the last day of `period`. */
@@ -118,7 +117,7 @@ export function shouldSkipGeneratedInvoice(input: {
 /** POST /api/finance/invoices/generate */
 export const generateInvoicesBodySchema = z
   .object({
-    billingPeriod: z.string().regex(PERIOD_RE, "Billing period must be YYYY-MM"),
+    billingPeriod: billingPeriodSchema,
     sessionId: z.string().max(64).optional(),
     classId: z.string().max(64).optional(),
     enrollmentIds: z.array(z.string().min(1)).max(100).optional(),

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { monthKeySchema } from "./monthKeySchema.js";
 
 // ---------------------------------------------------------------------------
 // Sub-schemas
@@ -16,7 +17,7 @@ export const questionBankDifficultyBreakdownItemSchema = z.object({
 });
 
 export const questionBankMonthlyResultItemSchema = z.object({
-  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  monthKey: monthKeySchema,
   resultsCount: z.number().int().nonnegative(),
   averageScore: z.number().nonnegative(),
 });

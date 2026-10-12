@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { monthKeySchema } from "./monthKeySchema.js";
 
 export const attendanceReportComparisonSessionSchema = z.object({
   sessionId: z.string(),
@@ -6,7 +7,7 @@ export const attendanceReportComparisonSessionSchema = z.object({
 });
 
 export const attendanceReportComparisonMonthSchema = z.object({
-  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  monthKey: monthKeySchema,
   presentCount: z.number().int().nonnegative(),
   total: z.number().int().nonnegative(),
 });
@@ -29,7 +30,7 @@ export const attendanceReportClassRateSchema = z.object({
 });
 
 export const attendanceReportMonthlyTrendSchema = z.object({
-  monthKey: z.string().regex(/^\d{4}-\d{2}$/),
+  monthKey: monthKeySchema,
   presentCount: z.number().int().nonnegative(),
   total: z.number().int().nonnegative(),
   rate: z.number().int().min(0).max(100),
