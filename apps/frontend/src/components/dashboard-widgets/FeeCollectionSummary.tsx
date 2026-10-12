@@ -14,7 +14,7 @@ import {
   FINANCE_MODULE_MANIFEST,
 } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { percentChange } from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";
+import { percentChange } from "@/tenant/hooks/collections/dashboard";
 
 /**
  * FeeCollectionSummary Component

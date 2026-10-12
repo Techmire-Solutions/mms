@@ -1,0 +1,15 @@
+{
+  "src/lib/contexts/ContactConfigContext.tsx": ["contacts"],
+  "src/tenant/components/messaging/TenantMessageComposerRecipientPicker.tsx": [
+    "messaging",
+    "contacts"
+  ],
+  "src/tenant/components/reports/MessagingReportsVolumeChart.ts": ["messaging"],
+  "src/tenant/components/reports/moduleReportAdapters.ts": [
+    "question-bank",
+    "users",
+    "enrollments",
+    "accounting",
+    "obligations"
+  ]
+}

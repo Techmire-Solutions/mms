@@ -19,7 +19,7 @@ import {
   STANDARD_MODULES_CONFIG_REGISTRY,
   type StandardModuleConfigExtraMap,
 } from "./standardModuleConfigRegistry";
-import { useAttendanceLookupsQuery } from "@/tenant/features/attendance/hooks/useAttendanceLookups";
+import { useAttendanceLookupsQuery } from "@/tenant/hooks/collections/attendance";
 import {
   useComposedUsersSettings,
   useUserPreferencesMutation,

@@ -15,6 +15,9 @@ export {
   useDashboardWidgetsReorderMutation,
   useDashboardSummaryQuery,
 } from "@/tenant/features/dashboard/hooks/useDashboardSetupConfig";
+export { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
+export { percentChange } from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";
+
 // Phase 7: contract-driven tsrClient hooks
 export {
   useDashboardPreferencesQuery as useDashboardContractPreferencesQuery,

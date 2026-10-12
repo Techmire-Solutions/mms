@@ -26,8 +26,8 @@ import {
   STANDARD_MODULES_CONFIG_REGISTRY,
   type StandardModuleConfigExtraMap,
 } from "./standardModuleConfigRegistry";
-import { useSessionLookupsQuery } from "@/tenant/features/sessions/hooks/useSessionLookups";
-import { useStudentLookupsQuery } from "@/tenant/features/students/hooks/useStudentLookups";
+import { useSessionLookupsQuery } from "@/tenant/hooks/collections/sessions";
+import { useStudentLookupsQuery } from "@/tenant/hooks/collections/students";
 import {
   useComposedFacultySettings,
   useFacultyPreferencesMutation,
