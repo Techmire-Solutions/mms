@@ -52,10 +52,7 @@ const platformPassword = "Pa$$w0rd123";
  * trigger reports itself active.
  */
 async function activateSectionTrigger(page: Page, name: RegExp): Promise<void> {
-  const trigger = page
-    .getByRole("tab", { name })
-    .or(page.getByRole("button", { name }))
-    .first();
+  const trigger = page.getByRole("tab", { name }).or(page.getByRole("button", { name })).first();
   await expect(trigger).toBeVisible({ timeout: 30_000 });
 
   const isActive = async () =>
