@@ -1,4 +1,6 @@
 {
+  "src/components/contactLink/ContactCreateModal.tsx": ["contacts"],
+  "src/components/contactLink/ContactEditModal.tsx": ["contacts"],
   "src/lib/contexts/ContactConfigContext.tsx": ["contacts"],
   "src/tenant/components/messaging/TenantMessageComposerRecipientPicker.tsx": [
     "messaging",

@@ -93,6 +93,16 @@ module.exports = {
           check(node, node.source.value);
         }
       },
+      // `export { X } from "@/tenant/features/…"` reaches into a feature exactly as an
+      // import does, and was previously unchecked — a hole in the rule that the
+      // baseline's staleness check surfaced, because the re-export was never "observed"
+      // and its exception looked resolved.
+      ExportNamedDeclaration(node) {
+        if (node.source) check(node, node.source.value);
+      },
+      ExportAllDeclaration(node) {
+        check(node, node.source.value);
+      },
       "Program:exit"(node) {
         if (!isSharedLayer || isTest) return;
         for (const target of allowed) {

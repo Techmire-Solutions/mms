@@ -101,6 +101,21 @@ describe("no-cross-feature-imports", () => {
         lint(`const m = await import("@/tenant/features/x/hooks/y");`, "src/hooks/foo.ts"),
       ).toEqual(["sharedLayer"]);
     });
+
+    // A re-export reaches into a feature exactly as an import does. These were unchecked
+    // until the baseline's staleness check exposed it — an exception looked "resolved"
+    // because the re-export was never observed.
+    it("flags a named re-export from a shared layer", () => {
+      expect(
+        lint(`export { X } from "@/tenant/features/x/components/X";`, "src/hooks/foo.ts"),
+      ).toEqual(["sharedLayer"]);
+    });
+
+    it("flags an export-all re-export from a shared layer", () => {
+      expect(
+        lint(`export * from "@/tenant/features/x/components/index";`, "src/hooks/foo.ts"),
+      ).toEqual(["sharedLayer"]);
+    });
   });
 
   describe("bridge layers (baseline)", () => {
