@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Lock, User } from "lucide-react";
 import type { TenantUserProfile } from "@mms/shared";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccountProfileContactTab } from "./AccountProfileContactTab";
 import { AccountProfileSecurityTab } from "./AccountProfileSecurityTab";

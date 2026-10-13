@@ -2,10 +2,10 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Scale } from "lucide-react";
 import { formatMoney, formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import {
   OverdueUrgencyBadge,
   OverdueRemindButton,

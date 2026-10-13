@@ -1,5 +1,5 @@
 import type { SystemUser } from "@mms/shared";
-import { EntityCardMetadata } from "@/components/ui/EntityCardMetadata";
+import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
 import { useTranslation } from "@/hooks/useTranslation";
 import { renderUserWorkColumnValue } from "@/tenant/features/users/components/userWorkColumnCell";
 import { useUsersEntityDescriptor } from "@/tenant/features/users/hooks/useUsersEntityDescriptor";

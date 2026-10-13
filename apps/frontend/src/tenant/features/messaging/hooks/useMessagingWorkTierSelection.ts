@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { Message } from "@mms/shared";
-import type { MessagingSelectedLogsMap } from "./MessagingWorkTier";
+import type { MessagingSelectedLogsMap } from "../components/MessagingWorkTier";
 
 interface UseMessagingWorkTierSelectionParams {
   logs: Message[];

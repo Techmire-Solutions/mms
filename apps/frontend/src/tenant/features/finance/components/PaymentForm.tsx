@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { ReceiptText } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { notify } from "@/lib/notify";
 import { PAYMENT_METHODS, type Invoice } from "@/lib/data/financeData";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { PaymentFormFields } from "@/tenant/features/finance/components/PaymentFormFields";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -20,7 +20,7 @@ import {
   buildInitialPaymentDraft,
   buildPaymentCreatePayload,
   validatePaymentFormDraft,
-} from "@/tenant/features/finance/components/paymentFormHelpers";
+} from "@/tenant/features/finance/lib/paymentFormHelpers";
 
 export interface PaymentFormProps {
   open: boolean;

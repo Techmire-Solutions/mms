@@ -7,9 +7,9 @@ import { resolveDefaultDashboardWidgetScope } from "@/lib/dashboardRole";
 import { CustomizeItemRow } from "@/tenant/features/dashboard/components/CustomizeItemRow";
 import { DashboardCustomizeWidgetsSection } from "@/tenant/features/dashboard/components/DashboardCustomizeWidgetsSection";
 import { DashboardAlertThresholdsSection } from "@/tenant/features/dashboard/components/DashboardAlertThresholdsSection";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
-import type { DashboardCustomizePanelProps } from "@/tenant/features/dashboard/components/dashboardCustomizePanelTypes";
+import type { DashboardCustomizePanelProps } from "@/tenant/features/dashboard/lib/dashboardCustomizePanelTypes";
 
 export type { DashboardCustomizePanelProps };
 

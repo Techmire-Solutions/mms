@@ -1,6 +1,6 @@
 import type { LucideProps } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
+import { getGenderIcon, getGenderIconClass } from "@/lib/ui/genderUi";
 
 export interface GenderIconProps extends Omit<LucideProps, "ref"> {
   gender?: string | null;

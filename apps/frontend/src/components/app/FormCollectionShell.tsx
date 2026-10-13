@@ -1,6 +1,6 @@
 import React, { type ElementType, type ReactNode, useEffect, useRef } from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { FormAddAnotherButton } from "@/components/ui/FormAddAnotherButton";
+import { EmptyState } from "@/components/app/EmptyState";
+import { FormAddAnotherButton } from "@/components/app/FormAddAnotherButton";
 import { COLLECTION_BODY } from "@/components/ui/formPrimitiveStyles";
 import { cn } from "@/lib/utils";
 

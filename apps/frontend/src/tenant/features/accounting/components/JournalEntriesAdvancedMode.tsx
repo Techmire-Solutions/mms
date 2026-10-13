@@ -10,7 +10,7 @@ import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type {
   JournalMode,
   JournalEntriesAdvancedModeProps,
-} from "./journalEntriesAdvancedModeTypes";
+} from "../lib/journalEntriesAdvancedModeTypes";
 
 export type { JournalMode, JournalEntriesAdvancedModeProps };
 

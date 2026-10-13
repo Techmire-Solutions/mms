@@ -5,12 +5,12 @@ import { useTranslation } from "@/hooks/useTranslation";
 import {
   useAccountingFiscalYearsPaginated,
   useAccountingReportAggregates,
-} from "../hooks/useAccountingApi";
+} from "./useAccountingApi";
 import {
   buildFinancialReportExportRows,
   getFinancialReportExportColumns,
   type TrialBalanceRow,
-} from "./financialReportsExportHelpers";
+} from "../lib/financialReportsExportHelpers";
 
 export type FinancialReportViewType = "income" | "balance" | "cashflow";
 

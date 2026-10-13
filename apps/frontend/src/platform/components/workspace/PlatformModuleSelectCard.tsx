@@ -1,5 +1,5 @@
 import React, { useId } from "react";
-import { FormCheckboxCard } from "@/components/ui/FormCheckboxCard";
+import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";

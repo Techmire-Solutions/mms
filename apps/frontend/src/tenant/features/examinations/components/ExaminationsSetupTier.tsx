@@ -1,10 +1,10 @@
 import React, { lazy, Suspense } from "react";
 import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";

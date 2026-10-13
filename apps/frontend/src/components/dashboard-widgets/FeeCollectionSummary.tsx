@@ -1,8 +1,8 @@
 import React from "react";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetCardHeader } from "@/components/ui/WidgetCardHeader";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { LegendChip } from "@/components/ui/LegendChip";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { LegendChip } from "@/components/app/LegendChip";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { useFinanceInvoicesPaginated } from "@/tenant/hooks/collections/finance";
 import { useTranslation } from "@/hooks/useTranslation";

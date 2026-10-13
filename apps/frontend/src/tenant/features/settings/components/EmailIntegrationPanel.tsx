@@ -1,14 +1,14 @@
 import React from "react";
 import { Loader2, Mail, PlugZap } from "lucide-react";
 import { type AppTranslationKey, type EmailProviderId } from "@mms/shared";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/app/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { FieldErrorMessage } from "@/components/ui/FormField";
-import { SettingsCallout } from "@/components/ui/SettingsShell";
-import { useEmailIntegrationPanel } from "@/tenant/features/settings/components/useEmailIntegrationPanel";
+import { FieldErrorMessage } from "@/components/app/FormField";
+import { SettingsCallout } from "@/components/app/SettingsShell";
+import { useEmailIntegrationPanel } from "@/tenant/features/settings/hooks/useEmailIntegrationPanel";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 

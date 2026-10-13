@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { useMessagingRecipientsByIds } from "../hooks/useMessagingContactsByIds";
+import { useMessagingRecipientsByIds } from "./useMessagingContactsByIds";
 
 export interface UseMessagingWorkTierDetailOptions {
   logs: Message[];

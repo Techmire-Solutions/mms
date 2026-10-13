@@ -1,13 +1,13 @@
 import React from "react";
 import { School } from "lucide-react";
-import { ModuleWorkDirectoryEmpty } from "@/components/ui/ModuleWorkDirectoryEmpty";
+import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FacultyListCards } from "@/tenant/features/faculty/components/FacultyListCards";
 import { FacultyListDesktopTable } from "@/tenant/features/faculty/components/FacultyListDesktopTable";
-import { buildFacultyCustomFieldsById } from "@/tenant/features/faculty/components/facultyListVisibleColumns";
-import type { FacultyListContentProps } from "@/tenant/features/faculty/components/facultyListContentShared";
+import { buildFacultyCustomFieldsById } from "@/tenant/features/faculty/lib/facultyListVisibleColumns";
+import type { FacultyListContentProps } from "@/tenant/features/faculty/lib/facultyListContentShared";
 
-export type { FacultyListContentProps } from "@/tenant/features/faculty/components/facultyListContentShared";
+export type { FacultyListContentProps } from "@/tenant/features/faculty/lib/facultyListContentShared";
 
 export type FacultyListContentInput = Omit<FacultyListContentProps, "customFieldsById">;
 

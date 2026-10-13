@@ -2,7 +2,7 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { LlmConfig, LlmTestResult } from "@mms/shared";
-import type { LlmHealthStatus } from "./llmSettingsControllerTypes";
+import type { LlmHealthStatus } from "../lib/llmSettingsControllerTypes";
 
 interface UseLlmConfigListActionsOptions {
   configs: LlmConfig[];

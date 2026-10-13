@@ -1,6 +1,6 @@
 import React from "react";
 import type { ChangeEvent } from "react";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import type { Contact } from "@mms/shared";
 import { ContactBasicAvatarSection } from "@/tenant/features/contacts/components/formTabs/ContactBasicAvatarSection";
 import { ContactBasicIdentityFields } from "@/tenant/features/contacts/components/formTabs/ContactBasicIdentityFields";

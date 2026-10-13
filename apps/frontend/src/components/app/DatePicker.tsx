@@ -1,13 +1,13 @@
 import * as React from "react";
 import { Calendar as CalendarIcon, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { YearPickerGrid } from "@/components/ui/YearPickerGrid";
+import { YearPickerGrid } from "@/components/app/YearPickerGrid";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useDatePickerState } from "@/components/ui/useDatePickerState";
-import { DatePickerCalendarContent } from "@/components/ui/DatePickerCalendarContent";
-import { keepOpenForChrome, resolveDatePickerHiddenValue } from "@/components/ui/datePickerBounds";
-import type { DatePickerProps } from "@/components/ui/datePickerTypes";
+import { useDatePickerState } from "@/components/app/useDatePickerState";
+import { DatePickerCalendarContent } from "@/components/app/DatePickerCalendarContent";
+import { keepOpenForChrome, resolveDatePickerHiddenValue } from "@/components/app/datePickerBounds";
+import type { DatePickerProps } from "@/components/app/datePickerTypes";
 
 export type { DatePickerProps };
 

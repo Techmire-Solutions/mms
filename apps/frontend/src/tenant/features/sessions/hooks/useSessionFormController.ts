@@ -15,7 +15,7 @@ import {
   buildSessionDraftFromRecord,
   sessionFormDraftSnapshot,
   type SessionFormDraft,
-} from "@/tenant/features/sessions/components/sessionFormShared";
+} from "@/tenant/features/sessions/lib/sessionFormShared";
 
 export interface UseSessionFormControllerProps {
   session?: Session | null;

@@ -6,8 +6,8 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { FileText } from "lucide-react";
-import { Field } from "@/components/ui/FormPrimitives";
-import { SectionCard, type SectionCardProps } from "@/components/ui/SectionCard";
+import { Field } from "@/components/app/FormPrimitives";
+import { SectionCard, type SectionCardProps } from "@/components/app/SectionCard";
 import { Textarea } from "@/components/ui/textarea";
 import { FORM_TEXTAREA } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";

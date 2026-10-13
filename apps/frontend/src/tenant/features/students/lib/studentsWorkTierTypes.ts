@@ -1,7 +1,7 @@
 import type { Student, StudentsListPageResult, StudentsQuickFilter } from "@mms/shared";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { useStudentColumnLayout } from "@/tenant/features/students/hooks/useStudentColumnLayout";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 import type { StudentsSelectionTargets } from "@/tenant/features/students/hooks/studentsSelectionTargets";
 import type { StudentsWorkOverlayInteractions } from "@/tenant/features/students/hooks/studentsPageOverlaysTypes";
 

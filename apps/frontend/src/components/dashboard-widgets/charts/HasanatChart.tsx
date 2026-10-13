@@ -1,8 +1,8 @@
 import React from "react";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetChartHeader } from "@/components/ui/WidgetChartHeader";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { LegendChip } from "@/components/ui/LegendChip";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetChartHeader } from "@/components/app/WidgetChartHeader";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { LegendChip } from "@/components/app/LegendChip";
 import { formatNumber } from "@mms/shared";
 import { ChartPrefsControlGroup } from "@/components/dashboard-widgets/charts/ChartPrefsControlGroup";
 import { HasanatChartPlot } from "@/components/dashboard-widgets/charts/HasanatChartPlot";

@@ -6,10 +6,10 @@ import {
   type SystemUser,
 } from "@mms/shared";
 import { KeyRound } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormField";
-import { PasswordInput } from "@/components/ui/PasswordInput";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormField";
+import { PasswordInput } from "@/components/app/PasswordInput";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 

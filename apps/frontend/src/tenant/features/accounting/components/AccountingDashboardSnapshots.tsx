@@ -2,13 +2,13 @@ import React from "react";
 import { formatDate } from "@mms/shared";
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { JournalEntry } from "@/lib/data/accountingData";
-import type { BalanceSheetItem } from "./useAccountingDashboardView";
+import type { BalanceSheetItem } from "../hooks/useAccountingDashboardView";
 
 export interface AccountingDashboardSnapshotsProps {
   bsData: BalanceSheetItem[];

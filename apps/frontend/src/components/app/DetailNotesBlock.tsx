@@ -6,7 +6,7 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { FileText } from "lucide-react";
-import { DetailSectionTitle } from "@/components/ui/DetailSectionTitle";
+import { DetailSectionTitle } from "@/components/app/DetailSectionTitle";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 

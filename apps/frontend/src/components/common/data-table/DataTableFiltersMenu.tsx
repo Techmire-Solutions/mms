@@ -3,7 +3,7 @@ import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDivider,
   ModuleFilterDropdown,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { DataTableFilter, DataTableFilterSelection } from "./dataTableTypes";
 

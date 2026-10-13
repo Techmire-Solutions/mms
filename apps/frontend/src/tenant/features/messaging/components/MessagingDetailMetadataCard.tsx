@@ -1,7 +1,7 @@
 import React from "react";
 import { formatDateTime, type Message } from "@mms/shared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { AlertCircle, Check, Copy, MessageCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 

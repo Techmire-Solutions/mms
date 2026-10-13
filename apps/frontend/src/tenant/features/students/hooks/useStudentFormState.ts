@@ -6,7 +6,7 @@ import { useStudentConfig } from "@/hooks/useStandardModuleConfig";
 import {
   getInitialStudentDraft,
   studentDraftSnapshot,
-} from "@/tenant/features/students/components/studentFormDraft";
+} from "@/tenant/features/students/lib/studentFormDraft";
 import { useStudentFormLinkedData } from "@/tenant/features/students/hooks/useStudentFormLinkedData";
 import { useStudentFormActionHandlers } from "@/tenant/features/students/hooks/useStudentFormActionHandlers";
 import { useStudentFormStatusOptions } from "@/tenant/features/students/hooks/useStudentFormStatusOptions";

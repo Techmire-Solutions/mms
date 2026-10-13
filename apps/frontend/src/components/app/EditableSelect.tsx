@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { OptionSelectPopover } from "@/components/ui/OptionSelectPopover";
+import { OptionSelectPopover } from "@/components/app/OptionSelectPopover";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT_COMPACT } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";

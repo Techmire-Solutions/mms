@@ -1,4 +1,4 @@
-import { mapToTypstReportCard } from "@/components/ui/template-editor/templatePayloadMappers";
+import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
 import type { StudentResultItem } from "@/tenant/features/examinations/components/StudentResultCard";
 import type { Exam } from "@/lib/data/examinationData";

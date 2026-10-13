@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
 import { ContactDetail } from "./ContactDetail";
 
-vi.mock("@/components/ui/Drawer", () => ({
+vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({
     title,
     children,

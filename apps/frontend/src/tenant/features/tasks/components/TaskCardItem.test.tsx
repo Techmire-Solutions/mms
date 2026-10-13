@@ -19,18 +19,18 @@ vi.mock("@/hooks/useWorkCardAction", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/EntityCard", () => {
+vi.mock("@/components/app/EntityCard", () => {
   const EntityCard = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
   EntityCard.Header = ({ displayName }: { displayName: string }) => <div>{displayName}</div>;
   EntityCard.MetaGrid = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
   return { EntityCard };
 });
 
-vi.mock("@/components/ui/EntityCardMetaTile", () => ({
+vi.mock("@/components/app/EntityCardMetaTile", () => ({
   EntityCardMetaTile: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock("@/components/ui/EntityCardFooterActions", () => ({
+vi.mock("@/components/app/EntityCardFooterActions", () => ({
   EntityCardFooterActions: () => null,
 }));
 

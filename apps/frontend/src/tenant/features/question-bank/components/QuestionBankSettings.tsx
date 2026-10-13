@@ -1,16 +1,16 @@
 import React, { useEffect } from "react";
 import { Library } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ToggleRow } from "@/components/ui/ToggleRow";
+import { ToggleRow } from "@/components/app/ToggleRow";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { CategoryManager } from "@/tenant/features/question-bank/components/CategoryManager";
 import { QuestionBankTaxonomySection } from "@/tenant/features/question-bank/components/QuestionBankTaxonomySection";
 import { useQuestionBankSetupPanelState } from "@/tenant/features/question-bank/hooks/useQuestionBankSetupPanelState";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface QuestionBankSettingsProps {
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */

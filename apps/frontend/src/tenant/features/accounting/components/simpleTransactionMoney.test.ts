@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isJournalEntryBalanced, journalEntryRecordSchema, moneyAmountSchema } from "@mms/shared";
-import { parseMoneyInput } from "./simpleTransactionMoney";
+import { parseMoneyInput } from "../lib/simpleTransactionMoney";
 
 describe("parseMoneyInput", () => {
   it.each([

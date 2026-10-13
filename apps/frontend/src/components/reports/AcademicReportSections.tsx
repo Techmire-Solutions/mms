@@ -1,9 +1,9 @@
 import React from "react";
 import { BookOpen, Star, Trophy, TrendingUp } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ExportToolbar } from "@/components/ui/ExportToolbar";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
-import { ActiveFilterBanner } from "@/components/ui/ActiveFilterBanner";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ExportToolbar } from "@/components/app/ExportToolbar";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { ActiveFilterBanner } from "@/components/app/ActiveFilterBanner";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AcademicResultItem } from "./academicReportTypes";
 import { AcademicReportResultsBody } from "./AcademicReportResultsBody";

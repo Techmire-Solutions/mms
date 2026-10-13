@@ -1,7 +1,7 @@
 import React from "react";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

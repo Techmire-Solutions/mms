@@ -4,12 +4,12 @@ import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import type { Student } from "@/lib/data/studentsData";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
-import { getGrade } from "@/tenant/features/examinations/components/gradeUtils";
+import { getGrade } from "@/tenant/features/examinations/lib/gradeUtils";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   RankedResult,
   ResultsViewStatsData,
-} from "@/tenant/features/examinations/components/resultsViewTypes";
+} from "@/tenant/features/examinations/lib/resultsViewTypes";
 
 export interface UseResultsViewDataOptions {
   exams: Exam[];

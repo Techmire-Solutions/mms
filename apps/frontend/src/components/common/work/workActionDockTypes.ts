@@ -4,7 +4,7 @@ import type {
   BulkActionDockPlacement,
   BulkActionDockTone,
 } from "@/components/common/BulkActionDock";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export type BulkSelectionPlacement = BulkActionDockPlacement;
 export type BulkSelectionTone = BulkActionDockTone;

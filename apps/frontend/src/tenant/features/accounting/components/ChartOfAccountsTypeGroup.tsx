@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
 import { type AppTranslationKey } from "@mms/shared";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
-import { type StatusBadgeConfigItem, StatusBadge } from "@/components/ui/StatusBadge";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { type StatusBadgeConfigItem, StatusBadge } from "@/components/app/StatusBadge";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { useTranslation } from "@/hooks/useTranslation";
 import {

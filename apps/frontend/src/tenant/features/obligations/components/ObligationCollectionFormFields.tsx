@@ -9,15 +9,15 @@ import {
 import { DEFAULT_CURRENCIES, type AppTranslationKey } from "@mms/shared";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { Card } from "@/components/ui/card";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { ObligationCollectionWakalaSection } from "@/tenant/features/obligations/components/ObligationCollectionWakalaSection";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 
 export type ObligationCollectionFormState = {
   receipt_no: string;

@@ -4,13 +4,13 @@ import {
   type Contact,
   type FieldDefinition as RegistryFieldDefinition,
 } from "@mms/shared";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptorFromFieldConfig } from "@/components/common/entityDescriptorFromFieldConfig";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useOptionalAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactGenderLabel, resolveRegistryLabel } from "@/lib/contacts/contactI18n";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 /** Contacts descriptor backed by the runtime FieldConfig — custom fields, permissions, i18n intact. */
 export function useContactEntityDescriptor(): EntityDescriptor<Contact> {

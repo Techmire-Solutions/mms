@@ -3,7 +3,7 @@ import {
   ActiveFilterBanner,
   type ActiveFilterBannerAction,
   type ActiveFilterBannerChip,
-} from "@/components/ui/ActiveFilterBanner";
+} from "@/components/app/ActiveFilterBanner";
 
 export interface ReportFilterItem {
   key: string;

@@ -6,7 +6,7 @@ import {
   voucherPrintLayout,
   type VoucherPrintKind,
   type VoucherPrintLayout,
-} from "@/tenant/features/accounting/components/paymentVoucherKind";
+} from "@/tenant/features/accounting/lib/paymentVoucherKind";
 
 export interface SalaryVoucherRef {
   staffId: string;

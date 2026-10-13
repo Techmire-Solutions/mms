@@ -77,7 +77,7 @@ vi.mock("@/tenant/features/enrollments/hooks/useEnrollmentsPageState", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
+vi.mock("@/components/app/ModulePageShell", () => ({
   ModulePageShell: ({
     headerTitle,
     headerActions,
@@ -98,7 +98,7 @@ vi.mock("@/components/ui/ModulePageShell", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="accordion-tabs">{children}</div>
   ),

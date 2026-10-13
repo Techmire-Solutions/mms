@@ -1,5 +1,5 @@
 import type { Invoice } from "@mms/shared";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 export const financeEntityDescriptor: EntityDescriptor<Invoice> = createEntityDescriptor<Invoice>({

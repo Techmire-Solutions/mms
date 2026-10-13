@@ -11,7 +11,7 @@ import {
   useQuestionBankConfig,
 } from "@/tenant/hooks/collections/questionBank";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 
 export interface QuestionBankReportFilters {
   status?: string;

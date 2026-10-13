@@ -15,7 +15,7 @@ import {
   extractEmployeeId,
   getInitialFacultyDraft,
   facultyDraftSnapshot,
-} from "@/tenant/features/faculty/components/facultyFormDraft";
+} from "@/tenant/features/faculty/lib/facultyFormDraft";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
 export interface UseFacultyDraftStateInput {

@@ -1,5 +1,5 @@
 import SessionsTable from "@/components/dashboard-widgets/SessionsTable";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { SessionsReportTodaySession } from "@mms/shared";
 

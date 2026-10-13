@@ -2,9 +2,9 @@ import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Users } from "lucide-react";
-import { StatCard } from "@/components/ui/StatCard";
-import { resolveAccent } from "@/components/ui/statCardAccent";
-import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { StatCard } from "@/components/app/StatCard";
+import { resolveAccent } from "@/components/app/statCardAccent";
+import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
 describe("statCardAccent resolveAccent", () => {
   it("resolves default accent to primary when omitted", () => {

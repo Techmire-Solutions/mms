@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createRoot } from "react-dom/client";
 import { User, Shield, Lock } from "lucide-react";
-import { WizardStepIndicator, type WizardStepItem } from "@/components/ui/WizardStepIndicator";
+import { WizardStepIndicator, type WizardStepItem } from "@/components/app/WizardStepIndicator";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

@@ -4,13 +4,13 @@ import { ReportChartCard } from "./ReportChartCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatNumber } from "@mms/shared";
 import { Bar, BarChart, Legend, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
-import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import { ChartTooltip, ChartTooltipRow } from "@/components/app/ChartTooltip";
 
 import type { ComparisonDataItem, DateRangeDataItem } from "./comparisonModeTypes";
 import { WORK_SURFACE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 
 type ComparisonModeChartData = Array<ComparisonDataItem | DateRangeDataItem>;

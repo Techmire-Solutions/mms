@@ -1,4 +1,4 @@
-import { SearchableSelectField } from "@/components/ui/SearchableSelectField";
+import { SearchableSelectField } from "@/components/app/SearchableSelectField";
 import React, { useState } from "react";
 import { useStudentsContractList } from "@/tenant/hooks/collections/students";
 import { useFacultyContractList } from "@/tenant/hooks/collections/faculty";

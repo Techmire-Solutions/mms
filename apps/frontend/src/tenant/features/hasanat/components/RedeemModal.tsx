@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Gift } from "lucide-react";
 import { type Redemption, type Distribution } from "@/lib/data/hasanatData";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormPrimitives";
+import { DatePicker } from "@/components/app/DatePicker";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { generateClientEntityId, todayISO } from "@mms/shared";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 
 interface RedeemModalProps {
   open: boolean;

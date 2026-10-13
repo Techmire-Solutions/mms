@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
-import { NotificationsPopover, type NotificationItem } from "@/components/ui/NotificationsPopover";
+import { NotificationsPopover, type NotificationItem } from "@/components/app/NotificationsPopover";
 import { ROUTES } from "@/lib/config/routes";
 import { useTenantNotifications } from "@/tenant/hooks/notifications/useTenantNotifications";
 import { useOpenTenantNotification } from "@/tenant/hooks/notifications/useOpenTenantNotification";

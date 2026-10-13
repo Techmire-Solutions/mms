@@ -1,13 +1,13 @@
 import type { Dispatch, JSX, SetStateAction } from "react";
 import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getStandardPageSizeOptions } from "@/components/ui/ExportPdfSettingsPopover";
+import { getStandardPageSizeOptions } from "@/components/app/ExportPdfSettingsPopover";
 import {
   getAggregateFunctionOptions,
   getReportDataSourceOptions,

@@ -12,7 +12,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Textarea } from "@/components/ui/textarea";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 
 export interface ConfirmAlertDialogOptionalReason {
   label: string;

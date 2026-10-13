@@ -4,7 +4,7 @@ import type {
   FieldBadgeConfig,
   FieldDefinition as DescriptorFieldDefinition,
   FieldValueType,
-} from "@/types/entityRegistry";
+} from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "./entityDescriptorFactory";
 
 export type { FieldBadgeConfig };

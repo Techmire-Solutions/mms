@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { createRoot } from "react-dom/client";
 import { act } from "react";
-import { FilterChips } from "@/components/ui/FilterChips";
+import { FilterChips } from "@/components/app/FilterChips";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => `t:${key}`, dir: "ltr", language: "en" }),

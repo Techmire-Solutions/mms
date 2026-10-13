@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { CalendarCheck } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { TableCellLink } from "@/components/ui/TableCellLink";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { TableCellLink } from "@/components/app/TableCellLink";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { ProgressBar } from "@/components/app/ProgressBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { utilisationColour } from "./sessionReportUtils";
 
 import type { SessionReportTableProps } from "./sessionReportTypes";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 
 const UtilisationBar = function UtilisationBar({ rate }: { rate: number }): React.JSX.Element {
   return (

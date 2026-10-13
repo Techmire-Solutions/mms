@@ -4,12 +4,12 @@ import { Plus, Package } from "lucide-react";
 import { type Denomination, type StockBatch } from "@/lib/data/hasanatData";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StockAddBatchModal } from "@/tenant/features/hasanat/components/StockAddBatchModal";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 
 export interface StockManagerProps {

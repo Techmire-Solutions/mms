@@ -1,5 +1,5 @@
 import { Lock } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 
 interface SetupReadOnlyMessageProps {

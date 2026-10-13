@@ -1,6 +1,6 @@
 import React from "react";
 import type { TemplateElement } from "@mms/shared";
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import {
   TABLE_FALLBACK_ROWS,
   resolveTableRows,

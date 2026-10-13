@@ -2,7 +2,7 @@ import React from "react";
 import {
   PersonIdentityMeta,
   type PersonIdentityMetaProps,
-} from "@/components/ui/PersonIdentityMeta";
+} from "@/components/app/PersonIdentityMeta";
 
 export type ContactIdentityMetaProps = Omit<PersonIdentityMetaProps, "syedLabel">;
 

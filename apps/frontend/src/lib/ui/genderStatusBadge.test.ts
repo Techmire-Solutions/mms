@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { genderStatusBadgeConfig } from "@/lib/genderStatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { genderStatusBadgeConfig } from "@/lib/ui/genderStatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 const t = (key: string) => `[${key}]`;
 

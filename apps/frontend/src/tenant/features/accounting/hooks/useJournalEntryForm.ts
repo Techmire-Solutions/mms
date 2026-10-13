@@ -10,14 +10,14 @@ import {
   todayISO,
 } from "@mms/shared";
 import { notify } from "@/lib/notify";
-import type { DraftForm, DraftLine } from "./journalEntryFormTypes";
-import type { JournalEntrySave } from "./journalEntriesTypes";
+import type { DraftForm, DraftLine } from "../lib/journalEntryFormTypes";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import {
   parseJournalLineAmount,
   calculateJournalEntryCompleteness,
   validateJournalEntryForm,
   isJournalRefUnique,
-} from "./journalEntryFormValidation";
+} from "../lib/journalEntryFormValidation";
 
 const EMPTY_LINE = (): DraftLine => ({
   id: generateClientEntityId("l", "-"),

@@ -1,7 +1,7 @@
 import React, { memo, type ReactNode } from "react";
 import { motion, type HTMLMotionProps } from "framer-motion";
 import { FORM_CARD } from "@/components/ui/formStyles";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { EntityCardHeader, type EntityCardHeaderProps } from "./EntityCardHeader";

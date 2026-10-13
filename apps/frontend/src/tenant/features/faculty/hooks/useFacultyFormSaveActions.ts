@@ -9,12 +9,12 @@ import type {
   FacultySettings,
   FieldDefinition,
 } from "@mms/shared";
-import { facultyDraftSnapshot } from "@/tenant/features/faculty/components/facultyFormDraft";
+import { facultyDraftSnapshot } from "@/tenant/features/faculty/lib/facultyFormDraft";
 import {
   confirmPendingFacultySave,
   runFacultySaveFlow,
-} from "@/tenant/features/faculty/components/facultyFormSaveFlow";
-import { DUPLICATE_ERROR_KEYS } from "@/tenant/features/faculty/components/facultyFormValidation";
+} from "@/tenant/features/faculty/lib/facultyFormSaveFlow";
+import { DUPLICATE_ERROR_KEYS } from "@/tenant/features/faculty/lib/facultyFormValidation";
 import type {
   FacultyUserAccountDraft,
   LinkedUserInfo,

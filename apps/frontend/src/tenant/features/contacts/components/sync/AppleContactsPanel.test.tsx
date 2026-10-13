@@ -29,7 +29,7 @@ vi.mock("@/tenant/features/contacts/hooks/useAppleContactsPanel", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/DashedFileDropZone", () => ({
+vi.mock("@/components/app/DashedFileDropZone", () => ({
   DashedFileDropZone: ({ title }: { title: string }) => <div data-testid="dropzone">{title}</div>,
 }));
 

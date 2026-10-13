@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attendanceStatusLabel } from "@/lib/attendanceStatusUi";
+import { attendanceStatusLabel } from "@/lib/ui/attendanceStatusUi";
 
 describe("attendanceStatusLabel", () => {
   it("returns the translated label when a translation exists", () => {

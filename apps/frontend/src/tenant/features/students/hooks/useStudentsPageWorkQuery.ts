@@ -1,6 +1,6 @@
 import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsQuickFilter } from "@mms/shared";
 import { useStudentsContractList } from "@/tenant/features/students/hooks/useStudentsTsrHooks";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 
 const SORT_FIELD_TO_API: Record<StudentsListContentSortField, string> = {
   name: "name",

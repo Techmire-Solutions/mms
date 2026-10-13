@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, Pause, Play, XCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { DispatchSpeed } from "./useMessageComposerDispatch";
 

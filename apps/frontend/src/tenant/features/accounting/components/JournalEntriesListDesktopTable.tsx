@@ -7,7 +7,7 @@ import {
   getVisibleLeadingColumnCount,
   isJournalBalanced,
   type JournalEntriesListProps,
-} from "@/tenant/features/accounting/components/journalEntriesListShared";
+} from "@/tenant/features/accounting/lib/journalEntriesListShared";
 import { useJournalEntriesTableColumns } from "./useJournalEntriesTableColumns";
 
 type JournalEntriesListDesktopTableProps = JournalEntriesListProps;

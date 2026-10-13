@@ -4,7 +4,7 @@ import {
   STUDENT_SORT_FIELDS,
   type ModuleColumnRegistryEntry,
 } from "@mms/shared";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 
 /** Sortable Work columns that map to the Students list API allowlist. */
 const STUDENT_LIST_SORTABLE_FIELDS = new Set<StudentsListContentSortField>(STUDENT_SORT_FIELDS);

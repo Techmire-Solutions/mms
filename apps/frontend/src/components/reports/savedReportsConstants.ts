@@ -1,4 +1,4 @@
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 export const SAVED_REPORT_CATEGORY_BADGE_CLS: Record<string, string> = {
   financial: SEMANTIC_BADGE.success,

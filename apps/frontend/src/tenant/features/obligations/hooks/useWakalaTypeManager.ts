@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import { generateClientEntityId } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import type { WakalaType, ObligationDistribution } from "@/lib/data/obligationsData";
-import type { WakalaTypeManagerProps } from "@/tenant/features/obligations/components/wakalaTypeManagerTypes";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { WakalaTypeManagerProps } from "@/tenant/features/obligations/lib/wakalaTypeManagerTypes";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 interface ModalState {
   mode: "add" | "edit" | "add-dist" | "edit-dist";

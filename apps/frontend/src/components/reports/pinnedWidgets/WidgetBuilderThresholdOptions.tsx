@@ -1,8 +1,8 @@
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface WidgetBuilderThresholdOptionsProps {

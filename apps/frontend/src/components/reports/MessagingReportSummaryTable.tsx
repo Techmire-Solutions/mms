@@ -1,6 +1,6 @@
 import React from "react";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getSolidBgClass } from "@/lib/semanticTone";
+import { getSolidBgClass } from "@/lib/ui/semanticTone";
 
 export interface ChannelSummaryRow extends Record<string, unknown> {
   id: string;

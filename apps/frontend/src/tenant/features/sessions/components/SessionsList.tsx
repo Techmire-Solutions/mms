@@ -1,11 +1,11 @@
 import { BookOpen, Plus } from "lucide-react";
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
-import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
+import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { SessionSortField } from "@/tenant/features/sessions/components/sessionPageTypes";
+import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPageTypes";
 import type { Session } from "@/lib/data/sessionsData";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { SessionsBulkActionBar } from "@/tenant/features/sessions/components/SessionsBulkActionBar";

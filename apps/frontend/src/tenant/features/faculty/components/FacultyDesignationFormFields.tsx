@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { FACULTY_DESIGNATION_NAME_MAX } from "@mms/shared";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
-import { FormSelect, type FormSelectOption } from "@/components/ui/FormSelect";
-import { FormSelectWithQuickCreate } from "@/components/ui/FormSelectWithQuickCreate";
+import { FormSelect, type FormSelectOption } from "@/components/app/FormSelect";
+import { FormSelectWithQuickCreate } from "@/components/app/FormSelectWithQuickCreate";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FacultyDesignationRolesField } from "@/tenant/features/faculty/components/FacultyDesignationRolesField";

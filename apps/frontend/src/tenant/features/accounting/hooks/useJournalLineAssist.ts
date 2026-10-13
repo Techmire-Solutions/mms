@@ -1,6 +1,6 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { generateClientEntityId, type JournalTemplate } from "@mms/shared";
-import type { DraftForm, DraftLine } from "./journalEntryFormTypes";
+import type { DraftForm, DraftLine } from "../lib/journalEntryFormTypes";
 
 export type JournalAmountSide = "debit" | "credit";
 

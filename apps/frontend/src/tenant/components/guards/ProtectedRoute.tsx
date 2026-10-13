@@ -6,7 +6,7 @@ import { DEFAULT_AUTH_REDIRECT, ROUTES } from "@/lib/config/routes";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { is2FAPending, is2FAVerified } from "@/lib/twoFactor";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { useInstitutionSetupStatus } from "@/tenant/hooks/useInstitutionSetupStatus";
 
 /**

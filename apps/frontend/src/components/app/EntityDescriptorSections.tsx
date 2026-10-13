@@ -1,10 +1,10 @@
 import React from "react";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import {
   DetailAttributeRow,
   type DetailAttributeRowVariant,
-} from "@/components/ui/DetailAttributeRow";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+} from "@/components/app/DetailAttributeRow";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { getEntityDescriptor } from "@/components/common/entityRegistry";
 
 export interface EntityDescriptorSectionsProps<T> {

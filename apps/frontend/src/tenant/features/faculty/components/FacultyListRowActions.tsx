@@ -1,6 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
-import { PersonMessagingRowActionsExtras } from "@/components/ui/PersonMessagingRowActionsExtras";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { resolveFacultyPrimaryChannels } from "@/lib/faculty/facultyPrimaryChannels";
 import { facultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
 import { hasWhatsApp, type Faculty } from "@mms/shared";

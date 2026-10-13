@@ -7,24 +7,24 @@ import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
-import { addAuditEntry } from "@/tenant/features/attendance/components/markAttendanceQueue";
+import { addAuditEntry } from "@/tenant/features/attendance/lib/markAttendanceQueue";
 import {
   attendanceRowsFromRecords,
   buildDefaultRows,
   enrolledStudentsForClass,
   isEnrollmentInAttendanceRoster,
   resolveSessionAndClassInfo,
-} from "@/tenant/features/attendance/components/markAttendanceRowUtils";
+} from "@/tenant/features/attendance/lib/markAttendanceRowUtils";
 import {
   loadQueue,
   useMarkAttendancePersistence,
-} from "@/tenant/features/attendance/components/useMarkAttendancePersistence";
+} from "@/tenant/features/attendance/hooks/useMarkAttendancePersistence";
 import type {
   AttendanceRow,
   GeoData,
   MarkAttendanceProps,
   OfflinePayload,
-} from "@/tenant/features/attendance/components/markAttendanceTypes";
+} from "@/tenant/features/attendance/lib/markAttendanceTypes";
 
 export function useMarkAttendanceController({
   filters,

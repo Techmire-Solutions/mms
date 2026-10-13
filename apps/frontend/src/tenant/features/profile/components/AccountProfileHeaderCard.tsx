@@ -5,7 +5,7 @@ import { getInitials, type TenantUserProfile } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { ProgressBar } from "@/components/app/ProgressBar";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface AccountProfileHeaderCardProps {

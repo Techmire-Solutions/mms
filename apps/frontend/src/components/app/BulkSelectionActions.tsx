@@ -12,7 +12,7 @@ import {
   bulkActionDockActionClassName,
   bulkActionDockDeleteClassName,
   bulkActionDockRestoreClassName,
-} from "@/components/ui/bulkActionDockStyles";
+} from "@/components/app/bulkActionDockStyles";
 import { Button } from "@/components/ui/button";
 
 export type BulkSelectionMessageChannel = "whatsapp" | "sms" | "email";

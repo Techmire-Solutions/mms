@@ -26,7 +26,7 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Drawer", () => ({
+vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({
     title,
     subtitle,

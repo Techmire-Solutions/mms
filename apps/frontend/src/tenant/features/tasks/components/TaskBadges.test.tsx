@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

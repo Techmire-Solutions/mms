@@ -15,7 +15,7 @@ import {
   type IndexedFieldLookups,
   type LookupItem,
   type FieldLookupInfo,
-} from "./invoiceTemplateTypes.js";
+} from "./invoiceTemplateTypes";
 
 describe("invoiceTemplateTypes", () => {
   it("exports standard page sizes and dimensions helper", () => {

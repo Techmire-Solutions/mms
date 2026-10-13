@@ -1,13 +1,13 @@
 import React, { lazy, Suspense, useRef } from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
 import { useUsersSetupPanelState } from "@/tenant/features/users/hooks/useUsersSetupPanelState";
 
 const RolesPermissions = lazy(() =>

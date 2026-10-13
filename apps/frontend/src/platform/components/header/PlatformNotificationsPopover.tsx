@@ -4,7 +4,7 @@ import type { PlatformWorkspaceRow } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { buildPlatformNotifications } from "@/platform/lib/buildPlatformNotifications";
 import { usePlatformNotificationAck } from "@/platform/hooks/usePlatformNotificationAck";
-import { NotificationsPopover, type NotificationItem } from "@/components/ui/NotificationsPopover";
+import { NotificationsPopover, type NotificationItem } from "@/components/app/NotificationsPopover";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformNotificationsPopoverProps {

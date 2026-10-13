@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table } from "@/components/ui/table";
 import { WorkBatchTableFooter } from "@/components/common/work/WorkBatchTableFooter";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { moneyToCents } from "@mms/shared";
 import {
   ACCOUNT_TYPES,
@@ -19,10 +19,10 @@ import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { AccountingDateFilterBar } from "./AccountingDateFilterBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { balanceToneClass } from "@/lib/semanticTone";
+import { balanceToneClass } from "@/lib/ui/semanticTone";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { TrialBalanceTypeGroup } from "./TrialBalanceTypeGroup";
-import { exportTrialBalanceCsv } from "./trialBalanceExport";
+import { exportTrialBalanceCsv } from "../lib/trialBalanceExport";
 
 interface TrialBalanceProps {
   /**

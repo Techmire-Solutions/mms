@@ -16,7 +16,7 @@ import type { Invoice } from "@/lib/data/financeData";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import type { Distribution, Denomination } from "@/lib/data/hasanatData";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { CustomCard } from "./reportCollectionTypes.js";
+import type { CustomCard } from "./reportCollectionTypes";
 import { calculateCustomCardDynamicTrend } from "./reportCustomCardTrend";
 
 export function computeCustomCard(

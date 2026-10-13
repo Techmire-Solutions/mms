@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Users, BarChart3, Settings, Download, Activity } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { Button } from "@/components/ui/button";
 import { PlatformAddAdminForm } from "@/platform/pages/PlatformAddAdminForm";
 import { usePlatformAdmins } from "@/platform/hooks/usePlatformAdmins";
@@ -14,7 +14,7 @@ import {
   PlatformUsersTier,
   type PlatformUsersSubTab,
 } from "@/platform/components/tiers/PlatformUsersTier";
-import type { AccordionTabItem } from "@/components/ui/ResponsiveAccordionTabs";
+import type { AccordionTabItem } from "@/components/app/ResponsiveAccordionTabs";
 import { ROUTES } from "@/lib/config/routes";
 
 export type PlatformUsersTab = PlatformUsersSubTab;

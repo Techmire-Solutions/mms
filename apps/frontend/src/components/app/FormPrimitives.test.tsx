@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { Input } from "./input";
+import { Input } from "../ui/input";
 import {
   CardTypeLabel,
   CardRemoveButton,

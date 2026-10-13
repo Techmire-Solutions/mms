@@ -1,10 +1,10 @@
-import { resolveAccentTone, withAccentAliases } from "@/lib/accentTone";
+import { resolveAccentTone, withAccentAliases } from "@/lib/ui/accentTone";
 import {
   type CardAccentColor,
   getCardStripeClass,
   SEMANTIC_BG,
   SEMANTIC_TEXT,
-} from "@/lib/semanticTone";
+} from "@/lib/ui/semanticTone";
 
 export interface AccentConfig {
   stripe: string;

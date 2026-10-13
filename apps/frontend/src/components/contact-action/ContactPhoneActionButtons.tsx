@@ -1,6 +1,6 @@
 import React from "react";
 import { Phone, MessageCircle, MessageSquare } from "lucide-react";
-import { MESSAGING_ICON_BTN_TONES } from "@/components/ui/messagingActionStyles";
+import { MESSAGING_ICON_BTN_TONES } from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 import { ActionCopyButton, ActionIconButton } from "./contactActionShared";
 

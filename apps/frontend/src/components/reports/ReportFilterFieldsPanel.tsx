@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import type { ReportFilterFields, ReportFilterFieldKey } from "./reportFilterTypes";
 import {

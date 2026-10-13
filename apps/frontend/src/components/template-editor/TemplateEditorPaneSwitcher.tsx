@@ -17,7 +17,7 @@
  */
 
 import React, { useMemo } from "react";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export type EditorPane = "elements" | "canvas" | "properties";

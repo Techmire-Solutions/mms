@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import { ContactEmailAction, ContactPhoneAction } from "@/components/ui/ContactAction";
+import { ContactEmailAction, ContactPhoneAction } from "@/components/app/ContactAction";
 import type {
   ContactResolvedPhone,
   ContactResolvedEmail,

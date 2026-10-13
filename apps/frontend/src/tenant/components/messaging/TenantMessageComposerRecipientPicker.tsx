@@ -11,9 +11,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useMessagingWorkRecipients } from "@/tenant/features/messaging/hooks/useMessagingWorkRecipients";
 import { useContactColumns } from "@/lib/contexts/ContactConfigContext";
 import ContactsListDesktopTable from "@/tenant/features/contacts/components/ContactsListDesktopTable";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { SearchBar } from "@/components/app/SearchBar";
 import { Button } from "@/components/ui/button";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 
 export interface MessageComposerRecipientPickerProps {
   kind: "phone" | "email";

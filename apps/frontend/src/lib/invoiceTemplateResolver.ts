@@ -4,7 +4,7 @@ import type {
   IndexedFieldLookups,
   InvoiceTemplateFieldKey,
   LookupItem,
-} from "./invoiceTemplateTypes.js";
+} from "./invoiceTemplateTypes";
 
 /**
  * Pre-indexes lookup collections into O(1) maps for high-performance template rendering.

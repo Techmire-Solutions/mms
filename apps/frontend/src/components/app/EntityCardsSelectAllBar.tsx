@@ -1,6 +1,6 @@
 import React, { type ReactElement, type ReactNode } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";

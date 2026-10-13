@@ -4,9 +4,9 @@ import { type Session, type Class } from "@/lib/data/sessionsData";
 import { type Student } from "@/lib/data/studentsData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface Step4ClassAssignmentProps {

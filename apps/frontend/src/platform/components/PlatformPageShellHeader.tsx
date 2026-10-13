@@ -8,7 +8,7 @@ import { usePlatformHealth } from "@/platform/hooks/usePlatformHealth";
 import { usePlatformBreadcrumb } from "@/platform/lib/PlatformBreadcrumbContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Breadcrumb } from "@/components/app/Breadcrumb";
 import { ROUTES, isNavPathActive } from "@/lib/config/routes";
 import { PLATFORM_NAV_ITEMS } from "@/platform/lib/platformNav";
 import { PlatformHeaderBrand } from "@/platform/components/header/PlatformHeaderBrand";

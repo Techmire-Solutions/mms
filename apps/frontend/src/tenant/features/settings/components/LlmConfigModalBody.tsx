@@ -1,10 +1,10 @@
 import type React from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/app/PasswordInput";
 import { Switch } from "@/components/ui/switch";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {

@@ -1,14 +1,14 @@
 import React from "react";
 import { Bell, CheckCheck } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTenantNotifications } from "@/tenant/hooks/notifications/useTenantNotifications";
 import { useOpenTenantNotification } from "@/tenant/hooks/notifications/useOpenTenantNotification";
-import { NotificationsPageRow } from "@/tenant/features/notifications/NotificationsPageRow";
+import { NotificationsPageRow } from "@/tenant/features/notifications/components/NotificationsPageRow";
 
 /** All tenant notifications with click-through to the source record and a mark-all-read action. */
 export default function NotificationsPage(): React.JSX.Element {

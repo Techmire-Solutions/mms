@@ -1,7 +1,7 @@
 import { GraduationCap, DollarSign, ClipboardCheck } from "lucide-react";
 import type { AppTranslationKey } from "@mms/shared";
 import { ROUTES } from "@/lib/config/routes";
-import type { CommandItem } from "@/components/ui/systemCommandItems";
+import type { CommandItem } from "@/components/app/systemCommandItems";
 
 /**
  * Deep-link command items for specific module tiers (P3-5).

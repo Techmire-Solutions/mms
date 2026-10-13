@@ -7,7 +7,7 @@ import {
   FormListFieldCard,
   FormSelect,
   TYPE_SELECT_WIDTH,
-} from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
 import type { SessionClassSchedule, SessionClassTimetablePeriod } from "@/lib/data/sessionsData";

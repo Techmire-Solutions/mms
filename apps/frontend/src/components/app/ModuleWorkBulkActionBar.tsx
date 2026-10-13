@@ -8,7 +8,7 @@ import {
   BulkSelectionMessagingActions,
   BulkSelectionRestoreAction,
   type BulkSelectionMessageChannel,
-} from "@/components/ui/BulkSelectionActions";
+} from "@/components/app/BulkSelectionActions";
 
 export interface ModuleWorkBulkActionBarProps {
   selectedCount: number;

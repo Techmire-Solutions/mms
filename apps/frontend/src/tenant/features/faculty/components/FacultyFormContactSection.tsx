@@ -1,7 +1,7 @@
 import type React from "react";
 import { GraduationCap, Mail, Phone, School, User } from "lucide-react";
 import ContactPicker from "@/components/contactLink/ContactPicker";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   getContactQualification,

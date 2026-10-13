@@ -9,8 +9,8 @@ import {
 } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { formatLocalizedRelationshipParts } from "@/lib/contacts/formatLocalizedRelationshipLabel";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import { relationshipBadgeCode } from "@/tenant/features/students/components/guardianRelationshipBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { relationshipBadgeCode } from "@/tenant/features/students/lib/guardianRelationshipBadge";
 import type { StudentRelationshipCardData } from "@/tenant/features/students/components/StudentRelationshipCard";
 
 export interface StudentRelationshipInput {

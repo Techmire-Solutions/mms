@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { TemplateEditor } from "../TemplateEditor";
+import { TemplateEditor } from "../app/TemplateEditor";
 import { TemplateElementRenderer } from "./TemplateElementRenderer";
 import { TemplateEditorPropertiesPanel } from "./TemplateEditorPropertiesPanel";
 import { TemplateEditorExportActions } from "./TemplateEditorExportActions";

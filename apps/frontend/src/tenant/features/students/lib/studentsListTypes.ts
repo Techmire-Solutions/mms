@@ -1,6 +1,6 @@
 import type { Student, StudentSortField } from "@mms/shared";
 import { type toMessagingRecipient, type ModuleColumnRegistryEntry } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 
 export type StudentsListContentSortField = StudentSortField;

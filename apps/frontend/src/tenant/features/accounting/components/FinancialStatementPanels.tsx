@@ -2,7 +2,7 @@ import React from "react";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { balanceToneClass } from "@/lib/semanticTone";
+import { balanceToneClass } from "@/lib/ui/semanticTone";
 import { ReportSection, type ReportRow } from "./FinancialReportSection";
 import { CashFlowStatementPanel } from "./CashFlowStatementPanel";
 

@@ -4,11 +4,11 @@ import {
   FormCollectionShell,
   FormListFieldCard,
   TYPE_SELECT_WIDTH,
-} from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { FormSelect } from "@/components/app/FormSelect";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import type { Mujtahid, MujtahidRep, ObligationType } from "@/lib/data/obligationsData";

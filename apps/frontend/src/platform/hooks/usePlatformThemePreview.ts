@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ThemeMode } from "@mms/shared";
 import { applyDocumentTheme } from "@/lib/brandingThemeCore";
-import { applyApexPlatformTheme } from "@/platform/lib/brandingEntryTheme";
+import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
 import { MMS_PLATFORM_BRANDING, MMS_PLATFORM_GLOBAL_SETTINGS } from "@/platform/lib/themeScope";
 
 export function usePlatformThemePreview() {

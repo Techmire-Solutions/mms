@@ -1,6 +1,6 @@
 import React from "react";
 import { Palette, ImageIcon, Loader2 } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import BrandColorPanel from "@/components/branding/BrandColorPanel";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

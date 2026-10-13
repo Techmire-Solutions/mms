@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { SetURLSearchParams } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
-import { messagingExportEndDateBound } from "./messagingReportsExport";
+import { messagingExportEndDateBound } from "../lib/messagingReportsExport";
 import { useMessagingWorkTierUrlSync } from "./useMessagingWorkTierUrlSync";
 
 export type MessagingChannelFilter = "all" | "sms" | "whatsapp" | "email";

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetCardHeader } from "@/components/ui/WidgetCardHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 import { AlertTriangle, Bell, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";

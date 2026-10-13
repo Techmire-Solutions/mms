@@ -1,8 +1,8 @@
 import React from "react";
 import { Upload } from "lucide-react";
 import type { Contact } from "@mms/shared";
-import { DashedFileDropZone } from "@/components/ui/DashedFileDropZone";
-import { Modal } from "@/components/ui/Modal";
+import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
+import { Modal } from "@/components/app/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppleContactsPanel } from "@/tenant/features/contacts/hooks/useAppleContactsPanel";
 import {

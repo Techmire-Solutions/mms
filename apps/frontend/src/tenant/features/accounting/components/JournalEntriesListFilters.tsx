@@ -1,14 +1,14 @@
 import { Download } from "lucide-react";
 import type { AppTranslationKey } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { FilterChips } from "@/components/ui/FilterChips";
-import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import { FilterChips } from "@/components/app/FilterChips";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { WorkTaskToolbar } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccountingFiltersMenuButton } from "@/tenant/features/accounting/components/AccountingFiltersMenuButton";
-import { getJournalTagLabel } from "@/tenant/features/accounting/components/journalEntriesListShared";
+import { getJournalTagLabel } from "@/tenant/features/accounting/lib/journalEntriesListShared";
 
 export const ACCOUNTING_WORK_SEARCH_INPUT_ID = "accounting-work-search";
 

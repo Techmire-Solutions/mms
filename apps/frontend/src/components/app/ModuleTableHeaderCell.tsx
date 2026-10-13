@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { ResizableTableHead } from "@/components/ui/ResizableTableHead";
+import { ResizableTableHead } from "@/components/app/ResizableTableHead";
 import type { TableCellAlign, TableCellVariant } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 

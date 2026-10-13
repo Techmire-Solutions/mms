@@ -1,8 +1,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import {
   Table,
   TableHeader,
@@ -12,9 +12,9 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
-import { getWidgetRecordDisplay } from "@/components/ui/reports/pinnedWidgets/widgetRecordDisplay";
-import { buildWidgetDrilldownStatusConfig } from "@/components/ui/reports/pinnedWidgets/widgetDrilldownStatusConfig";
-import type { useWidgetDrilldownModal } from "@/components/ui/reports/pinnedWidgets/useWidgetDrilldownModal";
+import { getWidgetRecordDisplay } from "@/components/reports/pinnedWidgets/widgetRecordDisplay";
+import { buildWidgetDrilldownStatusConfig } from "@/components/reports/pinnedWidgets/widgetDrilldownStatusConfig";
+import type { useWidgetDrilldownModal } from "@/components/reports/pinnedWidgets/useWidgetDrilldownModal";
 
 type WidgetDrilldownModalRecordsProps = Pick<
   ReturnType<typeof useWidgetDrilldownModal>,

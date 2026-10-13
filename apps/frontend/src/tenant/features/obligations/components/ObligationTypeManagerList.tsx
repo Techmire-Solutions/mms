@@ -1,7 +1,7 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { type ObligationType } from "@/lib/data/obligationsData";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import {
   DataTable,
   DataTableRowActions,

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { BiDiText } from "@/components/ui/BiDiText";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { BiDiText } from "@/components/app/BiDiText";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_INSET, type CardAccentColor } from "@/lib/semanticTone";
-import { getGenderCardAccent } from "@/lib/genderUi";
+import { CARD_STRIPE_INSET, type CardAccentColor } from "@/lib/ui/semanticTone";
+import { getGenderCardAccent } from "@/lib/ui/genderUi";
 
 export interface PersonDetailHeroCardProps {
   id: string | number;

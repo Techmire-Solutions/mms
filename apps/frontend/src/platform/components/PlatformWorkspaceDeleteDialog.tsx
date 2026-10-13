@@ -1,6 +1,6 @@
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { TypedConfirmDialog } from "@/components/ui/TypedConfirmDialog";
+import { TypedConfirmDialog } from "@/components/app/TypedConfirmDialog";
 
 interface PlatformWorkspaceDeleteDialogProps {
   workspace: PlatformWorkspaceRowData;

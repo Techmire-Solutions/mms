@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EnrollmentsModalLayer } from "./EnrollmentsModalLayer";
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     open,
     title,

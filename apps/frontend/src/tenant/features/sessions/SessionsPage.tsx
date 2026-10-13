@@ -1,8 +1,8 @@
 import React, { Suspense, lazy, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Plus, Calendar, Download, Upload } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { Button } from "@/components/ui/button";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { SessionsDialogLayer } from "@/tenant/features/sessions/components/SessionsDialogLayer";

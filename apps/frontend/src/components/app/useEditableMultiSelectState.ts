@@ -5,7 +5,7 @@ import {
   removeOptionFromCatalog,
   removeSelectedValue,
   toggleSelectedValue,
-} from "@/components/ui/editableMultiSelectUtils";
+} from "@/components/app/editableMultiSelectUtils";
 
 export interface UseEditableMultiSelectStateParams {
   options: string[];

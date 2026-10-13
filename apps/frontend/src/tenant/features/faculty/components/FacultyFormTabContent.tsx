@@ -6,7 +6,7 @@ import {
 import { FacultyFormDesignationSection } from "@/tenant/features/faculty/components/FacultyFormDesignationSection";
 import { FacultyCustomFieldsSection } from "./FacultyCustomFieldsSection";
 import { FacultyFormAllSections } from "./FacultyFormAllSections";
-import { type FacultyFormTabContentProps } from "./facultyFormTabs";
+import { type FacultyFormTabContentProps } from "../lib/facultyFormTabs";
 
 export type { FacultyFormTabContentProps };
 

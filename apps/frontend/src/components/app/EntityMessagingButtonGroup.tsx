@@ -1,11 +1,11 @@
 import React from "react";
 import { Mail, MessageCircle, MessageSquare, Phone } from "lucide-react";
-import { QuickActionButton } from "@/components/ui/QuickActionButton";
+import { QuickActionButton } from "@/components/app/QuickActionButton";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import {
   MESSAGING_QUICK_ACTION_BASE,
   MESSAGING_QUICK_ACTION_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface EntityMessagingButtonGroupProps {

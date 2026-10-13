@@ -1,14 +1,14 @@
 import React from "react";
-import { TableCellLink } from "@/components/ui/TableCellLink";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { TableCellLink } from "@/components/app/TableCellLink";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import type { FacultyWorkloadItem } from "@/components/ui/reports/facultyReportTypes";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import type { FacultyWorkloadItem } from "@/components/reports/facultyReportTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 
 interface FacultyReportWorkloadTableProps {
   t: TranslationFunction;

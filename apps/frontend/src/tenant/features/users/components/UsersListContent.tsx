@@ -4,7 +4,7 @@ import { UserPlus } from "lucide-react";
 import type { SystemUser } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UsersListDesktopTable } from "@/tenant/features/users/components/UsersListDesktopTable";
 import { UsersListCards } from "@/tenant/features/users/components/UsersListCards";

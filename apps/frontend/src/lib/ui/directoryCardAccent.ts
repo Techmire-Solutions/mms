@@ -9,4 +9,4 @@ export {
   getGenderCardAccent,
   getGenderBorderClass,
   getGenderBgClass,
-} from "@/lib/genderUi";
+} from "@/lib/ui/genderUi";

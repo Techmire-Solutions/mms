@@ -1,7 +1,7 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
 import type { EmailAddress, PhoneNumber } from "@mms/shared";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface StudentRelationshipContactListProps {

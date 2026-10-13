@@ -1,5 +1,5 @@
 import type { ModuleColumnRegistryEntry, SystemUser, UsersListPageResult } from "@mms/shared";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 
 export interface UsersListProps {
   users: SystemUser[];

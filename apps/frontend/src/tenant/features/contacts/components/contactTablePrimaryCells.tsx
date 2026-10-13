@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { type Contact, type ContactPreferences, getDisplayName } from "@mms/shared";
 import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { ContactPhoneAction, ContactEmailAction } from "@/components/ui/ContactAction";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { ContactPhoneAction, ContactEmailAction } from "@/components/app/ContactAction";
 
 import type { useTranslation } from "@/hooks/useTranslation";
 

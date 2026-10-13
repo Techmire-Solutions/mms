@@ -2,8 +2,8 @@ import { getPlatformAdminMetrics } from "@/platform/lib/platformAdminMetrics";
 import React from "react";
 import { ShieldCheck, UserCheck, Crown } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
-import { StatsSkeleton } from "@/components/ui/LoadingState";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { StatsSkeleton } from "@/components/app/LoadingState";
 import type { PlatformUserProfile } from "@mms/shared";
 
 export interface PlatformUsersCommandMetricsProps {

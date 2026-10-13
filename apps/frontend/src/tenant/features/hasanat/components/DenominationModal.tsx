@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import { CreditCard } from "lucide-react";
 import { type Denomination } from "@/lib/data/hasanatData";
 import { generateClientEntityId } from "@mms/shared";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, FORM_LABEL } from "@/components/ui/formStyles";
-import { DEFAULT_DENOMINATION_COLOR, getDenominationPresetColors } from "@/lib/denominationColors";
+import {
+  DEFAULT_DENOMINATION_COLOR,
+  getDenominationPresetColors,
+} from "@/lib/ui/denominationColors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";

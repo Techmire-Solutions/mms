@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { DEFAULT_COLUMN_REGISTRY, type ColumnRegistryEntry } from "@mms/shared";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/moduleColumnCustomizerTypes";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/moduleColumnCustomizerTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface ContactsListFiltersSortOption {

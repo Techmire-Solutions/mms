@@ -1,10 +1,10 @@
 import type React from "react";
-import { ModuleWorkBulkActionBar } from "@/components/ui/ModuleWorkBulkActionBar";
+import { ModuleWorkBulkActionBar } from "@/components/app/ModuleWorkBulkActionBar";
 import {
   BulkSelectionStatusAction,
   type BulkSelectionMessageChannel,
-} from "@/components/ui/BulkSelectionActions";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+} from "@/components/app/BulkSelectionActions";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { APP_TRANSLATIONS_EN, type AppTranslationKey } from "@mms/shared";
 

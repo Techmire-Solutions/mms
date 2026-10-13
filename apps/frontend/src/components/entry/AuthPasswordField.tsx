@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/app/PasswordInput";
 import { FORM_ERROR } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 

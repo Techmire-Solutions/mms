@@ -3,11 +3,11 @@ import { Bell, Save, UserCheck } from "lucide-react";
 import { type TaskSettings, DEFAULT_TASK_SETTINGS, type DelegationScope } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { RadioGroup, RadioGroupItem } from "@/components/app/RadioGroup";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTaskSettings, useUpdateTaskSettings } from "@/tenant/hooks/collections/tasks";
 import { notify } from "@/lib/notify";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface TasksSetupTabProps {
   initialSettings?: TaskSettings;

@@ -1,5 +1,5 @@
 import React from "react";
-import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 
 export interface HasanatTrashDialogsProps {
   pendingTrashId: string | null;

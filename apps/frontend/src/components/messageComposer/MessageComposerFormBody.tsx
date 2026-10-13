@@ -4,12 +4,12 @@ import {
   insertVariableTokenAt,
   type MessageTemplate,
 } from "@mms/shared";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { MessagingMessageBodyField } from "@/components/ui/MessagingMessageBodyField";
-import { MessagingVariableTokensBar } from "@/components/ui/MessagingVariableTokensBar";
+import { MessagingMessageBodyField } from "@/components/app/MessagingMessageBodyField";
+import { MessagingVariableTokensBar } from "@/components/app/MessagingVariableTokensBar";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";

@@ -1,6 +1,6 @@
 import React, { useId, useCallback } from "react";
 import { motion, type PanInfo, useDragControls } from "framer-motion";
-import { OverlayShell } from "@/components/ui/OverlayShell";
+import { OverlayShell } from "@/components/app/OverlayShell";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";

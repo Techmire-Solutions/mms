@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useState } from "react";
 import type {
   HasanatFacultyBarItem,
   HasanatPieItem,
-} from "@/components/ui/reports/hasanatReportSectionTypes";
+} from "@/components/reports/hasanatReportSectionTypes";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import {
   useHasanatDistributions,
@@ -13,27 +13,27 @@ import {
 } from "@/tenant/hooks/collections/hasanat";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { getDenominationPoints } from "@mms/shared";
-import { HasanatDistributionTable } from "@/components/ui/reports/HasanatDistributionTable";
+import { HasanatDistributionTable } from "@/components/reports/HasanatDistributionTable";
 
 const HasanatReportCharts = lazy(() =>
-  import("@/components/ui/reports/HasanatReportCharts").then((mod) => ({
+  import("@/components/reports/HasanatReportCharts").then((mod) => ({
     default: mod.HasanatReportCharts,
   })),
 );
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
 import type {
   HasanatReportProps,
   HasanatReportItem,
   HasanatByFacultyItem,
-} from "@/components/ui/reports/hasanatReportTypes";
+} from "@/components/reports/hasanatReportTypes";
 export type {
   HasanatReportItem,
   HasanatByFacultyItem,
-} from "@/components/ui/reports/hasanatReportTypes";
+} from "@/components/reports/hasanatReportTypes";
 
 /**
  * Renders the Hasanat rewards and points distribution reports,

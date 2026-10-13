@@ -6,7 +6,7 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/ui/TemplateEditor";
+import { TemplateEditor } from "@/components/app/TemplateEditor";
 import { getObject, saveObject } from "@/lib/db";
 import {
   type DocumentTemplate,
@@ -18,14 +18,14 @@ import {
 import {
   mapToTypstFeeReceipt,
   mapToZohoInvoice,
-} from "@/components/ui/template-editor/templatePayloadMappers";
+} from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
 import {
   PRINT_BLUE_DEEP,
   PRINT_BLUE_DIVIDER,
   PRINT_RED_DANGER,
   PRINT_GREEN_SUCCESS,
-} from "@/lib/printTemplateStyles";
+} from "@/lib/ui/printTemplateStyles";
 
 export const FINANCE_TEMPLATE_STORAGE_KEY = "mms_finance_invoice_template";
 

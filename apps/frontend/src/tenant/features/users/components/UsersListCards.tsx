@@ -1,6 +1,6 @@
 import type { SystemUser } from "@mms/shared";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";

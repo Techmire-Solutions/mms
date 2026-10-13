@@ -3,16 +3,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useScrollSurfaceOnChange } from "@/lib/routing/useScrollSurfaceOnChange";
-import { TabTrigger } from "@/components/ui/ResponsiveAccordionTabTrigger";
-import { ResponsiveAccordionTabsDesktop } from "@/components/ui/ResponsiveAccordionTabsDesktop";
+import { TabTrigger } from "@/components/app/ResponsiveAccordionTabTrigger";
+import { ResponsiveAccordionTabsDesktop } from "@/components/app/ResponsiveAccordionTabsDesktop";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { MEDIA_LG_UP } from "@/lib/breakpoints";
-import type { ResponsiveAccordionTabsProps } from "@/components/ui/ResponsiveAccordionTabsTypes";
+import type { ResponsiveAccordionTabsProps } from "@/components/app/ResponsiveAccordionTabsTypes";
 
 export type {
   AccordionTabItem,
   ResponsiveAccordionTabsProps,
-} from "@/components/ui/ResponsiveAccordionTabsTypes";
+} from "@/components/app/ResponsiveAccordionTabsTypes";
 
 /**
  * Responsive tab shell — mobile accordion (content under active heading),

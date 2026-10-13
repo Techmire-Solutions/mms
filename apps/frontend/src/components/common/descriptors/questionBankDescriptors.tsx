@@ -1,6 +1,6 @@
 import type { QuestionBankQuestion } from "@mms/shared";
-import type { EntityDescriptor } from "@/types/entityRegistry";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 export const questionBankEntityDescriptor: EntityDescriptor<QuestionBankQuestion> =

@@ -1,10 +1,10 @@
 import React from "react";
-import { ExportToolbar, type ExportColumn } from "@/components/ui/ExportToolbar";
-import { ListPagination } from "@/components/ui/ListPagination";
+import { ExportToolbar, type ExportColumn } from "@/components/app/ExportToolbar";
+import { ListPagination } from "@/components/app/ListPagination";
 import { cn } from "@/lib/utils";
 
-import { EmptyState } from "@/components/ui/EmptyState";
-import { TableSkeleton } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/app/EmptyState";
+import { TableSkeleton } from "@/components/app/LoadingState";
 
 export interface ReportDataGridContainerProps {
   children: React.ReactNode;

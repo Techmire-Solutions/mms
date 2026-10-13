@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import type { EntityDescriptor, FieldDefinition } from "@/types/entityRegistry";
+import type { EntityDescriptor, FieldDefinition } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "./entityDescriptorFactory";
-import type { CreateEntityDescriptorOptions } from "@/types/entityRegistry";
+import type { CreateEntityDescriptorOptions } from "@/components/common/entityRegistryTypes";
 
 export type StaticDescriptorInput<T> = Omit<CreateEntityDescriptorOptions<T>, "fields"> & {
   fields: (FieldDefinition<T> & { labelKey?: string })[];

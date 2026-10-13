@@ -6,7 +6,7 @@
 import React, { useCallback, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { DocumentTemplateEditor } from "@/components/ui/DocumentTemplateEditor";
+import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
 import {
   AVAILABLE_FIELDS,
   getAvailablePresets,

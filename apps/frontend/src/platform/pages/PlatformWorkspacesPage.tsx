@@ -3,7 +3,7 @@ import React from "react";
 import { Building2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import PlatformWorkspaceList from "@/platform/components/PlatformWorkspaceList";
 
 export default function PlatformWorkspacesPage(): React.JSX.Element {

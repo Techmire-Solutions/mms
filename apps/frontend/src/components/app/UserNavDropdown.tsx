@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronDown, LogOut } from "lucide-react";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

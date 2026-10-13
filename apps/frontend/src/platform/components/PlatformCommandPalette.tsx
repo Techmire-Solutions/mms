@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
-import { CommandPaletteShell } from "@/components/ui/CommandPaletteShell";
+import { CommandPaletteShell } from "@/components/app/CommandPaletteShell";
 import type { PlatformCommandItem } from "@/platform/components/platformCommandItems";
 import { PlatformCommandResultsList } from "@/platform/components/command/PlatformCommandResultsList";
 import { useOmniCommandRegistry } from "@/platform/components/command/useOmniCommandRegistry";

@@ -6,7 +6,7 @@
 import React, { useId } from "react";
 import { Type } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import type { ElementStyle, TemplateElement } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { TemplateEditorSection } from "./TemplateEditorSection";
@@ -14,7 +14,7 @@ import { TemplateEditorTypographyStyleButtons } from "./TemplateEditorTypography
 import { TemplateEditorTypographySwatches } from "./TemplateEditorTypographySwatches";
 import { TemplateEditorFontSizeColorControls } from "./TemplateEditorFontSizeColorControls";
 import { FONT_OPTIONS, SWATCHES, resolveTypographyStates } from "./templateEditorTypographyUtils";
-import { PRINT_EMERALD, PRINT_EMERALD_DEEP } from "@/lib/printTemplateStyles";
+import { PRINT_EMERALD, PRINT_EMERALD_DEEP } from "@/lib/ui/printTemplateStyles";
 
 export { FONT_OPTIONS, SWATCHES };
 

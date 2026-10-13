@@ -3,7 +3,7 @@ import {
   buildContactsDateRangeComparison,
   computeDynamicDateRangeComparison,
   computeDynamicSessionComparison,
-} from "@/components/ui/reports/comparisonModeCompute";
+} from "@/components/reports/comparisonModeCompute";
 import type { AppTranslationKey } from "@mms/shared";
 
 const t = (key: AppTranslationKey) => key;

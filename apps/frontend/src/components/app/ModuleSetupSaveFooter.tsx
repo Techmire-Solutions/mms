@@ -1,6 +1,6 @@
 import { Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { cn } from "@/lib/utils";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 

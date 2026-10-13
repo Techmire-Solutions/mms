@@ -1,14 +1,14 @@
 import React from "react";
 import { ReceiptText, User, Hash } from "lucide-react";
 import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { FeeStructure } from "@mms/shared";
-import type { InvoiceDraft } from "@/tenant/features/finance/components/invoiceFormDraft";
+import type { InvoiceDraft } from "@/tenant/features/finance/lib/invoiceFormDraft";
 import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { InvoiceFormMetadataFields } from "@/tenant/features/finance/components/InvoiceFormMetadataFields";
 

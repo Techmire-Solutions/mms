@@ -10,12 +10,12 @@ import type {
   CollectionMeta,
   CustomWidget,
   FilterRule,
-} from "@/components/ui/reports/dynamicChartVisualizerTypes";
-import { useDynamicChartVisualizerMetaEffects } from "@/components/ui/reports/useDynamicChartVisualizerEffects";
-import { useDynamicChartVisualizerContainer } from "@/components/ui/reports/useDynamicChartVisualizerContainer";
-import { isVisualizerWidgetPinned } from "@/components/ui/reports/dynamicChartVisualizerPin";
-import { buildDynamicChartVisualizerHandlers } from "@/components/ui/reports/useDynamicChartVisualizerHandlers";
-import { useDynamicChartVisualizerData } from "@/tenant/features/reports/controllers/useDynamicChartVisualizerData";
+} from "@/components/reports/dynamicChartVisualizerTypes";
+import { useDynamicChartVisualizerMetaEffects } from "@/components/reports/useDynamicChartVisualizerEffects";
+import { useDynamicChartVisualizerContainer } from "@/components/reports/useDynamicChartVisualizerContainer";
+import { isVisualizerWidgetPinned } from "@/components/reports/dynamicChartVisualizerPin";
+import { buildDynamicChartVisualizerHandlers } from "@/components/reports/useDynamicChartVisualizerHandlers";
+import { useDynamicChartVisualizerData } from "@/tenant/features/reports/hooks/useDynamicChartVisualizerData";
 
 const METADATA_CONFIGS: Record<string, CollectionMeta> = METADATA_FIELDS;
 

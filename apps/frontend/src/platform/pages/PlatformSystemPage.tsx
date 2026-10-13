@@ -1,7 +1,7 @@
 import React from "react";
 import { Server } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { PlatformSystemMaintenance } from "@/platform/components/PlatformSystemMaintenance";
 
 export default function PlatformSystemPage(): React.JSX.Element {

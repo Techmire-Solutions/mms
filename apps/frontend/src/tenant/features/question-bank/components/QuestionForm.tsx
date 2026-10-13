@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BookOpen } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {
@@ -21,7 +21,7 @@ import { QuestionFormContentSection } from "@/tenant/features/question-bank/comp
 import { QuestionFormFooterSummary } from "@/tenant/features/question-bank/components/QuestionFormFooterSummary";
 import { QuestionFormSourcesSection } from "@/tenant/features/question-bank/components/QuestionFormSourcesSection";
 
-import type { QuestionFormDraft, QuestionFormProps } from "./questionFormTypes";
+import type { QuestionFormDraft, QuestionFormProps } from "../lib/questionFormTypes";
 
 export function QuestionForm({
   open,

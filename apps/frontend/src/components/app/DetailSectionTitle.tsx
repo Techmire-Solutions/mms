@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { cn } from "@/lib/utils";
 
 export interface DetailSectionTitleProps {

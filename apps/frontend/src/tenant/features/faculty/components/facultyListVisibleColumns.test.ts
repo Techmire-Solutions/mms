@@ -6,7 +6,7 @@ import {
   facultyWorkColumnCellClass,
   facultyWorkColumnHeadClass,
   toFacultyListSortField,
-} from "./facultyListVisibleColumns";
+} from "../lib/facultyListVisibleColumns";
 
 const mockRegistry: ModuleColumnRegistryEntry[] = [
   { key: "name", label: "Name", enabled: true, fixed: true, order: 0 },

@@ -3,10 +3,10 @@ import { BrainCircuit } from "lucide-react";
 import { type Contact, getDisplayName, getContactTags } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactIdentityMeta } from "../ContactIdentityMeta";
-import { PersonDetailHeroCard } from "@/components/ui/PersonDetailHeroCard";
-import { DetailNotesBlock } from "@/components/ui/DetailNotesBlock";
+import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
+import { DetailNotesBlock } from "@/components/app/DetailNotesBlock";
 import { Badge } from "@/components/ui/badge";
-import { getGenderCardAccent } from "@/lib/genderUi";
+import { getGenderCardAccent } from "@/lib/ui/genderUi";
 
 export interface ContactDetailHeroCardProps {
   contact: Contact;

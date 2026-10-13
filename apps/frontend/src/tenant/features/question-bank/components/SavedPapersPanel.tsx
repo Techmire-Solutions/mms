@@ -2,7 +2,7 @@ import React from "react";
 import { FileText } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { type QuestionBankTest, formatDate } from "@mms/shared";
 

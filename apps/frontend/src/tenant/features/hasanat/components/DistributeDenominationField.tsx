@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Field, FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { Field, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Denomination, Distribution } from "@/lib/data/hasanatData";
 import { DenominationModal } from "./DenominationModal";

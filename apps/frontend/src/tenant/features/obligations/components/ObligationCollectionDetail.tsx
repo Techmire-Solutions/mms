@@ -9,13 +9,13 @@ import type {
   ObligationDistribution,
 } from "@/lib/data/obligationsData";
 import { formatDate } from "@mms/shared";
-import { Drawer } from "@/components/ui/Drawer";
+import { Drawer } from "@/components/app/Drawer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
-} from "@/components/ui/DetailDrawerArchiveChrome";
+} from "@/components/app/DetailDrawerArchiveChrome";
 import { ObligationInvoiceModals } from "./ObligationInvoiceModals";
 import { useObligationCollectionDetailModel } from "./detail/useObligationCollectionDetailModel";
 import { ObligationCollectionAttributesCard } from "./detail/ObligationCollectionAttributesCard";

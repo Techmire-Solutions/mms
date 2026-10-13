@@ -4,12 +4,12 @@ import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { type Denomination } from "@/lib/data/hasanatData";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { SectionHeader } from "@/components/app/SectionHeader";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DenominationModal } from "@/tenant/features/hasanat/components/DenominationModal";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 
 const MotionCard = motion.create(Card);
 

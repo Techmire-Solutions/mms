@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ReportChartCard } from "./ReportChartCard";
 
-vi.mock("@/components/ui/SafeResponsiveContainer", () => ({
+vi.mock("@/components/app/SafeResponsiveContainer", () => ({
   SafeResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   ),

@@ -1,16 +1,16 @@
 import { getPageDimensions, type TemplateElement } from "@mms/shared";
 import { escapeHtml } from "@/lib/escapeHtml";
-import { PRINT_COLORS } from "@/lib/printTemplateStyles";
+import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 import {
   resolveElementGeometry,
   resolveElementText,
   resolveTableRows,
   visibleTableRowCount,
-} from "@/components/ui/template-editor/templateDataResolution";
+} from "@/components/template-editor/templateDataResolution";
 import type {
   VoucherPrintPayload,
   VoucherTemplate,
-} from "@/tenant/features/accounting/components/voucherTemplateModel";
+} from "@/tenant/features/accounting/lib/voucherTemplateModel";
 
 function payloadRecord(data: VoucherPrintPayload): Record<string, unknown> {
   return {

@@ -2,8 +2,8 @@ import React, { useId } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/PasswordInput";
-import { Field, FieldErrorMessage } from "@/components/ui/FormField";
+import { PasswordInput } from "@/components/app/PasswordInput";
+import { Field, FieldErrorMessage } from "@/components/app/FormField";
 import {
   AlertDialog,
   AlertDialogCancel,

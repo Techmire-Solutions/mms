@@ -1,5 +1,5 @@
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 
 export interface PersonMessagingRowActionsExtrasProps {
   /** Primary phone (or null when the row has none) — drives SMS visibility. */

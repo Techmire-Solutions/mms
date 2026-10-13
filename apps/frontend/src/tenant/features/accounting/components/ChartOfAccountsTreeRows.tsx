@@ -3,11 +3,11 @@ import { Eye, EyeOff, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCard } from "@/components/app/EntityCard";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
 import { cn } from "@/lib/utils";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { ACCOUNT_TYPE_META, type Account } from "@/lib/data/accountingData";

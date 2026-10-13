@@ -3,7 +3,7 @@ import type { Contact, ContactsQuickFilter } from "@mms/shared";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type ContactsListCards from "@/tenant/features/contacts/components/ContactsListCards";
 import type ContactsListDesktopTable from "@/tenant/features/contacts/components/ContactsListDesktopTable";
-import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/contactTableTypes";
+import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 
 type ContactsWorkTierColumn = ContactsColumnConfig;
 

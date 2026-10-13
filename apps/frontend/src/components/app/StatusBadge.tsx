@@ -1,7 +1,7 @@
 import React from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { cn } from "@/lib/utils";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Badge } from "@/components/ui/badge";
 

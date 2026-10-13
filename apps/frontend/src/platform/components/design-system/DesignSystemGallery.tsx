@@ -1,11 +1,11 @@
 import React from "react";
 import { Building2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { StatCard } from "@/components/ui/StatCard";
+import { StatCard } from "@/components/app/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { Breadcrumb } from "@/components/app/Breadcrumb";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import {
   Table,
   TableBody,
@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ListPagination } from "@/components/ui/ListPagination";
+import { ListPagination } from "@/components/app/ListPagination";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 import {

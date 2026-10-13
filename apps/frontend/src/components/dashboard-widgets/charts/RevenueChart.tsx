@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetChartHeader } from "@/components/ui/WidgetChartHeader";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetChartHeader } from "@/components/app/WidgetChartHeader";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useBrandedDashboardChartColors } from "@/components/dashboard-widgets/useBrandedDashboardChartColors";
 import { ChartPrefsControlGroup } from "@/components/dashboard-widgets/charts/ChartPrefsControlGroup";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDashboardConfig } from "@/hooks/useDashboardConfig";
 import { useRevenueChartData } from "@/components/dashboard-widgets/charts/useRevenueChartData";
-import { LegendChip } from "@/components/ui/LegendChip";
+import { LegendChip } from "@/components/app/LegendChip";
 import { RevenueChartPlot } from "@/components/dashboard-widgets/charts/RevenueChartPlot";
 import {
   DASHBOARD_CHART_TYPE_OPTIONS,

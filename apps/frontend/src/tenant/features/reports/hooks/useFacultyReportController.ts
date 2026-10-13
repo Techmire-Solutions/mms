@@ -16,15 +16,15 @@ import {
   buildFacultyReportMetricItems,
   computeFacultyWorkload,
   summarizeFacultyWorkload,
-} from "@/tenant/features/reports/controllers/facultyReportMetrics";
-import { resolveFacultyReportExportRows } from "@/tenant/features/reports/controllers/facultyReportExport";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+} from "@/tenant/features/reports/hooks/facultyReportMetrics";
+import { resolveFacultyReportExportRows } from "@/tenant/features/reports/hooks/facultyReportExport";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 import {
   mapFacultyRow,
   type FacultyReportProps,
   type FacultyReportSubTab,
-} from "@/components/ui/reports/facultyReportTypes";
-import type { SubTab as UINavTab } from "@/components/ui/SubTabBar";
+} from "@/components/reports/facultyReportTypes";
+import type { SubTab as UINavTab } from "@/components/app/SubTabBar";
 
 /** Controller for Faculty Reports tier — Query + filters; presentational shell stays thin. */
 export function useFacultyReportController({ filters }: FacultyReportProps) {

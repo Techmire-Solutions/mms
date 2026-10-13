@@ -12,7 +12,7 @@ import {
   type StatItem,
 } from "@/lib/dashboardWidgets";
 import { resolveDashboardTrendMetric, TREND_METRIC_KEY_MAP } from "@/lib/dashboardCollections";
-import { resolveCardVisuals } from "@/lib/dashboardWidgetColors";
+import { resolveCardVisuals } from "@/lib/ui/dashboardWidgetColors";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { DashboardMetricTrends } from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";
 import type { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";

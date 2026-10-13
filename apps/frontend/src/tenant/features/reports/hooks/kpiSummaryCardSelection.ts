@@ -1,9 +1,9 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { getObject, saveObject } from "@/lib/db";
 import type { CustomCard } from "@/lib/reports/reportMetadata";
-import { areCustomCardsEqual, areStringListsEqual } from "@/components/ui/reports/kpiSummaryConfig";
-import { normalizeStoredCardIds } from "@/components/ui/reports/kpiSummaryFormatters";
-import type { CategorizedKPIItem } from "@/components/ui/reports/kpiSummaryTypes";
+import { areCustomCardsEqual, areStringListsEqual } from "@/components/reports/kpiSummaryConfig";
+import { normalizeStoredCardIds } from "@/components/reports/kpiSummaryFormatters";
+import type { CategorizedKPIItem } from "@/components/reports/kpiSummaryTypes";
 
 export interface KpiCardSelectionState {
   customCards: CustomCard[];

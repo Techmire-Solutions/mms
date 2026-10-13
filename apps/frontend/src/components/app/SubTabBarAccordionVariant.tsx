@@ -2,8 +2,8 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { SubTab } from "@/components/ui/SubTabBar";
-import { SubTabBarBadge } from "@/components/ui/SubTabBarBadge";
+import type { SubTab } from "@/components/app/SubTabBar";
+import { SubTabBarBadge } from "@/components/app/SubTabBarBadge";
 
 export interface SubTabBarVariantProps<K extends string> {
   tabs: readonly SubTab<K>[];

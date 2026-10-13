@@ -2,14 +2,14 @@ import { ArrowUpRight } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { SectionLabel } from "@/components/ui/SectionLabel";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { SectionLabel } from "@/components/app/SectionLabel";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { ContactCardMessagingButtons } from "@/tenant/features/contacts/components/ContactCardMessagingButtons";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 import { DETAIL_STYLES } from "./contactDetailStyles";
 

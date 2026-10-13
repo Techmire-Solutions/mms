@@ -1,10 +1,10 @@
 import React from "react";
 import type { TooltipContentProps } from "recharts";
 import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
-import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
-import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
-import type { FacultyWorkloadItem } from "@/components/ui/reports/facultyReportTypes";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import { ChartTooltip, ChartTooltipRow } from "@/components/app/ChartTooltip";
+import type { FacultyWorkloadItem } from "@/components/reports/facultyReportTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 function FacultyWorkloadTooltip({

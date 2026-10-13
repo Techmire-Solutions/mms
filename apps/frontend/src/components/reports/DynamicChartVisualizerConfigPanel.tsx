@@ -1,12 +1,12 @@
 import React from "react";
 import { Sparkles } from "lucide-react";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { DynamicChartVisualizerFiltersPanel } from "@/components/ui/reports/DynamicChartVisualizerFiltersPanel";
-import { DynamicChartVisualizerConfigFields } from "@/components/ui/reports/DynamicChartVisualizerConfigFields";
-import type { DynamicChartVisualizerConfigPanelProps } from "@/components/ui/reports/dynamicChartVisualizerConfigPanelTypes";
+import { DynamicChartVisualizerFiltersPanel } from "@/components/reports/DynamicChartVisualizerFiltersPanel";
+import { DynamicChartVisualizerConfigFields } from "@/components/reports/DynamicChartVisualizerConfigFields";
+import type { DynamicChartVisualizerConfigPanelProps } from "@/components/reports/dynamicChartVisualizerConfigPanelTypes";
 
-export type { DynamicChartVisualizerConfigPanelProps } from "@/components/ui/reports/dynamicChartVisualizerConfigPanelTypes";
+export type { DynamicChartVisualizerConfigPanelProps } from "@/components/reports/dynamicChartVisualizerConfigPanelTypes";
 
 export function DynamicChartVisualizerConfigPanel(
   props: DynamicChartVisualizerConfigPanelProps,

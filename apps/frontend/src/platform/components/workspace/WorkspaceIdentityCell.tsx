@@ -2,7 +2,7 @@ import React from "react";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 import WorkspaceLogo from "@/platform/components/WorkspaceLogo";
 import { tenantUrl } from "@/lib/config/tenantConfig";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { CopyButton } from "@/components/app/CopyButton";
 import { ExternalLink, Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 

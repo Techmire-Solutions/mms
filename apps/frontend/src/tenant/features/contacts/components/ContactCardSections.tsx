@@ -1,6 +1,6 @@
 import React from "react";
 import type { Contact, ContactPreferences } from "@mms/shared";
-import { EntityCardInfoPills } from "@/components/ui/EntityCardInfoPills";
+import { EntityCardInfoPills } from "@/components/app/EntityCardInfoPills";
 import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 
 export {

@@ -1,9 +1,9 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { FORM_LABEL, FORM_INPUT_BUILDER } from "@/components/ui/formStyles";
@@ -12,7 +12,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 export {
   WidgetBuilderIconPicker,
   type WidgetBuilderIconTab,
-} from "@/components/ui/reports/pinnedWidgets/WidgetBuilderIconPicker";
+} from "@/components/reports/pinnedWidgets/WidgetBuilderIconPicker";
 
 interface WidgetBuilderCardRoleOptionsProps {
   builderRole: string;

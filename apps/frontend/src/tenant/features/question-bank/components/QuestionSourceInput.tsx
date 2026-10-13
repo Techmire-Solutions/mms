@@ -1,7 +1,7 @@
 import type React from "react";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ModuleFieldDef } from "@mms/shared";

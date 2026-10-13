@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ExaminationFormFields } from "./ExaminationFormFields";
 
-vi.mock("@/components/ui/SectionCard", () => ({
+vi.mock("@/components/app/SectionCard", () => ({
   SectionCard: ({ children, title }: any) => (
     <div data-testid="section-card">
       <h3>{title}</h3>
@@ -12,7 +12,7 @@ vi.mock("@/components/ui/SectionCard", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   Field: ({ children, label }: any) => (
     <div>
       <label>{label}</label>
@@ -21,7 +21,7 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormSelect", () => ({
+vi.mock("@/components/app/FormSelect", () => ({
   FormSelect: ({ options, value }: any) => (
     <select data-testid="form-select" defaultValue={value}>
       {options.map((o: any) => (
@@ -33,7 +33,7 @@ vi.mock("@/components/ui/FormSelect", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({ value }: any) => <input data-testid="date-picker" defaultValue={value} />,
 }));
 

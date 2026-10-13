@@ -1,9 +1,9 @@
 import React, { type ElementType, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { CardRemoveButton } from "@/components/ui/FormCardChrome";
+import { CardRemoveButton } from "@/components/app/FormCardChrome";
 import { FORM_CARD } from "@/components/ui/formStyles";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const LIST_CARD_STRIPE = "bg-primary/60 group-hover:bg-primary";

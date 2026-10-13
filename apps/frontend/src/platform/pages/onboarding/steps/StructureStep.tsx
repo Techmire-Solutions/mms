@@ -7,7 +7,7 @@ import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Building2, Check } from "lucide-react";
 import { getRecommendedRolesForIndustry } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { OnboardingData } from "@/platform/pages/onboarding/onboardingWizardTypes";
 

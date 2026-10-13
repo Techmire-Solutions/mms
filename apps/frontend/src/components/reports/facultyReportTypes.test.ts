@@ -50,7 +50,7 @@ describe("mapFacultyRow", () => {
 describe("computeFacultyWorkload and summarizeFacultyWorkload", () => {
   it("aggregates workload across classes and sessions and sorts descending by totalStudents", async () => {
     const { computeFacultyWorkload, summarizeFacultyWorkload } =
-      await import("@/tenant/features/reports/controllers/facultyReportMetrics");
+      await import("@/tenant/features/reports/hooks/facultyReportMetrics");
     const sessions = [
       {
         id: "s1",

@@ -2,12 +2,12 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { applyDocumentTheme } from "@/lib/brandingThemeCore";
-import { applyApexPlatformTheme } from "@/platform/lib/brandingEntryTheme";
+import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
 import { MMS_PLATFORM_BRANDING } from "@/platform/lib/themeScope";
 import { usePlatformThemePreview } from "./usePlatformThemePreview";
 
 vi.mock("@/lib/brandingThemeCore", () => ({ applyDocumentTheme: vi.fn() }));
-vi.mock("@/platform/lib/brandingEntryTheme", () => ({ applyApexPlatformTheme: vi.fn() }));
+vi.mock("@/lib/branding/apexPlatformTheme", () => ({ applyApexPlatformTheme: vi.fn() }));
 
 function Preview() {
   const { setSelectedMode } = usePlatformThemePreview();

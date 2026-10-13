@@ -1,6 +1,6 @@
 import React, { type JSX } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import {
   TableHead,
   TableHeader,

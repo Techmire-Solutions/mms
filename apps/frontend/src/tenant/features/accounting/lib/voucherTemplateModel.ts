@@ -1,6 +1,6 @@
 import type { BrandingSettings, DocumentTemplate } from "@mms/shared";
 import { createDocumentTemplateStore } from "@/lib/documentTemplatePersistence";
-import type { PaymentVoucherModel } from "@/tenant/features/accounting/components/paymentVoucherModel";
+import type { PaymentVoucherModel } from "@/tenant/features/accounting/lib/paymentVoucherModel";
 
 /** Settings singleton for the accounting voucher layout. Includes "template" so title-case is skipped. */
 export const ACCOUNTING_VOUCHER_TEMPLATE_KEY = "accounting_voucher_template";

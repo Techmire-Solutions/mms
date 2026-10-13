@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { User } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
+import { SectionCard } from "@/components/app/SectionCard";
+import { FormSubmitActions } from "@/components/app/FormSubmitActions";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 import { useUpdatePlatformProfileName } from "@/platform/hooks/usePlatformProfile";

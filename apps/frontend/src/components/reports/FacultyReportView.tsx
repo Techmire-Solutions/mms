@@ -1,8 +1,8 @@
 import React, { lazy, Suspense } from "react";
 import { FACULTY_MODULE_MANIFEST, toTitleCase } from "@mms/shared";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { ReportDataGridContainer } from "./ReportDataGridContainer";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReportFilterBanner } from "./ReportFilterBanner";
 import { FacultyReportTables } from "./FacultyReportTables";

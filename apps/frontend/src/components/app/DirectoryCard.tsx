@@ -2,14 +2,14 @@ import React, { type ReactNode } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkCardAction, type UseWorkCardActionReturn } from "@/hooks/useWorkCardAction";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCard } from "@/components/app/EntityCard";
 import {
   EntityCardInfoPills,
   type EntityCardInfoPillsProps,
-} from "@/components/ui/EntityCardInfoPills";
-import { EntityCardMetadata } from "@/components/ui/EntityCardMetadata";
-import { EntityCardFooterActions } from "@/components/ui/EntityCardFooterActions";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+} from "@/components/app/EntityCardInfoPills";
+import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
+import { EntityCardFooterActions } from "@/components/app/EntityCardFooterActions";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 export interface DirectoryCardHeaderConfig {
   displayName: string;

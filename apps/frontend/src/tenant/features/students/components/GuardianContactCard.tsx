@@ -1,5 +1,5 @@
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 

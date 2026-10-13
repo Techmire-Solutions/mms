@@ -4,7 +4,7 @@ import type { OnboardingData } from "@/platform/pages/onboarding/OnboardingWizar
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { AuthEmailField } from "@/components/entry";
 import { AdminSetupPasswordFields } from "@/platform/pages/onboarding/steps/AdminSetupPasswordFields";
 

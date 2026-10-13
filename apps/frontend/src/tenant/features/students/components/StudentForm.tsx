@@ -1,10 +1,10 @@
 import React from "react";
 import { GraduationCap } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { FormFooterEntityChip } from "@/components/ui/FormFooterChip";
+import { FormModal } from "@/components/app/FormModal";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { FormFooterEntityChip } from "@/components/app/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
 import { StudentFormTabContent } from "@/tenant/features/students/components/StudentFormTabContent";
 import { useStudentFormState } from "@/tenant/features/students/hooks/useStudentFormState";

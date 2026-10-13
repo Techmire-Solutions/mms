@@ -12,8 +12,8 @@ import {
 import { calculateReportDateRange } from "@/lib/reports/reportDateUtils";
 import { notify } from "@/lib/notify";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
-import type { ChannelSummaryRow } from "@/components/ui/reports/MessagingReportSummaryTable";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
+import type { ChannelSummaryRow } from "@/components/reports/MessagingReportSummaryTable";
 
 export function useMessagingReportData(t: TranslationFunction, canWrite: boolean) {
   const [startDate, setStartDate] = useState("");

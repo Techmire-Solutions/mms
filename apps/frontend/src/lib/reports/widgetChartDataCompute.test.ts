@@ -16,7 +16,7 @@ const {
   readEnrollmentsWidgetAggregate: vi.fn(),
 }));
 
-vi.mock("./widgetAggregateReaders.js", () => ({
+vi.mock("./widgetAggregateReaders", () => ({
   readContactsWidgetAggregate,
   readStudentsWidgetAggregate,
   readFacultyWidgetAggregate,

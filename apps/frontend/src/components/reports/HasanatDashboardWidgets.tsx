@@ -1,6 +1,6 @@
 import React from "react";
 import { HasanatChart } from "@/components/dashboard-widgets/charts/HasanatChart";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export function HasanatDashboardWidgets(): React.JSX.Element {

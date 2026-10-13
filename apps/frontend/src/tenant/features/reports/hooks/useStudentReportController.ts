@@ -9,26 +9,26 @@ import {
   useStudentsContractList,
 } from "@/tenant/hooks/collections/students";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import {
   mapEnrollmentRow,
   resolveEnrollmentReportExportRows,
   resolveStudentReportExportRows,
-} from "@/tenant/features/reports/controllers/studentReportExport";
+} from "@/tenant/features/reports/hooks/studentReportExport";
 import {
   applyStudentsReportDrillDown,
   buildStudentReportMetricItems,
-} from "@/tenant/features/reports/controllers/studentReportMetrics";
-import type { SubTab as UINavTab } from "@/components/ui/SubTabBar";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+} from "@/tenant/features/reports/hooks/studentReportMetrics";
+import type { SubTab as UINavTab } from "@/components/app/SubTabBar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 import {
   type EnrollmentHistoryItem,
   mapStudentRow,
   type ReportStudent,
   type StudentReportProps,
   type StudentReportSubTab,
-} from "@/components/ui/reports/studentReportTypes";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+} from "@/components/reports/studentReportTypes";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 /** Controller for Students Reports tier — Query + filters; presentational shell stays thin. */
 export function useStudentReportController({ filters }: StudentReportProps) {

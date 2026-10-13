@@ -24,7 +24,7 @@ vi.mock("./ContactSubListCards", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   TYPE_SELECT_WIDTH: "w-32",
   FormCardTypeSelect: ({
     label,

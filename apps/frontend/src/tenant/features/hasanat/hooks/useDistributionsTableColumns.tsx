@@ -1,12 +1,12 @@
 import React from "react";
 import { User, Users2 } from "lucide-react";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import type { WorkBatchTableColumn } from "@/components/common/work";
 import type { Distribution } from "@/lib/data/hasanatData";
 import {
   getDistributionDenomination,
   type DistributionsListContentProps,
-} from "@/tenant/features/hasanat/components/distributionsListShared";
+} from "@/tenant/features/hasanat/lib/distributionsListShared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface UseDistributionsTableColumnsOptions {

@@ -1,16 +1,16 @@
 import React from "react";
 import { formatDate } from "@mms/shared";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCard } from "@/components/app/EntityCard";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   getJournalEntryLineTotals,
   getJournalTagLabel,
   type JournalEntriesListProps,
-} from "@/tenant/features/accounting/components/journalEntriesListShared";
+} from "@/tenant/features/accounting/lib/journalEntriesListShared";
 
 export type JournalEntriesListCardsProps = Omit<
   JournalEntriesListProps,

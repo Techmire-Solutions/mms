@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 
 vi.mock("@/hooks/useReducedMotion", () => ({
   useReducedMotion: () => false,

@@ -7,9 +7,9 @@ import {
   useResetWorkspaceAdminPassword,
   useCreateWorkspaceAdmin,
 } from "@/platform/hooks/usePlatformWorkspaces";
-import { Drawer } from "@/components/ui/Drawer";
-import { EntityDescriptorSections } from "@/components/ui/EntityDescriptorSections";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { Drawer } from "@/components/app/Drawer";
+import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 import type { useWorkspaceDeleteState } from "@/platform/components/workspace/useWorkspaceDeleteState";
 import type { usePlatformWorkspaceModalState } from "@/platform/components/workspace/usePlatformWorkspaceModalState";

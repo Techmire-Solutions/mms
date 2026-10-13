@@ -33,7 +33,14 @@ module.exports = {
   create(context) {
     const filename = context.filename.replace(/\\/g, "/").split("/src/").at(-1);
     const relative = `src/${filename}`;
-    if (!/^src\/components\/(ui|common)\//.test(relative) || /\.(test|spec)\./.test(relative))
+    // Shared-UI tier: primitives (ui), composites (app), engines (common), and the
+    // feature-shaped component libs carved out of ui/.
+    if (
+      !/^src\/components\/(ui|common|app|reports|template-editor|messageComposer|contact-action|sequence-numbering)\//.test(
+        relative,
+      ) ||
+      /\.(test|spec)\./.test(relative)
+    )
       return {};
     const allowed = new Set(baseline[relative] ?? []);
     const observed = new Set();

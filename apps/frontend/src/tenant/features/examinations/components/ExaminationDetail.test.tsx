@@ -10,7 +10,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Drawer", () => ({
+vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({ children, title }: any) => (
     <div data-testid="detail-drawer">
       <h2>{title}</h2>
@@ -19,7 +19,7 @@ vi.mock("@/components/ui/Drawer", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/DetailDrawerArchiveChrome", () => ({
+vi.mock("@/components/app/DetailDrawerArchiveChrome", () => ({
   DetailDrawerArchivedBanner: () => <div data-testid="archived-banner" />,
   DetailDrawerRestoreOrEditAction: () => <div data-testid="drawer-actions" />,
 }));

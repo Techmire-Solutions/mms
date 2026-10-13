@@ -1,7 +1,7 @@
 import React from "react";
 import { Clock, LogOut, TimerReset } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface SessionTimeoutModalProps {

@@ -1,6 +1,6 @@
 import type React from "react";
 import { type Contact, hasWhatsApp } from "@mms/shared";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface HasContactCardFaceChannelsParams {

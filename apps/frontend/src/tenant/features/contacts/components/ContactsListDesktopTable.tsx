@@ -8,7 +8,7 @@ import { type ContactsColumnConfig } from "@/tenant/features/contacts/components
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { renderContactTableCell } from "@/tenant/features/contacts/components/ContactTableCells";
 import { ContactsRowActions } from "@/tenant/features/contacts/components/ContactsRowActions";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 
 export interface ContactsListDesktopTableProps {
   contacts: Contact[];

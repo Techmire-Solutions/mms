@@ -1,12 +1,12 @@
 import React, { type JSX } from "react";
-import { SearchBar } from "@/components/ui/SearchBar";
-import { ModuleClearFiltersButton } from "@/components/ui/ModuleClearFiltersButton";
-import { ModuleTrashToggle } from "@/components/ui/ModuleTrashToggle";
-import { WorkViewModeToggle } from "@/components/ui/WorkViewModeToggle";
-import { ModuleColumnCustomizer } from "@/components/ui/ModuleColumnCustomizer";
+import { SearchBar } from "@/components/app/SearchBar";
+import { ModuleClearFiltersButton } from "@/components/app/ModuleClearFiltersButton";
+import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
+import { WorkViewModeToggle } from "@/components/app/WorkViewModeToggle";
+import { ModuleColumnCustomizer } from "@/components/app/ModuleColumnCustomizer";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
-import type { ModuleWorkToolbarProps } from "@/components/ui/moduleWorkToolbarTypes";
+import type { ModuleWorkToolbarProps } from "@/components/app/moduleWorkToolbarTypes";
 
 export type { ModuleWorkToolbarProps };
 

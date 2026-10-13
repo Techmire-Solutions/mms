@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Users, Filter, Clock, AlertTriangle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactsMetrics } from "@/tenant/features/contacts/hooks/useContacts";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 export interface ContactsCommandMetricsProps {
   shown: number;

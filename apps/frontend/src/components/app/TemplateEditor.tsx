@@ -17,7 +17,7 @@ import {
   type EditorPane,
   type TemplateEditorBranding,
   type TemplateEditorProps,
-} from "./template-editor";
+} from "../template-editor";
 
 export type { TemplateEditorBranding, TemplateEditorProps };
 

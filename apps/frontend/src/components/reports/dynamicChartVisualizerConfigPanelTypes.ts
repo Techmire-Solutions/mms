@@ -4,7 +4,7 @@ import type {
   ChartType,
   CollectionMeta,
   FilterRule,
-} from "@/components/ui/reports/dynamicChartVisualizerTypes";
+} from "@/components/reports/dynamicChartVisualizerTypes";
 
 export interface DynamicChartVisualizerConfigPanelProps {
   title: string;

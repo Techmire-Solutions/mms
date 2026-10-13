@@ -10,7 +10,7 @@ import {
   type FeeEntryInput,
   type SalaryEntryInput,
 } from "@mms/shared";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { Form } from "@/components/ui/form";
 import { firstZodFieldError } from "@/lib/forms/translateZodError";
 import { notify } from "@/lib/notify";

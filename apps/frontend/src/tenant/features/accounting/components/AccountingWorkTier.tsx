@@ -1,6 +1,6 @@
 import type React from "react";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorState } from "@/components/app/ErrorState";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccountingDashboard } from "@/tenant/features/accounting/components/AccountingDashboard";
 import { ChartOfAccounts } from "@/tenant/features/accounting/components/ChartOfAccounts";
@@ -9,10 +9,10 @@ import { JournalEntries } from "@/tenant/features/accounting/components/JournalE
 import type {
   JournalEntriesListPaging,
   JournalEntryFilterState,
-} from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
+} from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import { TrialBalance } from "@/tenant/features/accounting/components/TrialBalance";
 import type { Account, AccountingSettings, FiscalYear, JournalEntry } from "@mms/shared";
-import type { JournalEntriesChange } from "./journalEntriesTypes";
+import type { JournalEntriesChange } from "../lib/journalEntriesTypes";
 
 type AccountingSubTab = {
   id: string;

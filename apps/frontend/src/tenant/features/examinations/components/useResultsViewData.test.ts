@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
-import { useResultsViewData } from "./useResultsViewData";
+import { useResultsViewData } from "../hooks/useResultsViewData";
 import type { Exam, ExamResult } from "@/lib/data/examinationData";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;

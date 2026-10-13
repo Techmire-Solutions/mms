@@ -1,9 +1,9 @@
 import React from "react";
-import { CommandPaletteModal } from "@/components/ui/CommandPaletteModal";
+import { CommandPaletteModal } from "@/components/app/CommandPaletteModal";
 import {
   useCommandPaletteSearch,
   type UseCommandPaletteSearchOptions,
-} from "@/components/ui/useCommandPaletteSearch";
+} from "@/components/app/useCommandPaletteSearch";
 
 export interface CommandPaletteShellRenderCtx<T> {
   query: string;

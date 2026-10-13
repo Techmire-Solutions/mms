@@ -1,8 +1,8 @@
 import React from "react";
 import { ENROLLMENTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST, toTitleCase } from "@mms/shared";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { ReportDataGridContainer } from "./ReportDataGridContainer";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { ReportFilterBanner } from "./ReportFilterBanner";
 import { StudentReportTables } from "./StudentReportTables";
 import type { StudentReportViewModel } from "./reportViewModels";

@@ -1,12 +1,9 @@
 import React, { useState } from "react";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
-import type {
-  Mujtahid,
-  MujtahidRep,
-} from "@/tenant/features/obligations/components/mujtahidManagerTypes";
+import type { Mujtahid, MujtahidRep } from "@/tenant/features/obligations/lib/mujtahidManagerTypes";
 
 export interface MujtahidNameFormModalProps {
   title: string;

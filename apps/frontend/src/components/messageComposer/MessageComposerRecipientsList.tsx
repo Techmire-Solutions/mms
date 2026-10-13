@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { RecipientRow } from "./RecipientRow";
 import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createModuleStatusUi } from "@/lib/moduleStatusUi";
+import { createModuleStatusUi } from "@/lib/ui/moduleStatusUi";
 
 const t = (key: string) => (key === "student.status.active" ? "Active" : key);
 

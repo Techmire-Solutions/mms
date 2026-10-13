@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { Users } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { ContactsCommandMetrics } from "@/tenant/features/contacts/components/ContactsCommandMetrics";
 import ContactsDataBanner from "@/tenant/features/contacts/components/ContactsDataBanner";
 import ContactsSyncConflictPanel from "@/tenant/features/contacts/components/ContactsSyncConflictPanel";

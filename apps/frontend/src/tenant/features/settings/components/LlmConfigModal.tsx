@@ -1,6 +1,6 @@
 import type React from "react";
 import { Brain } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { type LlmConfig, type LlmProviderType, type LlmTestResult } from "@mms/shared";
 import { LlmConfigModalBody } from "@/tenant/features/settings/components/LlmConfigModalBody";

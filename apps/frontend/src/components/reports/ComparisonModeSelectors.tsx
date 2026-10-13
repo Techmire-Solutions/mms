@@ -1,7 +1,7 @@
 import React from "react";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { DateRange } from "./comparisonModeTypes";
 

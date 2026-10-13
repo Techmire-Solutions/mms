@@ -1,5 +1,5 @@
 import { SESSIONS_MODULE_MANIFEST, type Session } from "@mms/shared";
-import { EntityArchivedBanner } from "@/components/ui/DetailDrawerArchiveChrome";
+import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 import { useTranslation } from "@/hooks/useTranslation";
 
 /** Soft-delete archive banner for session drawer. */

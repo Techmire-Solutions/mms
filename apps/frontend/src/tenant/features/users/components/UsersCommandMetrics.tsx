@@ -2,7 +2,7 @@ import React from "react";
 import { Users as UsersIcon, ShieldAlert, UserCheck } from "lucide-react";
 import type { UsersCommandMetricsSnapshot } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useUsersMetrics } from "@/tenant/features/users/hooks/useUsersApi";
 
 interface UsersCommandMetricsProps {

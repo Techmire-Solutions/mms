@@ -1,14 +1,14 @@
 import React, { useMemo } from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { FilterChips } from "@/components/ui/FilterChips";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { FilterChips } from "@/components/app/FilterChips";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import ContactsListFilters from "@/tenant/features/contacts/components/ContactsListFilters";
 import { ContactsBulkActionBar } from "@/tenant/features/contacts/components/ContactsBulkActionBar";
 import { ContactsList } from "@/tenant/features/contacts/components/ContactsList";
 import { useContactEntityDescriptor } from "@/tenant/features/contacts/hooks/useContactEntityDescriptor";
 import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilterChips";
-import type { ContactsWorkTierProps } from "@/tenant/features/contacts/components/contactsWorkTierTypes";
+import type { ContactsWorkTierProps } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
 
 export const ContactsWorkTier = React.memo(function ContactsWorkTier({
   search,

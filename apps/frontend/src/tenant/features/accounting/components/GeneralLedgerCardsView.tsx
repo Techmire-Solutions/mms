@@ -1,11 +1,11 @@
 import React from "react";
 import { formatDate } from "@mms/shared";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { ReportMoneyCard } from "@/components/ui/reports/ReportMoneyCard";
-import { ReportMoneyCardsGrid } from "@/components/ui/reports/ReportMoneyCardsGrid";
-import { ReportMoneySummaryTile } from "@/components/ui/reports/ReportMoneySummaryTile";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
+import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid";
+import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { GeneralLedgerLineWithRunning } from "./useGeneralLedger";
+import type { GeneralLedgerLineWithRunning } from "../hooks/useGeneralLedger";
 
 /** ReportMoneyCard tile (report) — not DirectoryCard. */
 export interface GeneralLedgerCardsViewProps {

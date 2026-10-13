@@ -1,6 +1,6 @@
 import type React from "react";
 import { AnimatePresence } from "framer-motion";
-import { WidgetBuilder } from "@/components/ui/reports/pinnedWidgets/WidgetBuilder";
+import { WidgetBuilder } from "@/components/reports/pinnedWidgets/WidgetBuilder";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 
 interface PinnedWidgetsBuilderSectionProps {

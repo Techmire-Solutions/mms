@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Account, type FiscalYear, type JournalEntry } from "@/lib/data/accountingData";
@@ -10,11 +10,11 @@ import { SimpleTransactionWizardSteps } from "./SimpleTransactionWizardSteps";
 import { StepTransactionForm } from "./SimpleTransactionStepForm";
 import { StepReview } from "./SimpleTransactionStepReview";
 import { StepTypeSelection } from "./SimpleTransactionStepTypeSelection";
-import { type QuickActionType } from "./simpleTransactionWizardTypes";
-import type { JournalEntrySave } from "./journalEntriesTypes";
-import { useSimpleTransactionWizard } from "./useSimpleTransactionWizard";
-import { useAccountQuickCreate } from "./useAccountQuickCreate";
-import { resolveWizardTransactionGroups } from "./simpleTransactionTemplateGroups";
+import { type QuickActionType } from "../lib/simpleTransactionWizardTypes";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
+import { useSimpleTransactionWizard } from "../hooks/useSimpleTransactionWizard";
+import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
+import { resolveWizardTransactionGroups } from "../lib/simpleTransactionTemplateGroups";
 import { useJournalTemplates } from "@/tenant/features/accounting/hooks/useJournalTemplates";
 
 interface SimpleTransactionWizardProps {

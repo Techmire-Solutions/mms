@@ -1,5 +1,5 @@
 import type { AppTranslationKey } from "@mms/shared";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 import { buildCashflowExportRows } from "./financialReportsCashflowExport";
 
 export interface TrialBalanceRow {

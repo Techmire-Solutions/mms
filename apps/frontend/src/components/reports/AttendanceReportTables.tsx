@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { Users } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   AttendanceSummaryItem,
   RateBarRenderer,
   StudentAttendanceItem,
 } from "./attendanceReportTypes";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 import { AttendanceSummaryTable } from "./AttendanceSummaryTable";
 
 interface AttendanceReportTablesProps {

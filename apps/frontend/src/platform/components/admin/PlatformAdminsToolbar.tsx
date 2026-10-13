@@ -1,7 +1,7 @@
 import React from "react";
 import { Download } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { Button } from "@/components/ui/button";
 import { WorkTaskToolbar } from "@/components/common/work";
 import type { AdminRoleFilter } from "@/platform/pages/PlatformAdminsList";

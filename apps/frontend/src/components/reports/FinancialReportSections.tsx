@@ -1,11 +1,11 @@
 import React from "react";
 import { Area, AreaChart, Cell, Legend, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
-import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import { ChartTooltip, ChartTooltipRow } from "@/components/app/ChartTooltip";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
 import { Card } from "@/components/ui/card";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useFinanceCurrency } from "@/hooks/useCurrency";

@@ -3,7 +3,7 @@ import { parseSessionTimeoutMinutes, resolveTenantSessionPolicy, translateApp } 
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
-import { SessionTimeoutModal } from "@/components/session/SessionTimeoutModal";
+import { SessionTimeoutModal } from "@/components/app/SessionTimeoutModal";
 import { notify } from "@/lib/notify";
 
 /**

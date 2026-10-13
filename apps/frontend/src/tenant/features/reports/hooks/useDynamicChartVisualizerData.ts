@@ -6,11 +6,11 @@ import type {
   AggregatedItem,
   ChartOperation,
   FilterRule,
-} from "@/components/ui/reports/dynamicChartVisualizerTypes";
+} from "@/components/reports/dynamicChartVisualizerTypes";
 import {
   aggregateVisualizerRows,
   sortAndCapAggregatedItems,
-} from "@/components/ui/reports/dynamicChartVisualizerHelpers";
+} from "@/components/reports/dynamicChartVisualizerHelpers";
 
 const CONTACTS_VISUALIZER_QUERY_ID = "contacts-visualizer";
 const STUDENTS_VISUALIZER_QUERY_ID = "students-visualizer";

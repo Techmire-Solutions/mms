@@ -1,6 +1,6 @@
 import React from "react";
 import { Info } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import {
   BarChart,
   Bar,
@@ -20,15 +20,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
-import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/ui/ChartGrid";
+import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
+import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { capitalize, type AppTranslationKey } from "@mms/shared";
-import { getBrandingChartPalette } from "@/lib/brandingChartPalette";
+import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
 import type {
   AggregatedItem,
   ChartOperation,
   ChartType,
-} from "@/components/ui/reports/dynamicChartVisualizerTypes";
+} from "@/components/reports/dynamicChartVisualizerTypes";
 
 export interface DynamicChartVisualizerChartProps {
   chartType: ChartType;

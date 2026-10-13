@@ -1,13 +1,13 @@
 import React from "react";
 import { School, Calendar, DollarSign, Tag } from "lucide-react";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { InvoiceDraft } from "@/tenant/features/finance/components/invoiceFormDraft";
+import type { InvoiceDraft } from "@/tenant/features/finance/lib/invoiceFormDraft";
 
 export interface InvoiceFormMetadataFieldsProps {
   draft: InvoiceDraft;

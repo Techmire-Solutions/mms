@@ -1,18 +1,18 @@
 import React, { useRef } from "react";
 import { Printer, FileCode2 } from "lucide-react";
-import { getRankSuffix } from "@/tenant/features/examinations/components/gradeUtils";
+import { getRankSuffix } from "@/tenant/features/examinations/lib/gradeUtils";
 import { type StudentResultItem } from "@/tenant/features/examinations/components/StudentResultCard";
 import { type Exam } from "@/lib/data/examinationData";
 import { formatDate } from "@mms/shared";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   printHtmlDocument,
   exportTypstReportCard,
-} from "@/tenant/features/examinations/components/certificatePrintWindow";
+} from "@/tenant/features/examinations/lib/certificatePrintWindow";
 
 export interface CertificatePreviewProps {
   result: StudentResultItem;

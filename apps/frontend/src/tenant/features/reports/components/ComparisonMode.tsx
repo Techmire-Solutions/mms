@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { GitCompare, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ComparisonModeCharts } from "@/components/ui/reports/ComparisonModeCharts";
-import { ComparisonModeSelectors } from "@/components/ui/reports/ComparisonModeSelectors";
-import { useComparisonModeData } from "@/tenant/features/reports/controllers/useComparisonModeData";
-import type { ComparisonModeProps, DateRange } from "@/components/ui/reports/comparisonModeTypes";
+import { ComparisonModeCharts } from "@/components/reports/ComparisonModeCharts";
+import { ComparisonModeSelectors } from "@/components/reports/ComparisonModeSelectors";
+import { useComparisonModeData } from "@/tenant/features/reports/hooks/useComparisonModeData";
+import type { ComparisonModeProps, DateRange } from "@/components/reports/comparisonModeTypes";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 
 /**

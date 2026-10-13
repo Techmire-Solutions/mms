@@ -1,6 +1,6 @@
 import React from "react";
 import { AuthBackLink, AuthResendCodeControl, AuthSubmitButton } from "@/components/entry";
-import { isOtpComplete, OtpInput } from "@/components/ui/OtpInput";
+import { isOtpComplete, OtpInput } from "@/components/app/OtpInput";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AuthStepForm } from "./AuthStepForm";

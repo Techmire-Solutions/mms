@@ -1,18 +1,18 @@
 import React from "react";
 import { Archive } from "lucide-react";
 import { formatDate } from "@mms/shared";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { formatEntityStamp } from "@/lib/formatEntityStamp";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   calculateRemainingRetentionDays,
   RetentionCountdownBadge,
   type RetentionCountdownBadgeProps,
-} from "@/components/ui/RetentionCountdownBadge";
+} from "@/components/app/RetentionCountdownBadge";
 import {
   DetailDrawerRestoreOrEditAction,
   type DetailDrawerRestoreOrEditActionProps,
-} from "@/components/ui/DetailDrawerRestoreOrEditAction";
+} from "@/components/app/DetailDrawerRestoreOrEditAction";
 
 export {
   calculateRemainingRetentionDays,

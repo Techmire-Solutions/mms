@@ -1,5 +1,5 @@
 import { applyTitleCaseRecursive } from "@mms/shared";
-import { dispatchLocalDatabaseUpdate, safeSetItem, scopedStorageKey } from "@/lib/dbStorageCore.js";
+import { dispatchLocalDatabaseUpdate, safeSetItem, scopedStorageKey } from "@/lib/dbStorageCore";
 import { reportClientError, reportClientWarn } from "@/lib/clientErrorReporting";
 
 const TITLE_CASE_EXCLUDED_KEYWORDS = [

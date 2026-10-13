@@ -1,4 +1,4 @@
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { SessionsReportCapacityItem, SessionsReportTodaySession } from "@mms/shared";
 
 export type SessionCapacityItem = SessionsReportCapacityItem;

@@ -1,5 +1,5 @@
 import type { AppTranslationKey } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 type TranslateFn = (key: AppTranslationKey, args?: Record<string, string | number>) => string;
 

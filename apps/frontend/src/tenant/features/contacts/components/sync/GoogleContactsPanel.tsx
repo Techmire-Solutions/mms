@@ -1,10 +1,10 @@
 import React from "react";
 import { Globe, Info, Key, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SectionCard } from "@/components/app/SectionCard";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGoogleContactsSync } from "@/tenant/features/contacts/hooks/useGoogleContactsSync";
 import {

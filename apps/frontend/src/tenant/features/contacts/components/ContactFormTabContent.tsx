@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactBasicTab } from "@/tenant/features/contacts/components/formTabs/ContactBasicTab";
 import { ContactFormNestedTabsDispatcher } from "@/tenant/features/contacts/components/ContactFormNestedTabsDispatcher";

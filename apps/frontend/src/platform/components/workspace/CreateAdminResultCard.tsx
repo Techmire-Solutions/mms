@@ -1,5 +1,5 @@
 import React from "react";
-import { CredentialsResultCard } from "@/components/ui/CredentialsResultCard";
+import { CredentialsResultCard } from "@/components/app/CredentialsResultCard";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface CreateAdminResultCardProps {

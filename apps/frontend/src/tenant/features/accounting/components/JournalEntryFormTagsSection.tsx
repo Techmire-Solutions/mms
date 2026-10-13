@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { Plus, Sparkles, Tag } from "lucide-react";
 import type { JournalTemplate } from "@mms/shared";
 import { JOURNAL_TAGS } from "@/lib/data/accountingData";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { getJournalTagLabel } from "./journalEntriesListShared";
-import type { DraftForm } from "./journalEntryFormTypes";
+import { getJournalTagLabel } from "../lib/journalEntriesListShared";
+import type { DraftForm } from "../lib/journalEntryFormTypes";
 
 interface JournalEntryFormTagsSectionProps {
   t: TranslationFunction;

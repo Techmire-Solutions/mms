@@ -10,12 +10,12 @@ import {
   buildContactsDateRangeComparison,
   computeDynamicDateRangeComparison,
   computeDynamicSessionComparison,
-} from "@/components/ui/reports/comparisonModeCompute";
+} from "@/components/reports/comparisonModeCompute";
 import type {
   ComparisonDataItem,
   DateRange,
   DateRangeDataItem,
-} from "@/components/ui/reports/comparisonModeTypes";
+} from "@/components/reports/comparisonModeTypes";
 
 interface UseComparisonModeDataParams {
   category: string;

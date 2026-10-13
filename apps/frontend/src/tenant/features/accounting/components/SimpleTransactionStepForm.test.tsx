@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StepTransactionForm } from "./SimpleTransactionStepForm";
-import type { WizardFormState } from "./simpleTransactionWizardTypes";
+import type { WizardFormState } from "../lib/simpleTransactionWizardTypes";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
 
 declare global {
@@ -20,7 +20,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({
     id,
     value,
@@ -38,7 +38,7 @@ vi.mock("@/components/ui/DatePicker", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormSelect", () => ({
+vi.mock("@/components/app/FormSelect", () => ({
   FormSelect: ({
     id,
     value,
@@ -50,7 +50,7 @@ vi.mock("@/components/ui/FormSelect", () => ({
   }) => <input id={id} data-testid={id} value={value} onChange={(e) => onChange(e.target.value)} />,
 }));
 
-import { QUICK_ACTIONS } from "./journalEntriesQuickActions";
+import { QUICK_ACTIONS } from "../lib/journalEntriesQuickActions";
 
 const mockActionType = QUICK_ACTIONS[0]!.type;
 

@@ -2,14 +2,14 @@ import { formatDate } from "@mms/shared";
 import { TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { JournalEntry } from "@/lib/data/accountingData";
-import { resolveEntryDirection } from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+import { resolveEntryDirection } from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 import {
   getJournalEntryLineTotals,
   getJournalTagLabel,
-} from "@/tenant/features/accounting/components/journalEntriesListShared";
+} from "@/tenant/features/accounting/lib/journalEntriesListShared";
 import { PaymentVoucherPrintButton } from "@/tenant/features/accounting/components/PaymentVoucherPrintButton";
 
 interface JournalRecentEntryCardProps {

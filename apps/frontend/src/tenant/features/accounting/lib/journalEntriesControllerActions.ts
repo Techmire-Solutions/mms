@@ -2,8 +2,8 @@ import { formatMoney } from "@mms/shared";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import { runGridCsvExportJob } from "@/lib/backgroundJobs/runGridCsvExportJob";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { getJournalEntryLineTotals } from "@/tenant/features/accounting/components/journalEntriesListShared";
-import type { QuickActionType } from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+import { getJournalEntryLineTotals } from "@/tenant/features/accounting/lib/journalEntriesListShared";
+import type { QuickActionType } from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 
 export interface JournalEntryActionDeps {
   entries: JournalEntry[];

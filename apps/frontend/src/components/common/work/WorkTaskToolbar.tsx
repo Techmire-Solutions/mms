@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import { ModuleWorkToolbar } from "@/components/ui/ModuleWorkToolbar";
+import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";

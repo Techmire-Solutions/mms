@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import { Bar, BarChart, Tooltip, XAxis, YAxis } from "recharts";
-import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import { SectionCard } from "@/components/app/SectionCard";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 

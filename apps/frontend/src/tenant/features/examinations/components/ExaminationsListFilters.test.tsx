@@ -32,7 +32,7 @@ vi.mock("./ExaminationsFiltersMenuButton", () => ({
   EXAM_STATUSES: ["upcoming", "ongoing", "completed", "scheduled", "cancelled"],
 }));
 
-vi.mock("@/components/ui/FilterChips", () => ({
+vi.mock("@/components/app/FilterChips", () => ({
   FilterChips: () => <div data-testid="filter-chips">Filter Chips</div>,
 }));
 

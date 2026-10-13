@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import type { JournalReversalRequest } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
-import type { JournalEntriesListPaging } from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
+import type { JournalEntriesListPaging } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import type { JournalModalMode } from "@/tenant/features/accounting/components/JournalEntriesModalLayer";
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import type { JournalEntrySave } from "./journalEntriesTypes";
 
 export type JournalMode = "simple" | "advanced";

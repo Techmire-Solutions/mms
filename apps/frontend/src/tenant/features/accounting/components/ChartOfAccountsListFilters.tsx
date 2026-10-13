@@ -5,10 +5,10 @@ import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
-import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
-import { ModuleWorkToolbar } from "@/components/ui/ModuleWorkToolbar";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
+import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ACCOUNT_TYPES, type AccountType } from "@/lib/data/accountingData";

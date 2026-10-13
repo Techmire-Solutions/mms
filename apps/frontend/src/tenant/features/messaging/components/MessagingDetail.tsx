@@ -4,17 +4,17 @@ import {
   type Message,
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
-import { ChannelBadge } from "@/components/ui/ChannelBadge";
-import { Drawer } from "@/components/ui/Drawer";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { ChannelBadge } from "@/components/app/ChannelBadge";
+import { Drawer } from "@/components/app/Drawer";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
 import { AlertCircle, ArrowUpRight, Check, Copy, MessageSquare, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
-import { PersonDetailHeroCard } from "@/components/ui/PersonDetailHeroCard";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { MessagingDetailBodyCard } from "./MessagingDetailBodyCard";
 import { MessagingDetailMetadataCard } from "./MessagingDetailMetadataCard";
 

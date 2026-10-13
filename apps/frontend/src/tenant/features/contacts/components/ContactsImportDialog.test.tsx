@@ -34,7 +34,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/DashedFileDropZone", () => ({
+vi.mock("@/components/app/DashedFileDropZone", () => ({
   DashedFileDropZone: ({ title, inputAriaLabel }: { title: string; inputAriaLabel: string }) => (
     <div data-testid="dropzone" aria-label={inputAriaLabel}>
       {title}
@@ -42,7 +42,7 @@ vi.mock("@/components/ui/DashedFileDropZone", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({
     children,
     title,

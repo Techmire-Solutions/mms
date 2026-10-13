@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useHasanatConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";

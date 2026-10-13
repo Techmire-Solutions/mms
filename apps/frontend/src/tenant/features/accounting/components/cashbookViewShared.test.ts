@@ -9,7 +9,7 @@ import {
   isCashAccount,
   resolveCashAccountIds,
   sumCashbookTotals,
-} from "./cashbookViewShared";
+} from "../lib/cashbookViewShared";
 
 const translate = (key: string) => `t:${key}`;
 

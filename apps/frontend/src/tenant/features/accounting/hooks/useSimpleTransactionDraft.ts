@@ -9,8 +9,8 @@ import {
   type QuickActionType,
   type TransactionGroup,
   type WizardFormState,
-} from "./simpleTransactionWizardTypes";
-import { quickActionDescription } from "./quickActionLabels";
+} from "../lib/simpleTransactionWizardTypes";
+import { quickActionDescription } from "../lib/quickActionLabels";
 
 export const LAST_TYPE_SESSION_KEY = "mms-wizard-last-type-id";
 

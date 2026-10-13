@@ -1,11 +1,11 @@
 import React from "react";
-import { WidgetCard } from "@/components/ui/WidgetCard";
+import { WidgetCard } from "@/components/app/WidgetCard";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
 import { getQuickActionsForRole } from "@/lib/dashboardQuickActions";
-import { getQuickActionGlowClass, getQuickActionIconClasses } from "@/lib/dashboardWidgetColors";
+import { getQuickActionGlowClass, getQuickActionIconClasses } from "@/lib/ui/dashboardWidgetColors";
 import type { DashboardRole } from "@/lib/dashboardRole";
 import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
 import { useTranslation } from "@/hooks/useTranslation";

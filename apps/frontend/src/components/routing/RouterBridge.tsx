@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { registerAppNavigate, unregisterAppNavigate } from "@/lib/routing/appNavigate";
-import { applyApexPlatformTheme } from "@/platform/lib/brandingEntryTheme";
+import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
 import { revertSettingsPreviews } from "@/lib/settingsPreview";
 import { useScrollToTopOnNavigate } from "@/lib/routing/useScrollToTopOnNavigate";
 import { useTenant } from "@/lib/contexts/TenantContext";

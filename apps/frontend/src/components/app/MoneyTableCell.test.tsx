@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Table, TableBody, TableRow } from "@/components/ui/table";
-import { MoneyTableCell } from "@/components/ui/MoneyTableCell";
+import { MoneyTableCell } from "@/components/app/MoneyTableCell";
 
 function renderCell(element: React.ReactElement): string {
   return renderToStaticMarkup(

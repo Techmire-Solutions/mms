@@ -8,10 +8,10 @@ import {
   journalEntryRecordSchema,
 } from "@mms/shared";
 import { notify } from "@/lib/notify";
-import { validateWizardForm } from "./simpleTransactionWizardTypes";
-import { parseMoneyInput } from "./simpleTransactionMoney";
-import { quickActionDescription, quickActionLabel } from "./quickActionLabels";
-import type { JournalEntrySave } from "./journalEntriesTypes";
+import { validateWizardForm } from "../lib/simpleTransactionWizardTypes";
+import { parseMoneyInput } from "../lib/simpleTransactionMoney";
+import { quickActionDescription, quickActionLabel } from "../lib/quickActionLabels";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import {
   useSimpleTransactionDraft,
   LAST_TYPE_SESSION_KEY,

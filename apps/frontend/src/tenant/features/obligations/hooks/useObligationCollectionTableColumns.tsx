@@ -1,6 +1,6 @@
 import React from "react";
 import { formatDate } from "@mms/shared";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import type { WorkBatchTableColumn } from "@/components/common/work";
 import type { ObligationCollection } from "@/lib/data/obligationsData";
@@ -9,7 +9,7 @@ import {
   getObligationCollectionResolvedFields,
   OBLIGATION_COLLECTION_CURRENCIES,
   type ObligationCollectionListContentProps,
-} from "@/tenant/features/obligations/components/obligationCollectionListContentShared";
+} from "@/tenant/features/obligations/lib/obligationCollectionListContentShared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface UseObligationCollectionTableColumnsOptions {

@@ -1,7 +1,7 @@
 import type {
   AuditEntry,
   OfflinePayload,
-} from "@/tenant/features/attendance/components/markAttendanceTypes";
+} from "@/tenant/features/attendance/lib/markAttendanceTypes";
 import { reportClientError, reportClientWarn } from "@/lib/clientErrorReporting";
 
 export const ATTENDANCE_OFFLINE_QUEUE_KEY = "att_offline_queue";

@@ -4,15 +4,15 @@ import {
   isVoucherPrintable,
   resolveVoucherPrintKind,
   voucherPreparerName,
-} from "@/tenant/features/accounting/components/paymentVoucherKind";
+} from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import {
   buildPaymentVoucherModel,
   parseSalaryVoucherRef,
-} from "@/tenant/features/accounting/components/paymentVoucherModel";
+} from "@/tenant/features/accounting/lib/paymentVoucherModel";
 import {
   PAYMENT_VOUCHER_LABEL_KEYS,
   buildPaymentVoucherBody,
-} from "@/tenant/features/accounting/components/paymentVoucherHtml";
+} from "@/tenant/features/accounting/lib/paymentVoucherHtml";
 
 const account = (id: string, type: Account["type"], name: string): Account => ({
   id,

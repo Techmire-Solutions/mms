@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceRecordsConfirmDialogs } from "./AttendanceRecordsConfirmDialogs";
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({ open, title }: { open: boolean; title: string }) =>
     open ? <div data-testid="dialog">{title}</div> : null,
 }));

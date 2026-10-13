@@ -1,7 +1,7 @@
 import React from "react";
 import { GraduationCap, Filter, UserCheck, UserX, UserPlus } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import type { StudentsCommandMetricsSnapshot } from "@mms/shared";
 
 export interface StudentsCommandMetricsProps {

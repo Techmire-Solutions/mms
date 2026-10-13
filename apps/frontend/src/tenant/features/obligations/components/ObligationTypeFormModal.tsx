@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { DESIGNATED_FOR_OPTIONS } from "@/lib/data/obligationsData";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { AppTranslationKey } from "@mms/shared";
 import type { ObligationType } from "@/lib/data/obligationsData";
 import {
   DESIGNATED_LABEL_KEYS,
   type DesignatedFor,
-} from "@/tenant/features/obligations/components/obligationTypeManagerShared";
+} from "@/tenant/features/obligations/lib/obligationTypeManagerShared";
 
 interface ObligationTypeFormModalProps {
   title: string;

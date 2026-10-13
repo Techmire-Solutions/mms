@@ -1,12 +1,12 @@
 import React from "react";
 import type { TooltipContentProps } from "recharts";
 import { Bar, BarChart, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
-import { ChartTooltip, ChartTooltipRow } from "@/components/ui/ChartTooltip";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
+import { ChartTooltip, ChartTooltipRow } from "@/components/app/ChartTooltip";
 import { buildChartTooltip } from "@/components/dashboard-widgets/charts/chartPrimitives";
-import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
 import { BarChart2 } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 
 function DifficultyBreakdownTooltip({

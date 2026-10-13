@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";
 import { type Class, type Session } from "@/lib/data/sessionsData";
-import type { SwitchRecordOption } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderSwitchOptions";
+import type { SwitchRecordOption } from "@/components/reports/pinnedWidgets/WidgetBuilderSwitchOptions";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 
 interface UseWidgetBuilderRecordOptionsArgs {

@@ -5,8 +5,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Modal } from "@/components/ui/Modal";
-import { useAvatarCropperCanvas } from "@/components/ui/useAvatarCropperCanvas";
+import { Modal } from "@/components/app/Modal";
+import { useAvatarCropperCanvas } from "@/components/app/useAvatarCropperCanvas";
 
 interface AvatarCropperProps {
   src: string;

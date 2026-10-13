@@ -1,7 +1,7 @@
 import type React from "react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import {
   FACULTY_PROFILE_STATUS_VALUES,
   resolveFacultyProfileStatus,

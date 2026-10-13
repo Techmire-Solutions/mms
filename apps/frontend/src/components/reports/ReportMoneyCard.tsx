@@ -1,5 +1,5 @@
 import React, { type ReactNode } from "react";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCard } from "@/components/app/EntityCard";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 

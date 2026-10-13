@@ -10,7 +10,7 @@ import {
 } from "@mms/shared";
 import { useLlmModelFetch } from "./useLlmModelFetch";
 
-import { computeNextLlmConfigs, testLlmConnectivity } from "./llmSettingsModalHelpers";
+import { computeNextLlmConfigs, testLlmConnectivity } from "../lib/llmSettingsModalHelpers";
 
 interface UseLlmSettingsModalOptions {
   configs: LlmConfig[];

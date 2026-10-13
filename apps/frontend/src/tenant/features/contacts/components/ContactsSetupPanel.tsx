@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { ContactsPreferencesSection } from "@/tenant/features/contacts/components/ContactsPreferencesSection";
 import { useContactsSetupPanelState } from "@/tenant/features/contacts/hooks/useContactsSetupPanelState";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface ContactsSetupPanelProps {
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */

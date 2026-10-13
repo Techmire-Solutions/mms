@@ -1,5 +1,5 @@
 import React from "react";
-import { StatCard, type StatCardProps } from "@/components/ui/StatCard";
+import { StatCard, type StatCardProps } from "@/components/app/StatCard";
 import { cn } from "@/lib/utils";
 
 export interface MetricItem {

@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "audit:ui": "node scripts/ui-audit.js",
     "preview": "vite preview"
   },
   "dependencies": {

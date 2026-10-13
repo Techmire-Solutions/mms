@@ -1,12 +1,12 @@
 import React from "react";
 import { BookOpen, Calendar, Users, DollarSign } from "lucide-react";
 import { type Session } from "@/lib/data/sessionsData";
-import { SEMANTIC_BADGE, WIZARD_SELECTION_DOT } from "@/lib/semanticTone";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { SEMANTIC_BADGE, WIZARD_SELECTION_DOT } from "@/lib/ui/semanticTone";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 
 /**
  * Format a date string to a localized PK date.

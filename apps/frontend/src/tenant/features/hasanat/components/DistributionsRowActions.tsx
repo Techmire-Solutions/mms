@@ -5,8 +5,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Distribution } from "@/lib/data/hasanatData";
 

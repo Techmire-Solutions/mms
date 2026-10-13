@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ContactIdentityMeta } from "./ContactIdentityMeta";
 
-vi.mock("@/components/ui/PersonIdentityMeta", () => ({
+vi.mock("@/components/app/PersonIdentityMeta", () => ({
   PersonIdentityMeta: ({
     gender,
     isSyed,

@@ -13,10 +13,10 @@ import {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSettingsGlobalDraft } from "@/lib/contexts/SettingsGlobalDraftContext";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Label } from "@/components/ui/label";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { SettingsFormActions } from "@/components/ui/SettingsFormActions";
+import { SectionCard } from "@/components/app/SectionCard";
+import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import DateFormatSelect from "@/tenant/features/settings/components/DateFormatSelect";
 import EmailIntegrationPanel from "@/tenant/features/settings/components/EmailIntegrationPanel";
 import SmsIntegrationPanel from "@/tenant/features/settings/components/SmsIntegrationPanel";
@@ -30,7 +30,7 @@ import {
   SettingsFieldGroup,
   SettingsPanel,
   SettingsToggleRow,
-} from "@/components/ui/SettingsShell";
+} from "@/components/app/SettingsShell";
 
 /**
  * Regional preferences (everyone), notifications and security (admin only).

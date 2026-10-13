@@ -2,13 +2,13 @@ import React from "react";
 import { EyeOff } from "lucide-react";
 import { resolveWidgetTitle } from "@/lib/dashboardWidgets";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { Modal } from "@/components/ui/Modal";
-import { ListPagination } from "@/components/ui/ListPagination";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { Modal } from "@/components/app/Modal";
+import { ListPagination } from "@/components/app/ListPagination";
+import { SearchBar } from "@/components/app/SearchBar";
 import { Badge } from "@/components/ui/badge";
-import { useWidgetDrilldownModal } from "@/components/ui/reports/pinnedWidgets/useWidgetDrilldownModal";
-import { WidgetDrilldownModalRecords } from "@/components/ui/reports/pinnedWidgets/WidgetDrilldownModalRecords";
+import { useWidgetDrilldownModal } from "@/components/reports/pinnedWidgets/useWidgetDrilldownModal";
+import { WidgetDrilldownModalRecords } from "@/components/reports/pinnedWidgets/WidgetDrilldownModalRecords";
 
 /**
  * Focused overlay drilldown modal for micro-interactions.

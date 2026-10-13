@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { formatDateTime, todayISO } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { ClipboardList, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { getAuditLog } from "@/tenant/features/attendance/components/MarkAttendance";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { type AttendanceFilterState } from "@/tenant/features/attendance/components/AttendanceFilters";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { reportClientError } from "@/lib/clientErrorReporting";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { SectionHeader } from "@/components/app/SectionHeader";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import {
   DataTable,
   type DataTableColumn,
@@ -24,7 +24,7 @@ import {
   type AuditEntry,
   describeAuditEntry,
   buildAuditActionConfig,
-} from "@/tenant/features/attendance/components/auditLogFormatters";
+} from "@/tenant/features/attendance/lib/auditLogFormatters";
 
 export type { AuditEntry };
 

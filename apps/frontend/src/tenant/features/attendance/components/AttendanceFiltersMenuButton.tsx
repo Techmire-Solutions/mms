@@ -3,7 +3,7 @@ import { SlidersHorizontal } from "lucide-react";
 import {
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
 

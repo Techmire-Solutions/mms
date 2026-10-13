@@ -8,10 +8,10 @@ import {
   Hash,
   Layers,
 } from "lucide-react";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
-import { StatCard } from "@/components/ui/StatCard";
+import { StatCard } from "@/components/app/StatCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { triggerFileDownload } from "@/lib/download";

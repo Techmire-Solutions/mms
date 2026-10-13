@@ -1,11 +1,11 @@
 import React, { useId } from "react";
 import { motion } from "framer-motion";
-import { OverlayShell } from "@/components/ui/OverlayShell";
-import { ModalHeader } from "@/components/ui/ModalHeader";
-import { FormModalTabs } from "@/components/ui/FormModalTabs";
-import { FormModalFooter } from "@/components/ui/FormModalFooter";
-import { FormErrorBanner } from "@/components/ui/FormErrorBanner";
-import type { SubTab } from "@/components/ui/SubTabBar";
+import { OverlayShell } from "@/components/app/OverlayShell";
+import { ModalHeader } from "@/components/app/ModalHeader";
+import { FormModalTabs } from "@/components/app/FormModalTabs";
+import { FormModalFooter } from "@/components/app/FormModalFooter";
+import { FormErrorBanner } from "@/components/app/FormErrorBanner";
+import type { SubTab } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 

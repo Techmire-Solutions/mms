@@ -7,9 +7,9 @@ import {
   type WorkspaceRole,
   type ModuleCustomField,
 } from "@mms/shared";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import ContactPicker from "@/components/contactLink/ContactPicker";

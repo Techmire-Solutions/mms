@@ -8,7 +8,7 @@ import { Layers, Move } from "lucide-react";
 import type { ElementStyle, TemplateElement } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { normalizeHexColor, type AlignmentType } from "./templateEditorUtils";
-import { PRINT_COLORS } from "@/lib/printTemplateStyles";
+import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 import { TemplateEditorSection } from "./TemplateEditorSection";
 import { TemplateEditorAlignmentGrid } from "./TemplateEditorAlignmentGrid";
 import { TemplateEditorTypographySection } from "./TemplateEditorTypographySection";

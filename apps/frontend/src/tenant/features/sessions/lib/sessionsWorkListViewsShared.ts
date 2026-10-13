@@ -1,5 +1,5 @@
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Session } from "@/lib/data/sessionsData";
 
 export interface SessionsWorkColumnLayout {

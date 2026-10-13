@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   Field: ({
     label,
     required,

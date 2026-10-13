@@ -1,13 +1,13 @@
 import type { AppTranslationKey } from "@mms/shared";
 import { ACCOUNT_TYPE_META, type Account } from "@/lib/data/accountingData";
 import { Badge } from "@/components/ui/badge";
-import { Field } from "@/components/ui/FormField";
-import { FormListFieldCard, FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormField";
+import { FormListFieldCard, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { DraftLine } from "./journalEntryFormTypes";
-import type { JournalAmountSide } from "./useJournalLineAssist";
+import type { DraftLine } from "../lib/journalEntryFormTypes";
+import type { JournalAmountSide } from "../hooks/useJournalLineAssist";
 
 interface JournalEntryLinesEditorMobileProps {
   accounts: readonly Account[];

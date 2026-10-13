@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { type Payment } from "@/lib/data/financeData";
-import { PAYMENT_METHOD_BADGE, SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { PAYMENT_METHOD_BADGE, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { type AppTranslationKey } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import {
   PaymentsListContent,
   PAYMENT_TRACKER_COLUMN_KEYS,
@@ -14,7 +14,7 @@ import {
   PaymentMethodSummary,
   PaymentSelectionBar,
 } from "@/tenant/features/finance/components/PaymentsListFilters";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 const METHOD_LABEL_KEYS: Record<string, AppTranslationKey> = {
   Cash: "finance.paymentMethod.cash",

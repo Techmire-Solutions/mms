@@ -1,7 +1,7 @@
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Bar, BarChart, Cell, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
-import { chartAxisTick } from "@/components/ui/ChartGrid";
+import { chartAxisTick } from "@/components/app/ChartGrid";
 
 export interface TypeBreakdownEntry {
   name: string;

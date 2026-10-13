@@ -1,9 +1,9 @@
 import { useRef, type ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 import { insertVariableTokenAt } from "@mms/shared";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { MessagingVariableTokensBar } from "@/components/ui/MessagingVariableTokensBar";
+import { MessagingVariableTokensBar } from "@/components/app/MessagingVariableTokensBar";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -4,7 +4,7 @@ import type {
   FiscalYear,
   JournalEntry,
 } from "@/lib/data/accountingData";
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 
 /** Resolves with the entries as the server saved them (server-assigned voucher refs included). */
 export type JournalEntriesChange = (

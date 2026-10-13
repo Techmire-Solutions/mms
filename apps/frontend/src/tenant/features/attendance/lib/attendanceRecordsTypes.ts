@@ -1,5 +1,5 @@
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import type { AttendanceFilterState } from "@/tenant/features/attendance/components/AttendanceFilters";
 
 export const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;

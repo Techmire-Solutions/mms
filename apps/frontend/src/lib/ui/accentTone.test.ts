@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ACCENT_ALIASES, resolveAccentTone } from "./accentTone";
 import { CARD_STRIPE_COLORS, getCardStripeClass } from "./cardAccentTokens";
-import { ACCENT_MAP, resolveAccent } from "@/components/ui/statCardAccent";
+import { ACCENT_MAP, resolveAccent } from "@/components/app/statCardAccent";
 
 describe("shared accent contract", () => {
   it.each(Object.entries(ACCENT_ALIASES))("%s uses %s for icons and stripes", (alias, tone) => {

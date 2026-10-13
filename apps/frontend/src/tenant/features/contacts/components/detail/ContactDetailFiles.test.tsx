@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
 import { ContactDetailFiles } from "./ContactDetailFiles";
 
-vi.mock("@/components/ui/DashedFileDropZone", () => ({
+vi.mock("@/components/app/DashedFileDropZone", () => ({
   DashedFileDropZone: ({ title }: { title: string }) => <div data-testid="drop-zone">{title}</div>,
 }));
 

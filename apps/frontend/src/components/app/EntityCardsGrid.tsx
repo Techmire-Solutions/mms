@@ -2,7 +2,7 @@ import React, { useRef, useMemo, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { EntityCardsSelectAllBar } from "@/components/ui/EntityCardsSelectAllBar";
+import { EntityCardsSelectAllBar } from "@/components/app/EntityCardsSelectAllBar";
 import { cn } from "@/lib/utils";
 
 const containerVariants = {

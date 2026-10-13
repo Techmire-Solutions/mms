@@ -1,9 +1,9 @@
 import type { AppTranslationKey, ElementStyle, TemplateElement } from "@mms/shared";
-import { PRINT_COLORS } from "@/lib/printTemplateStyles";
+import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 import type {
   VoucherPrintPayload,
   VoucherTemplate,
-} from "@/tenant/features/accounting/components/voucherTemplateModel";
+} from "@/tenant/features/accounting/lib/voucherTemplateModel";
 
 type Field = keyof VoucherPrintPayload & string;
 type El = TemplateElement<Field>;

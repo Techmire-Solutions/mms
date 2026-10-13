@@ -34,7 +34,7 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
   useStudentsByIds: () => ({ data: [] }),
 }));
 
-vi.mock("@/components/ui/SearchBar", () => ({
+vi.mock("@/components/app/SearchBar", () => ({
   SearchBar: ({ placeholder }: { placeholder?: string }) => (
     <div data-testid="search-bar">{placeholder}</div>
   ),

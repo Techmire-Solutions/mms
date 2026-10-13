@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi } from "vitest";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import type { ObligationCollection } from "@mms/shared";
 import { useObligationEntityDescriptor } from "./useObligationEntityDescriptor";
 

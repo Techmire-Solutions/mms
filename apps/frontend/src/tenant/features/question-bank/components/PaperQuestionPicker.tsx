@@ -2,16 +2,16 @@ import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT, WORK_SURFACE } from "@/components/ui/formStyles";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
-import { FormSelect, type FormSelectOption } from "@/components/ui/FormSelect";
+import { FormSelect, type FormSelectOption } from "@/components/app/FormSelect";
 import { getQuestionCategoryIds, type QuestionBankQuestion as Question } from "@mms/shared";
 import type {
   DifficultyFilter,
   PaperSection,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { CategoryColorChip } from "@/tenant/features/question-bank/components/CategoryColorChip";
 
 interface QuestionCategoryBadge {

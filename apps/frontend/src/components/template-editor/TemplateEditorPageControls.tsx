@@ -6,7 +6,7 @@
 import React from "react";
 import { RectangleHorizontal, RectangleVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { PAGE_SIZES, type TemplateOrientation } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 

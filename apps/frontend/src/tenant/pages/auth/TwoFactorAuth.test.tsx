@@ -80,7 +80,7 @@ vi.mock("@/components/entry", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/OtpInput", () => ({
+vi.mock("@/components/app/OtpInput", () => ({
   createEmptyOtp: () => ["", "", "", "", "", ""],
   isOtpComplete: (code: string[]) => code.every((digit) => digit.length === 1),
   OtpInput: ({ value, onChange, disabled }: any) => (

@@ -1,8 +1,8 @@
 import { type FacultyMember, getPrimaryEmail, normalizeStoredFaculty } from "@mms/shared";
 import { notify } from "@/lib/notify";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
-import { extractEmployeeId } from "@/tenant/features/faculty/components/facultyFormDraft";
-import type { FacultySaveFlowInput } from "@/tenant/features/faculty/components/facultyFormSaveFlow";
+import { extractEmployeeId } from "@/tenant/features/faculty/lib/facultyFormDraft";
+import type { FacultySaveFlowInput } from "@/tenant/features/faculty/lib/facultyFormSaveFlow";
 
 export interface FacultySavePayloadInput {
   facultyDraft?: Partial<FacultyMember>;

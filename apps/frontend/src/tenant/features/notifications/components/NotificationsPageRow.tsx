@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DASHBOARD_NOTIFICATION_ICONS } from "@/lib/dashboardNotificationIcons";
+import { DASHBOARD_NOTIFICATION_ICONS } from "@/lib/ui/dashboardNotificationIcons";
 import type { TenantNotification } from "@/tenant/hooks/notifications/useTenantNotifications";
 
 interface NotificationsPageRowProps {

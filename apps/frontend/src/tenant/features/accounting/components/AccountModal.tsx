@@ -7,7 +7,7 @@ import {
   type AccountType,
 } from "@/lib/data/accountingData";
 import { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { accountRecordSchema, generateClientEntityId, type AppTranslationKey } from "@mms/shared";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";

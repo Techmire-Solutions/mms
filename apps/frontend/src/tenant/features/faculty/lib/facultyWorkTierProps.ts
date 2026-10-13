@@ -5,7 +5,7 @@ import type {
   FacultySortField,
   ModuleColumnRegistryEntry,
 } from "@mms/shared";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { FacultyWorkOverlayInteractions } from "@/tenant/features/faculty/hooks/facultyPageOverlaysTypes";
 

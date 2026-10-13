@@ -1,14 +1,14 @@
 import React from "react";
 import { AnimatePresence } from "framer-motion";
-import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import { isManuallyReversibleJournalSource, type JournalReversalRequest } from "@mms/shared";
 import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
 import { JournalEntryDetail } from "@/tenant/features/accounting/components/JournalEntryDetail";
 import { JournalEntryForm } from "@/tenant/features/accounting/components/JournalEntryForm";
 import { JournalReverseDialog } from "@/tenant/features/accounting/components/JournalReverseDialog";
-import type { JournalEntrySave } from "./journalEntriesTypes";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { isVoucherPrintable } from "@/tenant/features/accounting/components/paymentVoucherKind";
+import { isVoucherPrintable } from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
 
 export type JournalModalMode = "new" | "edit" | "view" | null;

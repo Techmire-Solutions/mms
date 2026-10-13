@@ -10,7 +10,7 @@ import {
   BulkSelectionMessagingActions,
   BulkSelectionStatusAction,
   type BulkSelectionMessageChannel,
-} from "@/components/ui/BulkSelectionActions";
+} from "@/components/app/BulkSelectionActions";
 
 export type BulkActionDockPlacement = "floating" | "inline";
 export type BulkActionDockTone = "glass" | "tint" | "plain";

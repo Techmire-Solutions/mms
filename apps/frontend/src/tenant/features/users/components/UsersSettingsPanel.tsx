@@ -1,12 +1,12 @@
 import React from "react";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Shield } from "lucide-react";
 import { type UsersSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ToggleRow } from "@/components/app/ToggleRow";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface UsersSettingsPanelProps {
   settingsDraft: UsersSettings;

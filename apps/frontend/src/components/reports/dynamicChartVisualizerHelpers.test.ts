@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   aggregateVisualizerRows,
   matchesFilterRule,
-} from "@/components/ui/reports/dynamicChartVisualizerHelpers";
+} from "@/components/reports/dynamicChartVisualizerHelpers";
 
 describe("aggregateVisualizerRows", () => {
   it("counts rows grouped by dimension", () => {

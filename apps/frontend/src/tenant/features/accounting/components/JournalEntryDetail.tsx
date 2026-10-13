@@ -3,17 +3,17 @@ import type { AppTranslationKey } from "@mms/shared";
 import { formatDate, isJournalEntryBalanced, moneyToCents } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Drawer } from "@/components/ui/Drawer";
+import { Drawer } from "@/components/app/Drawer";
 import { ACCOUNT_TYPE_META, type Account, type JournalEntry } from "@/lib/data/accountingData";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE, balanceToneClass } from "@/lib/semanticTone";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE, balanceToneClass } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import { DetailDrawerArchivedBanner } from "@/components/ui/DetailDrawerArchiveChrome";
+import { DetailDrawerArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 import { JournalEntryDetailLines } from "@/tenant/features/accounting/components/JournalEntryDetailLines";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 
 interface JournalEntryDetailProps {
   entry: JournalEntry;

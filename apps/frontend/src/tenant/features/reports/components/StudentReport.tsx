@@ -1,7 +1,7 @@
-import { StudentReportView } from "@/components/ui/reports/StudentReportView";
+import { StudentReportView } from "@/components/reports/StudentReportView";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
-import { useStudentReportController } from "../controllers/useStudentReportController";
-import type { StudentReportProps } from "@/components/ui/reports/studentReportTypes";
+import { useStudentReportController } from "../hooks/useStudentReportController";
+import type { StudentReportProps } from "@/components/reports/studentReportTypes";
 
 export default function StudentReport({ filters }: StudentReportProps): React.JSX.Element {
   const report = useStudentReportController({ filters });

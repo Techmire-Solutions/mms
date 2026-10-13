@@ -11,14 +11,14 @@ import {
   calcPercentage as pct,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Button } from "@/components/ui/button";
 import {
   sumScores,
   testTotalMarks,
   grade,
   GRADE_BADGE_CONFIG,
-} from "@/tenant/features/question-bank/components/autoGradingShared";
+} from "@/tenant/features/question-bank/lib/autoGradingShared";
 
 interface ResultRowProps {
   result: QuestionBankResult;

@@ -4,8 +4,8 @@
  */
 
 import { useMemo } from "react";
-import type { EntityDescriptor, FieldDefinition } from "@/types/entityRegistry";
-import type { FilterChip } from "@/components/ui/FilterChips";
+import type { EntityDescriptor, FieldDefinition } from "@/components/common/entityRegistryTypes";
+import type { FilterChip } from "@/components/app/FilterChips";
 
 /**
  * Derives a stable `FilterChip[]` array from an SSOT entity descriptor and

@@ -1,6 +1,6 @@
 import React from "react";
 import type { AppTranslationKey, ModuleTransferSchema } from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
+import { ModuleImportDialog } from "@/components/app/ModuleImportDialog";
 import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
 import { useTranslation } from "@/hooks/useTranslation";
 

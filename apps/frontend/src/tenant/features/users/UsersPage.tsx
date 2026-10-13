@@ -1,14 +1,14 @@
 import React, { Suspense } from "react";
 import { UserCog, Download, Mail, Plus, Upload } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { Button } from "@/components/ui/button";
 import { UsersModalLayer } from "@/tenant/features/users/components/UsersModalLayer";
 import { UsersCsvImportDialog } from "@/tenant/features/users/components/UsersCsvImportDialog";
 import { UsersWorkTier } from "@/tenant/features/users/components/UsersWorkTier";
 import { UsersCommandMetrics } from "@/tenant/features/users/components/UsersCommandMetrics";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { CardSkeleton } from "@/components/ui/LoadingState";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { CardSkeleton } from "@/components/app/LoadingState";
 import { useUsersPageController } from "@/tenant/features/users/hooks/useUsersPageController";
 
 const UsersReportsTier = React.lazy(() =>

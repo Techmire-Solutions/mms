@@ -8,8 +8,8 @@ import {
   AuthStatusBanner,
   AuthSubmitButton,
 } from "@/components/entry";
-import { OtpInput, isOtpComplete } from "@/components/ui/OtpInput";
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
+import { OtpInput, isOtpComplete } from "@/components/app/OtpInput";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { ROUTES } from "@/lib/config/routes";
 import type { PlatformForgotPasswordController } from "@/platform/pages/auth/usePlatformForgotPasswordController";
 

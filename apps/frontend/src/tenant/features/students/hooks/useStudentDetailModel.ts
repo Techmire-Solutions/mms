@@ -18,10 +18,10 @@ import { useStudentConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";
 import type { SiblingStudentItem } from "@/tenant/features/students/components/StudentDetailSiblingsSection";
-import { buildStudentSortedEnabledFields } from "@/tenant/features/students/components/studentDetailSortedFields";
-import { buildStudentContactProfile } from "@/tenant/features/students/components/studentDetailContactProfile";
-import { buildStudentRelationships } from "@/tenant/features/students/components/studentDetailRelationships";
-import { buildStudentSiblings } from "@/tenant/features/students/components/studentDetailSiblingMatch";
+import { buildStudentSortedEnabledFields } from "@/tenant/features/students/lib/studentDetailSortedFields";
+import { buildStudentContactProfile } from "@/tenant/features/students/lib/studentDetailContactProfile";
+import { buildStudentRelationships } from "@/tenant/features/students/lib/studentDetailRelationships";
+import { buildStudentSiblings } from "@/tenant/features/students/lib/studentDetailSiblingMatch";
 
 /** Detail drawer model: contact hydration, profile blocks, relationships, field config, siblings. */
 export function useStudentDetailModel(student: Student) {

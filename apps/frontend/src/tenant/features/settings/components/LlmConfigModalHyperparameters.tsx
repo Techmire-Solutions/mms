@@ -1,7 +1,7 @@
 import type React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { Slider } from "@/components/ui/slider";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Building2, GraduationCap, Hotel, Briefcase, Store, Sliders, Check } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Label } from "@/components/ui/label";
 import { INDUSTRY_PROFILES, type IndustryType } from "@mms/shared";
 import type { CreateMadrasaController } from "@/platform/pages/onboarding/steps/useCreateMadrasaController";

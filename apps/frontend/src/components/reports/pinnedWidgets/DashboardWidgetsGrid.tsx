@@ -1,7 +1,7 @@
 import { PinOff, Trash2, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { isComposedWidgetType } from "@/components/dashboard-widgets/registry";
 import { isSeededDashboardWidget } from "@/lib/dashboardWidgets";

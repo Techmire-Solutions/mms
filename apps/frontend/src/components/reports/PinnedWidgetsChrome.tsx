@@ -3,7 +3,7 @@ import { LayoutDashboard, SlidersHorizontal } from "lucide-react";
 import type { AppTranslationKey } from "@mms/shared";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 

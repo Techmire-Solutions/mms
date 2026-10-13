@@ -10,8 +10,8 @@ import {
   resolveAllContactPhones,
   resolveContactPhoneDisplay,
 } from "@/lib/contacts/contactI18n";
-import { getGenderAccentBarClass } from "@/lib/directoryCardAccent";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
+import { getGenderAccentBarClass } from "@/lib/ui/directoryCardAccent";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
 import { ContactCardActions } from "@/tenant/features/contacts/components/ContactCardActions";
 import { ContactCardHeader } from "@/tenant/features/contacts/components/ContactCardHeader";
 import {

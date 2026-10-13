@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import type { StudentsWorkTier } from "@/tenant/features/students/components/StudentsWorkTier";
-import type { StudentsWorkTierProps as WorkTierProps } from "@/tenant/features/students/components/studentsWorkTierTypes";
+import type { StudentsWorkTierProps as WorkTierProps } from "@/tenant/features/students/lib/studentsWorkTierTypes";
 
 type StudentsWorkTierProps = ComponentProps<typeof StudentsWorkTier>;
 

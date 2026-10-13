@@ -1,8 +1,8 @@
 import type React from "react";
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 export interface ModuleWorkToolbarProps {
   // 1. Accessibility & Layout

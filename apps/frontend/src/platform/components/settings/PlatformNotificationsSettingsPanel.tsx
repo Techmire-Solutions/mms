@@ -7,7 +7,7 @@ import {
 } from "@/platform/hooks/usePlatformSettings";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { CardSkeleton } from "@/components/ui/LoadingState";
+import { CardSkeleton } from "@/components/app/LoadingState";
 import { PlatformEmailIntegrationPanel } from "@/platform/components/settings/PlatformEmailIntegrationPanel";
 import { PlatformSmsIntegrationPanel } from "@/platform/components/settings/PlatformSmsIntegrationPanel";
 

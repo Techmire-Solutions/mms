@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DensityToggle } from "@/components/ui/DensityToggle";
+import { DensityToggle } from "@/components/app/DensityToggle";
 import type { PlatformDensity } from "@/platform/hooks/usePlatformDensity";
 import { TooltipProvider } from "@/components/ui/tooltip";
 

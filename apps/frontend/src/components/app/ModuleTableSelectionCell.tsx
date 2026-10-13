@@ -1,7 +1,7 @@
 import React, { type JSX } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell } from "@/components/ui/table";
-import { workTableStickyCellBg } from "@/components/ui/tableWorkSticky";
+import { workTableStickyCellBg } from "@/components/app/tableWorkSticky";
 import { cn } from "@/lib/utils";
 
 export interface ModuleTableSelectionCellProps {

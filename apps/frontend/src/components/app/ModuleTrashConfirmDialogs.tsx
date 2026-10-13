@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AppTranslationKey } from "@mms/shared";
 

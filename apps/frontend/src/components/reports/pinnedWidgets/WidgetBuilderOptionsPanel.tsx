@@ -1,6 +1,6 @@
 import React from "react";
 import { FORM_INPUT_BUILDER } from "@/components/ui/formStyles";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import { isListSummaryWidgetType } from "@/components/dashboard-widgets/registry";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -8,13 +8,13 @@ import {
   WidgetBuilderCardRoleOptions,
   WidgetBuilderCardTextOptions,
   WidgetBuilderIconPicker,
-} from "@/components/ui/reports/pinnedWidgets/WidgetBuilderCardOptions";
-import { WidgetBuilderColorOptions } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderColorOptions";
-import { WidgetBuilderMetricOptions } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderMetricOptions";
-import { WidgetBuilderSwitchOptions } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderSwitchOptions";
-import { WidgetBuilderThresholdOptions } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderThresholdOptions";
-import { WidgetBuilderTypeSelector } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderTypeSelector";
-import type { WidgetBuilderOptionsPanelProps } from "@/components/ui/reports/pinnedWidgets/widgetBuilderOptionsPanelTypes";
+} from "@/components/reports/pinnedWidgets/WidgetBuilderCardOptions";
+import { WidgetBuilderColorOptions } from "@/components/reports/pinnedWidgets/WidgetBuilderColorOptions";
+import { WidgetBuilderMetricOptions } from "@/components/reports/pinnedWidgets/WidgetBuilderMetricOptions";
+import { WidgetBuilderSwitchOptions } from "@/components/reports/pinnedWidgets/WidgetBuilderSwitchOptions";
+import { WidgetBuilderThresholdOptions } from "@/components/reports/pinnedWidgets/WidgetBuilderThresholdOptions";
+import { WidgetBuilderTypeSelector } from "@/components/reports/pinnedWidgets/WidgetBuilderTypeSelector";
+import type { WidgetBuilderOptionsPanelProps } from "@/components/reports/pinnedWidgets/widgetBuilderOptionsPanelTypes";
 
 export function WidgetBuilderOptionsPanel({
   mode,

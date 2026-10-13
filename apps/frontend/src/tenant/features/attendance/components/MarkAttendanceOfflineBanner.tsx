@@ -2,9 +2,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { UploadCloud, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { OfflinePayload } from "@/tenant/features/attendance/components/markAttendanceTypes";
+import type { OfflinePayload } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 
 export interface MarkAttendanceOfflineBannerProps {
   offline: boolean;

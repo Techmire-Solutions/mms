@@ -6,8 +6,8 @@
 
 import React from "react";
 import type { DocumentTemplate } from "@mms/shared";
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
-import { PRINT_COLORS } from "@/lib/printTemplateStyles";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
+import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { interpolateTemplateTokens } from "./templateEditorUtils";
 import { TemplateElementContent } from "./templateElementContent";

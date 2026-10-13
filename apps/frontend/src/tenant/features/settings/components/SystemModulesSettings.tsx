@@ -3,9 +3,9 @@ import { normalizeEnabledModules, SYSTEM_MODULES_BY_ID } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSettingsGlobalDraft } from "@/lib/contexts/SettingsGlobalDraftContext";
 import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
-import { SettingsFormActions } from "@/components/ui/SettingsFormActions";
+import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import ModuleSettingsNavGrid from "@/tenant/features/settings/components/modules/ModuleSettingsNavGrid";
-import { SettingsPanel } from "@/components/ui/SettingsShell";
+import { SettingsPanel } from "@/components/app/SettingsShell";
 import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 

@@ -1,8 +1,8 @@
 import React from "react";
 import type { QuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
+import { EmptyState } from "@/components/app/EmptyState";
 import { QuestionsList } from "./QuestionsList";
 import type { useQuestionBankFilters } from "@/tenant/features/question-bank/hooks/useQuestionBankFilters";
 import type { useQuestionBankWorkController } from "@/tenant/features/question-bank/hooks/useQuestionBankWorkController";

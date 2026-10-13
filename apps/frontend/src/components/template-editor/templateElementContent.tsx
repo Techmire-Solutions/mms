@@ -7,7 +7,7 @@
 
 import React from "react";
 import { generateQrSvgUri } from "@/lib/qrCodeGenerator";
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import type { ElementStyle, TemplateElement } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {

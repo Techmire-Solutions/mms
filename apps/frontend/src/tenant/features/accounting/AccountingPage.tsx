@@ -1,10 +1,10 @@
 import React from "react";
 import { AnimatePresence } from "framer-motion";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { accountingTransferSchema } from "@mms/shared";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { AccountingPageHeaderActions } from "@/tenant/features/accounting/components/AccountingPageHeaderActions";
@@ -12,7 +12,7 @@ import { AccountingCsvImportDialog } from "@/tenant/features/accounting/componen
 import { AccountingWorkTier } from "@/tenant/features/accounting/components/AccountingWorkTier";
 import { AccountingCommandMetrics } from "@/tenant/features/accounting/components/AccountingCommandMetrics";
 import { ACCOUNTING_PAGE_ICON } from "@/tenant/features/accounting/accountingPageSubTabs";
-import { JOURNAL_PAGE_SIZE } from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
+import { JOURNAL_PAGE_SIZE } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import { useAccountingPageController } from "@/tenant/features/accounting/hooks/useAccountingPageController";
 
 const AccountingReportsTier = React.lazy(() =>

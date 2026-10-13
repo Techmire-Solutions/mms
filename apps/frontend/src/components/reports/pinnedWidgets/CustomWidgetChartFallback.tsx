@@ -1,11 +1,11 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis } from "recharts";
-import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
-import { chartAxisTick } from "@/components/ui/ChartGrid";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
+import { chartAxisTick } from "@/components/app/ChartGrid";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { resolveWidgetChartHex } from "@/lib/brandingChartPalette";
+import { resolveWidgetChartHex } from "@/lib/ui/brandingChartPalette";
 import { computeWidgetChartData, type getWidgetCollections } from "@/lib/reports/widgetDataUtils";
 import { THEME_PALETTES, type CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 

@@ -1,6 +1,6 @@
 import type React from "react";
 import { Mail } from "lucide-react";
-import { CardPrimaryButton } from "@/components/ui/FormPrimitives";
+import { CardPrimaryButton } from "@/components/app/FormPrimitives";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveEmailLabel } from "@/lib/contacts/contactI18n";

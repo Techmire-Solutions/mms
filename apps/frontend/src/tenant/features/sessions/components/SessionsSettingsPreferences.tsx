@@ -2,10 +2,10 @@ import React from "react";
 import { formatMonthName, normalizeSessionsViewLayout, type SessionsSettings } from "@mms/shared";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { Field } from "@/components/ui/FormPrimitives";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
+import { FormSelect } from "@/components/app/FormSelect";
+import { ToggleRow } from "@/components/app/ToggleRow";
+import { Field } from "@/components/app/FormPrimitives";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface SessionsSettingsPreferencesProps {

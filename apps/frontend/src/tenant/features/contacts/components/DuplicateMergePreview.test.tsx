@@ -2,10 +2,10 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
-import type { DuplicatePair } from "./duplicateDetectionTypes";
+import type { DuplicatePair } from "../lib/duplicateDetectionTypes";
 import { MergePreview } from "./DuplicateMergePreview";
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({
     open,
     title,

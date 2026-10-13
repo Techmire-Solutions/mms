@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useState, useCallback } from "react";
 import { buildErdMermaid, type ErdDomain } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 import { ErdCanvasToolbar } from "@/platform/components/erd/ErdCanvasToolbar";

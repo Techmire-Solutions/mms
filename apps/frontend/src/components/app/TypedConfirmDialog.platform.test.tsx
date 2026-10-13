@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { TypedConfirmDialog } from "@/components/ui/TypedConfirmDialog";
+import { TypedConfirmDialog } from "@/components/app/TypedConfirmDialog";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

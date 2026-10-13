@@ -12,9 +12,9 @@ import {
 import { toAccountingPreferencesPayload } from "@/tenant/features/accounting/hooks/accountingSetupConfigApi";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { notify } from "@/lib/notify";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { FiscalYear } from "@/lib/data/accountingData";
 import { useAccountingSetupSaveActions } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
 

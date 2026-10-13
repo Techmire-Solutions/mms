@@ -1,6 +1,6 @@
 import React from "react";
 import { LayoutTemplate } from "lucide-react";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import type { DocumentTemplatePreset } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 

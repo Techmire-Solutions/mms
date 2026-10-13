@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import type { FacultyDesignationDefinition } from "@mms/shared";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { useFacultyDepartments } from "../hooks/useFacultyDepartments";
 import { useFacultyDesignationsController } from "../hooks/useFacultyDesignationsController";
 import { FacultyDesignationsTable } from "./FacultyDesignationsTable";

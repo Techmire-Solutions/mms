@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { FORM_LABEL } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 

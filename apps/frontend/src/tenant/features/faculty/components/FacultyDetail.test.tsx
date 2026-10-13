@@ -14,7 +14,7 @@ vi.mock("@/hooks/useStandardModuleConfig", () => {
   };
 });
 
-vi.mock("@/tenant/features/faculty/components/useFacultyDetailModel", () => {
+vi.mock("@/tenant/features/faculty/hooks/useFacultyDetailModel", () => {
   const model = (_faculty: FacultyMember) => ({
     statusConfig: {},
     detailFields: [],
@@ -32,7 +32,7 @@ vi.mock("@/tenant/features/faculty/components/useFacultyDetailModel", () => {
   };
 });
 
-vi.mock("@/components/ui/Drawer", () => ({
+vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({
     title,
     subtitle,

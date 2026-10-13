@@ -6,7 +6,7 @@ import {
   checkFacultyFormDuplicate,
   DUPLICATE_ERROR_KEYS,
   FACULTY_DUPLICATE_ERROR_KEYS,
-} from "./facultyFormValidation";
+} from "../lib/facultyFormValidation";
 import * as formAutoScroll from "@/lib/forms/formAutoScroll";
 import * as useFacultyModule from "@/tenant/features/faculty/hooks/useFaculty";
 import { DEFAULT_FACULTY_SETTINGS } from "@mms/shared";

@@ -13,7 +13,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({
     open,
     title,

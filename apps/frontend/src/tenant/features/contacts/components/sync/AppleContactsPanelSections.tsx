@@ -1,7 +1,7 @@
 import type React from "react";
 import { CheckCircle2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { ChangeEvent, RefObject } from "react";
 

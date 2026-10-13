@@ -5,31 +5,31 @@ import {
   useAttendanceReportAggregates,
 } from "@/tenant/hooks/collections/attendance";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { ProgressBar } from "@/components/app/ProgressBar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
 const AttendanceReportCharts = lazy(() =>
-  import("@/components/ui/reports/AttendanceReportCharts").then((m) => ({
+  import("@/components/reports/AttendanceReportCharts").then((m) => ({
     default: m.AttendanceReportCharts,
   })),
 );
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
-import { AttendanceReportTables } from "@/components/ui/reports/AttendanceReportTables";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
+import { AttendanceReportTables } from "@/components/reports/AttendanceReportTables";
 
 import type {
   AttendanceReportProps,
   AttendanceSummaryItem,
   StudentAttendanceItem,
-} from "@/components/ui/reports/attendanceReportTypes";
+} from "@/components/reports/attendanceReportTypes";
 
 export type {
   AttendanceReportProps,
   AttendanceSummaryItem,
   StudentAttendanceItem,
-} from "@/components/ui/reports/attendanceReportTypes";
+} from "@/components/reports/attendanceReportTypes";
 
 /**
  * Renders the attendance reports and metrics.

@@ -2,13 +2,13 @@ import React from "react";
 import { Award, Building2, Clock, CheckCircle2, Sparkles } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { CopyButton } from "@/components/app/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface ContactDetailSkillsSectionProps {

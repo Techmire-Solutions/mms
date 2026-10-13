@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { clampModuleColumnWidth } from "@mms/shared";
-import { measureColumnAutoFitWidth } from "@/components/ui/measureColumnAutoFitWidth";
+import { measureColumnAutoFitWidth } from "@/components/app/measureColumnAutoFitWidth";
 import {
   getTableCellAlignClass,
   getTableCellWrapClass,

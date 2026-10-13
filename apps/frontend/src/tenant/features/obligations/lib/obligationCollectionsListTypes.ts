@@ -4,7 +4,7 @@ import type {
   MujtahidRep,
   Mujtahid,
 } from "@/lib/data/obligationsData";
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 
 export interface ObligationCollectionListProps {
   collections: ObligationCollection[];

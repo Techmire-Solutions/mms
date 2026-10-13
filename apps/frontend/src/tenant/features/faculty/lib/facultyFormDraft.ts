@@ -9,7 +9,7 @@ import { createModuleFormDraft } from "@/lib/forms/createModuleFormDraft";
 import {
   employDesignationRowsFromFaculty,
   employDesignationRowsToWritePayload,
-} from "@/tenant/features/faculty/components/facultyEmployDesignationFormDraft";
+} from "@/tenant/features/faculty/lib/facultyEmployDesignationFormDraft";
 
 export interface FacultyFormControllerOptions {
   faculty?: FacultyMember;

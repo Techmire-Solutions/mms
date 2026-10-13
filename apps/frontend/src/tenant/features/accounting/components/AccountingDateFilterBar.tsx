@@ -1,6 +1,6 @@
 import React from "react";
 import { Download } from "lucide-react";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { Button } from "@/components/ui/button";
 import type { FiscalYear } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";

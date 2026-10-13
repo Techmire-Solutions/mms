@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { FinancialLedgerTable } from "@/components/ui/FinancialLedgerTable";
+import { FinancialLedgerTable } from "@/components/app/FinancialLedgerTable";
 
 describe("FinancialLedgerTable", () => {
   it("renders table caption, column headers, and data rows", () => {

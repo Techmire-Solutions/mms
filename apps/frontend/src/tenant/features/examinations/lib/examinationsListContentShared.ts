@@ -1,5 +1,5 @@
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Exam } from "@/lib/data/examinationData";
 

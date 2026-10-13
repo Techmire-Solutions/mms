@@ -29,7 +29,7 @@ vi.mock("@/platform/hooks/usePlatformAdmins", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     open,
     title,

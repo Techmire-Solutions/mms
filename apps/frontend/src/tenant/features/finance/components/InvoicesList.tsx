@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { InvoicesListOverlays } from "@/tenant/features/finance/components/InvoicesListOverlays";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import type { Invoice } from "@/lib/data/financeData";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { FinanceBulkActionBar } from "@/tenant/features/finance/components/FinanceBulkActionBar";
 import { InvoicesListContent } from "@/tenant/features/finance/components/InvoicesListContent";
 import { InvoicesListFilters } from "@/tenant/features/finance/components/InvoicesListFilters";
-import { getInvoiceVisibleWorkColumns } from "@/tenant/features/finance/components/invoiceListVisibleColumns";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { getInvoiceVisibleWorkColumns } from "@/tenant/features/finance/lib/invoiceListVisibleColumns";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 

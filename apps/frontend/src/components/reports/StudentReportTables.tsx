@@ -1,14 +1,14 @@
 import React from "react";
 import { Users } from "lucide-react";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toTitleCase } from "@mms/shared";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 import type { StudentReportTablesProps } from "./studentReportTypes";
 
 export const StudentReportTables = function StudentReportTables({

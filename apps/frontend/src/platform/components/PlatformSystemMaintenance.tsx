@@ -4,7 +4,7 @@ import { Database, Activity, Cpu, RefreshCw, CheckCircle2, Zap, Layers } from "l
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { Button } from "@/components/ui/button";
-import { StatCard } from "@/components/ui/StatCard";
+import { StatCard } from "@/components/app/StatCard";
 import { apiFetch } from "@/lib/apiClient";
 import { formatDateTime } from "@/lib/utils";
 import {

@@ -1,7 +1,7 @@
 import React from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 
 export interface DynamicChartVisualizerDisplayFieldsProps {
   showGrid: boolean;

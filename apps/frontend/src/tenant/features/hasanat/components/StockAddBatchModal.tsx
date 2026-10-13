@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Package } from "lucide-react";
 import { type Denomination, type StockBatch } from "@/lib/data/hasanatData";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormPrimitives";
+import { DatePicker } from "@/components/app/DatePicker";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { generateClientEntityId, todayISO } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DenominationModal } from "./DenominationModal";

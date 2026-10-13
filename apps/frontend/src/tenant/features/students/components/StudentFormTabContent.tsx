@@ -6,7 +6,7 @@ import {
   type StudentFieldErrorGetter,
   type StudentStatusSelectOption,
 } from "@/tenant/features/students/components/StudentFormSections";
-import { EntityNotesFormSection } from "@/components/ui/EntityNotesFormSection";
+import { EntityNotesFormSection } from "@/components/app/EntityNotesFormSection";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveStudentFieldLabel } from "@/tenant/features/students/components/StudentFormSectionShared";
 import React from "react";

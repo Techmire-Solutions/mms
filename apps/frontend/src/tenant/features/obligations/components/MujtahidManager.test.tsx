@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MujtahidManager } from "./MujtahidManager";
-import type { Mujtahid, MujtahidRep } from "./mujtahidManagerTypes";
+import type { Mujtahid, MujtahidRep } from "../lib/mujtahidManagerTypes";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -18,7 +18,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({
     open,
     onConfirm,

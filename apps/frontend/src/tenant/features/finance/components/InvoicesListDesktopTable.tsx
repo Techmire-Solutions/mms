@@ -1,10 +1,10 @@
 import React from "react";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { InvoicesRowActions } from "@/tenant/features/finance/components/InvoicesRowActions";
 import { renderInvoiceWorkColumnValue } from "@/tenant/features/finance/components/invoiceWorkColumnCell";
-import type { InvoicesListContentProps } from "@/tenant/features/finance/components/invoicesListShared";
+import type { InvoicesListContentProps } from "@/tenant/features/finance/lib/invoicesListShared";
 import type { Invoice } from "@/lib/data/financeData";
 
 export type InvoicesListDesktopTableProps = InvoicesListContentProps;

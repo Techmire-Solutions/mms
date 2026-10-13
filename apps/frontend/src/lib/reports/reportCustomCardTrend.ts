@@ -1,5 +1,5 @@
 import { getDenominationPoints, matchesWidgetFilter, type Denomination } from "@mms/shared";
-import type { CustomCard } from "./reportCollectionTypes.js";
+import type { CustomCard } from "./reportCollectionTypes";
 
 /** Compares the current 30-day window to the preceding 30 days for a custom card trend. */
 export function calculateCustomCardDynamicTrend(

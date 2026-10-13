@@ -1,5 +1,5 @@
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Denomination, Distribution } from "@/lib/data/hasanatData";
 
 export type DistributionStatus = Distribution["status"];

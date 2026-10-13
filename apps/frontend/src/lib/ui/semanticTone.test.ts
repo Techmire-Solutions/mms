@@ -14,7 +14,7 @@ import {
   SEMANTIC_BADGE,
   AVATAR_GRADIENTS,
   CARD_STRIPE_COLORS,
-} from "@/lib/semanticTone";
+} from "@/lib/ui/semanticTone";
 
 describe("getSolidBgClass", () => {
   it("returns the solid variant for a known tone", () => {

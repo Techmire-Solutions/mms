@@ -14,7 +14,7 @@ import {
   ATTENDANCE_COLUMN_KEYS,
   ATTENDANCE_SEARCH_DEBOUNCE_MS,
   type AttendanceRecordsProps,
-} from "./attendanceRecordsTypes";
+} from "../lib/attendanceRecordsTypes";
 
 export function useAttendanceRecordsState({
   filters,

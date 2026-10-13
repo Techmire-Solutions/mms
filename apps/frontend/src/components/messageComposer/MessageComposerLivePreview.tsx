@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCheck, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { calculateSmsSegments, formatDateTime, personalizeMessage } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { ChannelBadge } from "@/components/ui/ChannelBadge";
+import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";

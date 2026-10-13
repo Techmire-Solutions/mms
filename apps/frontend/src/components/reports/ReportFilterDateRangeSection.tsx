@@ -1,6 +1,6 @@
 import React from "react";
 import { Calendar } from "lucide-react";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { Button } from "@/components/ui/button";
 import { calculateReportDateRange } from "@/lib/reports/reportDateUtils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

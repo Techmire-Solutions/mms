@@ -19,8 +19,8 @@ import {
   type AggregateFn,
   type DataSource,
   type PreviewRow,
-} from "@/components/ui/reports/customReportBuilderFields";
-import { buildCustomReportPreviewRows } from "@/components/ui/reports/customReportBuilderPreview";
+} from "@/components/reports/customReportBuilderFields";
+import { buildCustomReportPreviewRows } from "@/components/reports/customReportBuilderPreview";
 
 export function useCustomReportBuilderState(initialSource?: string) {
   const { t } = useTranslation();

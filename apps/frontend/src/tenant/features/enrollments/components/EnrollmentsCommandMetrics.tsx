@@ -3,7 +3,7 @@ import { ClipboardList, Filter, CheckCircle2, Clock } from "lucide-react";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEnrollmentsMetrics } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 interface EnrollmentsCommandMetricsProps {
   total: number;

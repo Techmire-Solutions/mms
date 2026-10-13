@@ -1,9 +1,9 @@
 import type React from "react";
 import { AlertCircle, Shield } from "lucide-react";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/app/PasswordInput";
 import { useTranslation } from "@/hooks/useTranslation";
 import { workspaceRoleDescription, type WorkspaceRole } from "@mms/shared";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";

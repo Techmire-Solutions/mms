@@ -2,7 +2,7 @@ import React, { type ReactNode } from "react";
 import { MapPin } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { MESSAGING_ICON_BTN_TONES } from "@/components/ui/messagingActionStyles";
+import { MESSAGING_ICON_BTN_TONES } from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 import {
   ActionCopyButton,

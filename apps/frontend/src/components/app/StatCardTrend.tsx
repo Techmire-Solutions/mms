@@ -1,7 +1,7 @@
 import React from "react";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { trendTextClass } from "@/lib/semanticTone";
+import { trendTextClass } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface StatCardTrendProps {

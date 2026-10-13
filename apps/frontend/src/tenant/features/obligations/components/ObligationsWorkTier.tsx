@@ -1,6 +1,6 @@
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ObligationCollectionsList } from "@/tenant/features/obligations/components/ObligationCollectionsList";
 import type { useObligationColumnLayout } from "@/tenant/features/obligations/hooks/useObligationColumnLayout";

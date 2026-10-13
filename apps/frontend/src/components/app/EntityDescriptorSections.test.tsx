@@ -1,9 +1,9 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EntityDescriptorSections } from "@/components/ui/EntityDescriptorSections";
+import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
 import { createEntityDescriptor } from "@/components/common/entityDescriptorFactory";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),

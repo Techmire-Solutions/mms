@@ -1,11 +1,11 @@
 import React from "react";
 import { Settings, Eye } from "lucide-react";
-import { FormProgressBar } from "@/components/ui/FormProgressBar";
-import type { SubTab } from "@/components/ui/SubTabBar";
+import { FormProgressBar } from "@/components/app/FormProgressBar";
+import type { SubTab } from "@/components/app/SubTabBar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useDomFormProgress } from "@/components/ui/useDomFormProgress";
+import { useDomFormProgress } from "@/components/app/useDomFormProgress";
 
 type FormModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 

@@ -7,10 +7,10 @@ import React, { useMemo } from "react";
 import { formatBrandingAddress, formatDate, getPageDimensions, type Student } from "@mms/shared";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getPrintBrandingTokens } from "@/lib/printBrandingTokens";
-import { TemplateElementContent } from "@/components/ui/template-editor/templateElementContent";
-import { resolveElementGeometry } from "@/components/ui/template-editor/templateDataResolution";
-import { interpolateTemplateTokens } from "@/components/ui/template-editor/templateEditorUtils";
+import { getPrintBrandingTokens } from "@/lib/ui/printBrandingTokens";
+import { TemplateElementContent } from "@/components/template-editor/templateElementContent";
+import { resolveElementGeometry } from "@/components/template-editor/templateDataResolution";
+import { interpolateTemplateTokens } from "@/components/template-editor/templateEditorUtils";
 import type {
   CardSide,
   StudentCardPayload,

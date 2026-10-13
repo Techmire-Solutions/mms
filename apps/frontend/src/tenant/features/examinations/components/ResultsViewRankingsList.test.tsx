@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ResultsViewRankingsList } from "./ResultsViewRankingsList";
 import type { Exam } from "@/lib/data/examinationData";
-import type { RankedResult } from "./resultsViewTypes";
+import type { RankedResult } from "../lib/resultsViewTypes";
 
 const mockExam: Exam = {
   id: "ex-1",

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 import { KeyRound } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { CredentialsResultCard } from "@/components/ui/CredentialsResultCard";
+import { FormModal } from "@/components/app/FormModal";
+import { CredentialsResultCard } from "@/components/app/CredentialsResultCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WorkspaceSummary } from "@/platform/components/workspace/WorkspaceSummary";
 import { WorkspacePasswordField } from "@/platform/components/workspace/WorkspacePasswordField";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 
 interface PlatformWorkspaceResetPasswordDialogProps {

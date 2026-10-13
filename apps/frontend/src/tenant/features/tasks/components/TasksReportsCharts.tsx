@@ -6,8 +6,8 @@
 import React from "react";
 import { BarChart2 } from "lucide-react";
 import { Bar, BarChart, Cell, Legend, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
-import { chartAxisTick } from "@/components/ui/ChartGrid";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { chartAxisTick } from "@/components/app/ChartGrid";
+import { EmptyState } from "@/components/app/EmptyState";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -17,7 +17,7 @@ import {
   buildTasksPriorityChartData,
   buildTasksStatusChartData,
   hasChartValues,
-} from "./tasksReportsChartData";
+} from "../lib/tasksReportsChartData";
 
 interface TasksReportsChartsProps {
   metrics: TaskMetricsResponse;

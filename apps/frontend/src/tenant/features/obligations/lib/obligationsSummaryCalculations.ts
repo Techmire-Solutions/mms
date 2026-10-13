@@ -7,9 +7,12 @@ import type {
   MujtahidRep,
   WakalaType,
 } from "@/lib/data/obligationsData";
-import type { RepSummaryEntry } from "./ObligationsRepDuesSection";
-import type { MonthlyTrendEntry, TypeBreakdownEntry } from "./ObligationsSummaryChartsSection";
-import type { WakalaSummaryEntry } from "./ObligationsWakalaSummarySection";
+import type { RepSummaryEntry } from "../components/ObligationsRepDuesSection";
+import type {
+  MonthlyTrendEntry,
+  TypeBreakdownEntry,
+} from "../components/ObligationsSummaryChartsSection";
+import type { WakalaSummaryEntry } from "../components/ObligationsWakalaSummarySection";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export function buildWakalaSummary(

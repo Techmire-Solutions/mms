@@ -10,7 +10,7 @@ const { mockControllerState } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/tenant/features/faculty/components/useFacultyFormController", () => {
+vi.mock("@/tenant/features/faculty/hooks/useFacultyFormController", () => {
   const getController = () => ({
     t: (key: string) => key,
     dir: "ltr",
@@ -48,7 +48,7 @@ vi.mock("@/tenant/features/faculty/components/useFacultyFormController", () => {
   };
 });
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     children,

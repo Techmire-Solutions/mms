@@ -1,7 +1,7 @@
 import React, { type JSX } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ModuleTableFooterCount } from "@/components/ui/ModuleTableFooterCount";
+import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
 import { cn } from "@/lib/utils";
 import {

@@ -7,13 +7,13 @@ import {
   type FacultyDesignationDefinition,
   type FacultyMember,
 } from "@mms/shared";
-import { Field, FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { Field, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 import {
   buildDesignationDraftPatch,
   selectableDesignationOptions,
-} from "./facultyFormDesignationDraft";
+} from "../lib/facultyFormDesignationDraft";
 
 export interface FacultyDesignationSelectFieldProps {
   id?: string;

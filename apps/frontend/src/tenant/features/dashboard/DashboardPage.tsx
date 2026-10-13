@@ -7,8 +7,8 @@ import { DashboardCustomizePanel } from "@/tenant/features/dashboard/components/
 import { WelcomeBanner } from "@/tenant/features/dashboard/components/WelcomeBanner";
 import { SetupIncompleteCallout } from "@/tenant/features/dashboard/components/SetupIncompleteCallout";
 import { DashboardWidgets } from "@/lib/reports/pinnedWidgets";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { Button } from "@/components/ui/button";
 import { useDashboardPageController } from "@/tenant/features/dashboard/hooks/useDashboardPageController";
 import { useBranding } from "@/tenant/hooks/useBranding";

@@ -1,8 +1,8 @@
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ErrorState } from "@/components/app/ErrorState";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { Badge } from "@/components/ui/badge";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BookOpen } from "lucide-react";

@@ -1,21 +1,21 @@
 import React, { useMemo } from "react";
 import type { Faculty } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { ModuleTableFooterCount } from "@/components/ui/ModuleTableFooterCount";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { FacultyListRowActions } from "@/tenant/features/faculty/components/FacultyListRowActions";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
-import type { FacultySortField } from "@/tenant/features/faculty/components/facultyListTypes";
-import type { FacultyListContentProps } from "@/tenant/features/faculty/components/facultyListContentShared";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
+import type { FacultySortField } from "@/tenant/features/faculty/lib/facultyListTypes";
+import type { FacultyListContentProps } from "@/tenant/features/faculty/lib/facultyListContentShared";
 import {
   getFacultyVisibleWorkColumns,
   facultyWorkColumnHeadClass,
   facultyWorkColumnCellClass,
-} from "@/tenant/features/faculty/components/facultyListVisibleColumns";
-import { facultyRowIdentity } from "@/tenant/features/faculty/components/facultyFieldDisplay";
+} from "@/tenant/features/faculty/lib/facultyListVisibleColumns";
+import { facultyRowIdentity } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 import { renderFacultyWorkColumnValue } from "@/tenant/features/faculty/components/facultyWorkColumnCell";
 
 export type FacultyListDesktopTableProps = FacultyListContentProps;

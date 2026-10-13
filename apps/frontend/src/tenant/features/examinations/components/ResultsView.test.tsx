@@ -10,7 +10,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("./useResultsViewData", () => ({
+vi.mock("../hooks/useResultsViewData", () => ({
   useResultsViewData: () => ({
     exam: {
       id: "ex-1",

@@ -2,7 +2,7 @@ import * as React from "react";
 import { User } from "lucide-react";
 import { getInitials } from "@mms/shared";
 import { Avatar, AvatarImage, AvatarFallback, type AvatarProps } from "@/components/ui/avatar";
-import { getGenderAvatarFallbackClass } from "@/lib/genderUi";
+import { getGenderAvatarFallbackClass } from "@/lib/ui/genderUi";
 import { cn } from "@/lib/utils";
 
 const STATUS_COLORS = {

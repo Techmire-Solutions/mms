@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { PopoverContent } from "@/components/ui/popover";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import type { FormSelectSearchState } from "@/components/ui/useFormSelectSearch";
+import type { FormSelectSearchState } from "@/components/app/useFormSelectSearch";
 
 interface FormSelectSearchContentProps {
   baseId: string;

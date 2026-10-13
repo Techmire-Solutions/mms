@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import type { LogoColorProportion } from "@mms/shared";
-import { extractLogoBrandColors } from "@/lib/extractLogoBrandColors";
+import { extractLogoBrandColors } from "@/lib/ui/extractLogoBrandColors";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 

@@ -2,7 +2,7 @@ import React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { MESSAGING_ICON_BTN } from "@/components/ui/messagingActionStyles";
+import { MESSAGING_ICON_BTN } from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface MessagingActionButtonProps {

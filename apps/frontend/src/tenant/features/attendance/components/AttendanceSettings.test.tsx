@@ -52,7 +52,7 @@ vi.mock("./AttendanceSettingsPreferencesSection", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ModuleSetupSaveFooter", () => ({
+vi.mock("@/components/app/ModuleSetupSaveFooter", () => ({
   ModuleSetupSaveFooter: () => <div data-testid="save-footer">Save Footer</div>,
 }));
 

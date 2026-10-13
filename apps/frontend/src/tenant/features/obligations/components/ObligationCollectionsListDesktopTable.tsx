@@ -1,12 +1,12 @@
 import React from "react";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ObligationCollectionRowActions } from "@/tenant/features/obligations/components/ObligationCollectionRowActions";
 import { WorkBatchTable } from "@/components/common/work";
 import { useMergedObligationUsers } from "@/tenant/features/obligations/hooks/useObligationLookups";
-import type { ObligationCollectionListContentProps } from "@/tenant/features/obligations/components/obligationCollectionListContentShared";
+import type { ObligationCollectionListContentProps } from "@/tenant/features/obligations/lib/obligationCollectionListContentShared";
 import { useObligationCollectionTableColumns } from "@/tenant/features/obligations/hooks/useObligationCollectionTableColumns";
 
 type ObligationCollectionsListDesktopTableProps = Omit<

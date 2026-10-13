@@ -13,7 +13,7 @@ import {
   type StudentStatItem,
   sumScores,
   testTotalMarks,
-} from "./performanceAnalyticsUtils";
+} from "../lib/performanceAnalyticsUtils";
 
 const PerformanceAnalyticsPanels = lazy(() =>
   import("./PerformanceAnalyticsPanels").then((mod) => ({
@@ -21,7 +21,7 @@ const PerformanceAnalyticsPanels = lazy(() =>
   })),
 );
 
-export type { PerformanceAnalyticsProps } from "./performanceAnalyticsUtils";
+export type { PerformanceAnalyticsProps } from "../lib/performanceAnalyticsUtils";
 
 export function PerformanceAnalytics({
   tests,

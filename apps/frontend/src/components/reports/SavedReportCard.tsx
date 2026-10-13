@@ -3,13 +3,13 @@ import { Bookmark, Clock, Play, Trash2, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { formatDate, type AppTranslationKey, type GenericSavedReport } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useDateFormat } from "@/lib/contexts/DateFormatContext";
-import { SAVED_REPORT_CATEGORY_BADGE_CLS } from "@/components/ui/reports/savedReportsConstants";
+import { SAVED_REPORT_CATEGORY_BADGE_CLS } from "@/components/reports/savedReportsConstants";
 
 const MotionCard = motion.create(Card);
 

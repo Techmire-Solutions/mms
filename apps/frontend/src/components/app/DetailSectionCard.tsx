@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
-import { DetailSectionTitle } from "@/components/ui/DetailSectionTitle";
-import type { CardAccentColor } from "@/lib/semanticTone";
+import { DetailSectionTitle } from "@/components/app/DetailSectionTitle";
+import type { CardAccentColor } from "@/lib/ui/semanticTone";
 
 export interface DetailSectionCardProps {
   title: string;

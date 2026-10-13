@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { JOURNAL_TAGS } from "@/lib/data/accountingData";

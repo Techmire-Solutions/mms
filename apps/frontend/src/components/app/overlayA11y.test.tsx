@@ -1,9 +1,9 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Modal } from "@/components/ui/Modal";
-import { FormModal } from "@/components/ui/FormModal";
-import { Drawer } from "@/components/ui/Drawer";
+import { Modal } from "@/components/app/Modal";
+import { FormModal } from "@/components/app/FormModal";
+import { Drawer } from "@/components/app/Drawer";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

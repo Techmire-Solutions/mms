@@ -1,8 +1,8 @@
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FieldErrorMessage } from "@/components/ui/FormField";
+import { FieldErrorMessage } from "@/components/app/FormField";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 
 export interface FormCheckboxCardProps {
   id: string;

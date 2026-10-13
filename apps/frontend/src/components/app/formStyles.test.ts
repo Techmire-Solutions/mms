@@ -22,7 +22,7 @@ import {
   WORK_TOOLBAR_TRIGGER_FILTER_ACTIVE,
   WORK_TOOLBAR_TRIGGER_FILTER_IDLE,
   WORK_TOOLBAR_TRIGGER_IDLE,
-} from "./formStyles";
+} from "../ui/formStyles";
 
 describe("formStyles Design Token Contract", () => {
   const interactiveInputs = [

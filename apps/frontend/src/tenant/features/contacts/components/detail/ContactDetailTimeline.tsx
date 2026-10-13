@@ -9,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ACTIVITY_TYPE_I18N } from "@/lib/contacts/contactI18n";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
 import { DETAIL_SECTION_TITLE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";

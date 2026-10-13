@@ -10,7 +10,7 @@ vi.mock("@/tenant/features/contacts/components/ContactMetadataCell", () => ({
   ),
 }));
 
-vi.mock("@/tenant/features/contacts/components/contactCardColumnData", () => ({
+vi.mock("@/tenant/features/contacts/lib/contactCardColumnData", () => ({
   hasContactCardColumnData: () => true,
 }));
 

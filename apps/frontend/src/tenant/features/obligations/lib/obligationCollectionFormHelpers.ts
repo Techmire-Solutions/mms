@@ -5,7 +5,7 @@ import type {
   WakalaType,
 } from "@/lib/data/obligationsData";
 import { generateClientEntityId, type AppTranslationKey } from "@mms/shared";
-import type { ObligationCollectionFormState } from "./ObligationCollectionFormFields";
+import type { ObligationCollectionFormState } from "../components/ObligationCollectionFormFields";
 
 export function eligibleRepsForType(
   obligationTypeId: string,

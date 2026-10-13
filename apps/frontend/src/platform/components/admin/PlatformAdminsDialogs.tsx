@@ -1,7 +1,7 @@
 import React from "react";
 import type { PlatformUserProfile } from "@mms/shared";
-import { Drawer } from "@/components/ui/Drawer";
-import { EntityDescriptorSections } from "@/components/ui/EntityDescriptorSections";
+import { Drawer } from "@/components/app/Drawer";
+import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
 import { PlatformEditAdminAccessDialog } from "@/platform/components/PlatformEditAdminAccessDialog";
 import { PlatformAdminDangerDialog } from "@/platform/components/PlatformAdminDangerDialog";
 import type { DangerMode } from "@/platform/components/admin/PlatformAdminsTableView";

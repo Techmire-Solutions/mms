@@ -14,18 +14,18 @@ import {
   focusFacultyValidationField,
   facultyValidationErrorsByField,
   validateFacultyDraft,
-} from "@/tenant/features/faculty/components/facultyFormValidation";
+} from "@/tenant/features/faculty/lib/facultyFormValidation";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 import {
   confirmPendingFacultySave,
   notifyFacultySaveFailed,
   syncUserAccount,
-} from "@/tenant/features/faculty/components/facultyFormUserSync";
+} from "@/tenant/features/faculty/lib/facultyFormUserSync";
 import {
   buildFacultySavePayload,
   validateUserDraftRequirements,
   isEmployeeIdConflictError,
-} from "@/tenant/features/faculty/components/facultyFormSavePayload";
+} from "@/tenant/features/faculty/lib/facultyFormSavePayload";
 
 export { focusFacultyValidationField, confirmPendingFacultySave };
 

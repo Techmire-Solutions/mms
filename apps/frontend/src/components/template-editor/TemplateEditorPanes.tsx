@@ -5,7 +5,7 @@
 
 import React from "react";
 import type { TemplateFieldDefinition } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { TemplateEditorElementPalette } from "./TemplateEditorElementPalette";
 import { TemplateEditorCanvas } from "./TemplateEditorCanvas";
 import { TemplateEditorPropertiesPanel } from "./TemplateEditorPropertiesPanel";

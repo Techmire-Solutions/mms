@@ -1,5 +1,5 @@
 import type { TooltipContentProps } from "recharts";
-import { ChartTooltip } from "@/components/ui/ChartTooltip";
+import { ChartTooltip } from "@/components/app/ChartTooltip";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 

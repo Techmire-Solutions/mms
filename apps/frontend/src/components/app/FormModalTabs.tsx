@@ -1,7 +1,7 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
-import type { SubTab } from "@/components/ui/SubTabBar";
+import type { SubTab } from "@/components/app/SubTabBar";
 import { cn } from "@/lib/utils";
 
 interface FormModalTabsProps<K extends string = string> {

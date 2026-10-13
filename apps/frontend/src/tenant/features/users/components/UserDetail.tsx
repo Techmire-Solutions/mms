@@ -9,11 +9,11 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
-import { Drawer } from "@/components/ui/Drawer";
+import { Drawer } from "@/components/app/Drawer";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
-} from "@/components/ui/DetailDrawerArchiveChrome";
+} from "@/components/app/DetailDrawerArchiveChrome";
 import { UserRoleBadge, UserStatusBadge } from "@/tenant/features/users/components/UserBadges";
 import { notify } from "@/lib/notify";
 import { usePermissions } from "@/tenant/hooks/usePermissions";

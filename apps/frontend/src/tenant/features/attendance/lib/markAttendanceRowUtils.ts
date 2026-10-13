@@ -7,7 +7,7 @@ import type {
   AttendanceRow,
   GeoData,
   OfflinePayload,
-} from "@/tenant/features/attendance/components/markAttendanceTypes";
+} from "@/tenant/features/attendance/lib/markAttendanceTypes";
 
 export function buildDefaultRows(
   students: ClassStudent[],

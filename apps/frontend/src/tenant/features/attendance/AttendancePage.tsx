@@ -1,8 +1,8 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserCheck } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { AttendanceCommandMetrics } from "@/tenant/features/attendance/components/AttendanceCommandMetrics";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { attendanceTransferSchema } from "@mms/shared";
@@ -10,8 +10,8 @@ import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExp
 import { AttendanceWorkTier } from "@/tenant/features/attendance/components/AttendanceWorkTier";
 import { AttendanceCsvImportDialog } from "@/tenant/features/attendance/components/AttendanceCsvImportDialog";
 import { AttendancePageHeaderActions } from "@/tenant/features/attendance/components/AttendancePageHeaderActions";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
 import { useAttendancePageController } from "@/tenant/features/attendance/hooks/useAttendancePageController";
 
 const AttendanceReportsTier = React.lazy(() =>

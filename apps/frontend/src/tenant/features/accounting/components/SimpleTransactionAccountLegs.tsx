@@ -1,8 +1,8 @@
 import { AlertTriangle } from "lucide-react";
-import { Field } from "@/components/ui/FormField";
-import { FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormField";
+import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { WizardFormState } from "./simpleTransactionWizardTypes";
+import type { WizardFormState } from "../lib/simpleTransactionWizardTypes";
 
 export interface AccountLegConfig {
   id: string;

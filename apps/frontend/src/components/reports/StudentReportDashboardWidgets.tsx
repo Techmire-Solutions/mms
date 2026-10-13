@@ -1,6 +1,6 @@
 import React from "react";
 import EnrollmentChart from "@/components/dashboard-widgets/charts/EnrollmentChart";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export const StudentReportDashboardWidgets = React.memo(

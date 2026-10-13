@@ -1,4 +1,4 @@
-import { SearchableSelectField } from "@/components/ui/SearchableSelectField";
+import { SearchableSelectField } from "@/components/app/SearchableSelectField";
 import React from "react";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";

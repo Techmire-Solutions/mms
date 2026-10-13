@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { AccordionTabItem } from "@/components/ui/ResponsiveAccordionTabsTypes";
+import type { AccordionTabItem } from "@/components/app/ResponsiveAccordionTabsTypes";
 
 export function TabTrigger({
   tab,

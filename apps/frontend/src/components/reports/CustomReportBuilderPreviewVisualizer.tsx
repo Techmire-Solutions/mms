@@ -1,10 +1,10 @@
 import type { JSX } from "react";
 import { Settings } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type PreviewRow } from "./customReportBuilderFields";
 

@@ -5,15 +5,12 @@ import {
   type AppTranslationKey,
 } from "@mms/shared";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { Badge } from "@/components/ui/badge";
 import { getFieldLabel } from "@/lib/reports/reportMetadata";
-import type {
-  ChartOperation,
-  ChartType,
-} from "@/components/ui/reports/dynamicChartVisualizerTypes";
-import type { DynamicChartVisualizerConfigPanelProps } from "@/components/ui/reports/dynamicChartVisualizerConfigPanelTypes";
+import type { ChartOperation, ChartType } from "@/components/reports/dynamicChartVisualizerTypes";
+import type { DynamicChartVisualizerConfigPanelProps } from "@/components/reports/dynamicChartVisualizerConfigPanelTypes";
 import { DynamicChartVisualizerDisplayFields } from "./DynamicChartVisualizerDisplayFields";
 
 type FieldsProps = Pick<

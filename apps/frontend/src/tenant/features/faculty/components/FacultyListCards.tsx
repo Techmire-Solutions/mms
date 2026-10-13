@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFacultyEntityDescriptor } from "@/tenant/features/faculty/hooks/useFacultyEntityDescriptor";
 import { FacultyCardItem } from "@/tenant/features/faculty/components/FacultyCardItem";
-import type { FacultyListContentProps } from "@/tenant/features/faculty/components/facultyListContentShared";
+import type { FacultyListContentProps } from "@/tenant/features/faculty/lib/facultyListContentShared";
 
 export interface FacultyListCardsProps extends Omit<
   FacultyListContentProps,

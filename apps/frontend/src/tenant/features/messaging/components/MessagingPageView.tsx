@@ -7,10 +7,10 @@ import {
   messagingTransferSchema,
 } from "@mms/shared";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { MessagingTarget } from "@/hooks/useMessageComposerState";

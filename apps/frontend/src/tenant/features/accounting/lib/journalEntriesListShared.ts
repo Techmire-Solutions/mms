@@ -2,7 +2,7 @@ import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { ReactNode } from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { moneyToCents } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { JournalEntry } from "@/lib/data/accountingData";
 

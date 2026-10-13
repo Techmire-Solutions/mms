@@ -34,4 +34,4 @@ export {
 export {
   exportMessagingLogsFiltered,
   messagingExportEndDateBound,
-} from "@/tenant/features/messaging/components/messagingReportsExport";
+} from "@/tenant/features/messaging/lib/messagingReportsExport";

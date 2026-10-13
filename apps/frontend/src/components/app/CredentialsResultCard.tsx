@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { CopyButton } from "@/components/app/CopyButton";
 
 interface CredentialsResultCardProps {
   title: string;

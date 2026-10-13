@@ -1,16 +1,16 @@
 import React from "react";
 import { Users } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toTitleCase } from "@mms/shared";
-import { FacultyReportWorkloadTable } from "@/components/ui/reports/FacultyReportWorkloadTable";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import { FacultyReportWorkloadTable } from "@/components/reports/FacultyReportWorkloadTable";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 
 import type { FacultyReportTablesProps } from "./facultyReportTypes";
 

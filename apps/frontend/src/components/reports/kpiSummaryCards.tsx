@@ -9,7 +9,7 @@ import {
   CARD_STRIPE_INSET,
   CARD_STRIPE_COLORS,
   type CardAccentColor,
-} from "@/lib/semanticTone";
+} from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import type { CategorizedKPIItem } from "./kpiSummaryTypes";
 

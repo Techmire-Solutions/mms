@@ -8,7 +8,7 @@ import {
   consumeStudentsWorkDrillDown,
   type StudentsWorkDrillDown,
 } from "@/tenant/features/students/hooks/studentsWorkDrillDown";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 
 /** Directory filters, sort, trash, and selection SSOT for Students Work (Contacts-shaped). */
 export function useStudentsDirectoryFilters({

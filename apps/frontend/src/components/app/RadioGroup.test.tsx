@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { RadioGroup, RadioGroupItem } from "@/components/app/RadioGroup";
 
 describe("RadioGroup", () => {
   it("renders radio group items with proper accessibility attributes", () => {

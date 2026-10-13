@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StudentLeaderboardSection } from "./StudentLeaderboardSection";
-import type { StudentStatItem } from "./performanceAnalyticsUtils";
+import type { StudentStatItem } from "../lib/performanceAnalyticsUtils";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -15,7 +15,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ExportToolbar", () => ({
+vi.mock("@/components/app/ExportToolbar", () => ({
   ExportToolbar: ({ title }: { title: string }) => <div data-testid="export-toolbar">{title}</div>,
 }));
 

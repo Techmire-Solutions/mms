@@ -23,7 +23,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     open,
     title,

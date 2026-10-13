@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bell, X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { DashboardNotificationItem } from "@/lib/buildDashboardNotifications";
-import { DASHBOARD_NOTIFICATION_ICONS as ICONS } from "@/lib/dashboardNotificationIcons";
+import { DASHBOARD_NOTIFICATION_ICONS as ICONS } from "@/lib/ui/dashboardNotificationIcons";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Badge } from "@/components/ui/badge";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetCardHeader } from "@/components/ui/WidgetCardHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 
 interface NotificationsPanelProps {
   items: DashboardNotificationItem[];

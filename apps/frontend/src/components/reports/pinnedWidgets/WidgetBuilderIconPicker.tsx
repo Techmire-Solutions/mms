@@ -2,15 +2,15 @@ import React from "react";
 import { Search } from "lucide-react";
 import { capitalize, type AppTranslationKey } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { Input } from "@/components/ui/input";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ICONS_LIST } from "@/lib/reports/pinnedWidgetTypes";
 import {
   WIDGET_BUILDER_ICON_CATEGORIES,
   type WidgetBuilderIconTab,
-} from "@/components/ui/reports/pinnedWidgets/widgetBuilderIconCategories";
+} from "@/components/reports/pinnedWidgets/widgetBuilderIconCategories";
 
 interface WidgetBuilderIconPickerProps {
   builderIcon: string;

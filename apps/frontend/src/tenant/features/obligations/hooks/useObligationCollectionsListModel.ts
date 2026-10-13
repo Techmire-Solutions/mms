@@ -8,8 +8,8 @@ import type {
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMergedObligationContacts } from "@/tenant/features/obligations/hooks/useObligationLookups";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export interface UseObligationCollectionsListModelProps {
   collections: ObligationCollection[];

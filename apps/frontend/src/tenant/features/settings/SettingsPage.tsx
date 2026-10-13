@@ -2,12 +2,12 @@ import React, { Suspense, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings as SettingsIcon } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   ResponsiveAccordionTabs,
   type AccordionTabItem,
-} from "@/components/ui/ResponsiveAccordionTabs";
+} from "@/components/app/ResponsiveAccordionTabs";
 import { isSettingsSection, type SettingsSection } from "@/lib/config/routes";
 import { SETTINGS_NAV } from "@/lib/config/settingsNavConfig";
 import { SETTINGS_SECTION_COMPONENTS } from "@/lib/config/settingsSectionComponents";
@@ -18,7 +18,7 @@ import { SettingsBrandingDraftProvider } from "@/lib/contexts/SettingsBrandingDr
 import { SettingsGlobalDraftProvider } from "@/lib/contexts/SettingsGlobalDraftContext";
 
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 
 function SettingsContent({ section }: { section: SettingsSection }): React.JSX.Element {
   const Component = SETTINGS_SECTION_COMPONENTS[section];

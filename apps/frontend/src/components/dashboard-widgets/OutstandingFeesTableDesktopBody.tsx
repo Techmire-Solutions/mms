@@ -1,10 +1,10 @@
 import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { cn } from "@/lib/utils";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { EmptyState } from "@/components/app/EmptyState";
 import {
   MotionTableRow,
   OutstandingFeeMessagingActions,

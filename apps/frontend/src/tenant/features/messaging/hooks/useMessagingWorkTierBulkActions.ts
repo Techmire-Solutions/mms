@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
-import { exportMessagingLogsFiltered } from "./messagingReportsExport";
+import { exportMessagingLogsFiltered } from "../lib/messagingReportsExport";
 
 interface UseMessagingWorkTierBulkActionsParams {
   canWrite: boolean;

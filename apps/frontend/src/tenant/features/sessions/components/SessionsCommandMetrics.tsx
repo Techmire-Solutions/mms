@@ -2,7 +2,7 @@ import React from "react";
 import { Calendar, Filter, CheckCircle2, Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsMetrics } from "@/tenant/features/sessions/hooks/useSessions";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 interface SessionsCommandMetricsProps {
   total: number;

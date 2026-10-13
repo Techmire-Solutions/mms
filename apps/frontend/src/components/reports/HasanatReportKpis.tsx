@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Gift, Star, TrendingDown, Users } from "lucide-react";
 import { formatNumber } from "@mms/shared";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface HasanatReportKpisProps {

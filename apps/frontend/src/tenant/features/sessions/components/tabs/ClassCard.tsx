@@ -10,14 +10,14 @@ import {
 import type { FacultyMember } from "@mms/shared";
 
 import { Button } from "@/components/ui/button";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCard } from "@/components/app/EntityCard";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Class } from "@/lib/data/sessionsData";
-import { genderStatusBadgeConfig } from "@/lib/genderStatusBadge";
+import { genderStatusBadgeConfig } from "@/lib/ui/genderStatusBadge";
 import {
   facultyNameById,
   resolveClassFacultyId,

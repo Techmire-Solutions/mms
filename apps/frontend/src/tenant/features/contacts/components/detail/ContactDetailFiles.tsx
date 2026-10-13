@@ -5,11 +5,11 @@ import { formatDate, type Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DashedFileDropZone } from "@/components/ui/DashedFileDropZone";
+import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 import { DetailCollectionEmpty } from "./contactDetailChannelHelpers";
 

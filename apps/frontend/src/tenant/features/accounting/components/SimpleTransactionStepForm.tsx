@@ -1,17 +1,17 @@
-import { quickActionDescription } from "./quickActionLabels";
+import { quickActionDescription } from "../lib/quickActionLabels";
 import type { Dispatch, SetStateAction } from "react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormField";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormField";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
-import type { QuickActionType, WizardFormState } from "./simpleTransactionWizardTypes";
+import type { QuickActionType, WizardFormState } from "../lib/simpleTransactionWizardTypes";
 import { SimpleTransactionAmountInput } from "./SimpleTransactionAmountInput";
 import { SimpleTransactionTagSelector } from "./SimpleTransactionTagSelector";
 import { SimpleTransactionHeader } from "./SimpleTransactionHeader";
 import { SimpleTransactionAccountLegs } from "./SimpleTransactionAccountLegs";
 import { SimpleTransactionRefField } from "./SimpleTransactionRefField";
-import { useSimpleTransactionStepFormState } from "./useSimpleTransactionStepFormState";
+import { useSimpleTransactionStepFormState } from "../hooks/useSimpleTransactionStepFormState";
 
 interface StepTransactionFormProps {
   type: QuickActionType;

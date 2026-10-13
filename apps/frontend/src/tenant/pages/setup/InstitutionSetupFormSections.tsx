@@ -4,8 +4,8 @@ import type { BrandingSettings } from "@mms/shared";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/FormField";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { Field } from "@/components/app/FormField";
+import { SectionCard } from "@/components/app/SectionCard";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { InstitutionSetupAddressSection } from "./InstitutionSetupAddressSection";
 

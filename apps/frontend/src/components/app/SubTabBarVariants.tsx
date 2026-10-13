@@ -1,12 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { SubTabBarBadge } from "@/components/ui/SubTabBarBadge";
+import { SubTabBarBadge } from "@/components/app/SubTabBarBadge";
 import {
   SubTabBarAccordionVariant,
   type SubTabBarAccordionVariantProps,
   type SubTabBarVariantProps,
-} from "@/components/ui/SubTabBarAccordionVariant";
+} from "@/components/app/SubTabBarAccordionVariant";
 
 export { SubTabBarAccordionVariant };
 export type { SubTabBarAccordionVariantProps, SubTabBarVariantProps };

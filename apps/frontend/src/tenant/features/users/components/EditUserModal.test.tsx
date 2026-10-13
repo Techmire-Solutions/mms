@@ -42,7 +42,7 @@ vi.mock("@/tenant/hooks/collections/contacts", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({ title, subtitle, children, onSave, saveDisabled }: any) => (
     <div data-testid="form-modal">
       <h2>{title}</h2>

@@ -5,8 +5,8 @@ import {
   loadSelectedCardIdsForCategory,
   syncNewCustomCardSelections,
   syncSelectedCardIdsWithAvailable,
-} from "@/tenant/features/reports/controllers/kpiSummaryCardSelection";
-import type { CategorizedKPIItem } from "@/components/ui/reports/kpiSummaryTypes";
+} from "@/tenant/features/reports/hooks/kpiSummaryCardSelection";
+import type { CategorizedKPIItem } from "@/components/reports/kpiSummaryTypes";
 
 export function useKpiSummaryCardSelection(
   category: string,

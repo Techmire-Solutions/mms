@@ -2,12 +2,12 @@ import { UserCheck, UserMinus, UserPlus, UserX, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { FacultyCommandMetricsSnapshot, FacultyQuickFilter } from "@mms/shared";
 import { resolveFacultyStatusRoles } from "@mms/shared";
-import type { AccentColor } from "@/components/ui/statCardAccent";
+import type { AccentColor } from "@/components/app/statCardAccent";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
 import { applyFacultyWorkDrillDown } from "@/tenant/hooks/collections/faculty";
 import { resolveClassFacultyId, resolveClassFacultyName } from "@/lib/faculty/facultyAssignment";
-import type { FacultyWorkloadItem } from "@/components/ui/reports/facultyReportTypes";
+import type { FacultyWorkloadItem } from "@/components/reports/facultyReportTypes";
 
 export interface FacultyReportMetricItem {
   icon: LucideIcon;

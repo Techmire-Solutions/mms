@@ -10,7 +10,7 @@ import {
   PRINT_RULE,
   PRINT_BORDER,
   PRINT_LABEL,
-} from "@/lib/printTemplateStyles";
+} from "@/lib/ui/printTemplateStyles";
 
 // Quarantined print-only CSS stylesheet string for physical A4 exam paper generation.
 // Per mms-ui-ux-design.mdc §2, physical print styles (A4/PDF) are quarantined from application UI chrome tokens.

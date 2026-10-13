@@ -8,15 +8,15 @@ import {
   TASK_PRIORITIES,
   TASK_STATUSES,
 } from "@mms/shared";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { DateTimePicker } from "@/components/ui/DateTimePicker";
+import { DatePicker } from "@/components/app/DatePicker";
+import { DateTimePicker } from "@/components/app/DateTimePicker";
 import { TaskFormAssigneePicker } from "./TaskFormAssigneePicker";
-import { useTaskFormController } from "./useTaskFormController";
+import { useTaskFormController } from "../hooks/useTaskFormController";
 
 export interface TaskFormModalProps {
   open: boolean;

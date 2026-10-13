@@ -5,7 +5,7 @@ import {
   attendanceRecordsFromRows,
   studentRollNo,
   enrolledStudentsForClass,
-} from "./markAttendanceRowUtils";
+} from "../lib/markAttendanceRowUtils";
 import type { ClassStudent } from "@/lib/data/attendanceData";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Student } from "@/lib/data/studentsData";

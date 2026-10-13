@@ -1,5 +1,5 @@
 import React from "react";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Exam } from "@mms/shared";
 

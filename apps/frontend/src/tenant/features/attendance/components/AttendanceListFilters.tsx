@@ -1,8 +1,8 @@
 import type React from "react";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
-import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { WorkTaskToolbar } from "@/components/common/work";
-import { FilterChips } from "@/components/ui/FilterChips";
+import { FilterChips } from "@/components/app/FilterChips";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";

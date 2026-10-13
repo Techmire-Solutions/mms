@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Bookmark, Plus } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";

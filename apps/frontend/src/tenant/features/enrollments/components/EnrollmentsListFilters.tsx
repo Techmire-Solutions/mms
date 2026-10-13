@@ -1,7 +1,7 @@
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
-import { FilterChips } from "@/components/ui/FilterChips";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
+import { FilterChips } from "@/components/app/FilterChips";
 import { WorkTaskToolbar } from "@/components/common/work";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Session } from "@mms/shared";

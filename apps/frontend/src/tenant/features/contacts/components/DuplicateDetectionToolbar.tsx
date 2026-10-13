@@ -2,7 +2,7 @@ import React from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import type { DuplicateTierFilter } from "@/tenant/features/contacts/hooks/useDuplicateDetectionState";
 
 export interface DuplicateDetectionToolbarProps {

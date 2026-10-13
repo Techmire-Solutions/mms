@@ -4,7 +4,7 @@
  */
 
 import type { ElementStyle, TemplateElement } from "@mms/shared";
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { normalizeHexColor } from "./templateEditorUtils";
 
 export const SWATCHES = [

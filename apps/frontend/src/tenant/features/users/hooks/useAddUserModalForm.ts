@@ -10,7 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useUsersConfig } from "@/hooks/useStandardModuleConfig";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { notify } from "@/lib/notify";
-import type { AddUserFormState } from "./addUserModalTypes";
+import type { AddUserFormState } from "../lib/addUserModalTypes";
 
 export interface UseAddUserModalFormProps {
   onAdd: (user: SystemUser) => void | Promise<void>;

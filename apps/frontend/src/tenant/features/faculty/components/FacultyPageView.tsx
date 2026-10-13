@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { School } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIndustryTerminology } from "@/tenant/hooks/useIndustryTerminology";
 import { FacultyCommandMetrics } from "@/tenant/features/faculty/components/FacultyCommandMetrics";

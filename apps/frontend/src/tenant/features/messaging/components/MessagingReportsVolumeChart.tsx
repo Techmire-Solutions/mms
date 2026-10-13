@@ -1,7 +1,7 @@
 import React from "react";
 import { BarChart2 } from "lucide-react";
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { useTranslation } from "@/hooks/useTranslation";
 

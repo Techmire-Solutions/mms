@@ -1,8 +1,8 @@
 import React from "react";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { PersonDetailHeroCard } from "@/components/ui/PersonDetailHeroCard";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
 import { Badge } from "@/components/ui/badge";
-import { getGenderCardAccent } from "@/lib/genderUi";
+import { getGenderCardAccent } from "@/lib/ui/genderUi";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Student } from "@mms/shared";
 

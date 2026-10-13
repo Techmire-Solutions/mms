@@ -8,7 +8,7 @@ import type {
 } from "@/lib/data/obligationsData";
 import { InvoicePrintPreview } from "@/tenant/features/obligations/components/invoice/InvoicePrintPreview";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePrintInvoiceModalController } from "./usePrintInvoiceModalController";
 import { PrintInvoiceModalFooter } from "./PrintInvoiceModalFooter";

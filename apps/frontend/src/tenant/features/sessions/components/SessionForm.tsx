@@ -1,13 +1,13 @@
 import React from "react";
 import { Calendar } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { type Session } from "@/lib/data/sessionsData";
 import {
   SessionDetailsSection,
   SessionFinancialSection,
 } from "@/tenant/features/sessions/components/SessionFormSections";
 import { SessionFormFooter } from "@/tenant/features/sessions/components/SessionFormFooter";
-import { useSessionFormController } from "@/tenant/features/sessions/components/useSessionFormController";
+import { useSessionFormController } from "@/tenant/features/sessions/hooks/useSessionFormController";
 
 export interface SessionFormProps {
   open?: boolean;

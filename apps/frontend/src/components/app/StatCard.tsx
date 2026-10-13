@@ -3,13 +3,13 @@ import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { formatNumber } from "@mms/shared";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { resolveAccent, type AccentColor } from "@/components/ui/statCardAccent";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
-import { StatCardTrend } from "@/components/ui/StatCardTrend";
-import { StatCardSparkline } from "@/components/ui/StatCardSparkline";
+import { resolveAccent, type AccentColor } from "@/components/app/statCardAccent";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
+import { StatCardTrend } from "@/components/app/StatCardTrend";
+import { StatCardSparkline } from "@/components/app/StatCardSparkline";
 
 export interface StatCardProps {
   label: string;

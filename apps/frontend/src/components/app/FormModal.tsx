@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Modal, type ModalProps } from "@/components/ui/Modal";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { useFormModalLayout } from "@/components/ui/useFormModalLayout";
-import type { SubTab } from "@/components/ui/SubTabBar";
+import { Modal, type ModalProps } from "@/components/app/Modal";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { useFormModalLayout } from "@/components/app/useFormModalLayout";
+import type { SubTab } from "@/components/app/SubTabBar";
 
 export type { SubTab as FormModalTab };
 

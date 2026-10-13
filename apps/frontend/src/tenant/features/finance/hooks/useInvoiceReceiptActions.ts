@@ -5,13 +5,13 @@ import { getCollectedAmountForInvoice, getOutstandingAmountForInvoice } from "@m
 import {
   mapToTypstFeeReceipt,
   mapToZohoInvoice,
-} from "@/components/ui/template-editor/templatePayloadMappers";
+} from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
 import {
   buildPrintBodyStyle,
   PRINT_NEUTRAL_PALETTE,
   PRINT_COLORS,
-} from "@/lib/printTemplateStyles";
+} from "@/lib/ui/printTemplateStyles";
 
 export function useInvoiceReceiptActions(
   invoices: Invoice[],

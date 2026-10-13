@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import { DollarSign } from "lucide-react";
 import { formatDate } from "@mms/shared";
 import type { Invoice } from "@/lib/data/financeData";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 
 interface FinancialInvoiceTableProps {
   invoices: Invoice[];

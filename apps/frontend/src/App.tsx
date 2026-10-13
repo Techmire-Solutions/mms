@@ -12,7 +12,7 @@ import RouterBridge from "@/components/routing/RouterBridge";
 import { isEntryPath } from "@/lib/config/routes";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AppProviders } from "@/providers/AppProviders";
-import { NetworkStatusIndicator } from "@/components/ui/NetworkStatusIndicator";
+import { NetworkStatusIndicator } from "@/components/app/NetworkStatusIndicator";
 
 const AuthenticatedApp = (): React.JSX.Element | null => {
   const isTenantHost = useIsTenantHost();
@@ -53,7 +53,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     const applyTheme = isApexBoot
       ? () =>
-          import("@/platform/lib/brandingEntryTheme").then(({ applyApexPlatformTheme }) =>
+          import("@/lib/branding/apexPlatformTheme").then(({ applyApexPlatformTheme }) =>
             applyApexPlatformTheme("en"),
           )
       : () => import("@/lib/brandingTheme").then(({ applyAppTheme }) => applyAppTheme());

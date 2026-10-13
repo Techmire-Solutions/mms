@@ -4,7 +4,7 @@ import { formatDayName, formatLongDate, formatHijriDate } from "@mms/shared";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import {
   DASHBOARD_ROLE_GREETING_KEYS,
   DASHBOARD_ROLE_BADGE_KEYS,

@@ -1,14 +1,14 @@
 import React from "react";
 import { Plus, Trash2, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { getFieldLabel } from "@/lib/reports/reportMetadata";
-import type { FilterRule } from "@/components/ui/reports/dynamicChartVisualizerTypes";
-import type { DynamicChartVisualizerFiltersPanelProps } from "@/components/ui/reports/dynamicChartVisualizerConfigPanelTypes";
+import type { FilterRule } from "@/components/reports/dynamicChartVisualizerTypes";
+import type { DynamicChartVisualizerFiltersPanelProps } from "@/components/reports/dynamicChartVisualizerConfigPanelTypes";
 
 export function DynamicChartVisualizerFiltersPanel({
   filters,

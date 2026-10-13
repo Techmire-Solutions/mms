@@ -3,7 +3,7 @@ import { Copy, Edit3, Files, Trash2 } from "lucide-react";
 import type { MessageTemplate } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
 export interface MessagingTemplateActionButtonsProps {
   template: MessageTemplate;

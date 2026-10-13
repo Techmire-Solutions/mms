@@ -3,7 +3,7 @@ import type { WorkBatchTableColumn } from "@/components/common/work";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";
 import { AttendanceRecordStatusCell } from "@/tenant/features/attendance/components/AttendanceRecordStatusCell";
-import { TimePicker } from "@/components/ui/TimePicker";
+import { TimePicker } from "@/components/app/TimePicker";
 import { formatDate } from "@mms/shared";
 
 export interface UseAttendanceTableColumnsOptions {

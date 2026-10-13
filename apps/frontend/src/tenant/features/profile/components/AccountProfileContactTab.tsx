@@ -6,14 +6,14 @@ import {
   normalizePhoneInput,
   type TenantUserProfile,
 } from "@mms/shared";
-import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
+import { FormSubmitActions } from "@/components/app/FormSubmitActions";
 import { Card, CardContent } from "@/components/ui/card";
-import { CardTitleBar } from "@/components/ui/CardTitleBar";
+import { CardTitleBar } from "@/components/app/CardTitleBar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 
 export interface AccountProfileContactTabProps {

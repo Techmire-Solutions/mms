@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import type { KeyboardEvent } from "react";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export interface WorkCardEntity {
   id: string | number;

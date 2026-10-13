@@ -18,7 +18,7 @@ vi.mock("@/tenant/features/faculty/components/FacultySettings", () => ({
   FacultySettings: () => <div data-testid="faculty-settings">Faculty Settings Panel</div>,
 }));
 
-vi.mock("@/components/ui/ModuleTierMotion", () => ({
+vi.mock("@/components/app/ModuleTierMotion", () => ({
   ModuleTierMotion: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 

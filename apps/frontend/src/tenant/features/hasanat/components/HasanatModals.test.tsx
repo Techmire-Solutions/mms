@@ -23,7 +23,7 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     saveDisabled,
@@ -48,7 +48,7 @@ vi.mock("@/components/ui/FormModal", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({
     id,
     name,

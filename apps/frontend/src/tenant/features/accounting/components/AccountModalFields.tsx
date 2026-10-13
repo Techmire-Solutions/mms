@@ -2,8 +2,8 @@ import React from "react";
 import { ACCOUNT_TYPES, type Account, type AccountType } from "@/lib/data/accountingData";
 import type { AppTranslationKey } from "@mms/shared";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
 

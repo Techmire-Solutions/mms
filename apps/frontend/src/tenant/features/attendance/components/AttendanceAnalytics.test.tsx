@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceAnalytics } from "./AttendanceAnalytics";
 
-vi.mock("./useAttendanceAnalyticsModel", () => ({
+vi.mock("../hooks/useAttendanceAnalyticsModel", () => ({
   useAttendanceAnalyticsModel: () => ({
     t: (key: string) => key,
     overallRate: 92,
@@ -23,7 +23,7 @@ vi.mock("./useAttendanceAnalyticsModel", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
+vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
   ModuleCommandMetricsGrid: ({ items }: { items: { label: string; value: any }[] }) => (
     <div data-testid="metrics-grid">{items.map((i) => `${i.label}:${i.value}`).join(", ")}</div>
   ),

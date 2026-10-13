@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Download, FileSpreadsheet, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { BackgroundJobRecord } from "@mms/shared";
-import { DashedFileDropZone } from "@/components/ui/DashedFileDropZone";
-import { Modal } from "@/components/ui/Modal";
+import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
+import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
 
 export interface ModuleImportDialogProps<TRow = Record<string, unknown>> {

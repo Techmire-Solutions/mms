@@ -6,11 +6,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { ReportFilterFieldsPanel } from "@/components/ui/reports/ReportFilterFieldsPanel";
+import { ReportFilterFieldsPanel } from "@/components/reports/ReportFilterFieldsPanel";
 import type {
   ReportFilterFields,
   ReportFilterFieldKey,
-} from "@/components/ui/reports/reportFilterTypes";
+} from "@/components/reports/reportFilterTypes";
 
 export type { ReportFilterFields };
 

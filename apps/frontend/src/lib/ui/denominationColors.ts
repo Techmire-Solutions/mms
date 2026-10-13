@@ -1,6 +1,6 @@
 import { DEFAULT_BRANDING_SETTINGS } from "@mms/shared";
-import { getBrandingChartPalette } from "@/lib/brandingChartPalette";
-import { PRINT_COLORS } from "@/lib/printTemplateStyles";
+import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
+import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 
 /** Default card colour for new denominations. */
 export const DEFAULT_DENOMINATION_COLOR = DEFAULT_BRANDING_SETTINGS.primaryColor;

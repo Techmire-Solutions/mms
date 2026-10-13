@@ -4,15 +4,15 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Badge } from "@/components/ui/badge";
 import { formatContactOptionLabel } from "@/lib/contacts/contactI18n";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { isOptionSelected } from "@/components/ui/editableMultiSelectUtils";
+import { isOptionSelected } from "@/components/app/editableMultiSelectUtils";
 import {
   EditableMultiSelectOptionItem,
   type EditableMultiSelectOptionItemProps,
-} from "@/components/ui/EditableMultiSelectOptionItem";
+} from "@/components/app/EditableMultiSelectOptionItem";
 import {
   EditableMultiSelectSearchBar,
   type EditableMultiSelectSearchBarProps,
-} from "@/components/ui/EditableMultiSelectSearchBar";
+} from "@/components/app/EditableMultiSelectSearchBar";
 
 export { EditableMultiSelectOptionItem, EditableMultiSelectSearchBar };
 export type { EditableMultiSelectOptionItemProps, EditableMultiSelectSearchBarProps };

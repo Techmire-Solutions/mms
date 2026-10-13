@@ -1,7 +1,7 @@
 import * as React from "react";
 import { combineIsoDateAndTime, splitIsoDateTime } from "@mms/shared";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { TimePicker } from "@/components/ui/TimePicker";
+import { DatePicker } from "@/components/app/DatePicker";
+import { TimePicker } from "@/components/app/TimePicker";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";

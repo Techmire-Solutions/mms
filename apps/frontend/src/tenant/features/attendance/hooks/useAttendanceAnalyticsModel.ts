@@ -3,7 +3,7 @@ import type { AttendanceStatus } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useAttendanceReportAggregates } from "@/tenant/hooks/collections/attendance";
 import { useTranslation } from "@/hooks/useTranslation";
-import { attendanceStatusLabel } from "@/lib/attendanceStatusUi";
+import { attendanceStatusLabel } from "@/lib/ui/attendanceStatusUi";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 
 export interface AnalyticsFilters {

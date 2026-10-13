@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { JournalEntry } from "@/lib/data/accountingData";
-import type { QuickActionType } from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+import type { QuickActionType } from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 
 export interface UseJournalEntriesUiStateOptions {
   showDeleted?: boolean;

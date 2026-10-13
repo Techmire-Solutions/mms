@@ -1,13 +1,13 @@
 import type React from "react";
 import { Receipt } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ListPagination } from "@/components/ui/ListPagination";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ListPagination } from "@/components/app/ListPagination";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { JournalEntriesListCards } from "@/tenant/features/accounting/components/JournalEntriesListCards";
 import { JournalEntriesListDesktopTable } from "@/tenant/features/accounting/components/JournalEntriesListDesktopTable";
-import type { JournalEntriesListPaging } from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
-import type { JournalEntriesListProps } from "@/tenant/features/accounting/components/journalEntriesListShared";
+import type { JournalEntriesListPaging } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
+import type { JournalEntriesListProps } from "@/tenant/features/accounting/lib/journalEntriesListShared";
 
 /**
  * The shared list frame keeps the cards/table split and adds the pager once, so

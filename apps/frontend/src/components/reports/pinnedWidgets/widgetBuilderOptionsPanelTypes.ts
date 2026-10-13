@@ -1,5 +1,5 @@
-import type { WidgetBuilderIconTab } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderCardOptions";
-import type { SwitchRecordOption } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderSwitchOptions";
+import type { WidgetBuilderIconTab } from "@/components/reports/pinnedWidgets/WidgetBuilderCardOptions";
+import type { SwitchRecordOption } from "@/components/reports/pinnedWidgets/WidgetBuilderSwitchOptions";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 
 export interface WidgetBuilderTitleState {

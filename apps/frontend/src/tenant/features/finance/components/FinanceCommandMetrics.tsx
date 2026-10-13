@@ -2,7 +2,7 @@ import React from "react";
 import { ReceiptText, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceMetrics } from "@/tenant/features/finance/hooks/useFinanceMetrics";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 export interface FinanceCommandMetricsProps {
   invoiceTotal: number;

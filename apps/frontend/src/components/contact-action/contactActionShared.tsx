@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 import { notify } from "@/lib/notify";
 

@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 
-export { SettingsColoursBadge } from "@/components/ui/SettingsShellBadges";
+export { SettingsColoursBadge } from "@/components/app/SettingsShellBadges";
 
 export const SETTINGS_WIDTH = {
   narrow: "max-w-2xl",

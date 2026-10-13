@@ -1,10 +1,10 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { FORM_LABEL } from "@/components/ui/formStyles";
-import { LegendChip } from "@/components/ui/LegendChip";
+import { LegendChip } from "@/components/app/LegendChip";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { resolveWidgetChartHex } from "@/lib/brandingChartPalette";
+import { resolveWidgetChartHex } from "@/lib/ui/brandingChartPalette";
 
 interface WidgetBuilderColorOptionsProps {
   builderColor: string;

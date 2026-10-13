@@ -2,20 +2,20 @@ import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { generateClientEntityId, type ObligationType } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { ObligationTypeFormModal } from "@/tenant/features/obligations/components/ObligationTypeFormModal";
 import { ObligationTypeManagerList } from "@/tenant/features/obligations/components/ObligationTypeManagerList";
 import {
   DESIGNATED_LABEL_KEYS,
   OBLIGATION_TYPE_EMPTY,
   type ObligationTypeModalState,
-} from "@/tenant/features/obligations/components/obligationTypeManagerShared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+} from "@/tenant/features/obligations/lib/obligationTypeManagerShared";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
-export type { DesignatedFor } from "@/tenant/features/obligations/components/obligationTypeManagerShared";
+export type { DesignatedFor } from "@/tenant/features/obligations/lib/obligationTypeManagerShared";
 
 export interface ObligationTypeManagerProps {
   types: ObligationType[];

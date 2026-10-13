@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ObligationCollectionsListCards } from "./ObligationCollectionsListCards";
-import type { ObligationCollectionListContentProps } from "./obligationCollectionListContentShared";
+import type { ObligationCollectionListContentProps } from "../lib/obligationCollectionListContentShared";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

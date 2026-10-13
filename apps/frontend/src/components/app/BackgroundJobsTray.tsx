@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Download, Loader2, CheckCircle2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

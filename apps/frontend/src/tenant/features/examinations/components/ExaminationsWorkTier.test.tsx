@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: () => <div data-testid="sub-tab-bar">SubTabBar</div>,
 }));
 

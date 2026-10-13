@@ -3,11 +3,11 @@ import {
   isQuestionSourceFieldId,
   type QuestionBankQuestion,
 } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 
 type QuestionBankConfig = ReturnType<typeof useQuestionBankConfig>;
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export function useQuestionBankDisplayConfig(config: QuestionBankConfig) {
   const difficultyConfig = (() => ({

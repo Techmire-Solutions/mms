@@ -25,7 +25,7 @@ export {
   type ModuleFilterRadioOption,
   type ModuleFilterRadioGroupProps,
   type ModuleFilterDividerProps,
-} from "@/components/ui/moduleFilterGroups";
+} from "@/components/app/moduleFilterGroups";
 
 export interface ModuleFiltersMenuTriggerProps extends ComponentPropsWithoutRef<"button"> {
   label: string;

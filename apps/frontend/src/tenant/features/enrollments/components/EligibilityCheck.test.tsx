@@ -28,7 +28,7 @@ vi.mock("@/tenant/components/selectors/RegistryPersonSelect", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormSelect", () => ({
+vi.mock("@/components/app/FormSelect", () => ({
   FormSelect: ({ placeholder }: { placeholder?: string }) => (
     <div data-testid="form-select">{placeholder}</div>
   ),

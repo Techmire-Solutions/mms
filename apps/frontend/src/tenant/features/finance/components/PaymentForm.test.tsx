@@ -43,7 +43,7 @@ vi.mock("@/tenant/components/selectors/UserActorSelect", () => ({
   }) => <input data-testid={id} value={value} onChange={(e) => onChange(e.target.value)} />,
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({
     id,
     value,
@@ -61,7 +61,7 @@ vi.mock("@/components/ui/DatePicker", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     error,

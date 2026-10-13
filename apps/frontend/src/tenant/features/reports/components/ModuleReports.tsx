@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { BarChart2, GitCompare, Wrench, Sparkles, CreditCard, Bookmark } from "lucide-react";
 
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { type SubTab, SubTabBar } from "@/components/ui/SubTabBar";
+import { type SubTab, SubTabBar } from "@/components/app/SubTabBar";
 import { scrollDocumentToTop } from "@/lib/routing/scrollDocumentToTop";
 import ReportFilters, {
   type ReportFilterFields,

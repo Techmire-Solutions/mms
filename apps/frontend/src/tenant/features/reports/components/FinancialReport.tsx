@@ -6,16 +6,16 @@ import {
   useFinanceReportAggregates,
 } from "@/tenant/hooks/collections/finance";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 
 const FinancialReportCharts = lazy(() =>
-  import("@/components/ui/reports/FinancialReportSections").then((mod) => ({
+  import("@/components/reports/FinancialReportSections").then((mod) => ({
     default: mod.FinancialReportCharts,
   })),
 );
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
-import { FinancialInvoiceTable } from "@/components/ui/reports/FinancialReportTable";
+import { FinancialInvoiceTable } from "@/components/reports/FinancialReportTable";
 import {
   formatMonthYear,
   getCollectedAmountForInvoice,
@@ -24,7 +24,7 @@ import {
 import type {
   DiscountUsageByTypeItem,
   MonthlyFeeCollectionItem,
-} from "@/components/ui/reports/FinancialReportSections";
+} from "@/components/reports/FinancialReportSections";
 
 /** Active filter state passed down from the parent report view. */
 interface FinancialReportFilters {

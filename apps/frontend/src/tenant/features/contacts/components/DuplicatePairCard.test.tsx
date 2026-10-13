@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
-import type { DuplicatePair } from "./duplicateDetectionTypes";
+import type { DuplicatePair } from "../lib/duplicateDetectionTypes";
 import { DuplicatePairCard } from "./DuplicatePairCard";
 
 vi.mock("@/tenant/features/contacts/components/DuplicateDetectionParts", () => ({

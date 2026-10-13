@@ -3,13 +3,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { WorkspacePasswordField } from "./WorkspacePasswordField";
 import { WorkspaceAdminDialogFooter } from "./WorkspaceAdminDialogFooter";
-import { CredentialsResultCard } from "@/components/ui/CredentialsResultCard";
+import { CredentialsResultCard } from "@/components/app/CredentialsResultCard";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("@/components/ui/CopyButton", () => ({
+vi.mock("@/components/app/CopyButton", () => ({
   CopyButton: ({ text, label }: { text: string; label: string }) => (
     <button data-copy={text}>{label}</button>
   ),

@@ -5,7 +5,7 @@ import type { ContactsSyncConflict } from "@/lib/contacts/contactsSyncOutbox";
 import { getSyncConflictKindLabel } from "@/lib/contacts/contactI18n";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { ContactsSyncConflictDiffBody } from "@/tenant/features/contacts/components/ContactsSyncConflictDiffBody";
 import { useContactsSyncConflictRow } from "@/tenant/features/contacts/hooks/useContactsSyncConflictRow";
 

@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 import { MESSAGING_CHANNEL_CONFIG } from "../config";
 
 interface MessagingPageHeaderActionsProps {

@@ -8,7 +8,7 @@ import type {
   FieldDefinition,
 } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { focusFacultyValidationField } from "@/tenant/features/faculty/components/facultyFormValidation";
+import { focusFacultyValidationField } from "@/tenant/features/faculty/lib/facultyFormValidation";
 import type { FacultyStatusOption } from "@/tenant/features/faculty/components/FacultyFormSections";
 import type {
   FacultyUserAccountDraft,

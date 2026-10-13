@@ -4,7 +4,7 @@ import { resolveFacultyPrimaryChannels } from "@/lib/faculty/facultyPrimaryChann
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { useSessions, useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useFacultyStatusConfig } from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
-import { listFacultyDetailAttributeFields } from "@/tenant/features/faculty/components/facultyDetailFields";
+import { listFacultyDetailAttributeFields } from "@/tenant/features/faculty/lib/facultyDetailFields";
 import {
   getFacultyAssignedClasses,
   type FacultyAssignedClassItem,

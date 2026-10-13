@@ -1,9 +1,9 @@
 import React from "react";
 import { BarChart2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface MessagingReportHeaderBarProps {

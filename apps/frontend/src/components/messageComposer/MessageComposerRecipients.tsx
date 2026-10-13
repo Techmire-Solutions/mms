@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import type { StandardMessagingRecipient } from "@mms/shared";
-import { SearchBar } from "@/components/ui/SearchBar";
-import { SectionLabel } from "@/components/ui/SectionLabel";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
+import { SearchBar } from "@/components/app/SearchBar";
+import { SectionLabel } from "@/components/app/SectionLabel";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MessageComposerRecipientsList } from "./MessageComposerRecipientsList";
 import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";

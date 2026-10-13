@@ -1,5 +1,5 @@
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { facultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
 import { toMessagingRecipient, type Faculty } from "@mms/shared";
 

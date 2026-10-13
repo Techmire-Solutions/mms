@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { TooltipContentProps } from "recharts";
 import { cn } from "@/lib/utils";
-import { LegendChip } from "@/components/ui/LegendChip";
+import { LegendChip } from "@/components/app/LegendChip";
 
 export interface ChartTooltipProps extends Partial<TooltipContentProps> {
   /** Overrides the label line (defaults to `label`). */

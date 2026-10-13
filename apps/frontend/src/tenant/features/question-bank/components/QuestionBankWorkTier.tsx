@@ -1,8 +1,8 @@
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionBank as QuestionsPanel } from "@/tenant/features/question-bank/components/QuestionBank";

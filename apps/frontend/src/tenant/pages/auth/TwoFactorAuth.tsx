@@ -17,7 +17,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { getPendingChallengeId, is2FAVerified } from "@/lib/twoFactor";
 import { useResendCountdown } from "@/hooks/useResendCountdown";
-import { OtpInput, createEmptyOtp, isOtpComplete } from "@/components/ui/OtpInput";
+import { OtpInput, createEmptyOtp, isOtpComplete } from "@/components/app/OtpInput";
 
 /**
  * Two-factor verification after login when global settings require it.

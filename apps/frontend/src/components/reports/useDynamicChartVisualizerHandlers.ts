@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { FilterRule, CustomWidget } from "@/components/ui/reports/dynamicChartVisualizerTypes";
+import type { FilterRule, CustomWidget } from "@/components/reports/dynamicChartVisualizerTypes";
 import type { VisualizerConfig } from "@/lib/reports/reportMetadata";
 import {
   createFilterRule,
@@ -7,18 +7,18 @@ import {
   getDefaultCollectionField,
   toggleVisualizerWidgetPin,
   updateFilterRules,
-} from "@/components/ui/reports/dynamicChartVisualizerPin";
+} from "@/components/reports/dynamicChartVisualizerPin";
 import {
   exportVisualizerExcel,
   exportVisualizerPdf,
   exportVisualizerPng,
-} from "@/components/ui/reports/dynamicChartVisualizerExports";
+} from "@/components/reports/dynamicChartVisualizerExports";
 import type {
   AggregatedItem,
   ChartOperation,
   ChartType,
-} from "@/components/ui/reports/dynamicChartVisualizerTypes";
-import type { CollectionMeta } from "@/components/ui/reports/dynamicChartVisualizerTypes";
+} from "@/components/reports/dynamicChartVisualizerTypes";
+import type { CollectionMeta } from "@/components/reports/dynamicChartVisualizerTypes";
 
 interface BuildVisualizerHandlersOptions {
   chartRef: RefObject<HTMLDivElement | null>;

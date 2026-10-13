@@ -1,8 +1,8 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
-import { chartAxisTick } from "@/components/ui/ChartGrid";
+import { chartAxisTick } from "@/components/app/ChartGrid";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { ENROLLMENT_STATUSES } from "@/lib/data/enrollmentData";
 import { useFinanceCurrency } from "@/hooks/useCurrency";

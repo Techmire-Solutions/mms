@@ -20,7 +20,7 @@ vi.mock("@/tenant/features/attendance/components/AuditLog", () => ({
   AuditLog: () => <div data-testid="audit-log">Audit Log Component</div>,
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: ({ tabs }: { tabs: { label: string }[] }) => (
     <div data-testid="sub-tab-bar">{tabs.map((t) => t.label).join(", ")}</div>
   ),

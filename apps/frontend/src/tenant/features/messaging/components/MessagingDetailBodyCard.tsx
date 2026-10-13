@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { calculateSmsSegments, type Message } from "@mms/shared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { Button } from "@/components/ui/button";
 import { Check, Copy, Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
 export interface MessagingDetailBodyCardProps {
   log: Message;

@@ -3,7 +3,7 @@ import type { AccountingListQuery } from "@mms/shared";
 import { moneyToCents } from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { JournalEntry } from "@/lib/data/accountingData";
-import { getJournalEntryLineTotals } from "@/tenant/features/accounting/components/journalEntriesListShared";
+import { getJournalEntryLineTotals } from "@/tenant/features/accounting/lib/journalEntriesListShared";
 
 /** Journal Work filter values. Owned by the page that issues the server query. */
 export interface JournalEntryFilterState {

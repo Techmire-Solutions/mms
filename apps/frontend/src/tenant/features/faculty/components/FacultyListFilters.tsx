@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { FacultySortField, FacultyQuickFilter, ModuleColumnRegistryEntry } from "@mms/shared";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WorkTaskToolbar } from "@/components/common/work";
@@ -9,7 +9,7 @@ import { FacultyFiltersMenuButton } from "@/tenant/features/faculty/components/F
 import {
   getFacultyVisibleWorkColumns,
   toFacultyListSortField,
-} from "@/tenant/features/faculty/components/facultyListVisibleColumns";
+} from "@/tenant/features/faculty/lib/facultyListVisibleColumns";
 
 export interface FacultyListFiltersProps {
   search: string;

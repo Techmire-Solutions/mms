@@ -5,8 +5,8 @@ import type {
   AccountingSettings,
   FiscalYear,
 } from "@/lib/data/accountingData";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
-import { useAccountingDashboardView } from "./useAccountingDashboardView";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { useAccountingDashboardView } from "../hooks/useAccountingDashboardView";
 import { AccountingDashboardCharts } from "./AccountingDashboardCharts";
 import { AccountingDashboardSnapshots } from "./AccountingDashboardSnapshots";
 

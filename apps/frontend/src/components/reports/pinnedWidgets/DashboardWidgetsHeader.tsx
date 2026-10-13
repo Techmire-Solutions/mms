@@ -1,7 +1,7 @@
 import { LayoutDashboard } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
+import { SectionLabel } from "@/components/app/SectionLabel";
 
 interface DashboardWidgetsHeaderProps {
   gridMode: "comfortable" | "compact";

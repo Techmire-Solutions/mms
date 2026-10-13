@@ -4,13 +4,13 @@ import { formatDate, type ActivityLog } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
 import { ActivityActionBadge } from "@/tenant/features/users/components/UserBadges";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { EntityCard } from "@/components/app/EntityCard";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import {
   resolveVisibleColumns,

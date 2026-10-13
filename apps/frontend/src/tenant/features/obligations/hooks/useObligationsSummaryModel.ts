@@ -17,7 +17,7 @@ import {
   buildRepSummary,
   buildTypeBreakdown,
   buildMonthlyTrend,
-} from "./obligationsSummaryCalculations";
+} from "../lib/obligationsSummaryCalculations";
 
 export interface ObligationsSummaryFilterState {
   dateFrom: string;

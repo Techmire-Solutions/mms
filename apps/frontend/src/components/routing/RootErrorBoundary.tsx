@@ -1,6 +1,6 @@
 import React from "react";
 import { translateAppParams } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 
 import { Button } from "@/components/ui/button";
 

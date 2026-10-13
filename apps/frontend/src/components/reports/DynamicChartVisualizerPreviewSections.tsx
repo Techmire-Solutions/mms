@@ -3,16 +3,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Table as TableIcon } from "lucide-react";
 import { formatNumber } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type {
   AggregatedItem,
   ChartOperation,
-} from "@/components/ui/reports/dynamicChartVisualizerTypes";
+} from "@/components/reports/dynamicChartVisualizerTypes";
 
 interface VisualizerKpiCardsProps {
   processedData: AggregatedItem[];

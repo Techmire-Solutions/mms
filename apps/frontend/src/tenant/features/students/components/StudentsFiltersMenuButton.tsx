@@ -9,12 +9,12 @@ import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
-import { GenderIcon } from "@/components/ui/GenderIcon";
+} from "@/components/app/ModuleFiltersMenuButton";
+import { GenderIcon } from "@/components/app/GenderIcon";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { studentStatusLabel } from "@/lib/students/studentStatusUi";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 
 export interface StudentsFiltersMenuButtonProps {
   studentFilterStatus: string[];

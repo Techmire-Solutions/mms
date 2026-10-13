@@ -10,7 +10,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleRowActionsMenu", () => ({
+vi.mock("@/components/app/ModuleRowActionsMenu", () => ({
   ModuleRowActionsMenu: ({ triggerLabel, editLabel, deleteLabel }: any) => (
     <div data-testid="row-actions-menu">
       <span>{triggerLabel}</span>

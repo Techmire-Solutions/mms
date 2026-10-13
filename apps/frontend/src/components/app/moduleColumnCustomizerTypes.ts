@@ -1,6 +1,6 @@
 import type React from "react";
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 export interface ModuleColumnCustomizerLabels {
   trigger: string;

@@ -15,7 +15,7 @@ vi.mock("./ContactSubListCards", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({ value }: { value?: string }) => <div data-testid="datepicker">{value}</div>,
 }));
 
@@ -25,7 +25,7 @@ vi.mock("@/components/ui/textarea", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   TYPE_SELECT_WIDTH: "w-32",
   FormCardTypeSelect: ({
     label,

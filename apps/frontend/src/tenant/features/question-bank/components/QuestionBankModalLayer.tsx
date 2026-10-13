@@ -1,5 +1,5 @@
 import { ClipboardList, FileText, Library, Plus } from "lucide-react";
-import { FormModal, type FormModalTab } from "@/components/ui/FormModal";
+import { FormModal, type FormModalTab } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   PaperBuilder,

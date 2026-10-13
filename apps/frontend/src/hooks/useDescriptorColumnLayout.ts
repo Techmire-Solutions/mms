@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import type { TableColumnDescriptor } from "@/types/entityRegistry";
+import type { TableColumnDescriptor } from "@/components/common/entityRegistryTypes";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 
 /** Default column registry for an entity descriptor's table columns. */

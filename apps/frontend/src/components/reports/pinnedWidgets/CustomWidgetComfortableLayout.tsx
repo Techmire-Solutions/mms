@@ -2,27 +2,27 @@ import React from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { resolveWidgetTitle } from "@/lib/dashboardWidgets";
-import { getWidgetSubtitle } from "@/components/ui/reports/pinnedWidgets/customWidgetLayoutHelpers";
+import { getWidgetSubtitle } from "@/components/reports/pinnedWidgets/customWidgetLayoutHelpers";
 import {
   ComposedDashboardWidget,
   isComposedWidgetType,
 } from "@/components/dashboard-widgets/registry";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { SectionLabel } from "@/components/ui/SectionLabel";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { SectionLabel } from "@/components/app/SectionLabel";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { CARD_STRIPE_BASE, SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { CARD_STRIPE_BASE, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
-import { ProgressRing } from "@/components/ui/reports/pinnedWidgets/WidgetProgressRing";
+import { ProgressRing } from "@/components/reports/pinnedWidgets/WidgetProgressRing";
 import { COLOR_MAP, type CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
-import { CustomWidgetCardLayout } from "@/components/ui/reports/pinnedWidgets/CustomWidgetCardLayout";
+import { CustomWidgetCardLayout } from "@/components/reports/pinnedWidgets/CustomWidgetCardLayout";
 import type { ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";
 import type { computeCustomCard } from "@/lib/reports/reportMetadata";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 const CustomWidgetChartFallback = React.lazy(
-  () => import("@/components/ui/reports/pinnedWidgets/CustomWidgetChartFallback"),
+  () => import("@/components/reports/pinnedWidgets/CustomWidgetChartFallback"),
 );
 
 type AlertScheme = {

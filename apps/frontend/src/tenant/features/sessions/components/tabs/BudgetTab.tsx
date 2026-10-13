@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { BudgetOverviewCards } from "./budget/BudgetOverviewCards";
 import { BudgetSection } from "./budget/BudgetSection";
 import { BudgetAddModal } from "./budget/BudgetAddModal";

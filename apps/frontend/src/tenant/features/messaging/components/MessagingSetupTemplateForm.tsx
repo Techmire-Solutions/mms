@@ -1,12 +1,12 @@
 import type React from "react";
 import { Edit3, Plus } from "lucide-react";
 import type { MessageCategory } from "@mms/shared";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { Input } from "@/components/ui/input";
-import { MessagingMessageBodyField } from "@/components/ui/MessagingMessageBodyField";
+import { MessagingMessageBodyField } from "@/components/app/MessagingMessageBodyField";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 

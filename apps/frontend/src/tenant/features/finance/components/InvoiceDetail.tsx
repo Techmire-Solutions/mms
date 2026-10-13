@@ -2,15 +2,15 @@ import React from "react";
 import { ReceiptText, User, Calendar, CreditCard, Printer } from "lucide-react";
 import { type Invoice } from "@/lib/data/financeData";
 import { Button } from "@/components/ui/button";
-import { Drawer } from "@/components/ui/Drawer";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { Drawer } from "@/components/app/Drawer";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { cn } from "@/lib/utils";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
-} from "@/components/ui/DetailDrawerArchiveChrome";
+} from "@/components/app/DetailDrawerArchiveChrome";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDate, getOutstandingAmountForInvoice } from "@mms/shared";

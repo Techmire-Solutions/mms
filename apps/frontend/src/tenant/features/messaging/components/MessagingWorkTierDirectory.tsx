@@ -1,19 +1,19 @@
 import React from "react";
 import { AlertTriangle, MessageSquareOff, RotateCcw } from "lucide-react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { ModuleWorkDirectoryEmpty } from "@/components/ui/ModuleWorkDirectoryEmpty";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
-import { FilterChips } from "@/components/ui/FilterChips";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
+import { FilterChips } from "@/components/app/FilterChips";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 import { MessagingDetail } from "./MessagingDetail";
 import { MessagingWorkBulkActionBar } from "./MessagingWorkBulkActionBar";
 import { MessagingListCards } from "./MessagingListCards";
 import { MessagingListDesktopTable } from "./MessagingListDesktopTable";
 import { MessagingListFilters } from "./MessagingListFilters";
-import type { useMessagingWorkTierController } from "./useMessagingWorkTierController";
+import type { useMessagingWorkTierController } from "../hooks/useMessagingWorkTierController";
 
 type MessagingWorkTierDirectoryProps = ReturnType<typeof useMessagingWorkTierController> & {
   canWrite: boolean;

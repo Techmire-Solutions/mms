@@ -1,12 +1,12 @@
 import React from "react";
 import { RotateCcw } from "lucide-react";
 import type { Message } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { WorkBatchTable } from "@/components/common/work";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
-import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
 import type { MessagingSelectedLogsMap } from "./MessagingWorkTier";
 import { useMessagingTableColumns } from "./useMessagingTableColumns";
 

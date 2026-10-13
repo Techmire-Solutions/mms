@@ -1,5 +1,8 @@
 import React, { type ReactNode } from "react";
-import { FormCollectionShell, type FormCollectionShellProps } from "@/components/ui/FormPrimitives";
+import {
+  FormCollectionShell,
+  type FormCollectionShellProps,
+} from "@/components/app/FormPrimitives";
 
 /** True when any Setup field for the sub-list is enabled or custom fields exist. */
 export function resolveSubListAllowAdd(

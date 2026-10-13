@@ -2,7 +2,7 @@ import React from "react";
 import { Mail, Phone, Globe, Type } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/branding/BrandingShared";
 import { normalizePhoneInput, type BrandingSettings } from "@mms/shared";
 
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 
 interface BrandingSettingsProfileSectionProps {
   data: BrandingSettings;

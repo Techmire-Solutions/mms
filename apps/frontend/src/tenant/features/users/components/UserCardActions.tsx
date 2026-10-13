@@ -1,5 +1,5 @@
 import type { SystemUser } from "@mms/shared";
-import { EntityCardFooterActions } from "@/components/ui/EntityCardFooterActions";
+import { EntityCardFooterActions } from "@/components/app/EntityCardFooterActions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UsersRowActions } from "@/tenant/features/users/components/UsersRowActions";
 

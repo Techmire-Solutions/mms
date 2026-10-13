@@ -1,11 +1,11 @@
 import React from "react";
 import type { ReactNode } from "react";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { getEntityDescriptor } from "@/components/common/entityRegistry";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCard } from "@/components/app/EntityCard";
 
 /** Resolve a descriptor field label — labelKey via i18n wins over the legacy hardcoded label. Falls back to field.label if unmapped or raw key returned. */
 export function resolveFieldLabel(

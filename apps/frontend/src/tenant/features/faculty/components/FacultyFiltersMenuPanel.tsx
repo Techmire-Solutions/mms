@@ -13,8 +13,8 @@ import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDivider,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
-import { GenderIcon } from "@/components/ui/GenderIcon";
+} from "@/components/app/ModuleFiltersMenuButton";
+import { GenderIcon } from "@/components/app/GenderIcon";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { useTranslation } from "@/hooks/useTranslation";
 import { facultyStatusLabel } from "@/lib/faculty/facultyStatusUi";

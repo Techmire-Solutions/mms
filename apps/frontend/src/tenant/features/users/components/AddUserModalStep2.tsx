@@ -2,15 +2,15 @@ import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CalendarClock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 import { filterAssignableRoles, todayISO } from "@mms/shared";
-import { FieldErrorMessage } from "@/components/ui/FormPrimitives";
+import { FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { RoleCard } from "./AddUserModalRoleCard";
-import type { AddUserStepProps } from "./addUserModalTypes";
+import type { AddUserStepProps } from "../lib/addUserModalTypes";
 
 export function Step2({ form, setForm, errors }: AddUserStepProps): JSX.Element {
   const { t } = useTranslation();

@@ -4,7 +4,7 @@
  */
 import { SlidersHorizontal } from "lucide-react";
 import type { FacultySortField, FacultyQuickFilter } from "@mms/shared";
-import { ModuleFilterDropdown } from "@/components/ui/ModuleFiltersMenuButton";
+import { ModuleFilterDropdown } from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FacultyFiltersMenuPanel } from "./FacultyFiltersMenuPanel";
 

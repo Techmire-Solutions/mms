@@ -2,8 +2,8 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JournalTemplate } from "@mms/shared";
-import { useJournalEntryForm } from "./useJournalEntryForm";
-import { applyTemplateToLines, useJournalLineAssist } from "./useJournalLineAssist";
+import { useJournalEntryForm } from "../hooks/useJournalEntryForm";
+import { applyTemplateToLines, useJournalLineAssist } from "../hooks/useJournalLineAssist";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

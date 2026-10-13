@@ -2,7 +2,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TemplateEditor } from "../TemplateEditor";
+import { TemplateEditor } from "../app/TemplateEditor";
 import type { DocumentTemplate } from "@mms/shared";
 
 /**

@@ -2,7 +2,7 @@ import { resolveFacultySpecializations, resolveFacultyStatuses } from "@mms/shar
 import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { facultyStatusBadgeConfig } from "@/lib/faculty/facultyStatusUi";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 const resolveStatuses = resolveFacultyStatuses;
 const resolveSpecs = resolveFacultySpecializations;

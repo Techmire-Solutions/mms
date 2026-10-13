@@ -1,16 +1,13 @@
 import React from "react";
 import { Award, Printer } from "lucide-react";
-import {
-  getRankSuffix,
-  type GradeInfo,
-} from "@/tenant/features/examinations/components/gradeUtils";
+import { getRankSuffix, type GradeInfo } from "@/tenant/features/examinations/lib/gradeUtils";
 import { type Exam } from "@/lib/data/examinationData";
 import { formatDate } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { Card } from "@/components/ui/card";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { CARD_STRIPE_INSET, SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { CARD_STRIPE_INSET, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 

@@ -6,19 +6,19 @@ import {
   type FiscalYear,
   type JournalReversalRequest,
 } from "@mms/shared";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormField";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormField";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { getJournalEntryLineTotals } from "@/tenant/features/accounting/components/journalEntriesListShared";
-import { useJournalReverseDialogState } from "@/tenant/features/accounting/components/useJournalReverseDialogState";
+import { getJournalEntryLineTotals } from "@/tenant/features/accounting/lib/journalEntriesListShared";
+import { useJournalReverseDialogState } from "@/tenant/features/accounting/hooks/useJournalReverseDialogState";
 
 interface JournalReverseDialogProps {
   entry: JournalEntry;

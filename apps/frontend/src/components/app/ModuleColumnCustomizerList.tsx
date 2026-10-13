@@ -1,6 +1,6 @@
 import React from "react";
 import { GripVertical, Eye, EyeOff } from "lucide-react";
-import type { ModuleColumnCustomizerListProps } from "@/components/ui/moduleColumnCustomizerTypes";
+import type { ModuleColumnCustomizerListProps } from "@/components/app/moduleColumnCustomizerTypes";
 import { cn } from "@/lib/utils";
 
 export type { ModuleColumnCustomizerListProps };

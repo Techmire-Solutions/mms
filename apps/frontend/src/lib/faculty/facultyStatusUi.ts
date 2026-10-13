@@ -1,7 +1,7 @@
 import { resolveFacultyStatusRoles, resolveFacultyStatuses } from "@mms/shared";
-import type { AccentColor } from "@/components/ui/statCardAccent";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import { createModuleStatusUi } from "@/lib/moduleStatusUi";
+import type { AccentColor } from "@/components/app/statCardAccent";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { createModuleStatusUi } from "@/lib/ui/moduleStatusUi";
 
 const resolveRoles = resolveFacultyStatusRoles;
 const resolveStatuses = resolveFacultyStatuses;

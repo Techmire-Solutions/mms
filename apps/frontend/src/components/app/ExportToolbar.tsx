@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { FileSpreadsheet, FileText, Printer, Settings as SettingsIcon } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { ExportPdfSettingsPopover } from "@/components/ui/ExportPdfSettingsPopover";
-import { exportExcel, exportPdf, type ExportColumn } from "@/components/ui/exportToolbarUtils";
-import { ExportToolbarCompact } from "@/components/ui/ExportToolbarCompact";
+import { ExportPdfSettingsPopover } from "@/components/app/ExportPdfSettingsPopover";
+import { exportExcel, exportPdf, type ExportColumn } from "@/components/app/exportToolbarUtils";
+import { ExportToolbarCompact } from "@/components/app/ExportToolbarCompact";
 
-export type { ExportColumn } from "@/components/ui/exportToolbarUtils";
+export type { ExportColumn } from "@/components/app/exportToolbarUtils";
 
 export interface ExportToolbarProps {
   title: string;

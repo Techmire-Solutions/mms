@@ -6,7 +6,7 @@ import {
   type FacultyDepartmentEntity,
   type FacultyDesignationDefinition,
 } from "@mms/shared";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { FacultyDesignationFormPayload } from "../hooks/useFacultyDesignationsController";
 import { FacultyDesignationFormFields } from "./FacultyDesignationFormFields";

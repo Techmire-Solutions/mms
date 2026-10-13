@@ -5,7 +5,7 @@
 
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import type { TemplateElement, TemplateFieldDefinition } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 

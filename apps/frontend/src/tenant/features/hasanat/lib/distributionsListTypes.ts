@@ -1,5 +1,5 @@
 import type { Denomination, Distribution, StockBatch } from "@/lib/data/hasanatData";
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 
 export interface DistributionsListProps {
   denoms: Denomination[];

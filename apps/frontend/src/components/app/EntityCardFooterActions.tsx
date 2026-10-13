@@ -1,7 +1,7 @@
 import React, { type ReactNode } from "react";
-import { EntityCardViewButton } from "@/components/ui/EntityCardViewButton";
+import { EntityCardViewButton } from "@/components/app/EntityCardViewButton";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCard } from "@/components/app/EntityCard";
 
 export interface EntityCardFooterActionsProps {
   /** Optional view callback; when present, renders standard EntityCardViewButton. */

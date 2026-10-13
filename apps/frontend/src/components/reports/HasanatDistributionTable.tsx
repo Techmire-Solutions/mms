@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { Star } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
-import { TableCellLink } from "@/components/ui/TableCellLink";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
+import { TableCellLink } from "@/components/app/TableCellLink";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { HasanatReportItem } from "./hasanatReportTypes";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 
 interface HasanatDistributionTableProps {
   distribution: HasanatReportItem[];

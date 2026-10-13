@@ -1,10 +1,10 @@
 import { JournalEntriesAdvancedMode } from "@/tenant/features/accounting/components/JournalEntriesAdvancedMode";
 import { JournalEntriesSimpleMode } from "@/tenant/features/accounting/components/JournalEntriesSimpleMode";
-import type { JournalEntriesProps } from "@/tenant/features/accounting/components/journalEntriesTypes";
-import type { JournalEntriesServerQueryProps } from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
+import type { JournalEntriesProps } from "@/tenant/features/accounting/lib/journalEntriesTypes";
+import type { JournalEntriesServerQueryProps } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import { useJournalEntriesController } from "@/tenant/features/accounting/components/useJournalEntriesController";
 
-export type { JournalEntriesProps } from "@/tenant/features/accounting/components/journalEntriesTypes";
+export type { JournalEntriesProps } from "@/tenant/features/accounting/lib/journalEntriesTypes";
 
 /**
  * `journalEntriesTypes` keeps the directory-level contract; the server query

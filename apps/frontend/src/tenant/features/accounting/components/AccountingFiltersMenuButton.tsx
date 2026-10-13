@@ -3,10 +3,10 @@ import { Filter } from "lucide-react";
 import {
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { JOURNAL_TAGS } from "@/lib/data/accountingData";
-import { getJournalTagLabel } from "@/tenant/features/accounting/components/journalEntriesListShared";
+import { getJournalTagLabel } from "@/tenant/features/accounting/lib/journalEntriesListShared";
 
 interface AccountingFiltersMenuButtonProps {
   statusFilter: string;

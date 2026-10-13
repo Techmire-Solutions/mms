@@ -17,7 +17,7 @@ vi.mock("./EnterMarks", () => ({
   EnterMarks: () => <div data-testid="enter-marks">Enter Marks</div>,
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({ children, title, open }: any) =>
     open ? (
       <div data-testid="form-modal">

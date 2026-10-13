@@ -4,10 +4,10 @@ import { Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AppTranslationKey } from "@mms/shared";
 import { cn } from "@/lib/utils";
-import { COMMAND_ITEMS, type CommandItem } from "@/components/ui/commandPaletteItems";
-import { CommandPaletteModal } from "@/components/ui/CommandPaletteModal";
-import { useCommandPaletteSearch } from "@/components/ui/useCommandPaletteSearch";
-import { getRecents, pushRecent, filterCommandItems } from "@/components/ui/commandPaletteUtils";
+import { COMMAND_ITEMS, type CommandItem } from "@/components/app/commandPaletteItems";
+import { CommandPaletteModal } from "@/components/app/CommandPaletteModal";
+import { useCommandPaletteSearch } from "@/components/app/useCommandPaletteSearch";
+import { getRecents, pushRecent, filterCommandItems } from "@/components/app/commandPaletteUtils";
 
 export interface CommandPaletteProps {
   open: boolean;

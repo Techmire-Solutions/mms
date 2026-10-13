@@ -1,8 +1,8 @@
 import React from "react";
 import { ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { OtpInput } from "@/components/ui/OtpInput";
-import { FieldErrorMessage } from "@/components/ui/FormField";
+import { OtpInput } from "@/components/app/OtpInput";
+import { FieldErrorMessage } from "@/components/app/FormField";
 import {
   AuthSubmitButton,
   AuthResendCodeControl,

@@ -1,8 +1,8 @@
 import React, { type ReactNode } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { GenderIcon } from "@/components/ui/GenderIcon";
+import { GenderIcon } from "@/components/app/GenderIcon";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
-import { getGenderBadgeTone } from "@/lib/genderUi";
+import { getGenderBadgeTone } from "@/lib/ui/genderUi";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -15,7 +15,7 @@ import type {
   AcademicReportProps,
   AcademicResultItem,
   ClassRankingItem,
-} from "@/components/ui/reports/academicReportTypes";
+} from "@/components/reports/academicReportTypes";
 
 export function useAcademicReportController({ filters }: AcademicReportProps) {
   const { t } = useTranslation();

@@ -6,23 +6,23 @@ import type { CustomCard } from "@/lib/reports/reportMetadata";
 import {
   getDefaultKPICollection,
   getCategoryLabelKey,
-} from "@/components/ui/reports/kpiSummaryFormatters";
-import { buildStandardKPICards } from "@/components/ui/reports/kpiSummaryStandardCards";
+} from "@/components/reports/kpiSummaryFormatters";
+import { buildStandardKPICards } from "@/components/reports/kpiSummaryStandardCards";
 import {
   buildPossibleCards,
   createKpiCardHandlers,
   filterStandardPossibleCards,
-} from "@/tenant/features/reports/controllers/kpiSummaryCardHandlers";
-import { computePrimaryVolume } from "@/components/ui/reports/kpiSummaryPrimaryVolume";
-import { getKpiCategoryFlags } from "@/components/ui/reports/kpiSummaryCategoryFlags";
-import { useKpiSummaryDataSources } from "@/tenant/features/reports/controllers/useKpiSummaryDataSources";
-import { useKpiSummaryCustomCards } from "@/tenant/features/reports/controllers/useKpiSummaryCustomCards";
-import { useKpiSummaryCardSelection } from "@/tenant/features/reports/controllers/useKpiSummaryCardSelection";
+} from "@/tenant/features/reports/hooks/kpiSummaryCardHandlers";
+import { computePrimaryVolume } from "@/components/reports/kpiSummaryPrimaryVolume";
+import { getKpiCategoryFlags } from "@/components/reports/kpiSummaryCategoryFlags";
+import { useKpiSummaryDataSources } from "@/tenant/features/reports/hooks/useKpiSummaryDataSources";
+import { useKpiSummaryCustomCards } from "@/tenant/features/reports/hooks/useKpiSummaryCustomCards";
+import { useKpiSummaryCardSelection } from "@/tenant/features/reports/hooks/useKpiSummaryCardSelection";
 import type {
   CategorizedKPIItem,
   KPIItem,
   KPISummaryProps,
-} from "@/components/ui/reports/kpiSummaryTypes";
+} from "@/components/reports/kpiSummaryTypes";
 
 export interface KPISummaryModel {
   moduleLabel: string;

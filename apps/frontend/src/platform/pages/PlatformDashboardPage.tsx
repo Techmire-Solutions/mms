@@ -3,7 +3,7 @@ import React from "react";
 import { LayoutDashboard } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { PlatformDashboard } from "@/platform/components/PlatformDashboard";
 
 export default function PlatformDashboardPage(): React.JSX.Element {

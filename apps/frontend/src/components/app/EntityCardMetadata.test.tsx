@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EntityCardMetadata, resolveFieldLabel } from "@/components/ui/EntityCardMetadata";
+import { EntityCardMetadata, resolveFieldLabel } from "@/components/app/EntityCardMetadata";
 import { createEntityDescriptor } from "@/components/common/entityRegistry";
 
 vi.mock("@/hooks/useTranslation", () => ({

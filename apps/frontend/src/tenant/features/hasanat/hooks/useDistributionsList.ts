@@ -4,10 +4,10 @@ import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useHasanatContractList } from "@/tenant/features/hasanat/hooks/useHasanatTsrHooks";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 type DistributionStatus = Distribution["status"];
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 const DISTRIBUTION_SEARCH_DEBOUNCE_MS = 300;
 

@@ -8,9 +8,9 @@ import {
   EditableMultiSelectChipRow,
   EditableMultiSelectOptionList,
   EditableMultiSelectSearchBar,
-} from "@/components/ui/EditableMultiSelectParts";
-import { EditableMultiSelectAddBar } from "@/components/ui/EditableMultiSelectAddBar";
-import { useEditableMultiSelectState } from "@/components/ui/useEditableMultiSelectState";
+} from "@/components/app/EditableMultiSelectParts";
+import { EditableMultiSelectAddBar } from "@/components/app/EditableMultiSelectAddBar";
+import { useEditableMultiSelectState } from "@/components/app/useEditableMultiSelectState";
 
 export interface EditableMultiSelectProps {
   options: string[];

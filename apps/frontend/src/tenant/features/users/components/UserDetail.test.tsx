@@ -42,7 +42,7 @@ vi.mock("@/tenant/hooks/collections/users", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Drawer", () => ({
+vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({ title, subtitle, headerActions, children }: any) => (
     <div data-testid="detail-drawer">
       <h2>{title}</h2>
@@ -53,7 +53,7 @@ vi.mock("@/components/ui/Drawer", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/DetailDrawerArchiveChrome", () => ({
+vi.mock("@/components/app/DetailDrawerArchiveChrome", () => ({
   DetailDrawerArchivedBanner: ({ deletedAt }: any) => (
     <div data-testid="archived-banner">Archived at: {deletedAt}</div>
   ),

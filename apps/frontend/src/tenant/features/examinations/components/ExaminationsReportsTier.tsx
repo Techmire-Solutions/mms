@@ -1,6 +1,6 @@
 import type React from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { KPISummary, ModuleReports } from "@/tenant/components/moduleReports";
 
 export function ExaminationsReportsTier(): React.JSX.Element {

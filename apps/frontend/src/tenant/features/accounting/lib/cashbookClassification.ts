@@ -1,6 +1,6 @@
 import { moneyToCents } from "@mms/shared";
 import type { JournalEntry } from "@/lib/data/accountingData";
-import { resolveEntryDirection } from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+import { resolveEntryDirection } from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 import type { EntryType } from "./cashbookViewShared";
 
 export interface CashMovementCents {

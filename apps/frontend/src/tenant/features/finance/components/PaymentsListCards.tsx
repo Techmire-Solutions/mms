@@ -4,12 +4,12 @@ import { formatDate } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { EntityCard } from "@/components/app/EntityCard";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Payment } from "@/lib/data/financeData";
 
 export interface PaymentsListCardsProps {

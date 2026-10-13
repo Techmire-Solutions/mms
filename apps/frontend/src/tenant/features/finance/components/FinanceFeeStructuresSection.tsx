@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Layers } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import {
   Field,
   FormCollectionShell,
   FormListFieldCard,
   FormSelect,
-} from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { type TaskRecord, type TaskInsert, type TaskPriority, type TaskStatus } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";
-import type { SelectedAssignee } from "./TaskFormAssigneePicker";
+import type { SelectedAssignee } from "../components/TaskFormAssigneePicker";
 
 export interface UseTaskFormControllerProps {
   open: boolean;

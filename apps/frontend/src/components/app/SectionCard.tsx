@@ -1,9 +1,9 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
-import { CardTitleBar } from "@/components/ui/CardTitleBar";
-import { CARD_STRIPE_INSET, type CardAccentColor } from "@/lib/semanticTone";
-import { resolveAccent } from "@/components/ui/statCardAccent";
+import { CardTitleBar } from "@/components/app/CardTitleBar";
+import { CARD_STRIPE_INSET, type CardAccentColor } from "@/lib/ui/semanticTone";
+import { resolveAccent } from "@/components/app/statCardAccent";
 
 export interface SectionCardProps {
   title?: React.ReactNode;

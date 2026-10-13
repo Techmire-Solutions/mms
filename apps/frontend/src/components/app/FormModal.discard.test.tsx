@@ -6,7 +6,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({
     title,
     children,
@@ -26,12 +26,12 @@ vi.mock("@/components/ui/Modal", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({ open, title }: { open: boolean; title: string }) =>
     open ? <div data-testid="discard-dialog">{title}</div> : null,
 }));
 
-vi.mock("@/components/ui/useFormModalLayout", () => ({
+vi.mock("@/components/app/useFormModalLayout", () => ({
   useFormModalLayout: () => ({
     panelClassName: undefined,
     effectiveSize: "md",

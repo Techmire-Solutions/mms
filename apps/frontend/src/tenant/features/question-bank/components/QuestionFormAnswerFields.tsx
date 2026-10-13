@@ -1,9 +1,9 @@
 import { HelpCircle } from "lucide-react";
 import { type AppTranslationKey, type QuestionType } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Field, FieldErrorMessage, LABEL, RequiredMark } from "@/components/ui/FormPrimitives";
+import { Field, FieldErrorMessage, LABEL, RequiredMark } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { RadioGroup, RadioGroupItem } from "@/components/app/RadioGroup";
 import { Textarea } from "@/components/ui/textarea";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,7 +13,7 @@ import type {
   QuestionFormDraft,
   QuestionFormErrors,
   UpdateQuestionDraft,
-} from "./questionFormTypes";
+} from "../lib/questionFormTypes";
 
 interface QuestionFormAnswerFieldsProps {
   questionDraft: QuestionFormDraft;

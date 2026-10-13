@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CashbookViewTable } from "./CashbookViewTable";
-import type { CashbookRow } from "./cashbookViewShared";
+import type { CashbookRow } from "../lib/cashbookViewShared";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

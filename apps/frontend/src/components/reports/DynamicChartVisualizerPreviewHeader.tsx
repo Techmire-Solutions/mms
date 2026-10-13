@@ -10,10 +10,10 @@ import {
   Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ExportPdfSettingsPopover } from "@/components/ui/ExportPdfSettingsPopover";
+import { ExportPdfSettingsPopover } from "@/components/app/ExportPdfSettingsPopover";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { getCollectionLabel, getFieldLabel } from "@/lib/reports/reportMetadata";
-import type { CollectionMeta } from "@/components/ui/reports/dynamicChartVisualizerTypes";
+import type { CollectionMeta } from "@/components/reports/dynamicChartVisualizerTypes";
 
 interface VisualizerPreviewHeaderProps {
   title: string;

@@ -1,14 +1,14 @@
 import type React from "react";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { InvoicesRowActions } from "@/tenant/features/finance/components/InvoicesRowActions";
-import { getInvoiceVisibleWorkColumns } from "@/tenant/features/finance/components/invoiceListVisibleColumns";
+import { getInvoiceVisibleWorkColumns } from "@/tenant/features/finance/lib/invoiceListVisibleColumns";
 import { renderInvoiceWorkColumnValue } from "@/tenant/features/finance/components/invoiceWorkColumnCell";
-import type { InvoicesListContentProps } from "@/tenant/features/finance/components/invoicesListShared";
+import type { InvoicesListContentProps } from "@/tenant/features/finance/lib/invoicesListShared";
 
 export type InvoicesListCardsProps = Omit<
   InvoicesListContentProps,

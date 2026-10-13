@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import { DollarSign } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { FinancePreferencesSection } from "@/tenant/features/finance/components/FinancePreferencesSection";
 import { FinanceInvoiceNumberingSection } from "@/tenant/features/finance/components/FinanceInvoiceNumberingSection";
 import { FinanceFeeStructuresSection } from "@/tenant/features/finance/components/FinanceFeeStructuresSection";
 import { useFinanceSetupPanelState } from "@/tenant/features/finance/hooks/useFinanceSetupPanelState";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface FinanceSettingsProps {
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */

@@ -1,16 +1,16 @@
 import React, { useMemo, useState, type ReactNode } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
-import { DropdownSelectBase } from "@/components/ui/DropdownSelectBase";
+import { DropdownSelectBase } from "@/components/app/DropdownSelectBase";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactOptionLabel } from "@/lib/contacts/contactI18n";
 import { cn } from "@/lib/utils";
 import { REMOVE_BTN } from "@/components/ui/formPrimitiveStyles";
-import { EditableMultiSelectSearchBar } from "@/components/ui/EditableMultiSelectSearchBar";
+import { EditableMultiSelectSearchBar } from "@/components/app/EditableMultiSelectSearchBar";
 import {
   FORM_SELECT_SEARCH_MIN_OPTIONS,
   filterSelectOptions,
-} from "@/components/ui/useFormSelectSearch";
+} from "@/components/app/useFormSelectSearch";
 
 export interface OptionSelectPopoverProps {
   options: string[];

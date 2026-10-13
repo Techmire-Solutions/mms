@@ -1,5 +1,5 @@
 import type { AppTranslationKey } from "@mms/shared";
-import type { ReportCollection } from "./reportCollectionTypes.js";
+import type { ReportCollection } from "./reportCollectionTypes";
 
 export interface VisualizerConfig {
   id: string;

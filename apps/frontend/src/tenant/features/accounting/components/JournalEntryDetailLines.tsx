@@ -1,9 +1,9 @@
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import { ReportMoneyCard } from "@/components/ui/reports/ReportMoneyCard";
-import { ReportMoneySummaryTile } from "@/components/ui/reports/ReportMoneySummaryTile";
+import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
+import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
 import {
   useWorkDirectoryViewMode,
   type WorkDirectoryViewMode,

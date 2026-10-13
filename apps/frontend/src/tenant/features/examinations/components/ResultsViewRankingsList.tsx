@@ -3,17 +3,14 @@ import { motion } from "framer-motion";
 import { Trophy, Award } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { getInitials } from "@mms/shared";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Exam } from "@/lib/data/examinationData";
-import {
-  RANK_ICONS,
-  type RankedResult,
-} from "@/tenant/features/examinations/components/resultsViewTypes";
+import { RANK_ICONS, type RankedResult } from "@/tenant/features/examinations/lib/resultsViewTypes";
 
 export interface ResultsViewRankingsListProps {
   exam: Exam;

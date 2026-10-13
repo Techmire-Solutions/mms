@@ -1,7 +1,7 @@
 import { DEFAULT_BRANDING_SETTINGS } from "@mms/shared";
-import { getBrandingChartPalette } from "@/lib/brandingChartPalette";
+import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
-import { PRINT_COLORS, PRINT_NEUTRAL_PALETTE } from "@/lib/printTemplateStyles";
+import { PRINT_COLORS, PRINT_NEUTRAL_PALETTE } from "@/lib/ui/printTemplateStyles";
 
 /** Neutral print-canvas colours (not institution-specific). */
 export const PRINT_NEUTRAL = PRINT_NEUTRAL_PALETTE;

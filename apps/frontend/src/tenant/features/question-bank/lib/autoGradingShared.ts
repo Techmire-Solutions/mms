@@ -1,4 +1,4 @@
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { QuestionBankQuestion as Question, QuestionBankTest } from "@mms/shared";
 
 export function sumScores(scores: Record<string, number>): number {

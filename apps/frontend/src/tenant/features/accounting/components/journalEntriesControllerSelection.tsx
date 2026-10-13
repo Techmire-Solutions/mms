@@ -1,12 +1,12 @@
 import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import { JournalEntryRowActions } from "@/tenant/features/accounting/components/JournalEntryRowActions";
 import {
   extractAmountFromNaturalLanguage,
   parseNaturalLanguage,
   type QuickActionType,
-} from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+} from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 
 export function createJournalNlHandlers(
   nlInput: string,

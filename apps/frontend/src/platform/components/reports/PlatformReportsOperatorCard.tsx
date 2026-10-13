@@ -1,8 +1,8 @@
 import React from "react";
 import { ShieldCheck, ShieldAlert, CheckCircle2, Award } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetCardHeader } from "@/components/ui/WidgetCardHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";

@@ -2,18 +2,18 @@ import React from "react";
 import { formatDate } from "@mms/shared";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { EntityCard } from "@/components/app/EntityCard";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { ExaminationsRowActions } from "@/tenant/features/examinations/components/ExaminationsRowActions";
 import {
   getExamMeta,
   type ExaminationsListContentProps,
-} from "@/tenant/features/examinations/components/examinationsListContentShared";
+} from "@/tenant/features/examinations/lib/examinationsListContentShared";
 
 export type ExaminationsListCardsProps = Omit<
   ExaminationsListContentProps,

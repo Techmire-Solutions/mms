@@ -10,8 +10,8 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 const VARIANT_TO_TONE: Record<string, BadgeTone> = {
   primary: "primary",

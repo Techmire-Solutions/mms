@@ -1,11 +1,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { SessionSortField } from "@/tenant/features/sessions/components/sessionPageTypes";
+import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPageTypes";
 import type { Session } from "@/lib/data/sessionsData";
-import type { SessionsWorkColumnLayout } from "@/tenant/features/sessions/components/sessionsWorkListViewsShared";
+import type { SessionsWorkColumnLayout } from "@/tenant/features/sessions/lib/sessionsWorkListViewsShared";
 import { renderSessionWorkColumnValue } from "@/tenant/features/sessions/components/sessionWorkColumnCell";
 import { SessionListRowActions } from "@/tenant/features/sessions/components/SessionListRowActions";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";

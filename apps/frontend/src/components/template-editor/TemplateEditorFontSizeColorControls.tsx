@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Minus, Plus } from "lucide-react";
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import type { ElementStyle } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { normalizeHexColor } from "./templateEditorUtils";

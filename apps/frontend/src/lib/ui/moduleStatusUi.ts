@@ -1,6 +1,6 @@
 import { toTitleCase, type AppTranslationKey } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import type { AccentColor } from "@/components/ui/statCardAccent";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import type { AccentColor } from "@/components/app/statCardAccent";
 
 export type StatusTranslate = (key: AppTranslationKey) => string;
 

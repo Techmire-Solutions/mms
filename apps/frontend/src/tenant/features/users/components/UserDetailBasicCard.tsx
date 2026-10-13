@@ -3,8 +3,8 @@ import { Shield, AlertTriangle, CheckCircle2, Phone, Mail, Send } from "lucide-r
 import type { SystemUser } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 
 export interface UserDetailBasicCardProps {
   user: SystemUser;

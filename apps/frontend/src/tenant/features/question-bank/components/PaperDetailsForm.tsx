@@ -1,13 +1,13 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT, WORK_SURFACE } from "@/components/ui/formStyles";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   coercePaperNumberInput,
   type PaperConfig,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 interface PaperDetailsFormProps {
   config: PaperConfig;

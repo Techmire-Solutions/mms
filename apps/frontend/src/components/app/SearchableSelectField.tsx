@@ -1,8 +1,8 @@
 import { useId } from "react";
-import { FORM_LABEL } from "./formStyles";
+import { FORM_LABEL } from "../ui/formStyles";
 import { FormSelect, type FormSelectProps } from "./FormSelect";
 import { SearchBar } from "./SearchBar";
-import { Button } from "./button";
+import { Button } from "../ui/button";
 
 export interface SearchableSelectFieldProps extends Pick<
   FormSelectProps,

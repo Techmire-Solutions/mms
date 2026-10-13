@@ -3,13 +3,13 @@ import { PAGE_SIZES } from "@mms/shared";
 import {
   buildVoucherTemplate,
   voucherLayoutCopy,
-} from "@/tenant/features/accounting/components/voucherTemplateLayout";
-import { buildVoucherTemplateHtml } from "@/tenant/features/accounting/components/voucherTemplateHtml";
+} from "@/tenant/features/accounting/lib/voucherTemplateLayout";
+import { buildVoucherTemplateHtml } from "@/tenant/features/accounting/lib/voucherTemplateHtml";
 import {
   voucherTableLines,
   type VoucherPrintPayload,
-} from "@/tenant/features/accounting/components/voucherTemplateModel";
-import type { PaymentVoucherModel } from "@/tenant/features/accounting/components/paymentVoucherModel";
+} from "@/tenant/features/accounting/lib/voucherTemplateModel";
+import type { PaymentVoucherModel } from "@/tenant/features/accounting/lib/paymentVoucherModel";
 
 const copy = voucherLayoutCopy((key) => key);
 

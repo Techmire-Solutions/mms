@@ -1,8 +1,8 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
 import type { Class } from "@/lib/data/sessionsData";

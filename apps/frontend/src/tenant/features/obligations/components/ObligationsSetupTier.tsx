@@ -6,12 +6,12 @@ import type {
   MujtahidRep,
   WakalaType,
 } from "@mms/shared";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 
 const WakalaTypeManager = lazy(() =>

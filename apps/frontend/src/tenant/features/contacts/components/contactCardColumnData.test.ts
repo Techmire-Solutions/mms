@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Contact } from "@mms/shared";
-import { hasContactCardColumnData } from "@/tenant/features/contacts/components/contactCardColumnData";
+import { hasContactCardColumnData } from "@/tenant/features/contacts/lib/contactCardColumnData";
 
 describe("hasContactCardColumnData", () => {
   it("returns true/false for dob columns from the contact dob", () => {

@@ -3,17 +3,17 @@ import { Plus } from "lucide-react";
 import { DistributionFormModal } from "@/tenant/features/obligations/components/DistributionFormModal";
 import { WakalaFormModal } from "@/tenant/features/obligations/components/WakalaFormModal";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionHeader } from "@/components/app/SectionHeader";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { WakalaTypeCard } from "@/tenant/features/obligations/components/WakalaTypeCard";
-import { useWakalaTypeManager } from "@/tenant/features/obligations/components/useWakalaTypeManager";
-import type { WakalaTypeManagerProps } from "@/tenant/features/obligations/components/wakalaTypeManagerTypes";
+import { useWakalaTypeManager } from "@/tenant/features/obligations/hooks/useWakalaTypeManager";
+import type { WakalaTypeManagerProps } from "@/tenant/features/obligations/lib/wakalaTypeManagerTypes";
 
 export type {
   DistributionType,
   WakalaTypeManagerProps,
-} from "@/tenant/features/obligations/components/wakalaTypeManagerTypes";
+} from "@/tenant/features/obligations/lib/wakalaTypeManagerTypes";
 
 export function WakalaTypeManager(props: WakalaTypeManagerProps) {
   const {

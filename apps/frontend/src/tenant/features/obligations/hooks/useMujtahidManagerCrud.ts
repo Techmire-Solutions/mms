@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { generateClientEntityId } from "@mms/shared";
-import type { ModalState, Mujtahid, MujtahidRep } from "./mujtahidManagerTypes";
+import type { ModalState, Mujtahid, MujtahidRep } from "../lib/mujtahidManagerTypes";
 
 export interface UseMujtahidManagerCrudProps {
   mujtahids: Mujtahid[];

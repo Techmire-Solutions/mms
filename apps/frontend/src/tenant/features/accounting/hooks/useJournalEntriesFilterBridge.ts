@@ -1,4 +1,4 @@
-import type { JournalEntriesServerQueryProps } from "./journalEntriesControllerFilters";
+import type { JournalEntriesServerQueryProps } from "../lib/journalEntriesControllerFilters";
 
 export function useJournalEntriesFilterBridge(
   filters: JournalEntriesServerQueryProps["filters"],

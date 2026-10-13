@@ -1,17 +1,17 @@
-import { FormModal } from "@/components/ui/FormModal";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { FormModal } from "@/components/app/FormModal";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   MessageTemplate,
   StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
-import { MessageComposerDispatchControls } from "./messageComposer/MessageComposerDispatchControls";
-import { MessageComposerFormBody } from "./messageComposer/MessageComposerFormBody";
+import { MessageComposerDispatchControls } from "../messageComposer/MessageComposerDispatchControls";
+import { MessageComposerFormBody } from "../messageComposer/MessageComposerFormBody";
 import {
   MessageComposerRecipients,
   type RecipientPickerSlotProps,
-} from "./messageComposer/MessageComposerRecipients";
-import { useMessageComposerModel } from "./messageComposer/useMessageComposerModel";
+} from "../messageComposer/MessageComposerRecipients";
+import { useMessageComposerModel } from "../messageComposer/useMessageComposerModel";
 
 export type { RecipientPickerSlotProps };
 

@@ -1,11 +1,11 @@
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { CopyButton } from "@/components/app/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface CollectionRowAction {

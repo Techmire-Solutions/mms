@@ -1,13 +1,13 @@
 import type React from "react";
 import { type AccountingSettings } from "@mms/shared";
 import { DollarSign } from "lucide-react";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
-import { Field } from "@/components/ui/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import { Field } from "@/components/app/FormPrimitives";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { DATE_FORMATS } from "./accountingSettingsPreferencesShared";
+import { DATE_FORMATS } from "../lib/accountingSettingsPreferencesShared";
 
 type CurrencyOption = {
   code: string;

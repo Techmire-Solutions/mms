@@ -1,6 +1,6 @@
 import type { AppTranslationKey } from "@mms/shared";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
-import { isCashAccount } from "@/tenant/features/accounting/components/cashbookViewShared";
+import { isCashAccount } from "@/tenant/features/accounting/lib/cashbookViewShared";
 
 /** Printed voucher family. Payment is the existing expense / salary voucher. */
 export type VoucherPrintKind =

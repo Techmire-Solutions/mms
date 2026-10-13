@@ -5,7 +5,7 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getDuplicateFieldLabel, getDuplicateFieldValue } from "@/lib/contacts/contactI18n";
-import type { getDuplicateThemeColors } from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+import type { getDuplicateThemeColors } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 
 export interface DuplicateMergeFieldsListProps {
   fields: string[];

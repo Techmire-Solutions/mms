@@ -1,7 +1,7 @@
 import React from "react";
 import { SYSTEM_MODULES, type ModuleDefinition } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
 import { Badge } from "@/components/ui/badge";
 import { resolveModuleIcon } from "@/lib/config/moduleIcons";
 

@@ -1,8 +1,8 @@
 import React, { type ReactNode } from "react";
 import { formatMoney } from "@mms/shared";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { FieldDefinition } from "@/types/entityRegistry";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { FieldDefinition } from "@/components/common/entityRegistryTypes";
 
 export function formatFieldValueDefault<T>(
   field: FieldDefinition<T> | undefined,

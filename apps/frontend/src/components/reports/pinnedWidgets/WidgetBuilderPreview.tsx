@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { Slider } from "@/components/ui/slider";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";

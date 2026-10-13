@@ -1,8 +1,8 @@
 import { BookOpen, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { FormModal } from "@/components/ui/FormModal";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { FormModal } from "@/components/app/FormModal";
+import { SectionCard } from "@/components/app/SectionCard";
 import { FORM_LABEL } from "@/components/ui/formStyles";
 import {
   QUESTION_SOURCE_FIELD_TO_KEY,

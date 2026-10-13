@@ -1,6 +1,6 @@
 import React from "react";
 import { toTitleCase, type AppTranslationKey } from "@mms/shared";
-import { FormFooterEntityChip, FormFooterErrorChip } from "@/components/ui/FormFooterChip";
+import { FormFooterEntityChip, FormFooterErrorChip } from "@/components/app/FormFooterChip";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 

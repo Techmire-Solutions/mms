@@ -6,7 +6,7 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/ui/TemplateEditor";
+import { TemplateEditor } from "@/components/app/TemplateEditor";
 import { getObject, saveObject } from "@/lib/db";
 import {
   type DocumentTemplate,
@@ -14,7 +14,7 @@ import {
   type TemplateFieldDefinition,
   type TypstReportCardPayload,
 } from "@mms/shared";
-import { mapToTypstReportCard } from "@/components/ui/template-editor/templatePayloadMappers";
+import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
 import {
   PRINT_SLATE_DARK,
@@ -23,7 +23,7 @@ import {
   PRINT_BLUE_DEEP,
   PRINT_AMBER_DEEP,
   PRINT_EMERALD_DEEP,
-} from "@/lib/printTemplateStyles";
+} from "@/lib/ui/printTemplateStyles";
 
 export const EXAMINATION_TEMPLATE_STORAGE_KEY = "mms_examination_report_template";
 

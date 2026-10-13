@@ -7,7 +7,7 @@ import {
   type FleetStatusFilter,
 } from "@/platform/components/dashboard/PlatformDashboardFleetControls";
 import { PlatformDashboardFleetTable } from "@/platform/components/dashboard/PlatformDashboardFleetTable";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { notify } from "@/lib/notify";
 
 const PAGE_SIZE = 5;

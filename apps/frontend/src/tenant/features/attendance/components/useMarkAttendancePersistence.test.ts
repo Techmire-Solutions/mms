@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { useMarkAttendancePersistence } from "./useMarkAttendancePersistence";
+import { useMarkAttendancePersistence } from "../hooks/useMarkAttendancePersistence";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 

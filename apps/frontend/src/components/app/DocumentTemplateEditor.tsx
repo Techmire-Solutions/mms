@@ -9,7 +9,7 @@ import type { DocumentTemplate } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import type { DocumentTemplateStore } from "@/lib/documentTemplatePersistence";
-import { TemplateEditor, type TemplateEditorProps } from "@/components/ui/TemplateEditor";
+import { TemplateEditor, type TemplateEditorProps } from "@/components/app/TemplateEditor";
 
 export interface DocumentTemplateEditorProps<TPayload> extends Omit<
   TemplateEditorProps<TPayload>,

@@ -1,19 +1,19 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { JournalEntriesChange } from "@/tenant/features/accounting/components/journalEntriesTypes";
-import type { QuickActionType } from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+import type { JournalEntriesChange } from "@/tenant/features/accounting/lib/journalEntriesTypes";
+import type { QuickActionType } from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 import {
   createJournalPostHandler,
   createJournalSaveHandler,
   exportJournalEntriesCsv,
   formatJournalAmount,
-} from "@/tenant/features/accounting/components/journalEntriesControllerActions";
-import { useJournalEntriesTrashReversal } from "@/tenant/features/accounting/components/useJournalEntriesTrashReversal";
+} from "@/tenant/features/accounting/lib/journalEntriesControllerActions";
+import { useJournalEntriesTrashReversal } from "@/tenant/features/accounting/hooks/useJournalEntriesTrashReversal";
 import { createJournalEntryActionsRenderer } from "@/tenant/features/accounting/components/journalEntriesControllerSelection";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
-import { isVoucherPrintable } from "@/tenant/features/accounting/components/paymentVoucherKind";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
+import { isVoucherPrintable } from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
 
 export interface UseJournalEntriesActionsOptions {

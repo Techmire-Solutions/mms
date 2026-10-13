@@ -1,6 +1,6 @@
 import React from "react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import type { CardSide } from "../../lib/studentCardTemplateTypes";
 
 export interface StudentCardSideSwitcherProps {

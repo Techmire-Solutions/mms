@@ -10,10 +10,10 @@ import {
   resolveClassFacultyName,
 } from "@/lib/faculty/facultyAssignment";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ClassCard } from "@/tenant/features/sessions/components/tabs/ClassCard";
 import { ClassModal } from "@/tenant/features/sessions/components/tabs/ClassModal";
 

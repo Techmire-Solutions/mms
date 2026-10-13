@@ -1,7 +1,7 @@
 import React from "react";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { FORM_INPUT_BUILDER } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import {

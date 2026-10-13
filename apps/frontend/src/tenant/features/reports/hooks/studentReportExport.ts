@@ -6,10 +6,7 @@ import {
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { fetchAllStudentsForQuery } from "@/tenant/hooks/collections/students";
-import {
-  mapStudentRow,
-  type EnrollmentHistoryItem,
-} from "@/components/ui/reports/studentReportTypes";
+import { mapStudentRow, type EnrollmentHistoryItem } from "@/components/reports/studentReportTypes";
 
 /** Page-walk enrollments for report export (avoids maxPageSize collection dump in the UI). */
 export async function fetchAllEnrollmentsForQuery(params: {

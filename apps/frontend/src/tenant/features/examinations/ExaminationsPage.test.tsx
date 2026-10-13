@@ -59,7 +59,7 @@ vi.mock("@/tenant/features/examinations/hooks/useExaminationsPageController", ()
   }),
 }));
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
+vi.mock("@/components/app/ModulePageShell", () => ({
   ModulePageShell: ({ children, headerActions, metricsStrip }: any) => (
     <div data-testid="page-shell">
       {headerActions}
@@ -69,7 +69,7 @@ vi.mock("@/components/ui/ModulePageShell", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: any) => <div>{children}</div>,
 }));
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { runFacultySaveFlow } from "@/tenant/features/faculty/components/facultyFormSaveFlow";
+import { runFacultySaveFlow } from "@/tenant/features/faculty/lib/facultyFormSaveFlow";
 import * as formAutoScroll from "@/lib/forms/formAutoScroll";
 import type { Contact, FacultySettings } from "@mms/shared";
 
@@ -14,11 +14,9 @@ vi.mock("@/lib/clientErrorReporting", () => ({
   reportClientError: vi.fn(),
 }));
 
-vi.mock("@/tenant/features/faculty/components/facultyFormValidation", async (importOriginal) => {
+vi.mock("@/tenant/features/faculty/lib/facultyFormValidation", async (importOriginal) => {
   const actual =
-    await importOriginal<
-      typeof import("@/tenant/features/faculty/components/facultyFormValidation")
-    >();
+    await importOriginal<typeof import("@/tenant/features/faculty/lib/facultyFormValidation")>();
   return {
     ...actual,
     validateFacultyDraft: vi.fn(),
@@ -34,7 +32,7 @@ describe("FacultyForm Validation Auto-Scroll & Contact SSOT", () => {
   it("triggers scrollAndFocusFirstError with smooth center options when validation fails", async () => {
     const scrollSpy = vi.spyOn(formAutoScroll, "scrollAndFocusFirstError");
     const { validateFacultyDraft } =
-      await import("@/tenant/features/faculty/components/facultyFormValidation");
+      await import("@/tenant/features/faculty/lib/facultyFormValidation");
     vi.mocked(validateFacultyDraft).mockReturnValue([
       { fieldId: "employeeId", message: "Employee ID is required", tabId: "basic" },
     ]);
@@ -76,7 +74,7 @@ describe("FacultyForm Validation Auto-Scroll & Contact SSOT", () => {
 
   it("persists contact selection (SSOT) through successful submission", async () => {
     const { validateFacultyDraft } =
-      await import("@/tenant/features/faculty/components/facultyFormValidation");
+      await import("@/tenant/features/faculty/lib/facultyFormValidation");
     vi.mocked(validateFacultyDraft).mockReturnValue(null);
 
     const onSave = vi.fn();

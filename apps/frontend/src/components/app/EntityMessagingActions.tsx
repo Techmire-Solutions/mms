@@ -8,9 +8,9 @@ import {
 } from "@mms/shared";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { MessagingActionButton } from "@/components/ui/MessagingActionButton";
-import { EntityMessagingButtonGroup } from "@/components/ui/EntityMessagingButtonGroup";
-import { MESSAGING_ICON_BTN_TONES } from "@/components/ui/messagingActionStyles";
+import { MessagingActionButton } from "@/components/app/MessagingActionButton";
+import { EntityMessagingButtonGroup } from "@/components/app/EntityMessagingButtonGroup";
+import { MESSAGING_ICON_BTN_TONES } from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export type EntityMessagingVariant = "dropdown" | "icon-row" | "button-group";

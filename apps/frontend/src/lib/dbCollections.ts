@@ -5,9 +5,9 @@ import {
   safeSetItem,
   scopedStorageKey,
   syncToServer,
-} from "@/lib/dbStorageCore.js";
+} from "@/lib/dbStorageCore";
 import { reportClientError, reportClientWarn } from "@/lib/clientErrorReporting";
-import { hydrateLinkedCollection, normalizeLinkedCollection } from "@/lib/dbLinkHydration.js";
+import { hydrateLinkedCollection, normalizeLinkedCollection } from "@/lib/dbLinkHydration";
 
 export const DOCUMENT_STORE_COLLECTIONS = new Set(["currencies", "backups"]);
 const BUSINESS_COLLECTIONS = DOCUMENT_STORE_COLLECTIONS;

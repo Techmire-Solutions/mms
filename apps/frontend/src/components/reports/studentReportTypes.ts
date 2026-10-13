@@ -1,5 +1,5 @@
 import { calcAge, formatDate, type Session, type Student, type StudentRecord } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export type StudentReportSubTab = "list" | "history";
 

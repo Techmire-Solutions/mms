@@ -6,7 +6,7 @@ import { getEntityDescriptor } from "@/components/common/entityRegistry";
 import type {
   ModuleColumnCustomizerLabels,
   ModuleColumnCustomizerProps,
-} from "@/components/ui/moduleColumnCustomizerTypes";
+} from "@/components/app/moduleColumnCustomizerTypes";
 
 export interface UseModuleColumnCustomizerModelOptions {
   columnRegistry?: ModuleColumnRegistryEntry[];

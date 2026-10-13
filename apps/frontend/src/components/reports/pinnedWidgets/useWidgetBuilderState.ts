@@ -4,13 +4,13 @@ import { METADATA_FIELDS } from "@/lib/reports/reportMetadata";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import { useWidgetCollections } from "@/lib/reports/useReportCollections";
 import type { ReportCollection } from "@/lib/reports/reportMetadata";
-import { type WidgetBuilderIconTab } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderCardOptions";
-import { useWidgetBuilderRecordOptions } from "@/components/ui/reports/pinnedWidgets/useWidgetBuilderRecordOptions";
+import { type WidgetBuilderIconTab } from "@/components/reports/pinnedWidgets/WidgetBuilderCardOptions";
+import { useWidgetBuilderRecordOptions } from "@/components/reports/pinnedWidgets/useWidgetBuilderRecordOptions";
 import {
   buildWidgetBuilderPreview,
   buildWidgetSavePayload,
-} from "@/components/ui/reports/pinnedWidgets/widgetBuilderStateHelpers";
-import { useWidgetBuilderHydration } from "@/components/ui/reports/pinnedWidgets/useWidgetBuilderHydration";
+} from "@/components/reports/pinnedWidgets/widgetBuilderStateHelpers";
+import { useWidgetBuilderHydration } from "@/components/reports/pinnedWidgets/useWidgetBuilderHydration";
 
 interface UseWidgetBuilderStateOptions {
   initialCollection: CustomWidget["collection"];

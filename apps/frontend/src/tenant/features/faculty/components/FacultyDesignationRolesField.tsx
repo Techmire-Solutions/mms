@@ -1,8 +1,8 @@
 import type React from "react";
 import { useMemo } from "react";
 import { workspaceRoleLabel } from "@mms/shared";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelectWithQuickCreate } from "@/components/ui/FormSelectWithQuickCreate";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelectWithQuickCreate } from "@/components/app/FormSelectWithQuickCreate";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 

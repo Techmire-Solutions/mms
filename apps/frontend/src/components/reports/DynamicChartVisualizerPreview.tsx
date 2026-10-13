@@ -1,18 +1,18 @@
 import React from "react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { DynamicChartVisualizerChart } from "@/components/ui/reports/DynamicChartVisualizerChart";
+import { DynamicChartVisualizerChart } from "@/components/reports/DynamicChartVisualizerChart";
 import {
   VisualizerDataMatrix,
   VisualizerKpiCards,
-} from "@/components/ui/reports/DynamicChartVisualizerPreviewSections";
-import { VisualizerPreviewHeader } from "@/components/ui/reports/DynamicChartVisualizerPreviewHeader";
+} from "@/components/reports/DynamicChartVisualizerPreviewSections";
+import { VisualizerPreviewHeader } from "@/components/reports/DynamicChartVisualizerPreviewHeader";
 import type {
   AggregatedItem,
   ChartOperation,
   ChartType,
   CollectionMeta,
-} from "@/components/ui/reports/dynamicChartVisualizerTypes";
+} from "@/components/reports/dynamicChartVisualizerTypes";
 
 export interface DynamicChartVisualizerPreviewProps {
   chartRef: React.RefObject<HTMLDivElement | null>;

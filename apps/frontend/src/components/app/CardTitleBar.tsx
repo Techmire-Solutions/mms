@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 
 export interface CardTitleBarProps {
   title?: React.ReactNode;

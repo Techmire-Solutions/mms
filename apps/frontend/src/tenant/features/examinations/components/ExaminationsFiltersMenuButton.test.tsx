@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleFiltersMenuButton", () => ({
+vi.mock("@/components/app/ModuleFiltersMenuButton", () => ({
   ModuleFilterDropdown: ({ children, label }: any) => (
     <div data-testid="filter-dropdown">
       <span>{label}</span>

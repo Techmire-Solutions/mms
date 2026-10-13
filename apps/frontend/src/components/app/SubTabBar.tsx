@@ -4,7 +4,7 @@ import {
   SubTabBarAccordionVariant,
   SubTabBarPillVariant,
   SubTabBarUnderlineVariant,
-} from "@/components/ui/SubTabBarVariants";
+} from "@/components/app/SubTabBarVariants";
 
 export interface SubTab<K extends string = string> {
   key: K;

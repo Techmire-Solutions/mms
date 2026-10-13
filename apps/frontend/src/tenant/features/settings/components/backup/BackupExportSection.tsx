@@ -11,10 +11,10 @@ import {
   DollarSign,
   BookOpen,
 } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { StatCard } from "@/components/ui/StatCard";
+import { StatCard } from "@/components/app/StatCard";
 import type { WorkspaceExportStats } from "@/tenant/features/settings/hooks/backupRestoreTypes";
 
 interface BackupExportSectionProps {

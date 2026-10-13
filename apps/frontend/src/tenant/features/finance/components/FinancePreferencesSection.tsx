@@ -1,12 +1,12 @@
 import React from "react";
 import { DEFAULT_CURRENCIES, type AppTranslationKey, type FinanceSettings } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { Field } from "@/components/ui/FormPrimitives";
+import { ToggleRow } from "@/components/app/ToggleRow";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const ALL_PAYMENT_METHODS = ["cash", "bank_transfer", "cheque", "online", "card", "other"] as const;

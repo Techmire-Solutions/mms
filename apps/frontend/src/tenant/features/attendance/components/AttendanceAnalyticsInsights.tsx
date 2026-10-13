@@ -1,10 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { motion } from "framer-motion";
-import type { StudentRateEntry } from "@/tenant/features/attendance/components/useAttendanceAnalyticsModel";
+import type { StudentRateEntry } from "@/tenant/features/attendance/hooks/useAttendanceAnalyticsModel";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface AttendanceAnalyticsInsightsProps {

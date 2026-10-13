@@ -3,7 +3,7 @@ import {
   computeAxisFontSize,
   computeLegendFontSize,
   computeTickGap,
-} from "@/components/ui/reports/dynamicChartVisualizerPin";
+} from "@/components/reports/dynamicChartVisualizerPin";
 
 export function useDynamicChartVisualizerContainer(chartRef: RefObject<HTMLDivElement | null>) {
   const [containerWidth, setContainerWidth] = useState(600);

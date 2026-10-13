@@ -1,9 +1,9 @@
 import type React from "react";
 import { formatDate } from "@mms/shared";
-import { TimePicker } from "@/components/ui/TimePicker";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
+import { TimePicker } from "@/components/app/TimePicker";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { EntityCard } from "@/components/app/EntityCard";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";
 import { AttendanceRecordStatusCell } from "./AttendanceRecordStatusCell";

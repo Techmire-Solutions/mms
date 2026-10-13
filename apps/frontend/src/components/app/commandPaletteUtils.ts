@@ -1,4 +1,4 @@
-import type { CommandItem } from "@/components/ui/commandPaletteItems";
+import type { CommandItem } from "@/components/app/commandPaletteItems";
 
 export const RECENTS_KEY = "cmd:recents";
 export const MAX_RECENTS = 5;

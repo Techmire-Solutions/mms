@@ -1,5 +1,5 @@
 import type React from "react";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import {
   getAttendanceStatusInfo,
   type AttendanceRecord,

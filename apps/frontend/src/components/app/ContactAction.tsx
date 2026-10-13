@@ -2,31 +2,37 @@ import React from "react";
 import {
   ContactEmailAction,
   type ContactEmailActionProps,
-} from "./contact-action/ContactEmailAction";
-import { ContactLinkAction, type ContactLinkActionProps } from "./contact-action/ContactLinkAction";
+} from "../contact-action/ContactEmailAction";
+import {
+  ContactLinkAction,
+  type ContactLinkActionProps,
+} from "../contact-action/ContactLinkAction";
 import {
   ContactLocationAction,
   type ContactLocationActionProps,
-} from "./contact-action/ContactLocationAction";
+} from "../contact-action/ContactLocationAction";
 import {
   ContactPhoneAction,
   type ContactPhoneActionProps,
-} from "./contact-action/ContactPhoneAction";
+} from "../contact-action/ContactPhoneAction";
 
-export type { ContactActionVariant } from "./contact-action/contactActionShared";
+export type { ContactActionVariant } from "../contact-action/contactActionShared";
 export {
   ContactPhoneAction,
   type ContactPhoneActionProps,
-} from "./contact-action/ContactPhoneAction";
+} from "../contact-action/ContactPhoneAction";
 export {
   ContactEmailAction,
   type ContactEmailActionProps,
-} from "./contact-action/ContactEmailAction";
+} from "../contact-action/ContactEmailAction";
 export {
   ContactLocationAction,
   type ContactLocationActionProps,
-} from "./contact-action/ContactLocationAction";
-export { ContactLinkAction, type ContactLinkActionProps } from "./contact-action/ContactLinkAction";
+} from "../contact-action/ContactLocationAction";
+export {
+  ContactLinkAction,
+  type ContactLinkActionProps,
+} from "../contact-action/ContactLinkAction";
 
 export type ContactActionProps =
   | ({ type: "phone" } & ContactPhoneActionProps)

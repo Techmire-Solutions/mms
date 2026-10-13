@@ -1,12 +1,12 @@
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { ProgressBar } from "@/components/app/ProgressBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Session } from "@/lib/data/sessionsData";
 import { SessionListRowActions } from "@/tenant/features/sessions/components/SessionListRowActions";
-import { getSessionVisibleWorkColumns } from "@/tenant/features/sessions/components/sessionListVisibleColumns";
+import { getSessionVisibleWorkColumns } from "@/tenant/features/sessions/lib/sessionListVisibleColumns";
 import {
   getSessionCapacityMeta,
   renderSessionWorkColumnValue,

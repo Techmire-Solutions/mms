@@ -6,7 +6,7 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { StyleInput } from "./TemplateEditorStyleControls";
 import { normalizeHexColor } from "./templateEditorUtils";
 import { TemplateEditorSection } from "./TemplateEditorSection";
-import { PRINT_COLORS } from "@/lib/printTemplateStyles";
+import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 
 export interface TemplateEditorAppearanceSectionProps {
   elementId: string;

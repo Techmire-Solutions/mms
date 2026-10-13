@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildEnrollmentPayload } from "./enrollmentWizardBuildPayload";
+import { buildEnrollmentPayload } from "../lib/enrollmentWizardBuildPayload";
 
 describe("buildEnrollmentPayload", () => {
   it("builds enrollment payload properly with default values", () => {

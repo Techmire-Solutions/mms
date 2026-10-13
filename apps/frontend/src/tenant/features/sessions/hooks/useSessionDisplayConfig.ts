@@ -1,7 +1,7 @@
 import { type AppTranslationKey, toTitleCase } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { SESSION_TYPES } from "@/lib/data/sessionsData";
 
 const SESSION_TYPE_LABEL_KEYS: Record<string, AppTranslationKey> = {

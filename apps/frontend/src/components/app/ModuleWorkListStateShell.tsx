@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ListPagination } from "@/components/ui/ListPagination";
-import { TableSkeleton, CardSkeleton } from "@/components/ui/LoadingState";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ListPagination } from "@/components/app/ListPagination";
+import { TableSkeleton, CardSkeleton } from "@/components/app/LoadingState";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export type ModuleWorkListViewMode = "table" | "cards";

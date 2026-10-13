@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { ChevronDown, Tag } from "lucide-react";
-import { bulkActionDockActionClassName } from "@/components/ui/bulkActionDockStyles";
+import { bulkActionDockActionClassName } from "@/components/app/bulkActionDockStyles";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export interface BulkSelectionStatusActionProps {
   label: string;

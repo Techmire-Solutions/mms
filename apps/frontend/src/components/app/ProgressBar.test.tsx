@@ -1,6 +1,6 @@
 import { Children, type ReactElement } from "react";
 import { describe, expect, it } from "vitest";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { ProgressBar } from "@/components/app/ProgressBar";
 
 /**
  * Regression tests for a systemic ARIA conflict.

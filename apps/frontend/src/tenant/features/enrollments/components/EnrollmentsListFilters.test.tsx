@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleWorkToolbar", () => ({
+vi.mock("@/components/app/ModuleWorkToolbar", () => ({
   ModuleWorkToolbar: ({
     search,
     filterButton,
@@ -27,7 +27,7 @@ vi.mock("@/components/ui/ModuleWorkToolbar", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FilterChips", () => ({
+vi.mock("@/components/app/FilterChips", () => ({
   FilterChips: () => <div data-testid="filter-chips">Filter Chips</div>,
 }));
 

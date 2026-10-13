@@ -12,8 +12,8 @@ import {
   wizardCategoryAccountOptions,
   type QuickActionType,
   type WizardFormState,
-} from "./simpleTransactionWizardTypes";
-import { parseMoneyInput } from "./simpleTransactionMoney";
+} from "../lib/simpleTransactionWizardTypes";
+import { parseMoneyInput } from "../lib/simpleTransactionMoney";
 
 interface UseSimpleTransactionStepFormStateParams {
   type: QuickActionType;

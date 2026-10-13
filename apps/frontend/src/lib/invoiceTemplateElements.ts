@@ -1,4 +1,4 @@
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { buildInvoiceTemplateHeaderElements } from "./invoiceTemplateHeaderElements";
 import { buildInvoiceTemplateFooterElements } from "./invoiceTemplateFooterElements";
 import {
@@ -7,7 +7,7 @@ import {
   type BrandingInfo,
   type InvoiceTemplate,
   type TemplateTranslate,
-} from "./invoiceTemplateTypes.js";
+} from "./invoiceTemplateTypes";
 
 /**
  * Builds the default A6 invoice template element list from branding settings.

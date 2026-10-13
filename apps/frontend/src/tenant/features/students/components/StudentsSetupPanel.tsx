@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StudentsPreferencesSection } from "@/tenant/features/students/components/StudentsPreferencesSection";
 import { useStudentsSetupPanelState } from "@/tenant/features/students/hooks/useStudentsSetupPanelState";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface StudentsSetupPanelProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;

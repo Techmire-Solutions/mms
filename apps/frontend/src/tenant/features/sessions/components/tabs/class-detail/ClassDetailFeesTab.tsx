@@ -7,7 +7,7 @@ import {
   FormListFieldCard,
   FormSelect,
   TYPE_SELECT_WIDTH,
-} from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import type { SessionClassFee, SessionClassDiscount } from "@/lib/data/sessionsData";

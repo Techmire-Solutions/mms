@@ -1,9 +1,9 @@
 import React from "react";
 import type { ReactNode } from "react";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { BiDiText } from "@/components/ui/BiDiText";
+import { BiDiText } from "@/components/app/BiDiText";
 import { cn } from "@/lib/utils";
 
 export interface EntityCardHeaderProps {

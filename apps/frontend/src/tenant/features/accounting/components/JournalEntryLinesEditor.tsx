@@ -1,19 +1,19 @@
 import { AlertCircle, BookOpen, CheckCircle2 } from "lucide-react";
 import { type Account } from "@/lib/data/accountingData";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FieldErrorMessage } from "@/components/ui/FormField";
-import { FormCollectionShell } from "@/components/ui/FormPrimitives";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { FieldErrorMessage } from "@/components/app/FormField";
+import { FormCollectionShell } from "@/components/app/FormPrimitives";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableHeader } from "@/components/ui/table";
-import { MutedTableHeaderRow } from "@/components/ui/reports/FinancialDebitCreditTableChrome";
+import { MutedTableHeaderRow } from "@/components/reports/FinancialDebitCreditTableChrome";
 import { WorkBatchTableFooter } from "@/components/common/work/WorkBatchTableFooter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { balanceToneClass } from "@/lib/semanticTone";
-import type { DraftLine } from "./journalEntryFormTypes";
+import { balanceToneClass } from "@/lib/ui/semanticTone";
+import type { DraftLine } from "../lib/journalEntryFormTypes";
 import { JournalEntryLineRow } from "./JournalEntryLineRow";
 import { JournalEntryLinesEditorMobile } from "./JournalEntryLinesEditorMobile";
-import type { JournalAmountSide } from "./useJournalLineAssist";
+import type { JournalAmountSide } from "../hooks/useJournalLineAssist";
 import {
   useWorkDirectoryViewMode,
   type WorkDirectoryViewMode,

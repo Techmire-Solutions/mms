@@ -3,8 +3,8 @@ import type { Account, JournalEntry } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import type { MetricItem } from "@/components/ui/ModuleCommandMetricsGrid";
-import { useAccountingDashboardModel } from "@/tenant/features/accounting/components/useAccountingDashboardModel";
+import type { MetricItem } from "@/components/app/ModuleCommandMetricsGrid";
+import { useAccountingDashboardModel } from "@/tenant/features/accounting/hooks/useAccountingDashboardModel";
 import {
   useAccountingMetrics,
   useAccountingReportAggregates,

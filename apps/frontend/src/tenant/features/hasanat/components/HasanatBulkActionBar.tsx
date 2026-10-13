@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { HandCoins } from "lucide-react";
 import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
 
 export interface HasanatBulkActionBarProps {
   selectedCount: number;

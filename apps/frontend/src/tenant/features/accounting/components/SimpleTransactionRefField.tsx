@@ -1,4 +1,4 @@
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import { NextVoucherNumberHint } from "./NextVoucherNumberHint";
 import { useTranslation } from "@/hooks/useTranslation";

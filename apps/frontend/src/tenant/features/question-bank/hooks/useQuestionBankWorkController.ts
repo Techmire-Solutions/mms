@@ -5,7 +5,7 @@ import {
   buildQuestionsListMetaFields,
   shouldShowQuestionSourceCitation,
   useQuestionBankDisplayConfig,
-} from "@/tenant/features/question-bank/components/useQuestionBankDisplayConfig";
+} from "@/tenant/features/question-bank/hooks/useQuestionBankDisplayConfig";
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 

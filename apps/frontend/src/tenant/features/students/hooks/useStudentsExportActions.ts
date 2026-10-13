@@ -9,7 +9,7 @@ import {
 } from "@mms/shared";
 import { startServerStudentsCsvExport } from "@/lib/backgroundJobs/startServerStudentsCsvExport";
 import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleServerCsvExportActions";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 import type { StudentsQuickFilter } from "@mms/shared";
 import { useStudentsCrudNotify } from "@/tenant/features/students/hooks/useStudentsCrudNotify";
 

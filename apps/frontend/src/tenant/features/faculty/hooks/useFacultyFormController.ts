@@ -21,12 +21,12 @@ import {
 import {
   type FacultyFormControllerOptions,
   type UseFacultyFormControllerOptions,
-} from "@/tenant/features/faculty/components/facultyFormDraft";
-import { DUPLICATE_ERROR_KEYS } from "@/tenant/features/faculty/components/facultyFormValidation";
+} from "@/tenant/features/faculty/lib/facultyFormDraft";
+import { DUPLICATE_ERROR_KEYS } from "@/tenant/features/faculty/lib/facultyFormValidation";
 import type { FacultyStatusOption } from "@/tenant/features/faculty/components/FacultyFormSections";
-import { useFacultyAssignableRolesSync } from "@/tenant/features/faculty/components/useFacultyFormSync";
-import { useFacultyDraftState } from "@/tenant/features/faculty/components/useFacultyDraftState";
-import { useFacultyFormSaveActions } from "@/tenant/features/faculty/components/useFacultyFormSaveActions";
+import { useFacultyAssignableRolesSync } from "@/tenant/features/faculty/hooks/useFacultyFormSync";
+import { useFacultyDraftState } from "@/tenant/features/faculty/hooks/useFacultyDraftState";
+import { useFacultyFormSaveActions } from "@/tenant/features/faculty/hooks/useFacultyFormSaveActions";
 
 export type { FacultyFormControllerOptions, UseFacultyFormControllerOptions };
 

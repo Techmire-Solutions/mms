@@ -1,6 +1,6 @@
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
-import type { SubTab } from "@/components/ui/SubTabBar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
+import type { SubTab } from "@/components/app/SubTabBar";
 import type {
   FacultyReportTablesProps,
   FacultyReportFilters,

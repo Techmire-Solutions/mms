@@ -1,15 +1,15 @@
 import React, { Suspense, lazy, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ClipboardList } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { EnrollmentsCommandMetrics } from "@/tenant/features/enrollments/components/EnrollmentsCommandMetrics";
 import { EnrollmentsPageModals } from "@/tenant/features/enrollments/components/EnrollmentsPageModals";
 import { EnrollmentsWorkTier } from "@/tenant/features/enrollments/components/EnrollmentsWorkTier";
 import { EnrollmentsPageHeaderActions } from "@/tenant/features/enrollments/components/EnrollmentsPageHeaderActions";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
 import { useEnrollmentsPageState } from "@/tenant/features/enrollments/hooks/useEnrollmentsPageState";
 

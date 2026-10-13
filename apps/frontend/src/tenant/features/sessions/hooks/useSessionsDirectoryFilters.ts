@@ -5,7 +5,7 @@ import type {
   SessionSortField,
   SessionStatus,
   SessionType,
-} from "@/tenant/features/sessions/components/sessionPageTypes";
+} from "@/tenant/features/sessions/lib/sessionPageTypes";
 
 /** Directory filters, sort, and trash SSOT for Sessions Work (Teachers/Users-shaped). */
 export function useSessionsDirectoryFilters() {

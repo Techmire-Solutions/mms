@@ -1,9 +1,9 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import type { QuestionBankSummaryRow } from "@/tenant/features/reports/controllers/useQuestionBankReportData";
+import type { QuestionBankSummaryRow } from "@/tenant/features/reports/hooks/useQuestionBankReportData";
 
 export interface QuestionBankSummaryDataGridProps {
   summaryRows: QuestionBankSummaryRow[];

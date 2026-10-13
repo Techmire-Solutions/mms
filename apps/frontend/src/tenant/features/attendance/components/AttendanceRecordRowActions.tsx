@@ -4,8 +4,8 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
   MODULE_ROW_ACTIONS_TRIGGER_CLASS,
   ModuleRowActionsMenu,
-} from "@/components/ui/ModuleRowActionsMenu";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
+} from "@/components/app/ModuleRowActionsMenu";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 

@@ -10,7 +10,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/WizardStepIndicator", () => ({
+vi.mock("@/components/app/WizardStepIndicator", () => ({
   WizardStepIndicator: ({ steps, current }: { steps: { label: string }[]; current: number }) => (
     <div data-testid="step-indicator">
       <span>Current: {current}</span>

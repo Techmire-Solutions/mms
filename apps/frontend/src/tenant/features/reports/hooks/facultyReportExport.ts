@@ -1,6 +1,6 @@
 import type { Faculty, FacultyQuickFilter } from "@mms/shared";
 import { fetchAllFacultyForQuery } from "@/tenant/hooks/collections/faculty";
-import { mapFacultyRow } from "@/components/ui/reports/facultyReportTypes";
+import { mapFacultyRow } from "@/components/reports/facultyReportTypes";
 
 /** Resolves full faculty roster rows for CSV/Excel/PDF export (server-side filters). */
 export async function resolveFacultyReportExportRows(input: {

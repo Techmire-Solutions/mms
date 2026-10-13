@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import { customFieldKeyFromColumnKey, type Faculty, type FacultyCustomField } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { resolveFacultyFieldDisplayText } from "@/tenant/features/faculty/components/facultyFieldDisplay";
+import { resolveFacultyFieldDisplayText } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 
 export interface RenderFacultyWorkColumnOptions {
   t: TranslationFunction;

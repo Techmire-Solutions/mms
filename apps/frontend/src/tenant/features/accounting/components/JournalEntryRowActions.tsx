@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { CheckCircle2, Printer, RotateCcw } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { JournalEntry } from "@/lib/data/accountingData";
 

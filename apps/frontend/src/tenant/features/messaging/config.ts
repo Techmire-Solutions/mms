@@ -1,5 +1,5 @@
 import { Mail, MessageCircle, MessageSquare, type LucideIcon } from "lucide-react";
-import type { CardAccentColor } from "@/lib/semanticTone";
+import type { CardAccentColor } from "@/lib/ui/semanticTone";
 
 export type MessagingChannel = "whatsapp" | "sms" | "email";
 

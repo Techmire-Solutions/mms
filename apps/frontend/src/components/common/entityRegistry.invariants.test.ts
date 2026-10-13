@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ENTITY_REGISTRY } from "@/components/common/entityRegistry";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 const ALLOWED_BADGE_CLASSES = new Set<string>(Object.values(SEMANTIC_BADGE));
 

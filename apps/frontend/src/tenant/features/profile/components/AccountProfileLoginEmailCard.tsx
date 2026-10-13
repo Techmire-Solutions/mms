@@ -3,14 +3,14 @@ import { CheckCircle2, Mail } from "lucide-react";
 import type { TenantUserProfile } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CardTitleBar } from "@/components/ui/CardTitleBar";
+import { CardTitleBar } from "@/components/app/CardTitleBar";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/FormField";
-import { PasswordInput } from "@/components/ui/PasswordInput";
-import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { Field } from "@/components/app/FormField";
+import { PasswordInput } from "@/components/app/PasswordInput";
+import { FormSubmitActions } from "@/components/app/FormSubmitActions";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 
 export interface AccountProfileLoginEmailCardProps {

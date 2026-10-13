@@ -11,7 +11,7 @@ import {
 } from "@/platform/lib/recentWorkspaces";
 import { ROUTES } from "@/lib/config/routes";
 import { Button } from "@/components/ui/button";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import {
   DropdownMenu,
   DropdownMenuContent,

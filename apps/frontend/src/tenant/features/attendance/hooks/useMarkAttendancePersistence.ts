@@ -7,16 +7,16 @@ import {
   addAuditEntry,
   loadQueue,
   saveQueue,
-} from "@/tenant/features/attendance/components/markAttendanceQueue";
+} from "@/tenant/features/attendance/lib/markAttendanceQueue";
 import {
   attendanceRecordsFromRows,
   buildOfflinePayload,
-} from "@/tenant/features/attendance/components/markAttendanceRowUtils";
+} from "@/tenant/features/attendance/lib/markAttendanceRowUtils";
 import type {
   AttendanceRow,
   GeoData,
   OfflinePayload,
-} from "@/tenant/features/attendance/components/markAttendanceTypes";
+} from "@/tenant/features/attendance/lib/markAttendanceTypes";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 
 export interface UseMarkAttendancePersistenceOptions {

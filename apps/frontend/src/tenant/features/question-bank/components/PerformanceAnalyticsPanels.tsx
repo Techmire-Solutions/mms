@@ -1,7 +1,7 @@
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ProgressBar } from "@/components/app/ProgressBar";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { motion } from "framer-motion";
 import {
   BarChart,
@@ -15,7 +15,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/ui/ChartGrid";
+import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { AlertTriangle, Trophy } from "lucide-react";
 import {
   QUESTION_ACCURACY_EXCELLENT_THRESHOLD,
@@ -24,9 +24,9 @@ import {
   questionAccuracyTextClass,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
-import type { CategoryPerformance, StudentStatItem } from "./performanceAnalyticsUtils";
+import type { CategoryPerformance, StudentStatItem } from "../lib/performanceAnalyticsUtils";
 import { StudentLeaderboardSection } from "./StudentLeaderboardSection";
 
 export interface PerformanceAnalyticsPanelsProps {

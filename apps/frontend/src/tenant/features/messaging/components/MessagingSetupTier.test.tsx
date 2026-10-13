@@ -35,17 +35,17 @@ vi.mock("../hooks/useMessagingPageOptions", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleTierMotion", () => ({
+vi.mock("@/components/app/ModuleTierMotion", () => ({
   ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="module-tier-motion">{children}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: () => <div data-testid="sub-tab-bar">SubTabBar</div>,
 }));
 
-vi.mock("@/components/ui/SetupReadOnlyMessage", () => ({
+vi.mock("@/components/app/SetupReadOnlyMessage", () => ({
   SetupReadOnlyMessage: ({ title }: { title: string }) => (
     <div data-testid="read-only">{title}</div>
   ),

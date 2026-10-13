@@ -18,12 +18,12 @@ export {
   sameStudentsListFilters,
   studentsListQueryKeyParams,
   studentsPaginatedQueryKey,
-} from "./studentsListQueryBuilders.js";
+} from "./studentsListQueryBuilders";
 export type {
   StudentRecord,
   StudentsListPageResult,
   StudentsPaginatedParams,
-} from "./studentsListQueryBuilders.js";
+} from "./studentsListQueryBuilders";
 
 export interface StudentNextGrNumberParams {
   registeredDate: string;

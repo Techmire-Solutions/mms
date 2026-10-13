@@ -7,17 +7,17 @@ import {
   KPI_ROLE_ATTENDANCE_ONLY_IDS,
   KPI_ROLE_FINANCE_ONLY_IDS,
   KPI_TITLE_KEYS,
-} from "@/components/ui/reports/kpiSummaryConfig";
+} from "@/components/reports/kpiSummaryConfig";
 import {
   buildAggregateCustomCard,
   getDefaultCardConfig,
-} from "@/components/ui/reports/kpiSummaryFormatters";
-import { getKpiCategoryFlags } from "@/components/ui/reports/kpiSummaryCategoryFlags";
+} from "@/components/reports/kpiSummaryFormatters";
+import { getKpiCategoryFlags } from "@/components/reports/kpiSummaryCategoryFlags";
 import type {
   AggregateCardValue,
   CategorizedKPIItem,
   KPIItem,
-} from "@/components/ui/reports/kpiSummaryTypes";
+} from "@/components/reports/kpiSummaryTypes";
 
 const KPI_ROLE_ATTENDANCE_ONLY_SET = new Set(KPI_ROLE_ATTENDANCE_ONLY_IDS);
 const KPI_ROLE_FINANCE_ONLY_SET = new Set(KPI_ROLE_FINANCE_ONLY_IDS);

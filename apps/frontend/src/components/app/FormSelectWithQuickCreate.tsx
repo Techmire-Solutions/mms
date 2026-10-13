@@ -1,7 +1,7 @@
 import React from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormSelect, type FormSelectProps } from "@/components/ui/FormSelect";
+import { FormSelect, type FormSelectProps } from "@/components/app/FormSelect";
 import { cn } from "@/lib/utils";
 
 export interface FormSelectWithQuickCreateProps extends FormSelectProps {

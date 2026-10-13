@@ -15,7 +15,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
-import { SYSTEM_COMMAND_ITEMS, type CommandItem } from "@/components/ui/systemCommandItems";
+import { SYSTEM_COMMAND_ITEMS, type CommandItem } from "@/components/app/systemCommandItems";
 
 export type { CommandItem };
 
@@ -163,4 +163,4 @@ export const COMMAND_ITEMS: CommandItem[] = [
   ...SYSTEM_COMMAND_ITEMS,
 ];
 
-export { MODULE_TIER_COMMAND_ITEMS } from "@/components/ui/moduleTierCommandItems";
+export { MODULE_TIER_COMMAND_ITEMS } from "@/components/app/moduleTierCommandItems";

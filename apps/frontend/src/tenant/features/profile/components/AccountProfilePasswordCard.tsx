@@ -1,14 +1,14 @@
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
-import { FormSubmitActions } from "@/components/ui/FormSubmitActions";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
+import { FormSubmitActions } from "@/components/app/FormSubmitActions";
 import { useId } from "react";
 import { Lock } from "lucide-react";
-import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/app/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CardTitleBar } from "@/components/ui/CardTitleBar";
-import { FieldErrorMessage } from "@/components/ui/FormField";
+import { CardTitleBar } from "@/components/app/CardTitleBar";
+import { FieldErrorMessage } from "@/components/app/FormField";
 import { useTranslation } from "@/hooks/useTranslation";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 
 export interface AccountProfilePasswordCardProps {

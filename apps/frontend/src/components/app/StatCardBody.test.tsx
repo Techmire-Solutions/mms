@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Users } from "lucide-react";
-import { StatCardBody } from "@/components/ui/StatCardBody";
+import { StatCardBody } from "@/components/app/StatCardBody";
 
 const mockColorTheme = {
   bg: "bg-primary/10",

@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { PersonDetailHeroCard } from "@/components/ui/PersonDetailHeroCard";
+import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
 
 describe("PersonDetailHeroCard Component", () => {
   it("renders display name and avatar initials", () => {

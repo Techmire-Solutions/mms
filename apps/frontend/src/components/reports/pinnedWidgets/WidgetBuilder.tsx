@@ -1,9 +1,9 @@
 import React from "react";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
-import { WidgetBuilderPreview } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderPreview";
-import { WidgetBuilderHeader } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderHeader";
-import { WidgetBuilderOptionsPanel } from "@/components/ui/reports/pinnedWidgets/WidgetBuilderOptionsPanel";
-import { useWidgetBuilderState } from "@/components/ui/reports/pinnedWidgets/useWidgetBuilderState";
+import { WidgetBuilderPreview } from "@/components/reports/pinnedWidgets/WidgetBuilderPreview";
+import { WidgetBuilderHeader } from "@/components/reports/pinnedWidgets/WidgetBuilderHeader";
+import { WidgetBuilderOptionsPanel } from "@/components/reports/pinnedWidgets/WidgetBuilderOptionsPanel";
+import { useWidgetBuilderState } from "@/components/reports/pinnedWidgets/useWidgetBuilderState";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 

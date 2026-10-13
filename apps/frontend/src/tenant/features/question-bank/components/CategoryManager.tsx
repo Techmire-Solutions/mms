@@ -5,7 +5,7 @@ import { createQuestionCategory, type QuestionCategory } from "@mms/shared";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { CategoryColorChip } from "@/tenant/features/question-bank/components/CategoryColorChip";
 
 interface CategoryManagerProps {

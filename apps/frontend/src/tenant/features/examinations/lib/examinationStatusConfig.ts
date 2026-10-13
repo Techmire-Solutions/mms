@@ -1,6 +1,6 @@
 import type { AppTranslationKey } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 export interface ExaminationStatusLabels {
   upcoming: string;

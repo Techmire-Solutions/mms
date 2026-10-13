@@ -1,6 +1,6 @@
 import { Clock } from "lucide-react";
 import { formatDate } from "@mms/shared";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { formatEntityStamp } from "@/lib/formatEntityStamp";
 
 export interface DrawerUpdatedStampProps {

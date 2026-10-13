@@ -3,7 +3,7 @@ import { GitMerge, X } from "lucide-react";
 import type { ContactPreferences } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { DuplicatePair } from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+import type { DuplicatePair } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 import {
   ConfidenceBadge,
   DuplicateContactCard,

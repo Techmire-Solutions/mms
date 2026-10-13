@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
-import { useModuleWidgetAggregates } from "@/tenant/features/reports/controllers/useModuleWidgetAggregates";
+import { useModuleWidgetAggregates } from "@/tenant/features/reports/hooks/useModuleWidgetAggregates";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { CustomCard } from "@/lib/reports/reportMetadata";
-import { computeCustomCardItems } from "@/tenant/features/reports/controllers/kpiSummaryCardHandlers";
+import { computeCustomCardItems } from "@/tenant/features/reports/hooks/kpiSummaryCardHandlers";
 import {
   cardsChangedOnLocalUpdate,
   loadCustomCardsForCategory,
-} from "@/tenant/features/reports/controllers/kpiSummaryCardSelection";
-import type {
-  AggregateCardValue,
-  CategorizedKPIItem,
-} from "@/components/ui/reports/kpiSummaryTypes";
-import type { KpiCategoryFlags } from "@/components/ui/reports/kpiSummaryCategoryFlags";
-import type { KpiSummaryDataSources } from "@/tenant/features/reports/controllers/useKpiSummaryDataSources";
+} from "@/tenant/features/reports/hooks/kpiSummaryCardSelection";
+import type { AggregateCardValue, CategorizedKPIItem } from "@/components/reports/kpiSummaryTypes";
+import type { KpiCategoryFlags } from "@/components/reports/kpiSummaryCategoryFlags";
+import type { KpiSummaryDataSources } from "@/tenant/features/reports/hooks/useKpiSummaryDataSources";
 
 function buildServerAggregateMap(
   customCards: CustomCard[],

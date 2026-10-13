@@ -1,9 +1,9 @@
 import type React from "react";
 import { Briefcase } from "lucide-react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   resolveFacultyStatus,

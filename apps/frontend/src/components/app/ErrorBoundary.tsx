@@ -4,7 +4,7 @@ import { reportClientError } from "@/lib/clientErrorReporting";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const LazyErrorState = React.lazy(() =>
-  import("@/components/ui/ErrorState").then((m) => ({ default: m.ErrorState })),
+  import("@/components/app/ErrorState").then((m) => ({ default: m.ErrorState })),
 );
 
 interface ErrorBoundaryProps {

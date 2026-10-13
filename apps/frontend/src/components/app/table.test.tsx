@@ -15,7 +15,7 @@ import {
   getTableCellWrapClass,
   getTableCellAlignClass,
   getAriaSort,
-} from "./table";
+} from "../ui/table";
 
 describe("table SSOT system", () => {
   describe("getTableCellWrapClass & getTableCellAlignClass", () => {

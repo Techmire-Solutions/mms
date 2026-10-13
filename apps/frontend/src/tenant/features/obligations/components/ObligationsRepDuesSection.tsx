@@ -1,6 +1,6 @@
 import React from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ExportToolbar } from "@/components/ui/ExportToolbar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ExportToolbar } from "@/components/app/ExportToolbar";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   useWorkDirectoryViewMode,
@@ -11,7 +11,7 @@ import { Users } from "lucide-react";
 import { useMemo } from "react";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { ObligationsRepDuesCardsView } from "./ObligationsRepDuesCardsView";
 
 export interface RepSummaryEntry {

@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { JournalEntry } from "@/lib/data/accountingData";
-import { useJournalEntryForm } from "./useJournalEntryForm";
+import { useJournalEntryForm } from "../hooks/useJournalEntryForm";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

@@ -1,13 +1,13 @@
 import React from "react";
 import { ACCOUNT_TYPE_META, type AccountType } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { ReportMoneyCard } from "@/components/ui/reports/ReportMoneyCard";
-import { ReportMoneyCardsGrid } from "@/components/ui/reports/ReportMoneyCardsGrid";
-import { ReportMoneySummaryTile } from "@/components/ui/reports/ReportMoneySummaryTile";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
+import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid";
+import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
 import {
   useWorkDirectoryViewMode,
   type WorkDirectoryViewMode,

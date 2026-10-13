@@ -3,13 +3,13 @@ import { Columns3, Search, RotateCcw, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ModuleColumnCustomizerList } from "@/components/ui/ModuleColumnCustomizerList";
+import { ModuleColumnCustomizerList } from "@/components/app/ModuleColumnCustomizerList";
 import { WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 import type {
   ModuleColumnCustomizerLabels,
   ModuleColumnCustomizerProps,
-} from "@/components/ui/moduleColumnCustomizerTypes";
+} from "@/components/app/moduleColumnCustomizerTypes";
 import { useModuleColumnCustomizerModel } from "./useModuleColumnCustomizerModel";
 
 export type { ModuleColumnCustomizerLabels, ModuleColumnCustomizerProps };

@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";

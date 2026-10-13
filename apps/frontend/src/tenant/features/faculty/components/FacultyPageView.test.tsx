@@ -5,7 +5,7 @@ import { School } from "lucide-react";
 import { FacultyPageView } from "./FacultyPageView";
 import type { FacultyPageTabId } from "@/tenant/features/faculty/facultyPageWorkSubTabs";
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
+vi.mock("@/components/app/ModulePageShell", () => ({
   ModulePageShell: ({
     headerTitle,
     children,
@@ -30,7 +30,7 @@ vi.mock("@/tenant/features/faculty/components/FacultyCommandMetrics", () => ({
   FacultyCommandMetrics: () => <div data-testid="faculty-metrics">Faculty Metrics</div>,
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="accordion-tabs">{children}</div>
   ),

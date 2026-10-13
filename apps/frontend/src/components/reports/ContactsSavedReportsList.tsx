@@ -6,8 +6,8 @@ import type {
   ContactsWorkDrillDown,
 } from "@mms/shared";
 import { canDeleteContactsSavedReport, validateContactsSavedReportDrillDown } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE } from "@/components/ui/formStyles";

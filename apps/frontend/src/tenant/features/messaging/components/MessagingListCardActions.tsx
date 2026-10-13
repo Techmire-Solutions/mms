@@ -2,7 +2,7 @@ import type React from "react";
 import { Filter, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 import type { Message } from "@mms/shared";
 
 interface MessagingListCardActionsProps {

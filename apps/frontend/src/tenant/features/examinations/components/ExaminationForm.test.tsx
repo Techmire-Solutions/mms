@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import ExaminationForm from "./ExaminationForm";
 import type { Exam } from "@/lib/data/examinationData";
 
-vi.mock("@/tenant/features/examinations/components/useExaminationForm", () => ({
+vi.mock("@/tenant/features/examinations/hooks/useExaminationForm", () => ({
   useExaminationForm: () => ({
     t: (key: string) => key,
     saving: false,
@@ -27,7 +27,7 @@ vi.mock("@/tenant/features/examinations/components/useExaminationForm", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({ children, title }: any) => (
     <div data-testid="form-modal">
       <h2>{title}</h2>

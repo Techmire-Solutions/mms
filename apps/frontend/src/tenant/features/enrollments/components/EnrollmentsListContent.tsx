@@ -1,10 +1,10 @@
 import React from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ListPagination } from "@/components/ui/ListPagination";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ListPagination } from "@/components/app/ListPagination";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentsListCards } from "@/tenant/features/enrollments/components/EnrollmentsListCards";
 import { EnrollmentsListDesktopTable } from "@/tenant/features/enrollments/components/EnrollmentsListDesktopTable";
-import type { EnrollmentListContentProps } from "@/tenant/features/enrollments/components/enrollmentListContentShared";
+import type { EnrollmentListContentProps } from "@/tenant/features/enrollments/lib/enrollmentListContentShared";
 import { Search } from "lucide-react";
 
 export function EnrollmentsListContent(props: EnrollmentListContentProps): React.JSX.Element {

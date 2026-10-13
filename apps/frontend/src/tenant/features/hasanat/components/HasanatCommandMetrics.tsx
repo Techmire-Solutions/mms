@@ -2,7 +2,7 @@ import React from "react";
 import { Layers, Filter, Package, Star, Gift, TrendingUp, RotateCcw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useHasanatMetrics } from "@/tenant/features/hasanat/hooks/useHasanatApi";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 interface HasanatCommandMetricsProps {
   shown: number;

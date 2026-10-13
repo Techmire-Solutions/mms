@@ -1,5 +1,5 @@
 import type React from "react";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 
 export interface RegistryDateFieldProps {
   id: string;

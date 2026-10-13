@@ -4,18 +4,18 @@ import { ModuleScaffoldSkeleton } from "@/components/common/ModuleScaffold";
 import { AppShell } from "@/components/common/AppShell";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AppFooter } from "@/components/ui/AppFooter";
+import { AppFooter } from "@/components/app/AppFooter";
 import Sidebar from "@/tenant/components/layout/Sidebar";
 import TopBar from "@/tenant/components/layout/TopBar";
 import TopBarActions from "@/tenant/components/layout/TopBarActions";
 import MobileSidebar from "@/tenant/components/layout/MobileSidebar";
 const CommandPalette = React.lazy(() =>
-  import("@/components/ui/CommandPalette").then((m) => ({ default: m.CommandPalette })),
+  import("@/components/app/CommandPalette").then((m) => ({ default: m.CommandPalette })),
 );
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { getInitials } from "@mms/shared";
 import { useSessionTimeout } from "@/tenant/hooks/useSessionTimeout";
-import { LOGO_IMAGE } from "@/lib/semanticTone";
+import { LOGO_IMAGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalShortcut } from "@/hooks/useGlobalShortcut";
 import { useNavigationState } from "@/hooks/useNavigationState";

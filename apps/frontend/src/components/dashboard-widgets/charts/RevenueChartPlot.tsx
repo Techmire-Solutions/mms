@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ComposedChart, Bar, Line, Area, XAxis, YAxis, Tooltip } from "recharts";
-import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
+import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { ROUTES } from "@/lib/config/routes";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { RevenueChartTooltip } from "@/components/dashboard-widgets/charts/RevenueChartTooltip";
