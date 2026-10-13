@@ -87,32 +87,50 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const workspaceUrl = subdomain ? buildTenantUrl(subdomain, "/", getTenantUrlOptions()) : null;
 
-  const refetchWorkspace = () => {
+  const refetchWorkspace = React.useCallback(() => {
     void refetch();
-  };
+  }, [refetch]);
 
-  const redirectToApex = (path = "/") => {
+  const redirectToApex = React.useCallback((path = "/") => {
     window.location.href = buildApexUrl(path, getTenantUrlOptions());
-  };
+  }, []);
 
-  const redirectToTenant = (targetSubdomain: string, path = "/") => {
+  const redirectToTenant = React.useCallback((targetSubdomain: string, path = "/") => {
     window.location.href = buildTenantUrl(targetSubdomain, path, getTenantUrlOptions());
-  };
+  }, []);
 
-  const value: TenantContextValue = {
-    appDomain,
-    subdomain,
-    isApex,
-    workspace,
-    publicBranding,
-    workspaceLoading,
-    workspaceMissing,
-    workspaceLookupFailed,
-    workspaceUrl,
-    refetchWorkspace,
-    redirectToApex,
-    redirectToTenant,
-  };
+  // Stable value identity — this context is consumed by TranslationProvider, so an
+  // unstable object here cascades a re-render through every `useTranslation` consumer.
+  const value = React.useMemo<TenantContextValue>(
+    () => ({
+      appDomain,
+      subdomain,
+      isApex,
+      workspace,
+      publicBranding,
+      workspaceLoading,
+      workspaceMissing,
+      workspaceLookupFailed,
+      workspaceUrl,
+      refetchWorkspace,
+      redirectToApex,
+      redirectToTenant,
+    }),
+    [
+      appDomain,
+      subdomain,
+      isApex,
+      workspace,
+      publicBranding,
+      workspaceLoading,
+      workspaceMissing,
+      workspaceLookupFailed,
+      workspaceUrl,
+      refetchWorkspace,
+      redirectToApex,
+      redirectToTenant,
+    ],
+  );
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 };

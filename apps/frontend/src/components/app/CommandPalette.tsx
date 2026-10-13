@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -8,6 +8,7 @@ import { COMMAND_ITEMS, type CommandItem } from "@/components/app/commandPalette
 import { CommandPaletteModal } from "@/components/app/CommandPaletteModal";
 import { useCommandPaletteSearch } from "@/components/app/useCommandPaletteSearch";
 import { getRecents, pushRecent, filterCommandItems } from "@/components/app/commandPaletteUtils";
+import { prefetchRoute } from "@/lib/routing/routePrefetch";
 
 export interface CommandPaletteProps {
   open: boolean;
@@ -102,6 +103,12 @@ export function CommandPalette({
     if (!isEmptyQuery) return activeFilteredItems;
     return sections.flatMap((s) => s.items);
   }, [isEmptyQuery, activeFilteredItems, sections]);
+
+  // Warm the highlighted destination's chunk as the selection changes (keyboard + hover).
+  const selectedItem = flatItems[selectedIndex];
+  useEffect(() => {
+    if (selectedItem) prefetchRoute(selectedItem.path);
+  }, [selectedItem]);
 
   return (
     <CommandPaletteModal

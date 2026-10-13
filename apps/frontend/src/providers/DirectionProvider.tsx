@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getLanguageDirection, isRtlLanguage, type AppLanguageCode } from "@mms/shared";
 import { applyDocumentLanguage } from "@/lib/documentLanguage";
@@ -51,11 +51,11 @@ export function DirectionProvider({ children }: DirectionProviderProps): React.J
     }
   }, [language, dir]);
 
-  const value = (() => ({
-    dir,
-    isRtl,
-    language,
-  }))() as DirectionContextValue;
+  // Stable identity so direction consumers don't re-render on unrelated parent renders.
+  const value = useMemo<DirectionContextValue>(
+    () => ({ dir, isRtl, language }),
+    [dir, isRtl, language],
+  );
 
   return <DirectionContext.Provider value={value}>{children}</DirectionContext.Provider>;
 }

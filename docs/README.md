@@ -14,6 +14,7 @@ Project-wide entry points live at the repo root:
 - [faculty.md](./faculty.md) — Faculty module engineering spec (production gold standard).
 - [engineering/data-transfer-import-export.md](./engineering/data-transfer-import-export.md) — import/export framework.
 - [a11y-baseline.md](./a11y-baseline.md) — executable axe/WCAG gate baseline.
+- [frontend-performance-baseline.md](./frontend-performance-baseline.md) — render-hygiene + React Compiler baseline.
 - [dependencies-notes.md](./dependencies-notes.md) — dependency/tooling operational notes.
 
 ## Decisions

@@ -39,15 +39,24 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
     const isControlled = controlledValue !== undefined;
     const value = isControlled ? controlledValue : uncontrolledValue;
 
-    const onChange = (nextValue: string) => {
-      if (!isControlled) {
-        setUncontrolledValue(nextValue);
-      }
-      onValueChange?.(nextValue);
-    };
+    const onChange = React.useCallback(
+      (nextValue: string) => {
+        if (!isControlled) {
+          setUncontrolledValue(nextValue);
+        }
+        onValueChange?.(nextValue);
+      },
+      [isControlled, onValueChange],
+    );
+
+    // Stable context identity so consumers don't re-render on every parent render.
+    const contextValue = React.useMemo<RadioGroupContextValue>(
+      () => ({ name, value, onChange, disabled }),
+      [name, value, onChange, disabled],
+    );
 
     return (
-      <RadioGroupContext.Provider value={{ name, value, onChange, disabled }}>
+      <RadioGroupContext.Provider value={contextValue}>
         <div ref={ref} role="radiogroup" className={cn("grid gap-2", className)} {...props}>
           {children}
         </div>

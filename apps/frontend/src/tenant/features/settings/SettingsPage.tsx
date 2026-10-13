@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings as SettingsIcon } from "lucide-react";
@@ -65,8 +65,11 @@ export default function Settings(): React.JSX.Element {
     icon: item.icon,
   }));
 
+  // Stable context identity — avoids re-rendering every settings section consumer.
+  const settingsTabValue = useMemo(() => ({ activeTab: tab, setActiveTab: setTab }), [tab, setTab]);
+
   return (
-    <SettingsTabProvider value={{ activeTab: tab, setActiveTab: setTab }}>
+    <SettingsTabProvider value={settingsTabValue}>
       <SettingsGlobalDraftProvider>
         <SettingsBrandingDraftProvider
           saveSuccessMessage={t("branding.savedToast")}

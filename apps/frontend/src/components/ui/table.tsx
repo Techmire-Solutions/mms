@@ -19,25 +19,32 @@ export * from "./table/useTableSort";
 const TableContext = React.createContext<{ stickyHeader?: boolean }>({});
 
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
-  ({ className, containerClassName, stickyHeader, scrollRegionLabel, children, ...props }, ref) => (
-    <TableContext.Provider value={{ stickyHeader }}>
-      <div
-        role={scrollRegionLabel ? "region" : undefined}
-        aria-label={scrollRegionLabel}
-        tabIndex={scrollRegionLabel ? 0 : undefined}
-        className={cn("relative w-full max-w-full overflow-x-auto", containerClassName)}
-      >
-        <table
-          ref={ref}
-          role="table"
-          className={cn("w-full caption-bottom text-sm", className)}
-          {...props}
+  ({ className, containerClassName, stickyHeader, scrollRegionLabel, children, ...props }, ref) => {
+    // Stable context identity — avoids re-rendering every header/cell consumer on
+    // each parent render (the `value={{ stickyHeader }}` literal is banned by
+    // `mms-react/no-unmemoized-context-value`).
+    const tableContextValue = React.useMemo(() => ({ stickyHeader }), [stickyHeader]);
+
+    return (
+      <TableContext.Provider value={tableContextValue}>
+        <div
+          role={scrollRegionLabel ? "region" : undefined}
+          aria-label={scrollRegionLabel}
+          tabIndex={scrollRegionLabel ? 0 : undefined}
+          className={cn("relative w-full max-w-full overflow-x-auto", containerClassName)}
         >
-          {children}
-        </table>
-      </div>
-    </TableContext.Provider>
-  ),
+          <table
+            ref={ref}
+            role="table"
+            className={cn("w-full caption-bottom text-sm", className)}
+            {...props}
+          >
+            {children}
+          </table>
+        </div>
+      </TableContext.Provider>
+    );
+  },
 );
 Table.displayName = "Table";
 

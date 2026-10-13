@@ -29,8 +29,13 @@ const FormField = <
 >({
   ...props
 }: ControllerProps<TFieldValues, TName>) => {
+  // Stable context identity — memoized so `Controller` consumers don't re-render
+  // when the field name is unchanged (the `value={{ name }}` literal is banned by
+  // `mms-react/no-unmemoized-context-value`).
+  const fieldContextValue = React.useMemo(() => ({ name: props.name }), [props.name]);
+
   return (
-    <FormFieldContext.Provider value={{ name: props.name }}>
+    <FormFieldContext.Provider value={fieldContextValue}>
       <Controller {...props} />
     </FormFieldContext.Provider>
   );
@@ -67,9 +72,11 @@ const FormItemContext = React.createContext<FormItemContextValue>({} as FormItem
 
 function FormItem({ className, ref, ...props }: React.ComponentProps<"div">) {
   const id = React.useId();
+  // `id` is stable for the life of the item; memoize so consumers don't re-render.
+  const itemContextValue = React.useMemo(() => ({ id }), [id]);
 
   return (
-    <FormItemContext.Provider value={{ id }}>
+    <FormItemContext.Provider value={itemContextValue}>
       <div ref={ref} className={cn("space-y-2", className)} {...props} />
     </FormItemContext.Provider>
   );
