@@ -66,6 +66,7 @@ export function useContactPickerState({
             excludeId != null && String(excludeId).length > 0,
         )
         .map(String),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on excludeIds.join(",") to keep identity stable; depending on excludeIds would recompute (and refetch) on every new array literal.
     [excludeIds.join(",")],
   );
 

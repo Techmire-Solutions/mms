@@ -14,7 +14,6 @@ import {
   type InvoiceTemplateFieldKey,
   type IndexedFieldLookups,
   type LookupItem,
-  type FieldLookupInfo,
 } from "./invoiceTemplateTypes";
 
 describe("invoiceTemplateTypes", () => {
@@ -94,7 +93,6 @@ describe("invoiceTemplateTypes", () => {
     expect(sampleTemplate.pageSize).toBe("A6");
 
     const item: LookupItem = { id: "c-1", name: "Ali", phone: "+923001234567" };
-    const lookups: FieldLookupInfo = { contacts: [item] };
     const indexed: IndexedFieldLookups = {
       contacts: new Map([[String(item.id), item]]),
     };

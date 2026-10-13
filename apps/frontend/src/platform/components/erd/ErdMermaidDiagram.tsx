@@ -77,6 +77,7 @@ export function ErdMermaidDiagram({ domain }: ErdMermaidDiagramProps): React.JSX
             primaryColor: readThemeColor("--card", "#f8fafc"),
             primaryTextColor: readThemeColor("--foreground", "#0f172a"),
             primaryBorderColor: readThemeColor("--border", "#cbd5e1"),
+            // eslint-disable-next-line no-restricted-syntax -- CSS-var fallback for when the variable is unavailable (off-DOM)
             lineColor: readThemeColor("--primary", "#047857"),
             secondaryColor: readThemeColor("--muted", "#f1f5f9"),
             tertiaryColor: readThemeColor("--background", "#ffffff"),
@@ -97,7 +98,7 @@ export function ErdMermaidDiagram({ domain }: ErdMermaidDiagramProps): React.JSX
     return () => {
       controller.abort();
     };
-  }, [domain.id, renderId, retryTick, source]);
+  }, [domain.id, domain.tables.length, renderId, retryTick, source]);
 
   const handleCopySource = useCallback(() => {
     void navigator.clipboard.writeText(source);

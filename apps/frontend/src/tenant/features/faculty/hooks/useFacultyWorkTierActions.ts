@@ -156,7 +156,7 @@ export function useFacultyWorkTierActions(
     [sortField, sortDir, onSortChange],
   );
 
-  const members = props.faculty ?? [];
+  const members = useMemo(() => props.faculty ?? [], [props.faculty]);
   const selectionTargets = useMemo(
     () =>
       computeFacultySelectionTargets({

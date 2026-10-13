@@ -76,7 +76,7 @@ export function useStudentDetailModel(student: Student) {
   ]);
 
   const contactsQuery = useContactsByIds(linkedIds);
-  const contactList = contactsQuery.data ?? [];
+  const contactList = useMemo(() => contactsQuery.data ?? [], [contactsQuery.data]);
 
   const studentContact = useMemo(() => {
     return (

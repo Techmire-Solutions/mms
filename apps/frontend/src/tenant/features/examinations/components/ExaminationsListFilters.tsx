@@ -33,7 +33,7 @@ export function ExaminationsListFilters({
   onViewModeChange,
   search,
   filterStatus,
-  canWrite,
+  canWrite: _canWrite,
   canDelete = false,
   showDeleted,
   onToggleDeleted,
@@ -42,7 +42,7 @@ export function ExaminationsListFilters({
   onSearchChange,
   onToggleStatus,
   onClearStatuses,
-  onNew,
+  onNew: _onNew,
 }: ExaminationsListFiltersProps): React.JSX.Element {
   const { t } = useTranslation();
 

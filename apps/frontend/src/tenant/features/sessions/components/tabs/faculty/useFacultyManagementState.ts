@@ -21,11 +21,17 @@ export function useFacultyManagementState(
     modalOpen,
   );
 
-  const facultyList = (facultyData?.body?.faculty ?? []) as FacultyMember[];
+  const facultyList = useMemo(
+    () => (facultyData?.body?.faculty ?? []) as FacultyMember[],
+    [facultyData?.body?.faculty],
+  );
 
   const selectedFacultyIds = facultyId ? [facultyId] : [];
   const { data: selectedFacultyData } = useFacultyByIds(selectedFacultyIds);
-  const selectedFaculty = (selectedFacultyData ?? []) as FacultyMember[];
+  const selectedFaculty = useMemo(
+    () => (selectedFacultyData ?? []) as FacultyMember[],
+    [selectedFacultyData],
+  );
 
   const allFaculty = useMemo(() => {
     const map = new Map<string, FacultyMember>();

@@ -4,7 +4,7 @@ import type { EnrollmentModulePreferences } from "@mms/shared";
 import { normalizeEnrollmentModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<EnrollmentModulePreferences>({
-  fetchPreferencesFn: async (signal) => {
+  fetchPreferencesFn: async (_signal) => {
     const res = await apiContract.enrollments.getPreferences({
       query: undefined,
       extraHeaders: {},

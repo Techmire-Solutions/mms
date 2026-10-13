@@ -67,6 +67,7 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
 
   const confirmDiscardPrompt = useCallback(
     () => window.confirm(editor.t("templateEditor.discardUnsavedPrompt")),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editor.t is the stable slice this callback needs; depending on the whole `editor` object (a fresh hook return each render) would recreate the callback every render.
     [editor.t],
   );
 
@@ -111,10 +112,12 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
 
   const handleToggleGuides = useCallback(
     () => editor.setShowGuides((prev) => !prev),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editor.setShowGuides is the stable setter slice; the whole `editor` object is a fresh hook return each render.
     [editor.setShowGuides],
   );
   const handleTogglePreview = useCallback(
     () => editor.setIsPreviewMode((prev) => !prev),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editor.setIsPreviewMode is the stable setter slice; the whole `editor` object is a fresh hook return each render.
     [editor.setIsPreviewMode],
   );
 

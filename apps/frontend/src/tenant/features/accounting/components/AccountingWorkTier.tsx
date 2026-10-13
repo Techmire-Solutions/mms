@@ -104,8 +104,8 @@ export function AccountingWorkTier({
   onBulkRestoreEntries,
   journalColumnProps,
   accountColumnProps,
-  showActiveLabel,
-  showDeletedLabel,
+  showActiveLabel: _showActiveLabel,
+  showDeletedLabel: _showDeletedLabel,
   loadFailedTitle,
 }: AccountingWorkTierProps): React.JSX.Element {
   const { t } = useTranslation();

@@ -32,7 +32,7 @@ const ACTION_BASE = cn(WORK_SURFACE_INNER, MESSAGING_QUICK_ACTION_BASE, "shadow-
 
 export function EntityMessagingButtonGroup({
   primaryPhone,
-  primaryEmail,
+  primaryEmail: _primaryEmail,
   showCall,
   showWhatsApp,
   showSms,

@@ -122,6 +122,7 @@ export function useStudentsPageController() {
       id: col.key,
       label: col.label || col.key,
     }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the column-registry slices; depending on the whole `columnLayout` object (new each render) would rebuild the export columns on every render.
   }, [columnLayout.columnRegistry, columnLayout.isColumnVisible, t]);
 
   const { handleExportCSV, handleBulkExport } = useStudentsExportActions({

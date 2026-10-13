@@ -21,7 +21,6 @@ type Props = Omit<
 >;
 
 const mockSender = { id: "contact-1", name: "Syed Ahmad" };
-const mockObligationType = { id: "type-1", name: "Zakat" };
 
 const mockCollection = {
   id: "col-1",

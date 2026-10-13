@@ -33,7 +33,7 @@ export function SidebarNavItem({
   icon: Icon,
   active,
   showLabel,
-  collapsed,
+  collapsed: _collapsed,
   reducedMotion = false,
   layoutId,
   onClick,

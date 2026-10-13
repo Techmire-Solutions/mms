@@ -66,6 +66,7 @@ export function FacultyFormDesignationSection(
 
   const rows = useMemo(
     () => (showAny ? resolveFormRows(facultyDraft) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the specific draft fields the resolver reads; depending on the whole `facultyDraft` object (new each render) would recompute this on every keystroke.
     [
       showAny,
       facultyDraft.designationId,

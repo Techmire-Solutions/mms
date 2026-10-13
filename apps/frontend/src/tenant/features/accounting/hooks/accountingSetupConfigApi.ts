@@ -58,7 +58,7 @@ export function toAccountingPreferencesPayload(
 }
 
 const api = createModuleSetupConfigApi<AccountingModulePreferences>({
-  fetchPreferencesFn: async (signal) => {
+  fetchPreferencesFn: async (_signal) => {
     const res = await apiContract.accounting.getPreferences({ query: undefined, extraHeaders: {} });
     return (res.body as { preferences: AccountingModulePreferences }).preferences;
   },

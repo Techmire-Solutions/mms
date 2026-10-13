@@ -83,7 +83,7 @@ vi.mock("@/components/entry", () => ({
 vi.mock("@/components/app/OtpInput", () => ({
   createEmptyOtp: () => ["", "", "", "", "", ""],
   isOtpComplete: (code: string[]) => code.every((digit) => digit.length === 1),
-  OtpInput: ({ value, onChange, disabled }: any) => (
+  OtpInput: ({ value: _value, onChange, disabled }: any) => (
     <div data-testid="otp-input">
       <button
         data-testid="fill-otp"

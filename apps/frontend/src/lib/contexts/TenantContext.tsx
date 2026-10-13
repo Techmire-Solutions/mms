@@ -51,7 +51,6 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     data: workspaceLookup,
     error: workspaceError,
     isPending,
-    isFetching,
     isError,
     isFetched,
     refetch,

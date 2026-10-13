@@ -33,7 +33,6 @@ export function useDashboardPageController() {
     deleteWidget,
     saveWidget,
     updatePref,
-    updateCustomWidgets,
     reorderCustomWidgets,
   } = useDashboardConfig();
 

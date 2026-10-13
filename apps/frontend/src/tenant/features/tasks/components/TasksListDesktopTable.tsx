@@ -70,6 +70,7 @@ export function TasksListDesktopTable({
         isColumnVisible,
         getColumnWidth,
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleCycleStatus is derived from the already-listed `viewingDeleted`; adding it (or its unstable onUpdateStatus dep) would rebuild the columns on every render.
     [t, canWrite, viewingDeleted, onView, isColumnVisible, getColumnWidth],
   );
 

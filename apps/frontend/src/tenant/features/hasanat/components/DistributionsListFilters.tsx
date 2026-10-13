@@ -33,7 +33,7 @@ export function DistributionsListFilters({
   search,
   filterStatus,
   statusLabels,
-  canWrite,
+  canWrite: _canWrite,
   canDelete = false,
   showDeleted,
   onToggleDeleted,
@@ -41,7 +41,7 @@ export function DistributionsListFilters({
   onSearchChange,
   onToggleStatus,
   onClearStatuses,
-  onOpenModal,
+  onOpenModal: _onOpenModal,
 }: DistributionsListFiltersProps): JSX.Element {
   const { t } = useTranslation();
 

@@ -41,7 +41,7 @@ export function FacultyList(props: FacultyListProps): React.JSX.Element {
     columnRegistry = [],
   } = props;
 
-  const listItems = faculty ?? [];
+  const listItems = React.useMemo(() => faculty ?? [], [faculty]);
   const { t } = useTranslation();
   const {
     sorted,

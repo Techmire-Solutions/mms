@@ -28,7 +28,7 @@ export interface UseWorkCardActionOptions<TEntity extends WorkCardEntity> {
   canSelect?: boolean;
 }
 
-export interface UseWorkCardActionReturn<TEntity extends WorkCardEntity> {
+export interface UseWorkCardActionReturn<_TEntity extends WorkCardEntity> {
   isSelected: boolean;
   /** Stable toggle handler — passes current !isSelected to onToggleSelected. */
   onSelect: () => void;

@@ -79,10 +79,11 @@ export function useTenantDatabaseUpdates(): void {
   );
 
   useEffect(() => {
+    const pendingKeys = pendingKeysRef.current;
     return () => {
       cancelScheduleRef.current?.();
       cancelScheduleRef.current = null;
-      pendingKeysRef.current.clear();
+      pendingKeys.clear();
     };
   }, []);
 

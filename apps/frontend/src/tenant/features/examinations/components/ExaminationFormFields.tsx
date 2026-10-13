@@ -23,7 +23,7 @@ export function ExaminationFormFields({
   examDraft,
   classes,
   updateDraft,
-  getFieldError,
+  getFieldError: _getFieldError,
 }: ExaminationFormFieldsProps): React.JSX.Element {
   return (
     <div className="space-y-5 text-start">

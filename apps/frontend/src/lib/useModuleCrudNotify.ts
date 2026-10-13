@@ -21,15 +21,17 @@ export function useModuleCrudNotify({
 }: UseModuleCrudNotifyOptions) {
   const { t } = useTranslation();
 
-  const handleError = (
-    err: unknown,
-    scope: string,
-    messageKey: AppTranslationKey = defaultErrorKey,
-  ) => {
-    const validationMessage = getApiValidationMessage(err);
-    notify.error(t(messageKey), validationMessage ? { description: validationMessage } : undefined);
-    reportClientError(err, { scope });
-  };
+  const handleError = useCallback(
+    (err: unknown, scope: string, messageKey: AppTranslationKey = defaultErrorKey) => {
+      const validationMessage = getApiValidationMessage(err);
+      notify.error(
+        t(messageKey),
+        validationMessage ? { description: validationMessage } : undefined,
+      );
+      reportClientError(err, { scope });
+    },
+    [t, defaultErrorKey],
+  );
 
   const saveFailed = useCallback(() => {
     notify.error(t(saveFailedKey));

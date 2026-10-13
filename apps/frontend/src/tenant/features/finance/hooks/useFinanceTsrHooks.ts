@@ -4,8 +4,12 @@
 import { apiContract, tsrClient } from "@/lib/api";
 import { queryOptions, useQueryClient } from "@tanstack/react-query";
 import {
+  FINANCE_FIELD_CONFIG_QUERY_KEY,
   FINANCE_INVOICES_QUERY_KEY,
+  FINANCE_METRICS_QUERY_KEY,
   FINANCE_PAYMENTS_QUERY_KEY,
+  FINANCE_PREFERENCES_QUERY_KEY,
+  FINANCE_REPORT_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/finance/hooks/useFinanceApi";
 import { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";
 
@@ -67,7 +71,7 @@ export function useFinanceContractPayments(query: Record<string, unknown>, enabl
 
 export function useFinanceContractMetrics(enabled = true) {
   return tsrClient.finance.getMetrics.useQuery({
-    queryKey: ["finance", "metrics", "contract"],
+    queryKey: [...FINANCE_METRICS_QUERY_KEY, "contract"],
     queryData: {},
     staleTime: 30_000,
     enabled,
@@ -76,7 +80,7 @@ export function useFinanceContractMetrics(enabled = true) {
 
 export function useFinanceContractReportAggregates(query: Record<string, unknown>, enabled = true) {
   return tsrClient.finance.getReportAggregates.useQuery({
-    queryKey: ["finance_invoices", "report-aggregates", "contract", query],
+    queryKey: [...FINANCE_REPORT_AGGREGATES_QUERY_KEY, "contract", query],
     queryData: { query },
     staleTime: 5 * 60 * 1000,
     enabled,
@@ -85,7 +89,7 @@ export function useFinanceContractReportAggregates(query: Record<string, unknown
 
 export function useFinanceContractFieldConfig(enabled = true) {
   return tsrClient.finance.getFieldConfig.useQuery({
-    queryKey: ["finance", "field-config", "contract"],
+    queryKey: FINANCE_FIELD_CONFIG_QUERY_KEY,
     queryData: {},
     staleTime: 30_000,
     enabled,
@@ -94,7 +98,7 @@ export function useFinanceContractFieldConfig(enabled = true) {
 
 export function useFinanceContractPreferences(enabled = true) {
   return tsrClient.finance.getPreferences.useQuery({
-    queryKey: ["finance", "preferences", "contract"],
+    queryKey: FINANCE_PREFERENCES_QUERY_KEY,
     queryData: {},
     staleTime: 30_000,
     enabled,
@@ -104,14 +108,20 @@ export function useFinanceContractPreferences(enabled = true) {
 export function useFinanceContractUpdateFieldConfig() {
   const queryClient = useQueryClient();
   return tsrClient.finance.updateFieldConfig.useMutation({
-    onSuccess: () => invalidateFinanceQueries(queryClient),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: FINANCE_FIELD_CONFIG_QUERY_KEY });
+      invalidateFinanceQueries(queryClient);
+    },
   });
 }
 
 export function useFinanceContractUpdatePreferences() {
   const queryClient = useQueryClient();
   return tsrClient.finance.updatePreferences.useMutation({
-    onSuccess: () => invalidateFinanceQueries(queryClient),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: FINANCE_PREFERENCES_QUERY_KEY });
+      invalidateFinanceQueries(queryClient);
+    },
   });
 }
 

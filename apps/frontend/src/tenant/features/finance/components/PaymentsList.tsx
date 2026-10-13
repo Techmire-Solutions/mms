@@ -61,7 +61,7 @@ export function PaymentsList({
   getColumnWidth,
   onColumnResize,
   columnCustomizer,
-  onRowClick,
+  onRowClick: _onRowClick,
 }: PaymentsListProps): React.JSX.Element {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();

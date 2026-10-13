@@ -17,7 +17,7 @@ export function EnrollmentReportsCharts({
   aggregates,
 }: EnrollmentReportsChartsProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { formatCurrency } = useFinanceCurrency();
+  const { formatCurrency: _formatCurrency } = useFinanceCurrency();
   const palette = useBrandPalette();
   const COLORS = (() => [
     palette.primary,

@@ -34,7 +34,7 @@ export function MessagingWorkRecipientsTable({
   selectedById,
   allVisibleSelected,
   someVisibleSelected,
-  selectedCount,
+  selectedCount: _selectedCount,
   selectedCountLabel,
   pageCountLabel,
   showRecipientCol,

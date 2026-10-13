@@ -17,7 +17,7 @@ export function computeDynamicDateRangeComparison(
   hasanatMonthly: HasanatReportComparison["monthly"] | undefined,
   examinationsMonthly: ExaminationsReportComparison["monthly"] | undefined,
   rangeA: DateRange,
-  rangeB: DateRange,
+  _rangeB: DateRange,
 ): DateRangeDataItem[] {
   const bucketA = new Array<number>(12).fill(0);
   const bucketB = new Array<number>(12).fill(0);

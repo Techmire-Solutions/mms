@@ -1,29 +1,35 @@
+import { TENANT_PATHS, TENANT_APP_PATHS } from "@/lib/routing/moduleRegistry";
+
 /**
  * Central route path registry — single source of truth for URLs across the app.
+ * Tenant app paths are derived from the module registry
+ * (`@/lib/config/moduleRegistry`); platform/entry paths are declared here.
  */
 
 export const ROUTES = {
-  home: "/",
-  contacts: "/contacts",
-  students: "/students",
-  faculty: "/faculty",
-  enrollments: "/enrollments",
-  sessions: "/sessions",
-  attendance: "/attendance",
-  finance: "/finance",
-  hasanatCards: "/hasanat-cards",
-  examinations: "/examinations",
-  questionBank: "/question-bank",
-  accounting: "/accounting",
-  obligations: "/obligations",
-  tasks: "/tasks",
-  users: "/users",
-  profile: "/profile",
-  notifications: "/notifications",
+  // Tenant app surface — derived from the module registry (SSOT).
+  home: TENANT_PATHS.home,
+  contacts: TENANT_PATHS.contacts,
+  students: TENANT_PATHS.students,
+  faculty: TENANT_PATHS.faculty,
+  enrollments: TENANT_PATHS.enrollments,
+  sessions: TENANT_PATHS.sessions,
+  attendance: TENANT_PATHS.attendance,
+  finance: TENANT_PATHS.finance,
+  hasanatCards: TENANT_PATHS.hasanatCards,
+  examinations: TENANT_PATHS.examinations,
+  questionBank: TENANT_PATHS.questionBank,
+  accounting: TENANT_PATHS.accounting,
+  obligations: TENANT_PATHS.obligations,
+  tasks: TENANT_PATHS.tasks,
+  messaging: TENANT_PATHS.messaging,
+  users: TENANT_PATHS.users,
+  profile: TENANT_PATHS.profile,
+  notifications: TENANT_PATHS.notifications,
+  settings: TENANT_PATHS.settings,
+  // Platform apex + auth entry paths.
   forcePasswordChange: "/force-password-change",
   institutionSetup: "/institution-setup",
-  settings: "/settings",
-  messaging: "/messaging",
   login: "/login",
   platformLogin: "/platform/login",
   forgotPassword: "/forgot-password",
@@ -141,26 +147,8 @@ export function isNavPathActive(pathname: string, itemPath: string): boolean {
 /** Default post-login destination */
 export const DEFAULT_AUTH_REDIRECT = ROUTES.home;
 
-/** Tenant app module paths — not available on the apex host. */
-export const TENANT_APP_PATHS: readonly string[] = [
-  ROUTES.contacts,
-  ROUTES.students,
-  ROUTES.faculty,
-  ROUTES.enrollments,
-  ROUTES.sessions,
-  ROUTES.attendance,
-  ROUTES.finance,
-  ROUTES.hasanatCards,
-  ROUTES.examinations,
-  ROUTES.questionBank,
-  ROUTES.accounting,
-  ROUTES.obligations,
-  ROUTES.tasks,
-  ROUTES.messaging,
-  ROUTES.users,
-  ROUTES.profile,
-  ROUTES.notifications,
-];
+/** Tenant app module paths — not available on the apex host (from the registry). */
+export { TENANT_APP_PATHS };
 
 export function isTenantAppPath(pathname: string): boolean {
   return TENANT_APP_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));

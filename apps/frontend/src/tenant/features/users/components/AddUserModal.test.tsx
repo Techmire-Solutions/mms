@@ -36,7 +36,7 @@ vi.mock("@/components/app/FormModal", () => ({
 }));
 
 vi.mock("./AddUserModalStep1", () => ({
-  Step1: ({ form, setForm, errors }: any) => (
+  Step1: ({ form: _form, setForm, errors }: any) => (
     <div data-testid="step-1">
       <span data-testid="step1-errors">{JSON.stringify(errors)}</span>
       <button
@@ -71,7 +71,7 @@ vi.mock("./AddUserModalStep1", () => ({
 }));
 
 vi.mock("./AddUserModalStep2", () => ({
-  Step2: ({ form, setForm, errors }: any) => (
+  Step2: ({ form: _form, setForm, errors }: any) => (
     <div data-testid="step-2">
       <span data-testid="step2-errors">{JSON.stringify(errors)}</span>
       <button

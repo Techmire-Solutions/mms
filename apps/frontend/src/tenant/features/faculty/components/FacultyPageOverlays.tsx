@@ -69,7 +69,7 @@ export const FacultyPageOverlays = function FacultyPageOverlays({
   const configPending = false;
   const branding = useBranding();
   const sessionsQuery = useSessions();
-  const sessions = sessionsQuery.data ?? [];
+  const sessions = useMemo(() => sessionsQuery.data ?? [], [sessionsQuery.data]);
   const effectiveEdit = editFaculty;
   const effectiveView = viewFaculty;
   const effectiveIdCards = idCardFaculty;

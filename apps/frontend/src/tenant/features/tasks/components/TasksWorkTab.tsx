@@ -42,7 +42,7 @@ export function TasksWorkTab({
   onToggleSelectAll,
   onClearSelection,
   onToggleTrash,
-  onAddNew,
+  onAddNew: _onAddNew,
   onEdit,
   onDelete,
   onRestore,

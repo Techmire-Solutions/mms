@@ -28,7 +28,7 @@ function renderHook(options: HookOptions) {
     root.render(<HookHost />);
   });
 
-  function update(nextOptions: HookOptions) {
+  function update(_nextOptions: HookOptions) {
     act(() => {
       root.render(<HookHost key={Math.random()} />);
     });

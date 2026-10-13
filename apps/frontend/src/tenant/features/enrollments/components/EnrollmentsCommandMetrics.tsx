@@ -15,7 +15,7 @@ export const EnrollmentsCommandMetrics = function EnrollmentsCommandMetrics({
   shown,
 }: EnrollmentsCommandMetricsProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { formatCurrency, activeCurrency } = useFinanceCurrency();
+  const { formatCurrency: _formatCurrency, activeCurrency: _activeCurrency } = useFinanceCurrency();
   const { data: serverMetrics } = useEnrollmentsMetrics();
 
   const metrics = (() => ({

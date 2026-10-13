@@ -36,6 +36,7 @@ export function FacultyWorkTier(props: FacultyWorkTierProps): React.JSX.Element 
     if (props.showDeleted) {
       props.onToggleDeleted();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- depending on the whole `props` object would recreate this callback on any prop change; the listed props are the only ones read.
   }, [props.showDeleted, props.onToggleDeleted]);
 
   const handleBulkPrintIdCards = useCallback(() => {

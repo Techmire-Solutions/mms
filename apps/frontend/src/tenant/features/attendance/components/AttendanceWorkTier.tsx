@@ -58,7 +58,7 @@ export function AttendanceWorkTier({
   onFiltersChange,
   activeOpsTab,
   operationsTabs,
-  canDeleteAttendance,
+  canDeleteAttendance: _canDeleteAttendance,
   showDeleted,
   onShowDeletedToggle,
   showActiveLabel: _showActiveLabel,

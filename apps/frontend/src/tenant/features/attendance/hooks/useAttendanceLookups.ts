@@ -8,14 +8,12 @@ import {
 import { apiContract } from "@/lib/api";
 import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
 
-const ATTENDANCE_API = ATTENDANCE_MODULE_MANIFEST.restBasePath;
-
 export const ATTENDANCE_LOOKUPS_QUERY_KEY = [
   ATTENDANCE_MODULE_MANIFEST.collectionKey,
   "lookups",
 ] as const;
 
-export async function fetchAttendanceLookups(signal?: AbortSignal): Promise<AttendanceLookupsMap> {
+export async function fetchAttendanceLookups(_signal?: AbortSignal): Promise<AttendanceLookupsMap> {
   const res = await apiContract.attendance.getLookups({ query: undefined, extraHeaders: {} });
   return (res.body as { lookups?: AttendanceLookupsMap }).lookups ?? emptyAttendanceLookupsMap;
 }

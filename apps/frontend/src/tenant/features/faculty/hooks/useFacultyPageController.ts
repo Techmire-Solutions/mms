@@ -90,6 +90,7 @@ export function useFacultyPageController() {
 
   useEffect(() => {
     filters.setListPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filters.setListPage is a stable setter; depending on the whole `filters` object would run this page reset on every render.
   }, [viewMode, filters.setListPage]);
 
   const formState = useFacultyPageFormState();

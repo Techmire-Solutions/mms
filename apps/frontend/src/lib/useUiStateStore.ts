@@ -14,7 +14,7 @@ interface UiStateStore {
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
 const pendingUpdates: Record<string, unknown> = {};
 
-export const useUiStateStore = create<UiStateStore>((set, get) => ({
+export const useUiStateStore = create<UiStateStore>((set, _get) => ({
   state: {},
   isInitialized: false,
 
@@ -60,7 +60,7 @@ export const useUiStateStore = create<UiStateStore>((set, get) => ({
 
 // Utility hook for individual keys
 export function useUiPreference<T>(key: string, defaultValue: T): [T, (val: T) => void] {
-  const isInitialized = useUiStateStore((s) => s.isInitialized);
+  const _isInitialized = useUiStateStore((s) => s.isInitialized);
   const value = useUiStateStore((s) =>
     s.state[key] !== undefined ? s.state[key] : defaultValue,
   ) as T;

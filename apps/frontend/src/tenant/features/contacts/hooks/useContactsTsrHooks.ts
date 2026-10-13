@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-query";
 import type { ContactsListPageResult } from "@mms/shared";
 import {
+  CONTACTS_FIELD_CONFIG_QUERY_KEY,
   CONTACTS_QUERY_KEY,
   CONTACTS_REPORT_ANALYTICS_QUERY_KEY,
 } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
@@ -148,7 +149,7 @@ export function useContactsContractLogSetupAudit() {
 
 export function useContactsContractFieldConfig(enabled = true) {
   return tsrClient.contacts.getFieldConfig.useQuery({
-    queryKey: ["contacts", "field-config", "contract"],
+    queryKey: CONTACTS_FIELD_CONFIG_QUERY_KEY,
     queryData: {},
     staleTime: 30_000,
     enabled,

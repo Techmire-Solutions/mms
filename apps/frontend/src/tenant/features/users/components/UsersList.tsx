@@ -38,7 +38,7 @@ export function UsersList({
   onBulkRestore,
   onResetPassword,
   onAddUser,
-  onInviteUser,
+  onInviteUser: _onInviteUser,
   onMessage,
   canWrite = true,
   canDelete = true,

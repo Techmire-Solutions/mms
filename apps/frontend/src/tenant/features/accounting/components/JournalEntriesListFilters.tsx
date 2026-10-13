@@ -46,7 +46,7 @@ export function JournalEntriesListFilters({
   statusFilter,
   tagFilter,
   showFilters,
-  canWrite,
+  canWrite: _canWrite,
   canDelete = false,
   showDeleted,
   onToggleDeleted,
@@ -56,7 +56,7 @@ export function JournalEntriesListFilters({
   onStatusFilterChange,
   onTagFilterChange,
   onShowFiltersChange,
-  onOpenNew,
+  onOpenNew: _onOpenNew,
   onExportCsv,
 }: JournalEntriesListFiltersProps) {
   const { t } = useTranslation();

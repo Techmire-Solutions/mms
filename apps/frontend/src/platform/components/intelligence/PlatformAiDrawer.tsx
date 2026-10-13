@@ -67,7 +67,7 @@ export function PlatformAiDrawer({
       {/* Drawer Container */}
       <div
         className={cn(
-          "relative z-modal flex h-full w-full sm:w-[480px] max-w-full flex-col bg-card border-s border-border shadow-2xl animate-in slide-in-from-right duration-200",
+          "relative z-modal flex h-full w-full sm:w-120 max-w-full flex-col bg-card border-s border-border shadow-2xl animate-in slide-in-from-right duration-200",
           className,
         )}
       >

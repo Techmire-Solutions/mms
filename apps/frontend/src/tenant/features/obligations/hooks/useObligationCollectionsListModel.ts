@@ -36,7 +36,7 @@ export function useObligationCollectionsListModel({
   onFilteredCountChange,
   onClearSelection,
   onDelete,
-  onRestore,
+  onRestore: _onRestore,
   onBulkDelete,
   onBulkRestore,
 }: UseObligationCollectionsListModelProps) {

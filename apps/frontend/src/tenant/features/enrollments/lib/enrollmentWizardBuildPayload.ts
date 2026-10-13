@@ -13,7 +13,7 @@ export function buildEnrollmentPayload(params: {
   customFieldValues: Record<string, unknown>;
   t: TranslationFunction;
 }): Enrollment {
-  const { student, session, classInfo, feeResult, notes, customFieldValues, t } = params;
+  const { student, session, classInfo, feeResult, notes, t } = params;
   const nowISO = new Date().toISOString();
 
   return {

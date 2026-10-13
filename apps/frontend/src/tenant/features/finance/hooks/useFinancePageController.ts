@@ -112,6 +112,7 @@ export function useFinancePageController() {
 
   useEffect(() => {
     if (activeTab !== "work") setShowDeleted(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setShowDeleted is URL-backed and not guaranteed stable; depending on it could re-run this URL write every render.
   }, [activeTab]);
 
   const { handleRecordPayment, handleCreateInvoice, openCreateInvoice } = useFinanceFormActions({

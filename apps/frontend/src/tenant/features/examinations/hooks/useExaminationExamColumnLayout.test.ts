@@ -13,8 +13,8 @@ vi.mock("@/hooks/useTranslation", () => ({
 
 vi.mock("@/hooks/useModuleColumnLayout", () => ({
   useModuleColumnLayout: ({ tenantRegistry }: any) => ({
-    isColumnVisible: (key: string) => true,
-    getColumnWidth: (key: string) => 150,
+    isColumnVisible: (_key: string) => true,
+    getColumnWidth: (_key: string) => 150,
     setColumnWidth: vi.fn(),
     columnRegistry: tenantRegistry,
     updateUserColumnLayout: vi.fn(),

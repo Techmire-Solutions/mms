@@ -17,12 +17,6 @@ export interface StudentDetailFieldDef {
   group: string;
 }
 
-interface FieldTabMap {
-  fields: StudentsSettings["fields"];
-  formTabs: StudentsSettings["formTabs"];
-  enabledTabs: StudentsSettings["enabledTabs"];
-}
-
 /**
  * Enabled detail fields sorted by tab order then per-field order; basic tab always shows.
  * `basic` is excluded from tab gating (unlocked by definition), `group` falls back to a localized label.
