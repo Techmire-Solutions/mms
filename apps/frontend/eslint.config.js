@@ -8,6 +8,7 @@ import tseslint from "typescript-eslint";
 import boundaryImports from "./eslint-rules/no-cross-feature-imports.cjs";
 import uiHostImports from "./eslint-rules/no-ui-host-imports.cjs";
 import directionalRule from "./eslint-rules/no-physical-directional-classes.cjs";
+import contextValueRule from "./eslint-rules/no-unmemoized-context-value.cjs";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 const appFiles = [
@@ -20,6 +21,17 @@ const appFiles = [
   "src/platform/**/*.{ts,tsx}",
   "src/common/**/*.{ts,tsx}",
 ];
+
+// React Compiler lint rules shipped by eslint-plugin-react-hooks v7
+// (`recommended-latest`). Landed as `warn` for triage — `rules-of-hooks` and
+// `exhaustive-deps` stay governed by the explicit `error` entries below.
+const reactCompilerRules = Object.fromEntries(
+  Object.keys(pluginReactHooks.configs?.["recommended-latest"]?.rules ?? {})
+    .filter(
+      (name) => name !== "react-hooks/rules-of-hooks" && name !== "react-hooks/exhaustive-deps",
+    )
+    .map((name) => [name, "warn"]),
+);
 
 export default tseslint.config(
   {
@@ -58,6 +70,7 @@ export default tseslint.config(
         rules: { "no-cross-feature-imports": boundaryImports, "no-ui-host-imports": uiHostImports },
       },
       "mms-bidi": { rules: { "no-physical-directional-classes": directionalRule } },
+      "mms-react": { rules: { "no-unmemoized-context-value": contextValueRule } },
     },
     rules: {
       "no-useless-assignment": "off",
@@ -79,6 +92,7 @@ export default tseslint.config(
       "mms-boundary/no-cross-feature-imports": "error",
       "mms-boundary/no-ui-host-imports": "error",
       "mms-bidi/no-physical-directional-classes": "error",
+      "mms-react/no-unmemoized-context-value": "error",
       "react/jsx-uses-vars": "error",
       "react/jsx-uses-react": "error",
       "unused-imports/no-unused-imports": "error",
@@ -96,6 +110,7 @@ export default tseslint.config(
       "react/no-unknown-property": ["error", { ignore: ["cmdk-input-wrapper", "toast-close"] }],
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
+      ...reactCompilerRules,
       "no-restricted-syntax": [
         "error",
         {
@@ -137,6 +152,8 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
       // Fixtures legitimately use literal colours.
       "no-restricted-syntax": "off",
+      // Test harnesses wrap components with inline provider values deliberately.
+      "mms-react/no-unmemoized-context-value": "off",
     },
   },
   {
@@ -153,7 +170,11 @@ export default tseslint.config(
   {
     // Static accessibility checks — complements the E2E axe sweep
     // (e2e/tests/a11y/*) by catching obvious issues before runtime.
-    // Starts at `warn`; ratchet to `error` once the current findings are triaged.
+    // Kept at `warn`: a no-cache `eslint .` currently reports 146 jsx-a11y
+    // findings (no-autofocus, click-events-have-key-events, no-redundant-roles,
+    // control-has-associated-label, …). Ratchet to `error` once that backlog is
+    // triaged. Measure with `--no-cache` — the eslint `--cache` can hide
+    // warnings seeded by an earlier `--quiet` run.
     files: ["src/**/*.tsx"],
     plugins: { "jsx-a11y": pluginJsxA11y },
     rules: {

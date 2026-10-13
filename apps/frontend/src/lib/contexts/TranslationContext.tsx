@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useLocation } from "react-router-dom";
 import { useTenant } from "@/lib/contexts/TenantContext";
@@ -98,10 +98,23 @@ export function TranslationProvider({
     ensureLocaleFontsLoaded(activeLanguage);
   }, [activeLanguage]);
 
-  const t = <K extends AppTranslationKey>(key: K, ...args: TranslationArgs<K>) => {
-    warnIfKeyMissingAtRuntime(key);
-    return translateAppParams(key, activeLanguage, ...args);
-  };
+  // Stable identity per active language so `useTranslation` consumers don't
+  // re-render on every provider render (navigation, settings events, tenant churn).
+  const t = useCallback(
+    <K extends AppTranslationKey>(key: K, ...args: TranslationArgs<K>): string => {
+      warnIfKeyMissingAtRuntime(key);
+      return translateAppParams(key, activeLanguage, ...args);
+    },
+    [activeLanguage],
+  );
+
+  const dir = getLanguageDirection(activeLanguage);
+  const isRtl = isRtlLanguage(activeLanguage);
+
+  const value = useMemo<TranslationContextType>(
+    () => ({ language: activeLanguage, t, isLoading, dir, isRtl }),
+    [activeLanguage, t, isLoading, dir, isRtl],
+  );
 
   if (!isLanguageLoaded && !hasLoadedAnyLanguage) {
     return (
@@ -119,12 +132,5 @@ export function TranslationProvider({
     );
   }
 
-  const dir = getLanguageDirection(activeLanguage);
-  const isRtl = isRtlLanguage(activeLanguage);
-
-  return (
-    <TranslationContext.Provider value={{ language: activeLanguage, t, isLoading, dir, isRtl }}>
-      {children}
-    </TranslationContext.Provider>
-  );
+  return <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>;
 }

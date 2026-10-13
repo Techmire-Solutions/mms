@@ -13,6 +13,11 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 // Override with MMS_BACKEND_PROXY when the backend runs on a non-default port.
 const backendProxyTarget = process.env.MMS_BACKEND_PROXY ?? "http://127.0.0.1:3000";
 
+// React Compiler is opt-in and experimental (`@vitejs/plugin-react` v6 `compiler`
+// option, powered by oxc-transform-react). Default-off keeps production builds
+// byte-identical; enable per-build with MMS_REACT_COMPILER=1.
+const reactCompilerEnabled = process.env.MMS_REACT_COMPILER === "1";
+
 // Shared banner for vendor-validation chunk — injected by both Rollup and Rolldown.
 // Disables Zod v4 JIT compilation globally to avoid boot-time cost in the browser.
 const chunkBanner = (chunk: { name: string }): string =>
@@ -239,7 +244,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    react(),
+    react({ compiler: reactCompilerEnabled }),
     compression({
       algorithm: "brotliCompress",
       threshold: 1024,
