@@ -35,6 +35,7 @@ const CONSUMER_DIRS = ["apps/backend/src", "apps/frontend/src", "e2e"];
 const BASELINE = {
   flatRootFiles: 0,
   unlistedSubpathImports: 0,
+  exportsTargetsResolve: 0,
 };
 
 const toRel = (p) => path.relative(ROOT, p).split(path.sep).join("/");
@@ -78,6 +79,30 @@ for (const dir of CONSUMER_DIRS) {
   }
 }
 
+// --- Norm 3: every package.json `exports` target maps to a real src file ----
+// Guards against a moved module leaving a dangling subpath export (CI builds a
+// clean dist/, so a stale local emit can hide it).
+const exportsTargetsResolve = [];
+{
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "packages/shared/package.json"), "utf8"));
+  const seen = new Set();
+  for (const [sub, value] of Object.entries(pkg.exports ?? {})) {
+    for (const target of typeof value === "string" ? [value] : Object.values(value)) {
+      if (typeof target !== "string" || !target.startsWith("./dist/")) continue;
+      const rel = target
+        .replace("./dist/", "")
+        .replace(/\.d\.ts$/, "")
+        .replace(/\.js$/, "");
+      if (seen.has(rel)) continue;
+      seen.add(rel);
+      const has = [".ts", ".tsx"].some((ext) =>
+        fs.existsSync(path.join(SHARED_SRC, `${rel}${ext}`)),
+      );
+      if (!has) exportsTargetsResolve.push(`exports["${sub}"] → ${target} (no src/${rel}.ts)`);
+    }
+  }
+}
+
 const results = [
   {
     name: "Files directly under packages/shared/src/ root (only index.ts allowed)",
@@ -92,6 +117,13 @@ const results = [
     count: unlistedSubpathImports.length,
     baseline: BASELINE.unlistedSubpathImports,
     sample: unlistedSubpathImports.slice(0, 8),
+  },
+  {
+    name: "package.json exports subpaths missing a matching src file",
+    norm: "packages/shared/package.json (exports contract)",
+    count: exportsTargetsResolve.length,
+    baseline: BASELINE.exportsTargetsResolve,
+    sample: exportsTargetsResolve.slice(0, 8),
   },
 ];
 

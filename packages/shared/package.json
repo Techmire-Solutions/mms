@@ -13,9 +13,9 @@
       "types": "./dist/index.d.ts"
     },
     "./tenantUtils": {
-      "import": "./dist/tenantUtils.js",
-      "default": "./dist/tenantUtils.js",
-      "types": "./dist/tenantUtils.d.ts"
+      "import": "./dist/auth/tenantUtils.js",
+      "default": "./dist/auth/tenantUtils.js",
+      "types": "./dist/auth/tenantUtils.d.ts"
     },
     "./translations/en": {
       "import": "./dist/i18n/appTranslationsEn.js",
