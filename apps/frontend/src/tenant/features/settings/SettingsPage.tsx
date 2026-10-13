@@ -66,10 +66,7 @@ export default function Settings(): React.JSX.Element {
   }));
 
   // Stable context identity — avoids re-rendering every settings section consumer.
-  const settingsTabValue = useMemo(
-    () => ({ activeTab: tab, setActiveTab: setTab }),
-    [tab, setTab],
-  );
+  const settingsTabValue = useMemo(() => ({ activeTab: tab, setActiveTab: setTab }), [tab, setTab]);
 
   return (
     <SettingsTabProvider value={settingsTabValue}>
