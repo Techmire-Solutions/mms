@@ -6,7 +6,7 @@ import {
   defineTenantBulkCollectionService,
   upsertWithBroadcast,
 } from "../../services/tenantBulkService.js";
-import { broadcastCollection } from "../../services/websocketService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import { getQuestionBankModulePreferencesForWorkspace } from "../../db/repositories/questionBankModulePreferencesRepository.js";
 import {
   type QuestionBankQuestion,

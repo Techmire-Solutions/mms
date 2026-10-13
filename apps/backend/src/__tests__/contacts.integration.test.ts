@@ -98,12 +98,12 @@ const mockSaveContactFieldConfig = vi.fn();
 const mockLoadContactPreferences = vi.fn();
 const mockSaveContactPreferences = vi.fn();
 
-vi.mock("../services/contactPreferencesService.js", () => ({
+vi.mock("../contacts/use-cases/contactPreferencesService.js", () => ({
   loadContactPreferences: (...args: unknown[]) => mockLoadContactPreferences(...args),
   saveContactPreferences: (...args: unknown[]) => mockSaveContactPreferences(...args),
 }));
 
-vi.mock("../services/contactSavedReportsService.js", () => ({
+vi.mock("../contacts/use-cases/contactSavedReportUseCases.js", () => ({
   listContactsSavedReports: (...args: unknown[]) => mockListContactsSavedReports(...args),
   createContactsSavedReport: (...args: unknown[]) => mockCreateContactsSavedReport(...args),
   deleteContactsSavedReport: (...args: unknown[]) => mockDeleteContactsSavedReport(...args),
@@ -117,7 +117,7 @@ vi.mock("../services/userColumnPreferencesService.js", () => ({
     mockSetUserColumnPreferencesForModule(...args),
 }));
 
-vi.mock("../services/contactConfigService.js", () => ({
+vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
   loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
   saveContactFieldConfig: (...args: unknown[]) => mockSaveContactFieldConfig(...args),
 }));
@@ -125,7 +125,7 @@ vi.mock("../services/contactConfigService.js", () => ({
 const mockLoadContactLookupsMap = vi.fn();
 const mockReplaceContactLookupKind = vi.fn();
 
-vi.mock("../services/contactLookupsService.js", () => ({
+vi.mock("../contacts/use-cases/contactLookupsService.js", () => ({
   loadContactLookupsMap: (...args: unknown[]) => mockLoadContactLookupsMap(...args),
   loadContactLookupKind: vi.fn(),
   replaceContactLookupKind: (...args: unknown[]) => mockReplaceContactLookupKind(...args),
@@ -135,7 +135,7 @@ vi.mock("../services/auth/userService.js", () => ({
   getLinkedContactId: (...args: unknown[]) => mockGetLinkedContactId(...args),
 }));
 
-vi.mock("../services/contactGoogleSyncService.js", () => ({
+vi.mock("../contacts/use-cases/contactGoogleSyncUseCases.js", () => ({
   getContactGoogleSyncConfig: (...args: unknown[]) => mockGetContactGoogleSyncConfig(...args),
   setContactGoogleSyncConfig: vi.fn(),
   clearContactGoogleSyncConfig: vi.fn(),

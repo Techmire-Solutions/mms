@@ -31,7 +31,7 @@ import {
   countContactDuplicateMatches,
   loadDuplicatePairsPage,
   runContactsDuplicateScan,
-} from "../services/contactDuplicateScanService.js";
+} from "../contacts/use-cases/contactDuplicateScanUseCases.js";
 
 function contact(id: string, name: string, phone?: string, email?: string): Contact {
   return {

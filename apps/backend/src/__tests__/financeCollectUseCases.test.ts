@@ -42,7 +42,7 @@ vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => mockLedgerP
 vi.mock("../services/financePreferencesService.js", () => mockPrefs);
 vi.mock("../services/contactService.js", () => mockContacts);
 vi.mock("../finance/use-cases/financeUseCases.js", () => mockFinanceUseCases);
-vi.mock("../services/websocketService.js", () => mockWs);
+vi.mock("../lib/livePush.js", () => mockWs);
 
 import {
   collectOverdueInvoices,

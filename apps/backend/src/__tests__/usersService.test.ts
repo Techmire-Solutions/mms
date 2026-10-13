@@ -13,10 +13,10 @@ import {
   deleteUserById,
   upsertWorkspaceUsers,
 } from "../services/usersService.js";
-import { broadcastCollection } from "../services/websocketService.js";
+import { broadcastCollection } from "../lib/livePush.js";
 import { assertPasswordMeetsPolicy } from "../services/globalSettingsService.js";
 import { deleteRefreshTokensForUser } from "../services/auth/authArtifactService.js";
-import { revokeAllUserSessions } from "../services/session.service.js";
+import { revokeAllUserSessions } from "../services/authSessionService.js";
 
 const { bulkSaveActivityLogs, replaceActivityLogsForWorkspace } = vi.hoisted(() => ({
   bulkSaveActivityLogs: vi.fn(),
@@ -32,7 +32,7 @@ vi.mock("../db/repositories/logsRepository.js", () => ({
   replaceActivityLogsForWorkspace,
 }));
 
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),
 }));
@@ -59,7 +59,7 @@ vi.mock("../services/globalSettingsService.js", () => ({
   assertPasswordMeetsPolicy: vi.fn(),
 }));
 
-vi.mock("../services/session.service.js", () => ({
+vi.mock("../services/authSessionService.js", () => ({
   revokeAllUserSessions: vi.fn(),
 }));
 

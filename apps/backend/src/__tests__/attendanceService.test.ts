@@ -18,7 +18,7 @@ vi.mock("../db/repositories/attendanceRepository.js", () => ({
   bulkRestoreAttendanceRecords: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
 }));
 
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),
 }));

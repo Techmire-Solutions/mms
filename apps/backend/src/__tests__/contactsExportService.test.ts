@@ -14,7 +14,7 @@ vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
   loadContactFieldConfig: () => mockLoadContactFieldConfig(),
 }));
 
-import { buildContactsCsvExport } from "../services/contactsExportService.js";
+import { buildContactsCsvExport } from "../contacts/use-cases/contactExportUseCases.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 
 function fakeContact(id: string, overrides: Partial<Contact> = {}): Contact {

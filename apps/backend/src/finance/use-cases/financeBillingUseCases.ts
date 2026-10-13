@@ -30,7 +30,7 @@ export async function upsertFeeStructure(input: FeeStructureInsert): Promise<Fee
     domain: "finance",
     key: "fee-structures",
   });
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_fee_structures");
   return record;
 }
@@ -43,6 +43,6 @@ export async function removeFeeStructure(id: string): Promise<void> {
     domain: "finance",
     key: "fee-structures",
   });
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_fee_structures");
 }

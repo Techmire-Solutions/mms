@@ -26,7 +26,7 @@ import { closeFiscalYearForTenant } from "./accountingPeriodClose.js";
 import { tryPostOpeningJournal } from "../ledgerPosting/ledgerPostingService.js";
 
 async function broadcast(tenant: string, collection: string): Promise<void> {
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", collection);
 }
 

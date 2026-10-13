@@ -12,7 +12,7 @@ const mockWs = vi.hoisted(() => ({
 }));
 
 vi.mock("../db/repositories/financeBillingRepository.js", () => mockRepo);
-vi.mock("../services/websocketService.js", () => mockWs);
+vi.mock("../lib/livePush.js", () => mockWs);
 
 import {
   loadFeeStructures,

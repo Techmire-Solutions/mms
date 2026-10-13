@@ -2,7 +2,7 @@ import type { MessagingRepository } from "../repository/messagingRepository.js";
 import { messagingRepository } from "../repository/messagingRepositoryAdapter.js";
 import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
-import { broadcastCollection } from "../../services/websocketService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import {
   loadContactsByIdsForTenant,
   loadContactsPageForTenant,

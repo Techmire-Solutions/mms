@@ -1,3 +1,8 @@
+/**
+ * Reserved module — schema only, no application surface (see `inventory.ts`).
+ * No repository/route/use-case reads these tables; do not add CRUD without
+ * product sign-off — removal needs a forward-only `DROP TABLE` migration.
+ */
 import {
   pgTable,
   text,

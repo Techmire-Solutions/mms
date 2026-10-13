@@ -78,7 +78,7 @@ vi.mock("../lib/logger.js", () => ({
   },
 }));
 
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: vi.fn(),
 }));
 

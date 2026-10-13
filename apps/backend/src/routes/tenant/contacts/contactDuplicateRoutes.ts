@@ -3,7 +3,7 @@ import type { Contact, User } from "@mms/shared";
 import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
 import { sendDatabaseError } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
-import { countContactDuplicateMatches } from "../../../services/contactDuplicateScanService.js";
+import { countContactDuplicateMatches } from "../../../contacts/use-cases/contactDuplicateScanUseCases.js";
 import { contactUseCases } from "../../../contacts/use-cases/contactUseCases.js";
 import { prepareContactRecord } from "../../../services/contactService.js";
 import {
@@ -11,7 +11,7 @@ import {
   contactsDuplicatesQuerySchema,
   contactsDuplicateScanBodySchema,
 } from "@mms/shared";
-import { loadContactFieldConfig } from "../../../services/contactConfigService.js";
+import { loadContactFieldConfig } from "../../../contacts/use-cases/contactConfigService.js";
 import { collectContactWriteExtraFieldKeys, sanitizeContactsForViewer } from "@mms/shared";
 import {
   enqueueContactBackgroundJob,

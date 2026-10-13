@@ -35,7 +35,7 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   takeAuthArtifact: vi.fn(),
 }));
 
-vi.mock("../services/contactConfigService.js", () => ({
+vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
   loadContactFieldConfig: vi.fn().mockResolvedValue(null),
   saveContactFieldConfig: vi.fn().mockResolvedValue(undefined),
 }));
@@ -500,7 +500,7 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
     expect(meBefore.statusCode).toBe(200);
 
     // Revoke sessions when teacher is soft-deleted
-    const { revokeUserSessionKeys } = await import("../services/session.service.js");
+    const { revokeUserSessionKeys } = await import("../services/authSessionService.js");
     await revokeUserSessionKeys(targetTeacherId);
 
     const sessionAfter = await redisGet(sessionKey);

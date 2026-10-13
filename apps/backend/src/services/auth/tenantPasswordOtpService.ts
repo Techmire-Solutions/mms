@@ -19,7 +19,7 @@ import { activateInvitedTenantUserRow } from "../../db/repositories/tenantUserRe
 import { findUserByLoginEmailAndWorkspace, getPublicUserById } from "./userService.js";
 import { establishSession, type AuthResult } from "./authService.js";
 import { sendTenantEmail } from "../email/emailService.js";
-import { broadcastCollection } from "../websocketService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import { usersRepository } from "../../users/repository/usersRepositoryAdapter.js";
 import { logger } from "../../lib/logger.js";
 

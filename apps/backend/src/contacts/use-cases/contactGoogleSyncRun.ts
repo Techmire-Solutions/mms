@@ -6,7 +6,7 @@ import {
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
-import { broadcastCollection } from "../../services/websocketService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import {
   loadContactRuntimeDefaults,
   loadExistingNormalizedContactNames,

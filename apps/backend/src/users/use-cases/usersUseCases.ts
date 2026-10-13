@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import type { UsersRepository } from "../repository/usersRepository.js";
 import { usersRepository } from "../repository/usersRepositoryAdapter.js";
 import { getRequestTenant, requireTenant } from "../../lib/tenantContext.js";
-import { broadcastCollection } from "../../services/websocketService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import { getHydratedUsers, saveUsers } from "../../services/auth/userService.js";
 import { invalidateTenantRbac } from "../../services/rbacService.js";
 import { getRawUsers, type PersistedUser } from "../../services/auth/userServiceShared.js";

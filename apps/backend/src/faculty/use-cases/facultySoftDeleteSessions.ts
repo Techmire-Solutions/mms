@@ -6,7 +6,7 @@ import type { Faculty } from "@mms/shared";
 export async function revokeFacultySessions(tenant: string, members: Faculty[]): Promise<void> {
   try {
     const { revokeAllUserSessions, revokeUserSessionKeys } =
-      await import("../../services/session.service.js");
+      await import("../../services/authSessionService.js");
     const { listAllTenantUsersByWorkspace } =
       await import("../../db/repositories/tenantUserRepository.js");
 

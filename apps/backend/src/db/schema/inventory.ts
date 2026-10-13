@@ -1,3 +1,11 @@
+/**
+ * Reserved module — schema only, no application surface.
+ *
+ * These tables are declared and migrated, but no repository, route, or use-case
+ * reads or writes them: they are reachable only via `db/schema/index.ts` and the
+ * platform ERD registry. Do not add CRUD without product sign-off; removal needs
+ * a forward-only `DROP TABLE` migration and is tracked as separate backlog.
+ */
 import {
   pgTable,
   text,

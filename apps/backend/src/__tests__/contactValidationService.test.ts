@@ -12,7 +12,7 @@ vi.mock("../lib/zodRequest.js", () => ({
   validateOrThrow: (...args: unknown[]) => mockValidateOrThrow(...args),
 }));
 
-import { validateContactDynamic } from "../services/contactValidationService.js";
+import { validateContactDynamic } from "../contacts/use-cases/contactValidationUseCases.js";
 
 function makeFieldConfig(version = 1): FieldConfig {
   return {

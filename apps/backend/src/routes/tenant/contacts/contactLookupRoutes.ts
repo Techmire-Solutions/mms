@@ -13,8 +13,8 @@ import { canReadContacts } from "../../../services/rbacService.js";
 import {
   loadContactLookupsMap,
   replaceContactLookupKind,
-} from "../../../services/contactLookupsService.js";
-import { mirrorRelationshipLookupsFromPreferences } from "../../../services/contactPreferencesService.js";
+} from "../../../contacts/use-cases/contactLookupsService.js";
+import { mirrorRelationshipLookupsFromPreferences } from "../../../contacts/use-cases/contactPreferencesService.js";
 import { auditContact } from "./contactRouteHelpers.js";
 
 /** Contacts Setup lookup option lists (typed `contact_lookups`). */

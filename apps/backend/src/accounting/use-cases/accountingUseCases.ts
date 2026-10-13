@@ -605,7 +605,7 @@ export function createAccountingUseCases(
           deletionReason,
         );
         if (result.succeeded > 0) {
-          const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+          const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
           broadcastTenantUpdate(tenant, "collection", "accounting_entries");
         }
         return result;

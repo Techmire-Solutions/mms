@@ -82,7 +82,7 @@ export async function collectOverdueInvoices(
     }
     return { markedOverdue, lateFeesApplied };
   });
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   broadcastTenantUpdate(tenant, "collection", "finance_metrics");
   return result;
@@ -137,7 +137,7 @@ export async function remindOpenInvoices(
     remindedIds.push(invoice.id);
   }
   await markInvoicesReminded(tenant, remindedIds);
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   return {
     reminded: remindedIds.length,
@@ -168,7 +168,7 @@ export async function cancelInvoice(invoiceId: string): Promise<Invoice> {
   // Late fees post under their own source key, so reversing the invoice entry
   // alone left the fee on the books.
   await tryPostLateFeeReversalJournal(tenant, cancelled);
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   return cancelled;
 }
@@ -206,7 +206,7 @@ export async function createCreditNote(input: CreditNoteInsert): Promise<CreditN
     await tryPostCreditNoteJournal(tenant, invoice, created.id, parsed.amount);
     return created;
   });
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   return note;
 }

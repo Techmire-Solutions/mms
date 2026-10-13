@@ -22,7 +22,7 @@ import {
   sanitizeOneForUser,
 } from "./contactRouteHelpers.js";
 import { contactIdentityMatchBodySchema, collectContactWriteExtraFieldKeys } from "@mms/shared";
-import { loadContactFieldConfig } from "../../../services/contactConfigService.js";
+import { loadContactFieldConfig } from "../../../contacts/use-cases/contactConfigService.js";
 
 /** Contact CSV export queue, merge, and audit logging routes. */
 export const contactAuditExportRoutes: FastifyPluginAsync = async (fastify) => {

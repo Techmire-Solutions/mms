@@ -6,7 +6,7 @@ import {
   type PlatformAccessTokenPayload,
 } from "../../services/platform/platformAuthService.js";
 import { PLATFORM_ACCESS_COOKIE } from "../../services/platform/platformCookieService.js";
-import { revokeToken } from "../../services/session.service.js";
+import { revokeToken } from "../../services/authSessionService.js";
 import {
   verifyPlatformTwoFactorChallenge,
   resendPlatformTwoFactorChallenge,

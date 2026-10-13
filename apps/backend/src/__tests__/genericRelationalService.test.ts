@@ -3,7 +3,7 @@ import { z } from "zod";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { createGenericRelationalService } from "../services/genericRelationalService.js";
 
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: vi.fn(),
 }));
 

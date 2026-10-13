@@ -130,7 +130,7 @@ export function createGenericRelationalService<
     const parsed = schema ? (schema.parse(prepared) as T) : prepared;
     const normalized = normalizeFn ? normalizeFn(parsed) : parsed;
     await repo.save(tenant, normalized);
-    const { broadcastTenantUpdate } = await import("./websocketService.js");
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
     broadcastTenantUpdate(tenant, "collection", websocketCollection);
     return normalized;
   }
@@ -148,7 +148,7 @@ export function createGenericRelationalService<
     const parsed = schema ? (schema.parse(withId) as T) : withId;
     const normalized = normalizeFn ? normalizeFn(parsed) : parsed;
     await repo.save(tenant, normalized);
-    const { broadcastTenantUpdate } = await import("./websocketService.js");
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
     broadcastTenantUpdate(tenant, "collection", websocketCollection);
     return normalized;
   }
@@ -164,7 +164,7 @@ export function createGenericRelationalService<
     if (repo.deleteById) {
       const ok = await repo.deleteById(tenant, id, deletedBy, deletionReason);
       if (ok) {
-        const { broadcastTenantUpdate } = await import("./websocketService.js");
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
         broadcastTenantUpdate(tenant, "collection", websocketCollection);
         return true;
       }
@@ -178,7 +178,7 @@ export function createGenericRelationalService<
     if (repo.bulkDelete) {
       const res = await repo.bulkDelete(tenant, [id], deletedBy, deletionReason);
       if (res.succeeded === 1) {
-        const { broadcastTenantUpdate } = await import("./websocketService.js");
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
         broadcastTenantUpdate(tenant, "collection", websocketCollection);
         return true;
       }
@@ -203,7 +203,7 @@ export function createGenericRelationalService<
       deletionReason: deletionReason || undefined,
     } as T;
     await repo.save(tenant, updated);
-    const { broadcastTenantUpdate } = await import("./websocketService.js");
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
     broadcastTenantUpdate(tenant, "collection", websocketCollection);
     return true;
   }
@@ -215,7 +215,7 @@ export function createGenericRelationalService<
     if (repo.restoreById) {
       const ok = await repo.restoreById(tenant, id, userId);
       if (ok) {
-        const { broadcastTenantUpdate } = await import("./websocketService.js");
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
         broadcastTenantUpdate(tenant, "collection", websocketCollection);
         return true;
       }
@@ -229,7 +229,7 @@ export function createGenericRelationalService<
     if (repo.bulkRestore) {
       const res = await repo.bulkRestore(tenant, [id], userId);
       if (res.succeeded === 1) {
-        const { broadcastTenantUpdate } = await import("./websocketService.js");
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
         broadcastTenantUpdate(tenant, "collection", websocketCollection);
         return true;
       }
@@ -270,7 +270,7 @@ export function createGenericRelationalService<
       }
       throw err;
     }
-    const { broadcastTenantUpdate } = await import("./websocketService.js");
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
     broadcastTenantUpdate(tenant, "collection", websocketCollection);
     return true;
   }
@@ -286,7 +286,7 @@ export function createGenericRelationalService<
     if (repo.bulkDelete && tenant) {
       const result = await repo.bulkDelete(tenant, uniqueIds, deletedBy, deletionReason);
       if (result.succeeded > 0) {
-        const { broadcastTenantUpdate } = await import("./websocketService.js");
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
         broadcastTenantUpdate(tenant, "collection", websocketCollection);
       }
       return result;
@@ -315,7 +315,7 @@ export function createGenericRelationalService<
     if (repo.bulkRestore && tenant) {
       const result = await repo.bulkRestore(tenant, uniqueIds, userId);
       if (result.succeeded > 0) {
-        const { broadcastTenantUpdate } = await import("./websocketService.js");
+        const { broadcastTenantUpdate } = await import("../lib/livePush.js");
         broadcastTenantUpdate(tenant, "collection", websocketCollection);
       }
       return result;

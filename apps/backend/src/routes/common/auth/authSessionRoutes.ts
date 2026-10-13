@@ -16,7 +16,7 @@ import {
 } from "../../../services/auth/authCookieService.js";
 import { authenticateTenant } from "../../../middleware/authenticate.js";
 import { consumeAuthArtifact } from "../../../services/auth/authArtifactService.js";
-import { revokeAllUserSessions, revokeToken } from "../../../services/session.service.js";
+import { revokeAllUserSessions, revokeToken } from "../../../services/authSessionService.js";
 import { getJwtExpiresIn, loadGlobalSettings } from "../../../services/globalSettingsService.js";
 import { tenantSessionScope, touchSession } from "../../../services/sessionClockService.js";
 import { usersRepository } from "../../../users/repository/usersRepositoryAdapter.js";

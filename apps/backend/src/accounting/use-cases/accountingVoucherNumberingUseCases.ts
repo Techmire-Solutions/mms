@@ -33,7 +33,7 @@ export async function upsertVoucherNumbering(
 ): Promise<VoucherNumbering> {
   const tenant = requireTenant();
   await saveVoucherNumbering(tenant, voucherNumberingUpdateSchema.parse(input));
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "accounting_voucher_numbering");
   return loadVoucherNumbering();
 }

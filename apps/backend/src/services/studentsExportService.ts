@@ -25,7 +25,7 @@ import {
   type ModuleExportResult,
 } from "../lib/createModuleExportService.js";
 import { normalizeIncludeDeletedFlag } from "../lib/csvExportStreamFactory.js";
-import { loadStudentFieldConfig } from "./studentConfigService.js";
+import { loadStudentFieldConfig } from "../students/use-cases/studentConfigService.js";
 import { loadStudentsByIds, loadStudentsPage } from "../students/use-cases/studentUseCases.js";
 
 export type StudentsExportQueryInput = ModuleExportQueryInput<StudentsListQuery>;

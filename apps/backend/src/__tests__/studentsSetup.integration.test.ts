@@ -37,13 +37,13 @@ const mockSaveStudentFieldConfig = vi.fn();
 const mockLoadStudentModulePreferences = vi.fn();
 const mockSaveStudentModulePreferences = vi.fn();
 
-vi.mock("../services/studentConfigService.js", () => ({
+vi.mock("../students/use-cases/studentConfigService.js", () => ({
   loadStudentFieldConfig: (...args: unknown[]) => mockLoadStudentFieldConfig(...args),
   saveStudentFieldConfig: (...args: unknown[]) => mockSaveStudentFieldConfig(...args),
   loadStudentsSettingsCombined: (...args: unknown[]) => mockLoadStudentFieldConfig(...args),
 }));
 
-vi.mock("../services/studentPreferencesService.js", () => ({
+vi.mock("../students/use-cases/studentPreferencesService.js", () => ({
   loadStudentModulePreferences: (...args: unknown[]) => mockLoadStudentModulePreferences(...args),
   saveStudentModulePreferences: (...args: unknown[]) => mockSaveStudentModulePreferences(...args),
 }));
@@ -51,7 +51,7 @@ vi.mock("../services/studentPreferencesService.js", () => ({
 const mockLoadStudentLookupsMap = vi.fn();
 const mockReplaceStudentLookupKind = vi.fn();
 
-vi.mock("../services/studentLookupsService.js", () => ({
+vi.mock("../students/use-cases/studentLookupsService.js", () => ({
   loadStudentLookupsMap: (...args: unknown[]) => mockLoadStudentLookupsMap(...args),
   replaceStudentLookupKind: (...args: unknown[]) => mockReplaceStudentLookupKind(...args),
 }));

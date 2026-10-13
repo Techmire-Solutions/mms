@@ -23,7 +23,7 @@ import { saveObject } from "../../db/database.js";
 import { createTwoFactorChallenge, issueRefreshToken } from "./twoFactorService.js";
 import { setAuthCookies } from "./authCookieService.js";
 import { clearPlatformAccessCookie } from "../platform/platformCookieService.js";
-import { unblockTenant } from "../session.service.js";
+import { unblockTenant } from "../authSessionService.js";
 
 /** Public user shape re-exported for route usage. */
 export type { PublicUser as User };

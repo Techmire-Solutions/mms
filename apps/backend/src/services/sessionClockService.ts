@@ -1,5 +1,5 @@
 import { redisDel, redisGet, redisSet } from "../lib/redis.js";
-import { revokeToken } from "./session.service.js";
+import { revokeToken } from "./authSessionService.js";
 
 const SESSION_ACTIVITY_PREFIX = "session:idle:";
 const SESSION_CLOCK_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days: retain clock record across idle windows until explicit logout/expiry

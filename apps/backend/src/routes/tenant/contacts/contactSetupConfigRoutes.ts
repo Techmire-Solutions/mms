@@ -10,11 +10,11 @@ import { canReadContacts } from "../../../services/rbacService.js";
 import {
   loadContactFieldConfig,
   saveContactFieldConfig,
-} from "../../../services/contactConfigService.js";
+} from "../../../contacts/use-cases/contactConfigService.js";
 import {
   loadContactPreferences,
   saveContactPreferences,
-} from "../../../services/contactPreferencesService.js";
+} from "../../../contacts/use-cases/contactPreferencesService.js";
 import { auditContact } from "./contactRouteHelpers.js";
 
 /** Contacts Setup field-config + preferences (typed FORCE-RLS tables). */

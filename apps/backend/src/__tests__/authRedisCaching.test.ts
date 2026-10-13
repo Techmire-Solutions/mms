@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { redisGet, redisSet, redisDelPattern } from "../lib/redis.js";
-import { revokeUserSessionKeys } from "../services/session.service.js";
+import { revokeUserSessionKeys } from "../services/authSessionService.js";
 import { getWorkspaceBySubdomain, invalidateWorkspaceCache } from "../services/workspaceService.js";
 import {
   loadGlobalSettings,

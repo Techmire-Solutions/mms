@@ -283,7 +283,7 @@ vi.mock("../services/auth/userServiceList.js", () => ({
   getLinkedContactId: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),
 }));
@@ -292,7 +292,7 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   deleteRefreshTokensForUser: vi.fn(),
 }));
 
-vi.mock("../services/session.service.js", () => ({
+vi.mock("../services/authSessionService.js", () => ({
   revokeAllUserSessions: vi.fn(),
 }));
 

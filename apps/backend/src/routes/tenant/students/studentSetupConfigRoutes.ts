@@ -10,11 +10,11 @@ import { canReadCollection } from "../../../services/rbacService.js";
 import {
   loadStudentFieldConfig,
   saveStudentFieldConfig,
-} from "../../../services/studentConfigService.js";
+} from "../../../students/use-cases/studentConfigService.js";
 import {
   loadStudentModulePreferences,
   saveStudentModulePreferences,
-} from "../../../services/studentPreferencesService.js";
+} from "../../../students/use-cases/studentPreferencesService.js";
 import { auditStudent } from "./studentRouteHelpers.js";
 
 /** Students Setup field-config + preferences (typed FORCE-RLS tables). */
