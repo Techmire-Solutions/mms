@@ -34,6 +34,11 @@ export function DataTable<TData extends { id: string | number }>({
   card,
   primaryAction,
   toolbarExtras,
+  statusFilter,
+  dateRange,
+  trashToggle,
+  filterChips,
+  isSearching,
   emptyState,
   defaultViewMode,
   columnLayout,
@@ -96,6 +101,11 @@ export function DataTable<TData extends { id: string | number }>({
         hasActiveFilters={state.hasActiveFilters}
         onClearFilters={state.clearFilters}
         clearFiltersLabel={t("common.clearFilters")}
+        isSearching={isSearching}
+        statusFilter={statusFilter}
+        dateRange={dateRange}
+        trashToggle={trashToggle}
+        filterChips={filterChips}
         filterButton={
           filters?.length ? (
             <DataTableFiltersMenu

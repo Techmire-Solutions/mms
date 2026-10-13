@@ -1,5 +1,5 @@
 import type React from "react";
-import type { WorkBatchTableProps } from "@/components/common/work";
+import type { WorkBatchTableProps, WorkTaskToolbarProps } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 import type { TableCellAlign, TableCellVariant } from "@/components/ui/table";
@@ -95,6 +95,16 @@ export interface DataTableProps<
   primaryAction?: React.ReactNode;
   /** Extra toolbar controls rendered before the filter menu. */
   toolbarExtras?: React.ReactNode;
+  /** Work-tier status-pill filter (optional). */
+  statusFilter?: WorkTaskToolbarProps["statusFilter"];
+  /** Work-tier date-range controls (optional). */
+  dateRange?: WorkTaskToolbarProps["dateRange"];
+  /** Work-tier active/trash toggle (optional). */
+  trashToggle?: WorkTaskToolbarProps["trashToggle"];
+  /** Extra filter chips rendered in the toolbar (optional). */
+  filterChips?: WorkTaskToolbarProps["filterChips"];
+  /** Whether a background search is in flight (toolbar spinner). */
+  isSearching?: boolean;
   /** Shown when the source data is empty (not when search/filters exclude everything). */
   emptyState?: React.ReactNode;
   /** Initial view; defaults to table at md+ and cards below. */

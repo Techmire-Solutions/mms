@@ -6,7 +6,7 @@ import { PlatformAdminsList } from "./PlatformAdminsList";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
-    t: (key: string, params?: Record<string, string>) => {
+    t: (key: string, _params?: Record<string, string>) => {
       const map: Record<string, string> = {
         "platform.manageAdmins": "Manage Operators",
         "platform.roleAll": "All",

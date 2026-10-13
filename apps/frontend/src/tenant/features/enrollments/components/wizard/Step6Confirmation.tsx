@@ -32,8 +32,8 @@ export function Step6Confirmation({
   feeResult,
   notes,
   onNotesChange,
-  customFieldValues,
-  onCustomFieldChange,
+  customFieldValues: _customFieldValues,
+  onCustomFieldChange: _onCustomFieldChange,
 }: Step6ConfirmationProps): React.JSX.Element {
   const { t } = useTranslation();
   const age = student ? calcAge(student.dob) : null;

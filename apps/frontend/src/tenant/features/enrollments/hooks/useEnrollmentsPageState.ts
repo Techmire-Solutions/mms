@@ -45,10 +45,7 @@ export function useEnrollmentsPageState() {
   const directoryFilters = useEnrollmentsDirectoryFilters();
   const {
     listPage,
-    setListPage,
     showDeleted,
-    setShowDeleted,
-    search,
     setSearch,
     debouncedSearch,
     statusFilter,
@@ -91,6 +88,7 @@ export function useEnrollmentsPageState() {
 
   useEffect(() => {
     selection.setSelectedIds([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selection.setSelectedIds is a stable useState setter; depending on the whole `selection` object would re-run this clear on every render.
   }, [debouncedSearch, statusFilter, sessionFilter, showDeleted, selection.setSelectedIds]);
 
   const { logExportAudit } = useEnrollmentMutations();

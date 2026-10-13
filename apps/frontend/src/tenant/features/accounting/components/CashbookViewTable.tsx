@@ -136,7 +136,7 @@ export function CashbookViewTable({
     : columns;
   const footerRow: WorkBatchTableFooterRow = {
     cells: buildCashbookFooterCells(visibleColumns.map((column) => column.id)).map(
-      (cell, index) => ({
+      (cell, _index) => ({
         colSpan: cell.span,
         className:
           cell.kind === "label" || cell.kind === "blank"

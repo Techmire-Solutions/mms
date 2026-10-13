@@ -215,10 +215,8 @@ describe("AuthContext", () => {
 
   it("does not repeatedly call /api/auth/me on re-renders when a user is already persisted", async () => {
     localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(mockUser));
-    let renderCount = 0;
     function Consumer() {
       const { user } = useAuth();
-      renderCount++;
       return <div>{user?.name}</div>;
     }
 

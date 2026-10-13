@@ -9,7 +9,7 @@ import {
 } from "@mms/shared";
 
 export async function fetchDashboardPreferences(
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<DashboardPreferences | null> {
   const res = await apiContract.dashboard.getPreferences({
     query: {},
@@ -22,7 +22,7 @@ export async function fetchDashboardPreferences(
 
 export async function saveDashboardPreferencesAsync(
   prefs: DashboardPreferencesPutBody,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<DashboardPreferences> {
   const res = await apiContract.dashboard.putPreferences({
     body: prefs,
@@ -33,7 +33,7 @@ export async function saveDashboardPreferencesAsync(
   throw new Error("Failed to save dashboard preferences");
 }
 
-export async function fetchDashboardWidgets(signal?: AbortSignal): Promise<DashboardWidgetDto[]> {
+export async function fetchDashboardWidgets(_signal?: AbortSignal): Promise<DashboardWidgetDto[]> {
   const res = await apiContract.dashboard.getWidgets({ query: {} });
   if (res.status === 200) {
     return (res.body as { widgets?: DashboardWidgetDto[] }).widgets ?? [];
@@ -43,7 +43,7 @@ export async function fetchDashboardWidgets(signal?: AbortSignal): Promise<Dashb
 
 export async function saveDashboardWidgetsAsync(
   widgets: DashboardWidgetsPutBody,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<DashboardWidgetDto[]> {
   const sanitizedWidgets = normalizeDashboardWidgets(widgets);
   const res = await apiContract.dashboard.putWidgets({
@@ -55,7 +55,7 @@ export async function saveDashboardWidgetsAsync(
   throw new Error("Failed to save dashboard widgets");
 }
 
-export async function deleteDashboardWidgetAsync(id: string, signal?: AbortSignal): Promise<void> {
+export async function deleteDashboardWidgetAsync(id: string, _signal?: AbortSignal): Promise<void> {
   await apiContract.dashboard.deleteWidget({
     params: { id },
     body: {},
@@ -64,7 +64,7 @@ export async function deleteDashboardWidgetAsync(id: string, signal?: AbortSigna
 
 export async function reorderDashboardWidgetsAsync(
   order: Array<{ id: string; sortOrder: number }>,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<void> {
   const res = await apiContract.dashboard.reorderWidgets({
     body: { order },

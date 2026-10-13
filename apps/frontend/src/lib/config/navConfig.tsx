@@ -1,26 +1,11 @@
-import {
-  LayoutDashboard,
-  Users,
-  MessageSquare,
-  GraduationCap,
-  ClipboardList,
-  Calendar,
-  UserCheck,
-  DollarSign,
-  Star,
-  FileText,
-  Library,
-  Settings,
-  UserCog,
-  Scale,
-  TrendingUp,
-  BookOpen,
-  School,
-  CheckSquare,
-  type LucideIcon,
-} from "lucide-react";
+import { BookOpen, type LucideIcon } from "lucide-react";
 import type { AppTranslationKey } from "@mms/shared";
-import { ROUTES } from "@/lib/config/routes";
+import {
+  ACADEMICS_GROUP_ORDER,
+  TENANT_APP_ENTRIES,
+  type TenantAppEntry,
+  type TenantNavMeta,
+} from "@/lib/routing/moduleRegistry";
 
 export interface NavSubItem {
   labelKey: AppTranslationKey;
@@ -35,97 +20,41 @@ export interface NavItem {
   subItems?: NavSubItem[];
 }
 
-/** Primary sidebar / mobile navigation structure; access comes from `TENANT_APP_ROUTE_ACCESS`. */
-export const NAV_ITEMS: NavItem[] = [
-  {
-    labelKey: "nav.dashboard",
-    icon: LayoutDashboard,
-    path: ROUTES.home,
-  },
-  {
-    labelKey: "nav.contacts",
-    icon: Users,
-    path: ROUTES.contacts,
-  },
-  {
-    labelKey: "nav.faculty",
-    icon: School,
-    path: ROUTES.faculty,
-  },
-  {
-    labelKey: "nav.messaging",
-    icon: MessageSquare,
-    path: ROUTES.messaging,
-  },
-  {
-    labelKey: "nav.tasks",
-    icon: CheckSquare,
-    path: ROUTES.tasks,
-  },
-  {
-    labelKey: "nav.academics",
-    icon: BookOpen,
-    subItems: [
-      {
-        labelKey: "nav.students",
-        icon: GraduationCap,
-        path: ROUTES.students,
-      },
-      {
-        labelKey: "nav.sessions",
-        icon: Calendar,
-        path: ROUTES.sessions,
-      },
-      {
-        labelKey: "nav.enrollments",
-        icon: ClipboardList,
-        path: ROUTES.enrollments,
-      },
-      {
-        labelKey: "nav.attendance",
-        icon: UserCheck,
-        path: ROUTES.attendance,
-      },
-      {
-        labelKey: "nav.hasanatCards",
-        icon: Star,
-        path: ROUTES.hasanatCards,
-      },
-      {
-        labelKey: "nav.examinations",
-        icon: FileText,
-        path: ROUTES.examinations,
-      },
-      {
-        labelKey: "nav.questionBank",
-        icon: Library,
-        path: ROUTES.questionBank,
-      },
-    ],
-  },
-  {
-    labelKey: "nav.finance",
-    icon: DollarSign,
-    path: ROUTES.finance,
-  },
-  {
-    labelKey: "nav.accounting",
-    icon: TrendingUp,
-    path: ROUTES.accounting,
-  },
-  {
-    labelKey: "nav.obligations",
-    icon: Scale,
-    path: ROUTES.obligations,
-  },
-  {
-    labelKey: "nav.users",
-    icon: UserCog,
-    path: ROUTES.users,
-  },
-  {
-    labelKey: "nav.settings",
-    icon: Settings,
-    path: ROUTES.settings,
-  },
-];
+type NavEntry = TenantAppEntry & { nav: TenantNavMeta };
+
+const withNav = TENANT_APP_ENTRIES.filter((entry): entry is NavEntry => Boolean(entry.nav));
+
+const toNavItem = (entry: NavEntry): NavItem => ({
+  labelKey: entry.nav.labelKey,
+  icon: entry.nav.icon,
+  path: entry.path,
+});
+
+const toSubItem = (entry: NavEntry): NavSubItem => ({
+  labelKey: entry.nav.labelKey,
+  icon: entry.nav.icon,
+  path: entry.path,
+});
+
+/**
+ * Primary sidebar / mobile navigation structure — derived from the module
+ * registry. Access filtering happens downstream (`useSidebarNav`).
+ */
+export const NAV_ITEMS: NavItem[] = (() => {
+  const academics = withNav
+    .filter((entry) => entry.nav.group === "academics")
+    .sort((a, b) => a.nav.order - b.nav.order)
+    .map(toSubItem);
+
+  const nodes: { order: number; item: NavItem }[] = [
+    ...withNav
+      .filter((entry) => !entry.nav.group)
+      .map((entry) => ({ order: entry.nav.order, item: toNavItem(entry) })),
+    {
+      order: ACADEMICS_GROUP_ORDER,
+      item: { labelKey: "nav.academics", icon: BookOpen, subItems: academics },
+    },
+  ];
+
+  return nodes.sort((a, b) => a.order - b.order).map((node) => node.item);
+})();

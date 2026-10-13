@@ -18,7 +18,7 @@ export interface FinancePreferencesSectionProps {
 }
 
 export function FinancePreferencesSection({
-  settings,
+  settings: _settings,
   settingsDraft,
   upd,
 }: FinancePreferencesSectionProps): React.JSX.Element {

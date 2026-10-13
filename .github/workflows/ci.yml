@@ -166,6 +166,13 @@ jobs:
       - name: Lint (all packages)
         run: pnpm lint
 
+      # Non-blocking visibility for warning-level rules that the errors-only
+      # `lint` (`--quiet`) hides — currently react-hooks/exhaustive-deps.
+      # Report only; make it blocking once the remaining warnings are triaged.
+      - name: Lint warnings report (frontend, non-blocking)
+        continue-on-error: true
+        run: pnpm --filter mms-frontend lint:warn
+
       # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
       # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
       - name: Formatting (Prettier)

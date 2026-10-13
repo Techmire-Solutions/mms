@@ -137,6 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       verifyPasswordOtp,
       resetPasswordWithOtp,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- these auth ops include the component-defined `logout` (recreated each render); listing them would rebuild the context value every render and re-render every consumer.
     [
       user,
       isAuthenticated,

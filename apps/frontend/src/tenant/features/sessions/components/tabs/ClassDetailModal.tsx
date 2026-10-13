@@ -47,7 +47,10 @@ export function ClassDetailModal({
     { page: 1, limit: FACULTY_MODULE_MANIFEST.maxPageSize, status: "active" },
     open,
   );
-  const facultyList = (facultyData?.body?.faculty ?? []) as FacultyMember[];
+  const facultyList = useMemo(
+    () => (facultyData?.body?.faculty ?? []) as FacultyMember[],
+    [facultyData?.body?.faculty],
+  );
 
   const {
     classDraft,
@@ -80,7 +83,10 @@ export function ClassDetailModal({
   const activeFacultyId = classDraft.facultyId;
   const selectedFacultyId = activeFacultyId ? [activeFacultyId] : [];
   const { data: selectedFacultyData } = useFacultyByIds(selectedFacultyId);
-  const selectedFaculty = (selectedFacultyData ?? []) as FacultyMember[];
+  const selectedFaculty = useMemo(
+    () => (selectedFacultyData ?? []) as FacultyMember[],
+    [selectedFacultyData],
+  );
 
   const allFaculty = useMemo(() => {
     const map = new Map<string, FacultyMember>();

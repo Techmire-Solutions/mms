@@ -20,7 +20,7 @@ export const EXAMINATIONS_METRICS_QUERY_KEY = ["examinations", "metrics"] as con
 export const EXAMINATIONS_API = EXAMINATIONS_MODULE_MANIFEST.restBasePath;
 
 export function useExaminationsExams(options?: { enabled?: boolean; includeDeleted?: boolean }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated: _isAuthenticated } = useAuth();
   const includeDeleted = options?.includeDeleted ?? false;
   return tsrClient.examinations.listExams.useQuery({
     queryKey: [...EXAMINATIONS_EXAMS_QUERY_KEY, { includeDeleted }],
@@ -43,8 +43,8 @@ export function useExaminationsExamsCollection(options?: {
   return [];
 }
 
-export function useExaminationsResults(options?: { enabled?: boolean }) {
-  const { isAuthenticated } = useAuth();
+export function useExaminationsResults(_options?: { enabled?: boolean }) {
+  const { isAuthenticated: _isAuthenticated } = useAuth();
   return tsrClient.examinations.listResults.useQuery({
     queryKey: EXAMINATIONS_RESULTS_QUERY_KEY,
     staleTime: 30_000,

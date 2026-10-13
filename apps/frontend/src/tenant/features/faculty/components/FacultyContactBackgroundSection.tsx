@@ -38,15 +38,15 @@ export function FacultyContactBackgroundSection({
                   <div className="font-medium text-foreground flex items-center justify-between gap-1">
                     <span>{edu.degree || edu.institution}</span>
                     {edu.grade && (
-                      <span className="text-[10px] text-muted-foreground font-normal">
+                      <span className="text-4xs text-muted-foreground font-normal">
                         {edu.grade}
                       </span>
                     )}
                   </div>
                   {edu.degree && edu.institution && (
-                    <div className="text-muted-foreground text-[11px]">{edu.institution}</div>
+                    <div className="text-muted-foreground text-3xs">{edu.institution}</div>
                   )}
-                  {details && <div className="text-muted-foreground/80 text-[11px]">{details}</div>}
+                  {details && <div className="text-muted-foreground/80 text-3xs">{details}</div>}
                 </div>
               );
             })}
@@ -69,7 +69,7 @@ export function FacultyContactBackgroundSection({
               >
                 <span>{skill.name}</span>
                 {skill.proficiency && (
-                  <span className="text-muted-foreground text-[10px]">({skill.proficiency})</span>
+                  <span className="text-muted-foreground text-4xs">({skill.proficiency})</span>
                 )}
               </Badge>
             ))}
@@ -97,9 +97,9 @@ export function FacultyContactBackgroundSection({
                   className="p-2 rounded-md bg-muted/40 border border-border/50 text-xs space-y-0.5"
                 >
                   <div className="font-medium text-foreground">{exp.title}</div>
-                  <div className="text-muted-foreground text-[11px]">{exp.organization}</div>
+                  <div className="text-muted-foreground text-3xs">{exp.organization}</div>
                   {dates && (
-                    <div className="text-muted-foreground/80 text-[11px] flex items-center gap-1">
+                    <div className="text-muted-foreground/80 text-3xs flex items-center gap-1">
                       <Calendar className="w-3 h-3" aria-hidden />
                       <span>{dates}</span>
                     </div>

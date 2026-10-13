@@ -114,7 +114,7 @@ export function InvoicesListCards(props: InvoicesListCardsProps): React.JSX.Elem
     onToggleSelectAll,
   } = props;
 
-  const pageCountLabel = formatDirectoryPageCountLabel(invoices.length, t, {
+  const _pageCountLabel = formatDirectoryPageCountLabel(invoices.length, t, {
     singular: "finance.item.invoice",
     plural: "finance.item.invoices",
   });

@@ -1,51 +1,18 @@
 import type { AccessControlledModuleId, ModuleAccessDecision, ModuleAction } from "@mms/shared";
-import { ROUTES, isNavPathActive } from "@/lib/config/routes";
+import { isNavPathActive } from "@/lib/config/routes";
+import { TENANT_APP_ROUTE_ACCESS, type TenantRouteAccess } from "@/lib/routing/moduleRegistry";
 
 /**
- * Access classification for every route rendered inside the tenant app shell.
+ * Access classification for every route rendered inside the tenant app shell
+ * (derived from `@/lib/config/moduleRegistry`).
  * - `module`: owned by a module; gated on grant, enablement, and `action`.
  * - `landing`: Home — always reachable; its widgets and requests gate per module.
  * - `open`: not module-owned; any signed-in user (finer gating inside the page).
  */
-export type RouteAccessRule =
-  | { kind: "module"; moduleId: AccessControlledModuleId; action: ModuleAction }
-  | { kind: "landing"; moduleId: AccessControlledModuleId }
-  | { kind: "open"; reason: string };
+export type RouteAccessRule = TenantRouteAccess;
 
-const moduleRoute = (moduleId: AccessControlledModuleId): RouteAccessRule => ({
-  kind: "module",
-  moduleId,
-  action: "read",
-});
-
-/** Single source for route → module metadata; nested paths inherit their parent entry. */
-export const TENANT_APP_ROUTE_ACCESS: Readonly<Record<string, RouteAccessRule>> = {
-  [ROUTES.home]: { kind: "landing", moduleId: "dashboard" },
-  [ROUTES.contacts]: moduleRoute("contacts"),
-  [ROUTES.messaging]: moduleRoute("messaging"),
-  [ROUTES.students]: moduleRoute("students"),
-  [ROUTES.faculty]: moduleRoute("faculty"),
-  [ROUTES.enrollments]: moduleRoute("enrollment"),
-  [ROUTES.sessions]: moduleRoute("sessions"),
-  [ROUTES.attendance]: moduleRoute("attendance"),
-  [ROUTES.finance]: moduleRoute("finance"),
-  [ROUTES.hasanatCards]: moduleRoute("hasanat"),
-  [ROUTES.examinations]: moduleRoute("examination"),
-  [ROUTES.questionBank]: moduleRoute("questionBank"),
-  [ROUTES.accounting]: moduleRoute("accounting"),
-  [ROUTES.obligations]: moduleRoute("obligations"),
-  [ROUTES.tasks]: moduleRoute("tasks"),
-  [ROUTES.users]: moduleRoute("users"),
-  [ROUTES.profile]: { kind: "open", reason: "the signed-in user's own account" },
-  [ROUTES.notifications]: {
-    kind: "open",
-    reason: "the signed-in user's own alerts; each alert gates its module permission",
-  },
-  [ROUTES.settings]: {
-    kind: "open",
-    reason: "workspace settings; each section gates its own permission",
-  },
-};
+/** Route → module metadata; nested paths inherit their parent entry. */
+export { TENANT_APP_ROUTE_ACCESS };
 
 /** Most specific rule for a pathname; Home only matches exactly. */
 export function findRouteAccessRule(pathname: string): RouteAccessRule | undefined {

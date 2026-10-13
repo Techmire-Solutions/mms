@@ -28,7 +28,7 @@ interface PlatformSetupRegisterFormProps {
 
 export function PlatformSetupRegisterForm({
   t,
-  smtpConfigured,
+  smtpConfigured: _smtpConfigured,
   name,
   setName,
   email,

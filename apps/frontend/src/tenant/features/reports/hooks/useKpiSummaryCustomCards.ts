@@ -29,19 +29,6 @@ export function useKpiSummaryCustomCards(
   dataSources: KpiSummaryDataSources,
   t: TranslationFunction,
 ) {
-  const {
-    isContactsCategory,
-    isStudentsCategory,
-    isFacultyCategory,
-    isSessionsCategory,
-    isEnrollmentsCategory,
-  } = flags;
-  const {
-    questionBankQuestions: qbFromMetricsPath,
-    questionBankTests: qbTestsFromMetricsPath,
-    questionBankResults: qbResultsFromMetricsPath,
-  } = dataSources;
-
   const [customCards, setCustomCards] = useState<CustomCard[]>(() =>
     loadCustomCardsForCategory(category),
   );

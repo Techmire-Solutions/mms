@@ -122,5 +122,35 @@ export function useWidgetBuilderHydration({
       setTrendType("database");
       setBuilderRole("admin");
     }
-  }, [editWidgetConfig, initialCollection, t]);
+  }, [
+    editWidgetConfig,
+    initialCollection,
+    t,
+    setWidgetType,
+    setBuilderTitle,
+    setBuilderCollection,
+    setBuilderOperation,
+    setBuilderTargetField,
+    setBuilderFilterField,
+    setBuilderFilterOperator,
+    setBuilderFilterValue,
+    setBuilderColor,
+    setThresholdEnabled,
+    setThresholdCondition,
+    setThresholdValue,
+    setThresholdColor,
+    setSwitchActionType,
+    setSwitchStateKey,
+    setSwitchCollection,
+    setSwitchRecordId,
+    setSwitchField,
+    setSwitchLabelOn,
+    setSwitchLabelOff,
+    setBuilderIcon,
+    setSubTextType,
+    setFixedSubText,
+    setTrend,
+    setTrendType,
+    setBuilderRole,
+  ]);
 }

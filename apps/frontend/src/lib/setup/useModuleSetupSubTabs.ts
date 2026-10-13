@@ -28,6 +28,7 @@ export function useModuleSetupSubTabs({
     if (initialKey && initialKey !== sub && !isDirty(sub)) {
       setSub(initialKey);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- this effect only reacts to external initialKey changes; depending on `sub`/`isDirty` would re-run on every tab switch and snap the user's chosen tab back.
   }, [initialKey]);
 
   const discardConfirmOpen = pendingSubTab != null;

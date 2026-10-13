@@ -37,8 +37,8 @@ export function QuestionsListFilters({
   search,
   filterCats,
   filterDiff,
-  hideToolbarAdd,
-  canWrite,
+  hideToolbarAdd: _hideToolbarAdd,
+  canWrite: _canWrite,
   canDelete = false,
   showDeleted,
   onToggleDeleted,
@@ -46,7 +46,7 @@ export function QuestionsListFilters({
   onSearchChange,
   onFilterCatsChange,
   onFilterDiffChange,
-  onAddQuestion,
+  onAddQuestion: _onAddQuestion,
 }: QuestionsListFiltersProps): JSX.Element {
   const { t } = useTranslation();
 

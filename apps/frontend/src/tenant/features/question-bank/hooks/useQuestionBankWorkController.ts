@@ -43,7 +43,7 @@ export function useQuestionBankWorkController({
   onClearSelection,
   onToggleSelectAll,
   onDelete,
-  onRestore,
+  onRestore: _onRestore,
   onBulkDelete,
   onBulkRestore,
   onModalOpenChange,

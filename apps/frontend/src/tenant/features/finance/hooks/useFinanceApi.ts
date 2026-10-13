@@ -20,6 +20,8 @@ export const FINANCE_REPORT_AGGREGATES_QUERY_KEY = [
   FINANCE_MODULE_MANIFEST.collectionKey,
   "report-aggregates",
 ] as const;
+export const FINANCE_FIELD_CONFIG_QUERY_KEY = ["finance", "field-config", "contract"] as const;
+export const FINANCE_PREFERENCES_QUERY_KEY = ["finance", "preferences", "contract"] as const;
 
 /** Contract list hooks return the TanStack Query envelope; `data` is narrowed to the parsed page shape. */
 export type FinancePaginatedQueryResult<TPage> = Omit<

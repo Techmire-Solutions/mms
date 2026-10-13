@@ -57,10 +57,14 @@ export function useContactsExportActions({
   tenantName,
 }: UseContactsExportActionsOptions) {
   const contactConfig = useContactConfig();
-  const effectiveConfig: Partial<FieldConfig> = fieldConfig ?? {
-    fields: contactConfig.fields,
-    formTabs: contactConfig.formTabs,
-  };
+  const effectiveConfig: Partial<FieldConfig> = useMemo(
+    () =>
+      fieldConfig ?? {
+        fields: contactConfig.fields,
+        formTabs: contactConfig.formTabs,
+      },
+    [fieldConfig, contactConfig.fields, contactConfig.formTabs],
+  );
 
   const resolvedColumns = useMemo(
     () => defaultContactsExportColumns(t, effectiveConfig),

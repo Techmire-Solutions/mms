@@ -47,7 +47,7 @@ export function PlatformAdminsList({
   const [dangerMode, setDangerMode] = useState<DangerMode>("disable");
   const [inspectAdmin, setInspectAdmin] = useState<PlatformUserProfile | null>(null);
 
-  const rawItems = admins ?? [];
+  const rawItems = useMemo(() => admins ?? [], [admins]);
   const deferredQuery = useDeferredValue(searchQuery);
 
   const {

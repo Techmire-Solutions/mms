@@ -3,6 +3,7 @@ import pluginJs from "@eslint/js";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import pluginUnusedImports from "eslint-plugin-unused-imports";
+import pluginJsxA11y from "eslint-plugin-jsx-a11y";
 import tseslint from "typescript-eslint";
 import boundaryImports from "./eslint-rules/no-cross-feature-imports.cjs";
 import uiHostImports from "./eslint-rules/no-ui-host-imports.cjs";
@@ -94,11 +95,13 @@ export default tseslint.config(
       "react/react-in-jsx-scope": "off",
       "react/no-unknown-property": ["error", { ignore: ["cmdk-input-wrapper", "toast-close"] }],
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/exhaustive-deps": "error",
       "no-restricted-syntax": [
-        "warn",
+        "error",
         {
-          selector: "Literal[value=/\\bbg-white\\b/]",
+          // `print:bg-white` is the legitimate exception: print output must be
+          // white regardless of the active theme.
+          selector: "Literal[value=/(?<!print:)\\bbg-white\\b/]",
           message: "Prefer bg-card or SURFACE tokens over bg-white.",
         },
         {
@@ -132,6 +135,36 @@ export default tseslint.config(
     files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      // Fixtures legitimately use literal colours.
+      "no-restricted-syntax": "off",
+    },
+  },
+  {
+    // Colour-source modules: the sanctioned homes for literal palette values
+    // (print design tokens and the editor's colour swatches).
+    files: [
+      "src/lib/ui/printTemplateStyles.ts",
+      "src/components/template-editor/templateEditorTypographyUtils.ts",
+    ],
+    rules: {
+      "no-restricted-syntax": "off",
+    },
+  },
+  {
+    // Static accessibility checks — complements the E2E axe sweep
+    // (e2e/tests/a11y/*) by catching obvious issues before runtime.
+    // Starts at `warn`; ratchet to `error` once the current findings are triaged.
+    files: ["src/**/*.tsx"],
+    plugins: { "jsx-a11y": pluginJsxA11y },
+    rules: {
+      ...Object.fromEntries(
+        Object.keys(pluginJsxA11y.flatConfigs.recommended.rules ?? {}).map((rule) => [
+          rule,
+          "warn",
+        ]),
+      ),
+      // Deprecated by the plugin in favour of `label-has-associated-control`.
+      "jsx-a11y/label-has-for": "off",
     },
   },
   eslintConfigPrettier,

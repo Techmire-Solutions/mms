@@ -47,7 +47,6 @@ export function useUsersPageController() {
     setActiveTab,
     activeSubTab,
     setActiveSubTab,
-    configSubTab,
     setConfigSubTab,
     visibleTopTabs,
     effectiveTab,

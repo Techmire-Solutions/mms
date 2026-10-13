@@ -26,9 +26,11 @@ import { percentChange } from "@/tenant/hooks/collections/dashboard";
  */
 export default function FeeCollectionSummary({ title }: { title?: string }) {
   const { t } = useTranslation();
-  const invoices =
-    useFinanceInvoicesPaginated({ page: 1, limit: FINANCE_MODULE_MANIFEST.maxPageSize }).data
-      ?.invoices ?? [];
+  const invoicesData = useFinanceInvoicesPaginated({
+    page: 1,
+    limit: FINANCE_MODULE_MANIFEST.maxPageSize,
+  }).data?.invoices;
+  const invoices = React.useMemo(() => invoicesData ?? [], [invoicesData]);
   const { formatCurrency } = useFinanceCurrency();
 
   const {

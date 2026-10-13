@@ -48,7 +48,7 @@ export function UsersListDesktopTable({
   isColumnVisible,
 }: UsersListDesktopTableProps): JSX.Element {
   const { t } = useTranslation();
-  const visible = isColumnVisible ?? (() => true);
+  const visible = React.useMemo(() => isColumnVisible ?? (() => true), [isColumnVisible]);
   const columnContext = React.useMemo(() => ({ t, formatLoginDate }), [t, formatLoginDate]);
 
   const columns = React.useMemo<WorkBatchTableColumn<SystemUser>[]>(() => {

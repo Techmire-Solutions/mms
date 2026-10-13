@@ -79,7 +79,6 @@ export default function Accounting() {
     handleBulkRestoreEntries,
     handleShortcutStateChange,
     openJournalCreate,
-    openAccountCreate,
   } = c;
 
   return (

@@ -19,7 +19,7 @@ vi.mock("@/lib/apiClient", () => ({
 }));
 
 vi.mock("@tanstack/react-query", () => ({
-  useQuery: ({ queryKey, queryFn }: any) => ({
+  useQuery: ({ queryKey, queryFn: _queryFn }: any) => ({
     data: { totalExams: 10, averageScore: 78 },
     isLoading: false,
     queryKey,

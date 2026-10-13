@@ -69,7 +69,6 @@ export function useFacultyFormController({
 
   const {
     facultyDraft,
-    setFacultyDraft,
     setBaselineSnapshot,
     updateDraft,
     isDirty,

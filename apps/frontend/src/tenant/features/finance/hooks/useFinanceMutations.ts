@@ -24,7 +24,7 @@ import {
 } from "@/tenant/features/finance/hooks/useFinanceTsrHooks";
 
 export function useFinanceMutations() {
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
 
   const createInvoice = useFinanceContractCreateInvoice();
   const updateInvoice = useFinanceContractUpdateInvoice();

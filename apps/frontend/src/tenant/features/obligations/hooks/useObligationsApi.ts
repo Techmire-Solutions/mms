@@ -152,9 +152,8 @@ export function useObligationsCollections(options?: {
   enabled?: boolean;
   includeDeleted?: boolean;
 }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated: _isAuthenticated } = useAuth();
   const includeDeleted = options?.includeDeleted ?? false;
-  const enabled = options?.enabled ?? true;
   return tsrClient.obligations.listCollections.useQuery({
     queryKey: [...OBLIGATIONS_COLLECTIONS_QUERY_KEY, { includeDeleted }],
     queryData: { query: { includeDeleted: includeDeleted ? "true" : undefined } },

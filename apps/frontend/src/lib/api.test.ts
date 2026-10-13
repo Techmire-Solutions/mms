@@ -5,11 +5,11 @@ describe("tsrClient & contract integration (Phase 7)", () => {
   it("transports contract GET queries through apiFetch", async () => {
     const originalFetch = globalThis.fetch;
     let requestedUrl = "";
-    let seenHeaders: HeadersInit | undefined;
+    let _seenHeaders: HeadersInit | undefined;
 
     globalThis.fetch = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
       requestedUrl = url;
-      seenHeaders = init?.headers;
+      _seenHeaders = init?.headers;
       return new Response(
         JSON.stringify({
           students: [

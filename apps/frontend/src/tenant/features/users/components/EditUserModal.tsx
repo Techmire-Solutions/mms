@@ -61,7 +61,6 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
     }
     return filtered;
   }, [workspaceRoles, authUser?.role, roleLockedByFaculty, user.role]);
-  const initialContactId = user.contactId ?? "";
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm<EditWorkspaceUserInput & Record<string, unknown>>({
@@ -89,6 +88,7 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
         customFields.map((cf) => [cf.id, user[cf.id] ?? cf.defaultValue ?? ""]),
       ),
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the granular user fields + customFieldsKey; adding `user`/`customFields`/`form` would re-run form.reset on unrelated re-renders and wipe in-progress edits.
   }, [user.id, user.contactId, user.role, user.status, user.twoFactorEnabled, customFieldsKey]);
 
   const watchedContactId = form.watch("contactId");

@@ -49,7 +49,7 @@ export function PinnedWidgetsGrid({
   onTogglePin,
   onEditClick,
   onDeleteWidget,
-  onSwitchToggle,
+  onSwitchToggle: _onSwitchToggle,
   renderWidget,
   t,
 }: PinnedWidgetsGridProps): React.JSX.Element {

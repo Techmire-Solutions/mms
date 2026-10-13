@@ -31,6 +31,11 @@ export const CONTACTS_DUPLICATES_QUERY_KEY = [
   CONTACTS_MODULE_MANIFEST.collectionKey,
   "duplicates",
 ] as const;
+export const CONTACTS_FIELD_CONFIG_QUERY_KEY = [
+  CONTACTS_MODULE_MANIFEST.collectionKey,
+  "field-config",
+  "contract",
+] as const;
 
 export function contactDetailQueryKey(contactId: string) {
   return [...CONTACTS_QUERY_KEY, "detail", contactId] as const;

@@ -26,7 +26,7 @@ export const RecipientRow = memo(function RecipientRow({
   previewIndex,
   message,
   isEmail,
-  isSms,
+  isSms: _isSms,
   disabled,
   onPreviewIndexChange,
   onSendOne,

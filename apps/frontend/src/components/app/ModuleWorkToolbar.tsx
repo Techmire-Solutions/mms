@@ -27,7 +27,7 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
   trashToggle,
   viewModeToggle,
   columnCustomizer,
-  densityToggle,
+  densityToggle: _densityToggle,
   aiSuggestions,
   children,
   showExportInTrash = true,

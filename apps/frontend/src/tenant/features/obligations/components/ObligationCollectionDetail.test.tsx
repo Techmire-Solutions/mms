@@ -20,7 +20,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/tenant/features/obligations/hooks/useObligationLookups", () => ({
-  useMergedObligationContacts: (ids: (string | number | null | undefined)[]) => [
+  useMergedObligationContacts: (_ids: (string | number | null | undefined)[]) => [
     { id: "c-1", name: "Muhammad Ali" },
     { id: "c-2", name: "Sayyid Kazim" },
   ],

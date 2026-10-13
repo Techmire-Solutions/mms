@@ -74,7 +74,7 @@ export function createStandardModuleConfigHook<
           ...(settingsDraft ?? {}),
         };
       },
-      [defaultSettings, settings],
+      [settings],
     );
 
     const updateAsyncFn = useModuleUpdate();
@@ -103,18 +103,15 @@ export function createStandardModuleConfigHook<
         customFieldsFrom
           ? customFieldsFrom(settings)
           : ((settings.customFields ?? []) as ModuleCustomField[]),
-      [customFieldsFrom, settings],
+      [settings],
     );
 
-    const fieldOrder = settings.fieldOrder ?? defaultSettings.fieldOrder ?? [];
-
-    const orderedFields = useMemo(
-      () =>
-        orderedFieldsFrom
-          ? orderedFieldsFrom({ fieldOrder, settings })
-          : getSortedFields(defaultFieldDefs, fieldOrder, fields, customFields),
-      [orderedFieldsFrom, defaultFieldDefs, fieldOrder, settings, fields, customFields],
-    );
+    const orderedFields = useMemo(() => {
+      const fieldOrder = settings.fieldOrder ?? defaultSettings.fieldOrder ?? [];
+      return orderedFieldsFrom
+        ? orderedFieldsFrom({ fieldOrder, settings })
+        : getSortedFields(defaultFieldDefs, fieldOrder, fields, customFields);
+    }, [settings, fields, customFields]);
 
     const reloadConfig = useCallback(() => {}, []);
     const loadSettings = useCallback(() => settings, [settings]);

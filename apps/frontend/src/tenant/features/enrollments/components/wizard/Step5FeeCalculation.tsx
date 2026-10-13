@@ -33,6 +33,7 @@ export function Step5FeeCalculation({
   const discountsKey = JSON.stringify(sessionDiscounts);
   const fee = React.useMemo(() => {
     return calcFee(baseFee, student || {}, [], sessionDiscounts);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on stable granular fields + discountsKey; adding the `student`/`sessionDiscounts` object deps would recreate `fee` every render and re-fire the onFeeResult effect.
   }, [baseFee, student?.id, student?.discountType, student?.discountPct, discountsKey]);
 
   // Notify parent
