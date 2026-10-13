@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import {
   bootstrapAuthenticatedTenant,
   type TenantBootstrapCredentials,
-} from "../helpers/tenantBootstrap.js";
+} from "../../helpers/tenantBootstrap.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 

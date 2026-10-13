@@ -5,7 +5,7 @@ import {
   assertPrimaryControlsMeetTouchTarget,
   forceRtl,
   waitForAppShellReady,
-} from "../helpers/responsive.js";
+} from "../../helpers/responsive.js";
 
 const APEX_READY =
   '#platform-setup-email, #platform-email, a[href*="login"], button:has-text("Sign"), #main-content';

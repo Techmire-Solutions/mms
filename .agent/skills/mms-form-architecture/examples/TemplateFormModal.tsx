@@ -1,4 +1,4 @@
-import { FormModal, type FormModalProps } from '@/components/ui/FormModal';
+import { FormModal, type FormModalProps } from '@/components/app/FormModal';
 
 /** Shell-only example: callers own the real shared DTO, validation and draft.
  * See the skill's draft lifecycle checklist before wiring onSave/onClose.

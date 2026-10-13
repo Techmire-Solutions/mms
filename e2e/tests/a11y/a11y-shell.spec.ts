@@ -1,13 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
-import { assertNoSeriousA11yViolations } from "../helpers/a11y.js";
-import { auditOverlay } from "../helpers/a11yOverlay.js";
+import { assertNoSeriousA11yViolations } from "../../helpers/a11y.js";
+import { auditOverlay } from "../../helpers/a11yOverlay.js";
 import {
   RESPONSIVE_VIEWPORTS,
   forceRtl,
   waitForAppShellReady,
   waitForToastsToClear,
-} from "../helpers/responsive.js";
-import { bootstrapAuthenticatedTenantViaApi } from "../helpers/tenantApiBootstrap.js";
+} from "../../helpers/responsive.js";
+import { bootstrapAuthenticatedTenantViaApi } from "../../helpers/tenantApiBootstrap.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";

@@ -40,7 +40,7 @@ bash scripts/deploy-rollback.sh <sha>        # a specific release
 bash scripts/deploy-verify.sh                # local backend + public site reachability
 ```
 
-Notes that matter: the rollback restores a dist tarball and reloads PM2 — it does **not** reverse database migrations, and it will not fix an `.env` change (use `scripts/merge-backend-env.sh` deliberately). If only one process is sick, prefer the narrower recovery script (`scripts/deploy-recover-backend.sh`, `scripts/deploy-recover-frontend.sh`) so you do not roll back a healthy half.
+Notes that matter: the rollback restores a dist tarball and reloads PM2 — it does **not** reverse database migrations, and it will not fix an `.env` change (use `scripts/merge-backend-env.sh` deliberately). If only one process is sick, prefer the narrower recovery script (`scripts/deploy-recover-backend.sh`) so you do not roll back a healthy half.
 
 ## Fix-forward
 

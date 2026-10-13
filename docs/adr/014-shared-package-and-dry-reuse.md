@@ -1,4 +1,4 @@
-# ADR 0001: Single `@mms/shared` package + mandatory DRY reuse in the platform
+# ADR-014: Single `@mms/shared` package + mandatory DRY reuse in the platform
 
 - **Status:** Accepted
 - **Date:** 2025

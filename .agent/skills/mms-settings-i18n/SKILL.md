@@ -31,7 +31,7 @@ Advisory: use [exact-money guidance](../mms-finance-accounting/references/ledger
 
 ## Localization pipeline
 
-1. Add the key to `packages/shared/src/appTranslationsEn.ts`.
+1. Add the key to `packages/shared/src/i18n/appTranslationsEn.ts`.
 2. Sync ar/ur/fa packs to match.
 3. Consume via `useTranslation` + `AppTranslationKey` (`@/hooks/useTranslation`).
 4. Verify: `pnpm run check:i18n`.

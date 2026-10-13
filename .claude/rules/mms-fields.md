@@ -7,11 +7,11 @@ paths:
   - "apps/frontend/src/tenant/features/**/*Setup*"
   - "apps/frontend/src/platform/**/*Fields*"
   - "apps/frontend/src/platform/**/*Setup*"
-  - "packages/shared/src/contactTypes.ts"
-  - "packages/shared/src/contactEnabledTabs.ts"
-  - "packages/shared/src/contactColumnRegistrySync.ts"
-  - "packages/shared/src/contactFieldDependencies.ts"
-  - "packages/shared/src/*Field*"
+  - "packages/shared/src/**/contactTypes.ts"
+  - "packages/shared/src/**/contactEnabledTabs.ts"
+  - "packages/shared/src/**/contactColumnRegistrySync.ts"
+  - "packages/shared/src/**/contactFieldDependencies.ts"
+  - "packages/shared/src/**/*Field*"
 ---
 
 # MMS Fields & Registry Specification

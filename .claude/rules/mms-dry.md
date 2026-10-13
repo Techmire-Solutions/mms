@@ -15,7 +15,7 @@ paths:
 **Workflow skill:** `mms-shared-package` (extract/export pure helpers and Zod DTOs).
 
 ## 1. Proactive Search & Duplication Audits
-- **Search First:** Audit `@mms/shared`, `apps/frontend/src/lib/config/`, `apps/frontend/src/hooks/`, `@/components/ui/`, and `@/components/common/` before creating components, layouts, forms, dialogs, utilities, or DTOs. Extend existing abstractions via optional props rather than duplicating.
+- **Search First:** Audit `@mms/shared`, `apps/frontend/src/lib/config/`, `apps/frontend/src/hooks/`, `@/components/ui/`, `@/components/app/`, and `@/components/common/` before creating components, layouts, forms, dialogs, utilities, or DTOs. Extend existing abstractions via optional props rather than duplicating.
 - **Consumer Compatibility:** Shared component changes must maintain backward compatibility for existing consumers. Verify consumers, run tests, and check affected pages.
 - **Right-Sized Abstractions:** Consolidate identical duplication without changing behavior; do not force unrelated functionality into monolithic abstractions. Compose small primitives when call sites differ.
 - **Shared Chrome SSOT:** Enforce central primitives and design tokens:
@@ -40,7 +40,7 @@ paths:
 
 ## 3. Monorepo Layer Boundaries
 - **`@mms/shared`:** Pure validation schemas, types, constants, default configs, and formatters. Named exports only; subpath imports banned. Zero React, DOM, Fastify, or DB dependencies.
-- **`apps/frontend`:** React hooks, UI primitives, providers, TanStack Query facades. Ban direct cross-feature imports (`featureA` from `featureB`); route via `@/tenant/hooks/collections/*` facades or promote to `components/ui`.
+- **`apps/frontend`:** React hooks, UI primitives, providers, TanStack Query facades. Ban direct cross-feature imports (`featureA` from `featureB`); route via `@/tenant/hooks/collections/*` facades or promote to `components/app` (composites) / `components/ui` (primitives).
 - **`apps/backend`:** Fastify routes, services, repositories, and Drizzle schemas/queries.
 
 ## 4. Quality Bar & Code Cleanup

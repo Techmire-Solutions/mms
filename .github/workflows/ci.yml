@@ -197,6 +197,15 @@ jobs:
       - name: Backend route→storage boundary
         run: pnpm run check:backend-boundaries
 
+      # Ratchet: the rest of the ports-and-adapters chain (use-case/services
+      # storage imports, services/ re-export shims, tenant route aggregation).
+      - name: Backend structural ratchets
+        run: pnpm run check:backend-structure
+
+      # Ratchet: docs/ index completeness, ADR numbering, and doc-tree clutter.
+      - name: Documentation ratchets
+        run: pnpm run check:docs
+
       # Ratchet: applied migrations are immutable (forward-only DDL). Rewriting one makes
       # fresh and existing installs diverge, and the change never reaches the latter.
       # `--base HEAD^1` is explicit so an unresolvable ref fails loudly instead of
@@ -209,6 +218,12 @@ jobs:
       - name: Code-norm ratchets
         run: pnpm run check:code-norms
 
+      # Ratchet: frontend structural norms (primitives vs composites in
+      # components/ui, canonical feature shape, logic out of features/*/components,
+      # UI helpers out of lib/ root, barrel allowlist). Baselines live in the script.
+      - name: Frontend structure ratchets
+        run: pnpm run check:frontend-structure
+
       # Ratchet: Work Directory convergence (selection SSOT, unified bulk chrome,
       # zero dual-render, zero shortcut stubs).
       - name: Work Directory convergence
@@ -219,6 +234,11 @@ jobs:
       # can safely import it. Comments/strings and test files are ignored.
       - name: "@mms/shared purity & boundaries"
         run: pnpm run check:shared-purity
+
+      # Ratchet: @mms/shared stays de-flattened (domain folders, only index.ts at
+      # src/ root) and consumers use the exported subpaths only.
+      - name: "@mms/shared structure"
+        run: pnpm run check:shared-structure
 
       # Guards the retired Teacher / FDA surface and asserts the canonical
       # Faculty schema + temporal-designation constraint are present.

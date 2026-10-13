@@ -1,8 +1,10 @@
+> **ARCHIVED (2026-10-13)** — design-time blueprint. Current status lives in `.agent/rules/mms-migration-status.md`.
+
 # MMS Enterprise Modernization & Architecture Blueprint
 
 > **Status note:** design-time blueprint. Per-phase completion status is NOT
 > tracked here — the live Open Gaps Register lives in
-> [`.agent/rules/mms-migration-status.md`](../.agent/rules/mms-migration-status.md)
+> [`.agent/rules/mms-migration-status.md`](../../.agent/rules/mms-migration-status.md)
 > (synced to `.cursor/` and `.claude/`).
 
 ---

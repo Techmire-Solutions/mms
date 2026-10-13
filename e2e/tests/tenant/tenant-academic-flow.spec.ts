@@ -3,13 +3,13 @@ import {
   bootstrapAuthenticatedTenant,
   resetPlatformUsers,
   type TenantBootstrapCredentials,
-} from "../helpers/tenantBootstrap.js";
+} from "../../helpers/tenantBootstrap.js";
 import {
   createTestContactJaneDoe,
   createTestContactJohnDoe,
   registerStudentJaneDoe,
   seedTestClassAndEnrollment,
-} from "../helpers/tenantOperations.js";
+} from "../../helpers/tenantOperations.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";

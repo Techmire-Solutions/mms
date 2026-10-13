@@ -9,7 +9,7 @@ paths:
   - "apps/backend/src/services/platform/**"
   - "apps/backend/src/services/rbac*.ts"
   - "apps/backend/src/lib/tenantContext.ts"
-  - "packages/shared/src/platformApiErrors.ts"
+  - "packages/shared/src/**/platformApiErrors.ts"
   - "apps/frontend/src/lib/contexts/AuthContext.tsx"
   - "apps/frontend/src/platform/lib/PlatformAuthContext.tsx"
   - "apps/frontend/src/platform/lib/platformAuthErrors.ts"

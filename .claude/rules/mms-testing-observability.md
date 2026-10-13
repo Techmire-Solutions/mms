@@ -9,7 +9,7 @@ paths:
   - "apps/frontend/vitest*.config.ts"
   - "packages/shared/vitest*.config.ts"
   - "e2e/**"
-  - "apps/frontend/src/components/ui/ErrorBoundary.tsx"
+  - "apps/frontend/src/components/app/ErrorBoundary.tsx"
   - "apps/frontend/src/lib/clientErrorReporting.ts"
 ---
 

@@ -1,11 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
-import { assertNoSeriousA11yViolations } from "../helpers/a11y.js";
+import { assertNoSeriousA11yViolations } from "../../helpers/a11y.js";
 import {
   RESPONSIVE_VIEWPORTS,
   waitForAppShellReady,
   waitForToastsToClear,
-} from "../helpers/responsive.js";
-import { ensureE2ePlatformAdmin } from "../helpers/platformAdminSeeder.js";
+} from "../../helpers/responsive.js";
+import { ensureE2ePlatformAdmin } from "../../helpers/platformAdminSeeder.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";

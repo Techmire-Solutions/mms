@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, type Page, type Response, test } from "@playwright/test";
-import { waitForToastOverlayToClear } from "../helpers/tenantOperations.js";
+import { waitForToastOverlayToClear } from "../../helpers/tenantOperations.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 

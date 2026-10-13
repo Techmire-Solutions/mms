@@ -12,7 +12,7 @@ paths:
   - "apps/backend/src/lib/tenantContext.ts"
   - "apps/frontend/src/lib/db.ts"
   - "apps/frontend/src/lib/queryClient.ts"
-  - "packages/shared/src/apiSchemas.ts"
+  - "packages/shared/src/**/apiSchemas.ts"
 ---
 
 # MMS Data Layer & Caching System

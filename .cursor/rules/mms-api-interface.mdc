@@ -1,6 +1,6 @@
 ---
 description: Client-server REST interface contracts, apiClient fetch wrappers, Fastify handlers, and error shapes
-globs: apps/frontend/src/lib/apiClient*,apps/backend/src/routes/**/*.ts,apps/backend/src/contacts/**/*.ts,apps/backend/src/lib/**/*.ts,apps/backend/src/middleware/**/*.ts,apps/backend/src/app.ts,packages/shared/src/apiSchemas.ts
+globs: apps/frontend/src/lib/apiClient*,apps/backend/src/routes/**/*.ts,apps/backend/src/contacts/**/*.ts,apps/backend/src/lib/**/*.ts,apps/backend/src/middleware/**/*.ts,apps/backend/src/app.ts,packages/shared/src/**/apiSchemas.ts
 alwaysApply: false
 ---
 

@@ -31,10 +31,10 @@ These are sampled observations, not a completed repository-wide audit or fresh t
 | Several shared UI paths are compatibility exports of tenant code | `components/ui/RegistryPersonSelect.tsx`, `UserActorSelect.tsx`, `reports/*` | Distinguish import aliases from actual reusable components; track transitive dependencies. |
 | Token generation and DOM application already have separate owners | `index.css`, `lib/brandingThemeCore.ts`, shared `buildBrandingCssVariables` | Preserve HSL semantics and extend existing owners. |
 | Query persistence starts from the shared query client; persister has a default cache key | `lib/queryClient.ts`, `lib/query/idbCachePersister.ts` | Trace auth lifecycle, restore timing, origin boundaries, and identity changes before proposing changes. This alone does not prove a data leak. |
-| Prior consolidation has already happened | `docs/architecture/frontend-reuse-audit.md`, work-directory design and existing checks | Revalidate old findings; avoid repeating completed navigation, accent, or selection work. |
+| Prior consolidation has already happened | `docs/engineering/frontend-reuse-audit.md`, work-directory design and existing checks | Revalidate old findings; avoid repeating completed navigation, accent, or selection work. |
 
 Use the existing [reuse audit](frontend-reuse-audit.md), [architecture audit](../frontend-architecture-audit.md),
-[ADR 0001](../adr/0001-shared-package-and-dry-reuse.md), and
+[ADR 014](../adr/014-shared-package-and-dry-reuse.md), and
 [work-directory design](../superpowers/specs/2026-09-24-work-directory-convergence-design.md)
 as historical context. Their counts and verification results are not a current baseline.
 

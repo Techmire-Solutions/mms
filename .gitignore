@@ -72,6 +72,8 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+# Generated UI-audit report (apps/frontend/scripts/ui-audit.js)
+apps/frontend/scripts/ui-audit-report.json
 
 # 7. Local Uploads & Media Storage
 /apps/backend/uploads/

@@ -1,3 +1,5 @@
+> **ARCHIVED (2026-10-13)** — point-in-time snapshot (2026-09-15). Live inventory: `.agent/skills/README.md`.
+
 # MMS Agent Standards Review — Rules & Skills
 
 **Scope reviewed:** 21 rules × 3 tool mirrors (`.cursor/rules/*.mdc`, `.agent/rules/*.md`, `.claude/rules/*.md`), **38 skills** × 3 mirrors (30 audited; this review's own application added 8, expanding the inventory to the 38 `AGENTS.md` now documents), 26 skill aux files (`scripts/`, `references/`, `examples/`), the 6 workflows, `.agent/skills-manifest.json`, `scripts/verify-rules-integrity.mjs`, `.agent/scripts/sync-*.sh`, `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.cursor/hooks.json`, CI wiring.

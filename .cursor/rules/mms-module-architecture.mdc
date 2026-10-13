@@ -1,6 +1,6 @@
 ---
 description: Universal module architecture, page tabs (operational + required Reports/Setup), manifests, and soft-delete integration
-globs: apps/frontend/src/tenant/features/**,apps/frontend/src/platform/pages/**,packages/shared/src/*ModuleManifest.ts
+globs: apps/frontend/src/tenant/features/**,apps/frontend/src/platform/pages/**,packages/shared/src/**/*ModuleManifest.ts
 alwaysApply: false
 ---
 

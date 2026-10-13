@@ -1,3 +1,5 @@
+> **ARCHIVED (2026-10-13)** — migration complete (all tenant modules migrated).
+
 # Migration Plan — Legacy Modules to Use-Case + Repository-Interface Pattern
 
 ## Goal
