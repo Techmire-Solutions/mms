@@ -23,7 +23,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || "test";
  */
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const backendDir = path.resolve(__dirname, "../../apps/backend");
+const backendDir = path.resolve(__dirname, "../../../apps/backend");
 
 const isProductionTarget =
   process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production";
