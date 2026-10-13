@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatShortWeekdayLabels } from "../settingsTypes.js";
+import { formatShortWeekdayLabels } from "../settings/settingsTypes.js";
 
 describe("formatShortWeekdayLabels", () => {
   it("returns seven Monday-first short weekday labels", () => {

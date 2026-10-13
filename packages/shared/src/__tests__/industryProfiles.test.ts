@@ -5,8 +5,8 @@ import {
   getRecommendedModulesForIndustry,
   getRecommendedRolesForIndustry,
   getTerminologyForIndustry,
-} from "../industryProfiles.js";
-import { INDUSTRY_TYPES } from "../industryTypes.js";
+} from "../auth/industryProfiles.js";
+import { INDUSTRY_TYPES } from "../auth/industryTypes.js";
 
 describe("industryProfiles", () => {
   it("covers all supported industry types", () => {

@@ -81,12 +81,12 @@ export const moduleFieldsPrefsAuditBodySchema = z.preprocess((raw) => {
   return deepSanitizeStrings(raw);
 }, moduleFieldsPrefsAuditBodyBaseSchema);
 
-import { contactsListQuerySchema } from "../contactsListQuery.js";
-import { studentsListQuerySchema } from "../studentsListQuery.js";
-import { facultyListQuerySchema } from "../facultyListQuery.js";
-import { sessionsListQuerySchema } from "../sessionsListQuery.js";
-import { enrollmentsListQuerySchema } from "../enrollmentsListQuery.js";
-import { usersListQuerySchema } from "../usersListQuery.js";
+import { contactsListQuerySchema } from "../contacts/contactsListQuery.js";
+import { studentsListQuerySchema } from "../students/studentsListQuery.js";
+import { facultyListQuerySchema } from "../faculty/facultyListQuery.js";
+import { sessionsListQuerySchema } from "../sessions/sessionsListQuery.js";
+import { enrollmentsListQuerySchema } from "../enrollments/enrollmentsListQuery.js";
+import { usersListQuerySchema } from "../auth/usersListQuery.js";
 
 export const contactsCsvExportBodySchema = csvExportBodySchema(contactsListQuerySchema);
 export const studentsCsvExportBodySchema = csvExportBodySchema(studentsListQuerySchema);

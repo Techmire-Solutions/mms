@@ -5,7 +5,7 @@ import {
   computeSessionsCommandMetrics,
   computeEnrollmentsCommandMetrics,
   computeUsersCommandMetrics,
-} from "../moduleCommandMetrics.js";
+} from "../settings/moduleCommandMetrics.js";
 
 describe("moduleCommandMetrics", () => {
   it("computes student metrics breakdown correctly", () => {

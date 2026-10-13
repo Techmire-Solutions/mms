@@ -5,7 +5,7 @@ import {
   listNonGsmCharacters,
   SMS_HIGH_SEGMENT_WARN,
   SMS_SOFT_CHAR_WARN,
-} from "../smsUtils.js";
+} from "../messaging/smsUtils.js";
 
 describe("smsUtils", () => {
   describe("buildDeviceSmsUri", () => {

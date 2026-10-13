@@ -4,10 +4,10 @@ import {
   stripStudentClientSoftDeleteFields,
   hydrateStudentFromContacts,
   formatStudentNameWithParents,
-} from "../studentUtils.js";
-import { studentRecordSchema } from "../studentsModuleManifest.js";
-import type { Student } from "../studentTypes.js";
-import type { Contact } from "../contactTypes.js";
+} from "../students/studentUtils.js";
+import { studentRecordSchema } from "../students/studentsModuleManifest.js";
+import type { Student } from "../students/studentTypes.js";
+import type { Contact } from "../contacts/contactTypes.js";
 
 describe("studentUtils", () => {
   describe("stripStudentClientSoftDeleteFields", () => {

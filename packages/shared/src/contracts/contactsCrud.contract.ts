@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { contactRecordSchema } from "../contactsModuleManifest.js";
-import { contactIdentityMatchResultSchema } from "../contactIdentityMatch.js";
-import { baseListQuerySchema, includeDeletedQuerySchema } from "../apiSchemas.js";
+import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
+import { contactIdentityMatchResultSchema } from "../contacts/contactIdentityMatch.js";
+import { baseListQuerySchema, includeDeletedQuerySchema } from "../core/apiSchemas.js";
 import { contactWireWriteSchema } from "../schemas/contacts.dto.js";
 import { widgetAggregateResultSchema } from "../schemas/common.dto.js";
 import {

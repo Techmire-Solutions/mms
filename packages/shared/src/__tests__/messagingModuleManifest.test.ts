@@ -9,7 +9,7 @@ import {
   getMessageCategoryLabelKey,
   toMessagingRecipient,
   messagingResolveResponseSchema,
-} from "../messagingModuleManifest.js";
+} from "../messaging/messagingModuleManifest.js";
 
 describe("messagingModuleManifest", () => {
   it("defines the correct module manifest metadata and tiers", () => {

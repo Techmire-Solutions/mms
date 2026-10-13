@@ -10,7 +10,7 @@ import {
   hydrateAssessmentResultList,
   hydrateHasanatDistributionList,
   hydrateWorkspaceUserProfileList,
-} from "../linkedCollectionUtils.js";
+} from "../core/linkedCollectionUtils.js";
 
 describe("linkedCollectionUtils", () => {
   describe("Session classes normalization & hydration", () => {

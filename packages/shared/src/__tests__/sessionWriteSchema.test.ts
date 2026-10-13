@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { CLIENT_SOFT_DELETE_KEYS, stripClientSoftDeleteFields } from "../contactSoftDelete.js";
+import {
+  CLIENT_SOFT_DELETE_KEYS,
+  stripClientSoftDeleteFields,
+} from "../contacts/contactSoftDelete.js";
 import { sessionCreateBodySchema } from "../schemas/sessions.dto.js";
-import { SessionInsertSchema, isSessionDeleted, filterActiveSessions } from "../sessionTypes.js";
+import {
+  SessionInsertSchema,
+  isSessionDeleted,
+  filterActiveSessions,
+} from "../sessions/sessionTypes.js";
 
 describe("sessionWriteSchema", () => {
   it("CLIENT_SOFT_DELETE_KEYS contains all six soft-delete and restore fields", () => {

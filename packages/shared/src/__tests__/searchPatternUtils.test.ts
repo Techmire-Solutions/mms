@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchesWildcardSearch, toSqlSearchPattern } from "../searchPatternUtils.js";
+import { matchesWildcardSearch, toSqlSearchPattern } from "../core/searchPatternUtils.js";
 
 describe("searchPatternUtils", () => {
   describe("toSqlSearchPattern", () => {

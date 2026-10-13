@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   getContactFieldRemovalIssues,
   isContactSeedFieldKey,
-} from "../contactFieldDependencies.js";
-import { DEFAULT_COLUMN_REGISTRY } from "../contactTypes.js";
+} from "../contacts/contactFieldDependencies.js";
+import { DEFAULT_COLUMN_REGISTRY } from "../contacts/contactTypes.js";
 
 describe("contactFieldDependencies", () => {
   it("blocks removal of seed fields", () => {

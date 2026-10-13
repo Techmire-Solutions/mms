@@ -7,7 +7,7 @@
  *   import '@mms/shared/dataTransfer/export/serializers/csvSerializer';
  * or import the barrel `@mms/shared/dataTransfer`.
  */
-import { buildCsvContent } from "../../../csvUtils.js";
+import { buildCsvContent } from "../../../core/csvUtils.js";
 import { registerSerializer, type ExportSerializer } from "../exportSerializerRegistry.js";
 
 export const csvSerializer: ExportSerializer = {

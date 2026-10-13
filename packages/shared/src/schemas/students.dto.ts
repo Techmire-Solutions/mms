@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { stripStudentClientSoftDeleteFields } from "../studentUtils.js";
+import { stripStudentClientSoftDeleteFields } from "../students/studentUtils.js";
 import { deepSanitizeStrings } from "./sanitize.js";
-import { STUDENT_WRITE_SYSTEM_KEYS } from "../studentValidation.js";
+import { STUDENT_WRITE_SYSTEM_KEYS } from "../students/studentValidation.js";
 
 const STUDENT_WRITE_SYSTEM_KEY_SET = new Set<string>(STUDENT_WRITE_SYSTEM_KEYS);
 

@@ -4,8 +4,8 @@ import {
   sanitizeContactsForViewer,
   summarizeContactFieldChanges,
   type ContactFieldConfigSnapshot,
-} from "../contactResponseSanitizer.js";
-import type { Contact } from "../contactTypes.js";
+} from "../contacts/contactResponseSanitizer.js";
+import type { Contact } from "../contacts/contactTypes.js";
 
 describe("contactResponseSanitizer", () => {
   const mockConfig: ContactFieldConfigSnapshot = {

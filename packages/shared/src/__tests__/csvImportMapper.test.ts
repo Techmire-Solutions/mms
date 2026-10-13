@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { mapCsvGridToObjects } from "../csvImportMapper.js";
-import { generateCsvTemplate } from "../csvTemplateGenerator.js";
+import { mapCsvGridToObjects } from "../core/csvImportMapper.js";
+import { generateCsvTemplate } from "../core/csvTemplateGenerator.js";
 
 describe("csvImportMapper", () => {
   it("maps grid rows to object keys with case and punctuation insensitivity", () => {

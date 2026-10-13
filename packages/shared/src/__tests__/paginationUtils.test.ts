@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeTrimmedIds, isQueryFlagTrue, paginateArray } from "../paginationUtils.js";
+import { dedupeTrimmedIds, isQueryFlagTrue, paginateArray } from "../core/paginationUtils.js";
 
 describe("isQueryFlagTrue", () => {
   it("returns true for boolean true and numeric 1", () => {

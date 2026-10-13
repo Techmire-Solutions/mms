@@ -4,7 +4,7 @@ import {
   isValidIsoDate,
   isoDateOrEmptySchema,
   isoDateSchema,
-} from "../isoDateSchema.js";
+} from "../core/isoDateSchema.js";
 
 describe("isoDateSchema", () => {
   it("accepts valid calendar dates in YYYY-MM-DD format", () => {

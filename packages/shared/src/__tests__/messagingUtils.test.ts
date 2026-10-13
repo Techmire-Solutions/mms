@@ -6,13 +6,13 @@ import {
   MESSAGING_VARIABLE_TOKENS,
   appendVariableToken,
   insertVariableTokenAt,
-} from "../utils.js";
-import { calculateSmsSegments } from "../smsUtils.js";
+} from "../core/utils.js";
+import { calculateSmsSegments } from "../messaging/smsUtils.js";
 import {
   mergeMessageTemplates,
   DEFAULT_MESSAGE_TEMPLATES,
   type MessageTemplate,
-} from "../messagingSchemas.js";
+} from "../messaging/messagingSchemas.js";
 
 describe("messagingUtils", () => {
   describe("personalizeMessage", () => {

@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { deepSanitizeStrings } from "./sanitize.js";
-import type { FieldConfig } from "../contactTypes.js";
-import { isContactCustomCollectionTab } from "../contactEnabledTabs.js";
-import { stripContactClientSoftDeleteFields } from "../contactSoftDelete.js";
-import { hydrateContactRelationshipFields } from "../contactRelationshipHydrate.js";
+import type { FieldConfig } from "../contacts/contactTypes.js";
+import { isContactCustomCollectionTab } from "../contacts/contactEnabledTabs.js";
+import { stripContactClientSoftDeleteFields } from "../contacts/contactSoftDelete.js";
+import { hydrateContactRelationshipFields } from "../contacts/contactRelationshipHydrate.js";
 import {
   activitySchema,
   attachmentSchema,
@@ -18,7 +18,7 @@ import {
   relationshipSchema,
   socialLinkSchema,
   whatsappStatusOptionalSchema,
-} from "../contactNestedSchemas.js";
+} from "../contacts/contactNestedSchemas.js";
 
 const LIST_TAB_WRITE_KEYS: Record<string, string> = {
   phones: "phones",

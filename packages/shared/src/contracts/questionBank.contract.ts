@@ -1,16 +1,16 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema } from "../apiSchemas.js";
+import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { widgetAggregatesBodySchema, widgetAggregateResultSchema } from "../schemas/common.dto.js";
 import {
   questionBankQuestionRecordSchema,
   questionBankTestRecordSchema,
   questionBankResultRecordSchema,
-} from "../questionBankModuleManifest.js";
+} from "../examinations/questionBankModuleManifest.js";
 import {
   questionBankReportAggregatesSchema,
   questionBankReportQuerySchema,
-} from "../questionBankReportAggregates.js";
+} from "../examinations/questionBankReportAggregates.js";
 
 const c = initContract();
 const ok = z.unknown();

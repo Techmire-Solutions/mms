@@ -1,7 +1,7 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { ownContactPatchBodySchema } from "../schemas/profile.dto.js";
-import { contactRecordSchema } from "../contactsModuleManifest.js";
+import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
 
 const c = initContract();
 

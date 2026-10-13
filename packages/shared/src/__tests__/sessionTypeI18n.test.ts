@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sessionTypeI18nKey } from "../sessionTypeI18n.js";
+import { sessionTypeI18nKey } from "../sessions/sessionTypeI18n.js";
 
 describe("sessionTypeI18nKey", () => {
   it("maps the built-in session types to their i18n keys", () => {

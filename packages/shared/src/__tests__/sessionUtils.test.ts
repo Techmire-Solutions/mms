@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { normalizeStoredSession, stripSessionClientSoftDeleteFields } from "../sessionUtils.js";
+import {
+  normalizeStoredSession,
+  stripSessionClientSoftDeleteFields,
+} from "../sessions/sessionUtils.js";
 
 describe("sessionUtils", () => {
   it("stripSessionClientSoftDeleteFields removes soft-delete metadata", () => {

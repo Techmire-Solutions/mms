@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { deepSanitizeStrings } from "./sanitize.js";
-import { SessionSchema } from "../sessionTypes.js";
-import { stripSessionClientSoftDeleteFields } from "../sessionUtils.js";
+import { SessionSchema } from "../sessions/sessionTypes.js";
+import { stripSessionClientSoftDeleteFields } from "../sessions/sessionUtils.js";
 import { bulkIdsBodySchema, type BulkIdsBody } from "./api.dto.js";
 
 const sessionCreateBodyBaseSchema = SessionSchema.omit({

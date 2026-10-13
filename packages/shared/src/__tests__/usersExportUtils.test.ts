@@ -7,8 +7,8 @@ import {
   extractUserCell,
   buildUsersExportRows,
   type UserExportColumn,
-} from "../usersExportUtils.js";
-import type { WorkspaceUser } from "../userEntityTypes.js";
+} from "../auth/usersExportUtils.js";
+import type { WorkspaceUser } from "../auth/userEntityTypes.js";
 
 describe("usersExportUtils", () => {
   const sampleUser: WorkspaceUser = {

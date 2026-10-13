@@ -1,6 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { usersListQuerySchema } from "../usersListQuery.js";
+import { usersListQuerySchema } from "../auth/usersListQuery.js";
 import {
   activityLogRecordSchema,
   createWorkspaceUserSchema,
@@ -8,7 +8,7 @@ import {
   inviteWorkspaceUserSchema,
   resetWorkspaceUserPasswordSchema,
   workspaceUserRecordSchema,
-} from "../usersModuleManifest.js";
+} from "../auth/usersModuleManifest.js";
 
 const c = initContract();
 const errorResponse = z.unknown();

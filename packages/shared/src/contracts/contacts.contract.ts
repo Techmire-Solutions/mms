@@ -1,8 +1,8 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { contactRecordSchema } from "../contactsModuleManifest.js";
-import { contactIdentityMatchResultSchema } from "../contactIdentityMatch.js";
-import { baseListQuerySchema } from "../apiSchemas.js";
+import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
+import { contactIdentityMatchResultSchema } from "../contacts/contactIdentityMatch.js";
+import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { contactWireWriteSchema } from "../schemas/contacts.dto.js";
 
 const c = initContract();

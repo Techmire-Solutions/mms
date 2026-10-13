@@ -18,24 +18,24 @@
       "types": "./dist/tenantUtils.d.ts"
     },
     "./translations/en": {
-      "import": "./dist/appTranslationsEn.js",
-      "default": "./dist/appTranslationsEn.js",
-      "types": "./dist/appTranslationsEn.d.ts"
+      "import": "./dist/i18n/appTranslationsEn.js",
+      "default": "./dist/i18n/appTranslationsEn.js",
+      "types": "./dist/i18n/appTranslationsEn.d.ts"
     },
     "./translations/ar": {
-      "import": "./dist/appTranslationsAr.js",
-      "default": "./dist/appTranslationsAr.js",
-      "types": "./dist/appTranslationsAr.d.ts"
+      "import": "./dist/i18n/appTranslationsAr.js",
+      "default": "./dist/i18n/appTranslationsAr.js",
+      "types": "./dist/i18n/appTranslationsAr.d.ts"
     },
     "./translations/ur": {
-      "import": "./dist/appTranslationsUr.js",
-      "default": "./dist/appTranslationsUr.js",
-      "types": "./dist/appTranslationsUr.d.ts"
+      "import": "./dist/i18n/appTranslationsUr.js",
+      "default": "./dist/i18n/appTranslationsUr.js",
+      "types": "./dist/i18n/appTranslationsUr.d.ts"
     },
     "./translations/fa": {
-      "import": "./dist/appTranslationsFa.js",
-      "default": "./dist/appTranslationsFa.js",
-      "types": "./dist/appTranslationsFa.d.ts"
+      "import": "./dist/i18n/appTranslationsFa.js",
+      "default": "./dist/i18n/appTranslationsFa.js",
+      "types": "./dist/i18n/appTranslationsFa.d.ts"
     }
   },
   "scripts": {

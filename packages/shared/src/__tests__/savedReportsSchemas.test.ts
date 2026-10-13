@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   genericSavedReportCreateSchema,
   genericSavedReportListQuerySchema,
-} from "../savedReportsSchemas.js";
+} from "../reports/savedReportsSchemas.js";
 
 describe("generic saved-report schemas", () => {
   it("accepts a supported category and non-empty name", () => {

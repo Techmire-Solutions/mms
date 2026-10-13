@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildDynamicStudentSchema } from "../studentValidation.js";
-import { DEFAULT_STUDENTS_SETTINGS } from "../settingsTypes.js";
-import type { FieldDefinition } from "../contactTypes.js";
+import { buildDynamicStudentSchema } from "../students/studentValidation.js";
+import { DEFAULT_STUDENTS_SETTINGS } from "../settings/settingsTypes.js";
+import type { FieldDefinition } from "../contacts/contactTypes.js";
 
 describe("studentValidationAutoId", () => {
   const fields = {

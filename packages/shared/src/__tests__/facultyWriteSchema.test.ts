@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { stripFacultyClientSoftDeleteFields, stripFacultyWriteNoise } from "../facultyUtils.js";
-import { isFacultyDeleted, filterActiveFaculty } from "../facultyTypes.js";
+import {
+  stripFacultyClientSoftDeleteFields,
+  stripFacultyWriteNoise,
+} from "../faculty/facultyUtils.js";
+import { isFacultyDeleted, filterActiveFaculty } from "../faculty/facultyTypes.js";
 import { buildDynamicFacultySchema } from "../schemas/faculty.dto.js";
-import { DEFAULT_FACULTY_SETTINGS } from "../facultyModuleSettings.js";
+import { DEFAULT_FACULTY_SETTINGS } from "../faculty/facultyModuleSettings.js";
 
 describe("facultyWriteSchema and soft-delete helpers", () => {
   it("stripFacultyClientSoftDeleteFields strips all soft-delete metadata and deleted flag", () => {

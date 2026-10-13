@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { hasFieldValue, calculateProfileCompleteness } from "../contactProfileCompleteness.js";
-import type { Contact, FieldConfig } from "../contactTypes.js";
+import {
+  hasFieldValue,
+  calculateProfileCompleteness,
+} from "../contacts/contactProfileCompleteness.js";
+import type { Contact, FieldConfig } from "../contacts/contactTypes.js";
 
 describe("contactProfileCompleteness", () => {
   describe("hasFieldValue", () => {

@@ -1,6 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { LLM_PROVIDER_KEYS } from "../llmSettingsTypes.js";
+import { LLM_PROVIDER_KEYS } from "../auth/llmSettingsTypes.js";
 
 const c = initContract();
 const errorResponse = z.unknown();

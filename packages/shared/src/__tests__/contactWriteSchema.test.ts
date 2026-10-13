@@ -4,7 +4,7 @@ import {
   contactWriteSchema,
   collectContactWriteExtraFieldKeys,
 } from "../schemas/contacts.dto.js";
-import type { FieldConfig } from "../contactTypes.js";
+import type { FieldConfig } from "../contacts/contactTypes.js";
 
 describe("contactWriteSchema allowlist", () => {
   it("strips client soft-delete fields", () => {

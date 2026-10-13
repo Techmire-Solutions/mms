@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, buildCsvContent, buildTenantExportFilename } from "../csvUtils.js";
+import { escapeCsvCell, buildCsvContent, buildTenantExportFilename } from "../core/csvUtils.js";
 
 describe("csvUtils", () => {
   describe("escapeCsvCell", () => {

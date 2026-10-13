@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { baseListQuerySchema } from "../apiSchemas.js";
+import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 import {
   examRecordInsertSchema,
   examRecordUpdateSchema,
   examResultRecordInsertSchema,
   examResultRecordUpdateSchema,
-} from "../examinationsModuleManifest.js";
+} from "../examinations/examinationsModuleManifest.js";
 
 /** Query accepted by the examinations exams Work list endpoint. */
 export const examinationsListQuerySchema = baseListQuerySchema

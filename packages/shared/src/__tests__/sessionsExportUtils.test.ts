@@ -5,8 +5,8 @@ import {
   extractSessionCell,
   buildSessionsExportRows,
   type SessionExportColumn,
-} from "../sessionsExportUtils.js";
-import type { Session } from "../sessionTypes.js";
+} from "../sessions/sessionsExportUtils.js";
+import type { Session } from "../sessions/sessionTypes.js";
 
 describe("sessionsExportUtils", () => {
   const sampleSession: Session & { customFields?: Record<string, unknown> } = {

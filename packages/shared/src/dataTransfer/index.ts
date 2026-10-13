@@ -78,8 +78,8 @@ export {
   mapCsvGridToObjects,
   type CsvImportFieldMapping,
   type CsvImportMapResult,
-} from "../csvImportMapper.js";
-export { generateCsvTemplate, type CsvTemplateColumn } from "../csvTemplateGenerator.js";
+} from "../core/csvImportMapper.js";
+export { generateCsvTemplate, type CsvTemplateColumn } from "../core/csvTemplateGenerator.js";
 
 // Schemas
 export * from "./schemas/index.js";

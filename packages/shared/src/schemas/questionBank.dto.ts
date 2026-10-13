@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseListQuerySchema } from "../apiSchemas.js";
+import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 import {
   questionBankQuestionInsertSchema,
@@ -8,7 +8,7 @@ import {
   questionBankTestUpdateSchema,
   questionBankResultInsertSchema,
   questionBankResultUpdateSchema,
-} from "../questionBankModuleManifest.js";
+} from "../examinations/questionBankModuleManifest.js";
 
 /** Query accepted by the question bank questions Work list endpoint. */
 export const questionBankListQuerySchema = baseListQuerySchema

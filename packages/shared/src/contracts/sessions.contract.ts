@@ -1,16 +1,16 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { softDeleteBodySchema, includeDeletedQuerySchema } from "../apiSchemas.js";
+import { softDeleteBodySchema, includeDeletedQuerySchema } from "../core/apiSchemas.js";
 import {
   sessionCreateBodySchema,
   sessionUpdateBodySchema,
   sessionsBulkIdsSchema,
 } from "../schemas/sessions.dto.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
-import { sessionsBulkStatusSchema } from "../sessionsModuleManifest.js";
-import { sessionsReportAggregatesSchema } from "../sessionsReportAggregates.js";
-import { SessionSchema } from "../sessionTypes.js";
-import { sessionsListQuerySchema } from "../sessionsListQuery.js";
+import { sessionsBulkStatusSchema } from "../sessions/sessionsModuleManifest.js";
+import { sessionsReportAggregatesSchema } from "../sessions/sessionsReportAggregates.js";
+import { SessionSchema } from "../sessions/sessionTypes.js";
+import { sessionsListQuerySchema } from "../sessions/sessionsListQuery.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();

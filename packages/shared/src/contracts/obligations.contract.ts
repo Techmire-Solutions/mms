@@ -4,11 +4,11 @@ import {
   baseListQuerySchema,
   bulkStringIdsBodySchema,
   softDeleteBodySchema,
-} from "../apiSchemas.js";
+} from "../core/apiSchemas.js";
 import {
   obligationsReportAggregatesSchema,
   obligationsReportQuerySchema,
-} from "../obligationsReportAggregates.js";
+} from "../obligations/obligationsReportAggregates.js";
 import {
   obligationTypeRecordSchema,
   mujtahidRecordSchema,
@@ -22,7 +22,7 @@ import {
   wakalaTypeListSchema,
   obligationDistributionListSchema,
   obligationCollectionListSchema,
-} from "../obligationsModuleManifest.js";
+} from "../obligations/obligationsModuleManifest.js";
 
 const c = initContract();
 const ok = z.unknown();

@@ -23,74 +23,77 @@ import {
   isContactDeleted,
   stripClientSoftDeleteFields,
   stripContactClientSoftDeleteFields,
-} from "../contactSoftDelete.js";
+} from "../contacts/contactSoftDelete.js";
 import {
   STUDENT_CLIENT_SOFT_DELETE_KEYS,
   stripStudentClientSoftDeleteFields,
-} from "../studentUtils.js";
-import { filterActiveStudents, isStudentDeleted } from "../studentTypes.js";
+} from "../students/studentUtils.js";
+import { filterActiveStudents, isStudentDeleted } from "../students/studentTypes.js";
 import {
   FACULTY_CLIENT_SOFT_DELETE_KEYS,
   stripFacultyClientSoftDeleteFields,
   filterActiveFaculty,
   isFacultyDeleted,
-} from "../facultyUtils.js";
+} from "../faculty/facultyUtils.js";
 import {
   SESSION_CLIENT_SOFT_DELETE_KEYS,
   stripSessionClientSoftDeleteFields,
-} from "../sessionUtils.js";
-import { filterActiveSessions, isSessionDeleted } from "../sessionTypes.js";
+} from "../sessions/sessionUtils.js";
+import { filterActiveSessions, isSessionDeleted } from "../sessions/sessionTypes.js";
 import {
   ENROLLMENT_CLIENT_SOFT_DELETE_KEYS,
   stripEnrollmentClientSoftDeleteFields,
-} from "../enrollmentUtils.js";
-import { filterActiveEnrollments, isEnrollmentDeleted } from "../enrollmentsModuleManifest.js";
-import * as studentSoftDelete from "../studentSoftDelete.js";
-import * as facultySoftDelete from "../facultySoftDelete.js";
-import * as sessionSoftDelete from "../sessionSoftDelete.js";
-import * as enrollmentSoftDelete from "../enrollmentSoftDelete.js";
-import { filterActiveEntities, isEntityDeleted, SOFT_DELETE_KEYS } from "../softDelete.js";
-import { isQueryFlagTrue } from "../paginationUtils.js";
-import { manifestSoftDeleteSchema } from "../types/moduleManifest.js";
+} from "../enrollments/enrollmentUtils.js";
+import {
+  filterActiveEnrollments,
+  isEnrollmentDeleted,
+} from "../enrollments/enrollmentsModuleManifest.js";
+import * as studentSoftDelete from "../students/studentSoftDelete.js";
+import * as facultySoftDelete from "../faculty/facultySoftDelete.js";
+import * as sessionSoftDelete from "../sessions/sessionSoftDelete.js";
+import * as enrollmentSoftDelete from "../enrollments/enrollmentSoftDelete.js";
+import { filterActiveEntities, isEntityDeleted, SOFT_DELETE_KEYS } from "../core/softDelete.js";
+import { isQueryFlagTrue } from "../core/paginationUtils.js";
+import { manifestSoftDeleteSchema } from "../core/moduleManifest.js";
 import { contactWriteSchema } from "../schemas/contacts.dto.js";
 import { studentWriteSchema } from "../schemas/students.dto.js";
 import { buildDynamicFacultySchema } from "../schemas/faculty.dto.js";
 import { sessionCreateBodySchema, sessionUpdateBodySchema } from "../schemas/sessions.dto.js";
-import { SessionInsertSchema } from "../sessionTypes.js";
-import type { Contact } from "../contactTypes.js";
-import { DEFAULT_FACULTY_SETTINGS } from "../facultyModuleSettings.js";
-import { CONTACTS_MODULE_MANIFEST } from "../contactsModuleManifest.js";
-import { STUDENTS_MODULE_MANIFEST } from "../studentsModuleManifest.js";
-import { FACULTY_MODULE_MANIFEST } from "../facultyModuleManifest.js";
-import { SESSIONS_MODULE_MANIFEST } from "../sessionsModuleManifest.js";
+import { SessionInsertSchema } from "../sessions/sessionTypes.js";
+import type { Contact } from "../contacts/contactTypes.js";
+import { DEFAULT_FACULTY_SETTINGS } from "../faculty/facultyModuleSettings.js";
+import { CONTACTS_MODULE_MANIFEST } from "../contacts/contactsModuleManifest.js";
+import { STUDENTS_MODULE_MANIFEST } from "../students/studentsModuleManifest.js";
+import { FACULTY_MODULE_MANIFEST } from "../faculty/facultyModuleManifest.js";
+import { SESSIONS_MODULE_MANIFEST } from "../sessions/sessionsModuleManifest.js";
 import {
   ENROLLMENTS_MODULE_MANIFEST,
   enrollmentRecordInsertSchema,
   enrollmentRecordUpdateSchema,
-} from "../enrollmentsModuleManifest.js";
+} from "../enrollments/enrollmentsModuleManifest.js";
 import {
   FINANCE_MODULE_MANIFEST,
   invoiceRecordInsertSchema,
   paymentRecordInsertSchema,
-} from "../financeModuleManifest.js";
+} from "../finance/financeModuleManifest.js";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   accountRecordInsertSchema,
-} from "../accountingModuleManifest.js";
+} from "../finance/accountingModuleManifest.js";
 import {
   HASANAT_MODULE_MANIFEST,
   distributionRecordInsertSchema,
-} from "../hasanatModuleManifest.js";
-import { OBLIGATIONS_MODULE_MANIFEST } from "../obligationsModuleManifest.js";
+} from "../hasanat/hasanatModuleManifest.js";
+import { OBLIGATIONS_MODULE_MANIFEST } from "../obligations/obligationsModuleManifest.js";
 import {
   EXAMINATIONS_MODULE_MANIFEST,
   examRecordInsertSchema,
-} from "../examinationsModuleManifest.js";
+} from "../examinations/examinationsModuleManifest.js";
 import {
   QUESTION_BANK_MODULE_MANIFEST,
   questionBankQuestionInsertSchema,
-} from "../questionBankModuleManifest.js";
-import { MESSAGING_MODULE_MANIFEST } from "../messagingModuleManifest.js";
+} from "../examinations/questionBankModuleManifest.js";
+import { MESSAGING_MODULE_MANIFEST } from "../messaging/messagingModuleManifest.js";
 
 describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
   describe("1. Create and Update DTOs strip or reject client soft-delete fields", () => {

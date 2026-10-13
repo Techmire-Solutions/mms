@@ -78,7 +78,7 @@ export const linkedContactIdsQuerySchema = z
 
 export type LinkedContactIdsQuery = z.infer<typeof linkedContactIdsQuerySchema>;
 
-import type { SoftDeleteListFilter } from "../softDelete.js";
+import type { SoftDeleteListFilter } from "../core/softDelete.js";
 
 /** Authoritative repository list and pagination options */
 export interface RepositoryListOptions {

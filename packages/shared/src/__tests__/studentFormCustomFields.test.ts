@@ -3,8 +3,8 @@ import {
   listEnabledCustomStudentFormFields,
   listStudentSystemFormFieldKeys,
   isStudentSystemFormField,
-} from "../studentFormCustomFields.js";
-import type { FieldDefinition } from "../contactFieldSchemaTypes.js";
+} from "../students/studentFormCustomFields.js";
+import type { FieldDefinition } from "../contacts/contactFieldSchemaTypes.js";
 
 function field(partial: Partial<FieldDefinition> & { key: string }): FieldDefinition {
   return {

@@ -5,9 +5,9 @@ import {
   formatFacultyDisplayName,
   getContactQualification,
   getContactSpecialization,
-} from "../facultyUtils.js";
-import type { FacultyMember } from "../facultyTypes.js";
-import type { Contact } from "../contactTypes.js";
+} from "../faculty/facultyUtils.js";
+import type { FacultyMember } from "../faculty/facultyTypes.js";
+import type { Contact } from "../contacts/contactTypes.js";
 
 describe("facultyUtils", () => {
   describe("formatFacultyDisplayName", () => {

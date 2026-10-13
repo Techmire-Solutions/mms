@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { buildDynamicContactSchema, isUrlOrSocialHandle } from "../contactValidation.js";
-import { formatZodIssues } from "../contactValidationErrors.js";
+import { buildDynamicContactSchema, isUrlOrSocialHandle } from "../contacts/contactValidation.js";
+import { formatZodIssues } from "../contacts/contactValidationErrors.js";
 import { contactWriteSchema } from "../schemas/contacts.dto.js";
-import type { FieldConfig } from "../contactTypes.js";
+import type { FieldConfig } from "../contacts/contactTypes.js";
 
 describe("buildDynamicContactSchema", () => {
   it("should validate contact record with custom fields", () => {

@@ -4,7 +4,7 @@ import {
   contactsBulkTagBodySchema,
   CONTACT_ACTIVITY_TYPES,
   WHATSAPP_STATUS_VALUES,
-} from "../contactEntityTypes.js";
+} from "../contacts/contactEntityTypes.js";
 
 describe("contactEntityTypes", () => {
   describe("WHATSAPP_STATUS_VALUES", () => {

@@ -4,12 +4,12 @@ import {
   baseListQuerySchema,
   bulkStringIdsBodySchema,
   softDeleteBodySchema,
-} from "../apiSchemas.js";
+} from "../core/apiSchemas.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
   hasanatFieldConfigPutBodySchema,
   hasanatPreferencesPutBodySchema,
-} from "../hasanatSetupConfigTypes.js";
+} from "../hasanat/hasanatSetupConfigTypes.js";
 import {
   denomRecordSchema,
   batchRecordSchema,
@@ -19,9 +19,9 @@ import {
   batchListSchema,
   distributionListSchema,
   redemptionListSchema,
-} from "../hasanatModuleManifest.js";
-import { hasanatReportAggregatesSchema } from "../hasanatReportAggregates.js";
-import { reportComparisonQuerySchema } from "../reportComparisonQuery.js";
+} from "../hasanat/hasanatModuleManifest.js";
+import { hasanatReportAggregatesSchema } from "../hasanat/hasanatReportAggregates.js";
+import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();

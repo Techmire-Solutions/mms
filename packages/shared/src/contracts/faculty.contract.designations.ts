@@ -3,7 +3,7 @@ import {
   facultyDesignationAssignmentSchema,
   facultyDesignationSchema,
   facultyDesignationWriteSchema,
-} from "../facultyDesignationTypes.js";
+} from "../faculty/facultyDesignationTypes.js";
 
 const errorResponse = z.unknown();
 

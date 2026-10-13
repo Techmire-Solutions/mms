@@ -138,26 +138,26 @@ export default defineConfig({
             }
           }
           if (
-            id.includes("packages/shared/dist/appTranslationsEn") ||
-            id.includes("packages\\shared\\dist\\appTranslationsEn")
+            id.includes("packages/shared/dist/i18n/appTranslationsEn") ||
+            id.includes("packages\\shared\\dist\\i18n\\appTranslationsEn")
           ) {
             return "mms-i18n-en";
           }
           if (
-            id.includes("packages/shared/dist/appTranslationsAr") ||
-            id.includes("packages\\shared\\dist\\appTranslationsAr")
+            id.includes("packages/shared/dist/i18n/appTranslationsAr") ||
+            id.includes("packages\\shared\\dist\\i18n\\appTranslationsAr")
           ) {
             return "mms-i18n-ar";
           }
           if (
-            id.includes("packages/shared/dist/appTranslationsUr") ||
-            id.includes("packages\\shared\\dist\\appTranslationsUr")
+            id.includes("packages/shared/dist/i18n/appTranslationsUr") ||
+            id.includes("packages\\shared\\dist\\i18n\\appTranslationsUr")
           ) {
             return "mms-i18n-ur";
           }
           if (
-            id.includes("packages/shared/dist/appTranslationsFa") ||
-            id.includes("packages\\shared\\dist\\appTranslationsFa")
+            id.includes("packages/shared/dist/i18n/appTranslationsFa") ||
+            id.includes("packages\\shared\\dist\\i18n\\appTranslationsFa")
           ) {
             return "mms-i18n-fa";
           }
@@ -215,22 +215,22 @@ export default defineConfig({
             },
             {
               name: "mms-i18n-en",
-              test: /packages[\\/]shared[\\/]dist[\\/]appTranslationsEn/,
+              test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsEn/,
               priority: 5,
             },
             {
               name: "mms-i18n-ar",
-              test: /packages[\\/]shared[\\/]dist[\\/]appTranslationsAr/,
+              test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsAr/,
               priority: 5,
             },
             {
               name: "mms-i18n-ur",
-              test: /packages[\\/]shared[\\/]dist[\\/]appTranslationsUr/,
+              test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsUr/,
               priority: 5,
             },
             {
               name: "mms-i18n-fa",
-              test: /packages[\\/]shared[\\/]dist[\\/]appTranslationsFa/,
+              test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsFa/,
               priority: 5,
             },
           ],

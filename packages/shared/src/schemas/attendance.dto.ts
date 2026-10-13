@@ -4,7 +4,7 @@ import {
   attendanceRecordInsertSchema,
   attendanceRecordUpdateSchema,
   attendanceLeaveInsertSchema,
-} from "../attendanceModuleManifest.js";
+} from "../attendance/attendanceModuleManifest.js";
 
 const attendanceBulkIdsBaseSchema = z
   .object({

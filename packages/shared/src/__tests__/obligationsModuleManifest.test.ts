@@ -5,7 +5,7 @@ import {
   obligationCollectionInsertSchema,
   isObligationCollectionDeleted,
   filterActiveObligationCollections,
-} from "../obligationsModuleManifest.js";
+} from "../obligations/obligationsModuleManifest.js";
 
 describe("obligationsModuleManifest and soft-delete invariants", () => {
   it("declares soft delete in module manifest", () => {

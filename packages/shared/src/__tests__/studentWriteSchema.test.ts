@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildStudentWriteSchema, studentWriteSchema } from "../schemas/students.dto.js";
-import { collectStudentWriteExtraFieldKeys } from "../studentValidation.js";
-import type { StudentsSettings } from "../studentsModuleSettings.js";
+import { collectStudentWriteExtraFieldKeys } from "../students/studentValidation.js";
+import type { StudentsSettings } from "../students/studentsModuleSettings.js";
 
 describe("studentWriteSchema allowlist", () => {
   it("strips client soft-delete fields", () => {

@@ -6,7 +6,7 @@ import {
   resolveLlmModel,
   LLM_PROVIDER_KEYS,
   LLM_PROVIDERS_META,
-} from "../llmSettingsTypes.js";
+} from "../auth/llmSettingsTypes.js";
 
 describe("llmSettingsTypes helper utilities", () => {
   describe("formatLlmSpeed", () => {

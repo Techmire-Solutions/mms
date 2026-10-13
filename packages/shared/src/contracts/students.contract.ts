@@ -6,9 +6,12 @@ import {
   studentsDuplicateCheckBodySchema,
   studentsBulkStatusSchema,
 } from "../schemas/students.dto.js";
-import { studentRecordSchema } from "../studentsModuleManifest.js";
-import { studentsListQuerySchema, studentsNextGrNumberQuerySchema } from "../studentsListQuery.js";
-import { includeDeletedQuerySchema } from "../apiSchemas.js";
+import { studentRecordSchema } from "../students/studentsModuleManifest.js";
+import {
+  studentsListQuerySchema,
+  studentsNextGrNumberQuerySchema,
+} from "../students/studentsListQuery.js";
+import { includeDeletedQuerySchema } from "../core/apiSchemas.js";
 import { widgetAggregateResultSchema } from "../schemas/common.dto.js";
 
 const c = initContract();

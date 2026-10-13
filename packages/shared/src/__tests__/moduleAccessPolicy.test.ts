@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { roleHasPermission, type Permission } from "../permissions.js";
-import { SYSTEM_MODULES } from "../globalSettingsTypes.js";
+import { roleHasPermission, type Permission } from "../auth/permissions.js";
+import { SYSTEM_MODULES } from "../settings/globalSettingsTypes.js";
 import {
   ACCESS_CONTROLLED_MODULE_IDS,
   buildModuleAvailability,
@@ -8,7 +8,7 @@ import {
   getModuleActionPermission,
   resolveAccessModuleId,
   toEffectiveModuleFlags,
-} from "../moduleAccessPolicy.js";
+} from "../settings/moduleAccessPolicy.js";
 
 const asRole = (role: string) => (permission: Permission) => roleHasPermission(role, permission);
 

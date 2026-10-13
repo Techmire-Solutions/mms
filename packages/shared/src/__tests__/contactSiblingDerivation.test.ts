@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Contact } from "../contactEntityTypes.js";
+import type { Contact } from "../contacts/contactEntityTypes.js";
 import {
   deriveSiblingLinks,
   mergeStoredAndDerivedSiblingLinks,
-} from "../contactSiblingDerivation.js";
+} from "../contacts/contactSiblingDerivation.js";
 
 function contact(
   partial: Partial<Contact> & {

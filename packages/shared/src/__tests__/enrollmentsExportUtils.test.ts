@@ -7,8 +7,8 @@ import {
   extractEnrollmentCell,
   buildEnrollmentsExportRows,
   type EnrollmentExportColumn,
-} from "../enrollmentsExportUtils.js";
-import type { Enrollment } from "../enrollmentsModuleManifest.js";
+} from "../enrollments/enrollmentsExportUtils.js";
+import type { Enrollment } from "../enrollments/enrollmentsModuleManifest.js";
 
 describe("enrollmentsExportUtils", () => {
   const sampleEnrollment: Enrollment = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizePhoneInput } from "../phoneUtils.js";
+import { normalizePhoneInput } from "../core/phoneUtils.js";
 
 describe("normalizePhoneInput", () => {
   it("normalizes local and international phone inputs to E.164", () => {

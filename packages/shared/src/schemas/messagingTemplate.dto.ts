@@ -1,7 +1,13 @@
 import { z } from "zod";
-import { messageCategorySchema, messageChannelSchema } from "../messagingCategorySchemas.js";
-import { type MessageCategory, type MessageChannel } from "../messagingCategorySchemas.js";
-import { findUnknownPersonalizationTokens } from "../messagingPersonalizeUtils.js";
+import {
+  messageCategorySchema,
+  messageChannelSchema,
+} from "../messaging/messagingCategorySchemas.js";
+import {
+  type MessageCategory,
+  type MessageChannel,
+} from "../messaging/messagingCategorySchemas.js";
+import { findUnknownPersonalizationTokens } from "../messaging/messagingPersonalizeUtils.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 
 const messageTemplateInputObjectSchema = z

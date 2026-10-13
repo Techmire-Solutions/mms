@@ -7,7 +7,7 @@ import {
   workspaceUserRecordSchema,
   activityLogRecordSchema,
   USERS_MODULE_MANIFEST,
-} from "../usersModuleManifest.js";
+} from "../auth/usersModuleManifest.js";
 
 describe("workspace user form schemas", () => {
   it("accepts valid edit and invite values", () => {

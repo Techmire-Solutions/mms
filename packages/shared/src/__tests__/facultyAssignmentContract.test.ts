@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   facultyAssignmentWriteSchema,
   facultyDepartmentWriteSchema,
-} from "../facultyDepartmentTypes.js";
+} from "../faculty/facultyDepartmentTypes.js";
 
 const assignment = {
   facultyId: "f",

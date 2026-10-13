@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Contact } from "../contactTypes.js";
+import type { Contact } from "../contacts/contactTypes.js";
 import {
   contactMatchesSearch,
   getContactSearchHaystack,
   normalizeSearchString,
-} from "../contactsSearchUtils.js";
+} from "../contacts/contactsSearchUtils.js";
 
 describe("contactsSearchUtils", () => {
   it("matches name and email in search haystack", () => {

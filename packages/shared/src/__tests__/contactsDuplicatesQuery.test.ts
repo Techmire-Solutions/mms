@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { paginateContactDuplicatePairs } from "../contactsDuplicatesQuery.js";
-import type { ContactDuplicatePair } from "../contactDuplicateUtils.js";
+import { paginateContactDuplicatePairs } from "../contacts/contactsDuplicatesQuery.js";
+import type { ContactDuplicatePair } from "../contacts/contactDuplicateUtils.js";
 
 const pair = (id: string): ContactDuplicatePair => ({
   id,

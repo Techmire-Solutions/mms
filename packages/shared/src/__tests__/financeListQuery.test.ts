@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Invoice, Payment } from "../financeModuleManifest.js";
-import { paginateFinanceInvoices, paginateFinancePayments } from "../financeListQuery.js";
+import type { Invoice, Payment } from "../finance/financeModuleManifest.js";
+import { paginateFinanceInvoices, paginateFinancePayments } from "../finance/financeListQuery.js";
 
 const invoice: Invoice = {
   id: "inv-1",

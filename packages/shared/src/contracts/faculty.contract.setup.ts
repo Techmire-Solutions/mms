@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { facultyLookupsMapSchema } from "../facultyLookupTypes.js";
+import { facultyLookupsMapSchema } from "../faculty/facultyLookupTypes.js";
 import { facultyPreferencesResponseSchema } from "./faculty.contract.schemas.js";
 
 const errorResponse = z.unknown();

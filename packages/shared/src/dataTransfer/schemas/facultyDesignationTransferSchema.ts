@@ -8,7 +8,7 @@ import {
   registerModuleTransferSchema,
   type ModuleTransferSchema,
 } from "../index.js";
-import type { FacultyDesignationCsvRow } from "../../facultyDesignationCsvParser.js";
+import type { FacultyDesignationCsvRow } from "../../faculty/facultyDesignationCsvParser.js";
 
 export const facultyDesignationTransferSchema: ModuleTransferSchema<FacultyDesignationCsvRow> =
   createModuleTransferSchema<FacultyDesignationCsvRow>({

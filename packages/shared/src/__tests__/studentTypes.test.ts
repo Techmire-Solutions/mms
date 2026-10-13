@@ -5,7 +5,7 @@ import {
   isStudentDeleted,
   filterActiveStudents,
   type Student,
-} from "../studentTypes.js";
+} from "../students/studentTypes.js";
 
 describe("studentTypes", () => {
   describe("resolveStudentStatuses", () => {
