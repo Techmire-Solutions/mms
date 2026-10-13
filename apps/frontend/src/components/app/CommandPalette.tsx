@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -104,12 +104,6 @@ export function CommandPalette({
     return sections.flatMap((s) => s.items);
   }, [isEmptyQuery, activeFilteredItems, sections]);
 
-  // Warm the highlighted destination's chunk as the selection changes (keyboard + hover).
-  const selectedItem = flatItems[selectedIndex];
-  useEffect(() => {
-    if (selectedItem) prefetchRoute(selectedItem.path);
-  }, [selectedItem]);
-
   return (
     <CommandPaletteModal
       open={open}
@@ -155,7 +149,12 @@ export function CommandPalette({
                       role="option"
                       aria-selected={isSelected}
                       onClick={() => handleSelect(item)}
-                      onMouseEnter={() => setSelectedIndex(globalIndex)}
+                      onMouseEnter={() => {
+                        setSelectedIndex(globalIndex);
+                        // Warm the target chunk on explicit hover intent (not on every
+                        // arrow-key selection, which is noisy and test-hostile).
+                        prefetchRoute(item.path);
+                      }}
                       className={cn(
                         "flex w-full min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-start text-sm transition-colors cursor-pointer",
                         isSelected
