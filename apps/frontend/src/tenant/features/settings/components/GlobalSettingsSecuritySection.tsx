@@ -10,14 +10,14 @@ import {
   type PasswordPolicyLevel,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Label } from "@/components/ui/label";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import {
   SettingsCallout,
   SettingsFieldGroup,
   SettingsToggleRow,
-} from "@/components/ui/SettingsShell";
+} from "@/components/app/SettingsShell";
 import type { GlobalSettings } from "@mms/shared";
 import { Badge } from "@/components/ui/badge";
 

@@ -1,14 +1,14 @@
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import type {
   ActivityLog,
   ModuleColumnRegistryEntry,
   SystemUser,
   UsersListPageResult,
 } from "@mms/shared";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { CardSkeleton } from "@/components/ui/LoadingState";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ErrorState } from "@/components/app/ErrorState";
+import { CardSkeleton } from "@/components/app/LoadingState";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { DataTableColumnLayout } from "@/components/common/data-table";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ActivityLogs } from "@/tenant/features/users/components/ActivityLogs";

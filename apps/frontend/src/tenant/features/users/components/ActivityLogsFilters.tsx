@@ -1,14 +1,14 @@
 import React from "react";
 import { ACTIVITY_ACTION_VALUES, type SystemUser } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { toColumnCustomizer, type DataTableColumnLayout } from "@/components/common/data-table";
 import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { Button } from "@/components/ui/button";
 import { calculateReportDateRange } from "@/lib/reports/reportDateUtils";

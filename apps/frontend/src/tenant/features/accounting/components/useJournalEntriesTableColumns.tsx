@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { formatDate } from "@mms/shared";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { type WorkBatchTableColumn } from "@/components/common/work";
 import type { JournalEntry } from "@/lib/data/accountingData";
@@ -9,7 +9,7 @@ import {
   getJournalEntryLineTotals,
   getJournalTagLabel,
   type JournalEntriesListProps,
-} from "./journalEntriesListShared";
+} from "../lib/journalEntriesListShared";
 
 interface UseJournalEntriesTableColumnsParams {
   isColumnVisible: JournalEntriesListProps["isColumnVisible"];

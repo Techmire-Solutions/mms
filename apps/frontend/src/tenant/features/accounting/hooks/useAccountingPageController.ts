@@ -21,7 +21,7 @@ import {
   useAllAccountingEntries,
 } from "./useAccountingApi";
 import { useAccountingEntriesPage } from "./accountingListFetch";
-import { useJournalEntriesListQueryState } from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
+import { useJournalEntriesListQueryState } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import { useAccountingPageActions } from "@/tenant/features/accounting/hooks/useAccountingPageActions";
 import {
   ACCOUNTING_SUB_TAB_ICONS,

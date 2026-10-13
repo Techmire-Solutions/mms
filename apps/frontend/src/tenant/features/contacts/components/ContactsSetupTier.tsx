@@ -1,16 +1,16 @@
 import React, { useRef, lazy, Suspense } from "react";
 import { CONTACTS_MODULE_MANIFEST, DEFAULT_SETTINGS_SUB_TABS } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
 import { shouldOpenContactsSyncSetup } from "@/lib/contacts/googleContactsOAuth";
 import { resolveRegistryLabel } from "@/lib/contacts/contactI18n";
 import type { Contact } from "@mms/shared";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 
 const ContactsSetupPanel = lazy(
   () => import("@/tenant/features/contacts/components/ContactsSetupPanel"),

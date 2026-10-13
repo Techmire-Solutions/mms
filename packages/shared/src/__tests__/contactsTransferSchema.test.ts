@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { contactsTransferSchema } from "../contactsTransferSchema.js";
-import type { Contact } from "../contactEntityTypes.js";
+import { contactsTransferSchema } from "../contacts/contactsTransferSchema.js";
+import type { Contact } from "../contacts/contactEntityTypes.js";
 
 describe("contactsTransferSchema (Symmetric SSOT Example)", () => {
   it("enforces Field Whitelist: strips internal IDs and audit metadata", () => {

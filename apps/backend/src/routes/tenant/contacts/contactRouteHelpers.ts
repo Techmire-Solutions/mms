@@ -22,7 +22,7 @@ import {
 } from "../../../services/backgroundJobWorkerService.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
-import { loadContactFieldConfig } from "../../../services/contactConfigService.js";
+import { loadContactFieldConfig } from "../../../contacts/use-cases/contactConfigService.js";
 
 import {
   type ParsedUniqueConstraintError,

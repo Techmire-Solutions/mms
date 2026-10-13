@@ -4,7 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { notify } from "@/lib/notify";
 
 export function parseImportCandidate(raw: string): { primary: string; secondary: string } | null {

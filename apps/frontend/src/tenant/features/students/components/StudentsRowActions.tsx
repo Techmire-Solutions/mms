@@ -1,8 +1,8 @@
 import { hasWhatsApp, toMessagingRecipient, type Student } from "@mms/shared";
-import { PersonMessagingRowActionsExtras } from "@/components/ui/PersonMessagingRowActionsExtras";
+import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
-import type { StudentsListContentMessagingRecipient } from "@/tenant/features/students/components/studentsListTypes";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import type { StudentsListContentMessagingRecipient } from "@/tenant/features/students/lib/studentsListTypes";
 
 export interface StudentsRowActionsProps {
   student: Student;

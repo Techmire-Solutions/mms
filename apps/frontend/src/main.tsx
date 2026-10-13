@@ -5,7 +5,7 @@ import App from "@/App";
 import "@/index.css";
 import { isApexHost } from "@mms/shared/tenantUtils";
 import { getAppDomain } from "@/lib/config/tenantConfig";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 
 // Error reporting is non-interactive: initialize it without blocking first
 // paint. The Sentry SDK (~170KB) now lives behind the lazy
@@ -16,7 +16,7 @@ void import("@/lib/documentFavicon").then(
   ({ applyPlatformDocumentFavicon, applyTenantDocumentFavicon }) => {
     if (typeof window !== "undefined" && isApexHost(window.location.hostname, getAppDomain())) {
       applyPlatformDocumentFavicon();
-      void import("@/platform/lib/brandingEntryTheme").then(({ applyApexPlatformTheme }) => {
+      void import("@/lib/branding/apexPlatformTheme").then(({ applyApexPlatformTheme }) => {
         applyApexPlatformTheme("en");
       });
     } else {

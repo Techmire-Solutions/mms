@@ -1,6 +1,6 @@
 import type React from "react";
 import type { ComponentType } from "react";
-import { Field, FieldErrorMessage } from "@/components/ui/FormPrimitives";
+import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveRegistryLabel } from "@/lib/contacts/contactI18n";
 import type { AppTranslationKey, FieldDefinition } from "@mms/shared";

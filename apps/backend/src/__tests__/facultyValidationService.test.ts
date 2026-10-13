@@ -5,7 +5,7 @@ const mockLoadFacultySettingsCombined = vi.fn();
 const mockValidateOrThrow = vi.fn();
 const mockBuildDynamicFacultySchema = vi.fn();
 
-vi.mock("../services/facultyConfigService.js", () => ({
+vi.mock("../faculty/use-cases/facultyConfigService.js", () => ({
   loadFacultySettingsCombined: () => mockLoadFacultySettingsCombined(),
 }));
 

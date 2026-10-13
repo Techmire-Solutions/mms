@@ -23,7 +23,7 @@ vi.mock("@/tenant/features/examinations/hooks/useExaminationsApi", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
+vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
   ModuleCommandMetricsGrid: ({ items }: any) => (
     <div data-testid="metrics-grid">
       {items.map((item: any) => (

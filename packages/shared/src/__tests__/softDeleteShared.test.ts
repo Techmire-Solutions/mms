@@ -4,7 +4,7 @@ import {
   isEntityDeleted,
   filterActiveEntities,
   type SoftDeleteFields,
-} from "../softDelete.js";
+} from "../core/softDelete.js";
 
 interface TestRecord extends SoftDeleteFields {
   id: string;

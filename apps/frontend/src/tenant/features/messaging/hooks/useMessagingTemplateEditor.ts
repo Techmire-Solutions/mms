@@ -10,7 +10,7 @@ import { notify } from "@/lib/notify";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
-import { formatUnknownTokensLabel } from "@/components/ui/messageComposer/messageComposerTokenErrors";
+import { formatUnknownTokensLabel } from "@/components/messageComposer/messageComposerTokenErrors";
 import { useMessagingMutations } from "./useMessaging";
 
 type TemplateChannel = "all" | "sms" | "whatsapp" | "email";

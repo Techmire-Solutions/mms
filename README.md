@@ -72,6 +72,13 @@ mms/
 
 ---
 
+## Documentation
+
+All repository documentation is indexed in [`docs/README.md`](docs/README.md) — architecture,
+soft-delete, ADRs (`docs/adr/`), audits, and plans.
+
+---
+
 ## Prerequisites
 
 | Tool       | Version                                 |

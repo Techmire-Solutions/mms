@@ -8,7 +8,7 @@ import {
   buildJournalEntriesListQuery,
   computeJournalGrandTotals,
   useJournalEntriesListQueryState,
-} from "./journalEntriesControllerFilters";
+} from "../lib/journalEntriesControllerFilters";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 

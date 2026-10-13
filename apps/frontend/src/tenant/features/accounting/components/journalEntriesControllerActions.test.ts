@@ -4,7 +4,7 @@ import {
   createJournalSaveHandler,
   exportJournalEntriesCsv,
   formatJournalAmount,
-} from "./journalEntriesControllerActions";
+} from "../lib/journalEntriesControllerActions";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import { runGridCsvExportJob } from "@/lib/backgroundJobs/runGridCsvExportJob";
 

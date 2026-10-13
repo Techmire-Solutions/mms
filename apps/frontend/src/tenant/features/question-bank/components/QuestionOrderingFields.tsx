@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormCollectionShell, FormListFieldCard } from "@/components/ui/FormPrimitives";
+import { FormCollectionShell, FormListFieldCard } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { joinQuestionCompoundAnswer, type AppTranslationKey } from "@mms/shared";
 import { FORM_INPUT } from "@/components/ui/formStyles";

@@ -11,11 +11,11 @@ import {
 import type { Student } from "@mms/shared";
 import { type Enrollment } from "@/lib/data/enrollmentData";
 import { Button } from "@/components/ui/button";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { ENROLLMENT_PAYMENT_STATUSES, formatDate, formatDateTime } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 
 export interface EnrollmentDetailSectionsProps {
   enrollment: Enrollment;

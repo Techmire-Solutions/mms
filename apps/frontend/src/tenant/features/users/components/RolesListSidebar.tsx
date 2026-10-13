@@ -2,7 +2,7 @@ import React from "react";
 import { Plus, Pencil } from "lucide-react";
 import { workspaceRoleDescription, workspaceRoleLabel, type WorkspaceRole } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { UserRoleBadge } from "@/tenant/features/users/components/UserBadges";
 
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

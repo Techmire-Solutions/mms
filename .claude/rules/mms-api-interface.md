@@ -7,7 +7,7 @@ paths:
   - "apps/backend/src/lib/**/*.ts"
   - "apps/backend/src/middleware/**/*.ts"
   - "apps/backend/src/app.ts"
-  - "packages/shared/src/apiSchemas.ts"
+  - "packages/shared/src/**/apiSchemas.ts"
 ---
 
 # MMS API & Communications Interface

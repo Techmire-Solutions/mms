@@ -1,21 +1,21 @@
 import { z } from "zod";
-import { translateApp } from "../appTranslations.js";
-import type { AppTranslationKey } from "../appTranslations.js";
-import type { FieldDefinition } from "../contactTypes.js";
-import { buildCustomFieldSchema } from "../contactValidation.js";
-import { isFacultyLockedEnabledTab } from "../moduleFieldSetupPersons.js";
+import { translateApp } from "../i18n/appTranslations.js";
+import type { AppTranslationKey } from "../i18n/appTranslations.js";
+import type { FieldDefinition } from "../contacts/contactTypes.js";
+import { buildCustomFieldSchema } from "../contacts/contactValidation.js";
+import { isFacultyLockedEnabledTab } from "../settings/moduleFieldSetupPersons.js";
 import {
   listEnabledCustomFacultyFormFields,
   listFacultySystemFormFieldKeys,
-} from "../facultyFormCustomFields.js";
-import { facultyEmployDesignationsWriteSchema } from "../facultyEmployDesignationTypes.js";
-import type { FacultySettings } from "../facultyModuleSettings.js";
-import { facultyCoreSchema } from "../facultyModuleManifest.js";
+} from "../faculty/facultyFormCustomFields.js";
+import { facultyEmployDesignationsWriteSchema } from "../faculty/facultyEmployDesignationTypes.js";
+import type { FacultySettings } from "../faculty/facultyModuleSettings.js";
+import { facultyCoreSchema } from "../faculty/facultyModuleManifest.js";
 import {
   FACULTY_EMPLOYMENT_STATUS_VALUES,
   FACULTY_PROFILE_STATUS_VALUES,
-} from "../facultyTypes.js";
-import { stripFacultyWriteNoise } from "../facultyUtils.js";
+} from "../faculty/facultyTypes.js";
+import { stripFacultyWriteNoise } from "../faculty/facultyUtils.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 
 /** Audit / meta keys accepted on faculty writes. */

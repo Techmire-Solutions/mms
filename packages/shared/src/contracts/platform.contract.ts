@@ -35,7 +35,10 @@ import {
   challengeIdBodySchema,
   platformLoginResponseSchema,
 } from "../schemas/auth.dto.js";
-import { platformSettingsUpdateSchema, migrateAndRestartSchema } from "../platformSettingsTypes.js";
+import {
+  platformSettingsUpdateSchema,
+  migrateAndRestartSchema,
+} from "../auth/platformSettingsTypes.js";
 
 const c = initContract();
 

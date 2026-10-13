@@ -5,12 +5,12 @@
 
 import React from "react";
 import { formatDate, formatDateTime, type TaskRecord } from "@mms/shared";
-import { Drawer } from "@/components/ui/Drawer";
+import { Drawer } from "@/components/app/Drawer";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
-} from "@/components/ui/DetailDrawerArchiveChrome";
-import { DrawerUpdatedStamp } from "@/components/ui/DrawerUpdatedStamp";
+} from "@/components/app/DetailDrawerArchiveChrome";
+import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
 

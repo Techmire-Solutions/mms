@@ -1,5 +1,5 @@
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ExportToolbar } from "@/components/ui/ExportToolbar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ExportToolbar } from "@/components/app/ExportToolbar";
 import { Badge } from "@/components/ui/badge";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
@@ -11,7 +11,7 @@ import {
 } from "@/hooks/useWorkDirectoryViewMode";
 import type { ObligationDistribution } from "@/lib/data/obligationsData";
 import { AlertCircle, Layers } from "lucide-react";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { ObligationsWakalaSummaryCardsView } from "./ObligationsWakalaSummaryCardsView";
 
 /** ReportMoneyCard tile (report) — not DirectoryCard. */

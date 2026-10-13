@@ -3,7 +3,7 @@ description: Universal module architecture, page tabs (operational + required Re
 paths:
   - "apps/frontend/src/tenant/features/**"
   - "apps/frontend/src/platform/pages/**"
-  - "packages/shared/src/*ModuleManifest.ts"
+  - "packages/shared/src/**/*ModuleManifest.ts"
 ---
 
 # MMS Universal Module Architecture

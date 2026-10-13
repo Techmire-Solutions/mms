@@ -1,7 +1,7 @@
 import React from "react";
 import { Palette } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { DesignSystemGallery } from "@/platform/components/design-system/DesignSystemGallery";
 
 export default function PlatformDesignSystemPage(): React.JSX.Element {

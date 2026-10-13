@@ -1,6 +1,6 @@
 import type React from "react";
 import { useCallback, useMemo } from "react";
-import { FormCollectionShell, FormListFieldCard } from "@/components/ui/FormPrimitives";
+import { FormCollectionShell, FormListFieldCard } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   FacultyDepartmentEntity,
@@ -11,13 +11,13 @@ import type {
 } from "@mms/shared";
 import { FacultyCatalogCreateOverlays } from "./FacultyCatalogCreateOverlays";
 import { FacultyFormDesignationCard } from "./FacultyFormDesignationCard";
-import { buildDesignationDraftPatch } from "./facultyFormDesignationDraft";
+import { buildDesignationDraftPatch } from "../lib/facultyFormDesignationDraft";
 import {
   employDesignationRowsFromFaculty,
   flatDraftPatchFromEmployDesignationRows,
   newEmployDesignationFormRow,
   pickPrimaryEmployDesignationRow,
-} from "./facultyEmployDesignationFormDraft";
+} from "../lib/facultyEmployDesignationFormDraft";
 import { useFacultyFormCatalogQuickCreate } from "../hooks/useFacultyFormCatalogQuickCreate";
 
 export interface FacultyFormDesignationSectionProps {

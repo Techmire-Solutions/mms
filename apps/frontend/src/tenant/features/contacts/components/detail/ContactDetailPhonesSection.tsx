@@ -2,7 +2,7 @@ import { type Contact, PuppeteerWhatsAppProvider } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactPhoneFull, resolvePhoneLabel } from "@/lib/contacts/contactI18n";
 import { CollectionRowItem } from "./ContactDetailShared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
 import { DetailCollectionEmpty, withPrimaryPhone } from "./contactDetailChannelHelpers";
 import { buildDetailPhoneMessagingActions } from "./contactDetailMessagingActions";

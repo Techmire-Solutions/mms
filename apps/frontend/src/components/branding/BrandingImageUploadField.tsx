@@ -7,12 +7,12 @@ import {
 } from "@mms/shared";
 import { prepareImageForUpload } from "@/lib/imageOptimization";
 import { useTranslation } from "@/hooks/useTranslation";
-import { extractLogoBrandColors } from "@/lib/extractLogoBrandColors";
+import { extractLogoBrandColors } from "@/lib/ui/extractLogoBrandColors";
 import { uploadImageFile } from "@/lib/imageUpload";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { FieldErrorMessage } from "@/components/ui/FormField";
+import { FieldErrorMessage } from "@/components/app/FormField";
 import { FieldHint } from "@/components/branding/BrandingFieldHint";
 
 const MAX_FILE_BYTES = IMAGE_UPLOAD_MAX_INPUT_BYTES;

@@ -5,7 +5,7 @@ import { useBranding } from "@/tenant/hooks/useBranding";
 import { getInitials } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ROUTES } from "@/lib/config/routes";
-import { LOGO_IMAGE } from "@/lib/semanticTone";
+import { LOGO_IMAGE } from "@/lib/ui/semanticTone";
 
 interface SidebarBrandProps {
   collapsed: boolean;

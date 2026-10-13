@@ -1,9 +1,9 @@
 import React, { Suspense } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Star } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { hasanatTransferSchema } from "@mms/shared";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { HasanatCommandMetrics } from "@/tenant/features/hasanat/components/HasanatCommandMetrics";

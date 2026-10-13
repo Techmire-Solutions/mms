@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { UserCog } from "lucide-react";
 import { USERS_MODULE_MANIFEST, type SystemUser } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
-import type { BulkSelectionMessageChannel } from "@/components/ui/BulkSelectionActions";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import type { BulkSelectionMessageChannel } from "@/components/app/BulkSelectionActions";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface UsersBulkActionBarProps {

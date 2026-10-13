@@ -10,7 +10,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({ children, title, subtitle, footer }: any) => (
     <div data-testid="modal">
       <h2>{title}</h2>

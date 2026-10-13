@@ -3,11 +3,14 @@ import {
   FACULTY_WRITE_SYSTEM_KEYS,
   buildDynamicFacultySchema,
   formatFacultyZodIssues,
-} from "../facultyValidation.js";
-import { listFacultySystemFormFieldKeys } from "../facultyFormCustomFields.js";
-import { DEFAULT_FACULTY_SETTINGS, type FacultySettings } from "../facultyModuleSettings.js";
-import { INITIAL_FACULTY_FIELD_SEED } from "../moduleFieldSetupFaculty.js";
-import type { FieldDefinition } from "../contactTypes.js";
+} from "../faculty/facultyValidation.js";
+import { listFacultySystemFormFieldKeys } from "../faculty/facultyFormCustomFields.js";
+import {
+  DEFAULT_FACULTY_SETTINGS,
+  type FacultySettings,
+} from "../faculty/facultyModuleSettings.js";
+import { INITIAL_FACULTY_FIELD_SEED } from "../settings/moduleFieldSetupFaculty.js";
+import type { FieldDefinition } from "../contacts/contactTypes.js";
 
 describe("buildDynamicFacultySchema", () => {
   const settings: FacultySettings = {

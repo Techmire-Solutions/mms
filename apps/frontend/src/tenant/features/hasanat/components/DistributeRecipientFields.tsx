@@ -1,7 +1,7 @@
 import React, { type Dispatch, type SetStateAction } from "react";
 import { User, Users2 } from "lucide-react";
 import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
-import { Field, FieldErrorMessage, RequiredMark } from "@/components/ui/FormPrimitives";
+import { Field, FieldErrorMessage, RequiredMark } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, FORM_LABEL } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

@@ -1,7 +1,7 @@
 import { GraduationCap } from "lucide-react";
 import type { Student, StudentsListPageResult } from "@mms/shared";
-import { ModuleWorkDirectoryEmpty } from "@/components/ui/ModuleWorkDirectoryEmpty";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import StudentsListContent from "@/tenant/features/students/components/StudentsListContent";

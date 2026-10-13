@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractEmployeeId } from "./facultyFormDraft";
+import { extractEmployeeId } from "../lib/facultyFormDraft";
 
 describe("extractEmployeeId", () => {
   it("returns trimmed string when input is a string", () => {

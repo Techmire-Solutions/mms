@@ -1,4 +1,4 @@
-import { ModulePageShell, type ModulePageShellProps } from '@/components/ui/ModulePageShell';
+import { ModulePageShell, type ModulePageShellProps } from '@/components/app/ModulePageShell';
 
 /** Shell-only example, not a fabricated domain module.
  * Derive tabs from the real manifest and current permissions. Intersect the

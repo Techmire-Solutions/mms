@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/reports/ReportChartCard", () => ({
+vi.mock("@/components/reports/ReportChartCard", () => ({
   ReportChartCard: ({
     title,
     subtitle,

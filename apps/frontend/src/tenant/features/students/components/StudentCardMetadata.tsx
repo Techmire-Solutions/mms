@@ -1,9 +1,9 @@
 import type { ModuleColumnRegistryEntry, Student } from "@mms/shared";
-import { EntityCardMetadata } from "@/components/ui/EntityCardMetadata";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getStudentVisibleWorkColumns } from "@/tenant/features/students/components/studentsListVisibleColumns";
+import { getStudentVisibleWorkColumns } from "@/tenant/features/students/lib/studentsListVisibleColumns";
 import { renderStudentWorkColumnValue } from "@/tenant/features/students/components/studentWorkColumnCell";
 
 export interface StudentCardMetadataProps {

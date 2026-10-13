@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from "react";
 import { formatDate } from "@mms/shared";
 import { TrendingUp, TrendingDown, ArrowUpDown, AlertTriangle } from "lucide-react";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { FLOW_TONE, SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { FLOW_TONE, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { CashbookRow } from "@/tenant/features/accounting/components/cashbookViewShared";
+import type { CashbookRow } from "@/tenant/features/accounting/lib/cashbookViewShared";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import { PaymentVoucherPrintButton } from "@/tenant/features/accounting/components/PaymentVoucherPrintButton";
 

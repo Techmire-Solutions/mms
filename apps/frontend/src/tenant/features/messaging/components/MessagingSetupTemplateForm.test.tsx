@@ -14,7 +14,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/MessagingVariableTokensBar", () => ({
+vi.mock("@/components/app/MessagingVariableTokensBar", () => ({
   MessagingVariableTokensBar: () => <div data-testid="tokens-bar">Tokens</div>,
 }));
 

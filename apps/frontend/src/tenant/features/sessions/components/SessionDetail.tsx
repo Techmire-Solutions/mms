@@ -5,13 +5,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, Wallet, UserCheck } from "lucide-react";
-import { Drawer } from "@/components/ui/Drawer";
+import { Drawer } from "@/components/app/Drawer";
 import {
   DetailDrawerRestoreOrEditAction,
   DrawerSyncStatusFooter,
-} from "@/components/ui/DetailDrawerArchiveChrome";
+} from "@/components/app/DetailDrawerArchiveChrome";
 import { SessionArchivedBanner } from "@/tenant/features/sessions/components/SessionArchivedBanner";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import {
   formatMoney,
   SESSIONS_MODULE_MANIFEST,
@@ -22,10 +22,10 @@ import {
   type AppTranslationKey,
 } from "@mms/shared";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { SubTabBar, type SubTab } from "@/components/ui/SubTabBar";
+import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 import { ClassesTab } from "@/tenant/features/sessions/components/tabs/ClassesTab";
 import { FacultyManagementTab } from "@/tenant/features/sessions/components/tabs/FacultyManagementTab";

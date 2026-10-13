@@ -1,11 +1,11 @@
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import {
   defaultTemplateTranslate,
   INVOICE_TEMPLATE_STATIC_KEY_PREFIX,
   type BrandingInfo,
   type InvoiceTemplate,
   type TemplateTranslate,
-} from "./invoiceTemplateTypes.js";
+} from "./invoiceTemplateTypes";
 
 export function buildInvoiceTemplateHeaderElements(
   b: BrandingInfo,

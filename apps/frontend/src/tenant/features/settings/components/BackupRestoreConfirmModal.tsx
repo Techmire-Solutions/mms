@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { formatDateTime, type WorkspaceBackupSummary } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SettingsCallout } from "@/components/ui/SettingsShell";
+import { SettingsCallout } from "@/components/app/SettingsShell";
 import { compareBackupSubdomains } from "../hooks/backupRestoreUtils";
-import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/app/PasswordInput";
 import { BackupSummaryPreview } from "./BackupSummaryPreview";
 
 export interface BackupRestoreConfirmModalProps {

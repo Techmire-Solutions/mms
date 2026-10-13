@@ -9,10 +9,10 @@ import {
   FormSelect,
   TYPE_SELECT_WIDTH,
   type FormSelectOption,
-} from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactOptionLabel } from "@/lib/contacts/contactI18n";
-import { FormListFieldCard } from "@/components/ui/FormPrimitives";
+import { FormListFieldCard } from "@/components/app/FormPrimitives";
 import { ContactSubListShell, resolveSubListAllowAdd } from "./ContactSubListCards";
 import type { ContactSubListTabBaseProps } from "./types";
 

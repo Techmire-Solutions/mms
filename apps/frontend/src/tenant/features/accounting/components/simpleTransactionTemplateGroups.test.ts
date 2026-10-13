@@ -3,8 +3,8 @@ import type { Account, JournalTemplate } from "@mms/shared";
 import {
   buildTemplateTransactionGroups,
   resolveWizardTransactionGroups,
-} from "./simpleTransactionTemplateGroups";
-import { TRANSACTION_GROUPS } from "./simpleTransactionWizardGroups";
+} from "../lib/simpleTransactionTemplateGroups";
+import { TRANSACTION_GROUPS } from "../lib/simpleTransactionWizardGroups";
 
 const account = (id: string, code: string, type: Account["type"], name: string): Account => ({
   id,

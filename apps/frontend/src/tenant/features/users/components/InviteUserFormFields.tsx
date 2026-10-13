@@ -4,7 +4,7 @@ import { USER_STATUS_VALUES, type InviteWorkspaceUserInput, type WorkspaceRole }
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

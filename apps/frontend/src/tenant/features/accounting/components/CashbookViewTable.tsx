@@ -1,9 +1,9 @@
 import { formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { ReportMoneyCard } from "@/components/ui/reports/ReportMoneyCard";
-import { ReportMoneyCardsGrid } from "@/components/ui/reports/ReportMoneyCardsGrid";
-import { ReportMoneySummaryTile } from "@/components/ui/reports/ReportMoneySummaryTile";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
+import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid";
+import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import {
   resolveVisibleColumns,
@@ -18,7 +18,7 @@ import {
 import {
   buildCashbookFooterCells,
   type CashbookRow,
-} from "@/tenant/features/accounting/components/cashbookViewShared";
+} from "@/tenant/features/accounting/lib/cashbookViewShared";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
 import {
   useCashbookColumns,

@@ -4,8 +4,8 @@ import {
   buildContactsExportRows,
   type ContactExportColumn,
   type ContactExportLabels,
-} from "../contactsExportUtils.js";
-import type { Contact } from "../contactTypes.js";
+} from "../contacts/contactsExportUtils.js";
+import type { Contact } from "../contacts/contactTypes.js";
 
 describe("contactsExportUtils", () => {
   const columns: ContactExportColumn[] = [

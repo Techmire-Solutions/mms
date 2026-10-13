@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   findContactDuplicatePairs,
   getContactDuplicateCandidateKeys,
-} from "../contactDuplicateUtils.js";
-import { buildNamePrefixRegex, getEmails } from "../contactDisplayUtils.js";
-import { getPhoneNumbers } from "../phoneUtils.js";
-import type { Contact } from "../contactTypes.js";
+} from "../contacts/contactDuplicateUtils.js";
+import { buildNamePrefixRegex, getEmails } from "../contacts/contactDisplayUtils.js";
+import { getPhoneNumbers } from "../core/phoneUtils.js";
+import type { Contact } from "../contacts/contactTypes.js";
 
 function contact(id: string, name: string, phone?: string, email?: string): Contact {
   return {
@@ -130,7 +130,7 @@ describe("findContactDuplicatePairs (indexed)", () => {
 
 describe("mergeContacts", () => {
   it("merges basic properties, arrays, activities, attachments, and union of tags", async () => {
-    const { mergeContacts } = await import("../contactMergeUtils.js");
+    const { mergeContacts } = await import("../contacts/contactMergeUtils.js");
     const keep: Contact = {
       id: "c-1",
       name: "Ali Khan",

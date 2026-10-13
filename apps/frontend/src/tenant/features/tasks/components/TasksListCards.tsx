@@ -5,8 +5,8 @@
 
 import React, { useMemo } from "react";
 import type { TaskRecord, TaskStatus } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { EmptyState } from "@/components/app/EmptyState";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";

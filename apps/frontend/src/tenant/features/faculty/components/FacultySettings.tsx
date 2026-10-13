@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFacultySetupPanelState } from "@/tenant/features/faculty/hooks/useFacultySetupPanelState";
 import { FacultyPreferencesSection } from "@/tenant/features/faculty/components/FacultyPreferencesSection";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface FacultySettingsProps {
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */

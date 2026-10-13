@@ -1,22 +1,25 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema, softDeleteBodySchema } from "../apiSchemas.js";
+import { baseListQuerySchema, softDeleteBodySchema } from "../core/apiSchemas.js";
 import {
   attendanceBulkIdsSchema,
   attendanceCreateSchema,
   attendanceUpdateSchema,
 } from "../schemas/attendance.dto.js";
-import { attendanceRecordSchema, attendanceBulkSchema } from "../attendanceModuleManifest.js";
-import { attendanceLookupsMapSchema } from "../attendanceLookupTypes.js";
+import {
+  attendanceRecordSchema,
+  attendanceBulkSchema,
+} from "../attendance/attendanceModuleManifest.js";
+import { attendanceLookupsMapSchema } from "../attendance/attendanceLookupTypes.js";
 import { widgetAggregateResultSchema, widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
   attendanceFieldConfigPutBodySchema,
   attendancePreferencesPutBodySchema,
-} from "../attendanceSetupConfigTypes.js";
+} from "../attendance/attendanceSetupConfigTypes.js";
 import {
   attendanceReportAggregatesHttpQuerySchema,
   attendanceReportAggregatesSchema,
-} from "../attendanceReportAggregates.js";
+} from "../attendance/attendanceReportAggregates.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();

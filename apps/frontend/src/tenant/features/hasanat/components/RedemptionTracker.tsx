@@ -9,8 +9,8 @@ import {
   useHasanatMutations,
 } from "@/tenant/features/hasanat/hooks/useHasanatApi";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import {
   DataTable,

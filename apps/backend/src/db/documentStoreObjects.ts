@@ -52,7 +52,7 @@ export async function saveObject(key: string, data: unknown): Promise<void> {
     );
 
     if (tenant) {
-      const { broadcastTenantUpdate } = await import("../services/websocketService.js");
+      const { broadcastTenantUpdate } = await import("../lib/livePush.js");
       broadcastTenantUpdate(tenant, "object", key);
     }
   } catch (error) {
@@ -67,7 +67,7 @@ export async function deleteObject(key: string): Promise<void> {
   await deleteObjectByStorageKey(storageKey);
   const tenant = getRequestTenant();
   if (tenant) {
-    const { broadcastTenantUpdate } = await import("../services/websocketService.js");
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
     broadcastTenantUpdate(tenant, "object", key);
   }
 }

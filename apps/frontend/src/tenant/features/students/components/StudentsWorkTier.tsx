@@ -1,11 +1,11 @@
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { FilterChips } from "@/components/ui/FilterChips";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { FilterChips } from "@/components/app/FilterChips";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { useStudentsWorkFilterChips } from "@/tenant/features/students/hooks/useStudentsWorkFilterChips";
 import { StudentsBulkActionBar } from "@/tenant/features/students/components/StudentsBulkActionBar";
 import { StudentsList } from "@/tenant/features/students/components/StudentsList";
 import { StudentsListFilters } from "@/tenant/features/students/components/StudentsListFilters";
-import type { StudentsWorkTierProps } from "@/tenant/features/students/components/studentsWorkTierTypes";
+import type { StudentsWorkTierProps } from "@/tenant/features/students/lib/studentsWorkTierTypes";
 
 export function StudentsWorkTier({
   studentSearch,

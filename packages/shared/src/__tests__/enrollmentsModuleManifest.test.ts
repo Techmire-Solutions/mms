@@ -4,7 +4,7 @@ import {
   isEnrollmentDeleted,
   filterActiveEnrollments,
   enrollmentRecordSchema,
-} from "../enrollmentsModuleManifest.js";
+} from "../enrollments/enrollmentsModuleManifest.js";
 
 describe("enrollmentsModuleManifest and soft-delete helpers", () => {
   it("declares soft delete in module manifest", () => {

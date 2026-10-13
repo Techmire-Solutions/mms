@@ -1,7 +1,7 @@
 /** Orchestrator FormModal for configuring Class General Rules, Fees, Schedules, Budgets, Scholarships. */
 import React, { useState, useEffect, useMemo } from "react";
 import { GraduationCap, Calendar, Coffee, Award, Wallet } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFacultyContractList, useFacultyByIds } from "@/tenant/hooks/collections/faculty";
 import { useFinanceCurrency } from "@/hooks/useCurrency";

@@ -3,8 +3,8 @@ import {
   platformSettingsUpdateSchema,
   migrateAndRestartSchema,
   MIGRATE_AND_RESTART_CONFIRM,
-} from "../platformSettingsTypes.js";
-import { platformActivityLogsQuerySchema } from "../platformSchemas.js";
+} from "../auth/platformSettingsTypes.js";
+import { platformActivityLogsQuerySchema } from "../schemas/platform.dto.js";
 
 describe("platformSettingsValidation", () => {
   describe("platformActivityLogsQuerySchema", () => {

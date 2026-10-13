@@ -1,13 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
-import { ExportToolbar } from "@/components/ui/ExportToolbar";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
+import { ExportToolbar } from "@/components/app/ExportToolbar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BarChart2 } from "lucide-react";
 
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { Badge } from "@/components/ui/badge";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { ProgressBar } from "@/components/app/ProgressBar";
 import type { TypeBreakdownEntry } from "./ObligationsSummaryChartsSection";
 
 interface ObligationsTypeBreakdownSectionProps {

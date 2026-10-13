@@ -1,12 +1,12 @@
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetChartHeader } from "@/components/ui/WidgetChartHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetChartHeader } from "@/components/app/WidgetChartHeader";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/config/routes";
 import { useBrandedDashboardChartColors } from "@/components/dashboard-widgets/useBrandedDashboardChartColors";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { Tooltip, ComposedChart, Area, Line, Bar, Cell, XAxis, YAxis } from "recharts";
-import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
+import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAttendanceRecordsCollection } from "@/tenant/hooks/collections/attendance";
 import { useDashboardConfig } from "@/hooks/useDashboardConfig";

@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import type { UsersRepository } from "../repository/usersRepository.js";
 import { getRequestTenant, requireTenant } from "../../lib/tenantContext.js";
 import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
-import { broadcastCollection } from "../../services/websocketService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import {
   recordModernAuditEvent,
   mapActionStringToAuditType,

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Shield, Lock } from "lucide-react";
 import { workspaceRoleLabel } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 
 import { PermissionMatrix } from "@/tenant/features/users/components/PermissionMatrix";
 import { RoleFormModal } from "@/tenant/features/users/components/RoleFormModal";

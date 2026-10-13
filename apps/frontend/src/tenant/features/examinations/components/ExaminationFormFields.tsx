@@ -1,15 +1,15 @@
 import React from "react";
 import { BookOpen, Trophy, CheckCircle2, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { FormSelect } from "@/components/app/FormSelect";
+import { DatePicker } from "@/components/app/DatePicker";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field } from "@/components/ui/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
-import { EXAMINATION_SUBJECT_OPTIONS } from "./examinationFormConstants";
-import type { useExaminationForm } from "./useExaminationForm";
+import { EXAMINATION_SUBJECT_OPTIONS } from "../lib/examinationFormConstants";
+import type { useExaminationForm } from "../hooks/useExaminationForm";
 import type { Exam } from "@/lib/data/examinationData";
 
 export type ExaminationFormFieldsProps = Pick<

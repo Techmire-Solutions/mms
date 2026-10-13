@@ -1,11 +1,11 @@
 import type React from "react";
 import { Clock, GraduationCap, Hash } from "lucide-react";
-import { Field, EditableSelect } from "@/components/ui/FormPrimitives";
+import { Field, EditableSelect } from "@/components/app/FormPrimitives";
 import { Badge } from "@/components/ui/badge";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   formatDateTime,

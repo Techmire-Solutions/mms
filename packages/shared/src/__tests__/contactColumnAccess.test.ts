@@ -3,8 +3,8 @@ import {
   canViewContactColumn,
   resolveContactColumnField,
   type ContactColumnFieldContext,
-} from "../contactColumnAccess.js";
-import type { FieldDefinition } from "../contactFieldSchemaTypes.js";
+} from "../contacts/contactColumnAccess.js";
+import type { FieldDefinition } from "../contacts/contactFieldSchemaTypes.js";
 
 function makeField(key: string, overrides: Partial<FieldDefinition> = {}): FieldDefinition {
   return {

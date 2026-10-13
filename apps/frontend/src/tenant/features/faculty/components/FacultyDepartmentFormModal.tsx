@@ -7,9 +7,9 @@ import {
   type FacultyCatalogStatus,
   type FacultyDepartmentEntity,
 } from "@mms/shared";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormModal } from "@/components/ui/FormModal";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormModal } from "@/components/app/FormModal";
+import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

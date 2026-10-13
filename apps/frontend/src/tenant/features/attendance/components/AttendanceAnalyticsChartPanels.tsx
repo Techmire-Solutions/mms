@@ -1,5 +1,5 @@
 import { ReportChartCard } from "@/tenant/components/moduleReports";
-import { LegendChip } from "@/components/ui/LegendChip";
+import { LegendChip } from "@/components/app/LegendChip";
 import { motion } from "framer-motion";
 import {
   AreaChart,
@@ -13,14 +13,14 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
-import { attendanceStatusLabel } from "@/lib/attendanceStatusUi";
+import { attendanceStatusLabel } from "@/lib/ui/attendanceStatusUi";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type {
   ClassStatEntry,
   StudentRateEntry,
-} from "@/tenant/features/attendance/components/useAttendanceAnalyticsModel";
+} from "@/tenant/features/attendance/hooks/useAttendanceAnalyticsModel";
 
 export interface AttendanceAnalyticsChartPanelsProps {
   t: TranslationFunction;

@@ -4,7 +4,7 @@ import {
   buildFinancialReportExportRows,
   getFinancialReportExportColumns,
   type TrialBalanceRow,
-} from "./financialReportsExportHelpers";
+} from "../lib/financialReportsExportHelpers";
 
 describe("financialReportsExportHelpers", () => {
   const t = ((key: string) => key) as unknown as (key: AppTranslationKey) => string;

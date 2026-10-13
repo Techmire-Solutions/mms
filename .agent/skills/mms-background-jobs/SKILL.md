@@ -35,9 +35,9 @@ For report packs use a cutoff-consistent dataset and retain evidence per [closin
 - Frontend API/store: `apps/frontend/src/lib/backgroundJobs/`
 - Data transfer SSOT: `packages/shared/src/dataTransfer/` (`createModuleTransferSchema`, `buildExportGrid`, `moduleTransferRegistry`)
 - Frontend transfer actions: `apps/frontend/src/lib/backgroundJobs/useModuleCsvImportActions.ts`, `useModuleServerCsvExportActions.ts`
-- Generic import dialog: `apps/frontend/src/components/ui/ModuleImportDialog.tsx`
+- Generic import dialog: `apps/frontend/src/components/app/ModuleImportDialog.tsx`
 - Backend route helpers: `apps/backend/src/lib/registerModuleCsvImportRoutes.ts`, `registerModuleCsvExportRoutes.ts`
-- Tray: `apps/frontend/src/components/ui/BackgroundJobsTray.tsx`
+- Tray: `apps/frontend/src/components/app/BackgroundJobsTray.tsx`
 - Hook: `apps/frontend/src/tenant/hooks/useBackgroundJobs.ts`
 
 ## Workflow

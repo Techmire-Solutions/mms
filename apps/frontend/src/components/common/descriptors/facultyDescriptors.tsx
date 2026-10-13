@@ -1,6 +1,10 @@
 import type { Faculty } from "@mms/shared";
 import { FACULTY_DIRECTORY_COLUMN_SURFACES, facultyFieldLabelKey } from "@mms/shared";
-import type { EntityDescriptor, FieldDefinition, FieldValueType } from "@/types/entityRegistry";
+import type {
+  EntityDescriptor,
+  FieldDefinition,
+  FieldValueType,
+} from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 const SURFACE_FIELD_TYPE: Record<string, FieldValueType> = {

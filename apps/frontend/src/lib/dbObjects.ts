@@ -11,7 +11,7 @@ import {
   registerFinanceCurrencyProvider,
   registerSettingsProvider,
 } from "@mms/shared";
-import { syncToServer, type ServerSyncResult } from "@/lib/dbStorageCore.js";
+import { syncToServer, type ServerSyncResult } from "@/lib/dbStorageCore";
 import { getObject, readObjectLocal, writeObjectLocal } from "@/lib/dbObjectStorage";
 import { reportClientError } from "@/lib/clientErrorReporting";
 

@@ -5,9 +5,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
 import { Button } from "@/components/ui/button";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { ListPagination } from "@/components/ui/ListPagination";
+import { ListPagination } from "@/components/app/ListPagination";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { PlatformDashboardFleetRowMenu } from "@/platform/components/dashboard/PlatformDashboardFleetRowMenu";
 
 export interface PlatformDashboardFleetTableProps {

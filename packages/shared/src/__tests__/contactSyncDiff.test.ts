@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Contact } from "../contactTypes.js";
+import type { Contact } from "../contacts/contactTypes.js";
 import {
   diffContactForSync,
   mergeContactForSync,
   resolveSyncConflictContactId,
-} from "../contactSyncDiff.js";
+} from "../contacts/contactSyncDiff.js";
 
 const base: Contact = {
   id: "1",

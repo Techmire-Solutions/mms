@@ -1,12 +1,12 @@
 import { MapPin, type LucideIcon } from "lucide-react";
 import { CollectionRowItem, type CollectionRowAction } from "./ContactDetailShared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
 import { DetailCollectionEmpty } from "./contactDetailChannelHelpers";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface ContactDetailExternalLinkRow {

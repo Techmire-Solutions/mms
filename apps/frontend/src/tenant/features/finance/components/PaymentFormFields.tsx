@@ -1,15 +1,15 @@
 import React from "react";
 import { Coins, DollarSign, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormPrimitives";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormPrimitives";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { buildInitialPaymentDraft } from "@/tenant/features/finance/components/paymentFormHelpers";
+import type { buildInitialPaymentDraft } from "@/tenant/features/finance/lib/paymentFormHelpers";
 
 export interface PaymentFormFieldsProps {
   paymentDraft: ReturnType<typeof buildInitialPaymentDraft>;

@@ -9,9 +9,9 @@ import {
   type TaskStatus,
 } from "@mms/shared";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useTranslation } from "@/hooks/useTranslation";

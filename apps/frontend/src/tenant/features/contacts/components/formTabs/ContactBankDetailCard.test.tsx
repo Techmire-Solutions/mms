@@ -15,7 +15,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   TYPE_SELECT_WIDTH: "w-32",
   FormCardTypeSelect: ({
     label,
@@ -84,7 +84,7 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/LeadingIconInput", () => ({
+vi.mock("@/components/app/LeadingIconInput", () => ({
   LeadingIconInput: ({
     value,
     placeholder,

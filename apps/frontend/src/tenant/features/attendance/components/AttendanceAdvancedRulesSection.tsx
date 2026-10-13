@@ -1,15 +1,15 @@
 import React from "react";
 import { Scan } from "lucide-react";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { Badge } from "@/components/ui/badge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import type { AttendanceSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ToggleRow } from "@/components/ui/ToggleRow";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ToggleRow } from "@/components/app/ToggleRow";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface AttendanceAdvancedRulesSectionProps {
   settingsDraft: AttendanceSettings;

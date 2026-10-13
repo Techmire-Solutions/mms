@@ -4,7 +4,7 @@ import { attendanceRepository } from "../repository/attendanceRepositoryAdapter.
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
-import { broadcastCollection } from "../../services/websocketService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import {
   attendanceRecordSchema,
   attendanceListSchema,

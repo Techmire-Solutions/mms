@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import {
   ModuleDrawerLoadingSkeleton,
   ModuleOverlayLoadingFallback,
-} from "@/components/ui/ModuleOverlayLoadingChrome";
+} from "@/components/app/ModuleOverlayLoadingChrome";
 import { useSessions } from "@/tenant/hooks/collections/sessions";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { FacultyPageConfirmDialogs } from "@/tenant/features/faculty/components/FacultyPageConfirmDialogs";

@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { FORM_INPUT_COMPACT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { EnterMarksStudentRow } from "./EnterMarksStudentRow";
 import type { Exam } from "@/lib/data/examinationData";
-import type { ExamStudent } from "./useEnterMarksStudents";
+import type { ExamStudent } from "../hooks/useEnterMarksStudents";
 
 export interface EnterMarksTableProps {
   exam: Exam;

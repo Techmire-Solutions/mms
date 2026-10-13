@@ -3,7 +3,7 @@ import type { JSX, ReactNode } from "react";
 import {
   DetailAttributeRow,
   type DetailAttributeRowVariant,
-} from "@/components/ui/DetailAttributeRow";
+} from "@/components/app/DetailAttributeRow";
 
 export interface FacultyDetailAttributeRowProps {
   icon: LucideIcon;

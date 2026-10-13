@@ -1,15 +1,15 @@
 import { useMemo, type FormEvent } from "react";
 
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { CashbookView } from "@/tenant/features/accounting/components/CashbookView";
 import { JournalQuickActionsPanel } from "@/tenant/features/accounting/components/JournalQuickActionsPanel";
 import { SimpleTransactionWizard } from "@/tenant/features/accounting/components/SimpleTransactionWizard";
 import { SpecializedEntryModal } from "@/tenant/features/accounting/components/SpecializedEntryModal";
-import type { QuickActionType } from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+import type { QuickActionType } from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
-import type { JournalEntrySave } from "./journalEntriesTypes";
-import { isVoucherPrintable } from "@/tenant/features/accounting/components/paymentVoucherKind";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
+import { isVoucherPrintable } from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
 
 /** Quick-action ids that open the dedicated cross-module entry modal instead of the generic wizard. */

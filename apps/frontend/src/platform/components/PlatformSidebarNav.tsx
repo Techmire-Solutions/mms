@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { type PlatformNavSection, type PlatformNavItem } from "@/platform/lib/platformNav";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AppTranslationKey } from "@mms/shared";
-import { SidebarNavItem } from "@/components/ui/SidebarNavItem";
+import { SidebarNavItem } from "@/components/app/SidebarNavItem";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { isNavPathActive } from "@/lib/config/routes";

@@ -5,7 +5,7 @@ import {
   flatDraftPatchFromEmployDesignationRows,
   newEmployDesignationFormRow,
   pickPrimaryEmployDesignationRow,
-} from "./facultyEmployDesignationFormDraft";
+} from "../lib/facultyEmployDesignationFormDraft";
 
 describe("facultyEmployDesignationFormDraft", () => {
   it("builds rows from flat faculty mirrors", () => {

@@ -1,11 +1,11 @@
 import React, { lazy, Suspense } from "react";
 import { AlertTriangle, TrendingDown, Award } from "lucide-react";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AttendanceAnalyticsInsights } from "@/tenant/features/attendance/components/AttendanceAnalyticsInsights";
-import { useAttendanceAnalyticsModel } from "@/tenant/features/attendance/components/useAttendanceAnalyticsModel";
-import { StatsSkeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { useAttendanceAnalyticsModel } from "@/tenant/features/attendance/hooks/useAttendanceAnalyticsModel";
+import { StatsSkeleton } from "@/components/app/LoadingState";
+import { ErrorState } from "@/components/app/ErrorState";
 
 const AttendanceAnalyticsChartPanels = lazy(() =>
   import("@/tenant/features/attendance/components/AttendanceAnalyticsChartPanels").then((mod) => ({

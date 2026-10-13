@@ -7,9 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input as UiInput } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_LABEL } from "@/components/ui/formStyles";
-import type { AddUserStepProps } from "./addUserModalTypes";
+import type { AddUserStepProps } from "../lib/addUserModalTypes";
 
 const SETUP_OPTIONS = [
   {

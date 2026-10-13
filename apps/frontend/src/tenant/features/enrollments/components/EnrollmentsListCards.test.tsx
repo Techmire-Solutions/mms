@@ -14,7 +14,7 @@ vi.mock("@/hooks/useReducedMotion", () => ({
   useReducedMotion: () => false,
 }));
 
-vi.mock("@/components/ui/EntityCardsGrid", () => ({
+vi.mock("@/components/app/EntityCardsGrid", () => ({
   EntityCardsGrid: ({
     items,
     renderItem,

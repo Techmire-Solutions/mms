@@ -14,9 +14,9 @@ import {
   readSessionsWidgetAggregate,
   readEnrollmentsTotalFromMetrics,
   readEnrollmentsWidgetAggregate,
-} from "./widgetAggregateReaders.js";
-import { getFilteredRecords } from "./widgetCollectionSnapshot.js";
-import { computeWidgetChartData, type WidgetChartDataPoint } from "./widgetChartDataCompute.js";
+} from "./widgetAggregateReaders";
+import { getFilteredRecords } from "./widgetCollectionSnapshot";
+import { computeWidgetChartData, type WidgetChartDataPoint } from "./widgetChartDataCompute";
 
 export { computeWidgetChartData, type WidgetChartDataPoint };
 

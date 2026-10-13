@@ -39,7 +39,7 @@ vi.mock("@/tenant/features/enrollments/hooks/useEnrollmentsSetupPanelState", () 
   }),
 }));
 
-vi.mock("@/components/ui/ToggleRow", () => ({
+vi.mock("@/components/app/ToggleRow", () => ({
   ToggleRow: ({ label, value }: { label: string; value?: boolean }) => (
     <div data-testid="toggle-row">
       <span>{label}</span>
@@ -48,7 +48,7 @@ vi.mock("@/components/ui/ToggleRow", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ModuleSetupSaveFooter", () => ({
+vi.mock("@/components/app/ModuleSetupSaveFooter", () => ({
   ModuleSetupSaveFooter: () => <div data-testid="save-footer">Save Footer</div>,
 }));
 

@@ -3,19 +3,19 @@ import { Search } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
-import { DensityToggle, type DensityMode } from "@/components/ui/DensityToggle";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ErrorState } from "@/components/app/ErrorState";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
+import { DensityToggle, type DensityMode } from "@/components/app/DensityToggle";
 import { Inbox } from "lucide-react";
 
 export function DesignSystemActionsDemo(): React.JSX.Element {

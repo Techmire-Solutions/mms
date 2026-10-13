@@ -1,12 +1,12 @@
 import React from "react";
 import { formatMoney } from "@mms/shared";
 import { WORK_SURFACE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useMemo } from "react";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
-import { WarningCallout } from "@/components/ui/WarningCallout";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+import { WarningCallout } from "@/components/app/WarningCallout";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type {

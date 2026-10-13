@@ -2,7 +2,7 @@ import { PlatformDistributionTooltip } from "@/platform/components/reports/platf
 import React from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
 
 const LEGEND_FORMATTER = (value: string) => (
   <span className="text-xs font-semibold text-foreground">{value}</span>

@@ -1,6 +1,6 @@
 import type { ZodType } from "zod";
 import { getRequestTenant } from "../lib/tenantContext.js";
-import { broadcastCollection } from "./websocketService.js";
+import { broadcastCollection } from "../lib/livePush.js";
 
 interface TenantBulkRepo<T> {
   listByWorkspace: (subdomain: string) => Promise<T[]>;

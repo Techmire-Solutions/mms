@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { AttendanceRecord } from "../attendanceModuleManifest.js";
-import { paginateAttendance } from "../attendanceListQuery.js";
+import type { AttendanceRecord } from "../attendance/attendanceModuleManifest.js";
+import { paginateAttendance } from "../attendance/attendanceListQuery.js";
 
 const records: AttendanceRecord[] = [
   {

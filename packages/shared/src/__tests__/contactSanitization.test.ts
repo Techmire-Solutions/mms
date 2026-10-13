@@ -5,7 +5,7 @@ import {
   sanitizePhoneForWhatsApp,
   sanitizeEmailForMailto,
   getContactPhoneActionHrefs,
-} from "../contactSanitization.js";
+} from "../contacts/contactSanitization.js";
 
 describe("contactSanitization", () => {
   describe("sanitizePhoneForTel", () => {

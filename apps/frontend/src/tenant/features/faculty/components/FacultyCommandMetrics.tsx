@@ -2,7 +2,7 @@ import React from "react";
 import { School, Filter, UserCheck, UserX } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFacultyMetrics } from "@/tenant/features/faculty/hooks/useFaculty";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { resolveFacultyStatusRoles } from "@mms/shared";
 import { facultyStatusMetricAccent } from "@/lib/faculty/facultyStatusUi";
 

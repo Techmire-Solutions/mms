@@ -2,14 +2,14 @@ import React, { type JSX, type ReactNode } from "react";
 import { UserX } from "lucide-react";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { Contact } from "@mms/shared";
-import { ModuleWorkDirectoryEmpty } from "@/components/ui/ModuleWorkDirectoryEmpty";
+import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
 import {
   ModuleWorkListStateShell,
   type ModuleWorkListPageData,
-} from "@/components/ui/ModuleWorkListStateShell";
+} from "@/components/app/ModuleWorkListStateShell";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { MessagingSelectedMap } from "@/tenant/features/messaging/components/messagingWorkPanelShared";
+import type { MessagingSelectedMap } from "@/tenant/features/messaging/lib/messagingWorkPanelShared";
 import { MessagingWorkRecipientsCards } from "./MessagingWorkRecipientsCards";
 import { MessagingWorkRecipientsTable } from "./MessagingWorkRecipientsTable";
 

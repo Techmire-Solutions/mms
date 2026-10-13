@@ -1,14 +1,14 @@
 import React, { lazy, Suspense } from "react";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { EnrollmentsReportAggregates } from "@mms/shared";
 import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES } from "@mms/shared";
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const EnrollmentReportsCharts = lazy(() =>

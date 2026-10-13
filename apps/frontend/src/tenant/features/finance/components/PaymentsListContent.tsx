@@ -1,8 +1,8 @@
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { WorkViewModeToggle } from "@/components/ui/WorkViewModeToggle";
+import { WorkViewModeToggle } from "@/components/app/WorkViewModeToggle";
 import { PaymentLogHeader } from "@/tenant/features/finance/components/PaymentsListFilters";
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Payment } from "@/lib/data/financeData";
 import { PaymentsListCards } from "@/tenant/features/finance/components/PaymentsListCards";
 import { PaymentsListDesktopTable } from "@/tenant/features/finance/components/PaymentsListDesktopTable";

@@ -1,6 +1,6 @@
 import type { ContactLike } from "@mms/shared";
 import { hydrateCollectionRows, normalizeCollectionRows } from "@/lib/contactLink/collectionSync";
-import { scopedStorageKey } from "@/lib/dbStorageCore.js";
+import { scopedStorageKey } from "@/lib/dbStorageCore";
 
 export const LINK_MANAGED_COLLECTIONS = new Set([
   "students",

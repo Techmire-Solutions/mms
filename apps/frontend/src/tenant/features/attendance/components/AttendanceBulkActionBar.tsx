@@ -1,7 +1,7 @@
 import React from "react";
 import { UserCheck } from "lucide-react";
 import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
 
 export interface AttendanceBulkActionBarProps {
   selectedCount: number;

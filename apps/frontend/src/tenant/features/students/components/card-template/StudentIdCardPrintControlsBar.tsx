@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   CompactSegmentedControl,
   type CompactSegmentedOption,
-} from "@/components/ui/CompactSegmentedControl";
+} from "@/components/app/CompactSegmentedControl";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export type StudentCardPrintMode = "front" | "back" | "both";

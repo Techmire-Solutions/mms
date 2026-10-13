@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { GraduationCap } from "lucide-react";
 import { StudentsPageView } from "./StudentsPageView";
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
+vi.mock("@/components/app/ModulePageShell", () => ({
   ModulePageShell: ({
     headerTitle,
     children,
@@ -29,7 +29,7 @@ vi.mock("@/tenant/features/students/components/StudentsCommandMetrics", () => ({
   StudentsCommandMetrics: () => <div data-testid="students-metrics">Metrics</div>,
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="accordion-tabs">{children}</div>
   ),

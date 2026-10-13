@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
 import { ContactsRowActions } from "./ContactsRowActions";
 
-vi.mock("@/components/ui/ModuleRowActionsMenu", () => ({
+vi.mock("@/components/app/ModuleRowActionsMenu", () => ({
   ModuleRowActionsMenu: ({
     viewLabel,
     editLabel,

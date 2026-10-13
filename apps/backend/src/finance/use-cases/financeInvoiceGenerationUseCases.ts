@@ -128,7 +128,7 @@ export async function generateInvoices(
       .filter((invoice) => invoice.enrollmentId)
       .map((invoice) => ({ enrollmentId: invoice.enrollmentId as string, invoiceId: invoice.id })),
   );
-  const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   broadcastTenantUpdate(tenant, "collection", "finance_metrics");
   broadcastTenantUpdate(tenant, "collection", "enrollments");

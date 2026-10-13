@@ -7,7 +7,7 @@ import { WorkTaskToolbar } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { type ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import { type ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 
 export const MESSAGING_WORK_SEARCH_INPUT_ID = "messaging-work-search";
 

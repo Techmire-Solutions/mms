@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { ClipboardList } from "lucide-react";
 import { QUESTION_BANK_MODULE_MANIFEST } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
 
 export interface QuestionBankBulkActionBarProps {
   selectedCount: number;

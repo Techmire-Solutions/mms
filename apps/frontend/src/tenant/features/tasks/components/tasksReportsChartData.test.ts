@@ -4,7 +4,7 @@ import {
   buildTasksPriorityChartData,
   buildTasksStatusChartData,
   hasChartValues,
-} from "./tasksReportsChartData";
+} from "../lib/tasksReportsChartData";
 
 const metrics = {
   total: 10,

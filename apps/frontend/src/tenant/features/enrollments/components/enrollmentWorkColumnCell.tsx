@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { formatDate } from "@mms/shared";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Student } from "@mms/shared";
 import {
   findEnrollmentStudent,
   getEnrollmentStudentDisplayName,
-} from "@/tenant/features/enrollments/components/enrollmentListContentShared";
+} from "@/tenant/features/enrollments/lib/enrollmentListContentShared";
 
 /** Render an Enrollments Work column value (non-face columns). */
 export function renderEnrollmentWorkColumnValue(

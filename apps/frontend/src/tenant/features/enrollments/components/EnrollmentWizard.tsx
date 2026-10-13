@@ -22,7 +22,7 @@ import { type Session, type Class } from "@/lib/data/sessionsData";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
-import { buildEnrollmentPayload } from "@/tenant/features/enrollments/components/enrollmentWizardBuildPayload";
+import { buildEnrollmentPayload } from "@/tenant/features/enrollments/lib/enrollmentWizardBuildPayload";
 import { EnrollmentWizardSuccess } from "@/tenant/features/enrollments/components/EnrollmentWizardSuccess";
 import { EnrollmentWizardFooter } from "@/tenant/features/enrollments/components/EnrollmentWizardFooter";
 

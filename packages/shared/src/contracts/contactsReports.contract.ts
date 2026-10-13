@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { contactRecordSchema } from "../contactsModuleManifest.js";
-import { baseListQuerySchema } from "../apiSchemas.js";
+import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
+import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { contactSavedReportSchema } from "./contacts.contract.js";
 
 export const contactsReportAnalyticsQuerySchema = z.object({

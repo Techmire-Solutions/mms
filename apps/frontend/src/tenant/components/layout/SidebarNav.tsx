@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { SidebarNavItem } from "@/components/ui/SidebarNavItem";
+import { SidebarNavItem } from "@/components/app/SidebarNavItem";
 import { useTranslation } from "@/hooks/useTranslation";
 import { isNavPathActive, ROUTES } from "@/lib/config/routes";
 import { prefetchRoute } from "@/lib/routing/routePrefetch";

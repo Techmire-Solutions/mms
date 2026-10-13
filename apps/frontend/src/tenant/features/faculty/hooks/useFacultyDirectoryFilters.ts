@@ -5,7 +5,7 @@ import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { getDirectoryPageSelection } from "@/lib/directorySelection";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useFacultyDirectoryDrillDown } from "@/tenant/features/faculty/hooks/useFacultyDirectoryDrillDown";
-import type { FacultySortField } from "@/tenant/features/faculty/components/facultyListTypes";
+import type { FacultySortField } from "@/tenant/features/faculty/lib/facultyListTypes";
 
 /** Directory filters, sort, trash, and selection SSOT for Faculty Work. */
 export function useFacultyDirectoryFilters({

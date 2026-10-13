@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { RefreshCw } from "lucide-react";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";

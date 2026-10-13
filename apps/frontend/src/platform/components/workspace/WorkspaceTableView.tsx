@@ -6,7 +6,7 @@ import {
 } from "@mms/shared";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { toColumnResize, type DataTableColumnLayout } from "@/components/common/data-table";
 import { resolveVisibleDescriptorColumns } from "@/hooks/useDescriptorColumnLayout";

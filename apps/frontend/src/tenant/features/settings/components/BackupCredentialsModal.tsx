@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Lock, Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { Label } from "@/components/ui/label";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
-import { PasswordInput } from "@/components/ui/PasswordInput";
-import { SettingsCallout } from "@/components/ui/SettingsShell";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { PasswordInput } from "@/components/app/PasswordInput";
+import { SettingsCallout } from "@/components/app/SettingsShell";
 
 export interface BackupCredentialsModalProps {
   open: boolean;

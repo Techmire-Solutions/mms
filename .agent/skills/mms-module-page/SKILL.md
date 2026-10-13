@@ -43,12 +43,12 @@ metadata:
 | Concern | Path / symbol |
 |---------|----------------|
 | Gold pages | `apps/frontend/src/tenant/features/accounting/AccountingPage.tsx`, `.../contacts/ContactsPage.tsx` |
-| Shell | `apps/frontend/src/components/ui/ModulePageShell.tsx` |
+| Shell | `apps/frontend/src/components/app/ModulePageShell.tsx` |
 | Tier tabs | `apps/frontend/src/tenant/hooks/useModuleTierTabs.ts` (`useFilteredModuleTierTabs`) |
 | Permissions | `apps/frontend/src/tenant/hooks/usePermissions.ts` (`useModulePermissions`) |
 | Tab + trash state | `apps/frontend/src/hooks/usePersistedTabState.ts`, `apps/frontend/src/hooks/useDirectoryTrashState.ts` |
 | Router | `apps/frontend/src/components/routing/HostRoutes.tsx` |
-| Policy | `packages/shared/src/moduleAccessPolicy.ts` + `ModuleAccessRoute` |
+| Policy | `packages/shared/src/settings/moduleAccessPolicy.ts` + `ModuleAccessRoute` |
 | Template | `examples/TemplateModulePage.tsx` |
 
 Derive allowed tabs with `useFilteredModuleTierTabs({ workLabelKey: 'nav.<module>' })` (or explicit peer tabs for multi-ops modules), intersect persisted selection before rendering, and gate Reports/Setup content on capability. A hidden tab label alone does not protect its panel.

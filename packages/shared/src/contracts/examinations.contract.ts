@@ -1,19 +1,19 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema, softDeleteBodySchema } from "../apiSchemas.js";
+import { baseListQuerySchema, softDeleteBodySchema } from "../core/apiSchemas.js";
 import {
   examRecordSchema,
   examResultRecordSchema,
   examListSchema,
   examResultListSchema,
-} from "../examinationsModuleManifest.js";
-import { examinationsReportAggregatesSchema } from "../examinationsReportAggregates.js";
-import { reportComparisonQuerySchema } from "../reportComparisonQuery.js";
+} from "../examinations/examinationsModuleManifest.js";
+import { examinationsReportAggregatesSchema } from "../examinations/examinationsReportAggregates.js";
+import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
   examinationsFieldConfigPutBodySchema,
   examinationsPreferencesPutBodySchema,
-} from "../examinationsSetupConfigTypes.js";
+} from "../examinations/examinationsSetupConfigTypes.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();

@@ -8,7 +8,7 @@ import {
   wizardAccountOptions,
   wizardCategoryAccountOptions,
   type WizardFormState,
-} from "./simpleTransactionWizardTypes";
+} from "../lib/simpleTransactionWizardTypes";
 
 const translate = (key: string) => `t:${key}`;
 

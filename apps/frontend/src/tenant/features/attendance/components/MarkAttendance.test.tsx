@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkAttendance } from "./MarkAttendance";
 
-vi.mock("./useMarkAttendanceController", () => ({
+vi.mock("../hooks/useMarkAttendanceController", () => ({
   useMarkAttendanceController: (props: any) => ({
     filters: props.filters,
     t: (key: string) => key,

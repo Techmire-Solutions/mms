@@ -2,7 +2,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentReports } from "@/tenant/components/reports/moduleReportAdapters";
 import { useEnrollmentsReportAggregates } from "@/tenant/hooks/collections/enrollments";
 import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES, type EnrollmentsReportAggregates } from "@mms/shared";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import type { ReportFilterFields } from "./ReportFilters";
 
 export function EnrollmentReportsWrapper({

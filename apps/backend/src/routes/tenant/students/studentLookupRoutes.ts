@@ -10,7 +10,7 @@ import { canReadCollection } from "../../../services/rbacService.js";
 import {
   loadStudentLookupsMap,
   replaceStudentLookupKind,
-} from "../../../services/studentLookupsService.js";
+} from "../../../students/use-cases/studentLookupsService.js";
 import { auditStudent } from "./studentRouteHelpers.js";
 
 /** Students Setup lookup option lists (typed `student_lookups`). */

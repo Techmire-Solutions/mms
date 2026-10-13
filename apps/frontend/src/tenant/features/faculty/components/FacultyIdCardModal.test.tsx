@@ -13,7 +13,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({
     title,
     children,

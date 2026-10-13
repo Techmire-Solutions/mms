@@ -2,13 +2,13 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, UserPlus, X } from "lucide-react";
 import type { SystemUser } from "@mms/shared";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { Button } from "@/components/ui/button";
 import { ADD_USER_MODAL_STEP_DEFS, StepIndicator } from "./AddUserModalStepIndicator";
 import { Step1 } from "./AddUserModalStep1";
 import { Step2 } from "./AddUserModalStep2";
 import { Step3 } from "./AddUserModalStep3";
-import { useAddUserModalForm } from "./useAddUserModalForm";
+import { useAddUserModalForm } from "../hooks/useAddUserModalForm";
 import { AddUserSuccessView } from "./AddUserSuccessView";
 
 export interface AddUserModalProps {

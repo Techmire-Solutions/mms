@@ -2,12 +2,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { X, Sliders } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
-import { CustomReportBuilderConfigPanel } from "@/components/ui/reports/CustomReportBuilderConfigPanel";
-import { CustomReportBuilderPreviewPanel } from "@/components/ui/reports/CustomReportBuilderPreviewPanel";
-import { useCustomReportBuilderState } from "@/tenant/features/reports/controllers/useCustomReportBuilderState";
+import { CustomReportBuilderConfigPanel } from "@/components/reports/CustomReportBuilderConfigPanel";
+import { CustomReportBuilderPreviewPanel } from "@/components/reports/CustomReportBuilderPreviewPanel";
+import { useCustomReportBuilderState } from "@/tenant/features/reports/hooks/useCustomReportBuilderState";
 
 /** Props for the CustomReportBuilder component. */
 interface CustomReportBuilderProps {

@@ -1,11 +1,11 @@
 import React, { lazy, Suspense, useRef } from "react";
 import type { Denomination } from "@mms/shared";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 import { useTranslation } from "@/hooks/useTranslation";
 

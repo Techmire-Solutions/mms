@@ -1,11 +1,11 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
-import { CompactSegmentedControl } from "@/components/ui/CompactSegmentedControl";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 

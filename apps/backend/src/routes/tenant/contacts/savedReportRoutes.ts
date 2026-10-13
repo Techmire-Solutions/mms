@@ -6,7 +6,7 @@ import {
   deleteContactsSavedReport,
   listContactsSavedReports,
   touchContactsSavedReportRun,
-} from "../../../services/contactSavedReportsService.js";
+} from "../../../contacts/use-cases/contactSavedReportUseCases.js";
 import { contactsSavedReportCreateSchema, resourceIdParamsSchema } from "@mms/shared";
 import { sendDatabaseError, sendForbidden, sendNotFound } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";

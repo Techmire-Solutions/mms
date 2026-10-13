@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkAttendanceFieldControl } from "./MarkAttendanceFieldControl";
-import type { AttendanceRow } from "./markAttendanceTypes";
+import type { AttendanceRow } from "../lib/markAttendanceTypes";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -14,7 +14,7 @@ vi.mock("./StatusToggle", () => ({
   StatusToggle: ({ value }: { value: string }) => <div data-testid="status-toggle">{value}</div>,
 }));
 
-vi.mock("@/components/ui/TimePicker", () => ({
+vi.mock("@/components/app/TimePicker", () => ({
   TimePicker: ({ value }: { value: string }) => (
     <input data-testid="time-picker" defaultValue={value} />
   ),

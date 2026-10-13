@@ -7,7 +7,7 @@ import {
   PAPER_PRINT_STYLES,
   type PaperConfig,
   type PaperSection,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 function renderAnswerLines(question: Question): React.ReactElement | null {
   const lineCount = ANSWER_LINE_COUNT_BY_TYPE[question.type] ?? 2;

@@ -1,10 +1,10 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { ProgressBar } from "@/components/app/ProgressBar";
 import { Star, Package, Gift, RotateCcw, TrendingUp, Layers } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
-import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
+import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
 import type { Denomination, StockBatch, Distribution } from "@/lib/data/hasanatData";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useTranslation } from "@/hooks/useTranslation";

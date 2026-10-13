@@ -1,7 +1,7 @@
 import React, { useRef, useState, lazy, Suspense, type JSX } from "react";
 import { Printer, IdCard, Paintbrush } from "lucide-react";
 import { STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";

@@ -3,17 +3,17 @@ import {
   distributionRecordInsertSchema,
   isDistributionDeleted,
   filterActiveDistributions,
-} from "../hasanatModuleManifest.js";
+} from "../hasanat/hasanatModuleManifest.js";
 import {
   examRecordInsertSchema,
   isExamDeleted,
   filterActiveExams,
-} from "../examinationsModuleManifest.js";
+} from "../examinations/examinationsModuleManifest.js";
 import {
   questionBankQuestionInsertSchema,
   isQuestionDeleted,
   filterActiveQuestions,
-} from "../questionBankModuleManifest.js";
+} from "../examinations/questionBankModuleManifest.js";
 import {
   invoiceRecordInsertSchema,
   isInvoiceDeleted,
@@ -21,8 +21,8 @@ import {
   paymentRecordInsertSchema,
   isPaymentDeleted,
   filterActivePayments,
-} from "../financeModuleManifest.js";
-import { isUserDeleted, filterActiveUsers, type WorkspaceUser } from "../userEntityTypes.js";
+} from "../finance/financeModuleManifest.js";
+import { isUserDeleted, filterActiveUsers, type WorkspaceUser } from "../auth/userEntityTypes.js";
 import {
   accountRecordInsertSchema,
   isAccountDeleted,
@@ -31,13 +31,16 @@ import {
   filterActiveJournalEntries,
   isFiscalYearDeleted,
   filterActiveFiscalYears,
-} from "../accountingModuleManifest.js";
+} from "../finance/accountingModuleManifest.js";
 import {
   attendanceRecordInsertSchema,
   isAttendanceRecordDeleted,
   filterActiveAttendanceRecords,
-} from "../attendanceModuleManifest.js";
-import { isMessageLogDeleted, filterActiveMessageLogs } from "../messagingModuleManifest.js";
+} from "../attendance/attendanceModuleManifest.js";
+import {
+  isMessageLogDeleted,
+  filterActiveMessageLogs,
+} from "../messaging/messagingModuleManifest.js";
 
 describe("Soft-delete invariants across shared manifests and entity types", () => {
   describe("Hasanat distributions", () => {

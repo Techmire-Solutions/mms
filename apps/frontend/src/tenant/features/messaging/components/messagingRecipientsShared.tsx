@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
 export function MissingFieldBadge({ label }: { label: string }): JSX.Element {
   return (

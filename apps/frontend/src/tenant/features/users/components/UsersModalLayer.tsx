@@ -2,7 +2,7 @@ import React from "react";
 import { AnimatePresence } from "framer-motion";
 import type { MessagingTarget } from "@/hooks/useMessageComposerState";
 import type { SystemUser } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { AddUserModal } from "@/tenant/features/users/components/AddUserModal";
 import { EditUserModal } from "@/tenant/features/users/components/EditUserModal";
 import { InviteUserModal } from "@/tenant/features/users/components/InviteUserModal";

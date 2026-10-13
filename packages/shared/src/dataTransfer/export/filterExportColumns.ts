@@ -13,8 +13,8 @@
  * Each module builds a `FieldVisibilityContext` from its settings and
  * passes it to this function together with the requested column list.
  */
-import type { FieldDefinition, TabDefinition } from "../../contactFieldSchemaTypes.js";
-import { canViewContactField, canViewContactTab } from "../../contactFieldAccess.js";
+import type { FieldDefinition, TabDefinition } from "../../contacts/contactFieldSchemaTypes.js";
+import { canViewContactField, canViewContactTab } from "../../contacts/contactFieldAccess.js";
 import type { ExportColumn } from "../core/exportTypes.js";
 
 // ---------------------------------------------------------------------------

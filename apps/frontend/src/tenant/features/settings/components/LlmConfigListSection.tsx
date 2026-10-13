@@ -1,10 +1,10 @@
 import type React from "react";
 import { Brain, Plus, Search } from "lucide-react";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { SearchBar } from "@/components/app/SearchBar";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { SettingsCallout } from "@/components/ui/SettingsShell";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionCard } from "@/components/app/SectionCard";
+import { SettingsCallout } from "@/components/app/SettingsShell";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { LlmConfig, LlmTestResult } from "@mms/shared";
 import { LlmConfigCard } from "@/tenant/features/settings/components/LlmConfigCard";

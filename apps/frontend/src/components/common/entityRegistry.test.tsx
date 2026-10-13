@@ -20,13 +20,13 @@ import {
   messagingEntityDescriptor,
   getEntityDescriptor,
 } from "@/components/common/entityRegistry";
-import { EntityCardMetadata } from "@/components/ui/EntityCardMetadata";
-import { Drawer } from "@/components/ui/Drawer";
-import { EntityDescriptorSections } from "@/components/ui/EntityDescriptorSections";
-import { FilterChips } from "@/components/ui/FilterChips";
+import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
+import { Drawer } from "@/components/app/Drawer";
+import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
+import { FilterChips } from "@/components/app/FilterChips";
 import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilterChips";
 import { AppShell } from "@/components/common/AppShell";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

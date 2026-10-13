@@ -10,14 +10,14 @@ import {
   type UserStatus,
 } from "@mms/shared";
 import ContactPicker from "@/components/contactLink/ContactPicker";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { PersonIdentityMeta } from "@/components/ui/PersonIdentityMeta";
+import { FormSelect } from "@/components/app/FormSelect";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { PersonIdentityMeta } from "@/components/app/PersonIdentityMeta";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldErrorMessage } from "@/components/ui/FormPrimitives";
-import type { AddUserStepProps } from "./addUserModalTypes";
+import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
+import type { AddUserStepProps } from "../lib/addUserModalTypes";
 
 export function Step1({ form, setForm, errors }: AddUserStepProps): JSX.Element {
   const { t } = useTranslation();

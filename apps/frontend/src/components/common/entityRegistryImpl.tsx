@@ -7,7 +7,7 @@ import type {
   TableColumnDescriptor,
   EntityDescriptor,
   CreateEntityDescriptorOptions,
-} from "@/types/entityRegistry";
+} from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "./entityDescriptorFactory";
 import {
   contactsEntityDescriptor,

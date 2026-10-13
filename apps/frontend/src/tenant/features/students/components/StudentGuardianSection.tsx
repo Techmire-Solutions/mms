@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Users } from "lucide-react";
 import ContactEditModal from "@/components/contactLink/ContactEditModal";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   CONTACTS_MODULE_MANIFEST,
@@ -14,9 +14,9 @@ import {
   type Student,
 } from "@mms/shared";
 import { formatLocalizedRelationshipParts } from "@/lib/contacts/formatLocalizedRelationshipLabel";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { GuardianContactCard } from "@/tenant/features/students/components/GuardianContactCard";
-import { relationshipBadgeCode } from "@/tenant/features/students/components/guardianRelationshipBadge";
+import { relationshipBadgeCode } from "@/tenant/features/students/lib/guardianRelationshipBadge";
 import { useContactsByIds } from "@/tenant/hooks/collections/contacts";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 

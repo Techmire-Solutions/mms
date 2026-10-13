@@ -1,7 +1,7 @@
 import React from "react";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountingDateFilterBar } from "./AccountingDateFilterBar";
 import {
@@ -10,7 +10,7 @@ import {
   IncomeStatementPanel,
 } from "./FinancialStatementPanels";
 import { PinnedWidgets } from "@/tenant/components/reports";
-import { useFinancialReportsModel } from "./useFinancialReportsModel";
+import { useFinancialReportsModel } from "../hooks/useFinancialReportsModel";
 
 /**
  * FinancialReports component.

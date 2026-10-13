@@ -1,9 +1,9 @@
 import React from "react";
 import { IdCard, School } from "lucide-react";
 import { hydrateFacultyFromContact, type FacultyMember } from "@mms/shared";
-import { Drawer } from "@/components/ui/Drawer";
-import { DetailDrawerRestoreOrEditAction } from "@/components/ui/DetailDrawerArchiveChrome";
-import { DrawerUpdatedStamp } from "@/components/ui/DrawerUpdatedStamp";
+import { Drawer } from "@/components/app/Drawer";
+import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";
+import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
@@ -11,11 +11,11 @@ import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
 import { FacultyArchivedBanner } from "@/tenant/features/faculty/components/FacultyArchivedBanner";
 import { FacultyDetailFieldsSection } from "@/tenant/features/faculty/components/FacultyDetailFieldsSection";
 import { FacultyDetailHeroCard } from "@/tenant/features/faculty/components/FacultyDetailHeroCard";
-import { DetailNotesBlock } from "@/components/ui/DetailNotesBlock";
+import { DetailNotesBlock } from "@/components/app/DetailNotesBlock";
 import { FacultyDetailQuickActions } from "@/tenant/features/faculty/components/FacultyDetailQuickActions";
 import { FacultyDetailSessionsSection } from "@/tenant/features/faculty/components/FacultyDetailSessionsSection";
-import { resolveFacultyDisplayName } from "@/tenant/features/faculty/components/facultyFieldDisplay";
-import { useFacultyDetailModel } from "@/tenant/features/faculty/components/useFacultyDetailModel";
+import { resolveFacultyDisplayName } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
+import { useFacultyDetailModel } from "@/tenant/features/faculty/hooks/useFacultyDetailModel";
 
 export interface FacultyDetailProps {
   faculty: FacultyMember;

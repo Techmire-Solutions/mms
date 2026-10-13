@@ -1,12 +1,12 @@
 import React from "react";
 import { UserX } from "lucide-react";
 import type { Contact } from "@mms/shared";
-import { ModuleWorkDirectoryEmpty } from "@/components/ui/ModuleWorkDirectoryEmpty";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import ContactsListDesktopTable from "@/tenant/features/contacts/components/ContactsListDesktopTable";
 import ContactsListCards from "@/tenant/features/contacts/components/ContactsListCards";
-import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/contactTableTypes";
-import type { ContactsWorkViewMode } from "@/tenant/features/contacts/components/contactsWorkTierTypes";
+import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
+import type { ContactsWorkViewMode } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ContactsListProps {

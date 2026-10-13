@@ -5,7 +5,7 @@ import {
   isContactRetiredClassificationKey,
   sanitizeContactSeedObjects,
   stripContactRetiredClassificationFields,
-} from "../contactTypes.js";
+} from "../contacts/contactTypes.js";
 
 describe("contact classification SSOT", () => {
   it("recognizes retired classification keys", () => {

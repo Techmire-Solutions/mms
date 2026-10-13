@@ -60,7 +60,7 @@ vi.mock("@/tenant/features/finance/hooks/useFinanceSetupPanelState", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/SectionCard", () => ({
+vi.mock("@/components/app/SectionCard", () => ({
   SectionCard: ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
     <div data-testid="section-card">
       <h2>{title}</h2>
@@ -87,7 +87,7 @@ vi.mock("./FinanceFeeStructuresSection", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ModuleSetupSaveFooter", () => ({
+vi.mock("@/components/app/ModuleSetupSaveFooter", () => ({
   ModuleSetupSaveFooter: () => <div data-testid="save-footer">Save Footer</div>,
 }));
 

@@ -8,7 +8,7 @@ import {
   isValidIanaTimezone,
   normalizeTimezone,
   groupTimezoneOptions,
-} from "../timezoneUtils.js";
+} from "../core/timezoneUtils.js";
 
 describe("timezoneUtils", () => {
   describe("getIanaTimeZoneIds", () => {

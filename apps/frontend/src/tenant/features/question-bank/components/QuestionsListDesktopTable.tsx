@@ -4,9 +4,9 @@ import {
   getQuestionCategoryIds,
   type QuestionBankQuestion as Question,
 } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import { CategoryColorChip } from "@/tenant/features/question-bank/components/CategoryColorChip";

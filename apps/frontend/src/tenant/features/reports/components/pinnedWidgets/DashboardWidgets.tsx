@@ -22,8 +22,8 @@ import { useEnrollmentsWidgetAggregates } from "@/tenant/hooks/collections/enrol
 import { applyContactsWidgetWorkDrillDown } from "@/lib/contacts/contactsWidgetWorkDrillDown";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DashboardWidgetsHeader } from "@/components/ui/reports/pinnedWidgets/DashboardWidgetsHeader";
-import { DashboardWidgetsGrid } from "@/components/ui/reports/pinnedWidgets/DashboardWidgetsGrid";
+import { DashboardWidgetsHeader } from "@/components/reports/pinnedWidgets/DashboardWidgetsHeader";
+import { DashboardWidgetsGrid } from "@/components/reports/pinnedWidgets/DashboardWidgetsGrid";
 
 interface DashboardWidgetsProps {
   widgets?: CustomWidget[];

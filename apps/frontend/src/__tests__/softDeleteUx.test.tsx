@@ -6,16 +6,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
 
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { ModuleWorkToolbar } from "@/components/ui/ModuleWorkToolbar";
-import { ModuleTrashToggle } from "@/components/ui/ModuleTrashToggle";
-import { ModuleWorkBulkActionBar } from "@/components/ui/ModuleWorkBulkActionBar";
+import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
+import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
+import { ModuleWorkBulkActionBar } from "@/components/app/ModuleWorkBulkActionBar";
 import {
   EntityArchivedBanner,
   RetentionCountdownBadge,
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
   calculateRemainingRetentionDays,
-} from "@/components/ui/DetailDrawerArchiveChrome";
+} from "@/components/app/DetailDrawerArchiveChrome";
 import { ContactArchivedBanner } from "@/tenant/features/contacts/components/ContactArchivedBanner";
 import { StudentArchivedBanner } from "@/tenant/features/students/components/StudentArchivedBanner";
 import { FacultyArchivedBanner } from "@/tenant/features/faculty/components/FacultyArchivedBanner";

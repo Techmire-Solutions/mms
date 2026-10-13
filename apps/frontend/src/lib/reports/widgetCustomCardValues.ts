@@ -5,7 +5,7 @@ import {
   readFacultyWidgetAggregate,
   readSessionsWidgetAggregate,
   readEnrollmentsWidgetAggregate,
-} from "./widgetAggregateReaders.js";
+} from "./widgetAggregateReaders";
 
 function computeGenericCustomCardValue(
   card: {

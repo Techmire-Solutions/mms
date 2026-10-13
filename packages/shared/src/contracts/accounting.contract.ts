@@ -1,24 +1,24 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema } from "../apiSchemas.js";
-import { journalTemplatesSchema } from "../accountingJournalTemplates.js";
+import { baseListQuerySchema } from "../core/apiSchemas.js";
+import { journalTemplatesSchema } from "../finance/accountingJournalTemplates.js";
 import {
   accountingAccountsListQuerySchema,
   accountingEntriesListQuerySchema,
-} from "../accountingListQuery.js";
+} from "../finance/accountingListQuery.js";
 import {
   accountRecordSchema,
   journalEntryRecordSchema,
   fiscalYearRecordSchema,
-} from "../accountingModuleManifest.js";
+} from "../finance/accountingModuleManifest.js";
 import {
   accountingReportAggregatesSchema,
   accountingReportQuerySchema,
-} from "../accountingReportAggregates.js";
+} from "../finance/accountingReportAggregates.js";
 import {
   accountingFieldConfigPutBodySchema,
   accountingPreferencesPutBodySchema,
-} from "../accountingSetupConfigTypes.js";
+} from "../finance/accountingSetupConfigTypes.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();

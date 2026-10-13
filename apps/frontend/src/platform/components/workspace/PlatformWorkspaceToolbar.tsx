@@ -1,7 +1,7 @@
 import React from "react";
 import { Globe, Ban, Download, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { Button } from "@/components/ui/button";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { PlatformWorkspaceSortMenu } from "@/platform/components/PlatformWorkspaceSortMenu";

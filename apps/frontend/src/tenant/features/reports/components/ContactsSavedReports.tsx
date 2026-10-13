@@ -16,7 +16,7 @@ import { useContactsSavedReportsSource } from "@/tenant/hooks/collections/contac
 import { applyContactsWorkDrillDown } from "@/lib/contacts/contactsWorkDrillDown";
 import { notify } from "@/lib/notify";
 import { ContactsSavedReportsEditor } from "@/tenant/features/reports/components/ContactsSavedReportsEditor";
-import { ContactsSavedReportsList } from "@/components/ui/reports/ContactsSavedReportsList";
+import { ContactsSavedReportsList } from "@/components/reports/ContactsSavedReportsList";
 
 interface ContactsSavedReportsProps {
   suggestedDrillDown?: ContactsWorkDrillDown;

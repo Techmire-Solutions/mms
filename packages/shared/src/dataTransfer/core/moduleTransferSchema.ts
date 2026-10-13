@@ -4,15 +4,15 @@
  */
 
 import type { ExportColumn, ExportSpec, ExportCellExtractor } from "./exportTypes.js";
-import type { CsvImportFieldMapping, CsvImportMapResult } from "../../csvImportMapper.js";
-import type { CsvTemplateColumn } from "../../csvTemplateGenerator.js";
+import type { CsvImportFieldMapping, CsvImportMapResult } from "../../core/csvImportMapper.js";
+import type { CsvTemplateColumn } from "../../core/csvTemplateGenerator.js";
 import type { TransferFieldDefinition, ModuleTransferConfig } from "./transferFieldDef.js";
 import { isSystemMetadataKey } from "./systemMetadata.js";
-import { generateCsvTemplate } from "../../csvTemplateGenerator.js";
+import { generateCsvTemplate } from "../../core/csvTemplateGenerator.js";
 import { buildExportGrid } from "../export/buildExportGrid.js";
 import { csvSerializer } from "../export/serializers/csvSerializer.js";
-import { parseCsvRows } from "../../csvParserCore.js";
-import { mapCsvGridToObjects } from "../../csvImportMapper.js";
+import { parseCsvRows } from "../../core/csvParserCore.js";
+import { mapCsvGridToObjects } from "../../core/csvImportMapper.js";
 
 export interface ModuleTransferSchema<TEntity = Record<string, unknown>, TSettings = unknown> {
   readonly moduleId: string;

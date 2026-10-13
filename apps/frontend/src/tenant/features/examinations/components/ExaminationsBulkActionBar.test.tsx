@@ -12,7 +12,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleWorkBulkActionBar", () => ({
+vi.mock("@/components/app/ModuleWorkBulkActionBar", () => ({
   ModuleWorkBulkActionBar: ({ countLabel }: any) => <div data-testid="bulk-bar">{countLabel}</div>,
 }));
 

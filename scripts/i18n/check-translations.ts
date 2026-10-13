@@ -24,10 +24,10 @@ function extractTranslations(filePath: string): Record<string, string> {
   return result;
 }
 
-const en = extractTranslations(path.join(sharedSrc, "appTranslationsEn.ts"));
-const ar = extractTranslations(path.join(sharedSrc, "appTranslationsAr.ts"));
-const ur = extractTranslations(path.join(sharedSrc, "appTranslationsUr.ts"));
-const fa = extractTranslations(path.join(sharedSrc, "appTranslationsFa.ts"));
+const en = extractTranslations(path.join(sharedSrc, "i18n", "appTranslationsEn.ts"));
+const ar = extractTranslations(path.join(sharedSrc, "i18n", "appTranslationsAr.ts"));
+const ur = extractTranslations(path.join(sharedSrc, "i18n", "appTranslationsUr.ts"));
+const fa = extractTranslations(path.join(sharedSrc, "i18n", "appTranslationsFa.ts"));
 
 function isInvariantValue(key: string, value: string): boolean {
   if (value === "—" || value === "%") return true;

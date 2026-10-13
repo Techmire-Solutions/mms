@@ -19,7 +19,7 @@ vi.mock("@/hooks/useReducedMotion", () => ({
   useReducedMotion: () => false,
 }));
 
-import { contactToRecipient } from "./messagingWorkPanelShared";
+import { contactToRecipient } from "../lib/messagingWorkPanelShared";
 
 const mockContacts: Contact[] = [
   {

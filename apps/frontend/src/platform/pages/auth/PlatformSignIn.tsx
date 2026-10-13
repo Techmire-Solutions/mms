@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PlatformAuthLayout from "@/platform/components/PlatformAuthLayout";
 import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
 import { useSignInCredentialsForm } from "@/components/entry/useSignInCredentialsForm";
-import { createEmptyOtp, isOtpComplete } from "@/components/ui/OtpInput";
+import { createEmptyOtp, isOtpComplete } from "@/components/app/OtpInput";
 import { useResendCountdown } from "@/hooks/useResendCountdown";
 import { usePlatformAuth, type PlatformLoginOutcome } from "@/platform/lib/PlatformAuthContext";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";

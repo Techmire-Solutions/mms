@@ -10,9 +10,9 @@ import {
   isTenantBlocked,
   isTokenRevoked,
   isUserSessionRevoked,
-} from "../../services/session.service.js";
+} from "../../services/authSessionService.js";
 import { getWorkspaceBySubdomain } from "../../services/workspaceService.js";
-import { registerConnection, type MinimalWebSocket } from "../../services/websocketService.js";
+import { registerConnection, type MinimalWebSocket } from "../../lib/livePush.js";
 import { ACCESS_COOKIE } from "../../services/auth/authCookieService.js";
 
 interface DecodedToken {

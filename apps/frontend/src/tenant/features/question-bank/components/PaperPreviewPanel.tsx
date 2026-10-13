@@ -7,7 +7,7 @@ import type { QuestionBankQuestion as Question } from "@mms/shared";
 import type {
   PaperConfig,
   PaperSection,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 interface PaperPreviewPanelProps {
   config: PaperConfig;

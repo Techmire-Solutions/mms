@@ -4,7 +4,7 @@ import { notify } from "@/lib/notify";
 import {
   mapToTypstFeeReceipt,
   mapToZohoInvoice,
-} from "@/components/ui/template-editor/templatePayloadMappers";
+} from "@/components/template-editor/templatePayloadMappers";
 import type { ZohoInvoicePayload } from "@mms/shared";
 
 function safeFilenamePart(value: string): string {

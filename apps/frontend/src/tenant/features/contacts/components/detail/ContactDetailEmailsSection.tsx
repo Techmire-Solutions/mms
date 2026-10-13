@@ -2,7 +2,7 @@ import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveEmailLabel } from "@/lib/contacts/contactI18n";
 import { CollectionRowItem } from "./ContactDetailShared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
 import { DetailCollectionEmpty, withPrimaryEmail } from "./contactDetailChannelHelpers";
 import { buildDetailEmailMessagingActions } from "./contactDetailMessagingActions";

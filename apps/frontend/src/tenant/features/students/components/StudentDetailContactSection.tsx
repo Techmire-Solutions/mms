@@ -8,13 +8,13 @@ import type {
 } from "@mms/shared";
 import { toMessagingRecipient } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { StudentDetailContactChannels } from "./StudentDetailContactChannels";
 
 export interface StudentContactProfileData {

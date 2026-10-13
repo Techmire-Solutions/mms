@@ -1,13 +1,13 @@
 import React from "react";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentRowActions } from "@/tenant/features/enrollments/components/EnrollmentRowActions";
 import { renderEnrollmentWorkColumnValue } from "@/tenant/features/enrollments/components/enrollmentWorkColumnCell";
 import {
   findEnrollmentStudent,
   type EnrollmentListContentProps,
-} from "@/tenant/features/enrollments/components/enrollmentListContentShared";
+} from "@/tenant/features/enrollments/lib/enrollmentListContentShared";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 
 export type EnrollmentsListDesktopTableProps = Omit<

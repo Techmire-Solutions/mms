@@ -1,6 +1,6 @@
 ---
 description: System vs custom fields registry, field tabs, delete guards, and column registry synchronization
-globs: apps/frontend/src/lib/contacts/useContactConfig*.ts,apps/frontend/src/lib/contactFields*.ts,apps/frontend/src/tenant/features/**/*Fields*,apps/frontend/src/tenant/features/**/*Setup*,apps/frontend/src/platform/**/*Fields*,apps/frontend/src/platform/**/*Setup*,packages/shared/src/contactTypes.ts,packages/shared/src/contactEnabledTabs.ts,packages/shared/src/contactColumnRegistrySync.ts,packages/shared/src/contactFieldDependencies.ts,packages/shared/src/*Field*
+globs: apps/frontend/src/lib/contacts/useContactConfig*.ts,apps/frontend/src/lib/contactFields*.ts,apps/frontend/src/tenant/features/**/*Fields*,apps/frontend/src/tenant/features/**/*Setup*,apps/frontend/src/platform/**/*Fields*,apps/frontend/src/platform/**/*Setup*,packages/shared/src/**/contactTypes.ts,packages/shared/src/**/contactEnabledTabs.ts,packages/shared/src/**/contactColumnRegistrySync.ts,packages/shared/src/**/contactFieldDependencies.ts,packages/shared/src/**/*Field*
 alwaysApply: false
 ---
 

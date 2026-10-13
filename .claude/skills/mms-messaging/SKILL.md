@@ -21,7 +21,7 @@ metadata:
 | Area | Path |
 |------|------|
 | Page | `apps/frontend/src/tenant/features/messaging/MessagingPage.tsx` |
-| Composer | `components/ui/MessageComposer.tsx` + tokens bar |
+| Composer | `components/app/MessageComposer.tsx` + tokens bar |
 | Hooks | `useMessageTemplates`, `useMessageLogs`, `useMessagingMetrics`, `useMessagingMutations` |
 | Shared | `MESSAGING_MODULE_MANIFEST`, `messagingSchemas`, `MessagingRecipient` |
 | Backend | `routes/tenant/messaging.ts` (+ `messaging/**`), `messagingRepository.ts`, `services/messaging*.ts` |
@@ -56,7 +56,7 @@ metadata:
 
 ## Script
 
-`.agent/skills/mms-messaging/scripts/verify-template-tokens.mjs` validates every `{token}` in a template against the canonical token set in `packages/shared/src/messagingSchemas.ts`:
+`.agent/skills/mms-messaging/scripts/verify-template-tokens.mjs` validates every `{token}` in a template against the canonical token set in `packages/shared/src/messaging/messagingSchemas.ts`:
 
 ```bash
 node .agent/skills/mms-messaging/scripts/verify-template-tokens.mjs --text 'Salaam {student_name}, {bogus_token} due'

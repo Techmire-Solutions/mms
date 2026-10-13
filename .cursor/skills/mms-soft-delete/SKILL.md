@@ -55,7 +55,7 @@ Financial posted ledgers are append-only/reversal-driven; see ledger controls be
 - **URL Sync & Toggle**: Mount `ModuleTrashToggle` in toolbar; sync state to `?view=trash` via `useSearchParams()`. Preserves search and active filters across toggles.
 - **Bulk Actions**: Mount `BulkSelectionRestoreAction` in trash mode via `BulkSelectionBar`.
 - **Optimistic Undo**: Non-financial single-record deletes show instant 5–10s Undo toast calling restore.
-- **Detail Drawer**: Display `EntityArchivedBanner` / `DetailDrawerArchivedBanner` (from `@/components/ui/DetailDrawerArchiveChrome`) or a module wrapper (e.g. `StudentArchivedBanner`) with deletion metadata + Restore CTA; hide Edit and communication buttons.
+- **Detail Drawer**: Display `EntityArchivedBanner` / `DetailDrawerArchivedBanner` (from `@/components/app/DetailDrawerArchiveChrome`) or a module wrapper (e.g. `StudentArchivedBanner`) with deletion metadata + Restore CTA; hide Edit and communication buttons.
 
 ## 4. Verification
 

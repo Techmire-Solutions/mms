@@ -4,9 +4,9 @@ import {
   listEnabledCustomFacultyFormFields,
   listFacultySystemFormFieldKeys,
   resolveFacultyFieldsMapForColumnSync,
-} from "../facultyFormCustomFields.js";
-import { findFacultySeedField } from "../moduleFieldSetupFaculty.js";
-import type { FieldDefinition } from "../contactFieldSchemaTypes.js";
+} from "../faculty/facultyFormCustomFields.js";
+import { findFacultySeedField } from "../settings/moduleFieldSetupFaculty.js";
+import type { FieldDefinition } from "../contacts/contactFieldSchemaTypes.js";
 
 function field(partial: Partial<FieldDefinition> & { key: string }): FieldDefinition {
   return {

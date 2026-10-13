@@ -6,7 +6,7 @@ import type {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { cn } from "@/lib/utils";
 
 export interface QuestionBankTaxonomySectionProps {

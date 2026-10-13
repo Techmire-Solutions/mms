@@ -6,7 +6,7 @@ import {
   type WorkBatchTableColumn,
 } from "@/components/common/work";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { WORK_SURFACE } from "@/components/ui/formStyles";

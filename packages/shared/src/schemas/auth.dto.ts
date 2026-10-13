@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { deepSanitizeStrings } from "./sanitize.js";
-import { TENANT_AUTH_ERROR_TYPES, type User } from "../tenantAuthTypes.js";
-import { workspaceUserRecordSchema } from "../usersModuleManifest.js";
+import { TENANT_AUTH_ERROR_TYPES, type User } from "../auth/tenantAuthTypes.js";
+import { workspaceUserRecordSchema } from "../auth/usersModuleManifest.js";
 import { platformUserProfileDtoSchema } from "./platform.dto.js";
-import type { PlatformUserProfile } from "../platformTypes.js";
+import type { PlatformUserProfile } from "../auth/platformTypes.js";
 
 const onboardBodyBaseSchema = z
   .object({

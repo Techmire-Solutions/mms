@@ -1,11 +1,11 @@
 import React from "react";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { ProgressBar } from "@/components/app/ProgressBar";
+import { SectionLabel } from "@/components/app/SectionLabel";
 
-import { ReportMoneyCard } from "@/components/ui/reports/ReportMoneyCard";
-import { ReportMoneyCardsGrid } from "@/components/ui/reports/ReportMoneyCardsGrid";
-import { ReportMoneySummaryTile } from "@/components/ui/reports/ReportMoneySummaryTile";
+import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
+import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid";
+import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import {

@@ -8,8 +8,8 @@ import {
 } from "@mms/shared";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { MessagingSelectedMap } from "@/tenant/features/messaging/components/messagingWorkPanelShared";
-import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/semanticTone";
+import type { MessagingSelectedMap } from "@/tenant/features/messaging/lib/messagingWorkPanelShared";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
 import { MissingFieldBadge } from "./messagingRecipientsShared";
 
 export interface MessagingWorkRecipientsTableProps {

@@ -9,7 +9,7 @@ import {
   resolveStudentGuardianLinks,
   STUDENT_GUARDIAN_RELATIONSHIP_LABEL,
   STUDENT_PARENT_RELATIONSHIP_LABEL,
-} from "../studentGuardianFromContacts.js";
+} from "../students/studentGuardianFromContacts.js";
 
 describe("studentGuardianFromContacts", () => {
   describe("constants", () => {

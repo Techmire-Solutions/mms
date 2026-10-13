@@ -1,5 +1,5 @@
 import React from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { WorkBatchTable } from "@/components/common/work";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";

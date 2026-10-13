@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
-import { parseMoneyInput } from "./simpleTransactionMoney";
+import { parseMoneyInput } from "../lib/simpleTransactionMoney";
 
 interface SimpleTransactionAmountInputProps {
   prefix: string;

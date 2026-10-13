@@ -1,7 +1,7 @@
 import React from "react";
 import { UserCheck } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Badge } from "@/components/ui/badge";
 import type { EligibleAssigneeItem } from "@/tenant/features/tasks/hooks/useTasksApi";
 

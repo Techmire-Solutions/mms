@@ -1,6 +1,6 @@
 ---
 description: PostgreSQL database, Drizzle schema, migrations, transactions, and TanStack Query state authority
-globs: apps/backend/src/db/**,apps/backend/drizzle.config.ts,apps/backend/src/db/migrations/**,apps/backend/src/db/migrations_drizzle/**,apps/backend/src/worker/**,apps/backend/src/lib/redis.ts,apps/backend/src/routes/common/db.ts,apps/backend/src/services/dbSyncService.ts,apps/backend/src/lib/tenantContext.ts,apps/frontend/src/lib/db.ts,apps/frontend/src/lib/queryClient.ts,packages/shared/src/apiSchemas.ts
+globs: apps/backend/src/db/**,apps/backend/drizzle.config.ts,apps/backend/src/db/migrations/**,apps/backend/src/db/migrations_drizzle/**,apps/backend/src/worker/**,apps/backend/src/lib/redis.ts,apps/backend/src/routes/common/db.ts,apps/backend/src/services/dbSyncService.ts,apps/backend/src/lib/tenantContext.ts,apps/frontend/src/lib/db.ts,apps/frontend/src/lib/queryClient.ts,packages/shared/src/**/apiSchemas.ts
 alwaysApply: false
 ---
 

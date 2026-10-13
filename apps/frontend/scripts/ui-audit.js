@@ -29,8 +29,7 @@ const ROOT = path.join(__dirname, "..", "src");
 const SCAN_DIRS = [
   path.join(ROOT, "tenant"),
   path.join(ROOT, "platform"),
-  path.join(ROOT, "components", "ui"),
-  path.join(ROOT, "components", "common"),
+  path.join(ROOT, "components"),
 ];
 
 // Files exempt from all violations (intentional / documented exceptions)

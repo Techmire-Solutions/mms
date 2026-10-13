@@ -5,8 +5,8 @@ import { getCollectionLabel } from "@/lib/reports/reportMetadata";
 import { useTranslation } from "@/hooks/useTranslation";
 import { isSeededDashboardWidget, resolveWidgetTitle } from "@/lib/dashboardWidgets";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionCard } from "@/components/app/SectionCard";
 import { CustomizeItemRow } from "@/tenant/features/dashboard/components/CustomizeItemRow";
 
 export interface DashboardCustomizeWidgetsSectionProps {

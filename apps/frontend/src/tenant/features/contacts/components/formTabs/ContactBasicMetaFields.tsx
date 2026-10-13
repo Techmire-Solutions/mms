@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { IdCard } from "lucide-react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { EditableMultiSelect, Field, FormCheckboxCard } from "@/components/ui/FormPrimitives";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { DatePicker } from "@/components/app/DatePicker";
+import { EditableMultiSelect, Field, FormCheckboxCard } from "@/components/app/FormPrimitives";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type Contact, formatCnic, todayISO, getContactTags } from "@mms/shared";
 import { cn } from "@/lib/utils";

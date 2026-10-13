@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { canViewContactField, canViewContactTab } from "../contactFieldAccess.js";
-import type { FieldDefinition, TabDefinition } from "../contactFieldSchemaTypes.js";
+import { canViewContactField, canViewContactTab } from "../contacts/contactFieldAccess.js";
+import type { FieldDefinition, TabDefinition } from "../contacts/contactFieldSchemaTypes.js";
 
 function makeField(overrides: Partial<FieldDefinition> = {}): FieldDefinition {
   return {

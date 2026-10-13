@@ -9,7 +9,7 @@ import ModuleAccessRoute from "@/tenant/components/guards/ModuleAccessRoute";
 import WorkspaceDisabledScreen from "@/tenant/components/WorkspaceDisabledScreen";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AuthPageFrame } from "@/components/entry";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const AppLayout = React.lazy(() => import("@/tenant/components/layout/AppLayout"));

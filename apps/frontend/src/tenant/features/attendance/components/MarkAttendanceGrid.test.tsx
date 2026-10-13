@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkAttendanceGrid } from "./MarkAttendanceGrid";
-import type { AttendanceRow } from "./markAttendanceTypes";
+import type { AttendanceRow } from "../lib/markAttendanceTypes";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
 
 vi.mock("@/hooks/useTranslation", () => ({

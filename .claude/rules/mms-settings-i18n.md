@@ -10,7 +10,7 @@ paths:
   - "apps/frontend/src/lib/config/routes.ts"
   - "apps/frontend/src/lib/config/navConfig.tsx"
   - "apps/frontend/src/hooks/useTranslation.ts"
-  - "packages/shared/src/appTranslations*.ts"
+  - "packages/shared/src/i18n/appTranslations*.ts"
 ---
 
 # MMS Settings, Navigation & Internationalization

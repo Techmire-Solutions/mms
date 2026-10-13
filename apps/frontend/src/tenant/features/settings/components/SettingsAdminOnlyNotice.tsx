@@ -1,7 +1,7 @@
 import React from "react";
 import { ShieldAlert, type LucideIcon } from "lucide-react";
 import type { AppTranslationKey } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface SettingsAdminOnlyNoticeProps {

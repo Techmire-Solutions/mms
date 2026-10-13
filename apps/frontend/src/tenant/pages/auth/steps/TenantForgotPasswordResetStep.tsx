@@ -1,7 +1,7 @@
 import React from "react";
 import { AuthPasswordField, AuthSubmitButton } from "@/components/entry";
 import { getPasswordPolicyHintKey } from "@mms/shared";
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AuthStepForm } from "./AuthStepForm";
 

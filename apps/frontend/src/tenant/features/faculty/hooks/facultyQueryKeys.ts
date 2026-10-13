@@ -18,12 +18,12 @@ export {
   facultyListQueryKeyParams,
   facultyPaginatedQueryKey,
   sameFacultyListFilters,
-} from "./facultyListQueryBuilders.js";
+} from "./facultyListQueryBuilders";
 export type {
   FacultyRecord,
   FacultyListPageResult,
   FacultyPaginatedParams,
-} from "./facultyListQueryBuilders.js";
+} from "./facultyListQueryBuilders";
 
 export interface FacultyNextEmployeeIdParams {
   prefix?: string;

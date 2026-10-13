@@ -25,7 +25,7 @@ vi.mock("@/hooks/useStandardModuleConfig", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({ title, subtitle, children }: any) => (
     <div data-testid="form-modal">
       <h2>{title}</h2>

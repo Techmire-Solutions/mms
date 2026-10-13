@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS } from "../platformTypes.js";
+import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS } from "../auth/platformTypes.js";
 import {
   validatePlatformSetupEmail,
   validatePlatformSetupName,
   validatePlatformSetupPassword,
-} from "../platformSetupValidation.js";
+} from "../auth/platformSetupValidation.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 
 export const platformAdminPermissionsSchema = z

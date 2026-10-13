@@ -1,6 +1,6 @@
 ---
 description: Testing strategy (unit, API inject, Playwright E2E), coverage gates, isolation, and error reporting
-globs: packages/shared/**/*.test.ts,apps/backend/src/**/*.test.ts,apps/frontend/src/**/*.test.ts,apps/frontend/src/**/*.test.tsx,apps/backend/vitest*.config.ts,apps/frontend/vitest*.config.ts,packages/shared/vitest*.config.ts,e2e/**,apps/frontend/src/components/ui/ErrorBoundary.tsx,apps/frontend/src/lib/clientErrorReporting.ts
+globs: packages/shared/**/*.test.ts,apps/backend/src/**/*.test.ts,apps/frontend/src/**/*.test.ts,apps/frontend/src/**/*.test.tsx,apps/backend/vitest*.config.ts,apps/frontend/vitest*.config.ts,packages/shared/vitest*.config.ts,e2e/**,apps/frontend/src/components/app/ErrorBoundary.tsx,apps/frontend/src/lib/clientErrorReporting.ts
 alwaysApply: false
 ---
 

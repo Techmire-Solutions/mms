@@ -3,8 +3,8 @@ import { ReceiptText } from "lucide-react";
 import type { StandardMessagingRecipient } from "@mms/shared";
 import { getOutstandingAmountForInvoice } from "@mms/shared";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
-import { PersonMessagingRowActionsExtras } from "@/components/ui/PersonMessagingRowActionsExtras";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Invoice } from "@/lib/data/financeData";
 

@@ -9,11 +9,11 @@ import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import { USERS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/users/hooks/useUsersKeyboardShortcuts";
 
 interface UsersListFiltersProps {

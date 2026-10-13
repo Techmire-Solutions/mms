@@ -1,7 +1,10 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { dashboardPreferencesPutBodySchema } from "../dashboardPreferencesTypes.js";
-import { dashboardWidgetsPutBodySchema, customWidgetSchema } from "../dashboardWidgetSchema.js";
+import { dashboardPreferencesPutBodySchema } from "../dashboard/dashboardPreferencesTypes.js";
+import {
+  dashboardWidgetsPutBodySchema,
+  customWidgetSchema,
+} from "../dashboard/dashboardWidgetSchema.js";
 
 const c = initContract();
 

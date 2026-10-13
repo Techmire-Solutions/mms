@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ServerCog } from "lucide-react";
 import { MIGRATE_AND_RESTART_CONFIRM } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
@@ -11,7 +11,7 @@ import {
 } from "@/platform/hooks/usePlatformSettings";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { notify } from "@/lib/notify";
-import { TypedConfirmDialog } from "@/components/ui/TypedConfirmDialog";
+import { TypedConfirmDialog } from "@/components/app/TypedConfirmDialog";
 
 export function PlatformMigrateRestartCard(): React.JSX.Element | null {
   const { t } = useTranslation();

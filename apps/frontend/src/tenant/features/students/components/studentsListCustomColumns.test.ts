@@ -3,7 +3,7 @@ import { formatDate, formatDateTime } from "@mms/shared";
 import {
   formatStudentsListContentCustomValue,
   studentCustomFieldKeyFromColumn,
-} from "@/tenant/features/students/components/studentsListCustomColumns";
+} from "@/tenant/features/students/lib/studentsListCustomColumns";
 
 const t = (key: "common.yes" | "common.no" | "students.table.emptyDash"): string => {
   switch (key) {

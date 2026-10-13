@@ -18,6 +18,9 @@ mms/
 └── .agent/             # Tri-mirrored agent configuration (.agent, .cursor, .claude)
 ```
 
+Repository documentation is indexed in [`docs/README.md`](docs/README.md); decisions live in
+[`docs/adr/`](docs/adr/).
+
 ### Layer Constraints & Responsibilities
 
 | Layer                        | Path                                          | Responsibilities & Boundaries                                                                                                                    |
@@ -83,14 +86,20 @@ Backend modules follow Clean Architecture principles:
 ```
 apps/backend/src/{module}/
 ├── use-cases/
-│   ├── {module}UseCases.ts          # Composition root & DI wiring
-│   ├── create{Entity}UseCase.ts     # Business logic interactor
-│   └── get{Entity}UseCase.ts
+│   ├── {module}UseCases.ts          # Composition root (factory + singleton) & DI wiring
+│   └── {concern}UseCases.ts         # Business logic interactors
 └── repository/
-    ├── {module}Repository.ts        # Storage interface definition
-    └── {module}RepositoryAdapter.ts # Drizzle ORM implementation
+    ├── {module}Repository.ts        # Port: storage interface (types only)
+    └── {module}RepositoryAdapter.ts # Adapter: binds the port to db/repositories SQL
 ```
 
+- **Ports & Adapters over `db/repositories/`:** the real Drizzle/SQL lives in
+  `apps/backend/src/db/repositories/**` — the only layer that imports `drizzle-orm`. The domain
+  `{module}/repository/{module}RepositoryAdapter.ts` is a thin binding of that SQL to the module's port
+  (it contains no SQL itself). The enforced direction is
+  `routes → use-cases → port → adapter → db/repositories`. Route files must not import
+  `db/repositories`/`drizzle-orm` (`check:backend-boundaries`, baseline 0); use-case/service storage
+  imports are ratcheted down by `check:backend-structure`.
 - **PostgreSQL 16 & Drizzle ORM:** Normalized 3NF/BCNF schemas, typed columns, foreign keys with referential integrity.
 - **Tenant Isolation:** Transaction-scoped Row Level Security (`SET LOCAL app.current_tenant = ...`).
 - **Soft Deletion:** Tenant entity tables implement `deleted_at timestamp with time zone` with partial indexes (`WHERE deleted_at IS NULL`).

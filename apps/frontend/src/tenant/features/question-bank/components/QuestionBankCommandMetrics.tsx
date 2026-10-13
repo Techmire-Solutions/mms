@@ -2,7 +2,7 @@ import React from "react";
 import { HelpCircle, Filter, Sparkles, BarChart3 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useQuestionBankMetrics } from "@/tenant/features/question-bank/hooks/useQuestionBankApi";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 interface QuestionBankCommandMetricsProps {
   shown: number;

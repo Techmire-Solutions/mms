@@ -6,7 +6,7 @@ import {
   validatePlatformSetupName,
   validatePlatformSetupPassword,
   validatePlatformPasswordMatch,
-} from "../platformSetupValidation.js";
+} from "../auth/platformSetupValidation.js";
 
 describe("platformSetupValidation", () => {
   it("normalizes platform email strings", () => {

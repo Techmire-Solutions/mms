@@ -9,13 +9,13 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({ value, name }: { value?: string; name: string }) => (
     <input data-testid={`datepicker-${name}`} value={value || ""} readOnly />
   ),
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   Field: ({ label, children }: { label: string; children: React.ReactNode }) => (
     <div data-testid="form-field">
       <label>{label}</label>

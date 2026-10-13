@@ -3,7 +3,7 @@ import { Waypoints } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ErdExplorer } from "@/platform/components/erd/ErdExplorer";
 import {
   containerVariantsConsole as containerVariants,

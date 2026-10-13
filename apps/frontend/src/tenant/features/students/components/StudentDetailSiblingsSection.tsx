@@ -1,12 +1,12 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export interface SiblingStudentItem {
   id: string;

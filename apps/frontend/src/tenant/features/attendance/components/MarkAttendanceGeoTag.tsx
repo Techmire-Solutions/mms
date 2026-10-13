@@ -1,7 +1,7 @@
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { GeoData } from "@/tenant/features/attendance/components/markAttendanceTypes";
+import type { GeoData } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 
 export interface MarkAttendanceGeoTagProps {
   geo: GeoData | "loading" | null;

@@ -1,16 +1,16 @@
 import React, { lazy, Suspense } from "react";
 import { MessageSquareOff } from "lucide-react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { MESSAGING_MODULE_MANIFEST } from "@mms/shared";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { MessagingReportHeaderBar } from "@/components/ui/reports/MessagingReportHeaderBar";
-import { MessagingReportSummaryTable } from "@/components/ui/reports/MessagingReportSummaryTable";
+import { MessagingReportHeaderBar } from "@/components/reports/MessagingReportHeaderBar";
+import { MessagingReportSummaryTable } from "@/components/reports/MessagingReportSummaryTable";
 import { MessagingReportChannelStats } from "@/tenant/features/reports/components/MessagingReportChannelStats";
-import { useMessagingReportData } from "@/tenant/features/reports/controllers/useMessagingReportData";
+import { useMessagingReportData } from "@/tenant/features/reports/hooks/useMessagingReportData";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
 const MessagingReportsVolumeChart = lazy(() =>

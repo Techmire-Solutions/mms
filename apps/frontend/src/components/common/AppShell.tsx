@@ -1,5 +1,5 @@
 import React from "react";
-import { SkipToContentLink } from "@/components/ui/SkipToContentLink";
+import { SkipToContentLink } from "@/components/app/SkipToContentLink";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 

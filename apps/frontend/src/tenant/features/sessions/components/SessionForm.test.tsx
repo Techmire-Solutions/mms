@@ -34,7 +34,7 @@ vi.mock("@/hooks/useStandardModuleConfig", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({ value, onChange }: { value: string; onChange: (val: string) => void }) => (
     <input
       data-testid="datepicker"
@@ -44,7 +44,7 @@ vi.mock("@/components/ui/DatePicker", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     error,

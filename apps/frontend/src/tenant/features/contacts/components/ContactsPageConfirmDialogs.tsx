@@ -1,5 +1,5 @@
 import type React from "react";
-import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ContactsPageConfirmDialogsProps {

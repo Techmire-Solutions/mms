@@ -111,7 +111,7 @@ export async function saveCollection(
     );
 
     if (tenant) {
-      const { broadcastTenantUpdate } = await import("../services/websocketService.js");
+      const { broadcastTenantUpdate } = await import("../lib/livePush.js");
       broadcastTenantUpdate(tenant, "collection", name);
     }
   } catch (error) {
@@ -137,7 +137,7 @@ export async function deleteCollection(name: string): Promise<void> {
   );
 
   if (tenant) {
-    const { broadcastTenantUpdate } = await import("../services/websocketService.js");
+    const { broadcastTenantUpdate } = await import("../lib/livePush.js");
     broadcastTenantUpdate(tenant, "collection", name);
   }
 }

@@ -13,7 +13,7 @@ import type { ContactsDuplicatePairsPageResult } from "@mms/shared";
 import { DUPLICATE_REASON_I18N } from "@/lib/contacts/contactI18n";
 import { notify } from "@/lib/notify";
 import { reportClientError } from "@/lib/clientErrorReporting";
-import type { DuplicatePair } from "@/tenant/features/contacts/components/duplicateDetectionTypes";
+import type { DuplicatePair } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 
 function mapPairToViewModel(
   pair: {

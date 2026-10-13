@@ -2,7 +2,7 @@ import React from "react";
 import { DEFAULT_GLOBAL_SETTINGS, getPasswordPolicyHintKey } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AuthPasswordField } from "@/components/entry";
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 
 export interface AdminSetupPasswordFieldsProps {
   password: string;

@@ -1,14 +1,14 @@
-import { PRINT_NEUTRAL } from "@/lib/printBrandingTokens";
+import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { formatBrandingAddress, mergeBrandingSettings } from "@mms/shared";
-import { getInvoiceTemplateBranding } from "./invoiceTemplateBranding.js";
-import { buildDefaultInvoiceTemplateElements } from "./invoiceTemplateElements.js";
+import { getInvoiceTemplateBranding } from "./invoiceTemplateBranding";
+import { buildDefaultInvoiceTemplateElements } from "./invoiceTemplateElements";
 import {
   defaultTemplateTranslate,
   INVOICE_TEMPLATE_STATIC_KEY_PREFIX,
   type BrandingInfo,
   type InvoiceTemplate,
   type TemplateTranslate,
-} from "./invoiceTemplateTypes.js";
+} from "./invoiceTemplateTypes";
 
 export interface InvoiceTemplatePreset {
   key: string;

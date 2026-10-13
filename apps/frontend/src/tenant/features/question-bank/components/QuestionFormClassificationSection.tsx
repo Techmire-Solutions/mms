@@ -7,9 +7,9 @@ import {
   type QuestionCategory,
   type QuestionDifficulty,
 } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field, FieldErrorMessage } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CategorySelector } from "@/tenant/features/question-bank/components/CategorySelector";
 
@@ -17,7 +17,7 @@ import type {
   QuestionFormDraft,
   QuestionFormErrors,
   UpdateQuestionDraft,
-} from "./questionFormTypes";
+} from "../lib/questionFormTypes";
 
 interface QuestionFormClassificationSectionProps {
   questionDraft: QuestionFormDraft;

@@ -1,6 +1,10 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema, bulkIdsBodySchema, softDeleteBodySchema } from "../apiSchemas.js";
+import {
+  baseListQuerySchema,
+  bulkIdsBodySchema,
+  softDeleteBodySchema,
+} from "../core/apiSchemas.js";
 import { invoiceCreateSchema, paymentCreateSchema } from "../schemas/finance.dto.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 import {
@@ -9,13 +13,13 @@ import {
   invoiceRecordUpdateSchema,
   paymentRecordUpdateSchema,
   invoicesBulkStatusSchema,
-} from "../financeModuleManifest.js";
-import { financeReportAggregatesSchema } from "../financeReportAggregates.js";
-import { reportComparisonQuerySchema } from "../reportComparisonQuery.js";
+} from "../finance/financeModuleManifest.js";
+import { financeReportAggregatesSchema } from "../finance/financeReportAggregates.js";
+import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
 import {
   financeFieldConfigPutBodySchema,
   financePreferencesPutBodySchema,
-} from "../financeSetupConfigTypes.js";
+} from "../finance/financeSetupConfigTypes.js";
 
 const c = initContract();
 

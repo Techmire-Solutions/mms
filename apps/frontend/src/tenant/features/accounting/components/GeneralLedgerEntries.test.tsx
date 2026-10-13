@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GeneralLedgerEntries } from "./GeneralLedgerEntries";
 import type { Account } from "@/lib/data/accountingData";
-import type { GeneralLedgerLineWithRunning } from "./useGeneralLedger";
+import type { GeneralLedgerLineWithRunning } from "../hooks/useGeneralLedger";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

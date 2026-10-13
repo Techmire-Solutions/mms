@@ -27,7 +27,7 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 
 import { buildApp } from "../app.js";
 import { adminToken } from "./helpers/tokens.js";
-import { blockTenant, unblockTenant } from "../services/session.service.js";
+import { blockTenant, unblockTenant } from "../services/authSessionService.js";
 import { clearInMemoryRedisFallback } from "../lib/redis.js";
 
 describe("Immediate Tenant Suspension Hook", () => {

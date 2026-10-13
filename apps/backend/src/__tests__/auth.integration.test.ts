@@ -172,7 +172,7 @@ vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
 import { buildApp } from "../app.js";
 import { resetServerConfigCacheForTesting } from "../config/serverConfig.js";
 import { PLATFORM_ACCESS_COOKIE } from "../services/platform/platformCookieService.js";
-import { unblockTenant } from "../services/session.service.js";
+import { unblockTenant } from "../services/authSessionService.js";
 
 // Never let state from one test leak into the next: production-mode tests cache
 // server config, and the workspace-delete test blocklists the demo tenant.

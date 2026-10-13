@@ -18,7 +18,7 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ModuleRowActionsMenu", () => ({
+vi.mock("@/components/app/ModuleRowActionsMenu", () => ({
   MODULE_ROW_ACTIONS_TRIGGER_CLASS: "module-row-actions-trigger",
   ModuleRowActionsMenu: ({
     extras,

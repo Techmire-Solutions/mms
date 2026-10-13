@@ -20,7 +20,7 @@ vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
   useGlobalSettings: () => ({ passwordPolicy: "strong" }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     error,

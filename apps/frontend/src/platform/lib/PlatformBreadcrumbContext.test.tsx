@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 import { PlatformBreadcrumbProvider } from "@/platform/lib/PlatformBreadcrumbContext";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Breadcrumb } from "@/components/app/Breadcrumb";
 
 describe("PlatformBreadcrumbProvider", () => {
   it("given nested segments, should render a three-level trail", () => {

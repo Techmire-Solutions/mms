@@ -1,18 +1,18 @@
 import React from "react";
 import { BookOpen } from "lucide-react";
 import { type Account, type JournalEntry, type FiscalYear } from "@/lib/data/accountingData";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { Button } from "@/components/ui/button";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
 import { JournalEntryLinesEditor } from "./JournalEntryLinesEditor";
 import { JournalEntryFormDetailsSection } from "./JournalEntryFormDetailsSection";
 import { JournalEntryFormTagsSection } from "./JournalEntryFormTagsSection";
-import { useJournalEntryForm } from "./useJournalEntryForm";
-import { useAccountQuickCreate } from "./useAccountQuickCreate";
-import { useJournalLineAssist } from "./useJournalLineAssist";
+import { useJournalEntryForm } from "../hooks/useJournalEntryForm";
+import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
+import { useJournalLineAssist } from "../hooks/useJournalLineAssist";
 import { useJournalTemplates } from "@/tenant/features/accounting/hooks/useJournalTemplates";
-import type { JournalEntrySave } from "./journalEntriesTypes";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 
 interface JournalEntryFormProps {
   accounts: Account[];

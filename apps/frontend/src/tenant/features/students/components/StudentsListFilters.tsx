@@ -6,11 +6,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { WorkTaskToolbar } from "@/components/common/work";
 import type { useStudentColumnLayout } from "@/tenant/features/students/hooks/useStudentColumnLayout";
 import { StudentsFiltersMenuButton } from "@/tenant/features/students/components/StudentsFiltersMenuButton";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 import {
   getStudentVisibleWorkColumns,
   toStudentsListContentSortField,
-} from "@/tenant/features/students/components/studentsListVisibleColumns";
+} from "@/tenant/features/students/lib/studentsListVisibleColumns";
 import { STUDENTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/students/hooks/useStudentsKeyboardShortcuts";
 
 interface StudentsListFiltersProps {

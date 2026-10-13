@@ -9,7 +9,7 @@ import {
   createNamedEntityLookupMap,
   contactDisplayName,
   composeContactName,
-} from "../contactLinkPolicy.js";
+} from "../contacts/contactLinkPolicy.js";
 
 describe("contactLinkPolicy", () => {
   describe("stripRecordFields", () => {

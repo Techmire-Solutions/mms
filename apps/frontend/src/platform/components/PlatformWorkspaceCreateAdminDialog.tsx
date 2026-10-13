@@ -1,9 +1,9 @@
 import React, { useId, useState } from "react";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 import { UserPlus, User, Mail } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field, FieldErrorMessage } from "@/components/ui/FormField";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { FormModal } from "@/components/app/FormModal";
+import { Field, FieldErrorMessage } from "@/components/app/FormField";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { Input } from "@/components/ui/input";
 import { WorkspaceSummary } from "@/platform/components/workspace/WorkspaceSummary";
 import { WorkspacePasswordField } from "@/platform/components/workspace/WorkspacePasswordField";

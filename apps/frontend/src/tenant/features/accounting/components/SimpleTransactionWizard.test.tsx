@@ -2,10 +2,10 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { journalEntryRecordSchema, type JournalEntry } from "@mms/shared";
-import type { JournalEntrySave } from "./journalEntriesTypes";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import { SimpleTransactionWizard } from "./SimpleTransactionWizard";
 import { StepReview } from "./SimpleTransactionStepReview";
-import { TRANSACTION_GROUPS } from "./simpleTransactionWizardTypes";
+import { TRANSACTION_GROUPS } from "../lib/simpleTransactionWizardTypes";
 import type { Account } from "@/lib/data/accountingData";
 
 declare global {
@@ -53,7 +53,7 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
+vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({ id, value, onChange }: any) => (
     <input
       data-testid={id || "datepicker"}
@@ -64,7 +64,7 @@ vi.mock("@/components/ui/DatePicker", () => ({
 }));
 
 /** The real modal keeps the wizard mounted between openings; only its portal unmounts. */
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({ open, headerExtra, children }: any) =>
     open ? (
       <div data-testid="wizard-modal">

@@ -6,7 +6,7 @@ import {
   type DifficultyFilter,
   type PaperConfig,
   type PaperSection,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 interface UsePaperBuilderStateInput {
   defaultDuration: number;

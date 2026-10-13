@@ -4,12 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import {
   ResponsiveAccordionTabs,
   type AccordionTabItem,
-} from "@/components/ui/ResponsiveAccordionTabs";
-import { CardSkeleton } from "@/components/ui/LoadingState";
+} from "@/components/app/ResponsiveAccordionTabs";
+import { CardSkeleton } from "@/components/app/LoadingState";
 import { PlatformGlobalSettingsPanel } from "@/platform/components/settings/PlatformGlobalSettingsPanel";
 import { PlatformThemeSettingsPanel } from "@/platform/components/settings/PlatformThemeSettingsPanel";
 import { PlatformSecuritySettingsPanel } from "@/platform/components/settings/PlatformSecuritySettingsPanel";

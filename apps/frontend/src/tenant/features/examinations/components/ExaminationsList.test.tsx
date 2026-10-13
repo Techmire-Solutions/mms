@@ -62,11 +62,11 @@ vi.mock("./ExaminationsListContent", () => ({
   ExaminationsListContent: () => <div data-testid="list-content">List Content</div>,
 }));
 
-vi.mock("@/components/ui/ListPagination", () => ({
+vi.mock("@/components/app/ListPagination", () => ({
   ListPagination: () => <div data-testid="list-pagination">List Pagination</div>,
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 

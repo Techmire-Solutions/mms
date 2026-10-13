@@ -1,6 +1,6 @@
 import { type Dispatch, type SetStateAction } from "react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field, FieldErrorMessage } from "@/components/ui/FormPrimitives";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";

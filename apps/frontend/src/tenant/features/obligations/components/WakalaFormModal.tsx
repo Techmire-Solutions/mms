@@ -1,5 +1,5 @@
 import React from "react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWakalaFormModalState } from "./wakala/useWakalaFormModalState";
 import { WakalaStepProgressBar } from "./wakala/WakalaStepProgressBar";

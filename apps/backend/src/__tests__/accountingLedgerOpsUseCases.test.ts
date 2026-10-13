@@ -31,7 +31,7 @@ vi.mock("../db/repositories/accountingLedgerOpsRepository.js", () => mockRepo);
 vi.mock("../db/repositories/accountingAccountsRepository.js", () => mockAccountsRepo);
 vi.mock("../accounting/use-cases/accountingPeriodClose.js", () => mockPeriodClose);
 vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => mockPosting);
-vi.mock("../services/websocketService.js", () => mockWs);
+vi.mock("../lib/livePush.js", () => mockWs);
 
 import {
   loadPostingRules,

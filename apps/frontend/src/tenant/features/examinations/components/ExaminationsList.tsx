@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { useExamSelection } from "@/tenant/features/examinations/hooks/useExamSelection";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
@@ -11,11 +11,11 @@ import { ExaminationsTrashDialogs } from "@/tenant/features/examinations/compone
 import {
   resolveExaminationStatusConfig,
   resolveExaminationStatusLabels,
-} from "@/tenant/features/examinations/components/examinationStatusConfig";
+} from "@/tenant/features/examinations/lib/examinationStatusConfig";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useExaminationsTrashState } from "@/tenant/features/examinations/hooks/useExaminationsTrashState";
 import { useExaminationsDirectoryQuery } from "@/tenant/features/examinations/hooks/useExaminationsDirectoryQuery";
-import type { ExaminationsListProps } from "./examinationsListTypes";
+import type { ExaminationsListProps } from "../lib/examinationsListTypes";
 
 export type { ExaminationsListProps };
 

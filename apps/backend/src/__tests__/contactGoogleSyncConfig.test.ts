@@ -27,7 +27,7 @@ import {
   getContactGoogleSyncConfig,
   redactGoogleSyncConfigForClient,
   setContactGoogleSyncConfig,
-} from "../services/contactGoogleSyncConfig.js";
+} from "../contacts/use-cases/contactGoogleSyncUseCases.js";
 
 function credentialRecord(
   overrides: Partial<ContactGoogleSyncCredentialRecord> = {},

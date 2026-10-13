@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { contactRecordSchema } from "../contactsModuleManifest.js";
-import { WHATSAPP_STATUS_VALUES } from "../contactEntityTypes.js";
+import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
+import { WHATSAPP_STATUS_VALUES } from "../contacts/contactEntityTypes.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 
 /** Parsed contacts may still carry the pre-verification `unknown` WhatsApp state. */

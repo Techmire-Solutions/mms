@@ -1,5 +1,5 @@
 import type { Enrollment } from "@mms/shared";
-import { EntityArchivedBanner } from "@/components/ui/DetailDrawerArchiveChrome";
+import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface EnrollmentArchivedBannerProps {

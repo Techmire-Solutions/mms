@@ -2,15 +2,15 @@ import React from "react";
 import { type AccountingSettings, type FiscalYear } from "@mms/shared";
 import { Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Field } from "@/components/ui/FormPrimitives";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
-import { localizedFiscalMonths } from "./accountingSettingsPreferencesShared";
+import { Field } from "@/components/app/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import { localizedFiscalMonths } from "../lib/accountingSettingsPreferencesShared";
 import { AccountingFiscalYearsTable } from "./AccountingFiscalYearsTable";
 
 export interface AccountingSettingsFiscalYearsSectionProps {

@@ -75,7 +75,7 @@ vi.mock("../services/studentValidationService.js", () => ({
 
 const mockLoadStudentFieldConfig = vi.fn().mockResolvedValue(null);
 
-vi.mock("../services/studentConfigService.js", () => ({
+vi.mock("../students/use-cases/studentConfigService.js", () => ({
   loadStudentFieldConfig: (...args: unknown[]) => mockLoadStudentFieldConfig(...args),
   saveStudentFieldConfig: vi.fn(),
   loadStudentsSettingsCombined: vi.fn().mockResolvedValue(null),

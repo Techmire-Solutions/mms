@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   contactIdentityMatchBodySchema,
   contactIdentityMatchResultSchema,
-} from "../contactIdentityMatch.js";
+} from "../contacts/contactIdentityMatch.js";
 
 describe("contactIdentityMatchBodySchema", () => {
   it("parses a body with phones, emails, and names arrays", () => {

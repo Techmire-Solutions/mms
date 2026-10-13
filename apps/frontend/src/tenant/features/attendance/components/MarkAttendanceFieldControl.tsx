@@ -1,12 +1,12 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { TimePicker } from "@/components/ui/TimePicker";
+import { DatePicker } from "@/components/app/DatePicker";
+import { TimePicker } from "@/components/app/TimePicker";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import { StatusToggle } from "@/tenant/features/attendance/components/StatusToggle";
-import type { AttendanceRow } from "@/tenant/features/attendance/components/markAttendanceTypes";
+import type { AttendanceRow } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 import type { ModuleFieldDef } from "@mms/shared";
 
 export interface MarkAttendanceFieldControlProps {

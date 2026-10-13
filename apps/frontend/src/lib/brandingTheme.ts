@@ -12,9 +12,9 @@ import {
   resolveThemeMode,
 } from "@/lib/brandingThemeCore";
 
-import { applyApexPlatformTheme } from "@/platform/lib/brandingEntryTheme";
-export { applyApexPlatformTheme } from "@/platform/lib/brandingEntryTheme";
-export { applyTenantEntryTheme } from "@/tenant/lib/brandingEntryTheme";
+import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
+export { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
+export { applyTenantEntryTheme } from "@/lib/branding/tenantEntryTheme";
 
 function resolveTenantDocumentLanguage(storedLanguage: string, pathname: string): string {
   // Tenant auth entry stays English; authenticated app uses workspace language.

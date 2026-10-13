@@ -1,6 +1,6 @@
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
-import { normalizeGenderKey } from "@/lib/genderUi";
+import { normalizeGenderKey } from "@/lib/ui/genderUi";
 
 export interface CheckResult {
   id: string;

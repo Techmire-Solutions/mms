@@ -7,16 +7,16 @@ import { ChartOfAccountsListFilters } from "@/tenant/features/accounting/compone
 import { ChartOfAccountsListDesktopTable } from "@/tenant/features/accounting/components/ChartOfAccountsListDesktopTable";
 import { runGridCsvExportJob } from "@/lib/backgroundJobs/runGridCsvExportJob";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { type AppTranslationKey } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Button } from "@/components/ui/button";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ChartOfAccountsSeedEmptyState } from "@/tenant/features/accounting/components/ChartOfAccountsSeedEmptyState";
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import {
   useWorkDirectoryViewMode,
   type WorkDirectoryViewMode,

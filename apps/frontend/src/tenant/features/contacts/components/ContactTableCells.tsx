@@ -4,7 +4,7 @@ import type { useTranslation } from "@/hooks/useTranslation";
 import {
   columnWidthStyle,
   type ContactsColumnConfig,
-} from "@/tenant/features/contacts/components/contactTableTypes";
+} from "@/tenant/features/contacts/lib/contactTableTypes";
 import {
   renderContactEmailCell,
   renderContactNameCell,

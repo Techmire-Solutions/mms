@@ -5,8 +5,8 @@ import {
   facultyBulkStatusSchema,
   facultyBulkSpecializationSchema,
   facultyNextEmployeeIdQuerySchema,
-} from "../facultyModuleManifest.js";
-import { facultyListQuerySchema } from "../facultyListQuery.js";
+} from "../faculty/facultyModuleManifest.js";
+import { facultyListQuerySchema } from "../faculty/facultyListQuery.js";
 import { facultyWriteSchema, facultyDuplicateCheckBodySchema } from "../schemas/faculty.dto.js";
 import {
   facultyBulkResultResponseSchema,

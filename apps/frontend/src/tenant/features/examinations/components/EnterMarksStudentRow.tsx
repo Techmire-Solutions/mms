@@ -2,11 +2,11 @@ import React from "react";
 import { motion } from "framer-motion";
 import { type Exam } from "@/lib/data/examinationData";
 import type { Student } from "@/lib/data/studentsData";
-import { getGrade } from "@/tenant/features/examinations/components/gradeUtils";
+import { getGrade } from "@/tenant/features/examinations/lib/gradeUtils";
 import { FORM_INPUT_COMPACT } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 

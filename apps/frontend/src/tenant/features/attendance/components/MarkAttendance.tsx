@@ -1,23 +1,23 @@
 import { AnimatePresence } from "framer-motion";
 import { Users } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SearchBar } from "@/components/app/SearchBar";
 import { MarkAttendanceActions } from "@/tenant/features/attendance/components/MarkAttendanceActions";
 import { MarkAttendanceClassBar } from "@/tenant/features/attendance/components/MarkAttendanceClassBar";
 import { MarkAttendanceFacePlaceholder } from "@/tenant/features/attendance/components/MarkAttendanceFacePlaceholder";
 import { MarkAttendanceGrid } from "@/tenant/features/attendance/components/MarkAttendanceGrid";
 import { MarkAttendanceOfflineBanner } from "@/tenant/features/attendance/components/MarkAttendanceOfflineBanner";
 import { MarkAttendanceStatsStrip } from "@/tenant/features/attendance/components/MarkAttendanceStatsStrip";
-import { getAuditLog } from "@/tenant/features/attendance/components/markAttendanceQueue";
-import type { MarkAttendanceProps } from "@/tenant/features/attendance/components/markAttendanceTypes";
-import { useMarkAttendanceController } from "@/tenant/features/attendance/components/useMarkAttendanceController";
+import { getAuditLog } from "@/tenant/features/attendance/lib/markAttendanceQueue";
+import type { MarkAttendanceProps } from "@/tenant/features/attendance/lib/markAttendanceTypes";
+import { useMarkAttendanceController } from "@/tenant/features/attendance/hooks/useMarkAttendanceController";
 
 export type {
   AuditEntry,
   AttendanceRow,
   GeoData,
   OfflinePayload,
-} from "@/tenant/features/attendance/components/markAttendanceTypes";
+} from "@/tenant/features/attendance/lib/markAttendanceTypes";
 export { getAuditLog };
 
 export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {

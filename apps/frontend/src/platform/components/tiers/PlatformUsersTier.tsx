@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import { Users, BarChart3, Settings } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SubTabBar, type SubTab } from "@/components/ui/SubTabBar";
-import { CardSkeleton } from "@/components/ui/LoadingState";
+import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
+import { CardSkeleton } from "@/components/app/LoadingState";
 import { PlatformUsersWorkTier } from "@/platform/components/users/PlatformUsersWorkTier";
 import { PlatformUsersReportsTier } from "@/platform/components/users/PlatformUsersReportsTier";
 import { PlatformUsersSetupTier } from "@/platform/components/users/PlatformUsersSetupTier";

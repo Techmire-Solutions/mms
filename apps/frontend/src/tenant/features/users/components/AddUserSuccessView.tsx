@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { AddUserFormState } from "./addUserModalTypes";
+import type { AddUserFormState } from "../lib/addUserModalTypes";
 
 export interface AddUserSuccessViewProps {
   form: AddUserFormState;

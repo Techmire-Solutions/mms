@@ -2,10 +2,10 @@ import React, { useRef } from "react";
 import { Printer, ReceiptText, FileCode2, CloudUpload } from "lucide-react";
 import type { Invoice } from "@/lib/data/financeData";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ReceiptVoucher } from "./ReceiptVoucher";
-import { useInvoiceReceiptActions } from "./useInvoiceReceiptActions";
+import { useInvoiceReceiptActions } from "../hooks/useInvoiceReceiptActions";
 
 export interface InvoiceReceiptModalProps {
   invoices: Invoice[];

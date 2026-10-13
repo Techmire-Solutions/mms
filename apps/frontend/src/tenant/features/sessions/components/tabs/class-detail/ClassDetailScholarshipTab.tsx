@@ -1,10 +1,10 @@
 import React from "react";
 import { Award, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field } from "@/components/ui/FormField";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { Field } from "@/components/app/FormField";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { SessionClassScholarship } from "@/lib/data/sessionsData";
 

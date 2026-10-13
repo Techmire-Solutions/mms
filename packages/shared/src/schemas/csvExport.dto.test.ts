@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { contactsCsvExportBodySchema } from "./csvExport.dto.js";
-import { DEFAULT_CONTACT_EXPORT_COLUMNS } from "../contactExportColumns.js";
+import { DEFAULT_CONTACT_EXPORT_COLUMNS } from "../contacts/contactExportColumns.js";
 
 describe("csvExport.dto", () => {
   it("accepts DEFAULT_CONTACT_EXPORT_COLUMNS without too_big error", () => {

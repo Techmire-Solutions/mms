@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { deepSanitizeStrings } from "./sanitize.js";
-import { invoiceRecordInsertSchema, paymentRecordInsertSchema } from "../financeModuleManifest.js";
-import { stripClientSoftDeleteFields } from "../contactSoftDelete.js";
+import {
+  invoiceRecordInsertSchema,
+  paymentRecordInsertSchema,
+} from "../finance/financeModuleManifest.js";
+import { stripClientSoftDeleteFields } from "../contacts/contactSoftDelete.js";
 
 const financeBulkIdsBaseSchema = z
   .object({

@@ -30,6 +30,23 @@ function resolveBase() {
 
 export const changeBase = resolveBase();
 
+/**
+ * Rename map for the change set: new path -> original path. Without this, a moved
+ * file is treated as brand-new in `--changed` mode and every pre-existing violation
+ * it carries looks like a regression.
+ */
+function renameMap() {
+  const out = git(["diff", "--name-status", "-M", changeBase]) ?? "";
+  const map = new Map();
+  for (const line of out.split("\n")) {
+    const parts = line.split("\t");
+    if (parts[0]?.startsWith("R") && parts.length >= 3) map.set(parts[2].trim(), parts[1].trim());
+  }
+  return map;
+}
+
+const RENAMES = renameMap();
+
 /** Repo-relative paths changed vs the base, including staged and unstaged edits. */
 export function changedFiles() {
   const raw = process.env.MMS_CI_CHANGED ?? git(["diff", "--name-only", changeBase]) ?? "";
@@ -52,7 +69,8 @@ export function readCurrent(rel) {
   }
 }
 
-/** File content at the change base, or null when the file is new. */
+/** File content at the change base (following renames), or null when genuinely new. */
 export function readAtBase(rel) {
-  return git(["show", `${changeBase}:${rel}`]);
+  const source = RENAMES.get(rel) ?? rel;
+  return git(["show", `${changeBase}:${source}`]);
 }

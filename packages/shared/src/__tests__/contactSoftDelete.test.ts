@@ -3,9 +3,9 @@ import {
   filterActiveContacts,
   isContactDeleted,
   stripContactClientSoftDeleteFields,
-} from "../contactSoftDelete.js";
-import type { Contact } from "../contactTypes.js";
-import { contactWriteSchema } from "../contactsModuleManifest.js";
+} from "../contacts/contactSoftDelete.js";
+import type { Contact } from "../contacts/contactTypes.js";
+import { contactWriteSchema } from "../contacts/contactsModuleManifest.js";
 
 const active: Contact = {
   id: "1",

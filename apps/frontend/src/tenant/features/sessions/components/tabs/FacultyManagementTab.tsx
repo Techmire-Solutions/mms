@@ -5,7 +5,7 @@
 import React from "react";
 import { UserCheck, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SessionFacultyCard } from "./faculty/SessionFacultyCard";
 import { SessionFacultyFormModal } from "./faculty/SessionFacultyFormModal";

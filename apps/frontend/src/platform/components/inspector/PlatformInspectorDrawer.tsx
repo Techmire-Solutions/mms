@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
 import { usePlatformBreadcrumb } from "@/platform/lib/PlatformBreadcrumbContext";
-import { Drawer } from "@/components/ui/Drawer";
+import { Drawer } from "@/components/app/Drawer";
 import { Button } from "@/components/ui/button";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
 import { ROUTES } from "@/lib/config/routes";

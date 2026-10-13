@@ -1,21 +1,21 @@
 import React, { lazy, Suspense, useState } from "react";
 import { BarChart2, CheckCircle, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { SubTabBar, type SubTab } from "@/components/ui/SubTabBar";
+import { ErrorState } from "@/components/app/ErrorState";
+import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
 import { AutoGrading } from "@/tenant/components/reports/moduleReportAdapters";
 import { PerformanceAnalytics } from "@/tenant/components/reports/moduleReportAdapters";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 import {
   useQuestionBankReportData,
   type QuestionBankReportFilters,
-} from "@/tenant/features/reports/controllers/useQuestionBankReportData";
+} from "@/tenant/features/reports/hooks/useQuestionBankReportData";
 import { QuestionBankSummaryDataGrid } from "@/tenant/features/reports/components/QuestionBankSummaryDataGrid";
 
 const QuestionBankReportCharts = lazy(() =>
-  import("@/components/ui/reports/QuestionBankReportCharts").then((mod) => ({
+  import("@/components/reports/QuestionBankReportCharts").then((mod) => ({
     default: mod.QuestionBankReportCharts,
   })),
 );

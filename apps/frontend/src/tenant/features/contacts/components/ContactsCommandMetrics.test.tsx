@@ -21,7 +21,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
+vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
   ModuleCommandMetricsGrid: ({ items }: { items: Array<{ label: string; value: number }> }) => (
     <div data-testid="metrics-grid">
       {items.map((item) => (

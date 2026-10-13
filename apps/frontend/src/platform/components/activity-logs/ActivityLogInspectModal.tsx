@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Code2 } from "lucide-react";
 import { formatDate } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Modal } from "@/components/ui/Modal";
-import { CopyButton } from "@/components/ui/CopyButton";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { Modal } from "@/components/app/Modal";
+import { CopyButton } from "@/components/app/CopyButton";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import type { PlatformActivityLogItem } from "@/platform/hooks/usePlatformActivityLogs";
 
 interface ActivityLogInspectModalProps {

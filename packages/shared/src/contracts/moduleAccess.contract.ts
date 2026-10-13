@@ -1,6 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { MODULE_ACCESS_DENIAL_CODES } from "../moduleAccessPolicy.js";
+import { MODULE_ACCESS_DENIAL_CODES } from "../settings/moduleAccessPolicy.js";
 
 const c = initContract();
 

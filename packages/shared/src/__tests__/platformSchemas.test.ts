@@ -4,8 +4,8 @@ import {
   platformPasswordResetBodySchema,
   platformCreateAdminBodySchema,
   platformChangePasswordBodySchema,
-} from "../platformSchemas.js";
-import { PLATFORM_MIN_PASSWORD_LENGTH } from "../platformTypes.js";
+} from "../schemas/platform.dto.js";
+import { PLATFORM_MIN_PASSWORD_LENGTH } from "../auth/platformTypes.js";
 
 describe("platformSchemas", () => {
   it("validates platform setup registration input", () => {

@@ -1,8 +1,8 @@
 import React from "react";
 import { Loader2, PlugZap, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FieldErrorMessage } from "@/components/ui/FormField";
-import { SettingsCallout } from "@/components/ui/SettingsShell";
+import { FieldErrorMessage } from "@/components/app/FormField";
+import { SettingsCallout } from "@/components/app/SettingsShell";
 import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";

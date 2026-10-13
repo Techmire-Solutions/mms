@@ -7,7 +7,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { AuthPageBackdrop } from "@/components/entry/AuthPageShell";
 import { PlatformLogoMark } from "@/platform/components/PlatformPageShell";
 import { Button } from "@/components/ui/button";
-import { WizardStepIndicator } from "@/components/ui/WizardStepIndicator";
+import { WizardStepIndicator } from "@/components/app/WizardStepIndicator";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface WizardStepConfig {

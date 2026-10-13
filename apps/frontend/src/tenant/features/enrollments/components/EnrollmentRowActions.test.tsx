@@ -23,7 +23,7 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ModuleRowActionsMenu", () => ({
+vi.mock("@/components/app/ModuleRowActionsMenu", () => ({
   ModuleRowActionsMenu: ({
     viewLabel,
     extras,
@@ -38,7 +38,7 @@ vi.mock("@/components/ui/ModuleRowActionsMenu", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/PersonMessagingRowActionsExtras", () => ({
+vi.mock("@/components/app/PersonMessagingRowActionsExtras", () => ({
   PersonMessagingRowActionsExtras: () => <div data-testid="messaging-extras">Messaging</div>,
 }));
 

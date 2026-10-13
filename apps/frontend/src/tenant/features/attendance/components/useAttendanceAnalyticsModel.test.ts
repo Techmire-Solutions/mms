@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { useAttendanceAnalyticsModel } from "./useAttendanceAnalyticsModel";
+import { useAttendanceAnalyticsModel } from "../hooks/useAttendanceAnalyticsModel";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 

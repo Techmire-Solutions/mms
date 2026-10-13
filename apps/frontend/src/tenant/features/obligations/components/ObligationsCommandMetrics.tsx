@@ -2,7 +2,7 @@ import React from "react";
 import { Receipt, Filter, Banknote, Wallet } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useObligationsMetrics } from "@/tenant/features/obligations/hooks/useObligationsApi";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 
 interface ObligationsCommandMetricsProps {

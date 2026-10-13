@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { DistributionsListCards } from "./DistributionsListCards";
-import type { DistributionsListContentProps } from "./distributionsListShared";
+import type { DistributionsListContentProps } from "../lib/distributionsListShared";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

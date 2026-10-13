@@ -15,7 +15,7 @@ import {
   FormCollectionShell,
   FormListFieldCard,
   FormSelectWithQuickCreate,
-} from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
 import { QuestionSourceInput } from "@/tenant/features/question-bank/components/QuestionSourceInput";
 
 type TranslateFn = (key: AppTranslationKey, params?: Record<string, string | number>) => string;

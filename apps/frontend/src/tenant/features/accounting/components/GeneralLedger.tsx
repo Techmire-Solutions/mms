@@ -1,9 +1,9 @@
 import React from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { type Account, type JournalEntry } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useGeneralLedger } from "@/tenant/features/accounting/components/useGeneralLedger";
-import { exportGeneralLedgerCsv } from "@/tenant/features/accounting/components/generalLedgerExport";
+import { useGeneralLedger } from "@/tenant/features/accounting/hooks/useGeneralLedger";
+import { exportGeneralLedgerCsv } from "@/tenant/features/accounting/lib/generalLedgerExport";
 import { GeneralLedgerFilters } from "@/tenant/features/accounting/components/GeneralLedgerFilters";
 import { GeneralLedgerAccountSummary } from "@/tenant/features/accounting/components/GeneralLedgerAccountSummary";
 import { GeneralLedgerEntries } from "@/tenant/features/accounting/components/GeneralLedgerEntries";

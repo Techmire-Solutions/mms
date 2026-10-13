@@ -2,7 +2,7 @@ import { SlidersHorizontal } from "lucide-react";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDropdown,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { INVOICE_STATUSES } from "@/lib/data/financeData";
 import type { AppTranslationKey } from "@mms/shared";

@@ -5,7 +5,7 @@ import {
   resolveFacultyFieldsMapForColumnSync,
   type FieldDefinition,
 } from "@mms/shared";
-import { loadFacultySettingsCombined } from "./facultyConfigService.js";
+import { loadFacultySettingsCombined } from "../faculty/use-cases/facultyConfigService.js";
 import { validateOrThrow } from "../lib/zodRequest.js";
 
 /** Cache compiled schema by tenant + enabled-tabs/fields fingerprint + language. */

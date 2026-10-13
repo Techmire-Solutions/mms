@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import {
   OutstandingFeeMessagingActions,
   OutstandingFeeOverdueBadge,

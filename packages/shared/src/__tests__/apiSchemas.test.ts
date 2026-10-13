@@ -4,7 +4,7 @@ import {
   bulkIdsBodySchema,
   includeDeletedQuerySchema,
   softDeleteBodySchema,
-} from "../apiSchemas.js";
+} from "../core/apiSchemas.js";
 
 describe("apiSchemas", () => {
   it("parses includeDeleted query", () => {

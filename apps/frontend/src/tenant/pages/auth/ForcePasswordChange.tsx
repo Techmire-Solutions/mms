@@ -13,7 +13,7 @@ import {
   EntryPageHead,
   formatEntryTitle,
 } from "@/components/entry";
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { ROUTES } from "@/lib/config/routes";

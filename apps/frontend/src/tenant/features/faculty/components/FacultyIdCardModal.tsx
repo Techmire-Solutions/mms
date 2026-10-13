@@ -1,9 +1,9 @@
 import { useRef, type JSX } from "react";
 import { Printer, IdCard } from "lucide-react";
 import { formatDate, facultyFieldLabelKey, type Faculty } from "@mms/shared";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 

@@ -1,13 +1,13 @@
 import type { JSX } from "react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
+import { FormSelect } from "@/components/app/FormSelect";
 import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 
 /** String options from the filter menu narrowed into the safe channel/status unions. */
 const toChannel = (value: string): "all" | "sms" | "whatsapp" | "email" =>

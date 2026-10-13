@@ -9,7 +9,7 @@ description: Consolidated UI component primitives, design tokens, navigation tab
 
 ## 1. Central Primitives Enforcement
 - **Banned Raw Controls:** Never emit raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<table>`, `<dialog>`, or native checkboxes/switches where design system primitives exist.
-- **Sanctioned Primitives (`@/components/ui/*` & `@/components/common/*`):**
+- **Sanctioned Primitives (`@/components/ui/*` primitives, `@/components/app/*` composites, `@/components/common/*` engines):**
   - **Inputs & Controls:** `Button` (min 44×44px), `Input`, `LeadingIconInput`, `FormSelect`, `EditableSelect`, `Textarea`, `Checkbox`, `Switch`.
   - **Overlays & Drawers:** `FormModal` (portal shell), `DetailSheet` / `DetailDrawerShell` (drawer with archive banner and `WarningCallout`), `Popover`, `Tooltip`, `DropdownMenu`.
   - **Layout & Shells:** `AppShell` (universal frame), `ModulePageShell` / `ModuleScaffold` (page shell), `Table` (mandate `@tanstack/react-virtual` when rows > 30).
@@ -43,7 +43,7 @@ description: Consolidated UI component primitives, design tokens, navigation tab
 - **Contrast & Reading Order:** Support `prefers-contrast` and `forced-colors`. DOM order must match RTL visual reading order; positive `tabindex` is banned.
 
 ## 6. Single Source of Truth (SSOT) Entity UI Registry
-- **Declarative Descriptor:** Primary entities define descriptors via `createEntityDescriptor<T>()` (`@/components/common/entityRegistry`, `@/types/entityRegistry`).
+- **Declarative Descriptor:** Primary entities define descriptors via `createEntityDescriptor<T>()` (`@/components/common/entityRegistry`, types at `@/components/common/entityRegistryTypes`).
 - **Automatic Derivations:** Single schema drives `getTableColumns()`, `getCardFields()`, `formatFieldValue()`, and `getDrawerSections()`.
 - **Zero Forking:** Directory views, cards, filter chips, and detail sheets must consume descriptors; never duplicate ad-hoc column lists or attribute layouts.
 

@@ -13,7 +13,7 @@ import {
   type StatsSummary,
   sumScores,
   testTotalMarks,
-} from "@/tenant/features/question-bank/components/autoGradingShared";
+} from "@/tenant/features/question-bank/lib/autoGradingShared";
 import { AutoGradingResultRow } from "@/tenant/features/question-bank/components/AutoGradingResultRow";
 import { AutoGradingStats } from "@/tenant/features/question-bank/components/AutoGradingStats";
 

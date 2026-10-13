@@ -2,7 +2,7 @@ import React from "react";
 import { BookOpen, Filter, CheckCircle2, FileEdit } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingMetrics } from "@/tenant/features/accounting/hooks/useAccountingApi";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 interface AccountingCommandMetricsProps {
   entryTotal: number;

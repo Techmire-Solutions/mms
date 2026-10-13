@@ -1,23 +1,23 @@
 import React, { useState } from "react";
 import { Plus, Pencil, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { MujtahidNameFormModal } from "@/tenant/features/obligations/components/MujtahidNameFormModal";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
-import type { MujtahidManagerProps } from "@/tenant/features/obligations/components/mujtahidManagerTypes";
-import { useMujtahidManagerCrud } from "./useMujtahidManagerCrud";
+import type { MujtahidManagerProps } from "@/tenant/features/obligations/lib/mujtahidManagerTypes";
+import { useMujtahidManagerCrud } from "../hooks/useMujtahidManagerCrud";
 
 export type {
   Mujtahid,
   MujtahidRep,
   MujtahidManagerProps,
-} from "@/tenant/features/obligations/components/mujtahidManagerTypes";
+} from "@/tenant/features/obligations/lib/mujtahidManagerTypes";
 
 /**
  * MujtahidManager component.

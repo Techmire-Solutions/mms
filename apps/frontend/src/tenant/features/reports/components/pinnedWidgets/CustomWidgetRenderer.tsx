@@ -3,7 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { resolveWidgetTitle, resolveWidgetSubText } from "@/lib/dashboardWidgets";
 import { COMPOSED_WIDGET_TYPES } from "@/components/dashboard-widgets/registry";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { resolveThresholdChartHex, resolveWidgetChartHex } from "@/lib/brandingChartPalette";
+import { resolveThresholdChartHex, resolveWidgetChartHex } from "@/lib/ui/brandingChartPalette";
 import { computeCustomCard, type CustomCard } from "@/lib/reports/reportMetadata";
 import { readDashboardSwitchState } from "@/tenant/features/reports/components/pinnedWidgets/useDashboardSectionSettings";
 import { type ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";
@@ -17,10 +17,10 @@ import {
   computeSessionsCustomCardValue,
   computeEnrollmentsCustomCardValue,
 } from "@/lib/reports/widgetDataUtils";
-import { CustomWidgetCompactLayout } from "@/components/ui/reports/pinnedWidgets/CustomWidgetCompactLayout";
-import { CustomWidgetComfortableLayout } from "@/components/ui/reports/pinnedWidgets/CustomWidgetComfortableLayout";
+import { CustomWidgetCompactLayout } from "@/components/reports/pinnedWidgets/CustomWidgetCompactLayout";
+import { CustomWidgetComfortableLayout } from "@/components/reports/pinnedWidgets/CustomWidgetComfortableLayout";
 
-export { WidgetDrilldownModal } from "@/components/ui/reports/pinnedWidgets/WidgetDrilldownModal";
+export { WidgetDrilldownModal } from "@/components/reports/pinnedWidgets/WidgetDrilldownModal";
 
 /**
  * Render interface resolving dynamic card visualizations.

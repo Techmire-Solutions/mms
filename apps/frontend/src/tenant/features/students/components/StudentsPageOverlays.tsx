@@ -1,10 +1,10 @@
 import { lazy, Suspense, useMemo } from "react";
 import { AnimatePresence } from "framer-motion";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import {
   ModuleDrawerLoadingSkeleton,
   ModuleOverlayLoadingFallback,
-} from "@/components/ui/ModuleOverlayLoadingChrome";
+} from "@/components/app/ModuleOverlayLoadingChrome";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { StudentsPageConfirmDialogs } from "@/tenant/features/students/components/StudentsPageConfirmDialogs";
 import type { StudentsPageOverlaysProps } from "@/tenant/features/students/hooks/studentsPageOverlaysTypes";

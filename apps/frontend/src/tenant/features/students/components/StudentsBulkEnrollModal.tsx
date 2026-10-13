@@ -1,12 +1,12 @@
 import type React from "react";
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessions, useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import type { StudentsBulkEnrollBody } from "@mms/shared";
 import { cn } from "@/lib/utils";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup";
+import { RadioGroup, RadioGroupItem } from "@/components/app/RadioGroup";
 import { StudentsBulkEnrollSessionList } from "@/tenant/features/students/components/StudentsBulkEnrollSessionList";
 
 export interface StudentsBulkEnrollModalProps {

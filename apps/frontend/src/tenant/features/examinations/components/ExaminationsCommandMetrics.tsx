@@ -2,7 +2,7 @@ import React from "react";
 import { BookOpen, Filter, Clock, PlayCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useExaminationsMetrics } from "@/tenant/features/examinations/hooks/useExaminationsApi";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 export interface ExaminationsCommandMetricsProps {
   shown: number;

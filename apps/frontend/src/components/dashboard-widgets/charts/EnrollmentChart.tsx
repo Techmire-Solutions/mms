@@ -1,10 +1,10 @@
 import { useBrandedDashboardChartColors } from "@/components/dashboard-widgets/useBrandedDashboardChartColors";
 import { ComposedChart, Area, Line, Bar, XAxis, YAxis, Tooltip } from "recharts";
-import { SafeResponsiveContainer } from "@/components/ui/SafeResponsiveContainer";
-import { ChartGrid, chartAxisTick } from "@/components/ui/ChartGrid";
+import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
+import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { Badge } from "@/components/ui/badge";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetChartHeader } from "@/components/ui/WidgetChartHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetChartHeader } from "@/components/app/WidgetChartHeader";
 import { useEnrollmentsReportAggregates } from "@/tenant/hooks/collections/enrollments";
 import { TrendingUp } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";

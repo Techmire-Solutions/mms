@@ -1,16 +1,16 @@
 import type React from "react";
 import { Loader2, MessageSquare, RotateCcw, Send, Sparkles } from "lucide-react";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { LlmConfig } from "@mms/shared";
-import type { SandboxMessage } from "./llmSettingsTypes";
+import type { SandboxMessage } from "../lib/llmSettingsTypes";
 
 import { cn } from "@/lib/utils";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 
 interface LlmSandboxPanelProps {
   configs: LlmConfig[];

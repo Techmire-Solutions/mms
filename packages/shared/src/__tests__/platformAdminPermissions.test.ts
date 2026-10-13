@@ -4,7 +4,7 @@ import {
   platformUpdateAdminPermissionsBodySchema,
   platformWorkspaceRowDtoSchema,
   PLATFORM_WORKSPACE_ROW_SECRET_KEYS,
-} from "../platformSchemas.js";
+} from "../schemas/platform.dto.js";
 import {
   DEFAULT_PLATFORM_ADMIN_PERMISSIONS,
   FULL_PLATFORM_ADMIN_PERMISSIONS,
@@ -12,7 +12,7 @@ import {
   normalizePlatformAdminPermissions,
   platformUserCan,
   PLATFORM_MIN_PASSWORD_LENGTH,
-} from "../platformTypes.js";
+} from "../auth/platformTypes.js";
 
 describe("PLATFORM_ADMIN_PERMISSION_KEYS", () => {
   it("matches the DB CHECK allowlist and permission flag keys", () => {

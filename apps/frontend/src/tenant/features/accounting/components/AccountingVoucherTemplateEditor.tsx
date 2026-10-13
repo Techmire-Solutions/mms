@@ -1,16 +1,16 @@
 import React, { useMemo } from "react";
 import type { DocumentTemplatePreset } from "@mms/shared";
-import { DocumentTemplateEditor } from "@/components/ui/DocumentTemplateEditor";
+import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import {
   voucherTemplateDocumentStore,
   type VoucherPrintPayload,
-} from "@/tenant/features/accounting/components/voucherTemplateModel";
+} from "@/tenant/features/accounting/lib/voucherTemplateModel";
 import {
   buildVoucherTemplate,
   voucherLayoutCopy,
-} from "@/tenant/features/accounting/components/voucherTemplateLayout";
+} from "@/tenant/features/accounting/lib/voucherTemplateLayout";
 import { useVoucherTemplateSampleData } from "@/tenant/features/accounting/hooks/useVoucherTemplateSampleData";
 
 export interface AccountingVoucherTemplateEditorProps {

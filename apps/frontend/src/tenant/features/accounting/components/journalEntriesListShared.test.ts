@@ -5,7 +5,7 @@ import {
   getJournalEntryLineTotals,
   getJournalTagLabel,
   isJournalBalanced,
-} from "./journalEntriesListShared";
+} from "../lib/journalEntriesListShared";
 
 const entry = (
   lines: JournalEntry["lines"],

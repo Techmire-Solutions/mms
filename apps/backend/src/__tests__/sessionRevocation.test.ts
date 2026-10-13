@@ -28,7 +28,7 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 
 import { buildApp } from "../app.js";
 import { signTenantToken } from "./helpers/tokens.js";
-import { revokeToken, revokeAllUserSessions } from "../services/session.service.js";
+import { revokeToken, revokeAllUserSessions } from "../services/authSessionService.js";
 import { clearInMemoryRedisFallback } from "../lib/redis.js";
 
 describe("Enterprise Session Lifecycle & Token Revocation", () => {

@@ -40,7 +40,7 @@ vi.mock("../services/auth/userServiceShared.js", () => ({
   getRawUsers: (...args: unknown[]) => mockGetRawUsers(...args),
 }));
 
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),
 }));

@@ -9,11 +9,11 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { VOUCHER_KIND_TITLE_KEY } from "@/tenant/features/accounting/components/paymentVoucherKind";
+import { VOUCHER_KIND_TITLE_KEY } from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import {
   voucherContactLine,
   type VoucherPrintPayload,
-} from "@/tenant/features/accounting/components/voucherTemplateModel";
+} from "@/tenant/features/accounting/lib/voucherTemplateModel";
 
 type ScalarField = Exclude<keyof VoucherPrintPayload, "lines">;
 

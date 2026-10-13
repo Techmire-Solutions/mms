@@ -1,5 +1,5 @@
 import React from "react";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DistributionsRowActions } from "@/tenant/features/hasanat/components/DistributionsRowActions";
 import { WorkBatchTable } from "@/components/common/work";
@@ -7,7 +7,7 @@ import { useDistributionsTableColumns } from "@/tenant/features/hasanat/hooks/us
 import {
   getDistributionStatuses,
   type DistributionsListContentProps,
-} from "@/tenant/features/hasanat/components/distributionsListShared";
+} from "@/tenant/features/hasanat/lib/distributionsListShared";
 
 type DistributionsListDesktopTableProps = DistributionsListContentProps;
 

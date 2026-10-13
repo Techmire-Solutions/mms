@@ -5,7 +5,7 @@ import {
   isRtlLanguage,
   resolveQuestionFormLanguage,
   APP_LANGUAGES,
-} from "../languageUtils.js";
+} from "../core/languageUtils.js";
 
 describe("languageUtils", () => {
   describe("normalizeAppLanguage", () => {

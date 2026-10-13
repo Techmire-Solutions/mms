@@ -3,7 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import {
   FinancialLedgerTable,
   type FinancialLedgerTableProps,
-} from "@/components/ui/FinancialLedgerTable";
+} from "@/components/app/FinancialLedgerTable";
 
 export interface SimpleTransactionPostingTableProps {
   debitAccount: string;

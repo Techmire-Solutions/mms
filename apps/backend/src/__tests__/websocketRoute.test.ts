@@ -8,10 +8,10 @@ import type { AddressInfo } from "node:net";
 import type { FastifyInstance } from "fastify";
 import websocketRoutes from "../routes/common/websocket.js";
 import { ACCESS_COOKIE } from "../services/auth/authCookieService.js";
-import { isTokenRevoked } from "../services/session.service.js";
+import { isTokenRevoked } from "../services/authSessionService.js";
 import { getWorkspaceBySubdomain } from "../services/workspaceService.js";
 
-vi.mock("../services/session.service.js", () => ({
+vi.mock("../services/authSessionService.js", () => ({
   isTenantBlocked: vi.fn().mockResolvedValue(false),
   isTokenRevoked: vi.fn().mockResolvedValue(false),
   isUserSessionRevoked: vi.fn().mockResolvedValue(false),
@@ -27,7 +27,7 @@ vi.mock("../services/workspaceService.js", () => ({
 }));
 
 const mockRegisteredConnections: Array<{ subdomain: string; userId: string }> = [];
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   registerConnection: vi
     .fn()
     .mockImplementation((subdomain: string, _socket: unknown, userId: string) => {

@@ -1,6 +1,6 @@
 import { STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityArchivedBanner } from "@/components/ui/DetailDrawerArchiveChrome";
+import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 
 /** Soft-delete archive banner for student drawer and directory cards. */
 export function StudentArchivedBanner({ student }: { student: Student }): React.JSX.Element | null {

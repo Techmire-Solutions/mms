@@ -1,6 +1,6 @@
 import { type Student } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 
 interface UseStudentsListContentControllerOptions {

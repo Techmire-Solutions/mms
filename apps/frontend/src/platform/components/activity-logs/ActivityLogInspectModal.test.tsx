@@ -10,7 +10,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({
     open,
     title,
@@ -28,7 +28,7 @@ vi.mock("@/components/ui/Modal", () => ({
     ) : null,
 }));
 
-vi.mock("@/components/ui/CopyButton", () => ({
+vi.mock("@/components/app/CopyButton", () => ({
   CopyButton: ({ text, label }: { text: string; label?: string }) => (
     <button data-testid="copy-btn" data-text={text}>
       {label}
@@ -36,7 +36,7 @@ vi.mock("@/components/ui/CopyButton", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: ({ tabs }: { tabs: { key: string; label: string }[] }) => (
     <div data-testid="sub-tab-bar">
       {tabs.map((tab) => (

@@ -5,7 +5,7 @@ import { formatDate } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { Button } from "@/components/ui/button";
-import { ExportToolbar, type ExportColumn } from "@/components/ui/ExportToolbar";
+import { ExportToolbar, type ExportColumn } from "@/components/app/ExportToolbar";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";
 import { containerVariantsConsole, itemVariants } from "@/platform/lib/animations";

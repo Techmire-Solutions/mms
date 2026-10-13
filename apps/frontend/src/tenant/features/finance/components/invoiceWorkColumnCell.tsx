@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { formatDate } from "@mms/shared";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Invoice } from "@/lib/data/financeData";
 

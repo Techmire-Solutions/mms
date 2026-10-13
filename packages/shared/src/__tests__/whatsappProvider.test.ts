@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { PuppeteerWhatsAppProvider } from "../whatsappProvider.js";
-import { hasWhatsApp } from "../utils.js";
+import { PuppeteerWhatsAppProvider } from "../messaging/whatsappProvider.js";
+import { hasWhatsApp } from "../core/utils.js";
 
 describe("PuppeteerWhatsAppProvider.getNumberId", () => {
   it("returns digits for international numbers", () => {

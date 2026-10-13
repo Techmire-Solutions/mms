@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import { MarkAttendanceGeoTag } from "@/tenant/features/attendance/components/MarkAttendanceGeoTag";
-import type { GeoData } from "@/tenant/features/attendance/components/markAttendanceTypes";
+import type { GeoData } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 
 export interface AttendanceClassSummary {
   name?: string;

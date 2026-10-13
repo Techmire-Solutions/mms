@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildDynamicStudentSchema, formatStudentZodIssues } from "../studentValidation.js";
-import { DEFAULT_STUDENTS_SETTINGS, type StudentsSettings } from "../settingsTypes.js";
-import type { FieldDefinition } from "../contactTypes.js";
+import {
+  buildDynamicStudentSchema,
+  formatStudentZodIssues,
+} from "../students/studentValidation.js";
+import { DEFAULT_STUDENTS_SETTINGS, type StudentsSettings } from "../settings/settingsTypes.js";
+import type { FieldDefinition } from "../contacts/contactTypes.js";
 
 describe("studentValidation", () => {
   const mockSettings: StudentsSettings = {

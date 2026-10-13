@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { PlatformDashboard } from "../components/PlatformDashboard";
+import { PlatformDashboard } from "./PlatformDashboard";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -62,7 +62,7 @@ vi.mock("@/platform/components/dashboard/PlatformDashboardFleet", () => ({
   PlatformDashboardFleet: () => <div data-testid="dashboard-fleet">fleet</div>,
 }));
 
-vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
+vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
   ModuleCommandMetricsGrid: () => <div data-testid="dashboard-metrics">metrics</div>,
 }));
 

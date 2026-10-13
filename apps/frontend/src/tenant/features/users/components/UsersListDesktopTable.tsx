@@ -1,7 +1,7 @@
 import React, { type JSX } from "react";
 import type { SystemUser } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import { UsersRowActions } from "@/tenant/features/users/components/UsersRowActions";
 import { renderUserWorkColumnValue } from "@/tenant/features/users/components/userWorkColumnCell";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";

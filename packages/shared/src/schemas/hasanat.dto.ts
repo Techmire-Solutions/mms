@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseListQuerySchema } from "../apiSchemas.js";
+import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 import {
   denomRecordInsertSchema,
@@ -7,7 +7,7 @@ import {
   distributionRecordInsertSchema,
   distributionRecordUpdateSchema,
   redemptionRecordInsertSchema,
-} from "../hasanatModuleManifest.js";
+} from "../hasanat/hasanatModuleManifest.js";
 
 /** Query accepted by the hasanat distributions Work list endpoint. */
 export const hasanatListQuerySchema = baseListQuerySchema

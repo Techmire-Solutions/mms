@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi } from "vitest";
 import { useContactEntityDescriptor } from "@/tenant/features/contacts/hooks/useContactEntityDescriptor";
 import type { FieldDefinition as RegistryFieldDefinition } from "@mms/shared";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import type { Contact } from "@mms/shared";
 
 const registryField = (over: Partial<RegistryFieldDefinition>): RegistryFieldDefinition => ({

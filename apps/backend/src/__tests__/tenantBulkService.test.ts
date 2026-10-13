@@ -5,7 +5,7 @@ import { scopeDeleted, upsertWithBroadcast } from "../services/tenantBulkService
 const bulkSave = vi.fn();
 const broadcastCollection = vi.fn();
 
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => broadcastCollection(...args),
 }));
 

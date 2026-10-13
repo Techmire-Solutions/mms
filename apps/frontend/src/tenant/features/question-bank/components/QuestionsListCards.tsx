@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import type { QuestionBankQuestion as Question } from "@mms/shared";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";

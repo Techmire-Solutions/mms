@@ -4,7 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessagingDetail } from "./MessagingDetail";
 import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

@@ -1,7 +1,7 @@
 import React from "react";
 import type { Message } from "@mms/shared";
 import { MessagingWorkTierDirectory } from "./MessagingWorkTierDirectory";
-import { useMessagingWorkTierController } from "./useMessagingWorkTierController";
+import { useMessagingWorkTierController } from "../hooks/useMessagingWorkTierController";
 
 export type MessagingSelectedLogsMap = Record<string, Message>;
 

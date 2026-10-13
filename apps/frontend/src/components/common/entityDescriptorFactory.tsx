@@ -5,7 +5,7 @@ import type {
   TableColumnDescriptor,
   EntityDescriptor,
   CreateEntityDescriptorOptions,
-} from "@/types/entityRegistry";
+} from "@/components/common/entityRegistryTypes";
 import { formatFieldValueDefault, renderFieldValueDefault } from "./entityDescriptorRenderers";
 
 export function createEntityDescriptor<T>(

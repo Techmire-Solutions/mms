@@ -18,7 +18,7 @@ import {
   type ModuleExportResult,
 } from "../lib/createModuleExportService.js";
 import { normalizeIncludeDeletedFlag } from "../lib/csvExportStreamFactory.js";
-import { loadFacultyFieldConfig } from "./facultyConfigService.js";
+import { loadFacultyFieldConfig } from "../faculty/use-cases/facultyConfigService.js";
 import { loadFacultyByIds, loadFacultyPage } from "./facultyService.js";
 
 export type FacultyExportQueryInput = ModuleExportQueryInput<FacultyListQuery>;

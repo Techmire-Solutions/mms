@@ -4,11 +4,11 @@ import {
   enrollmentRecordSchema,
   enrollmentRecordInsertSchema,
   enrollmentRecordUpdateSchema,
-} from "../enrollmentsModuleManifest.js";
-import { enrollmentsListQuerySchema } from "../enrollmentsListQuery.js";
-import { enrollmentsReportAggregatesSchema } from "../enrollmentsReportAggregates.js";
-import { reportComparisonQuerySchema } from "../reportComparisonQuery.js";
-import { bulkStringIdsBodySchema } from "../apiSchemas.js";
+} from "../enrollments/enrollmentsModuleManifest.js";
+import { enrollmentsListQuerySchema } from "../enrollments/enrollmentsListQuery.js";
+import { enrollmentsReportAggregatesSchema } from "../enrollments/enrollmentsReportAggregates.js";
+import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
+import { bulkStringIdsBodySchema } from "../core/apiSchemas.js";
 import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
 
 const c = initContract();

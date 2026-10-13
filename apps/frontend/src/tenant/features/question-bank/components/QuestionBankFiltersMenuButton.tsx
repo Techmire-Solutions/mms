@@ -4,7 +4,7 @@ import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDivider,
   ModuleFilterDropdown,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 

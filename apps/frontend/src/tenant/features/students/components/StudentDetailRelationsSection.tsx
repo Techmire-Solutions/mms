@@ -1,6 +1,6 @@
 import React from "react";
 import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   StudentRelationshipCard,

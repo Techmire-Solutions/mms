@@ -1,12 +1,12 @@
 import React from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { Account, SalaryEntryInput } from "@mms/shared";
-import { FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
-import { useAccountQuickCreate } from "./useAccountQuickCreate";
+import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
 
 interface SpecializedEntrySalaryAccountFieldsProps {
   form: UseFormReturn<SalaryEntryInput>;

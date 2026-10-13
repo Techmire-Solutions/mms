@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformWorkspaceCreateAdminDialog } from "../PlatformWorkspaceCreateAdminDialog";
 import type { PlatformWorkspaceRow } from "@mms/shared";
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({
     open,
     title,

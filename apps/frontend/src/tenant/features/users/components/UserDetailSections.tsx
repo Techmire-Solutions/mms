@@ -9,8 +9,8 @@ import {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UserRoleBadge } from "@/tenant/features/users/components/UserBadges";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { UserDetailBasicCard } from "@/tenant/features/users/components/UserDetailBasicCard";
 import { UserDetailPermissionsCard } from "@/tenant/features/users/components/UserDetailPermissionsCard";
 

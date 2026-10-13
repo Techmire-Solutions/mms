@@ -6,7 +6,7 @@ import {
   getEffectiveGlobalSettings,
   mergeBrandingSettingsPreview,
   mergeGlobalSettingsPreview,
-} from "@/lib/dbObjects.js";
+} from "@/lib/dbObjects";
 import {
   isTenantHost,
   MMS_PLATFORM_BRANDING,

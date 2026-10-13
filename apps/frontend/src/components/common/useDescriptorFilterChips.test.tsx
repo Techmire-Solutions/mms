@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi } from "vitest";
 import { useDescriptorFilterChips } from "./useDescriptorFilterChips";
-import type { EntityDescriptor, FieldDefinition } from "@/types/entityRegistry";
+import type { EntityDescriptor, FieldDefinition } from "@/components/common/entityRegistryTypes";
 import { ENTITY_REGISTRY } from "@/components/common/entityRegistry";
 
 const MOCK_FIELDS: FieldDefinition<Record<string, unknown>>[] = [

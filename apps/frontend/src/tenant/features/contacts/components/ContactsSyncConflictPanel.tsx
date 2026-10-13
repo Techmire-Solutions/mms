@@ -10,8 +10,8 @@ import {
 } from "@/lib/contacts/contactsSyncOutbox";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactsSyncOutbox } from "@/tenant/features/contacts/hooks/useContactsSyncOutbox";
-import { FormModal } from "@/components/ui/FormModal";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { FormModal } from "@/components/app/FormModal";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { notify } from "@/lib/notify";
 import { ContactsSyncConflictRow } from "@/tenant/features/contacts/components/ContactsSyncConflictRow";
 

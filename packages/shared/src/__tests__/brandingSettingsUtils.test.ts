@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isInstitutionSetupComplete, formatBrandingAddress } from "../brandingSettingsUtils.js";
+import {
+  isInstitutionSetupComplete,
+  formatBrandingAddress,
+} from "../branding/brandingSettingsUtils.js";
 
 describe("isInstitutionSetupComplete", () => {
   it("returns false for null or undefined input", () => {

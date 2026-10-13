@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { DEFAULT_CONTACT_PREFERENCES } from "@mms/shared";
 import { DuplicateDetectionModal } from "./DuplicateDetectionModal";
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({
     open,
     title,

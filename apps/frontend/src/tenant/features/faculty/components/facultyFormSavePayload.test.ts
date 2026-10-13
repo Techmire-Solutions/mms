@@ -5,8 +5,8 @@ import {
   buildFacultySavePayload,
   validateUserDraftRequirements,
   isEmployeeIdConflictError,
-} from "./facultyFormSavePayload";
-import type { FacultySaveFlowInput } from "./facultyFormSaveFlow";
+} from "../lib/facultyFormSavePayload";
+import type { FacultySaveFlowInput } from "../lib/facultyFormSaveFlow";
 
 vi.mock("@/lib/notify", () => ({
   notify: {

@@ -269,7 +269,7 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
         );
       }
       const result = await repo.bulkUpdateInvoicesStatus(tenant, cleanIds, status);
-      const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+      const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
       broadcastTenantUpdate(tenant, "collection", "finance_invoices");
       broadcastTenantUpdate(tenant, "collection", "finance_metrics");
       return result;
@@ -401,7 +401,7 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
       );
       await tryPostPaymentJournal(tenant, savedPayment);
 
-      const { broadcastTenantUpdate } = await import("../../services/websocketService.js");
+      const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
       broadcastTenantUpdate(tenant, "collection", "finance_invoices");
       broadcastTenantUpdate(tenant, "collection", "finance_payments");
       return savedPayment;

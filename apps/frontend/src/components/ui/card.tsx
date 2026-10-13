@@ -7,7 +7,7 @@ import {
   CARD_STRIPE_INSET,
   type CardAccentColor,
   getCardStripeClass,
-} from "@/lib/semanticTone";
+} from "@/lib/ui/semanticTone";
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   accentColor?: CardAccentColor | "none" | false | null;

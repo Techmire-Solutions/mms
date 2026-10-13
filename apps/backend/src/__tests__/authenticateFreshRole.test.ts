@@ -35,7 +35,7 @@ vi.mock("../lib/httpErrors.js", () => ({
   sendForbidden: vi.fn(),
   sendUnauthorized: vi.fn(),
 }));
-vi.mock("../services/session.service.js", () => ({
+vi.mock("../services/authSessionService.js", () => ({
   checkTenantAuthPipelineBatch: vi.fn().mockResolvedValue({
     tenantBlocked: false,
     tokenRevoked: false,

@@ -8,7 +8,7 @@ import {
   type RbacPermissionMatrixGroup,
 } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PermissionMatrixRow } from "@/tenant/features/users/components/PermissionMatrixRow";

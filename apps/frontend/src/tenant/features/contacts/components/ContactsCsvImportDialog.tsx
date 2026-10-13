@@ -1,7 +1,7 @@
 import React from "react";
 import type { Contact } from "@mms/shared";
 import { contactsTransferSchema } from "@mms/shared";
-import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface ContactsCsvImportDialogProps {
   open: boolean;

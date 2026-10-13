@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { InvoicePrintPreview } from "./InvoicePrintPreview";
-import { TemplateElementRenderer } from "@/components/ui/template-editor/TemplateElementRenderer";
+import { TemplateElementRenderer } from "@/components/template-editor/TemplateElementRenderer";
 import type { InvoiceTemplate } from "@/lib/invoiceTemplateStore";
 import type { ObligationCollection } from "@/lib/data/obligationsData";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

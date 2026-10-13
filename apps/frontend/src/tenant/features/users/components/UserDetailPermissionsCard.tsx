@@ -3,8 +3,8 @@ import { Lock } from "lucide-react";
 import type { filterRbacModulesForSettings, PermissionAction } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { Badge } from "@/components/ui/badge";
 
 export interface UserDetailPermissionsCardProps {

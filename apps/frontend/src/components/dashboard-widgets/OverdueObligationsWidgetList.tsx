@@ -4,11 +4,11 @@ import { Scale } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatMoney, formatDate } from "@mms/shared";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SearchBar } from "@/components/ui/SearchBar";
-import { ListPagination } from "@/components/ui/ListPagination";
-import { ModuleTableHeaderCell } from "@/components/ui/ModuleTableHeaderCell";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SearchBar } from "@/components/app/SearchBar";
+import { ListPagination } from "@/components/app/ListPagination";
+import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import {
   OverdueUrgencyBadge,

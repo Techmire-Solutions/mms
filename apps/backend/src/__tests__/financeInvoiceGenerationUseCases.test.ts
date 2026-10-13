@@ -48,7 +48,7 @@ vi.mock("../db/repositories/financeInvoiceGenerationRepository.js", () => mockGe
 vi.mock("../services/financePreferencesService.js", () => mockPrefs);
 vi.mock("../finance/use-cases/financeUseCases.js", () => mockFinanceUseCases);
 vi.mock("../db/repositories/studentRepository.js", () => mockStudentRepo);
-vi.mock("../services/websocketService.js", () => mockWs);
+vi.mock("../lib/livePush.js", () => mockWs);
 vi.mock("../db/repositories/enrollmentRepository.js", () => mockEnrollmentRepo);
 
 import {

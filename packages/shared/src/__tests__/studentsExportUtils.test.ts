@@ -4,9 +4,9 @@ import {
   buildStudentsExportRows,
   extractStudentCell,
   type StudentExportColumn,
-} from "../studentsExportUtils.js";
-import type { Student } from "../studentTypes.js";
-import type { StudentsSettings } from "../studentsModuleSettings.js";
+} from "../students/studentsExportUtils.js";
+import type { Student } from "../students/studentTypes.js";
+import type { StudentsSettings } from "../students/studentsModuleSettings.js";
 
 describe("studentsExportUtils", () => {
   const columns: StudentExportColumn[] = [

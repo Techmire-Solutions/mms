@@ -32,7 +32,7 @@ vi.mock("@/tenant/features/students/hooks/useStudentFormState", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     children,

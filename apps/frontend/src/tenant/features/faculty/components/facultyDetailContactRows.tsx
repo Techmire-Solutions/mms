@@ -1,11 +1,11 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
 import { facultyFieldLabelKey, type Contact, type Faculty } from "@mms/shared";
-import { ContactPhoneAction, ContactEmailAction } from "@/components/ui/ContactAction";
+import { ContactPhoneAction, ContactEmailAction } from "@/components/app/ContactAction";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18nFormat";
-import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
+import { getGenderIcon, getGenderIconClass } from "@/lib/ui/genderUi";
 import type { FacultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
 import { FacultyDetailAttributeRow } from "@/tenant/features/faculty/components/FacultyDetailAttributeRow";
 

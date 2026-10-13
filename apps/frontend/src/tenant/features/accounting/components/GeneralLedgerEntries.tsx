@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
@@ -12,7 +12,7 @@ import {
   useWorkDirectoryViewMode,
   type WorkDirectoryViewMode,
 } from "@/hooks/useWorkDirectoryViewMode";
-import type { GeneralLedgerLineWithRunning } from "./useGeneralLedger";
+import type { GeneralLedgerLineWithRunning } from "../hooks/useGeneralLedger";
 
 interface GeneralLedgerEntriesProps {
   activeAccount: Account;

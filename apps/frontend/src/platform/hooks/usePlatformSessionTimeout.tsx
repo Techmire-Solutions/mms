@@ -3,7 +3,7 @@ import { resolvePlatformSessionPolicy, type SessionTimeoutPolicy } from "@mms/sh
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
-import { SessionTimeoutModal } from "@/components/session/SessionTimeoutModal";
+import { SessionTimeoutModal } from "@/components/app/SessionTimeoutModal";
 import { apiJson } from "@/lib/apiClient";
 import { PLATFORM_AUTH_PATHS } from "@/lib/apiClientHelpers";
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Contact } from "@mms/shared";
-import { contactToRecipient } from "./messagingWorkPanelShared";
+import { contactToRecipient } from "../lib/messagingWorkPanelShared";
 
 function contactFixture(overrides: Partial<Contact> = {}): Contact {
   return {

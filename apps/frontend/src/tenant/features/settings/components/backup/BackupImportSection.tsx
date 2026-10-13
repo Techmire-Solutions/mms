@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertTriangle, Upload, FileJson } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { SettingsCallout } from "@/components/ui/SettingsShell";
+import { SectionCard } from "@/components/app/SectionCard";
+import { SettingsCallout } from "@/components/app/SettingsShell";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 

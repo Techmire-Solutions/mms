@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { User, Calendar } from "lucide-react";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { SearchBar } from "@/components/app/SearchBar";
 import { STUDENTS_MODULE_MANIFEST } from "@mms/shared";
 import { calcAge, type Student } from "@/lib/data/studentsData";
 import { type Session } from "@/lib/data/sessionsData";
-import { WIZARD_SELECTION_DOT } from "@/lib/semanticTone";
+import { WIZARD_SELECTION_DOT } from "@/lib/ui/semanticTone";
 import { useStudentsByIds, useStudentsContractList } from "@/tenant/hooks/collections/students";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";
-import { genderStatusBadgeConfig } from "@/lib/genderStatusBadge";
+import { genderStatusBadgeConfig } from "@/lib/ui/genderStatusBadge";
 
 export interface Step1SelectStudentProps {
   value: Student | null | undefined;

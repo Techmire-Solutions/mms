@@ -1,6 +1,6 @@
 import type { PlatformWorkspaceRow } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ReviewList } from "@/components/ui/ReviewList";
+import { ReviewList } from "@/components/app/ReviewList";
 
 export function WorkspaceSummary({
   workspace,

@@ -9,7 +9,7 @@ import {
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { ConflictError } from "../../lib/httpErrors.js";
-import { broadcastCollection } from "../../services/websocketService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import {
   seedAccountsIfEmpty,
   type SeedAccountDefaults,

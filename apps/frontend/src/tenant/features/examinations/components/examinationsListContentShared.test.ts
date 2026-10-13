@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getExamMeta } from "./examinationsListContentShared";
+import { getExamMeta } from "../lib/examinationsListContentShared";
 import type { Exam } from "@/lib/data/examinationData";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 

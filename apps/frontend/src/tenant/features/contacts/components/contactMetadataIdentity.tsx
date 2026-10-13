@@ -2,10 +2,10 @@ import React from "react";
 import { CheckCircle2, MapPin } from "lucide-react";
 import { type Contact, hasWhatsApp, getPrimaryAddress, type AppTranslationKey } from "@mms/shared";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
-import { GenderIcon } from "@/components/ui/GenderIcon";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { GenderIcon } from "@/components/app/GenderIcon";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
-import { getGenderIconClass } from "@/lib/genderUi";
+import { getGenderIconClass } from "@/lib/ui/genderUi";
 import { cn } from "@/lib/utils";
 
 type Translate = (key: AppTranslationKey, params?: Record<string, string | number>) => string;

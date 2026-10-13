@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { ACCOUNTING_WORK_SEARCH_INPUT_ID } from "@/tenant/features/accounting/components/JournalEntriesListFilters";
-import type { useJournalEntriesListQueryState } from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
+import type { useJournalEntriesListQueryState } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 
 export interface UseAccountingPageShortcutsParams {
   activeTab: string;

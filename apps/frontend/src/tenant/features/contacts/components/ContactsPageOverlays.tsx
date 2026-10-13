@@ -4,7 +4,7 @@ import type { Contact, StandardMessagingRecipient } from "@mms/shared";
 import {
   ModuleDrawerLoadingSkeleton,
   ModuleOverlayLoadingFallback,
-} from "@/components/ui/ModuleOverlayLoadingChrome";
+} from "@/components/app/ModuleOverlayLoadingChrome";
 import { ContactsPageConfirmDialogs } from "@/tenant/features/contacts/components/ContactsPageConfirmDialogs";
 import { ContactsImportDialog } from "@/tenant/features/contacts/components/ContactsImportDialog";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";

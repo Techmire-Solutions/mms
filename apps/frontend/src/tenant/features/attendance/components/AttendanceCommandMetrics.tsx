@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAttendanceMetrics } from "@/tenant/features/attendance/hooks/useAttendance";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 export interface AttendanceCommandMetricsProps {
   total: number;

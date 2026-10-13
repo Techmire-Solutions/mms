@@ -1,8 +1,8 @@
 import { Calendar, Mail, Phone, User } from "lucide-react";
 import ContactPicker from "@/components/contactLink/ContactPicker";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
+import { getGenderIcon, getGenderIconClass } from "@/lib/ui/genderUi";
 import { getPrimaryEmail, getPrimaryPhone, type Contact, type FieldDefinition } from "@mms/shared";
 import {
   ContactProfileValue,

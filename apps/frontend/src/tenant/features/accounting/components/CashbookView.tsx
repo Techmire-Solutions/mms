@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { TrendingUp, TrendingDown, ArrowUpDown, AlertTriangle } from "lucide-react";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { centsToMoney, type JournalEntry, type Account } from "@/lib/data/accountingData";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { buildDataTableRegistry, toColumnCustomizer } from "@/components/common/data-table";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
@@ -15,7 +15,7 @@ import {
   resolveCashAccountIds,
   sumCashbookTotals,
   type EntryType,
-} from "@/tenant/features/accounting/components/cashbookViewShared";
+} from "@/tenant/features/accounting/lib/cashbookViewShared";
 import { CashbookViewTable } from "@/tenant/features/accounting/components/CashbookViewTable";
 import {
   useCashbookColumns,

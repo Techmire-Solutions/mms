@@ -1,6 +1,6 @@
 import type { Student } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCard } from "@/components/app/EntityCard";
 import { ParentNamesSubtitle } from "@/tenant/features/students/components/ParentNamesSubtitle";
 
 export interface StudentCardHeaderProps {

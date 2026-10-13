@@ -1,18 +1,18 @@
 import { useMemo, type FormEvent } from "react";
 import { CheckCircle2, DollarSign, Download, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SectionHeader } from "@/components/app/SectionHeader";
+import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import {
   QUICK_ACTIONS,
   type QuickActionType,
-} from "@/tenant/features/accounting/components/journalEntriesQuickActions";
+} from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 import { JournalRecentEntryCard } from "@/tenant/features/accounting/components/JournalRecentEntryCard";
 
 // Cash-flow direction comes from `resolveEntryDirection`, which reads the

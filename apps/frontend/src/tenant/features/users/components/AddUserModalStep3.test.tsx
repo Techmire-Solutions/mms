@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { Step3 } from "./AddUserModalStep3";
-import type { AddUserFormState } from "./addUserModalTypes";
+import type { AddUserFormState } from "../lib/addUserModalTypes";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 

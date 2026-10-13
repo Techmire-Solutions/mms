@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceAnalyticsChartPanels } from "./AttendanceAnalyticsChartPanels";
 
-vi.mock("@/components/ui/SafeResponsiveContainer", () => {
+vi.mock("@/components/app/SafeResponsiveContainer", () => {
   const MockContainer = ({ children }: { children: React.ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   );
@@ -13,7 +13,7 @@ vi.mock("@/components/ui/SafeResponsiveContainer", () => {
   };
 });
 
-vi.mock("@/components/ui/ChartGrid", () => ({
+vi.mock("@/components/app/ChartGrid", () => ({
   ChartGrid: () => <div data-testid="chart-grid" />,
   chartAxisTick: () => ({}),
 }));

@@ -4,7 +4,7 @@ import {
   PLATFORM_HTTP_ERROR_TYPES,
   PLATFORM_SERVICE_ERROR_CODES,
   PLATFORM_SERVICE_ERROR_STATUSES,
-} from "../platformApiErrors.js";
+} from "../auth/platformApiErrors.js";
 
 describe("platformApiErrors", () => {
   it("covers every service error code with an HTTP status", () => {

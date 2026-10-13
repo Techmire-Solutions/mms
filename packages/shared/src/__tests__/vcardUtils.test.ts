@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseVCard, toVCard } from "../vcardUtils.js";
-import type { Contact } from "../contactTypes.js";
+import { parseVCard, toVCard } from "../core/vcardUtils.js";
+import type { Contact } from "../contacts/contactTypes.js";
 
 describe("vcardUtils", () => {
   it("serializes contact to vCard 3.0 string", () => {

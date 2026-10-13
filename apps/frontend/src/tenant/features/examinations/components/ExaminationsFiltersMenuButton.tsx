@@ -3,7 +3,7 @@ import { Filter } from "lucide-react";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDropdown,
-} from "@/components/ui/ModuleFiltersMenuButton";
+} from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export const EXAM_STATUSES = [

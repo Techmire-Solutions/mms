@@ -7,7 +7,7 @@ import {
   createModuleTransferSchema,
   registerModuleTransferSchema,
 } from "../dataTransfer/index.js";
-import { contactsTransferSchema } from "../contactsTransferSchema.js";
+import { contactsTransferSchema } from "../contacts/contactsTransferSchema.js";
 
 describe("moduleTransferRegistry (Coverage & Catalog)", () => {
   it("catalogs all 15 form-containing modules across the workspace", () => {

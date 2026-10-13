@@ -1,9 +1,9 @@
 import React from "react";
 import { Plus, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { formatMoney } from "@mms/shared";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import type { BudgetItemWithClass } from "./budgetTabShared";
 
 interface BudgetSectionProps {

@@ -1,10 +1,10 @@
 import React from "react";
 import type { ActivityLog } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { UsersCommandMetrics } from "@/tenant/components/reports/moduleReportAdapters";
 import { ActivityLogs } from "@/tenant/components/reports/moduleReportAdapters";
 import { useActivityLogs, useUsersByIds } from "@/tenant/hooks/collections/users";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
 
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";

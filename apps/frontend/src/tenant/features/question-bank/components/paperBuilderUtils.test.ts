@@ -9,7 +9,7 @@ import {
   getPaperQuestionIds,
   normalizePaperSections,
   type PaperSection,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 const sections: PaperSection[] = [
   { id: "section-a", title: "A", instructions: "", questionIds: ["q1", "q2"] },
@@ -113,7 +113,10 @@ describe("paperBuilderUtils", () => {
    * without a real DOM and catches regressions in the generated HTML string.
    */
   describe("openPaperPrintWindow print-script contract", () => {
-    const src = readFileSync(path.resolve(import.meta.dirname, "./paperBuilderUtils.ts"), "utf-8");
+    const src = readFileSync(
+      path.resolve(import.meta.dirname, "../lib/paperBuilderUtils.ts"),
+      "utf-8",
+    );
 
     it("uses document.fonts.ready instead of a fixed setTimeout for print", () => {
       expect(src).toContain("document.fonts.ready");

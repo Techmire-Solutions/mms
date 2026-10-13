@@ -16,7 +16,7 @@ vi.mock("@/tenant/features/attendance/components/AttendanceAnalytics", () => ({
   AttendanceAnalytics: () => <div data-testid="analytics">Attendance Analytics</div>,
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: ({ tabs }: { tabs: { label: string }[] }) => (
     <div data-testid="sub-tab-bar">{tabs.map((tab) => tab.label).join(", ")}</div>
   ),

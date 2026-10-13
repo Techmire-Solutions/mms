@@ -15,7 +15,7 @@ import {
   toPublicPlatformUser,
 } from "../services/platform/platformUserService.js";
 import { sendForbidden, sendUnauthorized } from "../lib/httpErrors.js";
-import { isTokenRevoked } from "../services/session.service.js";
+import { isTokenRevoked } from "../services/authSessionService.js";
 
 export interface PlatformAuthenticatedRequest extends FastifyRequest {
   platformUser: PlatformUser;

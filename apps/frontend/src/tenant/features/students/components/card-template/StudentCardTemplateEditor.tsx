@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/ui/TemplateEditor";
+import { TemplateEditor } from "@/components/app/TemplateEditor";
 import { notify } from "@/lib/notify";
 import type { Student } from "@mms/shared";
 import type {

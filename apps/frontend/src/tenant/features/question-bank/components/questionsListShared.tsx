@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { getQuestionCategoryIds, QUESTION_SOURCE_FIELD_IDS } from "@mms/shared";
 import { CategoryColorChip } from "@/tenant/features/question-bank/components/CategoryColorChip";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import type { QuestionBankQuestion as Question } from "@mms/shared";

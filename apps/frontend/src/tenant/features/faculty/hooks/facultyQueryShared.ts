@@ -9,14 +9,14 @@ export {
   facultyListQueryKeyParams,
   facultyPaginatedQueryKey,
   sameFacultyListFilters,
-} from "./facultyQueryKeys.js";
+} from "./facultyQueryKeys";
 export type {
   FacultyRecord,
   FacultyNextEmployeeIdParams,
   FacultyListPageResult,
   FacultyPaginatedParams,
   FacultyWidgetAggregateWidgetInput,
-} from "./facultyQueryKeys.js";
+} from "./facultyQueryKeys";
 export type { Faculty, FacultyListQuery };
 
 export interface FacultyDirectoryQueryInput {

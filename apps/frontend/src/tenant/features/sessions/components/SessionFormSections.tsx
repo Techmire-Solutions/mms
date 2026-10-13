@@ -1,16 +1,16 @@
 import type React from "react";
 import { Calendar, Wallet } from "lucide-react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
 import { FORM_INPUT, FORM_TEXTAREA } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Session } from "@/lib/data/sessionsData";
-import type { SessionFormDraft } from "@/tenant/features/sessions/components/sessionFormShared";
+import type { SessionFormDraft } from "@/tenant/features/sessions/lib/sessionFormShared";
 
 export interface SessionSelectOption {
   value: string;

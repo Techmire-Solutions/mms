@@ -1,13 +1,13 @@
 import { CreditCard } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
-import { CardTitleBar } from "@/components/ui/CardTitleBar";
+import { CardTitleBar } from "@/components/app/CardTitleBar";
 import {
   ModuleColumnCustomizer,
   type ModuleColumnCustomizerProps,
-} from "@/components/ui/ModuleColumnCustomizer";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+} from "@/components/app/ModuleColumnCustomizer";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PaymentMethodSummaryProps {

@@ -4,7 +4,7 @@ import {
   type EmailAddress,
   type PhoneNumber,
 } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { cn } from "@/lib/utils";
 
 const DETAIL_COLLECTION_EMPTY_CLASS: Record<"plain" | "bordered" | "borderedRelaxed", string> = {

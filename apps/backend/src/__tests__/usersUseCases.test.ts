@@ -10,7 +10,7 @@ vi.mock("../services/auth/userService.js", () => ({
 vi.mock("../services/auth/userServiceShared.js", () => ({
   getRawUsers: vi.fn().mockResolvedValue([]),
 }));
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),
 }));

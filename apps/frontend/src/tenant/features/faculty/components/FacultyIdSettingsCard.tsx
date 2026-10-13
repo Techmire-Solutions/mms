@@ -6,8 +6,8 @@ import {
   type FacultySettings,
   type SequenceNumberingConfig,
 } from "@mms/shared";
-import { SequenceNumberingCard } from "@/components/ui/sequence-numbering";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SequenceNumberingCard } from "@/components/sequence-numbering";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface FacultyIdSettingsCardProps {
   settingsDraft: FacultySettings;

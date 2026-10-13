@@ -6,7 +6,7 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/ui/TemplateEditor";
+import { TemplateEditor } from "@/components/app/TemplateEditor";
 import { getObject, saveObject } from "@/lib/db";
 import type {
   DocumentTemplate,
@@ -19,7 +19,7 @@ import {
   PRINT_EMERALD_LIGHT,
   PRINT_EMERALD_DEEP,
   PRINT_SLATE_MUTED,
-} from "@/lib/printTemplateStyles";
+} from "@/lib/ui/printTemplateStyles";
 
 export interface HasanatPayload {
   receiptNo: string;

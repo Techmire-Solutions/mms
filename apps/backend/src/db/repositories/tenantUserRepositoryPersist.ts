@@ -9,7 +9,7 @@ import {
   listAllTenantUsersByWorkspace,
   type TenantUserRow,
 } from "./tenantUserRepositoryHydrate.js";
-import { revokeAllUserSessions, revokeUserSessionKeys } from "../../services/session.service.js";
+import { revokeAllUserSessions, revokeUserSessionKeys } from "../../services/authSessionService.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
 const TABLE_AUTH_KEYS = new Set([

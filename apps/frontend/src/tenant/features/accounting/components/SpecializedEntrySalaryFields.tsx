@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { Account, SalaryEntryInput } from "@mms/shared";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

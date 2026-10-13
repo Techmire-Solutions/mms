@@ -5,9 +5,9 @@ import {
   DEFAULT_CHART_OF_ACCOUNTS,
   DEFAULT_CHART_RETAINED_EARNINGS_CODE,
 } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Button } from "@/components/ui/button";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { useTranslation } from "@/hooks/useTranslation";
 import { isApiError } from "@/lib/apiClient";
 import { notifyApiFailure } from "@/lib/apiErrorNotify";

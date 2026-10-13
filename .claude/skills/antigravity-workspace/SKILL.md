@@ -69,8 +69,8 @@ bash .agent/skills/mms-dev-setup/scripts/verify-env.sh
 ## Architecture blueprints & docs
 
 - `docs/architecture.md`
-- `docs/adr/0001-shared-package-and-dry-reuse.md`
-- `docs/MigrationPlan.md`
+- `docs/adr/README.md` (ADR journal index)
+- `docs/archive/MigrationPlan.md`
 - `.agent/skills/README.md`
 
 ## Sync policy

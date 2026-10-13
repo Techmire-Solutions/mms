@@ -1,6 +1,6 @@
 import { type Contact, hasWhatsApp } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 
 export interface ContactDetailOverviewQuickActionsProps {
   contact: Contact;

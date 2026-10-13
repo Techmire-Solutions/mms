@@ -6,7 +6,7 @@ import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import {
   testTotalMarks,
   type StatsSummary,
-} from "@/tenant/features/question-bank/components/autoGradingShared";
+} from "@/tenant/features/question-bank/lib/autoGradingShared";
 
 interface AutoGradingStatsProps {
   stats: StatsSummary;

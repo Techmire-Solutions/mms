@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   facultyDepartmentSchema,
   facultyDepartmentWriteSchema,
-} from "../facultyDepartmentTypes.js";
+} from "../faculty/facultyDepartmentTypes.js";
 
 const errorResponse = z.unknown();
 

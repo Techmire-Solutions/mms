@@ -1,8 +1,11 @@
 import type { Faculty } from "@mms/shared";
 import { Badge } from "@/components/ui/badge";
-import { DirectoryCardSubtitleStack, PersonIdentityMeta } from "@/components/ui/PersonIdentityMeta";
+import {
+  DirectoryCardSubtitleStack,
+  PersonIdentityMeta,
+} from "@/components/app/PersonIdentityMeta";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCard } from "@/components/app/EntityCard";
 
 export interface FacultyCardHeaderProps {
   faculty: Faculty;

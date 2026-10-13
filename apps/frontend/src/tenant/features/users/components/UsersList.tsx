@@ -4,7 +4,7 @@ import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 import { formatDate } from "@mms/shared";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { UsersListContent } from "@/tenant/features/users/components/UsersListContent";
 import { UsersListFilters } from "@/tenant/features/users/components/UsersListFilters";
 import { UsersBulkActionBar } from "@/tenant/features/users/components/UsersBulkActionBar";
@@ -14,7 +14,7 @@ import {
   togglePageIdsInSelection,
 } from "@/lib/directorySelection";
 
-import type { UsersListProps } from "@/tenant/features/users/components/usersListTypes";
+import type { UsersListProps } from "@/tenant/features/users/hooks/usersListTypes";
 export type { UsersListProps };
 
 export function UsersList({

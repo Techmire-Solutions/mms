@@ -26,7 +26,7 @@ vi.mock("@/tenant/hooks/collections/faculty", async (importOriginal) => {
   };
 });
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     error,

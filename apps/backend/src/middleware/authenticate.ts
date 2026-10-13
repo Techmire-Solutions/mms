@@ -18,7 +18,7 @@ import { formatTraceParent } from "../config/telemetry.js";
 import { getWorkspaceBySubdomain } from "../services/workspaceService.js";
 import { loadGlobalSettings } from "../services/globalSettingsService.js";
 import { sendForbidden, sendUnauthorized } from "../lib/httpErrors.js";
-import { checkTenantAuthPipelineBatch } from "../services/session.service.js";
+import { checkTenantAuthPipelineBatch } from "../services/authSessionService.js";
 import { markRequestDiagnosticStage } from "../lib/requestDiagnostics.js";
 
 export interface AuthenticatedRequest extends FastifyRequest {

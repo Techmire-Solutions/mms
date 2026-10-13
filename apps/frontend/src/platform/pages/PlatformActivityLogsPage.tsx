@@ -1,7 +1,7 @@
 import React from "react";
 import { Activity } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 import PlatformActivityLogsContent from "@/platform/components/PlatformActivityLogsContent";
 
 export default function PlatformActivityLogsPage(): React.JSX.Element {

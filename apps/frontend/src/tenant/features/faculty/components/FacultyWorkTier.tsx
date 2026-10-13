@@ -1,14 +1,14 @@
 import { useCallback } from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { FilterChips } from "@/components/ui/FilterChips";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { FilterChips } from "@/components/app/FilterChips";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FacultyList } from "@/tenant/features/faculty/components/FacultyList";
 import { FacultyBulkActionBar } from "@/tenant/features/faculty/components/FacultyBulkActionBar";
 import { FacultyListFilters } from "@/tenant/features/faculty/components/FacultyListFilters";
 import { useFacultyWorkTierActions } from "@/tenant/features/faculty/hooks/useFacultyWorkTierActions";
-import type { FacultyWorkTierProps } from "@/tenant/features/faculty/components/facultyWorkTierProps";
+import type { FacultyWorkTierProps } from "@/tenant/features/faculty/lib/facultyWorkTierProps";
 
 export type { FacultyWorkTierProps };
 

@@ -5,9 +5,9 @@ import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLab
 import {
   getJournalBalanceDifference,
   isJournalBalanced,
-} from "@/tenant/features/accounting/components/journalEntriesListShared";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
+} from "@/tenant/features/accounting/lib/journalEntriesListShared";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 import { JournalEntryCard, type JournalEntriesListCardsProps } from "./JournalEntryCard";

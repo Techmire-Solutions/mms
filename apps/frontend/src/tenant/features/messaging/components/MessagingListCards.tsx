@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import type { Message } from "@mms/shared";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { notify } from "@/lib/notify";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";

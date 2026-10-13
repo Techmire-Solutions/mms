@@ -17,7 +17,7 @@ import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import {
   filterGroupedTimezones,
   timezoneDetectionErrorKey,
-} from "@/tenant/features/settings/components/timezoneSelectUtils";
+} from "@/tenant/features/settings/lib/timezoneSelectUtils";
 import { TimezoneSelectPopoverContent } from "@/tenant/features/settings/components/TimezoneSelectPopoverContent";
 
 interface TimezoneSelectProps {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Users, Tag } from "lucide-react";
 import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactsBulkTagModal } from "@/tenant/features/contacts/components/ContactsBulkTagModal";

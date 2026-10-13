@@ -38,4 +38,4 @@ export {
 export {
   type JournalEntryFilterState,
   EMPTY_JOURNAL_ENTRY_FILTERS,
-} from "@/tenant/features/accounting/components/journalEntriesControllerFilters";
+} from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";

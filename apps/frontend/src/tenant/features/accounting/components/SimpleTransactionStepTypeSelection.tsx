@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   TRANSACTION_GROUP_COLORS,
   TRANSACTION_GROUPS,
   type QuickActionType,
   type TransactionGroup,
-} from "./simpleTransactionWizardTypes";
-import { quickActionLabel } from "./quickActionLabels";
+} from "../lib/simpleTransactionWizardTypes";
+import { quickActionLabel } from "../lib/quickActionLabels";
 
 interface StepTypeSelectionProps {
   selected: QuickActionType | null;

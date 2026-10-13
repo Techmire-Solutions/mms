@@ -3,7 +3,7 @@ import type { FacultyDesignationDefinition } from "@mms/shared";
 import {
   buildDesignationDraftPatch,
   selectableDesignationOptions,
-} from "./facultyFormDesignationDraft";
+} from "../lib/facultyFormDesignationDraft";
 
 const designation = (
   overrides: Partial<FacultyDesignationDefinition>,

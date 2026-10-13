@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { DEFAULT_BRANDING_SETTINGS, type PublicBranding, getInitials } from "@mms/shared";
 import { useTenant } from "@/lib/contexts/TenantContext";
-import { applyTenantEntryTheme } from "@/tenant/lib/brandingEntryTheme";
+import { applyTenantEntryTheme } from "@/lib/branding/tenantEntryTheme";
 import { applyTenantDocumentFavicon } from "@/lib/documentFavicon";
-import { LOGO_IMAGE } from "@/lib/semanticTone";
+import { LOGO_IMAGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTenantBranding } from "@/tenant/hooks/useTenantBranding";
 import {

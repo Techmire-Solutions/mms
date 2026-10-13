@@ -23,7 +23,7 @@ per-finding remedies and the review criteria.
 | Form closed before the mutation resolved | Await `mutateAsync` before closing the dialog or clearing state — `mms-form-architecture.md` |
 | Direct SQL `DELETE` on a tenant entity | Route through soft-delete or check `app.allow_hard_purge` — `mms-data-layer.md` §6 |
 | Unique constraint on a recyclable soft-deletable key | Use a partial unique index `WHERE deleted_at IS NULL` — `mms-data-layer.md` §6 |
-| Cross-feature import added | Route through the `@/tenant/hooks/collections/*` facade or extract to `components/ui` / `lib/` / `@mms/shared` — the boundary lint fails otherwise (`mms-dry.md`) |
+| Cross-feature import added | Route through the `@/tenant/hooks/collections/*` facade or extract to `components/app` / `components/ui` / `lib/` / `@mms/shared` — the boundary lint fails otherwise (`mms-dry.md`) |
 | Banned Node-24 package introduced | Replace with the native built-in (`fetch`, `glob`, `crypto.hash`, `URLPattern`, `--env-file`) — `mms-dependencies.md` |
 | Non-erasable TS syntax (`enum`, `namespace`, parameter properties) | Replace with union types / const objects — `mms-dependencies.md` |
 | Unprefixed core-module import | Prefix with `node:` (`node:fs`, `node:crypto`, `node:path`, `node:async_hooks`) — `mms-structure-naming.md` |

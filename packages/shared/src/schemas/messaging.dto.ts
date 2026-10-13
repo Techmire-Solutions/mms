@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { messageCategorySchema } from "../messagingCategorySchemas.js";
+import { messageCategorySchema } from "../messaging/messagingCategorySchemas.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 
 export const messageStatusSchema = z.enum(["queued", "sent", "delivered", "failed", "skipped"]);

@@ -6,7 +6,7 @@
 import { User as UserIcon } from "lucide-react";
 import { type TaskRecord, type TaskStatus, type AppTranslationKey } from "@mms/shared";
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { TableCellLink } from "@/components/ui/TableCellLink";
+import { TableCellLink } from "@/components/app/TableCellLink";
 import { TaskPriorityBadge, TaskStatusBadge } from "./TaskBadges";
 
 export const TASK_NEXT_STATUS: Record<TaskStatus, TaskStatus> = {

@@ -75,7 +75,7 @@ vi.mock("./AccountingSettingsPreferences", () => ({
   },
 }));
 
-vi.mock("@/components/ui/ModuleSetupSaveFooter", () => ({
+vi.mock("@/components/app/ModuleSetupSaveFooter", () => ({
   ModuleSetupSaveFooter: ({ dirty }: { dirty: boolean }) => (
     <div data-testid="save-footer" data-dirty={String(dirty)}>
       Save Footer
@@ -87,7 +87,7 @@ vi.mock("./AccountingFiscalYearModal", () => ({
   AccountingFiscalYearModal: () => null,
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 

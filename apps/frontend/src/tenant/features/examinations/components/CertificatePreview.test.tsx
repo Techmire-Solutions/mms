@@ -21,7 +21,7 @@ vi.mock("@/lib/contexts/BrandingPaletteContext", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Modal", () => ({
+vi.mock("@/components/app/Modal", () => ({
   Modal: ({ children, title, headerActions }: any) => (
     <div data-testid="modal">
       <h2>{title}</h2>

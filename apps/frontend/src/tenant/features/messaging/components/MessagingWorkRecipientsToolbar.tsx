@@ -10,14 +10,14 @@ import {
   ModuleFilterDivider,
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from "@/components/ui/ModuleFiltersMenuButton";
-import { type ModuleColumnCustomizerLabels } from "@/components/ui/ModuleColumnCustomizer";
-import { FilterChips } from "@/components/ui/FilterChips";
+} from "@/components/app/ModuleFiltersMenuButton";
+import { type ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
+import { FilterChips } from "@/components/app/FilterChips";
 import { WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE } from "@/components/ui/formStyles";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 import { WorkTaskToolbar } from "@/components/common/work";
 
 export const MESSAGING_RECIPIENTS_SEARCH_INPUT_ID = "messaging-recipients-search";

@@ -11,7 +11,7 @@ import {
   openPaperPrintWindow,
   type PaperConfig,
   type PaperSection,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 interface UsePaperBuilderHandlersOptions {
   questions: Question[];

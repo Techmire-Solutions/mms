@@ -8,7 +8,7 @@ import {
   type Contact,
   type FieldDefinition,
 } from "@mms/shared";
-import { loadStudentsSettingsCombined } from "./studentConfigService.js";
+import { loadStudentsSettingsCombined } from "../students/use-cases/studentConfigService.js";
 import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
 import { validateOrThrow } from "../lib/zodRequest.js";
 

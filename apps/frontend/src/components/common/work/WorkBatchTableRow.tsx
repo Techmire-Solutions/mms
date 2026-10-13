@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { ModuleTableSelectionCell } from "@/components/ui/ModuleTableSelectionCell";
-import { workTableStickyCellBg } from "@/components/ui/tableWorkSticky";
+import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
+import { workTableStickyCellBg } from "@/components/app/tableWorkSticky";
 import { cn } from "@/lib/utils";
 import type { ListRowMotionFn } from "@/hooks/useListRowMotion";
 import type { WorkBatchTableColumn } from "./WorkBatchTable";

@@ -1,6 +1,6 @@
 import React from "react";
-import { Field } from "@/components/ui/FormField";
-import { FormCollectionShell, FormListFieldCard } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormField";
+import { FormCollectionShell, FormListFieldCard } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import {
   joinQuestionCompoundAnswer,

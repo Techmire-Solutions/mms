@@ -1,13 +1,13 @@
 import React from "react";
 import type { ModuleColumnRegistryEntry, Student } from "@mms/shared";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import { EnrollmentRowActions } from "@/tenant/features/enrollments/components/EnrollmentRowActions";
 import { renderEnrollmentWorkColumnValue } from "@/tenant/features/enrollments/components/enrollmentWorkColumnCell";
-import type { EnrollmentListContentProps } from "@/tenant/features/enrollments/components/enrollmentListContentShared";
+import type { EnrollmentListContentProps } from "@/tenant/features/enrollments/lib/enrollmentListContentShared";
 
 export interface EnrollmentCardProps {
   enrollment: Enrollment;

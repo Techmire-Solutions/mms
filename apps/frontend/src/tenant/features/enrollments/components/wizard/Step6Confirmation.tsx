@@ -6,7 +6,7 @@ import { type Session, type Class } from "@/lib/data/sessionsData";
 import { type CalculatedFee } from "@/lib/data/enrollmentData";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Field } from "@/components/ui/FormField";
+import { Field } from "@/components/app/FormField";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Step6ConfirmationRow,

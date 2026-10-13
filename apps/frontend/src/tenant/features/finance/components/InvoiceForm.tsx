@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ReceiptText } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import {
   invoiceTotalsFromLines,
@@ -22,7 +22,7 @@ import {
   createInitialDraft,
   nextInvoiceId,
   type InvoiceDraft,
-} from "@/tenant/features/finance/components/invoiceFormDraft";
+} from "@/tenant/features/finance/lib/invoiceFormDraft";
 import { useFinanceFeeStructures } from "@/tenant/features/finance/hooks/useFinanceFeeStructures";
 
 export interface InvoiceFormProps {

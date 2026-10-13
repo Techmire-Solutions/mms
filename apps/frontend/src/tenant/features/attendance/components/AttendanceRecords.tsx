@@ -1,14 +1,14 @@
 import React from "react";
 import { type AttendanceRecord } from "@/lib/data/attendanceData";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { AttendanceRecordRowActions } from "./AttendanceRecordRowActions";
 import { AttendanceListContent } from "./AttendanceListContent";
 import { AttendanceListFilters } from "./AttendanceListFilters";
 import { AttendanceBulkActionBar } from "./AttendanceBulkActionBar";
 import { AttendanceRecordsConfirmDialogs } from "./AttendanceRecordsConfirmDialogs";
-import { useAttendanceRecordsState } from "./useAttendanceRecordsState";
-import type { AttendanceRecordsProps } from "./attendanceRecordsTypes";
+import { useAttendanceRecordsState } from "../hooks/useAttendanceRecordsState";
+import type { AttendanceRecordsProps } from "../lib/attendanceRecordsTypes";
 
 export type { AttendanceRecordsProps };
 

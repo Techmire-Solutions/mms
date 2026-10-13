@@ -1,7 +1,7 @@
 import React from "react";
 import type { PlatformUserProfile } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { StatusBulkActionDock } from "@/components/ui/StatusBulkActionDock";
+import { StatusBulkActionDock } from "@/components/app/StatusBulkActionDock";
 
 export interface PlatformAdminBulkDockProps {
   selectedCount: number;

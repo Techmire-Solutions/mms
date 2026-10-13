@@ -5,8 +5,8 @@ import {
   type FinanceSettings,
   type SequenceNumberingConfig,
 } from "@mms/shared";
-import { SequenceNumberingCard } from "@/components/ui/sequence-numbering";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SequenceNumberingCard } from "@/components/sequence-numbering";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 
 export interface FinanceInvoiceNumberingSectionProps {
   settingsDraft: FinanceSettings;

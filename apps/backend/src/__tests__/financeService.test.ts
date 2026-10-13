@@ -30,7 +30,7 @@ vi.mock("../db/repositories/financeRepository.js", () => ({
   bulkRestorePayments: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
 }));
 
-vi.mock("../services/websocketService.js", () => ({
+vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: vi.fn(),
 }));
 

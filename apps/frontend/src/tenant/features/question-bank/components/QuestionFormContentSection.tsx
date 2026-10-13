@@ -1,8 +1,8 @@
 import { BookOpen } from "lucide-react";
 import { type QuestionType } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { FORM_SELECT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -12,7 +12,7 @@ import type {
   QuestionFormDraft,
   QuestionFormErrors,
   UpdateQuestionDraft,
-} from "./questionFormTypes";
+} from "../lib/questionFormTypes";
 
 interface QuestionFormContentSectionProps {
   questionDraft: QuestionFormDraft;

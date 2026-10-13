@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { HasanatTrashDialogs } from "./HasanatTrashDialogs";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DistributeModal } from "./DistributeModal";
 import { DistributionsListContent } from "./DistributionsListContent";
@@ -9,7 +9,7 @@ import { DistributionsListFilters } from "./DistributionsListFilters";
 import { HasanatBulkActionBar } from "./HasanatBulkActionBar";
 import { useDistributionsList } from "../hooks/useDistributionsList";
 import { useDistributionsTrashState } from "../hooks/useDistributionsTrashState";
-import type { DistributionsListProps } from "./distributionsListTypes";
+import type { DistributionsListProps } from "../lib/distributionsListTypes";
 
 export type { DistributionsListProps };
 

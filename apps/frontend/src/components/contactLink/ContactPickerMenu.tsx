@@ -4,8 +4,8 @@ import { User } from "lucide-react";
 import { type Contact, getDisplayName, getPrimaryPhone, getPrimaryAddress } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { UserAvatar } from "@/components/app/UserAvatar";
 
 export interface ContactPickerMenuProps {
   open: boolean;

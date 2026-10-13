@@ -4,7 +4,7 @@ import { type Exam, type ExamResult } from "@/lib/data/examinationData";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { useEnterMarksStudents } from "./useEnterMarksStudents";
+import { useEnterMarksStudents } from "../hooks/useEnterMarksStudents";
 import { EnterMarksTable } from "./EnterMarksTable";
 
 export interface EnterMarksProps {

@@ -1,17 +1,17 @@
-import { quickActionLabel } from "./quickActionLabels";
+import { quickActionLabel } from "../lib/quickActionLabels";
 import { useMemo, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SimpleTransactionPostingCards } from "./SimpleTransactionPostingCards";
 import { SimpleTransactionPostingTable } from "./SimpleTransactionPostingTable";
-import { ReviewList } from "@/components/ui/ReviewList";
+import { ReviewList } from "@/components/app/ReviewList";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Account } from "@/lib/data/accountingData";
-import type { QuickActionType, WizardFormState } from "./simpleTransactionWizardTypes";
+import type { QuickActionType, WizardFormState } from "../lib/simpleTransactionWizardTypes";
 import { formatDate } from "@mms/shared";
-import { parseMoneyInput } from "./simpleTransactionMoney";
+import { parseMoneyInput } from "../lib/simpleTransactionMoney";
 import {
   useWorkDirectoryViewMode,
   type WorkDirectoryViewMode,

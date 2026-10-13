@@ -27,7 +27,7 @@ vi.mock("@/tenant/features/accounting/hooks/useSeedDefaultChart", () => ({
   useSeedDefaultChart: () => ({ mutateAsync: mocks.seedMutateAsync, isPending: false }),
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({
     open,
     title,

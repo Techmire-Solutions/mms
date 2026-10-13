@@ -29,7 +29,7 @@ import {
   DATE_FORMAT_PRESET_IDS,
   DATE_PICKER_YEAR_PAST,
   DATE_PICKER_YEAR_FUTURE,
-} from "../dateFormatUtils.js";
+} from "../core/dateFormatUtils.js";
 
 describe("dateFormatUtils", () => {
   describe("normalizeDateFormat", () => {

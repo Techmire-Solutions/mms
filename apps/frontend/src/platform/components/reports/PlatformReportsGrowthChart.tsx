@@ -3,8 +3,8 @@ import { PlatformCountTooltip } from "@/platform/components/reports/platformChar
 import React, { useId, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import type { PlatformWorkspaceRow } from "@mms/shared";
 
 type Timeframe = "all" | "1y" | "90d" | "30d";

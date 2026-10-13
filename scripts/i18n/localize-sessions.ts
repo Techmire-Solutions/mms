@@ -554,8 +554,17 @@ function updateTranslationsFile(filePath: string, newDict: Record<string, string
   fs.writeFileSync(filePath, content, "utf-8");
 }
 
-updateTranslationsFile(path.join(sharedSrc, "appTranslationsAr.ts"), AR_SESSIONS_TRANSLATIONS);
-updateTranslationsFile(path.join(sharedSrc, "appTranslationsUr.ts"), UR_SESSIONS_TRANSLATIONS);
-updateTranslationsFile(path.join(sharedSrc, "appTranslationsFa.ts"), FA_SESSIONS_TRANSLATIONS);
+updateTranslationsFile(
+  path.join(sharedSrc, "i18n", "appTranslationsAr.ts"),
+  AR_SESSIONS_TRANSLATIONS,
+);
+updateTranslationsFile(
+  path.join(sharedSrc, "i18n", "appTranslationsUr.ts"),
+  UR_SESSIONS_TRANSLATIONS,
+);
+updateTranslationsFile(
+  path.join(sharedSrc, "i18n", "appTranslationsFa.ts"),
+  FA_SESSIONS_TRANSLATIONS,
+);
 
 console.log("Successfully updated session translations for AR, UR, and FA!");

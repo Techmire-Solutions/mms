@@ -5,11 +5,11 @@ import {
   type QuestionSourceBook,
   type QuestionSourceFieldId,
 } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionSourcesTab } from "@/tenant/features/question-bank/components/QuestionSourcesTab";
 
-import type { QuestionFormDraft, UpdateQuestionDraft } from "./questionFormTypes";
+import type { QuestionFormDraft, UpdateQuestionDraft } from "../lib/questionFormTypes";
 
 interface QuestionFormSourcesSectionProps {
   questionDraft: QuestionFormDraft;

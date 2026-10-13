@@ -1,15 +1,15 @@
 import React, { useMemo } from "react";
 import type { Student } from "@mms/shared";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
-import { getEnrollmentVisibleWorkColumns } from "@/tenant/features/enrollments/components/enrollmentListVisibleColumns";
+import { getEnrollmentVisibleWorkColumns } from "@/tenant/features/enrollments/lib/enrollmentListVisibleColumns";
 import {
   findEnrollmentStudent,
   getEnrollmentStudentDisplayName,
   type EnrollmentListContentProps,
-} from "@/tenant/features/enrollments/components/enrollmentListContentShared";
+} from "@/tenant/features/enrollments/lib/enrollmentListContentShared";
 import {
   EnrollmentCard,
   type EnrollmentCardProps,

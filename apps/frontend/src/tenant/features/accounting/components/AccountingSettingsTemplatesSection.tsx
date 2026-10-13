@@ -7,14 +7,14 @@ import {
   type JournalTemplate,
 } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormCollectionShell } from "@/components/ui/FormCollectionShell";
-import { FormListFieldCard } from "@/components/ui/FormListFieldCard";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormCollectionShell } from "@/components/app/FormCollectionShell";
+import { FormListFieldCard } from "@/components/app/FormListFieldCard";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import { SectionCard } from "@/components/app/SectionCard";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 

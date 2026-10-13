@@ -1,14 +1,14 @@
 import { INVOICE_TEMPLATE_OBJECT_KEY, type TemplateFieldDefinition } from "@mms/shared";
-import { createDocumentTemplateStore } from "./documentTemplatePersistence.js";
-import { getDefaultTemplate } from "./invoiceTemplateDefaults.js";
+import { createDocumentTemplateStore } from "./documentTemplatePersistence";
+import { getDefaultTemplate } from "./invoiceTemplateDefaults";
 import type {
   BrandingInfo,
   InvoiceTemplate,
   IndexedFieldLookups,
   InvoiceTemplateFieldKey,
   InvoiceReceiptPayload,
-} from "./invoiceTemplateTypes.js";
-import { indexLookups, resolveField } from "./invoiceTemplateResolver.js";
+} from "./invoiceTemplateTypes";
+import { indexLookups, resolveField } from "./invoiceTemplateResolver";
 
 export type { IndexedFieldLookups, InvoiceTemplateFieldKey };
 export { indexLookups, resolveField };

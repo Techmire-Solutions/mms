@@ -55,7 +55,7 @@ Form list cards use default primary stripe/icon — ban per-collection `accentCl
 
 ## Form contract and draft lifecycle
 
-Use `FormModalProps` in `apps/frontend/src/components/ui/FormModal.tsx`: `open`, `onSave`, `saving`, `saveDisabled`, and `error`. There are no `isOpen`, `isSubmitting`, or `onSubmit` props. `examples/TemplateFormModal.tsx` points at the shared shell instead of inventing a domain DTO.
+Use `FormModalProps` in `apps/frontend/src/components/app/FormModal.tsx`: `open`, `onSave`, `saving`, `saveDisabled`, and `error`. There are no `isOpen`, `isSubmitting`, or `onSubmit` props. `examples/TemplateFormModal.tsx` points at the shared shell instead of inventing a domain DTO.
 
 Advisory implementation checklist:
 1. Import the actual shared write schema; validate before mutation and map errors with existing helpers. Do not cast a partial draft into a write DTO or swallow rejection.

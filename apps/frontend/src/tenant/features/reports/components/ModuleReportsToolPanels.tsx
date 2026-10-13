@@ -4,7 +4,7 @@ import CustomReportBuilder from "@/tenant/features/reports/components/CustomRepo
 import ComparisonMode from "@/tenant/features/reports/components/ComparisonMode";
 import DynamicChartVisualizer from "@/tenant/features/reports/components/DynamicChartVisualizer";
 import DynamicCardBuilder from "@/tenant/features/reports/components/DynamicCardBuilder";
-import SavedReports from "@/components/ui/reports/SavedReports";
+import SavedReports from "@/components/reports/SavedReports";
 import ContactsSavedReports from "@/tenant/features/reports/components/ContactsSavedReports";
 import { getObject, saveObject } from "@/lib/db";
 import { type VisualizerConfig } from "@/lib/reports/reportMetadata";

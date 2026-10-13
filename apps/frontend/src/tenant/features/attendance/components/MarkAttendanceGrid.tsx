@@ -7,7 +7,7 @@ import {
 } from "@/hooks/useWorkDirectoryViewMode";
 import type { ModuleFieldDef } from "@mms/shared";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
-import type { AttendanceRow } from "./markAttendanceTypes";
+import type { AttendanceRow } from "../lib/markAttendanceTypes";
 import { MarkAttendanceCardsView } from "./MarkAttendanceCardsView";
 import { MarkAttendanceTableView } from "./MarkAttendanceTableView";
 

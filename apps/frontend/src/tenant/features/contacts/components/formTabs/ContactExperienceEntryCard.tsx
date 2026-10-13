@@ -6,9 +6,9 @@ import {
   Field,
   FormCardTypeSelect,
   TYPE_SELECT_WIDTH,
-} from "@/components/ui/FormPrimitives";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
-import { FormListFieldCard } from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { FormListFieldCard } from "@/components/app/FormPrimitives";
 import type { ContactSubListTabBaseProps } from "./types";
 import { ContactExperienceDatesSection } from "./ContactExperienceDatesSection";
 import { cn } from "@/lib/utils";

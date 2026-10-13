@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateQrMatrix, generateQrSvgUri } from "./qrCodeGenerator.js";
+import { generateQrMatrix, generateQrSvgUri } from "./qrCodeGenerator";
 
 describe("qrCodeGenerator", () => {
   describe("generateQrMatrix", () => {

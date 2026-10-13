@@ -35,10 +35,10 @@ Use for ledger posting, fee billing and collections, payroll journals, chart of 
 
 ## MMS implementation map
 
-- Shared validation and posting helpers: `packages/shared/src/accountingLedgerInvariants.ts`, `packages/shared/src/accountingLedgerPosting.ts`, `packages/shared/src/accountingModuleManifest.ts`, `packages/shared/src/accountingLedgerOps.ts`.
+- Shared validation and posting helpers: `packages/shared/src/finance/accountingLedgerInvariants.ts`, `packages/shared/src/finance/accountingLedgerPosting.ts`, `packages/shared/src/finance/accountingModuleManifest.ts`, `packages/shared/src/finance/accountingLedgerOps.ts`.
 - Posting orchestration: `apps/backend/src/accounting/use-cases/`, `apps/backend/src/accounting/ledgerPosting/ledgerPostingService.ts`, `apps/backend/src/finance/use-cases/`.
 - Persistence: `apps/backend/src/db/repositories/accountingEntriesPersist.ts`, `apps/backend/src/db/repositories/accountingEntryLocks.ts`, `apps/backend/src/db/repositories/accountingLedgerOpsRepository.ts`.
-- Close/report: `apps/backend/src/accounting/use-cases/accountingPeriodClose.ts`, `apps/backend/src/db/repositories/accountingRepositoryReport.ts`, `packages/shared/src/accountingReportAggregates.ts`.
+- Close/report: `apps/backend/src/accounting/use-cases/accountingPeriodClose.ts`, `apps/backend/src/db/repositories/accountingRepositoryReport.ts`, `packages/shared/src/finance/accountingReportAggregates.ts`.
 - UI: `apps/frontend/src/tenant/features/accounting/`; cross-module reads through `apps/frontend/src/tenant/hooks/collections/accounting.ts` and `apps/frontend/src/tenant/hooks/collections/finance.ts`.
 
 The existing journal DTO uses two-decimal **numbers**, `moneyToCents` returns a JavaScript number, and database amounts use numeric columns. This is a compatibility boundary, not proof of arbitrary precision or multicurrency support. Follow the exact-money migration guidance in the ledger reference; do not copy a floating-point summation or invent a parallel money validator.

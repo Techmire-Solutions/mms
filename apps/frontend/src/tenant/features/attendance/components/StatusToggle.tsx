@@ -4,7 +4,7 @@ import type { AttendanceStatus } from "@/lib/data/attendanceData";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AppTranslationKey } from "@mms/shared";
-import { attendanceStatusLabel } from "@/lib/attendanceStatusUi";
+import { attendanceStatusLabel } from "@/lib/ui/attendanceStatusUi";
 
 export interface StatusToggleProps {
   value: string;

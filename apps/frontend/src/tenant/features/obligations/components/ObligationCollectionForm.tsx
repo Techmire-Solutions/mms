@@ -9,7 +9,7 @@ import {
   type Mujtahid,
 } from "@/lib/data/obligationsData";
 import { todayISO, type AppTranslationKey } from "@mms/shared";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { calculateKeyedUnitsCompleteness } from "@/lib/formCompleteness";
@@ -18,13 +18,13 @@ import {
   type ObligationCollectionFormState,
 } from "@/tenant/features/obligations/components/ObligationCollectionFormFields";
 import { WakalaQuickCreateModals } from "@/tenant/features/obligations/components/wakala/WakalaQuickCreateModals";
-import { useObligationCollectionCatalogQuickCreate } from "@/tenant/features/obligations/components/useObligationCollectionCatalogQuickCreate";
+import { useObligationCollectionCatalogQuickCreate } from "@/tenant/features/obligations/hooks/useObligationCollectionCatalogQuickCreate";
 import {
   eligibleRepsForType,
   resolveMujtahidForRep,
   toObligationCollectionPayload,
   validateObligationCollectionForm,
-} from "@/tenant/features/obligations/components/obligationCollectionFormHelpers";
+} from "@/tenant/features/obligations/lib/obligationCollectionFormHelpers";
 import { useObligationsSettings } from "@/tenant/features/obligations/hooks/useObligationsSettings";
 
 const EMPTY: ObligationCollectionFormState = {

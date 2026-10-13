@@ -7,11 +7,11 @@ paths:
   - "apps/frontend/src/platform/components/reports/**"
   - "apps/frontend/src/tenant/features/dashboard*/**"
   - "apps/frontend/src/platform/**/*Report*"
-  - "apps/frontend/src/components/ui/ExportToolbar.tsx"
-  - "apps/frontend/src/components/ui/ExportToolbarCompact.tsx"
-  - "apps/frontend/src/components/ui/exportToolbarUtils.ts"
-  - "apps/frontend/src/components/ui/SafeResponsiveContainer.tsx"
-  - "packages/shared/src/*Report*.ts"
+  - "apps/frontend/src/components/app/ExportToolbar.tsx"
+  - "apps/frontend/src/components/app/ExportToolbarCompact.tsx"
+  - "apps/frontend/src/components/app/exportToolbarUtils.ts"
+  - "apps/frontend/src/components/app/SafeResponsiveContainer.tsx"
+  - "packages/shared/src/**/*Report*.ts"
 ---
 
 # MMS Reports & Analytics

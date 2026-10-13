@@ -15,14 +15,14 @@ import {
   IMAGE_UPLOAD_MAX_INPUT_BYTES,
 } from "@mms/shared";
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
-import { genderAvatarGradient } from "@/lib/semanticTone";
+import { genderAvatarGradient } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
 const AvatarCropper = React.lazy(() =>
-  import("@/components/ui/AvatarCropper").then((m) => ({ default: m.AvatarCropper })),
+  import("@/components/app/AvatarCropper").then((m) => ({ default: m.AvatarCropper })),
 );
 
 export interface ContactBasicAvatarSectionProps {

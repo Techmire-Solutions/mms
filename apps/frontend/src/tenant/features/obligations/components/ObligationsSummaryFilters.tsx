@@ -1,11 +1,11 @@
 import { Filter, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface ObligationsSummaryFiltersProps {

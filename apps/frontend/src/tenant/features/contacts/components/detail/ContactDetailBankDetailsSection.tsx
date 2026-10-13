@@ -2,10 +2,10 @@ import React from "react";
 import { Landmark, CreditCard } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import { CopyButton } from "@/components/ui/CopyButton";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { CopyButton } from "@/components/app/CopyButton";
+import { EmptyState } from "@/components/app/EmptyState";
 
 export interface ContactDetailBankDetailsSectionProps {
   contact: Contact;

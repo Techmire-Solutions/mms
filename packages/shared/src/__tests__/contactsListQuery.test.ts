@@ -5,8 +5,8 @@ import {
   contactsListQuerySchema,
   filterContactsForQuery,
   isContactsQuickFilter,
-} from "../contactsListQuery.js";
-import type { Contact } from "../contactTypes.js";
+} from "../contacts/contactsListQuery.js";
+import type { Contact } from "../contacts/contactTypes.js";
 
 function contact(partial: Partial<Contact> & Pick<Contact, "id" | "name">): Contact {
   return {

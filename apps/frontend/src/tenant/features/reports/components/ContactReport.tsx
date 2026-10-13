@@ -2,16 +2,16 @@ import React, { lazy, Suspense } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useContactsReportAnalytics } from "@/tenant/hooks/collections/contacts";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ReportChartCard } from "@/components/ui/reports/ReportChartCard";
-import { ReportDataGridContainer } from "@/components/ui/reports/ReportDataGridContainer";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import type { ExportColumn } from "@/components/ui/ExportToolbar";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
 
 const ContactReportCharts = lazy(() =>
-  import("@/components/ui/reports/ContactReportCharts").then((mod) => ({
+  import("@/components/reports/ContactReportCharts").then((mod) => ({
     default: mod.ContactReportCharts,
   })),
 );

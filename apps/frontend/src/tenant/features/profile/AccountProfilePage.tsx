@@ -1,14 +1,14 @@
 import React, { Suspense, type JSX } from "react";
 import { User } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AccountProfileHeaderCard } from "@/tenant/features/profile/AccountProfileHeaderCard";
-import { AccountProfileSettingsTabs } from "@/tenant/features/profile/AccountProfileSettingsTabs";
+import { AccountProfileHeaderCard } from "@/tenant/features/profile/components/AccountProfileHeaderCard";
+import { AccountProfileSettingsTabs } from "@/tenant/features/profile/components/AccountProfileSettingsTabs";
 import { useAccountProfilePageController } from "@/tenant/features/profile/hooks/useAccountProfilePageController";
 
 const AvatarCropper = React.lazy(() =>
-  import("@/components/ui/AvatarCropper").then((m) => ({ default: m.AvatarCropper })),
+  import("@/components/app/AvatarCropper").then((m) => ({ default: m.AvatarCropper })),
 );
 
 export default function AccountProfile(): JSX.Element {

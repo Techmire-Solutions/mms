@@ -7,7 +7,7 @@ import { PlatformSidebarProvider, usePlatformSidebar } from "@/platform/lib/Plat
 import { PlatformBreadcrumbProvider } from "@/platform/lib/PlatformBreadcrumbContext";
 import { PlatformInspectorProvider } from "@/platform/lib/PlatformInspectorContext";
 import { useGlobalShortcut } from "@/hooks/useGlobalShortcut";
-import { AppFooter } from "@/components/ui/AppFooter";
+import { AppFooter } from "@/components/app/AppFooter";
 import { PlatformPageShellHeader } from "@/platform/components/PlatformPageShellHeader";
 import { PlatformSidebar, PlatformMobileSidebar } from "@/platform/components/PlatformSidebar";
 import { PlatformCommandPalette } from "@/platform/components/PlatformCommandPalette";

@@ -7,7 +7,7 @@ import {
   MODULE_COLUMN_WIDTH_MAX,
   MODULE_COLUMN_WIDTH_MIN,
   type ModuleColumnRegistryEntry,
-} from "../moduleColumnPreferences.js";
+} from "../settings/moduleColumnPreferences.js";
 
 describe("module column widths", () => {
   it("clamps widths into the supported range", () => {

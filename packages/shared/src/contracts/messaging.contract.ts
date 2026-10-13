@@ -1,6 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema } from "../apiSchemas.js";
+import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { contactListPageResponseSchema } from "./contacts.contract.js";
 import {
   messageRecordSchema,
@@ -8,8 +8,8 @@ import {
   messagingRecipientsQuerySchema,
   messagingMetricsSchema,
 } from "../schemas/messaging.dto.js";
-import { messageTemplateSchema } from "../messagingTemplateSchemas.js";
-import { messagingResolveResponseSchema } from "../messagingModuleManifest.js";
+import { messageTemplateSchema } from "../messaging/messagingTemplateSchemas.js";
+import { messagingResolveResponseSchema } from "../messaging/messagingModuleManifest.js";
 
 const c = initContract();
 const ok = z.unknown();

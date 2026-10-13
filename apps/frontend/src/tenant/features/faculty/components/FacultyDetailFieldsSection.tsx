@@ -3,17 +3,17 @@ import { Award, School } from "lucide-react";
 import type { Faculty, FacultySettings } from "@mms/shared";
 import { resolveRoleDisplayName } from "@mms/shared";
 import { Badge } from "@/components/ui/badge";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveRegistryLabel } from "@/lib/contacts/contactI18n";
 import { facultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
 import { FacultyDetailAttributeRow } from "@/tenant/features/faculty/components/FacultyDetailAttributeRow";
-import type { FacultyDetailFieldRow } from "@/tenant/features/faculty/components/facultyDetailFields";
-import { resolveFacultyFieldDisplayText } from "@/tenant/features/faculty/components/facultyFieldDisplay";
+import type { FacultyDetailFieldRow } from "@/tenant/features/faculty/lib/facultyDetailFields";
+import { resolveFacultyFieldDisplayText } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 import {
   resolveFacultyTabLabel,
   SYSTEM_FIELD_ICONS,
-} from "@/tenant/features/faculty/components/facultyDetailShared";
+} from "@/tenant/features/faculty/lib/facultyDetailShared";
 import { buildFacultyContactRows } from "@/tenant/features/faculty/components/facultyDetailContactRows";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 

@@ -6,7 +6,7 @@ import {
   getChartPaletteColors,
   isColorblindSafeChartPalette,
   listChartPalettesByCategory,
-} from "../chartPalettes.js";
+} from "../branding/chartPalettes.js";
 
 describe("chartPalettes", () => {
   it("contains expected default chart palette ID", () => {

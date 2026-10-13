@@ -2,7 +2,7 @@ import React from "react";
 import type { Account, FiscalYear } from "@mms/shared";
 import { Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import {
   Field,
@@ -10,13 +10,13 @@ import {
   FormCollectionShell,
   FormListFieldCard,
   FormSelectWithQuickCreate,
-} from "@/components/ui/FormPrimitives";
-import { SectionCard } from "@/components/ui/SectionCard";
+} from "@/components/app/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import type { MoneySeparator } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { useAccountingOpeningBalancesState } from "@/tenant/features/accounting/hooks/useAccountingOpeningBalancesState";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
-import { useAccountQuickCreate } from "./useAccountQuickCreate";
+import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
 
 interface AccountingSettingsOpeningSectionProps {
   accounts: Account[];

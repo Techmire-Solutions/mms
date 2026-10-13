@@ -3,14 +3,14 @@ import { type Enrollment } from "@/lib/data/enrollmentData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
-import type { ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { EnrollmentsListContent } from "@/tenant/features/enrollments/components/EnrollmentsListContent";
 import { EnrollmentsListFilters } from "@/tenant/features/enrollments/components/EnrollmentsListFilters";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 const MessageComposer = React.lazy(
   () => import("@/tenant/components/messaging/TenantMessageComposer"),

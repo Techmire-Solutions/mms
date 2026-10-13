@@ -12,23 +12,23 @@ import { facultyResolveQueryOptions } from "@/tenant/hooks/collections/faculty";
 import {
   VOUCHER_KIND_TITLE_KEY,
   voucherPreparerName,
-} from "@/tenant/features/accounting/components/paymentVoucherKind";
+} from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import {
   buildPaymentVoucherModel,
   type SalaryVoucherRef,
-} from "@/tenant/features/accounting/components/paymentVoucherModel";
-import type { PaymentVoucherPrintInput } from "@/tenant/features/accounting/components/paymentVoucherHtml";
+} from "@/tenant/features/accounting/lib/paymentVoucherModel";
+import type { PaymentVoucherPrintInput } from "@/tenant/features/accounting/lib/paymentVoucherHtml";
 import {
   loadVoucherTemplate,
   voucherContactLine,
   voucherTableLines,
   type VoucherPrintPayload,
-} from "@/tenant/features/accounting/components/voucherTemplateModel";
+} from "@/tenant/features/accounting/lib/voucherTemplateModel";
 import {
   buildVoucherTemplate,
   voucherLayoutCopy,
-} from "@/tenant/features/accounting/components/voucherTemplateLayout";
-import { buildVoucherTemplateHtml } from "@/tenant/features/accounting/components/voucherTemplateHtml";
+} from "@/tenant/features/accounting/lib/voucherTemplateLayout";
+import { buildVoucherTemplateHtml } from "@/tenant/features/accounting/lib/voucherTemplateHtml";
 
 type Payee = PaymentVoucherPrintInput["payee"];
 

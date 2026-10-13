@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { phoneNumberSchema, emailAddressSchema } from "../contactNestedSchemas.js";
+import { phoneNumberSchema, emailAddressSchema } from "../contacts/contactNestedSchemas.js";
 import { deepSanitizeStrings } from "./sanitize.js";
 
 const changePasswordBodyBaseSchema = z

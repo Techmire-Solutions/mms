@@ -1,9 +1,9 @@
 import React from "react";
 import { Building2, Pencil, Trash2 } from "lucide-react";
 import type { FacultyDepartmentEntity } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import {
   DataTable,
   DataTableRowActions,

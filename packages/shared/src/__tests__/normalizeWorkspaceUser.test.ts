@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeWorkspaceUser } from "../userTypes.js";
+import { normalizeWorkspaceUser } from "../auth/userTypes.js";
 
 describe("normalizeWorkspaceUser", () => {
   it("falls back to loginEmail when email is empty", () => {

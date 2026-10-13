@@ -1,26 +1,26 @@
 import React, { lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { useAcademicReportController } from "../controllers/useAcademicReportController";
+import { ErrorState } from "@/components/app/ErrorState";
+import { useAcademicReportController } from "../hooks/useAcademicReportController";
 
 const AcademicReportCharts = lazy(() =>
-  import("@/components/ui/reports/AcademicReportCharts").then((mod) => ({
+  import("@/components/reports/AcademicReportCharts").then((mod) => ({
     default: mod.AcademicReportCharts,
   })),
 );
-import { AcademicReportClassRankings } from "@/components/ui/reports/AcademicReportClassRankings";
-import { ReportFilterBanner } from "@/components/ui/reports/ReportFilterBanner";
-import { AcademicReportResultsTable } from "@/components/ui/reports/AcademicReportResultsBody";
+import { AcademicReportClassRankings } from "@/components/reports/AcademicReportClassRankings";
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
+import { AcademicReportResultsTable } from "@/components/reports/AcademicReportResultsBody";
 import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
 
-import type { AcademicReportProps } from "@/components/ui/reports/academicReportTypes";
+import type { AcademicReportProps } from "@/components/reports/academicReportTypes";
 
 export type {
   AcademicReportFilters,
   AcademicReportProps,
   AcademicResultItem,
   ClassRankingItem,
-} from "@/components/ui/reports/academicReportTypes";
+} from "@/components/reports/academicReportTypes";
 
 /**
  * Renders the academic/exam reports including summary charts, class rankings cards, and a filterable exam-results table.

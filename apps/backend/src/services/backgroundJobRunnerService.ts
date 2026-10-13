@@ -17,11 +17,11 @@ import type {
   StudentExportColumn,
   FacultyExportColumn,
 } from "@mms/shared";
-import type { ContactsExportQueryInput } from "./contactsExportService.js";
+import type { ContactsExportQueryInput } from "../contacts/use-cases/contactExportUseCases.js";
 import {
   buildContactsCsvExport,
   generateContactsCsvStreamChunks,
-} from "./contactsExportService.js";
+} from "../contacts/use-cases/contactExportUseCases.js";
 import { buildContactsVcfExport } from "./contactsVcfExportService.js";
 import type { StudentsExportQueryInput } from "./studentsExportService.js";
 import {
@@ -50,7 +50,7 @@ import {
   generateMessagingCsvStreamChunks,
 } from "./messagingExportService.js";
 import { saveExportArtifact, saveStreamedExportArtifact } from "./exportArtifactService.js";
-import { runContactsDuplicateScan } from "./contactDuplicateScanService.js";
+import { runContactsDuplicateScan } from "../contacts/use-cases/contactDuplicateScanUseCases.js";
 import {
   buildContactsImportJobLabel,
   runContactsImportJob,

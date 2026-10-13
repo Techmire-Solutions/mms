@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformAdminsDialogs } from "./PlatformAdminsDialogs";
 import type { PlatformUserProfile } from "@mms/shared";
 
-vi.mock("@/components/ui/Drawer", () => ({
+vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({
     open,
     title,
@@ -22,7 +22,7 @@ vi.mock("@/components/ui/Drawer", () => ({
     ) : null,
 }));
 
-vi.mock("@/components/ui/EntityDescriptorSections", () => ({
+vi.mock("@/components/app/EntityDescriptorSections", () => ({
   EntityDescriptorSections: () => <span>descriptor-body</span>,
 }));
 

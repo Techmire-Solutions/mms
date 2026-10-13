@@ -40,7 +40,7 @@ export function loadBranding(): BrandingSettings {
 export { FieldHint } from "@/components/branding/BrandingFieldHint";
 export { ImageUploadField } from "@/components/branding/BrandingImageUploadField";
 export { SocialLinksEditor } from "@/components/branding/BrandingSocialLinksEditor";
-export { SettingsStatusBadges } from "@/components/ui/SettingsShell";
+export { SettingsStatusBadges } from "@/components/app/SettingsShell";
 
 export function defaultFooterForMadrasa(madrasaName: string, language = "en"): string {
   return formatBrandingFooterDefault(madrasaName, language);

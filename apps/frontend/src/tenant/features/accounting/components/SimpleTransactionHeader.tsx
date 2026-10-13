@@ -1,11 +1,11 @@
-import { quickActionLabel } from "./quickActionLabels";
+import { quickActionLabel } from "../lib/quickActionLabels";
 import { createElement } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   getTransactionGroupColorClasses,
   type QuickActionType,
-} from "./simpleTransactionWizardTypes";
+} from "../lib/simpleTransactionWizardTypes";
 
 interface SimpleTransactionHeaderProps {
   type: QuickActionType;

@@ -13,7 +13,7 @@ import {
 } from "../../services/workspaceService.js";
 import { verifyPlatformUserPassword } from "../../services/platform/platformUserService.js";
 import { insertPlatformActivityLog } from "../../platform/use-cases/platformUseCases.js";
-import { blockTenant, unblockTenant } from "../../services/session.service.js";
+import { blockTenant, unblockTenant } from "../../services/authSessionService.js";
 
 export async function handleListWorkspaces({
   query,

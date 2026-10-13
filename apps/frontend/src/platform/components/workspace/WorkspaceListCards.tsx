@@ -5,15 +5,15 @@ import { formatDate, type PlatformWorkspaceRow as PlatformWorkspaceRowData } fro
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCardMetadata } from "@/components/ui/EntityCardMetadata";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
 import { WorkspaceIdentityCell } from "@/platform/components/workspace/WorkspaceIdentityCell";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
 import { WorkspaceRowActions } from "@/platform/components/workspace/WorkspaceRowActions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 export type WorkspaceListCardsProps = Omit<
   WorkspaceTableViewProps,

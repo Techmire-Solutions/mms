@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { StatsSkeleton } from "@/components/ui/LoadingState";
+import { StatsSkeleton } from "@/components/app/LoadingState";
 
 const PlatformReports = lazy(() =>
   import("@/platform/components/PlatformReports").then((m) => ({ default: m.PlatformReports })),

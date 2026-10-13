@@ -1,7 +1,7 @@
 import type React from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { EmptyState } from "@/components/app/EmptyState";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";

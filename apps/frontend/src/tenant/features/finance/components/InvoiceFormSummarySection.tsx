@@ -1,5 +1,5 @@
 import React from "react";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface InvoiceFormSummarySectionProps {

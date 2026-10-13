@@ -1,8 +1,8 @@
 import React from "react";
 import { BookOpen } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { type Exam } from "@/lib/data/examinationData";
-import { useExaminationForm } from "./useExaminationForm";
+import { useExaminationForm } from "../hooks/useExaminationForm";
 import { ExaminationFormFields } from "./ExaminationFormFields";
 
 export interface ExamFormProps {

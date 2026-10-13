@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { accountRecordSchema } from "../accountingModuleManifest.js";
+import { accountRecordSchema } from "../finance/accountingModuleManifest.js";
 
 describe("accountRecordSchema", () => {
   const validAccount = {

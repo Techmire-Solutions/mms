@@ -4,7 +4,7 @@ import {
   genericSavedReportCreateSchema,
   genericSavedReportListQuerySchema,
   genericSavedReportIdParamsSchema,
-} from "../savedReportsSchemas.js";
+} from "../reports/savedReportsSchemas.js";
 
 const c = initContract();
 

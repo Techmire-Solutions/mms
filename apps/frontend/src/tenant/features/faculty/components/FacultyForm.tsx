@@ -1,15 +1,15 @@
 import React from "react";
 import { School } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { FormModal } from "@/components/app/FormModal";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import type { FacultyMember } from "@mms/shared";
 import { FacultyFormTabContent } from "@/tenant/features/faculty/components/FacultyFormTabContent";
-import { useFacultyFormController } from "@/tenant/features/faculty/components/useFacultyFormController";
+import { useFacultyFormController } from "@/tenant/features/faculty/hooks/useFacultyFormController";
 import { FacultyFormFooter } from "@/tenant/features/faculty/components/FacultyFormFooter";
 import {
   useFacultyFormTabs,
   type FacultyFormTabKey,
-} from "@/tenant/features/faculty/components/facultyFormTabs";
+} from "@/tenant/features/faculty/lib/facultyFormTabs";
 
 export type { FacultyFormTabKey };
 

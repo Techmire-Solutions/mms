@@ -20,10 +20,10 @@ import {
 import { type ObligationCollection } from "@/lib/data/obligationsData";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getPrintBrandingTokens } from "@/lib/printBrandingTokens";
-import { interpolateTemplateTokens } from "@/components/ui/template-editor/templateEditorUtils";
-import { TemplateElementContent } from "@/components/ui/template-editor/templateElementContent";
-import { resolveElementGeometry } from "@/components/ui/template-editor/templateDataResolution";
+import { getPrintBrandingTokens } from "@/lib/ui/printBrandingTokens";
+import { interpolateTemplateTokens } from "@/components/template-editor/templateEditorUtils";
+import { TemplateElementContent } from "@/components/template-editor/templateElementContent";
+import { resolveElementGeometry } from "@/components/template-editor/templateDataResolution";
 
 export interface InvoicePrintPreviewProps {
   template: InvoiceTemplate;

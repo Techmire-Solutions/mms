@@ -2,14 +2,14 @@ import React from "react";
 import type { Faculty } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FacultyListContent } from "@/tenant/features/faculty/components/FacultyListContent";
-import type { FacultyListProps } from "@/tenant/features/faculty/components/facultyListTypes";
-import { resolveFacultyDisplayName } from "@/tenant/features/faculty/components/facultyFieldDisplay";
-import { useFacultyListState } from "@/tenant/features/faculty/components/useFacultyListState";
+import type { FacultyListProps } from "@/tenant/features/faculty/lib/facultyListTypes";
+import { resolveFacultyDisplayName } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
+import { useFacultyListState } from "@/tenant/features/faculty/hooks/useFacultyListState";
 
 export type {
   FacultyListProps,
   FacultySortField,
-} from "@/tenant/features/faculty/components/facultyListTypes";
+} from "@/tenant/features/faculty/lib/facultyListTypes";
 
 /** Work directory content (table/cards + empty state) — confirms/drawer live at page level. */
 export function FacultyList(props: FacultyListProps): React.JSX.Element {

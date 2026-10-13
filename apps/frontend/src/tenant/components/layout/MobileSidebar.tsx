@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LOGO_IMAGE } from "@/lib/semanticTone";
+import { LOGO_IMAGE } from "@/lib/ui/semanticTone";
 import { ROUTES } from "@/lib/config/routes";
 import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
 import { MobileSidebarNavItems } from "@/tenant/components/layout/MobileSidebarNavItems";

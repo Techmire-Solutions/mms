@@ -1,9 +1,9 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { ExaminationsListCards } from "@/tenant/features/examinations/components/ExaminationsListCards";
 import { ExaminationsListDesktopTable } from "@/tenant/features/examinations/components/ExaminationsListDesktopTable";
-import type { ExaminationsListContentProps } from "@/tenant/features/examinations/components/examinationsListContentShared";
+import type { ExaminationsListContentProps } from "@/tenant/features/examinations/lib/examinationsListContentShared";
 import { BookOpen } from "lucide-react";
 
 export function ExaminationsListContent(props: ExaminationsListContentProps): React.JSX.Element {

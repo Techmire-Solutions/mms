@@ -1,0 +1,42 @@
+import type { ModuleColumnRegistryEntry, SystemUser, UsersListPageResult } from "@mms/shared";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
+
+export interface UsersListProps {
+  users: SystemUser[];
+  workPageData?: UsersListPageResult;
+  listPage: number;
+  onPageChange: (page: number) => void;
+  search: string;
+  roleFilter: string;
+  statusFilter: string;
+  selectedIds: string[];
+  onSelectedIdsChange: (ids: string[]) => void;
+  onSearchChange: (value: string) => void;
+  onRoleFilterChange: (value: string) => void;
+  onStatusFilterChange: (value: string) => void;
+  onView: (user: SystemUser) => void;
+  onEdit: (user: SystemUser) => void;
+  onDelete: (id: string) => void;
+  onRestore: (id: string) => void;
+  onBulkDelete: (ids: string[]) => void;
+  onBulkRestore: (ids: string[]) => void;
+  onResetPassword: (user: SystemUser) => void;
+  onAddUser: () => void;
+  onInviteUser?: () => void;
+  onMessage?: (channel: "sms" | "whatsapp" | "email", users: SystemUser[]) => void;
+  canWrite?: boolean;
+  canDelete?: boolean;
+  showDeleted?: boolean;
+  onToggleDeleted?: (next: boolean) => void;
+  isLoading?: boolean;
+  isError?: boolean;
+  isFetching?: boolean;
+  onRetry?: () => void;
+  getColumnWidth?: (key: string) => number | undefined;
+  onColumnResize?: (key: string, width: number) => void;
+  isColumnVisible?: (key: string) => boolean;
+  columnRegistry?: ModuleColumnRegistryEntry[];
+  updateUserColumnLayout?: (columnRegistry: ModuleColumnRegistryEntry[]) => void;
+  onResetLayout?: () => void;
+  customizerLabels?: ModuleColumnCustomizerLabels;
+}

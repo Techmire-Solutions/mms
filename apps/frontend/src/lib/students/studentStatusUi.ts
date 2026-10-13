@@ -1,6 +1,6 @@
 import { resolveStudentStatuses } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import { createModuleStatusUi } from "@/lib/moduleStatusUi";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { createModuleStatusUi } from "@/lib/ui/moduleStatusUi";
 
 /** Badge / chip tone classes for a student status (tenant-added statuses fall back to muted). */
 function studentStatusTone(status: string): string {

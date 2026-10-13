@@ -1,12 +1,12 @@
 import React, { Suspense, lazy, useState } from "react";
 import { GraduationCap } from "lucide-react";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
-import { ResponsiveAccordionTabs } from "@/components/ui/ResponsiveAccordionTabs";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { StudentsCommandMetrics } from "@/tenant/features/students/components/StudentsCommandMetrics";
 import { StudentsPageHeaderActions } from "@/tenant/features/students/components/StudentsPageHeaderActions";
 import { StudentsPageOverlays } from "@/tenant/features/students/components/StudentsPageOverlays";
 import { AnimatePresence } from "framer-motion";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { StudentsWorkTier } from "@/tenant/features/students/components/StudentsWorkTier";
 import { useTranslation } from "@/hooks/useTranslation";

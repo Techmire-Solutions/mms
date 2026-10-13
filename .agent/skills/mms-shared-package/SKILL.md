@@ -22,8 +22,9 @@ metadata:
 | Concern | Path |
 |---------|------|
 | API DTOs | `packages/shared/src/schemas/api.dto.ts` (`softDeleteBodySchema`, `bulkIdsBodySchema`) |
-| Soft-delete helpers | `packages/shared/src/softDelete.ts` |
-| Manifests | `packages/shared/src/*ModuleManifest.ts` |
+| Soft-delete helpers | `packages/shared/src/core/softDelete.ts` |
+| Manifests | `packages/shared/src/**/*ModuleManifest.ts` (per-domain folders) |
+| Domain folders | per-domain folders under `packages/shared/src/` (`core`, `auth`, `contacts`, `finance`, `settings`, `branding`, `messaging`, `i18n`, `erd`, …) — the `src/` root holds only `index.ts` |
 | Barrel | `packages/shared/src/index.ts` (named exports; extra subpaths only `./tenantUtils` + `./translations/{en,ar,ur,fa}`) |
 
 ## 1. Architectural Boundaries & Purity
@@ -43,13 +44,14 @@ metadata:
 
 ## 3. Workflow & Verification
 
-1. Place models in `packages/shared/src/*Types.ts` or `*Schemas.ts`.
-2. Add pure utilities to `utils.ts` (e.g. `formatDate`, `formatMoney`, `parsePhoneNumber`).
+1. Place models in the matching domain folder under `packages/shared/src/` (`*Types.ts` / `*Schemas.ts`) — never the `src/` root.
+2. Add pure utilities to `packages/shared/src/core/utils.ts` (e.g. `formatDate`, `formatMoney`, `parsePhoneNumber`).
 3. Export from `index.ts` with JSDoc on public symbols.
 4. Verify:
 
 ```bash
 bash .agent/skills/mms-shared-package/scripts/check-shared-exports.sh   # = pnpm run check:shared-purity (CI)
+pnpm run check:shared-structure                                         # de-flattening ratchet (CI)
 pnpm typecheck
 ```
 

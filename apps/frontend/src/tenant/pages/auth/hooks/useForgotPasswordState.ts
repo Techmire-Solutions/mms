@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DEFAULT_GLOBAL_SETTINGS, validatePasswordPolicy } from "@mms/shared";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
-import { createEmptyOtp, isOtpComplete } from "@/components/ui/OtpInput";
+import { createEmptyOtp, isOtpComplete } from "@/components/app/OtpInput";
 import { useResendCountdown } from "@/hooks/useResendCountdown";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";

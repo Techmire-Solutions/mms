@@ -47,7 +47,7 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/UserAvatar", () => ({
+vi.mock("@/components/app/UserAvatar", () => ({
   UserAvatar: ({ name }: any) => <div data-testid="avatar">{name}</div>,
 }));
 

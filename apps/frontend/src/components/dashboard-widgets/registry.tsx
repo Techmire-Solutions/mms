@@ -1,5 +1,5 @@
 import React from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const SessionsTable = React.lazy(() => import("@/components/dashboard-widgets/SessionsTable"));

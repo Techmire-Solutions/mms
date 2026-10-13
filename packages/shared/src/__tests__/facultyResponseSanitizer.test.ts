@@ -3,8 +3,8 @@ import {
   sanitizeFacultyForViewer,
   sanitizeFacultyListForViewer,
   type FacultyFieldConfigSnapshot,
-} from "../facultyResponseSanitizer.js";
-import type { FacultyMember } from "../facultyTypes.js";
+} from "../faculty/facultyResponseSanitizer.js";
+import type { FacultyMember } from "../faculty/facultyTypes.js";
 
 describe("facultyResponseSanitizer", () => {
   const mockConfig: FacultyFieldConfigSnapshot = {

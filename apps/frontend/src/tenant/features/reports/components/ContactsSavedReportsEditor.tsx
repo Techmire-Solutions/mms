@@ -1,15 +1,15 @@
 import React from "react";
 import type { ContactsSavedReportShareScope, WorkspaceUser } from "@mms/shared";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { FORM_INPUT } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUsersPaginated } from "@/tenant/hooks/collections/users";
-import { SearchBar } from "@/components/ui/SearchBar";
+import { SearchBar } from "@/components/app/SearchBar";
 
 interface ContactsSavedReportUserPickerProps {
   value: string[];

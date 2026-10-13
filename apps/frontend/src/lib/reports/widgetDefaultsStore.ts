@@ -1,7 +1,7 @@
 import type { CustomWidget } from "./pinnedWidgetTypes";
 import { DASHBOARD_WIDGETS_KEY, normalizeDashboardWidgets } from "@mms/shared";
 import { getObject, saveObject } from "@/lib/db";
-import { getDefaultCustomWidgets, withDefaultI18nKeys } from "./widgetDefaultSeeds.js";
+import { getDefaultCustomWidgets, withDefaultI18nKeys } from "./widgetDefaultSeeds";
 import { reportClientError } from "@/lib/clientErrorReporting";
 
 const SEEDED_WIDGET_BEHAVIOR_KEYS = [

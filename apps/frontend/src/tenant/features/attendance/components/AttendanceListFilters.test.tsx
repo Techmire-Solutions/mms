@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleWorkToolbar", () => ({
+vi.mock("@/components/app/ModuleWorkToolbar", () => ({
   ModuleWorkToolbar: ({
     children,
     filterChips,
@@ -28,11 +28,11 @@ vi.mock("./AttendanceFiltersMenuButton", () => ({
   AttendanceFiltersMenuButton: () => <div data-testid="filter-button">Filter Button</div>,
 }));
 
-vi.mock("@/components/ui/DateRangeFilterBar", () => ({
+vi.mock("@/components/app/DateRangeFilterBar", () => ({
   DateRangeFilterBar: () => <div data-testid="date-filter">Date Filter</div>,
 }));
 
-vi.mock("@/components/ui/FilterChips", () => ({
+vi.mock("@/components/app/FilterChips", () => ({
   FilterChips: () => <div data-testid="filter-chips">Filter Chips</div>,
 }));
 

@@ -7,13 +7,13 @@ import {
   getMessageCategoryLabelKey,
   type Message,
 } from "@mms/shared";
-import { type StatusBadgeConfigItem, StatusBadge } from "@/components/ui/StatusBadge";
-import { ChannelBadge } from "@/components/ui/ChannelBadge";
+import { type StatusBadgeConfigItem, StatusBadge } from "@/components/app/StatusBadge";
+import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { Button } from "@/components/ui/button";
 import { type WorkBatchTableColumn } from "@/components/common/work";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
 
 export interface UseMessagingTableColumnsOptions {
   isColumnVisible: (key: string) => boolean;

@@ -19,7 +19,7 @@ import {
   getStoragePrefix,
   safeSetItem,
   syncToServer,
-} from "@/lib/dbStorageCore.js";
+} from "@/lib/dbStorageCore";
 
 async function fetchSnapshot(path: string): Promise<TenantDatabaseSnapshot> {
   const response = await apiFetch(path, {

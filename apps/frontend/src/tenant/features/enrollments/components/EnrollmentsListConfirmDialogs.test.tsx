@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleTrashConfirmDialogs", () => ({
+vi.mock("@/components/app/ModuleTrashConfirmDialogs", () => ({
   ModuleTrashConfirmDialogs: ({
     singleDeleteTitle,
     bulkDeleteTitle,
