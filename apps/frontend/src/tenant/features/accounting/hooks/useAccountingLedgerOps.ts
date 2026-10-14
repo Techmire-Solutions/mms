@@ -8,7 +8,8 @@ import type {
   OpeningBalanceInsert,
   PostingRules,
 } from "@mms/shared";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
 
 const RULES_KEY = ["accounting", "posting-rules"] as const;
@@ -22,14 +23,23 @@ export {
   type MoneySeparator,
 } from "@/tenant/features/accounting/hooks/accountingMoneyParsers";
 
+/** Throws on any non-2xx (preserves the old `apiJson` throw-on-!ok). */
+function assertOk(response: { status: number; body: unknown }, context: string): void {
+  if (response.status >= 200 && response.status < 300) return;
+  const errorBody = response.body as { message?: string; type?: string } | undefined;
+  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
+}
+
 export function useAccountingPostingRules(enabled = true) {
   return useQuery({
     queryKey: RULES_KEY,
     queryFn: async ({ signal }) => {
-      const body = await apiJson<{ rules: PostingRules }>("/api/accounting/posting-rules", {
+      const response = await apiContract.accountingLedger.getPostingRules({
         signal,
+        fetchOptions: { signal },
       });
-      return body.rules;
+      assertOk(response, "Failed to load posting rules");
+      return (response.body as { rules: PostingRules }).rules;
     },
     enabled,
   });
@@ -38,12 +48,11 @@ export function useAccountingPostingRules(enabled = true) {
 export function useSaveAccountingPostingRules() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (rules: PostingRules) =>
-      apiJson<{ rules: PostingRules }>("/api/accounting/posting-rules", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rules),
-      }),
+    mutationFn: async (rules: PostingRules) => {
+      const response = await apiContract.accountingLedger.putPostingRules({ body: rules });
+      assertOk(response, "Failed to save posting rules");
+      return response.body as { rules: PostingRules };
+    },
     /**
      * The server resolves cash/receivables classification from these rules, and
      * `report-aggregates` holds a 5-minute `staleTime` — invalidating only
@@ -76,12 +85,14 @@ export interface CloseFiscalYearInput {
 export function useCloseFiscalYear() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, retainedEarningsAccountId }: CloseFiscalYearInput) =>
-      apiJson<{ fiscalYear: FiscalYear }>(`/api/accounting/fiscal-years/${id}/close`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(retainedEarningsAccountId ? { retainedEarningsAccountId } : {}),
-      }),
+    mutationFn: async ({ id, retainedEarningsAccountId }: CloseFiscalYearInput) => {
+      const response = await apiContract.accountingLedger.closeFiscalYear({
+        params: { id },
+        body: retainedEarningsAccountId ? { retainedEarningsAccountId } : {},
+      });
+      assertOk(response, "Failed to close fiscal year");
+      return response.body as { fiscalYear: FiscalYear };
+    },
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
 }
@@ -99,11 +110,13 @@ export function useOpeningBalances(fiscalYearId: string | undefined) {
   return useQuery({
     queryKey: [...OPENING_KEY, fiscalYearId],
     queryFn: async ({ signal }) => {
-      const body = await apiJson<{ balances: OpeningBalance[] }>(
-        `/api/accounting/opening-balances?fiscalYearId=${encodeURIComponent(fiscalYearId ?? "")}`,
-        { signal },
-      );
-      return body.balances;
+      const response = await apiContract.accountingLedger.listOpeningBalances({
+        query: { fiscalYearId: fiscalYearId ?? "" },
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load opening balances");
+      return (response.body as { balances: OpeningBalance[] }).balances;
     },
     enabled: Boolean(fiscalYearId),
     placeholderData: keepPreviousData,
@@ -118,12 +131,11 @@ export interface SaveOpeningBalancesInput {
 export function useSaveOpeningBalances() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: SaveOpeningBalancesInput) =>
-      apiJson<{ balances: OpeningBalance[] }>("/api/accounting/opening-balances", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }),
+    mutationFn: async (payload: SaveOpeningBalancesInput) => {
+      const response = await apiContract.accountingLedger.putOpeningBalances({ body: payload });
+      assertOk(response, "Failed to save opening balances");
+      return response.body as { balances: OpeningBalance[] };
+    },
     onSuccess: (saved, payload) => {
       // The response is the authoritative replacement set; seeding it directly
       // closes the window where a second Add would replay a stale list over the
@@ -143,13 +155,14 @@ export function useSaveOpeningBalances() {
 export function usePostOpeningBalances() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (fiscalYearId: string) =>
-      apiJson<{ success: boolean; posted: boolean }>(
-        `/api/accounting/opening-balances/${fiscalYearId}/post`,
-        {
-          method: "POST",
-        },
-      ),
+    mutationFn: async (fiscalYearId: string) => {
+      const response = await apiContract.accountingLedger.postOpeningBalances({
+        params: { fiscalYearId },
+        body: {},
+      });
+      assertOk(response, "Failed to post opening balances");
+      return response.body as { success: boolean; posted: boolean };
+    },
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
 }
@@ -158,11 +171,12 @@ export function useBankStatements(enabled = true) {
   return useQuery({
     queryKey: BANK_KEY,
     queryFn: async ({ signal }) => {
-      const body = await apiJson<{ statements: BankStatement[] }>(
-        "/api/accounting/bank-statements",
-        { signal },
-      );
-      return body.statements;
+      const response = await apiContract.accountingLedger.listBankStatements({
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load bank statements");
+      return (response.body as { statements: BankStatement[] }).statements;
     },
     enabled,
   });
@@ -171,12 +185,11 @@ export function useBankStatements(enabled = true) {
 export function useSaveBankStatement() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (statement: BankStatementInsert) =>
-      apiJson<{ statement: BankStatement }>("/api/accounting/bank-statements", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(statement),
-      }),
+    mutationFn: async (statement: BankStatementInsert) => {
+      const response = await apiContract.accountingLedger.putBankStatement({ body: statement });
+      assertOk(response, "Failed to save bank statement");
+      return response.body as { statement: BankStatement };
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BANK_KEY }),
   });
 }
@@ -184,12 +197,11 @@ export function useSaveBankStatement() {
 export function useMatchBankReconciliation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (match: BankReconciliationMatch) =>
-      apiJson<{ success: boolean }>("/api/accounting/bank-reconciliations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(match),
-      }),
+    mutationFn: async (match: BankReconciliationMatch) => {
+      const response = await apiContract.accountingLedger.matchBankReconciliation({ body: match });
+      assertOk(response, "Failed to save bank reconciliation");
+      return response.body as { success: boolean };
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: BANK_KEY }),
   });
 }

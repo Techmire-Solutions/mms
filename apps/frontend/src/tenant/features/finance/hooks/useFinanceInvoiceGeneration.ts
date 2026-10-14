@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { GenerateInvoicesBody, GenerateInvoicesResult } from "@mms/shared";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import {
   FINANCE_INVOICES_QUERY_KEY,
   FINANCE_METRICS_QUERY_KEY,
@@ -9,12 +10,18 @@ import {
 export function useFinanceInvoiceGeneration() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: GenerateInvoicesBody) =>
-      apiJson<GenerateInvoicesResult>("/api/finance/invoices/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }),
+    mutationFn: async (body: GenerateInvoicesBody) => {
+      const response = await apiContract.financeOps.generateInvoices({ body });
+      if (response.status < 200 || response.status >= 300) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to generate invoices",
+          errorBody?.type,
+        );
+      }
+      return response.body as GenerateInvoicesResult;
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: FINANCE_INVOICES_QUERY_KEY });
       void queryClient.invalidateQueries({ queryKey: FINANCE_METRICS_QUERY_KEY });

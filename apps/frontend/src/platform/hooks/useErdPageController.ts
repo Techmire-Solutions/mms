@@ -12,7 +12,8 @@ import {
   type ErdDomainId,
   type PlatformErdResponse,
 } from "@mms/shared";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import { PLATFORM_QUERY_KEYS } from "@/platform/lib/platformQueryKeys";
 
 const DEFAULT_DOMAIN: ErdDomainId = "accounting";
@@ -40,7 +41,18 @@ export function useErdPageController(): {
 
   const { data: dynamicData, isLoading } = useQuery<PlatformErdResponse>({
     queryKey: PLATFORM_QUERY_KEYS.erd,
-    queryFn: () => apiJson<PlatformErdResponse>("/api/platform/schema/erd"),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.platform.getErd({ signal, fetchOptions: { signal } });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load schema ERD",
+          errorBody?.type,
+        );
+      }
+      return response.body as PlatformErdResponse;
+    },
     staleTime: 60_000,
     retry: 1,
   });

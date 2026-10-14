@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PlatformUserProfile } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { apiJson } from "@/lib/apiClient";
-import { PLATFORM_AUTH_PATHS } from "@/lib/apiClientHelpers";
+import { ApiError } from "@/lib/apiClient";
 import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -38,10 +37,16 @@ export function usePlatformProfile(options?: { enabled?: boolean }) {
   const query = useQuery({
     queryKey: PLATFORM_PROFILE_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      const res = await apiJson<{ user: PlatformUserProfile }>(PLATFORM_AUTH_PATHS.me, {
-        signal,
-      });
-      return res.user;
+      const response = await apiContract.platform.getMe({ signal, fetchOptions: { signal } });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load platform profile",
+          errorBody?.type,
+        );
+      }
+      return (response.body as { user: PlatformUserProfile }).user;
     },
     enabled: (options?.enabled ?? true) && isPlatformAuthenticated,
     staleTime: 60_000,

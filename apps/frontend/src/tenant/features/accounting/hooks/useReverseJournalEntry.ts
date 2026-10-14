@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { JournalEntry, JournalReversalRequest } from "@mms/shared";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
 
 export interface JournalReversalResponse {
@@ -18,15 +19,21 @@ export interface JournalReversalResponse {
 export function useReverseJournalEntry() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, request }: { id: string; request: JournalReversalRequest }) =>
-      apiJson<JournalReversalResponse>(
-        `/api/accounting/entries/${encodeURIComponent(id)}/reverse`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(request),
-        },
-      ),
+    mutationFn: async ({ id, request }: { id: string; request: JournalReversalRequest }) => {
+      const response = await apiContract.accountingLedger.reverseJournalEntry({
+        params: { id },
+        body: request,
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to reverse journal entry",
+          errorBody?.type,
+        );
+      }
+      return response.body as JournalReversalResponse;
+    },
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
 }

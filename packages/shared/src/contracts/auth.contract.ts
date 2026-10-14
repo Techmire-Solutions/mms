@@ -102,4 +102,18 @@ export const authContract = c.router({
     },
     summary: "Confirm login email change",
   },
+  // Server-synced per-user UI preferences (`/api/auth/me/ui-state`, plain Fastify handler).
+  getUiState: {
+    method: "GET",
+    path: "/api/auth/me/ui-state",
+    responses: { 200: z.unknown(), 401: z.unknown() },
+    summary: "Get the current user's UI state",
+  },
+  patchUiState: {
+    method: "PATCH",
+    path: "/api/auth/me/ui-state",
+    body: z.unknown(),
+    responses: { 200: z.unknown(), 400: z.unknown(), 401: z.unknown() },
+    summary: "Update the current user's UI state",
+  },
 });

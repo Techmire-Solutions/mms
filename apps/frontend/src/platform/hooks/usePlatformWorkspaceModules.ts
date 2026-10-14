@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
-import { apiJson, ApiError } from "@/lib/apiClient";
+import { ApiError } from "@/lib/apiClient";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -20,13 +20,20 @@ export function useWorkspaceModules(
   const query = useQuery({
     queryKey: PLATFORM_QUERY_KEYS.workspaceModules(subdomain),
     queryFn: async ({ signal }) => {
-      const res = await apiJson<{ modules: string[] }>(
-        `/api/platform/workspaces/${encodeURIComponent(subdomain)}/modules`,
-        {
-          signal,
-        },
-      );
-      return res.modules;
+      const response = await apiContract.platform.getWorkspaceModules({
+        params: { subdomain },
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load workspace modules",
+          errorBody?.type,
+        );
+      }
+      return (response.body as { modules: string[] }).modules;
     },
     enabled: isPlatformAuthenticated && canWorkspaces && open && !!subdomain,
     staleTime: 0,

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch, resolveApiUrl } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
 import type { PublicBranding } from "@mms/shared";
 
 export interface PublicWorkspace {
@@ -57,19 +57,21 @@ export async function fetchWorkspaceBySubdomain(
   subdomain: string,
   signal?: AbortSignal,
 ): Promise<{ status: number; body: WorkspaceLookupResult | null }> {
-  const url = resolveApiUrl(`/api/workspace/by-subdomain/${encodeURIComponent(subdomain)}`);
-  const res = await apiFetch(url, { signal });
-  if (res.status === 404) {
+  const response = await apiContract.workspace.bySubdomain({
+    params: { subdomain },
+    signal,
+    fetchOptions: { signal },
+  });
+  if (response.status === 404) {
     return { status: 404, body: null };
   }
-  if (!res.ok) {
-    const error = Object.assign(new Error(`Workspace lookup failed: ${res.status}`), {
-      status: res.status,
+  if (response.status !== 200) {
+    const error = Object.assign(new Error(`Workspace lookup failed: ${response.status}`), {
+      status: response.status,
     });
     throw error;
   }
-  const data = (await res.json()) as WorkspaceLookupResult;
-  return { status: 200, body: data };
+  return { status: 200, body: response.body as WorkspaceLookupResult };
 }
 
 export function useWorkspaceBySubdomain(subdomain: string | null, enabled: boolean) {

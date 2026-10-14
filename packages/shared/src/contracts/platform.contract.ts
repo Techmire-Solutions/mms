@@ -39,6 +39,10 @@ import {
   platformSettingsUpdateSchema,
   migrateAndRestartSchema,
 } from "../auth/platformSettingsTypes.js";
+import {
+  platformAiQueryRequestSchema,
+  platformAiQueryResponseSchema,
+} from "../schemas/platformAi.dto.js";
 
 const c = initContract();
 
@@ -458,6 +462,48 @@ export const platformContract = c.router({
       403: platformErrorSchema,
     },
     summary: "Get super-user activity logs",
+  },
+  // System admin — read/ops endpoints served by plain Fastify handlers
+  // (platformAdminSystem.ts / platformAiRoutes.ts); declared here so the ts-rest client can reach them.
+  getErd: {
+    method: "GET",
+    path: "/api/platform/schema/erd",
+    responses: { 200: z.unknown(), 401: platformErrorSchema, 403: platformErrorSchema },
+    summary: "Get the introspected schema ERD",
+  },
+  getTelemetry: {
+    method: "GET",
+    path: "/api/platform/admin/system/telemetry",
+    responses: { 200: z.unknown(), 401: platformErrorSchema, 403: platformErrorSchema },
+    summary: "Get platform system telemetry",
+  },
+  getActivityTrend: {
+    method: "GET",
+    path: "/api/platform/admin/system/activity-trend",
+    responses: {
+      200: z.object({ trend: z.array(z.unknown()) }),
+      401: platformErrorSchema,
+      403: platformErrorSchema,
+    },
+    summary: "Get platform activity trend",
+  },
+  aiQuery: {
+    method: "POST",
+    path: "/api/platform/ai/query",
+    body: platformAiQueryRequestSchema,
+    responses: {
+      200: platformAiQueryResponseSchema,
+      400: platformErrorSchema,
+      403: platformErrorSchema,
+      500: platformErrorSchema,
+    },
+    summary: "Run a platform AI diagnostics query",
+  },
+  getSessionPolicy: {
+    method: "GET",
+    path: "/api/platform/auth/session/policy",
+    responses: { 200: z.unknown() },
+    summary: "Get the platform session timeout policy",
   },
   // Workspaces
   ...platformWorkspacesRoutes,

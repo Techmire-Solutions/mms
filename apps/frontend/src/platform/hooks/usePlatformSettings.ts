@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { MigrateAndRestartAccepted, PlatformSettings } from "@mms/shared";
-import { apiFetch, apiJson } from "@/lib/apiClient";
 import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
@@ -53,8 +53,8 @@ export async function waitForBackendReadyAfterMigrate(delayMs: number): Promise<
   const deadline = Date.now() + READY_POLL_TIMEOUT_MS;
   while (Date.now() < deadline) {
     try {
-      const response = await apiFetch("/ready");
-      if (response.ok) return;
+      const response = await apiContract.health.ready({});
+      if (response.status === 200) return;
     } catch {
       // Backend still restarting — keep polling.
     }
@@ -68,10 +68,16 @@ export function usePlatformSettingsQuery() {
   const query = useQuery({
     queryKey: PLATFORM_SETTINGS_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      const res = await apiJson<{ settings: PlatformSettings }>("/api/platform/settings", {
-        signal,
-      });
-      return res.settings;
+      const response = await apiContract.platform.getSettings({ signal, fetchOptions: { signal } });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load platform settings",
+          errorBody?.type,
+        );
+      }
+      return (response.body as { settings: PlatformSettings }).settings;
     },
     enabled: isPlatformAuthenticated && canSettings,
     staleTime: 60_000,

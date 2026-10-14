@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import {
   EXAMINATIONS_MODULE_MANIFEST,
@@ -21,21 +22,31 @@ export function useExaminationsReportAggregates(options?: {
   const enabled = (options?.enabled ?? true) && isAuthenticated;
   const comparison = normalizeExaminationsReportComparisonQuery(options?.comparison);
 
-  const queryParams = new URLSearchParams();
-  if (comparison?.sessionIds?.length)
-    queryParams.append("sessionIds", comparison.sessionIds.join(","));
-  if (comparison?.rangeAFrom) queryParams.append("rangeAFrom", comparison.rangeAFrom);
-  if (comparison?.rangeATo) queryParams.append("rangeATo", comparison.rangeATo);
-  if (comparison?.rangeBFrom) queryParams.append("rangeBFrom", comparison.rangeBFrom);
-  if (comparison?.rangeBTo) queryParams.append("rangeBTo", comparison.rangeBTo);
-
-  const queryString = queryParams.toString();
-  const url = `${EXAMINATIONS_MODULE_MANIFEST.restBasePath}/report-aggregates${queryString ? `?${queryString}` : ""}`;
+  const query = {
+    ...(comparison?.sessionIds?.length ? { sessionIds: comparison.sessionIds.join(",") } : {}),
+    ...(comparison?.rangeAFrom ? { rangeAFrom: comparison.rangeAFrom } : {}),
+    ...(comparison?.rangeATo ? { rangeATo: comparison.rangeATo } : {}),
+    ...(comparison?.rangeBFrom ? { rangeBFrom: comparison.rangeBFrom } : {}),
+    ...(comparison?.rangeBTo ? { rangeBTo: comparison.rangeBTo } : {}),
+  };
 
   return useQuery({
     queryKey: [...EXAMINATIONS_REPORT_AGGREGATES_QUERY_KEY, comparison],
     queryFn: async ({ signal }) => {
-      return apiJson<ExaminationsReportAggregates>(url, { signal });
+      const response = await apiContract.examinations.reportAggregates({
+        query,
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to fetch examinations report aggregates",
+          errorBody?.type,
+        );
+      }
+      return response.body as ExaminationsReportAggregates;
     },
     staleTime: 5 * 60 * 1000,
     enabled,

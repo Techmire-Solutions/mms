@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { PlatformWorkspaceListResponse, PlatformWorkspacesListQuery } from "@mms/shared";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { PLATFORM_QUERY_KEYS } from "@/platform/lib/platformQueryKeys";
 
@@ -16,18 +17,6 @@ export {
   useResetWorkspaceAdminPassword,
   useCreateWorkspaceAdmin,
 } from "./usePlatformWorkspaceAdminMutations";
-
-function buildListSearchParams(params: PlatformWorkspacesListQuery): string {
-  const sp = new URLSearchParams();
-  if (params.page && params.page > 1) sp.set("page", String(params.page));
-  if (params.limit) sp.set("limit", String(params.limit));
-  if (params.search?.trim()) sp.set("search", params.search.trim());
-  if (params.status && params.status !== "all") sp.set("status", params.status);
-  if (params.sortField) sp.set("sortField", params.sortField);
-  if (params.sortDir) sp.set("sortDir", params.sortDir);
-  const q = sp.toString();
-  return q ? `?${q}` : "";
-}
 
 export type PlatformWorkspacesListParams = PlatformWorkspacesListQuery;
 
@@ -53,11 +42,27 @@ export function usePlatformWorkspaces(params: PlatformWorkspacesListParams = {})
       sortDir: listParams.sortDir ?? "asc",
     }),
     queryFn: async ({ signal }) => {
-      const res = await apiJson<PlatformWorkspaceListResponse>(
-        `/api/platform/workspaces${buildListSearchParams(listParams)}`,
-        { signal },
-      );
-      return res;
+      const response = await apiContract.platform.listWorkspaces({
+        query: {
+          page: listParams.page,
+          limit: listParams.limit,
+          ...(listParams.search?.trim() ? { search: listParams.search.trim() } : {}),
+          ...(listParams.status && listParams.status !== "all" ? { status: listParams.status } : {}),
+          ...(listParams.sortField ? { sortField: listParams.sortField } : {}),
+          ...(listParams.sortDir ? { sortDir: listParams.sortDir } : {}),
+        },
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load platform workspaces",
+          errorBody?.type,
+        );
+      }
+      return response.body as PlatformWorkspaceListResponse;
     },
     enabled: isPlatformAuthenticated && canWorkspaces,
     staleTime: 60_000,
