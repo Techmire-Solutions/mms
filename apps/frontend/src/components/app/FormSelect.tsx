@@ -100,7 +100,6 @@ export function FormSelect({
             aria-label={ariaLabel}
             aria-invalid={ariaInvalid}
             aria-describedby={ariaDescribedBy}
-            aria-haspopup={isSearchable ? "listbox" : undefined}
             aria-expanded={isSearchable ? search.open : undefined}
             required={required}
             disabled={disabled}

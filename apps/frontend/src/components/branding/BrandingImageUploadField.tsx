@@ -168,6 +168,7 @@ export function ImageUploadField({
           type="file"
           accept="image/png,image/jpeg,image/webp,image/avif,image/svg+xml"
           className="sr-only"
+          aria-label={label}
           onChange={(event) => {
             const file = event.target.files?.[0];
             if (file) void processFile(file);

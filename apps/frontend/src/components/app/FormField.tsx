@@ -171,7 +171,6 @@ export function Field({
             type="button"
             aria-label="AI suggestion"
             aria-expanded={aiOpen}
-            aria-description="AI-generated"
             onClick={() => setAiOpen((o) => !o)}
             className="ms-auto inline-flex items-center justify-center w-5 h-5 rounded text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
           >

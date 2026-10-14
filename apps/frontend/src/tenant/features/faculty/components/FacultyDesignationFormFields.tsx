@@ -131,7 +131,6 @@ export function FacultyDesignationFormFields({
       <RoleFormModal
         open={createRoleOpen}
         title={t("faculty.designations.addRole")}
-        role={null}
         visibleModules={visibleModules}
         onSave={(role) => {
           void (async () => {

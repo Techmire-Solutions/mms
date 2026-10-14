@@ -46,7 +46,6 @@ export function DistributeRecipientTypeField({
               type="button"
               role="radio"
               aria-checked={isSelected}
-              aria-pressed={isSelected}
               onClick={() =>
                 setData((previousData) => ({
                   ...previousData,

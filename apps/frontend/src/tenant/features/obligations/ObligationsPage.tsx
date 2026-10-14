@@ -15,9 +15,7 @@ import { ObligationsCsvImportDialog } from "@/tenant/features/obligations/compon
 import { useObligationsPageController } from "@/tenant/features/obligations/hooks/useObligationsPageController";
 
 const ObligationsReportsTier = lazy(() =>
-  import("@/tenant/features/obligations/components/ObligationsReportsTier").then((m) => ({
-    default: m.ObligationsReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const ObligationsSetupTier = lazy(() =>
   import("@/tenant/features/obligations/components/ObligationsSetupTier").then((m) => ({
@@ -78,7 +76,7 @@ export default function Obligations() {
           >
             {c.effectiveTab === "reports" && (
               <Suspense fallback={<RouteStatusFallback />}>
-                <ObligationsReportsTier />
+                <ObligationsReportsTier category="obligations" />
               </Suspense>
             )}
 

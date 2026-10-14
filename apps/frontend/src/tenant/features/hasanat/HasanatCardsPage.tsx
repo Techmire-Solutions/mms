@@ -14,9 +14,7 @@ import { HasanatWorkTier } from "@/tenant/features/hasanat/components/HasanatWor
 import { useHasanatCardsPageController } from "@/tenant/features/hasanat/hooks/useHasanatCardsPageController";
 
 const HasanatReportsTier = React.lazy(() =>
-  import("@/tenant/features/hasanat/components/HasanatReportsTier").then((m) => ({
-    default: m.HasanatReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const HasanatSetupTier = React.lazy(() =>
   import("@/tenant/features/hasanat/components/HasanatSetupTier").then((m) => ({
@@ -78,7 +76,7 @@ export default function HasanatCards() {
             >
               {c.effectiveTab === "reports" && (
                 <Suspense fallback={<RouteStatusFallback />}>
-                  <HasanatReportsTier />
+                  <HasanatReportsTier category="hasanat" />
                 </Suspense>
               )}
               {c.effectiveTab === "setup" && (

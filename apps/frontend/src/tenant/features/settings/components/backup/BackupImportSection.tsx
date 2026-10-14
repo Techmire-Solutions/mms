@@ -100,6 +100,7 @@ const BackupImportSection = function BackupImportSection({
           accept=".mmsbak"
           name="workspace-backup"
           className="hidden"
+          aria-label={t("backup.restoreFileTitle")}
           onChange={(event) => {
             onFileSelected(event.target.files?.[0]);
             event.target.value = "";

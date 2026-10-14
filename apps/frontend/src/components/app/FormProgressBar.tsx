@@ -17,14 +17,17 @@ export function FormProgressBar({
 }: FormProgressBarProps): React.JSX.Element {
   const clamped = Math.max(0, Math.min(100, value));
   const complete = clamped === 100;
+  const labelId = React.useId();
 
   return (
     <div className={cn("space-y-1", className)}>
       <div className="flex items-center justify-between">
         {label ? (
-          <span className="text-xs font-semibold uppercase text-foreground/80">{label}</span>
+          <span id={labelId} className="text-xs font-semibold uppercase text-foreground/80">
+            {label}
+          </span>
         ) : (
-          <span />
+          <span id={labelId} />
         )}
         <span className={cn("text-xs font-bold", complete ? "text-primary" : "text-primary/70")}>
           {Math.round(clamped)}%
@@ -36,7 +39,7 @@ export function FormProgressBar({
         aria-valuenow={Math.round(clamped)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={typeof label === "string" ? label : undefined}
+        aria-labelledby={labelId}
       >
         <div
           className={cn(

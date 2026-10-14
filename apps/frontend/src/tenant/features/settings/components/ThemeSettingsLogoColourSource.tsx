@@ -133,12 +133,21 @@ export function ThemeSettingsLogoColourSource({
                 {proportions.map((item, i) => (
                   <div
                     key={`prop-${item.hex}-${i}`}
+                    role="button"
+                    tabIndex={0}
                     style={{ width: `${item.percentage}%`, backgroundColor: item.hex }}
                     title={`${item.hex} (${item.percentage}%) — click to copy`}
-                    className="h-full transition-all duration-300 hover:opacity-90 cursor-pointer"
+                    aria-label={`${item.hex} (${item.percentage}%)`}
+                    className="h-full cursor-pointer transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={() => {
                       void navigator.clipboard?.writeText(item.hex);
                       notify.success(t("theme.copiedHex", { hex: item.hex }));
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        event.currentTarget.click();
+                      }
                     }}
                   />
                 ))}

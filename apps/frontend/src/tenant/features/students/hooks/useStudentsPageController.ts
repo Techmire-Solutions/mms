@@ -1,13 +1,7 @@
 import { useEffect, useMemo } from "react";
-import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
-import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import {
-  STUDENTS_MODULE_MANIFEST,
-  resolveModuleTierTab,
-  resolveStudentStatuses,
-} from "@mms/shared";
+import { useModuleTierPageNav } from "@/tenant/hooks/useModuleTierPageNav";
+import { STUDENTS_MODULE_MANIFEST, resolveStudentStatuses } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useStudentsMetrics } from "@/tenant/features/students/hooks/useStudentsAnalyticsQueries";
 import { useStudentMutations } from "@/tenant/features/students/hooks/useStudents";
@@ -32,20 +26,13 @@ import {
 
 export function useStudentsPageController() {
   const { t } = useTranslation();
-  const {
-    canWrite,
-    canDelete,
-    canExport,
-    canReports: canViewReports,
-    canViewSetup,
-    canEditSetup,
-  } = useModulePermissions(STUDENTS_MODULE_MANIFEST);
+  const { canWrite, canDelete, canExport, canEditSetup, visibleTabs, setActiveTab, effectiveTab } =
+    useModuleTierPageNav({
+      manifest: STUDENTS_MODULE_MANIFEST,
+      workLabelKey: "nav.students",
+      storageKey: "students_active_tab",
+    });
 
-  const visibleTabs = useFilteredModuleTierTabs({
-    canViewSetup,
-    canViewReports,
-    workLabelKey: "nav.students",
-  });
   const { data: metrics } = useStudentsMetrics();
   const mutations = useStudentMutations();
   const {
@@ -55,11 +42,6 @@ export function useStudentsPageController() {
     isFieldEnabled,
   } = useStudentConfig();
   const studentStatusOptions = resolveStudentStatuses(configuredStatuses);
-  const [activeTab, setActiveTab] = usePersistedTabState<string>("students_active_tab", "work");
-  const effectiveTab = resolveModuleTierTab(
-    activeTab,
-    visibleTabs.map((tab) => tab.id),
-  );
   const formState = useStudentsPageFormState();
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
 

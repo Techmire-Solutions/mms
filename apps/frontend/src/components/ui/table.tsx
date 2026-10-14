@@ -55,7 +55,6 @@ const TableHeader = React.forwardRef<HTMLTableSectionElement, TableHeaderProps>(
     return (
       <thead
         ref={ref}
-        role="rowgroup"
         className={cn(
           "[&_tr]:border-b",
           isSticky && "sticky top-0 z-10 bg-background/95 backdrop-blur-xs shadow-2xs",
@@ -72,12 +71,7 @@ const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tbody
-    ref={ref}
-    role="rowgroup"
-    className={cn("[&_tr:last-child]:border-0", className)}
-    {...props}
-  />
+  <tbody ref={ref} className={cn("[&_tr:last-child]:border-0", className)} {...props} />
 ));
 TableBody.displayName = "TableBody";
 
@@ -85,7 +79,6 @@ const TableFooter = React.forwardRef<HTMLTableSectionElement, TableFooterProps>(
   ({ className, sticky, ...props }, ref) => (
     <tfoot
       ref={ref}
-      role="rowgroup"
       className={cn(
         "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
         sticky && "sticky bottom-0 z-10 bg-background/95 backdrop-blur-xs",

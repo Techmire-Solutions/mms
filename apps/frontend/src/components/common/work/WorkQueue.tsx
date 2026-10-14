@@ -94,7 +94,7 @@ export function WorkQueue<TData extends { id: string | number }>({
       )}
 
       {/* Queue Items Feed */}
-      <ul role="list" className={cn("space-y-2", className)}>
+      <ul className={cn("space-y-2", className)}>
         <AnimatePresence initial={false}>
           {activeItems.map((item, index) => {
             const idStr = String(item.id);

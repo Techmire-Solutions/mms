@@ -26,9 +26,7 @@ const FinanceSetupTier = React.lazy(() =>
   })),
 );
 const FinanceReportsTier = React.lazy(() =>
-  import("@/tenant/features/finance/components/FinanceReportsTier").then((m) => ({
-    default: m.FinanceReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 
 /**
@@ -92,7 +90,7 @@ export default function Finance(): React.JSX.Element {
             <ErrorBoundary>
               {c.activeTab === "reports" && (
                 <React.Suspense fallback={<RouteStatusFallback />}>
-                  <FinanceReportsTier />
+                  <FinanceReportsTier category="finance" />
                 </React.Suspense>
               )}
               {c.activeTab === "setup" && (

@@ -51,6 +51,7 @@ export function DatePicker({
 
   const resolvedId = id || state.fallbackId;
   const resolvedName = name || state.fallbackId;
+  const dialogId = `${resolvedId}-popover`;
   const resolvedPlaceholder = placeholder || (state.isYearMode ? "YYYY" : state.dateFormat);
   const hiddenValue = resolveDatePickerHiddenValue(value, state.isYearMode);
 
@@ -89,6 +90,7 @@ export function DatePicker({
           <CalendarIcon className="h-4 w-4 transition-colors opacity-80" />
         </PopoverTrigger>
         <PopoverContent
+          id={dialogId}
           className="w-auto p-0 surface-overlay rounded-2xl overflow-hidden"
           align="start"
           onInteractOutside={(e) => keepOpenForChrome(e, rootRef.current)}
@@ -148,6 +150,7 @@ export function DatePicker({
         role="combobox"
         aria-haspopup="dialog"
         aria-expanded={state.open}
+        aria-controls={dialogId}
         aria-required={required}
         aria-label={
           ariaLabel ||
@@ -180,6 +183,7 @@ export function DatePicker({
           value=""
           onChange={() => {}}
           tabIndex={-1}
+          aria-hidden="true"
         />
       )}
       <input type="hidden" name={`${resolvedName}_hidden`} value={hiddenValue || ""} />

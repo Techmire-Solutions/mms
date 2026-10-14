@@ -14,9 +14,7 @@ import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
 import { useEnrollmentsPageState } from "@/tenant/features/enrollments/hooks/useEnrollmentsPageState";
 
 const EnrollmentsReportsTier = lazy(() =>
-  import("@/tenant/features/enrollments/components/EnrollmentsReportsTier").then((m) => ({
-    default: m.EnrollmentsReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const EnrollmentsSetupTier = lazy(() =>
   import("@/tenant/features/enrollments/components/EnrollmentsSetupTier").then((m) => ({
@@ -120,7 +118,7 @@ export default function EnrollmentsPage() {
             {tab === "reports" && (
               <ErrorBoundary>
                 <Suspense fallback={<RouteStatusFallback />}>
-                  <EnrollmentsReportsTier />
+                  <EnrollmentsReportsTier category="enrollments" />
                 </Suspense>
               </ErrorBoundary>
             )}

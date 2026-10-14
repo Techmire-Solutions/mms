@@ -4,5 +4,6 @@
  */
 export { default as KPISummary } from "@/tenant/features/reports/components/KPISummary";
 export { default as ModuleReports } from "@/tenant/features/reports/components/ModuleReports";
+export { ModuleReportsTier } from "@/tenant/features/reports/components/ModuleReportsTier";
 export { ReportChartCard } from "@/components/reports/ReportChartCard";
 export { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
