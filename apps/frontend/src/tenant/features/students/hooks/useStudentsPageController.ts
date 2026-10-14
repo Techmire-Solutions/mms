@@ -26,19 +26,12 @@ import {
 
 export function useStudentsPageController() {
   const { t } = useTranslation();
-  const {
-    canWrite,
-    canDelete,
-    canExport,
-    canEditSetup,
-    visibleTabs,
-    setActiveTab,
-    effectiveTab,
-  } = useModuleTierPageNav({
-    manifest: STUDENTS_MODULE_MANIFEST,
-    workLabelKey: "nav.students",
-    storageKey: "students_active_tab",
-  });
+  const { canWrite, canDelete, canExport, canEditSetup, visibleTabs, setActiveTab, effectiveTab } =
+    useModuleTierPageNav({
+      manifest: STUDENTS_MODULE_MANIFEST,
+      workLabelKey: "nav.students",
+      storageKey: "students_active_tab",
+    });
 
   const { data: metrics } = useStudentsMetrics();
   const mutations = useStudentMutations();
