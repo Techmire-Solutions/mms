@@ -251,10 +251,21 @@ hidden from assistive tech inside a populated component
 (`ClassCard`'s capacity row, `Step4ClassAssignment`'s remaining-spots block). Neither
 could ever have surfaced here, because neither component renders without records.
 
-Closing it means seeding the tenant before the sweep — either an API seed or making
-the existing `tenantOperations` UI helpers robust (they are currently fragile enough
-that `registerStudentJaneDoe` failed mid-flow when I tried to reuse it). Until then,
-treat this gate as covering the shell and the empty state, not the modules.
+Closing it means seeding the tenant before the sweep. **Partially closed:**
+`e2e/tests/a11y/a11y-populated.spec.ts` now provisions a tenant via the API, runs the backend
+`seed-20-contacts.ts` (20 deterministic, idempotent records), and audits the **populated** contacts Work
+table — including a best-effort row detail drawer — plus the dashboard's populated metric widgets, at 1440
+and 375.
+
+Those populated audits run **advisory** (`advisory: true` on `assertNoSeriousA11yViolations`): findings are
+logged and attached as `a11y-advisory:<rule>` annotations but never fail the build, because this markup was
+never gate-audited before and has not yet been measured. The precondition — that rows genuinely rendered — is
+a hard assertion, so an accidentally-empty page fails loudly instead of producing a meaningless green.
+
+**Ratchet:** once the populated contacts surface is clean, drop `advisory: true` to make it gating, then
+repeat the seed→audit step per surface. Still uncovered (each needs its own seed): students/faculty/finance
+Work tables, richer charts/metrics, and the enrollment/wizard steps. The old UI-helper path
+(`registerStudentJaneDoe`, …) remains too fragile to reuse for seeding.
 
 ## Adjacent guards
 
