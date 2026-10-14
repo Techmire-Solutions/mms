@@ -8,15 +8,7 @@ import type {
   ObligationCollection,
 } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
-import {
-  OBLIGATIONS_TYPES_QUERY_KEY,
-  OBLIGATIONS_MUJTAHIDS_QUERY_KEY,
-  OBLIGATIONS_REPS_QUERY_KEY,
-  OBLIGATIONS_WAKALA_QUERY_KEY,
-  OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY,
-  OBLIGATIONS_COLLECTIONS_QUERY_KEY,
-  OBLIGATIONS_METRICS_QUERY_KEY,
-} from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
+import { invalidateObligationsQueries } from "@/tenant/features/obligations/hooks/invalidateObligationsQueries";
 
 function assertSuccess<T>(res: { status: number; body: T }, fallbackMsg: string): T {
   if (res.status < 200 || res.status >= 300) {
@@ -30,15 +22,11 @@ export function useObligationsMutations() {
   const queryClient = useQueryClient();
 
   const invalidateCollections = () => {
-    void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_COLLECTIONS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_METRICS_QUERY_KEY });
+    invalidateObligationsQueries(queryClient);
   };
 
   const _replaceTypes = tsrClient.obligations.replaceTypes.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_TYPES_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateObligationsQueries(queryClient),
   });
   const replaceTypes = {
     ..._replaceTypes,
@@ -49,10 +37,7 @@ export function useObligationsMutations() {
   };
 
   const _replaceMujtahids = tsrClient.obligations.replaceMujtahids.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_MUJTAHIDS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateObligationsQueries(queryClient),
   });
   const replaceMujtahids = {
     ..._replaceMujtahids,
@@ -63,10 +48,7 @@ export function useObligationsMutations() {
   };
 
   const _replaceReps = tsrClient.obligations.replaceReps.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_REPS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateObligationsQueries(queryClient),
   });
   const replaceReps = {
     ..._replaceReps,
@@ -77,10 +59,7 @@ export function useObligationsMutations() {
   };
 
   const _replaceWakala = tsrClient.obligations.replaceWakala.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_WAKALA_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateObligationsQueries(queryClient),
   });
   const replaceWakala = {
     ..._replaceWakala,
@@ -91,10 +70,7 @@ export function useObligationsMutations() {
   };
 
   const _replaceDistributions = tsrClient.obligations.replaceDistributions.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_DISTRIBUTIONS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: OBLIGATIONS_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateObligationsQueries(queryClient),
   });
   const replaceDistributions = {
     ..._replaceDistributions,

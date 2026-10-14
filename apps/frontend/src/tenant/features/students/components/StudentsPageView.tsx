@@ -5,7 +5,6 @@ import { StudentsCommandMetrics } from "@/tenant/features/students/components/St
 import { StudentsPageHeaderActions } from "@/tenant/features/students/components/StudentsPageHeaderActions";
 import { StudentsPageOverlays } from "@/tenant/features/students/components/StudentsPageOverlays";
 import { StudentsWorkTier } from "@/tenant/features/students/components/StudentsWorkTier";
-import { useTranslation } from "@/hooks/useTranslation";
 import type { useStudentsPageController } from "@/tenant/features/students/hooks/useStudentsPageController";
 
 const StudentsSetupTier = lazy(
@@ -41,7 +40,6 @@ export function StudentsPageView({
   tabPanelProps,
   pageOverlaysProps,
 }: StudentsPageViewProps): React.JSX.Element {
-  const { t } = useTranslation();
   const [importOpen, setImportOpen] = useState(false);
 
   return (

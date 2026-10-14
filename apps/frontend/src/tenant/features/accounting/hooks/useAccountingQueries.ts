@@ -13,30 +13,21 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { apiContract, tsrClient } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import type { AccountingCommandMetricsSnapshot } from "@mms/shared";
+import {
+  ACCOUNTING_METRICS_QUERY_KEY,
+  ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
+  ACCOUNTING_ACCOUNTS_QUERY_KEY,
+  ACCOUNTING_ENTRIES_QUERY_KEY,
+  ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
+} from "./accountingQueryKeys";
 
-export const ACCOUNTING_METRICS_QUERY_KEY = [
-  ACCOUNTING_MODULE_MANIFEST.moduleId,
-  "metrics",
-] as const;
-export const ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY = [
-  ACCOUNTING_MODULE_MANIFEST.moduleId,
-  "report-aggregates",
-] as const;
-export const ACCOUNTING_ACCOUNTS_QUERY_KEY = [
-  ACCOUNTING_MODULE_MANIFEST.moduleId,
-  "accounts",
-  "list",
-] as const;
-export const ACCOUNTING_ENTRIES_QUERY_KEY = [
-  ACCOUNTING_MODULE_MANIFEST.moduleId,
-  "entries",
-  "list",
-] as const;
-export const ACCOUNTING_FISCAL_YEARS_QUERY_KEY = [
-  ACCOUNTING_MODULE_MANIFEST.moduleId,
-  "fiscal_years",
-  "list",
-] as const;
+export {
+  ACCOUNTING_METRICS_QUERY_KEY,
+  ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
+  ACCOUNTING_ACCOUNTS_QUERY_KEY,
+  ACCOUNTING_ENTRIES_QUERY_KEY,
+  ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
+};
 
 export function accountingCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<AccountingCommandMetricsSnapshot>({

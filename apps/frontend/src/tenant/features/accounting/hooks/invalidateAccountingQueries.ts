@@ -5,7 +5,7 @@ import {
   ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
   ACCOUNTING_METRICS_QUERY_KEY,
   ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
-} from "@/tenant/features/accounting/hooks/useAccountingApi";
+} from "@/tenant/features/accounting/hooks/accountingQueryKeys";
 import { VOUCHER_NUMBERING_QUERY_KEY } from "@/tenant/features/accounting/hooks/useVoucherNumbering";
 
 /**

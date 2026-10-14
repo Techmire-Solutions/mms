@@ -5,6 +5,12 @@ import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient } from "@/lib/api";
+import {
+  EXAMINATIONS_EXAMS_QUERY_KEY,
+  EXAMINATIONS_RESULTS_QUERY_KEY,
+  EXAMINATIONS_METRICS_QUERY_KEY,
+} from "./examinationsQueryKeys";
+import { invalidateExaminationsQueries } from "./invalidateExaminationsQueries";
 
 export function examinationsCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<ExaminationsCommandMetricsSnapshot>({
@@ -13,9 +19,11 @@ export function examinationsCommandMetricsQueryOptions() {
   });
 }
 
-export const EXAMINATIONS_EXAMS_QUERY_KEY = ["examinations", "exams", "list"] as const;
-export const EXAMINATIONS_RESULTS_QUERY_KEY = ["examinations", "results", "list"] as const;
-export const EXAMINATIONS_METRICS_QUERY_KEY = ["examinations", "metrics"] as const;
+export {
+  EXAMINATIONS_EXAMS_QUERY_KEY,
+  EXAMINATIONS_RESULTS_QUERY_KEY,
+  EXAMINATIONS_METRICS_QUERY_KEY,
+};
 
 export const EXAMINATIONS_API = EXAMINATIONS_MODULE_MANIFEST.restBasePath;
 
@@ -74,8 +82,7 @@ export function useExaminationsMutations() {
   const queryClient = useQueryClient();
 
   const invalidateExams = () => {
-    void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_EXAMS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_METRICS_QUERY_KEY });
+    invalidateExaminationsQueries(queryClient);
   };
 
   const replaceExams = tsrClient.examinations.bulkUpdateExams.useMutation({
@@ -85,10 +92,7 @@ export function useExaminationsMutations() {
   });
 
   const replaceExamResults = tsrClient.examinations.bulkUpdateResults.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_RESULTS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateExaminationsQueries(queryClient),
   });
 
   const deleteExam = tsrClient.examinations.deleteExam.useMutation({

@@ -2,34 +2,21 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
 import type { Denomination, StockBatch, Distribution, Redemption } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
-import {
-  HASANAT_DENOMS_QUERY_KEY,
-  HASANAT_BATCHES_QUERY_KEY,
-  HASANAT_DISTRIBUTIONS_QUERY_KEY,
-  HASANAT_REDEMPTIONS_QUERY_KEY,
-  HASANAT_METRICS_QUERY_KEY,
-} from "./useHasanatQueries";
+import { invalidateHasanatQueries } from "./invalidateHasanatQueries";
 
 export function useHasanatMutations() {
   const queryClient = useQueryClient();
 
   const invalidateDistributions = () => {
-    void queryClient.invalidateQueries({ queryKey: HASANAT_DISTRIBUTIONS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: HASANAT_METRICS_QUERY_KEY });
+    invalidateHasanatQueries(queryClient);
   };
 
   const replaceDenoms = tsrClient.hasanat.replaceDenoms.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: HASANAT_DENOMS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: HASANAT_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateHasanatQueries(queryClient),
   });
 
   const replaceBatches = tsrClient.hasanat.replaceBatches.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: HASANAT_BATCHES_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: HASANAT_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateHasanatQueries(queryClient),
   });
 
   const createDistribution = tsrClient.hasanat.createDistribution.useMutation({
@@ -52,10 +39,7 @@ export function useHasanatMutations() {
   });
 
   const replaceRedemptions = tsrClient.hasanat.replaceRedemptions.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: HASANAT_REDEMPTIONS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: HASANAT_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateHasanatQueries(queryClient),
   });
 
   return {

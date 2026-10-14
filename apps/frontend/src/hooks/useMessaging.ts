@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
 import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
   type Message,
@@ -13,6 +14,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 export const MESSAGING_TEMPLATES_QUERY_KEY = ["messaging", "templates"] as const;
 export const MESSAGING_LOGS_QUERY_KEY = ["messaging", "logs"] as const;
 export const MESSAGING_METRICS_QUERY_KEY = ["messaging", "metrics"] as const;
+
+/** Invalidate messaging templates/logs/metrics Query keys (mutations + live push). */
+export function invalidateMessagingQueries(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: MESSAGING_TEMPLATES_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: MESSAGING_LOGS_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: MESSAGING_METRICS_QUERY_KEY });
+}
 
 export interface MessageLogsPageResult {
   logs: Message[];
@@ -132,9 +140,7 @@ export function useMessagingMutations() {
   const { t } = useTranslation();
 
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: MESSAGING_TEMPLATES_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: MESSAGING_LOGS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: MESSAGING_METRICS_QUERY_KEY });
+    invalidateMessagingQueries(queryClient);
   };
 
   const onError = (error: unknown) => {

@@ -93,7 +93,6 @@ export default function ThemeModeSelector({
             <div
               className={cn(
                 "w-full h-12 rounded-xl border p-1 flex gap-1 items-center justify-center transition-all duration-200 overflow-hidden shadow-2xs mb-2.5",
-                // eslint-disable-next-line no-restricted-syntax -- theme preview swatch intentionally renders literal light window
                 mode === "light" && "bg-white border-zinc-200 text-zinc-800",
                 mode === "dark" && "bg-zinc-950 border-zinc-800 text-zinc-200",
 

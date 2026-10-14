@@ -97,7 +97,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
         {rowErrors.length > 0 && (
           <div
             role="alert"
-            className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-700 dark:text-amber-400 max-h-32 overflow-y-auto space-y-1"
+            className="p-3 bg-warning/10 border border-warning/20 rounded-lg text-xs text-warning max-h-32 overflow-y-auto space-y-1"
           >
             <div className="font-semibold flex items-center gap-1.5">
               <AlertCircle className="w-4 h-4" />
@@ -113,8 +113,8 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
         )}
 
         {completedJob ? (
-          <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-700 dark:text-emerald-400 space-y-2 text-center">
-            <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-600 dark:text-emerald-400" />
+          <div className="p-4 bg-success/10 border border-success/20 rounded-lg text-xs text-success space-y-2 text-center">
+            <CheckCircle2 className="w-8 h-8 mx-auto text-success" />
             <div className="font-semibold text-sm">{completedJob.label}</div>
             <Button variant="outline" size="sm" onClick={resetState}>
               Import Another File
