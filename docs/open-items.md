@@ -149,3 +149,33 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
    requires the schema to match the form's own shape, so converting these would mean adding a second,
    draft-shaped schema that duplicates the existing imperative rules — the opposite of the goal. Revisit
    only if those schemas are reworked to validate the draft directly.
+
+9. **Live-push invalidation coverage gaps (module query keys outside their invalidator).** The tenant
+   WebSocket dispatcher (`apps/frontend/src/lib/tenant/invalidateModuleQueries.ts`) maps a broadcast
+   collection key to its module's centralized invalidator, and module mutations now delegate to the same
+   invalidator (see the `refactor(frontend): enforce palette-token norm and converge query invalidation`
+   change). But several module query keys are **not** in their module's invalidator, so a change broadcast
+   under the parent collection never refreshes them on another client:
+   - `FACULTY_DESIGNATIONS_QUERY_KEY` / `FACULTY_DEPARTMENTS_QUERY_KEY` — not in `invalidateFacultyQueries`
+     (which covers only list/metrics/widget-aggregates/preferences/lookups). Their own mutation hooks
+     invalidate them directly, so same-client is correct; cross-client is stale. The faculty catalog route
+     handlers (`routes/tenant/faculty/facultyDesignation*RouteHandlers.ts`, `facultyCatalogUseCases.ts`)
+     also emit **no `broadcastCollection` at all**, unlike hasanat denoms/batches — so the gap starts in the
+     backend, not the frontend.
+   - `CONTACTS_SAVED_REPORTS_QUERY_KEY` — not in `invalidateContactsQueries`.
+   - `FINANCE_FEE_STRUCTURES_QUERY_KEY` / `FINANCE_FIELD_CONFIG_QUERY_KEY` — not in
+     `invalidateFinanceQueries`.
+   _Needs:_ a decision on whether these catalogs should broadcast (backend `broadcastCollection` + a
+   dispatcher case + the key added to the module invalidator), or are intentionally eventually-consistent.
+   Not a frontend-only fix.
+
+10. **Frontend review follow-ups (deferred — need infra or a decision).** From the frontend review:
+    - **Sidebar/chrome unification (audit F6).** Platform `PlatformSidebar` (+ `platform/components/sidebar/*`)
+      and tenant `Sidebar`/`SidebarNav`/`MobileSidebar` are forked shells over two nav models
+      (`platform/lib/platformNav.ts` vs `lib/config/navConfig.tsx`); the shared `SidebarNavItem` leaf is
+      already reused. A single `AppSidebar` + per-host nav adapters is an L-effort change whose only guard
+      is the authenticated shell spec (currently `@local-only`), so it needs a change that can run the
+      responsive/axe shell specs.
+    - **`lib/invoiceTemplatePresets.ts` (862 LOC).** The only frontend file over the ADR-001 300-line cap;
+      even its `buildFormalA5Preset` element array exceeds 300 alone, so splitting needs a nested
+      decomposition (it is preset *data*, not logic).
