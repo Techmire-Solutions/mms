@@ -432,6 +432,35 @@ export function seedFacultySetup(subdomain: string): void {
 }
 
 /**
+ * Seeds 20 deterministic contacts into a tenant via the backend script, so the a11y
+ * gate can audit a *populated* directory (rows, filters, detail drawers) — the
+ * empty-tenant blind spot documented in `docs/a11y-baseline.md`. Idempotent (the
+ * script writes fixed ids `c-seed-dummy-*`), so re-running cannot duplicate rows.
+ */
+export function seedContacts(subdomain: string): void {
+  if (process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production") {
+    console.warn("[E2E SAFEGUARD] Skipping contacts seed on production environment.");
+    return;
+  }
+  try {
+    const output = execSync(`pnpm exec tsx src/scripts/seed-20-contacts.ts ${subdomain}`, {
+      cwd: backendDir,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || "test",
+        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+      },
+    });
+    console.log(output);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[E2E] Failed to seed contacts for ${subdomain}:`, message);
+    throw err;
+  }
+}
+
+/**
  * Creates Faculty record for existing John Doe contact
  */
 export async function createFacultyFromContact(page: Page): Promise<void> {

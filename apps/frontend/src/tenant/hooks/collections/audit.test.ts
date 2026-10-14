@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AUDIT_EVENTS_QUERY_KEY, auditEventsQueryOptions } from "./audit";
 
-vi.mock("@/lib/apiClient", () => ({
-  apiJson: vi.fn().mockResolvedValue({}),
+const apiContractMock = vi.hoisted(() => ({
+  audit: { listEvents: vi.fn().mockResolvedValue({ status: 200, body: {} }) },
 }));
 
-import { apiJson } from "@/lib/apiClient";
+vi.mock("@/lib/api", () => ({ apiContract: apiContractMock }));
 
 describe("auditEventsQueryOptions", () => {
   beforeEach(() => {
-    vi.mocked(apiJson).mockClear();
+    apiContractMock.audit.listEvents.mockClear();
   });
 
   it("targets the unfiltered events endpoint with the shared query key", async () => {
@@ -20,18 +20,19 @@ describe("auditEventsQueryOptions", () => {
     const signal = new AbortController().signal;
     await (options.queryFn as (ctx: { signal: AbortSignal }) => Promise<unknown>)({ signal });
 
-    expect(apiJson).toHaveBeenCalledWith("/api/audit/events", { signal });
+    expect(apiContractMock.audit.listEvents).toHaveBeenCalledWith(
+      expect.objectContaining({ query: {}, signal }),
+    );
   });
 
-  it("serializes active filters into the request path", async () => {
+  it("serializes active filters into the request query", async () => {
     const options = auditEventsQueryOptions({ limit: 10, offset: 20, tableName: "students" });
 
     const signal = new AbortController().signal;
     await (options.queryFn as (ctx: { signal: AbortSignal }) => Promise<unknown>)({ signal });
 
-    expect(apiJson).toHaveBeenCalledWith(
-      "/api/audit/events?limit=10&offset=20&tableName=students",
-      { signal },
+    expect(apiContractMock.audit.listEvents).toHaveBeenCalledWith(
+      expect.objectContaining({ query: { limit: 10, offset: 20, tableName: "students" } }),
     );
   });
 });

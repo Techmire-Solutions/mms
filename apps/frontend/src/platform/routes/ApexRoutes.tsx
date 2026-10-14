@@ -7,35 +7,94 @@ import { PlatformPageShell } from "@/platform/components/PlatformPageShell";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { PlatformAuthProvider } from "@/platform/lib/PlatformAuthContext";
 import { ApexBootPrefetch } from "@/platform/components/ApexBootPrefetch";
+import {
+  PLATFORM_CONSOLE_GROUPS,
+  type ApexConsoleEntry,
+  type ApexConsoleGroup,
+} from "@/platform/routes/apexRouteRegistry";
 
 const ApexHome = React.lazy(() => import("@/platform/pages/ApexHome"));
 const ApexWorkspaceGate = React.lazy(() => import("@/platform/pages/ApexWorkspaceGate"));
 const TenantNotFoundPage = React.lazy(() => import("@/platform/pages/TenantNotFoundPage"));
-const OnboardingWizard = React.lazy(() => import("@/platform/pages/onboarding/OnboardingWizard"));
-const PlatformAccount = React.lazy(() => import("@/platform/pages/PlatformAccount"));
 const PlatformForgotPassword = React.lazy(
   () => import("@/platform/pages/auth/PlatformForgotPassword"),
 );
 const PlatformLoginPage = React.lazy(() => import("@/platform/pages/auth/PlatformLoginPage"));
-const PlatformDashboardPage = React.lazy(() => import("@/platform/pages/PlatformDashboardPage"));
-const PlatformWorkspacesPage = React.lazy(() => import("@/platform/pages/PlatformWorkspacesPage"));
-const PlatformReportsPage = React.lazy(() => import("@/platform/pages/PlatformReportsPage"));
-const PlatformActivityLogsPage = React.lazy(
-  () => import("@/platform/pages/PlatformActivityLogsPage"),
-);
-const PlatformSystemPage = React.lazy(() => import("@/platform/pages/PlatformSystemPage"));
-const PlatformUsersPage = React.lazy(() => import("@/platform/pages/PlatformUsersPage"));
-const PlatformSettingsPage = React.lazy(() => import("@/platform/pages/PlatformSettingsPage"));
-const PlatformErdPage = React.lazy(() => import("@/platform/pages/PlatformErdPage"));
-const PlatformDesignSystemPage = React.lazy(
-  () => import("@/platform/pages/PlatformDesignSystemPage"),
+
+/**
+ * Stable id → lazy page component. Built once at module scope so `React.lazy`
+ * is not re-created per render (which would remount the page).
+ */
+const CONSOLE_PAGES = new Map<string, React.LazyExoticComponent<React.ComponentType>>(
+  PLATFORM_CONSOLE_GROUPS.flatMap((group) =>
+    group.entries
+      .filter((entry) => entry.loader)
+      .map(
+        (entry) =>
+          [
+            entry.id,
+            React.lazy(entry.loader as () => Promise<{ default: React.ComponentType }>),
+          ] as const,
+      ),
+  ),
 );
 
 const apexTenantGate = <ApexWorkspaceGate variant="tenantOnly" showWorkspaceList />;
 
+function renderConsoleEntry(entry: ApexConsoleEntry): React.JSX.Element {
+  if (entry.redirectTo) {
+    return (
+      <Route
+        key={entry.id}
+        path={entry.path}
+        element={<Navigate to={entry.redirectTo} replace />}
+      />
+    );
+  }
+  const Page = CONSOLE_PAGES.get(entry.id)!;
+  return (
+    <Route
+      key={entry.id}
+      path={entry.path}
+      element={
+        <React.Suspense fallback={<RouteStatusFallback />}>
+          <Page />
+        </React.Suspense>
+      }
+    />
+  );
+}
+
+function renderConsoleGroup(group: ApexConsoleGroup): React.JSX.Element {
+  const pages = <>{group.entries.map(renderConsoleEntry)}</>;
+  // Groups are shell-homogeneous today (only `onboard` opts out).
+  const useShell = group.entries.some((entry) => entry.shell !== false);
+  return (
+    <Route
+      key={group.permission ?? "authenticated"}
+      element={<PlatformBootGate requireAuth requirePermission={group.permission ?? undefined} />}
+    >
+      {useShell ? (
+        <Route
+          element={
+            <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
+              <PlatformPageShell width="7xl" />
+            </React.Suspense>
+          }
+        >
+          {pages}
+        </Route>
+      ) : (
+        pages
+      )}
+    </Route>
+  );
+}
+
 /**
  * Platform apex route tree — public entry routes vs platform-auth-protected admin routes.
  * Dedicated sign-in lives at `/platform/login` (`ROUTES.platformLogin`), dedicated dashboard at `/platform/dashboard`.
+ * Protected console routes are derived from `@/platform/routes/apexRouteRegistry`.
  */
 export default function ApexRoutes(): React.JSX.Element {
   return (
@@ -104,151 +163,8 @@ export default function ApexRoutes(): React.JSX.Element {
         <Route key={path} path={path} element={apexTenantGate} />
       ))}
 
-      {/* Protected platform routes — BootGate sends unauthenticated users to `/platform/login` */}
-      <Route element={<PlatformBootGate requireAuth />}>
-        <Route
-          element={
-            <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
-              <PlatformPageShell width="7xl" />
-            </React.Suspense>
-          }
-        >
-          <Route
-            path={ROUTES.platformAccount}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformAccount />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path={ROUTES.platformDashboard}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformDashboardPage />
-              </React.Suspense>
-            }
-          />
-        </Route>
-      </Route>
-      <Route element={<PlatformBootGate requireAuth requirePermission="workspaces" />}>
-        <Route
-          element={
-            <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
-              <PlatformPageShell width="7xl" />
-            </React.Suspense>
-          }
-        >
-          <Route
-            path={ROUTES.platformWorkspaces}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformWorkspacesPage />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path={ROUTES.platformReports}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformReportsPage />
-              </React.Suspense>
-            }
-          />
-        </Route>
-      </Route>
-      <Route element={<PlatformBootGate requireAuth requirePermission="onboard" />}>
-        <Route
-          path={ROUTES.onboarding}
-          element={
-            <React.Suspense fallback={<RouteStatusFallback />}>
-              <OnboardingWizard />
-            </React.Suspense>
-          }
-        />
-      </Route>
-      <Route element={<PlatformBootGate requireAuth requirePermission="admins" />}>
-        <Route
-          element={
-            <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
-              <PlatformPageShell width="7xl" />
-            </React.Suspense>
-          }
-        >
-          <Route
-            path={ROUTES.platformUsers}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformUsersPage />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path={ROUTES.platformAdmins}
-            element={<Navigate to={ROUTES.platformUsers} replace />}
-          />
-        </Route>
-      </Route>
-      <Route element={<PlatformBootGate requireAuth requirePermission="settings" />}>
-        <Route
-          element={
-            <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
-              <PlatformPageShell width="7xl" />
-            </React.Suspense>
-          }
-        >
-          <Route
-            path={ROUTES.platformSettings}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformSettingsPage />
-              </React.Suspense>
-            }
-          />
-        </Route>
-      </Route>
-      <Route element={<PlatformBootGate requireAuth requirePermission="system" />}>
-        <Route
-          element={
-            <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
-              <PlatformPageShell width="7xl" />
-            </React.Suspense>
-          }
-        >
-          <Route
-            path={ROUTES.platformActivityLogs}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformActivityLogsPage />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path={ROUTES.platformSystem}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformSystemPage />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path={ROUTES.platformErd}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformErdPage />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path={ROUTES.platformDesignSystem}
-            element={
-              <React.Suspense fallback={<RouteStatusFallback />}>
-                <PlatformDesignSystemPage />
-              </React.Suspense>
-            }
-          />
-        </Route>
-      </Route>
+      {/* Protected platform console — grouped by required permission (registry SSOT) */}
+      {PLATFORM_CONSOLE_GROUPS.map(renderConsoleGroup)}
 
       <Route path="*" element={<PlatformFallbackRoute />} />
     </Routes>

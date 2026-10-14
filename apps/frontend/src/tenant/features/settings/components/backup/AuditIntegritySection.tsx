@@ -15,7 +15,8 @@ import { StatCard } from "@/components/app/StatCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { triggerFileDownload } from "@/lib/download";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import {
   useAuditVerifyMutation,
   useAuditMerkleRootsQuery,
@@ -60,7 +61,16 @@ export function AuditIntegritySection({
   const handleExport = useCallback(async () => {
     setIsExporting(true);
     try {
-      const payload = await apiJson<AuditExportPayload>("/api/audit/export");
+      const response = await apiContract.audit.exportAudit({});
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Audit export failed",
+          errorBody?.type,
+        );
+      }
+      const payload = response.body as AuditExportPayload;
       const filename = `audit-trail-${workspaceSubdomain}-${new Date().toISOString().slice(0, 10)}.json`;
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       triggerFileDownload(blob, filename);

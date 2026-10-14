@@ -8,8 +8,8 @@ import type {
   SpecializedEntryResult,
 } from "@mms/shared";
 import { ACCOUNTING_MODULE_MANIFEST, FINANCE_MODULE_MANIFEST } from "@mms/shared";
-import { tsrClient } from "@/lib/api";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract, tsrClient } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
   ACCOUNTING_ENTRIES_QUERY_KEY,
@@ -99,14 +99,18 @@ export function useProcessSpecializedEntryMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: SpecializedEntryInput) =>
-      apiJson<SpecializedEntryResult>(
-        `${ACCOUNTING_MODULE_MANIFEST.restBasePath}/specialized-entries`,
-        {
-          method: "POST",
-          body: JSON.stringify(input),
-        },
-      ),
+    mutationFn: async (input: SpecializedEntryInput) => {
+      const response = await apiContract.accountingLedger.processSpecializedEntry({ body: input });
+      if (response.status < 200 || response.status >= 300) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to process specialized entry",
+          errorBody?.type,
+        );
+      }
+      return response.body as SpecializedEntryResult;
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [ACCOUNTING_MODULE_MANIFEST.moduleId] });
       void queryClient.invalidateQueries({ queryKey: [FINANCE_MODULE_MANIFEST.moduleId] });

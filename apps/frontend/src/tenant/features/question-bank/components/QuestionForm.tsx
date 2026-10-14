@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { BookOpen } from "lucide-react";
+import { useForm, type Resolver } from "react-hook-form";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -14,7 +15,7 @@ import {
   type QuestionBankQuestion as Question,
   type QuestionSourceBook,
 } from "@mms/shared";
-import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { createZodFormResolver } from "@/lib/forms/createZodFormResolver";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import { QuestionFormClassificationSection } from "@/tenant/features/question-bank/components/QuestionFormClassificationSection";
 import { QuestionFormContentSection } from "@/tenant/features/question-bank/components/QuestionFormContentSection";
@@ -22,6 +23,23 @@ import { QuestionFormFooterSummary } from "@/tenant/features/question-bank/compo
 import { QuestionFormSourcesSection } from "@/tenant/features/question-bank/components/QuestionFormSourcesSection";
 
 import type { QuestionFormDraft, QuestionFormProps } from "../lib/questionFormTypes";
+
+type QuestionFormValues = QuestionFormDraft & { id: string };
+
+function buildQuestionValues(question: Question | null, language: string): QuestionFormValues {
+  const defaultLang = normalizeAppLanguage(language);
+  return {
+    id: question?.id ?? `q${crypto.randomUUID()}`,
+    categoryIds: question?.categoryIds ?? [],
+    type: question?.type ?? "mcq",
+    difficulty: (question?.difficulty as QuestionDifficulty) ?? "easy",
+    questionLanguage: (question?.questionLanguage as AppLanguageCode) ?? defaultLang,
+    text: question?.text ?? "",
+    options: question?.options ? [...question.options] : ["", "", "", ""],
+    answer: question?.answer ?? "",
+    sourceCitations: question?.sourceCitations ? [...question.sourceCitations] : [],
+  } as QuestionFormValues;
+}
 
 export function QuestionForm({
   open,
@@ -34,53 +52,47 @@ export function QuestionForm({
   const { settings, categories, sourceBooks, updateSettingsAsync } =
     useQuestionBankConfig(questions);
   const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [questionDraft, setQuestionDraft] = useState<QuestionFormDraft>(() => {
-    const defaultLang = normalizeAppLanguage(language);
-    return {
-      categoryIds: question?.categoryIds ?? [],
-      type: question?.type ?? "mcq",
-      difficulty: (question?.difficulty as QuestionDifficulty) ?? "easy",
-      questionLanguage: (question?.questionLanguage as AppLanguageCode) ?? defaultLang,
-      text: question?.text ?? "",
-      options: question?.options ? [...question.options] : ["", "", "", ""],
-      answer: question?.answer ?? "",
-      sourceCitations: question?.sourceCitations ? [...question.sourceCitations] : [],
-    };
+  // Shared validation contract: same resolver + ValidationError shape as the other forms.
+  const resolver = useMemo(
+    () =>
+      createZodFormResolver(questionBankQuestionWriteSchema, {
+        resolveMessage: (message) => t(message as AppTranslationKey),
+      }) as unknown as Resolver<QuestionFormValues>,
+    [t],
+  );
+
+  const [defaultValues] = useState(() => buildQuestionValues(question, language));
+  const { watch, setValue, handleSubmit, reset, formState } = useForm<QuestionFormValues>({
+    resolver,
+    defaultValues,
+    mode: "onSubmit",
   });
 
-  // Re-sync draft when editing another question record
+  // Re-sync the draft when editing another question record / when the language changes.
   useEffect(() => {
     if (!open) return;
-    const defaultLang = normalizeAppLanguage(language);
-    setQuestionDraft({
-      categoryIds: question?.categoryIds ?? [],
-      type: question?.type ?? "mcq",
-      difficulty: (question?.difficulty as QuestionDifficulty) ?? "easy",
-      questionLanguage: (question?.questionLanguage as AppLanguageCode) ?? defaultLang,
-      text: question?.text ?? "",
-      options: question?.options ? [...question.options] : ["", "", "", ""],
-      answer: question?.answer ?? "",
-      sourceCitations: question?.sourceCitations ? [...question.sourceCitations] : [],
-    });
-    setErrors({});
-  }, [open, question, language]);
+    reset(buildQuestionValues(question, language));
+  }, [open, question, language, reset]);
 
-  const updateDraft = (patch: Partial<typeof questionDraft>) => {
-    setQuestionDraft((prev) => ({ ...prev, ...patch }));
-    const keys = Object.keys(patch);
-    setErrors((prev) => {
-      let changed = false;
-      const next = { ...prev };
-      for (const k of keys) {
-        if (next[k]) {
-          delete next[k];
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
+  const questionDraft = watch();
+
+  const errors = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [key, value] of Object.entries(formState.errors)) {
+      const message = (value as { message?: unknown } | undefined)?.message;
+      if (typeof message === "string") map[key] = message;
+    }
+    return map;
+  }, [formState.errors]);
+
+  const updateDraft = (patch: Partial<QuestionFormDraft>) => {
+    for (const [key, value] of Object.entries(patch)) {
+      setValue(key as keyof QuestionFormValues, value as never, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+    }
   };
 
   // Inline category/source-book creation in the question form persists to the
@@ -107,22 +119,10 @@ export function QuestionForm({
     await updateSettingsAsync({ ...settings, sourceBooks: next });
   };
 
-  const handleSave = async () => {
-    setErrors({});
-    const candidate = {
-      ...questionDraft,
-      id: question?.id || `q${crypto.randomUUID()}`,
-    };
-    const parsed = questionBankQuestionWriteSchema.safeParse(candidate);
-    if (!parsed.success) {
-      setErrors(mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)));
-      notify.error(t("questionBank.validationFailed"));
-      return;
-    }
-
+  const onValid = async (data: QuestionFormValues) => {
     setSaving(true);
     try {
-      await onSave(parsed.data as Question);
+      await onSave(data as Question);
       notify.success(question ? t("questionBank.updated") : t("questionBank.saved"));
       onClose();
     } catch (err: unknown) {
@@ -133,6 +133,9 @@ export function QuestionForm({
       setSaving(false);
     }
   };
+
+  const handleSave = () =>
+    handleSubmit(onValid, () => notify.error(t("questionBank.validationFailed")))();
 
   const footerStart = <QuestionFormFooterSummary questionDraft={questionDraft} />;
 

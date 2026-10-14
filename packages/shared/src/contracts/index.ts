@@ -28,6 +28,10 @@ import { publicContract } from "./public.contract.js";
 import { aiContract } from "./ai.contract.js";
 import { healthContract } from "./health.contract.js";
 import { moduleAccessContract } from "./moduleAccess.contract.js";
+import { auditContract } from "./audit.contract.js";
+import { tasksContract } from "./tasks.contract.js";
+import { accountingLedgerContract } from "./accountingLedger.contract.js";
+import { financeOpsContract } from "./financeOps.contract.js";
 import {
   platformContract,
   platformWorkspacesContract,
@@ -61,6 +65,10 @@ export const rootContract = c.router({
   ai: aiContract,
   health: healthContract,
   moduleAccess: moduleAccessContract,
+  audit: auditContract,
+  tasks: tasksContract,
+  accountingLedger: accountingLedgerContract,
+  financeOps: financeOpsContract,
   platform: platformContract,
 });
 
@@ -100,6 +108,10 @@ export {
   aiContract,
   healthContract,
   moduleAccessContract,
+  auditContract,
+  tasksContract,
+  accountingLedgerContract,
+  financeOpsContract,
   platformContract,
   platformWorkspacesContract,
   platformSettingsContract,
@@ -129,5 +141,9 @@ export type DomainContracts = {
   ai: typeof aiContract;
   health: typeof healthContract;
   moduleAccess: typeof moduleAccessContract;
+  audit: typeof auditContract;
+  tasks: typeof tasksContract;
+  accountingLedger: typeof accountingLedgerContract;
+  financeOps: typeof financeOpsContract;
   platform: typeof platformContract;
 };

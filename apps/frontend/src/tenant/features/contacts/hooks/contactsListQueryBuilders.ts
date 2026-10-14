@@ -1,5 +1,6 @@
 import { CONTACTS_MODULE_MANIFEST, type ContactsQuickFilter, type Contact } from "@mms/shared";
 import { apiContract } from "@/lib/api";
+import { createModuleListQueryBuilders } from "@/lib/query/createModuleListQueryBuilders";
 import {
   CONTACTS_API,
   CONTACTS_QUERY_KEY,
@@ -21,69 +22,29 @@ export interface ContactsPaginatedParams {
   enabled?: boolean;
 }
 
-export function buildContactsPageUrl(params: ContactsPaginatedParams): string {
-  const queryParams = new URLSearchParams();
-  queryParams.set("page", String(params.page));
-  queryParams.set("limit", String(params.limit ?? CONTACTS_MODULE_MANIFEST.defaultPageSize));
-  if (params.search?.trim()) queryParams.set("search", params.search.trim());
-  if (params.gender) queryParams.set("gender", params.gender);
-  if (params.includeDeleted) queryParams.set("includeDeleted", "true");
-  if (params.hasPhone) queryParams.set("hasPhone", "true");
-  if (params.hasReachable) queryParams.set("hasReachable", "true");
-  if (params.quickFilter && params.quickFilter !== "all") {
-    queryParams.set("quickFilter", params.quickFilter);
-  }
-  if (params.excludeIds && params.excludeIds.length > 0) {
-    queryParams.set("excludeIds", params.excludeIds.map(String).join(","));
-  }
-  if (params.excludeLinkedModules && params.excludeLinkedModules.length > 0) {
-    queryParams.set("excludeLinkedModules", params.excludeLinkedModules.join(","));
-  }
-  if (params.sortField) queryParams.set("sortField", params.sortField);
-  if (params.sortDir) queryParams.set("sortDir", params.sortDir);
-  return `${CONTACTS_API}?${queryParams.toString()}`;
-}
+const builders = createModuleListQueryBuilders<ContactsPaginatedParams>({
+  resolveApiPath: () => CONTACTS_API,
+  resolveQueryKey: () => CONTACTS_QUERY_KEY,
+  defaultPageSize: CONTACTS_MODULE_MANIFEST.defaultPageSize,
+  keyStyle: "include",
+  fields: [
+    { name: "search", kind: "text", keyDefault: "" },
+    { name: "gender", kind: "text", keyDefault: "" },
+    { name: "includeDeleted", kind: "boolean", keyDefault: false },
+    { name: "hasPhone", kind: "boolean", keyDefault: false },
+    { name: "hasReachable", kind: "boolean", keyDefault: false },
+    { name: "quickFilter", kind: "enum", keyDefault: "all", allValue: "all" },
+    { name: "excludeIds", kind: "csv", keyDefault: "" },
+    { name: "excludeLinkedModules", kind: "csv", keyDefault: "" },
+    { name: "sortField", kind: "text", keyDefault: "" },
+    { name: "sortDir", kind: "text", keyDefault: "asc" },
+  ],
+});
 
-export function contactsListQueryKeyParams(params: ContactsPaginatedParams) {
-  return {
-    page: params.page,
-    limit: params.limit ?? CONTACTS_MODULE_MANIFEST.defaultPageSize,
-    search: params.search?.trim() || "",
-    gender: params.gender || "",
-    includeDeleted: Boolean(params.includeDeleted),
-    hasPhone: Boolean(params.hasPhone),
-    hasReachable: Boolean(params.hasReachable),
-    quickFilter: params.quickFilter ?? "all",
-    excludeIds: (params.excludeIds ?? []).map(String).join(","),
-    excludeLinkedModules: (params.excludeLinkedModules ?? []).join(","),
-    sortField: params.sortField || "",
-    sortDir: params.sortDir || "asc",
-  };
-}
-
-export function contactsPaginatedQueryKey(params: ContactsPaginatedParams) {
-  return [...CONTACTS_QUERY_KEY, "page", contactsListQueryKeyParams(params)] as const;
-}
-
-export function sameContactsListFilters(
-  previous: ReturnType<typeof contactsListQueryKeyParams> | undefined,
-  next: ReturnType<typeof contactsListQueryKeyParams>,
-): boolean {
-  if (!previous) return false;
-  return (
-    previous.search === next.search &&
-    previous.gender === next.gender &&
-    previous.includeDeleted === next.includeDeleted &&
-    previous.hasPhone === next.hasPhone &&
-    previous.hasReachable === next.hasReachable &&
-    previous.quickFilter === next.quickFilter &&
-    previous.excludeIds === next.excludeIds &&
-    previous.excludeLinkedModules === next.excludeLinkedModules &&
-    previous.sortField === next.sortField &&
-    previous.sortDir === next.sortDir &&
-    previous.limit === next.limit
-  );
-}
+export const buildContactsPageUrl = builders.buildPageUrl;
+export const contactsListQueryKeyParams = builders.listQueryKeyParams;
+export const contactsPaginatedQueryKey = builders.paginatedQueryKey;
+export const sameContactsListFilters = builders.sameListFilters;
 
 /** Single SQL page — preferred for report visualizer (no unbounded walk). */
 export async function fetchContactById(

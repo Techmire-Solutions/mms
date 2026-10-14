@@ -9,6 +9,7 @@ import boundaryImports from "./eslint-rules/no-cross-feature-imports.cjs";
 import uiHostImports from "./eslint-rules/no-ui-host-imports.cjs";
 import directionalRule from "./eslint-rules/no-physical-directional-classes.cjs";
 import contextValueRule from "./eslint-rules/no-unmemoized-context-value.cjs";
+import directApiClientRule from "./eslint-rules/no-direct-api-client.cjs";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 const appFiles = [
@@ -72,7 +73,11 @@ export default tseslint.config(
       "react-hooks": pluginReactHooks,
       "unused-imports": pluginUnusedImports,
       "mms-boundary": {
-        rules: { "no-cross-feature-imports": boundaryImports, "no-ui-host-imports": uiHostImports },
+        rules: {
+          "no-cross-feature-imports": boundaryImports,
+          "no-ui-host-imports": uiHostImports,
+          "no-direct-api-client": directApiClientRule,
+        },
       },
       "mms-bidi": { rules: { "no-physical-directional-classes": directionalRule } },
       "mms-react": { rules: { "no-unmemoized-context-value": contextValueRule } },
@@ -148,6 +153,31 @@ export default tseslint.config(
             "Use semantic width/height tokens or spacing scale instead of arbitrary pixel values.",
         },
       ],
+    },
+  },
+  {
+    // Tenant + platform modules must use the typed ts-rest client; the raw
+    // apiFetch/apiJson transport is only sanctioned in `src/lib/**` + `src/hooks/**`
+    // (auth, integrations, uploads, db sync, background jobs) — see the rule header.
+    // Two platform infrastructure files are likewise sanctioned and ignored here:
+    //   - PlatformAuthContext: the platform auth/session context (its tenant twin
+    //     `src/lib/contexts/AuthContext.tsx` uses the raw transport and is outside
+    //     this rule's scope by living in `src/lib`).
+    //   - PlatformSystemMaintenance: a `/ready` probe that needs `cache: "no-store"`,
+    //     which the contract client does not expose.
+    // The baseline (eslint-rules/direct-api-client-baseline.json) is now empty — every
+    // module surface is migrated; new raw-transport module files fail this rule.
+    files: [
+      "src/tenant/features/**/*.{ts,tsx}",
+      "src/tenant/hooks/**/*.{ts,tsx}",
+      "src/platform/**/*.{ts,tsx}",
+    ],
+    ignores: [
+      "src/platform/lib/PlatformAuthContext.tsx",
+      "src/platform/components/PlatformSystemMaintenance.tsx",
+    ],
+    rules: {
+      "mms-boundary/no-direct-api-client": "error",
     },
   },
   {

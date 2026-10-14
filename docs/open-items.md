@@ -77,3 +77,75 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
    the two offline-banner CTAs kept their strong wash and dropped the same-token hover text (the contract's
    other remedy), and one range cell's now-dead hover class removed. The scan now covers **every interaction
    state**, with that measurement cited in the test so hover is not re-litigated.
+
+8. **Legacy client-state store (`@/lib/db` localStorage + `/api/db` sync).** _Partially migrated; remainder
+   blocked on missing endpoints (frontend-only scope)._ `src/lib/db.ts` is a re-export barrel over
+   `dbStorageCore` / `dbCollections` / `dbObjects` / `dbBackupSync`; the header already states the rule
+   (prefer TanStack Query + REST, keep this for settings/legacy writes). **Removed:** the dead
+   `useLiveObject` hook (0 consumers) and the dead barrel exports `saveCollectionAsync`, `saveObjectAsync`,
+   `syncDatabase`, `clearAllClientStorage`, `formatDate` (0 call sites; the underlying functions stay in their
+   modules). **Blocked — no Query/REST equivalent exists yet, so the file stays on the legacy store:**
+   - _Settings/branding_ — `useGlobalSettingsDraft`, `useThemeSettingsDraft`, `useBrandingDraft`,
+     `BrandingShared`, `InstitutionSetup` → need `/api/settings/global` + `/api/branding` object endpoints
+     (or an `AuthContext` session-settings extension).
+   - _Document templates_ — `documentTemplatePersistence` + `invoiceTemplateStore` / student-card / finance /
+     exam / hasanat editors (~15 consumers) → need a generic `/api/templates/:key` object endpoint.
+   - _Reports/KPI config_ — `usePinnedWidgetsController`, `useDashboardSectionSettings`, `kpiSummaryCard*`,
+     `DynamicCardBuilder`, `ModuleReportsToolPanels` → need `/api/reports/section-settings` + per-module KPI
+     config endpoints.
+   - _Module settings_ — `useObligationsSettings` → could reuse the `createModuleSetupConfigHooks` pattern
+     once a settings endpoint exists.
+   - _Backups history_ — `useLiveCollection("backups")` (1 consumer) → need a `backups` collection endpoint.
+   _Deliberately NOT removed_ (not dead, despite `pnpm` grep-appearing unused): the one-time local→server
+   widget seed in `useDashboardConfig`/`widgetDefaultsStore` is the **active** path that gives new/legacy
+   workspaces their default widgets, and `findCachedCollectionRecord`'s localStorage fallback is covered by
+   `queryCacheCollections.test.ts` — both are migration-window code and must stay until the migration closes.
+   The backup/restore subsystem (`dbBackupSync` via `useBackupRestore*`) is the sanctioned whole-tenant
+   `/api/db` path and is **not** a target.
+   Raw `apiFetch`/`apiJson` use is now ratcheted: `eslint-rules/no-direct-api-client.cjs` +
+   `direct-api-client-baseline.json` ban new hand-rolled call sites in `src/tenant/features/**`,
+   `src/tenant/hooks/**` **and `src/platform/**`** (ts-rest is the target), with a staleness check so the
+   baseline only shrinks. **Baselined raw-transport files: 0 (the baseline is now empty).** Tenant: 20 → 0 via
+   twenty migrations to their contract routes:
+   `useMessagingContactsByIds` (`messaging.resolveContacts`), `useMessagingWorkRecipients`
+   (`messaging.listRecipients` + `messaging.matchRecipients`), `useExaminationsReportAggregates`
+   (`examinations.reportAggregates`), `accountingListFetch` (`accounting.listEntries` + `listAccounts`),
+   `useAccountingQueries` (`accounting.getReportAggregates`), `useDeploymentAppDomain`
+   (`public.deploymentConfig`), `useWorkspaceBySubdomain` (`workspace.bySubdomain`),
+   `useModuleWidgetAggregates` (per-domain `widgetAggregates` — every dispatched domain declares the route),
+   plus the audit surface via a **new `auditContract`** (backend already serves `/api/audit/*` with plain
+   Fastify plugins): `collections/audit.ts` (`listEvents`/`listMerkleRoots`/`verifyChain`/`executeErasure`/
+   `getAnomalies`) and `AuditIntegritySection.tsx` (`exportAudit`); plus **new `tasksContract`** (11 routes;
+   `useTasksApi`) and the auth `ui-state` routes (`useInitializeUiState`) — all served by plain Fastify handlers.
+   Plus the accounting ledger-ops via a **new client-only `accountingLedgerContract`** (14 routes — posting rules,
+   opening balances, bank statements/reconciliations, specialized entries, reversals, chart seeding, voucher
+   numbering): `useAccountingLedgerOps`, `useAccountingMutations`, `useReverseJournalEntry`, `useSeedDefaultChart`,
+   `useVoucherNumbering`. It is a separate contract (not added to `accountingContract`, which the backend's ts-rest
+   router consumes wholesale) — the same multi-contract split the contacts domain already uses.
+   Plus the finance ops via a **new client-only `financeOpsContract`** (9 routes — invoice collect/remind/cancel,
+   invoice generation, credit notes, fee structures): `useFinanceCollect`, `useFinanceInvoiceGeneration`,
+   `useFinanceFeeStructures`. The tenant surface is now fully on the ts-rest client. Platform:
+   13 → 2 via eleven migrations —
+   `usePlatformWorkspaceMetrics` (`getWorkspaceMetrics`), `usePlatformActivityLogs` (`getActivityLogs`),
+   `usePlatformWorkspaceModules` GET (`getWorkspaceModules`), `usePlatformProfile` GET (`getMe`),
+   `useWorkspaceRegistry` (`workspace.registry`), `usePlatformWorkspaces` (`platform.listWorkspaces`),
+   `usePlatformSettings` (`platform.getSettings` + `health.ready`), plus four after **declaring their missing
+   routes** in `platform.contract.ts` (the backend already serves them via plain Fastify handlers; no handler
+   change): `useErdPageController` (`getErd`), `usePlatformTelemetry` (`getTelemetry` + `getActivityTrend`),
+   `usePlatformAiDiagnostics` (`aiQuery`), `usePlatformSessionTimeout` (`getSessionPolicy`).
+   The last 2 platform files are **sanctioned infrastructure**, ignored by the rule (same class as the
+   `src/lib/**` / `src/hooks/**` carve-out): `PlatformAuthContext.tsx` (platform auth/session context — the
+   tenant twin `src/lib/contexts/AuthContext.tsx` is raw and outside the rule) and `PlatformSystemMaintenance.tsx`
+   (`/ready` probe needing `cache: "no-store"`, which the contract client does not expose). Every tenant and
+   platform **module** surface is now on the typed ts-rest client.
+   **Forms:** `AccountModal` and `QuestionForm` are migrated onto the shared RHF contract
+   (`createZodFormResolver` + `toValidationErrors`); each has a test (`AccountModal.test.tsx` covers schema
+   errors, the Setup-driven duplicate check, and trimmed save; `QuestionForm.test.tsx` covers the valid save
+   path and the empty-field guard). Both bridge to their unchanged child field components (values via
+   `watch()`, updates via `setValue`, errors from `formState.errors`).
+   **Deliberately not migrated** — `InvoiceForm`, `PaymentForm`, `useMessagingTemplateEditor`: their Zod
+   schemas (`invoiceRecordInsertSchema`, `paymentRecordInsertSchema`, …) validate the **built payload**
+   (numbers, computed amounts), not the draft the form holds (amount is a string). The shared resolver
+   requires the schema to match the form's own shape, so converting these would mean adding a second,
+   draft-shaped schema that duplicates the existing imperative rules — the opposite of the goal. Revisit
+   only if those schemas are reworked to validate the draft directly.

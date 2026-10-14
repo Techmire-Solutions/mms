@@ -3,11 +3,12 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { usePlatformAiDiagnostics } from "./usePlatformAiDiagnostics";
-import * as apiClient from "@/lib/apiClient";
 
-vi.mock("@/lib/apiClient", () => ({
-  apiJson: vi.fn(),
+const apiContractMock = vi.hoisted(() => ({
+  platform: { aiQuery: vi.fn() },
 }));
+
+vi.mock("@/lib/api", () => ({ apiContract: apiContractMock }));
 
 function renderHook(path = "/platform/dashboard") {
   let hookResult!: ReturnType<typeof usePlatformAiDiagnostics>;
@@ -57,13 +58,16 @@ describe("usePlatformAiDiagnostics", () => {
   });
 
   it("dispatches prompt and appends assistant response", async () => {
-    vi.mocked(apiClient.apiJson).mockResolvedValueOnce({
-      success: true,
-      analysis: "DB pool is operating at 25% utilization.",
-      suggestions: [
-        { id: "1", label: "Inspect System", actionType: "navigate", target: "/platform/system" },
-      ],
-      latencyMs: 14,
+    apiContractMock.platform.aiQuery.mockResolvedValueOnce({
+      status: 200,
+      body: {
+        success: true,
+        analysis: "DB pool is operating at 25% utilization.",
+        suggestions: [
+          { id: "1", label: "Inspect System", actionType: "navigate", target: "/platform/system" },
+        ],
+        latencyMs: 14,
+      },
     });
 
     const { getResult, cleanup } = renderHook("/platform/system");
@@ -84,7 +88,7 @@ describe("usePlatformAiDiagnostics", () => {
   });
 
   it("surfaces error without inventing assistant health on API failure", async () => {
-    vi.mocked(apiClient.apiJson).mockRejectedValueOnce(new Error("Network error"));
+    apiContractMock.platform.aiQuery.mockRejectedValueOnce(new Error("Network error"));
 
     const { getResult, cleanup } = renderHook("/platform/dashboard");
 

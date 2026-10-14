@@ -6,7 +6,8 @@ import type {
   JournalEntry,
 } from "@mms/shared";
 import { ACCOUNTING_MODULE_MANIFEST, LIST_PAGE_MAX_LIMIT } from "@mms/shared";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import { useAuth } from "@/lib/contexts/AuthContext";
 
 /**
@@ -17,29 +18,36 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 const MAX_AGGREGATE_PAGES = 50;
 
 /**
- * Query params for one `GET /entries` request, mirroring the contract's
- * `listEntries` query.
+ * Query params for one `listEntries` request, mirroring the contract's
+ * `accountingEntriesListQuerySchema`.
  *
- * `tag` is sent here rather than through `useAccountingEntriesPaginated`:
- * that hook predates the tag filter and forwards a fixed field list, so a tag
- * passed to it would never reach the server and the filter would silently
- * narrow only the rows already loaded.
+ * `tag` is included: it is on the schema, and with server-side paging a tag
+ * filter applied only in the browser narrows one page at a time.
  */
-export function buildAccountingEntriesPageParams(query: AccountingListQuery): URLSearchParams {
-  const params = new URLSearchParams({
-    page: String(query.page ?? 1),
-    limit: String(Math.min(query.limit ?? LIST_PAGE_MAX_LIMIT, LIST_PAGE_MAX_LIMIT)),
-  });
-  if (query.search) params.set("search", query.search);
-  if (query.status) params.set("status", query.status);
-  if (query.tag) params.set("tag", query.tag);
-  if (query.dateFrom) params.set("dateFrom", query.dateFrom);
-  if (query.dateTo) params.set("dateTo", query.dateTo);
-  if (query.accountId) params.set("accountId", query.accountId);
-  if (query.sortField) params.set("sortField", query.sortField);
-  if (query.sortDir) params.set("sortDir", query.sortDir);
-  if (query.includeDeleted) params.set("includeDeleted", "true");
+export function buildAccountingEntriesPageParams(
+  query: AccountingListQuery,
+): Record<string, string | number | boolean> {
+  const params: Record<string, string | number | boolean> = {
+    page: query.page ?? 1,
+    limit: Math.min(query.limit ?? LIST_PAGE_MAX_LIMIT, LIST_PAGE_MAX_LIMIT),
+  };
+  if (query.search) params.search = query.search;
+  if (query.status) params.status = query.status;
+  if (query.tag) params.tag = query.tag;
+  if (query.dateFrom) params.dateFrom = query.dateFrom;
+  if (query.dateTo) params.dateTo = query.dateTo;
+  if (query.accountId) params.accountId = query.accountId;
+  if (query.sortField) params.sortField = query.sortField;
+  if (query.sortDir) params.sortDir = query.sortDir;
+  if (query.includeDeleted) params.includeDeleted = true;
   return params;
+}
+
+/** Throws an `ApiError` on a non-200 contract envelope (preserves the old throw-on-!ok). */
+function assertOk(response: { status: number; body: unknown }, context: string): void {
+  if (response.status === 200) return;
+  const errorBody = response.body as { message?: string; type?: string } | undefined;
+  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
 }
 
 /**
@@ -52,11 +60,13 @@ export async function fetchAccountingEntriesPage(
   query: AccountingListQuery,
   signal?: AbortSignal,
 ): Promise<AccountingEntriesListPageResult> {
-  const params = buildAccountingEntriesPageParams(query);
-  const body = await apiJson<Partial<AccountingEntriesListPageResult>>(
-    `${ACCOUNTING_MODULE_MANIFEST.restBasePath}/entries?${params.toString()}`,
-    { signal },
-  );
+  const response = await apiContract.accounting.listEntries({
+    query: buildAccountingEntriesPageParams(query),
+    signal,
+    fetchOptions: { signal },
+  });
+  assertOk(response, "Failed to fetch accounting entries");
+  const body = response.body as Partial<AccountingEntriesListPageResult>;
   return {
     entries: body.entries ?? [],
     total: body.total ?? body.entries?.length ?? 0,
@@ -84,7 +94,7 @@ export function useAccountingEntriesPage(
 ) {
   const { isAuthenticated } = useAuth();
   const enabled = (options?.enabled ?? true) && isAuthenticated;
-  const params = buildAccountingEntriesPageParams(query).toString();
+  const params = JSON.stringify(buildAccountingEntriesPageParams(query));
 
   return useQuery({
     queryKey: [...ACCOUNTING_ENTRIES_LIST_QUERY_KEY, "page", params],
@@ -110,16 +120,13 @@ export async function fetchAllAccountingEntries(
 ): Promise<JournalEntry[]> {
   const collected: JournalEntry[] = [];
   for (let page = 1; page <= MAX_AGGREGATE_PAGES; page += 1) {
-    const params = buildAccountingEntriesPageParams({
-      ...query,
-      page,
-      limit: LIST_PAGE_MAX_LIMIT,
+    const response = await apiContract.accounting.listEntries({
+      query: buildAccountingEntriesPageParams({ ...query, page, limit: LIST_PAGE_MAX_LIMIT }),
+      signal,
+      fetchOptions: { signal },
     });
-
-    const body = await apiJson<{ entries?: JournalEntry[]; hasMore?: boolean }>(
-      `${ACCOUNTING_MODULE_MANIFEST.restBasePath}/entries?${params.toString()}`,
-      { signal },
-    );
+    assertOk(response, "Failed to fetch accounting entries");
+    const body = response.body as { entries?: JournalEntry[]; hasMore?: boolean };
     const batch = body.entries ?? [];
     collected.push(...batch);
     if (!body.hasMore || batch.length === 0) return collected;
@@ -139,18 +146,19 @@ export async function fetchAllAccountingAccounts(
   const sortDir = options.sortDir ?? "asc";
   const collected: Account[] = [];
   for (let page = 1; page <= MAX_AGGREGATE_PAGES; page += 1) {
-    const params = new URLSearchParams({
-      page: String(page),
-      limit: String(LIST_PAGE_MAX_LIMIT),
-      sortField,
-      sortDir,
+    const response = await apiContract.accounting.listAccounts({
+      query: {
+        page,
+        limit: LIST_PAGE_MAX_LIMIT,
+        sortField,
+        sortDir,
+        ...(includeDeleted ? { includeDeleted: true } : {}),
+      },
+      signal,
+      fetchOptions: { signal },
     });
-    if (includeDeleted) params.set("includeDeleted", "true");
-
-    const body = await apiJson<{ accounts?: Account[]; hasMore?: boolean }>(
-      `${ACCOUNTING_MODULE_MANIFEST.restBasePath}/accounts?${params.toString()}`,
-      { signal },
-    );
+    assertOk(response, "Failed to fetch accounting accounts");
+    const body = response.body as { accounts?: Account[]; hasMore?: boolean };
     const batch = body.accounts ?? [];
     collected.push(...batch);
     if (!body.hasMore || batch.length === 0) return collected;

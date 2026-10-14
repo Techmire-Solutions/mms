@@ -6,11 +6,19 @@ import type { OpeningBalance } from "@mms/shared";
 import { ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY } from "@/tenant/features/accounting/hooks/useAccountingApi";
 
 const mocks = vi.hoisted(() => ({
-  apiJson: vi.fn(),
+  closeFiscalYear: vi.fn(),
+  putPostingRules: vi.fn(),
+  listOpeningBalances: vi.fn(),
 }));
 
-vi.mock("@/lib/apiClient", () => ({
-  apiJson: mocks.apiJson,
+vi.mock("@/lib/api", () => ({
+  apiContract: {
+    accountingLedger: {
+      closeFiscalYear: mocks.closeFiscalYear,
+      putPostingRules: mocks.putPostingRules,
+      listOpeningBalances: mocks.listOpeningBalances,
+    },
+  },
 }));
 
 import {
@@ -28,7 +36,9 @@ describe("accounting ledger ops hooks", () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
-    mocks.apiJson.mockReset();
+    mocks.closeFiscalYear.mockReset();
+    mocks.putPostingRules.mockReset();
+    mocks.listOpeningBalances.mockReset();
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     container = document.createElement("div");
     document.body.appendChild(container);
@@ -48,7 +58,10 @@ describe("accounting ledger ops hooks", () => {
   }
 
   it("sends the retained-earnings account explicitly when closing a fiscal year", async () => {
-    mocks.apiJson.mockResolvedValue({ fiscalYear: { id: "fy1", status: "closed" } });
+    mocks.closeFiscalYear.mockResolvedValue({
+      status: 200,
+      body: { fiscalYear: { id: "fy1", status: "closed" } },
+    });
     let closeFiscalYear: ReturnType<typeof useCloseFiscalYear> | null = null;
 
     function Probe(): React.JSX.Element {
@@ -61,14 +74,17 @@ describe("accounting ledger ops hooks", () => {
       await closeFiscalYear!.mutateAsync({ id: "fy1", retainedEarningsAccountId: "acc-equity-1" });
     });
 
-    const [url, init] = mocks.apiJson.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("/api/accounting/fiscal-years/fy1/close");
-    expect(init.method).toBe("POST");
-    expect(init.body).toBe(JSON.stringify({ retainedEarningsAccountId: "acc-equity-1" }));
+    expect(mocks.closeFiscalYear).toHaveBeenCalledWith({
+      params: { id: "fy1" },
+      body: { retainedEarningsAccountId: "acc-equity-1" },
+    });
   });
 
-  it("omits the body key entirely when no retained-earnings account was chosen", async () => {
-    mocks.apiJson.mockResolvedValue({ fiscalYear: { id: "fy1", status: "closed" } });
+  it("sends an empty body when no retained-earnings account was chosen", async () => {
+    mocks.closeFiscalYear.mockResolvedValue({
+      status: 200,
+      body: { fiscalYear: { id: "fy1", status: "closed" } },
+    });
     let closeFiscalYear: ReturnType<typeof useCloseFiscalYear> | null = null;
 
     function Probe(): React.JSX.Element {
@@ -81,13 +97,13 @@ describe("accounting ledger ops hooks", () => {
       await closeFiscalYear!.mutateAsync({ id: "fy1" });
     });
 
-    // The body schema is `.strict()`, so `{"retainedEarningsAccountId":undefined}`
+    // The body schema is `.strict()`, so `{ retainedEarningsAccountId: undefined }`
     // must never reach it — `{}` lets the server fall back to the preference.
-    expect((mocks.apiJson.mock.calls[0] as [string, RequestInit])[1].body).toBe("{}");
+    expect(mocks.closeFiscalYear).toHaveBeenCalledWith({ params: { id: "fy1" }, body: {} });
   });
 
   it("invalidates the report aggregates after saving posting rules", async () => {
-    mocks.apiJson.mockResolvedValue({ rules: {} });
+    mocks.putPostingRules.mockResolvedValue({ status: 200, body: { rules: {} } });
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
     let saveRules: ReturnType<typeof useSaveAccountingPostingRules> | null = null;
 
@@ -108,14 +124,24 @@ describe("accounting ledger ops hooks", () => {
   });
 
   it("keeps the previous year's opening balances visible while the next year loads", async () => {
-    mocks.apiJson.mockImplementation(async (url: string) => {
-      if (url.includes("fiscalYearId=fy1")) {
-        return {
-          balances: [{ id: "ob-1", fiscalYearId: "fy1", accountId: "acc-1", debit: 10, credit: 0 }],
-        };
-      }
-      return new Promise(() => {}) as Promise<{ balances: OpeningBalance[] }>;
-    });
+    mocks.listOpeningBalances.mockImplementation(
+      async ({ query }: { query: { fiscalYearId?: string } }) => {
+        if (query.fiscalYearId === "fy1") {
+          return {
+            status: 200,
+            body: {
+              balances: [
+                { id: "ob-1", fiscalYearId: "fy1", accountId: "acc-1", debit: 10, credit: 0 },
+              ],
+            },
+          };
+        }
+        return new Promise(() => {}) as Promise<{
+          status: number;
+          body: { balances: OpeningBalance[] };
+        }>;
+      },
+    );
 
     let hookResult: ReturnType<typeof useOpeningBalances> | null = null;
     function Probe({ fiscalYearId }: { fiscalYearId: string }): React.JSX.Element {

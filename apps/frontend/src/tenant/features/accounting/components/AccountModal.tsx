@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { BookOpen } from "lucide-react";
+import { useForm } from "react-hook-form";
 import {
   ACCOUNT_SUBTYPES,
   ACCOUNT_TYPE_META,
@@ -10,7 +11,7 @@ import { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { accountRecordSchema, generateClientEntityId, type AppTranslationKey } from "@mms/shared";
-import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { createZodFormResolver } from "@/lib/forms/createZodFormResolver";
 import { AccountModalFields } from "@/tenant/features/accounting/components/AccountModalFields";
 
 interface AccountModalProps {
@@ -23,78 +24,90 @@ interface AccountModalProps {
 export function AccountModal({ initial, onSave, onClose, existingCodes }: AccountModalProps) {
   const { t } = useTranslation();
   const isEdit = !!initial?.id;
-  const [form, setForm] = useState<Partial<Account>>(
-    initial || { code: "", name: "", type: "Asset", subtype: "", description: "", isActive: true },
-  );
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-
-  const type = form.type as AccountType;
-  const subtypes = type ? ACCOUNT_SUBTYPES[type] || [] : [];
   const { fields, orderedFields, isFieldEnabled } = useAccountingConfig();
 
-  const updateField = (key: keyof Account, value: unknown) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-    if (errors[key]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[key];
-        return next;
-      });
+  const [defaultValues] = useState<Account>(
+    () =>
+      ({
+        ...(initial ?? {}),
+        id: initial?.id ?? generateClientEntityId("a"),
+        code: initial?.code ?? "",
+        name: initial?.name ?? "",
+        type: initial?.type ?? "Asset",
+        subtype: initial?.subtype ?? "",
+        description: initial?.description ?? "",
+        isActive: initial?.isActive ?? true,
+      }) as Account,
+  );
+
+  // Shared validation contract: the resolver emits the same ValidationError[] shape as the
+  // hand-rolled forms; field messages are already translated via `resolveMessage`.
+  const resolver = useMemo(
+    () =>
+      createZodFormResolver(accountRecordSchema, {
+        resolveMessage: (message) => t(message as AppTranslationKey),
+      }),
+    [t],
+  );
+
+  const { watch, setValue, setError, handleSubmit, formState } = useForm<Account>({
+    resolver,
+    defaultValues,
+    mode: "onSubmit",
+  });
+
+  const form = watch();
+  const type = form.type as AccountType;
+  const subtypes = type ? ACCOUNT_SUBTYPES[type] || [] : [];
+
+  const errors = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [key, value] of Object.entries(formState.errors)) {
+      const message = (value as { message?: unknown } | undefined)?.message;
+      if (typeof message === "string") map[key] = message;
     }
+    return map;
+  }, [formState.errors]);
+
+  const updateField = (key: keyof Account, value: unknown) => {
+    setValue(key, value as never, { shouldDirty: true, shouldValidate: false });
   };
 
   const onTypeChange = (newType: AccountType) => {
-    setForm((prev) => ({ ...prev, type: newType, subtype: "" }));
-    if (errors.type || errors.subtype) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next.type;
-        delete next.subtype;
-        return next;
-      });
-    }
+    setValue("type", newType as never, { shouldDirty: true });
+    setValue("subtype", "" as never, { shouldDirty: true });
   };
 
-  const saveAccount = async () => {
-    const candidate = {
-      ...form,
-      id: isEdit ? form.id : generateClientEntityId("a"),
-      code: form.code?.trim() ?? "",
-      name: form.name?.trim() ?? "",
-      type: form.type ?? "Asset",
-      subtype: form.subtype ?? "",
-      description: form.description ?? "",
-      isActive: form.isActive ?? true,
-    };
-    const parsed = accountRecordSchema.safeParse(candidate);
-    const validationErrors = parsed.success
-      ? {}
-      : mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey));
+  const onValid = async (data: Account) => {
+    let hasExtraError = false;
 
-    if (!isEdit && existingCodes.includes(candidate.code)) {
-      validationErrors.code = t("accounting.coa.validation.codeExists");
+    if (!isEdit && existingCodes.includes(data.code.trim())) {
+      setError("code", { type: "manual", message: t("accounting.coa.validation.codeExists") });
+      hasExtraError = true;
     }
     for (const field of orderedFields) {
-      const candidateValue = (candidate as Record<string, unknown>)[field.id];
-      if (fields[field.id]?.required && !String(candidateValue ?? "").trim()) {
-        validationErrors[field.id] = t("common.formPleaseFixErrors");
+      const value = (data as Record<string, unknown>)[field.id];
+      if (fields[field.id]?.required && !String(value ?? "").trim()) {
+        setError(field.id as keyof Account, {
+          type: "manual",
+          message: t("common.formPleaseFixErrors"),
+        });
+        hasExtraError = true;
       }
     }
+    if (hasExtraError) return;
 
-    if (!parsed.success || Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
-      return;
-    }
     setSubmitting(true);
     try {
-      await onSave(parsed.data as Account);
+      await onSave(data);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const errorMessages = (() => Object.values(errors).filter(Boolean))();
+  const saveAccount = () => handleSubmit(onValid)();
+  const errorMessages = Object.values(errors).filter(Boolean);
 
   return (
     <FormModal

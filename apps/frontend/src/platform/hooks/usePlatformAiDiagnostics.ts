@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import type {
   PlatformAiQueryRequest,
   PlatformAiQueryResponse,
@@ -95,11 +96,16 @@ export function usePlatformAiDiagnostics(): {
       };
 
       try {
-        const response = await apiJson<PlatformAiQueryResponse>("/api/platform/ai/query", {
-          method: "POST",
-          body: JSON.stringify(requestPayload),
-          headers: { "Content-Type": "application/json" },
-        });
+        const result = await apiContract.platform.aiQuery({ body: requestPayload });
+        if (result.status !== 200) {
+          const errorBody = result.body as { message?: string; type?: string } | undefined;
+          throw new ApiError(
+            result.status,
+            errorBody?.message ?? "Diagnostics request failed",
+            errorBody?.type,
+          );
+        }
+        const response = result.body as PlatformAiQueryResponse;
 
         const assistantMsg: PlatformChatMessage = {
           id: assistantMsgId,

@@ -10,8 +10,8 @@ import type {
 import { ACCOUNTING_MODULE_MANIFEST, FINANCE_MODULE_MANIFEST } from "@mms/shared";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { tsrClient } from "@/lib/api";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract, tsrClient } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import type { AccountingCommandMetricsSnapshot } from "@mms/shared";
 
 export const ACCOUNTING_METRICS_QUERY_KEY = [
@@ -180,20 +180,31 @@ export function useAccountingReportAggregates(
 ) {
   const { isAuthenticated } = useAuth();
   const enabled = (options?.enabled ?? true) && isAuthenticated;
-  const params = new URLSearchParams();
-  if (options?.dateFrom) params.set("dateFrom", options.dateFrom);
-  if (options?.dateTo) params.set("dateTo", options.dateTo);
-  const qs = params.toString();
-  const url = `${ACCOUNTING_MODULE_MANIFEST.restBasePath}/report-aggregates${qs ? `?${qs}` : ""}`;
-
   return useQuery({
     queryKey: [
       ...ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
       options?.dateFrom,
       options?.dateTo,
     ] as const,
-    queryFn: async ({ signal }): Promise<AccountingReportAggregates> =>
-      apiJson<AccountingReportAggregates>(url, { signal }),
+    queryFn: async ({ signal }): Promise<AccountingReportAggregates> => {
+      const response = await apiContract.accounting.getReportAggregates({
+        query: {
+          ...(options?.dateFrom ? { dateFrom: options.dateFrom } : {}),
+          ...(options?.dateTo ? { dateTo: options.dateTo } : {}),
+        },
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to fetch accounting report aggregates",
+          errorBody?.type,
+        );
+      }
+      return response.body as AccountingReportAggregates;
+    },
     enabled,
     staleTime: 5 * 60 * 1000,
   });

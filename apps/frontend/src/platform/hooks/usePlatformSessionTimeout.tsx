@@ -4,8 +4,7 @@ import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
 import { SessionTimeoutModal } from "@/components/app/SessionTimeoutModal";
-import { apiJson } from "@/lib/apiClient";
-import { PLATFORM_AUTH_PATHS } from "@/lib/apiClientHelpers";
+import { apiContract } from "@/lib/api";
 
 interface PlatformSessionTimeoutOptions {
   enabled: boolean;
@@ -36,9 +35,10 @@ export function usePlatformSessionTimeout({
       return;
     }
     let active = true;
-    apiJson<SessionTimeoutPolicy>(PLATFORM_AUTH_PATHS.sessionPolicy)
-      .then((p) => {
-        if (active) setPolicy(p);
+    apiContract.platform
+      .getSessionPolicy({})
+      .then((response) => {
+        if (active && response.status === 200) setPolicy(response.body as SessionTimeoutPolicy);
       })
       .catch(() => {
         /* keep the last known policy on a transient failure */

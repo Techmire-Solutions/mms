@@ -13,7 +13,10 @@ import { invalidateExaminationsQueries } from "@/tenant/hooks/collections/examin
 import { invalidateQuestionBankQueries } from "@/tenant/hooks/collections/questionBank";
 import { invalidateAccountingQueries } from "@/tenant/hooks/collections/accounting";
 import { invalidateObligationsQueries } from "@/tenant/hooks/collections/obligations";
-import { invalidateDashboardQueries } from "@/tenant/hooks/collections/dashboard";
+import {
+  DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
+  invalidateDashboardQueries,
+} from "@/tenant/hooks/collections/dashboard";
 
 /**
  * Dynamically loaded dispatcher for live WebSocket collection invalidations.
@@ -28,7 +31,7 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     key !== "message_logs" &&
     key !== "message_templates"
   ) {
-    void queryClient.invalidateQueries({ queryKey: ["dashboard", "summary"] });
+    void queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY_ROOT });
   }
 
   switch (key) {

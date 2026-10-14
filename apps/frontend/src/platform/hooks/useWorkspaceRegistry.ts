@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { PublicWorkspaceSummary } from "@mms/shared";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import { WORKSPACE_REGISTRY_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
@@ -18,13 +19,16 @@ export function useWorkspaceRegistry(options?: { enabled?: boolean }): {
   const query = useQuery({
     queryKey: WORKSPACE_REGISTRY_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      const res = await apiJson<{ workspaces: PublicWorkspaceSummary[] }>(
-        "/api/workspace/registry",
-        {
-          signal,
-        },
-      );
-      return res.workspaces;
+      const response = await apiContract.workspace.registry({ signal, fetchOptions: { signal } });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load workspace registry",
+          errorBody?.type,
+        );
+      }
+      return (response.body as { workspaces: PublicWorkspaceSummary[] }).workspaces;
     },
     enabled: options?.enabled ?? isApex,
     staleTime: 60_000,

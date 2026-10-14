@@ -11,8 +11,9 @@ import { fetchDashboardSummaryAsync } from "./dashboardApi";
 
 export const DASHBOARD_PREFERENCES_QUERY_KEY = ["dashboard", "preferences"] as const;
 export const DASHBOARD_WIDGETS_QUERY_KEY = ["dashboard", "widgets"] as const;
+export const DASHBOARD_SUMMARY_QUERY_KEY_ROOT = ["dashboard", "summary"] as const;
 export const DASHBOARD_SUMMARY_QUERY_KEY = (date?: string, role?: string) =>
-  ["dashboard", "summary", { date, role }] as const;
+  [...DASHBOARD_SUMMARY_QUERY_KEY_ROOT, { date, role }] as const;
 
 /** Pure seeded default widgets, computed once — placeholder while the server query loads. */
 const DEFAULT_WIDGETS_PLACEHOLDER: CustomWidget[] = buildDefaultCustomWidgets();
@@ -20,7 +21,7 @@ const DEFAULT_WIDGETS_PLACEHOLDER: CustomWidget[] = buildDefaultCustomWidgets();
 export function invalidateDashboardQueries(queryClient: QueryClient): void {
   queryClient.invalidateQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
   queryClient.invalidateQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
-  queryClient.invalidateQueries({ queryKey: ["dashboard", "summary"] });
+  queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY_ROOT });
 }
 
 export function useDashboardSummaryQuery(

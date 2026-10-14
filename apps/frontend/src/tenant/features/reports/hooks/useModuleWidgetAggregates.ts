@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { apiJson } from "@/lib/apiClient";
+import { apiContract } from "@/lib/api";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { SUMMARY_STALE_TIME } from "@/lib/queryClient";
 import type { WidgetQuery, WidgetAggregateResult } from "@mms/shared";
@@ -17,21 +17,33 @@ export interface DynamicWidgetInput {
   chartLimit?: number;
 }
 
-const COLLECTION_TO_API_PATH: Record<string, string> = {
-  contacts: "/api/contacts/widget-aggregates",
-  students: "/api/students/widget-aggregates",
-  faculty: "/api/faculty/widget-aggregates",
-  sessions: "/api/sessions/widget-aggregates",
-  enrollments: "/api/enrollments/widget-aggregates",
-  finance_invoices: "/api/finance/widget-aggregates",
-  attendance_records: "/api/attendance/widget-aggregates",
-  hasanat_distributions: "/api/hasanat/widget-aggregates",
-  questions: "/api/question-bank/widget-aggregates",
-  tests: "/api/question-bank/widget-aggregates",
-  assessment_results: "/api/question-bank/widget-aggregates",
-  exams: "/api/examinations/widget-aggregates",
-  exam_results: "/api/examinations/widget-aggregates",
+/** Collection → `rootContract` domain whose `widgetAggregates` route serves it. */
+const COLLECTION_TO_DOMAIN: Record<string, string> = {
+  contacts: "contacts",
+  students: "students",
+  faculty: "faculty",
+  sessions: "sessions",
+  enrollments: "enrollments",
+  finance_invoices: "finance",
+  attendance_records: "attendance",
+  hasanat_distributions: "hasanat",
+  questions: "questionBank",
+  tests: "questionBank",
+  assessment_results: "questionBank",
+  exams: "examinations",
+  exam_results: "examinations",
 };
+
+/**
+ * Some domains' `widgetAggregates` response is a bare `Record<id, result>`; others wrap it as
+ * `{ results: Record<id, result> }`. Accept both so the merge keyed by widget id always works.
+ */
+function unwrapAggregates(body: unknown): Record<string, WidgetAggregateResult> {
+  if (!body || typeof body !== "object") return {};
+  const wrapped = (body as { results?: Record<string, WidgetAggregateResult> }).results;
+  if (wrapped && typeof wrapped === "object") return wrapped;
+  return body as Record<string, WidgetAggregateResult>;
+}
 
 export function useModuleWidgetAggregates(
   widgets: DynamicWidgetInput[],
@@ -43,10 +55,10 @@ export function useModuleWidgetAggregates(
   const groupedWidgets = (() => {
     const groups: Record<string, WidgetQuery[]> = {};
     for (const widget of widgets) {
-      const apiPath = COLLECTION_TO_API_PATH[widget.collection];
-      if (!apiPath) continue;
-      if (!groups[apiPath]) groups[apiPath] = [];
-      groups[apiPath].push({
+      const domain = COLLECTION_TO_DOMAIN[widget.collection];
+      if (!domain) continue;
+      if (!groups[domain]) groups[domain] = [];
+      groups[domain].push({
         id: widget.id,
         operation: widget.operation,
         targetField: widget.targetField,
@@ -82,16 +94,17 @@ export function useModuleWidgetAggregates(
       const results: Record<string, WidgetAggregateResult> = {};
 
       const responses = await Promise.all(
-        Object.entries(groupedWidgets).map(async ([path, reqWidgets]) => {
+        Object.entries(groupedWidgets).map(async ([domain, reqWidgets]) => {
           try {
-            const data = await apiJson<Record<string, WidgetAggregateResult>>(path, {
-              method: "POST",
-              body: JSON.stringify({ widgets: reqWidgets }),
+            const response = await apiContract[domain].widgetAggregates({
+              body: { widgets: reqWidgets },
               signal,
+              fetchOptions: { signal },
             });
-            return data || {};
+            if (response.status !== 200) return {};
+            return unwrapAggregates(response.body);
           } catch (e) {
-            reportClientError(e, { context: "reports.widgetAggregates", path });
+            reportClientError(e, { context: "reports.widgetAggregates", domain });
             return {};
           }
         }),

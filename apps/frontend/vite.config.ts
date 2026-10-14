@@ -6,6 +6,7 @@ import { defineConfig, type PluginOption } from "vite";
 import { visualizer } from "rollup-plugin-visualizer";
 import { compression } from "vite-plugin-compression2";
 import { VitePWA } from "vite-plugin-pwa";
+import { manualVendorChunk, rolldownChunkGroups } from "./src/lib/vendorChunks";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -94,79 +95,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         banner: chunkBanner,
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (
-              id.includes("/react/") ||
-              id.includes("/react-dom/") ||
-              id.includes("/scheduler/") ||
-              id.includes("/react-router/") ||
-              id.includes("/react-router-dom/")
-            ) {
-              return "vendor-react";
-            }
-            if (id.includes("/@tanstack/react-query/")) {
-              return "vendor-query";
-            }
-            if (id.includes("/@tanstack/react-virtual/")) {
-              return "vendor-virtual";
-            }
-            if (id.includes("/react-easy-crop/")) {
-              return "vendor-crop";
-            }
-            // Recharts 3 dropped its internal Redux dependency.
-            // @reduxjs/toolkit removed — add it back if the app adopts Redux directly.
-            if (
-              id.includes("/recharts/") ||
-              id.includes("/victory-vendor/") ||
-              id.includes("/d3-")
-            ) {
-              return "vendor-charts";
-            }
-            if (
-              id.includes("/@radix-ui/") ||
-              id.includes("/@floating-ui/") ||
-              id.includes("/lucide-react/") ||
-              id.includes("/aria-hidden/") ||
-              id.includes("/react-remove-scroll/") ||
-              id.includes("/clsx/") ||
-              id.includes("/tailwind-merge/") ||
-              id.includes("/class-variance-authority/")
-            ) {
-              return "vendor-ui";
-            }
-            if (id.includes("/framer-motion/")) {
-              return "vendor-motion";
-            }
-            if (id.includes("/zod/") || id.includes("/@ts-rest/")) {
-              return "vendor-validation";
-            }
-          }
-          if (
-            id.includes("packages/shared/dist/i18n/appTranslationsEn") ||
-            id.includes("packages\\shared\\dist\\i18n\\appTranslationsEn")
-          ) {
-            return "mms-i18n-en";
-          }
-          if (
-            id.includes("packages/shared/dist/i18n/appTranslationsAr") ||
-            id.includes("packages\\shared\\dist\\i18n\\appTranslationsAr")
-          ) {
-            return "mms-i18n-ar";
-          }
-          if (
-            id.includes("packages/shared/dist/i18n/appTranslationsUr") ||
-            id.includes("packages\\shared\\dist\\i18n\\appTranslationsUr")
-          ) {
-            return "mms-i18n-ur";
-          }
-          if (
-            id.includes("packages/shared/dist/i18n/appTranslationsFa") ||
-            id.includes("packages\\shared\\dist\\i18n\\appTranslationsFa")
-          ) {
-            return "mms-i18n-fa";
-          }
-        },
+        // Derives the vendor chunks from the shared SSOT (see src/lib/vendorChunks.ts).
+        manualChunks: manualVendorChunk,
       },
     },
     rolldownOptions: {
@@ -174,71 +104,7 @@ export default defineConfig({
         banner: chunkBanner,
         codeSplitting: {
           minSize: 20000,
-          groups: [
-            {
-              name: "vendor-react",
-              test: /node_modules[\\/](?:react|react-dom|scheduler|react-router|react-router-dom)[\\/]/,
-              priority: 50,
-            },
-            {
-              name: "vendor-query",
-              test: /node_modules[\\/]@tanstack[\\/]react-query[\\/]/,
-              priority: 45,
-            },
-            {
-              name: "vendor-virtual",
-              test: /node_modules[\\/]@tanstack[\\/]react-virtual[\\/]/,
-              priority: 44,
-            },
-            {
-              name: "vendor-crop",
-              test: /node_modules[\\/]react-easy-crop[\\/]/,
-              priority: 42,
-            },
-            {
-              name: "vendor-ui",
-              test: /node_modules[\\/](?:@radix-ui|@floating-ui|react-remove-scroll|aria-hidden|lucide-react|clsx|tailwind-merge|class-variance-authority)[\\/]/,
-              priority: 40,
-            },
-            {
-              name: "vendor-motion",
-              test: /node_modules[\\/]framer-motion[\\/]/,
-              priority: 35,
-            },
-            {
-              // Recharts 3 dropped its internal Redux dependency.
-              // @reduxjs/toolkit removed — add it back if the app adopts Redux directly.
-              // d3-[^\\/]+ matches full package names (e.g. d3-scale) not just the prefix.
-              name: "vendor-charts",
-              test: /node_modules[\\/](?:recharts|victory-vendor|d3-[^\\/]+)[\\/]/,
-              priority: 30,
-            },
-            {
-              name: "vendor-validation",
-              test: /node_modules[\\/](?:zod|@ts-rest)[\\/]/,
-              priority: 20,
-            },
-            {
-              name: "mms-i18n-en",
-              test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsEn/,
-              priority: 5,
-            },
-            {
-              name: "mms-i18n-ar",
-              test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsAr/,
-              priority: 5,
-            },
-            {
-              name: "mms-i18n-ur",
-              test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsUr/,
-              priority: 5,
-            },
-            {
-              name: "mms-i18n-fa",
-              test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsFa/,
-              priority: 5,
-            },
-          ],
+          groups: rolldownChunkGroups(),
         },
       },
     },
