@@ -60,7 +60,9 @@ describe("fetchAllAccountingEntries", () => {
   });
 
   it("forwards every journal filter it is given", async () => {
-    apiContractMock.accounting.listEntries.mockResolvedValueOnce(ok({ entries: [], hasMore: false }));
+    apiContractMock.accounting.listEntries.mockResolvedValueOnce(
+      ok({ entries: [], hasMore: false }),
+    );
 
     await fetchAllAccountingEntries({
       search: "INV-1",
@@ -121,7 +123,9 @@ describe("fetchAllAccountingAccounts", () => {
   });
 
   it("requests the trash only when asked", async () => {
-    apiContractMock.accounting.listAccounts.mockResolvedValueOnce(ok({ accounts: [], hasMore: false }));
+    apiContractMock.accounting.listAccounts.mockResolvedValueOnce(
+      ok({ accounts: [], hasMore: false }),
+    );
 
     await fetchAllAccountingAccounts({ includeDeleted: true });
 

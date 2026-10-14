@@ -115,13 +115,14 @@ export interface ApexConsoleGroup {
 }
 
 /** Entries grouped by their required permission, preserving first-seen order. */
-export const PLATFORM_CONSOLE_GROUPS: readonly ApexConsoleGroup[] =
-  PLATFORM_CONSOLE_ENTRIES.reduce<ApexConsoleGroup[]>((groups, entry) => {
-    let group = groups.find((candidate) => candidate.permission === entry.permission);
-    if (!group) {
-      group = { permission: entry.permission, entries: [] };
-      groups.push(group);
-    }
-    group.entries.push(entry);
-    return groups;
-  }, []);
+export const PLATFORM_CONSOLE_GROUPS: readonly ApexConsoleGroup[] = PLATFORM_CONSOLE_ENTRIES.reduce<
+  ApexConsoleGroup[]
+>((groups, entry) => {
+  let group = groups.find((candidate) => candidate.permission === entry.permission);
+  if (!group) {
+    group = { permission: entry.permission, entries: [] };
+    groups.push(group);
+  }
+  group.entries.push(entry);
+  return groups;
+}, []);

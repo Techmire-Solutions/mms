@@ -48,7 +48,10 @@ describe("toValidationErrors", () => {
 describe("firstValidationErrorMessage", () => {
   it("returns the first resolvable message, or empty when none", () => {
     expect(
-      firstValidationErrorMessage([{ fieldId: "a", tabId: "basic", message: "k" }], (m) => `t:${m}`),
+      firstValidationErrorMessage(
+        [{ fieldId: "a", tabId: "basic", message: "k" }],
+        (m) => `t:${m}`,
+      ),
     ).toBe("t:k");
     expect(firstValidationErrorMessage([], (m) => m)).toBe("");
     expect(firstValidationErrorMessage(undefined, (m) => m)).toBe("");
@@ -77,9 +80,9 @@ describe("createZodFormResolver", () => {
 
     const structured = readValidationErrors(result.errors as FieldErrors<typeof values>);
     expect(structured).toEqual(toValidationErrors(parseError(values)));
-    expect(
-      (result.errors as unknown as Record<string, unknown>)[VALIDATION_ERRORS_KEY],
-    ).toEqual(structured);
+    expect((result.errors as unknown as Record<string, unknown>)[VALIDATION_ERRORS_KEY]).toEqual(
+      structured,
+    );
   });
 
   it("normalizes field messages through resolveMessage", async () => {

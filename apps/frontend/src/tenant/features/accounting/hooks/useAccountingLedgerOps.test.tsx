@@ -136,7 +136,10 @@ describe("accounting ledger ops hooks", () => {
             },
           };
         }
-        return new Promise(() => {}) as Promise<{ status: number; body: { balances: OpeningBalance[] } }>;
+        return new Promise(() => {}) as Promise<{
+          status: number;
+          body: { balances: OpeningBalance[] };
+        }>;
       },
     );
 

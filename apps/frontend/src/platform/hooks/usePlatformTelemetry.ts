@@ -70,7 +70,10 @@ export function usePlatformTelemetry(options?: UsePlatformTelemetryOptions): {
   const query = useQuery({
     queryKey: PLATFORM_TELEMETRY_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      const response = await apiContract.platform.getTelemetry({ signal, fetchOptions: { signal } });
+      const response = await apiContract.platform.getTelemetry({
+        signal,
+        fetchOptions: { signal },
+      });
       if (response.status !== 200) {
         const errorBody = response.body as { message?: string; type?: string } | undefined;
         throw new ApiError(

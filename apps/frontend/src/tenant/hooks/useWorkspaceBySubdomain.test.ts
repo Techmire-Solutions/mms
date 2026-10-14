@@ -22,7 +22,9 @@ describe("fetchWorkspaceBySubdomain", () => {
 
     const result = await fetchWorkspaceBySubdomain("alpha");
 
-    expect(bySubdomain).toHaveBeenCalledWith(expect.objectContaining({ params: { subdomain: "alpha" } }));
+    expect(bySubdomain).toHaveBeenCalledWith(
+      expect.objectContaining({ params: { subdomain: "alpha" } }),
+    );
     expect(result).toEqual({ status: 200, body: mockResult });
   });
 

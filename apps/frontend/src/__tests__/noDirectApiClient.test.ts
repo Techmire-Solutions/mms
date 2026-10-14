@@ -20,7 +20,10 @@ const rule = require("../../eslint-rules/no-direct-api-client.cjs");
  */
 const baseline: string[] = JSON.parse(
   readFileSync(
-    join(dirname(fileURLToPath(import.meta.url)), "../../eslint-rules/direct-api-client-baseline.json"),
+    join(
+      dirname(fileURLToPath(import.meta.url)),
+      "../../eslint-rules/direct-api-client-baseline.json",
+    ),
     "utf8",
   ),
 );
@@ -86,9 +89,12 @@ describe("no-direct-api-client", () => {
     expect(lint(`import { apiJson } from "@/lib/apiClient";`, baselinedPath)).toEqual([]);
   });
 
-  it.skipIf(!baselinedPath)("reports a baselined file that no longer imports the transport as stale", () => {
-    const found = lint(`export const noop = 1;`, baselinedPath);
-    expect(found).toHaveLength(1);
-    expect(found[0]).toContain("no longer imports");
-  });
+  it.skipIf(!baselinedPath)(
+    "reports a baselined file that no longer imports the transport as stale",
+    () => {
+      const found = lint(`export const noop = 1;`, baselinedPath);
+      expect(found).toHaveLength(1);
+      expect(found[0]).toContain("no longer imports");
+    },
+  );
 });

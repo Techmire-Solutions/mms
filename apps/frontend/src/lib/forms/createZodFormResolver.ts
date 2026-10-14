@@ -63,7 +63,9 @@ export function createZodFormResolver<TSchema extends z.ZodType<FieldValues>>(
 
     const errors: Record<string, unknown> = {};
     for (const issue of parsed.error.issues) {
-      const message = options.resolveMessage ? options.resolveMessage(issue.message) : issue.message;
+      const message = options.resolveMessage
+        ? options.resolveMessage(issue.message)
+        : issue.message;
       setFieldError(errors, issue.path as PropertyKey[], { type: issue.code, message });
     }
     (errors as ValidationErrorsCarrier)[VALIDATION_ERRORS_KEY] = toValidationErrors(

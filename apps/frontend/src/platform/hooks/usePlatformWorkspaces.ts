@@ -47,7 +47,9 @@ export function usePlatformWorkspaces(params: PlatformWorkspacesListParams = {})
           page: listParams.page,
           limit: listParams.limit,
           ...(listParams.search?.trim() ? { search: listParams.search.trim() } : {}),
-          ...(listParams.status && listParams.status !== "all" ? { status: listParams.status } : {}),
+          ...(listParams.status && listParams.status !== "all"
+            ? { status: listParams.status }
+            : {}),
           ...(listParams.sortField ? { sortField: listParams.sortField } : {}),
           ...(listParams.sortDir ? { sortDir: listParams.sortDir } : {}),
         },

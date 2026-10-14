@@ -61,12 +61,7 @@ function mount(question: unknown) {
   const root = createRoot(container);
   act(() => {
     root.render(
-      <QuestionForm
-        open
-        question={question as never}
-        onClose={onClose}
-        onSave={onSave}
-      />,
+      <QuestionForm open question={question as never} onClose={onClose} onSave={onSave} />,
     );
   });
   return { container, onSave, onClose };

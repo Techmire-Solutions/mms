@@ -64,10 +64,26 @@ export const VENDOR_CHUNK_GROUPS: readonly VendorChunkGroup[] = [
     test: /node_modules[\\/](?:zod|@ts-rest)[\\/]/,
     priority: 20,
   },
-  { name: "mms-i18n-en", test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsEn/, priority: 5 },
-  { name: "mms-i18n-ar", test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsAr/, priority: 5 },
-  { name: "mms-i18n-ur", test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsUr/, priority: 5 },
-  { name: "mms-i18n-fa", test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsFa/, priority: 5 },
+  {
+    name: "mms-i18n-en",
+    test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsEn/,
+    priority: 5,
+  },
+  {
+    name: "mms-i18n-ar",
+    test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsAr/,
+    priority: 5,
+  },
+  {
+    name: "mms-i18n-ur",
+    test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsUr/,
+    priority: 5,
+  },
+  {
+    name: "mms-i18n-fa",
+    test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsFa/,
+    priority: 5,
+  },
 ];
 
 /** Groups in resolution precedence order (highest priority first). */
