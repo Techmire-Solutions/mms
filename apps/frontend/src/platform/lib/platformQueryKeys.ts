@@ -7,7 +7,7 @@ export const PLATFORM_QUERY_KEYS = {
     ["platform", "workspaces", "list", params] as const,
   workspaceMetrics: ["platform", "workspaces", "metrics"] as const,
   workspaceModules: (subdomain: string) => ["platform", "workspace-modules", subdomain] as const,
-  workspaceRegistry: ["workspace", "registry"] as const,
+  workspaceRegistry: ["platform", "workspace-registry"] as const,
   admins: ["platform", "admins"] as const,
   activityLogs: ["platform", "activity-logs"] as const,
   settings: ["platform", "settings"] as const,

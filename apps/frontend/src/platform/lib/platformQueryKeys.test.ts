@@ -43,7 +43,7 @@ describe("platformQueryKeys SSOT", () => {
     expect(PLATFORM_QUERY_KEYS.profile).toEqual(["platform", "profile"]);
     expect(PLATFORM_QUERY_KEYS.setupStatus).toEqual(["platform", "setup", "status"]);
     expect(PLATFORM_QUERY_KEYS.erd).toEqual(["platform", "schema", "erd"]);
-    expect(PLATFORM_QUERY_KEYS.workspaceRegistry).toEqual(["workspace", "registry"]);
+    expect(PLATFORM_QUERY_KEYS.workspaceRegistry).toEqual(["platform", "workspace-registry"]);
   });
 
   it("generates parameterized query keys for workspace modules", () => {
