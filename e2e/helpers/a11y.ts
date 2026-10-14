@@ -93,6 +93,16 @@ export interface A11yAuditOptions {
    * excluding chrome when the ready selector already names the surface under test.
    */
   include?: string[];
+  /**
+   * Measure-first mode: log + annotate findings but never fail the test.
+   *
+   * Used for surfaces that were previously un-audited (e.g. populated module
+   * directories) so the first runs record the real debt without turning the gate
+   * red on ground we cannot yet verify locally. Flip back to gating (drop the
+   * flag) once the surface is known clean — the same "baseline, then retire"
+   * approach the empty-tenant gate used.
+   */
+  advisory?: boolean;
 }
 
 /** Result shape derived from the builder, so `axe-core` need not be a direct dep. */
@@ -239,6 +249,21 @@ export async function assertNoSeriousA11yViolations(
     console.log(
       `[a11y] ${options.context}: ${advisory.length} non-blocking finding(s)\n${renderSummary(advisory)}`,
     );
+  }
+
+  if (options.advisory) {
+    if (blocking.length > 0) {
+      console.log(
+        `[a11y:advisory] ${options.context}: ${blocking.length} would-be-blocking finding(s)\n${renderSummary(blocking)}`,
+      );
+      for (const v of blocking) {
+        test.info().annotations.push({
+          type: `a11y-advisory:${v.id}`,
+          description: `${options.context} — ${v.help}`,
+        });
+      }
+    }
+    return;
   }
 
   expect(

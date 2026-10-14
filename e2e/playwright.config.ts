@@ -36,7 +36,7 @@ const ignoredSpecs = [
  * them on their own runners: sharding hands each runner a contiguous slice of
  * tests by count, which put every long test on shard 1.
  */
-const A11Y_SWEEP_SPECS = ["**/a11y-shell.spec.ts"];
+const A11Y_SWEEP_SPECS = ["**/a11y-shell.spec.ts", "**/a11y-populated.spec.ts"];
 
 /**
  * See https://playwright.dev/docs/test-configuration.
