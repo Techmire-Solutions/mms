@@ -72,6 +72,7 @@ export default function WizardLayout({
       <div
         className="relative z-sticky h-1 w-full bg-muted"
         role="progressbar"
+        aria-label={stepLabel}
         aria-valuenow={currentStep}
         aria-valuemin={1}
         aria-valuemax={steps.length}

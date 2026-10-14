@@ -60,6 +60,7 @@ export function TemplateEditorKeyboardHints({
           <Keyboard className="w-3.5 h-3.5 text-primary/80" aria-hidden="true" />
           <span>{t("templateEditor.shortcuts")}:</span>
         </div>
+        {/* eslint-disable-next-line jsx-a11y/no-redundant-roles -- role="list" restores list semantics Safari/VoiceOver drop under list-style:none */}
         <ul role="list" className="flex items-center gap-3 shrink-0 m-0 p-0 list-none">
           {shortcuts.map(([shortcutKey, shortcutLabel]) => (
             <li

@@ -21,9 +21,7 @@ const ExaminationDetail = React.lazy(() =>
 );
 
 const ExaminationsReportsTier = React.lazy(() =>
-  import("@/tenant/features/examinations/components/ExaminationsReportsTier").then((m) => ({
-    default: m.ExaminationsReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const ExaminationsSetupTier = React.lazy(() =>
   import("@/tenant/features/examinations/components/ExaminationsSetupTier").then((m) => ({
@@ -85,7 +83,7 @@ export default function Examinations(): React.JSX.Element {
 
             {c.effectiveTab === "reports" && (
               <React.Suspense fallback={<RouteStatusFallback />}>
-                <ExaminationsReportsTier />
+                <ExaminationsReportsTier category="examinations" />
               </React.Suspense>
             )}
 

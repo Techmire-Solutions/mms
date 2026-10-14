@@ -16,9 +16,7 @@ import { QuestionBankDetail } from "@/tenant/features/question-bank/components/Q
 import { useQuestionBankPageController } from "@/tenant/features/question-bank/hooks/useQuestionBankPageController";
 
 const QuestionBankReportsTier = lazy(() =>
-  import("@/tenant/features/question-bank/components/QuestionBankReportsTier").then((m) => ({
-    default: m.QuestionBankReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const QuestionBankSetupTier = lazy(() =>
   import("@/tenant/features/question-bank/components/QuestionBankSetupTier").then((m) => ({
@@ -82,7 +80,7 @@ export default function QuestionBankPage(): JSX.Element {
 
             {c.effectiveTab === "reports" && (
               <Suspense fallback={<RouteStatusFallback />}>
-                <QuestionBankReportsTier />
+                <QuestionBankReportsTier category="questionBank" />
               </Suspense>
             )}
 

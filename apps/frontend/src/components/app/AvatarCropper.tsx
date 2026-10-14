@@ -68,6 +68,7 @@ export function AvatarCropper({ src, onCrop, onCancel }: AvatarCropperProps): Re
             ref={canvasRef}
             width={previewSize}
             height={previewSize}
+            aria-label={t("contacts.form.cropProfilePhoto")}
             style={{
               width: previewSize,
               height: previewSize,

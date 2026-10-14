@@ -12,9 +12,7 @@ import { CardSkeleton } from "@/components/app/LoadingState";
 import { useUsersPageController } from "@/tenant/features/users/hooks/useUsersPageController";
 
 const UsersReportsTier = React.lazy(() =>
-  import("@/tenant/features/users/components/UsersReportsTier").then((m) => ({
-    default: m.UsersReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 
 const UsersSetupTier = React.lazy(() =>
@@ -80,7 +78,7 @@ export default function UsersPage(): React.JSX.Element {
         <ErrorBoundary>
           {controller.effectiveTab === "reports" && (
             <Suspense fallback={<CardSkeleton count={2} />}>
-              <UsersReportsTier />
+              <UsersReportsTier category="users" />
             </Suspense>
           )}
           {controller.effectiveTab === "setup" && (

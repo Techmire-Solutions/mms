@@ -69,7 +69,7 @@ describe("FormSelect", () => {
     render();
     const select = container.querySelector<HTMLSelectElement>("select#acct");
     expect(select?.options).toHaveLength(ACCOUNTS.length + 1);
-    expect(select?.getAttribute("aria-haspopup")).toBe("listbox");
+    expect(select?.getAttribute("aria-expanded")).toBe("false");
   });
 
   it("given a long list, should filter by typed text and pick when Enter is pressed", () => {
@@ -108,7 +108,7 @@ describe("FormSelect", () => {
 
   it("given a short or disabled list, should stay a plain native select", () => {
     render({ options: ACCOUNTS.slice(0, 3) });
-    expect(container.querySelector("select")?.hasAttribute("aria-haspopup")).toBe(false);
+    expect(container.querySelector("select")?.hasAttribute("aria-expanded")).toBe(false);
     render({ disabled: true });
     expect(container.querySelector("[data-form-select-hit-area]")).toBeNull();
   });

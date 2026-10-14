@@ -74,7 +74,7 @@ function PaperQuestion({
                 <td>
                   {optionIndex + 1}. {option}
                 </td>
-                <td>&nbsp;</td>
+                <td aria-hidden="true">&nbsp;</td>
               </tr>
             ))}
           </tbody>

@@ -20,6 +20,8 @@ Enforced unless noted. Open follow-ups live in [`../open-items.md`](../open-item
 | 013 | [Frontend Feature Isolation Across All Layers](./013-frontend-feature-isolation-across-all-layers.md) | Accepted |
 | 014 | [Single `@mms/shared` Package & Mandatory DRY Reuse](./014-shared-package-and-dry-reuse.md) | Accepted |
 | 015 | [Backend Ports & Adapters over `db/repositories/`](./015-backend-ports-and-adapters.md) | Accepted |
+| 016 | [Two Frontend Data-Table Tiers (client-side `DataTable` vs server-driven directory)](./016-frontend-data-table-tiers.md) | Accepted |
+| 017 | [Static Accessibility Gating (jsx-a11y error rules + E2E axe)](./017-static-accessibility-gating.md) | Accepted |
 
 ## Adding a record
 

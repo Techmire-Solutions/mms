@@ -79,7 +79,6 @@ export function OtpInput({
       className="flex justify-center gap-2 sm:gap-2.5"
       role="group"
       aria-label={ariaLabel}
-      aria-invalid={hasError || undefined}
     >
       {Array.from({ length }).map((_, index) => {
         const digit = value[index] || "";

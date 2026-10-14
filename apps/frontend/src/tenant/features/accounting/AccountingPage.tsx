@@ -16,9 +16,7 @@ import { JOURNAL_PAGE_SIZE } from "@/tenant/features/accounting/lib/journalEntri
 import { useAccountingPageController } from "@/tenant/features/accounting/hooks/useAccountingPageController";
 
 const AccountingReportsTier = React.lazy(() =>
-  import("@/tenant/features/accounting/components/AccountingReportsTier").then((m) => ({
-    default: m.AccountingReportsTier,
-  })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const AccountingSetupTier = React.lazy(() =>
   import("@/tenant/features/accounting/components/AccountingSetupTier").then((m) => ({
@@ -116,7 +114,7 @@ export default function Accounting() {
             <ErrorBoundary>
               {activeTab === "reports" && (
                 <React.Suspense fallback={<RouteStatusFallback />}>
-                  <AccountingReportsTier />
+                  <AccountingReportsTier category="accounting" />
                 </React.Suspense>
               )}
 

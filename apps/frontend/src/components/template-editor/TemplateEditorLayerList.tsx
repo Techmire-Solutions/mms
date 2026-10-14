@@ -37,12 +37,13 @@ export function TemplateEditorLayerList<TPayload = Record<string, unknown>>({
   }
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-redundant-roles -- role="list" restores list semantics Safari/VoiceOver drop under list-style:none
     <ul role="list" className="space-y-1 m-0 p-0 list-none max-h-56 overflow-y-auto pe-0.5">
       {topMostFirst.map((el) => {
         const isSelected = selected.has(el.id);
         const name = el.label || t("templateEditor.element");
         return (
-          <li key={el.id} role="listitem" className="m-0">
+          <li key={el.id} className="m-0">
             <button
               type="button"
               onClick={() => onSelectElement(el.id)}

@@ -85,8 +85,8 @@ vi.mock("./components/ExaminationsWorkTier", () => ({
   ExaminationsWorkTier: () => <div data-testid="work-tier">Work Tier</div>,
 }));
 
-vi.mock("./components/ExaminationsReportsTier", () => ({
-  ExaminationsReportsTier: () => <div data-testid="reports-tier">Reports Tier</div>,
+vi.mock("@/tenant/components/moduleReports", () => ({
+  ModuleReportsTier: () => <div data-testid="reports-tier">Reports Tier</div>,
 }));
 
 vi.mock("./components/ExaminationsSetupTier", () => ({

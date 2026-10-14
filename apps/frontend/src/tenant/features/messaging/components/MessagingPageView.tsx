@@ -20,7 +20,7 @@ import { MessagingWorkTier } from "./MessagingWorkTier";
 import { MessagingCsvImportDialog } from "./MessagingCsvImportDialog";
 
 const MessagingReportsTier = lazy(() =>
-  import("./MessagingReportsTier").then((m) => ({ default: m.MessagingReportsTier })),
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const MessagingSetupTier = lazy(() =>
   import("./MessagingSetupTier").then((m) => ({ default: m.MessagingSetupTier })),
@@ -126,7 +126,7 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
           )}
           {p.activeTab === "reports" && (
             <Suspense fallback={<RouteStatusFallback />}>
-              <MessagingReportsTier canWrite={p.canWrite} />
+              <MessagingReportsTier category="messaging" />
             </Suspense>
           )}
           {p.activeTab === "setup" && (

@@ -23,8 +23,13 @@ const appFiles = [
 ];
 
 // React Compiler lint rules shipped by eslint-plugin-react-hooks v7
-// (`recommended-latest`). Landed as `warn` for triage — `rules-of-hooks` and
-// `exhaustive-deps` stay governed by the explicit `error` entries below.
+// (`recommended-latest`). Triaged: a no-cache `eslint .` reports 213 findings,
+// all behavioural or optimisation notices — `set-state-in-effect` (128),
+// `refs` (43), `immutability` (13), `incompatible-library` (9), `purity` (4),
+// `preserve-manual-memoization` (4), `static-components` (2), `use-memo` (2) —
+// so they stay `warn` (every fix changes render/effect semantics). Only
+// `react-hooks/globals` is gated at `error` (test files are exempt). `rules-of-hooks`
+// and `exhaustive-deps` stay governed by the explicit `error` entries below.
 const reactCompilerRules = Object.fromEntries(
   Object.keys(pluginReactHooks.configs?.["recommended-latest"]?.rules ?? {})
     .filter(
@@ -111,6 +116,7 @@ export default tseslint.config(
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
       ...reactCompilerRules,
+      "react-hooks/globals": "error",
       "no-restricted-syntax": [
         "error",
         {
@@ -149,6 +155,8 @@ export default tseslint.config(
     // (mirrors the test-file exemption in scripts/check-code-norms.mjs).
     files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
     rules: {
+      // Tests are not run through the React Compiler transform.
+      ...Object.fromEntries(Object.keys(reactCompilerRules).map((rule) => [rule, "off"])),
       "@typescript-eslint/no-explicit-any": "off",
       // Fixtures legitimately use literal colours.
       "no-restricted-syntax": "off",
@@ -170,12 +178,23 @@ export default tseslint.config(
   {
     // Static accessibility checks — complements the E2E axe sweep
     // (e2e/tests/a11y/*) by catching obvious issues before runtime.
-    // Kept at `warn`: a no-cache `eslint .` currently reports 146 jsx-a11y
-    // findings (no-autofocus, click-events-have-key-events, no-redundant-roles,
-    // control-has-associated-label, …). Ratchet to `error` once that backlog is
-    // triaged. Measure with `--no-cache` — the eslint `--cache` can hide
-    // warnings seeded by an earlier `--quiet` run.
+    // Test files render real components but are not shipped UI, so they are
+    // exempt (mirrors the test-exemption block above). A no-cache `eslint .`
+    // reports 146 jsx-a11y findings (31 in test files → exempt); the
+    // behaviour-neutral rules we have fully triaged (role-supports-aria-props,
+    // role-has-required-aria-props, no-redundant-roles,
+    // control-has-associated-label, aria-role) are gated at `error`. The
+    // remaining interaction rules stay at `warn`: they were examined and the
+    // backlog is correct patterns the rules over-flag (listbox `role="option"`,
+    // `onClick={stopPropagation}` guards, pointer-only backdrops/dropzones/
+    // resize handles, conditional-role elements that already set
+    // role/tabIndex/onKeyDown, clickable rows with a keyboard alternative) —
+    // see ADR-017, which records this split and requires E2E verification
+    // before promoting any interaction rule.
+    // Measure with `--no-cache` — the eslint `--cache` can hide warnings seeded
+    // by an earlier `--quiet` run.
     files: ["src/**/*.tsx"],
+    ignores: ["**/*.test.tsx", "**/*.spec.tsx"],
     plugins: { "jsx-a11y": pluginJsxA11y },
     rules: {
       ...Object.fromEntries(
@@ -184,6 +203,12 @@ export default tseslint.config(
           "warn",
         ]),
       ),
+      // Promoted to `error` after triage — semantics-only, no UX change.
+      "jsx-a11y/role-supports-aria-props": "error",
+      "jsx-a11y/role-has-required-aria-props": "error",
+      "jsx-a11y/no-redundant-roles": "error",
+      "jsx-a11y/control-has-associated-label": "error",
+      "jsx-a11y/aria-role": "error",
       // Deprecated by the plugin in favour of `label-has-associated-control`.
       "jsx-a11y/label-has-for": "off",
     },

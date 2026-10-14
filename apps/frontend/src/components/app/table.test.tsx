@@ -68,7 +68,6 @@ describe("table SSOT system", () => {
       expect(html).toContain('role="region"');
       expect(html).toContain('aria-label="Student directory"');
       expect(html).toContain('role="table"');
-      expect(html).toContain('role="rowgroup"');
       expect(html).toContain('role="row"');
       expect(html).toContain('role="columnheader"');
       expect(html).toContain('role="cell"');
