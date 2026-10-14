@@ -5,17 +5,15 @@
 export {
   getWorkspaceLocalStoragePrefix,
   getSyncStatus,
-  clearAllClientStorage,
   type SyncStatus,
   type ServerSyncResult,
 } from "@/lib/dbStorageCore";
-export { syncDatabase, importDatabase, exportEncryptedTenantBackup } from "@/lib/dbBackupSync";
+export { importDatabase, exportEncryptedTenantBackup } from "@/lib/dbBackupSync";
 export {
   hasCollectionInCache,
   saveCollectionCacheOnly,
   getCollection,
   saveCollection,
-  saveCollectionAsync,
 } from "@/lib/dbCollections";
 export {
   getObject,
@@ -33,10 +31,7 @@ export {
   readObjectLocal,
   cachePublicBranding,
   saveObject,
-  saveObjectAsync,
 } from "@/lib/dbObjects";
-
-export { formatDate } from "@mms/shared";
 
 // Side-effect: wire shared date formatters to effective global settings (incl. preview).
 import "@/lib/dbObjects";
