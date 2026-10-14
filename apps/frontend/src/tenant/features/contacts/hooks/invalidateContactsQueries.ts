@@ -18,7 +18,6 @@ import { CONTACTS_PREFERENCES_QUERY_KEY } from "@/tenant/features/contacts/hooks
 
 const invalidateModuleQueries = createModuleQueryInvalidator({
   list: CONTACTS_QUERY_KEY,
-  count: CONTACTS_QUERY_KEY,
   metrics: CONTACTS_METRICS_QUERY_KEY,
   widgetAggregates: CONTACTS_WIDGET_AGGREGATES_QUERY_KEY,
   preferences: CONTACTS_PREFERENCES_QUERY_KEY,
