@@ -4,7 +4,7 @@ description: Triages PostgreSQL performance in MMS — slow queries, missing or 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Database Performance
@@ -44,7 +44,7 @@ Run the relevant ratchet before and after a change — a green ratchet is the ch
    ```bash
    pnpm --filter mms-backend index:concurrent
    ```
-   A plain `CREATE INDEX` in a migration is a production write-stall — the CI ratchet blocks new ones, and existing usage is baselined, not endorsed (`mms-data-layer.md` §7).
+   A plain `CREATE INDEX` in a migration is a production write-stall — the CI ratchet blocks new ones, and existing usage is baselined, not endorsed (`mms-data-layer.md` §7). For deep query plans, BRIN indexes, and covering index recipes, see [references/query-index-triage.md](references/query-index-triage.md).
 6. **Bloat and autovacuum:** high-churn soft-deletable tables (`message_logs`, `audit_trail_events`, `attendance_records`) carry aggressive autovacuum settings; verify they were applied before considering manual `VACUUM`.
 7. **Pagination is not optional:** every collection query must be bounded (default `limit: 25`, hard max `100` via `baseListQuerySchema`). An unbounded dump is a performance bug and a review blocker (`mms-performance.md` §1).
 

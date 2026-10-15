@@ -1,10 +1,10 @@
 ---
 name: mms-data-sync
-description: Governs legacy localStorage and /api/db document-store persistence (db.ts, useLiveCollection, objects/collections) for non-migrated entities. Use when modifying legacy storage keys, local drafts, or document sync endpoints. Do NOT use for server-authoritative REST entities (use mms-query-factories), full workspace encrypted backups (use mms-backup-restore), or database DDL migrations (use mms-schema-migrate).
+description: Governs legacy localStorage and /api/db document-store persistence (db.ts, useLiveCollection, objects/collections) for non-migrated entities. Use when modifying legacy storage keys, local drafts, or document sync endpoints. Do NOT use for ANY newly created modules or migrated REST entities (use mms-query-factories + mms-backend-api), full workspace encrypted backups (use mms-backup-restore), or database DDL migrations (use mms-schema-migrate).
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Data Sync Workflow

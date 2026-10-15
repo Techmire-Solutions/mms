@@ -4,7 +4,7 @@ description: Implements or audits MMS finance and accounting workflows — invoi
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Finance & Accounting Workflow

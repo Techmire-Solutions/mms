@@ -9,7 +9,7 @@ alwaysApply: false
 **Workflow skill:** `mms-dependency-upgrade` (catalogs, Dependabot, audits, React Compiler). Day-to-day install/run → `mms-dev-setup`.
 
 ## 1. Baseline & Workspace Catalogs
-- **Runtimes & Tooling:** Node.js `>=24.14.0` (LTS `engines.node`), Corepack `pnpm@11.15.1`, Turborepo `^2.11.3`, TypeScript `~7.0.2` (with `typescript-v6` compatibility alias).
+- **Runtimes & Tooling:** Node.js `>=24.14.0` (LTS `engines.node`), Corepack `pnpm@11.15.1`, Turborepo `^2.11.7`, TypeScript `~7.0.2` (with `typescript-v6` compatibility alias).
 - **Catalogs (`pnpm-workspace.yaml`):** React/React-DOM `^19.3.0`, React Router (`react-router-dom`) `^7.18.4`, Vite `^8.3.0`, Fastify `^5.12.5`, Pino `^10.3.1`, Drizzle ORM `^0.45.3`, Zod `^4.6.5`, TanStack Query `^5.103.2`, `@ts-rest/react-query` `3.52.1`. Apps cannot drift majors.
 - **E2E & Shared:** Playwright (`@playwright/test`) `^1.63.0`, axe-core `^4.13.0`, `@ts-rest/core`. Workspace protocol (`workspace:*`) mandatory for `@mms/shared`.
 
@@ -45,6 +45,3 @@ alwaysApply: false
 - Add plugin strictly to `apps/frontend/vite.config.ts` (never root).
 - Verify with `pnpm typecheck`, `pnpm test`, and FE lint before removing working manual memoization.
 
-## 7. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

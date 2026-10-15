@@ -4,7 +4,7 @@ description: Implements or audits workspace encrypted backup/export and wipe-res
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Backup & Restore Workflow
@@ -70,6 +70,10 @@ export async function executeWipeRestoreTransaction(tenantSubdomain: string, sna
 - [ ] Audit trail preserved without truncation; RESTORE action appended
 - [ ] Run: pnpm typecheck && cd apps/backend && pnpm test
 ```
+
+## References
+
+- Encrypted Backup Envelope & Restore Protocol: `references/backup-crypto-envelope.md`
 
 ## Related skills
 

@@ -492,8 +492,22 @@ for (const skill of diskSkills) {
   if (!body.includes("**Rule (norms SSOT):**") && !body.includes("**Rules (norms SSOT):**")) {
     fail(`Skill ${skill}: missing '**Rule (norms SSOT):**' header`);
   }
-  if (!/^##+\s*Related skills?\b/m.test(body)) {
+  const relatedSkillsMatch = body.match(/^##+\s*Related skills?\b[^\n]*\n+([^\n#]+)/m);
+  if (!relatedSkillsMatch) {
     fail(`Skill ${skill}: missing '## Related skills' section`);
+  } else {
+    const tokens = [...relatedSkillsMatch[1].matchAll(/`([a-z0-9-]+)`/g)].map((m) => m[1]);
+    for (const token of tokens) {
+      if (!knownSkillNames.has(token)) {
+        if (knownRuleNames.has(token)) {
+          fail(
+            `Skill ${skill}: references rule '${token}' under '## Related skills' (must reference skills only)`,
+          );
+        } else {
+          fail(`Skill ${skill}: references unknown skill '${token}' under '## Related skills'`);
+        }
+      }
+    }
   }
   if (!/^##+\s*When to use\b/m.test(body)) {
     fail(`Skill ${skill}: missing '## When to use' body section`);

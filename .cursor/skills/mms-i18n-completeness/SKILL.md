@@ -4,7 +4,7 @@ description: Audits and fixes MMS translation coverage across en/ar/ur/fa — mi
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS i18n Completeness

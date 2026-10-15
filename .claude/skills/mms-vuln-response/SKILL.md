@@ -4,7 +4,7 @@ description: Triages and responds to a dependency security advisory in MMS — r
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Vulnerability Response

@@ -1,19 +1,64 @@
-import { queryOptions } from '@tanstack/react-query';
+import { queryOptions, mutationOptions, QueryClient } from "@tanstack/react-query";
 
-/** Illustrates key identity and signal forwarding without inventing an API.
- * Use existing MMS factories in production. Pass a scope that identifies the
- * authorized dataset and a fetcher backed by the actual shared contract.
- * The caller still owns auth/permission gating and cache lifecycle.
- */
-export function templateDetailQueryOptions<T>(
-  scope: readonly string[],
+export interface TemplateEntity {
+  id: string;
+  name: string;
+  status: string;
+}
+
+/** Structured tuple keys for cache scoping. */
+export const templateKeys = {
+  all: ["tenant", "templateEntities"] as const,
+  lists: () => [...templateKeys.all, "list"] as const,
+  list: (params: Record<string, string | number>) => [...templateKeys.lists(), params] as const,
+  details: () => [...templateKeys.all, "detail"] as const,
+  detail: (id: string) => [...templateKeys.details(), id] as const,
+};
+
+/** Detail query options with automatic AbortSignal forwarding. */
+export function templateDetailQueryOptions(
   id: string,
-  enabled: boolean,
-  fetchDetail: (id: string, signal: AbortSignal) => Promise<T>,
+  fetchFn: (id: string, signal: AbortSignal) => Promise<TemplateEntity>,
 ) {
   return queryOptions({
-    queryKey: [...scope, 'detail', id] as const,
-    queryFn: ({ signal }) => fetchDetail(id, signal),
-    enabled: enabled && Boolean(id),
+    queryKey: templateKeys.detail(id),
+    queryFn: ({ signal }) => fetchFn(id, signal),
+    enabled: Boolean(id),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** Optimistic update mutation options with rollback on error. */
+export function templateUpdateMutationOptions(
+  queryClient: QueryClient,
+  updateFn: (entity: TemplateEntity) => Promise<TemplateEntity>,
+) {
+  return mutationOptions({
+    mutationFn: updateFn,
+    onMutate: async (updatedEntity: TemplateEntity) => {
+      // 1. Cancel ongoing queries
+      await queryClient.cancelQueries({ queryKey: templateKeys.detail(updatedEntity.id) });
+
+      // 2. Snapshot previous value
+      const previous = queryClient.getQueryData<TemplateEntity>(
+        templateKeys.detail(updatedEntity.id),
+      );
+
+      // 3. Optimistically update cache
+      queryClient.setQueryData(templateKeys.detail(updatedEntity.id), updatedEntity);
+
+      return { previous };
+    },
+    onError: (_err, updatedEntity, context) => {
+      // Rollback on failure
+      if (context?.previous) {
+        queryClient.setQueryData(templateKeys.detail(updatedEntity.id), context.previous);
+      }
+    },
+    onSettled: (_data, _err, updatedEntity) => {
+      // Invalidate on completion
+      queryClient.invalidateQueries({ queryKey: templateKeys.detail(updatedEntity.id) });
+      queryClient.invalidateQueries({ queryKey: templateKeys.lists() });
+    },
   });
 }

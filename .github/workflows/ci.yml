@@ -236,6 +236,11 @@ jobs:
       - name: Work Directory convergence
         run: pnpm run check:work-directory
 
+      # Ratchet: Shared UI component governance (zero duplicate components across consoles,
+      # @shared/ui SSOT, pure facades, zero orphaned imports).
+      - name: Shared UI architecture & governance
+        run: pnpm run check:shared-ui
+
       # @mms/shared must stay an environment-agnostic leaf (no DOM/React/Fastify/
       # DB/Redis/Node builtins) so both the browser bundle and the Node backend
       # can safely import it. Comments/strings and test files are ignored.

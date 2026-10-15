@@ -56,15 +56,13 @@ paths:
 
 ## 7. Gold-standard parity (REST tenant modules and platform pages)
 Align modules with **Contacts, Students, and Faculty** person-directory standard:
-- **Bulk PUT:** Upsert only per `mms-api-interface.md` §5; never wipe missing records.
-- **Soft-Delete Lifecycle:** `DELETE` + `POST /:id/restore` (batched bulk SQL); URL `?view=trash`; `ModuleTrashToggle` in toolbar; filter state preserved; drawer `WarningCallout` archive banner + Restore; hide create/actions in trash; `Cmd/Ctrl+N` guard; 23505 conflict trap on restore; 5–10s optimistic Undo toast; outbox CDC logging (`mms-data-layer.md` §6); backend routes isolate soft-delete in `<module>SoftDeleteRoutes.ts` with `registerResourceRoutes` (custom `restoreFn`, `buildRestoreResponse` viewer sanitization, `mapRestoreError` domain validation) and `registerSoftDeletableBulkTrashRoutes` (`mms-api-interface.md` §7).
-- **Mutations:** Await `mutateAsync` on form `onSave`; close modals only after mutation resolution.
-- **Setup Tier:** Manifest `setupSubTabs` (`preferences` default); `canEditSetup` gates writes; read-only fallback when view-only; Preferences Save dirty-gated.
-- **Work UX:** `ErrorState` with retry + `loadFailedHint`; `EmptyState` (`title` required, `compact` when dense); `Cmd/Ctrl+N` shortcut (`!viewingDeleted && canWrite`); Filters menu SSOT; controller-owned selection via `useWorkSelection`; two-layer bulk-bar chrome; header + `ModuleEntityIoToolbar` dual IO on operational tabs (§2); `isColumnVisible` gates; single resolved `viewMode` (`table` | `cards`); desktop tables use `WorkBatchTable`; cards use `DirectoryCard`/`DirectoryEntityCard` + `useWorkCardAction`; identical server pagination; row virtualization over 30 items; `useModuleColumnLayout` column width/visibility persistence; UI/UX Pro Max design intelligence alignment (`mms-ui-ux-design.md` §8) for semantic HSL token mapping, resilient text layout (`text-wrap: balance`), and state preservation.
-- **Manifest Constants:** Import `setupSubTabs`, `softDelete`, `work.bulkActions`, and permissions from manifest. Person directories mandate `directoryViews: ['table','cards']`.
+- **Bulk PUT:** Upsert only per `mms-api-interface.md` §5; never wipe missing rows.
+- **Soft-Delete Lifecycle:** Full lifecycle per §6, `mms-data-layer.md` §6, and `mms-api-interface.md` §7 (`DELETE` + `POST /:id/restore`, URL `?view=trash`, `ModuleTrashToggle`, drawer archive banner, 23505 conflict trap, 5–10s optimistic Undo toast, outbox CDC).
+- **Mutations:** Await `mutateAsync` on form `onSave`; close modals only after mutation resolution (`mms-form-architecture.md`).
+- **Setup Tier:** Manifest `setupSubTabs` (`preferences` default); `canEditSetup` gates writes; read-only fallback when view-only; Preferences Save dirty-gated (§4).
+- **Work UX & DirectoryCard SSOT:** `ErrorState` with retry + `loadFailedHint`; `EmptyState` (`title` required); `Cmd/Ctrl+N` shortcut; Filters menu SSOT; controller-owned selection (`useWorkSelection`); two-layer bulk-bar chrome; header + `ModuleEntityIoToolbar` dual IO on operational tabs (§2); `isColumnVisible` gates; single resolved `viewMode` (`table` | `cards`); desktop tables use `WorkBatchTable`; cards use `DirectoryCard` + `useWorkCardAction` (DirectoryCard SSOT); identical server pagination; row virtualization over 30 items; `useModuleColumnLayout` width/visibility persistence.
+- **Manifest Constants:** Import `setupSubTabs`, `softDelete`, `work.bulkActions`, and permissions from manifest. Person directories mandate `directoryViews: ['table','cards']` (§1).
 - **i18n & RBAC:** All user-facing copy via `t()`; `useModulePermissions(manifest)` gates CTAs. Intersect persisted tier/sub-tab selections with active permissions before rendering.
 
-## 8. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
+## 8. Work Directory Governance
 - **Work Directory Standards:** Enforce controller-owned selection (`useWorkSelection`), unified bulk bar (`ModuleUniversalBulkActionBar`), and single resolved `viewMode`. CI enforces zero regressions via `pnpm run check:work-directory`.
-- **Verification Gates:** Verify with `pnpm typecheck` and `pnpm test`. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

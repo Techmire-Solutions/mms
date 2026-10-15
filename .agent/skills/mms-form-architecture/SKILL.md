@@ -4,7 +4,7 @@ description: Implements static FormModal forms with shared Zod DTOs, React 19 de
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Form Architecture Skill
@@ -94,6 +94,10 @@ python3 .agent/skills/ui-ux-pro-max/scripts/search.py "<form-topic>" --domain ux
 - [ ] Focus-return restored to opener on dialog close
 - [ ] Run: pnpm typecheck && cd apps/frontend && pnpm lint
 ```
+
+## References
+
+- Form Collection Patterns & Control Recipes: `references/form-collection-patterns.md`
 
 ## Related skills
 

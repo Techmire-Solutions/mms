@@ -4,7 +4,7 @@ description: Operates the MMS production deployment on Hetzner — Apache vhost 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 compatibility: Requires SSH access to the Hetzner VPS and PM2/Apache on the server; never run against production without an explicit instruction.
 ---
 
@@ -69,6 +69,10 @@ curl -fsS "https://${MMS_APP_DOMAIN}/api/platform/auth/setup/status"
 # Tenant Health Check
 curl -fsS "https://<tenant-slug>.${MMS_APP_DOMAIN}/health"
 ```
+
+## References
+
+- Hetzner Deployment & Rollback Runbook: `references/hetzner-deploy-cheatsheet.md`
 
 ## Related skills
 

@@ -4,7 +4,7 @@ description: Covers the Master Module Scaffold Layout, Tailwind CSS v4 BiDi Desi
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS UI/UX Design System & BiDi Layout Contract
@@ -105,4 +105,4 @@ Record actual browser/locale/focus checks and observed layout behavior. Do not c
 
 ## Related skills
 
-`ui-ux-pro-max`, `mms-frontend`, `mms-form-architecture`, `mms-a11y-smoke`, `mms-settings-i18n`.
+`mms-shared-ui`, `ui-ux-pro-max`, `mms-frontend`, `mms-form-architecture`, `mms-a11y-smoke`, `mms-settings-i18n`.

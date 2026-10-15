@@ -4,7 +4,7 @@ description: Reviews a concrete change set (PR or local diff) against MMS rules 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 allowed-tools: Read Grep Glob Bash(pnpm typecheck) Bash(pnpm lint) Bash(pnpm test) Bash(pnpm ci:local) Bash(pnpm ci:local:full) Bash(bash scripts/ci/local-ci.sh) Bash(bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh)
 ---
 
