@@ -15,18 +15,25 @@ vi.mock("@/lib/notify", () => ({
   },
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({
-    t: (key: string) =>
-      ({
-        "faculty.io.importFaculties": "Import Faculty Members",
-        "faculty.io.importDesignations": "Import Designations",
-        "faculty.io.importFacultiesJob": "Importing faculty members…",
-        "faculty.io.importDesignationsJob": "Importing designations…",
-        "faculty.io.csvHint": "Upload CSV file to import records",
-      })[key] ?? key,
-  }),
-}));
+const FACULTY_IO_MAP: Record<string, string> = {
+  "faculty.io.importFaculties": "Import Faculty Members",
+  "faculty.io.importDesignations": "Import Designations",
+  "faculty.io.importFacultiesJob": "Importing faculty members…",
+  "faculty.io.importDesignationsJob": "Importing designations…",
+  "faculty.io.csvHint": "Upload CSV file to import records",
+};
+
+vi.mock("@/hooks/useTranslation", async () => {
+  const { translateAppParams } = await import("@mms/shared");
+  const realT = (key: string, params?: Record<string, string | number>): string =>
+    translateAppParams(key as never, "en", ...(params ? [params as never] : []));
+  return {
+    useTranslation: () => ({
+      t: (key: string, params?: Record<string, string | number>): string =>
+        FACULTY_IO_MAP[key] ?? realT(key, params),
+    }),
+  };
+});
 
 const mockStartServerImport = vi.fn().mockResolvedValue({
   id: "job-faculty-1",

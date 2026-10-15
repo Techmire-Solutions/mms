@@ -42,7 +42,7 @@ export {
   useObligationsContractRestoreCollection,
   useObligationsContractBulkDeleteCollections,
   useObligationsContractBulkRestoreCollections,
-} from "@/tenant/features/obligations/hooks/useObligationsTsrHooks";
+} from "@/tenant/features/obligations/hooks/useObligationsQueries";
 export {
   useObligationsSettings,
   loadObligationsSettings,

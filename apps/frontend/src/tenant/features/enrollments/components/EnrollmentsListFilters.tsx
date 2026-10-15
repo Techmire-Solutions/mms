@@ -1,6 +1,5 @@
 import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
-import { FilterChips } from "@/components/app/FilterChips";
-import { WorkTaskToolbar } from "@/components/common/work";
+import { WorkListFiltersScaffold, type WorkListFilterChip } from "@/components/common/work";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -56,16 +55,37 @@ export function EnrollmentsListFilters({
     label: sessionItem.name,
   }));
 
+  const chips: WorkListFilterChip[] = [
+    ...(statusFilter !== "all"
+      ? [
+          {
+            key: `status:${statusFilter}`,
+            label: statusConfig[statusFilter]?.label ?? statusFilter,
+            onRemove: () => onStatusChange("all"),
+          },
+        ]
+      : []),
+    ...(sessionFilter !== "all"
+      ? [
+          {
+            key: `session:${sessionFilter}`,
+            label: sessions.find((s) => s.id === sessionFilter)?.name ?? sessionFilter,
+            onRemove: () => onSessionChange("all"),
+          },
+        ]
+      : []),
+  ];
+
   return (
-    <WorkTaskToolbar
+    <WorkListFiltersScaffold
       regionLabel={t("enrollments.filters")}
       search={search}
       onSearchChange={onSearchChange}
       searchPlaceholder={t("enrollments.searchPlaceholder")}
       searchId={ENROLLMENTS_WORK_SEARCH_INPUT_ID}
-      hasActiveFilters={activeFilterCount > 0}
-      onClearFilters={onClearFilters}
+      activeFilterCount={activeFilterCount}
       clearFiltersLabel={t("enrollments.clearFilters")}
+      onClearFilters={onClearFilters}
       filterButton={
         <EnrollmentsFiltersMenuButton
           statusFilter={statusFilter}
@@ -78,31 +98,7 @@ export function EnrollmentsListFilters({
           onClearFilters={onClearFilters}
         />
       }
-      filterChips={
-        <FilterChips
-          chips={[
-            ...(statusFilter !== "all"
-              ? [
-                  {
-                    key: `status:${statusFilter}`,
-                    label: statusConfig[statusFilter]?.label ?? statusFilter,
-                    onRemove: () => onStatusChange("all"),
-                  },
-                ]
-              : []),
-            ...(sessionFilter !== "all"
-              ? [
-                  {
-                    key: `session:${sessionFilter}`,
-                    label: sessions.find((s) => s.id === sessionFilter)?.name ?? sessionFilter,
-                    onRemove: () => onSessionChange("all"),
-                  },
-                ]
-              : []),
-          ]}
-          onClearAll={onClearFilters}
-        />
-      }
+      chips={chips}
       trashToggle={
         canDelete && onShowDeletedChange
           ? {
@@ -118,12 +114,7 @@ export function EnrollmentsListFilters({
         viewMode,
         onViewModeChange,
       }}
-      columnCustomizer={{
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      }}
+      columnCustomizer={columnCustomizer}
     />
   );
 }

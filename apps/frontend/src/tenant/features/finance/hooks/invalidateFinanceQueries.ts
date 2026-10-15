@@ -4,7 +4,7 @@ import {
   FINANCE_METRICS_QUERY_KEY,
   FINANCE_PAYMENTS_QUERY_KEY,
   FINANCE_REPORT_AGGREGATES_QUERY_KEY,
-} from "@/tenant/features/finance/hooks/useFinanceApi";
+} from "@/tenant/features/finance/hooks/financeQueryKeys";
 
 /** Invalidate Finance invoices/payments/metrics/report-aggregates Query keys (mutations + live push). */
 export function invalidateFinanceQueries(queryClient: QueryClient): void {

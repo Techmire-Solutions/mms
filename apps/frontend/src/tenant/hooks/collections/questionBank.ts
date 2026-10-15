@@ -31,4 +31,4 @@ export {
   useQuestionBankContractBulkRestore,
   useQuestionBankContractDeleteQuestion,
   useQuestionBankContractRestoreQuestion,
-} from "@/tenant/features/question-bank/hooks/useQuestionBankTsrHooks";
+} from "@/tenant/features/question-bank/hooks/useQuestionBankQueries";

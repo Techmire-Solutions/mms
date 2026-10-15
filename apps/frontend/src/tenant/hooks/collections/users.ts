@@ -45,7 +45,7 @@ export {
   useUsersContractDelete,
   useUsersContractRestore,
   useUsersContractVerifyEmail,
-} from "@/tenant/features/users/hooks/useUsersTsrHooks";
+} from "@/tenant/features/users/hooks/useUsersQueries";
 
 /** Role catalog create — Faculty and other modules must import from this facade. */
 export { RoleFormModal } from "@/tenant/features/users/components/RoleFormModal";

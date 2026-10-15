@@ -21,6 +21,15 @@ interface AccountModalProps {
   existingCodes: string[];
 }
 
+/** Field ids ↔ the same translation keys AccountModalFields renders. */
+const ACCOUNT_FIELD_LABEL_KEYS: Partial<Record<string, AppTranslationKey>> = {
+  code: "accounting.coa.fields.code",
+  type: "accounting.coa.fields.type",
+  name: "accounting.coa.fields.name",
+  subtype: "accounting.coa.fields.subtype",
+  description: "accounting.coa.fields.description",
+};
+
 export function AccountModal({ initial, onSave, onClose, existingCodes }: AccountModalProps) {
   const { t } = useTranslation();
   const isEdit = !!initial?.id;
@@ -91,7 +100,11 @@ export function AccountModal({ initial, onSave, onClose, existingCodes }: Accoun
       if (fields[field.id]?.required && !String(value ?? "").trim()) {
         setError(field.id as keyof Account, {
           type: "manual",
-          message: t("common.formPleaseFixErrors"),
+          message: t("common.fieldRequired", {
+            field: ACCOUNT_FIELD_LABEL_KEYS[field.id]
+              ? t(ACCOUNT_FIELD_LABEL_KEYS[field.id]!)
+              : field.id,
+          }),
         });
         hasExtraError = true;
       }

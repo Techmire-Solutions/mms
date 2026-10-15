@@ -258,3 +258,53 @@ describe("TanStack Query v5 Query Options Factories (P8)", () => {
     });
   });
 });
+
+/**
+ * Key-parity guardrail: every exported list queryOptions factory (both the
+ * contract-driven generation and any legacy factories re-exported through a
+ * facade) must build its queryKey under the module's collection key, because
+ * the module invalidators (`invalidate*Queries`) target keys that share that
+ * prefix. A factory keyed outside the collection prefix would never be
+ * invalidated by its module's mutations.
+ */
+describe("module list query-key parity (invalidator coverage)", () => {
+  type ListOptionsFactory = (query: { page: number; limit: number }) => { queryKey: readonly unknown[] };
+
+  const modules: Array<[string, Record<string, unknown>]> = [
+    ["contacts", contactsFacade],
+    ["students", studentsFacade],
+    ["faculty", facultyFacade],
+    ["sessions", sessionsFacade],
+    ["enrollments", enrollmentsFacade],
+    ["finance", financeFacade],
+    ["attendance", attendanceFacade],
+    ["accounting", accountingFacade],
+    ["hasanat", hasanatFacade],
+    ["obligations", obligationsFacade],
+    ["examinations", examinationsFacade],
+    ["questionBank", questionBankFacade],
+    ["messaging", messagingFacade],
+    ["users", usersFacade],
+  ];
+
+  for (const [collectionKey, facade] of modules) {
+    it(`all ${collectionKey} list queryOptions keys start with ["${collectionKey}"] and an invalidator is exported`, () => {
+      const invalidatorNames = Object.keys(facade).filter((name) =>
+        /^invalidate\w+Queries$/.test(name),
+      );
+      expect(invalidatorNames.length).toBeGreaterThanOrEqual(1);
+
+      const factoryNames = Object.keys(facade).filter(
+        (name) =>
+          name.endsWith("ListQueryOptions") || name.endsWith("InfiniteQueryOptions"),
+      );
+      expect(factoryNames.length).toBeGreaterThanOrEqual(1);
+
+      for (const name of factoryNames) {
+        const factory = facade[name] as ListOptionsFactory;
+        const options = factory({ page: 1, limit: 25 });
+        expect(options.queryKey[0], `${name} queryKey[0]`).toBe(collectionKey);
+      }
+    });
+  }
+});

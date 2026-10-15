@@ -23,7 +23,7 @@ export {
   useFinancePreferencesQuery,
   FINANCE_PREFERENCES_QUERY_KEY,
 } from "@/tenant/features/finance/hooks/useFinanceSetupConfig";
-// Phase 7: contract-driven tsrClient hooks & query factories
+// Contract-driven tsrClient hooks & query factories
 export {
   financeInvoicesListQueryOptions,
   financePaymentsListQueryOptions,
@@ -37,5 +37,5 @@ export {
   useFinanceContractUpdatePayment,
   useFinanceContractBulkDeleteInvoices,
   useFinanceContractBulkStatusInvoices,
-} from "@/tenant/features/finance/hooks/useFinanceTsrHooks";
+} from "@/tenant/features/finance/hooks/useFinanceQueries";
 export { applyFinanceWorkDrillDown } from "@/tenant/features/finance/hooks/financeWorkDrillDown";

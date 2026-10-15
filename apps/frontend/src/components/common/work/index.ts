@@ -5,6 +5,13 @@ export {
 } from "./WorkTaskToolbar";
 
 export {
+  WorkListFiltersScaffold,
+  type WorkListFiltersScaffoldProps,
+  type WorkListFilterChip,
+  type WorkListTrashToggle,
+} from "./WorkListFiltersScaffold";
+
+export {
   WorkActionDock,
   type WorkActionDockProps,
   type WorkActionTransition,

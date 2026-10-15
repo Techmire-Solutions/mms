@@ -7,7 +7,7 @@ import {
   useAttendanceContractBulkRestore,
   useAttendanceContractUpdate,
   useAttendanceContractDelete,
-} from "./useAttendanceTsrHooks";
+} from "./useAttendance";
 
 vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-query")>();
@@ -33,7 +33,7 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-describe("useAttendanceTsrHooks suite", () => {
+describe("useAttendanceContractHooks suite", () => {
   it("exports contract hooks for list, create, bulk, delete, restore, update", () => {
     expect(useAttendanceContractList).toBeDefined();
     expect(useAttendanceContractCreate).toBeDefined();

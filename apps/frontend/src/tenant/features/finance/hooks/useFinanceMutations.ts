@@ -21,7 +21,7 @@ import {
   useFinanceContractBulkRestoreInvoices,
   useFinanceContractBulkRestorePayments,
   useFinanceContractBulkDeletePayments,
-} from "@/tenant/features/finance/hooks/useFinanceTsrHooks";
+} from "@/tenant/features/finance/hooks/useFinanceQueries";
 
 export function useFinanceMutations() {
   const _queryClient = useQueryClient();

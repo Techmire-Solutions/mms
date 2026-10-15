@@ -5,7 +5,7 @@ import {
   useEnrollmentsContractList,
   useEnrollmentsContractGet,
   useEnrollmentsContractCreate,
-} from "./useEnrollmentsTsrHooks";
+} from "./useEnrollmentsQueries";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -61,7 +61,7 @@ function TestComponent(): React.JSX.Element {
   return React.createElement("div");
 }
 
-describe("useEnrollmentsTsrHooks", () => {
+describe("useEnrollmentsQueries", () => {
   it("executes tsr query and mutation hooks properly", async () => {
     const root = createRoot(document.createElement("div"));
     await act(async () => {

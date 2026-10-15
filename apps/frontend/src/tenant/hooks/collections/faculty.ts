@@ -35,13 +35,16 @@ export {
   facultyListQueryOptions,
   useFacultyContractList,
   useFacultyContractGet,
+  useFacultyContractNextEmployeeId,
+} from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
+
+export {
   useFacultyContractCreate,
   useFacultyContractUpdate,
   useFacultyContractDelete,
   useFacultyContractBulkStatus,
   useFacultyContractDuplicateCheck,
-  useFacultyContractNextEmployeeId,
-} from "@/tenant/features/faculty/hooks/useFacultyTsrHooks";
+} from "@/tenant/features/faculty/hooks/useFacultyTsrMutations";
 
 export {
   FACULTY_DEPARTMENTS_QUERY_KEY,

@@ -22,7 +22,7 @@ export {
   ATTENDANCE_PREFERENCES_QUERY_KEY,
 } from "@/tenant/features/attendance/hooks/useAttendanceSetupConfig";
 export { useAttendanceLookupsQuery } from "@/tenant/features/attendance/hooks/useAttendanceLookups";
-// Phase 7: contract-driven tsrClient hooks & query factories
+// Contract-driven tsrClient hooks & query factories
 export {
   attendanceListQueryOptions,
   useAttendanceContractList,
@@ -32,5 +32,5 @@ export {
   useAttendanceContractBulkRestore,
   useAttendanceContractUpdate,
   useAttendanceContractDelete,
-} from "@/tenant/features/attendance/hooks/useAttendanceTsrHooks";
+} from "@/tenant/features/attendance/hooks/useAttendance";
 export { applyAttendanceWorkDrillDown } from "@/tenant/features/attendance/hooks/attendanceWorkDrillDown";

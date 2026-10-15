@@ -9,7 +9,7 @@ import {
   useFacultyContractBulkSpecialization,
   useFacultyContractLogExportAudit,
   useFacultyContractLogSetupAudit,
-} from "@/tenant/features/faculty/hooks/useFacultyTsrHooks";
+} from "@/tenant/features/faculty/hooks/useFacultyTsrMutations";
 
 /** Server mutations for Faculty records (create, update, delete, bulk delete, bulk status, bulk specialization). */
 export function useFacultyMutations() {

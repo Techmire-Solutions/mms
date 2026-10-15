@@ -30,7 +30,7 @@ import {
 import {
   useContactsContractFieldConfig,
   useContactsContractUpdateFieldConfig,
-} from "@/tenant/features/contacts/hooks/useContactsTsrHooks";
+} from "@/tenant/features/contacts/hooks/useContactsQueries";
 import {
   DEFAULT_CONTACT_PREFERENCES,
   type ContactPreferences,

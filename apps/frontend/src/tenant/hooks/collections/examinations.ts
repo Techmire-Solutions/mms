@@ -29,5 +29,5 @@ export {
   useExaminationsContractBulkUpdateResults,
   useExaminationsContractDeleteExam,
   useExaminationsContractRestoreExam,
-} from "@/tenant/features/examinations/hooks/useExaminationsTsrHooks";
+} from "@/tenant/features/examinations/hooks/useExaminationsQueries";
 export { useExaminationsReportAggregates } from "@/tenant/features/examinations/hooks/useExaminationsReportAggregates";

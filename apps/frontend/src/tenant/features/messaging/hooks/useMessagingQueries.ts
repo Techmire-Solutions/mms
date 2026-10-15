@@ -1,6 +1,6 @@
 /**
- * Phase 7: Contract-driven query/mutation hooks for the Messaging module.
- * Uses tsrClient (@ts-rest/react-query v5) for contract schema enforcement.
+ * Messaging contract-driven server-state surface: list query options, contract
+ * query hooks, and contract mutations.
  */
 import { apiContract, tsrClient } from "@/lib/api";
 import { queryOptions, useQueryClient } from "@tanstack/react-query";

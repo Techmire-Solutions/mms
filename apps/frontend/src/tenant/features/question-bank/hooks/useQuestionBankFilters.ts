@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { QUESTION_BANK_MODULE_MANIFEST, type QuestionBankQuestion as Question } from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useQuestionBankContractList } from "@/tenant/features/question-bank/hooks/useQuestionBankTsrHooks";
+import { useQuestionBankContractList } from "@/tenant/features/question-bank/hooks/useQuestionBankQueries";
 
 const QUESTION_SEARCH_DEBOUNCE_MS = 300;
 

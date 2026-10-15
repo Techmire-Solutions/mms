@@ -50,7 +50,7 @@ export function PlatformReportsModuleAdoption(): React.JSX.Element {
                     {Icon ? <Icon className="w-3 h-3 text-primary shrink-0" aria-hidden /> : null}
                     <span>{mod.label}</span>
                     {mod.required ? (
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary" aria-label="Required" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" aria-label={t("common.required")} />
                     ) : null}
                   </span>
                 );

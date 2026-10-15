@@ -37,4 +37,4 @@ export {
   useStudentsContractBulkEnroll,
   useStudentsContractNextGrNumber,
   useStudentsContractDuplicateCheck,
-} from "@/tenant/features/students/hooks/useStudentsTsrHooks";
+} from "@/tenant/features/students/hooks/useStudentsQueries";

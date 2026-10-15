@@ -13,7 +13,7 @@ import {
 import { useMemo } from "react";
 import { useSessions, useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useContactsByIds, useContactById } from "@/tenant/hooks/collections/contacts";
-import { useStudentsContractList } from "@/tenant/features/students/hooks/useStudentsTsrHooks";
+import { useStudentsContractList } from "@/tenant/features/students/hooks/useStudentsQueries";
 import { useStudentConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";

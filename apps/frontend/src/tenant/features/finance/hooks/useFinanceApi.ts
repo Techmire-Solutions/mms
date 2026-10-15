@@ -5,23 +5,22 @@ import type {
   FinanceInvoicesListPageResult,
   FinancePaymentsListPageResult,
 } from "@mms/shared";
-import { FINANCE_MODULE_MANIFEST, normalizeFinanceReportComparisonQuery } from "@mms/shared";
+import { normalizeFinanceReportComparisonQuery } from "@mms/shared";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import {
   useFinanceContractInvoices,
   useFinanceContractPayments,
   useFinanceContractReportAggregates,
-} from "@/tenant/features/finance/hooks/useFinanceTsrHooks";
+} from "@/tenant/features/finance/hooks/useFinanceQueries";
 
-export const FINANCE_INVOICES_QUERY_KEY = ["finance", "invoices", "list"] as const;
-export const FINANCE_PAYMENTS_QUERY_KEY = ["finance", "payments", "list"] as const;
-export const FINANCE_METRICS_QUERY_KEY = ["finance", "metrics"] as const;
-export const FINANCE_REPORT_AGGREGATES_QUERY_KEY = [
-  FINANCE_MODULE_MANIFEST.collectionKey,
-  "report-aggregates",
-] as const;
-export const FINANCE_FIELD_CONFIG_QUERY_KEY = ["finance", "field-config", "contract"] as const;
-export const FINANCE_PREFERENCES_QUERY_KEY = ["finance", "preferences", "contract"] as const;
+export {
+  FINANCE_INVOICES_QUERY_KEY,
+  FINANCE_PAYMENTS_QUERY_KEY,
+  FINANCE_METRICS_QUERY_KEY,
+  FINANCE_REPORT_AGGREGATES_QUERY_KEY,
+  FINANCE_FIELD_CONFIG_QUERY_KEY,
+  FINANCE_PREFERENCES_QUERY_KEY,
+} from "@/tenant/features/finance/hooks/financeQueryKeys";
 
 /** Contract list hooks return the TanStack Query envelope; `data` is narrowed to the parsed page shape. */
 export type FinancePaginatedQueryResult<TPage> = Omit<

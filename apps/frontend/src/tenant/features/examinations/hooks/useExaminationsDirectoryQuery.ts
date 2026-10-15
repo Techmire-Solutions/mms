@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { Exam } from "@/lib/data/examinationData";
 import { useDebounce } from "@/hooks/useDebounce";
 import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
-import { useExaminationsContractList } from "@/tenant/features/examinations/hooks/useExaminationsTsrHooks";
+import { useExaminationsContractList } from "@/tenant/features/examinations/hooks/useExaminationsQueries";
 
 const EXAM_SEARCH_DEBOUNCE_MS = 300;
 

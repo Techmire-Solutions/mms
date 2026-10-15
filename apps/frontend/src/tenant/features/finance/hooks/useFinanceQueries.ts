@@ -1,5 +1,7 @@
 /**
- * Phase 7: Contract-driven query/mutation hooks for the Finance module.
+ * Finance module contract-driven server-state surface (Phase 7): list query
+ * options, contract query hooks, and contract mutation hooks. Module-owned
+ * per-feature hooks layer on top of this file.
  */
 import { apiContract, tsrClient } from "@/lib/api";
 import { queryOptions, useQueryClient } from "@tanstack/react-query";
@@ -10,12 +12,12 @@ import {
   FINANCE_PAYMENTS_QUERY_KEY,
   FINANCE_PREFERENCES_QUERY_KEY,
   FINANCE_REPORT_AGGREGATES_QUERY_KEY,
-} from "@/tenant/features/finance/hooks/useFinanceApi";
+} from "@/tenant/features/finance/hooks/financeQueryKeys";
 import { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";
 
 export function financeInvoicesListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
-    queryKey: [...FINANCE_INVOICES_QUERY_KEY, "contract", query] as const,
+    queryKey: [...FINANCE_INVOICES_QUERY_KEY, query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.finance.listInvoices({
         query: query as Record<string, string>,
@@ -34,7 +36,7 @@ export function financeInvoicesListQueryOptions(query: Record<string, unknown> =
 
 export function financePaymentsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
-    queryKey: [...FINANCE_PAYMENTS_QUERY_KEY, "contract", query] as const,
+    queryKey: [...FINANCE_PAYMENTS_QUERY_KEY, query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.finance.listPayments({
         query: query as Record<string, string>,
@@ -53,7 +55,7 @@ export function financePaymentsListQueryOptions(query: Record<string, unknown> =
 
 export function useFinanceContractInvoices(query: Record<string, unknown>, enabled = true) {
   return tsrClient.finance.listInvoices.useQuery({
-    queryKey: [...FINANCE_INVOICES_QUERY_KEY, "contract", query],
+    queryKey: [...FINANCE_INVOICES_QUERY_KEY, query],
     queryData: { query },
     staleTime: 15_000,
     enabled,
@@ -62,7 +64,7 @@ export function useFinanceContractInvoices(query: Record<string, unknown>, enabl
 
 export function useFinanceContractPayments(query: Record<string, unknown>, enabled = true) {
   return tsrClient.finance.listPayments.useQuery({
-    queryKey: [...FINANCE_PAYMENTS_QUERY_KEY, "contract", query],
+    queryKey: [...FINANCE_PAYMENTS_QUERY_KEY, query],
     queryData: { query },
     staleTime: 15_000,
     enabled,
@@ -71,7 +73,7 @@ export function useFinanceContractPayments(query: Record<string, unknown>, enabl
 
 export function useFinanceContractMetrics(enabled = true) {
   return tsrClient.finance.getMetrics.useQuery({
-    queryKey: [...FINANCE_METRICS_QUERY_KEY, "contract"],
+    queryKey: [...FINANCE_METRICS_QUERY_KEY],
     queryData: {},
     staleTime: 30_000,
     enabled,
@@ -80,7 +82,7 @@ export function useFinanceContractMetrics(enabled = true) {
 
 export function useFinanceContractReportAggregates(query: Record<string, unknown>, enabled = true) {
   return tsrClient.finance.getReportAggregates.useQuery({
-    queryKey: [...FINANCE_REPORT_AGGREGATES_QUERY_KEY, "contract", query],
+    queryKey: [...FINANCE_REPORT_AGGREGATES_QUERY_KEY, query],
     queryData: { query },
     staleTime: 5 * 60 * 1000,
     enabled,

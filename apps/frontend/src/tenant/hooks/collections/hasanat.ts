@@ -40,4 +40,4 @@ export {
   useHasanatContractBulkRestore,
   useHasanatContractDeleteDistribution,
   useHasanatContractRestoreDistribution,
-} from "@/tenant/features/hasanat/hooks/useHasanatTsrHooks";
+} from "@/tenant/features/hasanat/hooks/useHasanatQueries";

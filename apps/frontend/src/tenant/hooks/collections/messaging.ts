@@ -25,7 +25,7 @@ export {
   useMessagingContractDeleteTemplate,
   useMessagingContractRecordLogs,
   useMessagingContractClearLogs,
-} from "@/tenant/features/messaging/hooks/useMessagingTsrHooks";
+} from "@/tenant/features/messaging/hooks/useMessagingQueries";
 
 export {
   MESSAGING_CHANNEL_CONFIG,
