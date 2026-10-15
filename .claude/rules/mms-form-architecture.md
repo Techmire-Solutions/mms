@@ -12,6 +12,7 @@ paths:
   - "apps/frontend/src/components/app/TimePicker.tsx"
   - "apps/frontend/src/components/app/DateTimePicker.tsx"
   - "apps/frontend/src/components/ui/formStyles.ts"
+  - "packages/ui/src/theme/formStyles.ts"
   - "apps/frontend/src/tenant/features/**/*Form*.tsx"
   - "apps/frontend/src/tenant/features/**/hooks/use*Write*.ts"
   - "apps/frontend/src/tenant/features/**/hooks/use*Form*.ts"
@@ -33,15 +34,14 @@ paths:
 - **Modal Scoping:** Use `FormModal` for create, edit, and builder flows; raw `Modal` restricted to confirm/preview dialogs. Shell manages header, icon, subtitle, tabs, progress, focus trap, and focus return on dismiss.
 - **Input Primitives & Tokens:** Inputs use `min-h-11 min-w-11` (`FORM_INPUT`). Cards use `FORM_CARD`; builders use `FORM_INPUT_BUILDER`. Inline errors use `FieldErrorMessage` + `FORM_ERROR`.
 - **Field Primitives:** Standardize on `Input`, `Textarea`, `Checkbox`, `FormSelect`, `FormSelectWithQuickCreate`, `DatePicker`, `TimePicker`, `DateTimePicker`, `EditableSelect`. Currency requires text `inputMode="decimal"` (ban `type="number"`). Phone uses `type="tel"` with E.164 normalization. Calendar is Gregorian only.
-- **Control decision table (SSOT):** Pick exactly one control family — do not invent parallel chrome.
-  - enum / filter → `FormSelect`
-  - string tenant lookup → `EditableSelect` + `onUpdateOptions`
-  - entity catalog FK + existing create `FormModal` → `FormSelectWithQuickCreate`
-  - person search → `ContactPicker` / `RegistryPersonSelect`
-  - chips / categories → `CategorySelector` / `FormTagsInput`
-  - discriminative row-header control → `FormCardTypeSelect` (from `FormCardChrome`) wrapping the control in `FormListFieldCard.typeSelect`
-  - repeatable draft rows → `FormCollectionShell` + `FormListFieldCard` + `FormAddAnotherButton`
-- **Catalog create SSOT:** On write forms, every **entity-catalog id** select whose module already has a create `FormModal` + mutation **must** use `FormSelectWithQuickCreate` (Plus → nested catalog modal → auto-select new id). **Required:** faculty dept/designation/position, org position FKs (dept/desig/location/parent), Wakala mujtahid/type/rep, obligation collection type/rep, QB citation `bookId`, accounting journal/simple `account_id` legs (gate Plus with write permission). **Forbidden / keep other SSOTs:** enum & filter-only `FormSelect`; string tenant lookups → `EditableSelect`; person search → `ContactPicker` / `RegistryPersonSelect`; chip/category UI → `CategorySelector`; cross-module heavy creates (e.g. Session→full FacultyForm, Enrollment→Session create). Ban one-off Plus+`FormSelect` chrome.
+- **Control decision table (SSOT):** Pick exactly one control family — do not invent parallel chrome:
+  - Enum / filter → `FormSelect`
+  - String tenant lookup → `EditableSelect` + `onUpdateOptions`
+  - Entity catalog FK + existing create `FormModal` → `FormSelectWithQuickCreate` (Plus → nested catalog modal → auto-select new ID; gate Plus with write permission). Applies to faculty dept/desig/pos, org position FKs, Wakala mujtahid/rep, obligation type/rep, QB `bookId`, accounting `account_id` legs. Ban one-off Plus+`FormSelect` chrome.
+  - Person search → `ContactPicker` / `RegistryPersonSelect` (ban full embedded forms)
+  - Chips / categories → `CategorySelector` / `FormTagsInput`
+  - Discriminative row-header control → `FormCardTypeSelect` in `FormListFieldCard.typeSelect`
+  - Repeatable draft rows → `FormCollectionShell` + `FormListFieldCard` + `FormAddAnotherButton`
 - **Scroll & Viewport:** Tabbed forms use `<FormModal tall>` (`max-h-[43.75rem]` + `flex-1 overflow-y-auto`). Use `dvh`/`svh` (+ safe area) over `vh`. Apply `useBodyScrollLock()` + `overscroll-contain` on scrollable modal bodies.
 - **Layout & Structure:** Enforce single-column flows (`COLLECTION_BODY`) inside `space-y-3`. Multi-column sections use CSS Subgrid or `@container` queries. Enabled registry fields must render (ban hardcoded allowlists). Client-side dynamic form compilers are banned. Gate entry and save CTAs with `canWrite`.
 
@@ -83,6 +83,3 @@ paths:
 - **FormModal:** Exclusively owns write mutations, create, edit, builder workflows, and data modifications with shared Zod validation.
 - **DetailSheet:** Exclusively owns read-only inspection, archive callouts, quick actions, and audit metadata via `EntityDescriptor<T>` (`mms-ui-ux-design.md` §6). Never embed edit forms in DetailSheet.
 
-## 8. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

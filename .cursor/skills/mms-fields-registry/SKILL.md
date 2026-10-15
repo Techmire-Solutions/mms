@@ -4,7 +4,7 @@ description: Adds or changes field/tab registries, module Setup Fields UI, and f
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Field & Tab Registry

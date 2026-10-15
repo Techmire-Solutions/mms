@@ -49,6 +49,3 @@ paths:
 - Zero ad-hoc polling loops (use WebSockets or documented `refetchInterval`).
 - Enforce the 300-line hard cap per hook file (prefer ≤220).
 
-## 9. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

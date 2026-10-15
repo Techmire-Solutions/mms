@@ -4,7 +4,7 @@ description: Runs accessibility verification for MMS UI work — axe scans, focu
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 compatibility: Requires Playwright browsers for the full axe mode; static mode is dependency-free.
 allowed-tools: Read Grep Glob Bash(bash .agent/skills/mms-a11y-smoke/scripts/smoke-a11y.sh) Bash(pnpm test:e2e)
 ---

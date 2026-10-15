@@ -4,7 +4,7 @@ description: Orients Antigravity agents to the MMS workspace layout — .agent r
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 allowed-tools: Read Grep Glob Bash(bash .agent/scripts/sync-all.sh) Bash(node scripts/verify-rules-integrity.mjs)
 ---
 

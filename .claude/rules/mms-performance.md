@@ -1,8 +1,8 @@
 ---
 description: Performance rules, query optimization, render hygiene, caching, streaming, and DOM virtualization
 paths:
-  - "apps/backend/src/db/**"
-  - "apps/backend/src/services/**"
+  - "apps/backend/src/lib/redis.ts"
+  - "apps/backend/src/worker/**"
   - "apps/frontend/src/components/common/data-table/**"
   - "apps/frontend/src/lib/queryClient.ts"
 ---
@@ -47,7 +47,6 @@ paths:
 - **TanStack Query State:** Deduplicate network requests using tuple keys (`queryOptions` factories). Ban `useEffect` fetch loops.
 
 ## 6. Safety, Verification & Documentation Standards
-- **Zero Output Bloat:** Output surgical diffs only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
 - **Contract Compatibility:** Performance refactors must preserve API response schemas and DTO contracts.
 - **Verification Gates:** Verify with `pnpm typecheck`, `pnpm test`, and relevant CI ratchets (`pnpm run check:db-projections`, `pnpm run check:migration-indexes`, `pnpm run check:bundle`).
 - **Quantify Impact:** Document baseline bottleneck and quantified resource saved (CPU, RAM, DB queries, bundle size) in reviews.

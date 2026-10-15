@@ -4,7 +4,7 @@ description: Diagnoses and safely operates the MMS BullMQ worker — stuck, retr
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 compatibility: Requires a reachable Redis instance and the worker process for live queue inspection.
 ---
 
@@ -33,7 +33,7 @@ An export retry can regenerate an artifact, but its source cutoff may change. A 
 | Process | docker-compose `worker` service, PM2 `mmsv2-worker`, dev `pnpm --filter mms-backend worker` |
 | Row-claiming jobs | `worker/purgeArchivedRecordsJob.ts`, `worker/processors/outboxCdcProcessor.ts` (`FOR UPDATE SKIP LOCKED`) |
 
-Job state lives in Redis, so the worker scales horizontally and the API process must never execute jobs inline.
+Job state lives in Redis, so the worker scales horizontally and the API process must never execute jobs inline. For Redis query commands and key patterns, see [references/bullmq-redis-cheatsheet.md](references/bullmq-redis-cheatsheet.md).
 
 ## Triage order
 

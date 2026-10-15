@@ -4,7 +4,7 @@ description: SMS/WhatsApp campaigns, MessageComposer, templates, message logs, a
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Messaging Workflow

@@ -1,10 +1,10 @@
 ---
 name: mms-shared-package
-description: Extends @mms/shared with types, settings defaults, module manifests, translation keys, messaging schemas, and pure utilities shared by frontend and backend. Use when adding shared types, formatDate, formatMoney, parsePhoneNumber, manifests, or moving duplicated logic to packages/shared. Do NOT use for DOM/React-specific UI components (use mms-frontend) or Fastify backend-only services (use mms-backend-api).
+description: Extends @mms/shared with types, settings defaults, module manifests, translation keys, messaging schemas, and pure utilities shared by frontend and backend. Use when adding shared types, formatDate, formatMoney, parsePhoneNumber, manifests, or moving duplicated logic to packages/shared. Do NOT use for UI components or JSX (use mms-shared-ui or mms-frontend) or Fastify backend-only services (use mms-backend-api).
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # @mms/shared Package Workflow
@@ -55,6 +55,10 @@ pnpm run check:shared-structure                                         # de-fla
 pnpm typecheck
 ```
 
+## References
+
+- Shared Package Guidelines & Export Standards: `references/shared-package-guidelines.md`
+
 ## Related skills
 
-`mms-schema-migrate`, `mms-backend-api`, `mms-settings-i18n`.
+`mms-schema-migrate`, `mms-backend-api`, `mms-settings-i18n`, `mms-shared-ui`.

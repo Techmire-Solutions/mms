@@ -4,7 +4,7 @@ description: Governs application-wide settings panels (/settings), settings prev
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Settings, Navigation & Internationalization

@@ -4,7 +4,7 @@ description: Implements or modifies the module Setup tier per mms-module-archite
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Module Setup Workflow

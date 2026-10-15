@@ -44,6 +44,3 @@ paths:
 - **Banned Document Store:** Never include `message_logs` or `message_templates` in `ALLOWED_COLLECTIONS`. Never re-allowlist `messages_u:` or dual-write via `saveCollection`.
 - **Banned Mutations:** Bulk wipe PUT is strictly prohibited (`mms-api-interface.md` §5); use upsert only. Never echo raw SQL errors to clients.
 
-## 6. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

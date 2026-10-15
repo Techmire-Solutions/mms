@@ -4,7 +4,7 @@ description: Implements TanStack Query v5 queryOptions/mutationOptions factories
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Query Factories Workflow
@@ -52,6 +52,10 @@ Under the existing no-optimistic-money rule, await persisted success, retain for
 ```
 
 Advisory cache review: inspect both in-memory Query state and IndexedDB persistence during logout, account switch and permission revocation. Auth-gating a query does not erase existing data. Include every response-shaping filter in keys; preserve existing scope conventions and test isolation before extending persistence. See the [frontend review](../mms-frontend/references/frontend-review.md).
+
+## References
+
+- Query Key Hierarchies & Cache Policies: `references/query-key-and-cache-policy.md`
 
 ## Examples
 

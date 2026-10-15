@@ -4,7 +4,7 @@ description: Sets up and runs the MMS monorepo (pnpm matching packageManager, No
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 compatibility: Requires Node >=24.14, pnpm 11.15.1, and reachable PostgreSQL.
 ---
 

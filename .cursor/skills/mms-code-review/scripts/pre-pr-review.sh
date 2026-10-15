@@ -42,6 +42,7 @@ gate "Migration index quality" pnpm run check:migration-indexes
 gate "Migrations are forward-only" pnpm run check:migrations-forward-only
 gate "Work directory convergence" pnpm run check:work-directory
 gate "Frontend structure ratchets" pnpm run check:frontend-structure
+gate "Shared UI architecture & governance" pnpm run check:shared-ui
 gate "Documentation ratchets" pnpm run check:docs
 if [[ "$SCOPE" == "affected" ]]; then
   gate "DB projection hygiene (changed files)" node scripts/check-db-projections.mjs --changed

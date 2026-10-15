@@ -44,6 +44,3 @@ paths:
 - **Platform Apex English Lock:** Platform apex (console, onboarding, admins, auth, tenant-not-found) is locked to **English + LTR**. Never consume tenant `settings.language`. Hardcode `dir="ltr"` and `lang="en"`.
 - **Unknown Tenant Gate:** Invalid/missing tenant subdomains trigger immediate hard-redirect (`window.location`) to `ROUTES.tenantNotFound` (`/tenant-not-found?subdomain=...`). Never mount tenant routes or `/settings` on invalid subdomains. Disabled workspaces render `WorkspaceDisabledScreen`.
 
-## 6. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

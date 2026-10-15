@@ -47,6 +47,3 @@ alwaysApply: false
 - **Cryptographic Provenance:** Compliance exports (`POST /api/audit/export`) embed canonical JSON hash chains, Merkle roots, and verification signatures in output metadata.
 - **Audit Data Tracking:** Access to audit trail records (viewing, searching, exporting) emits an immutable audit event (`action_type: 'VIEW'`).
 
-## 10. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

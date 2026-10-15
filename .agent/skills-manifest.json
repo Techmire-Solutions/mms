@@ -98,7 +98,7 @@
         "dedup scan",
         "progress",
         "download artifact",
-        "globle2"
+        "worker-job"
       ]
     },
     {
@@ -115,6 +115,22 @@
       ]
     },
     {
+      "name": "mms-ci-ratchets",
+      "path": "skills/mms-ci-ratchets",
+      "keywords": [
+        "diagnoses",
+        "resolves",
+        "failures",
+        "custom",
+        "ratchets",
+        "pre-commit",
+        "checks",
+        "check",
+        "backend-boundaries",
+        "code-norms"
+      ]
+    },
+    {
       "name": "mms-code-review",
       "path": "skills/mms-code-review",
       "keywords": [
@@ -124,6 +140,18 @@
         "audit",
         "backend security",
         "authenticateTenant"
+      ]
+    },
+    {
+      "name": "mms-data-import",
+      "path": "skills/mms-data-import",
+      "keywords": [
+        "bulk import",
+        "csv import",
+        "registerModuleCsvImportRoutes",
+        "batch onboarding",
+        "import dialog",
+        "dry-run validation"
       ]
     },
     {
@@ -196,6 +224,22 @@
         "traceparent",
         "audit",
         "responsible"
+      ]
+    },
+    {
+      "name": "mms-faculty-domain",
+      "path": "skills/mms-faculty-domain",
+      "keywords": [
+        "governs",
+        "faculty",
+        "academic",
+        "staff",
+        "domain",
+        "records",
+        "designation",
+        "assignments",
+        "temporal",
+        "appointments"
       ]
     },
     {
@@ -331,9 +375,9 @@
         "work",
         "reports",
         "setup",
-        "globle1",
-        "globle2",
-        "globlestructure",
+        "three-tier",
+        "command-center",
+        "module-shell",
         "command centre",
         "new module",
         "universal architecture"
@@ -346,7 +390,7 @@
         "setup",
         "fields",
         "preferences",
-        "globle2",
+        "sub-tabs",
         "CustomFieldsBuilder",
         "setup audit",
         "field dependencies"
@@ -363,7 +407,19 @@
         "bulk actions",
         "detail drawer",
         "column prefs",
-        "globle1"
+        "work-directory"
+      ]
+    },
+    {
+      "name": "mms-notifications",
+      "path": "skills/mms-notifications",
+      "keywords": [
+        "notifications",
+        "in-app alerts",
+        "unread count",
+        "badge",
+        "useTenantNotifications",
+        "NotificationsPage"
       ]
     },
     {
@@ -378,6 +434,22 @@
         "MMS_APP_DOMAIN",
         "github actions",
         "pm2"
+      ]
+    },
+    {
+      "name": "mms-platform-console",
+      "path": "skills/mms-platform-console",
+      "keywords": [
+        "implements",
+        "modifies",
+        "platform",
+        "console",
+        "features",
+        "apex",
+        "routes",
+        "permissions",
+        "workspace",
+        "provisioning"
       ]
     },
     {
@@ -406,6 +478,22 @@
         "failed",
         "jobs",
         "queue"
+      ]
+    },
+    {
+      "name": "mms-realtime-events",
+      "path": "skills/mms-realtime-events",
+      "keywords": [
+        "implements",
+        "maintains",
+        "websocket",
+        "real-time",
+        "event",
+        "distribution",
+        "over",
+        "/api/ws",
+        "multiplexing",
+        "client"
       ]
     },
     {
@@ -450,6 +538,22 @@
       ]
     },
     {
+      "name": "mms-seed-fixtures",
+      "path": "skills/mms-seed-fixtures",
+      "keywords": [
+        "authors",
+        "maintains",
+        "runs",
+        "database",
+        "seed",
+        "scripts",
+        "demo",
+        "tenant",
+        "fixtures",
+        "module"
+      ]
+    },
+    {
       "name": "mms-settings-i18n",
       "path": "skills/mms-settings-i18n",
       "keywords": [
@@ -478,6 +582,22 @@
       ]
     },
     {
+      "name": "mms-shared-ui",
+      "path": "skills/mms-shared-ui",
+      "keywords": [
+        "governs",
+        "shared",
+        "component",
+        "architecture",
+        "shared/ui",
+        "packages/ui",
+        "between",
+        "tenant",
+        "console",
+        "platform"
+      ]
+    },
+    {
       "name": "mms-soft-delete",
       "path": "skills/mms-soft-delete",
       "keywords": [
@@ -491,6 +611,22 @@
         "purgeArchivedRecords",
         "retention",
         "4-bucket"
+      ]
+    },
+    {
+      "name": "mms-student-lifecycle",
+      "path": "skills/mms-student-lifecycle",
+      "keywords": [
+        "implements",
+        "academic",
+        "student",
+        "lifecycle",
+        "workflows",
+        "admissions",
+        "enrollments",
+        "attendance",
+        "marking",
+        "grids"
       ]
     },
     {
@@ -520,6 +656,19 @@
         "typography",
         "scaffold layout",
         "primitives"
+      ]
+    },
+    {
+      "name": "mms-user-management",
+      "path": "skills/mms-user-management",
+      "keywords": [
+        "users",
+        "user management",
+        "invitations",
+        "staff invite",
+        "rbac",
+        "role assignment",
+        "UsersPage"
       ]
     },
     {

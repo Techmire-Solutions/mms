@@ -9,7 +9,7 @@ alwaysApply: false
 **Workflow skills:** local install/run → `mms-dev-setup` · production Hetzner/Apache → `mms-ops-deploy` · VPS casing/LF/PM2 → `mms-linux-compatibility`.
 
 ## 1. Prerequisites & Environment Setup
-- **Runtimes & Tooling:** Node.js `>=24.14.0` (native `--env-file=.env` and `--experimental-strip-types`; `dotenv` is banned), Corepack `pnpm@11.15.1`, Turbo `^2.11.3`, PostgreSQL 16.
+- **Runtimes & Tooling:** Node.js `>=24.14.0` (native `--env-file=.env` and `--experimental-strip-types`; `dotenv` is banned), Corepack `pnpm@11.15.1`, Turbo `^2.11.7`, PostgreSQL 16.
 - **Root Commands:** `pnpm dev` (concurrent apps), `pnpm build`, `pnpm typecheck`, `pnpm test`. Local screen session: `./restart_servers.sh [status|stop|--foreground]`.
 
 ## 2. Environment Variables & Ports Configuration
@@ -36,8 +36,7 @@ alwaysApply: false
 
 ## 5. Audit Operations, Statement Auditing & Storage Tiering
 - **Database Auditing (`pgAudit`):** Preload `postgresql-16-pgaudit` (`pgaudit.log = 'write, ddl, role'`) to capture direct console queries and DDL bypassing Fastify.
-- **Scheduled Verification:** Background cron runs `runAuditVerificationJob`, recording results in `audit_verification_runs` and triggering P1 alerts on hash discrepancies.
-- **Storage Tiering:** Cold audit archives (>90 days) export to WORM-locked storage (S3 Object Lock / MinIO) with Merkle roots. Monthly partitions detached via automated lifecycle.
+- **Verification Cron & Tiering:** Scheduled `runAuditVerificationJob` validates Merkle roots and hash chains (`mms-data-layer.mdc` §5). Cold audit archives (>90 days) export to WORM-locked storage (S3 Object Lock / MinIO); monthly partitions detached via automated lifecycle.
 
 ## 6. Environment Variables & Secret Lifecycle
 - **Documentation & Hygiene:** Document variable shape and safe defaults in `apps/backend/.env.example` in the same change. Never commit real `.env` files.
@@ -45,6 +44,3 @@ alwaysApply: false
 - **Fail Closed:** Fail process startup immediately if required security credentials (`JWT_SECRET`, `DATABASE_URL`) are missing or defaulted.
 - **Zero Echo:** Never log or output secrets into error messages, health endpoints, CI logs, or transcripts.
 
-## 7. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

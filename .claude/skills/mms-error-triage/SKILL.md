@@ -4,7 +4,7 @@ description: Triages a production error report end to end in MMS — Sentry issu
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Error Triage
@@ -27,7 +27,7 @@ Every hop already carries an identifier — use it instead of guessing from time
 | Database audit | `correlation_id` | `audit_trail_events` rows for the same request |
 | Tenant | `workspace_subdomain` / `tenant.id` | audit rows, logs, and the platform registry |
 
-The server echoes `x-request-id` and `traceparent` back on responses (`mms-api-interface.md`); if a user-facing error shows a request id, that id is the fastest entry point.
+The server echoes `x-request-id` and `traceparent` back on responses (`mms-api-interface.md`); if a user-facing error shows a request id, that id is the fastest entry point. For log query patterns and audit trail cross-referencing, see [references/correlation-tracing.md](references/correlation-tracing.md).
 
 ## Procedure
 

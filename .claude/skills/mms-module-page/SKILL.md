@@ -4,7 +4,7 @@ description: Creates or modifies MMS module pages per mms-module-architecture.md
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Module Page Pattern
@@ -68,6 +68,10 @@ Derive allowed tabs with `useFilteredModuleTierTabs({ workLabelKey: 'nav.<module
 - [ ] i18n keys added to en/ar/ur/fa (pnpm run check:i18n)
 - [ ] Verify: pnpm typecheck && pnpm --filter mms-frontend lint
 ```
+
+## References
+
+- Module Manifest, Routing & Tier Architecture: `references/module-manifest-and-routing.md`
 
 ## Related skills
 

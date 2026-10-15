@@ -4,7 +4,7 @@ description: Finds and fixes MMS backend auth weaknesses — tenant isolation, R
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Backend Security Workflow
