@@ -71,7 +71,9 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
     >
       <div className="space-y-4 text-start">
         <div className="flex items-center justify-between pb-2 border-b border-border">
-          <span className="text-xs text-muted-foreground">{t("module.import.downloadTemplateHint")}</span>
+          <span className="text-xs text-muted-foreground">
+            {t("module.import.downloadTemplateHint")}
+          </span>
           <Button
             variant="outline"
             size="sm"

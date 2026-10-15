@@ -2,7 +2,11 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { z } from "zod";
-import { useZodDraftForm, type UseZodDraftFormApi, type UseZodDraftFormOptions } from "./useZodDraftForm";
+import {
+  useZodDraftForm,
+  type UseZodDraftFormApi,
+  type UseZodDraftFormOptions,
+} from "./useZodDraftForm";
 import type { ValidationError } from "./validationErrors";
 import { notify } from "@/lib/notify";
 
@@ -39,7 +43,11 @@ const RuntimeProbe: React.FC<{ initial: Draft }> = ({ initial }) => {
   return null;
 };
 
-function mountHook(): { result: UseZodDraftFormApi<Draft, Record_>; root: Root; container: HTMLDivElement } {
+function mountHook(): {
+  result: UseZodDraftFormApi<Draft, Record_>;
+  root: Root;
+  container: HTMLDivElement;
+} {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);

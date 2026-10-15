@@ -73,9 +73,7 @@ export function WorkListFiltersScaffold({
       clearFiltersLabel={clearFiltersLabel}
       filterButton={filterButton}
       filterChips={<FilterChips chips={chips} onClearAll={onClearFilters} />}
-      trashToggle={
-        trashToggle && trashToggle.canViewDeleted ? { ...trashToggle } : undefined
-      }
+      trashToggle={trashToggle && trashToggle.canViewDeleted ? { ...trashToggle } : undefined}
       viewModeToggle={viewModeToggle}
       columnCustomizer={
         columnCustomizer

@@ -116,13 +116,27 @@ export function useZodDraftForm<TDraft extends object, TRecord>(
         setBaseline(takeSnapshot(draft));
         return true;
       } catch {
-        notify.error(saveFailedMessage ? resolveMessage(saveFailedMessage) : resolveMessage(notifyFallbackMessage));
+        notify.error(
+          saveFailedMessage
+            ? resolveMessage(saveFailedMessage)
+            : resolveMessage(notifyFallbackMessage),
+        );
         return false;
       } finally {
         setIsSaving(false);
       }
     },
-    [applyFailure, draft, earlyRules, notifyFallbackMessage, resolveMessage, saveFailedMessage, schema, takeSnapshot, toRecord],
+    [
+      applyFailure,
+      draft,
+      earlyRules,
+      notifyFallbackMessage,
+      resolveMessage,
+      saveFailedMessage,
+      schema,
+      takeSnapshot,
+      toRecord,
+    ],
   );
 
   return {

@@ -1,7 +1,10 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { WorkListFiltersScaffold, type WorkListFiltersScaffoldProps } from "./WorkListFiltersScaffold";
+import {
+  WorkListFiltersScaffold,
+  type WorkListFiltersScaffoldProps,
+} from "./WorkListFiltersScaffold";
 
 describe("WorkListFiltersScaffold", () => {
   const baseProps: WorkListFiltersScaffoldProps = {

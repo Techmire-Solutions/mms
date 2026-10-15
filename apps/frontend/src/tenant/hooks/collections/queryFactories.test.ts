@@ -268,7 +268,9 @@ describe("TanStack Query v5 Query Options Factories (P8)", () => {
  * invalidated by its module's mutations.
  */
 describe("module list query-key parity (invalidator coverage)", () => {
-  type ListOptionsFactory = (query: { page: number; limit: number }) => { queryKey: readonly unknown[] };
+  type ListOptionsFactory = (query: { page: number; limit: number }) => {
+    queryKey: readonly unknown[];
+  };
 
   const modules: Array<[string, Record<string, unknown>]> = [
     ["contacts", contactsFacade],
@@ -295,8 +297,7 @@ describe("module list query-key parity (invalidator coverage)", () => {
       expect(invalidatorNames.length).toBeGreaterThanOrEqual(1);
 
       const factoryNames = Object.keys(facade).filter(
-        (name) =>
-          name.endsWith("ListQueryOptions") || name.endsWith("InfiniteQueryOptions"),
+        (name) => name.endsWith("ListQueryOptions") || name.endsWith("InfiniteQueryOptions"),
       );
       expect(factoryNames.length).toBeGreaterThanOrEqual(1);
 
