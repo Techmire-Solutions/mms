@@ -11,7 +11,7 @@ import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsG
 import { StatsSkeleton } from "@/components/app/LoadingState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { EmptyState } from "@/components/app/EmptyState";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { containerVariantsConsole, itemVariants } from "@/platform/lib/animations";
 import { PlatformDashboardBanner } from "./dashboard/PlatformDashboardBanner";
 import { PlatformDashboardTelemetry } from "./dashboard/PlatformDashboardTelemetry";

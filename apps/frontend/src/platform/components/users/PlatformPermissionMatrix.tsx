@@ -7,13 +7,13 @@ import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/w
 import { ErrorState } from "@/components/app/ErrorState";
 import type { PlatformUserProfile } from "@mms/shared";
 import { SearchBar } from "@/components/app/SearchBar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@shared/ui";
+import { Badge } from "@shared/ui";
 import { EmptyState } from "@/components/app/EmptyState";
 import { CardSkeleton } from "@/components/app/LoadingState";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormField";
-import { Input } from "@/components/ui/input";
+import { Input } from "@shared/ui";
 import { cn } from "@/lib/utils";
 
 export function PlatformPermissionMatrix(): React.JSX.Element {

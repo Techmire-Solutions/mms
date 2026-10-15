@@ -5,11 +5,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { BackgroundJobsTray } from "@/components/app/BackgroundJobsTray";
 import { PlatformNotificationsPopover } from "@/platform/components/header/PlatformNotificationsPopover";
 import { UserNavDropdown } from "@/components/app/UserNavDropdown";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@shared/ui";
 import { ROUTES } from "@/lib/config/routes";
 import { cn } from "@/lib/utils";
 

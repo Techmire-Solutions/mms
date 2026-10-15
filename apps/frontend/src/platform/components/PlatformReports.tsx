@@ -4,7 +4,7 @@ import { Download } from "lucide-react";
 import { formatDate } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { ExportToolbar, type ExportColumn } from "@/components/app/ExportToolbar";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";

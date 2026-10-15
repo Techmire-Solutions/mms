@@ -10,7 +10,7 @@ import {
   Download,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 
 export interface ErdCanvasToolbarProps {
   zoom: number;

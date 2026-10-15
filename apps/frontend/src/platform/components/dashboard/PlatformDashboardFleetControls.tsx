@@ -3,10 +3,10 @@ import { Search } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Switch } from "@shared/ui";
+import { Label } from "@shared/ui";
 import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { WORK_SURFACE } from "@shared/ui";
 import { cn } from "@/lib/utils";
 
 export type FleetStatusFilter = "all" | "active" | "inactive";

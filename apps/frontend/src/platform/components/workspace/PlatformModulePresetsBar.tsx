@@ -1,7 +1,7 @@
 import React from "react";
 import { Sparkles, School, BookOpen, GraduationCap } from "lucide-react";
 import { SYSTEM_MODULES } from "@mms/shared";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PlatformModulePresetsBarProps {

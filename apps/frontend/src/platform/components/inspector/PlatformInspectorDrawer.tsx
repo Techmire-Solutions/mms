@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
 import { usePlatformBreadcrumb } from "@/platform/lib/PlatformBreadcrumbContext";
 import { Drawer } from "@/components/app/Drawer";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
 import { ROUTES } from "@/lib/config/routes";
 import { tenantUrl } from "@/lib/config/tenantConfig";

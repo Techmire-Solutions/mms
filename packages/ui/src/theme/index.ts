@@ -6,3 +6,4 @@ export {
   type UiConfigLabels,
   type UiConfigProviderProps,
 } from "./UiConfigContext";
+export * from "./formStyles";

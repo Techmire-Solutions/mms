@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export function PlatformSidebarSearch({ onOpen }: { onOpen: () => void }) {

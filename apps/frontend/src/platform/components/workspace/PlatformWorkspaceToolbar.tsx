@@ -2,7 +2,7 @@ import React from "react";
 import { Globe, Ban, Download, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SubTabBar } from "@/components/app/SubTabBar";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { PlatformWorkspaceSortMenu } from "@/platform/components/PlatformWorkspaceSortMenu";
 import type {

@@ -10,7 +10,7 @@ import {
   type RecentWorkspaceRecord,
 } from "@/platform/lib/recentWorkspaces";
 import { ROUTES } from "@/lib/config/routes";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import {
   DropdownMenu,
@@ -19,7 +19,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@shared/ui";
 
 const PAGE_SIZE = 8;
 

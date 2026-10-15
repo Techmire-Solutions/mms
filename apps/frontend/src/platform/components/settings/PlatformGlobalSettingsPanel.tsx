@@ -5,11 +5,11 @@ import {
   usePlatformSettingsQuery,
   useUpdatePlatformSettings,
 } from "@/platform/hooks/usePlatformSettings";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@shared/ui";
+import { Button } from "@shared/ui";
+import { Input } from "@shared/ui";
+import { Switch } from "@shared/ui";
+import { Label } from "@shared/ui";
 import { CardSkeleton } from "@/components/app/LoadingState";
 import { ErrorState } from "@/components/app/ErrorState";
 

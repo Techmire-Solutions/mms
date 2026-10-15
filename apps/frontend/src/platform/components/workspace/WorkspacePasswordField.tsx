@@ -1,8 +1,8 @@
 import { useId } from "react";
 import { RefreshCw } from "lucide-react";
 import { Field } from "@/components/app/FormField";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@shared/ui";
+import { Button } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { generateTemporaryPassword } from "@/lib/generateTemporaryPassword";
 

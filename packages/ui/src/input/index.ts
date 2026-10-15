@@ -1,4 +1,4 @@
-export { Input, type InputProps } from "./Input";
+export { Input, INPUT_CLASS, type InputProps } from "./Input";
 export { Textarea, type TextareaProps } from "./Textarea";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
 export {
@@ -7,9 +7,14 @@ export {
   SelectValue,
   SelectTrigger,
   SelectContent,
+  SelectLabel,
   SelectItem,
   SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+  isRadixSelectPortalTarget,
 } from "./Select";
-export { Switch } from "./Switch";
+export { Switch, type SwitchProps } from "./Switch";
 export { Label, type LabelProps } from "./Label";
 export { FormField, type FormFieldProps } from "./FormField";
+export { Slider } from "./Slider";

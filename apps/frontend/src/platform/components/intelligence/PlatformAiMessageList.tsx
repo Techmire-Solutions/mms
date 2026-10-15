@@ -1,8 +1,8 @@
 import React from "react";
 import { Sparkles, ArrowRight, Activity, Terminal } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@shared/ui";
+import { Badge } from "@shared/ui";
 import type { PlatformChatMessage } from "@/platform/hooks/usePlatformAiDiagnostics";
 import type { PlatformAiSuggestion } from "@mms/shared";
 import { cn } from "@/lib/utils";

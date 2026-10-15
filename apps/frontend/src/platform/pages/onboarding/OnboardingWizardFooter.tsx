@@ -1,6 +1,6 @@
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { WarningCallout } from "@/components/app/WarningCallout";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { ROUTES } from "@/lib/config/routes";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

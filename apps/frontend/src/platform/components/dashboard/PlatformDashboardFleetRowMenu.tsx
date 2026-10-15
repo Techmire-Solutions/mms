@@ -3,13 +3,13 @@ import { MoreHorizontal, Eye, ExternalLink } from "lucide-react";
 import type { PlatformWorkspaceRow } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@shared/ui";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 
 interface PlatformDashboardFleetRowMenuProps {

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ShieldAlert, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformSidebarBrandProps {

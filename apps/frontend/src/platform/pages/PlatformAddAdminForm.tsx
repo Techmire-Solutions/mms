@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Mail, User, UserPlus, ShieldPlus } from "lucide-react";
 import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformAdminPermissions } from "@mms/shared";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormField";

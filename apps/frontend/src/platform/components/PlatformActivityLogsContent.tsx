@@ -7,7 +7,7 @@ import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 import { CardSkeleton } from "@/components/app/LoadingState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { EmptyState } from "@/components/app/EmptyState";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { exportActivityLogsCsv } from "./activity-logs/exportActivityLogsCsv";

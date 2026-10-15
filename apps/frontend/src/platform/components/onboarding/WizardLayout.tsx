@@ -6,7 +6,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { AuthPageBackdrop } from "@/components/entry/AuthPageShell";
 import { PlatformLogoMark } from "@/platform/components/PlatformPageShell";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { WizardStepIndicator } from "@/components/app/WizardStepIndicator";
 import { ROUTES } from "@/lib/config/routes";
 

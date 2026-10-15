@@ -3,7 +3,7 @@ import { Users, BarChart3, Settings, Download, Activity } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { PlatformAddAdminForm } from "@/platform/pages/PlatformAddAdminForm";
 import { usePlatformAdmins } from "@/platform/hooks/usePlatformAdmins";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";

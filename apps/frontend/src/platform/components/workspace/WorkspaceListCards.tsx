@@ -11,7 +11,7 @@ import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
 import { WorkspaceIdentityCell } from "@/platform/components/workspace/WorkspaceIdentityCell";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
 import { WorkspaceRowActions } from "@/platform/components/workspace/WorkspaceRowActions";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@shared/ui";
 import { cn } from "@/lib/utils";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 

@@ -2,9 +2,9 @@ import React from "react";
 import { Mail } from "lucide-react";
 import { type AppTranslationKey, type EmailProviderId } from "@mms/shared";
 import { FormSelect } from "@/components/app/FormSelect";
-import { Input } from "@/components/ui/input";
+import { Input } from "@shared/ui";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { Label } from "@/components/ui/label";
+import { Label } from "@shared/ui";
 import { PlatformIntegrationPanelChrome } from "@/platform/components/settings/PlatformIntegrationPanelChrome";
 import { usePlatformEmailIntegrationPanel } from "@/platform/components/settings/usePlatformEmailIntegrationPanel";
 

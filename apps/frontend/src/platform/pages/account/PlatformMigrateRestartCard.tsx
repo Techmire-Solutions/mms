@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ServerCog } from "lucide-react";
 import { MIGRATE_AND_RESTART_CONFIRM } from "@mms/shared";
 import { SectionCard } from "@/components/app/SectionCard";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import {
