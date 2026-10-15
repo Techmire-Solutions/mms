@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi } from "vitest";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@shared/ui";
 import { PlatformWorkspaceDensityToggle } from "./PlatformWorkspaceDensityToggle";
 
 vi.mock("@/hooks/useTranslation", () => ({

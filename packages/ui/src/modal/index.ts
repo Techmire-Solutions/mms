@@ -1,8 +1,6 @@
 export { Modal, type ModalProps } from "./Modal";
 export {
   AlertDialog,
-  AlertDialogPortal,
-  AlertDialogOverlay,
   AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
@@ -11,6 +9,8 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogOverlay,
+  AlertDialogPortal,
   ConfirmDialog,
   type ConfirmDialogProps,
 } from "./AlertDialog";

@@ -13,7 +13,7 @@ import {
 } from "@/components/entry";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 
 export type ApexGateVariant = "forgotPassword" | "twoFactor" | "tenantOnly";
 

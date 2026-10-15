@@ -46,6 +46,15 @@ export default defineConfig({
       "@radix-ui/react-checkbox": path.resolve(rootDir, "./node_modules/@radix-ui/react-checkbox"),
       "@radix-ui/react-select": path.resolve(rootDir, "./node_modules/@radix-ui/react-select"),
       "@radix-ui/react-switch": path.resolve(rootDir, "./node_modules/@radix-ui/react-switch"),
+      "@radix-ui/react-tooltip": path.resolve(rootDir, "./node_modules/@radix-ui/react-tooltip"),
+      "@radix-ui/react-popover": path.resolve(rootDir, "./node_modules/@radix-ui/react-popover"),
+      "@radix-ui/react-dropdown-menu": path.resolve(
+        rootDir,
+        "./node_modules/@radix-ui/react-dropdown-menu",
+      ),
+      "@radix-ui/react-avatar": path.resolve(rootDir, "./node_modules/@radix-ui/react-avatar"),
+      "@radix-ui/react-slider": path.resolve(rootDir, "./node_modules/@radix-ui/react-slider"),
+      "@radix-ui/react-label": path.resolve(rootDir, "./node_modules/@radix-ui/react-label"),
     },
   },
   server: {

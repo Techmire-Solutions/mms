@@ -1,12 +1,12 @@
 import React from "react";
 import { Loader2, PlugZap, type LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { FieldErrorMessage } from "@/components/app/FormField";
 import { SettingsCallout } from "@/components/app/SettingsShell";
-import { Badge } from "@/components/ui/badge";
-import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
+import { Badge } from "@shared/ui";
+import { WORK_SURFACE_INNER } from "@shared/ui";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@shared/ui";
 
 interface PlatformIntegrationPanelChromeProps {
   icon: LucideIcon;

@@ -4,7 +4,7 @@ import type { PlatformAdminPermissions, PlatformUserProfile } from "@mms/shared"
 import { normalizePlatformAdminPermissions } from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormField";
-import { Input } from "@/components/ui/input";
+import { Input } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { useUpdatePlatformAdminPermissions } from "@/platform/hooks/usePlatformAdmins";

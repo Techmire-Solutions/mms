@@ -7,7 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { WorkspaceSummary } from "@/platform/components/workspace/WorkspaceSummary";
 import { WorkspacePasswordField } from "@/platform/components/workspace/WorkspacePasswordField";
 import { Field } from "@/components/app/FormField";
-import { Input } from "@/components/ui/input";
+import { Input } from "@shared/ui";
 
 interface PlatformWorkspaceResetPasswordDialogProps {
   open: boolean;

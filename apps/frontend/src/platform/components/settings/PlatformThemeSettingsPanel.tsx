@@ -2,8 +2,8 @@ import { usePlatformThemePreview } from "@/platform/hooks/usePlatformThemePrevie
 import { MMS_PLATFORM_BRANDING } from "@/platform/lib/themeScope";
 import React from "react";
 import { Palette, Sun, Moon, Monitor } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@shared/ui";
+import { Button } from "@shared/ui";
 import { cn } from "@/lib/utils";
 import { THEME_MODE_OPTIONS } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";

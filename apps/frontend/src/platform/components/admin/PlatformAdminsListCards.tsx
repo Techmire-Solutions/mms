@@ -11,7 +11,7 @@ import {
   PlatformAdminPermissionsBadges,
 } from "@/platform/components/admin/PlatformAdminBadges";
 import { PlatformAdminActionButtons } from "@/platform/components/admin/PlatformAdminActionButtons";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@shared/ui";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 export interface PlatformAdminsListCardsProps {

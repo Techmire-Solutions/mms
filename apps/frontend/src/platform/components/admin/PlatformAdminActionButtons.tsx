@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { PlatformUserProfile } from "@mms/shared";
 

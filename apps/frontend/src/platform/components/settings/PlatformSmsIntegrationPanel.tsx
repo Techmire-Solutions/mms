@@ -2,9 +2,9 @@ import React from "react";
 import { MessageSquare } from "lucide-react";
 import { type AppTranslationKey, type SmsProviderId } from "@mms/shared";
 import { FormSelect } from "@/components/app/FormSelect";
-import { Input } from "@/components/ui/input";
+import { Input } from "@shared/ui";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { Label } from "@/components/ui/label";
+import { Label } from "@shared/ui";
 import { PlatformIntegrationPanelChrome } from "@/platform/components/settings/PlatformIntegrationPanelChrome";
 import { usePlatformSmsIntegrationPanel } from "@/platform/components/settings/usePlatformSmsIntegrationPanel";
 

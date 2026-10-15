@@ -1,31 +1,59 @@
-import React from "react";
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import React, { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { Input } from "./Input";
 import { FormField } from "./FormField";
 
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
+}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
 describe("Input & FormField components", () => {
-  it("renders input field and handles value changes", () => {
-    render(<Input placeholder="Enter username" />);
-    const input = screen.getByPlaceholderText("Enter username");
-    expect(input).toBeDefined();
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
   });
 
-  it("applies error styling when error is true", () => {
-    render(<Input placeholder="Email" error="Invalid email address" />);
-    const input = screen.getByPlaceholderText("Email");
+  afterEach(async () => {
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("renders input field and handles value changes", async () => {
+    await act(async () => {
+      root.render(<Input placeholder="Enter username" />);
+    });
+    const input = container.querySelector("input") as HTMLInputElement;
+    expect(input).toBeTruthy();
+    expect(input.placeholder).toBe("Enter username");
+  });
+
+  it("applies error styling when error is true", async () => {
+    await act(async () => {
+      root.render(<Input placeholder="Email" error="Invalid email address" />);
+    });
+    const input = container.querySelector("input") as HTMLInputElement;
     expect(input.getAttribute("aria-invalid")).toBe("true");
     expect(input.className).toContain("border-destructive");
   });
 
-  it("renders FormField with label, hint, and error message", () => {
-    render(
-      <FormField label="Full Name" required hint="Legal name as on ID" error="Name is required">
-        <Input placeholder="John Doe" />
-      </FormField>,
-    );
-    expect(screen.getByText("Full Name")).toBeDefined();
-    expect(screen.getByText("*")).toBeDefined();
-    expect(screen.getByText("Name is required")).toBeDefined();
+  it("renders FormField with label, hint, and error message", async () => {
+    await act(async () => {
+      root.render(
+        <FormField label="Full Name" required hint="Legal name as on ID" error="Name is required">
+          <Input placeholder="John Doe" />
+        </FormField>,
+      );
+    });
+    expect(container.textContent).toContain("Full Name");
+    expect(container.textContent).toContain("*");
+    expect(container.textContent).toContain("Name is required");
   });
 });

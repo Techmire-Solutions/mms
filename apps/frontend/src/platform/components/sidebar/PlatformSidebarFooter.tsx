@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, LogOut, ShieldAlert } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UserAvatar } from "@/components/app/UserAvatar";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { SectionLabel } from "@/components/app/SectionLabel";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/config/routes";

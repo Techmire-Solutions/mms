@@ -1,7 +1,7 @@
 import React from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { cn } from "@/lib/utils";
 import type { PlatformCommandItem } from "@/platform/components/platformCommandItems";
 

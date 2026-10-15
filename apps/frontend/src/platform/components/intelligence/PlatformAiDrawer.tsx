@@ -2,7 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, X, Trash2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { usePlatformAiDiagnostics } from "@/platform/hooks/usePlatformAiDiagnostics";
 import { PlatformAiMessageList } from "@/platform/components/intelligence/PlatformAiMessageList";
 import { PlatformAiPromptBar } from "@/platform/components/intelligence/PlatformAiPromptBar";

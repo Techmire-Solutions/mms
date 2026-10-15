@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { User } from "lucide-react";
 import { SectionCard } from "@/components/app/SectionCard";
 import { FormSubmitActions } from "@/components/app/FormSubmitActions";
-import { Input } from "@/components/ui/input";
+import { Input } from "@shared/ui";
 import { Field } from "@/components/app/FormField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";

@@ -7,7 +7,7 @@ import { getVisiblePlatformNavSections } from "@/platform/lib/platformNav";
 import { PlatformSignOutDialog } from "@/platform/components/common/PlatformSignOutDialog";
 import { PlatformSidebarSearch } from "@/platform/components/sidebar/PlatformSidebarSearch";
 import { AppSidebar } from "@/components/common/AppSidebar";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@shared/ui";
 import { PlatformSidebarNav } from "@/platform/components/PlatformSidebarNav";
 import { PlatformSidebarBrand } from "@/platform/components/sidebar/PlatformSidebarBrand";
 import { PlatformSidebarFooter } from "@/platform/components/sidebar/PlatformSidebarFooter";

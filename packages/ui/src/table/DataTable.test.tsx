@@ -1,7 +1,12 @@
-import React from "react";
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import React, { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { DataTable, type DataTableColumn } from "./DataTable";
+
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
+}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 interface MockRecord {
   id: string;
@@ -20,53 +25,86 @@ const mockData: MockRecord[] = [
 ];
 
 describe("DataTable component", () => {
-  it("renders table data with columns and rows", () => {
-    render(<DataTable data={mockData} columns={mockColumns} />);
+  let container: HTMLDivElement;
+  let root: Root;
 
-    expect(screen.getByText("Name")).toBeDefined();
-    expect(screen.getByText("Role")).toBeDefined();
-    expect(screen.getByText("Alice")).toBeDefined();
-    expect(screen.getByText("Bob")).toBeDefined();
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
   });
 
-  it("renders empty state when data is empty", () => {
-    render(<DataTable data={[]} columns={mockColumns} />);
-    expect(screen.getByText("No records found")).toBeDefined();
+  afterEach(async () => {
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 
-  it("handles search input changes", () => {
+  it("renders table data with columns and rows", async () => {
+    await act(async () => {
+      root.render(<DataTable data={mockData} columns={mockColumns} />);
+    });
+
+    expect(container.textContent).toContain("Name");
+    expect(container.textContent).toContain("Role");
+    expect(container.textContent).toContain("Alice");
+    expect(container.textContent).toContain("Bob");
+  });
+
+  it("renders empty state when data is empty", async () => {
+    await act(async () => {
+      root.render(<DataTable data={[]} columns={mockColumns} />);
+    });
+    expect(container.textContent).toContain("No records found");
+  });
+
+  it("handles search input changes", async () => {
     const handleSearch = vi.fn();
-    render(
-      <DataTable
-        data={mockData}
-        columns={mockColumns}
-        searchQuery=""
-        onSearchChange={handleSearch}
-        searchPlaceholder="Filter users..."
-      />,
-    );
+    await act(async () => {
+      root.render(
+        <DataTable
+          data={mockData}
+          columns={mockColumns}
+          searchQuery=""
+          onSearchChange={handleSearch}
+          searchPlaceholder="Filter users..."
+        />,
+      );
+    });
 
-    const searchInput = screen.getByPlaceholderText("Filter users...");
-    fireEvent.change(searchInput, { target: { value: "Alice" } });
+    const searchInput = container.querySelector(
+      "input[placeholder='Filter users...']",
+    ) as HTMLInputElement;
+    expect(searchInput).toBeTruthy();
+    const valueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      "value",
+    )?.set;
+    valueSetter?.call(searchInput, "Alice");
+    searchInput.dispatchEvent(new Event("input", { bubbles: true }));
     expect(handleSearch).toHaveBeenCalledWith("Alice");
   });
 
-  it("handles pagination clicks", () => {
+  it("handles pagination clicks", async () => {
     const handlePageChange = vi.fn();
-    render(
-      <DataTable
-        data={mockData}
-        columns={mockColumns}
-        pagination={{
-          currentPage: 1,
-          totalPages: 3,
-          onPageChange: handlePageChange,
-        }}
-      />,
-    );
+    await act(async () => {
+      root.render(
+        <DataTable
+          data={mockData}
+          columns={mockColumns}
+          pagination={{
+            currentPage: 1,
+            totalPages: 3,
+            onPageChange: handlePageChange,
+          }}
+        />,
+      );
+    });
 
-    const nextBtn = screen.getByRole("button", { name: "Next" });
-    fireEvent.click(nextBtn);
+    const nextBtn = container.querySelector("button[aria-label='Next']") as HTMLButtonElement;
+    expect(nextBtn).toBeTruthy();
+    nextBtn.click();
     expect(handlePageChange).toHaveBeenCalledWith(2);
   });
 });

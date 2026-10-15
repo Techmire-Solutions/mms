@@ -6,7 +6,7 @@ import {
   type PlatformAdminPermissions,
 } from "@mms/shared";
 import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionConfig";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PlatformPermissionCheckboxItem } from "@/platform/components/admin/PlatformPermissionCheckboxItem";
 

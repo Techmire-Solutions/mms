@@ -15,7 +15,7 @@ import { PlatformAiDrawer } from "@/platform/components/intelligence/PlatformAiD
 import { PlatformInspectorDrawer } from "@/platform/components/inspector/PlatformInspectorDrawer";
 import { AppShell } from "@/components/common/AppShell";
 import { PlatformLiveRegionProvider } from "@/platform/components/common/PlatformLiveRegion";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@shared/ui";
 
 export { PlatformLogoMark } from "./common/PlatformLogoMark";
 

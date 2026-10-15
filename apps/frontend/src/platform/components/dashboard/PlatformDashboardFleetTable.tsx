@@ -3,7 +3,7 @@ import { Building2 } from "lucide-react";
 import type { PlatformWorkspaceRow } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { ListPagination } from "@/components/app/ListPagination";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";

@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DensityToggle } from "@/components/app/DensityToggle";
 import type { PlatformDensity } from "@/platform/hooks/usePlatformDensity";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@shared/ui";
 
 export interface PlatformWorkspaceDensityToggleProps {
   density: PlatformDensity;

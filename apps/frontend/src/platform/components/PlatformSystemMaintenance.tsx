@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Database, Activity, Cpu, RefreshCw, CheckCircle2, Zap, Layers } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@shared/ui";
 import { StatCard } from "@/components/app/StatCard";
 import { apiFetch } from "@/lib/apiClient";
 import { formatDateTime } from "@/lib/utils";

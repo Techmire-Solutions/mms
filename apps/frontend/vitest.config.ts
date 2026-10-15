@@ -36,6 +36,30 @@ export default defineConfig({
         import.meta.dirname,
         "./node_modules/@radix-ui/react-switch",
       ),
+      "@radix-ui/react-tooltip": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-tooltip",
+      ),
+      "@radix-ui/react-popover": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-popover",
+      ),
+      "@radix-ui/react-dropdown-menu": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-dropdown-menu",
+      ),
+      "@radix-ui/react-avatar": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-avatar",
+      ),
+      "@radix-ui/react-slider": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-slider",
+      ),
+      "@radix-ui/react-label": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-label",
+      ),
     },
   },
   test: {
@@ -45,7 +69,11 @@ export default defineConfig({
     // happy-dom's storage and resolves to `undefined` without --localstorage-file.
     // Disable it so happy-dom's window.localStorage is installed.
     execArgv: ["--no-experimental-webstorage"],
-    include: ["src/**/*.test.{ts,tsx}", "src/**/*.spec.{ts,tsx}"],
+    include: [
+      "src/**/*.test.{ts,tsx}",
+      "src/**/*.spec.{ts,tsx}",
+      "../../packages/ui/src/**/*.test.{ts,tsx}",
+    ],
     // Pre-bundle the heaviest imports into single files. Isolated test files each
     // re-evaluate their whole module graph; @mms/shared alone is ~500 dist modules
     // (~5–7s per test file on Windows) and drops to ~1s once bundled. `force`

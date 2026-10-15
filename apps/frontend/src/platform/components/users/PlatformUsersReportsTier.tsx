@@ -17,8 +17,8 @@ import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAdmins } from "@/platform/hooks/usePlatformAdmins";
 import { CardSkeleton } from "@/components/app/LoadingState";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@shared/ui";
+import { Badge } from "@shared/ui";
 
 export function PlatformUsersReportsTier(): React.JSX.Element {
   const { t } = useTranslation();

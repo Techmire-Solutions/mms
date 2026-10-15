@@ -1,8 +1,8 @@
 import React from "react";
 import { Blocks, ExternalLink, KeyRound, Trash2, UserPlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Button } from "@shared/ui";
+import { Switch } from "@shared/ui";
+import { Label } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface WorkspaceRowActionsProps {

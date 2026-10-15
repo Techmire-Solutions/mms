@@ -2,7 +2,7 @@ import type React from "react";
 import type { ErdRelationship } from "@mms/shared";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { WORK_SURFACE } from "@shared/ui";
 
 interface ErdRelationshipListProps {
   relationships: readonly ErdRelationship[];
