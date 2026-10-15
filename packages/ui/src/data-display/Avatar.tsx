@@ -22,8 +22,7 @@ export const avatarVariants = cva(
 );
 
 export interface AvatarProps
-  extends React.ComponentProps<typeof AvatarPrimitive.Root>,
-    VariantProps<typeof avatarVariants> {}
+  extends React.ComponentProps<typeof AvatarPrimitive.Root>, VariantProps<typeof avatarVariants> {}
 
 export function Avatar({ className, size, ref, ...props }: AvatarProps) {
   return (

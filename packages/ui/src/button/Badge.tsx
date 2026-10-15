@@ -37,13 +37,7 @@ export const badgeVariants = cva(
 export type BadgeVariant = VariantProps<typeof badgeVariants>["variant"];
 
 export type BadgeTone =
-  | "primary"
-  | "success"
-  | "destructive"
-  | "warning"
-  | "info"
-  | "secondary"
-  | "muted";
+  "primary" | "success" | "destructive" | "warning" | "info" | "secondary" | "muted";
 
 export const BADGE_TONES: Record<BadgeTone, string> = {
   primary: "bg-primary/10 text-primary border-primary/20",
@@ -56,8 +50,7 @@ export const BADGE_TONES: Record<BadgeTone, string> = {
 };
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLElement>,
-    VariantProps<typeof badgeVariants> {
+  extends React.HTMLAttributes<HTMLElement>, VariantProps<typeof badgeVariants> {
   ref?: React.Ref<HTMLElement>;
   tone?: BadgeTone;
   pill?: boolean;

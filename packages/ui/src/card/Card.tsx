@@ -7,14 +7,7 @@ export const CARD_STRIPE_INSET = "ps-5 sm:ps-6";
 export const CARD_STRIPE_BASE = "absolute inset-y-0 start-0 w-1.5";
 
 export type CardAccentColor =
-  | "primary"
-  | "success"
-  | "destructive"
-  | "warning"
-  | "info"
-  | "secondary"
-  | "muted"
-  | string;
+  "primary" | "success" | "destructive" | "warning" | "info" | "secondary" | "muted" | string;
 
 export const CARD_STRIPE_COLORS: Record<string, string> = {
   primary: "bg-primary/45 group-hover/card:bg-primary",

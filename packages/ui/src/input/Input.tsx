@@ -27,7 +27,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           INPUT_CLASS,
           leftIcon && "ps-9",
           rightIcon && "pe-9",
-          hasError && "border-destructive focus-visible:ring-destructive focus-visible:border-destructive",
+          hasError &&
+            "border-destructive focus-visible:ring-destructive focus-visible:border-destructive",
           className,
         )}
         ref={ref}

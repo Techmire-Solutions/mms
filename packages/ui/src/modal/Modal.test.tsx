@@ -30,7 +30,12 @@ describe("Modal & ConfirmDialog components", () => {
     const handleClose = vi.fn();
     await act(async () => {
       root.render(
-        <Modal open={true} onClose={handleClose} title="Create Workspace" subtitle="Fill in details">
+        <Modal
+          open={true}
+          onClose={handleClose}
+          title="Create Workspace"
+          subtitle="Fill in details"
+        >
           <div>Modal Body Content</div>
         </Modal>,
       );

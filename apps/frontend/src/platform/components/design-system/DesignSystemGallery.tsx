@@ -6,14 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui";
 import { Skeleton } from "@shared/ui";
 import { Breadcrumb } from "@/components/app/Breadcrumb";
 import { SubTabBar } from "@/components/app/SubTabBar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@shared/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@shared/ui";
 import { ListPagination } from "@/components/app/ListPagination";
 import { WORK_SURFACE } from "@shared/ui";
 import { cn } from "@/lib/utils";

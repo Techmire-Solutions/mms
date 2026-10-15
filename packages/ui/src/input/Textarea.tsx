@@ -22,7 +22,8 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         name={resolvedName}
         className={cn(
           TEXTAREA_CLASS,
-          hasError && "border-destructive focus-visible:ring-destructive focus-visible:border-destructive",
+          hasError &&
+            "border-destructive focus-visible:ring-destructive focus-visible:border-destructive",
           className,
         )}
         ref={ref}
