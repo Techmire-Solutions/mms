@@ -20,7 +20,7 @@ describe("AttendanceRecordsConfirmDialogs Component", () => {
         showDeleted={false}
         selectedIdsCount={0}
         onConfirmBulkTrash={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -38,7 +38,7 @@ describe("AttendanceRecordsConfirmDialogs Component", () => {
         showDeleted={true}
         selectedIdsCount={3}
         onConfirmBulkTrash={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

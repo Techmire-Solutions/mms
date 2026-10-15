@@ -21,21 +21,21 @@ vi.mock("./ResultsView", () => ({
   ResultsView: () => <div data-testid="results-view">Results View</div>,
 }));
 
-const mockExamLayout: any = {
+const mockExamLayout = {
   isColumnVisible: () => true,
   getColumnWidth: () => undefined,
   setColumnWidth: vi.fn(),
   columnRegistry: {},
   updateUserColumnLayout: vi.fn(),
   customizerLabels: {},
-};
+} as unknown as React.ComponentProps<typeof ExaminationsWorkTier>["examColumnLayout"];
 
-const mockResultsLayout: any = {
+const mockResultsLayout = {
   isColumnVisible: () => true,
   columnRegistry: {},
   updateUserColumnLayout: vi.fn(),
   customizerLabels: {},
-};
+} as unknown as React.ComponentProps<typeof ExaminationsWorkTier>["resultsColumnLayout"];
 
 describe("ExaminationsWorkTier Component", () => {
   it("renders examinations list when subtab is exams", () => {

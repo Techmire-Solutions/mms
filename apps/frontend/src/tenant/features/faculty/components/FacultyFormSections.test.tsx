@@ -46,7 +46,7 @@ describe("FacultyFormSections Components", () => {
             phones: [{ number: "+923001234567" }],
             emails: [{ address: "ali@madrasa.org" }],
             education: [{ degree: "M.A. Islamic Studies", fieldOfStudy: "Hadith" }],
-          } as any
+          } as unknown as never
         }
         linkedFacultyContactIds={[]}
         errors={{}}

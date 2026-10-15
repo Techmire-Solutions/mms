@@ -13,7 +13,14 @@ declare global {
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/tenant/features/accounting/components/JournalEntryRowActions", () => ({
-  JournalEntryRowActions: (props: any) => (
+  JournalEntryRowActions: (props: {
+    entry: JournalEntry;
+    onView: (entry: JournalEntry) => void;
+    onEdit: (entry: JournalEntry) => void;
+    onPost: (entry: JournalEntry) => void;
+    onReverse: (entry: JournalEntry) => void;
+    onTrashAction: (id: string) => void;
+  }) => (
     <div data-testid="row-actions">
       <button data-testid="view-btn" onClick={() => props.onView(props.entry)}>
         View

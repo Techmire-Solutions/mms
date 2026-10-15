@@ -71,7 +71,7 @@ describe("footer balance semantics", () => {
 
 describe("getJournalTagLabel", () => {
   it("translates known tags and preserves custom tags directly", () => {
-    const mockT = ((key: string) => `translated:${key}`) as any;
+    const mockT = ((key: string) => `translated:${key}`) as unknown as never;
     expect(getJournalTagLabel("Payroll", mockT)).toBe("translated:accounting.journal.tag.payroll");
     expect(getJournalTagLabel("payroll", mockT)).toBe("translated:accounting.journal.tag.payroll");
     expect(getJournalTagLabel("CustomProject", mockT)).toBe("CustomProject");

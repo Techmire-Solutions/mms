@@ -41,13 +41,13 @@ describe("AttendanceAnalyticsChartPanels Component", () => {
   it("renders class rate, trend, and distribution charts", () => {
     const html = renderToStaticMarkup(
       <AttendanceAnalyticsChartPanels
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
         colors={["#000"]}
         classStats={[{ name: "Class 1A", rate: 95 }]}
         monthlyTrend={[{ month: "Jan", rate: 90 }]}
         studentRates={[{ id: "student-1", name: "Ali", rate: 98 }]}
         pieData={[{ name: "Present", value: 40 }]}
-        statuses={[{ id: "present", label: "Present" } as any]}
+        statuses={[{ id: "present", label: "Present" } as unknown as never]}
         totalStats={{ present: 40 }}
       />,
     );

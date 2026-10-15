@@ -48,7 +48,7 @@ describe("examinationsPageControllerActions", () => {
     const deps = {
       exams: [mockExam],
       examResults: [],
-      t: ((key: string) => key) as any,
+      t: ((key: string) => key) as unknown as never,
       replaceExams,
       replaceExamResults,
       deleteExam,

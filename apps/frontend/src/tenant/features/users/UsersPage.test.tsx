@@ -47,7 +47,7 @@ vi.mock("@/tenant/features/users/hooks/useUsersPageController", () => ({
       isUserColumnVisible: vi.fn(() => true),
       userColumnRegistry: [],
       updateUserColumnLayout: vi.fn(),
-      userColumnCustomizerLabels: {} as any,
+      userColumnCustomizerLabels: {} as unknown as never,
       getActivityColumnWidth: vi.fn(),
       setActivityColumnWidth: vi.fn(),
       onSubTabChange: vi.fn(),

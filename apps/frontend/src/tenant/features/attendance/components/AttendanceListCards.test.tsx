@@ -50,7 +50,7 @@ describe("AttendanceListCards Component", () => {
         someVisibleSelected={false}
         onToggleSelectAll={vi.fn()}
         onToggleSelectedRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -77,7 +77,7 @@ describe("AttendanceListCards Component", () => {
         someVisibleSelected={false}
         onToggleSelectAll={vi.fn()}
         onToggleSelectedRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -100,7 +100,7 @@ describe("AttendanceListCards Component", () => {
         someVisibleSelected={false}
         onToggleSelectAll={vi.fn()}
         onToggleSelectedRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

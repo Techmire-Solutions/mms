@@ -15,7 +15,7 @@ import {
 } from "./useUsersQueries";
 import { invalidateUsersQueries } from "./invalidateUsersQueries";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
@@ -33,16 +33,16 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
 vi.mock("@/lib/api", () => ({
   tsrClient: {
     users: {
-      list: { useQuery: (...args: any[]) => mockUseQuery(...args) },
-      create: { useMutation: (opts: any) => mockUseMutation("create", opts) },
-      update: { useMutation: (opts: any) => mockUseMutation("update", opts) },
-      invite: { useMutation: (opts: any) => mockUseMutation("invite", opts) },
-      bulkUpdate: { useMutation: (opts: any) => mockUseMutation("bulkUpdate", opts) },
-      bulkDelete: { useMutation: (opts: any) => mockUseMutation("bulkDelete", opts) },
-      bulkRestore: { useMutation: (opts: any) => mockUseMutation("bulkRestore", opts) },
-      delete: { useMutation: (opts: any) => mockUseMutation("delete", opts) },
-      restore: { useMutation: (opts: any) => mockUseMutation("restore", opts) },
-      verifyEmail: { useMutation: (opts: any) => mockUseMutation("verifyEmail", opts) },
+      list: { useQuery: (...args: unknown[]) => mockUseQuery(...args) },
+      create: { useMutation: (opts: unknown) => mockUseMutation("create", opts) },
+      update: { useMutation: (opts: unknown) => mockUseMutation("update", opts) },
+      invite: { useMutation: (opts: unknown) => mockUseMutation("invite", opts) },
+      bulkUpdate: { useMutation: (opts: unknown) => mockUseMutation("bulkUpdate", opts) },
+      bulkDelete: { useMutation: (opts: unknown) => mockUseMutation("bulkDelete", opts) },
+      bulkRestore: { useMutation: (opts: unknown) => mockUseMutation("bulkRestore", opts) },
+      delete: { useMutation: (opts: unknown) => mockUseMutation("delete", opts) },
+      restore: { useMutation: (opts: unknown) => mockUseMutation("restore", opts) },
+      verifyEmail: { useMutation: (opts: unknown) => mockUseMutation("verifyEmail", opts) },
     },
   },
 }));
@@ -88,7 +88,7 @@ describe("useUsersContract", () => {
         enabled: true,
       }),
     );
-    expect((result.current as any).data.status).toBe(200);
+    expect(result.current.data.status).toBe(200);
     unmount();
   });
 
@@ -106,7 +106,7 @@ describe("useUsersContract", () => {
     ];
 
     for (const { hook, key } of mutations) {
-      let capturedOpts: any;
+      let capturedOpts!: { onSuccess: () => void };
       mockUseMutation.mockImplementationOnce((mutationKey, opts) => {
         expect(mutationKey).toBe(key);
         capturedOpts = opts;

@@ -7,7 +7,7 @@ import {
   useComposedExaminationsSettings,
 } from "./useExaminationSetupConfig";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/tenant/features/examinations/hooks/examinationSetupConfigApi", () => ({
   fetchExaminationPreferences: vi.fn().mockResolvedValue({
@@ -45,9 +45,9 @@ describe("useExaminationSetupConfig Hooks", () => {
   });
 
   it("provides preferences query, mutation and composed settings", async () => {
-    let queryResult: any;
-    let mutationResult: any;
-    let settingsResult: any;
+    let queryResult!: ReturnType<typeof useExaminationPreferencesQuery>;
+    let mutationResult!: ReturnType<typeof useExaminationPreferencesMutation>;
+    let settingsResult!: ReturnType<typeof useComposedExaminationsSettings>;
 
     function TestComponent() {
       queryResult = useExaminationPreferencesQuery();

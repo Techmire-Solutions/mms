@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { EnrollmentDetail } from "./EnrollmentDetail";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

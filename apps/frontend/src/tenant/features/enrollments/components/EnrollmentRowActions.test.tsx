@@ -47,7 +47,7 @@ const mockEnrollment = {
   studentId: "std-1",
   studentName: "Zayd Harith",
   status: "active",
-} as any;
+} as unknown as never;
 
 describe("EnrollmentRowActions Component", () => {
   it("renders actions menu with cancel and messaging extras", () => {

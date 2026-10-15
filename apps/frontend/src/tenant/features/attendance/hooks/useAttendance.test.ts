@@ -10,7 +10,7 @@ import {
   useAttendanceMetrics,
 } from "./useAttendance";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const attendanceApiMocks = vi.hoisted(() => ({
   listUseQuery: vi.fn(() => ({
@@ -105,12 +105,12 @@ describe("useAttendance Hook suite", () => {
   });
 
   it("provides paginated and collection attendance queries and mutations", async () => {
-    let paginatedResult: any = null;
-    let recordsResult: any = null;
-    let collectionResult: any = null;
-    let mutationsResult: any = null;
-    let reportResult: any = null;
-    let metricsResult: any = null;
+    let paginatedResult!: ReturnType<typeof useAttendancePaginated>;
+    let recordsResult!: ReturnType<typeof useAttendanceRecords>;
+    let collectionResult!: ReturnType<typeof useAttendanceRecordsCollection>;
+    let mutationsResult!: ReturnType<typeof useAttendanceMutations>;
+    let reportResult!: ReturnType<typeof useAttendanceReportAggregates>;
+    let metricsResult!: ReturnType<typeof useAttendanceMetrics>;
 
     function TestComponent() {
       paginatedResult = useAttendancePaginated({ page: 1 });

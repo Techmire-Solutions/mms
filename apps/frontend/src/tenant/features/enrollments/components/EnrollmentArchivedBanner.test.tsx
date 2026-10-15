@@ -7,7 +7,7 @@ const mockArchivedEnrollment = {
   id: "enr-1",
   deletedAt: "2024-01-01T00:00:00Z",
   deletionReason: "Student transferred to another school",
-} as any;
+} as unknown as never;
 
 describe("EnrollmentArchivedBanner Component", () => {
   it("renders archived banner with deletion reason", () => {

@@ -48,6 +48,7 @@ const BADGE_TONES: Record<BadgeTone, string> = {
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLElement>, VariantProps<typeof badgeVariants> {
+  ref?: React.Ref<HTMLElement>;
   /** Soft semantic tone — wins over `variant` when set. */
   tone?: BadgeTone;
   /** Rounded-full pill shape. */
@@ -70,25 +71,23 @@ export interface BadgeProps
  * Badge — SSOT for status/tag pills. Solid `variant` for filled chrome,
  * `tone` for soft semantic pills, `pill` for the rounded-full shape.
  */
-const Badge = React.forwardRef<HTMLElement, BadgeProps>(function Badge(
-  {
-    className,
-    variant,
-    size,
-    tone,
-    pill = false,
-    dot = false,
-    pulse = false,
-    onRemove,
-    removeAriaLabel = "Remove",
-    as: Comp = "div",
-    children,
-    onClick,
-    type,
-    ...props
-  },
+function Badge({
+  className,
+  variant,
+  size,
+  tone,
+  pill = false,
+  dot = false,
+  pulse = false,
+  onRemove,
+  removeAriaLabel = "Remove",
+  as: Comp = "div",
+  children,
+  onClick,
+  type,
   ref,
-) {
+  ...props
+}: BadgeProps) {
   const isInteractive = Comp === "button" || Boolean(onClick);
   const buttonType = Comp === "button" ? (type ?? "button") : undefined;
 
@@ -129,7 +128,6 @@ const Badge = React.forwardRef<HTMLElement, BadgeProps>(function Badge(
       )}
     </Comp>
   );
-});
-Badge.displayName = "Badge";
+}
 
 export { Badge, badgeVariants };

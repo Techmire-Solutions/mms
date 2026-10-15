@@ -8,31 +8,28 @@ export interface TableContextValue {
   stickyHeader?: boolean;
 }
 
-export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
+export interface TableProps extends React.ComponentProps<"table"> {
   containerClassName?: string;
   stickyHeader?: boolean;
   scrollRegionLabel?: string;
 }
 
-export interface TableHeaderProps extends React.HTMLAttributes<HTMLTableSectionElement> {
+export interface TableHeaderProps extends React.ComponentProps<"thead"> {
   sticky?: boolean;
 }
 
-export type TableBodyProps = React.HTMLAttributes<HTMLTableSectionElement>;
+export type TableBodyProps = React.ComponentProps<"tbody">;
 
-export interface TableFooterProps extends React.HTMLAttributes<HTMLTableSectionElement> {
+export interface TableFooterProps extends React.ComponentProps<"tfoot"> {
   /** Pins the footer to the bottom of the scroll container during vertical scrolling. */
   sticky?: boolean;
 }
 
-export interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+export interface TableRowProps extends React.ComponentProps<"tr"> {
   isFocusable?: boolean;
 }
 
-export interface TableHeadProps extends Omit<
-  React.ThHTMLAttributes<HTMLTableCellElement>,
-  "align"
-> {
+export interface TableHeadProps extends Omit<React.ComponentProps<"th">, "align"> {
   noWrap?: boolean;
   truncate?: boolean;
   align?: TableCellAlign;
@@ -50,10 +47,7 @@ export interface TableHeadProps extends Omit<
 
 export type TableHeadCellProps = TableHeadProps;
 
-export interface TableCellProps extends Omit<
-  React.TdHTMLAttributes<HTMLTableCellElement>,
-  "align"
-> {
+export interface TableCellProps extends Omit<React.ComponentProps<"td">, "align"> {
   noWrap?: boolean;
   truncate?: boolean;
   align?: TableCellAlign;
@@ -62,4 +56,4 @@ export interface TableCellProps extends Omit<
   asHeader?: boolean;
 }
 
-export type TableCaptionProps = React.HTMLAttributes<HTMLTableCaptionElement>;
+export type TableCaptionProps = React.ComponentProps<"caption">;

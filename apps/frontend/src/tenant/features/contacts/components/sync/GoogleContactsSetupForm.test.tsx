@@ -5,7 +5,9 @@ import { GoogleContactsSetupForm, GoogleContactsSetupHint } from "./GoogleContac
 
 describe("GoogleContactsSetupForm Components", () => {
   it("renders setup hint", () => {
-    const html = renderToStaticMarkup(<GoogleContactsSetupHint t={((k: string) => k) as any} />);
+    const html = renderToStaticMarkup(
+      <GoogleContactsSetupHint t={((k: string) => k) as unknown as never} />,
+    );
 
     expect(html).toContain("contacts.sync.oauthSetupTitle");
   });
@@ -20,7 +22,7 @@ describe("GoogleContactsSetupForm Components", () => {
         onClientSecretChange={vi.fn()}
         onSave={vi.fn()}
         onCancel={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

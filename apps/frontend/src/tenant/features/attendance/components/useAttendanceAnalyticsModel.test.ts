@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { useAttendanceAnalyticsModel } from "../hooks/useAttendanceAnalyticsModel";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -90,7 +90,7 @@ describe("useAttendanceAnalyticsModel Hook", () => {
   });
 
   it("calculates overall rate and pie data", async () => {
-    let hookResult: any = null;
+    let hookResult!: ReturnType<typeof useAttendanceAnalyticsModel>;
 
     function TestComponent() {
       hookResult = useAttendanceAnalyticsModel({ classId: "cls-1" });

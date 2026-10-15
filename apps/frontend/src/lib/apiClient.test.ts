@@ -180,7 +180,7 @@ describe("apiClient", () => {
     };
 
     const { apiFetch } = await import("@/lib/apiClient");
-    await expect(apiFetch("/api/health", { timeout: 10 } as any)).rejects.toThrow();
+    await expect(apiFetch("/api/health", { timeout: 10 } as unknown as never)).rejects.toThrow();
     globalThis.fetch = original;
   });
 

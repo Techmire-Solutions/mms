@@ -19,7 +19,7 @@ const mockConfig = {
   sourceBooks: [],
   isFieldEnabled: () => true,
   fieldLabel: (_id: string, label: string) => label,
-} as any;
+} as unknown as never;
 
 const baseProps = {
   questions: [

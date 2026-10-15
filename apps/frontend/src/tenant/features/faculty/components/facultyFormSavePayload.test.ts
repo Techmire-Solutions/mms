@@ -93,7 +93,7 @@ describe("facultyFormSavePayload", () => {
       facultyDraft: {},
       formInstanceId: "form-1",
       autoGenerateId: false,
-      settings: {} as any,
+      settings: {} as unknown as never,
       enabledTabs: new Set(),
       fields: {},
       language: "en",
@@ -132,7 +132,10 @@ describe("facultyFormSavePayload", () => {
         ...baseInput,
         setErrors,
         userAccountDraft: { enabled: true, setupMethod: "password", role: "" },
-        linkedContact: { id: "cnt-1", emails: [{ address: "test@example.com" }] } as any,
+        linkedContact: {
+          id: "cnt-1",
+          emails: [{ address: "test@example.com" }],
+        } as unknown as never,
       });
 
       expect(result).toBe(false);
@@ -152,7 +155,10 @@ describe("facultyFormSavePayload", () => {
           role: "staff",
           password: "short",
         },
-        linkedContact: { id: "cnt-1", emails: [{ address: "test@example.com" }] } as any,
+        linkedContact: {
+          id: "cnt-1",
+          emails: [{ address: "test@example.com" }],
+        } as unknown as never,
       });
 
       expect(result).toBe(false);
@@ -170,7 +176,10 @@ describe("facultyFormSavePayload", () => {
           role: "staff",
           password: "securepassword123",
         },
-        linkedContact: { id: "cnt-1", emails: [{ address: "test@example.com" }] } as any,
+        linkedContact: {
+          id: "cnt-1",
+          emails: [{ address: "test@example.com" }],
+        } as unknown as never,
       });
 
       expect(result).toBe(true);

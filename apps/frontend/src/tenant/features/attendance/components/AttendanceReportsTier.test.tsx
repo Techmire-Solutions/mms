@@ -27,7 +27,7 @@ describe("AttendanceReportsTier Component", () => {
     const html = renderToStaticMarkup(
       <AttendanceReportsTier
         role="admin"
-        filters={{ date: "2025-01-01", session: "all", classId: "all" } as any}
+        filters={{ date: "2025-01-01", session: "all", classId: "all" } as unknown as never}
         analyticsTabs={[
           { id: "charts", label: "Charts" },
           { id: "reports", label: "Reports" },

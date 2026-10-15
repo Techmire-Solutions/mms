@@ -10,7 +10,7 @@ describe("EnrollmentsPageHeaderActions Component", () => {
         canExport={true}
         canWriteEnrollments={true}
         showDeleted={false}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
         onExport={vi.fn()}
         onNew={vi.fn()}
       />,
@@ -26,7 +26,7 @@ describe("EnrollmentsPageHeaderActions Component", () => {
         canExport={true}
         canWriteEnrollments={true}
         showDeleted={false}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
         onExport={vi.fn()}
         onNew={vi.fn()}
         onImport={vi.fn()}
@@ -42,7 +42,7 @@ describe("EnrollmentsPageHeaderActions Component", () => {
         canExport={true}
         canWriteEnrollments={true}
         showDeleted={true}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
         onExport={vi.fn()}
         onNew={vi.fn()}
       />,

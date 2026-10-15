@@ -10,7 +10,7 @@ import {
   useExaminationsMutations,
 } from "./useExaminationsApi";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => ({
@@ -77,12 +77,12 @@ describe("useExaminationsApi Hooks", () => {
   });
 
   it("provides examinations data queries, collections, metrics, and mutations", async () => {
-    let examsResult: any;
-    let examsCollection: any;
-    let resultsQuery: any;
-    let resultsCollection: any;
-    let metricsResult: any;
-    let mutationsResult: any;
+    let examsResult!: ReturnType<typeof useExaminationsExams>;
+    let examsCollection!: ReturnType<typeof useExaminationsExamsCollection>;
+    let resultsQuery!: ReturnType<typeof useExaminationsResults>;
+    let resultsCollection!: ReturnType<typeof useExaminationsResultsCollection>;
+    let metricsResult!: ReturnType<typeof useExaminationsMetrics>;
+    let mutationsResult!: ReturnType<typeof useExaminationsMutations>;
 
     function TestComponent() {
       examsResult = useExaminationsExams();
@@ -103,7 +103,7 @@ describe("useExaminationsApi Hooks", () => {
     expect(examsCollection).toHaveLength(1);
     expect(resultsQuery.data.status).toBe(200);
     expect(resultsCollection).toHaveLength(1);
-    expect(metricsResult.data.total).toBe(1);
+    expect(metricsResult.data?.total).toBe(1);
     expect(mutationsResult.replaceExams).toBeDefined();
     expect(mutationsResult.deleteExam).toBeDefined();
   });

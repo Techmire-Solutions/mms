@@ -4,10 +4,10 @@ import { createRoot } from "react-dom/client";
 import { UsersModalLayer, type UsersModalLayerProps } from "./UsersModalLayer";
 import { normalizeWorkspaceUser } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/tenant/features/users/components/UserDetail", () => ({
-  UserDetail: ({ user, onClose }: any) => (
+  UserDetail: ({ user, onClose }: { user: { name: string }; onClose: () => void }) => (
     <div data-testid="user-detail">
       <span>{user.name}</span>
       <button onClick={onClose}>Close Detail</button>
@@ -16,7 +16,7 @@ vi.mock("@/tenant/features/users/components/UserDetail", () => ({
 }));
 
 vi.mock("@/tenant/features/users/components/EditUserModal", () => ({
-  EditUserModal: ({ user, onClose }: any) => (
+  EditUserModal: ({ user, onClose }: { user: { name: string }; onClose: () => void }) => (
     <div data-testid="edit-user-modal">
       <span>{user.name}</span>
       <button onClick={onClose}>Close Edit</button>
@@ -25,7 +25,7 @@ vi.mock("@/tenant/features/users/components/EditUserModal", () => ({
 }));
 
 vi.mock("@/tenant/features/users/components/ResetUserPasswordModal", () => ({
-  ResetUserPasswordModal: ({ user, onClose }: any) => (
+  ResetUserPasswordModal: ({ user, onClose }: { user: { name: string }; onClose: () => void }) => (
     <div data-testid="reset-password-modal">
       <span>{user.name}</span>
       <button onClick={onClose}>Close Reset</button>
@@ -34,7 +34,7 @@ vi.mock("@/tenant/features/users/components/ResetUserPasswordModal", () => ({
 }));
 
 vi.mock("@/tenant/features/users/components/AddUserModal", () => ({
-  AddUserModal: ({ onClose }: any) => (
+  AddUserModal: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="add-user-modal">
       <button onClick={onClose}>Close Add</button>
     </div>
@@ -42,7 +42,7 @@ vi.mock("@/tenant/features/users/components/AddUserModal", () => ({
 }));
 
 vi.mock("@/tenant/features/users/components/InviteUserModal", () => ({
-  InviteUserModal: ({ onClose }: any) => (
+  InviteUserModal: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="invite-user-modal">
       <button onClick={onClose}>Close Invite</button>
     </div>
@@ -50,7 +50,7 @@ vi.mock("@/tenant/features/users/components/InviteUserModal", () => ({
 }));
 
 vi.mock("@/tenant/components/messaging/TenantMessageComposer", () => ({
-  default: ({ onClose }: any) => (
+  default: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="message-composer">
       <button onClick={onClose}>Close Composer</button>
     </div>

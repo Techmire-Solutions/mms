@@ -3,7 +3,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { useExaminationsReportAggregates } from "./useExaminationsReportAggregates";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => ({
@@ -19,7 +19,7 @@ vi.mock("@/lib/apiClient", () => ({
 }));
 
 vi.mock("@tanstack/react-query", () => ({
-  useQuery: ({ queryKey, queryFn: _queryFn }: any) => ({
+  useQuery: ({ queryKey, queryFn: _queryFn }: { queryKey: unknown; queryFn: unknown }) => ({
     data: { totalExams: 10, averageScore: 78 },
     isLoading: false,
     queryKey,
@@ -41,7 +41,7 @@ describe("useExaminationsReportAggregates Hook", () => {
   });
 
   it("fetches examination report aggregates with query comparison params", async () => {
-    let hookResult: any;
+    let hookResult!: ReturnType<typeof useExaminationsReportAggregates>;
 
     function TestComponent() {
       hookResult = useExaminationsReportAggregates({
@@ -59,7 +59,7 @@ describe("useExaminationsReportAggregates Hook", () => {
       root.render(React.createElement(TestComponent));
     });
 
-    expect(hookResult.data.totalExams).toBe(10);
-    expect(hookResult.data.averageScore).toBe(78);
+    expect((hookResult.data as unknown as { totalExams: number }).totalExams).toBe(10);
+    expect((hookResult.data as unknown as { averageScore: number }).averageScore).toBe(78);
   });
 });

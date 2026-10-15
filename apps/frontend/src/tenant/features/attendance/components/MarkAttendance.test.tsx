@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MarkAttendance } from "./MarkAttendance";
 
 vi.mock("../hooks/useMarkAttendanceController", () => ({
-  useMarkAttendanceController: (props: any) => ({
+  useMarkAttendanceController: (props: { filters: Record<string, unknown> }) => ({
     filters: props.filters,
     t: (key: string) => key,
     isOffline: false,

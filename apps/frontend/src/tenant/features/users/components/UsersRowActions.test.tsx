@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { UsersRowActions } from "./UsersRowActions";
 import { normalizeWorkspaceUser } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let mockActor = { id: "actor-1", role: "admin" };
 

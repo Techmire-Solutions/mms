@@ -8,7 +8,7 @@ import { apiFetch, apiJson } from "@/lib/apiClient";
 import { AUTH_USER_STORAGE_KEY } from "./authContextHelpers";
 import type { User } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const { mockUser } = vi.hoisted(() => ({
   mockUser: {
@@ -62,12 +62,12 @@ describe("AuthContext", () => {
     vi.mocked(apiFetch).mockResolvedValue({
       ok: true,
       json: async () => ({ user: mockUser }),
-    } as any);
+    } as unknown as never);
     vi.mocked(apiJson).mockResolvedValue({ user: mockUser });
   });
 
   it("provides safe fallback via useOptionalAuth when rendered outside AuthProvider", () => {
-    let capturedAuth: ReturnType<typeof useOptionalAuth> = undefined as any;
+    let capturedAuth: ReturnType<typeof useOptionalAuth> = undefined as unknown as never;
     function Consumer() {
       capturedAuth = useOptionalAuth();
       return null;
@@ -86,7 +86,7 @@ describe("AuthContext", () => {
   });
 
   it("hydrates user session and exposes auth methods within AuthProvider", async () => {
-    let capturedAuth: ReturnType<typeof useAuth> = undefined as any;
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
     function Consumer() {
       capturedAuth = useAuth();
       return <div>{capturedAuth.user?.name ?? "Guest"}</div>;
@@ -113,7 +113,7 @@ describe("AuthContext", () => {
   });
 
   it("handles login with direct session application", async () => {
-    let capturedAuth: ReturnType<typeof useAuth> = undefined as any;
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
     function Consumer() {
       capturedAuth = useAuth();
       return null;
@@ -132,9 +132,9 @@ describe("AuthContext", () => {
     vi.mocked(apiFetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ user: mockUser, requires2FA: false }),
-    } as any);
+    } as unknown as never);
 
-    let result: any;
+    let result!: Awaited<ReturnType<typeof capturedAuth.login>>;
     await act(async () => {
       result = await capturedAuth.login("admin@madrasa.test", "password123");
     });
@@ -149,7 +149,7 @@ describe("AuthContext", () => {
   });
 
   it("handles login with 2FA challenge requirement", async () => {
-    let capturedAuth: ReturnType<typeof useAuth> = undefined as any;
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
     function Consumer() {
       capturedAuth = useAuth();
       return null;
@@ -168,9 +168,9 @@ describe("AuthContext", () => {
     vi.mocked(apiFetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ user: mockUser, requires2FA: true, challengeId: "ch-999" }),
-    } as any);
+    } as unknown as never);
 
-    let result: any;
+    let result!: Awaited<ReturnType<typeof capturedAuth.login>>;
     await act(async () => {
       result = await capturedAuth.login("admin@madrasa.test", "password123");
     });
@@ -184,7 +184,7 @@ describe("AuthContext", () => {
   });
 
   it("handles logout by clearing queryClient and stored session", async () => {
-    let capturedAuth: ReturnType<typeof useAuth> = undefined as any;
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
     function Consumer() {
       capturedAuth = useAuth();
       return null;
@@ -282,7 +282,7 @@ describe("AuthContext", () => {
   });
 
   it("recovers a cookie session from /api/auth/me when no user is persisted", async () => {
-    let capturedAuth: ReturnType<typeof useAuth> = undefined as any;
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
     function Consumer() {
       capturedAuth = useAuth();
       return <div>{capturedAuth.user?.name ?? "Guest"}</div>;

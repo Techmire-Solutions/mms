@@ -18,7 +18,15 @@ vi.mock("./EnterMarks", () => ({
 }));
 
 vi.mock("@/components/app/FormModal", () => ({
-  FormModal: ({ children, title, open }: any) =>
+  FormModal: ({
+    children,
+    title,
+    open,
+  }: {
+    children?: React.ReactNode;
+    title?: React.ReactNode;
+    open?: boolean;
+  }) =>
     open ? (
       <div data-testid="form-modal">
         <h2>{title}</h2>

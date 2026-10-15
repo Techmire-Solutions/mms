@@ -13,7 +13,7 @@ describe("ResultsViewStats Component", () => {
           passed: 18,
           failed: 2,
         }}
-        t={((key: string) => key) as any}
+        t={((key: string) => key) as unknown as never}
       />,
     );
 

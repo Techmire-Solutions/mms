@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { QueryClient } from "@tanstack/react-query";
 import { invalidateExaminationsQueries } from "./invalidateExaminationsQueries";
 import {
   EXAMINATIONS_EXAMS_QUERY_KEY,
@@ -9,7 +10,7 @@ import {
 describe("invalidateExaminationsQueries", () => {
   it("invalidates all examination query keys on queryClient", () => {
     const invalidateQueries = vi.fn();
-    const queryClient: any = { invalidateQueries };
+    const queryClient = { invalidateQueries } as unknown as QueryClient;
 
     invalidateExaminationsQueries(queryClient);
 

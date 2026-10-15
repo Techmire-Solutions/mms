@@ -35,7 +35,7 @@ describe("MarkAttendanceFieldControl Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceFieldControl
         row={mockRow}
-        field={{ id: "status", label: "Status", type: "select" } as any}
+        field={{ id: "status", label: "Status", type: "select" } as unknown as never}
         idPrefix="table"
         onFieldChange={vi.fn()}
       />,
@@ -49,7 +49,7 @@ describe("MarkAttendanceFieldControl Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceFieldControl
         row={mockRow}
-        field={{ id: "timeIn", label: "Time In", type: "time" } as any}
+        field={{ id: "timeIn", label: "Time In", type: "time" } as unknown as never}
         idPrefix="table"
         onFieldChange={vi.fn()}
       />,
@@ -62,7 +62,7 @@ describe("MarkAttendanceFieldControl Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceFieldControl
         row={mockRow}
-        field={{ id: "notes", label: "Notes", type: "text" } as any}
+        field={{ id: "notes", label: "Notes", type: "text" } as unknown as never}
         idPrefix="table"
         onFieldChange={vi.fn()}
       />,

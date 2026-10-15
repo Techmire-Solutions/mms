@@ -58,7 +58,7 @@ describe("MessagingWorkRecipientsCards", () => {
     const html = renderToStaticMarkup(
       <MessagingWorkRecipientsCards
         {...baseProps}
-        selectedById={{ "c-1": { id: "c-1", name: "Zayd Mansoor" } as any }}
+        selectedById={{ "c-1": { id: "c-1", name: "Zayd Mansoor" } as unknown as never }}
       />,
     );
     expect(html).toContain("border-primary/50");

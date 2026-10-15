@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { Step3 } from "./AddUserModalStep3";
 import type { AddUserFormState } from "../lib/addUserModalTypes";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
   useGlobalSettings: () => ({

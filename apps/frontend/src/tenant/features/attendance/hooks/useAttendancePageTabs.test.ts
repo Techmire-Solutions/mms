@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { useAttendancePageTabs } from "./useAttendancePageTabs";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -40,7 +40,7 @@ describe("useAttendancePageTabs Hook", () => {
   });
 
   it("resolves effective tab and visible tier tabs", async () => {
-    let hookResult: any = null;
+    let hookResult!: ReturnType<typeof useAttendancePageTabs>;
 
     function TestComponent() {
       hookResult = useAttendancePageTabs("work", "mark", "charts", true);

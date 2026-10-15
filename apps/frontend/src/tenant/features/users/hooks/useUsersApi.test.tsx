@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { extractActivityLogs, useUsersByIds, useUsersMutations } from "./useUsersApi";
 import { invalidateUsersQueries } from "./invalidateUsersQueries";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
@@ -28,20 +28,20 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
 vi.mock("@/lib/api", () => ({
   tsrClient: {
     users: {
-      list: { useQuery: (...args: any[]) => mockUseQuery(...args) },
-      activity: { useQuery: (...args: any[]) => mockUseQuery(...args) },
-      create: { useMutation: (opts: any) => mockUseMutation("create", opts) },
-      update: { useMutation: (opts: any) => mockUseMutation("update", opts) },
-      invite: { useMutation: (opts: any) => mockUseMutation("invite", opts) },
-      bulkUpdate: { useMutation: (opts: any) => mockUseMutation("bulkUpdate", opts) },
+      list: { useQuery: (...args: unknown[]) => mockUseQuery(...args) },
+      activity: { useQuery: (...args: unknown[]) => mockUseQuery(...args) },
+      create: { useMutation: (opts: unknown) => mockUseMutation("create", opts) },
+      update: { useMutation: (opts: unknown) => mockUseMutation("update", opts) },
+      invite: { useMutation: (opts: unknown) => mockUseMutation("invite", opts) },
+      bulkUpdate: { useMutation: (opts: unknown) => mockUseMutation("bulkUpdate", opts) },
       activityBulkUpdate: {
-        useMutation: (opts: any) => mockUseMutation("activityBulkUpdate", opts),
+        useMutation: (opts: unknown) => mockUseMutation("activityBulkUpdate", opts),
       },
-      delete: { useMutation: (opts: any) => mockUseMutation("delete", opts) },
-      restore: { useMutation: (opts: any) => mockUseMutation("restore", opts) },
-      bulkDelete: { useMutation: (opts: any) => mockUseMutation("bulkDelete", opts) },
-      bulkRestore: { useMutation: (opts: any) => mockUseMutation("bulkRestore", opts) },
-      resetPassword: { useMutation: (opts: any) => mockUseMutation("resetPassword", opts) },
+      delete: { useMutation: (opts: unknown) => mockUseMutation("delete", opts) },
+      restore: { useMutation: (opts: unknown) => mockUseMutation("restore", opts) },
+      bulkDelete: { useMutation: (opts: unknown) => mockUseMutation("bulkDelete", opts) },
+      bulkRestore: { useMutation: (opts: unknown) => mockUseMutation("bulkRestore", opts) },
+      resetPassword: { useMutation: (opts: unknown) => mockUseMutation("resetPassword", opts) },
       exportAudit: { useMutation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn() }) },
     },
   },
@@ -80,7 +80,7 @@ describe("useUsersApi", () => {
   describe("extractActivityLogs", () => {
     it("handles direct arrays, enveloped objects, and non-200 responses", () => {
       const logs = [{ id: "l1", action: "create", timestamp: "2026-09-01" }];
-      expect(extractActivityLogs(logs as any)).toEqual(logs);
+      expect(extractActivityLogs(logs as unknown as never)).toEqual(logs);
       expect(extractActivityLogs({ status: 200, body: { logs } })).toEqual(logs);
       expect(extractActivityLogs({ status: 200, body: logs })).toEqual(logs);
       expect(extractActivityLogs({ status: 500, body: { logs } })).toEqual([]);
@@ -126,7 +126,7 @@ describe("useUsersApi", () => {
 
   describe("useUsersMutations", () => {
     it("wires invalidation and unboxes mutation responses", async () => {
-      let capturedCreateOpts: any;
+      let capturedCreateOpts!: { onSuccess: () => void };
       const mockCreateMutateAsync = vi.fn().mockResolvedValue({
         status: 200,
         body: { user: { id: "u-created", name: "Created User" } },

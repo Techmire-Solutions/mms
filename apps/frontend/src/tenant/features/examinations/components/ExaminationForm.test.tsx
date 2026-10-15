@@ -28,7 +28,7 @@ vi.mock("@/tenant/features/examinations/hooks/useExaminationForm", () => ({
 }));
 
 vi.mock("@/components/app/FormModal", () => ({
-  FormModal: ({ children, title }: any) => (
+  FormModal: ({ children, title }: { children?: React.ReactNode; title?: React.ReactNode }) => (
     <div data-testid="form-modal">
       <h2>{title}</h2>
       {children}

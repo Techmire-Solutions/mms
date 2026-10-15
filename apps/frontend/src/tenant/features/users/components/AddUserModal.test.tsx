@@ -3,13 +3,13 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { AddUserModal } from "./AddUserModal";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
@@ -26,7 +26,15 @@ vi.mock("@/hooks/useStandardModuleConfig", () => ({
 }));
 
 vi.mock("@/components/app/FormModal", () => ({
-  FormModal: ({ title, subtitle, children }: any) => (
+  FormModal: ({
+    title,
+    subtitle,
+    children,
+  }: {
+    title?: React.ReactNode;
+    subtitle?: React.ReactNode;
+    children?: React.ReactNode;
+  }) => (
     <div data-testid="form-modal">
       <h2>{title}</h2>
       <h3>{subtitle}</h3>
@@ -36,13 +44,21 @@ vi.mock("@/components/app/FormModal", () => ({
 }));
 
 vi.mock("./AddUserModalStep1", () => ({
-  Step1: ({ form: _form, setForm, errors }: any) => (
+  Step1: ({
+    form: _form,
+    setForm,
+    errors,
+  }: {
+    form: unknown;
+    setForm: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+    errors: unknown;
+  }) => (
     <div data-testid="step-1">
       <span data-testid="step1-errors">{JSON.stringify(errors)}</span>
       <button
         data-testid="pick-contact-btn"
         onClick={() =>
-          setForm((prev: any) => ({
+          setForm((prev: Record<string, unknown>) => ({
             ...prev,
             contactId: "c1",
             name: "John Doe",
@@ -56,7 +72,7 @@ vi.mock("./AddUserModalStep1", () => ({
       <button
         data-testid="pick-duplicate-contact-btn"
         onClick={() =>
-          setForm((prev: any) => ({
+          setForm((prev: Record<string, unknown>) => ({
             ...prev,
             contactId: "c2",
             name: "Duplicate",
@@ -71,12 +87,20 @@ vi.mock("./AddUserModalStep1", () => ({
 }));
 
 vi.mock("./AddUserModalStep2", () => ({
-  Step2: ({ form: _form, setForm, errors }: any) => (
+  Step2: ({
+    form: _form,
+    setForm,
+    errors,
+  }: {
+    form: unknown;
+    setForm: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
+    errors: unknown;
+  }) => (
     <div data-testid="step-2">
       <span data-testid="step2-errors">{JSON.stringify(errors)}</span>
       <button
         data-testid="pick-role-btn"
-        onClick={() => setForm((prev: any) => ({ ...prev, role: "teacher" }))}
+        onClick={() => setForm((prev: Record<string, unknown>) => ({ ...prev, role: "teacher" }))}
       >
         Pick Role
       </button>
@@ -85,7 +109,7 @@ vi.mock("./AddUserModalStep2", () => ({
 }));
 
 vi.mock("./AddUserModalStep3", () => ({
-  Step3: ({ errors }: any) => (
+  Step3: ({ errors }: { errors?: unknown }) => (
     <div data-testid="step-3">
       <span data-testid="step3-errors">{JSON.stringify(errors)}</span>
     </div>

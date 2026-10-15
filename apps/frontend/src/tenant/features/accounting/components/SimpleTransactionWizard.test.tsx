@@ -32,10 +32,10 @@ vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
 
 vi.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    tr: ({ children, ...props }: any) => <tr {...props}>{children}</tr>,
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
+    tr: ({ children, ...props }: React.ComponentProps<"tr">) => <tr {...props}>{children}</tr>,
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+  AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/lib/contexts/AuthContext", () => ({
@@ -54,7 +54,15 @@ vi.mock("@/hooks/useCurrency", () => ({
 }));
 
 vi.mock("@/components/app/DatePicker", () => ({
-  DatePicker: ({ id, value, onChange }: any) => (
+  DatePicker: ({
+    id,
+    value,
+    onChange,
+  }: {
+    id?: string;
+    value?: string;
+    onChange: (value: string) => void;
+  }) => (
     <input
       data-testid={id || "datepicker"}
       value={value}
@@ -65,7 +73,15 @@ vi.mock("@/components/app/DatePicker", () => ({
 
 /** The real modal keeps the wizard mounted between openings; only its portal unmounts. */
 vi.mock("@/components/app/FormModal", () => ({
-  FormModal: ({ open, headerExtra, children }: any) =>
+  FormModal: ({
+    open,
+    headerExtra,
+    children,
+  }: {
+    open?: boolean;
+    headerExtra?: React.ReactNode;
+    children?: React.ReactNode;
+  }) =>
     open ? (
       <div data-testid="wizard-modal">
         {headerExtra}

@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ExaminationFormFields } from "./ExaminationFormFields";
 
 vi.mock("@/components/app/SectionCard", () => ({
-  SectionCard: ({ children, title }: any) => (
+  SectionCard: ({ children, title }: { children?: React.ReactNode; title?: React.ReactNode }) => (
     <div data-testid="section-card">
       <h3>{title}</h3>
       {children}
@@ -13,7 +13,7 @@ vi.mock("@/components/app/SectionCard", () => ({
 }));
 
 vi.mock("@/components/app/FormPrimitives", () => ({
-  Field: ({ children, label }: any) => (
+  Field: ({ children, label }: { children?: React.ReactNode; label?: React.ReactNode }) => (
     <div>
       <label>{label}</label>
       {children}
@@ -22,9 +22,18 @@ vi.mock("@/components/app/FormPrimitives", () => ({
 }));
 
 vi.mock("@/components/app/FormSelect", () => ({
-  FormSelect: ({ options, value }: any) => (
-    <select data-testid="form-select" defaultValue={value}>
-      {options.map((o: any) => (
+  FormSelect: ({
+    options,
+    value,
+  }: {
+    options: Array<{ value: string; label: React.ReactNode }>;
+    value?: unknown;
+  }) => (
+    <select
+      data-testid="form-select"
+      defaultValue={value as string | number | readonly string[] | undefined}
+    >
+      {options.map((o: { value: string; label: React.ReactNode }) => (
         <option key={o.value} value={o.value}>
           {o.label}
         </option>
@@ -34,14 +43,19 @@ vi.mock("@/components/app/FormSelect", () => ({
 }));
 
 vi.mock("@/components/app/DatePicker", () => ({
-  DatePicker: ({ value }: any) => <input data-testid="date-picker" defaultValue={value} />,
+  DatePicker: ({ value }: { value?: unknown }) => (
+    <input
+      data-testid="date-picker"
+      defaultValue={value as string | number | readonly string[] | undefined}
+    />
+  ),
 }));
 
 describe("ExaminationFormFields Component", () => {
   it("renders exam input fields and assigned classes", () => {
     const html = renderToStaticMarkup(
       <ExaminationFormFields
-        t={((key: string) => key) as any}
+        t={((key: string) => key) as unknown as never}
         errors={{}}
         examDraft={{
           name: "Annual Exam",

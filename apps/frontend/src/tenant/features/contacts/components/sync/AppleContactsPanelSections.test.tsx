@@ -10,7 +10,9 @@ import {
 
 describe("AppleContactsPanelSections Components", () => {
   it("renders export guide correctly", () => {
-    const html = renderToStaticMarkup(<AppleContactsExportGuide t={((k: string) => k) as any} />);
+    const html = renderToStaticMarkup(
+      <AppleContactsExportGuide t={((k: string) => k) as unknown as never} />,
+    );
 
     expect(html).toContain("contacts.sync.appleExportTitle");
   });
@@ -19,7 +21,10 @@ describe("AppleContactsPanelSections Components", () => {
     const html = renderToStaticMarkup(
       <AppleContactsImportResult
         result={{ imported: 12, skipped: 2 }}
-        t={((k: string, params: any) => `${k}:${params?.count ?? ""}`) as any}
+        t={
+          ((k: string, params: { count?: number }) =>
+            `${k}:${params?.count ?? ""}`) as unknown as never
+        }
       />,
     );
 
@@ -33,7 +38,7 @@ describe("AppleContactsPanelSections Components", () => {
         contactCount={25}
         exporting={false}
         onExport={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -43,7 +48,11 @@ describe("AppleContactsPanelSections Components", () => {
   it("renders hidden file input", () => {
     const fileRef = { current: null };
     const html = renderToStaticMarkup(
-      <AppleContactsFileInput fileRef={fileRef} onChange={vi.fn()} t={((k: string) => k) as any} />,
+      <AppleContactsFileInput
+        fileRef={fileRef}
+        onChange={vi.fn()}
+        t={((k: string) => k) as unknown as never}
+      />,
     );
 
     expect(html).toContain('type="file"');

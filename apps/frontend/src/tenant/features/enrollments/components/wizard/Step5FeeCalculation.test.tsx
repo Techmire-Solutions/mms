@@ -20,7 +20,7 @@ const mockSession = {
   name: "Spring 2025",
   baseFee: 300,
   discounts: [],
-} as any;
+} as unknown as never;
 
 describe("Step5FeeCalculation Component", () => {
   it("renders fee breakdown card", () => {

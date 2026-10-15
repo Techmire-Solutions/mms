@@ -69,7 +69,9 @@ describe("FacultyUserAccountSection Component", () => {
       wrapWithQueryClient(
         <FacultyUserAccountSection
           facultyDraft={{ contactId: "cnt-1" }}
-          linkedContact={{ id: "cnt-1", name: "Ustadh Umar", email: "faculty@madrasa.org" } as any}
+          linkedContact={
+            { id: "cnt-1", name: "Ustadh Umar", email: "faculty@madrasa.org" } as unknown as never
+          }
           userAccountDraft={draft}
           onUserAccountDraftChange={vi.fn()}
           errors={{}}
@@ -95,7 +97,9 @@ describe("FacultyUserAccountSection Component", () => {
       wrapWithQueryClient(
         <FacultyUserAccountSection
           facultyDraft={{ contactId: "cnt-2" }}
-          linkedContact={{ id: "cnt-2", name: "Ustadh Zayd", email: "zayd@madrasa.org" } as any}
+          linkedContact={
+            { id: "cnt-2", name: "Ustadh Zayd", email: "zayd@madrasa.org" } as unknown as never
+          }
           userAccountDraft={draft}
           onUserAccountDraftChange={vi.fn()}
           errors={{}}

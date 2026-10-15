@@ -75,7 +75,9 @@ vi.mock("@/lib/notify", () => ({
 }));
 
 function renderFinanceControllerHook() {
-  const result: { current: any } = {} as { current: any };
+  const result: { current: ReturnType<typeof useFinancePageController> } = {} as {
+    current: ReturnType<typeof useFinancePageController>;
+  };
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);

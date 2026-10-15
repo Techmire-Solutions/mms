@@ -13,6 +13,12 @@ import {
   useCreateWorkspaceAdmin,
 } from "./usePlatformWorkspaces";
 
+type WorkspaceResponse = {
+  status: number;
+  body: { workspaces: PlatformWorkspaceRow[] };
+  headers: Headers;
+};
+
 describe("usePlatformWorkspaces", () => {
   it("exports valid hook definitions and constants", () => {
     expect(PLATFORM_WORKSPACES_QUERY_KEY).toEqual(["platform", "workspaces"]);
@@ -51,44 +57,52 @@ describe("usePlatformWorkspaces", () => {
     });
 
     // Test enabled toggle updater targeting madrasa-1
-    queryClient.setQueryData(PLATFORM_WORKSPACES_QUERY_KEY, (old: any) => {
-      if (!old) return old;
-      if (old.body && Array.isArray(old.body.workspaces)) {
-        return {
-          ...old,
-          body: {
-            ...old.body,
-            workspaces: old.body.workspaces.map((w: PlatformWorkspaceRow) =>
-              w.subdomain === "madrasa-1" ? { ...w, enabled: false } : w,
-            ),
-          },
-        };
-      }
-      return old;
-    });
+    queryClient.setQueryData(
+      PLATFORM_WORKSPACES_QUERY_KEY,
+      (old: WorkspaceResponse | null | undefined) => {
+        if (!old) return old;
+        if (old.body && Array.isArray(old.body.workspaces)) {
+          return {
+            ...old,
+            body: {
+              ...old.body,
+              workspaces: old.body.workspaces.map((w: PlatformWorkspaceRow) =>
+                w.subdomain === "madrasa-1" ? { ...w, enabled: false } : w,
+              ),
+            },
+          };
+        }
+        return old;
+      },
+    );
 
-    const cached: any = queryClient.getQueryData(PLATFORM_WORKSPACES_QUERY_KEY);
+    const cached = queryClient.getQueryData(PLATFORM_WORKSPACES_QUERY_KEY) as WorkspaceResponse;
     expect(cached.body.workspaces[0].enabled).toBe(false);
     expect(cached.body.workspaces[1].enabled).toBe(true);
 
     // Test email verification toggle updater targeting madrasa-1
-    queryClient.setQueryData(PLATFORM_WORKSPACES_QUERY_KEY, (old: any) => {
-      if (!old) return old;
-      if (old.body && Array.isArray(old.body.workspaces)) {
-        return {
-          ...old,
-          body: {
-            ...old.body,
-            workspaces: old.body.workspaces.map((w: PlatformWorkspaceRow) =>
-              w.subdomain === "madrasa-1" ? { ...w, requireEmailVerification: false } : w,
-            ),
-          },
-        };
-      }
-      return old;
-    });
+    queryClient.setQueryData(
+      PLATFORM_WORKSPACES_QUERY_KEY,
+      (old: WorkspaceResponse | null | undefined) => {
+        if (!old) return old;
+        if (old.body && Array.isArray(old.body.workspaces)) {
+          return {
+            ...old,
+            body: {
+              ...old.body,
+              workspaces: old.body.workspaces.map((w: PlatformWorkspaceRow) =>
+                w.subdomain === "madrasa-1" ? { ...w, requireEmailVerification: false } : w,
+              ),
+            },
+          };
+        }
+        return old;
+      },
+    );
 
-    const updatedCached: any = queryClient.getQueryData(PLATFORM_WORKSPACES_QUERY_KEY);
+    const updatedCached = queryClient.getQueryData(
+      PLATFORM_WORKSPACES_QUERY_KEY,
+    ) as WorkspaceResponse;
     expect(updatedCached.body.workspaces[0].requireEmailVerification).toBe(false);
     expect(updatedCached.body.workspaces[1].requireEmailVerification).toBe(false);
   });
@@ -105,7 +119,7 @@ describe("usePlatformWorkspaces", () => {
 
     // 1. Direct array cache
     queryClient.setQueryData(PLATFORM_WORKSPACES_QUERY_KEY, [mockWorkspace]);
-    queryClient.setQueryData(PLATFORM_WORKSPACES_QUERY_KEY, (old: any) => {
+    queryClient.setQueryData(PLATFORM_WORKSPACES_QUERY_KEY, (old: unknown) => {
       if (!old) return old;
       if (Array.isArray(old)) {
         return old.map((w: PlatformWorkspaceRow) =>
@@ -115,12 +129,14 @@ describe("usePlatformWorkspaces", () => {
       return old;
     });
 
-    const cachedArray: any = queryClient.getQueryData(PLATFORM_WORKSPACES_QUERY_KEY);
+    const cachedArray = queryClient.getQueryData(
+      PLATFORM_WORKSPACES_QUERY_KEY,
+    ) as PlatformWorkspaceRow[];
     expect(cachedArray[0].enabled).toBe(false);
 
     // 2. Null cache returns undefined/null safely
     queryClient.setQueryData(PLATFORM_WORKSPACES_QUERY_KEY, null);
-    queryClient.setQueryData(PLATFORM_WORKSPACES_QUERY_KEY, (old: any) => {
+    queryClient.setQueryData(PLATFORM_WORKSPACES_QUERY_KEY, (old: unknown) => {
       if (!old) return old;
       return old;
     });

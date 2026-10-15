@@ -37,10 +37,10 @@ describe("examinationSetupConfigApi", () => {
     const updated = await saveExaminationPreferencesAsync({
       gradingSystem: "letter",
       certificateTemplate: "modern",
-    } as any);
+    } as unknown as never);
     expect(updated).toBeDefined();
 
-    setExaminationPreferencesMemory({ gradingSystem: "gpa" } as any);
+    setExaminationPreferencesMemory({ gradingSystem: "gpa" } as unknown as never);
     const fallback = getExaminationSettingsMemoryFallback();
     expect(fallback).toBeDefined();
   });

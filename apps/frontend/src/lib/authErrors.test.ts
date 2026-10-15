@@ -74,7 +74,9 @@ describe("authErrors", () => {
         type: "invalid_credentials",
         message: "Invalid email or password",
       });
-      expect(getAuthErrorMessage(err, mockT as any)).toBe("[translated:auth.invalidCredentials]");
+      expect(getAuthErrorMessage(err, mockT as unknown as never)).toBe(
+        "[translated:auth.invalidCredentials]",
+      );
     });
 
     it("translates email_not_verified", () => {
@@ -82,7 +84,9 @@ describe("authErrors", () => {
         type: "email_not_verified",
         message: "Verify your email before signing in",
       });
-      expect(getAuthErrorMessage(err, mockT as any)).toBe("[translated:auth.emailNotVerified]");
+      expect(getAuthErrorMessage(err, mockT as unknown as never)).toBe(
+        "[translated:auth.emailNotVerified]",
+      );
     });
 
     it("translates connection_error", () => {
@@ -90,7 +94,9 @@ describe("authErrors", () => {
         type: "connection_error",
         message: "Failed to fetch",
       });
-      expect(getAuthErrorMessage(err, mockT as any)).toBe("[translated:errors.state.network]");
+      expect(getAuthErrorMessage(err, mockT as unknown as never)).toBe(
+        "[translated:errors.state.network]",
+      );
     });
 
     it("translates rate limiting and includes the retry delay", () => {
@@ -99,7 +105,7 @@ describe("authErrors", () => {
         message: "Too many requests",
         retryAfterSeconds: 12,
       });
-      expect(getAuthErrorMessage(err, mockT as any)).toBe(
+      expect(getAuthErrorMessage(err, mockT as unknown as never)).toBe(
         "[translated:errors.rate_limit_exceeded] [translated:errors.retryAfterSeconds]",
       );
     });
@@ -109,12 +115,14 @@ describe("authErrors", () => {
         type: "workspace_disabled",
         message: "Madrasa closed for maintenance",
       });
-      expect(getAuthErrorMessage(err, mockT as any)).toBe("Madrasa closed for maintenance");
+      expect(getAuthErrorMessage(err, mockT as unknown as never)).toBe(
+        "Madrasa closed for maintenance",
+      );
     });
 
     it("handles generic Error instances", () => {
       const err = new Error("Network timeout");
-      expect(getAuthErrorMessage(err, mockT as any)).toBe("Network timeout");
+      expect(getAuthErrorMessage(err, mockT as unknown as never)).toBe("Network timeout");
     });
   });
 });

@@ -112,9 +112,13 @@ vi.mock("./components/EnrollmentsPageHeaderActions", () => ({
   EnrollmentsPageHeaderActions: () => <div data-testid="header-actions">Header Actions</div>,
 }));
 
-let capturedWorkTierProps: any = null;
+let capturedWorkTierProps: {
+  columnProps?: { columnCustomizer?: { onResetLayout?: unknown } };
+} | null = null;
 vi.mock("./components/EnrollmentsWorkTier", () => ({
-  EnrollmentsWorkTier: (props: any) => {
+  EnrollmentsWorkTier: (props: {
+    columnProps?: { columnCustomizer?: { onResetLayout?: unknown } };
+  }) => {
     capturedWorkTierProps = props;
     return <div data-testid="work-tier">Work Tier</div>;
   },

@@ -108,23 +108,24 @@ describe("enrollmentData dynamic calculations", () => {
         gender: "Male",
       } as unknown as Student;
 
-      const genderCheck = runFullEligibility(student, session, targetClass as any, []).find(
-        (check) => check.id === "gender",
-      );
+      const genderCheck = runFullEligibility(
+        student,
+        session,
+        targetClass as unknown as never,
+        [],
+      ).find((check) => check.id === "gender");
 
       expect(genderCheck?.status).toBe("pass");
     });
   });
 
   describe("calcFee", () => {
-    const sessionDiscounts: any[] = [
+    const sessionDiscounts: Parameters<typeof calcFee>[3] = [
       {
         id: "early_bird",
         name: "Early Bird",
         type: "percentage",
         value: 15,
-        conditions: "",
-        active: true,
       },
     ];
 

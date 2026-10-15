@@ -5,10 +5,12 @@ import { Check } from "lucide-react";
 import { FORM_CHECKBOX } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 
-const Checkbox = React.forwardRef<
-  React.ComponentRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
->(({ className, id, ...props }, ref) => {
+function Checkbox({
+  className,
+  id,
+  ref,
+  ...props
+}: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
   const fallbackId = React.useId();
   const resolvedId = id || fallbackId;
   return (
@@ -23,7 +25,6 @@ const Checkbox = React.forwardRef<
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );
-});
-Checkbox.displayName = CheckboxPrimitive.Root.displayName;
+}
 
 export { Checkbox };

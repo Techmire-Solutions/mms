@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { useExaminationsPageController } from "./useExaminationsPageController";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -93,7 +93,7 @@ describe("useExaminationsPageController Hook", () => {
   });
 
   it("orchestrates page controller state and modal handlers", async () => {
-    let hookResult: any;
+    let hookResult!: ReturnType<typeof useExaminationsPageController>;
 
     function TestComponent() {
       hookResult = useExaminationsPageController();

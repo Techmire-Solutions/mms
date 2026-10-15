@@ -4,7 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { useAttendancePageController } from "./useAttendancePageController";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -87,7 +87,7 @@ describe("useAttendancePageController Hook", () => {
   });
 
   it("coordinates tabs, filters, shortcuts, and actions", async () => {
-    let hookResult: any = null;
+    let hookResult!: ReturnType<typeof useAttendancePageController>;
 
     function TestComponent() {
       hookResult = useAttendancePageController();

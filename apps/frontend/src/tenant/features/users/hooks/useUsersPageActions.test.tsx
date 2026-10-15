@@ -5,7 +5,7 @@ import { useUsersPageActions } from "./useUsersPageActions";
 import { normalizeWorkspaceUser } from "@mms/shared";
 import { notify } from "@/lib/notify";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockDeleteUser = { mutateAsync: vi.fn() };
 const mockRestoreUser = { mutateAsync: vi.fn() };
@@ -64,7 +64,7 @@ describe("useUsersPageActions", () => {
   });
 
   const t = ((key: string, params?: Record<string, string | number>) =>
-    params ? `${key}:${JSON.stringify(params)}` : key) as any;
+    params ? `${key}:${JSON.stringify(params)}` : key) as unknown as never;
 
   const sampleUser = normalizeWorkspaceUser({
     id: "u1",
