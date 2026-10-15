@@ -104,6 +104,7 @@ export function WizardStepIndicator({
                 </button>
               ) : (
                 <div
+                  role="img"
                   className={cn(
                     "flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full border-2 transition-all",
                     isDone

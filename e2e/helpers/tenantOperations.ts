@@ -461,6 +461,117 @@ export function seedContacts(subdomain: string): void {
 }
 
 /**
+ * Seeds 20 deterministic students (each linked 1:1 to a seeded contact) into a tenant via the
+ * backend script, so the a11y gate can audit a *populated* students Work table. Run
+ * `seedContacts` first (the students reference `c-seed-dummy-*`). Idempotent (fixed ids).
+ */
+export function seedStudents(subdomain: string): void {
+  if (process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production") {
+    console.warn("[E2E SAFEGUARD] Skipping students seed on production environment.");
+    return;
+  }
+  try {
+    const output = execSync(`pnpm exec tsx src/scripts/seed-20-students.ts ${subdomain}`, {
+      cwd: backendDir,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || "test",
+        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+      },
+    });
+    console.log(output);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[E2E] Failed to seed students for ${subdomain}:`, message);
+    throw err;
+  }
+}
+
+/**
+ * Seeds 20 deterministic academic sessions into a tenant via the backend script, so the a11y gate
+ * can audit a *populated* sessions Work table. Self-contained (no contact/faculty dependency).
+ * Idempotent (fixed ids `sess-seed-*`).
+ */
+export function seedSessions(subdomain: string): void {
+  if (process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production") {
+    console.warn("[E2E SAFEGUARD] Skipping sessions seed on production environment.");
+    return;
+  }
+  try {
+    const output = execSync(`pnpm exec tsx src/scripts/seed-20-sessions.ts ${subdomain}`, {
+      cwd: backendDir,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || "test",
+        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+      },
+    });
+    console.log(output);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[E2E] Failed to seed sessions for ${subdomain}:`, message);
+    throw err;
+  }
+}
+
+/**
+ * Seeds 20 deterministic faculty members into a tenant via the backend script, so the a11y gate can
+ * audit a *populated* faculty Work table. Run `seedContacts` + `seedFacultySetup` first (the members
+ * reference `c-seed-dummy-*` and the `dept-default` / `desig-default` catalog). Idempotent.
+ */
+export function seedFaculty(subdomain: string): void {
+  if (process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production") {
+    console.warn("[E2E SAFEGUARD] Skipping faculty seed on production environment.");
+    return;
+  }
+  try {
+    const output = execSync(`pnpm exec tsx src/scripts/seed-20-faculty.ts ${subdomain}`, {
+      cwd: backendDir,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || "test",
+        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+      },
+    });
+    console.log(output);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[E2E] Failed to seed faculty for ${subdomain}:`, message);
+    throw err;
+  }
+}
+
+/**
+ * Seeds 20 deterministic invoices into a tenant via the backend script, so the a11y gate can audit a
+ * *populated* finance Work table. Self-contained (no contact/student dependency). Idempotent.
+ */
+export function seedInvoices(subdomain: string): void {
+  if (process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production") {
+    console.warn("[E2E SAFEGUARD] Skipping invoices seed on production environment.");
+    return;
+  }
+  try {
+    const output = execSync(`pnpm exec tsx src/scripts/seed-20-invoices.ts ${subdomain}`, {
+      cwd: backendDir,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        NODE_ENV: process.env.NODE_ENV || "test",
+        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
+      },
+    });
+    console.log(output);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[E2E] Failed to seed invoices for ${subdomain}:`, message);
+    throw err;
+  }
+}
+
+/**
  * Creates Faculty record for existing John Doe contact
  */
 export async function createFacultyFromContact(page: Page): Promise<void> {

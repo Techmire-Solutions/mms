@@ -8,6 +8,7 @@ import {
   saveFacultyDepartment,
   softDeleteFacultyDepartment,
 } from "../../../faculty/use-cases/facultyCatalogUseCases.js";
+import { broadcastCollection } from "../../../lib/livePush.js";
 import {
   authorizeCatalogRoute,
   canArchiveFacultySetup,
@@ -60,6 +61,7 @@ export async function handleRestoreDepartment({
         body: { type: "not_found", message: "Department not found in trash" },
       };
     }
+    await broadcastCollection("faculty");
     return { status: 200 as const, body: { department } };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not restore department";
@@ -86,6 +88,7 @@ export async function handleSaveDepartment({
       status: body.status,
       updatedBy: auth.user.id,
     });
+    await broadcastCollection("faculty");
     return { status: 200 as const, body: { department } };
   } catch (error) {
     if (isCatalogConflict(error))
@@ -109,6 +112,7 @@ export async function handleDeleteDepartment({
       return { status: 404 as const, body: { type: "not_found", message: "Department not found" } };
     }
     await softDeleteFacultyDepartment(auth.tenantId, id, auth.user.id, "User deleted");
+    await broadcastCollection("faculty");
     return { status: 200 as const, body: { success: true as const } };
   } catch (error) {
     if (isCatalogConflict(error)) {
