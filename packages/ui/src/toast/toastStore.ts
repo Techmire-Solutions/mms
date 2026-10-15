@@ -100,7 +100,8 @@ export function toast(props: Omit<ToastItem, "id" | "open">): {
 } {
   const id = genId();
 
-  const update = (props: Partial<ToastItem>) => dispatch({ type: "UPDATE_TOAST", toast: { ...props, id } });
+  const update = (props: Partial<ToastItem>) =>
+    dispatch({ type: "UPDATE_TOAST", toast: { ...props, id } });
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
 
   dispatch({

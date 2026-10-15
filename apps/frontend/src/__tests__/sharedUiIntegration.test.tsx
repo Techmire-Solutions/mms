@@ -100,7 +100,12 @@ describe("@shared/ui Core UI Library Integration", () => {
     const handleClose = vi.fn();
     await act(async () => {
       root.render(
-        <Modal open={true} onClose={handleClose} title="Workspace Settings" subtitle="Configure tenant">
+        <Modal
+          open={true}
+          onClose={handleClose}
+          title="Workspace Settings"
+          subtitle="Configure tenant"
+        >
           <div>Modal Content Body</div>
         </Modal>,
       );
@@ -132,7 +137,11 @@ describe("@shared/ui Core UI Library Integration", () => {
             totalPages: 2,
             onPageChange: handlePageChange,
           }}
-          renderRowActions={(row) => <button type="button" className="action-btn">Edit {row.name}</button>}
+          renderRowActions={(row) => (
+            <button type="button" className="action-btn">
+              Edit {row.name}
+            </button>
+          )}
         />,
       );
     });
@@ -141,9 +150,14 @@ describe("@shared/ui Core UI Library Integration", () => {
     expect(container.textContent).toContain("Zaid Ali");
     expect(container.textContent).toContain("Edit Fatima Zahra");
 
-    const searchInput = container.querySelector("input[placeholder='Search...']") as HTMLInputElement;
+    const searchInput = container.querySelector(
+      "input[placeholder='Search...']",
+    ) as HTMLInputElement;
     expect(searchInput).toBeTruthy();
-    const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+    const valueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      "value",
+    )?.set;
     valueSetter?.call(searchInput, "Fatima");
     searchInput.dispatchEvent(new Event("input", { bubbles: true }));
     expect(handleSearch).toHaveBeenCalledWith("Fatima");

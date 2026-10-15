@@ -20,7 +20,11 @@ describe("Button component", () => {
   });
 
   it("disables button and shows spinner when isLoading is true", () => {
-    render(<Button isLoading loadingText="Processing...">Submit</Button>);
+    render(
+      <Button isLoading loadingText="Processing...">
+        Submit
+      </Button>,
+    );
     const button = screen.getByRole("button");
     expect(button.getAttribute("disabled")).not.toBeNull();
     expect(button.getAttribute("aria-busy")).toBe("true");

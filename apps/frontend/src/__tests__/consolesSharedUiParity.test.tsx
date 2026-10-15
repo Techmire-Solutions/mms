@@ -1,13 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  Button,
-  DataTable,
-  ThemeScope,
-  UiConfigProvider,
-  type DataTableColumn,
-} from "@shared/ui";
+import { Button, DataTable, ThemeScope, UiConfigProvider, type DataTableColumn } from "@shared/ui";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
