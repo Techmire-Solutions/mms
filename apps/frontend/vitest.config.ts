@@ -6,6 +6,36 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
+      "@shared/ui": path.resolve(import.meta.dirname, "../../packages/ui/src"),
+      react: path.resolve(import.meta.dirname, "./node_modules/react"),
+      "react-dom": path.resolve(import.meta.dirname, "./node_modules/react-dom"),
+      clsx: path.resolve(import.meta.dirname, "./node_modules/clsx"),
+      "tailwind-merge": path.resolve(import.meta.dirname, "./node_modules/tailwind-merge"),
+      "class-variance-authority": path.resolve(
+        import.meta.dirname,
+        "./node_modules/class-variance-authority",
+      ),
+      "lucide-react": path.resolve(import.meta.dirname, "./node_modules/lucide-react"),
+      "@radix-ui/react-slot": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-slot",
+      ),
+      "@radix-ui/react-alert-dialog": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-alert-dialog",
+      ),
+      "@radix-ui/react-checkbox": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-checkbox",
+      ),
+      "@radix-ui/react-select": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-select",
+      ),
+      "@radix-ui/react-switch": path.resolve(
+        import.meta.dirname,
+        "./node_modules/@radix-ui/react-switch",
+      ),
     },
   },
   test: {

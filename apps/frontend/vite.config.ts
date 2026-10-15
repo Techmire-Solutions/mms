@@ -31,6 +31,21 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(rootDir, "./src"),
+      "@shared/ui": path.resolve(rootDir, "../../packages/ui/src"),
+      react: path.resolve(rootDir, "./node_modules/react"),
+      "react-dom": path.resolve(rootDir, "./node_modules/react-dom"),
+      clsx: path.resolve(rootDir, "./node_modules/clsx"),
+      "tailwind-merge": path.resolve(rootDir, "./node_modules/tailwind-merge"),
+      "class-variance-authority": path.resolve(rootDir, "./node_modules/class-variance-authority"),
+      "lucide-react": path.resolve(rootDir, "./node_modules/lucide-react"),
+      "@radix-ui/react-slot": path.resolve(rootDir, "./node_modules/@radix-ui/react-slot"),
+      "@radix-ui/react-alert-dialog": path.resolve(
+        rootDir,
+        "./node_modules/@radix-ui/react-alert-dialog",
+      ),
+      "@radix-ui/react-checkbox": path.resolve(rootDir, "./node_modules/@radix-ui/react-checkbox"),
+      "@radix-ui/react-select": path.resolve(rootDir, "./node_modules/@radix-ui/react-select"),
+      "@radix-ui/react-switch": path.resolve(rootDir, "./node_modules/@radix-ui/react-switch"),
     },
   },
   server: {
