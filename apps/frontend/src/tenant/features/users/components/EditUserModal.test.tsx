@@ -4,10 +4,15 @@ import { createRoot } from "react-dom/client";
 import { EditUserModal } from "./EditUserModal";
 import { normalizeWorkspaceUser } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let mockActorRole = "super_admin";
-let mockContact: any = {
+let mockContact: {
+  id: string;
+  name: string;
+  emails: { address: string; isPrimary: boolean }[];
+  phones: { number: string; isPrimary: boolean }[];
+} = {
   id: "c1",
   name: "Updated Contact Name",
   emails: [{ address: "contact@example.com", isPrimary: true }],
@@ -43,7 +48,19 @@ vi.mock("@/tenant/hooks/collections/contacts", () => ({
 }));
 
 vi.mock("@/components/app/FormModal", () => ({
-  FormModal: ({ title, subtitle, children, onSave, saveDisabled }: any) => (
+  FormModal: ({
+    title,
+    subtitle,
+    children,
+    onSave,
+    saveDisabled,
+  }: {
+    title?: React.ReactNode;
+    subtitle?: React.ReactNode;
+    children?: React.ReactNode;
+    onSave?: () => void;
+    saveDisabled?: boolean;
+  }) => (
     <div data-testid="form-modal">
       <h2>{title}</h2>
       <h3>{subtitle}</h3>
@@ -56,7 +73,7 @@ vi.mock("@/components/app/FormModal", () => ({
 }));
 
 vi.mock("@/components/contactLink/ContactPicker", () => ({
-  default: ({ value, onChange }: any) => (
+  default: ({ value, onChange }: { value?: string; onChange: (value: string) => void }) => (
     <div data-testid="contact-picker">
       <span data-testid="contact-val">{value}</span>
       <button data-testid="change-contact-btn" onClick={() => onChange("c1")}>

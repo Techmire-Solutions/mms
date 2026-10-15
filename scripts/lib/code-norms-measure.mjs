@@ -52,17 +52,19 @@ export function isScannedCss(rel) {
   );
 }
 
-/** Violations in one .ts/.tsx file; test files only count toward nothing. */
+/** Violations in one .ts/.tsx file; `any` is enforced in frontend tests, while backend/shared tests stay exempt. */
 export function measureSource(rel, content) {
   const lines = content.split("\n");
   const result = { anySites: [], arbitrarySites: [], hasHex: false, lineCount: lines.length };
-  if (TEST_FILE.test(rel)) return result;
+  const isTestFile = TEST_FILE.test(rel);
+  const isExemptTestFile = isTestFile && !rel.startsWith("apps/frontend/");
   lines.forEach((line, index) => {
     if (isComment(line)) return;
-    if (ANY_ANNOTATION.test(line)) result.anySites.push(`${rel}:${index + 1}`);
-    if (ARBITRARY_COLOUR.test(line)) result.arbitrarySites.push(`${rel}:${index + 1}`);
+    if (!isExemptTestFile && ANY_ANNOTATION.test(line)) result.anySites.push(`${rel}:${index + 1}`);
+    if (!isTestFile && ARBITRARY_COLOUR.test(line))
+      result.arbitrarySites.push(`${rel}:${index + 1}`);
   });
-  result.hasHex = HEX_COLOUR.test(content);
+  if (!isTestFile) result.hasHex = HEX_COLOUR.test(content);
   return result;
 }
 

@@ -5,7 +5,7 @@ import { UserDetail } from "./UserDetail";
 import { normalizeWorkspaceUser } from "@mms/shared";
 import { notify } from "@/lib/notify";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockMutateAsync = vi.fn();
 
@@ -43,7 +43,17 @@ vi.mock("@/tenant/hooks/collections/users", () => ({
 }));
 
 vi.mock("@/components/app/Drawer", () => ({
-  Drawer: ({ title, subtitle, headerActions, children }: any) => (
+  Drawer: ({
+    title,
+    subtitle,
+    headerActions,
+    children,
+  }: {
+    title?: React.ReactNode;
+    subtitle?: React.ReactNode;
+    headerActions?: React.ReactNode;
+    children?: React.ReactNode;
+  }) => (
     <div data-testid="detail-drawer">
       <h2>{title}</h2>
       <h3>{subtitle}</h3>
@@ -54,10 +64,18 @@ vi.mock("@/components/app/Drawer", () => ({
 }));
 
 vi.mock("@/components/app/DetailDrawerArchiveChrome", () => ({
-  DetailDrawerArchivedBanner: ({ deletedAt }: any) => (
+  DetailDrawerArchivedBanner: ({ deletedAt }: { deletedAt?: React.ReactNode }) => (
     <div data-testid="archived-banner">Archived at: {deletedAt}</div>
   ),
-  DetailDrawerRestoreOrEditAction: ({ isArchived, onRestore, onEdit }: any) => (
+  DetailDrawerRestoreOrEditAction: ({
+    isArchived,
+    onRestore,
+    onEdit,
+  }: {
+    isArchived?: boolean;
+    onRestore?: () => void;
+    onEdit?: () => void;
+  }) => (
     <div data-testid="restore-edit-actions">
       {isArchived && onRestore && (
         <button data-testid="restore-btn" onClick={onRestore}>
@@ -74,12 +92,16 @@ vi.mock("@/components/app/DetailDrawerArchiveChrome", () => ({
 }));
 
 vi.mock("@/tenant/features/users/components/UserBadges", () => ({
-  UserRoleBadge: ({ roleId }: any) => <span data-testid="role-badge">{roleId}</span>,
-  UserStatusBadge: ({ status }: any) => <span data-testid="status-badge">{status}</span>,
+  UserRoleBadge: ({ roleId }: { roleId?: React.ReactNode }) => (
+    <span data-testid="role-badge">{roleId}</span>
+  ),
+  UserStatusBadge: ({ status }: { status?: React.ReactNode }) => (
+    <span data-testid="status-badge">{status}</span>
+  ),
 }));
 
 vi.mock("@/tenant/features/users/components/UserDetailSections", () => ({
-  UserDetailSections: ({ onVerifyEmail }: any) => (
+  UserDetailSections: ({ onVerifyEmail }: { onVerifyEmail?: () => void }) => (
     <div data-testid="user-detail-sections">
       <button data-testid="verify-email-btn" onClick={onVerifyEmail}>
         Verify Email

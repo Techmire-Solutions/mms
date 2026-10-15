@@ -48,7 +48,7 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
 }));
 
 vi.mock("@/components/app/UserAvatar", () => ({
-  UserAvatar: ({ name }: any) => <div data-testid="avatar">{name}</div>,
+  UserAvatar: ({ name }: { name?: React.ReactNode }) => <div data-testid="avatar">{name}</div>,
 }));
 
 const mockExam: Exam = {

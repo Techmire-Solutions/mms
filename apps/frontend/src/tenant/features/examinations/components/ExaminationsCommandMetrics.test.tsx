@@ -24,9 +24,13 @@ vi.mock("@/tenant/features/examinations/hooks/useExaminationsApi", () => ({
 }));
 
 vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
-  ModuleCommandMetricsGrid: ({ items }: any) => (
+  ModuleCommandMetricsGrid: ({
+    items,
+  }: {
+    items: Array<{ label: string; value: React.ReactNode }>;
+  }) => (
     <div data-testid="metrics-grid">
-      {items.map((item: any) => (
+      {items.map((item: { label: string; value: React.ReactNode }) => (
         <span key={item.label}>
           {item.label}:{item.value}
         </span>

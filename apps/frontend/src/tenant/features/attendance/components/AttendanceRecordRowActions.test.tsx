@@ -63,7 +63,7 @@ describe("AttendanceRecordRowActions Component", () => {
         setEditingRecord={vi.fn()}
         setPendingDeleteId={vi.fn()}
         saveEditingRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -85,7 +85,7 @@ describe("AttendanceRecordRowActions Component", () => {
         setEditingRecord={vi.fn()}
         setPendingDeleteId={vi.fn()}
         saveEditingRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

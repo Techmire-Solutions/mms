@@ -64,7 +64,7 @@ describe("EnrollmentsListContent Component", () => {
     const html = renderToStaticMarkup(
       <EnrollmentsListContent
         viewMode="table"
-        enrollments={[{ id: "enr-1" } as any]}
+        enrollments={[{ id: "enr-1" } as unknown as never]}
         filteredCount={1}
         page={1}
         pageSize={25}
@@ -97,7 +97,7 @@ describe("EnrollmentsListContent Component", () => {
     const html = renderToStaticMarkup(
       <EnrollmentsListContent
         viewMode="cards"
-        enrollments={[{ id: "enr-1" } as any]}
+        enrollments={[{ id: "enr-1" } as unknown as never]}
         filteredCount={1}
         page={1}
         pageSize={25}

@@ -17,12 +17,12 @@ const mockStudent = {
   name: "Bilal Ahmad",
   dob: "2015-01-01",
   gender: "male",
-} as any;
+} as unknown as never;
 
 const mockSession = {
   id: "ses-1",
   name: "Spring 2025",
-} as any;
+} as unknown as never;
 
 describe("Step3Eligibility Component", () => {
   it("renders eligibility evaluation and passed badge", () => {

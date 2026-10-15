@@ -54,7 +54,7 @@ describe("ResultsViewRankingsList Component", () => {
         isColumnVisible={() => true}
         onSelectResult={vi.fn()}
         onCertificate={vi.fn()}
-        t={((key: string) => key) as any}
+        t={((key: string) => key) as unknown as never}
       />,
     );
 

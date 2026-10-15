@@ -304,7 +304,9 @@ describe("SSOT Entity UI Registry Architecture", () => {
       };
 
       const markup = renderToStaticMarkup(
-        <div>{contactsEntityDescriptor.renderFieldValue("gender", contact as any)}</div>,
+        <div>
+          {contactsEntityDescriptor.renderFieldValue("gender", contact as unknown as never)}
+        </div>,
       );
       expect(markup).toContain("Male");
       expect(markup).toContain(SEMANTIC_BADGE.info);
@@ -320,7 +322,9 @@ describe("SSOT Entity UI Registry Architecture", () => {
         gender: "male",
       };
 
-      expect(studentsEntityDescriptor.formatFieldValue("grNumber", student as any)).toBe("GR-102");
+      expect(
+        studentsEntityDescriptor.formatFieldValue("grNumber", student as unknown as never),
+      ).toBe("GR-102");
     });
 
     it("facultyEntityDescriptor maps employee info", () => {
@@ -333,9 +337,9 @@ describe("SSOT Entity UI Registry Architecture", () => {
         status: "active",
       };
 
-      expect(facultyEntityDescriptor.formatFieldValue("employeeId", faculty as any)).toBe(
-        "EMP-042",
-      );
+      expect(
+        facultyEntityDescriptor.formatFieldValue("employeeId", faculty as unknown as never),
+      ).toBe("EMP-042");
     });
 
     it("sessionsEntityDescriptor handles academic sessions and dates", () => {
@@ -348,7 +352,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
         isCurrent: true,
       };
 
-      expect(sessionsEntityDescriptor.formatFieldValue("name", session as any)).toBe(
+      expect(sessionsEntityDescriptor.formatFieldValue("name", session as unknown as never)).toBe(
         "Academic Year 2026-2027",
       );
     });
@@ -365,7 +369,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
 
       const formattedAmount = financeEntityDescriptor.formatFieldValue(
         "totalAmount",
-        invoice as any,
+        invoice as unknown as never,
       );
       expect(formattedAmount).toContain("250");
     });
@@ -412,10 +416,12 @@ describe("SSOT Entity UI Registry Architecture", () => {
         date: "2026-09-20",
         status: "present" as const,
       };
-      expect(attendanceEntityDescriptor.formatFieldValue("studentName", record as any)).toBe(
-        "Ali Hassan",
-      );
-      expect(attendanceEntityDescriptor.formatFieldValue("status", record as any)).toBe("Present");
+      expect(
+        attendanceEntityDescriptor.formatFieldValue("studentName", record as unknown as never),
+      ).toBe("Ali Hassan");
+      expect(
+        attendanceEntityDescriptor.formatFieldValue("status", record as unknown as never),
+      ).toBe("Present");
 
       expect(enrollmentsEntityDescriptor.entityType).toBe("enrollments");
       const enrollment = {
@@ -430,12 +436,12 @@ describe("SSOT Entity UI Registry Architecture", () => {
         status: "enrolled" as const,
         paymentStatus: "paid" as const,
       };
-      expect(enrollmentsEntityDescriptor.formatFieldValue("className", enrollment as any)).toBe(
-        "Grade 4",
-      );
-      expect(enrollmentsEntityDescriptor.formatFieldValue("status", enrollment as any)).toBe(
-        "Enrolled",
-      );
+      expect(
+        enrollmentsEntityDescriptor.formatFieldValue("className", enrollment as unknown as never),
+      ).toBe("Grade 4");
+      expect(
+        enrollmentsEntityDescriptor.formatFieldValue("status", enrollment as unknown as never),
+      ).toBe("Enrolled");
     });
 
     it("handles hasanat and obligations domain descriptors", () => {
@@ -451,9 +457,9 @@ describe("SSOT Entity UI Registry Architecture", () => {
         issuedDate: "2026-09-15",
         status: "active" as const,
       };
-      expect(hasanatEntityDescriptor.formatFieldValue("denominationName", dist as any)).toBe(
-        "100 Points",
-      );
+      expect(
+        hasanatEntityDescriptor.formatFieldValue("denominationName", dist as unknown as never),
+      ).toBe("100 Points");
 
       expect(obligationsEntityDescriptor.entityType).toBe("obligations");
       const obl = {
@@ -524,7 +530,10 @@ describe("SSOT Entity UI Registry Architecture", () => {
       };
 
       const markup = renderToStaticMarkup(
-        <EntityCardMetadata descriptor={studentsEntityDescriptor} entity={student as any} />,
+        <EntityCardMetadata
+          descriptor={studentsEntityDescriptor}
+          entity={student as unknown as never}
+        />,
       );
 
       expect(markup).toContain("Student Name");
@@ -545,7 +554,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
       const markup = renderToStaticMarkup(
         <EntityCardMetadata
           descriptor={studentsEntityDescriptor}
-          entity={student as any}
+          entity={student as unknown as never}
           visibleColumnIds={["grNumber"]}
         />,
       );
@@ -564,7 +573,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
       };
 
       const markup = renderToStaticMarkup(
-        <EntityCardMetadata entityType="contacts" entity={contact as any} />,
+        <EntityCardMetadata entityType="contacts" entity={contact as unknown as never} />,
       );
 
       expect(markup).toContain("Full Name");
@@ -593,7 +602,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
           <Drawer open={true} onClose={() => {}} title="Contact Details">
             <EntityDescriptorSections
               descriptor={contactsEntityDescriptor}
-              entity={contact as any}
+              entity={contact as unknown as never}
             />
           </Drawer>,
         );

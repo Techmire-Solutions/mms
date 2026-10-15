@@ -5,7 +5,7 @@ import { OutstandingFeesTableDesktopBody } from "./OutstandingFeesTableDesktopBo
 import type { OutstandingFeeRow } from "./OutstandingFeesTableParts";
 
 describe("OutstandingFeesTableDesktopBody", () => {
-  const mockTranslate = ((key: string) => key) as any;
+  const mockTranslate = ((key: string) => key) as unknown as never;
   const mockFormatCurrency = (amount: number) => `$${amount}`;
   const mockOpenComposer = vi.fn();
 

@@ -93,7 +93,7 @@ describe("useJournalEntriesController", () => {
   const defaultProps = {
     entries: mockEntries,
     accounts: [],
-    settings: {} as any,
+    settings: {} as unknown as never,
     fiscalYears: [],
     onChange: vi.fn(),
     onFilteredCountChange: vi.fn(),

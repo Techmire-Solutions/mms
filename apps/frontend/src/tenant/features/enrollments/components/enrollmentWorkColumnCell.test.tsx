@@ -32,11 +32,11 @@ const mockStudents: Student[] = [
     type: "student",
     createdAt: "2025-01-01T00:00:00Z",
     updatedAt: "2025-01-01T00:00:00Z",
-  } as any,
+  } as unknown as never,
 ];
 
 const mockOptions = {
-  t: ((k: string) => k) as any,
+  t: ((k: string) => k) as unknown as never,
   students: mockStudents,
   statusConfig: { confirmed: { label: "Confirmed", cls: "bg-success" } },
   paymentConfig: { paid: { label: "Paid", cls: "bg-success" } },

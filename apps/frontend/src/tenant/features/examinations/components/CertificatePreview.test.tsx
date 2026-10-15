@@ -22,7 +22,15 @@ vi.mock("@/lib/contexts/BrandingPaletteContext", () => ({
 }));
 
 vi.mock("@/components/app/Modal", () => ({
-  Modal: ({ children, title, headerActions }: any) => (
+  Modal: ({
+    children,
+    title,
+    headerActions,
+  }: {
+    children?: React.ReactNode;
+    title?: React.ReactNode;
+    headerActions?: React.ReactNode;
+  }) => (
     <div data-testid="modal">
       <h2>{title}</h2>
       {headerActions}

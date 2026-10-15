@@ -12,7 +12,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("./MarkAttendanceFieldControl", () => ({
-  MarkAttendanceFieldControl: ({ row, field }: { row: AttendanceRow; field: any }) => (
+  MarkAttendanceFieldControl: ({ row, field }: { row: AttendanceRow; field: { id: string } }) => (
     <div data-testid={`control-${field.id}`}>{row.name}</div>
   ),
 }));
@@ -45,7 +45,7 @@ describe("MarkAttendanceGrid Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceGrid
         rows={[mockRow]}
-        orderedFields={[{ id: "status", label: "Status", type: "select" } as any]}
+        orderedFields={[{ id: "status", label: "Status", type: "select" } as unknown as never]}
         statuses={mockStatuses}
         isFieldEnabled={() => true}
         onFieldChange={vi.fn()}
@@ -62,7 +62,7 @@ describe("MarkAttendanceGrid Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceGrid
         rows={[]}
-        orderedFields={[{ id: "status", label: "Status", type: "select" } as any]}
+        orderedFields={[{ id: "status", label: "Status", type: "select" } as unknown as never]}
         statuses={mockStatuses}
         isFieldEnabled={() => true}
         onFieldChange={vi.fn()}
@@ -76,7 +76,7 @@ describe("MarkAttendanceGrid Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceGrid
         rows={[mockRow]}
-        orderedFields={[{ id: "status", label: "Status", type: "select" } as any]}
+        orderedFields={[{ id: "status", label: "Status", type: "select" } as unknown as never]}
         statuses={mockStatuses}
         isFieldEnabled={() => true}
         onFieldChange={vi.fn()}
@@ -92,7 +92,7 @@ describe("MarkAttendanceGrid Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceGrid
         rows={[mockRow]}
-        orderedFields={[{ id: "status", label: "Status", type: "select" } as any]}
+        orderedFields={[{ id: "status", label: "Status", type: "select" } as unknown as never]}
         statuses={mockStatuses}
         isFieldEnabled={() => true}
         onFieldChange={vi.fn()}

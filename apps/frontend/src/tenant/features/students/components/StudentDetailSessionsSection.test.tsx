@@ -37,7 +37,7 @@ const mockSession: Session = {
       gender: "mixed",
       maxStudents: 20,
       enrolled: 15,
-    } as any,
+    } as unknown as never,
   ],
   createdAt: "2024-01-01T00:00:00Z",
 

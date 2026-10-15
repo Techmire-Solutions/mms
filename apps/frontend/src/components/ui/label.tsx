@@ -7,12 +7,8 @@ import { FORM_LABEL } from "@/components/ui/formStyles";
 
 const labelVariants = cva(FORM_LABEL);
 
-const Label = React.forwardRef<
-  React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props} />
-));
-Label.displayName = LabelPrimitive.Root.displayName;
+function Label({ className, ref, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
+  return <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props} />;
+}
 
 export { Label };

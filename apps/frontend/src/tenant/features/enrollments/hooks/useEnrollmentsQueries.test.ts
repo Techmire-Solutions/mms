@@ -50,9 +50,9 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-let listResult: any = null;
-let getResult: any = null;
-let createResult: any = null;
+let listResult!: ReturnType<typeof useEnrollmentsContractList>;
+let getResult!: ReturnType<typeof useEnrollmentsContractGet>;
+let createResult!: ReturnType<typeof useEnrollmentsContractCreate>;
 
 function TestComponent(): React.JSX.Element {
   listResult = useEnrollmentsContractList({ page: 1 });

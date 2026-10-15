@@ -6,12 +6,12 @@ vi.mock("react", async () => {
   const actual = await vi.importActual<typeof import("react")>("react");
   return {
     ...actual,
-    lazy: (importer: () => Promise<{ default: React.ComponentType<any> }>) => {
-      let Component: React.ComponentType<any> | null = null;
+    lazy: (importer: () => Promise<{ default: React.ComponentType<Record<string, unknown>> }>) => {
+      let Component: React.ComponentType<Record<string, unknown>> | null = null;
       importer().then((m) => {
         Component = m.default;
       });
-      return (props: any) => {
+      return (props: Record<string, unknown>) => {
         if (Component) {
           return React.createElement(Component, props);
         }
@@ -111,9 +111,9 @@ describe("ObligationsSetupTier Component", () => {
     ],
     activeTab: "wakala",
     canEditSetup: true,
-    obligationTypes: [{ id: "type-1", name: "Khums" } as any],
-    mujtahids: [{ id: "muj-1", name: "Sistani" } as any],
-    reps: [{ id: "rep-1", name: "Representative" } as any],
+    obligationTypes: [{ id: "type-1", name: "Khums" } as unknown as never],
+    mujtahids: [{ id: "muj-1", name: "Sistani" } as unknown as never],
+    reps: [{ id: "rep-1", name: "Representative" } as unknown as never],
     wakalaTypes: [],
     distributions: [],
     onTabChange: vi.fn(),

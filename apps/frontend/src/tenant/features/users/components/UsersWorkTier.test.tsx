@@ -4,10 +4,16 @@ import { createRoot } from "react-dom/client";
 import { UsersWorkTier, type UsersWorkTierProps } from "./UsersWorkTier";
 import { normalizeWorkspaceUser } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/tenant/features/users/components/UsersList", () => ({
-  UsersList: ({ users, onPageChange }: any) => (
+  UsersList: ({
+    users,
+    onPageChange,
+  }: {
+    users: unknown[];
+    onPageChange: (page: number) => void;
+  }) => (
     <div data-testid="users-list">
       <span>Users Count: {users.length}</span>
       <button onClick={() => onPageChange(2)}>Next Page</button>
@@ -16,7 +22,7 @@ vi.mock("@/tenant/features/users/components/UsersList", () => ({
 }));
 
 vi.mock("@/tenant/features/users/components/ActivityLogs", () => ({
-  ActivityLogs: ({ logs }: any) => (
+  ActivityLogs: ({ logs }: { logs: unknown[] }) => (
     <div data-testid="activity-logs">
       <span>Logs Count: {logs.length}</span>
     </div>
@@ -28,7 +34,7 @@ vi.mock("@/components/app/LoadingState", () => ({
 }));
 
 vi.mock("@/components/app/ErrorState", () => ({
-  ErrorState: ({ title, onRetry }: any) => (
+  ErrorState: ({ title, onRetry }: { title?: React.ReactNode; onRetry?: () => void }) => (
     <div data-testid="error-state">
       <span>{title}</span>
       <button onClick={onRetry}>Retry</button>
@@ -70,7 +76,7 @@ describe("UsersWorkTier", () => {
     isUserColumnVisible: vi.fn(() => true),
     userColumnRegistry: [],
     updateUserColumnLayout: vi.fn(),
-    userColumnCustomizerLabels: {} as any,
+    userColumnCustomizerLabels: {} as unknown as never,
     onSubTabChange: vi.fn(),
     onRetryUsers: vi.fn(),
     onRetryLogs: vi.fn(),
@@ -110,7 +116,7 @@ describe("UsersWorkTier", () => {
         <UsersWorkTier
           {...baseProps}
           activeSubTab="activity"
-          logs={[{ id: "log-1", action: "create", timestamp: "2026-09-01" } as any]}
+          logs={[{ id: "log-1", action: "create", timestamp: "2026-09-01" } as unknown as never]}
         />,
       );
     });

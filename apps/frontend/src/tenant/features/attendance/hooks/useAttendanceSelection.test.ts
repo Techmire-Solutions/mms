@@ -4,7 +4,7 @@ import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { useAttendanceSelection } from "./useAttendanceSelection";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockRecords: AttendanceRecord[] = [
   {
@@ -53,7 +53,7 @@ describe("useAttendanceSelection Hook", () => {
   });
 
   it("selects individual records and all records", async () => {
-    let hookResult: any = null;
+    let hookResult!: ReturnType<typeof useAttendanceSelection>;
 
     function TestComponent() {
       hookResult = useAttendanceSelection(mockRecords);

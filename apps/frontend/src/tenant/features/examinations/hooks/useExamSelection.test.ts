@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { useExamSelection } from "./useExamSelection";
 import type { Exam } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockExams: Exam[] = [
   {
@@ -52,7 +52,7 @@ describe("useExamSelection Hook", () => {
   });
 
   it("handles selection, select all, toggle, and clear", async () => {
-    let hookResult: any;
+    let hookResult!: ReturnType<typeof useExamSelection>;
 
     function TestComponent() {
       hookResult = useExamSelection(mockExams);

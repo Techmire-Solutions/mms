@@ -192,13 +192,10 @@ export default tseslint.config(
     },
   },
   {
-    // Tests may use `any` for mocks; the norm guards shipping source only
-    // (mirrors the test-file exemption in scripts/check-code-norms.mjs).
     files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
     rules: {
       // Tests are not run through the React Compiler transform.
       ...Object.fromEntries(Object.keys(reactCompilerRules).map((rule) => [rule, "off"])),
-      "@typescript-eslint/no-explicit-any": "off",
       // Fixtures legitimately use literal colours.
       "no-restricted-syntax": "off",
       // Test harnesses wrap components with inline provider values deliberately.

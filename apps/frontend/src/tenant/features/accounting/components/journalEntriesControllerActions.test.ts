@@ -102,7 +102,7 @@ describe("journalEntriesControllerActions", () => {
   describe("exportJournalEntriesCsv", () => {
     it("calls runGridCsvExportJob with formatted rows and columns", () => {
       const t = vi.fn((key: string) => key);
-      exportJournalEntriesCsv([mockEntry1], t as any);
+      exportJournalEntriesCsv([mockEntry1], t as unknown as never);
 
       expect(runGridCsvExportJob).toHaveBeenCalledWith(
         expect.objectContaining({

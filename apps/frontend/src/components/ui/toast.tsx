@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 /**
  * ToastProvider component provides the context/container for toasts.
  */
-const ToastProvider = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+function ToastProvider({ className, ref, ...props }: React.ComponentProps<"div">) {
+  return (
     <div
       ref={ref}
       className={cn(
@@ -16,15 +16,14 @@ const ToastProvider = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
       )}
       {...props}
     />
-  ),
-);
-ToastProvider.displayName = "ToastProvider";
+  );
+}
 
 /**
  * ToastViewport component defines the area where toasts are rendered.
  */
-const ToastViewport = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+function ToastViewport({ className, ref, ...props }: React.ComponentProps<"div">) {
+  return (
     <div
       ref={ref}
       className={cn(
@@ -33,9 +32,8 @@ const ToastViewport = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
       )}
       {...props}
     />
-  ),
-);
-ToastViewport.displayName = "ToastViewport";
+  );
+}
 
 const toastVariants = cva(
   "group pointer-events-auto relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-md border p-6 pe-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full rtl:data-[state=closed]:slide-out-to-left-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
@@ -57,23 +55,20 @@ const toastVariants = cva(
 );
 
 export interface ToastProps
-  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof toastVariants> {}
+  extends React.ComponentProps<"div">, VariantProps<typeof toastVariants> {}
 
 /**
  * Toast component representing an individual alert notification.
  */
-const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
-  ({ className, variant, ...props }, ref) => {
-    return <div ref={ref} className={cn(toastVariants({ variant }), className)} {...props} />;
-  },
-);
-Toast.displayName = "Toast";
+function Toast({ className, variant, ref, ...props }: ToastProps) {
+  return <div ref={ref} className={cn(toastVariants({ variant }), className)} {...props} />;
+}
 
 /**
  * ToastAction component for actions within a toast.
  */
-const ToastAction = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+function ToastAction({ className, ref, ...props }: React.ComponentProps<"div">) {
+  return (
     <div
       ref={ref}
       className={cn(
@@ -82,50 +77,41 @@ const ToastAction = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
       )}
       {...props}
     />
-  ),
-);
-ToastAction.displayName = "ToastAction";
+  );
+}
 
 /**
  * ToastClose component provides a close button for the toast.
  */
-const ToastClose = React.forwardRef<
-  HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, ...props }, ref) => (
-  <button
-    ref={ref}
-    className={cn(
-      "absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-current opacity-50 transition-opacity hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40",
-      className,
-    )}
-    toast-close=""
-    {...props}
-  >
-    <X className="h-4 w-4" />
-  </button>
-));
-ToastClose.displayName = "ToastClose";
+function ToastClose({ className, ref, ...props }: React.ComponentProps<"button">) {
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        "absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-current opacity-50 transition-opacity hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40",
+        className,
+      )}
+      toast-close=""
+      {...props}
+    >
+      <X className="h-4 w-4" />
+    </button>
+  );
+}
 
 /**
  * ToastTitle component displays the main header/title of a toast.
  */
-const ToastTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-sm font-semibold", className)} {...props} />
-  ),
-);
-ToastTitle.displayName = "ToastTitle";
+function ToastTitle({ className, ref, ...props }: React.ComponentProps<"div">) {
+  return <div ref={ref} className={cn("text-sm font-semibold", className)} {...props} />;
+}
 
 /**
  * ToastDescription component displays the detailed description text of a toast.
  */
-const ToastDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-sm opacity-90", className)} {...props} />
-  ),
-);
-ToastDescription.displayName = "ToastDescription";
+function ToastDescription({ className, ref, ...props }: React.ComponentProps<"div">) {
+  return <div ref={ref} className={cn("text-sm opacity-90", className)} {...props} />;
+}
 
 export {
   ToastProvider,

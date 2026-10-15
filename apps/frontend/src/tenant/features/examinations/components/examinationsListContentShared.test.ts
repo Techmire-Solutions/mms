@@ -30,19 +30,19 @@ const mockEnrollments: Enrollment[] = [
     studentId: "std-1",
     classId: "cls-1",
     status: "confirmed",
-  } as any,
+  } as unknown as never,
   {
     id: "enr-2",
     studentId: "std-2",
     classId: "cls-2",
     status: "confirmed",
-  } as any,
+  } as unknown as never,
   {
     id: "enr-3",
     studentId: "std-3",
     classId: "cls-1",
     status: "cancelled",
-  } as any,
+  } as unknown as never,
 ];
 
 describe("examinationsListContentShared Utilities", () => {

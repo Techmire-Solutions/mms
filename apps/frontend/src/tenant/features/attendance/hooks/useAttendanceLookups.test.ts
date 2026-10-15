@@ -37,8 +37,8 @@ describe("useAttendanceLookups Hook suite", () => {
     const lookups = await fetchAttendanceLookups();
     expect(lookups.statuses).toBeDefined();
 
-    const updated = await putAttendanceLookupKind("statuses" as any, [
-      { id: "present", label: "Present" } as any,
+    const updated = await putAttendanceLookupKind("statuses" as unknown as never, [
+      { id: "present", label: "Present" } as unknown as never,
     ]);
     expect(updated).toBeDefined();
   });

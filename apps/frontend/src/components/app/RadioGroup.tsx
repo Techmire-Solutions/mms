@@ -11,7 +11,7 @@ interface RadioGroupContextValue {
 
 const RadioGroupContext = React.createContext<RadioGroupContextValue>({});
 
-export interface RadioGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface RadioGroupProps extends React.ComponentProps<"div"> {
   name?: string;
   value?: string;
   defaultValue?: string;
@@ -19,100 +19,97 @@ export interface RadioGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   disabled?: boolean;
 }
 
-const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
-  (
-    {
-      className,
-      name,
-      value: controlledValue,
-      defaultValue,
-      onValueChange,
-      disabled,
-      children,
-      ...props
+function RadioGroup({
+  className,
+  name,
+  value: controlledValue,
+  defaultValue,
+  onValueChange,
+  disabled,
+  children,
+  ref,
+  ...props
+}: RadioGroupProps) {
+  const [uncontrolledValue, setUncontrolledValue] = React.useState<string | undefined>(
+    defaultValue,
+  );
+  const isControlled = controlledValue !== undefined;
+  const value = isControlled ? controlledValue : uncontrolledValue;
+
+  const onChange = React.useCallback(
+    (nextValue: string) => {
+      if (!isControlled) {
+        setUncontrolledValue(nextValue);
+      }
+      onValueChange?.(nextValue);
     },
-    ref,
-  ) => {
-    const [uncontrolledValue, setUncontrolledValue] = React.useState<string | undefined>(
-      defaultValue,
-    );
-    const isControlled = controlledValue !== undefined;
-    const value = isControlled ? controlledValue : uncontrolledValue;
+    [isControlled, onValueChange],
+  );
 
-    const onChange = React.useCallback(
-      (nextValue: string) => {
-        if (!isControlled) {
-          setUncontrolledValue(nextValue);
-        }
-        onValueChange?.(nextValue);
-      },
-      [isControlled, onValueChange],
-    );
+  // Stable context identity so consumers don't re-render on every parent render.
+  const contextValue = React.useMemo<RadioGroupContextValue>(
+    () => ({ name, value, onChange, disabled }),
+    [name, value, onChange, disabled],
+  );
 
-    // Stable context identity so consumers don't re-render on every parent render.
-    const contextValue = React.useMemo<RadioGroupContextValue>(
-      () => ({ name, value, onChange, disabled }),
-      [name, value, onChange, disabled],
-    );
+  return (
+    <RadioGroupContext.Provider value={contextValue}>
+      <div ref={ref} role="radiogroup" className={cn("grid gap-2", className)} {...props}>
+        {children}
+      </div>
+    </RadioGroupContext.Provider>
+  );
+}
 
-    return (
-      <RadioGroupContext.Provider value={contextValue}>
-        <div ref={ref} role="radiogroup" className={cn("grid gap-2", className)} {...props}>
-          {children}
-        </div>
-      </RadioGroupContext.Provider>
-    );
-  },
-);
-RadioGroup.displayName = "RadioGroup";
-
-export interface RadioGroupItemProps extends Omit<
-  React.ButtonHTMLAttributes<HTMLButtonElement>,
-  "onChange"
-> {
+export interface RadioGroupItemProps extends Omit<React.ComponentProps<"button">, "onChange"> {
   value: string;
 }
 
-const RadioGroupItem = React.forwardRef<HTMLButtonElement, RadioGroupItemProps>(
-  ({ className, value, id, disabled: itemDisabled, "aria-label": ariaLabel, ...props }, ref) => {
-    const context = React.useContext(RadioGroupContext);
-    const checked = context.value === value;
-    const disabled = itemDisabled || context.disabled;
+function RadioGroupItem({
+  className,
+  value,
+  id,
+  disabled: itemDisabled,
+  "aria-label": ariaLabel,
+  ref,
+  ...props
+}: RadioGroupItemProps) {
+  const context = React.useContext(RadioGroupContext);
+  const checked = context.value === value;
+  const disabled = itemDisabled || context.disabled;
 
-    return (
-      <button
-        ref={ref}
-        type="button"
-        role="radio"
-        id={id}
-        aria-checked={checked}
-        aria-label={ariaLabel}
-        disabled={disabled}
-        onClick={() => {
-          if (!disabled) {
-            context.onChange?.(value);
-          }
-        }}
+  return (
+    <button
+      ref={ref}
+      type="button"
+      role="radio"
+      id={id}
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={() => {
+        if (!disabled) {
+          context.onChange?.(value);
+        }
+      }}
+      className={cn(
+        "relative flex h-11 w-11 min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation",
+        className,
+      )}
+      {...props}
+    >
+      <span
         className={cn(
-          "relative flex h-11 w-11 min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation",
-          className,
+          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-primary shadow transition-colors",
+          checked
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-muted-foreground/40 bg-background",
         )}
-        {...props}
       >
-        <span
-          className={cn(
-            "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-primary shadow transition-colors",
-            checked
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-muted-foreground/40 bg-background",
-          )}
-        >
-          {checked && <Circle className="h-2 w-2 fill-current text-current" />}
-        </span>
-      </button>
-    );
-  },
-);
-RadioGroupItem.displayName = "RadioGroupItem";
+        {checked && <Circle className="h-2 w-2 fill-current text-current" />}
+      </span>
+    </button>
+  );
+}
 
 export { RadioGroup, RadioGroupItem };

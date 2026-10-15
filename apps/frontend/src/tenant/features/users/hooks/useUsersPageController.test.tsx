@@ -5,7 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { useUsersPageController } from "./useUsersPageController";
 import { normalizeWorkspaceUser } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const { mockAuthUser } = vi.hoisted(() => ({
   mockAuthUser: {
@@ -47,7 +47,7 @@ vi.mock("@/lib/notify", () => ({
 }));
 
 vi.mock("@/tenant/features/users/hooks/useUsersApi", () => ({
-  extractActivityLogs: (data: any) => data?.body ?? [],
+  extractActivityLogs: (data: { body?: unknown }) => data?.body ?? [],
   useActivityLogs: () => ({
     data: {
       status: 200,
@@ -89,7 +89,7 @@ describe("useUsersPageController", () => {
   });
 
   it("initializes controller state and derives logs from single activity query", () => {
-    let controller: ReturnType<typeof useUsersPageController> = undefined as any;
+    let controller: ReturnType<typeof useUsersPageController> = undefined as unknown as never;
     function Consumer() {
       controller = useUsersPageController();
       return null;
@@ -118,7 +118,7 @@ describe("useUsersPageController", () => {
 
   it("guards editing Super Admin when actor is standard Admin", async () => {
     const { notify } = await import("@/lib/notify");
-    let controller: ReturnType<typeof useUsersPageController> = undefined as any;
+    let controller: ReturnType<typeof useUsersPageController> = undefined as unknown as never;
     function Consumer() {
       controller = useUsersPageController();
       return null;

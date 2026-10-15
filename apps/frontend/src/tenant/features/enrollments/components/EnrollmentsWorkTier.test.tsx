@@ -74,7 +74,7 @@ describe("EnrollmentsWorkTier Component", () => {
           isColumnVisible: () => true,
           getColumnWidth: () => 120,
           onColumnResize: vi.fn(),
-          columnCustomizer: {} as any,
+          columnCustomizer: {} as unknown as never,
         }}
       />,
     );

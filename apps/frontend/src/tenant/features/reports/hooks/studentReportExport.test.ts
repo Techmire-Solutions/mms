@@ -114,12 +114,12 @@ describe("studentReportExport", () => {
         status: 200,
         body: { enrollments: [page1Enrollment], hasMore: true },
         headers: new Headers(),
-      } as any)
+      } as unknown as never)
       .mockResolvedValueOnce({
         status: 200,
         body: { enrollments: [page2Enrollment], hasMore: false },
         headers: new Headers(),
-      } as any);
+      } as unknown as never);
 
     const result = await fetchAllEnrollmentsForQuery({ search: "test" });
     expect(result).toHaveLength(2);
@@ -144,7 +144,7 @@ describe("studentReportExport", () => {
       status: 200,
       body: { enrollments: [mockEnrollment], hasMore: false },
       headers: new Headers(),
-    } as any);
+    } as unknown as never);
 
     const rows = await resolveEnrollmentReportExportRows({ search: "Student" });
     expect(rows).toHaveLength(1);

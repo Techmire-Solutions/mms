@@ -50,7 +50,7 @@ describe("StudentForm Validation Auto-Scroll & Contact SSOT", () => {
           requireGuardian: false,
           requireGender: false,
           requireDob: false,
-        } as any,
+        } as unknown as never,
         fields: {},
         enabledTabs: new Set(["basic", "registration"]),
         requiredTabs: new Set(["basic"]),
@@ -100,7 +100,7 @@ describe("StudentForm Validation Auto-Scroll & Contact SSOT", () => {
       } as Contact,
       linkedGenderRaw: "male",
       validationContext: {
-        settings: {} as any,
+        settings: {} as unknown as never,
         fields: {},
         enabledTabs: new Set(["basic", "registration"]),
         requiredTabs: new Set(["basic"]),

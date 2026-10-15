@@ -24,7 +24,7 @@ vi.mock("../hooks/useAttendanceAnalyticsModel", () => ({
 }));
 
 vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
-  ModuleCommandMetricsGrid: ({ items }: { items: { label: string; value: any }[] }) => (
+  ModuleCommandMetricsGrid: ({ items }: { items: { label: string; value: unknown }[] }) => (
     <div data-testid="metrics-grid">{items.map((i) => `${i.label}:${i.value}`).join(", ")}</div>
   ),
 }));

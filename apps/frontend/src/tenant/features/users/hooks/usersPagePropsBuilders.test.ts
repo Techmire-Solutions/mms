@@ -12,7 +12,7 @@ describe("usersPagePropsBuilders", () => {
       role: "admin",
     });
 
-    const mockFilters: any = {
+    const mockFilters = {
       listPage: 1,
       setListPage: vi.fn(),
       search: "",
@@ -25,28 +25,28 @@ describe("usersPagePropsBuilders", () => {
       setSelectedIds: vi.fn(),
       showDeleted: false,
       setShowDeleted: vi.fn(),
-    };
+    } as unknown as Parameters<typeof buildUsersWorkTierProps>[0]["filters"];
 
-    const mockColumns: any = {
+    const mockColumns = {
       getColumnWidth: vi.fn(),
       setColumnWidth: vi.fn(),
       isColumnVisible: vi.fn(() => true),
       columnRegistry: [],
       updateUserColumnLayout: vi.fn(),
       customizerLabels: {},
-    };
+    } as unknown as Parameters<typeof buildUsersWorkTierProps>[0]["columns"];
 
-    const mockActivityColumns: any = {
+    const mockActivityColumns = {
       getColumnWidth: vi.fn(),
       setColumnWidth: vi.fn(),
-    };
+    } as unknown as Parameters<typeof buildUsersWorkTierProps>[0]["activityColumns"];
 
-    const mockActions: any = {
+    const mockActions = {
       handleDeleteUser: vi.fn(),
       handleRestoreUser: vi.fn(),
       handleBulkDelete: vi.fn(),
       handleBulkRestore: vi.fn(),
-    };
+    } as unknown as Parameters<typeof buildUsersWorkTierProps>[0]["actions"];
 
     const workTierProps = buildUsersWorkTierProps({
       tabs: [{ id: "users", label: "Users" }],
@@ -82,13 +82,13 @@ describe("usersPagePropsBuilders", () => {
   });
 
   it("builds UsersModalLayerProps object from domain slices", () => {
-    const mockActions: any = {
+    const mockActions = {
       handleSaveEdit: vi.fn(),
       handleResetPassword: vi.fn(),
       handleAddUser: vi.fn(),
       handleInvite: vi.fn(),
       handleRestoreUser: vi.fn(),
-    };
+    } as unknown as Parameters<typeof buildUsersModalLayerProps>[0]["actions"];
 
     const modalLayerProps = buildUsersModalLayerProps({
       viewing: null,

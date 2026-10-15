@@ -60,7 +60,15 @@ vi.mock("@/tenant/features/examinations/hooks/useExaminationsPageController", ()
 }));
 
 vi.mock("@/components/app/ModulePageShell", () => ({
-  ModulePageShell: ({ children, headerActions, metricsStrip }: any) => (
+  ModulePageShell: ({
+    children,
+    headerActions,
+    metricsStrip,
+  }: {
+    children?: React.ReactNode;
+    headerActions?: React.ReactNode;
+    metricsStrip?: React.ReactNode;
+  }) => (
     <div data-testid="page-shell">
       {headerActions}
       {metricsStrip}
@@ -70,7 +78,7 @@ vi.mock("@/components/app/ModulePageShell", () => ({
 }));
 
 vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
-  ResponsiveAccordionTabs: ({ children }: any) => <div>{children}</div>,
+  ResponsiveAccordionTabs: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock("./components/ExaminationsCommandMetrics", () => ({

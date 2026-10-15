@@ -30,7 +30,7 @@ describe("AttendanceFiltersMenuButton Component", () => {
       <AttendanceFiltersMenuButton
         statusFilter="all"
         activeFilterCount={0}
-        statuses={[{ id: "present", label: "Present" } as any]}
+        statuses={[{ id: "present", label: "Present" } as unknown as never]}
         statusLabel={(id) => id.toUpperCase()}
         onChangeStatus={vi.fn()}
         onClearFilters={vi.fn()}

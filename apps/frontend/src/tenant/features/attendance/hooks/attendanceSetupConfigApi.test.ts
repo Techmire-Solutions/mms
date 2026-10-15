@@ -32,12 +32,14 @@ describe("attendanceSetupConfigApi utilities", () => {
     const fetched = await fetchAttendancePreferences();
     expect(fetched).toBeDefined();
 
-    const saved = await saveAttendancePreferencesAsync({ lateThresholdMins: 20 } as any);
+    const saved = await saveAttendancePreferencesAsync({
+      lateThresholdMins: 20,
+    } as unknown as never);
     expect(saved).toBeDefined();
   });
 
   it("manages in-memory fallback", () => {
-    setAttendancePreferencesMemory({ lateThresholdMins: 25 } as any);
+    setAttendancePreferencesMemory({ lateThresholdMins: 25 } as unknown as never);
     const memory = getAttendanceSettingsMemoryFallback();
     expect(memory).toBeDefined();
   });

@@ -12,7 +12,7 @@ import {
   useExaminationsContractRestoreExam,
 } from "./useExaminationsQueries";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-query")>();
@@ -64,14 +64,14 @@ describe("useExaminationsQueries", () => {
   });
 
   it("provides contract queries and mutations", async () => {
-    let listQuery: any;
-    let resultsQuery: any;
-    let bulkDelete: any;
-    let bulkRestore: any;
-    let bulkUpdateExams: any;
-    let bulkUpdateResults: any;
-    let deleteExam: any;
-    let restoreExam: any;
+    let listQuery!: ReturnType<typeof useExaminationsContractList>;
+    let resultsQuery!: ReturnType<typeof useExaminationsContractResults>;
+    let bulkDelete!: ReturnType<typeof useExaminationsContractBulkDelete>;
+    let bulkRestore!: ReturnType<typeof useExaminationsContractBulkRestore>;
+    let bulkUpdateExams!: ReturnType<typeof useExaminationsContractBulkUpdateExams>;
+    let bulkUpdateResults!: ReturnType<typeof useExaminationsContractBulkUpdateResults>;
+    let deleteExam!: ReturnType<typeof useExaminationsContractDeleteExam>;
+    let restoreExam!: ReturnType<typeof useExaminationsContractRestoreExam>;
 
     function TestComponent() {
       listQuery = useExaminationsContractList();

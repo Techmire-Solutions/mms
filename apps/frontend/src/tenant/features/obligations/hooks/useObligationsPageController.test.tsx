@@ -69,7 +69,9 @@ vi.mock("@/lib/notify", () => ({
 }));
 
 function renderObligationsControllerHook() {
-  const result: { current: any } = {} as { current: any };
+  const result: { current: ReturnType<typeof useObligationsPageController> } = {} as {
+    current: ReturnType<typeof useObligationsPageController>;
+  };
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);

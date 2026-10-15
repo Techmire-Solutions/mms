@@ -4,13 +4,13 @@ import { createRoot } from "react-dom/client";
 import TwoFactorAuth from "./TwoFactorAuth";
 import { normalizeWorkspaceUser } from "@mms/shared";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockNavigate = vi.fn();
 const mockVerify2FA = vi.fn();
 const mockResend2FA = vi.fn(async () => mockResendSuccess);
 let mockIsAuthenticated = false;
-let mockUser: any = null;
+let mockUser: ReturnType<typeof normalizeWorkspaceUser> | null = null;
 let mockPendingChallengeId: string | null = "challenge-123";
 let mockIs2FAVerified = false;
 let mockRequiresTwoFactor = true;
@@ -53,7 +53,15 @@ vi.mock("@/lib/twoFactor", () => ({
 }));
 
 vi.mock("@/tenant/components/AuthLayout", () => ({
-  default: ({ title, subtitle, children }: any) => (
+  default: ({
+    title,
+    subtitle,
+    children,
+  }: {
+    title?: React.ReactNode;
+    subtitle?: React.ReactNode;
+    children?: React.ReactNode;
+  }) => (
     <div data-testid="auth-layout">
       <h1>{title}</h1>
       <h2>{subtitle}</h2>
@@ -65,15 +73,35 @@ vi.mock("@/tenant/components/AuthLayout", () => ({
 vi.mock("@/components/entry", () => ({
   EntryPageHead: () => null,
   formatEntryTitle: (t: string) => t,
-  AuthBackLink: ({ to, label }: any) => <a href={to}>{label}</a>,
-  AuthMutedPanel: ({ children }: any) => <div data-testid="muted-panel">{children}</div>,
-  AuthResendCodeControl: ({ onResend, disabled, resendLabel }: any) => (
+  AuthBackLink: ({ to, label }: { to: string; label: React.ReactNode }) => <a href={to}>{label}</a>,
+  AuthMutedPanel: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="muted-panel">{children}</div>
+  ),
+  AuthResendCodeControl: ({
+    onResend,
+    disabled,
+    resendLabel,
+  }: {
+    onResend?: () => void;
+    disabled?: boolean;
+    resendLabel?: React.ReactNode;
+  }) => (
     <button data-testid="resend-btn" onClick={onResend} disabled={disabled}>
       {resendLabel}
     </button>
   ),
-  AuthStatusBanner: ({ message }: any) => <div data-testid="status-banner">{message}</div>,
-  AuthSubmitButton: ({ busy, label, disabled }: any) => (
+  AuthStatusBanner: ({ message }: { message?: React.ReactNode }) => (
+    <div data-testid="status-banner">{message}</div>
+  ),
+  AuthSubmitButton: ({
+    busy,
+    label,
+    disabled,
+  }: {
+    busy?: boolean;
+    label?: React.ReactNode;
+    disabled?: boolean;
+  }) => (
     <button type="submit" data-testid="submit-btn" disabled={disabled || busy}>
       {label}
     </button>
@@ -83,7 +111,15 @@ vi.mock("@/components/entry", () => ({
 vi.mock("@/components/app/OtpInput", () => ({
   createEmptyOtp: () => ["", "", "", "", "", ""],
   isOtpComplete: (code: string[]) => code.every((digit) => digit.length === 1),
-  OtpInput: ({ value: _value, onChange, disabled }: any) => (
+  OtpInput: ({
+    value: _value,
+    onChange,
+    disabled,
+  }: {
+    value: unknown;
+    onChange: (code: string[]) => void;
+    disabled?: boolean;
+  }) => (
     <div data-testid="otp-input">
       <button
         data-testid="fill-otp"

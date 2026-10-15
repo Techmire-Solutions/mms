@@ -13,7 +13,9 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/components/app/ModuleWorkBulkActionBar", () => ({
-  ModuleWorkBulkActionBar: ({ countLabel }: any) => <div data-testid="bulk-bar">{countLabel}</div>,
+  ModuleWorkBulkActionBar: ({ countLabel }: { countLabel?: React.ReactNode }) => (
+    <div data-testid="bulk-bar">{countLabel}</div>
+  ),
 }));
 
 describe("ExaminationsBulkActionBar Component", () => {

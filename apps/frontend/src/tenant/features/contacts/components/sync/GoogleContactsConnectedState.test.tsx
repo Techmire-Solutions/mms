@@ -20,7 +20,7 @@ describe("GoogleContactsConnectedState Component", () => {
         syncing={false}
         onDisconnect={vi.fn()}
         onSync={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
