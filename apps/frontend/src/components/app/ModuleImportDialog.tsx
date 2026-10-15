@@ -4,6 +4,7 @@ import type { BackgroundJobRecord } from "@mms/shared";
 import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ModuleImportDialogProps<TRow = Record<string, unknown>> {
   open: boolean;
@@ -34,6 +35,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
   canWrite,
   actions,
 }: ModuleImportDialogProps<TRow>): React.JSX.Element | null {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
 
   if (!open || !canWrite) return null;
@@ -64,12 +66,14 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
       onClose={onClose}
       icon={Upload}
       title={title}
-      subtitle={subtitle ?? "Upload CSV file to import records"}
+      subtitle={subtitle ?? t("module.import.subtitle")}
       size="md"
     >
       <div className="space-y-4 text-start">
         <div className="flex items-center justify-between pb-2 border-b border-border">
-          <span className="text-xs text-muted-foreground">Download standard template:</span>
+          <span className="text-xs text-muted-foreground">
+            {t("module.import.downloadTemplateHint")}
+          </span>
           <Button
             variant="outline"
             size="sm"
@@ -77,7 +81,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             className="gap-1.5 text-xs h-8"
           >
             <Download className="w-3.5 h-3.5" />
-            Download CSV Template
+            {t("module.import.downloadTemplateButton")}
           </Button>
         </div>
 
@@ -88,7 +92,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
           >
             <div className="font-semibold flex items-center gap-1.5">
               <AlertCircle className="w-4 h-4" />
-              Missing required columns
+              {t("module.import.missingColumns")}
             </div>
             <p>{missingHeaders.join(", ")}</p>
           </div>
@@ -97,27 +101,27 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
         {rowErrors.length > 0 && (
           <div
             role="alert"
-            className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-700 dark:text-amber-400 max-h-32 overflow-y-auto space-y-1"
+            className="p-3 bg-warning/10 border border-warning/20 rounded-lg text-xs text-warning max-h-32 overflow-y-auto space-y-1"
           >
             <div className="font-semibold flex items-center gap-1.5">
               <AlertCircle className="w-4 h-4" />
-              Formatting warnings ({rowErrors.length})
+              {t("module.import.formattingWarnings", { count: rowErrors.length })}
             </div>
             {rowErrors.slice(0, 5).map((err, idx) => (
-              <p key={idx}>
-                Row {err.row}: {err.error}
-              </p>
+              <p key={idx}>{t("module.import.rowError", { row: err.row, error: err.error })}</p>
             ))}
-            {rowErrors.length > 5 && <p>...and {rowErrors.length - 5} more issues.</p>}
+            {rowErrors.length > 5 && (
+              <p>{t("module.import.andMoreIssues", { count: rowErrors.length - 5 })}</p>
+            )}
           </div>
         )}
 
         {completedJob ? (
-          <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-700 dark:text-emerald-400 space-y-2 text-center">
-            <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-600 dark:text-emerald-400" />
+          <div className="p-4 bg-success/10 border border-success/20 rounded-lg text-xs text-success space-y-2 text-center">
+            <CheckCircle2 className="w-8 h-8 mx-auto text-success" />
             <div className="font-semibold text-sm">{completedJob.label}</div>
             <Button variant="outline" size="sm" onClick={resetState}>
-              Import Another File
+              {t("module.import.importAnother")}
             </Button>
           </div>
         ) : parsedRows.length > 0 ? (
@@ -127,7 +131,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
               <div>
                 <p className="text-sm font-medium">{fileName}</p>
                 <p className="text-xs text-muted-foreground">
-                  {parsedRows.length} valid record(s) ready to import
+                  {t("module.import.validRecords", { count: parsedRows.length })}
                 </p>
               </div>
             </div>
@@ -135,7 +139,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             {isImporting ? (
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Importing...</span>
+                  <span>{t("module.import.importing")}</span>
                   {progress && (
                     <span>
                       {progress.current} / {progress.total}
@@ -157,7 +161,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             ) : (
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="ghost" size="sm" onClick={resetState}>
-                  Change File
+                  {t("module.import.changeFile")}
                 </Button>
                 <Button
                   variant="default"
@@ -167,7 +171,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
                   className="gap-1.5"
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  Import {parsedRows.length} Records
+                  {t("module.import.importRecords", { count: parsedRows.length })}
                 </Button>
               </div>
             )}
@@ -177,9 +181,9 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             isDragging={isDragging}
             onDraggingChange={setIsDragging}
             onFiles={onFiles}
-            title="Drop CSV file here"
-            description="or click to browse from your device (.csv format)"
-            inputAriaLabel="Upload CSV file"
+            title={t("module.import.dropHere")}
+            description={t("module.import.dropDescription")}
+            inputAriaLabel={t("module.import.inputAria")}
             inputId="module-csv-file-input"
             inputName="file"
             accept=".csv,text/csv"

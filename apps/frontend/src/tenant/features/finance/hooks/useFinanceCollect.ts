@@ -10,10 +10,7 @@ import type {
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
-import {
-  FINANCE_INVOICES_QUERY_KEY,
-  FINANCE_METRICS_QUERY_KEY,
-} from "@/tenant/features/finance/hooks/useFinanceApi";
+import { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";
 
 const CREDIT_NOTES_KEY = ["finance", "credit-notes"] as const;
 
@@ -25,8 +22,7 @@ function assertOk(response: { status: number; body: unknown }, context: string):
 }
 
 function invalidateFinance(queryClient: ReturnType<typeof useQueryClient>): void {
-  void queryClient.invalidateQueries({ queryKey: FINANCE_INVOICES_QUERY_KEY });
-  void queryClient.invalidateQueries({ queryKey: FINANCE_METRICS_QUERY_KEY });
+  invalidateFinanceQueries(queryClient);
 }
 
 export function useFinanceCollectMutations() {

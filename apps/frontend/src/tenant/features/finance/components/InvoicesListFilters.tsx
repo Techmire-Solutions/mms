@@ -1,7 +1,6 @@
 import type React from "react";
 import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
-import { FilterChips } from "@/components/app/FilterChips";
-import { WorkTaskToolbar } from "@/components/common/work";
+import { WorkListFiltersScaffold, type WorkListFilterChip } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AppTranslationKey } from "@mms/shared";
@@ -39,16 +38,22 @@ export function InvoicesListFilters({
   const { t } = useTranslation();
   const statusLabel = (status: string) => t(`finance.invoiceStatus.${status}` as AppTranslationKey);
 
+  const chips: WorkListFilterChip[] = filterStatus.map((status) => ({
+    key: `status:${status}`,
+    label: statusLabel(status),
+    onRemove: () => onToggleStatus(status),
+  }));
+
   return (
-    <WorkTaskToolbar
+    <WorkListFiltersScaffold
       regionLabel={t("finance.invoices")}
       search={search}
       onSearchChange={onSearchChange}
       searchPlaceholder={t("finance.searchInvoices")}
       searchId={FINANCE_INVOICES_WORK_SEARCH_INPUT_ID}
-      hasActiveFilters={filterStatus.length > 0}
-      onClearFilters={onClearStatuses}
+      activeFilterCount={filterStatus.length}
       clearFiltersLabel={t("finance.clearFilters")}
+      onClearFilters={onClearStatuses}
       filterButton={
         <InvoicesFiltersMenuButton
           filterStatus={filterStatus}
@@ -57,16 +62,7 @@ export function InvoicesListFilters({
           onClearFilters={onClearStatuses}
         />
       }
-      filterChips={
-        <FilterChips
-          chips={filterStatus.map((status) => ({
-            key: `status:${status}`,
-            label: statusLabel(status),
-            onRemove: () => onToggleStatus(status),
-          }))}
-          onClearAll={onClearStatuses}
-        />
-      }
+      chips={chips}
       trashToggle={
         canDelete && onToggleDeleted
           ? {
@@ -82,16 +78,7 @@ export function InvoicesListFilters({
         viewMode,
         onViewModeChange,
       }}
-      columnCustomizer={
-        columnCustomizer
-          ? {
-              registry: columnCustomizer.columnRegistry,
-              onUpdate: columnCustomizer.updateUserColumnLayout,
-              onReset: columnCustomizer.onResetLayout,
-              labels: columnCustomizer.labels,
-            }
-          : undefined
-      }
+      columnCustomizer={columnCustomizer}
     />
   );
 }

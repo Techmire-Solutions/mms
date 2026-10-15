@@ -33,4 +33,4 @@ export {
   useEnrollmentsContractDelete,
   useEnrollmentsContractBulkDelete,
   useEnrollmentsContractBulkRestore,
-} from "@/tenant/features/enrollments/hooks/useEnrollmentsTsrHooks";
+} from "@/tenant/features/enrollments/hooks/useEnrollmentsQueries";

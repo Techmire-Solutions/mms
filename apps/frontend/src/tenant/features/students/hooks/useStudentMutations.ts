@@ -10,7 +10,7 @@ import {
   useStudentsContractBulkStatus,
   useStudentsContractLogExportAudit,
   useStudentsContractLogSetupAudit,
-} from "@/tenant/features/students/hooks/useStudentsTsrHooks";
+} from "@/tenant/features/students/hooks/useStudentsQueries";
 
 /** Server mutations for Student records (create, update, delete, bulk delete, bulk status). */
 export function useStudentMutations() {
@@ -45,7 +45,7 @@ export function useStudentMutations() {
   };
 }
 
-import { useStudentsContractBulkEnroll } from "@/tenant/features/students/hooks/useStudentsTsrHooks";
+import { useStudentsContractBulkEnroll } from "@/tenant/features/students/hooks/useStudentsQueries";
 
 /** Atomic bulk session enrollment mutation for selected students. */
 export function useStudentsBulkEnrollMutation() {

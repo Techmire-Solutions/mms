@@ -34,7 +34,7 @@ vi.mock("@/tenant/features/faculty/hooks/useFacultyDepartments", () => ({
   }),
 }));
 
-vi.mock("@/tenant/features/faculty/hooks/useFacultyTsrHooks", () => ({
+vi.mock("@/tenant/features/faculty/hooks/useFacultyTsrQueries", () => ({
   useFacultyContractList: () => ({
     data: { faculty: [{ id: "fac-1", name: "Prof. Tariq" }] },
     isLoading: false,

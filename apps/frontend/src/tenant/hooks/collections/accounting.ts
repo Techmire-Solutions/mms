@@ -34,7 +34,7 @@ export {
   useAccountingContractRestoreEntry,
   useAccountingContractBulkDeleteEntries,
   useAccountingContractBulkRestoreEntries,
-} from "@/tenant/features/accounting/hooks/useAccountingTsrHooks";
+} from "@/tenant/features/accounting/hooks/useAccountingContractHooks";
 export {
   type JournalEntryFilterState,
   EMPTY_JOURNAL_ENTRY_FILTERS,

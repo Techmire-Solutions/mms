@@ -10,26 +10,13 @@ import type {
 import { ACCOUNTING_MODULE_MANIFEST, FINANCE_MODULE_MANIFEST } from "@mms/shared";
 import { apiContract, tsrClient } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
-import {
-  ACCOUNTING_ACCOUNTS_QUERY_KEY,
-  ACCOUNTING_ENTRIES_QUERY_KEY,
-  ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
-  ACCOUNTING_METRICS_QUERY_KEY,
-  ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
-} from "./useAccountingQueries";
-import { VOUCHER_NUMBERING_QUERY_KEY } from "./useVoucherNumbering";
+import { invalidateAccountingQueries } from "./invalidateAccountingQueries";
 
 export function useAccountingMutations() {
   const queryClient = useQueryClient();
 
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: ACCOUNTING_ACCOUNTS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: ACCOUNTING_ENTRIES_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: ACCOUNTING_FISCAL_YEARS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: ACCOUNTING_METRICS_QUERY_KEY });
-    // Ledger writes change the report figures; invalidate so Reports tier is fresh.
-    void queryClient.invalidateQueries({ queryKey: ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: VOUCHER_NUMBERING_QUERY_KEY });
+    invalidateAccountingQueries(queryClient);
   };
 
   const upsertAccounts = tsrClient.accounting.upsertAccounts.useMutation({ onSuccess: invalidate });

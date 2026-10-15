@@ -107,7 +107,7 @@ export default tseslint.config(
       "react/jsx-uses-react": "error",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
-        "warn",
+        "error",
         {
           vars: "all",
           varsIgnorePattern: "^_",
@@ -129,6 +129,17 @@ export default tseslint.config(
           // white regardless of the active theme.
           selector: "Literal[value=/(?<!print:)\\bbg-white\\b/]",
           message: "Prefer bg-card or SURFACE tokens over bg-white.",
+        },
+        {
+          // Raw Tailwind palette utilities (e.g. bg-gray-500, text-zinc-800)
+          // bypass the semantic token layer and break under runtime branding and
+          // dark mode. Use SEMANTIC_* (lib/ui/semanticTone.ts) or the tokens
+          // declared in index.css @theme. Sanctioned exception: ThemeModeSelector's
+          // literal mode-preview swatches — see the colour-source block below.
+          selector:
+            "Literal[value=/\\b(bg|text|border|ring|outline|divide|from|via|to|fill|stroke|decoration|placeholder|caret|accent|shadow)-(gray|slate|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-[0-9]/]",
+          message:
+            "Use semantic tokens (SEMANTIC_* / bg-primary / text-muted-foreground) instead of raw Tailwind palette utilities.",
         },
         {
           selector: "Literal[value=/text-\\[#/]",
@@ -196,10 +207,13 @@ export default tseslint.config(
   },
   {
     // Colour-source modules: the sanctioned homes for literal palette values
-    // (print design tokens and the editor's colour swatches).
+    // (print design tokens, the editor's colour swatches, and the theme-mode
+    // preview swatches which must render literal light/dark regardless of the
+    // active brand token set).
     files: [
       "src/lib/ui/printTemplateStyles.ts",
       "src/components/template-editor/templateEditorTypographyUtils.ts",
+      "src/tenant/features/settings/components/ThemeModeSelector.tsx",
     ],
     rules: {
       "no-restricted-syntax": "off",

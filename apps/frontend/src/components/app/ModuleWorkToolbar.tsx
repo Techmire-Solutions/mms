@@ -6,6 +6,7 @@ import { WorkViewModeToggle } from "@/components/app/WorkViewModeToggle";
 import { ModuleColumnCustomizer } from "@/components/app/ModuleColumnCustomizer";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ModuleWorkToolbarProps } from "@/components/app/moduleWorkToolbarTypes";
 
 export type { ModuleWorkToolbarProps };
@@ -32,6 +33,7 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
   children,
   showExportInTrash = true,
 }: ModuleWorkToolbarProps): JSX.Element {
+  const { t } = useTranslation();
   const showChildren = Boolean(
     children && (!trashToggle?.viewingDeleted || showExportInTrash !== false),
   );
@@ -61,8 +63,8 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
       {aiSuggestions && (
         <div
           className="flex items-center gap-2 flex-wrap px-3 pt-2.5 pb-0"
-          aria-description="AI-generated"
-          aria-label="Smart filter suggestions"
+          aria-description={t("module.work.aiSuggestionsDescription")}
+          aria-label={t("module.work.aiSuggestionsAria")}
         >
           {aiSuggestions}
         </div>

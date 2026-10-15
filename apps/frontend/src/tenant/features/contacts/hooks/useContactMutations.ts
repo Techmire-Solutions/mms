@@ -12,7 +12,7 @@ import {
   useContactsContractBulkRestore,
   useContactsContractLogExportAudit,
   useContactsContractLogSetupAudit,
-} from "@/tenant/features/contacts/hooks/useContactsTsrHooks";
+} from "@/tenant/features/contacts/hooks/useContactsQueries";
 import { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/invalidateContactsQueries";
 import { unwrapContactMutationBody } from "@/tenant/features/contacts/hooks/contactMutationResponse";
 

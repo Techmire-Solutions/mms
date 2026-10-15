@@ -149,3 +149,53 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
    requires the schema to match the form's own shape, so converting these would mean adding a second,
    draft-shaped schema that duplicates the existing imperative rules — the opposite of the goal. Revisit
    only if those schemas are reworked to validate the draft directly.
+
+9. **Live-push invalidation coverage — reviewed; one real gap fixed.** The tenant WebSocket
+   dispatcher (`apps/frontend/src/lib/tenant/invalidateModuleQueries.ts`) maps a broadcast collection
+   key to its module's centralized invalidator. React Query invalidates by key **prefix**, so
+   sub-entities nested under a module's list key are already covered — e.g.
+   `FACULTY_DESIGNATIONS_QUERY_KEY = [...FACULTY_QUERY_KEY, "designations"]` is reached by the `list`
+   bucket. Findings:
+   - **Faculty catalog writes broadcast nothing** — unlike every other faculty write, which calls
+     `broadcastCollection("faculty")` — so a designation/department change was invisible to other
+     clients. **Fixed** in `facultyDesignationRouteHandlers` / `facultyDepartmentRouteHandlers`
+     (broadcast `"faculty"` on save/delete/restore; the frontend already covers the keys by prefix).
+   - **Contacts saved reports** (`savedReports` routes) are **owner-scoped** — each user has their own
+     presets — so cross-client push is intentionally not applicable.
+   - `FINANCE_FEE_STRUCTURES_QUERY_KEY` / `FINANCE_FIELD_CONFIG_QUERY_KEY` are setup-config reads, not
+     nested under the finance list key and not broadcast; revisit only if a cross-client need appears.
+
+10. **Frontend review follow-ups (updated).**
+    - **Sidebar/chrome unification (audit F6) — largely done.** Both hosts now compose the shared
+      `components/common/AppSidebar` frame (width/collapse container + surface tokens + motion-safe
+      transition) and render navigation through the shared `components/common/AppSidebarNav` (sections /
+      links / expandable groups / collapsed tooltips), fed by thin per-host adapters in the tenant
+      `SidebarNav` and the platform `PlatformSidebarNav`. The two registry models
+      (`lib/config/navConfig.tsx` vs `platform/lib/platformNav.ts`) and the brand/footer content stay
+      host-specific by design. **Validated against the live tenant shell:** the local authenticated
+      responsive spec (`responsive-authenticated.spec.ts`, 19/19) and the axe shell sweep
+      (`a11y-shell.spec.ts`, 2/2) both pass; collapsed sidebar links also gained an accessible name
+      (`SidebarNavItem` now sets `aria-label` when the label is visually hidden). The platform sidebar's
+      authenticated flow still warrants a visual pass.
+    - **`lib/invoiceTemplatePresets.ts` split — done.** The 862-line file is now a thin re-export barrel
+      over `lib/invoicePresets/*` (palette / types / classic / thermal / formalA5{Header,Amount}Elements /
+      modern / available), every module <300 LOC; output proven byte-identical by hash before/after and
+      the code-norms `filesOverHardLimit` baseline lowered 59 → 58.
+
+11. **Circular import in the dashboard collections barrel (fixed).** `tenant/hooks/collections/dashboard`
+    re-exports `useDashboardData`, which imported `useDashboardSummaryQuery` **back** through that same
+    barrel — a cycle that made Vite's dev ESM fail to expose the barrel's re-exports:
+    `SyntaxError: … /collections/dashboard.ts does not provide an export named 'DASHBOARD_SUMMARY_QUERY_KEY_ROOT'`,
+    surfaced twice per tenant-dashboard load via `useTenantDatabaseUpdates.dispatch`. Fixed by importing
+    `useDashboardSummaryQuery` from its defining module (`./useDashboardSetupConfig`) instead of the barrel.
+    Reproduced on pristine HEAD too (pre-existing; dev-only — the production bundle was unaffected). Found by
+    running the platform-onboarding E2E locally.
+
+12. **`@local-only` tenant flow specs fail at the Chart-of-Accounts step (pre-existing).** Running
+    `tenant-critical-lifecycles.spec.ts` and `tenant-operations-flow.spec.ts` locally fails in
+    `createAccountsAndJournalEntry` (`e2e/helpers/tenantOperations.ts:921`): after the account PUT returns
+    2xx and the dialog closes, `getByText("E2E Cash")` is not visible in the Chart of Accounts list.
+    Reproduced identically against the pre-change commit (`6adde94b5`), so it is **not** caused by the
+    recent frontend work — most likely shared-DB state / rot (these specs are `@local-only`, not CI-gated;
+    the repo notes they need an isolated disposable database). Needs a clean-DB reproduction before it is
+    treated as a product bug.

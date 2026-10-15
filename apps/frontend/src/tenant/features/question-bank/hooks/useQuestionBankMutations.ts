@@ -2,61 +2,41 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
 import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
-import {
-  QUESTION_BANK_METRICS_QUERY_KEY,
-  QUESTION_BANK_QUESTIONS_QUERY_KEY,
-  QUESTION_BANK_RESULTS_QUERY_KEY,
-  QUESTION_BANK_TESTS_QUERY_KEY,
-} from "./useQuestionBankApi";
+import { invalidateQuestionBankQueries } from "./invalidateQuestionBankQueries";
 
 export function useQuestionBankMutations() {
   const queryClient = useQueryClient();
 
-  const invalidateQuestions = () => {
-    void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_QUESTIONS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_METRICS_QUERY_KEY });
-  };
-
   const invalidate = () => {
-    invalidateQuestions();
-    void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_TESTS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_RESULTS_QUERY_KEY });
+    invalidateQuestionBankQueries(queryClient);
   };
 
   const replaceQuestions = tsrClient.questionBank.bulkUpdateQuestions.useMutation({
-    onSuccess: () => {
-      invalidateQuestions();
-    },
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
   const replaceTests = tsrClient.questionBank.bulkUpdateTests.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_TESTS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
   const replaceResults = tsrClient.questionBank.bulkUpdateResults.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_RESULTS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
   const deleteQuestion = tsrClient.questionBank.deleteQuestion.useMutation({
-    onSuccess: () => invalidateQuestions(),
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
   const restoreQuestion = tsrClient.questionBank.restoreQuestion.useMutation({
-    onSuccess: () => invalidateQuestions(),
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
   const bulkDeleteQuestions = tsrClient.questionBank.bulkDeleteQuestions.useMutation({
-    onSuccess: () => invalidateQuestions(),
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
   const bulkRestoreQuestions = tsrClient.questionBank.bulkRestoreQuestions.useMutation({
-    onSuccess: () => invalidateQuestions(),
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
   return {

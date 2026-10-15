@@ -27,7 +27,7 @@ vi.mock("@/tenant/features/examinations/hooks/useExamSelection", () => ({
   }),
 }));
 
-vi.mock("@/tenant/features/examinations/hooks/useExaminationsTsrHooks", () => ({
+vi.mock("@/tenant/features/examinations/hooks/useExaminationsQueries", () => ({
   useExaminationsContractList: () => ({
     data: {
       status: 200,

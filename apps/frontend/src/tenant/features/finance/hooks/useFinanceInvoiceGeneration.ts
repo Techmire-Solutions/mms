@@ -2,10 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { GenerateInvoicesBody, GenerateInvoicesResult } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
-import {
-  FINANCE_INVOICES_QUERY_KEY,
-  FINANCE_METRICS_QUERY_KEY,
-} from "@/tenant/features/finance/hooks/useFinanceApi";
+import { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";
 
 export function useFinanceInvoiceGeneration() {
   const queryClient = useQueryClient();
@@ -22,9 +19,6 @@ export function useFinanceInvoiceGeneration() {
       }
       return response.body as GenerateInvoicesResult;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: FINANCE_INVOICES_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: FINANCE_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateFinanceQueries(queryClient),
   });
 }

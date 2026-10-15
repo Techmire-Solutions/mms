@@ -10,7 +10,7 @@ import {
   useExaminationsContractBulkUpdateResults,
   useExaminationsContractDeleteExam,
   useExaminationsContractRestoreExam,
-} from "./useExaminationsTsrHooks";
+} from "./useExaminationsQueries";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -49,7 +49,7 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-describe("useExaminationsTsrHooks", () => {
+describe("useExaminationsQueries", () => {
   let container: HTMLDivElement | null = null;
 
   beforeEach(() => {

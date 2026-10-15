@@ -15,11 +15,10 @@ vi.mock("@/lib/notify", () => ({
   },
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({
-    t: (_key: string, fallback?: string) => fallback ?? _key,
-  }),
-}));
+vi.mock("@/hooks/useTranslation", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 
 const mockStartServerImport = vi.fn().mockResolvedValue({
   id: "job-hasanat-1",
@@ -67,6 +66,6 @@ describe("HasanatCsvImportDialog", () => {
     act(() => {
       root.render(<HasanatCsvImportDialog open={true} onClose={vi.fn()} canWrite={true} />);
     });
-    expect(document.body.textContent).toContain("common.import");
+    expect(document.body.textContent).toContain("Import");
   });
 });

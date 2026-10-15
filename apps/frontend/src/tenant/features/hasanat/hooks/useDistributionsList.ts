@@ -3,7 +3,7 @@ import type { Distribution } from "@/lib/data/hasanatData";
 import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useHasanatContractList } from "@/tenant/features/hasanat/hooks/useHasanatTsrHooks";
+import { useHasanatContractList } from "@/tenant/features/hasanat/hooks/useHasanatQueries";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 type DistributionStatus = Distribution["status"];

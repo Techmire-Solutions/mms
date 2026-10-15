@@ -11,6 +11,7 @@ import type { WorkBatchTableColumn, WorkBatchTableProps } from "./workBatchTable
 import { useListRowMotion } from "@/hooks/useListRowMotion";
 import { useWorkBatchTableInternalState } from "./useWorkBatchTableInternalState";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 
 export type { WorkBatchTableColumn, WorkBatchTableProps };
@@ -27,7 +28,7 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   sort,
   columnResize,
   renderRowActions,
-  actionsLabel = "Actions",
+  actionsLabel,
   actionsHeaderClassName,
   actionsCellClassName,
   stickyColumnId,
@@ -49,6 +50,9 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   tableBodyClassName,
   containerClassName,
 }: WorkBatchTableProps<TData>): JSX.Element {
+  const { t } = useTranslation();
+  const resolvedActionsLabel = actionsLabel ?? t("common.actions");
+  const selectAllAriaLabel = selection?.selectAllAriaLabel ?? t("common.selectAll");
   const { sortedData, sortConfig, columnResizeConfig } = useWorkBatchTableInternalState({
     data,
     columns,
@@ -125,11 +129,11 @@ export function WorkBatchTable<TData extends { id: string | number }>({
                     allSelected: selection.allSelected,
                     someSelected: selection.someSelected,
                     onSelectAll: selection.onSelectAll,
-                    ariaLabel: selection.selectAllAriaLabel ?? "Select all rows",
+                    ariaLabel: selectAllAriaLabel,
                   }
                 : undefined
             }
-            actionsLabel={renderRowActions ? actionsLabel : undefined}
+            actionsLabel={renderRowActions ? resolvedActionsLabel : undefined}
             actionsClassName={actionsHeaderClassName}
             stickyColumnId={stickyColumnId}
           />

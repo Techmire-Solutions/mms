@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import type { Contact } from "@mms/shared";
 import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
-import { useContactsContractList } from "@/tenant/features/contacts/hooks/useContactsTsrHooks";
+import { useContactsContractList } from "@/tenant/features/contacts/hooks/useContactsQueries";
 import { useContactsDirectoryFilters } from "@/tenant/features/contacts/hooks/useContactsDirectoryFilters";
 import { useContactsDirectoryLinks } from "@/tenant/features/contacts/hooks/useContactsDirectoryLinks";
 

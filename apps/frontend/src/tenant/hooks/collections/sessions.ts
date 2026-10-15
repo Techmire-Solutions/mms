@@ -24,7 +24,7 @@ export {
   SESSIONS_PREFERENCES_QUERY_KEY,
 } from "@/tenant/features/sessions/hooks/useSessionSetupConfig";
 export { useSessionLookupsQuery } from "@/tenant/features/sessions/hooks/useSessionLookups";
-// Phase 7: contract-driven tsrClient hooks & query factories
+// Contract-driven tsrClient hooks & query factories
 export {
   sessionsListQueryOptions,
   useSessionsContractList,
@@ -32,4 +32,4 @@ export {
   useSessionsContractBulkDelete,
   useSessionsContractBulkStatus,
   useSessionsContractBulkRestore,
-} from "@/tenant/features/sessions/hooks/useSessionsTsrHooks";
+} from "@/tenant/features/sessions/hooks/useSessions";

@@ -1,7 +1,6 @@
 /**
- * Phase 7: Contract-driven query/mutation hooks for the Obligations module.
- * Uses tsrClient (@ts-rest/react-query v5) for full contract schema enforcement.
- * Mutations are also available via useObligationsMutations (tsrClient-based).
+ * Obligations contract-driven server-state surface: list query options, contract
+ * query hooks, and contract mutations.
  */
 import { apiContract, tsrClient } from "@/lib/api";
 import { queryOptions, useQueryClient } from "@tanstack/react-query";

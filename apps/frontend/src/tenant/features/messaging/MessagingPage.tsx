@@ -17,8 +17,7 @@ import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { MESSAGING_WORK_SEARCH_INPUT_ID } from "./components/MessagingListFilters";
 import { useMessagingKeyboardShortcuts } from "./hooks/useMessagingKeyboardShortcuts";
 import {
-  MESSAGING_LOGS_QUERY_KEY,
-  MESSAGING_METRICS_QUERY_KEY,
+  invalidateMessagingQueries,
   useMessageTemplates,
   useMessagingMetrics,
   useMessagingMutations,
@@ -162,8 +161,7 @@ export default function MessagingPage(): React.JSX.Element {
 
   const handleDispatchSent = (): void => {
     void metricsQuery.refetch();
-    void queryClient.invalidateQueries({ queryKey: MESSAGING_LOGS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: MESSAGING_METRICS_QUERY_KEY });
+    invalidateMessagingQueries(queryClient);
   };
 
   const refetchMetrics = (): void => {

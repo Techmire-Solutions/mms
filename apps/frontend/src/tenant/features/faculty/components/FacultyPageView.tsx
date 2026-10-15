@@ -1,7 +1,6 @@
 import React, { lazy } from "react";
 import { School } from "lucide-react";
 import { ModuleTierPage, type ModuleTierPageSpec } from "@/components/app/ModuleTierPage";
-import { useTranslation } from "@/hooks/useTranslation";
 import { useIndustryTerminology } from "@/tenant/hooks/useIndustryTerminology";
 import { FacultyCommandMetrics } from "@/tenant/features/faculty/components/FacultyCommandMetrics";
 import { FacultyDesignationsSetupSection } from "@/tenant/features/faculty/components/FacultyDesignationsSetupSection";
@@ -43,7 +42,6 @@ export function FacultyPageView({
   tabPanelProps,
   pageOverlaysProps,
 }: FacultyPageViewProps): React.JSX.Element {
-  const { t } = useTranslation();
   const terminology = useIndustryTerminology();
 
   const spec: ModuleTierPageSpec = {

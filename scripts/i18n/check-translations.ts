@@ -13,13 +13,14 @@ function extractTranslations(filePath: string): Record<string, string> {
   }
   const content = fs.readFileSync(filePath, "utf-8");
   const result: Record<string, string> = {};
-  const lines = content.split("\n");
 
-  for (const line of lines) {
-    const match = line.match(/^\s*"([^"]+)":\s*"(.*)",?$/);
-    if (match) {
-      result[match[1]] = match[2];
-    }
+  // Prettier may wrap long entries (`"key":\n "value"`, escaped quotes inside
+  // values); some entries are single-quoted for embedded double quotes. Match
+  // key/value pairs across lines in both quote styles instead of per single line.
+  const entryPattern = /"([^"\\]+)":\s*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)')(\s*,|\s*$)/gm;
+  let match: RegExpExecArray | null;
+  while ((match = entryPattern.exec(content)) !== null) {
+    result[match[1]] = match[2] ?? match[3] ?? "";
   }
   return result;
 }

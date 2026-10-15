@@ -6,7 +6,7 @@ import {
   type FacultyQuickFilter,
 } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrHooks";
+import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
 import { buildFacultyDirectoryQuery } from "@/tenant/features/faculty/hooks/facultyQueryShared";
 import type { useFacultyColumnLayout } from "@/tenant/features/faculty/hooks/useFacultyColumnLayout";
 import {

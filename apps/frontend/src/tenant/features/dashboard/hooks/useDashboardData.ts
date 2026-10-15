@@ -30,7 +30,11 @@ import { useFinanceMetrics } from "@/tenant/hooks/collections/finance";
 import { useHasanatMetrics } from "@/tenant/hooks/collections/hasanat";
 import { useQuestionBankMetrics } from "@/tenant/hooks/collections/questionBank";
 import { useAccountingMetrics } from "@/tenant/hooks/collections/accounting";
-import { useDashboardSummaryQuery } from "@/tenant/hooks/collections/dashboard";
+// Imported from its defining module (not the `collections/dashboard` barrel) to break the
+// cycle: collections/dashboard re-exports `useDashboardData`, which would otherwise import
+// back through the barrel and make Vite's dev ESM fail to expose the barrel's re-exports
+// ("does not provide an export named 'DASHBOARD_SUMMARY_QUERY_KEY_ROOT'").
+import { useDashboardSummaryQuery } from "./useDashboardSetupConfig";
 
 import {
   todayISO,

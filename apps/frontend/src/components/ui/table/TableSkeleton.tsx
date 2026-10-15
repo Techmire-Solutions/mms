@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface TableSkeletonProps {
   /** Number of columns — must match the real table to reserve identical geometry. Defaults to 5. */
@@ -30,12 +31,13 @@ export function TableSkeleton({
   columnWidths,
   className,
 }: TableSkeletonProps): React.JSX.Element {
+  const { t } = useTranslation();
   const resolvedCols = columns ?? cols ?? 5;
   const colIndices = Array.from({ length: resolvedCols }, (_, i) => i);
   return (
     <div
       role="status"
-      aria-label="Loading table data"
+      aria-label={t("common.loading")}
       className={cn("relative w-full max-w-full overflow-x-auto", className)}
     >
       <table
@@ -76,7 +78,7 @@ export function TableSkeleton({
           ))}
         </tbody>
       </table>
-      <span className="sr-only">Loading…</span>
+      <span className="sr-only">{t("common.loading")}</span>
     </div>
   );
 }

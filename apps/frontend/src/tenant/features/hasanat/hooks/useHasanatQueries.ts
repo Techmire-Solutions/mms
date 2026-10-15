@@ -10,17 +10,23 @@ import { HASANAT_MODULE_MANIFEST, normalizeHasanatReportComparisonQuery } from "
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
-import { tsrClient } from "@/lib/api";
-
-export const HASANAT_DENOMS_QUERY_KEY = ["hasanat", "denoms", "list"] as const;
-export const HASANAT_BATCHES_QUERY_KEY = ["hasanat", "batches", "list"] as const;
-export const HASANAT_DISTRIBUTIONS_QUERY_KEY = ["hasanat", "distributions", "list"] as const;
-export const HASANAT_REDEMPTIONS_QUERY_KEY = ["hasanat", "redemptions", "list"] as const;
-export const HASANAT_METRICS_QUERY_KEY = ["hasanat", "metrics"] as const;
-export const HASANAT_REPORT_AGGREGATES_QUERY_KEY = [
-  HASANAT_MODULE_MANIFEST.collectionKey,
-  "report-aggregates",
-] as const;
+import { apiContract, tsrClient } from "@/lib/api";
+import {
+  HASANAT_DENOMS_QUERY_KEY,
+  HASANAT_BATCHES_QUERY_KEY,
+  HASANAT_DISTRIBUTIONS_QUERY_KEY,
+  HASANAT_REDEMPTIONS_QUERY_KEY,
+  HASANAT_METRICS_QUERY_KEY,
+  HASANAT_REPORT_AGGREGATES_QUERY_KEY,
+} from "./hasanatQueryKeys";
+export {
+  HASANAT_DENOMS_QUERY_KEY,
+  HASANAT_BATCHES_QUERY_KEY,
+  HASANAT_DISTRIBUTIONS_QUERY_KEY,
+  HASANAT_REDEMPTIONS_QUERY_KEY,
+  HASANAT_METRICS_QUERY_KEY,
+  HASANAT_REPORT_AGGREGATES_QUERY_KEY,
+};
 export const HASANAT_API = HASANAT_MODULE_MANIFEST.restBasePath;
 
 export function hasanatCommandMetricsQueryOptions() {
@@ -158,5 +164,97 @@ export function useHasanatMetrics(options?: { enabled?: boolean }) {
     moduleId: HASANAT_MODULE_MANIFEST.moduleId,
     apiPath: HASANAT_MODULE_MANIFEST.restBasePath,
     enabled: canRead && (options?.enabled ?? true),
+  });
+}
+
+// --- Contract-driven list queryOptions & mutation hooks ----------------------
+
+import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { invalidateHasanatQueries } from "@/tenant/features/hasanat/hooks/invalidateHasanatQueries";
+
+export function hasanatListQueryOptions(query: Record<string, unknown> = {}) {
+  return queryOptions({
+    queryKey: [...HASANAT_DISTRIBUTIONS_QUERY_KEY, "contract-list", query] as const,
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.hasanat.listDistributions({
+        query: query as Record<string, string>,
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        throw new Error("Failed to fetch hasanat distributions");
+      }
+      return response.body;
+    },
+    placeholderData: (prev) => prev,
+    staleTime: 15_000,
+  });
+}
+
+export function useHasanatContractList(query: Record<string, unknown> = {}, enabled = true) {
+  const { can } = usePermissions();
+  return tsrClient.hasanat.listDistributions.useQuery({
+    queryKey: [...HASANAT_DISTRIBUTIONS_QUERY_KEY, "contract-list", query],
+    queryData: { query },
+    staleTime: 15_000,
+    enabled: can("hasanat.read") && enabled,
+  });
+}
+
+export function useHasanatContractDenoms(enabled = true) {
+  const { can } = usePermissions();
+  return tsrClient.hasanat.listDenoms.useQuery({
+    queryKey: [...HASANAT_DENOMS_QUERY_KEY, "contract-list"],
+    queryData: { query: {} },
+    staleTime: 30_000,
+    enabled: can("hasanat.read") && enabled,
+  });
+}
+
+export function useHasanatContractBatches(enabled = true) {
+  const { can } = usePermissions();
+  return tsrClient.hasanat.listBatches.useQuery({
+    queryKey: [...HASANAT_BATCHES_QUERY_KEY, "contract-list"],
+    queryData: { query: {} },
+    staleTime: 30_000,
+    enabled: can("hasanat.read") && enabled,
+  });
+}
+
+export function useHasanatContractRedemptions(enabled = true) {
+  const { can } = usePermissions();
+  return tsrClient.hasanat.listRedemptions.useQuery({
+    queryKey: [...HASANAT_REDEMPTIONS_QUERY_KEY, "contract-list"],
+    queryData: { query: {} },
+    staleTime: 30_000,
+    enabled: can("hasanat.read") && enabled,
+  });
+}
+
+export function useHasanatContractBulkDelete() {
+  const queryClient = useQueryClient();
+  return tsrClient.hasanat.bulkDeleteDistributions.useMutation({
+    onSuccess: () => invalidateHasanatQueries(queryClient),
+  });
+}
+
+export function useHasanatContractBulkRestore() {
+  const queryClient = useQueryClient();
+  return tsrClient.hasanat.bulkRestoreDistributions.useMutation({
+    onSuccess: () => invalidateHasanatQueries(queryClient),
+  });
+}
+
+export function useHasanatContractDeleteDistribution() {
+  const queryClient = useQueryClient();
+  return tsrClient.hasanat.deleteDistribution.useMutation({
+    onSuccess: () => invalidateHasanatQueries(queryClient),
+  });
+}
+
+export function useHasanatContractRestoreDistribution() {
+  const queryClient = useQueryClient();
+  return tsrClient.hasanat.restoreDistribution.useMutation({
+    onSuccess: () => invalidateHasanatQueries(queryClient),
   });
 }

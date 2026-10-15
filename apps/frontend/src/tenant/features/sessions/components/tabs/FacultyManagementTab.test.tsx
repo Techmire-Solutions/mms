@@ -102,7 +102,7 @@ describe("FacultyManagementTab", () => {
     });
 
     const deleteBtn = document.body.querySelector<HTMLButtonElement>(
-      'button[aria-label="Delete faculty"]',
+      'button[aria-label="sessions.faculty.deleteAria"]',
     );
     expect(deleteBtn).not.toBeNull();
 

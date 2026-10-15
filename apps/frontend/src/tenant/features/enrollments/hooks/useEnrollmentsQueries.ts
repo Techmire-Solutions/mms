@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, queryOptions, useQueryClient } from "@tanstack/react-query";
 import type {
   Enrollment,
   EnrollmentsCommandMetricsSnapshot,
@@ -15,6 +15,7 @@ import {
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient, apiContract } from "@/lib/api";
+import { invalidateEnrollmentsQueries } from "@/tenant/features/enrollments/hooks/invalidateEnrollmentsQueries";
 
 export const ENROLLMENTS_QUERY_KEY = ["enrollments", "list"] as const;
 export const ENROLLMENTS_METRICS_QUERY_KEY = ["enrollments", "metrics"] as const;
@@ -197,3 +198,77 @@ export function useEnrollmentsWidgetAggregates(
 
 // keep URL builder available for consumers who need raw URLs
 export { buildEnrollmentsPageUrl };
+
+// --- Contract-driven list queryOptions & mutation hooks ----------------------
+
+export function enrollmentsListQueryOptions(query: Record<string, unknown> = {}) {
+  return queryOptions({
+    queryKey: [...ENROLLMENTS_QUERY_KEY, query] as const,
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.enrollments.list({
+        query: query as Record<string, string>,
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        throw new Error("Failed to fetch enrollments");
+      }
+      return response.body;
+    },
+    placeholderData: (prev) => prev,
+    staleTime: 15_000,
+  });
+}
+
+export function useEnrollmentsContractList(query: Record<string, unknown>, enabled = true) {
+  return tsrClient.enrollments.list.useQuery({
+    queryKey: [...ENROLLMENTS_QUERY_KEY, query],
+    queryData: { query },
+    staleTime: 15_000,
+    enabled,
+  });
+}
+
+export function useEnrollmentsContractGet(id: string, enabled = true) {
+  return tsrClient.enrollments.get.useQuery({
+    queryKey: [...ENROLLMENTS_QUERY_KEY, "detail", id],
+    queryData: { params: { id } },
+    enabled,
+    staleTime: 30_000,
+  });
+}
+
+export function useEnrollmentsContractCreate() {
+  const queryClient = useQueryClient();
+  return tsrClient.enrollments.create.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
+}
+
+export function useEnrollmentsContractUpdate() {
+  const queryClient = useQueryClient();
+  return tsrClient.enrollments.update.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
+}
+
+export function useEnrollmentsContractDelete() {
+  const queryClient = useQueryClient();
+  return tsrClient.enrollments.delete.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
+}
+
+export function useEnrollmentsContractBulkDelete() {
+  const queryClient = useQueryClient();
+  return tsrClient.enrollments.bulkDelete.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
+}
+
+export function useEnrollmentsContractBulkRestore() {
+  const queryClient = useQueryClient();
+  return tsrClient.enrollments.bulkRestore.useMutation({
+    onSuccess: () => invalidateEnrollmentsQueries(queryClient),
+  });
+}

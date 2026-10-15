@@ -9,6 +9,7 @@ import {
   softDeleteFacultyDesignation,
 } from "../../../faculty/use-cases/facultyCatalogUseCases.js";
 import { auditFaculty } from "./facultyRouteHelpers.js";
+import { broadcastCollection } from "../../../lib/livePush.js";
 import {
   authorizeCatalogRoute,
   canArchiveFacultySetup,
@@ -59,6 +60,7 @@ export async function handleRestoreDesignation({
         body: { type: "not_found", message: "Designation not found in trash" },
       };
     }
+    await broadcastCollection("faculty");
     return { status: 200 as const, body: { designation } };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not restore designation";
@@ -89,6 +91,7 @@ export async function handleSaveDesignation({
       `Saved faculty designation ${designation.name} (${designation.departmentName ?? designation.departmentId})`,
       designation.id,
     );
+    await broadcastCollection("faculty");
     return { status: 200 as const, body: { designation } };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid designation";
@@ -133,6 +136,7 @@ export async function handleDeleteDesignation({
       `Deleted faculty designation ${id}`,
       id,
     );
+    await broadcastCollection("faculty");
     return { status: 200 as const, body: { success: true as const } };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to delete designation";

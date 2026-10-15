@@ -12,7 +12,7 @@ import {
   useUsersContractDelete,
   useUsersContractRestore,
   useUsersContractVerifyEmail,
-} from "./useUsersTsrHooks";
+} from "./useUsersQueries";
 import { invalidateUsersQueries } from "./invalidateUsersQueries";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
@@ -20,11 +20,15 @@ import { invalidateUsersQueries } from "./invalidateUsersQueries";
 const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
 
-vi.mock("@tanstack/react-query", () => ({
-  useQueryClient: () => ({
-    invalidateQueries: vi.fn(),
-  }),
-}));
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  return {
+    ...actual,
+    useQueryClient: () => ({
+      invalidateQueries: vi.fn(),
+    }),
+  };
+});
 
 vi.mock("@/lib/api", () => ({
   tsrClient: {
@@ -68,7 +72,7 @@ function renderTestHook<T>(hookFn: () => T): { result: { current: T }; unmount: 
   };
 }
 
-describe("useUsersTsrHooks", () => {
+describe("useUsersContract", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

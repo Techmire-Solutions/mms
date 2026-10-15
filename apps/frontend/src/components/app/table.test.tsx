@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   Table,
@@ -16,6 +16,10 @@ import {
   getTableCellAlignClass,
   getAriaSort,
 } from "../ui/table";
+
+vi.mock("@/hooks/useTranslation", () => ({
+  useTranslation: () => ({ t: (key: string) => (key === "common.loading" ? "Loading…" : key) }),
+}));
 
 describe("table SSOT system", () => {
   describe("getTableCellWrapClass & getTableCellAlignClass", () => {
@@ -360,7 +364,7 @@ describe("table SSOT system", () => {
     it("renders with role=status and aria-label for screen readers", () => {
       const html = renderToStaticMarkup(<TableSkeleton columns={2} />);
       expect(html).toContain('role="status"');
-      expect(html).toContain('aria-label="Loading table data"');
+      expect(html).toContain('aria-label="Loading…"');
       expect(html).toContain("Loading…");
     });
 

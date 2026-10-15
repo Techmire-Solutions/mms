@@ -2,7 +2,14 @@ import { expect, test, type Page } from "@playwright/test";
 import { assertNoSeriousA11yViolations } from "../../helpers/a11y.js";
 import { waitForAppShellReady, waitForToastsToClear } from "../../helpers/responsive.js";
 import { bootstrapAuthenticatedTenantViaApi } from "../../helpers/tenantApiBootstrap.js";
-import { seedContacts } from "../../helpers/tenantOperations.js";
+import {
+  seedContacts,
+  seedFaculty,
+  seedFacultySetup,
+  seedInvoices,
+  seedSessions,
+  seedStudents,
+} from "../../helpers/tenantOperations.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";
@@ -17,11 +24,12 @@ const platformPassword = "Pa$$w0rd123";
  * markup (table rows, filter chrome, detail drawers, metric widgets) was never checked.
  *
  * The seeded tenant (20 deterministic contacts via `seed-20-contacts.ts`) is audited in
- * **advisory** mode: violations are logged + annotated, never fatal, because these
- * surfaces were never gate-audited before. Once clean, drop `advisory: true` to gate them.
+ * **gating** mode: serious/critical violations fail the build (same guard as the shell
+ * sweep). It ran advisory for the first passes; now clean, it gates — see
+ * `docs/a11y-baseline.md`.
  *
- * The precondition — that rows actually rendered — IS a hard assertion: an advisory audit
- * of an accidentally-empty page would be a meaningless green.
+ * The precondition — that rows actually rendered — IS a hard assertion: a gating audit of
+ * an accidentally-empty page would be a meaningless green.
  */
 
 async function gotoAndSettle(
@@ -47,8 +55,18 @@ async function gotoAndSettle(
   await page.waitForTimeout(400);
 }
 
-/** Provisions a fresh tenant via the API and seeds 20 contacts so surfaces render populated. */
-async function bootstrapSeededTenant(page: Page, tag: string): Promise<string> {
+/** Provisions a fresh tenant via the API and seeds contacts (optionally students) so surfaces render populated. */
+async function bootstrapSeededTenant(
+  page: Page,
+  tag: string,
+  options?: {
+    students?: boolean;
+    sessions?: boolean;
+    faculty?: boolean;
+    finance?: boolean;
+    enrollments?: boolean;
+  },
+): Promise<string> {
   const subdomain = `a11ypop${tag}${Date.now()}`;
   const tenantOrigin = `http://${subdomain}.localhost:5173`;
   await bootstrapAuthenticatedTenantViaApi(page, {
@@ -61,13 +79,24 @@ async function bootstrapSeededTenant(page: Page, tag: string): Promise<string> {
     platformPassword,
   });
   seedContacts(subdomain);
+  // Students reference the seeded contacts (`c-seed-dummy-*`), so contacts must be seeded first.
+  if (options?.students) seedStudents(subdomain);
+  if (options?.sessions) seedSessions(subdomain);
+  if (options?.faculty) {
+    // Faculty members reference the seeded contacts and the dept-default/desig-default catalog.
+    seedFacultySetup(subdomain);
+    seedFaculty(subdomain);
+  }
+  if (options?.finance) seedInvoices(subdomain);
+  // The enrollment wizard's student picker needs seeded students (contacts first).
+  if (options?.enrollments) seedStudents(subdomain);
   return tenantOrigin;
 }
 
 /**
- * Best-effort row → detail drawer audit. Advisory and non-failing on purpose: if the first
- * row does not open a drawer (or its first control does something else), it logs and returns
- * rather than blocking the gate on an interaction the shell sweep never exercised.
+ * Best-effort row → detail drawer audit. If the first row does not open a drawer (or its
+ * first control does something else) it returns early rather than blocking the gate on an
+ * interaction the shell sweep never exercised; when a drawer does open, the audit gates.
  */
 async function tryAuditRowDrawer(page: Page, context: string): Promise<void> {
   const row = page.locator("table:visible tbody tr").first();
@@ -81,13 +110,13 @@ async function tryAuditRowDrawer(page: Page, context: string): Promise<void> {
     .catch(() => false);
   if (!opened) return;
 
-  await assertNoSeriousA11yViolations(page, { context: `${context} (row detail)`, advisory: true });
+  await assertNoSeriousA11yViolations(page, { context: `${context} (row detail)` });
   await page.keyboard.press("Escape").catch(() => undefined);
   await drawer.waitFor({ state: "hidden", timeout: 3_000 }).catch(() => undefined);
 }
 
 test.describe("accessibility smoke — populated surfaces @smoke", () => {
-  test("populated contacts directory + detail drawer @ 1440 (advisory)", async ({ page }) => {
+  test("populated contacts directory + detail drawer @ 1440", async ({ page }) => {
     test.setTimeout(300_000);
     const tenantOrigin = await bootstrapSeededTenant(page, "d");
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -98,7 +127,6 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
 
     await assertNoSeriousA11yViolations(page, {
       context: "contacts (populated table) @ 1440px",
-      advisory: true,
     });
     await tryAuditRowDrawer(page, "contacts (populated) @ 1440px");
 
@@ -106,11 +134,10 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
     await gotoAndSettle(page, tenantOrigin, "/", "#main-content");
     await assertNoSeriousA11yViolations(page, {
       context: "dashboard (populated metrics) @ 1440px",
-      advisory: true,
     });
   });
 
-  test("populated contacts directory @ 375 (advisory)", async ({ page }) => {
+  test("populated contacts directory @ 375", async ({ page }) => {
     test.setTimeout(300_000);
     const tenantOrigin = await bootstrapSeededTenant(page, "m");
     await page.setViewportSize({ width: 375, height: 812 });
@@ -118,7 +145,80 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
     await gotoAndSettle(page, tenantOrigin, "/contacts", "#main-content");
     await assertNoSeriousA11yViolations(page, {
       context: "contacts (populated) @ 375px",
-      advisory: true,
     });
+  });
+
+  test("populated students directory + detail drawer @ 1440", async ({ page }) => {
+    test.setTimeout(300_000);
+    const tenantOrigin = await bootstrapSeededTenant(page, "s", { students: true });
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await gotoAndSettle(page, tenantOrigin, "/students", "#main-content");
+    // Precondition: the directory is genuinely populated (else the audit is meaningless).
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+
+    await assertNoSeriousA11yViolations(page, {
+      context: "students (populated table) @ 1440px",
+    });
+    await tryAuditRowDrawer(page, "students (populated) @ 1440px");
+  });
+
+  test("populated sessions directory + detail drawer @ 1440", async ({ page }) => {
+    test.setTimeout(300_000);
+    const tenantOrigin = await bootstrapSeededTenant(page, "se", { sessions: true });
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await gotoAndSettle(page, tenantOrigin, "/sessions", "#main-content");
+    // Precondition: the directory is genuinely populated (else the audit is meaningless).
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+
+    await assertNoSeriousA11yViolations(page, {
+      context: "sessions (populated table) @ 1440px",
+    });
+    await tryAuditRowDrawer(page, "sessions (populated) @ 1440px");
+  });
+
+  test("populated faculty directory + detail drawer @ 1440", async ({ page }) => {
+    test.setTimeout(300_000);
+    const tenantOrigin = await bootstrapSeededTenant(page, "f", { faculty: true });
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await gotoAndSettle(page, tenantOrigin, "/faculty", "#main-content");
+    // Precondition: the directory is genuinely populated (else the audit is meaningless).
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+
+    await assertNoSeriousA11yViolations(page, {
+      context: "faculty (populated table) @ 1440px",
+    });
+    await tryAuditRowDrawer(page, "faculty (populated) @ 1440px");
+  });
+
+  test("populated finance directory + detail drawer @ 1440", async ({ page }) => {
+    test.setTimeout(300_000);
+    const tenantOrigin = await bootstrapSeededTenant(page, "fi", { finance: true });
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await gotoAndSettle(page, tenantOrigin, "/finance", "#main-content");
+    // Precondition: the directory is genuinely populated (else the audit is meaningless).
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+
+    await assertNoSeriousA11yViolations(page, {
+      context: "finance (populated table) @ 1440px",
+    });
+    await tryAuditRowDrawer(page, "finance (populated) @ 1440px");
+  });
+
+  test("new enrollment wizard @ 1440", async ({ page }) => {
+    test.setTimeout(300_000);
+    const tenantOrigin = await bootstrapSeededTenant(page, "en", { enrollments: true });
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    await gotoAndSettle(page, tenantOrigin, "/enrollments", "#main-content");
+    await page.getByRole("button", { name: "New Enrollment" }).first().click();
+    const wizard = page.getByRole("dialog", { name: "New Enrollment" });
+    await expect(wizard).toBeVisible({ timeout: 20_000 });
+
+    await assertNoSeriousA11yViolations(page, { context: "enrollment wizard @ 1440px" });
+    await page.keyboard.press("Escape").catch(() => undefined);
   });
 });
