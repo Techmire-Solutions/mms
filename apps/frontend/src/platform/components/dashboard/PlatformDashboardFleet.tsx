@@ -7,7 +7,7 @@ import {
   type FleetStatusFilter,
 } from "@/platform/components/dashboard/PlatformDashboardFleetControls";
 import { PlatformDashboardFleetTable } from "@/platform/components/dashboard/PlatformDashboardFleetTable";
-import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@shared/ui";
 import { notify } from "@/lib/notify";
 
 const PAGE_SIZE = 5;
@@ -113,6 +113,7 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
         title={t("platform.fleetExportTitle")}
         description={t("platform.fleetExportHint", { count: selected.size })}
         confirmLabel={t("platform.workspaces.exportSelected")}
+        cancelLabel={t("common.cancel")}
         onConfirm={() => {
           notify.success(t("platform.fleetExportQueued", { count: selected.size }));
           setSelected(new Set());

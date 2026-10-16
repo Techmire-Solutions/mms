@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { WorkspacePasswordField } from "./WorkspacePasswordField";
 import { WorkspaceAdminDialogFooter } from "./WorkspaceAdminDialogFooter";
-import { CredentialsResultCard } from "@/components/app/CredentialsResultCard";
+import { CredentialsResultCard } from "@shared/ui";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),

@@ -1,21 +1,26 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
-import { Input } from "@shared/ui";
-import { LeadingIconInput } from "@/components/app/LeadingIconInput";
-import { Textarea } from "@shared/ui";
-import { Checkbox } from "@shared/ui";
-import { Switch } from "@shared/ui";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Badge } from "@shared/ui";
-import { StatusBadge } from "@/components/app/StatusBadge";
-import { EmptyState } from "@/components/app/EmptyState";
-import { ErrorState } from "@/components/app/ErrorState";
-import { WarningCallout } from "@/components/app/WarningCallout";
-import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
+import {
+  Button,
+  Input,
+  LeadingIconInput,
+  Textarea,
+  Checkbox,
+  Switch,
+  DensityToggle,
+  FormSelect,
+  type DensityMode,
+} from "@shared/ui";
+import {
+  Badge,
+  EmptyState,
+  ErrorState,
+  WarningCallout,
+  StatusBadge,
+  CompactSegmentedControl,
+} from "@shared/ui";
 import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
-import { DensityToggle, type DensityMode } from "@/components/app/DensityToggle";
 import { Inbox } from "lucide-react";
 
 export function DesignSystemActionsDemo(): React.JSX.Element {

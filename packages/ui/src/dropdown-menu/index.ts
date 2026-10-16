@@ -15,3 +15,4 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
 } from "./DropdownMenu";
+export { UserNavDropdown, type UserNavDropdownProps } from "./UserNavDropdown";

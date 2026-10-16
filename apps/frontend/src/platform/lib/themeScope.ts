@@ -5,9 +5,7 @@ import {
   mergeGlobalSettings,
   type BrandingSettings,
   type GlobalSettings,
-  isApexHost,
 } from "@mms/shared";
-import { getAppDomain } from "@/lib/config/tenantConfig";
 
 /**
  * Hardcoded MMS platform theme for the apex domain (marketing, console, onboarding).
@@ -25,11 +23,7 @@ export const MMS_PLATFORM_BRANDING: BrandingSettings = mergeBrandingSettings({
 export const MMS_PLATFORM_GLOBAL_SETTINGS: GlobalSettings =
   mergeGlobalSettings(DEFAULT_GLOBAL_SETTINGS);
 
-/** True when the hostname is a tenant workspace (`{subdomain}.localhost` or `{subdomain}.{platform-domain}`). */
-export function isTenantHost(): boolean {
-  if (typeof window === "undefined") return false;
-  return !isApexHost(window.location.hostname, getAppDomain());
-}
+export { isTenantHost } from "@/lib/config/tenantConfig";
 
 /**
  * Platform apex is always English/LTR. Same lock applies on tenant hosts for

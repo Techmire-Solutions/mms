@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import type { BreadcrumbItem } from "@/components/app/Breadcrumb";
+import type { BreadcrumbItem } from "@shared/ui";
 
 export type PlatformBreadcrumbSegment = BreadcrumbItem;
 

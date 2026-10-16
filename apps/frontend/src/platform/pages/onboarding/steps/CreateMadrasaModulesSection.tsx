@@ -1,7 +1,7 @@
 import React from "react";
 import { LayoutDashboard } from "lucide-react";
 import { SYSTEM_MODULES } from "@mms/shared";
-import { SectionCard } from "@/components/app/SectionCard";
+import { SectionCard } from "@shared/ui";
 import { PlatformModuleSelectCard } from "@/platform/components/workspace/PlatformModuleSelectCard";
 import { PlatformModulePresetsBar } from "@/platform/components/workspace/PlatformModulePresetsBar";
 import type { CreateMadrasaController } from "@/platform/pages/onboarding/steps/useCreateMadrasaController";

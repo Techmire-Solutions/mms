@@ -1,5 +1,5 @@
 import React from "react";
-import { StatusBadge } from "@/components/app/StatusBadge";
+import { StatusBadge } from "@shared/ui";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 

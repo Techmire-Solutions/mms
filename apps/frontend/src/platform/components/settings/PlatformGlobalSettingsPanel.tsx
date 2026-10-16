@@ -5,13 +5,19 @@ import {
   usePlatformSettingsQuery,
   useUpdatePlatformSettings,
 } from "@/platform/hooks/usePlatformSettings";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@shared/ui";
-import { Button } from "@shared/ui";
-import { Input } from "@shared/ui";
-import { Switch } from "@shared/ui";
-import { Label } from "@shared/ui";
-import { CardSkeleton } from "@/components/app/LoadingState";
-import { ErrorState } from "@/components/app/ErrorState";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Button,
+  Input,
+  Switch,
+  Label,
+  ErrorState,
+  CardSkeleton,
+} from "@shared/ui";
 
 export function PlatformGlobalSettingsPanel(): React.JSX.Element {
   const { t } = useTranslation();

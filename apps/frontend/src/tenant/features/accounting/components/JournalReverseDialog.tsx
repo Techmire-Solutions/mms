@@ -66,7 +66,7 @@ export function JournalReverseDialog({
         return request ? onConfirm(request) : false;
       }}
     >
-      <div className="max-h-[55vh] space-y-4 overflow-y-auto px-1 pb-1">
+      <div className="max-h-96 space-y-4 overflow-y-auto px-1 pb-1">
         <section aria-labelledby={`${ids.date}-original`} className="space-y-2">
           <h3 id={`${ids.date}-original`} className="text-sm font-semibold text-foreground">
             {t("accounting.journal.reverse.originalSection")}

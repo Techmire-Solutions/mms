@@ -9,7 +9,7 @@ import {
   ResponsiveAccordionTabs,
   type AccordionTabItem,
 } from "@/components/app/ResponsiveAccordionTabs";
-import { CardSkeleton } from "@/components/app/LoadingState";
+import { CardSkeleton } from "@shared/ui";
 import { PlatformGlobalSettingsPanel } from "@/platform/components/settings/PlatformGlobalSettingsPanel";
 import { PlatformThemeSettingsPanel } from "@/platform/components/settings/PlatformThemeSettingsPanel";
 import { PlatformSecuritySettingsPanel } from "@/platform/components/settings/PlatformSecuritySettingsPanel";

@@ -15,8 +15,7 @@ import {
 } from "recharts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ReportChartCard } from "@/components/reports/ReportChartCard";
-import { WidgetCard } from "@/components/app/WidgetCard";
-import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
+import { WidgetCard, WidgetCardHeader } from "@shared/ui";
 import { usePlatformActivityTrend } from "@/platform/hooks/usePlatformTelemetry";
 
 export interface PlatformDashboardChartsProps {

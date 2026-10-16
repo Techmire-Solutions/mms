@@ -2,9 +2,10 @@ import React from "react";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 import WorkspaceLogo from "@/platform/components/WorkspaceLogo";
 import { tenantUrl } from "@/lib/config/tenantConfig";
-import { CopyButton } from "@/components/app/CopyButton";
+import { CopyButton } from "@shared/ui";
 import { ExternalLink, Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
 
 interface WorkspaceIdentityCellProps {
   workspace: PlatformWorkspaceRowData;
@@ -58,7 +59,7 @@ export function WorkspaceIdentityCell({
           <CopyButton
             text={tenantLink}
             className="min-h-11 min-w-11 p-0 text-muted-foreground hover:text-foreground opacity-60 hover:opacity-100 transition-opacity rounded-md cursor-pointer"
-            showToast
+            onCopy={() => notify.success(t("contacts.table.copied"))}
           />
         </div>
         {workspace.adminEmail ? (

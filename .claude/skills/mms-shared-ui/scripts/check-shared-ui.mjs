@@ -86,12 +86,8 @@ const crossConsoleImports = [];
 const TENANT_IMPORTING_PLATFORM = /from\s+["']@\/platform\/([^"']+)["']/g;
 const tenantFiles = walkFiles(TENANT_DIR, isCodeFile);
 
-// Grandfathered domain bridges tracked for future decoupling
-const CROSS_CONSOLE_ALLOWLIST = new Set([
-  "apps/frontend/src/tenant/components/WorkspaceDisabledScreen.tsx:@/platform/components/PlatformPageShell",
-  "apps/frontend/src/tenant/hooks/useBranding.ts:@/platform/lib/themeScope",
-  "apps/frontend/src/platform/lib/themeScope.test.ts:@/tenant/hooks/useWorkspaceBySubdomain",
-]);
+// Zero cross-console imports between Tenant and Platform
+const CROSS_CONSOLE_ALLOWLIST = new Set([]);
 
 for (const file of tenantFiles) {
   const content = fs.readFileSync(file, "utf8");
@@ -134,6 +130,7 @@ const facadeViolations = [];
 const facadeFiles = walkFiles(UI_FACADE_DIR, (f) => f.endsWith(".tsx") || f.endsWith(".ts"));
 
 const SHARED_PRIMITIVE_NAMES = new Set([
+  "alert-dialog.tsx",
   "avatar.tsx",
   "badge.tsx",
   "button.tsx",
@@ -150,8 +147,19 @@ const SHARED_PRIMITIVE_NAMES = new Set([
   "slider.tsx",
   "switch.tsx",
   "table.tsx",
+  "TableCell.tsx",
+  "TableHead.tsx",
+  "TableSkeleton.tsx",
+  "TableEmpty.tsx",
+  "tableTypes.ts",
+  "tableUtils.ts",
+  "useTableSort.ts",
   "textarea.tsx",
+  "toast.tsx",
+  "toaster.tsx",
+  "toastStore.ts",
   "tooltip.tsx",
+  "use-toast.tsx",
 ]);
 
 for (const file of facadeFiles) {
@@ -185,6 +193,7 @@ for (const file of facadeFiles) {
 // ─────────────────────────────────────────────────────────────────────────────
 const duplicatePrimitiveFiles = [];
 const BANNED_LOCAL_PRIMITIVES = new Set([
+  "AlertDialog.tsx",
   "Button.tsx",
   "Badge.tsx",
   "Input.tsx",
@@ -200,6 +209,45 @@ const BANNED_LOCAL_PRIMITIVES = new Set([
   "Tooltip.tsx",
   "Skeleton.tsx",
   "Avatar.tsx",
+  "Toast.tsx",
+  "Toaster.tsx",
+  "Callout.tsx",
+  "WarningCallout.tsx",
+  "ErrorState.tsx",
+  "CardSkeleton.tsx",
+  "StatsSkeleton.tsx",
+  "TableSkeleton.tsx",
+  "TableEmpty.tsx",
+  "TableCell.tsx",
+  "TableHead.tsx",
+  "DensityToggle.tsx",
+  "LeadingIconInput.tsx",
+  "CopyButton.tsx",
+  "NotificationsPopover.tsx",
+  "PasswordStrengthMeter.tsx",
+  "PasswordInput.tsx",
+  "OtpInput.tsx",
+  "CardTitleBar.tsx",
+  "SectionCard.tsx",
+  "WidgetCard.tsx",
+  "WidgetCardHeader.tsx",
+  "Breadcrumb.tsx",
+  "TypedConfirmDialog.tsx",
+  "SectionLabel.tsx",
+  "FormSubmitActions.tsx",
+  "ProgressBar.tsx",
+  "WizardStepIndicator.tsx",
+  "ListPagination.tsx",
+  "StatusBadge.tsx",
+  "CompactSegmentedControl.tsx",
+  "ConfirmAlertDialog.tsx",
+  "ReviewList.tsx",
+  "FormCheckboxCard.tsx",
+  "CredentialsResultCard.tsx",
+  "AppFooter.tsx",
+  "SessionTimeoutModal.tsx",
+  "SearchBar.tsx",
+  "FormSelect.tsx",
 ]);
 
 for (const file of [...platformFiles, ...tenantFiles]) {

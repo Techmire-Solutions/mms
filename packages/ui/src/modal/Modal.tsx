@@ -8,11 +8,12 @@ export interface ModalProps {
   onClose: () => void;
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | React.ComponentType<{ className?: string }>;
   size?: "sm" | "md" | "lg" | "xl" | "2xl";
   headerExtra?: React.ReactNode;
   footer?: React.ReactNode;
   dismissible?: boolean;
+  priority?: boolean;
   className?: string;
   children: React.ReactNode;
 }
@@ -39,6 +40,7 @@ export function Modal({
   headerExtra,
   footer,
   dismissible = true,
+  priority = false,
   className,
   children,
 }: ModalProps): React.JSX.Element | null {
@@ -63,7 +65,10 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className={cn(
+        "fixed inset-0 flex items-center justify-center p-4 sm:p-6",
+        priority ? "z-[60]" : "z-50",
+      )}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
@@ -92,7 +97,11 @@ export function Modal({
             <div className="flex items-center gap-3">
               {icon && (
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary [&_svg]:size-5">
-                  {icon}
+                  {React.isValidElement(icon)
+                    ? icon
+                    : React.createElement(icon as React.ComponentType<{ className?: string }>, {
+                        className: "h-5 w-5",
+                      })}
                 </div>
               )}
               <div className="space-y-1">

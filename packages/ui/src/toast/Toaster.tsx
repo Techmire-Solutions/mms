@@ -6,7 +6,8 @@ export function Toaster(): React.JSX.Element {
   const { toasts, dismiss } = useToast();
 
   return (
-    <div
+    <section
+      role="region"
       aria-label="Notifications"
       className="pointer-events-none fixed bottom-0 end-0 z-50 flex max-h-screen w-full flex-col-reverse p-4 sm:max-w-md gap-2"
     >
@@ -20,6 +21,6 @@ export function Toaster(): React.JSX.Element {
           onClose={() => dismiss(item.id)}
         />
       ))}
-    </div>
+    </section>
   );
 }

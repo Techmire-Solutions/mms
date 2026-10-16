@@ -4,16 +4,18 @@ import { Check, X, Shield } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissionMatrix } from "@/platform/hooks/usePlatformPermissionMatrix";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { ErrorState } from "@/components/app/ErrorState";
 import type { PlatformUserProfile } from "@mms/shared";
-import { SearchBar } from "@/components/app/SearchBar";
-import { Button } from "@shared/ui";
-import { Badge } from "@shared/ui";
-import { EmptyState } from "@/components/app/EmptyState";
-import { CardSkeleton } from "@/components/app/LoadingState";
+import {
+  Button,
+  Badge,
+  Input,
+  EmptyState,
+  ErrorState,
+  CardSkeleton,
+  Field,
+  SearchBar,
+} from "@shared/ui";
 import { FormModal } from "@/components/app/FormModal";
-import { Field } from "@/components/app/FormField";
-import { Input } from "@shared/ui";
 import { cn } from "@/lib/utils";
 
 export function PlatformPermissionMatrix(): React.JSX.Element {

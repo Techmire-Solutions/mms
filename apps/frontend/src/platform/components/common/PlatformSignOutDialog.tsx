@@ -1,4 +1,4 @@
-import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ConfirmAlertDialog } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface PlatformSignOutDialogProps {

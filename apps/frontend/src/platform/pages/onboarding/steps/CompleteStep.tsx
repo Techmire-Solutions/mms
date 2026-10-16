@@ -7,9 +7,7 @@ import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { ClipboardCheck } from "lucide-react";
 import { SYSTEM_MODULES } from "@mms/shared";
-import { SectionCard } from "@/components/app/SectionCard";
-import { Field } from "@/components/app/FormField";
-import { Input } from "@shared/ui";
+import { Field, Input, SectionCard } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { OnboardingData } from "@/platform/pages/onboarding/onboardingWizardTypes";
 

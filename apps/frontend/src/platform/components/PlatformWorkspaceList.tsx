@@ -8,8 +8,7 @@ import { usePlatformWorkspaceMetrics } from "@/platform/hooks/usePlatformWorkspa
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { usePlatformWorkspaceDescriptor } from "@/platform/hooks/usePlatformWorkspaceDescriptor";
 import { useDescriptorColumnLayout } from "@/hooks/useDescriptorColumnLayout";
-import { Button } from "@shared/ui";
-import { EmptyState } from "@/components/app/EmptyState";
+import { Button, EmptyState } from "@shared/ui";
 import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { PlatformWorkspaceDialogs } from "@/platform/components/workspace/PlatformWorkspaceDialogs";
 import { PlatformWorkspaceToolbar } from "@/platform/components/workspace/PlatformWorkspaceToolbar";

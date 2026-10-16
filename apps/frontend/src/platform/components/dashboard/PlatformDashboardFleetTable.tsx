@@ -3,11 +3,9 @@ import { Building2 } from "lucide-react";
 import type { PlatformWorkspaceRow } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
-import { Button } from "@shared/ui";
+import { Button, EmptyState, ListPagination } from "@shared/ui";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { ListPagination } from "@/components/app/ListPagination";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
-import { EmptyState } from "@/components/app/EmptyState";
 import { PlatformDashboardFleetRowMenu } from "@/platform/components/dashboard/PlatformDashboardFleetRowMenu";
 
 export interface PlatformDashboardFleetTableProps {
@@ -98,7 +96,13 @@ export function PlatformDashboardFleetTable({
         total={total}
         limit={pageSize}
         onPageChange={onPageChange}
-        i18nNamespace="platform"
+        labels={{
+          previous: t("platform.pagination.previous"),
+          next: t("platform.pagination.next"),
+          range: (from, to, tot) => t("platform.pagination.range", { from, to, total: tot }),
+          pageOf: (p, tp) => t("platform.pagination.pageOf", { page: p, totalPages: tp }),
+          label: t("platform.pagination.label"),
+        }}
       />
     </div>
   );

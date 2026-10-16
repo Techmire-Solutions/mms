@@ -28,13 +28,17 @@ vi.mock("@/components/app/Modal", () => ({
     ) : null,
 }));
 
-vi.mock("@/components/app/CopyButton", () => ({
-  CopyButton: ({ text, label }: { text: string; label?: string }) => (
-    <button data-testid="copy-btn" data-text={text}>
-      {label}
-    </button>
-  ),
-}));
+vi.mock("@shared/ui", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    CopyButton: ({ text, label }: { text: string; label?: string }) => (
+      <button data-testid="copy-btn" data-text={text}>
+        {label}
+      </button>
+    ),
+  };
+});
 
 vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: ({ tabs }: { tabs: { key: string; label: string }[] }) => (

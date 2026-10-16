@@ -18,3 +18,15 @@ export {
   type CardFooterProps,
   type CardAccentColor,
 } from "./Card";
+
+export { CardTitleBar, type CardTitleBarProps } from "./CardTitleBar";
+export { SectionCard, type SectionCardProps } from "./SectionCard";
+export { WidgetCard, type WidgetCardProps } from "./WidgetCard";
+export { WidgetCardHeader, type WidgetCardHeaderProps } from "./WidgetCardHeader";
+export {
+  CredentialsResultCard,
+  type CredentialsResultCardProps,
+  type CredentialsResultField,
+} from "./CredentialsResultCard";
+export { AppFooter, type AppFooterProps } from "./AppFooter";
+export { IntegrationPanelChrome, type IntegrationPanelChromeProps } from "./IntegrationPanelChrome";

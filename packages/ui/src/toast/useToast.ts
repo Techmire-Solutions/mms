@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { getToastState, subscribeToToasts, toast, type ToastItem } from "./toastStore";
+import {
+  dismissToast,
+  getToastState,
+  subscribeToToasts,
+  toast,
+  type ToastItem,
+} from "./toastStore";
 
 export function useToast(): {
   toasts: ToastItem[];
@@ -18,9 +24,9 @@ export function useToast(): {
     toasts: state.toasts,
     toast,
     dismiss: (id?: string) => {
-      if (id) {
-        state.toasts.find((t) => t.id === id);
-      }
+      dismissToast(id);
     },
   };
 }
+
+export { toast };

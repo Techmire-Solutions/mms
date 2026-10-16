@@ -4,10 +4,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { StatCard } from "@/components/app/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui";
 import { Skeleton } from "@shared/ui";
-import { Breadcrumb } from "@/components/app/Breadcrumb";
+import { Breadcrumb } from "@shared/ui";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@shared/ui";
-import { ListPagination } from "@/components/app/ListPagination";
+import { ListPagination } from "@shared/ui";
 import { WORK_SURFACE } from "@shared/ui";
 import { cn } from "@/lib/utils";
 import {
@@ -69,13 +69,7 @@ function DataDemo(): React.JSX.Element {
           </TableBody>
         </Table>
       </div>
-      <ListPagination
-        page={page}
-        total={42}
-        limit={10}
-        onPageChange={setPage}
-        i18nNamespace="platform"
-      />
+      <ListPagination page={page} total={42} limit={10} onPageChange={setPage} />
     </div>
   );
 }

@@ -7,7 +7,7 @@ import {
   AuthSubmitButton,
   AuthTextField,
 } from "@/components/entry";
-import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
+import { PasswordStrengthMeter } from "@shared/ui";
 import PlatformAuthLayout from "@/platform/components/PlatformAuthLayout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 

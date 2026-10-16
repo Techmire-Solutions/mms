@@ -1,6 +1,6 @@
 import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionConfig";
 import React from "react";
-import { StatusBadge } from "@/components/app/StatusBadge";
+import { StatusBadge } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { PlatformUserProfile } from "@mms/shared";

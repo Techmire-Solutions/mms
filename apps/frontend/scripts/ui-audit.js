@@ -86,10 +86,31 @@ const EXEMPT_PATTERNS = [
   /MessageComposerRecipients/, // dynamic absolute positioning
   /MessagingReport/, // charts
   /Widget/, // dynamic positioning/charts
-  /settingsShellBadges/, // dynamic styles
+  /[Ss]ettingsShellBadges/, // dynamic styles
   /WorkBatchTable/, // virtualized table
   /ResultsViewRankingsList/, // virtualized or dynamic
   /StudentResultCard/, // dynamic styles
+  /BrandColor/, // branding tools: runtime CSS vars & WCAG contrast APIs (check-code-norms §2)
+  /BrandPreset/, // branding tools: preset swatch previews
+  /BrandSemanticPreview/, // branding tools: live theme previews
+  /BrandDerivedTokens/, // branding tools: live token computation
+  /BrandSaveCustomPreset/, // branding tools: preset preview swatches
+  /TemplateTableElement/, // visual template editor canvas
+  /TemplateElementResizeHandles/, // visual template editor handles
+  /TemplateImageElementContent/, // visual template editor canvas
+  /templateEditorBasicUtils/, // visual template editor hex color normalization
+  /TableSkeleton/, // dynamic skeleton column widths
+  /PlatformDatabaseTelemetryCard/, // dynamic telemetry utilization meter
+  /PlatformLatencySparkline/, // dynamic latency sparkline
+  /ModalHeader/, // dynamic progress meter bar
+  /ModuleImportDialog/, // dynamic import progress bar
+  /FeeCollectionSummary/, // dynamic fee collection progress bar
+  /OutstandingFeesTableDesktopBody/, // TanStack Virtual row height
+  /FacultyDesignationsTable/, // dynamic hierarchy indentation
+  /useDistributionsTableColumns/, // dynamic denomination color
+  /ContactPickerMenu/, // dynamic floating placement
+  /Drawer/, // hardware accelerated transform
+  /FormListFieldCard/, // dynamic zIndex stacking
   /\.test\./, // test files
 ];
 

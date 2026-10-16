@@ -1,7 +1,6 @@
 import React, { useId } from "react";
 import type { LucideIcon } from "lucide-react";
-import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
-import { Badge } from "@shared/ui";
+import { Badge, FormCheckboxCard } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PlatformPermissionCheckboxItemProps {

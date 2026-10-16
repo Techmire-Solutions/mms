@@ -6,8 +6,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformProfile } from "@/platform/hooks/usePlatformProfile";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
-import { CardSkeleton } from "@/components/app/LoadingState";
-import { ErrorState } from "@/components/app/ErrorState";
+import { ErrorState, CardSkeleton } from "@shared/ui";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 
 import { containerVariants, itemVariants as cardVariants } from "@/platform/lib/animations";

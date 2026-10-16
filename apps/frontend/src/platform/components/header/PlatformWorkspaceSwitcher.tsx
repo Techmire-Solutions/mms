@@ -10,9 +10,9 @@ import {
   type RecentWorkspaceRecord,
 } from "@/platform/lib/recentWorkspaces";
 import { ROUTES } from "@/lib/config/routes";
-import { Button } from "@shared/ui";
-import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import {
+  Button,
+  LeadingIconInput,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -51,7 +51,7 @@ export function PlatformWorkspaceSwitcher(): React.JSX.Element | null {
         <Button
           type="button"
           variant="outline"
-          className="hidden md:inline-flex min-h-11 max-w-[14rem] gap-2 rounded-xl border-border/80 px-3 text-xs font-bold cursor-pointer"
+          className="hidden md:inline-flex min-h-11 max-w-56 gap-2 rounded-xl border-border/80 px-3 text-xs font-bold cursor-pointer"
           aria-label={t("platform.workspaceSwitcher")}
         >
           <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />

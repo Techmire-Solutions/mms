@@ -1,10 +1,7 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LeadingIconInput } from "@/components/app/LeadingIconInput";
-import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
-import { Switch } from "@shared/ui";
-import { Label } from "@shared/ui";
+import { Switch, Label, LeadingIconInput, CompactSegmentedControl } from "@shared/ui";
 import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { WORK_SURFACE } from "@shared/ui";
 import { cn } from "@/lib/utils";
