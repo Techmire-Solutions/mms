@@ -9,21 +9,23 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/alert-dialog", () => ({
-  AlertDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
+vi.mock("@radix-ui/react-alert-dialog", () => ({
+  Root: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
     open ? <div data-testid="alert-dialog">{children}</div> : null,
-  AlertDialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AlertDialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AlertDialogTitle: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <h2 className={className}>{children}</h2>,
-  AlertDialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
-  AlertDialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AlertDialogCancel: ({ children }: { children: React.ReactNode }) => (
+  Trigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Portal: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Overlay: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Content: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Header: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Title: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <h2 className={className}>{children}</h2>
+  ),
+  Description: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+  Footer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Cancel: ({ children }: { children: React.ReactNode }) => (
+    <button type="button">{children}</button>
+  ),
+  Action: ({ children }: { children: React.ReactNode }) => (
     <button type="button">{children}</button>
   ),
 }));

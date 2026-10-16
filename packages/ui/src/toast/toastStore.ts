@@ -134,3 +134,12 @@ export function subscribeToToasts(listener: (state: State) => void): () => void 
 export function getToastState(): State {
   return memoryState;
 }
+
+export function dismissToast(toastId?: string): void {
+  dispatch({ type: "DISMISS_TOAST", toastId });
+}
+
+export { reducer };
+export const getToastMemoryState = getToastState;
+export const genToastId = genId;
+export type ToasterToast = ToastItem;

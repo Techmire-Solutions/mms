@@ -3,7 +3,7 @@ import { resolvePlatformSessionPolicy, type SessionTimeoutPolicy } from "@mms/sh
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
-import { SessionTimeoutModal } from "@/components/app/SessionTimeoutModal";
+import { SessionTimeoutModal } from "@shared/ui";
 import { apiContract } from "@/lib/api";
 
 interface PlatformSessionTimeoutOptions {
@@ -79,6 +79,11 @@ export function usePlatformSessionTimeout({
       onExtend={handleExtend}
       onSignOut={handleTimeout}
       busy={busy}
+      title={t("session.timeoutTitle")}
+      subtitle={t("session.timeoutDesc")}
+      staySignedInLabel={t("session.staySignedIn")}
+      signOutNowLabel={t("session.signOutNow")}
+      countdownMessage={(sec) => t("session.timeoutCountdown", { seconds: String(sec) })}
     />
   );
 }

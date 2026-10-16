@@ -4,7 +4,7 @@ import { type BrandingSettings, type AppTranslationKey } from "@mms/shared";
 import { applyAppTheme } from "@/lib/brandingTheme";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { SETTINGS_PREVIEW_EVENT } from "@/lib/settingsPreview";
-import { isTenantHost } from "@/platform/lib/themeScope";
+import { isTenantHost } from "@/lib/config/tenantConfig";
 import { ROUTES, isEntryPath } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
 import { applyPlatformDocumentFavicon, applyTenantDocumentFavicon } from "@/lib/documentFavicon";

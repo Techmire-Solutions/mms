@@ -2,9 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Activity, Building2, BarChart3, Server, UserPlus, Settings } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
-import { WidgetCard } from "@/components/app/WidgetCard";
-import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
+import { Button, WidgetCard, WidgetCardHeader } from "@shared/ui";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformDashboardQuickActionsProps {

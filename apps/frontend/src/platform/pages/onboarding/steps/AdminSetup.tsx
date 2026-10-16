@@ -2,9 +2,7 @@ import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { OnboardingData } from "@/platform/pages/onboarding/OnboardingWizard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Input } from "@shared/ui";
-import { Checkbox } from "@shared/ui";
-import { Field } from "@/components/app/FormField";
+import { Checkbox, Field, Input } from "@shared/ui";
 import { AuthEmailField } from "@/components/entry";
 import { AdminSetupPasswordFields } from "@/platform/pages/onboarding/steps/AdminSetupPasswordFields";
 

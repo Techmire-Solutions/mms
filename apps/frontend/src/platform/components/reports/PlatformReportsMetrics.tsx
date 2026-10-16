@@ -2,7 +2,7 @@ import React from "react";
 import { Globe, TrendingUp, ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { StatsSkeleton } from "@/components/app/LoadingState";
+import { StatsSkeleton } from "@shared/ui";
 import type { PlatformUser } from "@mms/shared";
 
 interface PlatformReportsMetricsProps {

@@ -65,3 +65,80 @@ export function Toast({
     </div>
   );
 }
+
+/** Action button within a toast (e.g. Undo). */
+export function ToastAction({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.JSX.Element {
+  return (
+    <div
+      className={cn(
+        "inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function ToastProvider({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.JSX.Element {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none fixed top-0 z-toast flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:end-0 sm:top-auto sm:flex-col md:max-w-toast",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function ToastViewport({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.JSX.Element {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none fixed top-0 z-toast flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:end-0 sm:top-auto sm:flex-col md:max-w-toast",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function ToastTitle({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.JSX.Element {
+  return <div className={cn("text-sm font-semibold", className)} {...props} />;
+}
+
+export function ToastDescription({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.JSX.Element {
+  return <div className={cn("text-sm opacity-90", className)} {...props} />;
+}
+
+export function ToastClose({
+  className,
+  ...props
+}: React.ComponentProps<"button">): React.JSX.Element {
+  return (
+    <button
+      className={cn(
+        "absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-current opacity-50 transition-opacity hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40",
+        className,
+      )}
+      {...props}
+    >
+      <X className="h-4 w-4" />
+    </button>
+  );
+}

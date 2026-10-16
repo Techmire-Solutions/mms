@@ -1,7 +1,11 @@
 import React from "react";
+import {
+  PasswordStrengthMeter as SharedPasswordStrengthMeter,
+  type PasswordStrengthMeterProps as SharedPasswordStrengthMeterProps,
+  type PasswordStrengthCheck,
+} from "@shared/ui";
 import { getPasswordStrength } from "@/lib/passwordStrength";
 import { useTranslation } from "@/hooks/useTranslation";
-import { cn } from "@/lib/utils";
 
 export interface PasswordStrengthMeterProps {
   password: string;
@@ -9,6 +13,12 @@ export interface PasswordStrengthMeterProps {
   showChecks?: boolean;
 }
 
+export { type PasswordStrengthCheck, type SharedPasswordStrengthMeterProps };
+
+/**
+ * Password strength meter facade providing app localization and entropy styling.
+ * Delegates rendering to @shared/ui PasswordStrengthMeter.
+ */
 export function PasswordStrengthMeter({
   password,
   className,
@@ -30,48 +40,15 @@ export function PasswordStrengthMeter({
   const strengthLabel = key ? t(key) : t("account.passwordStrengthVeryWeak");
 
   return (
-    <div className={cn("space-y-2 pt-1", className)} aria-live="polite">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="text-muted-foreground font-medium">{t("auth.passwordStrength")}</span>
-        <span className="font-semibold text-xs capitalize">{strengthLabel}</span>
-      </div>
-
-      <div
-        className="grid grid-cols-5 gap-1.5 h-1.5 rounded-full overflow-hidden bg-muted"
-        role="meter"
-        aria-valuenow={score}
-        aria-valuemin={0}
-        aria-valuemax={5}
-        aria-label={t("auth.passwordStrength")}
-        aria-valuetext={strengthLabel}
-      >
-        {[1, 2, 3, 4, 5].map((step) => (
-          <div
-            key={step}
-            className={cn(
-              "h-full transition-colors duration-300 motion-reduce:transition-none",
-              score >= step ? colorClass : "bg-transparent",
-            )}
-          />
-        ))}
-      </div>
-
-      {showChecks ? (
-        <div className="grid grid-cols-2 gap-1 pt-1">
-          {checks.map((item) => (
-            <div
-              key={item.label}
-              className={cn(
-                "flex items-center gap-1.5 text-3xs transition-colors",
-                item.pass ? "text-success font-semibold" : "text-muted-foreground",
-              )}
-            >
-              <span>{item.pass ? "✓" : "○"}</span>
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </div>
+    <SharedPasswordStrengthMeter
+      password={password}
+      score={score}
+      colorClass={colorClass}
+      strengthTitle={t("auth.passwordStrength")}
+      strengthLabel={strengthLabel}
+      checks={checks}
+      showChecks={showChecks}
+      className={className}
+    />
   );
 }

@@ -2,12 +2,14 @@ import React from "react";
 import { Activity, ShieldAlert, Download, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformActivityLogs } from "@/platform/hooks/usePlatformActivityLogs";
-import { WidgetCard } from "@/components/app/WidgetCard";
-import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
-import { CardSkeleton } from "@/components/app/LoadingState";
-import { ErrorState } from "@/components/app/ErrorState";
-import { EmptyState } from "@/components/app/EmptyState";
-import { Button } from "@shared/ui";
+import {
+  Button,
+  EmptyState,
+  ErrorState,
+  CardSkeleton,
+  WidgetCard,
+  WidgetCardHeader,
+} from "@shared/ui";
 import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { exportActivityLogsCsv } from "./activity-logs/exportActivityLogsCsv";

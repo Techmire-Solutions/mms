@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 import { Mail, User, UserPlus, ShieldPlus } from "lucide-react";
 import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformAdminPermissions } from "@mms/shared";
-import { PasswordInput } from "@/components/app/PasswordInput";
-import { Button } from "@shared/ui";
-import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import {
+  Button,
+  PasswordInput,
+  LeadingIconInput,
+  PasswordStrengthMeter,
+  Field,
+  SectionCard,
+} from "@shared/ui";
 import { FormModal } from "@/components/app/FormModal";
-import { Field } from "@/components/app/FormField";
-import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { getPlatformRegisterError } from "@/platform/lib/platformValidation";
 import { useAddPlatformAdmin } from "@/platform/hooks/usePlatformAdmins";
 import { PlatformAdminPermissionsFields } from "@/platform/components/PlatformAdminPermissionsFields";
-import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 
 export function PlatformAddAdminForm({
   asTriggerOnly = false,

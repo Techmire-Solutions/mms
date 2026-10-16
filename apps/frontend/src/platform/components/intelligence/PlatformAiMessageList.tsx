@@ -53,7 +53,7 @@ export function PlatformAiMessageList({
           <div
             key={msg.id}
             className={cn(
-              "flex flex-col gap-1.5 max-w-[88%]",
+              "flex flex-col gap-1.5 max-w-5/6",
               isUser ? "ms-auto items-end" : "me-auto items-start",
             )}
           >

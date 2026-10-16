@@ -7,7 +7,6 @@ import { PlatformSidebarProvider, usePlatformSidebar } from "@/platform/lib/Plat
 import { PlatformBreadcrumbProvider } from "@/platform/lib/PlatformBreadcrumbContext";
 import { PlatformInspectorProvider } from "@/platform/lib/PlatformInspectorContext";
 import { useGlobalShortcut } from "@/hooks/useGlobalShortcut";
-import { AppFooter } from "@/components/app/AppFooter";
 import { PlatformPageShellHeader } from "@/platform/components/PlatformPageShellHeader";
 import { PlatformSidebar, PlatformMobileSidebar } from "@/platform/components/PlatformSidebar";
 import { PlatformCommandPalette } from "@/platform/components/PlatformCommandPalette";
@@ -15,7 +14,7 @@ import { PlatformAiDrawer } from "@/platform/components/intelligence/PlatformAiD
 import { PlatformInspectorDrawer } from "@/platform/components/inspector/PlatformInspectorDrawer";
 import { AppShell } from "@/components/common/AppShell";
 import { PlatformLiveRegionProvider } from "@/platform/components/common/PlatformLiveRegion";
-import { TooltipProvider } from "@shared/ui";
+import { AppFooter, TooltipProvider } from "@shared/ui";
 
 export { PlatformLogoMark } from "./common/PlatformLogoMark";
 

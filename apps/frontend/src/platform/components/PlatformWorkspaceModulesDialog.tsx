@@ -3,7 +3,7 @@ import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shar
 import { SYSTEM_MODULES } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormModal } from "@/components/app/FormModal";
-import { CardSkeleton } from "@/components/app/LoadingState";
+import { CardSkeleton } from "@shared/ui";
 import { PlatformModuleSelectCard } from "@/platform/components/workspace/PlatformModuleSelectCard";
 import { PlatformModulePresetsBar } from "@/platform/components/workspace/PlatformModulePresetsBar";
 import {

@@ -12,13 +12,18 @@ import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES } from "@mms/shared";
 import { getPlatformAdminMetrics } from "@/platform/lib/platformAdminMetrics";
 import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionConfig";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { ProgressBar } from "@/components/app/ProgressBar";
-import { ErrorState } from "@/components/app/ErrorState";
+import {
+  Badge,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  ErrorState,
+  CardSkeleton,
+  ProgressBar,
+} from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAdmins } from "@/platform/hooks/usePlatformAdmins";
-import { CardSkeleton } from "@/components/app/LoadingState";
-import { Card, CardHeader, CardTitle, CardContent } from "@shared/ui";
-import { Badge } from "@shared/ui";
 
 export function PlatformUsersReportsTier(): React.JSX.Element {
   const { t } = useTranslation();

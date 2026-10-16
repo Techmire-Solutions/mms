@@ -6,9 +6,7 @@ import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions"
 import { usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
 import { usePlatformHealth } from "@/platform/hooks/usePlatformHealth";
 import { usePlatformBreadcrumb } from "@/platform/lib/PlatformBreadcrumbContext";
-import { Button } from "@shared/ui";
-import { Badge } from "@shared/ui";
-import { Breadcrumb } from "@/components/app/Breadcrumb";
+import { Badge, Breadcrumb, Button } from "@shared/ui";
 import { ROUTES, isNavPathActive } from "@/lib/config/routes";
 import { PLATFORM_NAV_ITEMS } from "@/platform/lib/platformNav";
 import { PlatformHeaderBrand } from "@/platform/components/header/PlatformHeaderBrand";
@@ -94,6 +92,14 @@ export function PlatformPageShellHeader({
             ariaLabel={t("common.breadcrumb")}
             className="hidden lg:flex min-w-0"
             items={breadcrumbItems}
+            renderLink={(item, children) => (
+              <Link
+                to={item.href!}
+                className="font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                {children}
+              </Link>
+            )}
           />
 
           <PlatformWorkspaceSwitcher />

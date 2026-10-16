@@ -4,7 +4,7 @@ import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 import { usePlatformSetupStatus } from "@/platform/hooks/usePlatformSetupStatus";
 import { ROUTES } from "@/lib/config/routes";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
-import { ErrorState } from "@/components/app/ErrorState";
+import { ErrorState } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 /**
