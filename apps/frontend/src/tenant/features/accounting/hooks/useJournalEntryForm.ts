@@ -7,6 +7,7 @@ import {
   isJournalEntryBalanced,
   journalEntryRecordSchema,
   moneyToCents,
+  resolveDefaultFiscalYear,
   todayISO,
 } from "@mms/shared";
 import { notify } from "@/lib/notify";
@@ -45,9 +46,7 @@ export function useJournalEntryForm({
   const { t } = useTranslation();
   const { user } = useAuth();
   const isEdit = !!initial?.id;
-  const activeFiscalYearRecord = (fiscalYears || []).find(
-    (fiscalYear) => fiscalYear.status === "active",
-  );
+  const activeFiscalYearRecord = resolveDefaultFiscalYear(fiscalYears, todayISO());
   const activeFiscalYear = activeFiscalYearRecord?.id || "";
 
   const [form, setForm] = useState<DraftForm>(() => {

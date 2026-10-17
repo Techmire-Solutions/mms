@@ -113,6 +113,10 @@ export const AccountingSettings = function AccountingSettings({
         initial={fyModal}
         onSave={handleSaveFY}
         onClose={() => setFyModal(null)}
+        onRequestClose={(fiscalYearId) => {
+          setFyModal(null);
+          handleRequestCloseFiscalYear(fiscalYearId);
+        }}
       />
 
       <CloseFiscalYearModal

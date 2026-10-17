@@ -699,6 +699,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "accounting.settings.bankRec.matched": "سطر صورتحساب مطابقت داده شد",
   "accounting.settings.bankRec.matchFailed": "مطابقت سطر صورتحساب ناموفق بود",
   "accounting.settings.fy.close": "بستن سال",
+  "accounting.settings.fy.closeHint":
+    "وضعیت «بسته» را اینجا نمی‌توان انتخاب کرد. برای قفل کردن این سال و ثبت سند اختتامیه از «بستن سال» استفاده کنید.",
   "accounting.settings.fy.closed": "سال مالی بسته شد",
   "accounting.settings.fy.closeFailed": "بستن سال مالی ناموفق بود",
   "accounting.settings.fy.saved": "سال مالی ذخیره شد",

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Account, FiscalYear } from "@/lib/data/accountingData";
-import { todayISO, type AppTranslationKey } from "@mms/shared";
+import { resolveDefaultFiscalYear, todayISO, type AppTranslationKey } from "@mms/shared";
 import { notify } from "@/lib/notify";
 import {
   buildWizardFormState,
@@ -36,8 +36,7 @@ export function useSimpleTransactionDraft({
   t,
   transactionGroups = TRANSACTION_GROUPS,
 }: UseSimpleTransactionDraftParams) {
-  const activeFiscalYearLabel =
-    (fiscalYears || []).find((fiscalYear) => fiscalYear.status === "active")?.label || "";
+  const activeFiscalYearLabel = resolveDefaultFiscalYear(fiscalYears, todayISO())?.label || "";
   const [step, setStep] = useState(() => (prefillType ? 2 : 1));
   const [selectedType, setSelectedType] = useState<QuickActionType | null>(prefillType || null);
   const [showAdvanced, setShowAdvanced] = useState(false);

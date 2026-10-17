@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { FiscalYear } from "@mms/shared";
+import { resolveDefaultFiscalYear, todayISO, type FiscalYear } from "@mms/shared";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -23,7 +23,7 @@ export function useFinancialReportsModel() {
     fiscalYearsResult.data?.status === 200 ? fiscalYearsResult.data.body.fiscalYears : [];
 
   const [view, setView] = useState<FinancialReportViewType>("income");
-  const activeFiscalYear = fiscalYears.find((fy) => fy.status === "active");
+  const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [hasUserSetRange, setHasUserSetRange] = useState(false);
