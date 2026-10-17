@@ -687,6 +687,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "accounting.settings.bankRec.matched": "تمت مطابقة بند الكشف",
   "accounting.settings.bankRec.matchFailed": "تعذرت مطابقة بند الكشف",
   "accounting.settings.fy.close": "إغلاق السنة",
+  "accounting.settings.fy.closeHint":
+    "لا يمكن اختيار حالة «مغلقة» هنا. استخدم «إغلاق السنة» لقفل هذه السنة وترحيل قيد الإقفال.",
   "accounting.settings.fy.closed": "تم إغلاق السنة المالية",
   "accounting.settings.fy.closeFailed": "تعذر إغلاق السنة المالية",
   "accounting.settings.fy.saved": "تم حفظ السنة المالية",

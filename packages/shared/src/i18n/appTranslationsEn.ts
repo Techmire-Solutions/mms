@@ -687,6 +687,8 @@ export const APP_TRANSLATIONS_EN = {
   "accounting.settings.bankRec.matched": "Statement line matched",
   "accounting.settings.bankRec.matchFailed": "Failed to match statement line",
   "accounting.settings.fy.close": "Close year",
+  "accounting.settings.fy.closeHint":
+    "Closed is not a status you can pick here. Use Close year to lock this year and post its closing entry.",
   "accounting.settings.fy.closed": "Fiscal year closed",
   "accounting.settings.fy.closeFailed": "Failed to close fiscal year",
   "accounting.settings.fy.saved": "Fiscal year saved",

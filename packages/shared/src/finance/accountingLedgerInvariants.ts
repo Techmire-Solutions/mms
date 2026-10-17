@@ -121,3 +121,22 @@ export function findFiscalYearForDate<T extends FiscalYearRange>(
   if (!needle) return null;
   return years.find((year) => year.startDate <= needle && needle <= year.endDate) ?? null;
 }
+
+/**
+ * The fiscal year new work should default to (journal forms, quick transactions,
+ * report ranges): the open year whose range contains `today`. Several years can
+ * be open at once (next year set up early, last year awaiting close), and the
+ * `active` flag is set by hand, so the calendar decides first. Falls back to the
+ * open year flagged `active` when no open year covers today, else null.
+ */
+export function resolveDefaultFiscalYear<T extends FiscalYearRange>(
+  years: readonly T[] | null | undefined,
+  today: string,
+): T | null {
+  const openYears = (years ?? []).filter((year) => !isFiscalYearClosed(year));
+  return (
+    findFiscalYearForDate(openYears, today) ??
+    openYears.find((year) => year.status === "active") ??
+    null
+  );
+}

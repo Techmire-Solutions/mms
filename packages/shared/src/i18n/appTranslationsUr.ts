@@ -693,6 +693,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "accounting.settings.bankRec.matched": "اسٹیٹمنٹ لائن مل گئی",
   "accounting.settings.bankRec.matchFailed": "اسٹیٹمنٹ لائن نہیں مل سکی",
   "accounting.settings.fy.close": "سال بند کریں",
+  "accounting.settings.fy.closeHint":
+    "یہاں «بند» حالت منتخب نہیں کی جا سکتی۔ اس سال کو مقفل کرنے اور اختتامی اندراج پوسٹ کرنے کے لیے «سال بند کریں» استعمال کریں۔",
   "accounting.settings.fy.closed": "مالی سال بند ہو گیا",
   "accounting.settings.fy.closeFailed": "مالی سال بند نہیں ہو سکا",
   "accounting.settings.fy.saved": "مالی سال محفوظ ہو گیا",

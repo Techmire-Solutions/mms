@@ -7,6 +7,7 @@ import {
   isJournalSourceType,
   moneyAmountSchema,
   moneyToCents,
+  resolveDefaultFiscalYear,
   resolveFiscalYearRef,
   signedMoneyAmountSchema,
 } from "./accountingLedgerInvariants.js";
@@ -134,5 +135,43 @@ describe("accountingLedgerInvariants", () => {
 
     expect(signedMoneyAmountSchema.safeParse(-10.5).success).toBe(true);
     expect(signedMoneyAmountSchema.safeParse(10.005).success).toBe(false);
+  });
+});
+
+describe("resolveDefaultFiscalYear", () => {
+  const fy2025 = {
+    id: "a",
+    label: "2025-26",
+    status: "active",
+    startDate: "2025-07-01",
+    endDate: "2026-06-30",
+  };
+  const fy2026 = {
+    id: "b",
+    label: "2026-27",
+    status: "upcoming",
+    startDate: "2026-07-01",
+    endDate: "2027-06-30",
+  };
+  const fy2024 = {
+    id: "c",
+    label: "2024-25",
+    status: "closed",
+    startDate: "2024-07-01",
+    endDate: "2025-06-30",
+  };
+
+  it("prefers the open year containing today over the active flag", () => {
+    expect(resolveDefaultFiscalYear([fy2025, fy2026], "2026-10-17")?.id).toBe("b");
+  });
+
+  it("never defaults to a closed year even when it contains today", () => {
+    expect(resolveDefaultFiscalYear([fy2024, fy2025], "2025-01-15")?.id).toBe("a");
+  });
+
+  it("falls back to the active year, then null", () => {
+    expect(resolveDefaultFiscalYear([fy2025, fy2026], "2030-01-01")?.id).toBe("a");
+    expect(resolveDefaultFiscalYear([fy2026], "2030-01-01")).toBeNull();
+    expect(resolveDefaultFiscalYear(undefined, "2026-10-17")).toBeNull();
   });
 });

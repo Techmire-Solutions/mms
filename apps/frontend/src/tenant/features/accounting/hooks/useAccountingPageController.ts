@@ -11,6 +11,8 @@ import { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import {
   ACCOUNTING_MODULE_MANIFEST,
+  resolveDefaultFiscalYear,
+  todayISO,
   type Account,
   type JournalEntry,
   type FiscalYear,
@@ -123,7 +125,7 @@ export function useAccountingPageController() {
     journalList,
   });
 
-  const activeFiscalYear = fiscalYears.find((fiscalYear) => fiscalYear.status === "active");
+  const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
   const listLoadFailed =
     accountsResult.isError ||
     entriesResult.isError ||

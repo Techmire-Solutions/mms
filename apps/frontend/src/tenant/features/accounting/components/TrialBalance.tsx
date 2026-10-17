@@ -7,7 +7,7 @@ import { Table } from "@/components/ui/table";
 import { WorkBatchTableFooter } from "@/components/common/work/WorkBatchTableFooter";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/app/StatGrid";
-import { moneyToCents } from "@mms/shared";
+import { moneyToCents, resolveDefaultFiscalYear, todayISO } from "@mms/shared";
 import {
   ACCOUNT_TYPES,
   type Account,
@@ -41,7 +41,7 @@ export function TrialBalance({ fiscalYears }: TrialBalanceProps) {
   const { t } = useTranslation();
   const { formatCurrency } = useAccountingCurrency();
   const { viewMode } = useWorkDirectoryViewMode();
-  const activeFiscalYear = (fiscalYears || []).find((fiscalYear) => fiscalYear.status === "active");
+  const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [hasUserSetRange, setHasUserSetRange] = useState(false);
