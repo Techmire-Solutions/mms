@@ -36,8 +36,7 @@ export function useSimpleTransactionDraft({
   t,
   transactionGroups = TRANSACTION_GROUPS,
 }: UseSimpleTransactionDraftParams) {
-  const activeFiscalYearLabel =
-    resolveDefaultFiscalYear(fiscalYears, todayISO())?.label || "";
+  const activeFiscalYearLabel = resolveDefaultFiscalYear(fiscalYears, todayISO())?.label || "";
   const [step, setStep] = useState(() => (prefillType ? 2 : 1));
   const [selectedType, setSelectedType] = useState<QuickActionType | null>(prefillType || null);
   const [showAdvanced, setShowAdvanced] = useState(false);
