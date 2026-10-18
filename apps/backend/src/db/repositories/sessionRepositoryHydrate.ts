@@ -25,6 +25,7 @@ export {
   findClassesByIds,
   findClassById,
 } from "./sessionRepositoryQueries.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 type Transaction = TenantTransaction;
 
@@ -79,7 +80,7 @@ export async function hydrateSessionsListAggregated(
           'ageMin', c.age_min,
           'ageMax', c.age_max,
           'capacity', c.capacity,
-          'enrolled', (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND e.status <> 'cancelled'),
+          'enrolled', (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}),
           'enrollmentDeadline', c.enrollment_deadline,
           'status', c.status,
           'facultyId', c.faculty_id,
@@ -362,7 +363,7 @@ export async function hydrateSessionsList(
         ageMin: sessionClasses.ageMin,
         ageMax: sessionClasses.ageMax,
         capacity: sessionClasses.capacity,
-        enrolled: sql<number>`(SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = ${sessionClasses.workspaceSubdomain} AND e.session_id = ${sessionClasses.sessionId} AND e.class_id = ${sessionClasses.id} AND e.deleted_at IS NULL AND e.status <> 'cancelled')`,
+        enrolled: sql<number>`(SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = ${sessionClasses.workspaceSubdomain} AND e.session_id = ${sessionClasses.sessionId} AND e.class_id = ${sessionClasses.id} AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")})`,
         enrollmentDeadline: sessionClasses.enrollmentDeadline,
         status: sessionClasses.status,
         facultyId: sessionClasses.facultyId,
@@ -665,7 +666,7 @@ export async function hydrateSessionsListSummary(
           'facultyId', c.faculty_id,
           'facultyName', c.faculty_name,
           'capacity', c.capacity,
-          'enrolled', (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND e.status <> 'cancelled'),
+          'enrolled', (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}),
           'room', c.room,
           'programId', c.program_id,
           'sortOrder', c.sort_order,

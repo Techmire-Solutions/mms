@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import type { Session, SessionClassSection } from "@mms/shared";
 import type { TenantTransaction } from "../tenant-context.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 type SectionRow = {
   id: string;
@@ -37,7 +38,7 @@ export async function attachClassSectionsTx(
            ct.faculty_id AS "classTeacherId", ct.name AS "classTeacherName",
            (SELECT count(*)::int FROM enrollments e
              WHERE e.workspace_subdomain = s.workspace_subdomain AND e.section_id = s.id
-               AND e.deleted_at IS NULL AND e.status <> 'cancelled') AS enrolled
+               AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}) AS enrolled
       FROM session_class_sections s
       LEFT JOIN LATERAL (
         SELECT a.faculty_id, concat_ws(' ', c.first_name, c.last_name) AS name

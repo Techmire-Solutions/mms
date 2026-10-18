@@ -24,6 +24,7 @@ import {
   registrationLinksContract,
 } from "./registration.contract.js";
 import { sessionSectionsContract } from "./sessionSections.contract.js";
+import { enrollmentOperationsContract } from "./enrollmentOperations.contract.js";
 import { questionBankContract } from "./questionBank.contract.js";
 import { accountingContract } from "./accounting.contract.js";
 import { hasanatContract } from "./hasanat.contract.js";
@@ -66,6 +67,7 @@ export const rootContract = c.router({
   academicCalendar: academicCalendarContract,
   registrationLinks: registrationLinksContract,
   admissions: admissionsContract,
+  enrollmentOperations: enrollmentOperationsContract,
   publicRegistration: publicRegistrationContract,
   sessionSections: sessionSectionsContract,
   questionBank: questionBankContract,
@@ -116,6 +118,7 @@ export {
   academicCalendarContract,
   registrationLinksContract,
   admissionsContract,
+  enrollmentOperationsContract,
   publicRegistrationContract,
   sessionSectionsContract,
   questionBankContract,
@@ -156,6 +159,7 @@ export type DomainContracts = {
   academicCalendar: typeof academicCalendarContract;
   registrationLinks: typeof registrationLinksContract;
   admissions: typeof admissionsContract;
+  enrollmentOperations: typeof enrollmentOperationsContract;
   publicRegistration: typeof publicRegistrationContract;
   sessionSections: typeof sessionSectionsContract;
   questionBank: typeof questionBankContract;

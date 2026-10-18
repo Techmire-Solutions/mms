@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import type { SessionsReportAggregates } from "@mms/shared";
 import { getQueryRows } from "../documentStoreKeys.js";
 import { withTenantRead } from "../tenant-context.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 const WEEKDAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
@@ -33,7 +34,7 @@ export async function loadSessionsReportAggregatesSql(
       INNER JOIN session_classes c
         ON c.workspace_subdomain = s.workspace_subdomain
         AND c.session_id = s.id
-      CROSS JOIN LATERAL (SELECT count(*)::int AS enrolled FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND e.status <> 'cancelled') ce
+      CROSS JOIN LATERAL (SELECT count(*)::int AS enrolled FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}) ce
       WHERE s.workspace_subdomain = ${subdomain}
         AND s.deleted_at IS NULL
       ORDER BY s.name ASC, c.name ASC
@@ -96,7 +97,7 @@ export async function loadSessionsReportAggregatesSql(
           ELSE ''
         END AS time,
         COALESCE(c.room, '') AS room,
-        (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND e.status <> 'cancelled') AS students,
+        (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}) AS students,
         CASE WHEN tt.id IS NOT NULL THEN 'live' ELSE 'upcoming' END AS status
       FROM sessions s
       INNER JOIN session_classes c

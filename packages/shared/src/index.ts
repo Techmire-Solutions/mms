@@ -270,6 +270,7 @@ export * from "./enrollments/enrollmentsWidgetAggregate.js";
 export * from "./enrollments/enrollmentFees.js";
 export * from "./enrollments/enrollmentEligibility.js";
 export * from "./enrollments/registrationTypes.js";
+export * from "./enrollments/enrollmentOperations.js";
 export * from "./attendance/academicCalendarTypes.js";
 export * from "./attendance/academicCalendar.js";
 export * from "./sessions/academicCatalogTypes.js";

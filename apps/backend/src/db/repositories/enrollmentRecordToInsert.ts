@@ -18,6 +18,7 @@ export function recordToInsert(tenant: string, record: Enrollment): EnrollmentIn
     sectionId: record.sectionId || null,
     rollNo: record.rollNo || null,
     enrolledDate: String(record.enrolledDate || ""),
+    startOn: record.startOn || null,
     baseFee: String(record.baseFee ?? 0),
     discountType: String(record.discountType || "none"),
     discountLabel: String(record.discountLabel || ""),

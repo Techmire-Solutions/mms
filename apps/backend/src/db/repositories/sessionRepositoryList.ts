@@ -23,6 +23,7 @@ import { sessions } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
 import { findSessionsSummaryByIds } from "./sessionRepository.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 const SESSION_SORT_FIELDS = new Set([
   "name",
@@ -211,7 +212,7 @@ export async function aggregateSessionsCommandMetrics(
         CROSS JOIN LATERAL (
           SELECT count(*)::int AS enrolled FROM enrollments e
           WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id
-            AND e.class_id = c.id AND e.deleted_at IS NULL AND e.status <> 'cancelled'
+            AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}
         ) ce
         WHERE c.workspace_subdomain = s.workspace_subdomain
           AND c.session_id = s.id

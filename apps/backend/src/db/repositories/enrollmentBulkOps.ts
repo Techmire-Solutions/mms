@@ -1,7 +1,8 @@
-import { and, eq, inArray, isNull, ne } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { enrollments } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
+import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
 
 /** Students (of `studentIds`) that already hold a live, non-cancelled enrollment in the session. */
 export async function findActivelyEnrolledStudentIds(
@@ -21,7 +22,7 @@ export async function findActivelyEnrolledStudentIds(
           eq(enrollments.sessionId, sessionId),
           inArray(enrollments.studentId, studentIds),
           isNull(enrollments.deletedAt),
-          ne(enrollments.status, "cancelled"),
+          enrollmentHoldsSeatWhere(),
         ),
       );
     return new Set(rows.map((row) => row.studentId));
@@ -46,7 +47,7 @@ export async function cancelStudentEnrollmentsInSession(
           eq(enrollments.sessionId, sessionId),
           inArray(enrollments.studentId, studentIds),
           isNull(enrollments.deletedAt),
-          ne(enrollments.status, "cancelled"),
+          enrollmentHoldsSeatWhere(),
         ),
       )
       .returning({ id: enrollments.id });

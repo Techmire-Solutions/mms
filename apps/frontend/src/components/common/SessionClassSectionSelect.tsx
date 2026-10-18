@@ -20,6 +20,8 @@ export interface SessionClassSectionSelectProps {
   idPrefix: string;
   required?: boolean;
   disabled?: boolean;
+  /** Keeps the session fixed (e.g. a transfer stays inside its session). */
+  lockSession?: boolean;
 }
 
 /** Cascading session → class → section picker; changing a level clears the levels below it. */
@@ -31,6 +33,7 @@ export function SessionClassSectionSelect({
   idPrefix,
   required,
   disabled,
+  lockSession,
 }: SessionClassSectionSelectProps): React.JSX.Element {
   const { t } = useTranslation();
   const terms = useAcademicTerms();
@@ -44,7 +47,7 @@ export function SessionClassSectionSelect({
           id={`${idPrefix}-session`}
           name="sessionId"
           value={value.sessionId}
-          disabled={disabled}
+          disabled={disabled || lockSession}
           placeholder={t("common.selectPlaceholder")}
           onChange={(sessionId) => onChange({ sessionId, classId: "", sectionId: "" })}
           options={sessions.map((row) => ({ value: row.id, label: row.name }))}
