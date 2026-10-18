@@ -22,6 +22,10 @@ export const attendanceRecordSchema = z
     timeIn: z.string().optional().default(''),
     timeOut: z.string().optional().default(''),
     notes: z.string().optional().default(''),
+    /** Server-set: user who last marked the row. */
+    markedBy: z.string().nullable().optional(),
+    /** Section at marking time (server-stamped from the student's enrollment). */
+    sectionId: z.string().nullable().optional(),
     customFields: z.record(z.string(), z.unknown()).optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
@@ -104,7 +108,7 @@ export const ATTENDANCE_MODULE_MANIFEST = {
   restBasePath: '/api/attendance',
   analyticsCategory: 'attendance',
   tiers: ['work', 'reports', 'setup'] as const,
-  setupSubTabs: ['preferences'] as const,
+  setupSubTabs: ['calendar', 'preferences'] as const,
   permissions: {
     read: 'analytics.view',
     write: 'attendance.write',

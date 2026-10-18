@@ -2,6 +2,7 @@ import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { sessions, enrollments } from '../schema.js';
 import { withTenant } from '../tenant-context.js';
 
+import { syncEnrolledSessionsTx } from './enrollmentSessionSync.js';
 export async function softDeleteSessionWithCascade(
   tenant: string,
   sessionId: string,
@@ -60,6 +61,7 @@ export async function softDeleteSessionWithCascade(
           isNull(enrollments.deletedAt),
         ),
       );
+    await syncEnrolledSessionsTx(tx, subdomain, { sessionIds: [sessionId] });
 
     return true;
   });
@@ -127,6 +129,7 @@ export async function restoreSessionWithCascade(
           eq(enrollments.deletedWithCascade, true),
         ),
       );
+    await syncEnrolledSessionsTx(tx, subdomain, { sessionIds: [sessionId] });
 
     return true;
   });
@@ -189,6 +192,7 @@ export async function bulkDeleteSessions(
             isNull(enrollments.deletedAt),
           ),
         );
+      await syncEnrolledSessionsTx(tx, subdomain, { sessionIds: deletedIds });
     }
 
     const succeeded = res.length;
@@ -246,6 +250,7 @@ export async function bulkRestoreSessions(
             eq(enrollments.deletedWithCascade, true),
           ),
         );
+      await syncEnrolledSessionsTx(tx, subdomain, { sessionIds: restoredIds });
     }
 
     const succeeded = res.length;

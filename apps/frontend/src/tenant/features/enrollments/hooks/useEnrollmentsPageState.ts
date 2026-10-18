@@ -3,7 +3,7 @@ import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
-import { ClipboardList, UserCheck } from "lucide-react";
+import { ClipboardList, UserCheck, Inbox } from "lucide-react";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { type Enrollment } from "@/lib/data/enrollmentData";
 import {
@@ -25,6 +25,7 @@ export function useEnrollmentsPageState() {
   const SUB_TABS = (() => [
       { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
       { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
+      { id: "admissions", label: t("enrollments.admissions.title"), icon: Inbox },
     ])();
   const permissions = useModulePermissions(ENROLLMENTS_MODULE_MANIFEST);
   const {

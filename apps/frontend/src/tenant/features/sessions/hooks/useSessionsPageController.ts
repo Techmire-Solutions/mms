@@ -40,9 +40,9 @@ export function useSessionsPageController() {
     bulkUpdateSessionStatus,
     logExportAudit,
   } = useSessionMutations();
-  const { statuses, types } = useSessionConfig();
+  const { types } = useSessionConfig();
   const { statusOptions, typeOptions, statusLabels, typeLabels, statusConfig, typeConfig } =
-    useSessionDisplayConfig({ statuses, types, t });
+    useSessionDisplayConfig({ types, t });
 
   const columnLayout = useSessionColumnLayout();
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();

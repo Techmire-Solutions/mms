@@ -3,6 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceFilters } from "./AttendanceFilters";
 
+
+vi.mock("@/hooks/useAcademicTerms", () => ({
+  useAcademicTerms: () => ({
+    session: { singular: "Session", plural: "Sessions" },
+    class: { singular: "Class", plural: "Classes" },
+    section: { singular: "Section", plural: "Sections" },
+  }),
+}));
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,

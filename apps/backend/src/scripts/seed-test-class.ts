@@ -71,7 +71,7 @@ async function main() {
     workspaceSubdomain: subdomain,
     name: 'Quran Hifz Session 2026',
     type: 'Hifz',
-    status: 'active',
+    status: 'in_progress',
     startDate: '2026-01-01',
     endDate: '2026-12-31',
     baseFee: '1000',

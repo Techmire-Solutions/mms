@@ -115,6 +115,7 @@ export const attendancePreferencesPutBodySchema = z
     allowManualOverride: z.boolean().optional(),
     offlineEnabled: z.boolean().optional(),
     geoTagging: z.boolean().optional(),
+    allowExtraClassOnHolidays: z.boolean().optional(),
     defaultViewLayout: z.string().optional(),
   })
   .passthrough();
@@ -136,6 +137,7 @@ export interface AttendanceModulePreferences {
   allowManualOverride: boolean;
   offlineEnabled: boolean;
   geoTagging: boolean;
+  allowExtraClassOnHolidays: boolean;
   defaultViewLayout: string;
 }
 
@@ -160,6 +162,7 @@ export function normalizeAttendanceModulePreferences(
       allowManualOverride: DEFAULT_ATTENDANCE_SETTINGS.allowManualOverride,
       offlineEnabled: DEFAULT_ATTENDANCE_SETTINGS.offlineEnabled,
       geoTagging: DEFAULT_ATTENDANCE_SETTINGS.geoTagging,
+      allowExtraClassOnHolidays: DEFAULT_ATTENDANCE_SETTINGS.allowExtraClassOnHolidays,
       defaultViewLayout: DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout || 'list',
     };
   }
@@ -181,6 +184,7 @@ export function normalizeAttendanceModulePreferences(
     allowManualOverride: typeof prefs.allowManualOverride === 'boolean' ? prefs.allowManualOverride : DEFAULT_ATTENDANCE_SETTINGS.allowManualOverride,
     offlineEnabled: typeof prefs.offlineEnabled === 'boolean' ? prefs.offlineEnabled : DEFAULT_ATTENDANCE_SETTINGS.offlineEnabled,
     geoTagging: typeof prefs.geoTagging === 'boolean' ? prefs.geoTagging : DEFAULT_ATTENDANCE_SETTINGS.geoTagging,
+    allowExtraClassOnHolidays: prefs.allowExtraClassOnHolidays === true,
     defaultViewLayout: typeof prefs.defaultViewLayout === 'string' ? prefs.defaultViewLayout : DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout || 'list',
   };
 }
@@ -208,6 +212,7 @@ export function normalizeAttendanceSettings(raw: unknown): AttendanceSettings {
     allowManualOverride: DEFAULT_ATTENDANCE_SETTINGS.allowManualOverride, // managed by preferences
     offlineEnabled: DEFAULT_ATTENDANCE_SETTINGS.offlineEnabled, // managed by preferences
     geoTagging: DEFAULT_ATTENDANCE_SETTINGS.geoTagging, // managed by preferences
+    allowExtraClassOnHolidays: DEFAULT_ATTENDANCE_SETTINGS.allowExtraClassOnHolidays, // managed by preferences
     defaultViewLayout: DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout, // managed by preferences
     fields: resolveAttendanceFieldsMap(
       safe.fields && typeof safe.fields === 'object' && !Array.isArray(safe.fields)
@@ -245,6 +250,7 @@ export function composeAttendanceSettings(
     allowManualOverride: prefs.allowManualOverride,
     offlineEnabled: prefs.offlineEnabled,
     geoTagging: prefs.geoTagging,
+    allowExtraClassOnHolidays: prefs.allowExtraClassOnHolidays,
     defaultViewLayout: prefs.defaultViewLayout,
     formTabs: formTabs ?? fieldConfig?.formTabs,
   };
@@ -271,6 +277,7 @@ export function stripAttendanceFieldConfigForPersist(
     allowManualOverride: _allowManualOverride,
     offlineEnabled: _offlineEnabled,
     geoTagging: _geoTagging,
+    allowExtraClassOnHolidays: _allowExtraClassOnHolidays,
     defaultViewLayout: _defaultViewLayout,
     ...fieldConfigOnly 
   } = config;

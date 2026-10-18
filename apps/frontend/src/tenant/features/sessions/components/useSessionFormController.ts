@@ -2,16 +2,18 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useGlobalSettings } from '@/tenant/hooks/useGlobalSettings';
 import { useFinanceCurrency } from '@/hooks/useCurrency';
-import { useSessionConfig } from '@/hooks/useStandardModuleConfig';
 import { notify } from '@/lib/notify';
-import { type Session, SESSION_TYPES } from '@/lib/data/sessionsData';
-import { SessionSchema, toTitleCase, type AppTranslationKey } from '@mms/shared';
+import { type Session } from '@/lib/data/sessionsData';
+import {
+  DEFAULT_SESSION_CATEGORY_CODE, SESSIONS_MODULE_MANIFEST, SESSION_TRANSITIONS, SessionSchema, isSessionStructureLocked,
+  normalizeSessionStatus, toTitleCase, type AppTranslationKey, type SessionLifecycleState,
+} from '@mms/shared';
+import { useAcademicCatalogItems } from '@/hooks/useAcademicCatalog';
+import { useModulePermissions } from '@/tenant/hooks/usePermissions';
 import { mapZodFormErrors } from '@/lib/forms/mapZodFormErrors';
 import type { SessionSelectOption } from '@/tenant/features/sessions/components/SessionFormSections';
 import {
   SESSION_CURRENCIES,
-  SESSION_STATUSES,
-  SESSION_TYPE_LABEL_KEYS,
   buildSessionDraftFromRecord,
   sessionFormDraftSnapshot,
   type SessionFormDraft,
@@ -26,31 +28,32 @@ export interface UseSessionFormControllerProps {
 export function useSessionFormController({ session, onClose, onSave }: UseSessionFormControllerProps) {
   const { t } = useTranslation();
   const { language } = useGlobalSettings();
-  const { settings, types, statuses } = useSessionConfig();
   const { activeCurrency } = useFinanceCurrency();
   const defaultCurrency = activeCurrency.code;
 
-  const typeOptions = types.length > 0 ? types : [...SESSION_TYPES];
-  const statusValues = statuses.length > 0 ? statuses : [...SESSION_STATUSES];
-  const defaultType = typeOptions.includes(settings.defaultSessionType)
-    ? settings.defaultSessionType
-    : (typeOptions[0] || 'Hifz');
+  // Lifecycle: new sessions start as draft/open; existing ones offer only allowed transitions.
+  const currentStatus = normalizeSessionStatus(session?.status ?? 'draft');
+  const statusValues: SessionLifecycleState[] = session ? [currentStatus, ...SESSION_TRANSITIONS[currentStatus]] : ['draft', 'open'];
+  const structureLocked = Boolean(session) && isSessionStructureLocked(currentStatus);
+  const { canEditSetup } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
+  const categories = useAcademicCatalogItems('categories').data ?? [];
+  const defaultCategoryId = categories.find((row) => row.code === DEFAULT_SESSION_CATEGORY_CODE && !row.deletedAt)?.id ?? '';
 
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sessionDraft, setSessionDraft] = useState<SessionFormDraft>(() =>
-    buildSessionDraftFromRecord(session, defaultType, defaultCurrency),
+    buildSessionDraftFromRecord(session, defaultCurrency),
   );
   const [baselineSnapshot, setBaselineSnapshot] = useState(() =>
-    sessionFormDraftSnapshot(buildSessionDraftFromRecord(session, defaultType, defaultCurrency)),
+    sessionFormDraftSnapshot(buildSessionDraftFromRecord(session, defaultCurrency)),
   );
 
   useEffect(() => {
-    const nextDraft = buildSessionDraftFromRecord(session, defaultType, defaultCurrency);
+    const nextDraft = buildSessionDraftFromRecord(session, defaultCurrency);
     setSessionDraft(nextDraft);
     setBaselineSnapshot(sessionFormDraftSnapshot(nextDraft));
     setErrors({});
-  }, [session, defaultCurrency, defaultType]);
+  }, [session, defaultCurrency]);
 
   const updateDraft = (patch: Partial<SessionFormDraft>) => {
     setSessionDraft((prev) => ({ ...prev, ...patch }));
@@ -88,10 +91,14 @@ export function useSessionFormController({ session, onClose, onSave }: UseSessio
       const payload: Session = {
         id: session?.id || crypto.randomUUID(),
         name: toTitleCase(sessionDraft.name || ''),
-        type: sessionDraft.type || defaultType,
-        status: (sessionDraft.status as Session['status']) || 'active',
+        // Category/program are catalog ids; the server resolves defaults and the `type` snapshot.
+        type: session?.type ?? '',
+        categoryId: sessionDraft.categoryId || defaultCategoryId,
+        programId: sessionDraft.programId || '',
+        status: (sessionDraft.status as Session['status']) || currentStatus,
         startDate: sessionDraft.startDate || '',
         endDate: sessionDraft.endDate || '',
+        workingDays: sessionDraft.workingDays ?? [],
         baseFee: Number(sessionDraft.baseFee || 0),
         currency: sessionDraft.currency || defaultCurrency,
         description: sessionDraft.description || '',
@@ -123,27 +130,11 @@ export function useSessionFormController({ session, onClose, onSave }: UseSessio
     }
   };
 
-  const sessionTypeOptions = ((): SessionSelectOption[] =>
-    typeOptions.map((typeOption) => {
-      const translationKey = SESSION_TYPE_LABEL_KEYS[typeOption];
-      return {
-        value: typeOption,
-        label: translationKey ? t(translationKey) : typeOption,
-      };
-    }))();
-
-  const statusOptions = ((): SessionSelectOption[] =>
-    statusValues.map((statusOption) => {
-      const translationKey = `sessions.statuses.${statusOption}` as AppTranslationKey;
-      const translated = t(translationKey);
-      const label = translated === translationKey ? toTitleCase(statusOption) : translated;
-      return { value: statusOption, label };
-    }))();
+  const statusOptions: SessionSelectOption[] = statusValues.map((state) => ({ value: state, label: t(`sessions.lifecycle.${state}`) }));
 
   return {
     t,
     language,
-    defaultType,
     defaultCurrency,
     saving,
     errors,
@@ -151,8 +142,10 @@ export function useSessionFormController({ session, onClose, onSave }: UseSessio
     updateDraft,
     isDirty,
     handleSave,
-    sessionTypeOptions,
     statusOptions,
+    structureLocked,
+    defaultCategoryId,
+    canCreateCatalog: canEditSetup,
     currencyOptions: SESSION_CURRENCIES,
   };
 }

@@ -12,6 +12,7 @@ import {
   studentsNextGrNumberQuerySchema,
 } from '../studentsListQuery.js';
 import { includeDeletedQuerySchema } from '../apiSchemas.js';
+import { studentLookupPutBodySchema } from '../schemas/studentLookup.dto.js';
 
 const c = initContract();
 
@@ -342,5 +343,18 @@ export const studentContract = c.router({
     path: '/api/students/lookups/:kind',
     responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
     summary: 'Get a specific lookup kind',
+  },
+  updateLookupKind: {
+    method: 'PUT',
+    path: '/api/students/lookups/:kind',
+    pathParams: z.object({ kind: z.string() }),
+    body: studentLookupPutBodySchema,
+    responses: {
+      200: z.object({ success: z.literal(true), kind: z.string(), items: z.array(z.string()) }),
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: 'Replace a specific lookup kind',
   },
 });

@@ -90,6 +90,15 @@ export const AUTH_RATE_LIMIT = {
     buildRateLimitError(RATE_LIMIT_MESSAGE, context),
 };
 
+/** Public registration submissions: per IP + workspace (anti-spam, no auth on this path). */
+export const PUBLIC_REGISTRATION_RATE_LIMIT = {
+  max: isProduction() ? 5 : 1000,
+  timeWindow: '10 minutes' as const,
+  keyGenerator: (request: FastifyRequest) => generateCompositeRateLimitKey(request),
+  errorResponseBuilder: (_request: unknown, context: RateLimitErrorContext) =>
+    buildRateLimitError(RATE_LIMIT_MESSAGE, context),
+};
+
 /** Rate limit for messaging write paths (dispatch log POSTs and export enqueue). */
 export const MESSAGING_LOG_RATE_LIMIT = {
   max: isProduction() ? 30 : 1000,

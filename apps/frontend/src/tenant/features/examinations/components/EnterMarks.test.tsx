@@ -4,6 +4,14 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { EnterMarks } from "./EnterMarks";
 import type { Exam, ExamResult } from "@/lib/data/examinationData";
 
+
+vi.mock("@/hooks/useAcademicTerms", () => ({
+  useAcademicTerms: () => ({
+    session: { singular: "Session", plural: "Sessions" },
+    class: { singular: "Class", plural: "Classes" },
+    section: { singular: "Section", plural: "Sections" },
+  }),
+}));
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,

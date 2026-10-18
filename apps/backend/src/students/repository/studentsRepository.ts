@@ -91,12 +91,6 @@ export interface StudentsRepository {
   findSoftDeletedByContactId(tenant: string, contactId: string): Promise<Student | null>;
   listActiveMissingGrNumber(tenant: string, options?: { limit?: number }): Promise<Student[]>;
   bulkUpdateStatusSql(tenant: string, ids: string[], status: string): Promise<number>;
-  bulkEnroll(
-    tenant: string,
-    studentIds: string[],
-    sessionIds: string[],
-    mode?: 'add' | 'replace' | 'remove',
-  ): Promise<{ succeeded: number; failed: number }>;
   bulkSoftDelete?(
     tenant: string,
     ids: string[],

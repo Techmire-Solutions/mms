@@ -2,6 +2,8 @@ import { pgTable, text, timestamp, index, boolean, primaryKey, varchar, numeric,
 import { workspaces } from './platform.js';
 import { financeInvoices, financePayments } from './finance.js';
 import { accountingAccounts } from './accounting.js';
+import { sessions, sessionClasses } from './sessions.js';
+import { programs } from './academicCatalogs.js';
 
 export const financeFeeStructures = pgTable('finance_fee_structures', {
   id: text('id').notNull(),
@@ -9,6 +11,10 @@ export const financeFeeStructures = pgTable('finance_fee_structures', {
   name: varchar('name', { length: 150 }).notNull(),
   session: varchar('session', { length: 120 }).notNull().default(''),
   className: varchar('class_name', { length: 120 }).notNull().default(''),
+  /** Typed references (migration 0171); `session` / `className` stay as display snapshots. */
+  sessionId: text('session_id'),
+  classId: text('class_id'),
+  programId: text('program_id'),
   frequency: varchar('frequency', { length: 20 }).notNull().default('monthly'),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
@@ -16,6 +22,12 @@ export const financeFeeStructures = pgTable('finance_fee_structures', {
 }, (table) => [
   primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
   index('finance_fee_structures_workspace_active_idx').on(table.workspaceSubdomain, table.isActive),
+  foreignKey({ name: 'finance_fee_structures_session_fk', columns: [table.workspaceSubdomain, table.sessionId], foreignColumns: [sessions.workspaceSubdomain, sessions.id] }).onDelete('restrict'),
+  foreignKey({ name: 'finance_fee_structures_class_fk', columns: [table.workspaceSubdomain, table.classId], foreignColumns: [sessionClasses.workspaceSubdomain, sessionClasses.id] }).onDelete('restrict'),
+  foreignKey({ name: 'finance_fee_structures_program_fk', columns: [table.workspaceSubdomain, table.programId], foreignColumns: [programs.workspaceSubdomain, programs.id] }).onDelete('restrict'),
+  index('finance_fee_structures_session_idx').on(table.workspaceSubdomain, table.sessionId),
+  index('finance_fee_structures_class_idx').on(table.workspaceSubdomain, table.classId),
+  index('finance_fee_structures_program_idx').on(table.workspaceSubdomain, table.programId),
 ]);
 
 export const financeFeeItems = pgTable('finance_fee_items', {

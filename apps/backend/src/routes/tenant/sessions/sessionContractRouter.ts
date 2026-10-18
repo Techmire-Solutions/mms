@@ -28,6 +28,7 @@ import {
   loadSessionLookupsMap,
 } from '../../../services/sessionLookupsService.js';
 import { auditSession } from './sessionRouteHelpers.js';
+import { putSessionLookupKind } from './sessionLookupKindPut.js';
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 const SETUP_WRITE_PERM = SESSIONS_MODULE_MANIFEST.permissions.setupWrite;
@@ -84,7 +85,9 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
       if (!canWriteCollection(user, COLLECTION))
         return { status: 403 as const, body: { type: 'forbidden', message: 'Insufficient permissions' } };
       try {
-        const updated = await withTenant(String(request.tenant?.id), () => sessionsUseCases.updateSessionById(id, body), { readOnly: false });
+        // Locked changes after start need Sessions setup rights plus a reason (audited).
+        const lock = { canOverrideLock: roleHasPermission(user.role, SETUP_WRITE_PERM) };
+        const updated = await withTenant(String(request.tenant?.id), () => sessionsUseCases.updateSessionById(id, body, lock), { readOnly: false });
         if (!updated) return { status: 404 as const, body: { type: 'not_found', message: 'Session not found' } };
         return { status: 200 as const, body: { session: updated } };
       } catch (error) {
@@ -260,6 +263,8 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
         return handleContractError(request, error, { status: 500, body: { type: 'database_error', message: 'Failed to load session lookup kind' } });
       }
     },
+
+    updateLookupKind: putSessionLookupKind,
   } as unknown as RouterImplementation<typeof sessionContract>);
 
   await fastify.register(s.plugin(router), {

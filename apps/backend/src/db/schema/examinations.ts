@@ -1,17 +1,20 @@
-import { pgTable, text, timestamp, index, integer, jsonb, primaryKey, foreignKey, varchar, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, index, integer, jsonb, primaryKey, foreignKey, varchar, numeric, date } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { students } from "./students.js";
 import { softDeleteColumns } from "./softDeleteSchema.js";
+import { subjects } from "./academicCatalogs.js";
+import { sessionClasses } from "./sessions.js";
 
 export const exams = pgTable('exams', {
   id: text('id').notNull(),
   workspaceSubdomain: text('workspace_subdomain').notNull().references(() => workspaces.subdomain, { onDelete: 'cascade' }),
   name: varchar('name', { length: 150 }).notNull(),
   subject: varchar('subject', { length: 120 }).notNull().default(''),
+  subjectId: text('subject_id'),
   totalMarks: integer('total_marks').notNull().default(100),
   passingMarks: integer('passing_marks').notNull().default(50),
-  date: varchar('date', { length: 10 }).notNull(),
+  date: date('date', { mode: 'string' }),
   duration: integer('duration').notNull().default(60),
   status: varchar('status', { length: 20 }).notNull().default('upcoming'),
   description: text('description').notNull().default(''),
@@ -20,6 +23,12 @@ export const exams = pgTable('exams', {
   updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 }, (table) => [
   primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
+  foreignKey({
+    name: 'exams_subject_fk',
+    columns: [table.workspaceSubdomain, table.subjectId],
+    foreignColumns: [subjects.workspaceSubdomain, subjects.id],
+  }).onDelete('restrict'),
+  index('exams_workspace_subject_idx').on(table.workspaceSubdomain, table.subjectId),
   index('exams_workspace_date_idx').on(table.workspaceSubdomain, table.date),
   index('exams_workspace_status_idx').on(table.workspaceSubdomain, table.status),
   index('exams_workspace_deleted_idx').on(table.workspaceSubdomain, table.deletedAt),
@@ -47,6 +56,7 @@ export const examClasses = pgTable('exam_classes', {
   }).onDelete('cascade'),
   index('exam_classes_workspace_exam_idx').on(table.workspaceSubdomain, table.examId),
   index('exam_classes_workspace_class_idx').on(table.workspaceSubdomain, table.classId),
+  foreignKey({ name: 'exam_classes_class_fk', columns: [table.workspaceSubdomain, table.classId], foreignColumns: [sessionClasses.workspaceSubdomain, sessionClasses.id] }).onDelete('restrict'),
 ]);
 
 export const examResults = pgTable('exam_results', {
@@ -55,6 +65,7 @@ export const examResults = pgTable('exam_results', {
   examId: text('exam_id').notNull(),
   studentId: varchar('student_id', { length: 64 }).notNull(),
   marksObtained: integer('marks_obtained').notNull().default(0),
+  markedBy: text('marked_by'),
   createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
 }, (table) => [
@@ -165,6 +176,8 @@ export const tests = pgTable('tests', {
   difficulty: varchar('difficulty', { length: 20 }).notNull().default('mixed'),
   duration: integer('duration').notNull().default(60),
   examClass: varchar('exam_class', { length: 120 }),
+  /** `session_classes.id`; `examClass` stays as the display snapshot. */
+  classId: text('class_id'),
   totalMarks: integer('total_marks'),
   instructions: text('instructions'),
   ...softDeleteColumns,
@@ -173,6 +186,7 @@ export const tests = pgTable('tests', {
 }, (table) => [
   primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
   index('tests_workspace_category_idx').on(table.workspaceSubdomain, table.categoryId),
+  index('tests_class_idx').on(table.workspaceSubdomain, table.classId),
   index('tests_workspace_deleted_idx').on(table.workspaceSubdomain, table.deletedAt),
   index('tests_workspace_active_idx')
     .on(table.workspaceSubdomain)

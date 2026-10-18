@@ -6,6 +6,7 @@ import { ResponsiveAccordionTabs } from '@/components/ui/ResponsiveAccordionTabs
 import { ActionButton } from '@/components/ui/ActionButton';
 import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
 import { SessionsDialogLayer } from '@/tenant/features/sessions/components/SessionsDialogLayer';
+import { useAcademicTerms } from '@/hooks/useAcademicTerms';
 import { SessionsWorkTier } from '@/tenant/features/sessions/components/SessionsWorkTier';
 import { SessionsCommandMetrics } from '@/tenant/features/sessions/components/SessionsCommandMetrics';
 import { useSessionsPageController } from '@/tenant/features/sessions/hooks/useSessionsPageController';
@@ -23,14 +24,15 @@ const SessionsSetupTier = lazy(() =>
 
 export default function Sessions() {
   const c = useSessionsPageController();
+  const terms = useAcademicTerms();
   const [importOpen, setImportOpen] = useState(false);
 
   return (
     <ModulePageShell
-      seoTitle={`MMS - ${c.t('nav.sessions')}`}
+      seoTitle={`MMS - ${terms.session.plural}`}
       seoDescription={c.t('page.sessions.subtitle')}
       headerIcon={Calendar}
-      headerTitle={c.t('nav.sessions')}
+      headerTitle={terms.session.plural}
       headerSubtitle={c.t('page.sessions.subtitle')}
       headerActions={
         <>

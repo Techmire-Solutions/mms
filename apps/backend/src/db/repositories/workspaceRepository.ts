@@ -482,3 +482,13 @@ export async function deleteWorkspaceRow(subdomain: string): Promise<void> {
   invalidateWorkspaceCache(subdomain);
 }
 
+
+/** IANA timezone of a workspace (business-day authority); null when unset. */
+export async function findWorkspaceTimezone(subdomain: string): Promise<string | null> {
+  const [row] = await activeDb()
+    .select({ timezone: workspacesTable.timezone })
+    .from(workspacesTable)
+    .where(eq(workspacesTable.subdomain, subdomain.trim().toLowerCase()))
+    .limit(1);
+  return row?.timezone ?? null;
+}

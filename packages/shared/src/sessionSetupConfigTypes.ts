@@ -12,6 +12,7 @@ import { getFlatFieldsConfig } from './moduleFieldConfigUtils.js';
 import { moduleFieldConfigPutBodyBaseSchema } from './schemas/moduleFieldConfig.dto.js';
 import { deepSanitizeStrings } from './schemas/sanitize.js';
 import { normalizeSessionsViewLayout } from './sessionsExportUtils.js';
+import { academicTerminologySchema, normalizeAcademicTerminology, type AcademicTerminology } from './academicTerminology.js';
 
 /** Deep clone {@link INITIAL_SESSIONS_FIELD_SEED} for default and Setup states. */
 export function cloneSessionFieldSeed(): Record<string, FieldDefinition[]> {
@@ -106,10 +107,11 @@ export const sessionPreferencesPutBodySchema = z
     academicYear: z.string().optional(),
     sessionStart: z.string().optional(),
     defaultViewLayout: z.string().optional(),
+    terminology: academicTerminologySchema.optional(),
   })
   .passthrough();
 
-export type SessionModulePreferences = Pick<
+export type SessionModulePreferences = { terminology: AcademicTerminology } & Pick<
   SessionsSettings,
   | 'defaultDuration'
   | 'defaultSessionType'
@@ -134,6 +136,7 @@ const PREF_KEYS = [
   'academicYear',
   'sessionStart',
   'defaultViewLayout',
+  'terminology',
 ] as const;
 
 /** Normalize Sessions module preferences (typed `session_module_preferences`). */
@@ -151,6 +154,7 @@ export function normalizeSessionModulePreferences(
     academicYear: DEFAULT_SESSIONS_SETTINGS.academicYear,
     sessionStart: DEFAULT_SESSIONS_SETTINGS.sessionStart,
     defaultViewLayout: DEFAULT_SESSIONS_SETTINGS.defaultViewLayout,
+    terminology: {},
   };
   if (!partial || typeof partial !== 'object') return { ...defaults };
 
@@ -192,6 +196,7 @@ export function normalizeSessionModulePreferences(
         ? partial.defaultViewLayout
         : defaults.defaultViewLayout,
     ),
+    terminology: normalizeAcademicTerminology((partial as Record<string, unknown>).terminology),
   };
 }
 
@@ -211,6 +216,7 @@ export function stripSessionFieldConfigForPersist(
     academicYear: _academicYear,
     sessionStart: _sessionStart,
     defaultViewLayout: _defaultViewLayout,
+    terminology: _terminology,
     ...rest
   } = config as SessionsSettings & Record<string, unknown>;
   return rest;

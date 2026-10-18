@@ -13,8 +13,6 @@ export {
   saveStudent,
   bulkSaveStudents,
   replaceStudentsForWorkspace,
-  bulkEnrollStudentsTx,
-  bulkEnrollStudents,
 } from './studentRepositoryPersist.js';
 export {
   bulkSoftDeleteStudentsSql,

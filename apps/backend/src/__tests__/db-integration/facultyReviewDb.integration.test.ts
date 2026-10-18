@@ -45,7 +45,7 @@ describe('Faculty review fixes against PostgreSQL', () => {
     await withTenant(tenant, async (tx) => {
       await tx.execute(sql`
         INSERT INTO sessions (workspace_subdomain, id, name, status, created_at, updated_at)
-        VALUES (${tenant}, 'sess-test', 'Test Session', 'active', now(), now())
+        VALUES (${tenant}, 'sess-test', 'Test Session', 'in_progress', now(), now())
         ON CONFLICT DO NOTHING
       `);
       await tx.execute(sql`

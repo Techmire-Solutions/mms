@@ -3,6 +3,9 @@ import { invalidateContactsQueries } from '@/tenant/hooks/collections/contacts';
 import { invalidateEnrollmentsQueries } from '@/tenant/hooks/collections/enrollments';
 import { invalidateMessagingQueries } from '@/tenant/hooks/collections/messaging';
 import { invalidateSessionsQueries } from '@/tenant/hooks/collections/sessions';
+import { invalidateAcademicCatalogQueries } from '@/lib/query/academicCatalogQueries';
+import { invalidateAcademicCalendarQueries } from '@/lib/query/academicCalendarQueries';
+import { invalidateRegistrationQueries } from '@/lib/query/registrationQueries';
 import { invalidateStudentsQueries } from '@/tenant/hooks/collections/students';
 import { invalidateFacultyQueries } from '@/tenant/hooks/collections/faculty';
 import { invalidateUsersQueries } from '@/tenant/hooks/collections/users';
@@ -31,7 +34,22 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     case 'students': return invalidateStudentsQueries(queryClient);
     case 'faculty': return invalidateFacultyQueries(queryClient);
     case 'sessions': return invalidateSessionsQueries(queryClient);
-    case 'enrollments': return invalidateEnrollmentsQueries(queryClient);
+    case 'academic_catalogs': return invalidateAcademicCatalogQueries(queryClient);
+    case 'registration_links':
+    case 'registration_applications':
+      // Approvals also create students and enrollments.
+      invalidateStudentsQueries(queryClient);
+      invalidateEnrollmentsQueries(queryClient);
+      return invalidateRegistrationQueries(queryClient);
+    case 'academic_calendar':
+      // Holidays change attendance rates.
+      invalidateAcademicCalendarQueries(queryClient);
+      return invalidateAttendanceQueries(queryClient);
+    case 'enrollments':
+      // Enrollments drive student session membership and class/section counts (server-derived).
+      invalidateStudentsQueries(queryClient);
+      invalidateSessionsQueries(queryClient);
+      return invalidateEnrollmentsQueries(queryClient);
     case 'users':
     case 'user_activity_logs': return invalidateUsersQueries(queryClient);
     case 'attendance':

@@ -5,7 +5,6 @@ import {
   resolveStudentsByIdentifiers,
   saveStudent,
   bulkSaveStudents,
-  bulkEnrollStudents,
   bulkSoftDeleteStudentsSql,
   bulkRestoreStudentsSql,
 } from '../../db/repositories/studentRepository.js';
@@ -71,8 +70,6 @@ function createStudentsRepository(): StudentsRepository {
     listActiveMissingGrNumber: (tenant, options) =>
       listActiveStudentsMissingGrNumber(tenant, options),
     bulkUpdateStatusSql: (tenant, ids, status) => bulkUpdateStudentsStatusSql(tenant, ids, status),
-    bulkEnroll: (tenant, studentIds, sessionIds, mode) =>
-      bulkEnrollStudents(tenant, studentIds, sessionIds, mode),
     bulkSoftDelete: (tenant, ids, deletedBy, deletionReason) =>
       bulkSoftDeleteStudentsSql(tenant, ids, deletedBy, deletionReason),
     bulkRestore: (tenant, ids, userId) =>

@@ -20,6 +20,14 @@ vi.mock("@/tenant/hooks/collections/sessions", () => ({
   ],
 }));
 
+vi.mock("@/hooks/useAcademicTerms", () => ({
+  useAcademicTerms: () => ({
+    session: { singular: "Session", plural: "Sessions" },
+    class: { singular: "Class", plural: "Classes" },
+    section: { singular: "Section", plural: "Sections" },
+  }),
+}));
+
 vi.mock("@/components/ui/FormModal", () => ({
   FormModal: ({ title, children }: {
     title: string;
@@ -33,7 +41,7 @@ vi.mock("@/components/ui/FormModal", () => ({
 }));
 
 describe("StudentsBulkEnrollModal Component", () => {
-  it("renders bulk enroll modal with sessions and modes", () => {
+  it("given open, should render the session picker, class field and enroll/cancel modes", () => {
     const html = renderToStaticMarkup(
       <StudentsBulkEnrollModal
         open={true}
@@ -47,7 +55,9 @@ describe("StudentsBulkEnrollModal Component", () => {
     expect(html).toContain("Enrolling 5 students");
     expect(html).toContain("Morning Hifz");
     expect(html).toContain("Evening Tajweed");
-    expect(html).toContain("students.bulkEnrollModeAdd");
+    expect(html).toContain("students.bulkEnrollModeEnroll");
+    expect(html).toContain("students.bulkEnrollModeCancel");
+    expect(html).toContain("Class");
   });
 
   it("returns null when open is false", () => {

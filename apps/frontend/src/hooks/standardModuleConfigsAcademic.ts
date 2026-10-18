@@ -1,3 +1,5 @@
+import { activeAcademicCatalogItems } from '@mms/shared';
+import { useAcademicCatalogItems } from '@/hooks/useAcademicCatalog';
 import { useMemo } from 'react';
 import type { ModuleCustomField } from '@mms/shared';
 import {
@@ -140,9 +142,11 @@ const useSessionConfigImpl = createStandardModuleConfigHook<
   lookupsFrom: function useSessionConfigLookups() {
     const lookupsQuery = useSessionLookupsQuery();
     const lookups = lookupsQuery.data ?? emptySessionLookupsMap;
+    const programsQuery = useAcademicCatalogItems('programs');
     return {
       statuses: lookups.statuses,
-      types: lookups.types,
+      /** Active Program names (the session `type` snapshot mirrors the program name). */
+      types: activeAcademicCatalogItems(programsQuery.data ?? []).map((program) => program.name),
     };
   },
 });

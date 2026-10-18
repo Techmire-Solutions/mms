@@ -1,61 +1,48 @@
 import type React from "react";
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
+import type { StudentsBulkEnrollPlacement } from "@mms/shared";
 import { FormModal } from "@/components/ui/FormModal";
+import { Field, FormSelect } from "@/components/ui/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useSessions, useSessionsCollection } from "@/tenant/hooks/collections/sessions";
-import type { StudentsBulkEnrollBody } from "@mms/shared";
-import { cn } from "@/lib/utils";
-import { StudentsBulkEnrollSessionList } from "@/tenant/features/students/components/StudentsBulkEnrollSessionList";
+import { useAcademicTerms } from "@/hooks/useAcademicTerms";
+import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 
 export interface StudentsBulkEnrollModalProps {
   open: boolean;
   onClose: () => void;
   selectedCount: number;
-  onConfirm: (payload: { sessionIds: string[]; mode: StudentsBulkEnrollBody["mode"] }) => Promise<void> | void;
+  onConfirm: (payload: StudentsBulkEnrollPlacement) => Promise<void> | void;
   isPending?: boolean;
 }
 
-export function StudentsBulkEnrollModal({
-  open,
-  onClose,
-  selectedCount,
-  onConfirm,
-  isPending = false,
-}: StudentsBulkEnrollModalProps): React.JSX.Element | null {
-  const { t } = useTranslation();
-  const sessionsQuery = useSessions();
-  const sessions = useSessionsCollection();
+type Mode = StudentsBulkEnrollPlacement["mode"];
 
-  const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
-  const [mode, setMode] = useState<StudentsBulkEnrollBody["mode"]>("add");
+/** Bulk enroll selected students into one class/section, or cancel their enrollment in a session. */
+export function StudentsBulkEnrollModal({ open, onClose, selectedCount, onConfirm, isPending = false }: StudentsBulkEnrollModalProps): React.JSX.Element | null {
+  const { t } = useTranslation();
+  const terms = useAcademicTerms();
+  const sessions = useSessionsCollection();
+  const [mode, setMode] = useState<Mode>("add");
+  const [sessionId, setSessionId] = useState("");
+  const [classId, setClassId] = useState("");
+  const [sectionId, setSectionId] = useState("");
 
   if (!open) return null;
 
-  const toggleSession = (id: string) => {
-    setSelectedSessionIds((prev) => {
-      const nextSet = new Set(prev);
-      if (nextSet.has(id)) {
-        nextSet.delete(id);
-      } else {
-        nextSet.add(id);
-      }
-      return [...nextSet];
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedSessionIds.length === sessions.length) {
-      setSelectedSessionIds([]);
-    } else {
-      setSelectedSessionIds(sessions.map((s) => String(s.id)));
-    }
-  };
+  const session = sessions.find((s) => String(s.id) === sessionId);
+  const sessionClass = session?.classes?.find((c) => c.id === classId);
+  const sections = (sessionClass?.sections ?? []).filter((section) => section.status !== "closed");
+  const ready = Boolean(sessionId) && (mode === "remove" || Boolean(classId));
 
   const handleSave = async () => {
-    if (selectedSessionIds.length === 0) return;
-    await onConfirm({ sessionIds: selectedSessionIds, mode });
-    setSelectedSessionIds([]);
+    if (!ready) return;
+    await onConfirm(mode === "remove"
+      ? { mode, sessionId }
+      : { mode, sessionId, classId, ...(sectionId ? { sectionId } : {}) });
+    setSessionId("");
+    setClassId("");
+    setSectionId("");
     onClose();
   };
 
@@ -70,80 +57,55 @@ export function StudentsBulkEnrollModal({
       saveLabel={t("students.bulkEnroll")}
       onSave={handleSave}
       saving={isPending}
-      saveDisabled={isPending || selectedSessionIds.length === 0}
-      formId="students-bulk-enroll-modal-form"
+      saveDisabled={isPending || !ready}
     >
-      <form
-        id="students-bulk-enroll-modal-form"
-        noValidate
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (selectedSessionIds.length > 0 && !isPending) void handleSave();
-        }}
-        className="space-y-5 text-start"
-      >
-        <p className="text-sm text-muted-foreground m-0">
-          {t("students.bulkEnrollDesc", { count: selectedCount })}
-        </p>
-
-        {/* Action Mode Radio Group */}
-        <div className="space-y-2">
-          <span className="text-xs font-semibold text-foreground" id="bulk-enroll-mode-label">
-            {t("students.bulkEnrollMode")}
-          </span>
-          <div
-            role="radiogroup"
-            aria-labelledby="bulk-enroll-mode-label"
-            className="grid grid-cols-1 sm:grid-cols-3 gap-2"
-          >
-            {(
-              [
-                { id: "add", label: t("students.bulkEnrollModeAdd") },
-                { id: "replace", label: t("students.bulkEnrollModeReplace") },
-                { id: "remove", label: t("students.bulkEnrollModeRemove") },
-              ] as const
-            ).map((opt) => {
-              const isSelected = mode === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  onClick={() => setMode(opt.id)}
-                  className={cn(
-                    "flex items-start gap-2 p-3 text-start rounded-xl border text-xs transition-colors min-h-11 cursor-pointer",
-                    isSelected
-                      ? "border-primary bg-primary/10 text-foreground font-medium ring-1 ring-primary"
-                      : "border-border/60 hover:bg-muted/50 text-muted-foreground",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "w-4 h-4 rounded-full border flex items-center justify-center mt-0.5 shrink-0",
-                      isSelected
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-muted-foreground/40",
-                    )}
-                  >
-                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-background" />}
-                  </div>
-                  <span className="leading-tight">{opt.label}</span>
-                </button>
-              );
-            })}
+      <div className="space-y-5 text-start">
+        <p className="m-0 text-sm text-muted-foreground">{t("students.bulkEnrollClassDesc", { count: selectedCount })}</p>
+        <Field id="bulk-enroll-mode" label={t("students.bulkEnrollMode")} required>
+          <FormSelect
+            id="bulk-enroll-mode"
+            value={mode}
+            onChange={(value) => setMode(value === "remove" ? "remove" : "add")}
+            options={[
+              { value: "add", label: t("students.bulkEnrollModeEnroll") },
+              { value: "remove", label: t("students.bulkEnrollModeCancel") },
+            ]}
+          />
+        </Field>
+        <Field id="bulk-enroll-session" label={t("students.bulkEnrollSession")} required>
+          <FormSelect
+            id="bulk-enroll-session"
+            value={sessionId}
+            onChange={(value) => { setSessionId(value); setClassId(""); setSectionId(""); }}
+            placeholder={t("students.bulkEnrollSelectSessions")}
+            options={sessions.filter((s) => !s.deletedAt).map((s) => ({ value: String(s.id), label: s.name }))}
+          />
+        </Field>
+        {mode === "add" ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field id="bulk-enroll-class" label={terms.class.singular} required>
+              <FormSelect
+                id="bulk-enroll-class"
+                value={classId}
+                disabled={!session}
+                onChange={(value) => { setClassId(value); setSectionId(""); }}
+                options={(session?.classes ?? []).map((c) => ({ value: c.id, label: c.name }))}
+              />
+            </Field>
+            {sections.length > 1 ? (
+              <Field id="bulk-enroll-section" label={terms.section.singular}>
+                <FormSelect
+                  id="bulk-enroll-section"
+                  value={sectionId}
+                  onChange={setSectionId}
+                  placeholder={t("common.allSections")}
+                  options={sections.map((section) => ({ value: section.id, label: `${section.name} (${section.enrolled ?? 0}/${section.capacity})` }))}
+                />
+              </Field>
+            ) : null}
           </div>
-        </div>
-
-        <StudentsBulkEnrollSessionList
-          sessions={sessions}
-          isLoading={sessionsQuery.isLoading}
-          selectedSessionIds={selectedSessionIds}
-          onToggleSession={toggleSession}
-          onSelectAll={handleSelectAll}
-        />
-      </form>
+        ) : null}
+      </div>
     </FormModal>
   );
 }
-

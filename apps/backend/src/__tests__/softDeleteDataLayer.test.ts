@@ -27,6 +27,10 @@ import { bulkSoftDeleteAccounts } from '../db/repositories/accountingAccountsRep
 import { softDeleteSessionWithCascade, restoreSessionWithCascade } from '../db/repositories/sessionRepositoryPersist.js';
 import { findPaymentsByIds } from '../db/repositories/financePaymentsRepository.js';
 import { findEnrollmentsByIds } from '../db/repositories/enrollmentRepositoryHydrate.js';
+vi.mock('../attendance/use-cases/attendanceSectionStamp.js', () => ({
+  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => records),
+}));
+
 
 vi.mock('../db/database.js', () => ({
   runInTransaction: vi.fn((cb: () => unknown) => cb()),
@@ -409,6 +413,8 @@ describe('Soft-Delete Data Layer & Relational Guardrails', () => {
       const enrollmentsUpdateSpy = vi.fn().mockResolvedValue([]);
 
       const fakeTx = {
+        // Enrolled-session sync (enrollmentSessionSync) runs raw SQL in the same transaction.
+        execute: vi.fn().mockResolvedValue({ rows: [] }),
         select: vi.fn(() => ({
           from: vi.fn(() => ({
             where: vi.fn(() => ({
@@ -448,6 +454,8 @@ describe('Soft-Delete Data Layer & Relational Guardrails', () => {
       let enrollmentsRestored = false;
 
       const fakeTx = {
+        // Enrolled-session sync (enrollmentSessionSync) runs raw SQL in the same transaction.
+        execute: vi.fn().mockResolvedValue({ rows: [] }),
         select: vi.fn(() => ({
           from: vi.fn(() => ({
             where: vi.fn(() => ({
@@ -505,6 +513,8 @@ describe('Soft-Delete Data Layer & Relational Guardrails', () => {
       ];
 
       const fakeTx = {
+        // Enrolled-session sync (enrollmentSessionSync) runs raw SQL in the same transaction.
+        execute: vi.fn().mockResolvedValue({ rows: [] }),
         select: vi.fn(() => ({
           from: vi.fn(() => ({
             where: vi.fn(() => ({
@@ -1053,7 +1063,7 @@ describe('Soft-Delete Data Layer & Relational Guardrails', () => {
       ).rejects.toMatchObject({ statusCode: 400, message: expect.stringContaining('student is archived or does not exist') });
     });
 
-    it('createAttendanceRecord throws 400 when session is archived', async () => {
+    it('createAttendanceRecord throws 400 when the class session is archived', async () => {
       const cases = createAttendanceUseCases(
         {} as any,
         {
@@ -1071,7 +1081,7 @@ describe('Soft-Delete Data Layer & Relational Guardrails', () => {
             status: 'present',
           } as any),
         ),
-      ).rejects.toMatchObject({ statusCode: 400, message: expect.stringContaining('session is archived') });
+      ).rejects.toMatchObject({ statusCode: 400, message: expect.stringContaining('class is archived') });
     });
 
     it('upsertAttendanceRecords throws 400 when any student in batch is archived or missing', async () => {

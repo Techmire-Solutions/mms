@@ -67,16 +67,20 @@ describe('sessions use-cases (DI with fake repository)', () => {
     expect(repo.listSessionsPage).toHaveBeenCalledWith('demo', { page: 2, limit: 12 });
   });
 
-  it('bulkUpdateSessionsStatus delegates to the injected repository', async () => {
+  it('given mixed lifecycle states, should apply only allowed transitions (normalized) and count the rest as failed', async () => {
+    // Arrange
     const repo = createFakeRepo();
+    vi.mocked(repo.findSessionById).mockImplementation(async (_tenant: string, id: string) =>
+      ({ id, status: id === 's1' ? 'open' : 'completed' }) as never);
+    vi.mocked(repo.bulkUpdateSessionsStatus).mockResolvedValue({ succeeded: 1, failed: 0 });
     const useCases = createSessionsUseCases(repo);
 
-    const result = await runWithTenant('demo', () =>
-      useCases.bulkUpdateSessionsStatus(['s1', 's2'], 'active'),
-    );
+    // Act
+    const result = await runWithTenant('demo', () => useCases.bulkUpdateSessionsStatus(['s1', 's2'], 'active'));
 
-    expect(result).toEqual({ succeeded: 2, failed: 0 });
-    expect(repo.bulkUpdateSessionsStatus).toHaveBeenCalledWith('demo', ['s1', 's2'], 'active');
+    // Assert
+    expect(result).toEqual({ succeeded: 1, failed: 1 });
+    expect(repo.bulkUpdateSessionsStatus).toHaveBeenCalledWith('demo', ['s1'], 'in_progress');
   });
 
   it('loadSessionsByIds filters out soft-deleted sessions', async () => {

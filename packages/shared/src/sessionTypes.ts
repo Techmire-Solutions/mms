@@ -3,6 +3,8 @@
  * @description Domain types and strict Zod schemas for Academic Sessions Management (Model 6).
  */
 import { z } from 'zod';
+import { SessionClassSectionSchema } from './sessionSectionTypes.js';
+import { WEEKDAY_NAMES } from './academicCalendar.js';
 
 // ============================================================================
 // 1. Session Management (Faculty Assigned to Session)
@@ -151,7 +153,11 @@ export const SessionClassTimetablePeriodSchema = z
     startTime: z.string().min(1, 'Start time is required'),
     endTime: z.string().min(1, 'End time is required'),
     subject: z.string().min(1, 'Subject is required'),
+    /** `subjects.id`; the server refreshes `subject` from the catalog when set. */
+    subjectId: z.string().optional(),
     facultyId: z.string().optional().default(''),
+    /** Extra teachers on this period (assistants / co-teachers). */
+    assistantFacultyIds: z.array(z.string().min(1)).max(10).optional(),
     facultyName: z.string().optional().default(''),
   })
   .strict();
@@ -163,7 +169,11 @@ export const SessionClassTimetablePeriodInsertSchema = z
     startTime: z.string().min(1, 'Start time is required'),
     endTime: z.string().min(1, 'End time is required'),
     subject: z.string().min(1, 'Subject is required'),
+    /** `subjects.id`; the server refreshes `subject` from the catalog when set. */
+    subjectId: z.string().optional(),
     facultyId: z.string().optional().default(''),
+    /** Extra teachers on this period (assistants / co-teachers). */
+    assistantFacultyIds: z.array(z.string().min(1)).max(10).optional(),
     facultyName: z.string().optional().default(''),
   })
   .strict();
@@ -302,6 +312,10 @@ export const ClassSchema = z
     facultyId: z.string().optional().default(''),
     facultyName: z.string().optional().default(''),
     room: z.string().optional().default(''),
+    /** `programs.id` (defaults to the session's program). */
+    programId: z.string().optional(),
+    /** Sections of the class (omit to leave stored sections untouched). */
+    sections: z.array(SessionClassSectionSchema).optional(),
     // Model 6 Child sub-entities
     fees: z.array(SessionClassFeeSchema).default([]),
     schedules: z.array(SessionClassScheduleSchema).default([]),
@@ -329,6 +343,8 @@ export const ClassInsertSchema = z
     facultyId: z.string().optional().default(''),
     facultyName: z.string().optional().default(''),
     room: z.string().optional().default(''),
+    programId: z.string().optional(),
+    sections: z.array(SessionClassSectionSchema).optional(),
     fees: z.array(SessionClassFeeInsertSchema).default([]),
     schedules: z.array(SessionClassScheduleInsertSchema).default([]),
     budgets: z.array(SessionClassBudgetInsertSchema).default([]),
@@ -349,10 +365,18 @@ export const SessionSchema = z
   .object({
     id: z.string(),
     name: z.string().min(1, 'Session name is required'),
-    status: z.enum(['active', 'inactive']).default('active'),
+    // Lifecycle state (see sessionLifecycle); legacy values are normalized server-side.
+    status: z.string().trim().min(1).max(50).default('draft'),
+    /** Legacy display snapshot; superseded by `categoryId` / `programId`. */
     type: z.string().optional().default('academic'),
+    /** `session_categories.id` (Academic Year, Term, Short Course, …). */
+    categoryId: z.string().optional(),
+    /** `programs.id` — default program for the session's classes. */
+    programId: z.string().optional(),
     startDate: z.string().optional().default(''),
     endDate: z.string().optional().default(''),
+    /** Weekly teaching days for this session; empty/absent = the workspace attendance working days. */
+    workingDays: z.array(z.enum(WEEKDAY_NAMES)).max(7).optional(),
     description: z.string().optional(),
     currency: z.string().optional().default('PKR'),
     baseFee: z.coerce.number().nonnegative().default(0),
@@ -375,8 +399,14 @@ export const SessionInsertSchema = z
   .object({
     id: z.string().optional(),
     name: z.string().min(1, 'Session name is required'),
-    status: z.enum(['active', 'inactive']).default('active'),
+    // Lifecycle state (see sessionLifecycle); legacy values are normalized server-side.
+    status: z.string().trim().min(1).max(50).default('draft'),
+    /** Legacy display snapshot; superseded by `categoryId` / `programId`. */
     type: z.string().optional().default('academic'),
+    /** `session_categories.id` (Academic Year, Term, Short Course, …). */
+    categoryId: z.string().optional(),
+    /** `programs.id` — default program for the session's classes. */
+    programId: z.string().optional(),
     startDate: z.string().optional().default(''),
     endDate: z.string().optional().default(''),
     description: z.string().optional(),

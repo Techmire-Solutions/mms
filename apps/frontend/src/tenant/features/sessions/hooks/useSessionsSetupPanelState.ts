@@ -1,6 +1,5 @@
 import { type SessionsSettings } from "@mms/shared";
 import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
-import { SESSION_TYPES } from "@/lib/data/sessionsData";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useSessionsSetupSaveActions } from "@/tenant/features/sessions/hooks/useSessionsSetupSaveActions";
 
@@ -31,7 +30,7 @@ export function useSessionsSetupPanelState(): UseSessionsSetupPanelStateReturn {
     config,
   });
 
-  const typeOptions = (() => (types.length > 0 ? types : [...SESSION_TYPES]))();
+  const typeOptions = types;
 
   const {
     saving,

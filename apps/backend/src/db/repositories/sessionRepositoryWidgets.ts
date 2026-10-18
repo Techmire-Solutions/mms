@@ -19,9 +19,9 @@ function resolveSessionColumnSql(field: string): SQL {
     case 'status':
       return sql`${sessions.status}`;
     case 'startDate':
-      return sql`${sessions.startDate}`;
+      return sql`${sessions.startDate}::text`;
     case 'endDate':
-      return sql`${sessions.endDate}`;
+      return sql`${sessions.endDate}::text`;
     case 'baseFee':
       return sql`${sessions.baseFee}`;
     case 'currency':

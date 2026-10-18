@@ -1,4 +1,4 @@
-import { STUDENTS_MODULE_MANIFEST, type StudentsBulkEnrollBody } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, type StudentsBulkEnrollPlacement } from "@mms/shared";
 import type { StudentsWorkTierSource } from "./studentsPageWorkTierProps";
 import type { useStudentsDirectoryFilters } from "./useStudentsDirectoryFilters";
 import type { useStudentsCrudActions } from "./useStudentsCrudActions";
@@ -93,7 +93,7 @@ export function buildStudentsWorkSource(params: BuildStudentsWorkSourceParams): 
     openEditForm: formState.openEditForm,
     handleRestore: workActions.handleRestore,
     handleBulkStatusChange: workActions.handleBulkStatusChange,
-    handleBulkEnroll: async (payload: { sessionIds: string[]; mode: StudentsBulkEnrollBody["mode"] }) => {
+    handleBulkEnroll: async (payload: StudentsBulkEnrollPlacement) => {
       try {
         await workActions.handleBulkEnroll(directory.selectedIds, payload);
         directory.clearSelection();

@@ -6,6 +6,8 @@ import { MarkAttendanceActions } from "@/tenant/features/attendance/components/M
 import { MarkAttendanceClassBar } from "@/tenant/features/attendance/components/MarkAttendanceClassBar";
 import { MarkAttendanceFacePlaceholder } from "@/tenant/features/attendance/components/MarkAttendanceFacePlaceholder";
 import { MarkAttendanceGrid } from "@/tenant/features/attendance/components/MarkAttendanceGrid";
+import { MarkAttendanceHolidayBanner } from "@/tenant/features/attendance/components/MarkAttendanceHolidayBanner";
+import { useInstructionalDayStatus } from "@/tenant/features/attendance/hooks/useInstructionalDayStatus";
 import { MarkAttendanceOfflineBanner } from "@/tenant/features/attendance/components/MarkAttendanceOfflineBanner";
 import { MarkAttendanceStatsStrip } from "@/tenant/features/attendance/components/MarkAttendanceStatsStrip";
 import { getAuditLog } from "@/tenant/features/attendance/components/markAttendanceQueue";
@@ -17,6 +19,14 @@ export { getAuditLog };
 
 export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
   const controller = useMarkAttendanceController(props);
+  const dayStatus = useInstructionalDayStatus({
+    date: controller.filters.date,
+    sessionId: controller.sessionInfo?.id,
+    classId: controller.filters.classId,
+    sectionId: controller.filters.sectionId,
+    sessionWorkingDays: controller.sessionInfo?.workingDays,
+  });
+  const dayAllowsMarking = dayStatus.instructional || dayStatus.allowExtraClass;
 
   if (!controller.filters.classId) {
     return (
@@ -36,6 +46,8 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
       <AnimatePresence>
         {controller.showFaceAI && <MarkAttendanceFacePlaceholder onClose={() => controller.setShowFaceAI(false)} />}
       </AnimatePresence>
+
+      <MarkAttendanceHolidayBanner status={dayStatus} />
 
       <MarkAttendanceClassBar
         classInfo={controller.classInfo}
@@ -74,7 +86,7 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
         visibleRows={controller.filteredRows.length}
         isOffline={controller.isOffline}
         submitted={controller.submitted}
-        canWriteAttendance={controller.canWriteAttendance}
+        canWriteAttendance={controller.canWriteAttendance && dayAllowsMarking}
         onSaveDraft={() => void controller.handleSaveDraft()}
         onSubmit={() => void controller.handleSubmit()}
       />

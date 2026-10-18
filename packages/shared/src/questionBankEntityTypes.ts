@@ -64,6 +64,8 @@ export interface QuestionBankTest {
   createdAt: string;
   /** Manual paper-builder class/section label printed on the exam paper. */
   examClass?: string;
+  /** `session_classes.id` the paper is set for; `examClass` stays as the printed label. */
+  classId?: string | null;
   /** Manual paper-builder total marks printed on the exam paper. */
   totalMarks?: number;
   /** Manual paper-builder instructions printed before paper sections. */

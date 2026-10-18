@@ -9,6 +9,17 @@ import { ClassDetailBudgetTab } from './ClassDetailBudgetTab';
 import { ClassDetailScholarshipTab } from './ClassDetailScholarshipTab';
 import { EMPTY_CLASS } from './useClassDetailDraft';
 
+
+vi.mock("@/hooks/useAcademicCatalog", () => ({
+  useAcademicCatalogItems: () => ({ data: [] }),
+  useExaminationSubjects: () => ({ data: [] }),
+  useAcademicCatalogActions: () => ({ save: vi.fn(), remove: vi.fn(), restore: vi.fn(), isPending: false }),
+}));
+
+vi.mock("@/tenant/hooks/usePermissions", () => ({
+  useModulePermissions: () => ({ canRead: true, canWrite: true, canDelete: false, canEditSetup: false }),
+}));
+
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }

@@ -66,6 +66,7 @@ describe("paperBuilderUtils", () => {
       config: {
         name: "Monthly Paper",
         examClass: "Hifz 2",
+        classId: "",
         totalMarks: 50,
         duration: 45,
         instructions: "Answer all.",

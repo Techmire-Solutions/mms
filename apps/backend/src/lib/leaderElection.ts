@@ -7,6 +7,7 @@ import { logger } from './logger.js';
  */
 export const LEADER_LOCK_AUDIT_VERIFICATION = 918_273_641;
 export const LEADER_LOCK_RETENTION_PURGE = 918_273_642;
+export const LEADER_LOCK_SESSION_LIFECYCLE = 918_273_643;
 
 export interface LeaderLease {
   /** True while this process still holds the session-level advisory lock. */

@@ -170,8 +170,9 @@ export async function aggregateSessionsCommandMetrics(
     const result = await tx.execute(sql`
       SELECT
         COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE lower(s.status) = 'active')::int AS active,
-        COUNT(*) FILTER (WHERE lower(s.status) = 'upcoming')::int AS upcoming,
+        -- Lifecycle buckets (migration 0169): active = in progress, upcoming = draft or open.
+        COUNT(*) FILTER (WHERE s.status = 'in_progress')::int AS active,
+        COUNT(*) FILTER (WHERE s.status IN ('draft', 'open'))::int AS upcoming,
         COUNT(*) FILTER (WHERE lower(s.status) = 'completed')::int AS completed,
         COUNT(*) FILTER (WHERE lower(s.status) = 'cancelled')::int AS cancelled,
         COALESCE(SUM(cls.total_enrolled), 0)::int AS total_enrolled,
@@ -190,10 +191,15 @@ export async function aggregateSessionsCommandMetrics(
       FROM sessions s
       LEFT JOIN LATERAL (
         SELECT
-          SUM(c.enrolled)::int AS total_enrolled,
+          SUM(ce.enrolled)::int AS total_enrolled,
           SUM(c.capacity)::int AS total_capacity,
           COUNT(*)::int AS class_count
         FROM session_classes c
+        CROSS JOIN LATERAL (
+          SELECT count(*)::int AS enrolled FROM enrollments e
+          WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id
+            AND e.class_id = c.id AND e.deleted_at IS NULL AND e.status <> 'cancelled'
+        ) ce
         WHERE c.workspace_subdomain = s.workspace_subdomain
           AND c.session_id = s.id
       ) cls ON true

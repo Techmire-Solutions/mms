@@ -95,6 +95,7 @@ export async function saveExamResult(tenant: string, record: ExamResult): Promis
         examId: record.examId,
         studentId: record.studentId,
         marksObtained: record.marksObtained ?? 0,
+        markedBy: record.markedBy ?? null,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -103,6 +104,7 @@ export async function saveExamResult(tenant: string, record: ExamResult): Promis
           examId: record.examId,
           studentId: record.studentId,
           marksObtained: record.marksObtained ?? 0,
+          markedBy: record.markedBy ?? null,
           updatedAt: new Date(),
         },
       });
@@ -130,6 +132,7 @@ export async function bulkSaveExamResults(tenant: string, records: ExamResult[])
           examId: r.examId,
           studentId: r.studentId,
           marksObtained: r.marksObtained ?? 0,
+          markedBy: r.markedBy ?? null,
           updatedAt: new Date(),
         })),
       )
@@ -139,6 +142,7 @@ export async function bulkSaveExamResults(tenant: string, records: ExamResult[])
           examId: sql`excluded.exam_id`,
           studentId: sql`excluded.student_id`,
           marksObtained: sql`excluded.marks_obtained`,
+          markedBy: sql`excluded.marked_by`,
           updatedAt: new Date(),
         },
       });
@@ -164,6 +168,7 @@ export async function replaceExamResultsForWorkspace(tenant: string, records: Ex
           examId: r.examId,
           studentId: r.studentId,
           marksObtained: r.marksObtained ?? 0,
+          markedBy: r.markedBy ?? null,
           updatedAt: new Date(),
         })),
       );

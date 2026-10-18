@@ -1,6 +1,7 @@
 import type { TabDefinition } from "./contactTypes.js";
 import type { ModuleFieldDef } from "./moduleFieldSchema.js";
 import { INITIAL_SESSIONS_FIELD_SEED } from "./moduleFieldSetupAcademic.js";
+import type { AcademicTerminology } from "./academicTerminology.js";
 
 // ─── Sessions Module Settings ─────────────────────────────────────────────────
 
@@ -28,6 +29,8 @@ export interface SessionsSettings {
   /** Month in which the academic session starts, e.g. "april". */
   sessionStart: string;
   defaultViewLayout?: string;
+  /** Tenant relabels for Session / Class / Section per language. */
+  terminology?: AcademicTerminology;
   fields?: Record<string, unknown>;
   customFields?: [];
   fieldOrder?: string[];

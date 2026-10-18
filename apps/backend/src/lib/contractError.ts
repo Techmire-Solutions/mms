@@ -1,5 +1,6 @@
 import type { FastifyRequest } from 'fastify';
 import { ZodError } from 'zod';
+import { isForeignKeyViolation } from './pgErrors.js';
 
 interface ContractErrorBody {
   type: string;
@@ -43,6 +44,12 @@ export function handleContractError(
           .join('; ')}`,
       },
     };
+  }
+
+  // A restricting foreign key (e.g. a class still referenced by attendance) is a conflict, not a
+  // server fault; never leak the constraint name or SQL.
+  if (isForeignKeyViolation(error)) {
+    return { status: 409, body: { type: 'conflict', message: 'This record is still referenced by other records' } };
   }
 
   // Preserve intentional domain statuses (HttpDomainError and friends) instead

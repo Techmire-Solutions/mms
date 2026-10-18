@@ -5,6 +5,9 @@ import { registerModuleAccess } from '../../middleware/requireTenantModule.js';
 import { sessionsUseCases } from '../../sessions/use-cases/sessionsUseCases.js';
 import { registerStandardExtendedRoutes } from '../../lib/crudRouter.js';
 import { sessionContractRouter } from './sessions/sessionContractRouter.js';
+import { academicCatalogRouter } from './sessions/academicCatalogRouter.js';
+import { registrationLinksRouter } from './sessions/registrationLinksRouter.js';
+import { sessionSectionsRouter } from './sessions/sessionSectionsRouter.js';
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 
@@ -34,5 +37,8 @@ export default async function sessionsRoutes(
   );
 
   await fastify.register(sessionContractRouter);
+  await fastify.register(academicCatalogRouter);
+  await fastify.register(registrationLinksRouter);
+  await fastify.register(sessionSectionsRouter);
 }
 

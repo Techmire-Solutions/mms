@@ -8,7 +8,7 @@ export type AttendanceRow = typeof attendance.$inferSelect;
 export type AttendanceInsert = typeof attendance.$inferInsert;
 
 /** Row shape returned by explicit select projections (purgeAfter is DB-only generated column). */
-export type AttendanceSelectRow = Omit<AttendanceRow, 'purgeAfter'>;
+export type AttendanceSelectRow = Omit<AttendanceRow, 'purgeAfter' | 'dateOn'>;
 
 /**
  * Canonical DB -> Contract mapper for Attendance.
@@ -26,6 +26,8 @@ export function attendanceRowToRecord(row: AttendanceSelectRow | AttendanceRow):
     timeIn: row.timeIn,
     timeOut: row.timeOut,
     notes: row.notes,
+    markedBy: row.markedBy ?? null,
+    sectionId: row.sectionId ?? null,
     ...mapAuditTimestamps(row),
   } satisfies AttendanceRecord;
 }
@@ -61,6 +63,8 @@ export function attendanceRecordToInsert(
     timeIn: String(record.timeIn || ''),
     timeOut: String(record.timeOut || ''),
     notes: String(record.notes || ''),
+    markedBy: record.markedBy ?? null,
+    sectionId: record.sectionId ?? null,
     deletedAt: audit.deletedAt,
     deletedBy: audit.deletedBy,
     deletionReason: audit.deletionReason,

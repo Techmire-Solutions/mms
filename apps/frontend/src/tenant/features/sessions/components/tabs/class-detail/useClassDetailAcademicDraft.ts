@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { formatFacultyDisplayName, type FacultyMember } from '@mms/shared';
+import { activeAcademicCatalogItems, formatFacultyDisplayName, type FacultyMember } from '@mms/shared';
+import { useAcademicCatalogItems } from '@/hooks/useAcademicCatalog';
 import type {
   Class,
   SessionClassSchedule,
@@ -20,6 +21,8 @@ export function useClassDetailAcademicDraft(
   setClassDraft: Dispatch<SetStateAction<Class>>,
   allFaculty: FacultyMember[],
 ) {
+  const subjectsQuery = useAcademicCatalogItems('subjects');
+  const defaultSubject = useMemo(() => activeAcademicCatalogItems(subjectsQuery.data ?? [])[0], [subjectsQuery.data]);
   const addScheduleRow = useCallback(() => {
     setClassDraft((prev) => {
       const newSchedule: SessionClassSchedule = {
@@ -63,7 +66,8 @@ export function useClassDetailAcademicDraft(
         timetableId: timetable.id,
         startTime: '08:00',
         endTime: '09:00',
-        subject: 'Quran Memorization',
+        subject: defaultSubject?.name ?? '',
+        subjectId: defaultSubject?.id ?? '',
         facultyId: facultyIdStr,
         facultyName: initialFacultyName,
       };
@@ -72,7 +76,7 @@ export function useClassDetailAcademicDraft(
         timetables: [{ ...timetable, periods: [...(timetable.periods || []), newPeriod] }],
       };
     });
-  }, [allFaculty, setClassDraft]);
+  }, [allFaculty, defaultSubject, setClassDraft]);
 
   const removePeriodRow = useCallback((id: string) => {
     setClassDraft((prev) => {

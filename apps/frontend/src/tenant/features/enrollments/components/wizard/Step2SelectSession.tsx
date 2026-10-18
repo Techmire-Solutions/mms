@@ -18,6 +18,7 @@ import { formatDate } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 
 
+import { normalizeSessionStatus, SESSION_ENROLLABLE_STATES } from "@mms/shared";
 export interface Step2SelectSessionProps {
   value: Session | null | undefined;
   onChange: (session: Session) => void;
@@ -40,7 +41,7 @@ export function Step2SelectSession({ value, onChange, sessions = [] }: Step2Sele
       full: { label: t("enrollment.session.full"), cls: SEMANTIC_BADGE.destructiveStrong },
       almost_full: { label: t("enrollment.session.almostFull"), cls: SEMANTIC_BADGE.warningStrong },
     }))() as Record<string, StatusBadgeConfigItem>;
-  const activeSessions = sessions.filter((session) => session.status === "active");
+  const activeSessions = sessions.filter((session) => SESSION_ENROLLABLE_STATES.includes(normalizeSessionStatus(session.status)));
 
   return (
     <section className="space-y-4" aria-labelledby="step2-title">

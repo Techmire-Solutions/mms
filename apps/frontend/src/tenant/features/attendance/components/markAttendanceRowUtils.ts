@@ -94,8 +94,20 @@ export function studentRollNo(student: Student | undefined, studentId: string): 
 export function isEnrollmentInAttendanceRoster(
   enrollment: Enrollment,
   classId: string,
+  sectionId?: string,
 ): boolean {
-  return enrollment.classId === classId && enrollment.status !== "cancelled";
+  return enrollment.classId === classId && enrollment.status !== "cancelled" && (!sectionId || enrollment.sectionId === sectionId);
+}
+
+/** Existing attendance rows for the class/date, narrowed to the roster when a section is selected. */
+export function existingRecordsForRoster<T extends { classId: string; date: string; studentId: string }>(
+  records: T[],
+  filters: { classId: string; date: string; sectionId?: string },
+  roster: ReadonlyArray<{ id: string }>,
+): T[] {
+  const inRoster = filters.sectionId ? new Set(roster.map((student) => String(student.id))) : null;
+  return records.filter((record) => record.classId === filters.classId && record.date === filters.date
+    && (!inRoster || inRoster.has(String(record.studentId))));
 }
 
 export function enrolledStudentsForClass(
@@ -103,6 +115,7 @@ export function enrolledStudentsForClass(
   enrollments: Enrollment[],
   students: Student[],
   unnamedStudentLabel: string,
+  sectionId?: string,
 ): ClassStudent[] {
   if (!classId) return [];
 
@@ -110,7 +123,7 @@ export function enrolledStudentsForClass(
   const seen = new Set<string>();
 
   return enrollments
-    .filter((enrollment) => isEnrollmentInAttendanceRoster(enrollment, classId))
+    .filter((enrollment) => isEnrollmentInAttendanceRoster(enrollment, classId, sectionId))
     .flatMap((enrollment) => {
       const studentId = String(enrollment.studentId || "");
       if (!studentId || seen.has(studentId)) return [];

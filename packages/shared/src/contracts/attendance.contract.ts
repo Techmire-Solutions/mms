@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { baseListQuerySchema, softDeleteBodySchema } from '../apiSchemas.js';
 import { attendanceBulkIdsSchema, attendanceCreateSchema, attendanceUpdateSchema } from '../schemas/attendance.dto.js';
 import { attendanceRecordSchema, attendanceBulkSchema } from '../attendanceModuleManifest.js';
-import { attendanceLookupsMapSchema } from '../attendanceLookupTypes.js';
+import { attendanceLookupsMapSchema, attendanceLookupPutBodySchema } from '../attendanceLookupTypes.js';
 import { widgetAggregatesBodySchema } from '../schemas/common.dto.js';
 import {
   attendanceFieldConfigPutBodySchema,
@@ -223,5 +223,18 @@ export const attendanceContract = c.router({
     path: '/api/attendance/lookups/:kind',
     responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
     summary: 'Get a specific lookup kind',
+  },
+  updateLookupKind: {
+    method: 'PUT',
+    path: '/api/attendance/lookups/:kind',
+    pathParams: z.object({ kind: z.string() }),
+    body: attendanceLookupPutBodySchema,
+    responses: {
+      200: z.object({ success: z.literal(true), kind: z.string(), items: attendanceLookupPutBodySchema.shape.items }),
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: 'Replace a specific lookup kind',
   },
 });

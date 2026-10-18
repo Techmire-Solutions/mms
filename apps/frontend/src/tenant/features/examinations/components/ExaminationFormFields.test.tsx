@@ -3,6 +3,17 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ExaminationFormFields } from "./ExaminationFormFields";
 
+
+vi.mock("@/hooks/useAcademicCatalog", () => ({
+  useAcademicCatalogItems: () => ({ data: [] }),
+  useExaminationSubjects: () => ({ data: [] }),
+  useAcademicCatalogActions: () => ({ save: vi.fn(), remove: vi.fn(), restore: vi.fn(), isPending: false }),
+}));
+
+vi.mock("@/tenant/hooks/usePermissions", () => ({
+  useModulePermissions: () => ({ canRead: true, canWrite: true, canDelete: false, canEditSetup: false }),
+}));
+
 vi.mock("@/components/ui/SectionCard", () => ({
   SectionCard: ({ children, title }: any) => (
     <div data-testid="section-card">

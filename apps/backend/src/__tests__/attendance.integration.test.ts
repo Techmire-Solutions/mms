@@ -2,6 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildApp } from '../app.js';
 import { adminToken, teacherToken, viewerToken } from './helpers/tokens.js';
 
+
+const mockAssertTeacherClassScope = vi.fn().mockResolvedValue(undefined);
+vi.mock('../sessions/use-cases/teacherSectionScope.js', () => ({
+  assertTeacherClassScope: (...args: unknown[]) => mockAssertTeacherClassScope(...args),
+  assertTeacherAnyClassScope: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('../attendance/use-cases/instructionalDayGuard.js', () => ({
+  assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock('../db/database.js', () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
   pingDatabase: vi.fn().mockResolvedValue(true),
@@ -211,7 +220,8 @@ describe('attendance REST routes integration', () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockUpsertAttendanceRecords).toHaveBeenCalledWith([attendanceRecord]);
+    expect(mockUpsertAttendanceRecords).toHaveBeenCalledWith([{ ...attendanceRecord, markedBy: expect.any(String) }]);
+    expect(mockAssertTeacherClassScope).toHaveBeenCalledWith(expect.objectContaining({ role: 'teacher' }), 'demo', [{ classId: attendanceRecord.classId, date: attendanceRecord.date }]);
     expect(res.json()).toEqual({ records: [attendanceRecord] });
     await app.close();
   });

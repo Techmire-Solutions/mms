@@ -3,6 +3,14 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { AuditLog } from "./AuditLog";
 
+
+vi.mock("@/hooks/useAcademicTerms", () => ({
+  useAcademicTerms: () => ({
+    session: { singular: "Session", plural: "Sessions" },
+    class: { singular: "Class", plural: "Classes" },
+    section: { singular: "Section", plural: "Sections" },
+  }),
+}));
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({

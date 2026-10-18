@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Filter, X, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { SectionFilterField } from "@/components/common/SectionFilterField";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Field } from "@/components/ui/FormField";
@@ -16,6 +17,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 export interface AttendanceFilterState {
   sessionId: string;
   classId: string;
+  /** Narrows the roster to one section of the class (empty = all sections). */
+  sectionId?: string;
   facultyId: string;
   date: string;
 }
@@ -155,11 +158,17 @@ export function AttendanceFilters({ filters, onChange }: AttendanceFiltersProps)
                   id="filter-class"
                   name="classId"
                   value={filters.classId}
-                  onChange={(value) => setFilterValue("classId", value)}
+                  onChange={(value) => onChange({ ...filters, classId: value, sectionId: "" })}
                   placeholder={t("attendance.filters.allClasses")}
                   options={sessionClasses.map((sessionClass) => ({ value: sessionClass.id, label: sessionClass.name }))}
                 />
               </Field>
+
+              <SectionFilterField
+                sections={allClasses.find((sessionClass) => sessionClass.id === filters.classId)?.sections ?? []}
+                value={filters.sectionId ?? ""}
+                onChange={(value) => setFilterValue("sectionId", value)}
+              />
 
               {/* Faculty */}
               <Field id="filter-faculty" label={t("attendance.filters.faculty") || t("nav.faculty")}>

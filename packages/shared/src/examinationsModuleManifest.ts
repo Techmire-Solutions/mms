@@ -12,6 +12,8 @@ export const examRecordSchema = z
     id: z.string(),
     name: z.string(),
     subject: z.string().default(''),
+    /** `subjects.id`; `subject` is the display snapshot. */
+    subjectId: z.string().optional(),
     totalMarks: z.number().default(100),
     passingMarks: z.number().default(50),
     date: z.string(),
@@ -37,6 +39,7 @@ export const examRecordInsertSchema = z
     id: z.string().optional(),
     name: z.string().min(1, 'Exam name is required'),
     subject: z.string().optional().default(''),
+    subjectId: z.string().optional(),
     totalMarks: z.number().positive().default(100),
     passingMarks: z.number().nonnegative().default(50),
     date: isoDateSchema,
@@ -72,6 +75,8 @@ export const examResultRecordSchema = z
     examId: z.string(),
     studentId: z.string(),
     marksObtained: z.number().default(0),
+    /** Server-set: user who entered the marks. */
+    markedBy: z.string().nullable().optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
   })

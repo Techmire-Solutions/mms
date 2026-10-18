@@ -8,7 +8,7 @@ import {
   type EnrollmentsListPageResult,
   type EnrollmentsListQuery,
 } from '@mms/shared';
-import { enrollments, enrollmentTimelineEvents } from '../schema.js';
+import { enrollments, enrollmentTimelineEvents, type EnrollmentSelectRow } from '../schema.js';
 import { withTenantRead } from '../tenant-context.js';
 import { runListPage } from './listPageHelper.js';
 import { enrollmentRowToRecord } from './enrollmentRepository.js';
@@ -145,7 +145,7 @@ export async function listEnrollmentsPage(
       afterId: query.afterId,
       skipCount: query.skipCount,
       defaultPageSize: 12,
-      rowMapper: (row) => row as typeof enrollments.$inferSelect,
+      rowMapper: (row) => row as EnrollmentSelectRow,
     });
 
     if (result.items.length === 0) {

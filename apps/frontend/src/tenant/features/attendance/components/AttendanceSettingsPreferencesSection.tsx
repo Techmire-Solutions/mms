@@ -2,6 +2,7 @@ import React from "react";
 import type { AttendanceSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AttendanceTimingRulesSection } from "./AttendanceTimingRulesSection";
+import { AttendanceTeachingDaysSection } from "./AttendanceTeachingDaysSection";
 import { AttendanceQrRulesSection } from "./AttendanceQrRulesSection";
 import { AttendanceAlertsRulesSection } from "./AttendanceAlertsRulesSection";
 import { AttendanceAdvancedRulesSection } from "./AttendanceAdvancedRulesSection";
@@ -27,6 +28,15 @@ export function AttendanceSettingsPreferencesSection({
 
   return (
     <div className="space-y-6">
+      <AttendanceTeachingDaysSection
+        settingsDraft={settingsDraft}
+        upd={upd}
+        isPrefsDirty={isPrefsDirty}
+        saving={saving}
+        saved={saved}
+        onSave={onSave}
+      />
+
       <AttendanceTimingRulesSection
         settingsDraft={settingsDraft}
         upd={upd}

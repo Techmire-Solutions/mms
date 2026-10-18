@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { GraduationCap, BookOpen, IdCard } from "lucide-react";
-import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsBulkEnrollBody } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsBulkEnrollPlacement } from "@mms/shared";
 import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
 import { Button } from "@/components/ui/button";
 import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
@@ -23,7 +23,7 @@ export interface StudentsBulkActionBarProps {
   onSms: (targets: Student[]) => void;
   onEmail: (targets: Student[]) => void;
   onBulkStatusChange?: (status: string) => void;
-  onBulkEnroll?: (payload: { sessionIds: string[]; mode: StudentsBulkEnrollBody["mode"] }) => Promise<void> | void;
+  onBulkEnroll?: (payload: StudentsBulkEnrollPlacement) => Promise<void> | void;
   isBulkEnrollPending?: boolean;
   onBulkPrintIdCards?: () => void;
   onBulkExport?: () => void;

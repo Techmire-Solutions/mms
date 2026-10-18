@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, index, jsonb, primaryKey, varchar, bigint, numeric, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, index, jsonb, primaryKey, varchar, bigint, numeric, foreignKey, date } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { students } from "./students.js";
@@ -14,7 +14,13 @@ export const enrollments = pgTable('enrollments', {
   sessionName: varchar('session_name', { length: 255 }).notNull().default('') ,
   classId: varchar('class_id', { length: 64 }).notNull(),
   className: varchar('class_name', { length: 255 }).notNull().default(''),
+  /** `session_class_sections.id` (migration 0167). */
+  sectionId: text('section_id'),
+  /** Roll number within the section (unique per section among active enrollments). */
+  rollNo: varchar('roll_no', { length: 64 }),
   enrolledDate: varchar('enrolled_date', { length: 10 }).notNull(),
+  /** Expand column (migration 0173): trigger-synced `date` copy of `enrolled_date`. */
+  enrolledOn: date('enrolled_on', { mode: 'string' }),
   baseFee: numeric('base_fee', { precision: 12, scale: 2 }).notNull().default('0'),
   discountType: varchar('discount_type', { length: 32 }).notNull().default('none'),
   discountLabel: varchar('discount_label', { length: 120 }).notNull().default(''),
@@ -101,6 +107,8 @@ export const enrollmentModulePreferences = pgTable('enrollment_module_preference
 /* ========================================================================= */
 
 export type EnrollmentRow = typeof enrollments.$inferSelect;
+/** Row as read by the app: `enrolledOn` (0173 expand column) is trigger-maintained and not read yet. */
+export type EnrollmentSelectRow = Omit<EnrollmentRow, 'enrolledOn'>;
 export type InsertEnrollmentRow = typeof enrollments.$inferInsert;
 export type EnrollmentTimelineEventRow = typeof enrollmentTimelineEvents.$inferSelect;
 export type InsertEnrollmentTimelineEventRow = typeof enrollmentTimelineEvents.$inferInsert;

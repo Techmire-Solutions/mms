@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { Field } from "@/components/ui/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
-import { EXAMINATION_SUBJECT_OPTIONS } from "./examinationFormConstants";
+import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
+import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import type { useExaminationForm } from "./useExaminationForm";
 import type { Exam } from "@/lib/data/examinationData";
 
@@ -25,6 +27,8 @@ export function ExaminationFormFields({
   updateDraft,
   getFieldError,
 }: ExaminationFormFieldsProps): React.JSX.Element {
+  // Subjects are a Sessions catalog; quick-create needs Sessions setup permission.
+  const { canEditSetup: canCreateSubject } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
   return (
     <div className="space-y-5 text-start">
           <SectionCard
@@ -53,16 +57,15 @@ export function ExaminationFormFields({
               </div>
 
               <Field id="exam-subject" label={t("examinations.form.fields.subject")}>
-                <FormSelect
+                <AcademicCatalogSelect
+                  kind="subjects"
+                  source="examinations"
                   id="exam-subject"
-                  name="subject"
-                  value={examDraft.subject || ""}
-                  onChange={(val) => updateDraft({ subject: val })}
-                  placeholder={t("examinations.form.placeholders.subject")}
-                  options={EXAMINATION_SUBJECT_OPTIONS.map((subjectOption) => ({
-                    value: subjectOption.value,
-                    label: t(subjectOption.labelKey),
-                  }))}
+                  name="subjectId"
+                  value={examDraft.subjectId ?? ""}
+                  onChange={(subjectId, subject) => updateDraft({ subjectId, subject: subject?.name ?? "" })}
+                  canCreate={canCreateSubject}
+                  allowNone
                 />
               </Field>
 

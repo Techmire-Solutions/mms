@@ -77,15 +77,24 @@ export const studentWireWriteSchema = z.preprocess((raw) => {
   return deepSanitizeStrings(stripped);
 }, studentWriteBaseObjectSchema.passthrough());
 
+/**
+ * Bulk enrollment goes through `enrollments` (source of truth): `add` needs a class (section is
+ * defaulted server-side when omitted); `remove` cancels active enrollments in the session.
+ */
 export const studentsBulkEnrollBodySchema = z
   .object({
     studentIds: z.array(z.union([z.string(), z.number()])).min(1).max(500),
-    sessionIds: z.array(z.string().min(1)).min(1).max(50),
-    mode: z.enum(['add', 'replace', 'remove']).default('add'),
+    sessionId: z.string().min(1),
+    classId: z.string().min(1).optional(),
+    sectionId: z.string().min(1).optional(),
+    mode: z.enum(['add', 'remove']).default('add'),
   })
-  .strict();
+  .strict()
+  .refine((body) => body.mode === 'remove' || Boolean(body.classId), { message: 'Class is required', path: ['classId'] });
 
 export type StudentsBulkEnrollBody = z.infer<typeof studentsBulkEnrollBodySchema>;
+/** Bulk-enroll target chosen in the UI (student ids come from the selection). */
+export type StudentsBulkEnrollPlacement = Omit<StudentsBulkEnrollBody, 'studentIds'>;
 
 const studentsDuplicateCheckBodyBaseSchema = z.object({
   excludeId: z.string().optional(),

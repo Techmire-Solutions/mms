@@ -8,6 +8,7 @@ import { Step1SelectStudent } from "@/tenant/features/enrollments/components/wiz
 import { Step2SelectSession } from "@/tenant/features/enrollments/components/wizard/Step2SelectSession";
 import { Step3Eligibility } from "@/tenant/features/enrollments/components/wizard/Step3Eligibility";
 import { Step4ClassAssignment } from "@/tenant/features/enrollments/components/wizard/Step4ClassAssignment";
+import { defaultSectionId, type SectionPlacement } from "@/tenant/features/enrollments/components/wizard/Step4SectionPlacement";
 import { Step5FeeCalculation } from "@/tenant/features/enrollments/components/wizard/Step5FeeCalculation";
 import { Step6Confirmation } from "@/tenant/features/enrollments/components/wizard/Step6Confirmation";
 import { suggestClass, runFullEligibility, type Enrollment, type CalculatedFee } from '@/lib/data/enrollmentData';
@@ -31,7 +32,12 @@ export const EnrollmentWizard = (function EnrollmentWizard({ onComplete, onCance
       const [step, setStep] = useState<number>(0);
       const [student, setStudent]       = useState<Student | null>(null);
       const [session, setSession]       = useState<Session | null>(null);
-      const [classInfo, setClassInfo]   = useState<Class | null>(null);
+      const [classInfo, setClassInfoState] = useState<Class | null>(null);
+      const [placement, setPlacement] = useState<SectionPlacement>({ sectionId: '', rollNo: '' });
+      const setClassInfo = (next: Class | null) => {
+        setClassInfoState(next);
+        setPlacement({ sectionId: defaultSectionId(next), rollNo: '' });
+      };
       const [feeResult, setFeeResult]   = useState<CalculatedFee | null>(null);
       const [notes, setNotes]           = useState<string>("");
       const [customFieldValues, setCustomFieldValues] = useState<Record<string, unknown>>({});
@@ -59,7 +65,7 @@ export const EnrollmentWizard = (function EnrollmentWizard({ onComplete, onCance
           const checks = student && session ? runFullEligibility(student, session, suggested, []) : [];
           return checks.every((check) => check.status !== "fail");
         }
-        if (step === 3) return !!classInfo;
+        if (step === 3) return !!classInfo && (!(classInfo.sections ?? []).length || !!placement.sectionId);
         if (step === 4) return !!feeResult;
         return true;
       };
@@ -96,6 +102,7 @@ export const EnrollmentWizard = (function EnrollmentWizard({ onComplete, onCance
           notes,
           customFieldValues,
           t,
+          placement,
         });
 
         setSubmitting(true);
@@ -150,6 +157,7 @@ export const EnrollmentWizard = (function EnrollmentWizard({ onComplete, onCance
                   <Step4ClassAssignment
                     session={session} student={student}
                     suggestedClass={suggested} value={classInfo} onChange={setClassInfo}
+                    placement={placement} onPlacementChange={setPlacement}
                   />
                 )}
                 {step === 4 && student && session && (

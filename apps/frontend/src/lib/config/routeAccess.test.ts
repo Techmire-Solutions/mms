@@ -22,6 +22,7 @@ const OUTSIDE_APP_SHELL = new Set<string>([
   ROUTES.platformForgotPassword, ROUTES.platformAccount, ROUTES.platformAdmins, ROUTES.platformUsers,
   ROUTES.platformSettings, ROUTES.platformDashboard, ROUTES.platformWorkspaces, ROUTES.platformReports,
   ROUTES.platformActivityLogs, ROUTES.platformSystem, ROUTES.platformErd, ROUTES.platformDesignSystem,
+  ROUTES.apply,
 ]);
 
 function evaluator(

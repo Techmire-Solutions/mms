@@ -4,6 +4,7 @@ import { attendanceRepository } from '../repository/attendanceRepositoryAdapter.
 import { getRequestTenant } from '../../lib/tenantContext.js';
 import { createGenericRelationalService } from '../../services/genericRelationalService.js';
 import { defineTenantBulkCollectionService } from '../../services/tenantBulkService.js';
+import { stampAttendanceSections } from './attendanceSectionStamp.js';
 import { broadcastCollection } from '../../services/websocketService.js';
 import {
   attendanceRecordSchema,
@@ -85,10 +86,10 @@ export function createAttendanceUseCases(
     if (record.classId) {
       const getSession =
         deps?.findSessionById ??
-        (await import('../../db/repositories/sessionRepositoryHydrate.js')).findClassOrSessionById;
+        (await import('../../db/repositories/sessionRepositoryHydrate.js')).findClassById;
       const session = await getSession(tenant, record.classId);
       if (!session || session.deletedAt) {
-        const err = new Error('Referenced session is archived or does not exist');
+        const err = new Error('Referenced class is archived or does not exist');
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
@@ -116,13 +117,12 @@ export function createAttendanceUseCases(
       const sessionHydrate = await import('../../db/repositories/sessionRepositoryHydrate.js');
       const getSessions =
         deps?.findSessionsByIds ??
-        sessionHydrate.findClassesOrSessionsByIds ??
-        sessionHydrate.findSessionsByIds;
+        sessionHydrate.findClassesByIds;
       const sessions = await getSessions(tenant, sessionIds);
       const activeSessionIds = new Set(sessions.filter((s) => !s.deletedAt).map((s) => s.id));
       for (const sessionId of sessionIds) {
         if (!activeSessionIds.has(sessionId)) {
-          const err = new Error('Referenced session is archived or does not exist');
+          const err = new Error('Referenced class is archived or does not exist');
           (err as Error & { statusCode: number }).statusCode = 400;
           throw err;
         }
@@ -136,7 +136,8 @@ export function createAttendanceUseCases(
       const tenant = getRequestTenant();
       if (!tenant) throw new Error('Tenant context required');
       await validateActiveForeignKeys(tenant, record);
-      return crud.create(record as AttendanceRecord);
+      const [stamped] = await stampAttendanceSections(tenant, [record]);
+      return crud.create(stamped as AttendanceRecord);
     },
     updateAttendanceRecordById: async (
       id: string,
@@ -145,7 +146,10 @@ export function createAttendanceUseCases(
       const tenant = getRequestTenant();
       if (!tenant) throw new Error('Tenant context required');
       await validateActiveForeignKeys(tenant, record);
-      return crud.updateById(id, record as AttendanceRecord);
+      // Section is server-owned: re-stamped only when the row's class/student are known.
+      const { sectionId: _clientSection, ...rest } = record as Partial<AttendanceRecord>;
+      const next = rest.classId && rest.studentId ? (await stampAttendanceSections(tenant, [rest]))[0] : rest;
+      return crud.updateById(id, next as AttendanceRecord);
     },
     deleteAttendanceRecordById: crud.deleteById,
     restoreAttendanceRecordById: crud.restoreById,
@@ -159,8 +163,9 @@ export function createAttendanceUseCases(
     upsertAttendanceRecords: async (records: (AttendanceRecordInsert | AttendanceRecord)[]): Promise<AttendanceRecord[]> => {
       const tenant = getRequestTenant();
       if (!tenant) throw new Error('Tenant context required');
-      const parsed = attendanceListSchema.parse(records);
-      await validateBatchActiveForeignKeys(tenant, parsed);
+      const validated = attendanceListSchema.parse(records);
+      await validateBatchActiveForeignKeys(tenant, validated);
+      const parsed = await stampAttendanceSections(tenant, validated);
       await repo.bulkSaveAttendanceRecords(tenant, parsed);
       await broadcastCollection('attendance_records');
       return parsed;

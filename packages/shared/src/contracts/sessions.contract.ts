@@ -6,6 +6,8 @@ import { widgetAggregatesBodySchema } from '../schemas/common.dto.js';
 import { sessionsBulkStatusSchema } from '../sessionsModuleManifest.js';
 import { sessionsReportAggregatesSchema } from '../sessionsReportAggregates.js';
 import { SessionSchema } from '../sessionTypes.js';
+import { academicTerminologySchema } from '../academicTerminology.js';
+import { sessionLookupContractEndpoints } from './sessions.contract.lookups.js';
 import { sessionsListQuerySchema } from '../sessionsListQuery.js';
 
 const c = initContract();
@@ -35,6 +37,7 @@ export const sessionPreferencesResponseSchema = z.object({
   academicYear: z.string(),
   sessionStart: z.string(),
   defaultViewLayout: z.string(),
+  terminology: academicTerminologySchema,
 });
 
 export const sessionContract = c.router({
@@ -181,17 +184,5 @@ export const sessionContract = c.router({
     responses: { 200: z.object({ success: z.literal(true), preferences: sessionPreferencesResponseSchema }), 403: errorResponse, 500: errorResponse },
     summary: 'Update preferences',
   },
-  getLookups: {
-    method: 'GET',
-    path: '/api/sessions/lookups',
-    responses: { 200: z.object({ lookups: z.object({ statuses: z.array(z.string()), types: z.array(z.string()) }) }), 403: errorResponse, 500: errorResponse },
-    summary: 'Get all lookups',
-  },
-  getLookupKind: {
-    method: 'GET',
-    path: '/api/sessions/lookups/:kind',
-    pathParams: z.object({ kind: z.string() }),
-    responses: { 200: z.array(z.string()), 403: errorResponse, 500: errorResponse },
-    summary: 'Get a specific lookup kind',
-  },
+  ...sessionLookupContractEndpoints,
 });

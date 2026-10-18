@@ -8,6 +8,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WarningCallout } from "@/components/ui/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Step4SectionPlacement, type SectionPlacement } from "./Step4SectionPlacement";
 
 export interface Step4ClassAssignmentProps {
   session: Session | null | undefined;
@@ -15,6 +16,8 @@ export interface Step4ClassAssignmentProps {
   suggestedClass: Class | null | undefined;
   value: Class | null | undefined;
   onChange: (sessionClass: Class) => void;
+  placement: SectionPlacement;
+  onPlacementChange: (placement: SectionPlacement) => void;
 }
 
 /**
@@ -28,7 +31,7 @@ export interface Step4ClassAssignmentProps {
  * @param props.onChange - Callback on class selection change.
  * @returns The Step4ClassAssignment component.
  */
-export function Step4ClassAssignment({ session, student: _student, suggestedClass, value, onChange }: Step4ClassAssignmentProps): React.JSX.Element {
+export function Step4ClassAssignment({ session, student: _student, suggestedClass, value, onChange, placement, onPlacementChange }: Step4ClassAssignmentProps): React.JSX.Element {
   const { t } = useTranslation();
   const [override, setOverride] = useState<boolean>(false);
   const classes = session?.classes || [];
@@ -159,6 +162,7 @@ export function Step4ClassAssignment({ session, student: _student, suggestedClas
 
         })}
       </div>
+      {value ? <Step4SectionPlacement sessionClass={value} value={placement} onChange={onPlacementChange} /> : null}
     </section>
   );
 }

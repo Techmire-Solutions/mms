@@ -28,6 +28,7 @@ import { defaultSearchAdapter } from './adapters/searchIndexAdapter.js';
 import { purgeExpiredArchivedRecords } from './purgeArchivedRecordsJob.js';
 import { purgeExpiredPlatformActivityLogs } from './purgePlatformActivityLogsJob.js';
 import { clearRetentionPurgeScheduler, scheduleNextDailyPurge } from './retentionPurgeScheduler.js';
+import { clearSessionLifecycleScheduler, scheduleSessionLifecycle } from './sessionLifecycleScheduler.js';
 import { startOutboxCdcListener, type OutboxCdcHandle } from './outboxCdcListener.js';
 import { cleanupOrphanedJobs } from './workerOrphanCleanup.js';
 
@@ -153,6 +154,8 @@ export async function startWorkerDaemon(): Promise<void> {
 
   // Register the daily retention purge schedule to run at 02:00 UTC
   scheduleNextDailyPurge(() => isRunning, activeDb(), 2);
+  // Hourly: open sessions auto-start on their start date (workspace timezone).
+  scheduleSessionLifecycle(() => isRunning);
 
   const shutdown = async (signal: string) => {
     if (!isRunning) return;
@@ -174,6 +177,7 @@ export async function startWorkerDaemon(): Promise<void> {
         cdcListenerHandle = null;
       }
       clearRetentionPurgeScheduler();
+      clearSessionLifecycleScheduler();
       for (const worker of activeWorkers) {
         try {
           await worker.close();

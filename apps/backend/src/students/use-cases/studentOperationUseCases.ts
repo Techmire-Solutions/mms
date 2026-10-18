@@ -16,6 +16,7 @@ import type { StudentsRepository } from '../repository/studentsRepository.js';
 import { studentsRepository } from '../repository/studentsRepositoryAdapter.js';
 import { throwGrUniqueConflict } from './studentNormalizeUseCases.js';
 
+import { bulkEnrollStudentsIntoClass, type BulkEnrollInput } from '../../enrollments/use-cases/enrollmentBulkEnroll.js';
 export async function computeNextGrNumberForDate(
   regDate: string,
   settings: StudentGrNumberSettings,
@@ -158,29 +159,10 @@ export async function migrateStudentsMissingGrNumbers(
   return { updated, hasMore: missing.length >= MIGRATE_GR_CHUNK };
 }
 
-export async function bulkEnrollStudents(
-  input: {
-    studentIds: string[];
-    sessionIds: string[];
-    mode?: 'add' | 'replace' | 'remove';
-  },
-  repo: StudentsRepository = studentsRepository,
-): Promise<{ succeeded: number; failed: number }> {
+/** Students-module entry point; enrollment rows are created/cancelled by the Enrollments domain. */
+export async function bulkEnrollStudents(input: BulkEnrollInput): Promise<{ succeeded: number; failed: number }> {
   const tenant = getRequestTenant();
   if (!tenant) return { succeeded: 0, failed: input.studentIds.length };
-
-  const uniqueStudentIds = [...new Set(input.studentIds.map((id) => String(id).trim()).filter(Boolean))];
-  const uniqueSessionIds = [...new Set(input.sessionIds.map((id) => String(id).trim()).filter(Boolean))];
-  if (uniqueStudentIds.length === 0 || uniqueSessionIds.length === 0) {
-    return { succeeded: 0, failed: 0 };
-  }
-
-  const result = await repo.bulkEnroll(tenant, uniqueStudentIds, uniqueSessionIds, input.mode ?? 'add');
-  if (result.succeeded > 0) {
-    await invalidateMultiTierCache({ tenantId: tenant, domain: 'students' });
-    await broadcastCollection('students');
-    await broadcastCollection('sessions');
-  }
-  return result;
+  return bulkEnrollStudentsIntoClass(tenant, input);
 }
 
