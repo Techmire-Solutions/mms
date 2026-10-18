@@ -26,3 +26,37 @@ export async function yieldToMain(deadline: number, budgetMs: number = 50): Prom
   }
   return deadline;
 }
+
+export interface VisibilityInfo {
+  initiallyBackgrounded: boolean;
+  timeBackgrounded: number | null;
+}
+
+/**
+ * Modern Web Guidance: detect-initial-visibility-state
+ * Accurately determines whether the page was loaded in a background tab
+ * and records the high-resolution timestamp when it occurred using VisibilityStateEntry.
+ */
+export function getVisibilityInfo(): VisibilityInfo {
+  if (typeof performance !== "undefined" && typeof performance.getEntriesByType === "function") {
+    const entries = performance.getEntriesByType("visibility-state");
+    if (entries && entries.length > 0) {
+      const first = entries[0];
+      const initiallyBackgrounded = first.name === "hidden";
+      let timeBackgrounded: number | null = null;
+      for (const entry of entries) {
+        if (entry.name === "hidden") {
+          timeBackgrounded = entry.startTime;
+          break;
+        }
+      }
+      return { initiallyBackgrounded, timeBackgrounded };
+    }
+  }
+
+  const isHidden = typeof document !== "undefined" && document.visibilityState === "hidden";
+  return {
+    initiallyBackgrounded: isHidden,
+    timeBackgrounded: isHidden ? 0 : null,
+  };
+}
