@@ -37,6 +37,10 @@ export const enrollments = pgTable(
     enrolledDate: varchar("enrolled_date", { length: 10 }).notNull(),
     /** Expand column (migration 0173): trigger-synced `date` copy of `enrolled_date`. */
     enrolledOn: date("enrolled_on", { mode: "string" }),
+    /** Enrollment window (migration 0175): late join / withdrawal; null start = `enrolled_on`. */
+    startOn: date("start_on", { mode: "string" }),
+    endOn: date("end_on", { mode: "string" }),
+    endReason: varchar("end_reason", { length: 500 }),
     baseFee: numeric("base_fee", { precision: 12, scale: 2 }).notNull().default("0"),
     discountType: varchar("discount_type", { length: 32 }).notNull().default("none"),
     discountLabel: varchar("discount_label", { length: 120 }).notNull().default(""),
@@ -100,6 +104,16 @@ export const enrollmentTimelineEvents = pgTable(
     event: varchar("event", { length: 120 }).notNull(),
     by: varchar("by", { length: 120 }).notNull(),
     ts: varchar("ts", { length: 40 }).notNull(),
+    /** Typed server-written event (migration 0175); null on legacy client-written rows. */
+    eventType: varchar("event_type", { length: 40 }),
+    occurredAt: timestamp("occurred_at", { withTimezone: true, mode: "date" }),
+    effectiveOn: date("effective_on", { mode: "string" }),
+    actorUserId: text("actor_user_id"),
+    fromClassId: text("from_class_id"),
+    toClassId: text("to_class_id"),
+    fromSectionId: text("from_section_id"),
+    toSectionId: text("to_section_id"),
+    reason: varchar("reason", { length: 500 }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [

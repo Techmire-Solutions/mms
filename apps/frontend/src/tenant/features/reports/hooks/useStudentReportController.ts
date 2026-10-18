@@ -9,7 +9,7 @@ import {
   useStudentsContractList,
 } from "@/tenant/hooks/collections/students";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";
-import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { enrollmentStatusBadgeConfig } from "@/lib/ui/enrollmentStatusBadge";
 import {
   mapEnrollmentRow,
   resolveEnrollmentReportExportRows,
@@ -28,7 +28,6 @@ import {
   type StudentReportProps,
   type StudentReportSubTab,
 } from "@/components/reports/studentReportTypes";
-import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 /** Controller for Students Reports tier — Query + filters; presentational shell stays thin. */
 export function useStudentReportController({ filters }: StudentReportProps) {
@@ -36,12 +35,7 @@ export function useStudentReportController({ filters }: StudentReportProps) {
   const sessions = useSessionsCollection();
   const [activeSubTab, setActiveSubTab] = useState<StudentReportSubTab>("list");
   const statusBadgeConfig = (() => studentStatusBadgeConfig(t))();
-  const enrollmentStatusConfig = (() => ({
-    pending: { label: t("enrollments.status.pending"), cls: SEMANTIC_BADGE.warning },
-    confirmed: { label: t("enrollments.status.confirmed"), cls: SEMANTIC_BADGE.success },
-    cancelled: { label: t("enrollments.status.cancelled"), cls: SEMANTIC_BADGE.destructive },
-    completed: { label: t("enrollments.status.completed"), cls: SEMANTIC_BADGE.info },
-  }))() as Record<string, StatusBadgeConfigItem>;
+  const enrollmentStatusConfig = enrollmentStatusBadgeConfig(t);
 
   const REPORT_TABS = (() => [
     { key: "list", label: t("students.report.studentListTab") },

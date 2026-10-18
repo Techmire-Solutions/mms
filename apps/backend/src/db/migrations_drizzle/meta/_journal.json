@@ -1226,6 +1226,13 @@
       "when": 1791104200000,
       "tag": "0174_registration",
       "breakpoints": true
+    },
+    {
+      "idx": 175,
+      "version": "7",
+      "when": 1791104300000,
+      "tag": "0175_enrollment_placements",
+      "breakpoints": true
     }
   ]
 }

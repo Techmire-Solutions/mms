@@ -1,4 +1,5 @@
 import { sql, type SQL } from "drizzle-orm";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 export interface EnrolledSessionSyncScope {
   studentIds?: readonly string[];
@@ -51,7 +52,7 @@ export async function syncEnrolledSessionsTx(
        AND NOT EXISTS (
          SELECT 1 FROM enrollments a
           WHERE a.workspace_subdomain = s.workspace_subdomain AND a.student_id = s.student_id AND a.session_id = s.session_id
-            AND a.deleted_at IS NULL AND a.status <> 'cancelled'
+            AND a.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("a")}
        )
   `);
 
@@ -61,7 +62,7 @@ export async function syncEnrolledSessionsTx(
       FROM enrollments a
      WHERE a.workspace_subdomain = ${subdomain}
        AND a.student_id IN (${targets})
-       AND a.deleted_at IS NULL AND a.status <> 'cancelled'
+       AND a.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("a")}
        AND EXISTS (SELECT 1 FROM sessions ses WHERE ses.workspace_subdomain = a.workspace_subdomain AND ses.id = a.session_id)
     ON CONFLICT (workspace_subdomain, student_id, session_id) DO NOTHING
   `);

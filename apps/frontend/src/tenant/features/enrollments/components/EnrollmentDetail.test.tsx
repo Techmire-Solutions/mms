@@ -26,6 +26,10 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
   }),
 }));
 
+vi.mock("@/tenant/features/enrollments/components/EnrollmentOperationsPanel", () => ({
+  EnrollmentOperationsPanel: () => null,
+}));
+
 vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({
     title,
