@@ -194,14 +194,12 @@ export async function aggregateSessionsCommandMetrics(
         COALESCE(SUM(cls.total_capacity), 0)::int AS total_capacity,
         COALESCE(SUM(cls.class_count), 0)::int AS total_classes,
         COUNT(*) FILTER (WHERE
-          s.start_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND (s.start_date)::date >= (CURRENT_DATE - INTERVAL '6 days')
-          AND (s.start_date)::date <= CURRENT_DATE
+          s.start_date >= (CURRENT_DATE - INTERVAL '6 days')
+          AND s.start_date <= CURRENT_DATE
         )::int AS sessions_this_week,
         COUNT(*) FILTER (WHERE
-          s.start_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND (s.start_date)::date >= (CURRENT_DATE - INTERVAL '13 days')
-          AND (s.start_date)::date <= (CURRENT_DATE - INTERVAL '7 days')
+          s.start_date >= (CURRENT_DATE - INTERVAL '13 days')
+          AND s.start_date <= (CURRENT_DATE - INTERVAL '7 days')
         )::int AS sessions_last_week
       FROM sessions s
       LEFT JOIN LATERAL (

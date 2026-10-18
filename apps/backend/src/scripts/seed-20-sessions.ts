@@ -37,7 +37,7 @@ async function main() {
         workspaceSubdomain: subdomain,
         name: `Seeded Session ${String(n).padStart(2, "0")}`,
         type: "academic",
-        status: "active",
+        status: "in_progress",
         startDate: "2026-01-01",
         endDate: "2026-12-31",
         baseFee: String(1000 + n),
