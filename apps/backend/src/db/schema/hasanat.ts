@@ -14,6 +14,7 @@ import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { students } from "./students.js";
 import { faculty } from "./faculty.js";
+import { sessionClasses } from "./sessions.js";
 import { softDeleteColumns } from "./softDeleteSchema.js";
 
 export const hasanatDenoms = pgTable(
@@ -82,6 +83,8 @@ export const hasanatDistributions = pgTable(
     recipientFacultyId: varchar("recipient_faculty_id", { length: 64 }),
     recipientName: varchar("recipient_name", { length: 255 }).notNull().default(""),
     recipientClass: varchar("recipient_class", { length: 120 }).notNull().default(""),
+    /** `session_classes.id` at issue time; `recipientClass` stays as the display snapshot. */
+    classId: text("class_id"),
     quantity: integer("quantity").notNull().default(1),
     reason: text("reason").notNull().default(""),
     issuedDate: varchar("issued_date", { length: 10 }).notNull(),
@@ -119,6 +122,12 @@ export const hasanatDistributions = pgTable(
       table.recipientFacultyId,
     ),
     index("hasanat_dist_workspace_batch_idx").on(table.workspaceSubdomain, table.batchId),
+    foreignKey({
+      name: "hasanat_distributions_class_fk",
+      columns: [table.workspaceSubdomain, table.classId],
+      foreignColumns: [sessionClasses.workspaceSubdomain, sessionClasses.id],
+    }).onDelete("restrict"),
+    index("hasanat_distributions_class_idx").on(table.workspaceSubdomain, table.classId),
     index("hasanat_dist_workspace_denom_idx").on(table.workspaceSubdomain, table.denominationId),
     index("hasanat_dist_workspace_issued_date_idx").on(table.workspaceSubdomain, table.issuedDate),
     index("hasanat_dist_workspace_status_idx").on(table.workspaceSubdomain, table.status),

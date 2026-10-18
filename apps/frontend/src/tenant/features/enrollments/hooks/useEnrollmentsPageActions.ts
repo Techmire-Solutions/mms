@@ -1,13 +1,9 @@
 import { useTranslation } from "@/hooks/useTranslation";
-import { apiContract } from "@/lib/api";
 import { notify } from "@/lib/notify";
 import type { Enrollment } from "@/lib/data/enrollmentData";
-import type { StudentRecord } from "@mms/shared";
-import { useStudentMutations } from "@/tenant/hooks/collections/students";
 import { useEnrollmentViewerRole } from "@/tenant/hooks/useViewerRole";
 import { useEnrollmentMutations } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
 import { useEnrollmentsBulkActions } from "@/tenant/features/enrollments/hooks/useEnrollmentsBulkActions";
-import { reportClientError } from "@/lib/clientErrorReporting";
 
 export interface UseEnrollmentsPageActionsParams {
   enrollments: Enrollment[];
@@ -32,31 +28,11 @@ export function useEnrollmentsPageActions({
     bulkDeleteEnrollments,
     bulkRestoreEnrollments,
   } = useEnrollmentMutations();
-  const { updateStudent } = useStudentMutations();
 
   const handleComplete = async (enrollment: Enrollment) => {
     try {
+      // The server keeps the student's session membership in sync with enrollments.
       await createEnrollment.mutateAsync(enrollment);
-      try {
-        const res = await apiContract.students.resolve({
-          body: { ids: [String(enrollment.studentId)] },
-        });
-        const body = res.body as {
-          students?: Array<StudentRecord & { enrolledSessions?: string[] }>;
-        };
-        const student = body.students?.[0];
-        if (student) {
-          const enrolled = student.enrolledSessions ?? [];
-          if (!enrolled.includes(enrollment.sessionId)) {
-            updateStudent.mutate({
-              id: String(student.id),
-              student: { ...student, enrolledSessions: [...enrolled, enrollment.sessionId] },
-            });
-          }
-        }
-      } catch (error) {
-        reportClientError(error, { context: "enrollments.updateStudentEnrolledSessions" });
-      }
       notify.success(t("enrollments.toast.created"));
       onActiveSubTabChange("directory");
     } catch (error) {

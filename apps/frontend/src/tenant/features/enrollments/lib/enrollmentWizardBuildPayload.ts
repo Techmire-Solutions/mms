@@ -12,8 +12,10 @@ export function buildEnrollmentPayload(params: {
   notes: string;
   customFieldValues: Record<string, unknown>;
   t: TranslationFunction;
+  /** Section + roll number; the server defaults the section when omitted. */
+  placement?: { sectionId: string; rollNo: string };
 }): Enrollment {
-  const { student, session, classInfo, feeResult, notes, t } = params;
+  const { student, session, classInfo, feeResult, notes, t, placement } = params;
   const nowISO = new Date().toISOString();
 
   return {
@@ -24,6 +26,8 @@ export function buildEnrollmentPayload(params: {
     sessionName: session.name,
     classId: classInfo?.id || "",
     className: classInfo?.name || "",
+    ...(placement?.sectionId ? { sectionId: placement.sectionId } : {}),
+    ...(placement?.rollNo.trim() ? { rollNo: placement.rollNo.trim() } : {}),
     enrolledDate: todayISO(),
     baseFee: session.baseFee,
     discountType: feeResult.id,

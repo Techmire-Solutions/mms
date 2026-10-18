@@ -28,6 +28,10 @@ export const enrollmentRecordSchema = z
     sessionName: z.string().optional().default(""),
     classId: z.string(),
     className: z.string().optional().default(""),
+    /** `session_class_sections.id`; defaults to the class's first section on write. */
+    sectionId: z.string().optional(),
+    /** Roll number within the section. */
+    rollNo: z.string().max(64).optional(),
     enrolledDate: z.string(),
     baseFee: z.number().default(0),
     discountType: z.string().optional().default("none"),
@@ -60,6 +64,10 @@ export const enrollmentRecordInsertSchema = z
     sessionName: z.string().optional().default(""),
     classId: z.string().min(1, "Class is required"),
     className: z.string().optional().default(""),
+    /** `session_class_sections.id`; defaults to the class's first section on write. */
+    sectionId: z.string().optional(),
+    /** Roll number within the section. */
+    rollNo: z.string().max(64).optional(),
     enrolledDate: isoDateSchema,
     baseFee: z.number().nonnegative().optional().default(0),
     discountType: z.string().optional().default("none"),

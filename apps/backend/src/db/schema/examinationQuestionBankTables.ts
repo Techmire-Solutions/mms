@@ -142,6 +142,8 @@ export const tests = pgTable(
     difficulty: varchar("difficulty", { length: 20 }).notNull().default("mixed"),
     duration: integer("duration").notNull().default(60),
     examClass: varchar("exam_class", { length: 120 }),
+    /** `session_classes.id`; `examClass` stays as the display snapshot. */
+    classId: text("class_id"),
     totalMarks: integer("total_marks"),
     instructions: text("instructions"),
     ...softDeleteColumns,
@@ -151,6 +153,7 @@ export const tests = pgTable(
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
     index("tests_workspace_category_idx").on(table.workspaceSubdomain, table.categoryId),
+    index("tests_class_idx").on(table.workspaceSubdomain, table.classId),
     index("tests_workspace_deleted_idx").on(table.workspaceSubdomain, table.deletedAt),
     index("tests_workspace_active_idx")
       .on(table.workspaceSubdomain)

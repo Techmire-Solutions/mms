@@ -1,10 +1,10 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { dedupeTrimmedIds, type Enrollment } from "@mms/shared";
-import { enrollments, enrollmentTimelineEvents } from "../schema.js";
+import { enrollments, enrollmentTimelineEvents, type EnrollmentSelectRow } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
-type EnrollmentRow = typeof enrollments.$inferSelect;
+type EnrollmentRow = EnrollmentSelectRow;
 type TimelineEventRow = typeof enrollmentTimelineEvents.$inferSelect;
 
 export function enrollmentRowToRecord(
@@ -19,6 +19,8 @@ export function enrollmentRowToRecord(
     sessionName: row.sessionName,
     classId: row.classId,
     className: row.className,
+    sectionId: row.sectionId ?? undefined,
+    rollNo: row.rollNo ?? undefined,
     enrolledDate: row.enrolledDate,
     baseFee: Number(row.baseFee ?? 0),
     discountType: row.discountType,
@@ -60,6 +62,8 @@ export async function listEnrollmentsByWorkspace(
         sessionName: enrollments.sessionName,
         classId: enrollments.classId,
         className: enrollments.className,
+        sectionId: enrollments.sectionId,
+        rollNo: enrollments.rollNo,
         enrolledDate: enrollments.enrolledDate,
         baseFee: enrollments.baseFee,
         discountType: enrollments.discountType,
@@ -135,6 +139,8 @@ export async function findEnrollmentById(tenant: string, id: string): Promise<En
         sessionName: enrollments.sessionName,
         classId: enrollments.classId,
         className: enrollments.className,
+        sectionId: enrollments.sectionId,
+        rollNo: enrollments.rollNo,
         enrolledDate: enrollments.enrolledDate,
         baseFee: enrollments.baseFee,
         discountType: enrollments.discountType,
@@ -208,6 +214,8 @@ export async function findEnrollmentsByIds(
         sessionName: enrollments.sessionName,
         classId: enrollments.classId,
         className: enrollments.className,
+        sectionId: enrollments.sectionId,
+        rollNo: enrollments.rollNo,
         enrolledDate: enrollments.enrolledDate,
         baseFee: enrollments.baseFee,
         discountType: enrollments.discountType,

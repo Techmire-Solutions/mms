@@ -4,9 +4,16 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { Field } from "@/components/app/FormField";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
+import {
+  formatFacultyDisplayName,
+  SESSIONS_MODULE_MANIFEST,
+  type FacultyMember,
+} from "@mms/shared";
+import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import type { Class } from "@/lib/data/sessionsData";
 
+import { useSessionStructureLock } from "../sessionStructureLock";
 interface ClassDetailGeneralTabProps {
   classDraft: Class;
   updateDraft: <K extends keyof Class>(field: K, value: Class[K]) => void;
@@ -21,6 +28,10 @@ export function ClassDetailGeneralTab({
   allFaculty,
 }: ClassDetailGeneralTabProps): React.JSX.Element {
   const { t } = useTranslation();
+  const { canEditSetup } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
+  // After the session starts, eligibility of an existing class is fixed (Phase 4 edit policy).
+  const lock = useSessionStructureLock();
+  const eligibilityLocked = lock.locked && lock.savedClassIds.has(classDraft.id);
 
   return (
     <div className="space-y-4">
@@ -40,6 +51,7 @@ export function ClassDetailGeneralTab({
           <FormSelect
             id="class-gender"
             name="gender"
+            disabled={eligibilityLocked}
             value={classDraft.gender}
             onChange={(val) => updateDraft("gender", val as "male" | "female" | "mixed")}
             options={[
@@ -50,6 +62,18 @@ export function ClassDetailGeneralTab({
             className="w-full"
           />
         </Field>
+
+        <Field id="class-program" label={t("sessions.form.program")}>
+          <AcademicCatalogSelect
+            kind="programs"
+            id="class-program"
+            name="programId"
+            value={classDraft.programId ?? ""}
+            onChange={(programId) => updateDraft("programId", programId)}
+            canCreate={canEditSetup}
+            allowNone
+          />
+        </Field>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -57,6 +81,7 @@ export function ClassDetailGeneralTab({
           <Input
             id="class-min-age"
             name="minAge"
+            disabled={eligibilityLocked}
             type="text"
             inputMode="numeric"
             value={classDraft.minAge ?? 0}
@@ -68,6 +93,7 @@ export function ClassDetailGeneralTab({
           <Input
             id="class-max-age"
             name="maxAge"
+            disabled={eligibilityLocked}
             type="text"
             inputMode="numeric"
             value={classDraft.maxAge ?? 0}

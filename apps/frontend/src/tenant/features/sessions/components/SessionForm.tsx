@@ -7,6 +7,7 @@ import {
   SessionFinancialSection,
 } from "@/tenant/features/sessions/components/SessionFormSections";
 import { SessionFormFooter } from "@/tenant/features/sessions/components/SessionFormFooter";
+import { SessionScheduleSection } from "@/tenant/features/sessions/components/SessionScheduleSection";
 import { useSessionFormController } from "@/tenant/features/sessions/hooks/useSessionFormController";
 
 export interface SessionFormProps {
@@ -25,7 +26,6 @@ export const SessionForm = function SessionForm({
   const {
     t,
     language,
-    defaultType,
     defaultCurrency,
     saving,
     errors,
@@ -33,8 +33,10 @@ export const SessionForm = function SessionForm({
     updateDraft,
     isDirty,
     handleSave,
-    sessionTypeOptions,
     statusOptions,
+    structureLocked,
+    defaultCategoryId,
+    canCreateCatalog,
     currencyOptions,
   } = useSessionFormController({ session, onClose, onSave });
 
@@ -87,11 +89,13 @@ export const SessionForm = function SessionForm({
         <SessionDetailsSection
           sessionDraft={sessionDraft}
           errors={errors}
-          defaultType={defaultType}
-          sessionTypeOptions={sessionTypeOptions}
+          defaultCategoryId={defaultCategoryId}
+          structureLocked={structureLocked}
+          canCreateCatalog={canCreateCatalog}
           statusOptions={statusOptions}
           onDraftChange={updateDraft}
         />
+        <SessionScheduleSection sessionDraft={sessionDraft} onDraftChange={updateDraft} />
         <SessionFinancialSection
           sessionDraft={sessionDraft}
           errors={errors}

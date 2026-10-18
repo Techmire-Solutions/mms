@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { type Student, type StudentsBulkEnrollBody } from "@mms/shared";
+import { type Student, type StudentsBulkEnrollPlacement } from "@mms/shared";
 import {
   type useStudentMutations,
   type StudentRecord,
@@ -132,16 +132,9 @@ export function useStudentsCrudActions({
   );
 
   const handleBulkEnroll = useCallback(
-    async (
-      studentIds: string[],
-      payload: { sessionIds: string[]; mode: StudentsBulkEnrollBody["mode"] },
-    ): Promise<void> => {
+    async (studentIds: string[], payload: StudentsBulkEnrollPlacement): Promise<void> => {
       try {
-        const result = await bulkEnrollMutation.mutateAsync({
-          studentIds,
-          sessionIds: payload.sessionIds,
-          mode: payload.mode,
-        });
+        const result = await bulkEnrollMutation.mutateAsync({ studentIds, ...payload });
         const resBody =
           (result as { body?: { succeeded?: number; failed?: number } }).body ?? result;
         notifyBulkResult(

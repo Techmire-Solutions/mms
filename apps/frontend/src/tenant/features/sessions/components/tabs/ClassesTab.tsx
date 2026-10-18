@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Plus, GraduationCap } from "lucide-react";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { useFacultyByIds } from "@/tenant/hooks/collections/faculty";
 import { collectFacultyIdsFromClasses } from "@/lib/registryResolve";
 import {
@@ -17,6 +18,9 @@ import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ClassCard } from "@/tenant/features/sessions/components/tabs/ClassCard";
 import { ClassModal } from "@/tenant/features/sessions/components/tabs/ClassModal";
 
+import { isSessionStructureLocked } from "@mms/shared";
+import { notify } from "@/lib/notify";
+import { SessionStructureLockContext } from "./sessionStructureLock";
 const MessageComposer = React.lazy(
   () => import("@/tenant/components/messaging/TenantMessageComposer"),
 );
@@ -34,6 +38,12 @@ interface ClassesTabProps {
  */
 export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
   const { t } = useTranslation();
+  const terms = useAcademicTerms();
+  const locked = isSessionStructureLocked(session.status);
+  const lockContext = useMemo(
+    () => ({ locked, savedClassIds: new Set((session.classes ?? []).map((cls) => cls.id)) }),
+    [locked, session.classes],
+  );
   const facultyIds = (() => collectFacultyIdsFromClasses(session.classes))();
   const { data: facultyMembers = [] } = useFacultyByIds(facultyIds);
   const { messagingTarget, openComposer, closeComposer } = useMessageComposerState();
@@ -109,7 +119,7 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
               }}
               className="flex h-auto w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
             >
-              <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {t("sessions.classes.add")}
+              <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {terms.class.singular}
             </Button>
           )
         }
@@ -130,7 +140,13 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
               sessionClass={sessionClass}
               faculty={facultyMembers}
               onEdit={handleEdit}
-              onDelete={() => setDeleteTarget(sessionClass)}
+              onDelete={() =>
+                locked
+                  ? notify.warning(
+                      t("sessions.lock.blocked", { fields: t("sessions.lock.field.classRemoved") }),
+                    )
+                  : setDeleteTarget(sessionClass)
+              }
               onMessage={handleClassMessage}
               canWrite={canWrite}
             />
@@ -138,18 +154,20 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
         </div>
       )}
 
-      <ClassModal
-        open={showModal}
-        sessionClass={classBeingEdited}
-        onClose={() => {
-          if (!saving) {
-            setShowModal(false);
-            setClassBeingEdited(null);
-          }
-        }}
-        onSave={handleSave}
-        saving={saving}
-      />
+      <SessionStructureLockContext.Provider value={lockContext}>
+        <ClassModal
+          open={showModal}
+          sessionClass={classBeingEdited}
+          onClose={() => {
+            if (!saving) {
+              setShowModal(false);
+              setClassBeingEdited(null);
+            }
+          }}
+          onSave={handleSave}
+          saving={saving}
+        />
+      </SessionStructureLockContext.Provider>
 
       {canWrite && messagingTarget && (
         <React.Suspense fallback={null}>

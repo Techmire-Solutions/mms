@@ -9,10 +9,13 @@ import {
   primaryKey,
   foreignKey,
   varchar,
+  date,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { students } from "./students.js";
+import { sessionClasses } from "./sessions.js";
+import { sessionClassSections } from "./sessionSections.js";
 
 export const attendance = pgTable(
   "attendance",
@@ -22,14 +25,20 @@ export const attendance = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     classId: varchar("class_id", { length: 64 }).notNull(),
+    /** Section at marking time (kept when the student later transfers). */
+    sectionId: text("section_id"),
     studentId: varchar("student_id", { length: 64 }).notNull(),
     studentName: varchar("student_name", { length: 255 }).notNull().default(""),
     rollNo: varchar("roll_no", { length: 64 }).notNull().default(""),
     date: varchar("date", { length: 10 }).notNull(),
+    /** Expand column (migration 0173): trigger-synced `date` copy of `date`; reads switch in the contract step. */
+    dateOn: date("date_on", { mode: "string" }),
     status: varchar("status", { length: 20 }).notNull().default("present"),
     timeIn: varchar("time_in", { length: 10 }).notNull().default(""),
     timeOut: varchar("time_out", { length: 10 }).notNull().default(""),
     notes: text("notes").notNull().default(""),
+    /** User who last marked this row (teacher of record is resolved from section staff by date). */
+    markedBy: text("marked_by"),
     deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "date" }),
     deletedBy: text("deleted_by"),
     deletionReason: varchar("deletion_reason", { length: 500 }),
@@ -66,6 +75,17 @@ export const attendance = pgTable(
       foreignColumns: [students.workspaceSubdomain, students.id],
     }).onDelete("cascade"),
     index("attendance_workspace_student_idx").on(table.workspaceSubdomain, table.studentId),
+    foreignKey({
+      name: "attendance_class_fk",
+      columns: [table.workspaceSubdomain, table.classId],
+      foreignColumns: [sessionClasses.workspaceSubdomain, sessionClasses.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "attendance_section_fk",
+      columns: [table.workspaceSubdomain, table.sectionId],
+      foreignColumns: [sessionClassSections.workspaceSubdomain, sessionClassSections.id],
+    }).onDelete("restrict"),
+    index("attendance_workspace_section_idx").on(table.workspaceSubdomain, table.sectionId),
     index("attendance_workspace_deleted_idx").on(table.workspaceSubdomain, table.deletedAt),
     index("attendance_workspace_updated_at_active_idx")
       .on(table.workspaceSubdomain, table.updatedAt)
@@ -88,8 +108,8 @@ export const attendanceLeaves = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     studentId: varchar("student_id", { length: 64 }).notNull(),
-    fromDate: varchar("from_date", { length: 10 }).notNull(),
-    toDate: varchar("to_date", { length: 10 }).notNull(),
+    fromDate: date("from_date", { mode: "string" }),
+    toDate: date("to_date", { mode: "string" }),
     reason: text("reason").notNull(),
     status: varchar("status", { length: 20 }).notNull().default("pending"),
     approvedBy: text("approved_by"),

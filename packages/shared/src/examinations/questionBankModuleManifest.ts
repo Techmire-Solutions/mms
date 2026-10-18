@@ -158,6 +158,8 @@ export const questionBankTestRecordSchema = z
     createdAt: z.string(),
     updatedAt: z.string().optional(),
     examClass: z.string().optional(),
+    /** `session_classes.id`; `examClass` is the display snapshot. */
+    classId: z.string().nullable().optional(),
     totalMarks: z.number().optional(),
     instructions: z.string().optional(),
     sections: z
@@ -185,6 +187,8 @@ export const questionBankTestInsertSchema = z
     difficulty: z.enum(["easy", "medium", "hard", "mixed"]).default("mixed"),
     duration: z.number().default(60),
     examClass: z.string().optional(),
+    /** `session_classes.id`; `examClass` is the display snapshot. */
+    classId: z.string().nullable().optional(),
     totalMarks: z.number().optional(),
     instructions: z.string().optional(),
     sections: z

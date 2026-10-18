@@ -4,8 +4,6 @@ import { students, studentEnrolledSessions } from "../schema.js";
 import { withTenant, type AppDb } from "../tenant-context.js";
 import { mapAuditToInsert } from "./repositoryMappers.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { syncStudentEnrolledSessionsTx } from "./studentRepositoryEnrollOps.js";
-import { syncBulkStudentEnrolledSessionsTx } from "./studentRepositoryBulkEnrollSync.js";
 
 export type StudentInsert = typeof students.$inferInsert;
 
@@ -112,8 +110,6 @@ export async function persistStudentTx(
   subdomain: string,
   student: Student,
 ): Promise<void> {
-  const studentId = String(student.id);
-
   await tx
     .insert(students)
     .values(studentWriteValues(subdomain, student))
@@ -122,7 +118,7 @@ export async function persistStudentTx(
       set: studentUpdateSetValues(subdomain, student),
     });
 
-  await syncStudentEnrolledSessionsTx(tx, subdomain, studentId, student.enrolledSessions);
+  // `enrolledSessions` is derived from enrollments (enrollmentSessionSync) — never written from a student save.
 }
 
 export async function saveStudent(tenant: string, student: Student): Promise<void> {
@@ -173,8 +169,6 @@ export async function bulkSaveStudents(tenant: string, items: Student[]): Promis
           updatedBy: sql`excluded.updated_by`,
         },
       });
-
-    await syncBulkStudentEnrolledSessionsTx(tx, subdomain, items);
   });
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
 }
@@ -210,4 +204,3 @@ export async function replaceStudentsForWorkspace(tenant: string, items: Student
   });
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
 }
-export { bulkEnrollStudentsTx, bulkEnrollStudents } from "./studentRepositoryEnrollOps.js";

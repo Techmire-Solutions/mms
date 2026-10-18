@@ -2,6 +2,11 @@
 import { z } from "zod";
 import { DEFAULT_SESSIONS_SETTINGS, type SessionsSettings } from "./sessionsModuleSettings.js";
 import { normalizeSessionsViewLayout } from "./sessionsExportUtils.js";
+import {
+  academicTerminologySchema,
+  normalizeAcademicTerminology,
+  type AcademicTerminology,
+} from "./academicTerminology.js";
 
 /** PUT /api/sessions/preferences — academic/session prefs only. */
 export const sessionPreferencesPutBodySchema = z
@@ -16,10 +21,11 @@ export const sessionPreferencesPutBodySchema = z
     academicYear: z.string().optional(),
     sessionStart: z.string().optional(),
     defaultViewLayout: z.string().optional(),
+    terminology: academicTerminologySchema.optional(),
   })
   .passthrough();
 
-export type SessionModulePreferences = Pick<
+export type SessionModulePreferences = { terminology: AcademicTerminology } & Pick<
   SessionsSettings,
   | "defaultDuration"
   | "defaultSessionType"
@@ -44,6 +50,7 @@ const PREF_KEYS = [
   "academicYear",
   "sessionStart",
   "defaultViewLayout",
+  "terminology",
 ] as const;
 
 /** Normalize Sessions module preferences (typed `session_module_preferences`). */
@@ -61,6 +68,7 @@ export function normalizeSessionModulePreferences(
     academicYear: DEFAULT_SESSIONS_SETTINGS.academicYear,
     sessionStart: DEFAULT_SESSIONS_SETTINGS.sessionStart,
     defaultViewLayout: DEFAULT_SESSIONS_SETTINGS.defaultViewLayout,
+    terminology: {},
   };
   if (!partial || typeof partial !== "object") return { ...defaults };
 
@@ -102,6 +110,7 @@ export function normalizeSessionModulePreferences(
         ? partial.defaultViewLayout
         : defaults.defaultViewLayout,
     ),
+    terminology: normalizeAcademicTerminology((partial as Record<string, unknown>).terminology),
   };
 }
 

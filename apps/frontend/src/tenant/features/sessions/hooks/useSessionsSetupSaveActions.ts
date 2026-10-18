@@ -1,20 +1,10 @@
 import { useState } from "react";
-import { type SessionsSettings } from "@mms/shared";
+import { SESSION_MODULE_PREFERENCE_KEYS, type SessionsSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
-const PREF_KEYS = [
-  "defaultDuration",
-  "defaultSessionType",
-  "allowOverlap",
-  "archiveOldSessions",
-  "requireBudget",
-  "timetableConflictCheck",
-  "notifyOnSessionStart",
-  "academicYear",
-  "sessionStart",
-  "defaultViewLayout",
-] as const;
+/** Shared SSOT: every key persisted on `session_module_preferences` (incl. terminology). */
+const PREF_KEYS = SESSION_MODULE_PREFERENCE_KEYS;
 
 /** Sessions Setup save + dirty detection (§7 await / dirty). */
 export function useSessionsSetupSaveActions({

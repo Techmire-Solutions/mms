@@ -1,4 +1,4 @@
-import React, { type Dispatch, type SetStateAction } from "react";
+import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { User, Users2 } from "lucide-react";
 import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { Field, FieldErrorMessage, RequiredMark } from "@/components/app/FormPrimitives";
@@ -6,6 +6,11 @@ import { FORM_INPUT, FORM_LABEL } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  SessionClassSectionSelect,
+  sessionIdForClass,
+} from "@/components/common/SessionClassSectionSelect";
+import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import type { Distribution } from "@/lib/data/hasanatData";
 
 export interface DistributeRecipientTypeFieldProps {
@@ -139,15 +144,39 @@ export function DistributeRecipientClassField({
   errors,
 }: DistributeRecipientClassFieldProps): React.JSX.Element {
   const { t } = useTranslation();
+  const sessions = useSessionsCollection();
+  const [sessionId, setSessionId] = useState(() => sessionIdForClass(sessions, data.classId));
+
+  if (data.recipientType === "student") {
+    return (
+      <div className="grid grid-cols-1 gap-4 sm:col-span-2 sm:grid-cols-2">
+        <SessionClassSectionSelect
+          sessions={sessions}
+          value={{
+            sessionId: sessionId || sessionIdForClass(sessions, data.classId),
+            classId: data.classId ?? "",
+            sectionId: "",
+          }}
+          required={isRequired}
+          idPrefix="recp-class"
+          onChange={(next) => {
+            setSessionId(next.sessionId);
+            const cls = sessions
+              .find((row) => row.id === next.sessionId)
+              ?.classes.find((row) => row.id === next.classId);
+            updateField("classId", next.classId || null);
+            updateField("recipientClass", cls?.name ?? "");
+          }}
+        />
+        {errors?.recipientClass ? <FieldErrorMessage message={errors.recipientClass} /> : null}
+      </div>
+    );
+  }
 
   return (
     <Field
       id="recp-class"
-      label={
-        data.recipientType === "student"
-          ? t("hasanat.form.classLabel")
-          : t("hasanat.form.departmentLabel")
-      }
+      label={t("hasanat.form.departmentLabel")}
       required={isRequired}
       error={errors?.recipientClass}
     >

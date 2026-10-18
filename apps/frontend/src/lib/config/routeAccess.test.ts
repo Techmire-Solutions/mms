@@ -37,6 +37,7 @@ const OUTSIDE_APP_SHELL = new Set<string>([
   ROUTES.platformSystem,
   ROUTES.platformErd,
   ROUTES.platformDesignSystem,
+  ROUTES.apply,
 ]);
 
 function evaluator(

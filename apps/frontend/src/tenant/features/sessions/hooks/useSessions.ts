@@ -83,6 +83,25 @@ export function useSessions(options?: { enabled?: boolean }) {
 }
 export { useSessionMutations } from "./useSessionMutations";
 
+/**
+ * Full session (classes with fees, timetables, …) for detail/edit surfaces.
+ * List rows are summary-shaped; saving them would replace class children with empty arrays.
+ */
+export function useSessionDetail(summary: Session | null): Session | null {
+  const { isAuthenticated } = useAuth();
+  const id = summary ? String(summary.id) : "";
+  const includeDeleted = summary?.deletedAt ? "true" : undefined;
+  const query = tsrClient.sessions.get.useQuery({
+    queryKey: [...SESSIONS_QUERY_KEY, "detail", id, includeDeleted ?? "active"],
+    queryData: { params: { id }, query: includeDeleted ? { includeDeleted } : {} },
+    enabled: isAuthenticated && Boolean(id),
+    staleTime: 15_000,
+  });
+  if (!id || !query.data || query.data.status !== 200) return null;
+  const session = (query.data.body as { session?: Session } | null)?.session;
+  return session && String(session.id) === id ? session : null;
+}
+
 export function useSessionsCollection(options?: { enabled?: boolean }): Session[] {
   const query = useSessions(options);
   if (!query.data || query.data.status !== 200) return [];

@@ -7,9 +7,16 @@ import {
   FormListFieldCard,
   FormSelect,
   TYPE_SELECT_WIDTH,
+  EditableMultiSelect,
 } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
+import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import {
+  formatFacultyDisplayName,
+  SESSIONS_MODULE_MANIFEST,
+  type FacultyMember,
+} from "@mms/shared";
 import type { SessionClassSchedule, SessionClassTimetablePeriod } from "@/lib/data/sessionsData";
 
 interface ClassDetailScheduleTabProps {
@@ -35,6 +42,7 @@ export function ClassDetailScheduleTab({
   onRemovePeriod,
   onUpdatePeriod,
 }: ClassDetailScheduleTabProps): React.JSX.Element {
+  const { canEditSetup: canCreateSubject } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
   const { t } = useTranslation();
   const facultyMembers = allFaculty;
 
@@ -129,13 +137,19 @@ export function ClassDetailScheduleTab({
                 aria-label={t("sessions.timetable.form.endTime")}
                 className="w-28 text-xs"
               />
-              <Input
-                placeholder={t("sessions.classes.detail.timetable.subjectPlaceholder")}
-                value={period.subject}
-                onChange={(e) => onUpdatePeriod(period.id, { subject: e.target.value })}
-                aria-label={t("sessions.classes.detail.timetable.subjectPlaceholder")}
-                className="min-w-0 flex-1 text-xs"
-              />
+              <div className="min-w-40 flex-1">
+                <AcademicCatalogSelect
+                  kind="subjects"
+                  id={`period-subject-${period.id}`}
+                  name="subjectId"
+                  aria-label={t("sessions.classes.detail.timetable.subjectPlaceholder")}
+                  value={period.subjectId ?? ""}
+                  onChange={(subjectId, subject) =>
+                    onUpdatePeriod(period.id, { subjectId, subject: subject?.name ?? "" })
+                  }
+                  canCreate={canCreateSubject}
+                />
+              </div>
               <FormSelect
                 id={`period-faculty-${period.id}`}
                 name="facultyName"
@@ -161,6 +175,26 @@ export function ClassDetailScheduleTab({
                   }),
                 ]}
                 className="w-44 min-w-40 shrink-0 text-xs"
+              />
+            </div>
+            <div className="mt-2">
+              <EditableMultiSelect
+                id={`period-assistants-${period.id}`}
+                placeholder={t("sessions.periods.assistants")}
+                options={facultyMembers
+                  .filter((m) => String(m.id) !== period.facultyId)
+                  .map((m) => formatFacultyDisplayName(m))}
+                values={facultyMembers
+                  .filter((m) => (period.assistantFacultyIds ?? []).includes(String(m.id)))
+                  .map((m) => formatFacultyDisplayName(m))}
+                onChange={(labels) =>
+                  onUpdatePeriod(period.id, {
+                    assistantFacultyIds: facultyMembers
+                      .filter((m) => labels.includes(formatFacultyDisplayName(m)))
+                      .map((m) => String(m.id)),
+                  })
+                }
+                maxVisible={3}
               />
             </div>
           </FormListFieldCard>

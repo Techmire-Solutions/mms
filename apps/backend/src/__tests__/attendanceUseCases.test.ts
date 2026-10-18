@@ -2,6 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import { createAttendanceUseCases } from "../attendance/use-cases/attendanceUseCases.js";
 import type { AttendanceRepository } from "../attendance/repository/attendanceRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
+vi.mock("../attendance/use-cases/attendanceSectionStamp.js", () => ({
+  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => records),
+}));
 
 function createFakeRepo(): AttendanceRepository {
   return {
@@ -245,7 +248,7 @@ describe("attendance use-cases (DI with fake repository)", () => {
           status: "present",
         } as any),
       ),
-    ).rejects.toThrow("Referenced session is archived or does not exist");
+    ).rejects.toThrow("Referenced class is archived or does not exist");
   });
 
   it("upsertAttendanceRecords throws 400 when batch contains an archived student", async () => {

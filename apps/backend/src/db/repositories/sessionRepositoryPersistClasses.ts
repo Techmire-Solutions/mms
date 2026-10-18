@@ -1,305 +1,131 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { type Class } from "@mms/shared";
 import { randomUUID } from "node:crypto";
-import {
-  sessionClasses,
-  sessionClassFees,
-  sessionClassSchedules,
-  sessionClassBudgets,
-  sessionClassDiscounts,
-  sessionClassTimetables,
-  sessionClassTimetablePeriods,
-  sessionClassRefreshments,
-  scholarshipEligibilities,
-  sessionClassScholarships,
-} from "../schema.js";
+import { sessionClasses, enrollments, examClasses } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
+import { ConflictError } from "../../lib/httpErrors.js";
+import { persistClassSectionsTx } from "./sessionRepositorySections.js";
+import { hasClassReferencesTx } from "./sessionClassReferenceGuard.js";
+import {
+  collectClassChildRows,
+  deleteClassChildrenTx,
+  emptyClassChildRows,
+  insertClassChildRowsTx,
+} from "./sessionRepositoryClassChildren.js";
+import { toDbDate } from "../../lib/dbDate.js";
 
 type Transaction = TenantTransaction;
 
+/**
+ * Rejects removing classes that are still referenced — enrollments, attendance (archived rows too,
+ * since the FK restricts), exams, fee structures, hasanat distributions or question papers.
+ */
+async function assertClassesRemovableTx(
+  tx: Transaction,
+  subdomain: string,
+  classIds: string[],
+): Promise<void> {
+  if (classIds.length === 0) return;
+  if (await hasClassReferencesTx(tx, subdomain, classIds)) {
+    throw new ConflictError(
+      "Cannot remove a class that has enrollments, attendance, exams or fee structures",
+    );
+  }
+  const [enrolled] = await tx
+    .select({ id: enrollments.id })
+    .from(enrollments)
+    // Archived enrollments still hold the (deferred) composite FK, so they block removal too.
+    .where(
+      and(eq(enrollments.workspaceSubdomain, subdomain), inArray(enrollments.classId, classIds)),
+    )
+    .limit(1);
+  const [examined] = await tx
+    .select({ examId: examClasses.examId })
+    .from(examClasses)
+    .where(
+      and(eq(examClasses.workspaceSubdomain, subdomain), inArray(examClasses.classId, classIds)),
+    )
+    .limit(1);
+  if (enrolled || examined) {
+    throw new ConflictError("Cannot remove a class that has enrollments, attendance, or exams");
+  }
+}
+
+/**
+ * Persists a session's classes by id: upserts classes present in the payload, replaces their
+ * child collections, and deletes only classes missing from the payload (guarded against dependants).
+ * `classes === undefined` leaves existing classes untouched.
+ */
 export async function persistSessionClassesTx(
   tx: Transaction,
   subdomain: string,
   sessionId: string,
   classes?: Class[],
 ): Promise<void> {
-  // 1. Clear existing classes and class-level sub-tables
-  const existingClasses = await tx
+  if (classes === undefined) return;
+
+  const payload = classes.map((c) => ({ ...c, id: c.id || randomUUID() }));
+  const keptIds = payload.map((c) => c.id);
+  const sessionScope = and(
+    eq(sessionClasses.workspaceSubdomain, subdomain),
+    eq(sessionClasses.sessionId, sessionId),
+  );
+
+  const removed = await tx
     .select({ id: sessionClasses.id })
     .from(sessionClasses)
     .where(
-      and(
-        eq(sessionClasses.workspaceSubdomain, subdomain),
-        eq(sessionClasses.sessionId, sessionId),
-      ),
+      keptIds.length > 0 ? and(sessionScope, notInArray(sessionClasses.id, keptIds)) : sessionScope,
     );
+  const removedIds = removed.map((r) => r.id);
 
-  const existingClassIds = existingClasses.map((c) => c.id);
-
-  if (existingClassIds.length > 0) {
-    const existingTimetables = await tx
-      .select({ id: sessionClassTimetables.id })
-      .from(sessionClassTimetables)
-      .where(
-        and(
-          eq(sessionClassTimetables.workspaceSubdomain, subdomain),
-          inArray(sessionClassTimetables.sessionClassId, existingClassIds),
-        ),
-      );
-    const existingTimetableIds = existingTimetables.map((t) => t.id);
-
-    if (existingTimetableIds.length > 0) {
-      await tx
-        .delete(sessionClassTimetablePeriods)
-        .where(
-          and(
-            eq(sessionClassTimetablePeriods.workspaceSubdomain, subdomain),
-            inArray(sessionClassTimetablePeriods.timetableId, existingTimetableIds),
-          ),
-        );
-    }
-
-    await Promise.all([
-      tx
-        .delete(sessionClassFees)
-        .where(
-          and(
-            eq(sessionClassFees.workspaceSubdomain, subdomain),
-            inArray(sessionClassFees.sessionClassId, existingClassIds),
-          ),
-        ),
-      tx
-        .delete(sessionClassSchedules)
-        .where(
-          and(
-            eq(sessionClassSchedules.workspaceSubdomain, subdomain),
-            inArray(sessionClassSchedules.sessionClassId, existingClassIds),
-          ),
-        ),
-      tx
-        .delete(sessionClassBudgets)
-        .where(
-          and(
-            eq(sessionClassBudgets.workspaceSubdomain, subdomain),
-            inArray(sessionClassBudgets.sessionClassId, existingClassIds),
-          ),
-        ),
-      tx
-        .delete(sessionClassDiscounts)
-        .where(
-          and(
-            eq(sessionClassDiscounts.workspaceSubdomain, subdomain),
-            inArray(sessionClassDiscounts.sessionClassId, existingClassIds),
-          ),
-        ),
-      tx
-        .delete(sessionClassTimetables)
-        .where(
-          and(
-            eq(sessionClassTimetables.workspaceSubdomain, subdomain),
-            inArray(sessionClassTimetables.sessionClassId, existingClassIds),
-          ),
-        ),
-      tx
-        .delete(sessionClassRefreshments)
-        .where(
-          and(
-            eq(sessionClassRefreshments.workspaceSubdomain, subdomain),
-            inArray(sessionClassRefreshments.sessionClassId, existingClassIds),
-          ),
-        ),
-      tx
-        .delete(sessionClassScholarships)
-        .where(
-          and(
-            eq(sessionClassScholarships.workspaceSubdomain, subdomain),
-            inArray(sessionClassScholarships.sessionClassId, existingClassIds),
-          ),
-        ),
-    ]);
-
+  await assertClassesRemovableTx(tx, subdomain, removedIds);
+  await deleteClassChildrenTx(tx, subdomain, [...removedIds, ...keptIds]);
+  if (removedIds.length > 0) {
+    // Removed (unused) classes cascade to their sections' staff history, which is soft-delete guarded.
+    await tx.execute(sql`SELECT set_config('app.allow_hard_purge', 'true', true)`);
     await tx
       .delete(sessionClasses)
-      .where(
-        and(
-          eq(sessionClasses.workspaceSubdomain, subdomain),
-          eq(sessionClasses.sessionId, sessionId),
-        ),
-      );
+      .where(and(sessionScope, inArray(sessionClasses.id, removedIds)));
   }
 
-  // 2. Insert new classes and their sub-graphs
-  if (!classes || classes.length === 0) return;
-
-  const classInserts: Array<typeof sessionClasses.$inferInsert> = [];
-  const feeInserts: Array<typeof sessionClassFees.$inferInsert> = [];
-  const scheduleInserts: Array<typeof sessionClassSchedules.$inferInsert> = [];
-  const budgetInserts: Array<typeof sessionClassBudgets.$inferInsert> = [];
-  const discountInserts: Array<typeof sessionClassDiscounts.$inferInsert> = [];
-  const refreshmentInserts: Array<typeof sessionClassRefreshments.$inferInsert> = [];
-  const timetableInserts: Array<typeof sessionClassTimetables.$inferInsert> = [];
-  const periodInserts: Array<typeof sessionClassTimetablePeriods.$inferInsert> = [];
-  const scholarshipInserts: Array<typeof sessionClassScholarships.$inferInsert> = [];
-
-  for (let idx = 0; idx < classes.length; idx++) {
-    const c = classes[idx];
-    const classId = c.id || randomUUID();
-
-    classInserts.push({
-      id: classId,
-      workspaceSubdomain: subdomain,
+  const childRows = emptyClassChildRows();
+  for (let idx = 0; idx < payload.length; idx++) {
+    const c = payload[idx];
+    const values = {
       sessionId,
       name: c.name,
       gender: c.gender || "mixed",
-      ageCalculationDate: c.ageCalculationDate || "",
+      ageCalculationDate: toDbDate(c.ageCalculationDate),
       ageMin: c.minAge ?? 4,
       ageMax: c.maxAge ?? 25,
-      capacity: c.maxStudents ?? 30,
-      enrolled: c.enrolled ?? 0,
+      // Class capacity is the sum of its sections when sections are sent.
+      capacity: c.sections?.length
+        ? c.sections.reduce((total, section) => total + Math.max(0, section.capacity ?? 0), 0)
+        : (c.maxStudents ?? 30),
       enrollmentDeadline: c.enrollmentDeadline || "",
       status: c.status || "active",
       facultyId: c.facultyId?.trim() ? c.facultyId.trim() : null,
       facultyName: c.facultyName || "",
       room: c.room || "",
+      programId: c.programId || null,
       sortOrder: idx,
-    });
-
-    for (const fee of c.fees || []) {
-      feeInserts.push({
-        id: fee.id || randomUUID(),
-        workspaceSubdomain: subdomain,
-        sessionClassId: classId,
-        feeType: fee.feeType,
-        amount: String(fee.amount ?? 0),
+    };
+    // `enrolled` is derived from enrollments on read; never trusted from the client.
+    await tx
+      .insert(sessionClasses)
+      .values({ id: c.id, workspaceSubdomain: subdomain, enrolled: 0, ...values })
+      .onConflictDoUpdate({
+        target: [sessionClasses.workspaceSubdomain, sessionClasses.sessionId, sessionClasses.id],
+        set: values,
       });
-    }
-
-    for (const s of c.schedules || []) {
-      scheduleInserts.push({
-        id: s.id || randomUUID(),
-        workspaceSubdomain: subdomain,
-        sessionClassId: classId,
-        scheduleType: s.scheduleType,
-        startDate: s.startDate,
-        endDate: s.endDate,
-      });
-    }
-
-    for (const b of c.budgets || []) {
-      budgetInserts.push({
-        id: b.id || randomUUID(),
-        workspaceSubdomain: subdomain,
-        sessionClassId: classId,
-        budgetType: b.budgetType,
-        detail: b.detail,
-        amount: String(b.amount ?? 0),
-      });
-    }
-
-    for (const d of c.discounts || []) {
-      discountInserts.push({
-        id: d.id || randomUUID(),
-        workspaceSubdomain: subdomain,
-        sessionClassId: classId,
-        discountType: d.discountType,
-        percentage: String(d.percentage ?? 0),
-        startDate: d.startDate || null,
-        endDate: d.endDate || null,
-        eligibilityCriteria: d.eligibilityCriteria || {},
-        status: d.status || "active",
-      });
-    }
-
-    for (const r of c.refreshments || []) {
-      refreshmentInserts.push({
-        id: r.id || randomUUID(),
-        workspaceSubdomain: subdomain,
-        sessionClassId: classId,
-        date: r.date,
-        item: r.item,
-        quantity: r.quantity ?? 1,
-        pricePerUnit: String(r.pricePerUnit ?? 0),
-        paidAmount: String(r.paidAmount ?? 0),
-      });
-    }
-
-    for (const t of c.timetables || []) {
-      const timetableId = t.id || randomUUID();
-      timetableInserts.push({
-        id: timetableId,
-        workspaceSubdomain: subdomain,
-        sessionClassId: classId,
-        date: t.date,
-      });
-      for (const p of t.periods || []) {
-        periodInserts.push({
-          id: p.id || randomUUID(),
-          workspaceSubdomain: subdomain,
-          timetableId,
-          startTime: p.startTime,
-          endTime: p.endTime,
-          subject: p.subject,
-          facultyId: p.facultyId?.trim() ? p.facultyId.trim() : null,
-          facultyName: p.facultyName || "",
-        });
-      }
-    }
-
-    for (const sc of c.scholarships || []) {
-      let eligibilityId = sc.scholarshipEligibilityId;
-      if (sc.eligibility) {
-        eligibilityId = sc.eligibility.id || randomUUID();
-        await tx
-          .insert(scholarshipEligibilities)
-          .values({
-            id: eligibilityId,
-            workspaceSubdomain: subdomain,
-            orphan: sc.eligibility.orphan,
-            job: sc.eligibility.job,
-            business: sc.eligibility.business,
-            property: sc.eligibility.property,
-            familyMembers: sc.eligibility.familyMembers,
-            onJobMembers: sc.eligibility.onJobMembers,
-            schoolGoingSiblings: sc.eligibility.schoolGoingSiblings,
-            residence: sc.eligibility.residence,
-            notes: sc.eligibility.notes || null,
-          })
-          .onConflictDoUpdate({
-            target: [scholarshipEligibilities.workspaceSubdomain, scholarshipEligibilities.id],
-            set: {
-              orphan: sc.eligibility.orphan,
-              job: sc.eligibility.job,
-              business: sc.eligibility.business,
-              property: sc.eligibility.property,
-              familyMembers: sc.eligibility.familyMembers,
-              onJobMembers: sc.eligibility.onJobMembers,
-              schoolGoingSiblings: sc.eligibility.schoolGoingSiblings,
-              residence: sc.eligibility.residence,
-              notes: sc.eligibility.notes || null,
-            },
-          });
-      }
-
-      scholarshipInserts.push({
-        id: sc.id || randomUUID(),
-        workspaceSubdomain: subdomain,
-        sessionClassId: classId,
-        scholarshipEligibilityId: eligibilityId || null,
-        percentage: String(sc.percentage ?? 0),
-        expiryDate: sc.expiryDate || "",
-      });
-    }
+    await persistClassSectionsTx(
+      tx,
+      { subdomain, sessionId, classId: c.id, capacity: values.capacity, room: values.room },
+      c.sections,
+    );
+    collectClassChildRows(childRows, subdomain, c.id, c);
   }
 
-  if (classInserts.length > 0) await tx.insert(sessionClasses).values(classInserts);
-  if (feeInserts.length > 0) await tx.insert(sessionClassFees).values(feeInserts);
-  if (scheduleInserts.length > 0) await tx.insert(sessionClassSchedules).values(scheduleInserts);
-  if (budgetInserts.length > 0) await tx.insert(sessionClassBudgets).values(budgetInserts);
-  if (discountInserts.length > 0) await tx.insert(sessionClassDiscounts).values(discountInserts);
-  if (refreshmentInserts.length > 0)
-    await tx.insert(sessionClassRefreshments).values(refreshmentInserts);
-  if (timetableInserts.length > 0) await tx.insert(sessionClassTimetables).values(timetableInserts);
-  if (periodInserts.length > 0) await tx.insert(sessionClassTimetablePeriods).values(periodInserts);
-  if (scholarshipInserts.length > 0)
-    await tx.insert(sessionClassScholarships).values(scholarshipInserts);
+  await insertClassChildRowsTx(tx, childRows);
 }

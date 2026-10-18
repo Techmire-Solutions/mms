@@ -9,6 +9,27 @@ import {
   attendanceRecordToInsert as recordToInsert,
 } from "./attendanceRepositoryMappers.js";
 
+const ATTENDANCE_RECORD_COLUMNS = {
+  id: attendance.id,
+  workspaceSubdomain: attendance.workspaceSubdomain,
+  classId: attendance.classId,
+  studentId: attendance.studentId,
+  studentName: attendance.studentName,
+  rollNo: attendance.rollNo,
+  date: attendance.date,
+  status: attendance.status,
+  timeIn: attendance.timeIn,
+  timeOut: attendance.timeOut,
+  notes: attendance.notes,
+  markedBy: attendance.markedBy,
+  sectionId: attendance.sectionId,
+  deletedAt: attendance.deletedAt,
+  deletedBy: attendance.deletedBy,
+  deletionReason: attendance.deletionReason,
+  createdAt: attendance.createdAt,
+  updatedAt: attendance.updatedAt,
+};
+
 export async function listAttendanceRecordsByWorkspace(
   tenant: string,
   options?: { limit?: number; offset?: number; includeDeleted?: boolean },
@@ -22,24 +43,7 @@ export async function listAttendanceRecordsByWorkspace(
       conditions.push(isNull(attendance.deletedAt));
     }
     const rows = await tx
-      .select({
-        id: attendance.id,
-        workspaceSubdomain: attendance.workspaceSubdomain,
-        classId: attendance.classId,
-        studentId: attendance.studentId,
-        studentName: attendance.studentName,
-        rollNo: attendance.rollNo,
-        date: attendance.date,
-        status: attendance.status,
-        timeIn: attendance.timeIn,
-        timeOut: attendance.timeOut,
-        notes: attendance.notes,
-        deletedAt: attendance.deletedAt,
-        deletedBy: attendance.deletedBy,
-        deletionReason: attendance.deletionReason,
-        createdAt: attendance.createdAt,
-        updatedAt: attendance.updatedAt,
-      })
+      .select(ATTENDANCE_RECORD_COLUMNS)
       .from(attendance)
       .where(and(...conditions))
       .limit(limit)
@@ -57,24 +61,7 @@ export async function findAttendanceRecordById(
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
-      .select({
-        id: attendance.id,
-        workspaceSubdomain: attendance.workspaceSubdomain,
-        classId: attendance.classId,
-        studentId: attendance.studentId,
-        studentName: attendance.studentName,
-        rollNo: attendance.rollNo,
-        date: attendance.date,
-        status: attendance.status,
-        timeIn: attendance.timeIn,
-        timeOut: attendance.timeOut,
-        notes: attendance.notes,
-        deletedAt: attendance.deletedAt,
-        deletedBy: attendance.deletedBy,
-        deletionReason: attendance.deletionReason,
-        createdAt: attendance.createdAt,
-        updatedAt: attendance.updatedAt,
-      })
+      .select(ATTENDANCE_RECORD_COLUMNS)
       .from(attendance)
       .where(and(eq(attendance.workspaceSubdomain, subdomain), eq(attendance.id, trimmedId)))
       .limit(1);
@@ -92,24 +79,7 @@ export async function findAttendanceRecordsByIds(
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
-      .select({
-        id: attendance.id,
-        workspaceSubdomain: attendance.workspaceSubdomain,
-        classId: attendance.classId,
-        studentId: attendance.studentId,
-        studentName: attendance.studentName,
-        rollNo: attendance.rollNo,
-        date: attendance.date,
-        status: attendance.status,
-        timeIn: attendance.timeIn,
-        timeOut: attendance.timeOut,
-        notes: attendance.notes,
-        deletedAt: attendance.deletedAt,
-        deletedBy: attendance.deletedBy,
-        deletionReason: attendance.deletionReason,
-        createdAt: attendance.createdAt,
-        updatedAt: attendance.updatedAt,
-      })
+      .select(ATTENDANCE_RECORD_COLUMNS)
       .from(attendance)
       .where(and(eq(attendance.workspaceSubdomain, subdomain), inArray(attendance.id, cleanIds)));
     return rows.map(rowToRecord);
@@ -138,6 +108,8 @@ export async function saveAttendanceRecord(
           timeIn: values.timeIn,
           timeOut: values.timeOut,
           notes: values.notes,
+          markedBy: values.markedBy,
+          sectionId: values.sectionId,
           deletedAt: values.deletedAt,
           deletedBy: values.deletedBy,
           deletionReason: values.deletionReason,
@@ -176,6 +148,8 @@ export async function bulkSaveAttendanceRecords(
           timeIn: sql`excluded.time_in`,
           timeOut: sql`excluded.time_out`,
           notes: sql`excluded.notes`,
+          markedBy: sql`excluded.marked_by`,
+          sectionId: sql`excluded.section_id`,
           deletedAt: sql`excluded.deleted_at`,
           deletedBy: sql`excluded.deleted_by`,
           deletionReason: sql`excluded.deletion_reason`,

@@ -33,6 +33,9 @@ import {
 } from "../../../services/attendancePreferencesService.js";
 import { loadAttendanceLookupsMap } from "../../../services/attendanceLookupsService.js";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
+import { putAttendanceLookupKind } from "./attendanceLookupKindPut.js";
+import { assertTeacherClassScope } from "../../../sessions/use-cases/teacherSectionScope.js";
+import { assertInstructionalDays } from "../../../attendance/use-cases/instructionalDayGuard.js";
 
 const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
 const SETUP_WRITE_PERM = ATTENDANCE_MODULE_MANIFEST.permissions.setupWrite;
@@ -119,9 +122,15 @@ export const attendanceContractRouter: FastifyPluginAsync = async (fastify) => {
       }
 
       try {
+        await assertTeacherClassScope(user, tenantId, [{ classId: body.classId, date: body.date }]);
+        await assertInstructionalDays(
+          tenantId,
+          [{ classId: body.classId, studentId: body.studentId, date: body.date }],
+          user.id,
+        );
         const item = await withTenant(
           tenantId,
-          () => attendanceUseCases.createAttendanceRecord(body),
+          () => attendanceUseCases.createAttendanceRecord({ ...body, markedBy: user.id }),
           { readOnly: false },
         );
         return { status: 201 as const, body: item };
@@ -156,9 +165,22 @@ export const attendanceContractRouter: FastifyPluginAsync = async (fastify) => {
       }
 
       try {
+        await assertTeacherClassScope(
+          user,
+          tenantId,
+          body.records.map((r) => ({ classId: r.classId, date: r.date })),
+        );
+        await assertInstructionalDays(
+          tenantId,
+          body.records.map((r) => ({ classId: r.classId, studentId: r.studentId, date: r.date })),
+          user.id,
+        );
         const records = await withTenant(
           tenantId,
-          () => attendanceUseCases.upsertAttendanceRecords(body.records),
+          () =>
+            attendanceUseCases.upsertAttendanceRecords(
+              body.records.map((r) => ({ ...r, markedBy: user.id })),
+            ),
           { readOnly: false },
         );
         return { status: 200 as const, body: { records } };
@@ -285,7 +307,31 @@ export const attendanceContractRouter: FastifyPluginAsync = async (fastify) => {
       try {
         const updated = await withTenant(
           tenantId,
-          () => attendanceUseCases.updateAttendanceRecordById(id, { ...bodyRecord, id }),
+          async () => {
+            const existing = await attendanceUseCases.loadAttendanceRecordById(id);
+            const classId = String(bodyRecord.classId ?? existing?.classId ?? "");
+            const date = String(bodyRecord.date ?? existing?.date ?? "");
+            await assertTeacherClassScope(user, tenantId, [{ classId, date }]);
+            // Moving a record onto another day/class must land on a teaching day.
+            if (classId !== existing?.classId || date !== existing?.date) {
+              await assertInstructionalDays(
+                tenantId,
+                [
+                  {
+                    classId,
+                    studentId: String(bodyRecord.studentId ?? existing?.studentId ?? ""),
+                    date,
+                  },
+                ],
+                user.id,
+              );
+            }
+            return attendanceUseCases.updateAttendanceRecordById(id, {
+              ...bodyRecord,
+              id,
+              markedBy: user.id,
+            });
+          },
           { readOnly: false },
         );
         if (!updated) {
@@ -624,6 +670,8 @@ export const attendanceContractRouter: FastifyPluginAsync = async (fastify) => {
         });
       }
     },
+
+    updateLookupKind: putAttendanceLookupKind,
   } as unknown as RouterImplementation<typeof attendanceContract>);
 
   await fastify.register(s.plugin(router), {

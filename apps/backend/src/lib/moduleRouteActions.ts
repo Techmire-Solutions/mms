@@ -53,6 +53,20 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     pattern: /\/(export|export\/csv|export\/vcf|export-audit)$/,
     action: "export",
   },
+  // Academic catalogs (session categories / programs / subjects) are Sessions setup data.
+  {
+    methods: ["PUT", "DELETE", "POST"],
+    pattern: /^\/api\/sessions\/catalogs\/:catalog\/:id(\/restore)?$/,
+    action: "setupWrite",
+    onlyModules: ["sessions"],
+  },
+  // Academic calendar (holidays / make-up days) is Attendance setup data.
+  {
+    methods: ["PUT", "DELETE", "POST"],
+    pattern: /^\/api\/attendance\/calendar\/:id(\/restore)?$/,
+    action: "setupWrite",
+    onlyModules: ["attendance"],
+  },
   { methods: ["POST", "DELETE"], pattern: /\/saved-reports(\/:id(\/run)?)?$/, action: "read" },
   {
     methods: ["POST"],

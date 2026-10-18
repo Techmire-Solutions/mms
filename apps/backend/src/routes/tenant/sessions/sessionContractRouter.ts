@@ -30,6 +30,7 @@ import {
 } from "../../../services/sessionPreferencesService.js";
 import { loadSessionLookupsMap } from "../../../services/sessionLookupsService.js";
 import { auditSession } from "./sessionRouteHelpers.js";
+import { putSessionLookupKind } from "./sessionLookupKindPut.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 const SETUP_WRITE_PERM = SESSIONS_MODULE_MANIFEST.permissions.setupWrite;
@@ -151,9 +152,11 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
           body: { type: "forbidden", message: "Insufficient permissions" },
         };
       try {
+        // Locked changes after start need Sessions setup rights plus a reason (audited).
+        const lock = { canOverrideLock: roleHasPermission(user.role, SETUP_WRITE_PERM) };
         const updated = await withTenant(
           String(request.tenant?.id),
-          () => sessionsUseCases.updateSessionById(id, body),
+          () => sessionsUseCases.updateSessionById(id, body, lock),
           { readOnly: false },
         );
         if (!updated)
@@ -533,6 +536,8 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
         });
       }
     },
+
+    updateLookupKind: putSessionLookupKind,
   } as unknown as RouterImplementation<typeof sessionContract>);
 
   await fastify.register(s.plugin(router), {

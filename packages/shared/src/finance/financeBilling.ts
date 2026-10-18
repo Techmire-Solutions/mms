@@ -74,6 +74,10 @@ export const feeStructureRecordSchema = z
     name: z.string().min(1),
     session: z.string().default(""),
     className: z.string().default(""),
+    /** Typed refs (sessions / session_classes / programs); the text fields stay as display snapshots. */
+    sessionId: z.string().nullable().optional(),
+    classId: z.string().nullable().optional(),
+    programId: z.string().nullable().optional(),
     frequency: z.enum(FEE_FREQUENCIES).default("monthly"),
     isActive: z.boolean().default(true),
     items: z.array(feeItemRecordSchema).default([]),
@@ -88,6 +92,10 @@ export const feeStructureInsertSchema = z
     name: z.string().min(1),
     session: z.string().optional().default(""),
     className: z.string().optional().default(""),
+    /** Typed refs (sessions / session_classes / programs); the text fields stay as display snapshots. */
+    sessionId: z.string().nullable().optional(),
+    classId: z.string().nullable().optional(),
+    programId: z.string().nullable().optional(),
     frequency: z.enum(FEE_FREQUENCIES).optional().default("monthly"),
     isActive: z.boolean().optional().default(true),
     items: z.array(feeItemInsertSchema).optional().default([]),

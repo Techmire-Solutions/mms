@@ -1,6 +1,6 @@
 import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { type Student, type RepositoryListOptions } from "@mms/shared";
-import { students, studentEnrolledSessions } from "../schema.js";
+import { students, studentEnrolledSessions, type StudentSelectRow } from "../schema.js";
 import { withTenantRead, type AppDb } from "../tenant-context.js";
 import {
   enableIncludeDeleted,
@@ -14,7 +14,7 @@ import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
 export async function hydrateStudentsList(
   tx: AppDb,
   subdomain: string,
-  rows: (typeof students.$inferSelect)[],
+  rows: StudentSelectRow[],
 ): Promise<Student[]> {
   if (rows.length === 0) return [];
   const ids = rows.map((r) => r.id);
@@ -83,7 +83,7 @@ export async function findStudentById(
   return withTenantRead(subdomain, async (tx) => {
     if (!tx || typeof (tx as { select?: unknown }).select !== "function") return null;
     if (options?.includeDeleted) await enableIncludeDeleted(tx);
-    let rows: (typeof students.$inferSelect)[];
+    let rows: StudentSelectRow[];
     if (
       process.env.MMS_USE_PREPARED_STATEMENTS !== "false" &&
       typeof (tx as { execute?: unknown }).execute === "function"

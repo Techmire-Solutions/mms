@@ -4,19 +4,18 @@
  */
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, Wallet, UserCheck } from "lucide-react";
+import { GraduationCap, Wallet, UserCheck, Link2 } from "lucide-react";
 import { Drawer } from "@/components/app/Drawer";
 import {
   DetailDrawerRestoreOrEditAction,
   DrawerSyncStatusFooter,
 } from "@/components/app/DetailDrawerArchiveChrome";
 import { SessionArchivedBanner } from "@/tenant/features/sessions/components/SessionArchivedBanner";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import {
   formatMoney,
   SESSIONS_MODULE_MANIFEST,
   formatDate,
-  toTitleCase,
   sessionTypeI18nKey,
   type Session,
   type AppTranslationKey,
@@ -24,25 +23,28 @@ import {
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
-import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { useAcademicTerms } from "@/hooks/useAcademicTerms";
+import { sessionLifecycleDisplay } from "@/tenant/features/sessions/hooks/sessionLifecycleDisplay";
 
 import { ClassesTab } from "@/tenant/features/sessions/components/tabs/ClassesTab";
 import { FacultyManagementTab } from "@/tenant/features/sessions/components/tabs/FacultyManagementTab";
 import { BudgetTab } from "@/tenant/features/sessions/components/tabs/BudgetTab";
+import { RegistrationLinksTab } from "@/tenant/features/sessions/components/tabs/RegistrationLinksTab";
 
-const TAB_KEYS = ["classes", "faculty", "budget"] as const;
+const TAB_KEYS = ["classes", "faculty", "budget", "registration"] as const;
 
 const TAB_ICONS = {
   classes: GraduationCap,
   faculty: UserCheck,
   budget: Wallet,
+  registration: Link2,
 } as const;
 
 const TAB_COMPONENTS: Record<string, React.ElementType> = {
   classes: ClassesTab,
   faculty: FacultyManagementTab,
   budget: BudgetTab,
+  registration: RegistrationLinksTab,
 };
 
 export interface SessionDetailProps {
@@ -63,8 +65,8 @@ export const SessionDetail = function SessionDetail({
   onRestore,
 }: SessionDetailProps): React.JSX.Element {
   const { t } = useTranslation();
+  const terms = useAcademicTerms();
   const { canWrite } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
-  const { statuses: statusOptions } = useSessionConfig();
   const [tab, setTab] = useState<string>("classes");
   const TabContent = TAB_COMPONENTS[tab];
   const isArchived = Boolean(session.deletedAt);
@@ -73,42 +75,17 @@ export const SessionDetail = function SessionDetail({
   const typeKey = sessionTypeI18nKey(session.type);
   const sessionTypeLabel = typeKey ? t(typeKey) : session.type;
 
-  const statusLabels = (() => {
-    const labels: Record<string, string> = {};
-    for (const statusOption of statusOptions) {
-      const translationKey = `sessions.status.${statusOption}` as AppTranslationKey;
-      const translated = t(translationKey);
-      labels[statusOption] = translated === translationKey ? toTitleCase(statusOption) : translated;
-    }
-    return labels;
-  })();
-
-  const statusConfig = (() => ({
-    active: {
-      label: statusLabels.active || t("sessions.status.active"),
-      cls: SEMANTIC_BADGE.success,
-    },
-    upcoming: {
-      label: statusLabels.upcoming || t("sessions.status.upcoming"),
-      cls: SEMANTIC_BADGE.info,
-    },
-    completed: {
-      label: statusLabels.completed || t("sessions.status.completed"),
-      cls: SEMANTIC_BADGE.muted,
-    },
-    cancelled: {
-      label: statusLabels.cancelled || t("sessions.status.cancelled"),
-      cls: SEMANTIC_BADGE.destructive,
-    },
-  }))() as Record<string, StatusBadgeConfigItem>;
+  const { statusConfig } = sessionLifecycleDisplay(t);
 
   const tabs: readonly SubTab[] = (() =>
     TAB_KEYS.map((key) => ({
       key,
       label:
-        key === "faculty"
-          ? "Faculty Management"
-          : t(`sessions.detail.tab.${key}` as AppTranslationKey),
+        key === "classes"
+          ? terms.class.plural
+          : key === "faculty"
+            ? "Faculty Management"
+            : t(`sessions.detail.tab.${key}` as AppTranslationKey),
       icon: TAB_ICONS[key],
     })))();
 

@@ -12,6 +12,7 @@ import { upsertStudentFieldConfig } from "../db/repositories/studentFieldConfigR
 import { upsertStudentModulePreferences } from "../db/repositories/studentModulePreferencesRepository.js";
 import { upsertFacultyFieldConfig } from "../db/repositories/facultyFieldConfigRepository.js";
 import { upsertFacultyModulePreferences } from "../db/repositories/facultyModulePreferencesRepository.js";
+import { seedAcademicCatalogDefaults } from "../db/repositories/academicCatalogSeed.js";
 
 /**
  * Seeds default collections and objects for a new tenant workspace.
@@ -45,5 +46,7 @@ export async function seedTenantDefaults(): Promise<void> {
     const facultySetup = splitFacultySettingsBlob(DEFAULT_FACULTY_SETTINGS);
     await upsertFacultyFieldConfig(subdomain, facultySetup.fieldConfig);
     await upsertFacultyModulePreferences(subdomain, Object.assign({}, facultySetup.preferences));
+
+    await seedAcademicCatalogDefaults(subdomain);
   }
 }

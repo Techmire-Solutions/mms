@@ -1,5 +1,5 @@
 import { and, eq, sql } from "drizzle-orm";
-import { tenantUsers, contacts, students, sessions } from "./schema.js";
+import { tenantUsers, contacts, students, sessions, type StudentSelectRow } from "./schema.js";
 import { getRootDb } from "./dbConnection.js";
 import {
   preparedTenantUserColumns,
@@ -17,7 +17,7 @@ export {
 
 export type PreparedTenantUserRow = typeof tenantUsers.$inferSelect;
 export type PreparedContactRow = typeof contacts.$inferSelect;
-export type PreparedStudentRow = typeof students.$inferSelect;
+export type PreparedStudentRow = StudentSelectRow;
 export type PreparedSessionRow = typeof sessions.$inferSelect;
 
 export interface PreparedLookupStatement<T> {

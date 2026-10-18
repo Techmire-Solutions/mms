@@ -22,8 +22,8 @@ export {
   findSessionById,
   findSessionsByIds,
   findSessionsSummaryByIds,
-  findClassesOrSessionsByIds,
-  findClassOrSessionById,
+  findClassesByIds,
+  findClassById,
 } from "./sessionRepositoryQueries.js";
 
 type Transaction = TenantTransaction;
@@ -75,16 +75,17 @@ export async function hydrateSessionsListAggregated(
           'workspaceSubdomain', c.workspace_subdomain,
           'name', c.name,
           'gender', c.gender,
-          'ageCalculationDate', c.age_calc_date,
+          'ageCalculationDate', COALESCE(c.age_calc_date::text, ''),
           'ageMin', c.age_min,
           'ageMax', c.age_max,
           'capacity', c.capacity,
-          'enrolled', c.enrolled,
+          'enrolled', (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND e.status <> 'cancelled'),
           'enrollmentDeadline', c.enrollment_deadline,
           'status', c.status,
           'facultyId', c.faculty_id,
           'facultyName', c.faculty_name,
           'room', c.room,
+          'programId', c.program_id,
           'sortOrder', c.sort_order,
           'createdAt', c.created_at,
           'fees', COALESCE((
@@ -105,8 +106,8 @@ export async function hydrateSessionsListAggregated(
               'sessionClassId', sch.session_class_id,
               'workspaceSubdomain', sch.workspace_subdomain,
               'scheduleType', sch.schedule_type,
-              'startDate', sch.start_date,
-              'endDate', sch.end_date,
+              'startDate', COALESCE(sch.start_date::text, ''),
+              'endDate', COALESCE(sch.end_date::text, ''),
               'createdAt', sch.created_at
             ))
             FROM session_class_schedules sch
@@ -132,8 +133,8 @@ export async function hydrateSessionsListAggregated(
               'workspaceSubdomain', dc.workspace_subdomain,
               'discountType', dc.discount_type,
               'percentage', dc.percentage,
-              'startDate', dc.start_date,
-              'endDate', dc.end_date,
+              'startDate', COALESCE(dc.start_date::text, ''),
+              'endDate', COALESCE(dc.end_date::text, ''),
               'eligibilityCriteria', dc.eligibility_criteria,
               'status', dc.status,
               'createdAt', dc.created_at
@@ -146,7 +147,7 @@ export async function hydrateSessionsListAggregated(
               'id', tt.id,
               'sessionClassId', tt.session_class_id,
               'workspaceSubdomain', tt.workspace_subdomain,
-              'date', tt.date,
+              'date', COALESCE(tt.date::text, ''),
               'createdAt', tt.created_at,
               'periods', COALESCE((
                 SELECT json_agg(json_build_object(
@@ -156,6 +157,7 @@ export async function hydrateSessionsListAggregated(
                   'startTime', per.start_time,
                   'endTime', per.end_time,
                   'subject', per.subject,
+                  'subjectId', per.subject_id,
                   'facultyId', per.faculty_id,
                   'facultyName', per.faculty_name,
                   'createdAt', per.created_at
@@ -172,7 +174,7 @@ export async function hydrateSessionsListAggregated(
               'id', ref.id,
               'sessionClassId', ref.session_class_id,
               'workspaceSubdomain', ref.workspace_subdomain,
-              'date', ref.date,
+              'date', COALESCE(ref.date::text, ''),
               'item', ref.item,
               'quantity', ref.quantity,
               'pricePerUnit', ref.price_per_unit,
@@ -189,7 +191,7 @@ export async function hydrateSessionsListAggregated(
               'workspaceSubdomain', sc.workspace_subdomain,
               'scholarshipEligibilityId', sc.scholarship_eligibility_id,
               'percentage', sc.percentage,
-              'expiryDate', sc.expiry_date,
+              'expiryDate', COALESCE(sc.expiry_date::text, ''),
               'createdAt', sc.created_at,
               'eligibility', (
                 SELECT json_build_object(
@@ -360,12 +362,13 @@ export async function hydrateSessionsList(
         ageMin: sessionClasses.ageMin,
         ageMax: sessionClasses.ageMax,
         capacity: sessionClasses.capacity,
-        enrolled: sessionClasses.enrolled,
+        enrolled: sql<number>`(SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = ${sessionClasses.workspaceSubdomain} AND e.session_id = ${sessionClasses.sessionId} AND e.class_id = ${sessionClasses.id} AND e.deleted_at IS NULL AND e.status <> 'cancelled')`,
         enrollmentDeadline: sessionClasses.enrollmentDeadline,
         status: sessionClasses.status,
         facultyId: sessionClasses.facultyId,
         facultyName: sessionClasses.facultyName,
         room: sessionClasses.room,
+        programId: sessionClasses.programId,
         sortOrder: sessionClasses.sortOrder,
         createdAt: sessionClasses.createdAt,
       })
@@ -541,6 +544,7 @@ export async function hydrateSessionsList(
             startTime: sessionClassTimetablePeriods.startTime,
             endTime: sessionClassTimetablePeriods.endTime,
             subject: sessionClassTimetablePeriods.subject,
+            subjectId: sessionClassTimetablePeriods.subjectId,
             facultyId: sessionClassTimetablePeriods.facultyId,
             facultyName: sessionClassTimetablePeriods.facultyName,
             createdAt: sessionClassTimetablePeriods.createdAt,
@@ -661,8 +665,9 @@ export async function hydrateSessionsListSummary(
           'facultyId', c.faculty_id,
           'facultyName', c.faculty_name,
           'capacity', c.capacity,
-          'enrolled', c.enrolled,
+          'enrolled', (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND e.status <> 'cancelled'),
           'room', c.room,
+          'programId', c.program_id,
           'sortOrder', c.sort_order,
           'createdAt', c.created_at
         ) ORDER BY c.sort_order)

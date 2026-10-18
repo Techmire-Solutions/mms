@@ -2,15 +2,24 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
-import { type Session, SESSION_TYPES } from "@/lib/data/sessionsData";
-import { SessionSchema, toTitleCase, type AppTranslationKey } from "@mms/shared";
+import { type Session } from "@/lib/data/sessionsData";
+import {
+  DEFAULT_SESSION_CATEGORY_CODE,
+  SESSIONS_MODULE_MANIFEST,
+  SESSION_TRANSITIONS,
+  SessionSchema,
+  isSessionStructureLocked,
+  normalizeSessionStatus,
+  toTitleCase,
+  type AppTranslationKey,
+  type SessionLifecycleState,
+} from "@mms/shared";
+import { useAcademicCatalogItems } from "@/hooks/useAcademicCatalog";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useZodDraftForm } from "@/lib/forms/useZodDraftForm";
 import type { SessionSelectOption } from "@/tenant/features/sessions/components/SessionFormSections";
 import {
   SESSION_CURRENCIES,
-  SESSION_STATUSES,
-  SESSION_TYPE_LABEL_KEYS,
   buildSessionDraftFromRecord,
   sessionFormDraftSnapshot,
   type SessionFormDraft,
@@ -29,19 +38,24 @@ export function useSessionFormController({
 }: UseSessionFormControllerProps) {
   const { t } = useTranslation();
   const { language } = useGlobalSettings();
-  const { settings, types, statuses } = useSessionConfig();
   const { activeCurrency } = useFinanceCurrency();
   const defaultCurrency = activeCurrency.code;
 
-  const typeOptions = types.length > 0 ? types : [...SESSION_TYPES];
-  const statusValues = statuses.length > 0 ? statuses : [...SESSION_STATUSES];
-  const defaultType = typeOptions.includes(settings.defaultSessionType)
-    ? settings.defaultSessionType
-    : typeOptions[0] || "Hifz";
+  // Lifecycle: new sessions start as draft/open; existing ones offer only allowed transitions.
+  const currentStatus = normalizeSessionStatus(session?.status ?? "draft");
+  const statusValues: SessionLifecycleState[] = session
+    ? [currentStatus, ...SESSION_TRANSITIONS[currentStatus]]
+    : ["draft", "open"];
+  const structureLocked = Boolean(session) && isSessionStructureLocked(currentStatus);
+  const { canEditSetup } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
+  const categories = useAcademicCatalogItems("categories").data ?? [];
+  const defaultCategoryId =
+    categories.find((row) => row.code === DEFAULT_SESSION_CATEGORY_CODE && !row.deletedAt)?.id ??
+    "";
 
   const buildDraft = useCallback(
-    () => buildSessionDraftFromRecord(session, defaultType, defaultCurrency),
-    [session, defaultType, defaultCurrency],
+    () => buildSessionDraftFromRecord(session, defaultCurrency),
+    [session, defaultCurrency],
   );
 
   const form = useZodDraftForm<SessionFormDraft, Session>(useMemo(buildDraft, [buildDraft]), {
@@ -49,10 +63,14 @@ export function useSessionFormController({
     toRecord: (draft): Session => ({
       id: session?.id || crypto.randomUUID(),
       name: toTitleCase(draft.name || ""),
-      type: draft.type || defaultType,
-      status: (draft.status as Session["status"]) || "active",
+      // Category/program are catalog ids; the server resolves defaults and the `type` snapshot.
+      type: session?.type ?? "",
+      categoryId: draft.categoryId || defaultCategoryId,
+      programId: draft.programId || "",
+      status: (draft.status as Session["status"]) || currentStatus,
       startDate: draft.startDate || "",
       endDate: draft.endDate || "",
+      workingDays: draft.workingDays ?? [],
       baseFee: Number(draft.baseFee || 0),
       currency: draft.currency || defaultCurrency,
       description: draft.description || "",
@@ -99,27 +117,14 @@ export function useSessionFormController({
     [onClose, onSave, save],
   );
 
-  const sessionTypeOptions = ((): SessionSelectOption[] =>
-    typeOptions.map((typeOption) => {
-      const translationKey = SESSION_TYPE_LABEL_KEYS[typeOption];
-      return {
-        value: typeOption,
-        label: translationKey ? t(translationKey) : typeOption,
-      };
-    }))();
-
-  const statusOptions = ((): SessionSelectOption[] =>
-    statusValues.map((statusOption) => {
-      const translationKey = `sessions.statuses.${statusOption}` as AppTranslationKey;
-      const translated = t(translationKey);
-      const label = translated === translationKey ? toTitleCase(statusOption) : translated;
-      return { value: statusOption, label };
-    }))();
+  const statusOptions: SessionSelectOption[] = statusValues.map((state) => ({
+    value: state,
+    label: t(`sessions.lifecycle.${state}`),
+  }));
 
   return {
     t,
     language,
-    defaultType,
     defaultCurrency,
     saving: isSaving,
     errors,
@@ -127,8 +132,10 @@ export function useSessionFormController({
     updateDraft,
     isDirty,
     handleSave,
-    sessionTypeOptions,
     statusOptions,
+    structureLocked,
+    defaultCategoryId,
+    canCreateCatalog: canEditSetup,
     currencyOptions: SESSION_CURRENCIES,
   };
 }

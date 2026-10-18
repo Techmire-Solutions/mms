@@ -2,35 +2,10 @@ import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type Enrollment, type EnrollmentTimelineItem } from "@mms/shared";
 import { enrollments, enrollmentTimelineEvents } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { mapAuditToInsert } from "./repositoryMappers.js";
+import { recordToInsert } from "./enrollmentRecordToInsert.js";
+import { resolveEnrollmentSectionsTx } from "./enrollmentSectionResolve.js";
 
-type EnrollmentInsert = typeof enrollments.$inferInsert;
-
-function recordToInsert(tenant: string, record: Enrollment): EnrollmentInsert {
-  return {
-    id: String(record.id),
-    workspaceSubdomain: tenant.trim().toLowerCase(),
-    studentId: String(record.studentId || ""),
-    studentName: String(record.studentName || ""),
-    sessionId: String(record.sessionId || ""),
-    sessionName: String(record.sessionName || ""),
-    classId: String(record.classId || ""),
-    className: String(record.className || ""),
-    enrolledDate: String(record.enrolledDate || ""),
-    baseFee: String(record.baseFee ?? 0),
-    discountType: String(record.discountType || "none"),
-    discountLabel: String(record.discountLabel || ""),
-    discountPct: String(record.discountPct ?? 0),
-    discountAmt: String(record.discountAmt ?? 0),
-    finalFee: String(record.finalFee ?? 0),
-    status: String(record.status || "pending"),
-    invoiceId: record.invoiceId ? String(record.invoiceId) : null,
-    paymentStatus: String(record.paymentStatus || "none"),
-    notes: String(record.notes || ""),
-    ...mapAuditToInsert(record),
-  } satisfies EnrollmentInsert;
-}
-
+import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 async function writeTimelineEvents(
   tx: TenantTransaction,
   subdomain: string,
@@ -61,7 +36,8 @@ async function writeTimelineEvents(
 export async function saveEnrollment(tenant: string, record: Enrollment): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    const values = recordToInsert(subdomain, record);
+    const [placed] = await resolveEnrollmentSectionsTx(tx, subdomain, [record]);
+    const values = recordToInsert(subdomain, placed);
     await tx
       .insert(enrollments)
       .values(values)
@@ -74,6 +50,8 @@ export async function saveEnrollment(tenant: string, record: Enrollment): Promis
           sessionName: values.sessionName,
           classId: values.classId,
           className: values.className,
+          sectionId: values.sectionId,
+          rollNo: values.rollNo,
           enrolledDate: values.enrolledDate,
           baseFee: values.baseFee,
           discountType: values.discountType,
@@ -96,6 +74,7 @@ export async function saveEnrollment(tenant: string, record: Enrollment): Promis
       });
 
     await writeTimelineEvents(tx, subdomain, record.id, record.timeline);
+    await syncEnrolledSessionsTx(tx, subdomain, { studentIds: [String(placed.studentId)] });
   });
 }
 
@@ -106,7 +85,11 @@ export async function bulkSaveEnrollments(tenant: string, records: Enrollment[])
     const recordIds = records.map((r) => String(r.id));
     await tx
       .insert(enrollments)
-      .values(records.map((record) => recordToInsert(subdomain, record)))
+      .values(
+        (await resolveEnrollmentSectionsTx(tx, subdomain, records)).map((record) =>
+          recordToInsert(subdomain, record),
+        ),
+      )
       .onConflictDoUpdate({
         target: [enrollments.workspaceSubdomain, enrollments.id],
         set: {
@@ -116,6 +99,8 @@ export async function bulkSaveEnrollments(tenant: string, records: Enrollment[])
           sessionName: sql`excluded.session_name`,
           classId: sql`excluded.class_id`,
           className: sql`excluded.class_name`,
+          sectionId: sql`excluded.section_id`,
+          rollNo: sql`excluded.roll_no`,
           enrolledDate: sql`excluded.enrolled_date`,
           baseFee: sql`excluded.base_fee`,
           discountType: sql`excluded.discount_type`,
@@ -158,6 +143,9 @@ export async function bulkSaveEnrollments(tenant: string, records: Enrollment[])
     if (allEvents.length > 0) {
       await tx.insert(enrollmentTimelineEvents).values(allEvents);
     }
+    await syncEnrolledSessionsTx(tx, subdomain, {
+      studentIds: records.map((record) => String(record.studentId)),
+    });
   });
 }
 
@@ -200,9 +188,10 @@ export async function replaceEnrollmentsForWorkspace(
       .where(eq(enrollmentTimelineEvents.workspaceSubdomain, subdomain));
     await tx.delete(enrollments).where(eq(enrollments.workspaceSubdomain, subdomain));
     if (records.length > 0) {
+      const placed = await resolveEnrollmentSectionsTx(tx, subdomain, records);
       await tx
         .insert(enrollments)
-        .values(records.map((record) => recordToInsert(subdomain, record)));
+        .values(placed.map((record) => recordToInsert(subdomain, record)));
       const allEvents = records.flatMap((record) =>
         (record.timeline ?? []).map((item) => ({
           workspaceSubdomain: subdomain,
@@ -248,6 +237,7 @@ export async function bulkSoftDeleteEnrollments(
       )
       .returning({ id: enrollments.id });
 
+    await syncEnrolledSessionsTx(tx, subdomain, { enrollmentIds: updated.map((row) => row.id) });
     return {
       succeeded: updated.length,
       failed: uniqueIds.length - updated.length,
@@ -285,6 +275,7 @@ export async function bulkRestoreEnrollments(
       )
       .returning({ id: enrollments.id });
 
+    await syncEnrolledSessionsTx(tx, subdomain, { enrollmentIds: updated.map((row) => row.id) });
     return {
       succeeded: updated.length,
       failed: uniqueIds.length - updated.length,

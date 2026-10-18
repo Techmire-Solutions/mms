@@ -24,7 +24,7 @@ export const SESSIONS_MODULE_MANIFEST = {
   restBasePath: "/api/sessions",
   analyticsCategory: "sessions",
   tiers: ["work", "reports", "setup"] as const,
-  setupSubTabs: ["preferences"] as const,
+  setupSubTabs: ["categories", "programs", "subjects", "terminology", "preferences"] as const,
   permissions: {
     read: "enrollments.read",
     write: "enrollments.write",

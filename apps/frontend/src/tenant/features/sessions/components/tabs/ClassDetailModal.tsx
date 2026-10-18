@@ -1,6 +1,6 @@
 /** Orchestrator FormModal for configuring Class General Rules, Fees, Schedules, Budgets, Scholarships. */
 import React, { useState, useEffect, useMemo } from "react";
-import { GraduationCap, Calendar, Coffee, Award, Wallet } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFacultyContractList, useFacultyByIds } from "@/tenant/hooks/collections/faculty";
@@ -8,10 +8,12 @@ import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { FACULTY_MODULE_MANIFEST, formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
 import type { Class } from "@/lib/data/sessionsData";
 import {
+  CLASS_DETAIL_TABS,
+  ClassDetailSectionsTab,
   type ClassDetailTabId,
-  type ClassDetailTabItem,
   useClassDetailDraft,
 } from "./class-detail";
+import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { ClassDetailTabBody } from "./ClassDetailTabBody";
 
 interface ClassDetailModalProps {
@@ -22,14 +24,6 @@ interface ClassDetailModalProps {
   saving?: boolean;
 }
 
-const TABS: readonly ClassDetailTabItem[] = [
-  { id: "general", labelKey: "sessions.classes.detail.tab.general", icon: GraduationCap },
-  { id: "fees", labelKey: "sessions.classes.detail.tab.fees", icon: Wallet },
-  { id: "schedule", labelKey: "sessions.classes.detail.tab.schedule", icon: Calendar },
-  { id: "budget", labelKey: "sessions.classes.detail.tab.budget", icon: Coffee },
-  { id: "scholarship", labelKey: "sessions.classes.detail.tab.scholarship", icon: Award },
-];
-
 export function ClassDetailModal({
   open,
   sessionClass,
@@ -38,6 +32,7 @@ export function ClassDetailModal({
   saving = false,
 }: ClassDetailModalProps): React.JSX.Element {
   const { t } = useTranslation();
+  const terms = useAcademicTerms();
   const { activeCurrency } = useFinanceCurrency();
   const currencySymbol = activeCurrency?.symbol || "";
   const [activeTab, setActiveTab] = useState<ClassDetailTabId>("general");
@@ -102,8 +97,13 @@ export function ClassDetailModal({
   }, [facultyList, selectedFaculty]);
 
   const formTabs = useMemo(
-    () => TABS.map((tab) => ({ key: tab.id, label: t(tab.labelKey), icon: tab.icon })),
-    [t],
+    () =>
+      CLASS_DETAIL_TABS.map((tab) => ({
+        key: tab.id,
+        label: tab.id === "sections" ? terms.section.plural : t(tab.labelKey),
+        icon: tab.icon,
+      })),
+    [t, terms],
   );
 
   useEffect(() => {
@@ -179,36 +179,46 @@ export function ClassDetailModal({
         }}
         className="w-full space-y-3"
       >
-        <ClassDetailTabBody
-          activeTab={activeTab}
-          classDraft={classDraft}
-          updateDraft={updateDraft}
-          errors={errors}
-          allFaculty={allFaculty}
-          currencySymbol={currencySymbol}
-          addFeeRow={addFeeRow}
-          removeFeeRow={removeFeeRow}
-          updateFeeRow={updateFeeRow}
-          addDiscountRow={addDiscountRow}
-          removeDiscountRow={removeDiscountRow}
-          updateDiscountRow={updateDiscountRow}
-          addScheduleRow={addScheduleRow}
-          removeScheduleRow={removeScheduleRow}
-          updateScheduleRow={updateScheduleRow}
-          activeTimetable={activeTimetable}
-          addPeriodRow={addPeriodRow}
-          removePeriodRow={removePeriodRow}
-          updatePeriodRow={updatePeriodRow}
-          addBudgetRow={addBudgetRow}
-          removeBudgetRow={removeBudgetRow}
-          updateBudgetRow={updateBudgetRow}
-          addRefreshmentRow={addRefreshmentRow}
-          removeRefreshmentRow={removeRefreshmentRow}
-          updateRefreshmentRow={updateRefreshmentRow}
-          activeScholarship={activeScholarship}
-          updateScholarship={updateScholarship}
-          updateEligibility={updateEligibility}
-        />
+        {activeTab === "sections" ? (
+          <ClassDetailSectionsTab
+            classId={classDraft.id}
+            sections={classDraft.sections ?? []}
+            savedSectionIds={new Set((sessionClass?.sections ?? []).map((section) => section.id))}
+            allFaculty={allFaculty}
+            onChange={(sections) => updateDraft("sections", sections)}
+          />
+        ) : (
+          <ClassDetailTabBody
+            activeTab={activeTab}
+            classDraft={classDraft}
+            updateDraft={updateDraft}
+            errors={errors}
+            allFaculty={allFaculty}
+            currencySymbol={currencySymbol}
+            addFeeRow={addFeeRow}
+            removeFeeRow={removeFeeRow}
+            updateFeeRow={updateFeeRow}
+            addDiscountRow={addDiscountRow}
+            removeDiscountRow={removeDiscountRow}
+            updateDiscountRow={updateDiscountRow}
+            addScheduleRow={addScheduleRow}
+            removeScheduleRow={removeScheduleRow}
+            updateScheduleRow={updateScheduleRow}
+            activeTimetable={activeTimetable}
+            addPeriodRow={addPeriodRow}
+            removePeriodRow={removePeriodRow}
+            updatePeriodRow={updatePeriodRow}
+            addBudgetRow={addBudgetRow}
+            removeBudgetRow={removeBudgetRow}
+            updateBudgetRow={updateBudgetRow}
+            addRefreshmentRow={addRefreshmentRow}
+            removeRefreshmentRow={removeRefreshmentRow}
+            updateRefreshmentRow={updateRefreshmentRow}
+            activeScholarship={activeScholarship}
+            updateScholarship={updateScholarship}
+            updateEligibility={updateEligibility}
+          />
+        )}
       </form>
     </FormModal>
   );

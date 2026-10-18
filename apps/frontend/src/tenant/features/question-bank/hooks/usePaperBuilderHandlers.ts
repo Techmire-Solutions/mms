@@ -96,6 +96,7 @@ export function usePaperBuilderHandlers({
       duration: config.duration,
       createdAt: currentPaper?.createdAt ?? new Date().toISOString(),
       ...(examClass ? { examClass } : {}),
+      classId: config.classId || null,
       totalMarks: config.totalMarks,
       ...(instructions ? { instructions } : {}),
       sections: paperSections,

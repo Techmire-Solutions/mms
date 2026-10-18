@@ -14,6 +14,7 @@ import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/cont
 import { replyValidationError } from "../../../lib/zodRequest.js";
 import { auditStudent } from "./studentRouteHelpers.js";
 
+import { handleContractError } from "../../../lib/contractError.js";
 const s = initServer();
 
 /** Students operations — bulk status, bulk enroll, next GR, duplicate check, migrate GR. */
@@ -77,9 +78,8 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
           String(request.tenant?.id),
           () =>
             studentUseCases.bulkEnrollStudents({
+              ...body,
               studentIds: body.studentIds.map(String),
-              sessionIds: body.sessionIds.map(String),
-              mode: body.mode,
             }),
           { readOnly: false },
         );
@@ -89,11 +89,11 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
           `Updated session enrollments (${body.mode}) for ${result.succeeded} student(s)`,
         );
         return { status: 200 as const, body: { success: true, ...result } };
-      } catch {
-        return {
-          status: 500 as const,
+      } catch (error) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to bulk enroll students" },
-        };
+        });
       }
     },
 

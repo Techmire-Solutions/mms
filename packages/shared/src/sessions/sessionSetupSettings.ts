@@ -40,6 +40,7 @@ export function stripSessionFieldConfigForPersist(
     academicYear: _academicYear,
     sessionStart: _sessionStart,
     defaultViewLayout: _defaultViewLayout,
+    terminology: _terminology,
     ...rest
   } = config as SessionsSettings & Record<string, unknown>;
   return rest;
