@@ -6,6 +6,7 @@ import { useScrollSurfaceOnChange } from "@/lib/routing/useScrollSurfaceOnChange
 import { TabTrigger } from "@/components/app/ResponsiveAccordionTabTrigger";
 import { ResponsiveAccordionTabsDesktop } from "@/components/app/ResponsiveAccordionTabsDesktop";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useSafeViewTransition } from "@/hooks/useSafeViewTransition";
 import { MEDIA_LG_UP } from "@/lib/breakpoints";
 import type { ResponsiveAccordionTabsProps } from "@/components/app/ResponsiveAccordionTabsTypes";
 
@@ -32,12 +33,13 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
   className,
 }: ResponsiveAccordionTabsProps): React.JSX.Element {
   const { t } = useTranslation();
+  const safeViewTransition = useSafeViewTransition();
   const sectionRefs = useRef<Partial<Record<string, HTMLElement | null>>>({});
   const prefix = panelIdPrefix;
 
   const handleTabChange = async (tabId: string) => {
     if (collapsible && activeTab === tabId) {
-      onTabChange("");
+      safeViewTransition(() => onTabChange(""));
       return;
     }
     if (tabId === activeTab) return;
@@ -49,7 +51,7 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
         return;
       }
     }
-    onTabChange(tabId);
+    safeViewTransition(() => onTabChange(tabId));
   };
 
   useScrollSurfaceOnChange(activeTab, {

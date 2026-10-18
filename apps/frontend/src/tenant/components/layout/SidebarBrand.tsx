@@ -33,6 +33,9 @@ export function SidebarBrand({ collapsed }: SidebarBrandProps): React.JSX.Elemen
             className={`h-8 w-8 shrink-0 rounded-lg ${LOGO_IMAGE} border-sidebar-border`}
             width={32}
             height={32}
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
             onError={() => setImgError(true)}
           />
         ) : (

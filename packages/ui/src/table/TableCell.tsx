@@ -11,6 +11,7 @@ export function TableCell({
   variant,
   isFocusable,
   asHeader,
+  isSticky,
   title,
   tabIndex,
   children,
@@ -21,6 +22,8 @@ export function TableCell({
   const resolvedTitle = title ?? (truncate && typeof children === "string" ? children : undefined);
   const wrapClass = getTableCellWrapClass(noWrap, truncate);
   const alignClass = getTableCellAlignClass(align, variant);
+  const stickyClass =
+    isSticky && "sticky inset-inline-start-0 z-1 bg-background/95 backdrop-blur-xs shadow-2xs";
 
   if (isRowHeader) {
     return (
@@ -36,6 +39,7 @@ export function TableCell({
           alignClass,
           isFocusable &&
             "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
+          stickyClass,
           className,
         )}
         {...props}
@@ -57,6 +61,7 @@ export function TableCell({
         alignClass,
         isFocusable &&
           "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
+        stickyClass,
         className,
       )}
       {...props}

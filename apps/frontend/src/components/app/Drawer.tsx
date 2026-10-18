@@ -160,11 +160,13 @@ export function Drawer({
 
           <div
             className={cn(
-              "flex-1 overflow-y-auto overscroll-contain px-5 py-5 space-y-6",
+              "relative flex-1 overflow-y-auto overscroll-contain scroll-state-container px-5 py-5 space-y-6",
               contentClassName,
             )}
           >
+            <div className="scroll-indicator-top" aria-hidden="true" />
             {children}
+            <div className="scroll-indicator-bottom" aria-hidden="true" />
           </div>
 
           {footer && (

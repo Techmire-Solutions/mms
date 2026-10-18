@@ -24,7 +24,7 @@ export function SubTabBarUnderlineVariant<K extends string>({
       <div
         role="tablist"
         aria-orientation="horizontal"
-        className="flex w-full items-center gap-1 border-b border-border/40 overflow-x-auto no-scrollbar"
+        className="flex w-full items-center gap-1 border-b border-border/40 overflow-x-auto no-scrollbar mask-fade-inline-end"
       >
         {tabs.map((tab) => {
           const active = value === tab.key;

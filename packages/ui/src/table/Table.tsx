@@ -6,7 +6,7 @@ const TableContext = React.createContext<{ stickyHeader?: boolean }>({});
 export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
   containerClassName?: string;
   stickyHeader?: boolean;
-  scrollRegionLabel?: string;
+  scrollRegionLabel?: string | false;
   ref?: React.Ref<HTMLTableElement>;
 }
 
@@ -14,20 +14,24 @@ export function Table({
   className,
   containerClassName,
   stickyHeader,
-  scrollRegionLabel,
+  scrollRegionLabel = "Scrollable table",
   children,
   ref,
   ...props
 }: TableProps) {
   const tableContextValue = React.useMemo(() => ({ stickyHeader }), [stickyHeader]);
+  const isRegion = Boolean(scrollRegionLabel);
 
   return (
     <TableContext.Provider value={tableContextValue}>
       <div
-        role={scrollRegionLabel ? "region" : undefined}
-        aria-label={scrollRegionLabel}
-        tabIndex={scrollRegionLabel ? 0 : undefined}
-        className={cn("relative w-full max-w-full overflow-x-auto", containerClassName)}
+        role={isRegion ? "region" : undefined}
+        aria-label={typeof scrollRegionLabel === "string" ? scrollRegionLabel : undefined}
+        tabIndex={isRegion ? 0 : undefined}
+        className={cn(
+          "@container relative w-full max-w-full overflow-x-auto focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 [overflow-anchor:none]",
+          containerClassName,
+        )}
       >
         <table
           ref={ref}
@@ -56,7 +60,8 @@ export function TableHeader({ className, sticky, ref, ...props }: TableHeaderPro
       ref={ref}
       className={cn(
         "[&_tr]:border-b",
-        isSticky && "sticky top-0 z-10 bg-background/95 backdrop-blur-xs shadow-2xs",
+        isSticky &&
+          "sticky top-0 z-10 bg-background/95 backdrop-blur-xs shadow-2xs sticky-scroll-state stuck-elevated transition-shadow",
         className,
       )}
       {...props}

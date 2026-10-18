@@ -32,12 +32,15 @@
       } catch (_) {}
     }
 
+    var meta = document.querySelector('meta[name="color-scheme"]');
     if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
       d.classList.add("dark");
       d.style.colorScheme = "dark";
+      if (meta) meta.content = "dark";
     } else {
       d.classList.remove("dark");
       d.style.colorScheme = "light";
+      if (meta) meta.content = "light";
     }
   } catch (_) {}
 })();

@@ -72,12 +72,27 @@ export function Modal({
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
+      {...(dismissible ? { closedby: "any" } : {})}
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in-0"
-        onClick={() => {
-          if (dismissible) onClose();
+        data-overlay-backdrop="true"
+        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in-0 overscroll-contain"
+        onClick={(event) => {
+          if (!dismissible) return;
+          // Modern Web Guidance: light-dismiss-a-dialog fallback
+          if (modalRef.current) {
+            const rect = modalRef.current.getBoundingClientRect();
+            const isInside =
+              rect.width > 0 &&
+              rect.height > 0 &&
+              rect.top <= event.clientY &&
+              event.clientY <= rect.top + rect.height &&
+              rect.left <= event.clientX &&
+              event.clientX <= rect.left + rect.width;
+            if (isInside) return;
+          }
+          onClose();
         }}
         aria-hidden="true"
       />
@@ -86,7 +101,7 @@ export function Modal({
       <div
         ref={modalRef}
         className={cn(
-          "relative z-10 flex w-full flex-col rounded-xl border border-border bg-card text-card-foreground shadow-2xl animate-in fade-in-0 zoom-in-95 max-h-[90vh]",
+          "relative z-10 flex w-full flex-col rounded-xl border border-border bg-card text-card-foreground shadow-2xl animate-in fade-in-0 zoom-in-95 max-h-[90vh] overscroll-contain",
           SIZE_MAP[size],
           className,
         )}

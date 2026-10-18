@@ -14,6 +14,7 @@ export function AuthEmailField({
   autoComplete = "email",
   placeholder,
   required = true,
+  enterKeyHint = "next",
 }: {
   id: string;
   label: string;
@@ -25,6 +26,7 @@ export function AuthEmailField({
   autoComplete?: string;
   placeholder?: string;
   required?: boolean;
+  enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
 }): React.JSX.Element {
   return (
     <AuthTextField
@@ -41,7 +43,10 @@ export function AuthEmailField({
       type="email"
       name="email"
       inputMode="email"
+      enterKeyHint={enterKeyHint}
       spellCheck={false}
+      autoCapitalize="none"
+      autoCorrect="off"
       icon={Mail}
     />
   );

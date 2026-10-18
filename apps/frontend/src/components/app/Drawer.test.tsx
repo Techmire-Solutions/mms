@@ -44,4 +44,31 @@ describe("Drawer Component", () => {
     expect(element.props.size).toBe("lg");
     expect(element.props.title).toBe("Side Drawer");
   });
+
+  it("renders scroll-state-container with top and bottom affordance indicators", async () => {
+    const { createRoot } = await import("react-dom/client");
+    const { act } = await import("react");
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <Drawer open={true} onClose={() => {}} title="Scrollable Drawer">
+          <div>Item 1</div>
+          <div>Item 2</div>
+        </Drawer>,
+      );
+    });
+
+    const scrollContainer = document.querySelector(".scroll-state-container");
+    expect(scrollContainer).not.toBeNull();
+    expect(scrollContainer?.querySelector(".scroll-indicator-top")).not.toBeNull();
+    expect(scrollContainer?.querySelector(".scroll-indicator-bottom")).not.toBeNull();
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
 });
