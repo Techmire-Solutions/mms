@@ -75,13 +75,7 @@ describe("ToggleRow Component (@shared/ui)", () => {
     const handleChange = vi.fn();
 
     await act(async () => {
-      root.render(
-        <ToggleRow
-          label="Dark Mode"
-          value={true}
-          onChange={handleChange}
-        />,
-      );
+      root.render(<ToggleRow label="Dark Mode" value={true} onChange={handleChange} />);
     });
 
     const switchEl = container.querySelector('[role="switch"]');
@@ -90,14 +84,7 @@ describe("ToggleRow Component (@shared/ui)", () => {
 
   it("renders card and bordered variants with appropriate styling classes", async () => {
     await act(async () => {
-      root.render(
-        <ToggleRow
-          id="test-card"
-          label="Card Mode"
-          variant="card"
-          checked={true}
-        />,
-      );
+      root.render(<ToggleRow id="test-card" label="Card Mode" variant="card" checked={true} />);
     });
 
     expect(container.firstElementChild?.className).toContain("rounded-xl");
@@ -105,12 +92,7 @@ describe("ToggleRow Component (@shared/ui)", () => {
 
     await act(async () => {
       root.render(
-        <ToggleRow
-          id="test-bordered"
-          label="Bordered Mode"
-          variant="bordered"
-          checked={false}
-        />,
+        <ToggleRow id="test-bordered" label="Bordered Mode" variant="bordered" checked={false} />,
       );
     });
 

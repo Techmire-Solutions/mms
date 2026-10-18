@@ -42,7 +42,6 @@ vi.mock("@/components/app/SectionCard", () => ({
   ),
 }));
 
-
 vi.mock("@/components/app/FormSelect", () => ({
   FormSelect: () => <div data-testid="form-select">FormSelect</div>,
 }));

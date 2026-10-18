@@ -34,8 +34,7 @@ export function Avatar({ className, size, ref, ...props }: AvatarProps) {
   );
 }
 
-export interface AvatarImageProps
-  extends React.ComponentProps<typeof AvatarPrimitive.Image> {
+export interface AvatarImageProps extends React.ComponentProps<typeof AvatarPrimitive.Image> {
   fetchPriority?: "high" | "low" | "auto";
 }
 

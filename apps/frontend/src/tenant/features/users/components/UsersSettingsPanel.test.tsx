@@ -18,7 +18,6 @@ vi.mock("@/components/app/SectionCard", () => ({
   ),
 }));
 
-
 vi.mock("@/components/app/ModuleSetupSaveFooter", () => ({
   ModuleSetupSaveFooter: () => <div data-testid="save-footer">Save Footer</div>,
 }));

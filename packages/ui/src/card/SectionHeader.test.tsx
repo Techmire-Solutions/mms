@@ -20,9 +20,7 @@ describe("SectionHeader Component (@shared/ui)", () => {
   });
 
   it("supports h3 heading level when specified", () => {
-    const html = renderToStaticMarkup(
-      <SectionHeader title="Sub-section" headingLevel={3} />,
-    );
+    const html = renderToStaticMarkup(<SectionHeader title="Sub-section" headingLevel={3} />);
 
     expect(html).toContain("<h3");
     expect(html).not.toContain("<h2");
@@ -30,10 +28,7 @@ describe("SectionHeader Component (@shared/ui)", () => {
 
   it("renders leading icon with aria-hidden", () => {
     const html = renderToStaticMarkup(
-      <SectionHeader
-        title="Settings"
-        icon={<span data-testid="settings-icon">⚙</span>}
-      />,
+      <SectionHeader title="Settings" icon={<span data-testid="settings-icon">⚙</span>} />,
     );
 
     expect(html).toContain('aria-hidden="true"');

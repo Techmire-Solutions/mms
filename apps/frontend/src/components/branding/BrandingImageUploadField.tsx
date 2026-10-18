@@ -132,7 +132,13 @@ export function ImageUploadField({
           {uploading ? (
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
           ) : value ? (
-            <img src={value} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+            <img
+              src={value}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
           ) : (
             <ImageIcon className="h-5 w-5 text-muted-foreground" aria-hidden />
           )}

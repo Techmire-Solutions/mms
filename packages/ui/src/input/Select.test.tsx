@@ -112,12 +112,7 @@ describe("Select component & branded-select-styling", () => {
           picked = val;
         },
       });
-      return (
-        <input
-          data-testid="search-input"
-          onKeyDown={search.handleSearchKeyDown}
-        />
-      );
+      return <input data-testid="search-input" onKeyDown={search.handleSearchKeyDown} />;
     }
 
     await act(async () => {

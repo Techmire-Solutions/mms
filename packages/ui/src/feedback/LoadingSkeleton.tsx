@@ -11,7 +11,11 @@ export interface CardSkeletonProps {
 /**
  * A skeleton loader for card-based layouts.
  */
-export function CardSkeleton({ count = 3, className = "", ...props }: CardSkeletonProps): React.JSX.Element {
+export function CardSkeleton({
+  count = 3,
+  className = "",
+  ...props
+}: CardSkeletonProps): React.JSX.Element {
   return (
     <div
       data-testid={props["data-testid"] ?? "card-skeleton"}

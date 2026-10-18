@@ -29,7 +29,6 @@ vi.mock("@/tenant/features/users/components/ActivityLogs", () => ({
   ),
 }));
 
-
 vi.mock("@/components/app/ErrorState", () => ({
   ErrorState: ({ title, onRetry }: { title?: React.ReactNode; onRetry?: () => void }) => (
     <div data-testid="error-state">

@@ -56,8 +56,7 @@ export function ToggleRow({
     onChange?.(nextChecked);
   };
 
-  const stringAriaLabel =
-    ariaLabel ?? (typeof label === "string" ? label : undefined);
+  const stringAriaLabel = ariaLabel ?? (typeof label === "string" ? label : undefined);
 
   if (variant === "card") {
     return (
@@ -72,10 +71,7 @@ export function ToggleRow({
         )}
       >
         <div className="min-w-0 flex-1">
-          <Label
-            htmlFor={id}
-            className="text-sm font-semibold text-foreground cursor-pointer"
-          >
+          <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer">
             {label}
           </Label>
           {description ? (
@@ -106,10 +102,7 @@ export function ToggleRow({
         )}
       >
         <div className="min-w-0 flex-1 space-y-0.5">
-          <Label
-            htmlFor={id}
-            className="text-xs font-medium cursor-pointer text-foreground"
-          >
+          <Label htmlFor={id} className="text-xs font-medium cursor-pointer text-foreground">
             {label}
           </Label>
           {description ? (
@@ -139,10 +132,7 @@ export function ToggleRow({
       )}
     >
       <div className="min-w-0 flex-1">
-        <Label
-          htmlFor={id}
-          className="text-sm font-semibold text-foreground cursor-pointer block"
-        >
+        <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer block">
           {label}
         </Label>
         {description ? (

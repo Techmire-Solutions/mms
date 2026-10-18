@@ -35,30 +35,22 @@ describe("WorkspaceLogo Component (@shared/ui)", () => {
   });
 
   it("supports size tokens (sm, md, lg)", () => {
-    const htmlSm = renderToStaticMarkup(
-      <WorkspaceLogo size="sm" madrasaName="Al-Huda" />,
-    );
+    const htmlSm = renderToStaticMarkup(<WorkspaceLogo size="sm" madrasaName="Al-Huda" />);
     expect(htmlSm).toContain("h-8");
     expect(htmlSm).toContain("w-8");
 
-    const htmlLg = renderToStaticMarkup(
-      <WorkspaceLogo size="lg" madrasaName="Al-Huda" />,
-    );
+    const htmlLg = renderToStaticMarkup(<WorkspaceLogo size="lg" madrasaName="Al-Huda" />);
     expect(htmlLg).toContain("h-12");
     expect(htmlLg).toContain("w-12");
   });
 
   it("renders custom fallback text when provided", () => {
-    const html = renderToStaticMarkup(
-      <WorkspaceLogo madrasaName="Al-Huda" fallbackText="AH" />,
-    );
+    const html = renderToStaticMarkup(<WorkspaceLogo madrasaName="Al-Huda" fallbackText="AH" />);
     expect(html).toContain("AH");
   });
 
   it("applies lazy loading and async decoding by default", () => {
-    const html = renderToStaticMarkup(
-      <WorkspaceLogo logoUrl="/logo.png" madrasaName="Al-Huda" />,
-    );
+    const html = renderToStaticMarkup(<WorkspaceLogo logoUrl="/logo.png" madrasaName="Al-Huda" />);
     expect(html).toContain('loading="lazy"');
     expect(html).toContain('decoding="async"');
     expect(html).toContain('width="40"');
@@ -67,11 +59,7 @@ describe("WorkspaceLogo Component (@shared/ui)", () => {
 
   it("elevates loading to eager when fetchPriority is high", () => {
     const html = renderToStaticMarkup(
-      <WorkspaceLogo
-        logoUrl="/logo.png"
-        madrasaName="Al-Huda"
-        fetchPriority="high"
-      />,
+      <WorkspaceLogo logoUrl="/logo.png" madrasaName="Al-Huda" fetchPriority="high" />,
     );
     expect(html).toContain('loading="eager"');
     expect(html).toContain('fetchPriority="high"');

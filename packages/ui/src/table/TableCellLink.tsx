@@ -2,8 +2,7 @@ import React from "react";
 import { Button } from "../button/Button";
 import { cn } from "../utils";
 
-export interface TableCellLinkProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface TableCellLinkProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Muted subtitle link (font-normal, muted-foreground). */
   muted?: boolean;
   /** Filter-toggle link: transparent hover + `text-primary` when `selected`. */

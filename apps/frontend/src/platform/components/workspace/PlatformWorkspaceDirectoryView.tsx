@@ -1,7 +1,4 @@
-import {
-  WorkspaceTableView,
-  type WorkspaceTableViewProps,
-} from "./WorkspaceTableView";
+import { WorkspaceTableView, type WorkspaceTableViewProps } from "./WorkspaceTableView";
 import React from "react";
 import { WorkspaceListCards } from "@/platform/components/workspace/WorkspaceListCards";
 
