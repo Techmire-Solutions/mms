@@ -61,8 +61,7 @@ describe("useSafeViewTransition", () => {
     expect(startViewTransitionSpy).toHaveBeenCalledWith(updateFn);
     expect(updateFn).toHaveBeenCalled();
 
-    (document as unknown as { startViewTransition?: unknown }).startViewTransition =
-      originalSVT;
+    (document as unknown as { startViewTransition?: unknown }).startViewTransition = originalSVT;
   });
 
   it("bypasses startViewTransition when prefers-reduced-motion is active", () => {
@@ -92,8 +91,7 @@ describe("useSafeViewTransition", () => {
     expect(startViewTransitionSpy).not.toHaveBeenCalled();
     expect(updateFn).toHaveBeenCalled();
 
-    (document as unknown as { startViewTransition?: unknown }).startViewTransition =
-      originalSVT;
+    (document as unknown as { startViewTransition?: unknown }).startViewTransition = originalSVT;
     window.matchMedia = originalMatchMedia;
   });
 });

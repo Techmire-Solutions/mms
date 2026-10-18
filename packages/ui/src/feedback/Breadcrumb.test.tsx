@@ -77,11 +77,7 @@ describe("Breadcrumb component - Modern Web Guidance: accessibility, html", () =
 
     await act(async () => {
       root.render(
-        <Breadcrumb
-          items={testItems}
-          ariaLabel="Breadcrumbs"
-          renderLink={customRender}
-        />,
+        <Breadcrumb items={testItems} ariaLabel="Breadcrumbs" renderLink={customRender} />,
       );
     });
 

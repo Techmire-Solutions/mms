@@ -72,4 +72,3 @@ describe("AuthTextField & AuthEmailField", () => {
     expect(input.getAttribute("enterkeyhint")).toBe("next");
   });
 });
-

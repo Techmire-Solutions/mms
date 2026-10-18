@@ -33,7 +33,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       e: Parameters<NonNullable<React.TextareaHTMLAttributes<HTMLTextAreaElement>["onInput"]>>[0],
     ) => {
       onInput?.(e);
-      if (!hasError && e.currentTarget.checkValidity && e.currentTarget.getAttribute("aria-invalid") === "true") {
+      if (
+        !hasError &&
+        e.currentTarget.checkValidity &&
+        e.currentTarget.getAttribute("aria-invalid") === "true"
+      ) {
         if (e.currentTarget.checkValidity()) {
           e.currentTarget.removeAttribute("aria-invalid");
         }

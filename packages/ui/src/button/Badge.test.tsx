@@ -60,7 +60,9 @@ describe("Badge component - Modern Web Guidance: precise-text-alignment", () => 
       );
     });
 
-    const removeBtn = container.querySelector('button[aria-label="Remove tag"]') as HTMLButtonElement;
+    const removeBtn = container.querySelector(
+      'button[aria-label="Remove tag"]',
+    ) as HTMLButtonElement;
     expect(removeBtn).not.toBeNull();
 
     await act(async () => {

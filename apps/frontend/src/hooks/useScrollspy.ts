@@ -65,4 +65,3 @@ export function useScrollspy(sectionIds: readonly string[]): string | null {
   if (isNative) return null;
   return activeId;
 }
-

@@ -41,11 +41,7 @@ describe("Switch component - Modern Web Guidance: switch", () => {
     const handleCheckedChange = vi.fn();
     await act(async () => {
       root.render(
-        <Switch
-          checked={true}
-          onCheckedChange={handleCheckedChange}
-          aria-label="Dark mode"
-        />,
+        <Switch checked={true} onCheckedChange={handleCheckedChange} aria-label="Dark mode" />,
       );
     });
 

@@ -14,12 +14,5 @@ export function ProgressRing({
   colorHex: string;
   isCompact?: boolean;
 }): React.JSX.Element {
-  return (
-    <SharedProgressRing
-      percentage={percentage}
-      colorHex={colorHex}
-      isCompact={isCompact}
-    />
-  );
+  return <SharedProgressRing percentage={percentage} colorHex={colorHex} isCompact={isCompact} />;
 }
-

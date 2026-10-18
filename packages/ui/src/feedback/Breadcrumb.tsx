@@ -32,10 +32,7 @@ export function Breadcrumb({
           const linkContent = item.label;
 
           return (
-            <li
-              key={`${item.label}-${index}`}
-              className="inline-flex items-center gap-2"
-            >
+            <li key={`${item.label}-${index}`} className="inline-flex items-center gap-2">
               {index > 0 ? (
                 <ChevronRight
                   className="h-3.5 w-3.5 text-muted-foreground/50 rtl:rotate-180 shrink-0"
@@ -57,9 +54,7 @@ export function Breadcrumb({
                 <span
                   aria-current={isLast ? "page" : undefined}
                   className={cn(
-                    isLast
-                      ? "font-bold text-foreground"
-                      : "font-medium text-muted-foreground",
+                    isLast ? "font-bold text-foreground" : "font-medium text-muted-foreground",
                   )}
                 >
                   {item.label}
@@ -72,6 +67,5 @@ export function Breadcrumb({
     </nav>
   );
 }
-
 
 Breadcrumb.displayName = "Breadcrumb";

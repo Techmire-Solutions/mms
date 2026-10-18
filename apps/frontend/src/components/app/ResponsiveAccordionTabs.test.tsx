@@ -50,11 +50,7 @@ describe("ResponsiveAccordionTabs", () => {
 
     await act(async () => {
       root.render(
-        <ResponsiveAccordionTabs
-          tabs={sampleTabs}
-          activeTab="overview"
-          onTabChange={onTabChange}
-        >
+        <ResponsiveAccordionTabs tabs={sampleTabs} activeTab="overview" onTabChange={onTabChange}>
           <div>Active Tab Content</div>
         </ResponsiveAccordionTabs>,
       );
@@ -82,11 +78,7 @@ describe("ResponsiveAccordionTabs", () => {
 
     await act(async () => {
       root.render(
-        <ResponsiveAccordionTabs
-          tabs={sampleTabs}
-          activeTab="overview"
-          onTabChange={onTabChange}
-        >
+        <ResponsiveAccordionTabs tabs={sampleTabs} activeTab="overview" onTabChange={onTabChange}>
           <div>Active Tab Content</div>
         </ResponsiveAccordionTabs>,
       );

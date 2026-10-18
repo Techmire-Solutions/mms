@@ -1,14 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "./Card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./Card";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

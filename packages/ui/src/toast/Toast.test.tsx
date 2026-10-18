@@ -47,13 +47,7 @@ describe("Toast component - Modern Web Guidance: persistent-toast-notifications"
   it("supports popover='manual' for Top Layer promotion and close button target action", async () => {
     const handleClose = vi.fn();
     await act(async () => {
-      root.render(
-        <Toast
-          title="Notification"
-          popover="manual"
-          onClose={handleClose}
-        />,
-      );
+      root.render(<Toast title="Notification" popover="manual" onClose={handleClose} />);
     });
 
     const toast = container.querySelector('[role="status"]');

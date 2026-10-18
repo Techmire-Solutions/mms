@@ -683,7 +683,9 @@
     border: 1px solid hsl(var(--background));
     border-radius: var(--slider-thumb-radius);
     background-color: var(--slider-thumb-color);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
 
   /* Firefox track, progress, and thumb */
@@ -706,7 +708,9 @@
     border: 1px solid hsl(var(--background));
     border-radius: var(--slider-thumb-radius);
     background-color: var(--slider-thumb-color);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
 
   input[type="range"]:disabled {
@@ -825,7 +829,13 @@
 }
 
 @utility mask-fade-inline-both {
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
 }
 
@@ -839,7 +849,13 @@
 }
 
 @utility mask-fade-block-both {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
   mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
 }
 
@@ -955,7 +971,9 @@
  * Declarative entry transition using @starting-style with reduced-motion fallback.
  */
 @utility animate-fade-entry {
-  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
   @starting-style {
     opacity: 0;
     transform: scale(0.95);
@@ -1442,4 +1460,3 @@
   );
   background-size: 16px 16px;
 }
-

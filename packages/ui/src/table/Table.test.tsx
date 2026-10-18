@@ -115,4 +115,3 @@ describe("Table component - Modern Web Guidance: responsive-table", () => {
     expect(thead?.className).toContain("stuck-elevated");
   });
 });
-

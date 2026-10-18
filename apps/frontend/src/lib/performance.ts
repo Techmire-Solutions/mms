@@ -10,10 +10,7 @@
  * @param budgetMs - Duration budget in milliseconds before yielding (default: 50ms).
  * @returns Updated next deadline timestamp.
  */
-export async function yieldToMain(
-  deadline: number,
-  budgetMs: number = 50,
-): Promise<number> {
+export async function yieldToMain(deadline: number, budgetMs: number = 50): Promise<number> {
   if (performance.now() >= deadline) {
     const scheduler =
       typeof window !== "undefined" && "scheduler" in window

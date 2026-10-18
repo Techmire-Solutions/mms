@@ -18,7 +18,9 @@ describe("DrawerUpdatedStamp", () => {
 
   it("renders formatted date with relative time when stamp is provided", () => {
     const recentDate = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const html = renderToStaticMarkup(<DrawerUpdatedStamp label="Updated" updatedAt={recentDate} />);
+    const html = renderToStaticMarkup(
+      <DrawerUpdatedStamp label="Updated" updatedAt={recentDate} />,
+    );
 
     expect(html).toContain("Updated");
     expect(html).toContain("ago");

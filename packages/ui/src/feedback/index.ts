@@ -33,14 +33,8 @@ export {
   type WizardStepItem,
 } from "./WizardStepIndicator";
 export { ProgressRing, type ProgressRingProps } from "./ProgressRing";
-export {
-  Spinner,
-  type SpinnerProps,
-  type SpinnerSize,
-  type SpinnerVariant,
-} from "./Spinner";
+export { Spinner, type SpinnerProps, type SpinnerSize, type SpinnerVariant } from "./Spinner";
 export {
   ScrollProgressIndicator,
   type ScrollProgressIndicatorProps,
 } from "./ScrollProgressIndicator";
-

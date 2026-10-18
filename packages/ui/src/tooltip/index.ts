@@ -6,4 +6,3 @@ export {
   TooltipArrow,
   type TooltipContentProps,
 } from "./Tooltip";
-

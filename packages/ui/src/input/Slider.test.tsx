@@ -39,11 +39,7 @@ describe("Slider component - Modern Web Guidance: slider", () => {
   it("formats aria-valuetext using formatValueText prop", async () => {
     await act(async () => {
       root.render(
-        <Slider
-          defaultValue={[75]}
-          formatValueText={(v) => `${v}%`}
-          aria-label="Battery level"
-        />,
+        <Slider defaultValue={[75]} formatValueText={(v) => `${v}%`} aria-label="Battery level" />,
       );
     });
 

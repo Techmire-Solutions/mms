@@ -91,13 +91,11 @@ describe("useBodyScrollLock", () => {
   });
 
   it("skips manual padding compensation when CSS scrollbar-gutter is natively supported", async () => {
-    const cssSpy = vi
-      .spyOn(window.CSS, "supports")
-      .mockImplementation(((...args: string[]) => {
-        const [prop, val] = args;
-        if (prop === "scrollbar-gutter" && val === "stable") return true;
-        return false;
-      }) as typeof window.CSS.supports);
+    const cssSpy = vi.spyOn(window.CSS, "supports").mockImplementation(((...args: string[]) => {
+      const [prop, val] = args;
+      if (prop === "scrollbar-gutter" && val === "stable") return true;
+      return false;
+    }) as typeof window.CSS.supports);
 
     await act(async () => {
       root.render(<TestModal active={true} />);

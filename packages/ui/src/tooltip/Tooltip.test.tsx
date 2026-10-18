@@ -1,13 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-  TooltipArrow,
-} from "./Tooltip";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow } from "./Tooltip";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

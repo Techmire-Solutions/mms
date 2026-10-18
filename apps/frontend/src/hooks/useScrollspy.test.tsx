@@ -93,7 +93,9 @@ describe("useScrollspy", () => {
   });
 
   it("isNativeScrollspySupported returns true when CSS.supports matches", () => {
-    setSupportsMock((prop: string, val?: string) => prop === "scroll-target-group" && val === "auto");
+    setSupportsMock(
+      (prop: string, val?: string) => prop === "scroll-target-group" && val === "auto",
+    );
     expect(isNativeScrollspySupported()).toBe(true);
   });
 
@@ -103,7 +105,10 @@ describe("useScrollspy", () => {
     let currentActive: string | null = "initial";
     await act(async () => {
       root.render(
-        <TestComponent sections={["sec1", "sec2"]} onActiveChange={(val) => (currentActive = val)} />,
+        <TestComponent
+          sections={["sec1", "sec2"]}
+          onActiveChange={(val) => (currentActive = val)}
+        />,
       );
     });
 
@@ -146,9 +151,7 @@ describe("useScrollspy", () => {
     globalThis.IntersectionObserver = MockObserver as unknown as typeof IntersectionObserver;
 
     await act(async () => {
-      root.render(
-        <TestComponent sections={["sec1"]} onActiveChange={() => {}} />,
-      );
+      root.render(<TestComponent sections={["sec1"]} onActiveChange={() => {}} />);
     });
 
     await act(async () => {

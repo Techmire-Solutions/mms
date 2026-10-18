@@ -6,8 +6,7 @@ export const TooltipProvider = TooltipPrimitive.Provider;
 export const Tooltip = TooltipPrimitive.Root;
 export const TooltipTrigger = TooltipPrimitive.Trigger;
 
-export interface TooltipContentProps
-  extends React.ComponentProps<typeof TooltipPrimitive.Content> {
+export interface TooltipContentProps extends React.ComponentProps<typeof TooltipPrimitive.Content> {
   /**
    * Whether to display a directional arrow indicator.
    * Modern Web Guidance: position-aware-tooltips.
@@ -40,15 +39,10 @@ export function TooltipContent({
         {...props}
       >
         {children}
-        {showArrow && (
-          <TooltipPrimitive.Arrow
-            className={cn("fill-primary", arrowClassName)}
-          />
-        )}
+        {showArrow && <TooltipPrimitive.Arrow className={cn("fill-primary", arrowClassName)} />}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   );
 }
 
 export const TooltipArrow = TooltipPrimitive.Arrow;
-

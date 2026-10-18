@@ -55,11 +55,7 @@ export function ProgressBar({
   const isDecorative = props["aria-hidden"] === true || props["aria-hidden"] === "true";
   const valueText =
     props["aria-valuetext"] ??
-    (formatValueText
-      ? formatValueText(pct)
-      : typeof label === "string"
-        ? label
-        : undefined);
+    (formatValueText ? formatValueText(pct) : typeof label === "string" ? label : undefined);
 
   const durationStyle =
     animated &&
@@ -113,7 +109,6 @@ export function ProgressBar({
       {bar}
     </div>
   );
-
 }
 
 ProgressBar.displayName = "ProgressBar";

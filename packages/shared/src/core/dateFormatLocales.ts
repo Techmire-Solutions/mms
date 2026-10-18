@@ -143,7 +143,6 @@ export function formatRelativeTime(
     return formatter.format(diffMonths, "month");
   }
 
-
   const diffYears = Math.round(diffDays / 365);
   return formatter.format(diffYears, "year");
 }
@@ -174,12 +173,18 @@ function getCachedDurationFormatter(
 ): { format: (d: FormatDurationInput) => string } | null {
   const cacheKey = `${locale}:${style}`;
   let formatter = durationFormatterCache.get(cacheKey) as
-    | { format: (d: FormatDurationInput) => string }
-    | undefined;
+    { format: (d: FormatDurationInput) => string } | undefined;
   if (!formatter) {
     if (typeof Intl !== "undefined" && "DurationFormat" in Intl) {
       try {
-        const Ctor = (Intl as unknown as { DurationFormat: new (loc: string, opt: { style: string }) => { format: (d: FormatDurationInput) => string } }).DurationFormat;
+        const Ctor = (
+          Intl as unknown as {
+            DurationFormat: new (
+              loc: string,
+              opt: { style: string },
+            ) => { format: (d: FormatDurationInput) => string };
+          }
+        ).DurationFormat;
         formatter = new Ctor(locale, { style });
         durationFormatterCache.set(cacheKey, formatter);
       } catch {
@@ -218,12 +223,15 @@ export function formatDuration(
   // Fallback: simple English string assembly
   const parts: string[] = [];
   if (duration.years) parts.push(`${duration.years} ${duration.years === 1 ? "year" : "years"}`);
-  if (duration.months) parts.push(`${duration.months} ${duration.months === 1 ? "month" : "months"}`);
+  if (duration.months)
+    parts.push(`${duration.months} ${duration.months === 1 ? "month" : "months"}`);
   if (duration.weeks) parts.push(`${duration.weeks} ${duration.weeks === 1 ? "week" : "weeks"}`);
   if (duration.days) parts.push(`${duration.days} ${duration.days === 1 ? "day" : "days"}`);
   if (duration.hours) parts.push(`${duration.hours} ${duration.hours === 1 ? "hour" : "hours"}`);
-  if (duration.minutes) parts.push(`${duration.minutes} ${duration.minutes === 1 ? "minute" : "minutes"}`);
-  if (duration.seconds) parts.push(`${duration.seconds} ${duration.seconds === 1 ? "second" : "seconds"}`);
+  if (duration.minutes)
+    parts.push(`${duration.minutes} ${duration.minutes === 1 ? "minute" : "minutes"}`);
+  if (duration.seconds)
+    parts.push(`${duration.seconds} ${duration.seconds === 1 ? "second" : "seconds"}`);
 
   return parts.length > 0 ? parts.join(", ") : "0 seconds";
 }

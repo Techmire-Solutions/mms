@@ -18,7 +18,8 @@ export function isImeSafeEnter(
   event: { key: string; nativeEvent?: { isComposing?: boolean; keyCode?: number } } | KeyboardEvent,
 ): boolean {
   if (event.key !== "Enter") return false;
-  const native = "nativeEvent" in event && event.nativeEvent ? event.nativeEvent : (event as KeyboardEvent);
+  const native =
+    "nativeEvent" in event && event.nativeEvent ? event.nativeEvent : (event as KeyboardEvent);
   if (native.isComposing || native.keyCode === 229) {
     return false;
   }

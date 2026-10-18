@@ -2,8 +2,7 @@ import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { cn } from "../utils";
 
-export interface SliderProps
-  extends React.ComponentProps<typeof SliderPrimitive.Root> {
+export interface SliderProps extends React.ComponentProps<typeof SliderPrimitive.Root> {
   /**
    * Optional custom formatter for aria-valuetext to announce human-readable
    * units to assistive screen readers (e.g. (v) => `${v}%`).
@@ -21,8 +20,7 @@ export const Slider = ({
   ...props
 }: SliderProps) => {
   const values = value ?? defaultValue ?? [0];
-  const thumbCount =
-    Array.isArray(values) && values.length > 0 ? values.length : 1;
+  const thumbCount = Array.isArray(values) && values.length > 0 ? values.length : 1;
 
   return (
     <SliderPrimitive.Root
@@ -55,4 +53,3 @@ export const Slider = ({
   );
 };
 Slider.displayName = SliderPrimitive.Root.displayName;
-
