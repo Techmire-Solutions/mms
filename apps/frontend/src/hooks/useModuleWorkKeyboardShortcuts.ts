@@ -41,7 +41,6 @@ export function useModuleWorkKeyboardShortcuts({
     onCreate,
   });
 
-
   useEffect(() => {
     if (!enabled) return;
 
@@ -73,5 +72,13 @@ export function useModuleWorkKeyboardShortcuts({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [enabled, searchEnabled, searchInputId, selectedCount, hasActiveFilters, clearFilters, clearSelection]);
+  }, [
+    enabled,
+    searchEnabled,
+    searchInputId,
+    selectedCount,
+    hasActiveFilters,
+    clearFilters,
+    clearSelection,
+  ]);
 }

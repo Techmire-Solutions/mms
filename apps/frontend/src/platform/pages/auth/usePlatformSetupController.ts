@@ -22,10 +22,7 @@ export function usePlatformSetupController(_smtpConfigured: boolean) {
 
   const loading = registerMutation.isPending;
 
-  const pageTitle = formatEntryTitle(
-    t("platform.setupTitle"),
-    t("entry.productName"),
-  );
+  const pageTitle = formatEntryTitle(t("platform.setupTitle"), t("entry.productName"));
 
   const handleRegister = async (event: React.FormEvent): Promise<void> => {
     event.preventDefault();

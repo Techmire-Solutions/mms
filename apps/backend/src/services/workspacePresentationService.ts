@@ -13,39 +13,42 @@ import {
   isInstitutionSetupComplete,
   isWorkspaceEnabled,
   toPublicBranding,
-} from '@mms/shared';
-import { and, eq, inArray, isNull, sql, count } from 'drizzle-orm';
-import { randomBytes } from 'node:crypto';
-import { getDb } from '../db/database.js';
-import { tenantUsers, workspaces as workspacesTable } from '../db/schema.js';
-import { hashPassword } from './auth/passwordService.js';
+} from "@mms/shared";
+import { and, eq, inArray, isNull, sql, count } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
+import { getDb } from "../db/database.js";
+import { tenantUsers, workspaces as workspacesTable } from "../db/schema.js";
+import { hashPassword } from "./auth/passwordService.js";
 import {
   getWorkspaceBranding,
   getWorkspaceWithBranding,
   listWorkspaceRowsWithBranding,
   updateWorkspaceBrandingRow,
   upsertWorkspaceBranding as upsertWorkspaceBrandingRepo,
-} from '../db/repositories/workspaceRepository.js';
+} from "../db/repositories/workspaceRepository.js";
 import {
   getUserModulePreferencesByWorkspace,
   getUserModulePreferencesByWorkspaces,
-} from '../db/repositories/userModulePreferencesRepository.js';
-import {
-  normalizeSubdomainInput,
-  invalidateWorkspaceCache,
-} from './workspaceService.js';
+} from "../db/repositories/userModulePreferencesRepository.js";
+import { normalizeSubdomainInput, invalidateWorkspaceCache } from "./workspaceService.js";
 
 /** Cryptographically random temporary password for platform break-glass flows. */
 function generateTemporaryAdminPassword(): string {
-  return `Mms#${randomBytes(6).toString('base64url')}`;
+  return `Mms#${randomBytes(6).toString("base64url")}`;
 }
 
 function generateTenantUserId(): string {
-  return `usr_${randomBytes(8).toString('hex')}`;
+  return `usr_${randomBytes(8).toString("hex")}`;
 }
 
 function mapWorkspaceSummaryRow(
-  workspace: { subdomain: string; madrasaName: string; tagline?: string | null; enabled?: boolean; createdAt: string | Date },
+  workspace: {
+    subdomain: string;
+    madrasaName: string;
+    tagline?: string | null;
+    enabled?: boolean;
+    createdAt: string | Date;
+  },
   branding: BrandingSettings | null | undefined,
   prefsRaw: Partial<UserModulePreferences> | Record<string, unknown> | null | undefined,
   adminEmailFromMap?: string,
@@ -55,7 +58,7 @@ function mapWorkspaceSummaryRow(
   const logoUrl = publicBranding.logoUrl?.trim();
   const adminEmail = adminEmailFromMap || (branding?.email ? branding.email : undefined);
   const createdAt =
-    typeof workspace.createdAt === 'string'
+    typeof workspace.createdAt === "string"
       ? workspace.createdAt
       : workspace.createdAt.toISOString();
   return {
@@ -65,7 +68,8 @@ function mapWorkspaceSummaryRow(
     logoUrl: logoUrl || undefined,
     enabled: isWorkspaceEnabled(workspace),
     createdAt,
-    requireEmailVerification: prefs.requireEmailVerification ?? DEFAULT_USERS_SETTINGS.requireEmailVerification,
+    requireEmailVerification:
+      prefs.requireEmailVerification ?? DEFAULT_USERS_SETTINGS.requireEmailVerification,
     adminEmail,
   };
 }
@@ -74,34 +78,34 @@ function filterAndSortSummaries(
   summaries: PlatformWorkspaceRow[],
   query: PlatformWorkspacesListQuery,
 ): PlatformWorkspaceRow[] {
-  const search = (query.search ?? '').trim().toLowerCase();
-  const status = query.status ?? 'all';
-  const sortField = query.sortField === 'madrasaName' ? 'name' : (query.sortField ?? 'name');
-  const sortDir = query.sortDir ?? 'asc';
+  const search = (query.search ?? "").trim().toLowerCase();
+  const status = query.status ?? "all";
+  const sortField = query.sortField === "madrasaName" ? "name" : (query.sortField ?? "name");
+  const sortDir = query.sortDir ?? "asc";
 
   let filtered = summaries;
   if (search) {
     filtered = filtered.filter(
       (w) =>
-        (w.madrasaName ?? '').toLowerCase().includes(search) ||
+        (w.madrasaName ?? "").toLowerCase().includes(search) ||
         w.subdomain.toLowerCase().includes(search),
     );
   }
-  if (status === 'active') filtered = filtered.filter((w) => w.enabled);
-  if (status === 'inactive') filtered = filtered.filter((w) => !w.enabled);
+  if (status === "active") filtered = filtered.filter((w) => w.enabled);
+  if (status === "inactive") filtered = filtered.filter((w) => !w.enabled);
 
   return [...filtered].sort((a, b) => {
     let comparison = 0;
-    if (sortField === 'name') {
-      comparison = (a.madrasaName ?? '').localeCompare(b.madrasaName ?? '');
-    } else if (sortField === 'subdomain') {
+    if (sortField === "name") {
+      comparison = (a.madrasaName ?? "").localeCompare(b.madrasaName ?? "");
+    } else if (sortField === "subdomain") {
       comparison = a.subdomain.localeCompare(b.subdomain);
-    } else if (sortField === 'createdAt') {
+    } else if (sortField === "createdAt") {
       comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    } else if (sortField === 'status') {
+    } else if (sortField === "status") {
       comparison = Number(b.enabled) - Number(a.enabled);
     }
-    return sortDir === 'asc' ? comparison : -comparison;
+    return sortDir === "asc" ? comparison : -comparison;
   });
 }
 
@@ -216,7 +220,9 @@ export async function listPublicWorkspaces(): Promise<PublicWorkspaceSummary[]> 
 }
 
 /** Fetch map of primary admin emails by workspace subdomain. */
-export async function getWorkspaceAdminEmailsMap(subdomains: string[]): Promise<Map<string, string>> {
+export async function getWorkspaceAdminEmailsMap(
+  subdomains: string[],
+): Promise<Map<string, string>> {
   if (subdomains.length === 0) return new Map();
   const db = getDb();
   const cleanSubdomains = subdomains.map((s) => s.toLowerCase());
@@ -229,18 +235,20 @@ export async function getWorkspaceAdminEmailsMap(subdomains: string[]): Promise<
     })
     .from(tenantUsers)
     .where(
-      and(
-        inArray(tenantUsers.workspaceSubdomain, cleanSubdomains),
-        isNull(tenantUsers.deletedAt),
-      ),
+      and(inArray(tenantUsers.workspaceSubdomain, cleanSubdomains), isNull(tenantUsers.deletedAt)),
     );
 
-  rows.sort((a: { role?: string; createdAt?: Date | null }, b: { role?: string; createdAt?: Date | null }) => {
-    const aIsAdmin = a.role === 'admin' || a.role === 'super_user' ? 0 : 1;
-    const bIsAdmin = b.role === 'admin' || b.role === 'super_user' ? 0 : 1;
-    if (aIsAdmin !== bIsAdmin) return aIsAdmin - bIsAdmin;
-    return (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0);
-  });
+  rows.sort(
+    (
+      a: { role?: string; createdAt?: Date | null },
+      b: { role?: string; createdAt?: Date | null },
+    ) => {
+      const aIsAdmin = a.role === "admin" || a.role === "super_user" ? 0 : 1;
+      const bIsAdmin = b.role === "admin" || b.role === "super_user" ? 0 : 1;
+      if (aIsAdmin !== bIsAdmin) return aIsAdmin - bIsAdmin;
+      return (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0);
+    },
+  );
 
   const map = new Map<string, string>();
   for (const row of rows) {
@@ -270,19 +278,19 @@ export async function resetWorkspaceAdminPassword(
       createdAt: tenantUsers.createdAt,
     })
     .from(tenantUsers)
-    .where(
-      and(
-        eq(tenantUsers.workspaceSubdomain, normalized),
-        isNull(tenantUsers.deletedAt),
-      ),
-    );
+    .where(and(eq(tenantUsers.workspaceSubdomain, normalized), isNull(tenantUsers.deletedAt)));
 
-  users.sort((a: { role?: string; createdAt?: Date | null }, b: { role?: string; createdAt?: Date | null }) => {
-    const aIsAdmin = a.role === 'admin' || a.role === 'super_user' ? 0 : 1;
-    const bIsAdmin = b.role === 'admin' || b.role === 'super_user' ? 0 : 1;
-    if (aIsAdmin !== bIsAdmin) return aIsAdmin - bIsAdmin;
-    return (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0);
-  });
+  users.sort(
+    (
+      a: { role?: string; createdAt?: Date | null },
+      b: { role?: string; createdAt?: Date | null },
+    ) => {
+      const aIsAdmin = a.role === "admin" || a.role === "super_user" ? 0 : 1;
+      const bIsAdmin = b.role === "admin" || b.role === "super_user" ? 0 : 1;
+      if (aIsAdmin !== bIsAdmin) return aIsAdmin - bIsAdmin;
+      return (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0);
+    },
+  );
 
   const targetUser = users[0];
   const fallbackEmail = data.branding?.email?.trim() || `admin@${normalized}.local`;
@@ -297,8 +305,8 @@ export async function resetWorkspaceAdminPassword(
       workspaceSubdomain: normalized,
       loginEmail: fallbackEmail,
       passwordHash,
-      name: 'Admin',
-      role: 'admin',
+      name: "Admin",
+      role: "admin",
       mustChangePassword: true,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -332,10 +340,13 @@ export async function resetWorkspaceAdminPassword(
 export async function createWorkspaceAdminUser(
   subdomain: string,
   input: { name: string; email: string; password?: string },
-): Promise<{ success: true; subdomain: string; adminEmail: string; name: string; initialPassword: string } | { success: false; error: 'WORKSPACE_NOT_FOUND' | 'USER_ALREADY_EXISTS' }> {
+): Promise<
+  | { success: true; subdomain: string; adminEmail: string; name: string; initialPassword: string }
+  | { success: false; error: "WORKSPACE_NOT_FOUND" | "USER_ALREADY_EXISTS" }
+> {
   const normalized = normalizeSubdomainInput(subdomain);
   const data = await getWorkspaceWithBranding(normalized);
-  if (!data) return { success: false, error: 'WORKSPACE_NOT_FOUND' };
+  if (!data) return { success: false, error: "WORKSPACE_NOT_FOUND" };
 
   const db = getDb();
   const emailClean = input.email.trim().toLowerCase();
@@ -352,7 +363,7 @@ export async function createWorkspaceAdminUser(
     );
 
   if (existing.length > 0) {
-    return { success: false, error: 'USER_ALREADY_EXISTS' };
+    return { success: false, error: "USER_ALREADY_EXISTS" };
   }
 
   const initialPassword = input.password?.trim() || generateTemporaryAdminPassword();
@@ -365,7 +376,7 @@ export async function createWorkspaceAdminUser(
     loginEmail: emailClean,
     passwordHash,
     name: input.name.trim(),
-    role: 'admin',
+    role: "admin",
     mustChangePassword: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -389,10 +400,14 @@ export async function getPlatformWorkspaceSummary(
   if (!data) return null;
   const rawPrefs = await getUserModulePreferencesByWorkspace(normalized);
   const prefs = normalizeUserModulePreferences(rawPrefs);
-  const publicBranding = toPublicBranding(data.branding ? data.branding : mergeBrandingSettings(null));
+  const publicBranding = toPublicBranding(
+    data.branding ? data.branding : mergeBrandingSettings(null),
+  );
   const logoUrl = publicBranding.logoUrl?.trim();
   const adminEmailsMap = await getWorkspaceAdminEmailsMap([normalized]);
-  const adminEmail = adminEmailsMap.get(normalized.toLowerCase()) || (data.branding?.email ? data.branding.email : undefined);
+  const adminEmail =
+    adminEmailsMap.get(normalized.toLowerCase()) ||
+    (data.branding?.email ? data.branding.email : undefined);
   const createdAt = String(data.workspace.createdAt);
   return {
     subdomain: data.workspace.subdomain,
@@ -401,7 +416,8 @@ export async function getPlatformWorkspaceSummary(
     logoUrl: logoUrl || undefined,
     enabled: isWorkspaceEnabled(data.workspace),
     createdAt,
-    requireEmailVerification: prefs.requireEmailVerification ?? DEFAULT_USERS_SETTINGS.requireEmailVerification,
+    requireEmailVerification:
+      prefs.requireEmailVerification ?? DEFAULT_USERS_SETTINGS.requireEmailVerification,
     adminEmail,
   };
 }
@@ -409,7 +425,7 @@ export async function getPlatformWorkspaceSummary(
 /** Keeps the global workspace registry in sync with saved branding name/tagline. */
 export async function syncWorkspaceFromBranding(
   subdomain: string,
-  branding: Pick<BrandingSettings, 'madrasaName' | 'tagline'>,
+  branding: Pick<BrandingSettings, "madrasaName" | "tagline">,
 ): Promise<void> {
   const normalized = normalizeSubdomainInput(subdomain);
   await updateWorkspaceBrandingRow(normalized, branding);

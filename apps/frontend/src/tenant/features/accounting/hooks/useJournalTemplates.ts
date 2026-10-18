@@ -27,7 +27,8 @@ export function useJournalTemplates(accounts: readonly Account[]) {
   const isReady = preferencesQuery.isSuccess && !preferencesQuery.isPlaceholderData;
 
   const templates: JournalTemplate[] = useMemo(
-    () => normalizeAccountingModulePreferences(preferencesQuery.data ?? null).journalTemplates ?? [],
+    () =>
+      normalizeAccountingModulePreferences(preferencesQuery.data ?? null).journalTemplates ?? [],
     [preferencesQuery.data],
   );
 

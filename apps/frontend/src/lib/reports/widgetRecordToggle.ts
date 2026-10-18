@@ -1,6 +1,6 @@
-import { apiFetch, apiJson } from '@/lib/apiClient';
-import { findCachedCollectionRecord } from '@/lib/queryCacheCollections';
-import { queryClientInstance } from '@/lib/queryClient';
+import { apiFetch, apiJson } from "@/lib/apiClient";
+import { findCachedCollectionRecord } from "@/lib/queryCacheCollections";
+import { queryClientInstance } from "@/lib/queryClient";
 import {
   ATTENDANCE_MODULE_MANIFEST,
   CONTACTS_MODULE_MANIFEST,
@@ -8,13 +8,13 @@ import {
   HASANAT_MODULE_MANIFEST,
   SESSIONS_MODULE_MANIFEST,
   STUDENTS_MODULE_MANIFEST,
-} from '@mms/shared';
-import { ATTENDANCE_QUERY_KEY } from '@/tenant/hooks/collections/attendance';
-import { CONTACTS_QUERY_KEY } from '@/tenant/hooks/collections/contacts';
-import { FINANCE_INVOICES_QUERY_KEY } from '@/tenant/hooks/collections/finance';
-import { HASANAT_DISTRIBUTIONS_QUERY_KEY } from '@/tenant/hooks/collections/hasanat';
-import { SESSIONS_QUERY_KEY } from '@/tenant/hooks/collections/sessions';
-import { STUDENTS_QUERY_KEY } from '@/tenant/hooks/collections/students';
+} from "@mms/shared";
+import { ATTENDANCE_QUERY_KEY } from "@/tenant/hooks/collections/attendance";
+import { CONTACTS_QUERY_KEY } from "@/tenant/hooks/collections/contacts";
+import { FINANCE_INVOICES_QUERY_KEY } from "@/tenant/hooks/collections/finance";
+import { HASANAT_DISTRIBUTIONS_QUERY_KEY } from "@/tenant/hooks/collections/hasanat";
+import { SESSIONS_QUERY_KEY } from "@/tenant/hooks/collections/sessions";
+import { STUDENTS_QUERY_KEY } from "@/tenant/hooks/collections/students";
 
 type RestToggleConfig = {
   putPath: (id: string) => string;
@@ -57,13 +57,13 @@ export function isRestWidgetCollection(collectionName: string): boolean {
 }
 
 function nextToggleFieldValue(current: unknown): unknown {
-  if (current === 'active') return 'inactive';
-  if (current === 'inactive') return 'active';
-  if (current === 'paid') return 'unpaid';
-  if (current === 'unpaid') return 'paid';
-  if (current === 'present') return 'absent';
-  if (current === 'absent') return 'present';
-  if (typeof current === 'boolean') return !current;
+  if (current === "active") return "inactive";
+  if (current === "inactive") return "active";
+  if (current === "paid") return "unpaid";
+  if (current === "unpaid") return "paid";
+  if (current === "present") return "absent";
+  if (current === "absent") return "present";
+  if (typeof current === "boolean") return !current;
   return !current;
 }
 
@@ -72,12 +72,12 @@ function patchRecordForCollection(
   record: Record<string, unknown>,
   field: string,
 ): Record<string, unknown> {
-  if (collectionName === 'finance_invoices' && field === 'status') {
-    const nextStatus = record.status === 'paid' ? 'unpaid' : 'paid';
+  if (collectionName === "finance_invoices" && field === "status") {
+    const nextStatus = record.status === "paid" ? "unpaid" : "paid";
     const finalAmt = Number(record.finalAmt || 0);
-    return { ...record, status: nextStatus, paidAmt: nextStatus === 'paid' ? finalAmt : 0 };
+    return { ...record, status: nextStatus, paidAmt: nextStatus === "paid" ? finalAmt : 0 };
   }
-  if (collectionName === 'contacts' && field === 'status') {
+  if (collectionName === "contacts" && field === "status") {
     return { ...record, isActive: record.isActive === false };
   }
   return { ...record, [field]: nextToggleFieldValue(record[field]) };
@@ -93,17 +93,13 @@ export async function persistWidgetRecordToggle(options: {
   field?: string;
 }): Promise<void> {
   const { collectionName, recordId } = options;
-  const field = options.field ?? 'status';
+  const field = options.field ?? "status";
   const config = REST_WIDGET_TOGGLE_CONFIG[collectionName];
   if (!config) {
     throw new Error(`Collection "${collectionName}" is not REST-toggleable from widgets`);
   }
 
-  const existing = findCachedCollectionRecord(
-    collectionName,
-    recordId,
-    config.invalidateQueryKey,
-  );
+  const existing = findCachedCollectionRecord(collectionName, recordId, config.invalidateQueryKey);
   if (!existing) {
     throw new Error(`Record ${recordId} not found in ${collectionName} cache`);
   }
@@ -112,26 +108,26 @@ export async function persistWidgetRecordToggle(options: {
 
   if (config.bulkBody) {
     await apiJson(config.putPath(recordId), {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify([patched]),
     });
   } else {
     await apiJson(config.putPath(recordId), {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(patched),
     });
   }
 
   void queryClientInstance.invalidateQueries({ queryKey: config.invalidateQueryKey });
-  window.dispatchEvent(new Event('local-database-update'));
+  window.dispatchEvent(new Event("local-database-update"));
 }
 
 /** Soft-delete a Hasanat distribution from widget drill-down via REST. */
 export async function persistWidgetHasanatDistributionDelete(distId: string): Promise<void> {
   await apiFetch(
     `${HASANAT_MODULE_MANIFEST.restBasePath}/distributions/${encodeURIComponent(distId)}`,
-    { method: 'DELETE' },
+    { method: "DELETE" },
   );
   void queryClientInstance.invalidateQueries({ queryKey: HASANAT_DISTRIBUTIONS_QUERY_KEY });
-  window.dispatchEvent(new Event('local-database-update'));
+  window.dispatchEvent(new Event("local-database-update"));
 }

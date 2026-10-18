@@ -1,7 +1,7 @@
-import { and, eq } from 'drizzle-orm';
-import type { Contact } from '@mms/shared';
-import { contactSocials, contactEducations, contactExperiences, contactSkills } from '../schema.js';
-import { type TenantTransaction } from '../tenant-context.js';
+import { and, eq } from "drizzle-orm";
+import type { Contact } from "@mms/shared";
+import { contactSocials, contactEducations, contactExperiences, contactSkills } from "../schema.js";
+import { type TenantTransaction } from "../tenant-context.js";
 
 type Transaction = TenantTransaction;
 
@@ -13,7 +13,12 @@ export async function syncContactProfessionalChildrenTx(
 ): Promise<void> {
   await tx
     .delete(contactSocials)
-    .where(and(eq(contactSocials.workspaceSubdomain, subdomain), eq(contactSocials.contactId, contactId)));
+    .where(
+      and(
+        eq(contactSocials.workspaceSubdomain, subdomain),
+        eq(contactSocials.contactId, contactId),
+      ),
+    );
   if (contact.socials && contact.socials.length > 0) {
     await tx.insert(contactSocials).values(
       contact.socials.map((s, idx) => ({
@@ -29,7 +34,12 @@ export async function syncContactProfessionalChildrenTx(
 
   await tx
     .delete(contactEducations)
-    .where(and(eq(contactEducations.workspaceSubdomain, subdomain), eq(contactEducations.contactId, contactId)));
+    .where(
+      and(
+        eq(contactEducations.workspaceSubdomain, subdomain),
+        eq(contactEducations.contactId, contactId),
+      ),
+    );
   if (contact.education && contact.education.length > 0) {
     await tx.insert(contactEducations).values(
       contact.education.map((e, idx) => ({
@@ -49,7 +59,12 @@ export async function syncContactProfessionalChildrenTx(
 
   await tx
     .delete(contactExperiences)
-    .where(and(eq(contactExperiences.workspaceSubdomain, subdomain), eq(contactExperiences.contactId, contactId)));
+    .where(
+      and(
+        eq(contactExperiences.workspaceSubdomain, subdomain),
+        eq(contactExperiences.contactId, contactId),
+      ),
+    );
   if (contact.experience && contact.experience.length > 0) {
     await tx.insert(contactExperiences).values(
       contact.experience.map((exp, idx) => ({
@@ -71,7 +86,9 @@ export async function syncContactProfessionalChildrenTx(
 
   await tx
     .delete(contactSkills)
-    .where(and(eq(contactSkills.workspaceSubdomain, subdomain), eq(contactSkills.contactId, contactId)));
+    .where(
+      and(eq(contactSkills.workspaceSubdomain, subdomain), eq(contactSkills.contactId, contactId)),
+    );
   if (contact.skills && contact.skills.length > 0) {
     await tx.insert(contactSkills).values(
       contact.skills.map((s, idx) => ({

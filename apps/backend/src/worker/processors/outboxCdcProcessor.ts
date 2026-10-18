@@ -1,9 +1,9 @@
-import { and, isNull, asc, eq, lt, sql } from 'drizzle-orm';
-import { withGlobalTenant } from '../../db/tenant-context.js';
-import { outboxEvents } from '../../db/schema/outboxEvents.js';
-import { redisGet, redisSet, redisDelPattern, redisKeys } from '../../lib/redis.js';
-import { logger } from '../../lib/logger.js';
-import type { SearchIndexAdapter } from '../adapters/searchIndexAdapter.js';
+import { and, isNull, asc, eq, lt, sql } from "drizzle-orm";
+import { withGlobalTenant } from "../../db/tenant-context.js";
+import { outboxEvents } from "../../db/schema/outboxEvents.js";
+import { redisGet, redisSet, redisDelPattern, redisKeys } from "../../lib/redis.js";
+import { logger } from "../../lib/logger.js";
+import type { SearchIndexAdapter } from "../adapters/searchIndexAdapter.js";
 
 const BATCH_SIZE = 100;
 /** After this many consecutive failures an event stops being retried (poison). */
@@ -61,21 +61,17 @@ export async function processOutboxCdcBatch(
         payload: outboxEvents.payload,
       })
       .from(outboxEvents)
-      .where(and(
-        isNull(outboxEvents.processedAt),
-        lt(outboxEvents.attempts, MAX_CDC_ATTEMPTS),
-      ))
+      .where(and(isNull(outboxEvents.processedAt), lt(outboxEvents.attempts, MAX_CDC_ATTEMPTS)))
       .orderBy(asc(outboxEvents.createdAt))
       .limit(BATCH_SIZE)
-      .for('update', { skipLocked: true });
+      .for("update", { skipLocked: true });
 
     if (rows.length === 0) return;
 
     for (const row of rows) {
       const payload = row.payload as Record<string, unknown>;
-      const incomingVersion = typeof payload['version'] === 'number'
-        ? (payload['version'] as number)
-        : 0;
+      const incomingVersion =
+        typeof payload["version"] === "number" ? (payload["version"] as number) : 0;
 
       // Monotonic version guard — discard stale out-of-order events
       const vk = versionKey(row.workspaceSubdomain, row.entityType, row.entityId);
@@ -92,7 +88,7 @@ export async function processOutboxCdcBatch(
             incomingVersion,
             existingVersion,
           },
-          '[OutboxCdc] Dropping stale/out-of-order event — version guard',
+          "[OutboxCdc] Dropping stale/out-of-order event — version guard",
         );
         // Mark processed so it is not retried (stale = permanently stale)
         await db
@@ -104,18 +100,16 @@ export async function processOutboxCdcBatch(
       }
 
       try {
-        if (row.eventType === 'entity.soft_deleted') {
+        if (row.eventType === "entity.soft_deleted") {
           // 1. Tombstone search index
           await searchAdapter.deleteDocument(row.entityType, row.entityId);
           // 2. Evict all tenant entity cache keys
           await redisDelPattern(cacheEvictPattern(row.workspaceSubdomain, row.entityType));
-
-        } else if (row.eventType === 'entity.restored') {
+        } else if (row.eventType === "entity.restored") {
           // 1. Re-index document (snapshot payload used if available)
           await searchAdapter.indexDocument(row.entityType, row.entityId, payload);
           // 2. Evict stale cache entries so next read is fresh
           await redisDelPattern(cacheEvictPattern(row.workspaceSubdomain, row.entityType));
-
         } else {
           // entity.hard_purge or unknown — just evict cache
           await redisDelPattern(cacheEvictPattern(row.workspaceSubdomain, row.entityType));
@@ -136,7 +130,7 @@ export async function processOutboxCdcBatch(
         const message = err instanceof Error ? err.message : String(err);
         logger.error(
           { err, eventId: row.id, eventType: row.eventType, entityId: row.entityId },
-          '[OutboxCdc] Failed to process CDC event — incrementing attempt counter',
+          "[OutboxCdc] Failed to process CDC event — incrementing attempt counter",
         );
         // Record the failure and move on. Once attempts reach MAX_CDC_ATTEMPTS
         // the event is excluded from the candidate query so it can no longer

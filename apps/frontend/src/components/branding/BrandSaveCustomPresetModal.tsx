@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 interface BrandSaveCustomPresetModalProps {

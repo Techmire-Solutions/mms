@@ -1,11 +1,11 @@
 import type { Faculty } from "@mms/shared";
-import type { EntityDescriptor, FieldBadgeConfig } from "@/types/entityRegistry";
+import type { EntityDescriptor, FieldBadgeConfig } from "@/components/common/entityRegistryTypes";
 import { facultyEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { facultyStatusBadgeConfig } from "@/lib/faculty/facultyStatusUi";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useMemo } from "react";
 
 /**

@@ -1,6 +1,10 @@
 import type React from "react";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { getAttendanceStatusInfo, type AttendanceRecord, type AttendanceStatus } from "@/lib/data/attendanceData";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import {
+  getAttendanceStatusInfo,
+  type AttendanceRecord,
+  type AttendanceStatus,
+} from "@/lib/data/attendanceData";
 import { StatusToggle } from "@/tenant/features/attendance/components/StatusToggle";
 
 export interface AttendanceRecordStatusCellProps {
@@ -27,7 +31,13 @@ export function AttendanceRecordStatusCell({
 
   const info = getAttendanceStatusInfo(attendanceRecord.status, statuses);
   const config: Record<string, StatusBadgeConfigItem> = info
-    ? { [attendanceRecord.status]: { label: info.label, cls: `${info.bg} ${info.text} ${info.border} font-semibold`, dot: info.dot } }
+    ? {
+        [attendanceRecord.status]: {
+          label: info.label,
+          cls: `${info.bg} ${info.text} ${info.border} font-semibold`,
+          dot: info.dot,
+        },
+      }
     : {};
 
   return <StatusBadge status={attendanceRecord.status} config={config} size="sm" />;

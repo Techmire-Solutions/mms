@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   EMPTY_ATTENDANCE_REPORT_AGGREGATES,
@@ -9,12 +9,18 @@ import {
   type AttendanceReportComparison,
   type AttendanceReportComparisonMonth,
   type AttendanceReportComparisonSession,
-} from '@mms/shared';
-import { getQueryRows } from '../documentStoreKeys.js';
-import { withTenantRead } from '../tenant-context.js';
-import { loadCountableAttendanceSql } from './attendanceCountableSql.js';
-import { activeAttendanceWhere, isPresentOrLateSql, loadAttendanceOverview } from './attendanceRepositoryReportOverview.js';
+} from "@mms/shared";
+import { getQueryRows } from "../documentStoreKeys.js";
+import { withTenantRead } from "../tenant-context.js";
+import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
+import { isPresentOrLateSql, loadAttendanceOverview } from "./attendanceReportOverview.js";
 
+function activeAttendanceWhere(subdomain: string, alias = "a"): ReturnType<typeof sql> {
+  return sql`
+    ${sql.raw(`${alias}.workspace_subdomain`)} = ${subdomain}
+    AND ${sql.raw(`${alias}.deleted_at`)} IS NULL
+  `;
+}
 /** Attendance analytics plus optional ComparisonMode aggregates. */
 export async function loadAttendanceReportAggregatesSql(
   tenant: string,
@@ -39,7 +45,7 @@ export async function loadAttendanceReportAggregatesSql(
 
     const sessionIds = dedupeTrimmedIds(query.sessionIds ?? []);
     if (sessionIds.length > 0) {
-      const presentOrLate = isPresentOrLateSql('a');
+      const presentOrLate = isPresentOrLateSql("a");
       const compareSessionResult = await tx.execute(sql`
         WITH selected AS (
           SELECT s.id AS "sessionId"
@@ -73,18 +79,21 @@ export async function loadAttendanceReportAggregatesSql(
           )::int AS "attendancePct"
         FROM session_classes sc
         LEFT JOIN attendance a
-          ON ${activeAttendanceWhere(subdomain, 'a')}
-          AND ${countable('a')}
+          ON ${activeAttendanceWhere(subdomain, "a")}
+          AND ${countable("a")}
           AND sc."classId" IS NOT NULL
           AND a.class_id = sc."classId"
         GROUP BY sc."sessionId"
       `);
 
       comparison.sessions = ensureAllSessionsInComparison(
-        getQueryRows<Record<string, unknown>>(compareSessionResult).map((row) => ({
-          sessionId: String(row.sessionId ?? ''),
-          attendancePct: Number(row.attendancePct ?? 0),
-        } satisfies AttendanceReportComparisonSession)),
+        getQueryRows<Record<string, unknown>>(compareSessionResult).map(
+          (row) =>
+            ({
+              sessionId: String(row.sessionId ?? ""),
+              attendancePct: Number(row.attendancePct ?? 0),
+            }) satisfies AttendanceReportComparisonSession,
+        ),
         sessionIds,
         (sessionId) => ({ sessionId, attendancePct: 0 }),
       );
@@ -95,15 +104,15 @@ export async function loadAttendanceReportAggregatesSql(
       to: string | undefined,
     ): Promise<AttendanceReportComparisonMonth[]> => {
       if (!from || !to) return [];
-      const presentOrLate = isPresentOrLateSql('a');
+      const presentOrLate = isPresentOrLateSql("a");
       const monthResult = await tx.execute(sql`
         SELECT
           to_char(left(a.date, 10)::date, 'YYYY-MM') AS "monthKey",
           COUNT(*) FILTER (WHERE ${presentOrLate})::int AS "presentCount",
           COUNT(*)::int AS total
         FROM attendance a
-        WHERE ${activeAttendanceWhere(subdomain, 'a')}
-          AND ${countable('a')}
+        WHERE ${activeAttendanceWhere(subdomain, "a")}
+          AND ${countable("a")}
           AND a.date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
           AND left(a.date, 10) >= ${from}
           AND left(a.date, 10) <= ${to}
@@ -114,7 +123,7 @@ export async function loadAttendanceReportAggregatesSql(
       const monthly: AttendanceReportComparisonMonth[] = [];
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        if (typeof row?.monthKey === 'string' && /^\d{4}-\d{2}$/.test(row.monthKey)) {
+        if (typeof row?.monthKey === "string" && /^\d{4}-\d{2}$/.test(row.monthKey)) {
           monthly.push({
             monthKey: row.monthKey,
             presentCount: Number(row.presentCount ?? 0),

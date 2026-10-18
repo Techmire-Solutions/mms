@@ -1,15 +1,18 @@
-import React from 'react';
-import { Globe, Ban, Download, RefreshCw } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { SubTabBar } from '@/components/ui/SubTabBar';
-import { ActionButton } from '@/components/ui/ActionButton';
-import { WorkTaskToolbar } from '@/components/common/work';
-import { PlatformWorkspaceSortMenu } from '@/platform/components/PlatformWorkspaceSortMenu';
-import type { WorkspaceSortDirection, WorkspaceSortField } from '@/platform/components/platformWorkspaceListData';
+import React from "react";
+import { Globe, Ban, Download, RefreshCw } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { Button } from "@shared/ui";
+import { WorkTaskToolbar } from "@/components/common/work";
+import { PlatformWorkspaceSortMenu } from "@/platform/components/PlatformWorkspaceSortMenu";
+import type {
+  WorkspaceSortDirection,
+  WorkspaceSortField,
+} from "@/platform/components/platformWorkspaceListData";
 
-import type { PlatformDensity } from '@/platform/hooks/usePlatformDensity';
-import { toColumnCustomizer, type DataTableColumnLayout } from '@/components/common/data-table';
-import { PlatformWorkspaceDensityToggle } from '@/platform/components/workspace/PlatformWorkspaceDensityToggle';
+import type { PlatformDensity } from "@/platform/hooks/usePlatformDensity";
+import { toColumnCustomizer, type DataTableColumnLayout } from "@/components/common/data-table";
+import { PlatformWorkspaceDensityToggle } from "@/platform/components/workspace/PlatformWorkspaceDensityToggle";
 
 export interface PlatformWorkspaceToolbarProps {
   shownCount: number;
@@ -21,12 +24,12 @@ export interface PlatformWorkspaceToolbarProps {
   isSearching: boolean;
   hasActiveFilters: boolean;
   onClearFilters: () => void;
-  viewMode: 'table' | 'cards';
-  onViewModeChange: (viewMode: 'table' | 'cards') => void;
+  viewMode: "table" | "cards";
+  onViewModeChange: (viewMode: "table" | "cards") => void;
   density?: PlatformDensity;
   onDensityChange?: (density: PlatformDensity) => void;
-  statusFilter: 'all' | 'active' | 'inactive';
-  onStatusFilterChange: (status: 'all' | 'active' | 'inactive') => void;
+  statusFilter: "all" | "active" | "inactive";
+  onStatusFilterChange: (status: "all" | "active" | "inactive") => void;
   sortField: WorkspaceSortField;
   sortDirection: WorkspaceSortDirection;
   onToggleSort: (field: WorkspaceSortField) => void;
@@ -62,16 +65,16 @@ export function PlatformWorkspaceToolbar({
 
   return (
     <WorkTaskToolbar
-      regionLabel={t('platform.manageMadrasas')}
-      shownCountLabel={t('platform.shownCountOfTotal', { shown: shownCount, total: totalCount })}
+      regionLabel={t("platform.manageMadrasas")}
+      shownCountLabel={t("platform.shownCountOfTotal", { shown: shownCount, total: totalCount })}
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('common.search')}
+      searchPlaceholder={t("common.search")}
       searchId="platform-workspaces-search"
       isSearching={isSearching}
       hasActiveFilters={hasActiveFilters}
       onClearFilters={onClearFilters}
-      clearFiltersLabel={t('common.clearFilters')}
+      clearFiltersLabel={t("common.clearFilters")}
       viewModeToggle={{
         viewMode,
         onViewModeChange,
@@ -79,9 +82,9 @@ export function PlatformWorkspaceToolbar({
       columnCustomizer={toColumnCustomizer(columnLayout)}
       filterButton={
         <div className="flex items-center gap-2">
-          {onDensityChange && viewMode === 'table' && (
+          {onDensityChange && viewMode === "table" && (
             <PlatformWorkspaceDensityToggle
-              density={density ?? 'standard'}
+              density={density ?? "standard"}
               onDensityChange={onDensityChange}
             />
           )}
@@ -94,33 +97,41 @@ export function PlatformWorkspaceToolbar({
       }
       primaryAction={
         <div className="flex items-center gap-2">
-          <ActionButton
-            variant="secondary"
+          <Button
+            variant="outline"
             size="sm"
             icon={RefreshCw}
             loading={isSearching}
             onClick={onRefetch}
             className="min-w-11"
-            title={t('common.refresh')}
-            aria-label={t('common.refresh')}
+            title={t("common.refresh")}
+            aria-label={t("common.refresh")}
           />
-          <ActionButton
-            variant="secondary"
+          <Button
+            variant="outline"
             icon={Download}
             onClick={onExportCsv}
             disabled={shownCount === 0}
-            title={t('platform.exportWorkspacesCsv')}
+            title={t("platform.exportWorkspacesCsv")}
           >
-            {t('platform.exportWorkspacesCsv')}
-          </ActionButton>
+            {t("platform.exportWorkspacesCsv")}
+          </Button>
         </div>
       }
     >
       <SubTabBar
         tabs={[
-          { key: 'all', label: `${t('platform.filterAll')} (${totalCount})` },
-          { key: 'active', label: `${t('platform.workspaceActive')} (${activeCount})`, icon: Globe },
-          { key: 'inactive', label: `${t('platform.workspaceInactive')} (${inactiveCount})`, icon: Ban },
+          { key: "all", label: `${t("platform.filterAll")} (${totalCount})` },
+          {
+            key: "active",
+            label: `${t("platform.workspaceActive")} (${activeCount})`,
+            icon: Globe,
+          },
+          {
+            key: "inactive",
+            label: `${t("platform.workspaceInactive")} (${inactiveCount})`,
+            icon: Ban,
+          },
         ]}
         value={statusFilter}
         onChange={onStatusFilterChange}

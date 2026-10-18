@@ -26,9 +26,7 @@ export function createModuleSetupConfigApi<TPreferences>({
     return normalized;
   }
 
-  async function savePreferencesAsync(
-    preferences: TPreferences,
-  ): Promise<TPreferences> {
+  async function savePreferencesAsync(preferences: TPreferences): Promise<TPreferences> {
     const normalized = normalizePrefs(preferences);
     const response = await savePreferencesFn(normalized);
     const saved = normalizePrefs(response ?? normalized);

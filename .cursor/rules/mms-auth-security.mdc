@@ -1,6 +1,6 @@
 ---
 description: Authentication session cookies, JWT token scopes, tenant isolation context, RBAC matrices, and threat mitigations
-globs: apps/backend/src/routes/common/auth.ts,apps/backend/src/routes/tenant/**,apps/backend/src/routes/platform/**,apps/backend/src/middleware/authenticate*.ts,apps/backend/src/services/auth/**,apps/backend/src/services/platform/**,apps/backend/src/services/rbac*.ts,apps/backend/src/lib/tenantContext.ts,packages/shared/src/platformApiErrors.ts,apps/frontend/src/lib/contexts/AuthContext.tsx,apps/frontend/src/platform/lib/PlatformAuthContext.tsx,apps/frontend/src/platform/lib/platformAuthErrors.ts,apps/frontend/src/platform/pages/auth/**,apps/frontend/src/tenant/hooks/usePermissions.ts,apps/frontend/src/tenant/pages/**,apps/frontend/src/tenant/components/**,apps/frontend/src/tenant/routes/**,apps/frontend/src/lib/apiClient.ts,apps/frontend/src/lib/apiClientHelpers.ts,apps/frontend/src/components/routing/**
+globs: apps/backend/src/routes/common/auth.ts,apps/backend/src/middleware/authenticate*.ts,apps/backend/src/services/auth/**,apps/backend/src/services/platform/**,apps/backend/src/services/rbac*.ts,apps/backend/src/lib/tenantContext.ts,packages/shared/src/**/platformApiErrors.ts,packages/shared/src/**/moduleAccessPolicy.ts,apps/frontend/src/lib/contexts/AuthContext.tsx,apps/frontend/src/platform/lib/PlatformAuthContext.tsx,apps/frontend/src/platform/lib/platformAuthErrors.ts,apps/frontend/src/platform/pages/auth/**,apps/frontend/src/tenant/hooks/usePermissions.ts,apps/frontend/src/components/routing/**
 alwaysApply: false
 ---
 
@@ -41,9 +41,5 @@ alwaysApply: false
 - **Hard-Delete Guard:** Schema `forbid_hard_delete()` trigger blocks SQL deletes. Bypass requires `SET LOCAL app.allow_hard_purge = 'true'`.
 
 ## 5. Audit Trail Security, Governance & Trace Context
-- **W3C Trace Context:** Propagate `traceparent` into `AsyncLocalStorage` to bind as `correlation_id` in audit records.
-- **Privilege Hardening:** Database user has `INSERT`-only on audit tables (`UPDATE`/`DELETE` revoked). Viewing audit logs is an auditable event.
+- **Security & Privilege Hardening:** Audit trail cryptographic chaining, RFC 8785 canonical JSON, and outbox transactions follow `mms-data-layer.mdc` §5. Propagate W3C `traceparent` via `AsyncLocalStorage` (`AsyncContextFrame`) as `correlation_id`. Database user has `INSERT`-only rights on audit tables; viewing audit logs is an auditable event.
 
-## 6. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

@@ -16,10 +16,10 @@ export function useLocalPagination<T>({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const handleSearchChange = ((val: string) => {
+  const handleSearchChange = (val: string) => {
     setSearchQuery(val);
     setCurrentPage(1);
-  });
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -35,9 +35,10 @@ export function useLocalPagination<T>({
 
     if (searchFields) {
       return items.filter((item) =>
-        searchFields(item).some((field) =>
-          field !== null && field !== undefined && String(field).toLowerCase().includes(query)
-        )
+        searchFields(item).some(
+          (field) =>
+            field !== null && field !== undefined && String(field).toLowerCase().includes(query),
+        ),
       );
     }
 

@@ -9,17 +9,17 @@ import {
   ContactDetailDrawerFooter,
 } from "./ContactDetailDrawerChrome";
 
-vi.mock("@/components/ui/DetailDrawerArchiveChrome", () => ({
+vi.mock("@/components/app/DetailDrawerArchiveChrome", () => ({
   DetailDrawerRestoreOrEditAction: ({ editLabel }: { editLabel: string }) => (
     <div data-testid="edit-action">{editLabel}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: ({ value }: { value: string }) => <div data-testid="tab-bar">Tab: {value}</div>,
 }));
 
-vi.mock("@/components/ui/DrawerUpdatedStamp", () => ({
+vi.mock("@/components/app/DrawerUpdatedStamp", () => ({
   DrawerUpdatedStamp: ({ label }: { label: string }) => (
     <div data-testid="updated-stamp">{label}</div>
   ),
@@ -72,9 +72,7 @@ describe("ContactDetailDrawerChrome Components", () => {
     );
     expect(htmlTabBar).toContain("Tab: overview");
 
-    const htmlFooter = renderToStaticMarkup(
-      <ContactDetailDrawerFooter contact={mockContact} />,
-    );
+    const htmlFooter = renderToStaticMarkup(<ContactDetailDrawerFooter contact={mockContact} />);
     expect(htmlFooter).toContain("contacts.detail.updatedLabel");
   });
 });

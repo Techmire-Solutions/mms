@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import type { Session } from '@/lib/data/sessionsData';
+import { useState } from "react";
+import type { Session } from "@/lib/data/sessionsData";
 
 export function useSessionsDialogs(onDeleteConfirm?: (id: string, reason?: string) => void) {
   const [showForm, setShowForm] = useState(false);

@@ -34,7 +34,10 @@ const filters: DataTableFilter<Row>[] = [
   {
     id: "status",
     label: "Status",
-    options: [{ value: "active", label: "Active" }, { value: "inactive", label: "Inactive" }],
+    options: [
+      { value: "active", label: "Active" },
+      { value: "inactive", label: "Inactive" },
+    ],
     getValue: (r) => r.status,
   },
 ];

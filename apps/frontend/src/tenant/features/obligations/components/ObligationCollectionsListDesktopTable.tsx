@@ -1,12 +1,12 @@
 import React from "react";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ObligationCollectionRowActions } from "@/tenant/features/obligations/components/ObligationCollectionRowActions";
 import { WorkBatchTable } from "@/components/common/work";
 import { useMergedObligationUsers } from "@/tenant/features/obligations/hooks/useObligationLookups";
-import type { ObligationCollectionListContentProps } from "@/tenant/features/obligations/components/obligationCollectionListContentShared";
+import type { ObligationCollectionListContentProps } from "@/tenant/features/obligations/lib/obligationCollectionListContentShared";
 import { useObligationCollectionTableColumns } from "@/tenant/features/obligations/hooks/useObligationCollectionTableColumns";
 
 type ObligationCollectionsListDesktopTableProps = Omit<
@@ -16,17 +16,39 @@ type ObligationCollectionsListDesktopTableProps = Omit<
   viewMode?: ObligationCollectionListContentProps["viewMode"];
 };
 
-export function ObligationCollectionsListDesktopTable(props: ObligationCollectionsListDesktopTableProps): React.JSX.Element {
+export function ObligationCollectionsListDesktopTable(
+  props: ObligationCollectionsListDesktopTableProps,
+): React.JSX.Element {
   const {
-    collections, selectedIds, isColumnVisible, allVisibleSelected, someVisibleSelected,
-    canWrite, canDelete, showDeleted, paymentModeConfig, getContact, getRep, getMujtahid,
-    getObligationType, getColumnWidth, onColumnResize, onView, onPrint, onToggleSelectAll,
-    onToggleSelectedCollection, onTrashAction, onMessage,
+    collections,
+    selectedIds,
+    isColumnVisible,
+    allVisibleSelected,
+    someVisibleSelected,
+    canWrite,
+    canDelete,
+    showDeleted,
+    paymentModeConfig,
+    getContact,
+    getRep,
+    getMujtahid,
+    getObligationType,
+    getColumnWidth,
+    onColumnResize,
+    onView,
+    onPrint,
+    onToggleSelectAll,
+    onToggleSelectedCollection,
+    onTrashAction,
+    onMessage,
   } = props;
   const { t } = useTranslation();
   const selectedSet = React.useMemo(() => new Set(selectedIds), [selectedIds]);
 
-  const receiverIds = React.useMemo(() => collections.map((c) => c.received_by).filter(Boolean), [collections]);
+  const receiverIds = React.useMemo(
+    () => collections.map((c) => c.received_by).filter(Boolean),
+    [collections],
+  );
   const users = useMergedObligationUsers(receiverIds);
   const userMap = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -53,15 +75,19 @@ export function ObligationCollectionsListDesktopTable(props: ObligationCollectio
       columns={columns}
       caption={t("obligations.collectionsList")}
       selection={
-        canDelete ? {
-          selectedIds,
-          onSelectOne: (id) => onToggleSelectedCollection(String(id), !selectedSet.has(String(id))),
-          onSelectAll: () => onToggleSelectAll(!allVisibleSelected),
-          allSelected: allVisibleSelected,
-          someSelected: someVisibleSelected,
-          selectAllAriaLabel: t("obligations.trash.selectAll"),
-          selectRowAriaLabel: (c) => t("obligations.trash.selectCollection", { receipt: c.receipt_no }),
-        } : undefined
+        canDelete
+          ? {
+              selectedIds,
+              onSelectOne: (id) =>
+                onToggleSelectedCollection(String(id), !selectedSet.has(String(id))),
+              onSelectAll: () => onToggleSelectAll(!allVisibleSelected),
+              allSelected: allVisibleSelected,
+              someSelected: someVisibleSelected,
+              selectAllAriaLabel: t("obligations.trash.selectAll"),
+              selectRowAriaLabel: (c) =>
+                t("obligations.trash.selectCollection", { receipt: c.receipt_no }),
+            }
+          : undefined
       }
       columnResize={{ getColumnWidth: (key) => getColumnWidth?.(key), onColumnResize }}
       actionsHeaderClassName="w-24 min-w-24 text-end px-3 py-3"

@@ -65,7 +65,9 @@ vi.mock("@/tenant/features/question-bank/hooks/useQuestionBankTrashActions", () 
 }));
 
 function renderQuestionBankControllerHook() {
-  const result: { current: any } = {} as { current: any };
+  const result: { current: ReturnType<typeof useQuestionBankPageController> } = {} as {
+    current: ReturnType<typeof useQuestionBankPageController>;
+  };
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);

@@ -1,7 +1,10 @@
 import { ClipboardList, FileText, Library, Plus } from "lucide-react";
-import { FormModal, type FormModalTab } from "@/components/ui/FormModal";
+import { FormModal, type FormModalTab } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
-import { PaperBuilder, type PaperBuilderTab } from "@/tenant/features/question-bank/components/PaperBuilder";
+import {
+  PaperBuilder,
+  type PaperBuilderTab,
+} from "@/tenant/features/question-bank/components/PaperBuilder";
 import { QuestionForm } from "@/tenant/features/question-bank/components/QuestionForm";
 import type { QuestionBankQuestion, QuestionBankTest } from "@mms/shared";
 

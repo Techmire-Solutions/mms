@@ -10,12 +10,20 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
-  DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-    <button data-testid="dropdown-menu-item" onClick={onClick}>{children}</button>
+  DropdownMenuItem: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
+    <button data-testid="dropdown-menu-item" onClick={onClick}>
+      {children}
+    </button>
   ),
 }));
 
-vi.mock("@/components/ui/ModuleRowActionsMenu", () => ({
+vi.mock("@/components/app/ModuleRowActionsMenu", () => ({
   ModuleRowActionsMenu: ({
     viewLabel,
     extras,
@@ -30,7 +38,7 @@ vi.mock("@/components/ui/ModuleRowActionsMenu", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/PersonMessagingRowActionsExtras", () => ({
+vi.mock("@/components/app/PersonMessagingRowActionsExtras", () => ({
   PersonMessagingRowActionsExtras: () => <div data-testid="messaging-extras">Messaging</div>,
 }));
 
@@ -39,7 +47,7 @@ const mockEnrollment = {
   studentId: "std-1",
   studentName: "Zayd Harith",
   status: "active",
-} as any;
+} as unknown as never;
 
 describe("EnrollmentRowActions Component", () => {
   it("renders actions menu with cancel and messaging extras", () => {

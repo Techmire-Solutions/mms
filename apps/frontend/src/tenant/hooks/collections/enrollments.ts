@@ -15,14 +15,14 @@ export {
   useEnrollmentsMetrics,
   useEnrollmentsReportAggregates,
   useEnrollmentsWidgetAggregates,
-} from '@/tenant/features/enrollments/hooks/useEnrollmentsApi';
-export { invalidateEnrollmentsQueries } from '@/tenant/features/enrollments/hooks/invalidateEnrollmentsQueries';
+} from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
+export { invalidateEnrollmentsQueries } from "@/tenant/features/enrollments/hooks/invalidateEnrollmentsQueries";
 export {
   useComposedEnrollmentsSettings,
   useEnrollmentPreferencesMutation,
   useEnrollmentPreferencesQuery,
   ENROLLMENTS_PREFERENCES_QUERY_KEY,
-} from '@/tenant/features/enrollments/hooks/useEnrollmentSetupConfig';
+} from "@/tenant/features/enrollments/hooks/useEnrollmentSetupConfig";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   enrollmentsListQueryOptions,
@@ -33,4 +33,4 @@ export {
   useEnrollmentsContractDelete,
   useEnrollmentsContractBulkDelete,
   useEnrollmentsContractBulkRestore,
-} from '@/tenant/features/enrollments/hooks/useEnrollmentsTsrHooks';
+} from "@/tenant/features/enrollments/hooks/useEnrollmentsQueries";

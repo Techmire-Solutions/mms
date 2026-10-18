@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
-import { instructionalDayDecision, weekdayIndexes, type CalendarEventLite } from '@mms/shared';
-import { useAttendanceConfig } from '@/hooks/useStandardModuleConfig';
-import { useAcademicCalendarEvents } from './useAcademicCalendar';
+import { useMemo } from "react";
+import { instructionalDayDecision, weekdayIndexes, type CalendarEventLite } from "@mms/shared";
+import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
+import { useAcademicCalendarEvents } from "./useAcademicCalendar";
 
 export interface InstructionalDayInput {
   date: string;
@@ -37,5 +37,16 @@ export function useInstructionalDayStatus(input: InstructionalDayInput): Instruc
       scope: { sessionId: input.sessionId, classId: input.classId, sectionId: input.sectionId },
     });
     return { ...decision, allowExtraClass, isLoading: query.isLoading };
-  }, [settings.allowExtraClassOnHolidays, settings.workingDays, valid, input.date, input.sessionId, input.classId, input.sectionId, sessionDays, query.data, query.isLoading]);
+  }, [
+    settings.allowExtraClassOnHolidays,
+    settings.workingDays,
+    valid,
+    input.date,
+    input.sessionId,
+    input.classId,
+    input.sectionId,
+    sessionDays,
+    query.data,
+    query.isLoading,
+  ]);
 }

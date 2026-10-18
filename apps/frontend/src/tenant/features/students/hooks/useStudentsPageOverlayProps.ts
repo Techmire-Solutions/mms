@@ -24,7 +24,11 @@ export function useStudentsPageOverlayProps({
   overlays: WorkOverlays;
   workActions: Pick<
     WorkActions,
-    "handleSaveStudent" | "handleRestore" | "handleDelete" | "handleBulkDelete" | "handleBulkRestore"
+    | "handleSaveStudent"
+    | "handleRestore"
+    | "handleDelete"
+    | "handleBulkDelete"
+    | "handleBulkRestore"
   >;
   selectedIds: string[];
   clearSelection: () => void;

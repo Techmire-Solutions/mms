@@ -1,15 +1,15 @@
-import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import UsersPage from './UsersPage';
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import UsersPage from "./UsersPage";
 
-vi.mock('@/tenant/features/users/hooks/useUsersPageController', () => ({
+vi.mock("@/tenant/features/users/hooks/useUsersPageController", () => ({
   useUsersPageController: () => ({
     t: (key: string) => key,
-    effectiveTab: 'work',
-    effectiveSubTab: 'users',
-    effectiveConfigTab: 'preferences',
-    visibleTopTabs: [{ id: 'work', label: 'Users' }],
+    effectiveTab: "work",
+    effectiveSubTab: "users",
+    effectiveConfigTab: "preferences",
+    visibleTopTabs: [{ id: "work", label: "Users" }],
     USERS_CONFIG_TABS: [],
     canExport: true,
     canWrite: true,
@@ -21,14 +21,14 @@ vi.mock('@/tenant/features/users/hooks/useUsersPageController', () => ({
     setShowAddUser: vi.fn(),
     handleExportCSV: vi.fn(),
     workTierProps: {
-      tabs: [{ id: 'users', label: 'Users' }],
-      activeSubTab: 'users',
+      tabs: [{ id: "users", label: "Users" }],
+      activeSubTab: "users",
       users: [],
       listPage: 1,
       onPageChange: vi.fn(),
-      search: '',
-      roleFilter: 'all',
-      statusFilter: 'all',
+      search: "",
+      roleFilter: "all",
+      statusFilter: "all",
       selectedIds: [],
       onSelectedIdsChange: vi.fn(),
       onSearchChange: vi.fn(),
@@ -47,7 +47,7 @@ vi.mock('@/tenant/features/users/hooks/useUsersPageController', () => ({
       isUserColumnVisible: vi.fn(() => true),
       userColumnRegistry: [],
       updateUserColumnLayout: vi.fn(),
-      userColumnCustomizerLabels: {} as any,
+      userColumnCustomizerLabels: {} as unknown as never,
       getActivityColumnWidth: vi.fn(),
       setActivityColumnWidth: vi.fn(),
       onSubTabChange: vi.fn(),
@@ -91,24 +91,24 @@ vi.mock('@/tenant/features/users/hooks/useUsersPageController', () => ({
   }),
 }));
 
-vi.mock('@/tenant/features/users/components/UsersWorkTier', () => ({
+vi.mock("@/tenant/features/users/components/UsersWorkTier", () => ({
   UsersWorkTier: () => <div data-testid="users-work-tier">Users Work Tier Content</div>,
 }));
 
-vi.mock('@/tenant/features/users/components/UsersModalLayer', () => ({
+vi.mock("@/tenant/features/users/components/UsersModalLayer", () => ({
   UsersModalLayer: () => <div data-testid="users-modal-layer">Users Modal Layer Content</div>,
 }));
 
-vi.mock('@/tenant/features/users/components/UsersCommandMetrics', () => ({
+vi.mock("@/tenant/features/users/components/UsersCommandMetrics", () => ({
   UsersCommandMetrics: () => <div data-testid="users-command-metrics">Metrics</div>,
 }));
 
-describe('UsersPage', () => {
-  it('renders page shell with header actions and work tier', () => {
+describe("UsersPage", () => {
+  it("renders page shell with header actions and work tier", () => {
     const html = renderToStaticMarkup(<UsersPage />);
-    expect(html).toContain('Users Work Tier Content');
-    expect(html).toContain('users.exportCsv');
-    expect(html).toContain('users.invite');
-    expect(html).toContain('users.add');
+    expect(html).toContain("Users Work Tier Content");
+    expect(html).toContain("users.exportCsv");
+    expect(html).toContain("users.invite");
+    expect(html).toContain("users.add");
   });
 });

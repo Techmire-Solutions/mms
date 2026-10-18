@@ -7,9 +7,9 @@
 #
 # Reads the hook payload on stdin (JSON containing .file_path or .path), then:
 #   * runs eslint --fix for TS/JS through the same compatibility shim the pnpm
-#     lint scripts use (this is what the repo can actually run today), and
-#   * runs prettier when a local binary exists — the repo has a .prettierrc.json
-#     but does NOT currently depend on prettier, so that branch is normally inert.
+#     lint scripts use, and
+#   * runs prettier via the local binary (a root devDependency since ADR-009;
+#     `format:check` gates CI) when it is installed.
 #
 # Always exits 0 — a formatting failure must never block an agent. Unfixable
 # errors are printed so the agent sees them.

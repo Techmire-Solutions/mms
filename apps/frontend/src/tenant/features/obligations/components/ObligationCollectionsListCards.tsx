@@ -4,12 +4,12 @@ import { formatDate } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { EntityCard } from "@/components/app/EntityCard";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { ObligationCollectionRowActions } from "@/tenant/features/obligations/components/ObligationCollectionRowActions";
@@ -17,7 +17,7 @@ import {
   formatObligationCollectionAmount,
   getObligationCollectionResolvedFields,
   type ObligationCollectionListContentProps,
-} from "@/tenant/features/obligations/components/obligationCollectionListContentShared";
+} from "@/tenant/features/obligations/lib/obligationCollectionListContentShared";
 
 type ObligationCollectionListCardsProps = Omit<
   ObligationCollectionListContentProps,
@@ -54,7 +54,10 @@ function ObligationCollectionCard({
   } = props;
 
   const helpers = { getContact, getRep, getMujtahid, getObligationType };
-  const { sender, obligationType, rep, mujtahid } = getObligationCollectionResolvedFields(collection, helpers);
+  const { sender, obligationType, rep, mujtahid } = getObligationCollectionResolvedFields(
+    collection,
+    helpers,
+  );
   const displayName = sender?.name || "—";
 
   return (
@@ -68,7 +71,9 @@ function ObligationCollectionCard({
       header={{
         displayName,
         subtitle: isColumnVisible("receiptNo") ? (
-          <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">{collection.receipt_no}</p>
+          <p className="mt-0.5 truncate font-mono text-xs font-bold text-primary">
+            {collection.receipt_no}
+          </p>
         ) : undefined,
       }}
       viewLabel={t("obligations.actions.viewShort")}
@@ -82,7 +87,9 @@ function ObligationCollectionCard({
           )}
           {isColumnVisible("obligationType") && (
             <EntityCardMetaTile label={t("obligations.columns.obligationType")}>
-              <Badge pill tone="primary" className="px-2 font-bold">{obligationType?.name || "—"}</Badge>
+              <Badge pill tone="primary" className="px-2 font-bold">
+                {obligationType?.name || "—"}
+              </Badge>
             </EntityCardMetaTile>
           )}
           {isColumnVisible("repMujtahid") && (
@@ -137,10 +144,19 @@ function ObligationCollectionCard({
   );
 }
 
-export function ObligationCollectionsListCards(props: ObligationCollectionListCardsProps): React.JSX.Element {
+export function ObligationCollectionsListCards(
+  props: ObligationCollectionListCardsProps,
+): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const { collections, selectedIds, canDelete, allVisibleSelected, someVisibleSelected, onToggleSelectAll } = props;
+  const {
+    collections,
+    selectedIds,
+    canDelete,
+    allVisibleSelected,
+    someVisibleSelected,
+    onToggleSelectAll,
+  } = props;
 
   const pageCountLabel = formatDirectoryPageCountLabel(collections.length, t, {
     singular: "obligations.item.collection",

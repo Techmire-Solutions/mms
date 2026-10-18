@@ -10,12 +10,7 @@ import {
 
 describe("facultyPageWorkSubTabs", () => {
   it("exposes four peer tabs and two IO entities (no departments tab)", () => {
-    expect(FACULTY_PAGE_TAB_IDS).toEqual([
-      "faculties",
-      "designations",
-      "reports",
-      "setup",
-    ]);
+    expect(FACULTY_PAGE_TAB_IDS).toEqual(["faculties", "designations", "reports", "setup"]);
     expect(FACULTY_IO_ENTITY_IDS).toEqual(["faculties", "designations"]);
   });
 

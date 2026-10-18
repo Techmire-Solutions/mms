@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { DEFAULT_COLUMN_REGISTRY, type ColumnRegistryEntry } from "@mms/shared";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ModuleColumnCustomizerLabels } from "@/components/ui/moduleColumnCustomizerTypes";
+import type { ModuleColumnCustomizerLabels } from "@/components/app/moduleColumnCustomizerTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface ContactsListFiltersSortOption {
@@ -27,7 +27,9 @@ export function useContactsToolbarModel(): ContactsListFiltersModel {
 
   const sortOptions = useMemo(() => {
     const dynamicSorts: ContactsListFiltersSortOption[] = availableColumns
-      .filter((column): column is typeof column & { sortField: string } => Boolean(column.sortField))
+      .filter((column): column is typeof column & { sortField: string } =>
+        Boolean(column.sortField),
+      )
       .map((column) => ({
         field: column.sortField,
         label: column.label,
@@ -35,7 +37,9 @@ export function useContactsToolbarModel(): ContactsListFiltersModel {
 
     const combined = [...dynamicSorts];
     systemSortOptions.forEach((systemSortOption) => {
-      if (!combined.some((existingSortOption) => existingSortOption.field === systemSortOption.field)) {
+      if (
+        !combined.some((existingSortOption) => existingSortOption.field === systemSortOption.field)
+      ) {
         combined.push(systemSortOption);
       }
     });

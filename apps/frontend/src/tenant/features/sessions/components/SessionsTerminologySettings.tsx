@@ -8,12 +8,12 @@ import {
   type AcademicTermKey,
   type AcademicTerminology,
 } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsSetupPanelState } from "@/tenant/features/sessions/hooks/useSessionsSetupPanelState";
@@ -31,11 +31,16 @@ export interface SessionsTerminologySettingsProps {
 }
 
 /** Sessions → Setup → Terminology: per-language relabels for Session / Class / Section. */
-export function SessionsTerminologySettings({ onDirtyChange }: SessionsTerminologySettingsProps): React.JSX.Element {
+export function SessionsTerminologySettings({
+  onDirtyChange,
+}: SessionsTerminologySettingsProps): React.JSX.Element {
   const { t, language: uiLanguage } = useTranslation();
-  const { settingsDraft, upd, saved, saving, isPrefsDirty, handleSave } = useSessionsSetupPanelState();
+  const { settingsDraft, upd, saved, saving, isPrefsDirty, handleSave } =
+    useSessionsSetupPanelState();
   const [language, setLanguage] = useState<Language>(
-    (ACADEMIC_TERM_LANGUAGES as readonly string[]).includes(uiLanguage) ? (uiLanguage as Language) : "en",
+    (ACADEMIC_TERM_LANGUAGES as readonly string[]).includes(uiLanguage)
+      ? (uiLanguage as Language)
+      : "en",
   );
   const terminology: AcademicTerminology = settingsDraft.terminology ?? {};
 
@@ -45,12 +50,20 @@ export function SessionsTerminologySettings({ onDirtyChange }: SessionsTerminolo
 
   const setTerm = (key: AcademicTermKey, field: Field, value: string) => {
     const current = terminology[language]?.[key] ?? { singular: "", plural: "" };
-    upd("terminology", { ...terminology, [language]: { ...terminology[language], [key]: { ...current, [field]: value } } });
+    upd("terminology", {
+      ...terminology,
+      [language]: { ...terminology[language], [key]: { ...current, [field]: value } },
+    });
   };
 
   return (
     <ModuleSetupContent>
-      <SectionCard title={t("academicTerms.title")} icon={Languages} accentColor="primary" className={SETUP_SECTION_CARD_CLASS}>
+      <SectionCard
+        title={t("academicTerms.title")}
+        icon={Languages}
+        accentColor="primary"
+        className={SETUP_SECTION_CARD_CLASS}
+      >
         <p className="mb-3 text-sm text-muted-foreground text-pretty">{t("academicTerms.hint")}</p>
         <SubTabBar
           tabs={ACADEMIC_TERM_LANGUAGES.map((code) => ({ key: code, label: languageLabel(code) }))}
@@ -60,9 +73,15 @@ export function SessionsTerminologySettings({ onDirtyChange }: SessionsTerminolo
         <div className="mt-4 space-y-4">
           {ACADEMIC_TERM_KEYS.map((key) => (
             <fieldset key={key} className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:items-end">
-              <legend className="text-sm font-medium sm:pb-3">{t(`academicTerms.${key}.singular`)}</legend>
+              <legend className="text-sm font-medium sm:pb-3">
+                {t(`academicTerms.${key}.singular`)}
+              </legend>
               {(["singular", "plural"] as const).map((field) => (
-                <Field key={field} id={`term-${language}-${key}-${field}`} label={t(`academicTerms.${field}`)}>
+                <Field
+                  key={field}
+                  id={`term-${language}-${key}-${field}`}
+                  label={t(`academicTerms.${field}`)}
+                >
                   <Input
                     id={`term-${language}-${key}-${field}`}
                     dir={languageDir(language)}

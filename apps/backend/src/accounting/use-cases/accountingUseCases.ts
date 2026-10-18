@@ -1,11 +1,11 @@
-import type { AccountingRepository } from '../repository/accountingRepository.js';
-import { accountingRepository } from '../repository/accountingRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
+import type { AccountingRepository } from "../repository/accountingRepository.js";
+import { accountingRepository } from "../repository/accountingRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import {
   defineTenantBulkCollectionService,
   upsertWithBroadcast,
-} from '../../services/tenantBulkService.js';
+} from "../../services/tenantBulkService.js";
 import {
   EMPTY_ACCOUNTING_REPORT_AGGREGATES,
   dedupeTrimmedIds,
@@ -22,18 +22,18 @@ import {
   fiscalYearListSchema,
   journalEntryRecordSchema,
   accountRecordSchema,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   prepareJournalEntryForPersist,
   assertJournalAccountsWritable,
   assertJournalEntryPeriodOpen,
-} from './accountingLedgerGuards.js';
-import { getPostingRules } from '../../db/repositories/accountingLedgerOpsRepository.js';
-import { withTenant } from '../../db/tenant-context.js';
-import { ConflictError } from '../../lib/httpErrors.js';
-import { isUniqueViolation } from '../../lib/pgErrors.js';
-import { randomUUID } from 'node:crypto';
-import { assignVoucherRefs } from './journalVoucherRefs.js';
+} from "./accountingLedgerGuards.js";
+import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { ConflictError } from "../../lib/httpErrors.js";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
+import { randomUUID } from "node:crypto";
+import { assignVoucherRefs } from "./journalVoucherRefs.js";
 
 const EMPTY_ACCOUNTING_METRICS: AccountingCommandMetricsSnapshot = {
   totalEntries: 0,
@@ -50,17 +50,22 @@ const EMPTY_ACCOUNTING_METRICS: AccountingCommandMetricsSnapshot = {
   liabilities: 0,
 };
 
-function normalizeLines(lines: JournalEntry['lines']): string {
+function normalizeLines(lines: JournalEntry["lines"]): string {
   return (lines ?? [])
     .map((line) =>
-      [line.account_id, moneyToCents(line.debit), moneyToCents(line.credit), line.description ?? ''].join('|'),
+      [
+        line.account_id,
+        moneyToCents(line.debit),
+        moneyToCents(line.credit),
+        line.description ?? "",
+      ].join("|"),
     )
     .sort()
-    .join(';');
+    .join(";");
 }
 
 function normalizeList(values: readonly string[] | undefined): string {
-  return [...(values ?? [])].sort().join('|');
+  return [...(values ?? [])].sort().join("|");
 }
 
 /**
@@ -70,15 +75,15 @@ function normalizeList(values: readonly string[] | undefined): string {
 function journalEntryContentChanged(incoming: JournalEntry, stored: JournalEntry): boolean {
   return (
     incoming.date !== stored.date ||
-    (incoming.ref ?? '') !== (stored.ref ?? '') ||
-    (incoming.description ?? '') !== (stored.description ?? '') ||
+    (incoming.ref ?? "") !== (stored.ref ?? "") ||
+    (incoming.description ?? "") !== (stored.description ?? "") ||
     incoming.status !== stored.status ||
-    (incoming.fiscal_year ?? '') !== (stored.fiscal_year ?? '') ||
-    (incoming.fiscal_year_id ?? '') !== (stored.fiscal_year_id ?? '') ||
-    (incoming.source_type ?? '') !== (stored.source_type ?? '') ||
-    (incoming.source_id ?? '') !== (stored.source_id ?? '') ||
-    (incoming.transaction_type ?? '') !== (stored.transaction_type ?? '') ||
-    (incoming.reversed_ref ?? '') !== (stored.reversed_ref ?? '') ||
+    (incoming.fiscal_year ?? "") !== (stored.fiscal_year ?? "") ||
+    (incoming.fiscal_year_id ?? "") !== (stored.fiscal_year_id ?? "") ||
+    (incoming.source_type ?? "") !== (stored.source_type ?? "") ||
+    (incoming.source_id ?? "") !== (stored.source_id ?? "") ||
+    (incoming.transaction_type ?? "") !== (stored.transaction_type ?? "") ||
+    (incoming.reversed_ref ?? "") !== (stored.reversed_ref ?? "") ||
     Boolean(incoming.simple_mode) !== Boolean(stored.simple_mode) ||
     normalizeLines(incoming.lines) !== normalizeLines(stored.lines) ||
     normalizeList(incoming.tags) !== normalizeList(stored.tags) ||
@@ -89,19 +94,22 @@ function journalEntryContentChanged(incoming: JournalEntry, stored: JournalEntry
 function mapJournalEntryUniqueError(error: unknown): never {
   const pgErr = error as { constraint?: string; message?: string };
   if (
-    pgErr.constraint === 'accounting_entries_workspace_ref_active_uidx' ||
-    pgErr.message?.includes('accounting_entries_workspace_ref_active_uidx')
+    pgErr.constraint === "accounting_entries_workspace_ref_active_uidx" ||
+    pgErr.message?.includes("accounting_entries_workspace_ref_active_uidx")
   ) {
-    throw new ConflictError('A journal entry with this reference already exists');
+    throw new ConflictError("A journal entry with this reference already exists");
   }
   throw new ConflictError(
-    'A journal entry already exists for this source (conflicting source_type/source_id)',
+    "A journal entry already exists for this source (conflicting source_type/source_id)",
   );
 }
 
 export interface AccountingUseCasesDependencies {
   countActiveJournalLinesForAccount?: (tenant: string, accountId: string) => Promise<number>;
-  countActiveJournalLinesForAccounts?: (tenant: string, accountIds: string[]) => Promise<Map<string, number>>;
+  countActiveJournalLinesForAccounts?: (
+    tenant: string,
+    accountIds: string[],
+  ) => Promise<Map<string, number>>;
 }
 
 /**
@@ -115,21 +123,30 @@ export function createAccountingUseCases(
   deps?: AccountingUseCasesDependencies,
 ) {
   const accountService = defineTenantBulkCollectionService<Account>(
-    { listByWorkspace: repo.listAccountsByWorkspace, replaceForWorkspace: repo.replaceAccountsForWorkspace },
+    {
+      listByWorkspace: repo.listAccountsByWorkspace,
+      replaceForWorkspace: repo.replaceAccountsForWorkspace,
+    },
     accountListSchema,
-    'accounting_accounts',
+    "accounting_accounts",
   );
 
   const entryBulkService = defineTenantBulkCollectionService<JournalEntry>(
-    { listByWorkspace: repo.listEntriesByWorkspace, replaceForWorkspace: repo.replaceEntriesForWorkspace },
+    {
+      listByWorkspace: repo.listEntriesByWorkspace,
+      replaceForWorkspace: repo.replaceEntriesForWorkspace,
+    },
     journalEntryListSchema,
-    'accounting_entries',
+    "accounting_entries",
   );
 
   const fiscalYearService = defineTenantBulkCollectionService<FiscalYear>(
-    { listByWorkspace: repo.listFiscalYearsByWorkspace, replaceForWorkspace: repo.replaceFiscalYearsForWorkspace },
+    {
+      listByWorkspace: repo.listFiscalYearsByWorkspace,
+      replaceForWorkspace: repo.replaceFiscalYearsForWorkspace,
+    },
     fiscalYearListSchema,
-    'accounting_fiscal_years',
+    "accounting_fiscal_years",
   );
 
   const entryCrud = createGenericRelationalService<JournalEntry>({
@@ -141,8 +158,8 @@ export function createAccountingUseCases(
       bulkRestore: repo.bulkRestoreEntries,
     },
     schema: journalEntryRecordSchema,
-    websocketCollection: 'accounting_entries',
-    idPrefix: 'je',
+    websocketCollection: "accounting_entries",
+    idPrefix: "je",
   });
 
   const accountCrud = createGenericRelationalService<Account>({
@@ -154,8 +171,8 @@ export function createAccountingUseCases(
       bulkRestore: repo.bulkRestoreAccounts,
     },
     schema: accountRecordSchema,
-    websocketCollection: 'accounting_accounts',
-    idPrefix: 'acc',
+    websocketCollection: "accounting_accounts",
+    idPrefix: "acc",
   });
 
   /**
@@ -190,7 +207,7 @@ export function createAccountingUseCases(
     stored: JournalEntry | undefined,
   ): JournalEntry => ({
     ...entry,
-    source_type: stored ? stored.source_type : 'manual',
+    source_type: stored ? stored.source_type : "manual",
     source_id: stored ? stored.source_id : undefined,
     reversed_ref: stored ? stored.reversed_ref : undefined,
   });
@@ -207,11 +224,11 @@ export function createAccountingUseCases(
   ): void => {
     for (const incoming of entries) {
       const existing = storedById.get(incoming.id);
-      if (!existing || existing.status !== 'posted') continue;
+      if (!existing || existing.status !== "posted") continue;
       if (journalEntryContentChanged(incoming, existing)) {
         throw Object.assign(
-          new Error('Posted journal entries are immutable — reverse them instead of editing'),
-          { statusCode: 422, type: 'validation_error' },
+          new Error("Posted journal entries are immutable — reverse them instead of editing"),
+          { statusCode: 422, type: "validation_error" },
         );
       }
     }
@@ -274,31 +291,35 @@ export function createAccountingUseCases(
     const storedById = new Map(stored.map((year) => [year.id, year]));
     for (const year of incoming) {
       if (year.deletedAt || year.deletedBy || year.deletionReason) {
-        throw Object.assign(new Error('Fiscal year lifecycle fields cannot be changed through bulk saves'), {
-          statusCode: 422, type: 'validation_error',
-        });
+        throw Object.assign(
+          new Error("Fiscal year lifecycle fields cannot be changed through bulk saves"),
+          {
+            statusCode: 422,
+            type: "validation_error",
+          },
+        );
       }
       const existing = storedById.get(year.id);
-      const isClosed = year.status === 'closed';
-      if (existing?.status === 'closed') {
+      const isClosed = year.status === "closed";
+      if (existing?.status === "closed") {
         if (!isClosed) {
           throw Object.assign(
-            new Error('A closed fiscal year cannot be reopened — post an adjustment instead'),
-            { statusCode: 422, type: 'validation_error' },
+            new Error("A closed fiscal year cannot be reopened — post an adjustment instead"),
+            { statusCode: 422, type: "validation_error" },
           );
         }
         if (existing.startDate !== year.startDate || existing.endDate !== year.endDate) {
           throw Object.assign(
-            new Error('A closed fiscal year cannot have its date range changed'),
-            { statusCode: 422, type: 'validation_error' },
+            new Error("A closed fiscal year cannot have its date range changed"),
+            { statusCode: 422, type: "validation_error" },
           );
         }
         continue;
       }
       if (isClosed) {
         throw Object.assign(
-          new Error('Fiscal years must be closed through the close-fiscal-year action'),
-          { statusCode: 422, type: 'validation_error' },
+          new Error("Fiscal years must be closed through the close-fiscal-year action"),
+          { statusCode: 422, type: "validation_error" },
         );
       }
     }
@@ -313,8 +334,8 @@ export function createAccountingUseCases(
     if (!tenant) return false;
     const existing = await repo.findEntryById(tenant, id);
     if (!existing || existing.deletedAt) return false;
-    if (existing.status === 'posted') {
-      throw new Error('Posted journal entries cannot be deleted');
+    if (existing.status === "posted") {
+      throw new Error("Posted journal entries cannot be deleted");
     }
     return entryCrud.deleteById(id, deletedBy, deletionReason);
   };
@@ -387,7 +408,12 @@ export function createAccountingUseCases(
     },
 
     upsertAccounts: (accounts: Account[]) =>
-      upsertWithBroadcast(accountListSchema, accounts, repo.bulkSaveAccounts, 'accounting_accounts'),
+      upsertWithBroadcast(
+        accountListSchema,
+        accounts,
+        repo.bulkSaveAccounts,
+        "accounting_accounts",
+      ),
     /**
      * Runs the immutability, period and account guards and the write inside one
      * transaction. The route that serves this (`PUT {path}/bulk`) opens no
@@ -396,10 +422,13 @@ export function createAccountingUseCases(
      */
     upsertEntries: async (entries: JournalEntry[]) => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       return withTenant(tenant, async () => {
         const parsed = journalEntryListSchema.parse(entries);
-        await repo.lockJournalEntries(tenant, parsed.map((entry) => entry.id));
+        await repo.lockJournalEntries(
+          tenant,
+          parsed.map((entry) => entry.id),
+        );
         const fiscalYears = await fiscalYearService.load();
         const storedById = await loadStoredEntriesByIds(parsed);
 
@@ -427,13 +456,15 @@ export function createAccountingUseCases(
         );
         assertEntriesMutable(sanitized, storedById);
         await assertEntriesWritable(tenant, sanitized, storedById, fiscalYears);
-        const prepared = sanitized.map((entry) => prepareJournalEntryForPersist(entry, fiscalYears));
+        const prepared = sanitized.map((entry) =>
+          prepareJournalEntryForPersist(entry, fiscalYears),
+        );
         try {
           return await upsertWithBroadcast(
             journalEntryListSchema,
             prepared,
             repo.bulkSaveEntries,
-            'accounting_entries',
+            "accounting_entries",
             { skipValidation: true },
           );
         } catch (error) {
@@ -446,21 +477,21 @@ export function createAccountingUseCases(
     },
     upsertFiscalYears: async (fiscalYears: FiscalYear[]) => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       return withTenant(tenant, async () => {
         await assertFiscalYearWritesAllowed(fiscalYears);
         return upsertWithBroadcast(
           fiscalYearListSchema,
           fiscalYears,
           repo.bulkSaveFiscalYears,
-          'accounting_fiscal_years',
+          "accounting_fiscal_years",
         );
       });
     },
 
     createJournalEntry: async (record: JournalEntry) => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       return withTenant(tenant, async () => {
         const id = record.id?.trim() || `je-${randomUUID()}`;
         await repo.lockJournalEntries(tenant, [id]);
@@ -481,14 +512,11 @@ export function createAccountingUseCases(
           new Map(existing ? [[id, existing.ref]] : []),
         );
 
-        const sanitized = withServerOwnedSourceKeys(
-          { ...record, id, ref },
-          existing ?? undefined,
-        );
+        const sanitized = withServerOwnedSourceKeys({ ...record, id, ref }, existing ?? undefined);
         const prepared = prepareJournalEntryForPersist(sanitized, fiscalYears);
         if (existing) {
           if (existing.deletedAt || journalEntryContentChanged(prepared, existing)) {
-            throw new ConflictError('A different journal entry already exists with this ID');
+            throw new ConflictError("A different journal entry already exists with this ID");
           }
           return existing;
         }
@@ -506,7 +534,7 @@ export function createAccountingUseCases(
     },
     updateJournalEntryById: async (id: string, record: JournalEntry) => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       return withTenant(tenant, async () => {
         await repo.lockJournalEntries(tenant, [id]);
         const fiscalYears = await fiscalYearService.load();
@@ -528,7 +556,10 @@ export function createAccountingUseCases(
         assertJournalEntryPeriodOpen(sanitized, fiscalYears);
         await assertEntryAccountsWritable(tenant, [sanitized]);
         try {
-          return await entryCrud.updateById(id, prepareJournalEntryForPersist(sanitized, fiscalYears));
+          return await entryCrud.updateById(
+            id,
+            prepareJournalEntryForPersist(sanitized, fiscalYears),
+          );
         } catch (error) {
           if (isUniqueViolation(error)) {
             mapJournalEntryUniqueError(error);
@@ -542,7 +573,9 @@ export function createAccountingUseCases(
       if (tenant && repo.findEntryById && repo.findEntryByRef) {
         const trashed = await repo.findEntryById(tenant, id);
         if (trashed?.ref?.trim()) {
-          const conflicting = await repo.findEntryByRef(tenant, trashed.ref.trim(), { excludeId: id });
+          const conflicting = await repo.findEntryByRef(tenant, trashed.ref.trim(), {
+            excludeId: id,
+          });
           if (conflicting) {
             throw new ConflictError(
               `Cannot restore journal entry: reference "${trashed.ref}" is already used by an active entry`,
@@ -565,10 +598,15 @@ export function createAccountingUseCases(
       if (cleanIds.length === 0) return { succeeded: 0, failed: 0 };
       const tenant = getRequestTenant();
       if (repo.bulkSoftDeleteEntries && tenant) {
-        const result = await repo.bulkSoftDeleteEntries(tenant, cleanIds, deletedBy, deletionReason);
+        const result = await repo.bulkSoftDeleteEntries(
+          tenant,
+          cleanIds,
+          deletedBy,
+          deletionReason,
+        );
         if (result.succeeded > 0) {
-          const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-          broadcastTenantUpdate(tenant, 'collection', 'accounting_entries');
+          const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
+          broadcastTenantUpdate(tenant, "collection", "accounting_entries");
         }
         return result;
       }
@@ -592,16 +630,16 @@ export function createAccountingUseCases(
       deletionReason?: string,
     ): Promise<boolean> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       const cleanId = id?.trim();
       if (!cleanId) return false;
       const getActiveCount =
         deps?.countActiveJournalLinesForAccount ??
-        (await import('../../db/repositories/accountingAccountsRepository.js'))
+        (await import("../../db/repositories/accountingAccountsRepository.js"))
           .countActiveJournalLinesForAccount;
       const activeCount = await getActiveCount(tenant, cleanId);
       if (activeCount > 0) {
-        const err = new Error('Cannot archive account with active ledger entries');
+        const err = new Error("Cannot archive account with active ledger entries");
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
@@ -619,7 +657,7 @@ export function createAccountingUseCases(
       if (cleanIds.length === 0) return { succeeded: 0, failed: 0 };
       const getActiveCounts =
         deps?.countActiveJournalLinesForAccounts ??
-        (await import('../../db/repositories/accountingAccountsRepository.js'))
+        (await import("../../db/repositories/accountingAccountsRepository.js"))
           .countActiveJournalLinesForAccounts;
       const activeCounts = await getActiveCounts(tenant, cleanIds);
       const blockedIds = new Set<string>();
@@ -641,7 +679,13 @@ export function createAccountingUseCases(
     loadAccountsPage: async (query: AccountingListQuery & { includeDeleted?: boolean }) => {
       const tenant = getRequestTenant();
       if (!tenant) {
-        return { accounts: [], total: 0, page: query.page ?? 1, limit: query.limit ?? 12, hasMore: false };
+        return {
+          accounts: [],
+          total: 0,
+          page: query.page ?? 1,
+          limit: query.limit ?? 12,
+          hasMore: false,
+        };
       }
       return repo.listAccountsPage(tenant, query);
     },
@@ -649,7 +693,13 @@ export function createAccountingUseCases(
     loadEntriesPage: async (query: AccountingListQuery & { includeDeleted?: boolean }) => {
       const tenant = getRequestTenant();
       if (!tenant) {
-        return { entries: [], total: 0, page: query.page ?? 1, limit: query.limit ?? 12, hasMore: false };
+        return {
+          entries: [],
+          total: 0,
+          page: query.page ?? 1,
+          limit: query.limit ?? 12,
+          hasMore: false,
+        };
       }
       return repo.listEntriesPage(tenant, query);
     },
@@ -657,7 +707,13 @@ export function createAccountingUseCases(
     loadFiscalYearsPage: async (query: AccountingListQuery & { includeDeleted?: boolean }) => {
       const tenant = getRequestTenant();
       if (!tenant) {
-        return { fiscalYears: [], total: 0, page: query.page ?? 1, limit: query.limit ?? 12, hasMore: false };
+        return {
+          fiscalYears: [],
+          total: 0,
+          page: query.page ?? 1,
+          limit: query.limit ?? 12,
+          hasMore: false,
+        };
       }
       return repo.listFiscalYearsPage(tenant, query);
     },

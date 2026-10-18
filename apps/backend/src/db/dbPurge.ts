@@ -1,17 +1,16 @@
-import { WORKSPACES_COLLECTION } from '@mms/shared';
-import { like, sql } from 'drizzle-orm';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { deleteAuthArtifactsForWorkspace } from '../services/auth/authArtifactService.js';
-import { withTenant } from './tenant-context.js';
-import {
-  getQueryRows,
-  saveCollection,
-  saveObject,
-} from './documentStore.js';
-import { getMinimalCollectionsForSeed, getMinimalObjects } from './minimalSeeds.js';
-import * as schema from './schema.js';
+import { WORKSPACES_COLLECTION } from "@mms/shared";
+import { like, sql } from "drizzle-orm";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { deleteAuthArtifactsForWorkspace } from "../services/auth/authArtifactService.js";
+import { withTenant } from "./tenant-context.js";
+import { getQueryRows, saveCollection, saveObject } from "./documentStore.js";
+import { getMinimalCollectionsForSeed, getMinimalObjects } from "./minimalSeeds.js";
+import * as schema from "./schema.js";
 
-async function deleteTenantRowsByColumn(columnName: 'workspace_subdomain' | 'tenant_id', tenant: string): Promise<void> {
+async function deleteTenantRowsByColumn(
+  columnName: "workspace_subdomain" | "tenant_id",
+  tenant: string,
+): Promise<void> {
   await withTenant(tenant, async (tx) => {
     // `include_deleted` is required so the soft-delete RLS policy does not hide
     // archived rows; without it a workspace purge silently leaves all trashed
@@ -21,9 +20,13 @@ async function deleteTenantRowsByColumn(columnName: 'workspace_subdomain' | 'ten
         set_config('app.include_deleted', 'true', true),
         set_config('app.allow_hard_purge', 'true', true)
     `);
-    if (columnName === 'workspace_subdomain') {
-      await tx.execute(sql`UPDATE "faculty_departments" SET "parent_id" = NULL WHERE "workspace_subdomain" = ${tenant}`);
-      await tx.execute(sql`UPDATE "tasks" SET "parent_task_id" = NULL WHERE "workspace_subdomain" = ${tenant}`);
+    if (columnName === "workspace_subdomain") {
+      await tx.execute(
+        sql`UPDATE "faculty_departments" SET "parent_id" = NULL WHERE "workspace_subdomain" = ${tenant}`,
+      );
+      await tx.execute(
+        sql`UPDATE "tasks" SET "parent_task_id" = NULL WHERE "workspace_subdomain" = ${tenant}`,
+      );
     }
     const result = await tx.execute(sql`
       SELECT table_name
@@ -60,7 +63,7 @@ async function deleteTenantRowsByColumn(columnName: 'workspace_subdomain' | 'ten
 export async function purgeTenantDataBySubdomain(subdomain: string): Promise<void> {
   const tenant = subdomain.trim().toLowerCase();
   if (!tenant) {
-    throw new Error('Subdomain is required to purge tenant data');
+    throw new Error("Subdomain is required to purge tenant data");
   }
 
   const prefix = `t:${tenant}:`;
@@ -70,8 +73,8 @@ export async function purgeTenantDataBySubdomain(subdomain: string): Promise<voi
     await tx.delete(schema.objects).where(like(schema.objects.key, `${prefix}%`));
   });
 
-  await deleteTenantRowsByColumn('tenant_id', tenant);
-  await deleteTenantRowsByColumn('workspace_subdomain', tenant);
+  await deleteTenantRowsByColumn("tenant_id", tenant);
+  await deleteTenantRowsByColumn("workspace_subdomain", tenant);
   await deleteAuthArtifactsForWorkspace(tenant);
 }
 
@@ -81,7 +84,7 @@ export async function purgeTenantDataBySubdomain(subdomain: string): Promise<voi
 export async function resetTenantData(): Promise<void> {
   const tenant = getRequestTenant();
   if (!tenant) {
-    throw new Error('Tenant context is required to reset workspace data');
+    throw new Error("Tenant context is required to reset workspace data");
   }
 
   await purgeTenantDataBySubdomain(tenant);

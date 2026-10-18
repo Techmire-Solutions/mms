@@ -1,27 +1,27 @@
-import React, { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DistributeModal } from './DistributeModal';
-import type { Denomination, StockBatch } from '@/lib/data/hasanatData';
+import React, { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DistributeModal } from "./DistributeModal";
+import type { Denomination, StockBatch } from "@/lib/data/hasanatData";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
 }));
 
-vi.mock('@/lib/contexts/AuthContext', () => ({
+vi.mock("@/lib/contexts/AuthContext", () => ({
   useAuth: () => ({
-    user: { id: 'usr-1', name: 'Admin' },
+    user: { id: "usr-1", name: "Admin" },
   }),
 }));
 
-vi.mock('@/hooks/useStandardModuleConfig', () => ({
+vi.mock("@/hooks/useStandardModuleConfig", () => ({
   useHasanatConfig: () => ({
     fields: {
       denominationId: { required: true },
@@ -33,20 +33,20 @@ vi.mock('@/hooks/useStandardModuleConfig', () => ({
       issuedBy: { required: true },
     },
     orderedFields: [
-      { id: 'denominationId' },
-      { id: 'recipientType' },
-      { id: 'recipientName' },
-      { id: 'quantity' },
-      { id: 'issuedDate' },
-      { id: 'reason' },
-      { id: 'issuedBy' },
+      { id: "denominationId" },
+      { id: "recipientType" },
+      { id: "recipientName" },
+      { id: "quantity" },
+      { id: "issuedDate" },
+      { id: "reason" },
+      { id: "issuedBy" },
     ],
     isFieldEnabled: () => true,
     isFieldRequired: () => true,
   }),
 }));
 
-vi.mock('@/components/ui/FormModal', () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     saveDisabled,
@@ -73,7 +73,7 @@ vi.mock('@/components/ui/FormModal', () => ({
   ),
 }));
 
-vi.mock('@/tenant/components/selectors/RegistryPersonSelect', () => ({
+vi.mock("@/tenant/components/selectors/RegistryPersonSelect", () => ({
   RegistryPersonSelect: ({
     id,
     value,
@@ -92,7 +92,7 @@ vi.mock('@/tenant/components/selectors/RegistryPersonSelect', () => ({
   ),
 }));
 
-vi.mock('@/tenant/components/selectors/UserActorSelect', () => ({
+vi.mock("@/tenant/components/selectors/UserActorSelect", () => ({
   UserActorSelect: ({
     id,
     value,
@@ -111,17 +111,11 @@ vi.mock('@/tenant/components/selectors/UserActorSelect', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/DatePicker', () => ({
-  DatePicker: ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (val: string) => void;
-  }) => (
+vi.mock("@/components/app/DatePicker", () => ({
+  DatePicker: ({ value, onChange }: { value: string; onChange: (val: string) => void }) => (
     <input
       data-testid="datepicker"
-      value={value || ''}
+      value={value || ""}
       onChange={(e) => onChange(e.target.value)}
     />
   ),
@@ -129,40 +123,40 @@ vi.mock('@/components/ui/DatePicker', () => ({
 
 const mockDenoms: Denomination[] = [
   {
-    id: 'd-1',
-    name: 'Silver Star',
-    description: 'Reward for good conduct',
+    id: "d-1",
+    name: "Silver Star",
+    description: "Reward for good conduct",
     points: 10,
-    color: '#3b82f6',
-    icon: '⭐',
+    color: "#3b82f6",
+    icon: "⭐",
     active: true,
   },
 ];
 
 const mockBatches: StockBatch[] = [
   {
-    id: 'b-1',
-    denominationId: 'd-1',
-    denominationName: 'Silver Star',
+    id: "b-1",
+    denominationId: "d-1",
+    denominationName: "Silver Star",
     quantity: 100,
     remaining: 50,
-    addedDate: '2026-01-01',
-    note: 'Initial batch',
+    addedDate: "2026-01-01",
+    note: "Initial batch",
   },
 ];
 
 function setInputValue(input: HTMLInputElement, value: string) {
-  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
   setter?.call(input, value);
-  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-describe('DistributeModal Component', () => {
+describe("DistributeModal Component", () => {
   let container: HTMLDivElement;
   let root: Root;
 
   beforeEach(() => {
-    container = document.createElement('div');
+    container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
     vi.clearAllMocks();
@@ -175,7 +169,7 @@ describe('DistributeModal Component', () => {
     container.remove();
   });
 
-  it('renders modal with denomination and quantity inputMode=numeric', async () => {
+  it("renders modal with denomination and quantity inputMode=numeric", async () => {
     await act(async () => {
       root.render(
         <DistributeModal
@@ -188,13 +182,13 @@ describe('DistributeModal Component', () => {
       );
     });
 
-    expect(container.textContent).toContain('hasanat.distributeCards');
-    const qtyInput = container.querySelector('#qty') as HTMLInputElement;
+    expect(container.textContent).toContain("hasanat.distributeCards");
+    const qtyInput = container.querySelector("#qty") as HTMLInputElement;
     expect(qtyInput).not.toBeNull();
-    expect(qtyInput.getAttribute('inputmode')).toBe('numeric');
+    expect(qtyInput.getAttribute("inputmode")).toBe("numeric");
   });
 
-  it('disables save button when total available is 0 or required fields missing', async () => {
+  it("disables save button when total available is 0 or required fields missing", async () => {
     await act(async () => {
       root.render(
         <DistributeModal
@@ -207,11 +201,13 @@ describe('DistributeModal Component', () => {
       );
     });
 
-    const saveBtn = container.querySelector('[data-testid="distribute-save-btn"]') as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      '[data-testid="distribute-save-btn"]',
+    ) as HTMLButtonElement;
     expect(saveBtn.disabled).toBe(true);
   });
 
-  it('submits valid distribution payload when form is filled', async () => {
+  it("submits valid distribution payload when form is filled", async () => {
     const onSave = vi.fn();
 
     await act(async () => {
@@ -226,13 +222,17 @@ describe('DistributeModal Component', () => {
       );
     });
 
-    const recipientInput = container.querySelector('[data-testid="registry-person-select"]') as HTMLInputElement;
-    const reasonInput = container.querySelector('#reason') as HTMLInputElement;
-    const saveBtn = container.querySelector('[data-testid="distribute-save-btn"]') as HTMLButtonElement;
+    const recipientInput = container.querySelector(
+      '[data-testid="registry-person-select"]',
+    ) as HTMLInputElement;
+    const reasonInput = container.querySelector("#reason") as HTMLInputElement;
+    const saveBtn = container.querySelector(
+      '[data-testid="distribute-save-btn"]',
+    ) as HTMLButtonElement;
 
     await act(async () => {
-      setInputValue(recipientInput, 'student-123');
-      setInputValue(reasonInput, 'Quran memorization excellence');
+      setInputValue(recipientInput, "student-123");
+      setInputValue(reasonInput, "Quran memorization excellence");
     });
 
     expect(saveBtn.disabled).toBe(false);
@@ -243,19 +243,19 @@ describe('DistributeModal Component', () => {
 
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
-        denominationId: 'd-1',
-        denominationName: 'Silver Star',
-        batchId: 'b-1',
-        recipientType: 'student',
-        recipientStudentId: 'student-123',
-        reason: 'Quran memorization excellence',
+        denominationId: "d-1",
+        denominationName: "Silver Star",
+        batchId: "b-1",
+        recipientType: "student",
+        recipientStudentId: "student-123",
+        reason: "Quran memorization excellence",
         quantity: 1,
-        issuedByUserId: 'usr-1',
+        issuedByUserId: "usr-1",
       }),
     );
   });
 
-  it('displays inline validation errors when submitted without required fields', async () => {
+  it("displays inline validation errors when submitted without required fields", async () => {
     const onSave = vi.fn();
 
     await act(async () => {
@@ -270,7 +270,9 @@ describe('DistributeModal Component', () => {
       );
     });
 
-    const saveBtn = container.querySelector('[data-testid="distribute-save-btn"]') as HTMLButtonElement;
+    const saveBtn = container.querySelector(
+      '[data-testid="distribute-save-btn"]',
+    ) as HTMLButtonElement;
     expect(saveBtn.disabled).toBe(false);
 
     await act(async () => {
@@ -278,10 +280,9 @@ describe('DistributeModal Component', () => {
     });
 
     expect(onSave).not.toHaveBeenCalled();
-    const recipientError = container.querySelector('#recipient-error');
-    const reasonError = container.querySelector('#reason-error');
+    const recipientError = container.querySelector("#recipient-error");
+    const reasonError = container.querySelector("#reason-error");
     expect(recipientError).not.toBeNull();
     expect(reasonError).not.toBeNull();
   });
 });
-

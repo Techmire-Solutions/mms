@@ -5,9 +5,9 @@
  * Placed in backend because ExcelJS and Buffer are server-only runtime dependencies.
  * Registers with the shared export serializer registry so format dispatch works seamlessly.
  */
-import ExcelJS from 'exceljs';
-import type { ExportSerializer } from '@mms/shared';
-import { registerSerializer } from '@mms/shared';
+import ExcelJS from "exceljs";
+import type { ExportSerializer } from "@mms/shared";
+import { registerSerializer } from "@mms/shared";
 
 // ---------------------------------------------------------------------------
 // XLSX buffer builder
@@ -16,7 +16,7 @@ import { registerSerializer } from '@mms/shared';
 /** Builds an XLSX Buffer from a header + row grid using ExcelJS. */
 export async function buildXlsxBuffer(grid: unknown[][]): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Export');
+  const sheet = workbook.addWorksheet("Export");
 
   if (grid.length === 0) {
     return Buffer.from(await workbook.xlsx.writeBuffer());
@@ -29,9 +29,9 @@ export async function buildXlsxBuffer(grid: unknown[][]): Promise<Buffer> {
   const header = sheet.addRow(headers);
   header.font = { bold: true };
   header.fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFE0E0E0' },
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFE0E0E0" },
   };
 
   // Auto column widths based on header text
@@ -42,12 +42,12 @@ export async function buildXlsxBuffer(grid: unknown[][]): Promise<Buffer> {
   // Data rows
   for (const row of dataRows) {
     const rowArr = Array.isArray(row) ? row : [];
-    const cells = rowArr.map((cell) => (cell === null || cell === undefined ? '' : cell));
+    const cells = rowArr.map((cell) => (cell === null || cell === undefined ? "" : cell));
     sheet.addRow(cells);
   }
 
   // Freeze header row
-  sheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 1 }];
+  sheet.views = [{ state: "frozen", xSplit: 0, ySplit: 1 }];
 
   return Buffer.from(await workbook.xlsx.writeBuffer());
 }
@@ -59,14 +59,14 @@ export async function buildXlsxBuffer(grid: unknown[][]): Promise<Buffer> {
 export const xlsxSerializer: ExportSerializer & {
   serializeBufferAsync(grid: unknown[][]): Promise<Buffer>;
 } = {
-  format: 'xlsx',
-  contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  fileExtension: '.xlsx',
+  format: "xlsx",
+  contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  fileExtension: ".xlsx",
 
   serialize(): string {
     throw new Error(
-      'XLSX serialization is asynchronous. Use xlsxSerializer.serializeBufferAsync(grid) ' +
-        'or the background-job export route.',
+      "XLSX serialization is asynchronous. Use xlsxSerializer.serializeBufferAsync(grid) " +
+        "or the background-job export route.",
     );
   },
 

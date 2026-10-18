@@ -4,15 +4,15 @@ import {
   DEFAULT_STUDENTS_SETTINGS,
   splitFacultySettingsBlob,
   DEFAULT_FACULTY_SETTINGS,
-} from '@mms/shared';
-import { getMinimalCollectionsForSeed, getMinimalObjects } from '../db/minimalSeeds.js';
-import { getCollection, getObject, saveCollection, saveObject } from '../db/database.js';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { upsertStudentFieldConfig } from '../db/repositories/studentFieldConfigRepository.js';
-import { upsertStudentModulePreferences } from '../db/repositories/studentModulePreferencesRepository.js';
-import { upsertFacultyFieldConfig } from '../db/repositories/facultyFieldConfigRepository.js';
-import { upsertFacultyModulePreferences } from '../db/repositories/facultyModulePreferencesRepository.js';
-import { seedAcademicCatalogDefaults } from '../db/repositories/academicCatalogSeed.js';
+} from "@mms/shared";
+import { getMinimalCollectionsForSeed, getMinimalObjects } from "../db/minimalSeeds.js";
+import { getCollection, getObject, saveCollection, saveObject } from "../db/database.js";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { upsertStudentFieldConfig } from "../db/repositories/studentFieldConfigRepository.js";
+import { upsertStudentModulePreferences } from "../db/repositories/studentModulePreferencesRepository.js";
+import { upsertFacultyFieldConfig } from "../db/repositories/facultyFieldConfigRepository.js";
+import { upsertFacultyModulePreferences } from "../db/repositories/facultyModulePreferencesRepository.js";
+import { seedAcademicCatalogDefaults } from "../db/repositories/academicCatalogSeed.js";
 
 /**
  * Seeds default collections and objects for a new tenant workspace.
@@ -32,7 +32,7 @@ export async function seedTenantDefaults(): Promise<void> {
 
   const objects = getMinimalObjects();
   for (const [key, objectSeed] of Object.entries(objects)) {
-    if (key === 'branding' || key === 'global_settings') continue;
+    if (key === "branding" || key === "global_settings") continue;
     const existing = await getObject(key);
     if (existing !== null && existing !== undefined) continue;
     await saveObject(key, objectSeed);
@@ -41,17 +41,11 @@ export async function seedTenantDefaults(): Promise<void> {
   if (subdomain) {
     const { fieldConfig, preferences } = splitStudentsSettingsBlob(DEFAULT_STUDENTS_SETTINGS);
     await upsertStudentFieldConfig(subdomain, fieldConfig);
-    await upsertStudentModulePreferences(
-      subdomain,
-      Object.assign({}, preferences),
-    );
+    await upsertStudentModulePreferences(subdomain, Object.assign({}, preferences));
 
     const facultySetup = splitFacultySettingsBlob(DEFAULT_FACULTY_SETTINGS);
     await upsertFacultyFieldConfig(subdomain, facultySetup.fieldConfig);
-    await upsertFacultyModulePreferences(
-      subdomain,
-      Object.assign({}, facultySetup.preferences),
-    );
+    await upsertFacultyModulePreferences(subdomain, Object.assign({}, facultySetup.preferences));
 
     await seedAcademicCatalogDefaults(subdomain);
   }

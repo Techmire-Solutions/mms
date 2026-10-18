@@ -6,12 +6,12 @@ vi.mock("react", async () => {
   const actual = await vi.importActual<typeof import("react")>("react");
   return {
     ...actual,
-    lazy: (importer: () => Promise<{ default: React.ComponentType<any> }>) => {
-      let Component: React.ComponentType<any> | null = null;
+    lazy: (importer: () => Promise<{ default: React.ComponentType<Record<string, unknown>> }>) => {
+      let Component: React.ComponentType<Record<string, unknown>> | null = null;
       importer().then((m) => {
         Component = m.default;
       });
-      return (props: any) => {
+      return (props: Record<string, unknown>) => {
         if (Component) {
           return React.createElement(Component, props);
         }
@@ -29,25 +29,27 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleTierMotion", () => ({
+vi.mock("@/components/app/ModuleTierMotion", () => ({
   ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="module-tier-motion">{children}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SetupReadOnlyMessage", () => ({
+vi.mock("@/components/app/SetupReadOnlyMessage", () => ({
   SetupReadOnlyMessage: ({ title }: { title: string }) => (
     <div data-testid="setup-read-only-message">{title}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: () => <div data-testid="sub-tab-bar">SubTabBar</div>,
 }));
 
 vi.mock("./ObligationTypeManager", () => ({
   default: () => <div data-testid="obligation-type-manager">Obligation Type Manager</div>,
-  ObligationTypeManager: () => <div data-testid="obligation-type-manager">Obligation Type Manager</div>,
+  ObligationTypeManager: () => (
+    <div data-testid="obligation-type-manager">Obligation Type Manager</div>
+  ),
 }));
 
 vi.mock("./MujtahidManager", () => ({
@@ -71,7 +73,11 @@ vi.mock("@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor"
       Invoice Template Editor
     </div>
   ),
-  InvoiceTemplateEditor: (props: { obligationTypes?: unknown[]; mujtahids?: unknown[]; reps?: unknown[] }) => (
+  InvoiceTemplateEditor: (props: {
+    obligationTypes?: unknown[];
+    mujtahids?: unknown[];
+    reps?: unknown[];
+  }) => (
     <div
       data-testid="invoice-template-editor"
       data-types-count={props.obligationTypes?.length ?? 0}
@@ -84,8 +90,12 @@ vi.mock("@/tenant/features/obligations/components/invoice/InvoiceTemplateEditor"
 }));
 
 vi.mock("@/tenant/features/obligations/components/ObligationsReceiptNumberingSection", () => ({
-  default: () => <div data-testid="obligations-receipt-numbering-section">Receipt Numbering Section</div>,
-  ObligationsReceiptNumberingSection: () => <div data-testid="obligations-receipt-numbering-section">Receipt Numbering Section</div>,
+  default: () => (
+    <div data-testid="obligations-receipt-numbering-section">Receipt Numbering Section</div>
+  ),
+  ObligationsReceiptNumberingSection: () => (
+    <div data-testid="obligations-receipt-numbering-section">Receipt Numbering Section</div>
+  ),
 }));
 
 describe("ObligationsSetupTier Component", () => {
@@ -101,9 +111,9 @@ describe("ObligationsSetupTier Component", () => {
     ],
     activeTab: "wakala",
     canEditSetup: true,
-    obligationTypes: [{ id: "type-1", name: "Khums" } as any],
-    mujtahids: [{ id: "muj-1", name: "Sistani" } as any],
-    reps: [{ id: "rep-1", name: "Representative" } as any],
+    obligationTypes: [{ id: "type-1", name: "Khums" } as unknown as never],
+    mujtahids: [{ id: "muj-1", name: "Sistani" } as unknown as never],
+    reps: [{ id: "rep-1", name: "Representative" } as unknown as never],
     wakalaTypes: [],
     distributions: [],
     onTabChange: vi.fn(),

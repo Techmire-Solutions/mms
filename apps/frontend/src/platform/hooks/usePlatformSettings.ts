@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { MigrateAndRestartAccepted, PlatformSettings } from '@mms/shared';
-import { apiFetch, apiJson } from '@/lib/apiClient';
-import { apiContract } from '@/lib/api';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { MigrateAndRestartAccepted, PlatformSettings } from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 
 /** Default delay before migrate starts when the response omits delayMs. */
 const DEFAULT_MIGRATE_RESTART_DELAY_MS = 1_500;
@@ -16,9 +16,9 @@ const READY_POLL_TIMEOUT_MS = 60_000;
 /** Interval between `/ready` probes while waiting for the backend. */
 const READY_POLL_INTERVAL_MS = 750;
 
-import { PLATFORM_SETTINGS_QUERY_KEY } from '@/platform/lib/platformQueryKeys';
+import { PLATFORM_SETTINGS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
-export { PLATFORM_SETTINGS_QUERY_KEY } from '@/platform/lib/platformQueryKeys';
+export { PLATFORM_SETTINGS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -27,9 +27,9 @@ function sleep(ms: number): Promise<void> {
 }
 
 function updateSettingsCache(old: unknown, newSettings: PlatformSettings): unknown {
-  if (!old || typeof old !== 'object') return old;
+  if (!old || typeof old !== "object") return old;
   const asTsr = old as { body?: { settings?: PlatformSettings } };
-  if (asTsr.body && typeof asTsr.body === 'object') {
+  if (asTsr.body && typeof asTsr.body === "object") {
     return {
       ...asTsr,
       body: {
@@ -46,14 +46,15 @@ function updateSettingsCache(old: unknown, newSettings: PlatformSettings): unkno
  * Preserves the platform session — callers should soft-reload, not log out.
  */
 export async function waitForBackendReadyAfterMigrate(delayMs: number): Promise<void> {
-  const waitMs = Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : DEFAULT_MIGRATE_RESTART_DELAY_MS;
+  const waitMs =
+    Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : DEFAULT_MIGRATE_RESTART_DELAY_MS;
   await sleep(waitMs);
 
   const deadline = Date.now() + READY_POLL_TIMEOUT_MS;
   while (Date.now() < deadline) {
     try {
-      const response = await apiFetch('/ready');
-      if (response.ok) return;
+      const response = await apiContract.health.ready({});
+      if (response.status === 200) return;
     } catch {
       // Backend still restarting — keep polling.
     }
@@ -67,10 +68,16 @@ export function usePlatformSettingsQuery() {
   const query = useQuery({
     queryKey: PLATFORM_SETTINGS_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      const res = await apiJson<{ settings: PlatformSettings }>('/api/platform/settings', {
-        signal,
-      });
-      return res.settings;
+      const response = await apiContract.platform.getSettings({ signal, fetchOptions: { signal } });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load platform settings",
+          errorBody?.type,
+        );
+      }
+      return (response.body as { settings: PlatformSettings }).settings;
     },
     enabled: isPlatformAuthenticated && canSettings,
     staleTime: 60_000,
@@ -106,7 +113,6 @@ export function useUpdatePlatformSettings() {
   });
 }
 
-
 /** Hook for platform super-users to apply Drizzle migrations and reload the backend. */
 export function useMigrateAndRestartPlatform() {
   const { t } = useTranslation();
@@ -117,11 +123,10 @@ export function useMigrateAndRestartPlatform() {
       return res.body as MigrateAndRestartAccepted;
     },
     onSuccess: () => {
-      notify.success(t('platform.profileMigrateRestartSuccess'));
+      notify.success(t("platform.profileMigrateRestartSuccess"));
     },
     onError: (err) => {
       notify.error(getPlatformErrorMessage(err, t));
     },
   });
 }
-

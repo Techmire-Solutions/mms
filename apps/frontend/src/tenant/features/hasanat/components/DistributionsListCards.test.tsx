@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { DistributionsListCards } from "./DistributionsListCards";
-import type { DistributionsListContentProps } from "./distributionsListShared";
+import type { DistributionsListContentProps } from "../lib/distributionsListShared";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -79,10 +79,7 @@ describe("DistributionsListCards", () => {
 
   it("hides denomination subtitle when card column hidden", () => {
     const html = renderToStaticMarkup(
-      <DistributionsListCards
-        {...baseProps}
-        isColumnVisible={(k) => k !== "card"}
-      />,
+      <DistributionsListCards {...baseProps} isColumnVisible={(k) => k !== "card"} />,
     );
     expect(html).not.toContain("Gold Star");
   });
@@ -103,10 +100,7 @@ describe("DistributionsListCards", () => {
 
   it("hides quantity tile when column hidden", () => {
     const html = renderToStaticMarkup(
-      <DistributionsListCards
-        {...baseProps}
-        isColumnVisible={(k) => k !== "quantity"}
-      />,
+      <DistributionsListCards {...baseProps} isColumnVisible={(k) => k !== "quantity"} />,
     );
     expect(html).not.toContain("hasanat.columns.distribution.quantity");
   });
@@ -117,9 +111,7 @@ describe("DistributionsListCards", () => {
   });
 
   it("does not render checkbox when canDelete=false", () => {
-    const html = renderToStaticMarkup(
-      <DistributionsListCards {...baseProps} canDelete={false} />,
-    );
+    const html = renderToStaticMarkup(<DistributionsListCards {...baseProps} canDelete={false} />);
     expect(html).not.toContain('type="checkbox"');
   });
 

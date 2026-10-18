@@ -1,13 +1,13 @@
-import type { AppTranslationKey } from '@mms/shared';
-import { ACCOUNT_TYPE_META, type Account } from '@/lib/data/accountingData';
-import { Badge } from '@/components/ui/badge';
-import { Field } from '@/components/ui/FormField';
-import { FormListFieldCard, FormSelectWithQuickCreate } from '@/components/ui/FormPrimitives';
-import { Input } from '@/components/ui/input';
-import { StatGrid, StatRow } from '@/components/ui/StatGrid';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { DraftLine } from './journalEntryFormTypes';
-import type { JournalAmountSide } from './useJournalLineAssist';
+import type { AppTranslationKey } from "@mms/shared";
+import { ACCOUNT_TYPE_META, type Account } from "@/lib/data/accountingData";
+import { Badge } from "@/components/ui/badge";
+import { Field } from "@/components/app/FormField";
+import { FormListFieldCard, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
+import { Input } from "@/components/ui/input";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { DraftLine } from "../lib/journalEntryFormTypes";
+import type { JournalAmountSide } from "../hooks/useJournalLineAssist";
 
 interface JournalEntryLinesEditorMobileProps {
   accounts: readonly Account[];
@@ -79,8 +79,15 @@ export function JournalEntryLinesEditorMobile({
                   addAriaLabel={t("accounting.coa.addAccount")}
                 />
                 {account && (
-                  <Badge pill variant="outline" className={`mt-0.5 px-1.5 font-bold ${ACCOUNT_TYPE_META[account.type]?.color}`}>
-                    {t(`accounting.type.${account.type}` as AppTranslationKey)} · {ACCOUNT_TYPE_META[account.type]?.normalBalance === "debit" ? t("accounting.journal.form.drNormal") : t("accounting.journal.form.crNormal")}
+                  <Badge
+                    pill
+                    variant="outline"
+                    className={`mt-0.5 px-1.5 font-bold ${ACCOUNT_TYPE_META[account.type]?.color}`}
+                  >
+                    {t(`accounting.type.${account.type}` as AppTranslationKey)} ·{" "}
+                    {ACCOUNT_TYPE_META[account.type]?.normalBalance === "debit"
+                      ? t("accounting.journal.form.drNormal")
+                      : t("accounting.journal.form.crNormal")}
                   </Badge>
                 )}
               </Field>
@@ -91,7 +98,9 @@ export function JournalEntryLinesEditorMobile({
                 <Input
                   id={`line-mobile-${lineIndex}-description`}
                   name={`lines.${lineIndex}.description`}
-                  aria-label={t("accounting.journal.form.lineDescriptionAria", { line: lineIndex + 1 })}
+                  aria-label={t("accounting.journal.form.lineDescriptionAria", {
+                    line: lineIndex + 1,
+                  })}
                   value={line.description || ""}
                   onChange={(event) => onUpdateLine(lineIndex, "description", event.target.value)}
                   placeholder={t("accounting.journal.form.notePlaceholder")}
@@ -126,7 +135,9 @@ export function JournalEntryLinesEditorMobile({
                     name={`lines.${lineIndex}.credit`}
                     type="text"
                     inputMode="decimal"
-                    aria-label={t("accounting.journal.form.lineCreditAria", { line: lineIndex + 1 })}
+                    aria-label={t("accounting.journal.form.lineCreditAria", {
+                      line: lineIndex + 1,
+                    })}
                     value={line.credit}
                     placeholder="0.00"
                     onChange={(event) => onUpdateLine(lineIndex, "credit", event.target.value)}
@@ -141,7 +152,9 @@ export function JournalEntryLinesEditorMobile({
         );
       })}
       <article className="rounded-xl border border-border bg-muted/30 p-3">
-        <p className="text-xs font-bold uppercase text-muted-foreground m-0 mb-2">{t("accounting.journal.form.totals")}</p>
+        <p className="text-xs font-bold uppercase text-muted-foreground m-0 mb-2">
+          {t("accounting.journal.form.totals")}
+        </p>
         <StatGrid>
           <StatRow
             label={t("accounting.ledger.columns.debit")}

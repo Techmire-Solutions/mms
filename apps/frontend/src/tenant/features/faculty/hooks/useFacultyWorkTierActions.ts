@@ -4,7 +4,7 @@ import { computeFacultySelectionTargets } from "@/tenant/features/faculty/hooks/
 import { useFacultyEntityDescriptor } from "@/tenant/features/faculty/hooks/useFacultyEntityDescriptor";
 import { useFacultyStatusConfig } from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
 import type { Faculty, FacultySortField } from "@mms/shared";
-import type { FilterChip } from "@/components/ui/FilterChips";
+import type { FilterChip } from "@/components/app/FilterChips";
 
 export interface UseFacultyWorkTierActionsProps {
   filterStatus: string[];
@@ -156,7 +156,7 @@ export function useFacultyWorkTierActions(
     [sortField, sortDir, onSortChange],
   );
 
-  const members = props.faculty ?? [];
+  const members = useMemo(() => props.faculty ?? [], [props.faculty]);
   const selectionTargets = useMemo(
     () =>
       computeFacultySelectionTargets({

@@ -1,2 +1,2 @@
-import type { Exam, ExamResult } from '@mms/shared';
+import type { Exam, ExamResult } from "@mms/shared";
 export type { Exam, ExamResult };

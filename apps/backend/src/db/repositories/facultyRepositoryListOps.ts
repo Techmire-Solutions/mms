@@ -1,17 +1,17 @@
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/pg-core';
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import {
   DEFAULT_FACULTY_STATUS,
   dedupeTrimmedIds,
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   resolveFacultyStatusRoles,
   type FacultyCommandMetricsSnapshot,
-} from '@mms/shared';
-import { faculty, facultyEmployments } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { facultyStatusExpr } from './facultyRepositoryListQuerySql.js';
+} from "@mms/shared";
+import { faculty, facultyEmployments } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { facultyStatusExpr } from "./facultyRepositoryListQuerySql.js";
 
-const feEmp = alias(facultyEmployments, 'fe_emp');
+const feEmp = alias(facultyEmployments, "fe_emp");
 
 /**
  * Set typed `status` for active faculty in one UPDATE.
@@ -40,7 +40,7 @@ export async function bulkUpdateFacultyStatusSql(
       );
     const employmentIds = linked
       .map((row) => row.employmentId)
-      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+      .filter((id): id is string => typeof id === "string" && id.length > 0);
     if (employmentIds.length === 0) return 0;
     const updated = await tx
       .update(facultyEmployments)
@@ -105,8 +105,11 @@ export async function aggregateFacultyCommandMetrics(
       (${faculty.createdAt})::date
     )`;
     const status = facultyStatusExpr();
-    const { active: activeStatus, inactive: inactiveStatus, onLeave: onLeaveStatus } =
-      resolveFacultyStatusRoles();
+    const {
+      active: activeStatus,
+      inactive: inactiveStatus,
+      onLeave: onLeaveStatus,
+    } = resolveFacultyStatusRoles();
 
     const rows = await tx
       .select({
@@ -141,4 +144,3 @@ export async function aggregateFacultyCommandMetrics(
     };
   });
 }
-

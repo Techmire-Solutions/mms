@@ -1,11 +1,8 @@
-import {
-  FACULTY_MODULE_MANIFEST,
-  splitFacultySettingsBlob,
-} from '@mms/shared';
+import { FACULTY_MODULE_MANIFEST, splitFacultySettingsBlob } from "@mms/shared";
 import {
   hydrateModuleSetupCollectionsFromLegacyObjects,
   type LegacySetupHydrateConfig,
-} from './hydrateModuleSetupFromLegacyBackup.js';
+} from "./hydrateModuleSetupFromLegacyBackup.js";
 
 /** Canonical document-store Faculty Setup object keys. */
 export const FACULTY_SETTINGS_OBJECT_KEY = FACULTY_MODULE_MANIFEST.settingsObjectKey;
@@ -15,7 +12,7 @@ export const FACULTY_COLUMN_PREFS_OBJECT_KEY = FACULTY_MODULE_MANIFEST.columnPre
 export const FACULTY_LEGACY_SETUP_OBJECT_KEYS = [
   FACULTY_SETTINGS_OBJECT_KEY,
   FACULTY_COLUMN_PREFS_OBJECT_KEY,
-  'faculty_field_config',
+  "faculty_field_config",
 ] as const;
 
 /**
@@ -35,9 +32,9 @@ export function hydrateFacultySetupCollectionsFromLegacyObjects(
   const config: LegacySetupHydrateConfig = {
     settingsObjectKey: FACULTY_SETTINGS_OBJECT_KEY,
     columnPreferencesObjectKey: FACULTY_COLUMN_PREFS_OBJECT_KEY,
-    fieldConfigCollection: 'faculty_field_configs',
-    modulePrefsCollection: 'faculty_module_preferences',
-    columnPrefsCollection: 'faculty_user_column_prefs',
+    fieldConfigCollection: "faculty_field_configs",
+    modulePrefsCollection: "faculty_module_preferences",
+    columnPrefsCollection: "faculty_user_column_prefs",
     splitSettingsBlob: splitFacultySettingsBlob,
   };
 

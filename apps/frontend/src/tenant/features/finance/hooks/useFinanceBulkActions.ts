@@ -1,12 +1,12 @@
-import type { InvoicesBulkStatusBody } from '@mms/shared';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { notify } from '@/lib/notify';
+import type { InvoicesBulkStatusBody } from "@mms/shared";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { notify } from "@/lib/notify";
 
 export interface UseFinanceBulkActionsOptions {
   bulkUpdateInvoiceStatus: {
     mutateAsync: (args: {
       ids: string[];
-      status: InvoicesBulkStatusBody['status'];
+      status: InvoicesBulkStatusBody["status"];
     }) => Promise<{ succeeded: number; failed: number }>;
   };
   clearInvoiceSelection: () => void;
@@ -21,17 +21,17 @@ export function useFinanceBulkActions({
   t,
 }: UseFinanceBulkActionsOptions) {
   const mutationError = (error: Error): void => {
-    notify.error(t('finance.trash.actionFailed'), { description: error.message });
+    notify.error(t("finance.trash.actionFailed"), { description: error.message });
   };
 
   const handleBulkResult = (
     result: { succeeded: number; failed: number },
-    successKey: 'finance.trash.deleted' | 'finance.trash.restored',
-    scope?: 'invoices' | 'payments',
+    successKey: "finance.trash.deleted" | "finance.trash.restored",
+    scope?: "invoices" | "payments",
   ): void => {
     if (result.failed > 0) {
       notify.error(
-        t('finance.trash.bulkPartial', {
+        t("finance.trash.bulkPartial", {
           succeeded: result.succeeded,
           failed: result.failed,
         }),
@@ -39,18 +39,18 @@ export function useFinanceBulkActions({
     } else if (result.succeeded > 1) {
       notify.success(
         t(
-          successKey === 'finance.trash.deleted'
-            ? 'finance.trash.bulkDeleted'
-            : 'finance.trash.bulkRestored',
+          successKey === "finance.trash.deleted"
+            ? "finance.trash.bulkDeleted"
+            : "finance.trash.bulkRestored",
           { count: result.succeeded },
         ),
       );
     } else {
       notify.success(t(successKey));
     }
-    if (scope === 'invoices') {
+    if (scope === "invoices") {
       clearInvoiceSelection();
-    } else if (scope === 'payments') {
+    } else if (scope === "payments") {
       clearPaymentSelection();
     } else {
       clearInvoiceSelection();
@@ -62,19 +62,19 @@ export function useFinanceBulkActions({
     try {
       const result = await bulkUpdateInvoiceStatus.mutateAsync({
         ids,
-        status: status as InvoicesBulkStatusBody['status'],
+        status: status as InvoicesBulkStatusBody["status"],
       });
       if (result.failed > 0) {
-        notify.error(t('finance.bulkStatusFailed'), {
+        notify.error(t("finance.bulkStatusFailed"), {
           description: `${result.succeeded} updated, ${result.failed} failed`,
         });
       } else if (result.succeeded > 1) {
-        notify.success(t('finance.bulkStatusSuccessMany', { count: result.succeeded }));
+        notify.success(t("finance.bulkStatusSuccessMany", { count: result.succeeded }));
       } else {
-        notify.success(t('finance.bulkStatusSuccess'));
+        notify.success(t("finance.bulkStatusSuccess"));
       }
     } catch {
-      notify.error(t('finance.bulkStatusFailed'));
+      notify.error(t("finance.bulkStatusFailed"));
     }
   };
 

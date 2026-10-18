@@ -1,17 +1,19 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { PlatformAdminPermissions, PlatformCreateAdminInput, PlatformUserProfile } from '@mms/shared';
-import { apiContract } from '@/lib/api';
-import { usePlatformAuth } from '@/platform/lib/PlatformAuthContext';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
-import { updateAdminsCache } from './platformAdminsCache';
-import { PLATFORM_ADMINS_QUERY_KEY } from '@/platform/lib/platformQueryKeys';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type {
+  PlatformAdminPermissions,
+  PlatformCreateAdminInput,
+  PlatformUserProfile,
+} from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { updateAdminsCache } from "./platformAdminsCache";
+import { PLATFORM_ADMINS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
-export { PLATFORM_ADMINS_QUERY_KEY } from '@/platform/lib/platformQueryKeys';
-
-
+export { PLATFORM_ADMINS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
 /** Hook for super-users to retrieve the list of platform operators. */
 export function usePlatformAdmins(): {
@@ -30,7 +32,7 @@ export function usePlatformAdmins(): {
         fetchOptions: { signal },
       });
       if (res.status !== 200) {
-        throw new Error((res.body as { message?: string })?.message ?? 'Failed to list admins');
+        throw new Error((res.body as { message?: string })?.message ?? "Failed to list admins");
       }
       return (res.body as { users: PlatformUserProfile[] }).users;
     },
@@ -59,7 +61,7 @@ export function useAddPlatformAdmin() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: PLATFORM_ADMINS_QUERY_KEY });
-      notify.success(t('platform.addAdminSuccess'));
+      notify.success(t("platform.addAdminSuccess"));
     },
     onError: (err) => {
       notify.error(getPlatformErrorMessage(err, t));
@@ -79,11 +81,7 @@ export function useUpdatePlatformAdminPermissions() {
     { adminId: string; permissions: PlatformAdminPermissions; password: string },
     { previousUsers: unknown }
   >({
-    mutationFn: async ({
-      adminId,
-      permissions,
-      password,
-    }) => {
+    mutationFn: async ({ adminId, permissions, password }) => {
       const res = await apiContract.platform.updateAdminPermissions({
         params: { adminId },
         body: { permissions, password },
@@ -101,7 +99,7 @@ export function useUpdatePlatformAdminPermissions() {
       return { previousUsers };
     },
     onSuccess: async (response) => {
-      notify.success(t('platform.adminAccessUpdated'));
+      notify.success(t("platform.adminAccessUpdated"));
       if (platformUser?.id === response.user.id) {
         await checkPlatformAuth();
       }
@@ -122,6 +120,4 @@ export {
   useSetPlatformAdminDisabled,
   useDeletePlatformAdmin,
   useVerifyPlatformAdminEmail,
-} from './usePlatformAdminLifecycle';
-
-
+} from "./usePlatformAdminLifecycle";

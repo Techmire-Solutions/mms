@@ -1,5 +1,5 @@
-import { queryClientInstance } from '@/lib/queryClient';
-import { getCollection } from '@/lib/db';
+import { queryClientInstance } from "@/lib/queryClient";
+import { getCollection } from "@/lib/db";
 
 /**
  * Reads the first array payload matching a TanStack Query key prefix.

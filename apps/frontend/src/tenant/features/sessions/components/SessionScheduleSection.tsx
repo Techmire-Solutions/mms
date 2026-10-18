@@ -1,9 +1,9 @@
 import React from "react";
 import { CalendarDays } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/app/SectionCard";
 import { WorkingDaysPicker } from "@/components/common/WorkingDaysPicker";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { SessionFormDraft } from "./sessionFormShared";
+import type { SessionFormDraft } from "@/tenant/features/sessions/lib/sessionFormShared";
 
 export interface SessionScheduleSectionProps {
   sessionDraft: SessionFormDraft;
@@ -11,10 +11,18 @@ export interface SessionScheduleSectionProps {
 }
 
 /** Optional weekly teaching days for this session (e.g. weekend-only short courses). */
-export function SessionScheduleSection({ sessionDraft, onDraftChange }: SessionScheduleSectionProps): React.JSX.Element {
+export function SessionScheduleSection({
+  sessionDraft,
+  onDraftChange,
+}: SessionScheduleSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   return (
-    <SectionCard accentColor="primary" icon={CalendarDays} title={t("sessions.form.sectionSchedule")} className="shadow-sm text-start">
+    <SectionCard
+      accentColor="primary"
+      icon={CalendarDays}
+      title={t("sessions.form.sectionSchedule")}
+      className="shadow-sm text-start"
+    >
       <WorkingDaysPicker
         label={t("sessions.form.workingDays")}
         description={t("sessions.form.workingDaysHint")}

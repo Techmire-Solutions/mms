@@ -2,22 +2,28 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
-import type { DuplicatePair } from "./duplicateDetectionTypes";
+import type { DuplicatePair } from "../lib/duplicateDetectionTypes";
 import { MergePreview } from "./DuplicateMergePreview";
 
-vi.mock("@/components/ui/Modal", () => ({
-  Modal: ({ open, title, children, footer }: {
+vi.mock("@/components/app/Modal", () => ({
+  Modal: ({
+    open,
+    title,
+    children,
+    footer,
+  }: {
     open: boolean;
     title: string;
     children: React.ReactNode;
     footer?: React.ReactNode;
-  }) => (open ? (
-    <div data-testid="modal">
-      <h2>{title}</h2>
-      <div>{children}</div>
-      <div>{footer}</div>
-    </div>
-  ) : null),
+  }) =>
+    open ? (
+      <div data-testid="modal">
+        <h2>{title}</h2>
+        <div>{children}</div>
+        <div>{footer}</div>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@/lib/contexts/ContactConfigContext", () => ({
@@ -68,12 +74,7 @@ const mockPair: DuplicatePair = {
 describe("DuplicateMergePreview Component", () => {
   it("renders merge preview modal with resolved fields", () => {
     const html = renderToStaticMarkup(
-      <MergePreview
-        pair={mockPair}
-        keepIndex={0}
-        onClose={vi.fn()}
-        onConfirm={vi.fn()}
-      />,
+      <MergePreview pair={mockPair} keepIndex={0} onClose={vi.fn()} onConfirm={vi.fn()} />,
     );
 
     expect(html).toContain("contacts.duplicates.mergePreview");

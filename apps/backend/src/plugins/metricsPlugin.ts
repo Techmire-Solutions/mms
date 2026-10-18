@@ -1,12 +1,12 @@
-import type { FastifyInstance } from 'fastify';
-import { checkIsRedisConnected } from '../lib/redis.js';
-import { getPoolMetrics } from '../db/database.js';
+import type { FastifyInstance } from "fastify";
+import { checkIsRedisConnected } from "../lib/redis.js";
+import { getPoolMetrics } from "../db/database.js";
 import {
   HTTP_DURATION_BUCKETS,
   HTTP_REQUESTS_TOTAL,
   metrics,
   registerDefaultMetrics,
-} from '../lib/metrics.js';
+} from "../lib/metrics.js";
 
 /**
  * Operational metrics instrumentation.
@@ -28,44 +28,46 @@ export function registerMetricsPlugin(app: FastifyInstance): void {
 
   // --- DB pool saturation (the signal that matters most for this app) -------
   metrics.gauge(
-    'mms_db_pool_connections',
-    'Postgres pool connections by state (total/idle/waiting).',
+    "mms_db_pool_connections",
+    "Postgres pool connections by state (total/idle/waiting).",
     () => {
       const pool = getPoolMetrics();
       if (!pool) return [];
       return [
-        { labels: { state: 'total', pool: 'primary' }, value: pool.totalCount },
-        { labels: { state: 'idle', pool: 'primary' }, value: pool.idleCount },
-        { labels: { state: 'waiting', pool: 'primary' }, value: pool.waitingCount },
+        { labels: { state: "total", pool: "primary" }, value: pool.totalCount },
+        { labels: { state: "idle", pool: "primary" }, value: pool.idleCount },
+        { labels: { state: "waiting", pool: "primary" }, value: pool.waitingCount },
         ...(pool.replica
           ? [
-              { labels: { state: 'total', pool: 'replica' }, value: pool.replica.totalCount },
-              { labels: { state: 'idle', pool: 'replica' }, value: pool.replica.idleCount },
-              { labels: { state: 'waiting', pool: 'replica' }, value: pool.replica.waitingCount },
+              { labels: { state: "total", pool: "replica" }, value: pool.replica.totalCount },
+              { labels: { state: "idle", pool: "replica" }, value: pool.replica.idleCount },
+              { labels: { state: "waiting", pool: "replica" }, value: pool.replica.waitingCount },
             ]
           : []),
       ];
     },
   );
 
-  metrics.gauge('mms_redis_connected', 'Whether the Redis client is currently connected (1/0).', () => [
-    { value: checkIsRedisConnected() ? 1 : 0 },
-  ]);
+  metrics.gauge(
+    "mms_redis_connected",
+    "Whether the Redis client is currently connected (1/0).",
+    () => [{ value: checkIsRedisConnected() ? 1 : 0 }],
+  );
 
   // --- Process health ------------------------------------------------------
-  metrics.gauge('mms_process_uptime_seconds', 'Process uptime in seconds.', () => [
+  metrics.gauge("mms_process_uptime_seconds", "Process uptime in seconds.", () => [
     { value: Math.round((Date.now() - startedAt) / 1000) },
   ]);
 
-  metrics.gauge('mms_process_resident_memory_bytes', 'Resident set size in bytes.', () => [
+  metrics.gauge("mms_process_resident_memory_bytes", "Resident set size in bytes.", () => [
     { value: process.memoryUsage().rss },
   ]);
 
-  metrics.gauge('mms_nodejs_heap_used_bytes', 'V8 heap used in bytes.', () => [
+  metrics.gauge("mms_nodejs_heap_used_bytes", "V8 heap used in bytes.", () => [
     { value: process.memoryUsage().heapUsed },
   ]);
 
-  metrics.gauge('mms_nodejs_heap_total_bytes', 'V8 heap total in bytes.', () => [
+  metrics.gauge("mms_nodejs_heap_total_bytes", "V8 heap total in bytes.", () => [
     { value: process.memoryUsage().heapTotal },
   ]);
 
@@ -86,19 +88,19 @@ export function registerMetricsPlugin(app: FastifyInstance): void {
   lagTimer.unref?.();
 
   metrics.gauge(
-    'mms_nodejs_event_loop_lag_seconds',
-    'Event loop lag in seconds, sampled every 5s.',
+    "mms_nodejs_event_loop_lag_seconds",
+    "Event loop lag in seconds, sampled every 5s.",
     () => [{ value: Number((sampledLagMs / 1000).toFixed(6)) }],
   );
 
-  app.addHook('onResponse', (request, reply, done) => {
+  app.addHook("onResponse", (request, reply, done) => {
     try {
-      const route = request.routeOptions?.url ?? 'unmatched';
+      const route = request.routeOptions?.url ?? "unmatched";
       const statusClass = `${Math.floor(reply.statusCode / 100)}xx`;
       const labels = { route, method: request.method, status: statusClass };
 
       metrics.increment(HTTP_REQUESTS_TOTAL, labels);
-      metrics.observe('mms_http_request_duration_seconds', reply.elapsedTime / 1000, {
+      metrics.observe("mms_http_request_duration_seconds", reply.elapsedTime / 1000, {
         route,
         method: request.method,
       });
@@ -110,7 +112,7 @@ export function registerMetricsPlugin(app: FastifyInstance): void {
 
   app.log.info(
     { durationBuckets: HTTP_DURATION_BUCKETS.length },
-    'Operational metrics instrumentation registered',
+    "Operational metrics instrumentation registered",
   );
 }
 
@@ -124,7 +126,7 @@ const LAG_INTERVAL_MS = 5_000;
  * per environment and scrape it over a private network.
  */
 export function isMetricsEndpointEnabled(): boolean {
-  return process.env.METRICS_ENABLED === 'true';
+  return process.env.METRICS_ENABLED === "true";
 }
 
 /**
@@ -135,6 +137,6 @@ export function isMetricsRequestAuthorized(authorizationHeader?: string): boolea
   const expected = process.env.METRICS_TOKEN;
   if (!expected) return true;
   if (!authorizationHeader) return false;
-  const [scheme, token] = authorizationHeader.split(' ');
-  return scheme?.toLowerCase() === 'bearer' && token === expected;
+  const [scheme, token] = authorizationHeader.split(" ");
+  return scheme?.toLowerCase() === "bearer" && token === expected;
 }

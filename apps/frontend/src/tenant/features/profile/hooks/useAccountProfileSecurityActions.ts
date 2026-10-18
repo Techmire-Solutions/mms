@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useTenantProfile, TENANT_PROFILE_KEY } from '@/tenant/hooks/useTenantProfile';
-import { notify } from '@/lib/notify';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useTenantProfile, TENANT_PROFILE_KEY } from "@/tenant/hooks/useTenantProfile";
+import { notify } from "@/lib/notify";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   changePasswordBodySchema,
   requestLoginEmailChangeBodySchema,
   confirmLoginEmailChangeBodySchema,
-} from '@mms/shared';
-import { tsrClient } from '@/lib/api';
+} from "@mms/shared";
+import { tsrClient } from "@/lib/api";
 
 export function useAccountProfileSecurityActions() {
   const { t } = useTranslation();
@@ -17,26 +17,23 @@ export function useAccountProfileSecurityActions() {
   const queryClient = useQueryClient();
   const { refetch } = useTenantProfile();
 
-  const [newLoginEmail, setNewLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  const [newLoginEmail, setNewLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [challengeId, setChallengeId] = useState<string | null>(null);
-  const [verifyCode, setVerifyCode] = useState('');
+  const [verifyCode, setVerifyCode] = useState("");
   const [devCode, setDevCode] = useState<string | null>(null);
   const [loginEmailBusy, setLoginEmailBusy] = useState(false);
 
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordBusy, setPasswordBusy] = useState(false);
 
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const requestLoginEmailMutation = tsrClient.auth.requestLoginEmail.useMutation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const confirmLoginEmailMutation = tsrClient.auth.confirmLoginEmail.useMutation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const changePasswordMutation = tsrClient.auth.changePassword.useMutation();
 
   const handleRequestLoginEmail = async (): Promise<void> => {
@@ -49,23 +46,26 @@ export function useAccountProfileSecurityActions() {
       };
       const checked = requestLoginEmailChangeBodySchema.safeParse(payload);
       if (!checked.success) {
-        notify.error(t('common.formPleaseFixErrors'));
+        notify.error(t("common.formPleaseFixErrors"));
         return;
       }
       const { status, body } = await requestLoginEmailMutation.mutateAsync({
-        body: checked.data
+        body: checked.data,
       });
       if (status !== 200) {
         if (status === 401) {
-          throw new Error(t('account.wrongPassword'));
+          throw new Error(t("account.wrongPassword"));
         }
-        throw new Error(t('errors.boundary.description'));
+        throw new Error(t("errors.boundary.description"));
       }
       setChallengeId(body.challengeId);
       if (body.devCode) setDevCode(body.devCode);
-      notify.success(t('account.sendCode'));
+      notify.success(t("account.sendCode"));
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message || t('errors.boundary.description') : t('errors.boundary.description');
+      const message =
+        error instanceof Error
+          ? error.message || t("errors.boundary.description")
+          : t("errors.boundary.description");
       notify.error(message);
     } finally {
       setLoginEmailBusy(false);
@@ -81,24 +81,27 @@ export function useAccountProfileSecurityActions() {
         code: verifyCode,
       });
       if (!checked.success) {
-        notify.error(t('common.formPleaseFixErrors'));
+        notify.error(t("common.formPleaseFixErrors"));
         return;
       }
       const { status } = await confirmLoginEmailMutation.mutateAsync({
         body: checked.data,
       });
-      if (status !== 200) throw new Error(t('errors.boundary.description'));
+      if (status !== 200) throw new Error(t("errors.boundary.description"));
       setChallengeId(null);
-      setVerifyCode('');
-      setNewLoginEmail('');
-      setLoginPassword('');
+      setVerifyCode("");
+      setNewLoginEmail("");
+      setLoginPassword("");
       setDevCode(null);
       await checkUserAuth();
       await queryClient.invalidateQueries({ queryKey: TENANT_PROFILE_KEY });
       await refetch();
-      notify.success(t('account.loginEmailChanged'));
+      notify.success(t("account.loginEmailChanged"));
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message || t('errors.boundary.description') : t('errors.boundary.description');
+      const message =
+        error instanceof Error
+          ? error.message || t("errors.boundary.description")
+          : t("errors.boundary.description");
       notify.error(message);
     } finally {
       setLoginEmailBusy(false);
@@ -107,7 +110,7 @@ export function useAccountProfileSecurityActions() {
 
   const handleChangePassword = async (): Promise<void> => {
     if (newPassword !== confirmPassword) {
-      notify.error(t('account.passwordMismatch'));
+      notify.error(t("account.passwordMismatch"));
       return;
     }
     setPasswordBusy(true);
@@ -117,7 +120,7 @@ export function useAccountProfileSecurityActions() {
         newPassword,
       });
       if (!checked.success) {
-        notify.error(t('common.formPleaseFixErrors'));
+        notify.error(t("common.formPleaseFixErrors"));
         return;
       }
       const { status } = await changePasswordMutation.mutateAsync({
@@ -125,16 +128,19 @@ export function useAccountProfileSecurityActions() {
       });
       if (status !== 200) {
         if (status === 401) {
-          throw new Error(t('account.wrongPassword'));
+          throw new Error(t("account.wrongPassword"));
         }
-        throw new Error(t('errors.boundary.description'));
+        throw new Error(t("errors.boundary.description"));
       }
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      notify.success(t('account.passwordChanged'));
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      notify.success(t("account.passwordChanged"));
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message || t('errors.boundary.description') : t('errors.boundary.description');
+      const message =
+        error instanceof Error
+          ? error.message || t("errors.boundary.description")
+          : t("errors.boundary.description");
       notify.error(message);
     } finally {
       setPasswordBusy(false);
@@ -143,23 +149,23 @@ export function useAccountProfileSecurityActions() {
 
   const handleCancelLoginEmailRequest = (): void => {
     setShowEmailForm(false);
-    setNewLoginEmail('');
-    setLoginPassword('');
+    setNewLoginEmail("");
+    setLoginPassword("");
   };
 
   const handleCancelLoginEmailConfirm = (): void => {
     setShowEmailForm(false);
-    setNewLoginEmail('');
-    setLoginPassword('');
+    setNewLoginEmail("");
+    setLoginPassword("");
     setChallengeId(null);
-    setVerifyCode('');
+    setVerifyCode("");
   };
 
   const handleCancelPasswordChange = (): void => {
     setShowPasswordForm(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
   };
 
   return {

@@ -5,7 +5,7 @@ import type { Enrollment } from "@/lib/data/enrollmentData";
 import { notify } from "@/lib/notify";
 import { useEnrollmentsPageActions } from "./useEnrollmentsPageActions";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mocks = vi.hoisted(() => ({
   createEnrollment: { mutateAsync: vi.fn() },
@@ -19,8 +19,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
-    t: (key: string, params?: Record<string, string>) =>
-      params ? `${key}:${params.status}` : key,
+    t: (key: string, params?: Record<string, string>) => (params ? `${key}:${params.status}` : key),
   }),
 }));
 
@@ -93,12 +92,14 @@ describe("useEnrollmentsPageActions", () => {
 
   it("persists a payment status change and refreshes the open detail", () => {
     const onViewingChange = vi.fn();
-    const { result, unmount } = renderTestHook(() => useEnrollmentsPageActions({
-      enrollments: [enrollment],
-      viewing: enrollment,
-      onViewingChange,
-      onActiveSubTabChange: vi.fn(),
-    }));
+    const { result, unmount } = renderTestHook(() =>
+      useEnrollmentsPageActions({
+        enrollments: [enrollment],
+        viewing: enrollment,
+        onViewingChange,
+        onActiveSubTabChange: vi.fn(),
+      }),
+    );
 
     act(() => result.current?.handlePaymentStatusChange("enr-1", "paid"));
 

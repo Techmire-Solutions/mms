@@ -1,5 +1,5 @@
-import path from 'node:path';
-import { defineConfig } from 'vitest/config';
+import path from "node:path";
+import { defineConfig } from "vitest/config";
 
 /**
  * Opt-in real-Postgres integration suite (src/__tests__/db-integration).
@@ -12,31 +12,26 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: {
     alias: {
-      '@': path.resolve(import.meta.dirname, './src'),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
   test: {
-    environment: 'node',
+    environment: "node",
     env: {
-      NODE_ENV: 'test',
-      LOG_LEVEL: 'silent',
-      JWT_SECRET: 'test-secret-at-least-32-chars-long!!',
-      PORT: '0',
-      MMS_LOG_DEV_CREDENTIALS: 'true',
+      NODE_ENV: "test",
+      LOG_LEVEL: "silent",
+      JWT_SECRET: "test-secret-at-least-32-chars-long!!",
+      PORT: "0",
+      MMS_LOG_DEV_CREDENTIALS: "true",
     },
-    include: ['src/__tests__/db-integration/**/*.{test,spec}.ts'],
-    pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: true,
-        isolate: false,
-      },
-    },
+    include: ["src/__tests__/db-integration/**/*.{test,spec}.ts"],
+    pool: "threads",
+    isolate: false,
     maxWorkers: 1,
     fileParallelism: false,
     clearMocks: true,
     restoreMocks: true,
-    execArgv: ['--no-experimental-webstorage'],
+    execArgv: ["--no-experimental-webstorage"],
     testTimeout: 20_000,
     hookTimeout: 30_000,
   },

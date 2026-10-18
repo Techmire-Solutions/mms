@@ -1,8 +1,8 @@
-import { sql } from 'drizzle-orm';
-import { loadBackendEnv } from '../config/loadEnv.js';
-import { closeDatabase, initializeDatabaseConnection } from '../db/dbConnection.js';
-import { withGlobalTenant } from '../db/tenant-context.js';
-import { logger } from '../lib/logger.js';
+import { sql } from "drizzle-orm";
+import { loadBackendEnv } from "../config/loadEnv.js";
+import { closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
+import { withGlobalTenant } from "../db/tenant-context.js";
+import { logger } from "../lib/logger.js";
 
 loadBackendEnv();
 
@@ -47,18 +47,22 @@ async function main(): Promise<void> {
   const convertible = rows.filter((row) => row.classCount === 1 && row.sectionCount === 1);
   const needsAdmin = rows.filter((row) => !(row.classCount === 1 && row.sectionCount === 1));
   console.log(`[audit:enrollment-ssot] ${rows.length} session pair(s) without an enrollment.`);
-  console.log(`  • ${convertible.length} convertible by migration 0168 (session has one class / one section)`);
+  console.log(
+    `  • ${convertible.length} convertible by migration 0168 (session has one class / one section)`,
+  );
   console.log(`  • ${needsAdmin.length} need an administrator to choose a class\n`);
   for (const row of needsAdmin) {
-    console.log(`  ${row.workspace.padEnd(24)} student ${row.studentId.padEnd(24)} session ${row.sessionName ?? row.sessionId} (${row.classCount} classes)`);
+    console.log(
+      `  ${row.workspace.padEnd(24)} student ${row.studentId.padEnd(24)} session ${row.sessionName ?? row.sessionId} (${row.classCount} classes)`,
+    );
   }
   if (needsAdmin.length > 0) process.exitCode = 1;
   await closeDatabase();
 }
 
 main().catch(async (error: unknown) => {
-  logger.error({ err: error }, 'audit:enrollment-ssot failed');
-  console.error('✗ Failed:', error instanceof Error ? error.message : String(error));
+  logger.error({ err: error }, "audit:enrollment-ssot failed");
+  console.error("✗ Failed:", error instanceof Error ? error.message : String(error));
   await closeDatabase().catch(() => undefined);
   process.exit(1);
 });

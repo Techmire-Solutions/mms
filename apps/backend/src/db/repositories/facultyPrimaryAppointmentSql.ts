@@ -2,8 +2,8 @@
  * @file facultyPrimaryAppointmentSql.ts
  * @description Faculty Work list FROM: employment SSOT + primary employ-designation.
  */
-import { sql, type SQL } from 'drizzle-orm';
-import { faculty } from '../schema.js';
+import { sql, type SQL } from "drizzle-orm";
+import { faculty } from "../schema.js";
 
 /**
  * FROM clause: faculty + employment + LATERAL primary open employ-designation

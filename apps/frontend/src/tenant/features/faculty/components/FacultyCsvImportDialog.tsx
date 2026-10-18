@@ -5,7 +5,7 @@ import {
   type FacultyTransferEntity,
   type FacultyDesignationCsvRow,
 } from "@mms/shared";
-import { ModuleImportDialog } from "@/components/ui/ModuleImportDialog";
+import { ModuleImportDialog } from "@/components/app/ModuleImportDialog";
 import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { FacultyIoEntity } from "@/tenant/features/faculty/facultyPageWorkSubTabs";
@@ -66,4 +66,3 @@ export function FacultyCsvImportDialog({
     />
   );
 }
-

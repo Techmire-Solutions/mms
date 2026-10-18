@@ -1,14 +1,14 @@
-import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { QuestionSourcesCitationsSection } from './QuestionSourcesCitationsSection';
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { QuestionSourcesCitationsSection } from "./QuestionSourcesCitationsSection";
 
-describe('QuestionSourcesCitationsSection', () => {
-  it('shows book Plus when canAddBook is enabled', () => {
+describe("QuestionSourcesCitationsSection", () => {
+  it("shows book Plus when canAddBook is enabled", () => {
     const html = renderToStaticMarkup(
       <QuestionSourcesCitationsSection
-        sourceBooks={[{ id: 'b1', name: 'Book', fieldIds: ['sourceBookName'], metadata: {} }]}
-        citationEntries={[{ bookId: '', citation: {} }]}
+        sourceBooks={[{ id: "b1", name: "Book", fieldIds: ["sourceBookName"], metadata: {} }]}
+        citationEntries={[{ bookId: "", citation: {} }]}
         fieldById={new Map()}
         fieldLabel={(id) => id}
         t={(key) => key}
@@ -23,11 +23,11 @@ describe('QuestionSourcesCitationsSection', () => {
     expect(html).toContain('aria-label="questionBank.addSourceBook"');
   });
 
-  it('hides book Plus when canAddBook is false', () => {
+  it("hides book Plus when canAddBook is false", () => {
     const html = renderToStaticMarkup(
       <QuestionSourcesCitationsSection
-        sourceBooks={[{ id: 'b1', name: 'Book', fieldIds: ['sourceBookName'], metadata: {} }]}
-        citationEntries={[{ bookId: 'b1', citation: {} }]}
+        sourceBooks={[{ id: "b1", name: "Book", fieldIds: ["sourceBookName"], metadata: {} }]}
+        citationEntries={[{ bookId: "b1", citation: {} }]}
         fieldById={new Map()}
         fieldLabel={(id) => id}
         t={(key) => key}

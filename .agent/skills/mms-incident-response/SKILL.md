@@ -4,7 +4,7 @@ description: Runs the MMS production incident procedure on the Hetzner host — 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 compatibility: Requires SSH access to the Hetzner VPS with PM2 and Apache; do not run destructive steps without an explicit instruction.
 ---
 
@@ -40,7 +40,7 @@ bash scripts/deploy-rollback.sh <sha>        # a specific release
 bash scripts/deploy-verify.sh                # local backend + public site reachability
 ```
 
-Notes that matter: the rollback restores a dist tarball and reloads PM2 — it does **not** reverse database migrations, and it will not fix an `.env` change (use `scripts/merge-backend-env.sh` deliberately). If only one process is sick, prefer the narrower recovery script (`scripts/deploy-recover-backend.sh`, `scripts/deploy-recover-frontend.sh`) so you do not roll back a healthy half.
+Notes that matter: the rollback restores a dist tarball and reloads PM2 — it does **not** reverse database migrations, and it will not fix an `.env` change (use `scripts/merge-backend-env.sh` deliberately). If only one process is sick, prefer the narrower recovery script (`scripts/deploy-recover-backend.sh`) so you do not roll back a healthy half. For complete procedures, see [references/hetzner-playbook.md](references/hetzner-playbook.md).
 
 ## Fix-forward
 

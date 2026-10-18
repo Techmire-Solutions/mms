@@ -1,10 +1,14 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { TemplateEditor } from "@/components/ui/TemplateEditor";
+import { TemplateEditor } from "@/components/app/TemplateEditor";
 import { notify } from "@/lib/notify";
 import type { Student } from "@mms/shared";
-import type { CardSide, StudentCardPayload, StudentCardTemplate } from "../../lib/studentCardTemplateTypes";
+import type {
+  CardSide,
+  StudentCardPayload,
+  StudentCardTemplate,
+} from "../../lib/studentCardTemplateTypes";
 import {
   getDefaultStudentCardBackElements,
   getDefaultStudentCardTemplate,
@@ -55,7 +59,8 @@ export function StudentCardTemplateEditor({
     () =>
       AVAILABLE_STUDENT_CARD_FIELDS.map((field) => ({
         ...field,
-        label: t(`students.cardTemplate.field.${field.field}` as Parameters<typeof t>[0]) || field.label,
+        label:
+          t(`students.cardTemplate.field.${field.field}` as Parameters<typeof t>[0]) || field.label,
       })),
     [t],
   );
@@ -148,23 +153,20 @@ export function StudentCardTemplateEditor({
     [activeSide],
   );
 
-  const sideLabel = activeSide === "front" ? t("students.cardTemplate.side.front") : t("students.cardTemplate.side.back");
+  const sideLabel =
+    activeSide === "front"
+      ? t("students.cardTemplate.side.front")
+      : t("students.cardTemplate.side.back");
 
   return (
     <div className="relative w-full h-full flex flex-col">
       {/* Side Switcher Bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-card border-b border-border text-xs">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-foreground">
-            {t("students.cardTemplate.title")}
-          </span>
+          <span className="font-semibold text-foreground">{t("students.cardTemplate.title")}</span>
           <span className="text-muted-foreground">({sideLabel})</span>
         </div>
-        <StudentCardSideSwitcher
-          activeSide={activeSide}
-          onSelectSide={setActiveSide}
-          t={t}
-        />
+        <StudentCardSideSwitcher activeSide={activeSide} onSelectSide={setActiveSide} t={t} />
       </div>
 
       <div className="flex-1 min-h-0">

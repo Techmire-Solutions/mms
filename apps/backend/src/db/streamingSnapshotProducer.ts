@@ -1,21 +1,21 @@
-import { asc, gt, sql } from 'drizzle-orm';
+import { asc, gt, sql } from "drizzle-orm";
 import {
   WORKSPACES_COLLECTION,
   PLATFORM_SUPER_USERS_OBJECT_KEY,
   isBackupExcludedObjectKey,
   isServerOnlyObjectKey,
   parseTenantScopedStorageKey,
-} from '@mms/shared';
-import * as schema from './schema.js';
-import { generateSnapshotJsonFromSource } from '../lib/streamingSnapshotJson.js';
+} from "@mms/shared";
+import * as schema from "./schema.js";
+import { generateSnapshotJsonFromSource } from "../lib/streamingSnapshotJson.js";
 import {
   withActiveTransaction,
   type DbClient,
   type LongLivedTenantTransaction,
-} from './dbConnection.js';
-import { RELATIONAL_REPLACE_MAPPING } from './relationalReplaceMapping.js';
-import { stripCredentials } from './relationalSnapshot.js';
-import { collectAssetUrlsFromValue, readAssetBase64 } from '../services/backupAssetService.js';
+} from "./dbConnection.js";
+import { RELATIONAL_REPLACE_MAPPING } from "./relationalReplaceMapping.js";
+import { stripCredentials } from "./relationalSnapshot.js";
+import { collectAssetUrlsFromValue, readAssetBase64 } from "../services/backupAssetService.js";
 
 const PAGE_SIZE = 200;
 
@@ -29,16 +29,16 @@ export async function* pageTenantCollections(
   tx: DbClient,
   subdomain: string | null,
 ): AsyncGenerator<[string, AsyncIterable<unknown>]> {
-  const tenant = subdomain?.trim().toLowerCase() || '';
+  const tenant = subdomain?.trim().toLowerCase() || "";
   let lastSeenName: string | null = null;
   for (;;) {
     const baseQuery = tx
       .select({ name: schema.collections.name }) // Exclude data to avoid buffering huge JSON
       .from(schema.collections);
 
-    const rows = await (lastSeenName
-      ? baseQuery.where(gt(schema.collections.name, lastSeenName))
-      : baseQuery)
+    const rows = await (
+      lastSeenName ? baseQuery.where(gt(schema.collections.name, lastSeenName)) : baseQuery
+    )
       .orderBy(asc(schema.collections.name))
       .limit(PAGE_SIZE);
 
@@ -91,16 +91,16 @@ export async function* pageTenantObjects(
   tx: DbClient,
   subdomain: string | null,
 ): AsyncGenerator<[string, unknown]> {
-  const tenant = subdomain?.trim().toLowerCase() || '';
+  const tenant = subdomain?.trim().toLowerCase() || "";
   let lastSeenKey: string | null = null;
   for (;;) {
     const baseQuery = tx
       .select({ key: schema.objects.key, data: schema.objects.data })
       .from(schema.objects);
 
-    const rows = await (lastSeenKey
-      ? baseQuery.where(gt(schema.objects.key, lastSeenKey))
-      : baseQuery)
+    const rows = await (
+      lastSeenKey ? baseQuery.where(gt(schema.objects.key, lastSeenKey)) : baseQuery
+    )
       .orderBy(asc(schema.objects.key))
       .limit(PAGE_SIZE);
 
@@ -170,16 +170,16 @@ export async function* streamSyncSnapshot(
         { getWorkspaceBranding, getWorkspaceGlobalSettings },
         { maskGlobalSettingsForClient },
       ] = await Promise.all([
-        import('./repositories/workspaceRepository.js'),
-        import('../services/globalSettingsService.js'),
+        import("./repositories/workspaceRepository.js"),
+        import("../services/globalSettingsService.js"),
       ]);
       const [branding, globalSettings] = await Promise.all([
         getWorkspaceBranding(tenant),
         getWorkspaceGlobalSettings(tenant),
       ]);
-      if (branding) extraObjects.push(['branding', branding]);
+      if (branding) extraObjects.push(["branding", branding]);
       if (globalSettings) {
-        extraObjects.push(['global_settings', maskGlobalSettingsForClient(globalSettings)]);
+        extraObjects.push(["global_settings", maskGlobalSettingsForClient(globalSettings)]);
       }
     });
   }
@@ -235,7 +235,7 @@ export async function* streamBackupSnapshot(
         let offset = 0;
         let previousFirstId: unknown = undefined;
         for (;;) {
-          const chunk = await listRows(tenant ?? '', { limit: CHUNK_SIZE, offset });
+          const chunk = await listRows(tenant ?? "", { limit: CHUNK_SIZE, offset });
           if (!Array.isArray(chunk) || chunk.length === 0) break;
           const currentFirstId = (chunk[0] as { id?: unknown })?.id ?? chunk[0];
           if (offset > 0 && currentFirstId !== undefined && currentFirstId === previousFirstId) {
@@ -264,18 +264,17 @@ export async function* streamBackupSnapshot(
     if (tenant) {
       const extra: Array<[string, unknown]> = [];
       await withActiveTransaction(tx, async () => {
-        const { getWorkspaceBranding, getWorkspaceGlobalSettings } = await import(
-          './repositories/workspaceRepository.js'
-        );
+        const { getWorkspaceBranding, getWorkspaceGlobalSettings } =
+          await import("./repositories/workspaceRepository.js");
         const [branding, globalSettings] = await Promise.all([
           getWorkspaceBranding(tenant),
           getWorkspaceGlobalSettings(tenant),
         ]);
         if (branding) {
           collectAssetUrlsFromValue(branding, assetUrls);
-          extra.push(['branding', branding]);
+          extra.push(["branding", branding]);
         }
-        if (globalSettings) extra.push(['global_settings', globalSettings]);
+        if (globalSettings) extra.push(["global_settings", globalSettings]);
         // email_integration is a server-only key (stripped by sanitizeSnapshot),
         // so it is intentionally NOT emitted here to match the /backup contract.
       });
@@ -290,5 +289,9 @@ export async function* streamBackupSnapshot(
     }
   }
 
-  yield* generateSnapshotJsonFromSource({ collections: collections(), objects: objects(), assets: assets() });
+  yield* generateSnapshotJsonFromSource({
+    collections: collections(),
+    objects: objects(),
+    assets: assets(),
+  });
 }

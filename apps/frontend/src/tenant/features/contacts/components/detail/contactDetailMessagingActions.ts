@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { formatTelHref } from "@/lib/contacts/contactPhoneDisplay";
 import type { CollectionRowAction } from "./CollectionRowItem";
 
@@ -23,9 +23,7 @@ interface DetailMessagingRowActionInput {
 }
 
 /** Build a CollectionRowAction with shared messaging icon button tones. */
-function detailMessagingRowAction(
-  input: DetailMessagingRowActionInput,
-): CollectionRowAction {
+function detailMessagingRowAction(input: DetailMessagingRowActionInput): CollectionRowAction {
   return {
     key: input.key,
     icon: input.icon,

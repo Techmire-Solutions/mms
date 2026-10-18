@@ -1,15 +1,19 @@
-import { useState } from 'react';
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
+import { useState } from "react";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
 
 export function usePlatformWorkspaceModalState() {
   const [modulesOpen, setModulesOpen] = useState(false);
-  const [targetModulesWorkspace, setTargetModulesWorkspace] = useState<PlatformWorkspaceRowData | null>(null);
+  const [targetModulesWorkspace, setTargetModulesWorkspace] =
+    useState<PlatformWorkspaceRowData | null>(null);
 
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
-  const [targetResetWorkspace, setTargetResetWorkspace] = useState<PlatformWorkspaceRowData | null>(null);
+  const [targetResetWorkspace, setTargetResetWorkspace] = useState<PlatformWorkspaceRowData | null>(
+    null,
+  );
 
   const [createAdminOpen, setCreateAdminOpen] = useState(false);
-  const [targetCreateWorkspace, setTargetCreateWorkspace] = useState<PlatformWorkspaceRowData | null>(null);
+  const [targetCreateWorkspace, setTargetCreateWorkspace] =
+    useState<PlatformWorkspaceRowData | null>(null);
 
   const [inspectWorkspace, setInspectWorkspace] = useState<PlatformWorkspaceRowData | null>(null);
 

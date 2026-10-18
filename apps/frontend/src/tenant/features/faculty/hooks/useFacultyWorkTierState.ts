@@ -6,7 +6,7 @@ import {
   type FacultyQuickFilter,
 } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrHooks";
+import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
 import { buildFacultyDirectoryQuery } from "@/tenant/features/faculty/hooks/facultyQueryShared";
 import type { useFacultyColumnLayout } from "@/tenant/features/faculty/hooks/useFacultyColumnLayout";
 import {
@@ -59,12 +59,7 @@ export function useFacultyWorkTierState({
   t,
 }: UseFacultyWorkTierStateInput) {
   const exportColumns = useMemo(
-    () =>
-      resolveFacultyExportColumns(
-        columnLayout.columnRegistry,
-        columnLayout.isColumnVisible,
-        t,
-      ),
+    () => resolveFacultyExportColumns(columnLayout.columnRegistry, columnLayout.isColumnVisible, t),
     [columnLayout.columnRegistry, columnLayout.isColumnVisible, t],
   );
 
@@ -111,7 +106,8 @@ export function useFacultyWorkTierState({
 
   const workFaculty = (workPageQuery.data?.body?.faculty ?? []) as FacultyMember[];
   const shownCount = workPageQuery.data?.body?.total ?? workFaculty.length;
-  const isWorkError = workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
+  const isWorkError =
+    workPageQuery.isError || (workPageQuery.data != null && workPageQuery.data.status !== 200);
   const workPageData = workPageQuery.data?.status === 200 ? workPageQuery.data.body : undefined;
 
   return {

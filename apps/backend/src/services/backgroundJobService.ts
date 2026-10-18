@@ -1,12 +1,12 @@
-import { and, eq, ne, desc, or } from 'drizzle-orm';
+import { and, eq, ne, desc, or } from "drizzle-orm";
 import {
   BACKGROUND_JOBS_MAX_PER_USER,
   type BackgroundJobRecord,
   type BackgroundJobStatus,
-} from '@mms/shared';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { withTenant, type TenantTransaction } from '../db/tenant-context.js';
-import { backgroundJobs, tenantUsers } from '../db/schema.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { withTenant, type TenantTransaction } from "../db/tenant-context.js";
+import { backgroundJobs, tenantUsers } from "../db/schema.js";
 
 export function rowToJobRecord(row: typeof backgroundJobs.$inferSelect): BackgroundJobRecord {
   const record: BackgroundJobRecord = {
@@ -54,13 +54,12 @@ export async function listUserBackgroundJobs(userId: string): Promise<Background
         updatedAt: backgroundJobs.updatedAt,
       })
       .from(backgroundJobs)
-      .where(and(
-        eq(backgroundJobs.tenantId, tenantId),
-        or(
-          eq(backgroundJobs.userId, userId),
-          eq(backgroundJobs.userId, effectiveUserId),
+      .where(
+        and(
+          eq(backgroundJobs.tenantId, tenantId),
+          or(eq(backgroundJobs.userId, userId), eq(backgroundJobs.userId, effectiveUserId)),
         ),
-      ))
+      )
       .orderBy(desc(backgroundJobs.createdAt))
       .limit(BACKGROUND_JOBS_MAX_PER_USER);
 
@@ -76,10 +75,7 @@ async function resolveEffectiveTenantUserId(
   const existing = await tx
     .select({ id: tenantUsers.id })
     .from(tenantUsers)
-    .where(and(
-      eq(tenantUsers.workspaceSubdomain, tenantId),
-      eq(tenantUsers.id, userId),
-    ))
+    .where(and(eq(tenantUsers.workspaceSubdomain, tenantId), eq(tenantUsers.id, userId)))
     .limit(1);
 
   if (existing.length > 0) return userId;
@@ -101,7 +97,7 @@ export async function upsertUserBackgroundJob(
   job: BackgroundJobRecord,
 ): Promise<BackgroundJobRecord> {
   const tenantId = getRequestTenant();
-  if (!tenantId) throw new Error('Tenant context is required to upsert background job');
+  if (!tenantId) throw new Error("Tenant context is required to upsert background job");
 
   const values = {
     id: job.id,
@@ -124,7 +120,8 @@ export async function upsertUserBackgroundJob(
   await withTenant(tenantId, async (tx) => {
     const effectiveUserId = await resolveEffectiveTenantUserId(tx, tenantId, userId);
     values.userId = effectiveUserId;
-    await tx.insert(backgroundJobs)
+    await tx
+      .insert(backgroundJobs)
       .values(values)
       .onConflictDoUpdate({
         target: backgroundJobs.id,
@@ -172,14 +169,12 @@ export async function createDatabaseBackgroundJob(
 
 export async function dismissUserBackgroundJob(_userId: string, jobId: string): Promise<boolean> {
   const tenantId = getRequestTenant();
-  if (!tenantId) throw new Error('Tenant context is required to dismiss background job');
+  if (!tenantId) throw new Error("Tenant context is required to dismiss background job");
 
   return withTenant(tenantId, async (tx) => {
-    const deleted = await tx.delete(backgroundJobs)
-      .where(and(
-        eq(backgroundJobs.tenantId, tenantId),
-        eq(backgroundJobs.id, jobId)
-      ))
+    const deleted = await tx
+      .delete(backgroundJobs)
+      .where(and(eq(backgroundJobs.tenantId, tenantId), eq(backgroundJobs.id, jobId)))
       .returning({ id: backgroundJobs.id });
 
     return deleted.length > 0;
@@ -188,19 +183,19 @@ export async function dismissUserBackgroundJob(_userId: string, jobId: string): 
 
 export async function clearFinishedUserBackgroundJobs(userId: string): Promise<number> {
   const tenantId = getRequestTenant();
-  if (!tenantId) throw new Error('Tenant context is required to clear background jobs');
+  if (!tenantId) throw new Error("Tenant context is required to clear background jobs");
 
   return withTenant(tenantId, async (tx) => {
     const effectiveUserId = await resolveEffectiveTenantUserId(tx, tenantId, userId);
-    const cleared = await tx.delete(backgroundJobs)
-      .where(and(
-        eq(backgroundJobs.tenantId, tenantId),
-        or(
-          eq(backgroundJobs.userId, userId),
-          eq(backgroundJobs.userId, effectiveUserId),
+    const cleared = await tx
+      .delete(backgroundJobs)
+      .where(
+        and(
+          eq(backgroundJobs.tenantId, tenantId),
+          or(eq(backgroundJobs.userId, userId), eq(backgroundJobs.userId, effectiveUserId)),
+          ne(backgroundJobs.status, "running"),
         ),
-        ne(backgroundJobs.status, 'running')
-      ))
+      )
       .returning({ id: backgroundJobs.id });
 
     return cleared.length;
@@ -213,7 +208,8 @@ export async function clearTenantBackgroundJobs(): Promise<number> {
   if (!tenantId) return 0;
 
   return withTenant(tenantId, async (tx) => {
-    const cleared = await tx.delete(backgroundJobs)
+    const cleared = await tx
+      .delete(backgroundJobs)
       .where(eq(backgroundJobs.tenantId, tenantId))
       .returning({ id: backgroundJobs.id });
 
@@ -250,10 +246,7 @@ export async function getUserBackgroundJob(
         updatedAt: backgroundJobs.updatedAt,
       })
       .from(backgroundJobs)
-      .where(and(
-        eq(backgroundJobs.tenantId, tenantId),
-        eq(backgroundJobs.id, jobId)
-      ))
+      .where(and(eq(backgroundJobs.tenantId, tenantId), eq(backgroundJobs.id, jobId)))
       .limit(1);
 
     const row = rows[0];
@@ -272,19 +265,18 @@ export async function getUserBackgroundJobPayload(
 
   return withTenant(tenantId, async (tx) => {
     const effectiveUserId = await resolveEffectiveTenantUserId(tx, tenantId, userId);
-    const rows = await tx.select({ payload: backgroundJobs.payload })
+    const rows = await tx
+      .select({ payload: backgroundJobs.payload })
       .from(backgroundJobs)
-      .where(and(
-        eq(backgroundJobs.tenantId, tenantId),
-        or(
-          eq(backgroundJobs.userId, userId),
-          eq(backgroundJobs.userId, effectiveUserId),
+      .where(
+        and(
+          eq(backgroundJobs.tenantId, tenantId),
+          or(eq(backgroundJobs.userId, userId), eq(backgroundJobs.userId, effectiveUserId)),
+          eq(backgroundJobs.id, jobId),
         ),
-        eq(backgroundJobs.id, jobId),
-      ))
+      )
       .limit(1);
 
     return rows[0]?.payload ?? null;
   });
 }
-

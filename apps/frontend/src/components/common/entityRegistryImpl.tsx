@@ -7,7 +7,7 @@ import type {
   TableColumnDescriptor,
   EntityDescriptor,
   CreateEntityDescriptorOptions,
-} from "@/types/entityRegistry";
+} from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "./entityDescriptorFactory";
 import {
   contactsEntityDescriptor,
@@ -104,11 +104,8 @@ export const ENTITY_REGISTRY = {
 export function getEntityDescriptor<K extends keyof EntityRegistryMap>(
   entityType: K,
 ): EntityRegistryMap[K];
-export function getEntityDescriptor(
-  entityType: string,
-): EntityDescriptor<unknown> | undefined;
-export function getEntityDescriptor(
-  entityType: string,
-): EntityDescriptor<unknown> | undefined {
-  return ENTITY_REGISTRY[entityType as keyof EntityRegistryMap] as EntityDescriptor<unknown> | undefined;
+export function getEntityDescriptor(entityType: string): EntityDescriptor<unknown> | undefined;
+export function getEntityDescriptor(entityType: string): EntityDescriptor<unknown> | undefined {
+  return ENTITY_REGISTRY[entityType as keyof EntityRegistryMap] as
+    EntityDescriptor<unknown> | undefined;
 }

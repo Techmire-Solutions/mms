@@ -1,5 +1,5 @@
-import { requireTenant } from './tenantContext.js';
-import { broadcastCollection } from './livePush.js';
+import { requireTenant } from "./tenantContext.js";
+import { broadcastCollection } from "./livePush.js";
 
 /**
  * Shared field-config load/save: tenant → load → strip on save → reload → broadcast.
@@ -31,9 +31,9 @@ export function createModuleFieldConfigService<
   async function load(): Promise<(TDocument & { formTabs: TFormTab[] }) | null> {
     const tenant = requireTenant();
     const raw = await getByWorkspace(tenant);
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
     const document = await toDocument(raw, tenant);
-    return { ...document, formTabs: ((document.formTabs ?? []) as TFormTab[]) };
+    return { ...document, formTabs: (document.formTabs ?? []) as TFormTab[] };
   }
 
   async function save(config: TDocument): Promise<TDocument & { formTabs: TFormTab[] }> {
@@ -49,4 +49,3 @@ export function createModuleFieldConfigService<
 }
 
 export { requireTenant as requireFieldConfigTenant };
-

@@ -1,7 +1,7 @@
-import { redisDel, redisGet, redisSet } from '../lib/redis.js';
-import { revokeToken } from './session.service.js';
+import { redisDel, redisGet, redisSet } from "../lib/redis.js";
+import { revokeToken } from "./authSessionService.js";
 
-const SESSION_ACTIVITY_PREFIX = 'session:idle:';
+const SESSION_ACTIVITY_PREFIX = "session:idle:";
 const SESSION_CLOCK_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days: retain clock record across idle windows until explicit logout/expiry
 
 /**
@@ -82,21 +82,16 @@ export async function resetSessionClock(scope: string, idleMs: number): Promise<
 }
 
 /** Records `now` as the last-activity time, preserving the session start. */
-export async function touchSession(
-  scope: string,
-  idleMs: number,
-  force = false,
-): Promise<void> {
+export async function touchSession(scope: string, idleMs: number, force = false): Promise<void> {
   if (!scope) return;
   const now = Date.now();
   // Never throttle longer than half the idle window: with a 1-minute idle policy
   // the fixed 60s throttle could drop an activity just after the window while
   // the stored timestamp was already past `idleMs`, expiring an active session.
-  const effectiveThrottleMs = idleMs > 0
-    ? Math.min(TOUCH_THROTTLE_MS, Math.floor(idleMs / 2))
-    : 0;
+  const effectiveThrottleMs = idleMs > 0 ? Math.min(TOUCH_THROTTLE_MS, Math.floor(idleMs / 2)) : 0;
   const last = touchThrottle.get(scope);
-  if (!force && effectiveThrottleMs > 0 && last !== undefined && now - last < effectiveThrottleMs) return;
+  if (!force && effectiveThrottleMs > 0 && last !== undefined && now - last < effectiveThrottleMs)
+    return;
   setTouchThrottle(scope, now);
 
   const existing = await readClock(scope);

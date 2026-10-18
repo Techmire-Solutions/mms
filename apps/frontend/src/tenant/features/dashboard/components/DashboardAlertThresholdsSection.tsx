@@ -1,13 +1,16 @@
 import React from "react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field } from "@/components/ui/FormField";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface DashboardAlertThresholdsSectionProps {
   lowAttendanceThreshold?: number;
   urgentAttendanceThreshold?: number;
-  onUpdateThreshold: (key: "lowAttendanceThreshold" | "urgentAttendanceThreshold", value: number) => void;
+  onUpdateThreshold: (
+    key: "lowAttendanceThreshold" | "urgentAttendanceThreshold",
+    value: number,
+  ) => void;
   hasGridMode: boolean;
   t: TranslationFunction;
 }

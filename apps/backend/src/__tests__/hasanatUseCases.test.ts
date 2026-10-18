@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
-import { createHasanatUseCases } from '../hasanat/use-cases/hasanatUseCases.js';
-import type { HasanatRepository } from '../hasanat/repository/hasanatRepository.js';
-import { runWithTenant } from '../lib/tenantContext.js';
+import { describe, expect, it, vi } from "vitest";
+import { createHasanatUseCases } from "../hasanat/use-cases/hasanatUseCases.js";
+import type { HasanatRepository } from "../hasanat/repository/hasanatRepository.js";
+import { runWithTenant } from "../lib/tenantContext.js";
 
 function createFakeRepo(): HasanatRepository {
   return {
@@ -59,126 +59,173 @@ function createFakeRepo(): HasanatRepository {
   };
 }
 
-describe('hasanat use-cases (DI with fake repository)', () => {
-  it('loadDistributionsPage delegates to the injected repository with the active tenant', async () => {
+describe("hasanat use-cases (DI with fake repository)", () => {
+  it("loadDistributionsPage delegates to the injected repository with the active tenant", async () => {
     const repo = createFakeRepo();
     const useCases = createHasanatUseCases(repo);
 
-    const result = await runWithTenant('demo', () => useCases.loadDistributionsPage({ page: 2, limit: 15 }));
+    const result = await runWithTenant("demo", () =>
+      useCases.loadDistributionsPage({ page: 2, limit: 15 }),
+    );
 
     expect(result).toEqual({ distributions: [], total: 0, page: 1, limit: 15, hasMore: false });
-    expect(repo.listDistributionsPage).toHaveBeenCalledWith('demo', { page: 2, limit: 15 });
+    expect(repo.listDistributionsPage).toHaveBeenCalledWith("demo", { page: 2, limit: 15 });
   });
 
-  it('loadHasanatCommandMetrics delegates to the injected repository', async () => {
+  it("loadHasanatCommandMetrics delegates to the injected repository", async () => {
     const repo = createFakeRepo();
     const useCases = createHasanatUseCases(repo);
 
-    const result = await runWithTenant('demo', () => useCases.loadHasanatCommandMetrics());
+    const result = await runWithTenant("demo", () => useCases.loadHasanatCommandMetrics());
 
     expect(result.totalStock).toBe(10);
-    expect(repo.aggregateHasanatCommandMetrics).toHaveBeenCalledWith('demo');
+    expect(repo.aggregateHasanatCommandMetrics).toHaveBeenCalledWith("demo");
   });
 
-  it('upsertDenoms delegates to the injected repository', async () => {
+  it("upsertDenoms delegates to the injected repository", async () => {
     const repo = createFakeRepo();
     const useCases = createHasanatUseCases(repo);
     const denom = {
-      id: 'd-1',
-      name: 'Star',
+      id: "d-1",
+      name: "Star",
       points: 5,
-      color: 'emerald',
-      description: '',
-      icon: 'Star',
+      color: "emerald",
+      description: "",
+      icon: "Star",
       active: true,
     };
 
-    const result = await runWithTenant('demo', () => useCases.upsertDenoms([denom]));
+    const result = await runWithTenant("demo", () => useCases.upsertDenoms([denom]));
 
     expect(result).toEqual([denom]);
-    expect(repo.bulkSaveDenoms).toHaveBeenCalledWith('demo', [denom]);
+    expect(repo.bulkSaveDenoms).toHaveBeenCalledWith("demo", [denom]);
   });
 
-  it('loadDenomById and loadDenomsByIds delegate to repository', async () => {
+  it("loadDenomById and loadDenomsByIds delegate to repository", async () => {
     const repo = createFakeRepo();
-    const fakeDenom = { id: 'd-1', name: 'Star', points: 5, color: 'emerald', description: '', icon: 'Star', active: true };
+    const fakeDenom = {
+      id: "d-1",
+      name: "Star",
+      points: 5,
+      color: "emerald",
+      description: "",
+      icon: "Star",
+      active: true,
+    };
     (repo.findDenomById as any).mockResolvedValue(fakeDenom);
     (repo.findDenomsByIds as any).mockResolvedValue([fakeDenom]);
     const useCases = createHasanatUseCases(repo);
 
-    const single = await runWithTenant('demo', () => useCases.loadDenomById('d-1'));
-    const multiple = await runWithTenant('demo', () => useCases.loadDenomsByIds(['d-1', '  ']));
+    const single = await runWithTenant("demo", () => useCases.loadDenomById("d-1"));
+    const multiple = await runWithTenant("demo", () => useCases.loadDenomsByIds(["d-1", "  "]));
 
     expect(single).toEqual(fakeDenom);
     expect(multiple).toEqual([fakeDenom]);
-    expect(repo.findDenomById).toHaveBeenCalledWith('demo', 'd-1');
-    expect(repo.findDenomsByIds).toHaveBeenCalledWith('demo', ['d-1']);
+    expect(repo.findDenomById).toHaveBeenCalledWith("demo", "d-1");
+    expect(repo.findDenomsByIds).toHaveBeenCalledWith("demo", ["d-1"]);
   });
 
-  it('loadBatchById and loadBatchesByIds delegate to repository', async () => {
+  it("loadBatchById and loadBatchesByIds delegate to repository", async () => {
     const repo = createFakeRepo();
-    const fakeBatch = { id: 'b-1', denominationId: 'd-1', denominationName: 'Star', quantity: 100, remaining: 80, addedDate: '2026-09-01', note: '' };
+    const fakeBatch = {
+      id: "b-1",
+      denominationId: "d-1",
+      denominationName: "Star",
+      quantity: 100,
+      remaining: 80,
+      addedDate: "2026-09-01",
+      note: "",
+    };
     (repo.findBatchById as any).mockResolvedValue(fakeBatch);
     (repo.findBatchesByIds as any).mockResolvedValue([fakeBatch]);
     const useCases = createHasanatUseCases(repo);
 
-    const single = await runWithTenant('demo', () => useCases.loadBatchById('b-1'));
-    const multiple = await runWithTenant('demo', () => useCases.loadBatchesByIds(['b-1', '']));
+    const single = await runWithTenant("demo", () => useCases.loadBatchById("b-1"));
+    const multiple = await runWithTenant("demo", () => useCases.loadBatchesByIds(["b-1", ""]));
 
     expect(single).toEqual(fakeBatch);
     expect(multiple).toEqual([fakeBatch]);
-    expect(repo.findBatchById).toHaveBeenCalledWith('demo', 'b-1');
-    expect(repo.findBatchesByIds).toHaveBeenCalledWith('demo', ['b-1']);
+    expect(repo.findBatchById).toHaveBeenCalledWith("demo", "b-1");
+    expect(repo.findBatchesByIds).toHaveBeenCalledWith("demo", ["b-1"]);
   });
 
-  it('loadRedemptionById and loadRedemptionsByIds delegate to repository', async () => {
+  it("loadRedemptionById and loadRedemptionsByIds delegate to repository", async () => {
     const repo = createFakeRepo();
-    const fakeRedemption = { id: 'r-1', distributionId: 'dist-1', studentName: 'Alice', reward: 'Book', pointsUsed: 50, date: '2026-09-01' };
+    const fakeRedemption = {
+      id: "r-1",
+      distributionId: "dist-1",
+      studentName: "Alice",
+      reward: "Book",
+      pointsUsed: 50,
+      date: "2026-09-01",
+    };
     (repo.findRedemptionById as any).mockResolvedValue(fakeRedemption);
     (repo.findRedemptionsByIds as any).mockResolvedValue([fakeRedemption]);
     const useCases = createHasanatUseCases(repo);
 
-    const single = await runWithTenant('demo', () => useCases.loadRedemptionById('r-1'));
-    const multiple = await runWithTenant('demo', () => useCases.loadRedemptionsByIds(['r-1']));
+    const single = await runWithTenant("demo", () => useCases.loadRedemptionById("r-1"));
+    const multiple = await runWithTenant("demo", () => useCases.loadRedemptionsByIds(["r-1"]));
 
     expect(single).toEqual(fakeRedemption);
     expect(multiple).toEqual([fakeRedemption]);
-    expect(repo.findRedemptionById).toHaveBeenCalledWith('demo', 'r-1');
-    expect(repo.findRedemptionsByIds).toHaveBeenCalledWith('demo', ['r-1']);
+    expect(repo.findRedemptionById).toHaveBeenCalledWith("demo", "r-1");
+    expect(repo.findRedemptionsByIds).toHaveBeenCalledWith("demo", ["r-1"]);
   });
 
-  it('loadDistributionsByIds filters soft-deleted items by default', async () => {
+  it("loadDistributionsByIds filters soft-deleted items by default", async () => {
     const repo = createFakeRepo();
-    const activeDist = { id: 'dist-1', batchId: 'b-1', denominationId: 'd-1', denominationName: 'Star', recipientType: 'student' as const, recipientName: 'Alice', recipientClass: '1A', quantity: 1, reason: 'Good deed', issuedDate: '2026-09-01', status: 'active' as const };
-    const deletedDist = { ...activeDist, id: 'dist-2', deletedAt: new Date().toISOString() };
-    (repo.findDistributionsByIds as any).mockImplementation(async (_t: string, _ids: string[], opts?: any) => {
-      return (opts?.includeDeleted || opts?.deleted === 'deleted') ? [deletedDist] : [activeDist];
-    });
+    const activeDist = {
+      id: "dist-1",
+      batchId: "b-1",
+      denominationId: "d-1",
+      denominationName: "Star",
+      recipientType: "student" as const,
+      recipientName: "Alice",
+      recipientClass: "1A",
+      quantity: 1,
+      reason: "Good deed",
+      issuedDate: "2026-09-01",
+      status: "active" as const,
+    };
+    const deletedDist = { ...activeDist, id: "dist-2", deletedAt: new Date().toISOString() };
+    (repo.findDistributionsByIds as any).mockImplementation(
+      async (_t: string, _ids: string[], opts?: any) => {
+        return opts?.includeDeleted || opts?.deleted === "deleted" ? [deletedDist] : [activeDist];
+      },
+    );
     const useCases = createHasanatUseCases(repo);
 
-    const activeOnly = await runWithTenant('demo', () => useCases.loadDistributionsByIds(['dist-1', 'dist-2']));
-    const archivedOnly = await runWithTenant('demo', () => useCases.loadDistributionsByIds(['dist-1', 'dist-2'], true));
+    const activeOnly = await runWithTenant("demo", () =>
+      useCases.loadDistributionsByIds(["dist-1", "dist-2"]),
+    );
+    const archivedOnly = await runWithTenant("demo", () =>
+      useCases.loadDistributionsByIds(["dist-1", "dist-2"], true),
+    );
 
-    expect(repo.findDistributionsByIds).toHaveBeenCalledWith('demo', ['dist-1', 'dist-2'], { includeDeleted: false });
+    expect(repo.findDistributionsByIds).toHaveBeenCalledWith("demo", ["dist-1", "dist-2"], {
+      includeDeleted: false,
+    });
     expect(activeOnly).toHaveLength(1);
-    expect(activeOnly[0].id).toBe('dist-1');
-    expect(repo.findDistributionsByIds).toHaveBeenCalledWith('demo', ['dist-1', 'dist-2'], { includeDeleted: true });
+    expect(activeOnly[0].id).toBe("dist-1");
+    expect(repo.findDistributionsByIds).toHaveBeenCalledWith("demo", ["dist-1", "dist-2"], {
+      includeDeleted: true,
+    });
     expect(archivedOnly).toHaveLength(1);
-    expect(archivedOnly[0].id).toBe('dist-2');
+    expect(archivedOnly[0].id).toBe("dist-2");
   });
 
-  it('returns empty defaults when no tenant context is bound', async () => {
+  it("returns empty defaults when no tenant context is bound", async () => {
     const repo = createFakeRepo();
     const useCases = createHasanatUseCases(repo);
 
     const page = await useCases.loadDistributionsPage({ page: 1, limit: 15 });
     const metrics = await useCases.loadHasanatCommandMetrics();
-    const singleBatch = await useCases.loadBatchById('b-1');
-    const batchList = await useCases.loadBatchesByIds(['b-1']);
-    const singleDenom = await useCases.loadDenomById('d-1');
-    const denomList = await useCases.loadDenomsByIds(['d-1']);
-    const singleRedemption = await useCases.loadRedemptionById('r-1');
-    const redemptionList = await useCases.loadRedemptionsByIds(['r-1']);
+    const singleBatch = await useCases.loadBatchById("b-1");
+    const batchList = await useCases.loadBatchesByIds(["b-1"]);
+    const singleDenom = await useCases.loadDenomById("d-1");
+    const denomList = await useCases.loadDenomsByIds(["d-1"]);
+    const singleRedemption = await useCases.loadRedemptionById("r-1");
+    const redemptionList = await useCases.loadRedemptionsByIds(["r-1"]);
 
     expect(page).toEqual({ distributions: [], total: 0, page: 1, limit: 15, hasMore: false });
     expect(metrics.totalStock).toBe(0);

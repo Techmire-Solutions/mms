@@ -18,7 +18,7 @@ Historically transformed from a simplistic "teachers" table, the current Faculty
    - **Work Tier:** High-density directory table, responsive mobile cards, quick filters, bulk actions, column customizer, slide-over detail drawer, and batch-printable laminated ID cards.
    - **Reports Tier:** KPI metrics, departmental distributions, qualification breakdowns, and multi-format exports (CSV, Excel, print).
    - **Setup Tier:** Institutional preferences, atomic annual-rollover employee ID generator configuration, department hierarchy catalog, and designation rank catalog.
-5. **Strict Architectural Modularity:** Zero files exceeding the 200-line hard ceiling; strict decoupling between presentation components, hooks, use cases, and database repositories.
+5. **Strict Architectural Modularity:** Zero files exceeding the 300-line hard ceiling; strict decoupling between presentation components, hooks, use cases, and database repositories.
 
 ---
 
@@ -76,7 +76,7 @@ graph TD
 
 ## 3. Database Layer (PostgreSQL 16 & Drizzle ORM)
 
-The database schema is defined using Drizzle ORM in [`apps/backend/src/db/schema/faculty.ts`](file:///Users/syedaalin/Documents/mms/apps/backend/src/db/schema/faculty.ts) and sub-modules decomposed to comply with the 200-line limit.
+The database schema is defined using Drizzle ORM in [`apps/backend/src/db/schema/faculty.ts`](file:///Users/syedaalin/Documents/mms/apps/backend/src/db/schema/faculty.ts) and sub-modules decomposed to comply with the 300-line limit.
 
 ### 3.1 Relational Tables & Field Schemas
 

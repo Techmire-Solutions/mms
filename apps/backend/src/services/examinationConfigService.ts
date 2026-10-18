@@ -6,13 +6,13 @@ import {
   type FieldDefinition,
   type ExaminationsSettings,
   type TabDefinition,
-} from '@mms/shared';
-import { createModuleFieldConfigService } from '../lib/createModuleFieldConfigService.js';
+} from "@mms/shared";
+import { createModuleFieldConfigService } from "../lib/createModuleFieldConfigService.js";
 import {
   getExaminationFieldConfig,
   setExaminationFieldConfig,
-} from '../db/repositories/examinationFieldConfigRepository.js';
-import { getExaminationModulePreferences } from '../db/repositories/examinationModulePreferencesRepository.js';
+} from "../db/repositories/examinationFieldConfigRepository.js";
+import { getExaminationModulePreferences } from "../db/repositories/examinationModulePreferencesRepository.js";
 
 const examinationFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -21,7 +21,7 @@ const examinationFieldConfig = createModuleFieldConfigService<
   Record<string, FieldDefinition[]> | undefined,
   ReturnType<typeof stripExaminationsFieldConfigForPersist>
 >({
-  broadcastKey: 'examinations',
+  broadcastKey: "examinations",
   getByWorkspace: getExaminationFieldConfig,
   upsert: setExaminationFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -32,7 +32,7 @@ const examinationFieldConfig = createModuleFieldConfigService<
     );
   },
   stripForPersist: stripExaminationsFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload examinations field config after save',
+  reloadFailedMessage: "Failed to reload examinations field config after save",
 });
 
 export const getExaminationFieldConfigService = examinationFieldConfig.load;
@@ -42,4 +42,3 @@ export async function updateExaminationFieldConfigService(
 ): Promise<ExaminationsSettings> {
   return examinationFieldConfig.save(normalizeExaminationsSettings(config));
 }
-

@@ -7,12 +7,14 @@ import {
   getVisibleLeadingColumnCount,
   isJournalBalanced,
   type JournalEntriesListProps,
-} from "@/tenant/features/accounting/components/journalEntriesListShared";
+} from "@/tenant/features/accounting/lib/journalEntriesListShared";
 import { useJournalEntriesTableColumns } from "./useJournalEntriesTableColumns";
 
 type JournalEntriesListDesktopTableProps = JournalEntriesListProps;
 
-export function JournalEntriesListDesktopTable(props: JournalEntriesListDesktopTableProps): React.JSX.Element {
+export function JournalEntriesListDesktopTable(
+  props: JournalEntriesListDesktopTableProps,
+): React.JSX.Element {
   const {
     entries,
     selectedIds,

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { formatDate, todayISO } from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { DatePicker } from '@/components/ui/DatePicker';
-import { useTranslation } from '@/hooks/useTranslation';
+import React, { useState } from "react";
+import { formatDate, todayISO } from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/app/DatePicker";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface SectionAssignmentRowProps {
   assignment: {
@@ -24,14 +24,23 @@ export interface SectionAssignmentRowProps {
 }
 
 /** One effective-dated row: who, role, period, reason, and an inline "end on" control. */
-export function SectionAssignmentRow({ assignment, roleLabel, pending = false, onEnd }: SectionAssignmentRowProps): React.JSX.Element {
+export function SectionAssignmentRow({
+  assignment,
+  roleLabel,
+  pending = false,
+  onEnd,
+}: SectionAssignmentRowProps): React.JSX.Element {
   const { t } = useTranslation();
   const [ending, setEnding] = useState(false);
   const [endOn, setEndOn] = useState(todayISO());
-  const label = roleLabel ? roleLabel(assignment.role) : t(`sessions.staff.role.${assignment.role as 'class_teacher' | 'subject_teacher' | 'assistant'}`);
-  const period = t('sessions.staff.period', {
+  const label = roleLabel
+    ? roleLabel(assignment.role)
+    : t(
+        `sessions.staff.role.${assignment.role as "class_teacher" | "subject_teacher" | "assistant"}`,
+      );
+  const period = t("sessions.staff.period", {
     from: formatDate(assignment.startOn),
-    to: assignment.endOn ? formatDate(assignment.endOn) : t('sessions.staff.present'),
+    to: assignment.endOn ? formatDate(assignment.endOn) : t("sessions.staff.present"),
   });
 
   return (
@@ -39,22 +48,53 @@ export function SectionAssignmentRow({ assignment, roleLabel, pending = false, o
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{assignment.facultyName ?? assignment.studentName}</p>
         <p className="text-xs text-muted-foreground">
-          {label}{assignment.subjectName ? ` · ${assignment.subjectName}` : ''} · {period}
-          {assignment.changeReason ? ` · ${assignment.changeReason}` : ''}
+          {label}
+          {assignment.subjectName ? ` · ${assignment.subjectName}` : ""} · {period}
+          {assignment.changeReason ? ` · ${assignment.changeReason}` : ""}
         </p>
       </div>
       {onEnd && !ending ? (
-        <Button type="button" size="sm" variant="outline" className="min-h-11" disabled={pending} onClick={() => setEnding(true)}>
-          {t('sessions.staff.end')}
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="min-h-11"
+          disabled={pending}
+          onClick={() => setEnding(true)}
+        >
+          {t("sessions.staff.end")}
         </Button>
       ) : null}
       {onEnd && ending ? (
         <div className="flex items-center gap-2">
-          <DatePicker id={`end-${assignment.id}`} aria-label={t('sessions.staff.endOn')} value={endOn} min={assignment.startOn} onChange={setEndOn} />
-          <Button type="button" size="sm" className="min-h-11" disabled={pending || !endOn} onClick={() => { onEnd(endOn); setEnding(false); }}>
-            {t('sessions.staff.end')}
+          <DatePicker
+            id={`end-${assignment.id}`}
+            aria-label={t("sessions.staff.endOn")}
+            value={endOn}
+            min={assignment.startOn}
+            onChange={setEndOn}
+          />
+          <Button
+            type="button"
+            size="sm"
+            className="min-h-11"
+            disabled={pending || !endOn}
+            onClick={() => {
+              onEnd(endOn);
+              setEnding(false);
+            }}
+          >
+            {t("sessions.staff.end")}
           </Button>
-          <Button type="button" size="sm" variant="ghost" className="min-h-11" onClick={() => setEnding(false)}>{t('common.cancel')}</Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="min-h-11"
+            onClick={() => setEnding(false)}
+          >
+            {t("common.cancel")}
+          </Button>
         </div>
       ) : null}
     </div>

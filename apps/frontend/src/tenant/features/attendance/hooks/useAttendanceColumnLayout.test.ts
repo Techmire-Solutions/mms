@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { useAttendanceColumnLayout } from "./useAttendanceColumnLayout";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -12,12 +12,16 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/hooks/useModuleColumnLayout", () => ({
-  useModuleColumnLayout: (params: any) => ({
+  useModuleColumnLayout: (params: {
+    moduleId: string;
+    tenantRegistry: Array<{ key: string; enabled: boolean }>;
+  }) => ({
     moduleId: params.moduleId,
     columnRegistry: params.tenantRegistry,
-    isColumnVisible: (key: string) => params.tenantRegistry.some(
-      (column: { key: string; enabled: boolean }) => column.key === key && column.enabled,
-    ),
+    isColumnVisible: (key: string) =>
+      params.tenantRegistry.some(
+        (column: { key: string; enabled: boolean }) => column.key === key && column.enabled,
+      ),
   }),
 }));
 
@@ -37,7 +41,7 @@ describe("useAttendanceColumnLayout Hook", () => {
   });
 
   it("builds attendance column layout and returns visibility checkers", async () => {
-    let hookResult: any = null;
+    let hookResult!: ReturnType<typeof useAttendanceColumnLayout>;
 
     function TestComponent() {
       hookResult = useAttendanceColumnLayout();
@@ -50,10 +54,11 @@ describe("useAttendanceColumnLayout Hook", () => {
     });
 
     expect(hookResult).toBeDefined();
-    expect(hookResult.moduleId).toBe("attendance");
+    expect((hookResult as unknown as { moduleId: string }).moduleId).toBe("attendance");
     expect(hookResult.isColumnVisible("student")).toBe(true);
     expect(hookResult.isColumnVisible("session")).toBe(true);
-    expect(hookResult.columnRegistry.find((column: { key: string }) => column.key === "session")?.label)
-      .toBe("attendance.columns.session");
+    expect(
+      hookResult.columnRegistry.find((column: { key: string }) => column.key === "session")?.label,
+    ).toBe("attendance.columns.session");
   });
 });

@@ -14,4 +14,3 @@ export type { Invoice, Payment, FinanceSettings, InvoiceStatus, OpenInvoiceStatu
 export { DEFAULT_FINANCE_SETTINGS, INVOICE_STATUSES, OPEN_INVOICE_STATUSES, isOpenInvoiceStatus };
 
 export const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Online", "Cheque", "Other"] as const;
-

@@ -1,12 +1,12 @@
 import { type AccountingSettings, type Account } from "@mms/shared";
 import { Sliders, Hash } from "lucide-react";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { Field } from "@/components/ui/FormPrimitives";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import { ToggleRow } from "@/components/app/ToggleRow";
+import { Field } from "@/components/app/FormPrimitives";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 
 export interface AccountingSettingsRulesSectionProps {
@@ -113,8 +113,13 @@ export function AccountingSettingsRulesSection({
               placeholder={t("accounting.journal.form.none")}
               options={accounts
                 .filter((account) => account.type === "Equity" && account.isActive !== false)
-                .sort((firstAccount, secondAccount) => firstAccount.code.localeCompare(secondAccount.code))
-                .map((account) => ({ value: account.id, label: `${account.code} – ${account.name}` }))}
+                .sort((firstAccount, secondAccount) =>
+                  firstAccount.code.localeCompare(secondAccount.code),
+                )
+                .map((account) => ({
+                  value: account.id,
+                  label: `${account.code} – ${account.name}`,
+                }))}
             />
           </Field>
         </div>

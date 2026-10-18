@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LOGO_IMAGE } from "@/lib/semanticTone";
+import { LOGO_IMAGE } from "@/lib/ui/semanticTone";
 import { ROUTES } from "@/lib/config/routes";
 import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
 import { MobileSidebarNavItems } from "@/tenant/components/layout/MobileSidebarNavItems";
@@ -22,7 +22,10 @@ export interface MobileSidebarProps {
   onClose: () => void;
 }
 
-export default function MobileSidebar({ open, onClose }: MobileSidebarProps): React.JSX.Element | null {
+export default function MobileSidebar({
+  open,
+  onClose,
+}: MobileSidebarProps): React.JSX.Element | null {
   const branding = useBranding();
   const { user, logout } = useAuth();
   const { t } = useTranslation();
@@ -132,7 +135,9 @@ export default function MobileSidebar({ open, onClose }: MobileSidebarProps): Re
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-sidebar-foreground">{user?.name ?? "User"}</p>
+              <p className="truncate text-sm font-semibold text-sidebar-foreground">
+                {user?.name ?? "User"}
+              </p>
               <p className="truncate text-xs text-sidebar-muted-foreground">{user?.email ?? ""}</p>
             </div>
           </div>

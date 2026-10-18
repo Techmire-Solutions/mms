@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { deepSanitizeStrings } from './sanitize.js';
+import { z } from "zod";
+import { deepSanitizeStrings } from "./sanitize.js";
 
 export const moduleFieldConfigPutBodyBaseSchema = z
   .object({
@@ -12,6 +12,6 @@ export const moduleFieldConfigPutBodyBaseSchema = z
   .strict();
 
 export const moduleFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, moduleFieldConfigPutBodyBaseSchema);

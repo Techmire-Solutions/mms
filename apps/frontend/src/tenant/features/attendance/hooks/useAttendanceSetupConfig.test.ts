@@ -7,7 +7,7 @@ import {
   useComposedAttendanceSettings,
 } from "./useAttendanceSetupConfig";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/lib/query/createModuleSetupConfigHooks", () => ({
   createModuleSetupConfigHooks: () => ({
@@ -37,9 +37,9 @@ describe("useAttendanceSetupConfig Hook suite", () => {
   });
 
   it("provides preferences query, mutation and composed settings", async () => {
-    let queryResult: any = null;
-    let mutationResult: any = null;
-    let composedResult: any = null;
+    let queryResult!: ReturnType<typeof useAttendancePreferencesQuery>;
+    let mutationResult!: ReturnType<typeof useAttendancePreferencesMutation>;
+    let composedResult!: ReturnType<typeof useComposedAttendanceSettings>;
 
     function TestComponent() {
       queryResult = useAttendancePreferencesQuery();

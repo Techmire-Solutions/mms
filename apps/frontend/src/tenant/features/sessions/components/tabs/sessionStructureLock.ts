@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext } from "react";
 
 export interface SessionStructureLock {
   /** Parent session has started: structural edits to saved classes/sections are locked. */
@@ -7,7 +7,10 @@ export interface SessionStructureLock {
   savedClassIds: ReadonlySet<string>;
 }
 
-export const SessionStructureLockContext = createContext<SessionStructureLock>({ locked: false, savedClassIds: new Set() });
+export const SessionStructureLockContext = createContext<SessionStructureLock>({
+  locked: false,
+  savedClassIds: new Set(),
+});
 
 export function useSessionStructureLock(): SessionStructureLock {
   return useContext(SessionStructureLockContext);

@@ -7,7 +7,6 @@ import { TranslationContext, type TranslationFunction } from "@/lib/contexts/Tra
 import { useThemeSettingsDraft, type UseThemeSettingsDraftResult } from "./useThemeSettingsDraft";
 
 declare global {
-   
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;

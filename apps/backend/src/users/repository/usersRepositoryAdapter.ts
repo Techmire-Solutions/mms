@@ -1,4 +1,4 @@
-import type { UsersRepository } from './usersRepository.js';
+import type { UsersRepository } from "./usersRepository.js";
 import {
   softDeleteTenantUserRow,
   restoreTenantUserRow,
@@ -6,12 +6,12 @@ import {
   resetTenantUserPasswordRow,
   findTenantUserRowById,
   listTenantUsersByIds,
-} from '../../db/repositories/tenantUserRepository.js';
+} from "../../db/repositories/tenantUserRepository.js";
 import {
   aggregateUsersCommandMetrics,
   countTenantUsersActive,
   listTenantUsersPage,
-} from '../../db/repositories/tenantUserRepositoryList.js';
+} from "../../db/repositories/tenantUserRepositoryList.js";
 import {
   listActivityLogsByWorkspace,
   findActivityLogById,
@@ -19,7 +19,7 @@ import {
   saveActivityLog,
   bulkSaveActivityLogs,
   replaceActivityLogsForWorkspace,
-} from '../../db/repositories/logsRepository.js';
+} from "../../db/repositories/logsRepository.js";
 
 /**
  * Drizzle-backed adapter for {@link UsersRepository}. Delegates to the existing

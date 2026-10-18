@@ -17,7 +17,7 @@ describe("MarkAttendanceOfflineBanner Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceOfflineBanner
         offline={true}
-        queue={[{ classId: "cls-1" } as any]}
+        queue={[{ classId: "cls-1" } as unknown as never]}
         onSync={vi.fn()}
       />,
     );
@@ -30,7 +30,7 @@ describe("MarkAttendanceOfflineBanner Component", () => {
     const html = renderToStaticMarkup(
       <MarkAttendanceOfflineBanner
         offline={false}
-        queue={[{ classId: "cls-1" } as any]}
+        queue={[{ classId: "cls-1" } as unknown as never]}
         onSync={vi.fn()}
       />,
     );

@@ -1,7 +1,10 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ObligationsWakalaSummarySection, type WakalaSummaryEntry } from "./ObligationsWakalaSummarySection";
+import {
+  ObligationsWakalaSummarySection,
+  type WakalaSummaryEntry,
+} from "./ObligationsWakalaSummarySection";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -28,8 +31,20 @@ const mockEntries: WakalaSummaryEntry[] = [
     total: 2400,
     hasWakala: true,
     distributions: [
-      { id: "dist-1", name: "Sahm-e Imam", percentage: 50, type: "Liability", wakala_type_id: "wt-1" },
-      { id: "dist-2", name: "Sahm-e Sadat", percentage: 50, type: "Income", wakala_type_id: "wt-1" },
+      {
+        id: "dist-1",
+        name: "Sahm-e Imam",
+        percentage: 50,
+        type: "Liability",
+        wakala_type_id: "wt-1",
+      },
+      {
+        id: "dist-2",
+        name: "Sahm-e Sadat",
+        percentage: 50,
+        type: "Income",
+        wakala_type_id: "wt-1",
+      },
     ],
   },
 ];

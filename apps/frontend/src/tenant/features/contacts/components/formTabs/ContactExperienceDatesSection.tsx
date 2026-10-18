@@ -1,6 +1,6 @@
 import React from "react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field, FormCheckboxCard } from "@/components/ui/FormPrimitives";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field, FormCheckboxCard } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import type { ContactExperience } from "@mms/shared";
@@ -78,9 +78,7 @@ export function ContactExperienceDatesSection({
                 required={!exp.isCurrent && isFieldRequired("experience", "endDate")}
                 onChange={(dateStr) => onUpdate({ endDate: dateStr })}
                 placeholder={
-                  exp.isCurrent
-                    ? t("contacts.form.present")
-                    : t("contacts.form.endDatePlaceholder")
+                  exp.isCurrent ? t("contacts.form.present") : t("contacts.form.endDatePlaceholder")
                 }
                 min={exp.startDate || undefined}
                 className={cn(

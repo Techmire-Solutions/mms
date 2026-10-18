@@ -1,7 +1,7 @@
 import React, { useRef, useState, lazy, Suspense, type JSX } from "react";
 import { Printer, IdCard, Paintbrush } from "lucide-react";
 import { STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
@@ -12,9 +12,7 @@ import {
 } from "./card-template/StudentIdCardPrintControlsBar";
 import { StudentIdCardPrintGrid } from "./card-template/StudentIdCardPrintGrid";
 
-const StudentCardTemplateEditor = lazy(
-  () => import("./card-template/StudentCardTemplateEditor"),
-);
+const StudentCardTemplateEditor = lazy(() => import("./card-template/StudentCardTemplateEditor"));
 
 export interface StudentIdCardItem {
   student: Student;
@@ -71,7 +69,11 @@ export function StudentIdCardModal({
       <Modal
         open={open}
         onClose={onClose}
-        title={isBatch ? t("students.idCard.batchPrint", { count: items.length }) : t("students.idCard.title")}
+        title={
+          isBatch
+            ? t("students.idCard.batchPrint", { count: items.length })
+            : t("students.idCard.title")
+        }
         icon={IdCard}
         size="lg"
         footer={

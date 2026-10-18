@@ -1,8 +1,7 @@
-import React from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { DensityToggle } from '@/components/ui/DensityToggle';
-import type { PlatformDensity } from '@/platform/hooks/usePlatformDensity';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { DensityToggle, TooltipProvider } from "@shared/ui";
+import type { PlatformDensity } from "@/platform/hooks/usePlatformDensity";
 
 export interface PlatformWorkspaceDensityToggleProps {
   density: PlatformDensity;
@@ -23,11 +22,11 @@ export function PlatformWorkspaceDensityToggle({
       <DensityToggle
         density={density}
         onChange={onDensityChange}
-        ariaLabel={t('dashboard.layoutDensity')}
+        ariaLabel={t("dashboard.layoutDensity")}
         labels={{
-          compact: t('dashboard.densityCompact'),
-          standard: t('dashboard.densityStandard'),
-          comfortable: t('dashboard.densityComfortable'),
+          compact: t("dashboard.densityCompact"),
+          standard: t("dashboard.densityStandard"),
+          comfortable: t("dashboard.densityComfortable"),
         }}
         className={className}
       />

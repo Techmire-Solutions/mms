@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import { Ban, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormPrimitives";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { canCancelInvoice, canCreditInvoice, getOutstandingAmountForInvoice, type Invoice } from "@mms/shared";
-import { useFinanceCollectMutations, useFinanceCreditNotes } from "@/tenant/features/finance/hooks/useFinanceCollect";
+import {
+  canCancelInvoice,
+  canCreditInvoice,
+  getOutstandingAmountForInvoice,
+  type Invoice,
+} from "@mms/shared";
+import {
+  useFinanceCollectMutations,
+  useFinanceCreditNotes,
+} from "@/tenant/features/finance/hooks/useFinanceCollect";
 
 export function InvoiceCorrectionActions({
   invoice,
@@ -30,7 +38,8 @@ export function InvoiceCorrectionActions({
   const showCredit = openBalance > 0 && canCreditInvoice(invoice, openBalance);
   const showCancel = canCancelInvoice(invoice);
 
-  if (invoice.status === "cancelled" || (!showCredit && !showCancel && notes.length === 0)) return null;
+  if (invoice.status === "cancelled" || (!showCredit && !showCancel && notes.length === 0))
+    return null;
 
   const handleCancel = async (): Promise<void> => {
     try {
@@ -123,7 +132,12 @@ export function InvoiceCorrectionActions({
             />
           </Field>
           <Field id="credit-reason" label={t("finance.collect.creditReason")}>
-            <Input id="credit-reason" className={FORM_INPUT} value={reason} onChange={(event) => setReason(event.target.value)} />
+            <Input
+              id="credit-reason"
+              className={FORM_INPUT}
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+            />
           </Field>
         </form>
       </FormModal>

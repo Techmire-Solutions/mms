@@ -1,5 +1,5 @@
-import { sql } from 'drizzle-orm';
-import { activeDb } from '../db/dbConnection.js';
+import { sql } from "drizzle-orm";
+import { activeDb } from "../db/dbConnection.js";
 
 /**
  * Transaction-scoped advisory lock so only one wipe-restore can run per tenant at
@@ -9,7 +9,7 @@ import { activeDb } from '../db/dbConnection.js';
  * Keying mirrors `contactsRepositoryAdapter.acquireUniqueValueLocks`: a fixed
  * namespace int4 plus `hashtext(subdomain)` so each workspace gets a distinct lock.
  */
-const RESTORE_LOCK_NAMESPACE = 'restore';
+const RESTORE_LOCK_NAMESPACE = "restore";
 
 /**
  * Tries to acquire the tenant restore lock within the current transaction.
@@ -26,9 +26,9 @@ export async function acquireTenantRestoreLock(subdomain: string): Promise<boole
 /** Thrown when a concurrent restore already holds the tenant lock. */
 export class RestoreInProgressError extends Error {
   readonly statusCode = 409;
-  readonly type = 'conflict';
+  readonly type = "conflict";
   constructor() {
-    super('backup.restoreInProgress');
-    this.name = 'RestoreInProgressError';
+    super("backup.restoreInProgress");
+    this.name = "RestoreInProgressError";
   }
 }

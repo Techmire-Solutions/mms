@@ -1,22 +1,22 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   calculateTenantFairSharePriority,
   incrementTenantInflightJobs,
   decrementTenantInflightJobs,
   getTenantInflightJobsCount,
-} from '../worker/queues/index.js';
-import { TENANT_PRIORITY_BANDS } from '../worker/queues/queueConfig.js';
+} from "../worker/queues/index.js";
+import { TENANT_PRIORITY_BANDS } from "../worker/queues/queueConfig.js";
 
-describe('Multi-Tenant Fair-Share Queue Scheduling', () => {
-  it('assigns Band 1 priority when tenant has 0 inflight jobs', async () => {
-    const tenant = 'tenant-idle';
+describe("Multi-Tenant Fair-Share Queue Scheduling", () => {
+  it("assigns Band 1 priority when tenant has 0 inflight jobs", async () => {
+    const tenant = "tenant-idle";
     const priority = await calculateTenantFairSharePriority(tenant);
     expect(priority).toBe(TENANT_PRIORITY_BANDS.BAND_1_LOW_LOAD);
     expect(priority).toBe(1);
   });
 
-  it('assigns Band 2 priority when tenant has 2-5 inflight jobs', async () => {
-    const tenant = 'tenant-moderate';
+  it("assigns Band 2 priority when tenant has 2-5 inflight jobs", async () => {
+    const tenant = "tenant-moderate";
     await incrementTenantInflightJobs(tenant);
     await incrementTenantInflightJobs(tenant);
     expect(await getTenantInflightJobsCount(tenant)).toBe(2);
@@ -31,8 +31,8 @@ describe('Multi-Tenant Fair-Share Queue Scheduling', () => {
     expect(await getTenantInflightJobsCount(tenant)).toBe(0);
   });
 
-  it('assigns Band 3 priority when tenant has more than 5 inflight jobs', async () => {
-    const tenant = 'tenant-heavy';
+  it("assigns Band 3 priority when tenant has more than 5 inflight jobs", async () => {
+    const tenant = "tenant-heavy";
     for (let i = 0; i < 6; i++) {
       await incrementTenantInflightJobs(tenant);
     }
@@ -49,9 +49,9 @@ describe('Multi-Tenant Fair-Share Queue Scheduling', () => {
     expect(await getTenantInflightJobsCount(tenant)).toBe(0);
   });
 
-  it('ensures idle tenant jobs take priority over heavy tenant jobs', async () => {
-    const heavyTenant = 'tenant-bursting';
-    const idleTenant = 'tenant-starving';
+  it("ensures idle tenant jobs take priority over heavy tenant jobs", async () => {
+    const heavyTenant = "tenant-bursting";
+    const idleTenant = "tenant-starving";
 
     for (let i = 0; i < 7; i++) {
       await incrementTenantInflightJobs(heavyTenant);
@@ -71,8 +71,8 @@ describe('Multi-Tenant Fair-Share Queue Scheduling', () => {
     }
   });
 
-  it('prevents underflow when decrement is called beyond current count', async () => {
-    const tenant = 'tenant-underflow';
+  it("prevents underflow when decrement is called beyond current count", async () => {
+    const tenant = "tenant-underflow";
     expect(await getTenantInflightJobsCount(tenant)).toBe(0);
 
     // Decrement when already 0
@@ -85,9 +85,9 @@ describe('Multi-Tenant Fair-Share Queue Scheduling', () => {
     expect(priority).toBe(TENANT_PRIORITY_BANDS.BAND_1_LOW_LOAD);
   });
 
-  it('guarantees tenant isolation under distinct load distributions', async () => {
-    const tenantA = 'tenant-iso-a';
-    const tenantB = 'tenant-iso-b';
+  it("guarantees tenant isolation under distinct load distributions", async () => {
+    const tenantA = "tenant-iso-a";
+    const tenantB = "tenant-iso-b";
 
     // Tenant A gets 10 jobs
     for (let i = 0; i < 10; i++) {
@@ -99,8 +99,12 @@ describe('Multi-Tenant Fair-Share Queue Scheduling', () => {
     expect(await getTenantInflightJobsCount(tenantA)).toBe(10);
     expect(await getTenantInflightJobsCount(tenantB)).toBe(1);
 
-    expect(await calculateTenantFairSharePriority(tenantA)).toBe(TENANT_PRIORITY_BANDS.BAND_3_HIGH_LOAD);
-    expect(await calculateTenantFairSharePriority(tenantB)).toBe(TENANT_PRIORITY_BANDS.BAND_1_LOW_LOAD);
+    expect(await calculateTenantFairSharePriority(tenantA)).toBe(
+      TENANT_PRIORITY_BANDS.BAND_3_HIGH_LOAD,
+    );
+    expect(await calculateTenantFairSharePriority(tenantB)).toBe(
+      TENANT_PRIORITY_BANDS.BAND_1_LOW_LOAD,
+    );
 
     // Cleanup
     for (let i = 0; i < 10; i++) {
@@ -112,19 +116,19 @@ describe('Multi-Tenant Fair-Share Queue Scheduling', () => {
     expect(await getTenantInflightJobsCount(tenantB)).toBe(0);
   });
 
-  it('handles highly concurrent atomic increments and decrements without race conditions', async () => {
-    const tenant = 'tenant-concurrency';
+  it("handles highly concurrent atomic increments and decrements without race conditions", async () => {
+    const tenant = "tenant-concurrency";
     const concurrentCount = 50;
 
     // Concurrently increment 50 times
     await Promise.all(
-      Array.from({ length: concurrentCount }, () => incrementTenantInflightJobs(tenant))
+      Array.from({ length: concurrentCount }, () => incrementTenantInflightJobs(tenant)),
     );
     expect(await getTenantInflightJobsCount(tenant)).toBe(concurrentCount);
 
     // Concurrently decrement 50 times
     await Promise.all(
-      Array.from({ length: concurrentCount }, () => decrementTenantInflightJobs(tenant))
+      Array.from({ length: concurrentCount }, () => decrementTenantInflightJobs(tenant)),
     );
     expect(await getTenantInflightJobsCount(tenant)).toBe(0);
   });

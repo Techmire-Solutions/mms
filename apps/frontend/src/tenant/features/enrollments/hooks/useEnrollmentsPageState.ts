@@ -23,10 +23,10 @@ import { useEnrollmentsSelection } from "@/tenant/features/enrollments/hooks/use
 export function useEnrollmentsPageState() {
   const { t } = useTranslation();
   const SUB_TABS = (() => [
-      { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
-      { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
-      { id: "admissions", label: t("enrollments.admissions.title"), icon: Inbox },
-    ])();
+    { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
+    { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
+    { id: "admissions", label: t("enrollments.admissions.title"), icon: Inbox },
+  ])();
   const permissions = useModulePermissions(ENROLLMENTS_MODULE_MANIFEST);
   const {
     canWrite: canWriteEnrollments,
@@ -46,10 +46,7 @@ export function useEnrollmentsPageState() {
   const directoryFilters = useEnrollmentsDirectoryFilters();
   const {
     listPage,
-    setListPage,
     showDeleted,
-    setShowDeleted,
-    search,
     setSearch,
     debouncedSearch,
     statusFilter,
@@ -76,7 +73,8 @@ export function useEnrollmentsPageState() {
     enabled: useServerWork,
   });
 
-  const pageData = (workPageData?.body ?? workPageData) as { enrollments?: Enrollment[]; total?: number } | undefined;
+  const pageData = (workPageData?.body ?? workPageData) as
+    { enrollments?: Enrollment[]; total?: number } | undefined;
 
   const enrollments = (() => (pageData?.enrollments ?? []) as Enrollment[])();
   const filteredCount = pageData?.total ?? enrollments.length;
@@ -91,6 +89,7 @@ export function useEnrollmentsPageState() {
 
   useEffect(() => {
     selection.setSelectedIds([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selection.setSelectedIds is a stable useState setter; depending on the whole `selection` object would re-run this clear on every render.
   }, [debouncedSearch, statusFilter, sessionFilter, showDeleted, selection.setSelectedIds]);
 
   const { logExportAudit } = useEnrollmentMutations();

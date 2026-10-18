@@ -1,35 +1,37 @@
-import { resolveApiUrl } from '@/lib/apiClientHelpers';
-import { notifySessionExpired } from '@/lib/apiClient';
-import type { BackgroundJobEventMessage } from '@mms/shared';
+import { resolveApiUrl } from "@/lib/apiClientHelpers";
+import { notifySessionExpired } from "@/lib/apiClient";
+import type { BackgroundJobEventMessage } from "@mms/shared";
 
 export type TenantDatabaseUpdateMessage = {
-  event: 'database-update';
-  type: 'collection' | 'object';
+  event: "database-update";
+  type: "collection" | "object";
   key: string;
 };
 
 export type TenantWebSocketMessage = TenantDatabaseUpdateMessage | BackgroundJobEventMessage;
 
 export function resolveTenantWebSocketUrl(): string {
-  const httpUrl = resolveApiUrl('/api/ws');
+  const httpUrl = resolveApiUrl("/api/ws");
   if (/^https?:\/\//i.test(httpUrl)) {
-    return httpUrl.replace(/^http/i, 'ws');
+    return httpUrl.replace(/^http/i, "ws");
   }
-  if (typeof window === 'undefined') return 'ws://127.0.0.1/api/ws';
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  if (typeof window === "undefined") return "ws://127.0.0.1/api/ws";
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   return `${protocol}//${window.location.host}/api/ws`;
 }
 
-export function parseTenantDatabaseUpdate(raw: string | unknown): TenantDatabaseUpdateMessage | null {
+export function parseTenantDatabaseUpdate(
+  raw: string | unknown,
+): TenantDatabaseUpdateMessage | null {
   try {
-    const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    const parsed: unknown = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
     const record = parsed as Record<string, unknown>;
-    if (record.event !== 'database-update') return null;
-    if (record.type !== 'collection' && record.type !== 'object') return null;
-    if (typeof record.key !== 'string' || !record.key.trim()) return null;
+    if (record.event !== "database-update") return null;
+    if (record.type !== "collection" && record.type !== "object") return null;
+    if (typeof record.key !== "string" || !record.key.trim()) return null;
     return {
-      event: 'database-update',
+      event: "database-update",
       type: record.type,
       key: record.key,
     };
@@ -38,34 +40,37 @@ export function parseTenantDatabaseUpdate(raw: string | unknown): TenantDatabase
   }
 }
 
-function parseProgress(value: unknown): BackgroundJobEventMessage['progress'] {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+function parseProgress(value: unknown): BackgroundJobEventMessage["progress"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
   const p = value as Record<string, unknown>;
-  return typeof p.current === 'number' && typeof p.total === 'number' && typeof p.percent === 'number'
+  return typeof p.current === "number" &&
+    typeof p.total === "number" &&
+    typeof p.percent === "number"
     ? { current: p.current, total: p.total, percent: p.percent }
     : undefined;
 }
 
 export function parseTenantJobEvent(raw: string | unknown): BackgroundJobEventMessage | null {
   try {
-    const parsed: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    const parsed: unknown = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
     const r = parsed as Record<string, unknown>;
-    if (r.event !== 'job-progress' && r.event !== 'job-completed' && r.event !== 'job-failed') return null;
-    if (typeof r.jobId !== 'string' || typeof r.tenantId !== 'string') return null;
+    if (r.event !== "job-progress" && r.event !== "job-completed" && r.event !== "job-failed")
+      return null;
+    if (typeof r.jobId !== "string" || typeof r.tenantId !== "string") return null;
     const progress = parseProgress(r.progress);
     return {
       event: r.event,
       tenantId: r.tenantId,
       jobId: r.jobId,
-      ...(typeof r.userId === 'string' ? { userId: r.userId } : {}),
-      ...(typeof r.moduleId === 'string' ? { moduleId: r.moduleId } : {}),
-      ...(typeof r.kind === 'string' ? { kind: r.kind } : {}),
-      ...(typeof r.label === 'string' ? { label: r.label } : {}),
+      ...(typeof r.userId === "string" ? { userId: r.userId } : {}),
+      ...(typeof r.moduleId === "string" ? { moduleId: r.moduleId } : {}),
+      ...(typeof r.kind === "string" ? { kind: r.kind } : {}),
+      ...(typeof r.label === "string" ? { label: r.label } : {}),
       ...(progress ? { progress } : {}),
-      ...(typeof r.hasDownload === 'boolean' ? { hasDownload: r.hasDownload } : {}),
-      ...(typeof r.error === 'string' ? { error: r.error } : {}),
-      ...(typeof r.completedAt === 'string' ? { completedAt: r.completedAt } : {}),
+      ...(typeof r.hasDownload === "boolean" ? { hasDownload: r.hasDownload } : {}),
+      ...(typeof r.error === "string" ? { error: r.error } : {}),
+      ...(typeof r.completedAt === "string" ? { completedAt: r.completedAt } : {}),
     };
   } catch {
     return null;
@@ -119,11 +124,14 @@ export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): 
     };
 
     const onMessage = (event: MessageEvent) => {
-      if (typeof event.data !== 'string') return;
+      if (typeof event.data !== "string") return;
       try {
         const parsed = JSON.parse(event.data) as unknown;
         const dbUpdate = parseTenantDatabaseUpdate(parsed);
-        if (dbUpdate) { handlers.onDatabaseUpdate(dbUpdate); return; }
+        if (dbUpdate) {
+          handlers.onDatabaseUpdate(dbUpdate);
+          return;
+        }
         const jobEvent = parseTenantJobEvent(parsed);
         if (jobEvent) {
           handlers.onJobEvent?.(jobEvent);
@@ -138,10 +146,10 @@ export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): 
     };
 
     const cleanupSocket = (s: WebSocket) => {
-      s.removeEventListener('open', onOpen);
-      s.removeEventListener('message', onMessage);
-      s.removeEventListener('error', onError);
-      s.removeEventListener('close', onClose);
+      s.removeEventListener("open", onOpen);
+      s.removeEventListener("message", onMessage);
+      s.removeEventListener("error", onError);
+      s.removeEventListener("close", onClose);
       s.onopen = null;
       s.onmessage = null;
       s.onerror = null;
@@ -154,7 +162,7 @@ export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): 
         socket = null;
       }
       if (!closedByCaller && event.code === 4001) {
-        notifySessionExpired('websocket_unauthorized');
+        notifySessionExpired("websocket_unauthorized");
       }
       // Do not auto-reconnect if closed due to auth, missing token, or subdomain mismatch (4000-4009)
       if (!closedByCaller && (event.code < 4000 || event.code > 4009)) {
@@ -162,10 +170,10 @@ export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): 
       }
     };
 
-    socket.addEventListener('open', onOpen);
-    socket.addEventListener('message', onMessage);
-    socket.addEventListener('error', onError);
-    socket.addEventListener('close', onClose);
+    socket.addEventListener("open", onOpen);
+    socket.addEventListener("message", onMessage);
+    socket.addEventListener("error", onError);
+    socket.addEventListener("close", onClose);
   };
 
   open();
@@ -182,12 +190,12 @@ export function connectTenantDatabaseSocket(handlers: TenantWebSocketHandlers): 
       s.onclose = null;
       if (s.readyState === WebSocket.CONNECTING) {
         const handleConnectingOpen = () => {
-          s.removeEventListener('open', handleConnectingOpen);
-          s.close(1000, 'Client unmounted');
+          s.removeEventListener("open", handleConnectingOpen);
+          s.close(1000, "Client unmounted");
         };
-        s.addEventListener('open', handleConnectingOpen, { once: true });
+        s.addEventListener("open", handleConnectingOpen, { once: true });
       } else if (s.readyState === WebSocket.OPEN) {
-        s.close(1000, 'Client unmounted');
+        s.close(1000, "Client unmounted");
       }
     }
   };

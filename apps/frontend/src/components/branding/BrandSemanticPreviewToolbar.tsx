@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  BarChart3,
-  Eye,
-  IdCard,
-  LayoutGrid,
-  Moon,
-  Sparkles,
-  Sun,
-  Table,
-} from "lucide-react";
+import { BarChart3, Eye, IdCard, LayoutGrid, Moon, Sparkles, Sun, Table } from "lucide-react";
 import type { BrandingThemeMode } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +13,8 @@ import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export type PreviewTab = "actions" | "table" | "document" | "dashboard";
-export type ColorblindFilterType = "normal" | "protanopia" | "deuteranopia" | "tritanopia" | "achromatopsia";
+export type ColorblindFilterType =
+  "normal" | "protanopia" | "deuteranopia" | "tritanopia" | "achromatopsia";
 
 interface BrandSemanticPreviewToolbarProps {
   activeTab: PreviewTab;
@@ -52,7 +44,10 @@ export function BrandSemanticPreviewToolbar({
 
       <div className="flex flex-wrap items-center gap-2">
         {/* Surface View Switcher */}
-        <div className="flex items-center rounded-lg border border-border/60 bg-muted/40 p-0.5" role="tablist">
+        <div
+          className="flex items-center rounded-lg border border-border/60 bg-muted/40 p-0.5"
+          role="tablist"
+        >
           <Button
             type="button"
             variant="ghost"
@@ -62,7 +57,9 @@ export function BrandSemanticPreviewToolbar({
             onClick={() => onTabChange("actions")}
             className={cn(
               "min-h-11 px-3 text-xs font-medium rounded-md transition-all",
-              activeTab === "actions" ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground",
+              activeTab === "actions"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <LayoutGrid className="h-3.5 w-3.5 me-1.5" />
@@ -77,7 +74,9 @@ export function BrandSemanticPreviewToolbar({
             onClick={() => onTabChange("table")}
             className={cn(
               "min-h-11 px-3 text-xs font-medium rounded-md transition-all",
-              activeTab === "table" ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground",
+              activeTab === "table"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Table className="h-3.5 w-3.5 me-1.5" />
@@ -92,7 +91,9 @@ export function BrandSemanticPreviewToolbar({
             onClick={() => onTabChange("dashboard")}
             className={cn(
               "min-h-11 px-3 text-xs font-medium rounded-md transition-all",
-              activeTab === "dashboard" ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground",
+              activeTab === "dashboard"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <BarChart3 className="h-3.5 w-3.5 me-1.5" />
@@ -107,7 +108,9 @@ export function BrandSemanticPreviewToolbar({
             onClick={() => onTabChange("document")}
             className={cn(
               "min-h-11 px-3 text-xs font-medium rounded-md transition-all",
-              activeTab === "document" ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground",
+              activeTab === "document"
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <IdCard className="h-3.5 w-3.5 me-1.5" />
@@ -129,17 +132,31 @@ export function BrandSemanticPreviewToolbar({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="normal" className="text-xs">{t("theme.colorblindNormal")}</SelectItem>
-              <SelectItem value="protanopia" className="text-xs">{t("theme.colorblindProtanopia")}</SelectItem>
-              <SelectItem value="deuteranopia" className="text-xs">{t("theme.colorblindDeuteranopia")}</SelectItem>
-              <SelectItem value="tritanopia" className="text-xs">{t("theme.colorblindTritanopia")}</SelectItem>
-              <SelectItem value="achromatopsia" className="text-xs">{t("theme.colorblindAchromatopsia")}</SelectItem>
+              <SelectItem value="normal" className="text-xs">
+                {t("theme.colorblindNormal")}
+              </SelectItem>
+              <SelectItem value="protanopia" className="text-xs">
+                {t("theme.colorblindProtanopia")}
+              </SelectItem>
+              <SelectItem value="deuteranopia" className="text-xs">
+                {t("theme.colorblindDeuteranopia")}
+              </SelectItem>
+              <SelectItem value="tritanopia" className="text-xs">
+                {t("theme.colorblindTritanopia")}
+              </SelectItem>
+              <SelectItem value="achromatopsia" className="text-xs">
+                {t("theme.colorblindAchromatopsia")}
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {/* Light / Dark Mode Toggle */}
-        <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/40 p-0.5" role="group" aria-label={t("theme.previewModeToggle")}>
+        <div
+          className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/40 p-0.5"
+          role="group"
+          aria-label={t("theme.previewModeToggle")}
+        >
           <Button
             type="button"
             variant="ghost"
@@ -148,7 +165,9 @@ export function BrandSemanticPreviewToolbar({
             aria-pressed={localMode === "light"}
             className={cn(
               "min-h-11 px-3 text-xs font-semibold rounded-md transition-all",
-              localMode === "light" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
+              localMode === "light"
+                ? "bg-background text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Sun className="h-3.5 w-3.5 me-1" aria-hidden />
@@ -162,7 +181,9 @@ export function BrandSemanticPreviewToolbar({
             aria-pressed={localMode === "dark"}
             className={cn(
               "min-h-11 px-3 text-xs font-semibold rounded-md transition-all",
-              localMode === "dark" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
+              localMode === "dark"
+                ? "bg-background text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Moon className="h-3.5 w-3.5 me-1" aria-hidden />

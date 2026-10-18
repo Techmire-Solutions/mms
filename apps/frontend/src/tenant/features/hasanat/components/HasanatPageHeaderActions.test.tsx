@@ -37,7 +37,7 @@ describe("HasanatPageHeaderActions", () => {
           onDistribute={vi.fn()}
           onImport={onImport}
           onExport={onExport}
-        />
+        />,
       );
     });
 

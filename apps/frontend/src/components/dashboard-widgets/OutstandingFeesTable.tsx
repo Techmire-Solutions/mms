@@ -1,15 +1,15 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetCardHeader } from "@/components/ui/WidgetCardHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 import { getOutstandingAmountForInvoice } from "@mms/shared";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { SearchBar } from "@/components/ui/SearchBar";
-import { ListPagination } from "@/components/ui/ListPagination";
+import { SearchBar } from "@/components/app/SearchBar";
+import { ListPagination } from "@/components/app/ListPagination";
 import { useLocalPagination } from "@/hooks/useLocalPagination";
 import { ROUTES } from "@/lib/config/routes";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,8 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
   const { unpaidInvoices, studentMap } = useUnpaidInvoiceStudents();
   const { formatCurrency } = useFinanceCurrency();
 
-  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } = useMessageComposerState();
+  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
+    useMessageComposerState();
 
   const mappedRows = useMemo(() => {
     const now = new Date();
@@ -37,7 +38,10 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
       const amount = getOutstandingAmountForInvoice(invoice);
 
       const due = new Date(invoice.dueDate);
-      const diffMonths = Math.max(1, (nowYear - due.getFullYear()) * 12 + (nowMonth - due.getMonth()));
+      const diffMonths = Math.max(
+        1,
+        (nowYear - due.getFullYear()) * 12 + (nowMonth - due.getMonth()),
+      );
 
       return {
         id: invoice.id,
@@ -68,12 +72,15 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
   });
 
   const totalUnpaid = unpaidInvoices.length;
-  const listProps = useMemo(() => ({
-    canWriteMessaging,
-    formatCurrency,
-    openComposer,
-    t,
-  }), [canWriteMessaging, formatCurrency, openComposer, t]);
+  const listProps = useMemo(
+    () => ({
+      canWriteMessaging,
+      formatCurrency,
+      openComposer,
+      t,
+    }),
+    [canWriteMessaging, formatCurrency, openComposer, t],
+  );
 
   return (
     <WidgetCard ariaLabelledby="outstanding-fees-heading" accentColor="destructive">
@@ -129,7 +136,10 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
       <OutstandingFeesTableDesktopBody rows={paginatedRows} {...listProps} />
 
       <footer className="px-5 py-3.5 border-t border-border/45 flex flex-wrap items-center justify-between gap-2 bg-muted/10 select-none">
-        <Link to={ROUTES.finance} className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline">
+        <Link
+          to={ROUTES.finance}
+          className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline"
+        >
           {t("dashboard.widgets.viewAllOutstanding")}
         </Link>
         <ListPagination

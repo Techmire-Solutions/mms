@@ -9,7 +9,7 @@ This workflow guides the systematic review of codebase changes (e.g., Pull Reque
 ## Phase 1: Context & Rule Loading
 
 - [ ] **Load review skill**: Invoke the `mms-code-review` skill to prepare for the review process.
-- [ ] **Load always-on rules**: Review the core guidelines by reading `rules/antigravity-global.md`, `rules/mms-core.md`, `rules/mms-migration-status.md`, and `rules/mms-completion-review.md`.
+- [ ] **Load always-on rules**: Review the core guidelines by reading `rules/mms-agent-universal.md`, `rules/mms-core.md`, `rules/mms-migration-status.md`, and `rules/mms-completion-review.md`.
 - [ ] **Load scoped rules**: Identify the domain of the changes and load relevant scoped rules (e.g., `rules/mms-dry.md`, `rules/mms-dependencies.md`, `rules/mms-auth-security.md`, `rules/mms-data-layer.md`, `rules/mms-ui-ux-design.md`).
 
 ## Phase 2: Automated Checks

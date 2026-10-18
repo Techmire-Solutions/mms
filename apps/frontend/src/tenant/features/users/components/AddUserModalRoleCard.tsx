@@ -14,7 +14,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/semanticTone";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 
 interface RoleCardProps {
   role: WorkspaceRole;
@@ -48,7 +48,7 @@ export function RoleCard({ role, selected, onSelect }: RoleCardProps): JSX.Eleme
         CARD_STRIPE_INSET,
         selected
           ? "border-primary bg-primary/5 shadow-xs"
-          : "border-border bg-card hover:border-primary/40 hover:bg-muted/20"
+          : "border-border bg-card hover:border-primary/40 hover:bg-muted/20",
       )}
     >
       <div
@@ -56,14 +56,14 @@ export function RoleCard({ role, selected, onSelect }: RoleCardProps): JSX.Eleme
         className={cn(
           CARD_STRIPE_BASE,
           selected ? "bg-primary" : "bg-primary/30 group-hover/card:bg-primary/50",
-          "transition-colors duration-150 ease-out"
+          "transition-colors duration-150 ease-out",
         )}
       />
       <div className="p-3 flex items-start gap-3">
         <div
           className={cn(
             "w-4 h-4 mt-0.5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all",
-            selected ? "bg-primary border-primary" : "border-border"
+            selected ? "bg-primary border-primary" : "border-border",
           )}
           aria-hidden="true"
         >
@@ -85,7 +85,8 @@ export function RoleCard({ role, selected, onSelect }: RoleCardProps): JSX.Eleme
               }}
               className="text-xs text-primary font-semibold flex items-center gap-0.5 hover:underline min-h-11 px-2 shadow-none"
             >
-              <Info className="w-3.5 h-3.5" aria-hidden /> {showPerms ? t("users.addHidePermissions") : t("users.addShowPermissions")}
+              <Info className="w-3.5 h-3.5" aria-hidden />{" "}
+              {showPerms ? t("users.addHidePermissions") : t("users.addShowPermissions")}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-1">{workspaceRoleDescription(role, t)}</p>
@@ -104,11 +105,17 @@ export function RoleCard({ role, selected, onSelect }: RoleCardProps): JSX.Eleme
           >
             <div className="p-3 grid grid-cols-1 gap-1 sm:grid-cols-2">
               {Object.entries(role.permissions || {})
-                .filter(([moduleId]) => isRbacModuleEnabled(moduleId, globalSettings.enabledModules))
+                .filter(([moduleId]) =>
+                  isRbacModuleEnabled(moduleId, globalSettings.enabledModules),
+                )
                 .map(([moduleId, permissions]) => (
                   <div key={moduleId} className="text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">{rbacModuleLabel(moduleId, t)}:</span>{" "}
-                    {permissions.map((permissionAction) => t(`users.permission.${permissionAction}`)).join(", ")}
+                    <span className="font-semibold text-foreground">
+                      {rbacModuleLabel(moduleId, t)}:
+                    </span>{" "}
+                    {permissions
+                      .map((permissionAction) => t(`users.permission.${permissionAction}`))
+                      .join(", ")}
                   </div>
                 ))}
             </div>

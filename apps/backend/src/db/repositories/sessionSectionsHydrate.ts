@@ -1,6 +1,6 @@
-import { sql } from 'drizzle-orm';
-import type { Session, SessionClassSection } from '@mms/shared';
-import type { TenantTransaction } from '../tenant-context.js';
+import { sql } from "drizzle-orm";
+import type { Session, SessionClassSection } from "@mms/shared";
+import type { TenantTransaction } from "../tenant-context.js";
 
 type SectionRow = {
   id: string;
@@ -18,8 +18,14 @@ type SectionRow = {
  * Attaches sections (and timetable-period assistants) to every class of the given sessions (one query): current class teacher
  * (active assignment on the workspace business day) and active, non-cancelled enrollment count.
  */
-export async function attachClassSectionsTx(tx: TenantTransaction, subdomain: string, sessions: Session[]): Promise<Session[]> {
-  const classIds = sessions.flatMap((session) => (session.classes ?? []).map((cls) => String(cls.id)));
+export async function attachClassSectionsTx(
+  tx: TenantTransaction,
+  subdomain: string,
+  sessions: Session[],
+): Promise<Session[]> {
+  const classIds = sessions.flatMap((session) =>
+    (session.classes ?? []).map((cls) => String(cls.id)),
+  );
   if (classIds.length === 0) return sessions;
 
   const result = await tx.execute<SectionRow>(sql`
@@ -47,7 +53,10 @@ export async function attachClassSectionsTx(tx: TenantTransaction, subdomain: st
          LIMIT 1
       ) ct ON true
      WHERE s.workspace_subdomain = ${subdomain}
-       AND s.class_id IN (${sql.join(classIds.map((id) => sql`${id}`), sql`, `)})
+       AND s.class_id IN (${sql.join(
+         classIds.map((id) => sql`${id}`),
+         sql`, `,
+       )})
      ORDER BY s.class_id, s.sort_order, s.name
   `);
 
@@ -59,8 +68,8 @@ export async function attachClassSectionsTx(tx: TenantTransaction, subdomain: st
       classId: row.classId,
       name: row.name,
       capacity: Number(row.capacity ?? 0),
-      room: row.room ?? '',
-      status: row.status === 'closed' ? 'closed' : 'active',
+      room: row.room ?? "",
+      status: row.status === "closed" ? "closed" : "active",
       classTeacherId: row.classTeacherId ?? undefined,
       classTeacherName: row.classTeacherName?.trim() || undefined,
       enrolled: Number(row.enrolled ?? 0),
@@ -68,15 +77,27 @@ export async function attachClassSectionsTx(tx: TenantTransaction, subdomain: st
     byClass.set(row.classId, list);
   }
 
-  const periodIds = sessions.flatMap((session) => (session.classes ?? [])
-    .flatMap((cls) => (cls.timetables ?? []).flatMap((timetable) => (timetable.periods ?? []).map((period) => period.id))));
+  const periodIds = sessions.flatMap((session) =>
+    (session.classes ?? []).flatMap((cls) =>
+      (cls.timetables ?? []).flatMap((timetable) =>
+        (timetable.periods ?? []).map((period) => period.id),
+      ),
+    ),
+  );
   const assistantsByPeriod = new Map<string, string[]>();
   if (periodIds.length > 0) {
     const staff = await tx.execute<{ periodId: string; facultyId: string }>(sql`
       SELECT period_id AS "periodId", faculty_id AS "facultyId" FROM session_class_timetable_period_staff
-       WHERE workspace_subdomain = ${subdomain} AND period_id IN (${sql.join(periodIds.map((id) => sql`${id}`), sql`, `)})
+       WHERE workspace_subdomain = ${subdomain} AND period_id IN (${sql.join(
+         periodIds.map((id) => sql`${id}`),
+         sql`, `,
+       )})
     `);
-    for (const row of staff.rows) assistantsByPeriod.set(row.periodId, [...(assistantsByPeriod.get(row.periodId) ?? []), row.facultyId]);
+    for (const row of staff.rows)
+      assistantsByPeriod.set(row.periodId, [
+        ...(assistantsByPeriod.get(row.periodId) ?? []),
+        row.facultyId,
+      ]);
   }
 
   return sessions.map((session) => ({
@@ -86,9 +107,17 @@ export async function attachClassSectionsTx(tx: TenantTransaction, subdomain: st
       const capacity = sections.reduce((total, section) => total + section.capacity, 0);
       const timetables = (cls.timetables ?? []).map((timetable) => ({
         ...timetable,
-        periods: (timetable.periods ?? []).map((period) => ({ ...period, assistantFacultyIds: assistantsByPeriod.get(period.id) ?? [] })),
+        periods: (timetable.periods ?? []).map((period) => ({
+          ...period,
+          assistantFacultyIds: assistantsByPeriod.get(period.id) ?? [],
+        })),
       }));
-      return { ...cls, sections, timetables, ...(sections.length > 0 ? { maxStudents: capacity } : {}) };
+      return {
+        ...cls,
+        sections,
+        timetables,
+        ...(sections.length > 0 ? { maxStudents: capacity } : {}),
+      };
     }),
   }));
 }

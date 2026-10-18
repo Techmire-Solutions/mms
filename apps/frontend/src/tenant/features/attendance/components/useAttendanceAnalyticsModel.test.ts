@@ -1,9 +1,9 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { useAttendanceAnalyticsModel } from "./useAttendanceAnalyticsModel";
+import { useAttendanceAnalyticsModel } from "../hooks/useAttendanceAnalyticsModel";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -32,29 +32,35 @@ vi.mock("@/tenant/hooks/collections/attendance", () => ({
         overallRate: 80,
         totalRecords: 5,
         lowAttendanceCount: 1,
-        classRates: [{
-          classId: "cls-1",
-          className: "Class 1",
-          sessionName: "2026",
-          presentCount: 4,
-          total: 5,
-          rate: 80,
-        }],
+        classRates: [
+          {
+            classId: "cls-1",
+            className: "Class 1",
+            sessionName: "2026",
+            presentCount: 4,
+            total: 5,
+            rate: 80,
+          },
+        ],
         monthlyTrend: [{ monthKey: "2026-08", presentCount: 4, total: 5, rate: 80 }],
-        studentRates: [{
-          studentId: "student-1",
-          name: "Ali Hassan",
-          presentCount: 1,
-          total: 2,
-          rate: 50,
-        }],
-        topPerformers: [{
-          studentId: "student-2",
-          name: "Zayd Ahmed",
-          presentCount: 3,
-          total: 3,
-          rate: 100,
-        }],
+        studentRates: [
+          {
+            studentId: "student-1",
+            name: "Ali Hassan",
+            presentCount: 1,
+            total: 2,
+            rate: 50,
+          },
+        ],
+        topPerformers: [
+          {
+            studentId: "student-2",
+            name: "Zayd Ahmed",
+            presentCount: 3,
+            total: 3,
+            rate: 100,
+          },
+        ],
         statusCounts: [
           { status: "present", count: 3 },
           { status: "late", count: 1 },
@@ -84,7 +90,7 @@ describe("useAttendanceAnalyticsModel Hook", () => {
   });
 
   it("calculates overall rate and pie data", async () => {
-    let hookResult: any = null;
+    let hookResult!: ReturnType<typeof useAttendanceAnalyticsModel>;
 
     function TestComponent() {
       hookResult = useAttendanceAnalyticsModel({ classId: "cls-1" });

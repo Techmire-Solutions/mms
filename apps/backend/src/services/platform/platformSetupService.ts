@@ -2,15 +2,12 @@ import type {
   PlatformSetupRegisterBody,
   PlatformSetupStatus,
   StoredPlatformUser,
-} from '@mms/shared';
-import { normalizePlatformEmail } from '@mms/shared';
-import { hashPassword } from '../auth/passwordService.js';
-import {
-  createVerifiedPlatformUser,
-  hasPlatformUsers,
-} from './platformUserService.js';
-import { isPlatformSmtpConfigured } from './platformEmailService.js';
-import { PlatformError } from './platformErrorService.js';
+} from "@mms/shared";
+import { normalizePlatformEmail } from "@mms/shared";
+import { hashPassword } from "../auth/passwordService.js";
+import { createVerifiedPlatformUser, hasPlatformUsers } from "./platformUserService.js";
+import { isPlatformSmtpConfigured } from "./platformEmailService.js";
+import { PlatformError } from "./platformErrorService.js";
 
 export async function getPlatformSetupStatus(): Promise<PlatformSetupStatus> {
   const needsSetup = !(await hasPlatformUsers());
@@ -26,7 +23,7 @@ export async function startPlatformSetup(
   input: PlatformSetupRegisterBody,
 ): Promise<StoredPlatformUser> {
   if (await hasPlatformUsers()) {
-    throw new PlatformError('setup_not_needed', 'Platform administrator already exists');
+    throw new PlatformError("setup_not_needed", "Platform administrator already exists");
   }
 
   const email = normalizePlatformEmail(input.email);
@@ -36,6 +33,6 @@ export async function startPlatformSetup(
     email,
     name: input.name.trim(),
     passwordHash,
-    role: 'super_user',
+    role: "super_user",
   });
 }

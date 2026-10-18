@@ -1,14 +1,14 @@
-import type { ContactLookupKind } from '@mms/shared';
-import { contactLookups } from '../schema.js';
+import type { ContactLookupKind } from "@mms/shared";
+import { contactLookups } from "../schema.js";
 import {
   createModuleLookupsRepo,
   type ModuleLookupRowInput,
   type ModuleLookupDbRow,
-} from './moduleSetupRepoFactories.js';
+} from "./moduleSetupRepoFactories.js";
 
 export type { ModuleLookupDbRow as LookupDbRow };
 
-interface ContactLookupRowInput extends Omit<ModuleLookupRowInput, 'kind'> {
+interface ContactLookupRowInput extends Omit<ModuleLookupRowInput, "kind"> {
   kind: ContactLookupKind;
 }
 

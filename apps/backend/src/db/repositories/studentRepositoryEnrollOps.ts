@@ -1,6 +1,6 @@
-import { and, eq } from 'drizzle-orm';
-import { studentEnrolledSessions } from '../schema.js';
-import type { AppDb } from '../tenant-context.js';
+import { and, eq } from "drizzle-orm";
+import { studentEnrolledSessions } from "../schema.js";
+import type { AppDb } from "../tenant-context.js";
 
 /**
  * Diff-based sync of enrolled sessions for a single student.

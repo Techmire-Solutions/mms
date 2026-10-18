@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MujtahidManager } from "./MujtahidManager";
-import type { Mujtahid, MujtahidRep } from "./mujtahidManagerTypes";
+import type { Mujtahid, MujtahidRep } from "../lib/mujtahidManagerTypes";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -18,8 +18,16 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
-  ConfirmAlertDialog: ({ open, onConfirm, confirmLabel }: { open: boolean; onConfirm: () => void; confirmLabel?: string }) =>
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+  ConfirmAlertDialog: ({
+    open,
+    onConfirm,
+    confirmLabel,
+  }: {
+    open: boolean;
+    onConfirm: () => void;
+    confirmLabel?: string;
+  }) =>
     open ? (
       <div data-testid="confirm-dialog">
         <button type="button" onClick={() => onConfirm()}>
@@ -38,9 +46,7 @@ describe("MujtahidManager Component", () => {
     { id: "m2", name: "Ayatollah Khamenei" },
   ];
 
-  const sampleReps: MujtahidRep[] = [
-    { id: "mr1", mujtahid_id: "m1", name: "Representative A" },
-  ];
+  const sampleReps: MujtahidRep[] = [{ id: "mr1", mujtahid_id: "m1", name: "Representative A" }];
 
   beforeEach(() => {
     container = document.createElement("div");
@@ -96,9 +102,10 @@ describe("MujtahidManager Component", () => {
     });
 
     // Find and click the Add Rep button for Sistani (m1)
-    const addRepButtons = Array.from(container.querySelectorAll("button")).filter((btn) =>
-      btn.getAttribute("aria-label")?.includes("Ayatollah Sistani") &&
-      btn.textContent?.includes("obligations.mujtahids.addRep"),
+    const addRepButtons = Array.from(container.querySelectorAll("button")).filter(
+      (btn) =>
+        btn.getAttribute("aria-label")?.includes("Ayatollah Sistani") &&
+        btn.textContent?.includes("obligations.mujtahids.addRep"),
     );
     expect(addRepButtons.length).toBeGreaterThan(0);
 
@@ -116,8 +123,8 @@ describe("MujtahidManager Component", () => {
     });
 
     // Find and click the Save button inside the modal
-    const saveButton = Array.from(document.body.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("common.save"),
+    const saveButton = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("common.save"),
     );
     expect(saveButton).toBeDefined();
 
@@ -151,9 +158,10 @@ describe("MujtahidManager Component", () => {
       );
     });
 
-    const addRepButtons = Array.from(container.querySelectorAll("button")).filter((btn) =>
-      btn.getAttribute("aria-label")?.includes("Ayatollah Sistani") &&
-      btn.textContent?.includes("obligations.mujtahids.addRep"),
+    const addRepButtons = Array.from(container.querySelectorAll("button")).filter(
+      (btn) =>
+        btn.getAttribute("aria-label")?.includes("Ayatollah Sistani") &&
+        btn.textContent?.includes("obligations.mujtahids.addRep"),
     );
     await act(async () => {
       addRepButtons[0]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -164,8 +172,8 @@ describe("MujtahidManager Component", () => {
       setInputValue(input, "Failed Rep");
     });
 
-    const saveButton = Array.from(document.body.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("common.save"),
+    const saveButton = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("common.save"),
     );
     await act(async () => {
       saveButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -192,16 +200,17 @@ describe("MujtahidManager Component", () => {
       );
     });
 
-    const addRepButtons = Array.from(container.querySelectorAll("button")).filter((btn) =>
-      btn.getAttribute("aria-label")?.includes("Ayatollah Sistani") &&
-      btn.textContent?.includes("obligations.mujtahids.addRep"),
+    const addRepButtons = Array.from(container.querySelectorAll("button")).filter(
+      (btn) =>
+        btn.getAttribute("aria-label")?.includes("Ayatollah Sistani") &&
+        btn.textContent?.includes("obligations.mujtahids.addRep"),
     );
     await act(async () => {
       addRepButtons[0]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    const saveButton = Array.from(document.body.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("common.save"),
+    const saveButton = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("common.save"),
     );
     await act(async () => {
       saveButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

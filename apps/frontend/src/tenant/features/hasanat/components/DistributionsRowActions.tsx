@@ -1,16 +1,16 @@
-import type { JSX } from 'react';
+import type { JSX } from "react";
 import {
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { EntityMessagingActions } from '@/components/ui/EntityMessagingActions';
-import { ModuleRowActionsMenu } from '@/components/ui/ModuleRowActionsMenu';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { Distribution } from '@/lib/data/hasanatData';
+} from "@/components/ui/dropdown-menu";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { Distribution } from "@/lib/data/hasanatData";
 
-type DistributionStatus = Distribution['status'];
+type DistributionStatus = Distribution["status"];
 
 interface DistributionsRowActionsProps {
   distribution: Distribution;
@@ -22,7 +22,7 @@ interface DistributionsRowActionsProps {
   canRestoreRows: boolean;
   canDeleteRows: boolean;
   triggerClassName?: string;
-  onMessage?: (channel: 'whatsapp' | 'sms', distribution: Distribution) => void;
+  onMessage?: (channel: "whatsapp" | "sms", distribution: Distribution) => void;
   onChangeStatus: (id: string, status: DistributionStatus) => void;
   onTrashAction: (id: string) => void;
 }
@@ -55,9 +55,9 @@ export function DistributionsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t('hasanat.table.actions')}
-      deleteLabel={t('common.delete')}
-      restoreLabel={t('hasanat.trash.restore')}
+      triggerLabel={t("hasanat.table.actions")}
+      deleteLabel={t("common.delete")}
+      restoreLabel={t("hasanat.trash.restore")}
       archived={showDeleted}
       canWrite={canWrite}
       canDelete={canDelete && (showDeleted ? canRestoreRows : canDeleteRows)}
@@ -72,10 +72,14 @@ export function DistributionsRowActions({
           <>
             {showStatus ? (
               <>
-                <DropdownMenuLabel className="text-xs">{t('hasanat.changeStatus')}</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs">
+                  {t("hasanat.changeStatus")}
+                </DropdownMenuLabel>
                 <DropdownMenuRadioGroup
                   value={distribution.status}
-                  onValueChange={(status) => onChangeStatus(distribution.id, status as DistributionStatus)}
+                  onValueChange={(status) =>
+                    onChangeStatus(distribution.id, status as DistributionStatus)
+                  }
                 >
                   {statuses.map((status) => (
                     <DropdownMenuRadioItem key={status} value={status}>
@@ -88,18 +92,19 @@ export function DistributionsRowActions({
             {showMessaging && onMessage ? (
               <>
                 {showStatus ? <DropdownMenuSeparator /> : null}
-                <DropdownMenuLabel className="text-xs">{t('messaging.channel')}</DropdownMenuLabel>
-                <EntityMessagingActions variant="dropdown"
+                <DropdownMenuLabel className="text-xs">{t("messaging.channel")}</DropdownMenuLabel>
+                <EntityMessagingActions
+                  variant="dropdown"
                   showWhatsApp
                   showSms
                   showEmail={false}
-                  onWhatsApp={() => onMessage('whatsapp', distribution)}
-                  onSms={() => onMessage('sms', distribution)}
+                  onWhatsApp={() => onMessage("whatsapp", distribution)}
+                  onSms={() => onMessage("sms", distribution)}
                   onEmail={() => undefined}
                   labels={{
-                    whatsapp: t('messaging.channel.whatsapp'),
-                    sms: t('messaging.channel.sms'),
-                    email: t('messaging.channel.email'),
+                    whatsapp: t("messaging.channel.whatsapp"),
+                    sms: t("messaging.channel.sms"),
+                    email: t("messaging.channel.email"),
                   }}
                 />
               </>

@@ -1,19 +1,19 @@
-import type { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify';
-import { initServer, type RouterImplementation } from '@ts-rest/fastify';
-import { platformWorkspacesContract } from '@mms/shared';
+import type { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from "fastify";
+import { initServer, type RouterImplementation } from "@ts-rest/fastify";
+import { platformWorkspacesContract } from "@mms/shared";
 import {
   authenticatePlatform,
   requirePlatformPermission,
   type PlatformAuthenticatedRequest,
-} from '../../middleware/authenticatePlatform.js';
-import { replyValidationError } from '../../lib/zodRequest.js';
-import { AUTH_RATE_LIMIT } from '../../lib/rateLimitConfig.js';
-import { createStrictRateLimitGuard } from '../../lib/rateLimitGuard.js';
+} from "../../middleware/authenticatePlatform.js";
+import { replyValidationError } from "../../lib/zodRequest.js";
+import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
+import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
 import {
   handleVerifyTenantUserEmail,
   handleResetWorkspaceAdminPassword,
   handleCreateWorkspaceAdminUser,
-} from './platformWorkspaceAdminHandlers.js';
+} from "./platformWorkspaceAdminHandlers.js";
 import {
   handleListWorkspaces,
   handleGetWorkspaceMetrics,
@@ -22,7 +22,7 @@ import {
   handleUpdateWorkspaceModules,
   handlePatchWorkspaceEmailVerification,
   handleDeleteWorkspace,
-} from './platformWorkspaceOpsHandlers.js';
+} from "./platformWorkspaceOpsHandlers.js";
 
 const s = initServer();
 
@@ -32,8 +32,8 @@ export default async function platformWorkspaceRoutes(
 ): Promise<void> {
   const breakGlassRateLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
 
-  fastify.addHook('preHandler', authenticatePlatform);
-  fastify.addHook('preHandler', requirePlatformPermission('workspaces'));
+  fastify.addHook("preHandler", authenticatePlatform);
+  fastify.addHook("preHandler", requirePlatformPermission("workspaces"));
 
   const router = s.router(platformWorkspacesContract, {
     listWorkspaces: handleListWorkspaces,
@@ -65,8 +65,10 @@ export default async function platformWorkspaceRoutes(
           await breakGlassRateLimit(request, reply);
           if (reply.sent) return;
           const req = request as PlatformAuthenticatedRequest;
-          if (req.platformUser?.role !== 'super_user') {
-            return reply.status(403).send({ type: 'forbidden', message: 'Super-user privilege required' });
+          if (req.platformUser?.role !== "super_user") {
+            return reply
+              .status(403)
+              .send({ type: "forbidden", message: "Super-user privilege required" });
           }
         },
       },

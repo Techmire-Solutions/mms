@@ -23,10 +23,14 @@ vi.mock("@/tenant/features/examinations/hooks/useExaminationsApi", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
-  ModuleCommandMetricsGrid: ({ items }: any) => (
+vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
+  ModuleCommandMetricsGrid: ({
+    items,
+  }: {
+    items: Array<{ label: string; value: React.ReactNode }>;
+  }) => (
     <div data-testid="metrics-grid">
-      {items.map((item: any) => (
+      {items.map((item: { label: string; value: React.ReactNode }) => (
         <span key={item.label}>
           {item.label}:{item.value}
         </span>
@@ -37,9 +41,7 @@ vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
 
 describe("ExaminationsCommandMetrics Component", () => {
   it("renders total, filtered, upcoming, and ongoing metric counts", () => {
-    const html = renderToStaticMarkup(
-      <ExaminationsCommandMetrics shown={4} total={10} />,
-    );
+    const html = renderToStaticMarkup(<ExaminationsCommandMetrics shown={4} total={10} />);
 
     expect(html).toContain("examinations.metrics.total:10");
     expect(html).toContain("examinations.metrics.filtered:4");

@@ -6,7 +6,7 @@ import type { useContactsMessagingActions } from "@/tenant/features/contacts/hoo
 import type { useContactsPageActions } from "@/tenant/features/contacts/hooks/useContactsPageActions";
 import type { useContactsPageOverlayState } from "@/tenant/features/contacts/hooks/useContactsPageOverlayState";
 import type { useContactsSelectionTargets } from "@/tenant/features/contacts/hooks/useContactsSelectionTargets";
-import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/contactTableTypes";
+import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 import { buildContactsWorkTierProps } from "@/tenant/features/contacts/hooks/contactsWorkTierPropsBuilder";
 
 type Directory = ReturnType<typeof useContactsDirectory>;

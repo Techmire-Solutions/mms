@@ -1,6 +1,6 @@
-import { and, eq, isNull, or } from 'drizzle-orm';
-import { accountingEntries } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
+import { and, eq, isNull, or } from "drizzle-orm";
+import { accountingEntries } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
 
 /**
  * Active entry that already reverses the original, whether posted through the
@@ -12,7 +12,10 @@ export async function findActiveReversalOf(
   original: { id: string; ref: string },
 ): Promise<{ id: string; ref: string } | null> {
   const subdomain = tenant.trim().toLowerCase();
-  const bySource = and(eq(accountingEntries.sourceType, 'reversal'), eq(accountingEntries.sourceId, original.id));
+  const bySource = and(
+    eq(accountingEntries.sourceType, "reversal"),
+    eq(accountingEntries.sourceId, original.id),
+  );
   const ref = original.ref.trim();
   return withTenant(subdomain, async (tx) => {
     const rows = await tx

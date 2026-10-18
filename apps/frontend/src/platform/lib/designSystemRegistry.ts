@@ -1,13 +1,8 @@
-import type { AppTranslationKey } from '@mms/shared';
+import type { AppTranslationKey } from "@mms/shared";
 
 /** Gallery section ids — single catalog of shared UI primitives. */
 export type DesignSystemSectionId =
-  | 'actions'
-  | 'inputs'
-  | 'feedback'
-  | 'overlays'
-  | 'data'
-  | 'layout';
+  "actions" | "inputs" | "feedback" | "overlays" | "data" | "layout";
 
 export interface DesignSystemSectionMeta {
   id: DesignSystemSectionId;
@@ -22,45 +17,46 @@ export interface DesignSystemSectionMeta {
  */
 export const DESIGN_SYSTEM_SECTIONS: readonly DesignSystemSectionMeta[] = [
   {
-    id: 'actions',
-    labelKey: 'platform.designSystemActions',
-    primitives: ['Button', 'ActionButton', 'DensityToggle', 'CopyButton'],
+    id: "actions",
+    labelKey: "platform.designSystemActions",
+    primitives: ["Button", "TableCellLink", "DensityToggle", "CopyButton"],
   },
   {
-    id: 'inputs',
-    labelKey: 'platform.designSystemInputs',
+    id: "inputs",
+    labelKey: "platform.designSystemInputs",
     primitives: [
-      'Input',
-      'LeadingIconInput',
-      'Textarea',
-      'Checkbox',
-      'Switch',
-      'FormSelect',
-      'EditableSelect',
-      'CompactSegmentedControl',
-      'SegmentedPillFilter',
-      'DateRangeFilterBar',
+      "Input",
+      "LeadingIconInput",
+      "Textarea",
+      "Checkbox",
+      "Switch",
+      "FormSelect",
+      "EditableSelect",
+      "CompactSegmentedControl",
+      "DateRangeFilterBar",
+      "RadioGroup",
+      "FormCheckboxCard",
     ],
   },
   {
-    id: 'feedback',
-    labelKey: 'platform.designSystemFeedback',
-    primitives: ['EmptyState', 'ErrorState', 'StatusBadge', 'Badge', 'WarningCallout'],
+    id: "feedback",
+    labelKey: "platform.designSystemFeedback",
+    primitives: ["EmptyState", "ErrorState", "StatusBadge", "Badge", "WarningCallout"],
   },
   {
-    id: 'overlays',
-    labelKey: 'platform.designSystemOverlays',
-    primitives: ['Popover', 'Tooltip', 'DropdownMenu', 'Modal', 'FormModal', 'CommandPalette'],
+    id: "overlays",
+    labelKey: "platform.designSystemOverlays",
+    primitives: ["Popover", "Tooltip", "DropdownMenu", "Modal", "FormModal", "CommandPalette"],
   },
   {
-    id: 'data',
-    labelKey: 'platform.designSystemData',
-    primitives: ['StatCard', 'Table', 'Skeleton', 'ListPagination'],
+    id: "data",
+    labelKey: "platform.designSystemData",
+    primitives: ["StatCard", "Table", "Skeleton", "ListPagination"],
   },
   {
-    id: 'layout',
-    labelKey: 'platform.designSystemLayout',
-    primitives: ['Card', 'SubTabBar', 'Breadcrumb', 'PageHeader'],
+    id: "layout",
+    labelKey: "platform.designSystemLayout",
+    primitives: ["Card", "SubTabBar", "Breadcrumb", "PageHeader", "WizardStepIndicator"],
   },
 ] as const;
 

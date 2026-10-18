@@ -1,7 +1,7 @@
 import React from "react";
 import { AuthPasswordField, AuthSubmitButton } from "@/components/entry";
 import { getPasswordPolicyHintKey } from "@mms/shared";
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AuthStepForm } from "./AuthStepForm";
 
@@ -61,7 +61,11 @@ export function TenantForgotPasswordResetStep({
             clearError();
           }}
         />
-        <AuthSubmitButton busy={loading} busyLabel={t("auth.settingPassword")} label={t("auth.setPassword")} />
+        <AuthSubmitButton
+          busy={loading}
+          busyLabel={t("auth.settingPassword")}
+          label={t("auth.setPassword")}
+        />
       </fieldset>
     </AuthStepForm>
   );

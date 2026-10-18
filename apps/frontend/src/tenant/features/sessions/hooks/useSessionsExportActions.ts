@@ -7,7 +7,7 @@ import {
 } from "@mms/shared";
 import { startServerSessionsCsvExport } from "@/lib/backgroundJobs/startServerSessionsCsvExport";
 import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleServerCsvExportActions";
-import type { SessionSortField } from "@/tenant/features/sessions/components/sessionPageTypes";
+import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPageTypes";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
@@ -24,10 +24,7 @@ export interface UseSessionsExportActionsOptions {
   viewingDeleted: boolean;
   selectedIds: string[];
   logExportAudit: {
-    mutateAsync: (payload: {
-      count: number;
-      scope: ExportAuditScope;
-    }) => Promise<unknown>;
+    mutateAsync: (payload: { count: number; scope: ExportAuditScope }) => Promise<unknown>;
   };
 }
 
@@ -46,17 +43,17 @@ export function useSessionsExportActions({
 }: UseSessionsExportActionsOptions) {
   const { t } = useTranslation();
 
-  const buildFilteredQuery = ((): SessionsListQuery => ({
-      search: search.trim() || undefined,
-      status: filterStatus.length > 0 ? filterStatus.join(",") : undefined,
-      type: filterType.length > 0 ? filterType.join(",") : undefined,
-      sortField,
-      sortDir,
-    }));
+  const buildFilteredQuery = (): SessionsListQuery => ({
+    search: search.trim() || undefined,
+    status: filterStatus.length > 0 ? filterStatus.join(",") : undefined,
+    type: filterType.length > 0 ? filterType.join(",") : undefined,
+    sortField,
+    sortDir,
+  });
 
-  const onError = (() => {
-      notify.error(t("sessions.exportFailed"));
-    });
+  const onError = () => {
+    notify.error(t("sessions.exportFailed"));
+  };
 
   return useModuleServerCsvExportActions<SessionExportColumn, SessionsListQuery>({
     canExport,
@@ -85,18 +82,36 @@ export function defaultSessionsExportColumns(
     { id: "name", label: t("sessions.columns.name" as AppTranslationKey) },
     { id: "type", label: t("sessions.columns.type" as AppTranslationKey) },
     { id: "status", label: t("sessions.columns.status" as AppTranslationKey) },
-    { id: "startDate", label: t("sessions.columns.startDate" as AppTranslationKey) || "Start Date" },
+    {
+      id: "startDate",
+      label: t("sessions.columns.startDate" as AppTranslationKey) || "Start Date",
+    },
     { id: "endDate", label: t("sessions.columns.endDate" as AppTranslationKey) || "End Date" },
     { id: "duration", label: t("sessions.columns.duration" as AppTranslationKey) },
     { id: "baseFee", label: t("sessions.columns.fee" as AppTranslationKey) },
     { id: "currency", label: t("sessions.columns.currency" as AppTranslationKey) || "Currency" },
-    { id: "description", label: t("sessions.columns.description" as AppTranslationKey) || "Description" },
-    { id: "enrolled", label: t("sessions.columns.enrolled" as AppTranslationKey) || "Enrolled Students" },
+    {
+      id: "description",
+      label: t("sessions.columns.description" as AppTranslationKey) || "Description",
+    },
+    {
+      id: "enrolled",
+      label: t("sessions.columns.enrolled" as AppTranslationKey) || "Enrolled Students",
+    },
     { id: "capacity", label: t("sessions.columns.capacity" as AppTranslationKey) || "Capacity" },
-    { id: "classesCount", label: t("sessions.columns.classesCount" as AppTranslationKey) || "Classes Count" },
+    {
+      id: "classesCount",
+      label: t("sessions.columns.classesCount" as AppTranslationKey) || "Classes Count",
+    },
     { id: "classNames", label: t("sessions.columns.classes" as AppTranslationKey) || "Classes" },
-    { id: "facultyCount", label: t("sessions.columns.facultyCount" as AppTranslationKey) || "Faculty Count" },
-    { id: "facultyNames", label: t("sessions.columns.faculty" as AppTranslationKey) || "Assigned Faculty" },
+    {
+      id: "facultyCount",
+      label: t("sessions.columns.facultyCount" as AppTranslationKey) || "Faculty Count",
+    },
+    {
+      id: "facultyNames",
+      label: t("sessions.columns.faculty" as AppTranslationKey) || "Assigned Faculty",
+    },
   ];
   return mergeCustomSessionExportColumns(base, settings);
 }

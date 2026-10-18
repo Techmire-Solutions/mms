@@ -2,10 +2,10 @@ import React from "react";
 import { formatMonthName, normalizeSessionsViewLayout, type SessionsSettings } from "@mms/shared";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { Field } from "@/components/ui/FormPrimitives";
-import { SegmentedPillFilter } from "@/components/ui/SegmentedPillFilter";
+import { FormSelect } from "@/components/app/FormSelect";
+import { ToggleRow } from "@/components/app/ToggleRow";
+import { Field } from "@/components/app/FormPrimitives";
+import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface SessionsSettingsPreferencesProps {
@@ -63,11 +63,23 @@ export function SessionsSettingsPreferences({
             name="sessionStart"
             value={settingsDraft.sessionStart}
             onChange={(value) => upd("sessionStart", value)}
-            options={["january", "february", "march", "april", "may", "june",
-              "july", "august", "september", "october", "november", "december"].map((month, idx) => ({
-                value: month,
-                label: formatMonthName(new Date(2000, idx, 1)),
-              }))}
+            options={[
+              "january",
+              "february",
+              "march",
+              "april",
+              "may",
+              "june",
+              "july",
+              "august",
+              "september",
+              "october",
+              "november",
+              "december",
+            ].map((month, idx) => ({
+              value: month,
+              label: formatMonthName(new Date(2000, idx, 1)),
+            }))}
             className="w-full"
           />
         </Field>
@@ -107,11 +119,14 @@ export function SessionsSettingsPreferences({
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3">
           <div className="min-w-0">
-            <p className="m-0 text-sm font-semibold text-foreground">{t("sessions.settings.defaultViewLayout")}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t("sessions.settings.defaultViewLayoutHint")}</p>
+            <p className="m-0 text-sm font-semibold text-foreground">
+              {t("sessions.settings.defaultViewLayout")}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t("sessions.settings.defaultViewLayoutHint")}
+            </p>
           </div>
-          <SegmentedPillFilter
-            size="sm"
+          <CompactSegmentedControl
             value={normalizeSessionsViewLayout(settingsDraft.defaultViewLayout)}
             onChange={(value) => upd("defaultViewLayout", value)}
             options={[

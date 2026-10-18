@@ -6,12 +6,12 @@ import {
   type Contact,
   type ContactPreferences,
 } from "@mms/shared";
-import { EntityCardMetadata } from "@/components/ui/EntityCardMetadata";
+import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ContactArchivedBanner } from "@/tenant/features/contacts/components/ContactArchivedBanner";
 import { ContactMetadataCell } from "@/tenant/features/contacts/components/ContactMetadataCell";
-import { hasContactCardColumnData } from "@/tenant/features/contacts/components/contactCardColumnData";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { hasContactCardColumnData } from "@/tenant/features/contacts/lib/contactCardColumnData";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/ContactTableRow";
 
 export interface ContactCardMetadataGridProps {
@@ -41,8 +41,8 @@ export function ContactCardMetadataGrid({
     return null;
   }
 
-  const hasVisibleRelationshipContact = otherColumns.some((col) =>
-    isRelationshipContactColumnKey(col.id) && isColumnVisible(col.id),
+  const hasVisibleRelationshipContact = otherColumns.some(
+    (col) => isRelationshipContactColumnKey(col.id) && isColumnVisible(col.id),
   );
 
   const extraColumns =
@@ -102,4 +102,3 @@ export function ContactCardDeletedBanner({
 }: ContactCardDeletedBannerProps): React.JSX.Element | null {
   return <ContactArchivedBanner contact={contact} />;
 }
-

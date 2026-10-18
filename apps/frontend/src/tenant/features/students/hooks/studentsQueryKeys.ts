@@ -1,8 +1,14 @@
-import { STUDENTS_MODULE_MANIFEST, type StudentsWidgetQuery } from '@mms/shared';
+import { STUDENTS_MODULE_MANIFEST, type StudentsWidgetQuery } from "@mms/shared";
 
-export const STUDENTS_QUERY_KEY = [STUDENTS_MODULE_MANIFEST.collectionKey, 'list'] as const;
-export const STUDENTS_METRICS_QUERY_KEY = [STUDENTS_MODULE_MANIFEST.collectionKey, 'metrics'] as const;
-export const STUDENTS_WIDGET_AGGREGATES_QUERY_KEY = [STUDENTS_MODULE_MANIFEST.collectionKey, 'widget-aggregates'] as const;
+export const STUDENTS_QUERY_KEY = [STUDENTS_MODULE_MANIFEST.collectionKey, "list"] as const;
+export const STUDENTS_METRICS_QUERY_KEY = [
+  STUDENTS_MODULE_MANIFEST.collectionKey,
+  "metrics",
+] as const;
+export const STUDENTS_WIDGET_AGGREGATES_QUERY_KEY = [
+  STUDENTS_MODULE_MANIFEST.collectionKey,
+  "widget-aggregates",
+] as const;
 
 export const STUDENTS_API = STUDENTS_MODULE_MANIFEST.restBasePath;
 
@@ -12,12 +18,12 @@ export {
   sameStudentsListFilters,
   studentsListQueryKeyParams,
   studentsPaginatedQueryKey,
-} from './studentsListQueryBuilders.js';
+} from "./studentsListQueryBuilders";
 export type {
   StudentRecord,
   StudentsListPageResult,
   StudentsPaginatedParams,
-} from './studentsListQueryBuilders.js';
+} from "./studentsListQueryBuilders";
 
 export interface StudentNextGrNumberParams {
   registeredDate: string;

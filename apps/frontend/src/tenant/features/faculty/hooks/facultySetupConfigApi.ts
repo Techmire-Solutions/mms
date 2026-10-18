@@ -44,7 +44,9 @@ export async function fetchFacultyFieldConfig(_signal?: AbortSignal): Promise<Fa
   return merged;
 }
 
-export async function saveFacultyFieldConfigAsync(config: FacultySettings): Promise<FacultySettings> {
+export async function saveFacultyFieldConfigAsync(
+  config: FacultySettings,
+): Promise<FacultySettings> {
   const bodyPayload = stripFacultyFieldConfigForPersist(config);
   const response = await apiContract.faculty.updateFieldConfig({ body: bodyPayload });
   const data = response.body as { success: boolean; config: FacultySettings };

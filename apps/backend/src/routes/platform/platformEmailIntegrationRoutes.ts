@@ -1,38 +1,49 @@
-import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
-import { isEmailProviderId, mergeEmailIntegrationConfig, emailIntegrationBodySchema } from '@mms/shared';
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import {
+  isEmailProviderId,
+  mergeEmailIntegrationConfig,
+  emailIntegrationBodySchema,
+} from "@mms/shared";
 import {
   loadPlatformEmailIntegrationConfig,
   markPlatformEmailIntegrationTestResult,
   savePlatformEmailIntegrationConfig,
   savePlatformEmailIntegrationSecrets,
-} from '../../services/platform/platformEmailIntegrationService.js';
-import { sendPlatformEmail, verifyPlatformEmailTransport } from '../../services/platform/platformEmailService.js';
-import { authenticatePlatform, requirePlatformPermission, type PlatformAuthenticatedRequest } from '../../middleware/authenticatePlatform.js';
-import { parseRequest, replyValidationError } from '../../lib/zodRequest.js';
-import { createStrictRateLimitGuard } from '../../lib/rateLimitGuard.js';
-import { AUTH_RATE_LIMIT } from '../../lib/rateLimitConfig.js';
+} from "../../services/platform/platformEmailIntegrationService.js";
+import {
+  sendPlatformEmail,
+  verifyPlatformEmailTransport,
+} from "../../services/platform/platformEmailService.js";
+import {
+  authenticatePlatform,
+  requirePlatformPermission,
+  type PlatformAuthenticatedRequest,
+} from "../../middleware/authenticatePlatform.js";
+import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
+import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
+import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
 
 export default async function platformEmailIntegrationRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
-  fastify.addHook('preHandler', authenticatePlatform);
-  fastify.addHook('preHandler', requirePlatformPermission('settings'));
+  fastify.addHook("preHandler", authenticatePlatform);
+  fastify.addHook("preHandler", requirePlatformPermission("settings"));
 
   const sendLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
 
-  fastify.get('/integration', async (_request, reply) => {
+  fastify.get("/integration", async (_request, reply) => {
     const config = await loadPlatformEmailIntegrationConfig();
     return reply.send(config);
   });
 
-  fastify.put('/integration', async (request, reply) => {
+  fastify.put("/integration", async (request, reply) => {
     const parsed = parseRequest(emailIntegrationBodySchema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
     const body = parsed.data;
 
     if (!isEmailProviderId(body.providerId)) {
-      return replyValidationError(reply, 'Unsupported email provider');
+      return replyValidationError(reply, "Unsupported email provider");
     }
 
     const current = await loadPlatformEmailIntegrationConfig();
@@ -60,23 +71,27 @@ export default async function platformEmailIntegrationRoutes(
     return reply.send(saved);
   });
 
-  fastify.post('/integration/test', { preHandler: sendLimit }, async (request, reply) => {
+  fastify.post("/integration/test", { preHandler: sendLimit }, async (request, reply) => {
     const verify = await verifyPlatformEmailTransport();
     if (!verify.sent) {
       await markPlatformEmailIntegrationTestResult(false, verify.message ?? verify.reason);
-      return replyValidationError(reply, verify.message ?? 'Email is not configured', { reason: verify.reason });
+      return replyValidationError(reply, verify.message ?? "Email is not configured", {
+        reason: verify.reason,
+      });
     }
 
     const { platformUser } = request as PlatformAuthenticatedRequest;
     const testSend = await sendPlatformEmail({
       to: platformUser.email,
-      subject: 'MMS platform email test',
-      text: 'Your MMS platform email integration is working.',
+      subject: "MMS platform email test",
+      text: "Your MMS platform email integration is working.",
     });
 
     if (!testSend.sent) {
       await markPlatformEmailIntegrationTestResult(false, testSend.message ?? testSend.reason);
-      return replyValidationError(reply, testSend.message ?? 'Test email could not be sent', { reason: testSend.reason });
+      return replyValidationError(reply, testSend.message ?? "Test email could not be sent", {
+        reason: testSend.reason,
+      });
     }
 
     const saved = await markPlatformEmailIntegrationTestResult(true);

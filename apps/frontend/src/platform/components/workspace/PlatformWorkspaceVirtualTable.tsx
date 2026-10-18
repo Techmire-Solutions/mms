@@ -1,5 +1,8 @@
-import React from 'react';
-import { WorkspaceTableView, type WorkspaceTableViewProps } from '@/platform/components/workspace/WorkspaceTableView';
+import React from "react";
+import {
+  WorkspaceTableView,
+  type WorkspaceTableViewProps,
+} from "@/platform/components/workspace/WorkspaceTableView";
 
 export type PlatformWorkspaceVirtualTableProps = WorkspaceTableViewProps;
 

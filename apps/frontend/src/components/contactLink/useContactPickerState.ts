@@ -8,10 +8,7 @@ import {
   type RefObject,
   useMemo,
 } from "react";
-import {
-  type Contact,
-  filterContactsForQuery,
-} from "@mms/shared";
+import { type Contact, filterContactsForQuery } from "@mms/shared";
 import { uploadUserImage } from "@/lib/imageUpload";
 import type { ContactCreateDefaults } from "./ContactCreateModal";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -61,26 +58,37 @@ export function useContactPickerState({
   const avatarInputId = `${resolvedId}-avatar`;
   const menuStyle = useAnchorMenuStyle(open, anchorRef);
 
-  const normalizedExcludeIds = useMemo(() =>
+  const normalizedExcludeIds = useMemo(
+    () =>
       excludeIds
-        .filter((excludeId): excludeId is string | number => excludeId != null && String(excludeId).length > 0)
-        .map(String), [excludeIds.join(",")]);
+        .filter(
+          (excludeId): excludeId is string | number =>
+            excludeId != null && String(excludeId).length > 0,
+        )
+        .map(String),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on excludeIds.join(",") to keep identity stable; depending on excludeIds would recompute (and refetch) on every new array literal.
+    [excludeIds.join(",")],
+  );
 
   const debouncedQuery = useDebounce(query, 250);
-  const { data: searchPage, isFetching: isSearching } = useContactsContractList({
-    page: 1,
-    limit: PICKER_PAGE_SIZE,
-    search: debouncedQuery,
-    gender: filterGender,
-    hasPhone,
-    excludeIds: normalizedExcludeIds,
-  }, serverMode && open);
+  const { data: searchPage, isFetching: isSearching } = useContactsContractList(
+    {
+      page: 1,
+      limit: PICKER_PAGE_SIZE,
+      search: debouncedQuery,
+      gender: filterGender,
+      hasPhone,
+      excludeIds: normalizedExcludeIds,
+    },
+    serverMode && open,
+  );
   const { data: selectedFromServer } = useContactById(
     value != null ? String(value) : undefined,
     serverMode && value != null,
   );
 
-  const directory = (() => (serverMode ? ((searchPage?.body?.contacts ?? []) as Contact[]) : contacts))();
+  const directory = (() =>
+    serverMode ? ((searchPage?.body?.contacts ?? []) as Contact[]) : contacts)();
 
   const closeDropdown = useCallback(() => {
     setQuery("");
@@ -109,12 +117,12 @@ export function useContactPickerState({
   const [selectedCache, setSelectedCache] = useState<Contact | null>(null);
 
   const matches = (() =>
-      filterContactsForQuery(directory, {
-        search: query,
-        gender: filterGender,
-        hasPhone,
-        excludeIds: normalizedExcludeIds,
-      }).slice(0, PICKER_PAGE_SIZE))();
+    filterContactsForQuery(directory, {
+      search: query,
+      gender: filterGender,
+      hasPhone,
+      excludeIds: normalizedExcludeIds,
+    }).slice(0, PICKER_PAGE_SIZE))();
 
   const selected = (() => {
     if (value == null) return null;
@@ -130,7 +138,7 @@ export function useContactPickerState({
     );
   })();
 
-  const handleFileChange = (async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     try {
@@ -141,12 +149,12 @@ export function useContactPickerState({
       reportClientError(err, { scope: "ContactPicker.avatar_upload" });
     }
     event.target.value = "";
-  });
+  };
 
-  const openCreateFlow = ((searchText: string): void => {
+  const openCreateFlow = (searchText: string): void => {
     setCreateQuery(searchText);
     setCreateOpen(true);
-  });
+  };
 
   return {
     t,

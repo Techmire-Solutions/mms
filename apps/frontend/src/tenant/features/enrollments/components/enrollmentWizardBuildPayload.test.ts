@@ -1,23 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { buildEnrollmentPayload } from "./enrollmentWizardBuildPayload";
+import { buildEnrollmentPayload } from "../lib/enrollmentWizardBuildPayload";
 
 describe("buildEnrollmentPayload", () => {
   it("builds enrollment payload properly with default values", () => {
     const student = {
       id: "std-1",
       name: "Bilal Ahmad",
-    } as any;
+    } as unknown as never;
 
     const session = {
       id: "ses-1",
       name: "Spring 2025",
       baseFee: 150,
-    } as any;
+    } as unknown as never;
 
     const classInfo = {
       id: "cls-1",
       name: "Class 1A",
-    } as any;
+    } as unknown as never;
 
     const feeResult = {
       id: "standard",
@@ -25,7 +25,7 @@ describe("buildEnrollmentPayload", () => {
       pct: 0,
       discountAmt: 0,
       finalFee: 150,
-    } as any;
+    } as unknown as never;
 
     const payload = buildEnrollmentPayload({
       student,
@@ -34,7 +34,7 @@ describe("buildEnrollmentPayload", () => {
       feeResult,
       notes: "Test notes",
       customFieldValues: { custom1: "val1" },
-      t: ((k: string) => k) as any,
+      t: ((k: string) => k) as unknown as never,
     });
 
     expect(payload.studentId).toBe("std-1");

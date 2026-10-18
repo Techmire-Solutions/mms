@@ -1,10 +1,10 @@
-import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Account } from '@mms/shared';
-import { accountingAccounts, accountingEntries, accountingJournalLines } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { ValidationError } from '../../lib/httpErrors.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Account } from "@mms/shared";
+import { accountingAccounts, accountingEntries, accountingJournalLines } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { ValidationError } from "../../lib/httpErrors.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 
 type AccountRow = typeof accountingAccounts.$inferSelect;
 
@@ -13,7 +13,7 @@ export function accountRowToRecord(row: AccountRow): Account {
     id: row.id,
     code: row.code,
     name: row.name,
-    type: row.type as Account['type'],
+    type: row.type as Account["type"],
     subtype: row.subtype,
     description: row.description,
     isActive: row.isActive,
@@ -23,11 +23,11 @@ export function accountRowToRecord(row: AccountRow): Account {
 
 export async function listAccountsByWorkspace(
   tenant: string,
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<Account[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const filter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+    const filter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
     const conditions = buildTenantSoftDeleteConditions(accountingAccounts, subdomain, filter);
 
     const rows = await tx
@@ -80,7 +80,12 @@ export async function findAccountById(tenant: string, id: string): Promise<Accou
         updatedAt: accountingAccounts.updatedAt,
       })
       .from(accountingAccounts)
-      .where(and(eq(accountingAccounts.workspaceSubdomain, subdomain), eq(accountingAccounts.id, trimmedId)))
+      .where(
+        and(
+          eq(accountingAccounts.workspaceSubdomain, subdomain),
+          eq(accountingAccounts.id, trimmedId),
+        ),
+      )
       .limit(1);
     const row = rows[0];
     return row ? accountRowToRecord(row) : null;
@@ -90,13 +95,13 @@ export async function findAccountById(tenant: string, id: string): Promise<Accou
 export async function findAccountsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<Account[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const filter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+    const filter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
     const conditions = [
       ...buildTenantSoftDeleteConditions(accountingAccounts, subdomain, filter),
       inArray(accountingAccounts.id, cleanIds),
@@ -138,8 +143,8 @@ export async function saveAccount(tenant: string, record: Account): Promise<void
         code: record.code,
         name: record.name,
         type: record.type,
-        subtype: record.subtype ?? '',
-        description: record.description ?? '',
+        subtype: record.subtype ?? "",
+        description: record.description ?? "",
         isActive: record.isActive ?? true,
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
@@ -152,8 +157,8 @@ export async function saveAccount(tenant: string, record: Account): Promise<void
           code: record.code,
           name: record.name,
           type: record.type,
-          subtype: record.subtype ?? '',
-          description: record.description ?? '',
+          subtype: record.subtype ?? "",
+          description: record.description ?? "",
           isActive: record.isActive ?? true,
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
@@ -169,7 +174,7 @@ export async function bulkSaveAccounts(tenant: string, records: Account[]): Prom
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Account>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -185,8 +190,8 @@ export async function bulkSaveAccounts(tenant: string, records: Account[]): Prom
           code: r.code,
           name: r.name,
           type: r.type,
-          subtype: r.subtype ?? '',
-          description: r.description ?? '',
+          subtype: r.subtype ?? "",
+          description: r.description ?? "",
           isActive: r.isActive ?? true,
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
@@ -212,11 +217,14 @@ export async function bulkSaveAccounts(tenant: string, records: Account[]): Prom
   });
 }
 
-export async function replaceAccountsForWorkspace(tenant: string, records: Account[]): Promise<void> {
+export async function replaceAccountsForWorkspace(
+  tenant: string,
+  records: Account[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Account>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -231,8 +239,8 @@ export async function replaceAccountsForWorkspace(tenant: string, records: Accou
           code: r.code,
           name: r.name,
           type: r.type,
-          subtype: r.subtype ?? '',
-          description: r.description ?? '',
+          subtype: r.subtype ?? "",
+          description: r.description ?? "",
           isActive: r.isActive ?? true,
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
@@ -352,7 +360,7 @@ export async function countActiveJournalLinesForAccount(
           // Posted only: drafts are not in the ledger, so an account referenced
           // solely by an unbalanced draft must stay archivable. Drafts that
           // reference an archived account are rejected when they are posted.
-          eq(accountingEntries.status, 'posted'),
+          eq(accountingEntries.status, "posted"),
         ),
       );
     return Number(result[0]?.count ?? 0);
@@ -387,7 +395,7 @@ export async function countActiveJournalLinesForAccounts(
           inArray(accountingJournalLines.accountId, cleanIds),
           isNull(accountingEntries.deletedAt),
           // Posted only — see countActiveJournalLinesForAccount.
-          eq(accountingEntries.status, 'posted'),
+          eq(accountingEntries.status, "posted"),
         ),
       )
       .groupBy(accountingJournalLines.accountId);
@@ -397,4 +405,3 @@ export async function countActiveJournalLinesForAccounts(
     return map;
   });
 }
-

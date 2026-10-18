@@ -3,11 +3,7 @@ import { type HasanatSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
-const PREF_KEYS = [
-  "pointsPerUnit",
-  "autoApprovePayouts",
-  "defaultViewLayout",
-] as const;
+const PREF_KEYS = ["pointsPerUnit", "autoApprovePayouts", "defaultViewLayout"] as const;
 
 /** Hasanat Setup save + dirty detection (§7 await / dirty). */
 export function useHasanatSetupSaveActions({
@@ -32,7 +28,7 @@ export function useHasanatSetupSaveActions({
     );
   })();
 
-  const handleSave = (async (): Promise<void> => {
+  const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;
     setSaving(true);
     try {
@@ -46,7 +42,7 @@ export function useHasanatSetupSaveActions({
     } finally {
       setSaving(false);
     }
-  });
+  };
 
   return {
     saving,

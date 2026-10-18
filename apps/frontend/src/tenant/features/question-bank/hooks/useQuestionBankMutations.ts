@@ -1,73 +1,42 @@
-import { useQueryClient } from '@tanstack/react-query';
-import type { MutateOptions } from '@tanstack/react-query';
-import type {
-  QuestionBankQuestion,
-  QuestionBankTest,
-  QuestionBankResult,
-} from '@mms/shared';
-import { tsrClient } from '@/lib/api';
-import {
-  QUESTION_BANK_METRICS_QUERY_KEY,
-  QUESTION_BANK_QUESTIONS_QUERY_KEY,
-  QUESTION_BANK_RESULTS_QUERY_KEY,
-  QUESTION_BANK_TESTS_QUERY_KEY,
-} from './useQuestionBankApi';
+import { useQueryClient } from "@tanstack/react-query";
+import type { MutateOptions } from "@tanstack/react-query";
+import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/shared";
+import { tsrClient } from "@/lib/api";
+import { invalidateQuestionBankQueries } from "./invalidateQuestionBankQueries";
 
 export function useQuestionBankMutations() {
   const queryClient = useQueryClient();
 
-  const invalidateQuestions = () => {
-    void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_QUESTIONS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_METRICS_QUERY_KEY });
-  };
-
   const invalidate = () => {
-    invalidateQuestions();
-    void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_TESTS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_RESULTS_QUERY_KEY });
+    invalidateQuestionBankQueries(queryClient);
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceQuestions = tsrClient.questionBank.bulkUpdateQuestions.useMutation({
-    onSuccess: () => {
-      invalidateQuestions();
-    },
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceTests = tsrClient.questionBank.bulkUpdateTests.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_TESTS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const replaceResults = tsrClient.questionBank.bulkUpdateResults.useMutation({
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_RESULTS_QUERY_KEY });
-      void queryClient.invalidateQueries({ queryKey: QUESTION_BANK_METRICS_QUERY_KEY });
-    },
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteQuestion = tsrClient.questionBank.deleteQuestion.useMutation({
-    onSuccess: () => invalidateQuestions(),
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const restoreQuestion = tsrClient.questionBank.restoreQuestion.useMutation({
-    onSuccess: () => invalidateQuestions(),
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkDeleteQuestions = tsrClient.questionBank.bulkDeleteQuestions.useMutation({
-    onSuccess: () => invalidateQuestions(),
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const bulkRestoreQuestions = tsrClient.questionBank.bulkRestoreQuestions.useMutation({
-    onSuccess: () => invalidateQuestions(),
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
   return {
@@ -92,8 +61,7 @@ export function useQuestionBankMutations() {
     },
     deleteQuestion: {
       ...deleteQuestion,
-      mutate: (id: string, opts?: MutateOptions) =>
-        deleteQuestion.mutate({ params: { id } }, opts),
+      mutate: (id: string, opts?: MutateOptions) => deleteQuestion.mutate({ params: { id } }, opts),
       mutateAsync: (id: string) => deleteQuestion.mutateAsync({ params: { id } }),
     },
     restoreQuestion: {

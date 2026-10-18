@@ -11,7 +11,7 @@ import {
   openPaperPrintWindow,
   type PaperConfig,
   type PaperSection,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 interface UsePaperBuilderHandlersOptions {
   questions: Question[];
@@ -45,17 +45,26 @@ export function usePaperBuilderHandlers({
   const { t } = useTranslation();
   const qbConfig = useQuestionBankConfig(questions);
 
-  const categoryById = (() => new Map(qbConfig.categories.map((category) => [category.id, { color: category.color, name: category.name }])))();
+  const categoryById = (() =>
+    new Map(
+      qbConfig.categories.map((category) => [
+        category.id,
+        { color: category.color, name: category.name },
+      ]),
+    ))();
 
   const categoryOptions = (() => [
-      { value: ALL_FILTER, label: t("questionBank.allCategories") },
-      ...qbConfig.categories.map((category) => ({ value: category.id, label: category.name })),
-    ])();
+    { value: ALL_FILTER, label: t("questionBank.allCategories") },
+    ...qbConfig.categories.map((category) => ({ value: category.id, label: category.name })),
+  ])();
 
   const difficultyOptions = (() => [
-      { value: ALL_FILTER, label: t("questionBank.difficultyAny") },
-      ...qbConfig.enabledDifficulties.map((difficulty) => ({ value: difficulty, label: qbConfig.difficultyLabel(difficulty) })),
-    ])();
+    { value: ALL_FILTER, label: t("questionBank.difficultyAny") },
+    ...qbConfig.enabledDifficulties.map((difficulty) => ({
+      value: difficulty,
+      label: qbConfig.difficultyLabel(difficulty),
+    })),
+  ])();
 
   const handlePrintPaper = (): void => {
     const content = printRef.current;
@@ -72,7 +81,9 @@ export function usePaperBuilderHandlers({
     const paperSections = normalizePaperSections(sections);
     const questionIds = getPaperQuestionIds(paperSections);
     if (questionIds.length === 0 || saving) return;
-    const currentPaper = activePaperId ? tests.find((paper) => paper.id === activePaperId) : undefined;
+    const currentPaper = activePaperId
+      ? tests.find((paper) => paper.id === activePaperId)
+      : undefined;
     const examClass = config.examClass.trim();
     const instructions = config.instructions.trim();
     const paperName = config.name.trim() || t("questionBank.previewDefaultName");
@@ -95,7 +106,9 @@ export function usePaperBuilderHandlers({
       await onSaveTest(savedPaper);
       setActivePaperId(savedPaper.id);
       setSaved(true);
-      notify.success(t("questionBank.paperSaved"), { description: t("questionBank.testCreatedDesc") });
+      notify.success(t("questionBank.paperSaved"), {
+        description: t("questionBank.testCreatedDesc"),
+      });
     } catch (caughtError: unknown) {
       notify.error(t("questionBank.paperSaveFailed"), { description: describeError(caughtError) });
     } finally {
@@ -104,9 +117,8 @@ export function usePaperBuilderHandlers({
   };
 
   const handleOpenPaper = (paper: QuestionBankTest): void => {
-    const draft = createPaperDraftFromTest(
-      paper,
-      (sectionNumber) => t("questionBank.defaultSectionTitle", { n: sectionNumber }),
+    const draft = createPaperDraftFromTest(paper, (sectionNumber) =>
+      t("questionBank.defaultSectionTitle", { n: sectionNumber }),
     );
     loadPaperDraft(draft.config, draft.sections);
     setActivePaperId(paper.id);

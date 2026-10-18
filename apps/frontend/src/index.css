@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap");
 
 @source "../index.html";
 @source "./**/*.{js,jsx,ts,tsx}";
@@ -8,7 +8,16 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-sans, "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  --font-sans: var(
+    --font-sans,
+    "Geist",
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   --font-display: var(--font-display, "Geist", "Inter", sans-serif);
   --font-arabic: var(--font-arabic, "Readex Pro", "Noto Sans Arabic", "Amiri", sans-serif);
   --font-urdu: var(--font-urdu, "Noto Nastaliq Urdu", "Amiri", serif);
@@ -127,29 +136,18 @@
   --animation-stagger-unit: 0.04s;
 
   --shadow-surface:
-    0 1px 2px 0 hsl(var(--foreground) / 0.04),
-    0 2px 6px -1px hsl(var(--foreground) / 0.04);
+    0 1px 2px 0 hsl(var(--foreground) / 0.04), 0 2px 6px -1px hsl(var(--foreground) / 0.04);
   --shadow-surface-lg:
-    0 4px 12px -2px hsl(var(--foreground) / 0.06),
-    0 2px 4px -1px hsl(var(--foreground) / 0.03);
-  --shadow-drawer:
-    0 8px 24px -4px hsl(var(--foreground) / 0.08);
-  --shadow-glow-destructive:
-    0 0 0 1px hsl(var(--destructive) / 0.25);
-  --shadow-glow-destructive-sm:
-    0 0 0 1px hsl(var(--destructive) / 0.35);
-  --shadow-glow-warning:
-    0 0 0 1px hsl(var(--warning) / 0.25);
-  --shadow-glow-warning-sm:
-    0 0 0 1px hsl(var(--warning) / 0.35);
-  --shadow-glow-primary:
-    0 0 0 1px hsl(var(--primary) / 0.25);
-  --shadow-glow-success:
-    0 0 0 1px hsl(var(--success) / 0.25);
-  --shadow-glow-success-sm:
-    0 0 0 1px hsl(var(--success) / 0.35);
-  --shadow-glow-info:
-    0 0 0 1px hsl(var(--info) / 0.25);
+    0 4px 12px -2px hsl(var(--foreground) / 0.06), 0 2px 4px -1px hsl(var(--foreground) / 0.03);
+  --shadow-drawer: 0 8px 24px -4px hsl(var(--foreground) / 0.08);
+  --shadow-glow-destructive: 0 0 0 1px hsl(var(--destructive) / 0.25);
+  --shadow-glow-destructive-sm: 0 0 0 1px hsl(var(--destructive) / 0.35);
+  --shadow-glow-warning: 0 0 0 1px hsl(var(--warning) / 0.25);
+  --shadow-glow-warning-sm: 0 0 0 1px hsl(var(--warning) / 0.35);
+  --shadow-glow-primary: 0 0 0 1px hsl(var(--primary) / 0.25);
+  --shadow-glow-success: 0 0 0 1px hsl(var(--success) / 0.25);
+  --shadow-glow-success-sm: 0 0 0 1px hsl(var(--success) / 0.35);
+  --shadow-glow-info: 0 0 0 1px hsl(var(--info) / 0.25);
 
   /* Repeated layout sizes (Rule of Three) */
   --spacing-sidebar: 16.25rem;
@@ -316,10 +314,12 @@
 /* Tenant branding tokens — HSL components injected by applyBrandingTheme() */
 :root {
   color-scheme: light;
-  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
+  --font-sans:
+    "Plus Jakarta Sans", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Noto Sans Arabic", sans-serif;
   /* Latin display default. Amiri is only fetched for ar/ur (see lib/localeFonts.ts),
      so naming it here made English/Persian fall back to a generic serif. */
-  --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
 
   /*
    * WCAG AA CONTRAST CONTRACT — do not lighten these without re-checking.
@@ -422,11 +422,11 @@
   --muted-foreground: 40 15% 60%;
   --accent: 32 8% 16%;
   --accent-foreground: 40 25% 92%;
-  --destructive: 0 72% 66%;
+  --destructive: 0 72% 71%;
   --destructive-foreground: 0 72% 12%;
   --success: 158 65% 42%;
   --success-foreground: 158 65% 12%;
-  --warning: 32 80% 46%;
+  --warning: 32 80% 52%;
   --warning-foreground: 32 80% 12%;
   --info: 217 85% 66%;
   --info-foreground: 217 85% 12%;
@@ -489,7 +489,12 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     text-wrap: balance;
   }
 
@@ -511,7 +516,6 @@
     word-break: normal;
   }
 
-
   :lang(ur),
   [lang="ur"] {
     /* Nastaliq stacks letterforms vertically and has deep descenders; the
@@ -530,7 +534,7 @@
      locales that actually load it instead of applying a serif globally. */
   [lang="ar"],
   [lang="ur"] {
-    --font-display: 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif;
+    --font-display: "Amiri", "Scheherazade New", "Traditional Arabic", serif;
   }
 
   ::selection {
@@ -552,7 +556,9 @@
 
   @media (prefers-reduced-motion: no-preference) {
     body {
-      transition: background-color 0.2s ease, color 0.15s ease;
+      transition:
+        background-color 0.2s ease,
+        color 0.15s ease;
     }
   }
 
@@ -589,7 +595,7 @@
 @utility surface-raised {
   background-color: hsl(var(--surface-raised));
   border-width: 1px;
-  border-color: hsl(var(--foreground) / 0.10);
+  border-color: hsl(var(--foreground) / 0.1);
   box-shadow: 0 1px 2px 0 hsl(var(--foreground) / 0.04);
 }
 
@@ -695,12 +701,16 @@
 
 @utility row-debit {
   background-color: var(--color-surface-debit-row);
-  &:hover { background-color: var(--color-surface-debit-row); }
+  &:hover {
+    background-color: var(--color-surface-debit-row);
+  }
 }
 
 @utility row-credit {
   background-color: var(--color-surface-credit-row);
-  &:hover { background-color: var(--color-surface-credit-row); }
+  &:hover {
+    background-color: var(--color-surface-credit-row);
+  }
 }
 
 ::-webkit-scrollbar {
@@ -721,15 +731,13 @@
 }
 
 .islamic-pattern {
-  background-image:
-    radial-gradient(hsl(var(--foreground) / 0.02) 1px, transparent 1px);
+  background-image: radial-gradient(hsl(var(--foreground) / 0.02) 1px, transparent 1px);
   background-size: 32px 32px;
   background-position: 0 0;
 }
 
 .dark .islamic-pattern {
-  background-image:
-    radial-gradient(hsl(var(--foreground) / 0.03) 1px, transparent 1px);
+  background-image: radial-gradient(hsl(var(--foreground) / 0.03) 1px, transparent 1px);
 }
 
 /*
@@ -826,8 +834,16 @@
  * Default  : 3.25rem rows — baseline comfortable reading.
  * Relaxed  : 4rem rows    — high-legibility / accessibility mode.
  */
-[data-density="compact"] tr { --row-h: 2.75rem; }
-[data-density="default"] tr { --row-h: 3.25rem; }
-[data-density="relaxed"] tr { --row-h: 4rem; }
+[data-density="compact"] tr {
+  --row-h: 2.75rem;
+}
+[data-density="default"] tr {
+  --row-h: 3.25rem;
+}
+[data-density="relaxed"] tr {
+  --row-h: 4rem;
+}
 [data-density] tr td,
-[data-density] tr th { block-size: var(--row-h, 3.25rem); }
+[data-density] tr th {
+  block-size: var(--row-h, 3.25rem);
+}

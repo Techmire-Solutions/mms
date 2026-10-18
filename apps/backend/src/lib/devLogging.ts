@@ -17,15 +17,15 @@
  * into durable, widely-readable logs. Unrecognised or missing values fail
  * closed.
  */
-export const DEV_CREDENTIAL_LOGGING_ENV_VAR = 'MMS_LOG_DEV_CREDENTIALS';
+export const DEV_CREDENTIAL_LOGGING_ENV_VAR = "MMS_LOG_DEV_CREDENTIALS";
 
 /** Environments where a developer is expected to be reading the logs directly. */
-const LOCAL_ENVIRONMENTS = new Set(['development', 'test']);
+const LOCAL_ENVIRONMENTS = new Set(["development", "test"]);
 
 export function isDevCredentialLoggingEnabled(): boolean {
   const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
   if (!nodeEnv || !LOCAL_ENVIRONMENTS.has(nodeEnv)) return false;
-  return process.env[DEV_CREDENTIAL_LOGGING_ENV_VAR] === 'true';
+  return process.env[DEV_CREDENTIAL_LOGGING_ENV_VAR] === "true";
 }
 
 /**
@@ -37,9 +37,9 @@ export function isDevCredentialLoggingEnabled(): boolean {
  * component.
  */
 export function maskEmail(email: string | undefined | null): string {
-  if (!email) return '';
-  const at = email.indexOf('@');
-  if (at <= 0) return '***';
+  if (!email) return "";
+  const at = email.indexOf("@");
+  if (at <= 0) return "***";
   const local = email.slice(0, at);
   const domain = email.slice(at);
   const head = local.slice(0, 1);

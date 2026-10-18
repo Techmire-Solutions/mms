@@ -78,20 +78,12 @@ describe("ContactEditModal", () => {
 
   it("renders empty string when open is false or contact is missing", () => {
     const html1 = renderToStaticMarkup(
-      <ContactEditModal
-        open={false}
-        contact={testContact}
-        onClose={vi.fn()}
-      />
+      <ContactEditModal open={false} contact={testContact} onClose={vi.fn()} />,
     );
     expect(html1).toBe("");
 
     const html2 = renderToStaticMarkup(
-      <ContactEditModal
-        open={true}
-        contact={null}
-        onClose={vi.fn()}
-      />
+      <ContactEditModal open={true} contact={null} onClose={vi.fn()} />,
     );
     expect(html2).toBe("");
   });
@@ -100,22 +92,14 @@ describe("ContactEditModal", () => {
     mockCanWrite = false;
     const onClose = vi.fn();
     const html = renderToStaticMarkup(
-      <ContactEditModal
-        open={true}
-        contact={testContact}
-        onClose={onClose}
-      />
+      <ContactEditModal open={true} contact={testContact} onClose={onClose} />,
     );
     expect(html).toBe("");
   });
 
   it("renders ContactForm when open and contact provided", () => {
     const html = renderToStaticMarkup(
-      <ContactEditModal
-        open={true}
-        contact={testContact}
-        onClose={vi.fn()}
-      />
+      <ContactEditModal open={true} contact={testContact} onClose={vi.fn()} />,
     );
     expect(html).toContain("common.loading");
   });

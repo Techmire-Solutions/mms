@@ -2,19 +2,16 @@ import React from "react";
 import { BookOpen, School, Users, DoorOpen } from "lucide-react";
 import { sessionTypeI18nKey, type AppTranslationKey } from "@mms/shared";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { DetailSectionTitle } from "@/components/ui/DetailSectionTitle";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ErrorState } from "@/components/app/ErrorState";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailSectionTitle } from "@/components/app/DetailSectionTitle";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { FacultyAssignedClassItem } from "@/lib/faculty/facultyAssignment";
 
-function sessionStatusLabel(
-  status: string,
-  t: (key: AppTranslationKey) => string,
-): string {
+function sessionStatusLabel(status: string, t: (key: AppTranslationKey) => string): string {
   const key = `sessions.status.${status}` as AppTranslationKey;
   const translated = t(key);
   return translated === key ? status : translated;
@@ -76,7 +73,7 @@ export function FacultyDetailSessionsSection({
       <div className="space-y-2.5">
         {assignedClasses.map((item) => {
           const typeKey = item.sessionType ? sessionTypeI18nKey(item.sessionType) : null;
-          const typeLabel = typeKey ? t(typeKey) : (item.sessionType || "");
+          const typeLabel = typeKey ? t(typeKey) : item.sessionType || "";
 
           return (
             <Card
@@ -87,12 +84,15 @@ export function FacultyDetailSessionsSection({
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <BookOpen className="w-4 h-4 text-primary shrink-0" aria-hidden />
-                  <h5 className="text-sm font-bold text-foreground truncate">
-                    {item.className}
-                  </h5>
+                  <h5 className="text-sm font-bold text-foreground truncate">{item.className}</h5>
                 </div>
                 {typeLabel ? (
-                  <Badge as="span" size="sm" tone="primary" className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider shrink-0">
+                  <Badge
+                    as="span"
+                    size="sm"
+                    tone="primary"
+                    className="px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider shrink-0"
+                  >
                     {typeLabel}
                   </Badge>
                 ) : null}

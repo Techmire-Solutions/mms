@@ -3,18 +3,18 @@ import {
   normalizeFinanceModulePreferences,
   normalizeFinanceSettings,
   type FinanceModulePreferences,
-  type FinanceSettings
-} from '@mms/shared';
-import { createModuleSetupConfigHooks } from '@/lib/query/createModuleSetupConfigHooks';
+  type FinanceSettings,
+} from "@mms/shared";
+import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchFinancePreferences,
   saveFinancePreferencesAsync,
   setFinancePreferencesMemory,
-} from '@/tenant/features/finance/hooks/financeSetupConfigApi';
+} from "@/tenant/features/finance/hooks/financeSetupConfigApi";
 
 export const FINANCE_PREFERENCES_QUERY_KEY = [
   FINANCE_MODULE_MANIFEST.collectionKey,
-  'preferences',
+  "preferences",
 ] as const;
 
 const setupConfigHooks = createModuleSetupConfigHooks<FinanceModulePreferences>({
@@ -28,7 +28,7 @@ const setupConfigHooks = createModuleSetupConfigHooks<FinanceModulePreferences>(
 export const useFinancePreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useFinancePreferencesMutation = setupConfigHooks.usePreferencesMutation;
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 /** Composed FinanceSettings from preferences queries. */
 export function useComposedFinanceSettings(): FinanceSettings {

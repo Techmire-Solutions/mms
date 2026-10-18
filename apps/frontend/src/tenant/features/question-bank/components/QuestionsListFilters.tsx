@@ -1,15 +1,15 @@
-import type { Dispatch, JSX, SetStateAction } from 'react';
-import { type ModuleColumnCustomizerProps } from '@/components/ui/ModuleColumnCustomizer';
-import { FilterChips } from '@/components/ui/FilterChips';
-import { WorkTaskToolbar } from '@/components/common/work';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useTranslation } from '@/hooks/useTranslation';
-import { QuestionBankFiltersMenuButton } from '@/tenant/features/question-bank/components/QuestionBankFiltersMenuButton';
-import type { useQuestionBankConfig } from '@/tenant/features/question-bank/hooks/useQuestionBankConfig';
+import type { Dispatch, JSX, SetStateAction } from "react";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
+import { FilterChips } from "@/components/app/FilterChips";
+import { WorkTaskToolbar } from "@/components/common/work";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useTranslation } from "@/hooks/useTranslation";
+import { QuestionBankFiltersMenuButton } from "@/tenant/features/question-bank/components/QuestionBankFiltersMenuButton";
+import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 
 type QuestionBankConfig = ReturnType<typeof useQuestionBankConfig>;
 
-export const QUESTION_BANK_WORK_SEARCH_INPUT_ID = 'question-bank-work-search';
+export const QUESTION_BANK_WORK_SEARCH_INPUT_ID = "question-bank-work-search";
 
 interface QuestionsListFiltersProps {
   viewMode: WorkDirectoryViewMode;
@@ -37,8 +37,8 @@ export function QuestionsListFilters({
   search,
   filterCats,
   filterDiff,
-  hideToolbarAdd,
-  canWrite,
+  hideToolbarAdd: _hideToolbarAdd,
+  canWrite: _canWrite,
   canDelete = false,
   showDeleted,
   onToggleDeleted,
@@ -46,7 +46,7 @@ export function QuestionsListFilters({
   onSearchChange,
   onFilterCatsChange,
   onFilterDiffChange,
-  onAddQuestion,
+  onAddQuestion: _onAddQuestion,
 }: QuestionsListFiltersProps): JSX.Element {
   const { t } = useTranslation();
 
@@ -85,14 +85,14 @@ export function QuestionsListFilters({
 
   return (
     <WorkTaskToolbar
-      regionLabel={t('page.questionBank.title')}
+      regionLabel={t("page.questionBank.title")}
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('questionBank.searchPlaceholder')}
+      searchPlaceholder={t("questionBank.searchPlaceholder")}
       searchId={QUESTION_BANK_WORK_SEARCH_INPUT_ID}
       hasActiveFilters={activeFilterCount > 0}
       onClearFilters={clearFilters}
-      clearFiltersLabel={t('questionBank.clearFilters')}
+      clearFiltersLabel={t("questionBank.clearFilters")}
       filterButton={
         <QuestionBankFiltersMenuButton
           config={config}
@@ -114,8 +114,8 @@ export function QuestionsListFilters({
               canViewDeleted: canDelete,
               viewingDeleted: showDeleted,
               onToggle: onToggleDeleted,
-              activeLabel: t('questionBank.trash.showActive'),
-              deletedLabel: t('questionBank.trash.showDeleted'),
+              activeLabel: t("questionBank.trash.showActive"),
+              deletedLabel: t("questionBank.trash.showDeleted"),
             }
           : undefined
       }
@@ -123,12 +123,16 @@ export function QuestionsListFilters({
         viewMode,
         onViewModeChange,
       }}
-      columnCustomizer={columnCustomizer ? {
-        registry: columnCustomizer.columnRegistry,
-        onUpdate: columnCustomizer.updateUserColumnLayout,
-        onReset: columnCustomizer.onResetLayout,
-        labels: columnCustomizer.labels,
-      } : undefined}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
     />
   );
 }

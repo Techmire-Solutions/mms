@@ -1,29 +1,29 @@
-import { describe, it, expect, vi } from 'vitest';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
-import { PlatformAiDrawer } from './PlatformAiDrawer';
+import { describe, it, expect, vi } from "vitest";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { MemoryRouter } from "react-router-dom";
+import { PlatformAiDrawer } from "./PlatformAiDrawer";
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
-        'platform.aiCopilotTitle': 'Platform Copilot',
-        'platform.aiCopilotSubtitle': 'Contextual AI Diagnostics & Assistant',
-        'platform.aiAskPlaceholder': 'Ask Copilot...',
-        'platform.aiAnalyzing': 'Analyzing...',
-        'common.delete': 'Delete',
-        'common.close': 'Close',
-        'common.send': 'Send',
+        "platform.aiCopilotTitle": "Platform Copilot",
+        "platform.aiCopilotSubtitle": "Contextual AI Diagnostics & Assistant",
+        "platform.aiAskPlaceholder": "Ask Copilot...",
+        "platform.aiAnalyzing": "Analyzing...",
+        "common.delete": "Delete",
+        "common.close": "Close",
+        "common.send": "Send",
       };
       return map[key] ?? key;
     },
   }),
 }));
 
-describe('PlatformAiDrawer', () => {
-  it('returns null when isOpen is false', () => {
-    const container = document.createElement('div');
+describe("PlatformAiDrawer", () => {
+  it("returns null when isOpen is false", () => {
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -35,15 +35,15 @@ describe('PlatformAiDrawer', () => {
       );
     });
 
-    expect(container.innerHTML).toBe('');
+    expect(container.innerHTML).toBe("");
 
     act(() => root.unmount());
     container.remove();
   });
 
-  it('renders modal dialog and responds to close button and escape key', () => {
+  it("renders modal dialog and responds to close button and escape key", () => {
     const onClose = vi.fn();
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
@@ -57,8 +57,8 @@ describe('PlatformAiDrawer', () => {
 
     const dialog = container.querySelector('[role="dialog"]');
     expect(dialog).not.toBeNull();
-    expect(dialog?.getAttribute('aria-modal')).toBe('true');
-    expect(container.textContent).toContain('Platform Copilot');
+    expect(dialog?.getAttribute("aria-modal")).toBe("true");
+    expect(container.textContent).toContain("Platform Copilot");
 
     // Click close button
     const closeBtn = container.querySelector('button[aria-label="Close"]');
@@ -70,7 +70,7 @@ describe('PlatformAiDrawer', () => {
 
     // Press Escape key
     act(() => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     });
     expect(onClose).toHaveBeenCalledTimes(2);
 

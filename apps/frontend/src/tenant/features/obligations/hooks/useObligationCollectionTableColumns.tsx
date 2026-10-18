@@ -1,6 +1,6 @@
 import React from "react";
 import { formatDate } from "@mms/shared";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import type { WorkBatchTableColumn } from "@/components/common/work";
 import type { ObligationCollection } from "@/lib/data/obligationsData";
@@ -9,7 +9,7 @@ import {
   getObligationCollectionResolvedFields,
   OBLIGATION_COLLECTION_CURRENCIES,
   type ObligationCollectionListContentProps,
-} from "@/tenant/features/obligations/components/obligationCollectionListContentShared";
+} from "@/tenant/features/obligations/lib/obligationCollectionListContentShared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface UseObligationCollectionTableColumnsOptions {
@@ -104,7 +104,9 @@ export function useObligationCollectionTableColumns(
           return (
             <>
               <span>{rep?.name || "—"}</span>
-              {mujtahid && <span className="text-xs block text-muted-foreground">{mujtahid.name}</span>}
+              {mujtahid && (
+                <span className="text-xs block text-muted-foreground">{mujtahid.name}</span>
+              )}
             </>
           );
         },
@@ -149,9 +151,11 @@ export function useObligationCollectionTableColumns(
         noWrap: true,
         cellClassName: "text-xs text-muted-foreground",
         render: (collection) =>
-          OBLIGATION_COLLECTION_CURRENCIES.find((currency) => currency.id === collection.currency_id)?.code
-          || collection.currency_id
-          || "—",
+          OBLIGATION_COLLECTION_CURRENCIES.find(
+            (currency) => currency.id === collection.currency_id,
+          )?.code ||
+          collection.currency_id ||
+          "—",
       });
     }
 

@@ -1,9 +1,5 @@
-import {
-  getDenominationPoints,
-  matchesWidgetFilter,
-  type Denomination,
-} from '@mms/shared';
-import type { CustomCard } from './reportCollectionTypes.js';
+import { getDenominationPoints, matchesWidgetFilter, type Denomination } from "@mms/shared";
+import type { CustomCard } from "./reportCollectionTypes";
 
 /** Compares the current 30-day window to the preceding 30 days for a custom card trend. */
 export function calculateCustomCardDynamicTrend(
@@ -13,17 +9,17 @@ export function calculateCustomCardDynamicTrend(
   denoms?: Denomination[],
 ): number {
   const dateField = {
-    students: 'registeredDate',
-    faculty: 'joinDate',
-    sessions: 'startDate',
-    enrollments: 'enrolledDate',
-    finance_invoices: 'dueDate',
-    attendance_records: 'date',
-    hasanat_distributions: 'issuedDate',
-    contacts: 'createdAt',
-    questions: '',
-    tests: 'createdAt',
-    assessment_results: 'submittedAt',
+    students: "registeredDate",
+    faculty: "joinDate",
+    sessions: "startDate",
+    enrollments: "enrolledDate",
+    finance_invoices: "dueDate",
+    attendance_records: "date",
+    hasanat_distributions: "issuedDate",
+    contacts: "createdAt",
+    questions: "",
+    tests: "createdAt",
+    assessment_results: "submittedAt",
   }[collectionName];
 
   if (!dateField || collectionRows.length === 0) return 0;
@@ -43,29 +39,29 @@ export function calculateCustomCardDynamicTrend(
 
   const thirtyDays = 30 * 24 * 60 * 60 * 1000;
   const pivotTime = maxTime - thirtyDays;
-  const startTime = maxTime - (2 * thirtyDays);
+  const startTime = maxTime - 2 * thirtyDays;
 
   const computePeriodValue = (periodRows: Record<string, unknown>[]) => {
     const filteredRows = periodRows.filter((periodRow) =>
       matchesWidgetFilter(periodRow, card.filterField, card.filterOperator, card.filterValue),
     );
 
-    if (card.operation === 'count') {
+    if (card.operation === "count") {
       return filteredRows.length;
     }
 
-    if (card.operation === 'percentage') {
+    if (card.operation === "percentage") {
       return periodRows.length > 0 ? (filteredRows.length / periodRows.length) * 100 : 0;
     }
 
-    const targetMetricField = card.targetField || '';
+    const targetMetricField = card.targetField || "";
     let sum = 0;
     let count = 0;
     filteredRows.forEach((filteredRow) => {
-      if (card.collection === 'hasanat_distributions' && targetMetricField === 'points') {
+      if (card.collection === "hasanat_distributions" && targetMetricField === "points") {
         const points = getDenominationPoints(
-          typeof filteredRow.denominationId === 'string' ? filteredRow.denominationId : null,
-          typeof filteredRow.denominationName === 'string' ? filteredRow.denominationName : null,
+          typeof filteredRow.denominationId === "string" ? filteredRow.denominationId : null,
+          typeof filteredRow.denominationName === "string" ? filteredRow.denominationName : null,
           denoms,
         );
         sum += Number(filteredRow.quantity || 1) * points;
@@ -79,7 +75,7 @@ export function calculateCustomCardDynamicTrend(
       }
     });
 
-    return card.operation === 'sum' ? sum : (count > 0 ? sum / count : 0);
+    return card.operation === "sum" ? sum : count > 0 ? sum / count : 0;
   };
 
   const currentItems: Record<string, unknown>[] = [];

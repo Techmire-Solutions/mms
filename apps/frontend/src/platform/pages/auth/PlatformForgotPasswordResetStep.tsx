@@ -8,8 +8,7 @@ import {
   AuthStatusBanner,
   AuthSubmitButton,
 } from "@/components/entry";
-import { OtpInput, isOtpComplete } from "@/components/ui/OtpInput";
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
+import { OtpInput, isOtpComplete, PasswordStrengthMeter } from "@shared/ui";
 import { ROUTES } from "@/lib/config/routes";
 import type { PlatformForgotPasswordController } from "@/platform/pages/auth/usePlatformForgotPasswordController";
 
@@ -17,7 +16,9 @@ interface PlatformForgotPasswordResetStepProps {
   controller: PlatformForgotPasswordController;
 }
 
-export function PlatformForgotPasswordResetStep({ controller }: PlatformForgotPasswordResetStepProps): React.JSX.Element {
+export function PlatformForgotPasswordResetStep({
+  controller,
+}: PlatformForgotPasswordResetStepProps): React.JSX.Element {
   const {
     t,
     newPasswordId,
@@ -38,8 +39,16 @@ export function PlatformForgotPasswordResetStep({ controller }: PlatformForgotPa
   } = controller;
 
   return (
-    <PlatformAuthLayout title={t("platform.forgotResetTitle")} subtitle={t("platform.forgotResetSubtitle")}>
-      <form onSubmit={(event) => void handleReset(event)} className="space-y-4 text-start" noValidate aria-busy={loading}>
+    <PlatformAuthLayout
+      title={t("platform.forgotResetTitle")}
+      subtitle={t("platform.forgotResetSubtitle")}
+    >
+      <form
+        onSubmit={(event) => void handleReset(event)}
+        className="space-y-4 text-start"
+        noValidate
+        aria-busy={loading}
+      >
         <fieldset disabled={loading} className="m-0 min-w-0 space-y-4 border-0 p-0">
           {devHint ? <AuthStatusBanner variant="warning" message={devHint} /> : null}
 

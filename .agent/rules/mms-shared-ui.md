@@ -1,0 +1,74 @@
+---
+trigger: model_decision
+description: Shared UI component architecture governance — @shared/ui SSOT, cross-console duplicate ban, pre-deletion verification gates, and orphaned import detection
+---
+
+# MMS Shared UI Component Architecture Governance
+
+**Norms SSOT (do not restate — link only):**
+- Duplicate ban + extraction → `mms-dry.md` §1 (Cross-Console Component Duplication Banned) · §4 (Pre-Deletion Checks)
+- Primitive SSOT enforcement → `mms-ui-ux-design.md` §1 (Central Primitives Enforcement)
+- Monorepo topology → `mms-structure-naming.md` §1 (Frontend Colocation)
+- Post-edit verification → `mms-completion-review.md` §1.3 (Shared UI & Pre-Deletion Verification)
+
+**Workflow skill:** `mms-shared-ui` — invoke for authoring, auditing, migration, and cleanup.
+**Audit workflow:** `/shared-ui-audit` — run to prove zero violations before merge.
+
+## 1. Package Topology (Single Source of Truth)
+
+```
+packages/ui/src/          ← @shared/ui (SSOT for ALL reusable UI primitives)
+apps/frontend/src/components/ui/  ← typed re-exports only, zero local JSX
+apps/frontend/src/platform/       ← imports directly from @shared/ui
+apps/frontend/src/tenant/         ← imports from @shared/ui or @/components/ui/*
+```
+
+**Enforcement:** `pnpm run check:shared-ui` · `pnpm run check:frontend-structure`
+
+## 2. Invariants (Machine-Enforced)
+
+| Rule | Enforcer |
+|---|---|
+| Zero duplicate UI primitive files in `platform/` or `tenant/` | `pnpm run check:shared-ui` (CI + pre-PR gate) |
+| Platform Console: import directly from `@shared/ui`, never `@/components/ui/*` | `pnpm run check:shared-ui` |
+| Zero cross-console imports (`tenant/` ↔ `platform/`) | `pnpm run check:shared-ui` |
+| UI facades in `components/ui/` re-export only — zero local JSX implementations | `pnpm run check:shared-ui` · `platformUiArchitecture.test.ts` |
+| Zero orphaned imports referencing deleted/non-existent UI files | `pnpm run check:shared-ui` |
+
+## 3. Cross-Console Variation Policy
+
+Never fork a component for console-specific visual differences. Use:
+1. **Props** (`variant`, `tone`, `size`, `interactive`, `accentColor`)
+2. **Composition** — console-specific shells that compose `@shared/ui` primitives
+3. **CSS Tokens** — `packages/ui/src/theme/formStyles.ts` semantic variables
+
+## 4. Strict Pre-Deletion Protocol (mandatory gates)
+
+When deleting or migrating any legacy UI file:
+
+```bash
+# Step 1 — Pre-deletion baseline (must be green before touching files)
+pnpm typecheck
+pnpm --filter mms-frontend lint
+pnpm --filter mms-frontend build
+
+# Step 2 — Delete file(s), update call sites to @shared/ui
+
+# Step 3 — Post-deletion verification (must be zero violations)
+pnpm typecheck
+pnpm --filter mms-frontend lint
+pnpm --filter mms-frontend build
+pnpm run check:shared-ui
+```
+
+Skipping either gate is banned — regressions have occurred from bypassing them.
+
+## 5. Orphaned Import Detection
+
+Run `pnpm run check:shared-ui` to detect:
+- Imports of `@/components/ui/<name>` where the file no longer exists on disk
+- Platform Console files importing from `@/components/ui/*` instead of `@shared/ui`
+- Any `@/tenant/*` ↔ `@/platform/*` cross-console leakage
+
+For a full JSON report: `node scripts/check-shared-ui.mjs --json`
+

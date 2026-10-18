@@ -1,5 +1,5 @@
-import type { ActivityLog, UsersListQuery, UsersCommandMetricsSnapshot } from '@mms/shared';
-import type { TenantUserRow } from '../../db/repositories/tenantUserRepository.js';
+import type { ActivityLog, UsersListQuery, UsersCommandMetricsSnapshot } from "@mms/shared";
+import type { TenantUserRow } from "../../db/repositories/tenantUserRepository.js";
 
 /**
  * Sole storage gateway for the users module (tenant users + activity logs).
@@ -15,7 +15,13 @@ export interface UsersRepository {
   listTenantUsersPage(
     tenant: string,
     query: UsersListQuery & { includeDeleted?: boolean },
-  ): Promise<{ rows: TenantUserRow[]; total: number; page: number; limit: number; hasMore: boolean }>;
+  ): Promise<{
+    rows: TenantUserRow[];
+    total: number;
+    page: number;
+    limit: number;
+    hasMore: boolean;
+  }>;
   countTenantUsersActive(tenant: string): Promise<number>;
   aggregateUsersCommandMetrics(
     tenant: string,
@@ -31,11 +37,7 @@ export interface UsersRepository {
   softDeleteTenantUserRow(tenant: string, id: string, deletedBy: string): Promise<boolean>;
   restoreTenantUserRow(tenant: string, id: string): Promise<boolean>;
   verifyTenantUserEmailRow(tenant: string, id: string): Promise<boolean>;
-  resetTenantUserPasswordRow(
-    tenant: string,
-    id: string,
-    passwordHash: string,
-  ): Promise<boolean>;
+  resetTenantUserPasswordRow(tenant: string, id: string, passwordHash: string): Promise<boolean>;
 
   // Activity logs
   listActivityLogsByWorkspace(tenant: string): Promise<ActivityLog[]>;

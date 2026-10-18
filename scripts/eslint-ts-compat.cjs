@@ -13,24 +13,24 @@
 // EXIT PATHS: if typescript-v6 is missing we hard-fail instead of falling
 // back to TS 7 — a silent fallback would make rule behavior differ per
 // machine (older findings from the repo review: "silently degrades").
-const Module = require('module');
+const Module = require("module");
 
 let ts6;
 try {
-  ts6 = require('typescript-v6');
+  ts6 = require("typescript-v6");
 } catch (err) {
   console.error(
-    '[eslint-ts-compat] FATAL: typescript-v6 not found. This workspace lints ' +
-      'with TypeScript 6 (typescript-eslint cannot parse TS 7 yet). Run ' +
-      '`pnpm install` a second time so the root devDependency aliases ' +
-      '(typescript-v6 -> npm:typescript@6) resolve, then retry lint.'
+    "[eslint-ts-compat] FATAL: typescript-v6 not found. This workspace lints " +
+      "with TypeScript 6 (typescript-eslint cannot parse TS 7 yet). Run " +
+      "`pnpm install` a second time so the root devDependency aliases " +
+      "(typescript-v6 -> npm:typescript@6) resolve, then retry lint.",
   );
   process.exit(1);
 }
 
 const origRequire = Module.prototype.require;
 Module.prototype.require = function (id) {
-  if (id === 'typescript') {
+  if (id === "typescript") {
     return ts6;
   }
   return origRequire.apply(this, arguments);

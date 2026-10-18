@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AcademicCalendarEvent, AcademicCalendarEventWrite } from '@mms/shared';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { isApiError } from '@/lib/apiError';
-import { notify } from '@/lib/notify';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { AcademicCalendarEvent, AcademicCalendarEventWrite } from "@mms/shared";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { isApiError } from "@/lib/apiError";
+import { notify } from "@/lib/notify";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   academicCalendarQueryOptions,
   deleteAcademicCalendarEventMutationOptions,
@@ -11,8 +11,8 @@ import {
   restoreAcademicCalendarEventMutationOptions,
   saveAcademicCalendarEventMutationOptions,
   type AcademicCalendarRangeQuery,
-} from '@/lib/query/academicCalendarQueries';
-import { invalidateAttendanceQueries } from './invalidateAttendanceQueries';
+} from "@/lib/query/academicCalendarQueries";
+import { invalidateAttendanceQueries } from "./invalidateAttendanceQueries";
 
 /** Calendar events overlapping a date range. */
 export function useAcademicCalendarEvents(range: AcademicCalendarRangeQuery, enabled = true) {
@@ -21,7 +21,9 @@ export function useAcademicCalendarEvents(range: AcademicCalendarRangeQuery, ena
 }
 
 function errorDetail(error: unknown): string | undefined {
-  return isApiError(error) && (error.status === 400 || error.status === 409) ? error.message : undefined;
+  return isApiError(error) && (error.status === 400 || error.status === 409)
+    ? error.message
+    : undefined;
 }
 
 /** Save / delete / restore with call-site toasts; each resolves to null/false on failure. */
@@ -34,16 +36,25 @@ export function useAcademicCalendarActions() {
     invalidateAttendanceQueries(queryClient);
   };
   const saveMutation = useMutation({ ...saveAcademicCalendarEventMutationOptions(), onSettled });
-  const deleteMutation = useMutation({ ...deleteAcademicCalendarEventMutationOptions(), onSettled });
-  const restoreMutation = useMutation({ ...restoreAcademicCalendarEventMutationOptions(), onSettled });
+  const deleteMutation = useMutation({
+    ...deleteAcademicCalendarEventMutationOptions(),
+    onSettled,
+  });
+  const restoreMutation = useMutation({
+    ...restoreAcademicCalendarEventMutationOptions(),
+    onSettled,
+  });
 
-  const save = async (id: string | undefined, body: AcademicCalendarEventWrite): Promise<AcademicCalendarEvent | null> => {
+  const save = async (
+    id: string | undefined,
+    body: AcademicCalendarEventWrite,
+  ): Promise<AcademicCalendarEvent | null> => {
     try {
       const saved = await saveMutation.mutateAsync({ id: id ?? crypto.randomUUID(), body });
-      notify.success(t('attendance.calendar.saved'));
+      notify.success(t("attendance.calendar.saved"));
       return saved;
     } catch (error) {
-      notify.error(t('attendance.calendar.saveFailed'), { description: errorDetail(error) });
+      notify.error(t("attendance.calendar.saveFailed"), { description: errorDetail(error) });
       return null;
     }
   };
@@ -51,10 +62,10 @@ export function useAcademicCalendarActions() {
   const remove = async (target: AcademicCalendarEvent): Promise<boolean> => {
     try {
       await deleteMutation.mutateAsync(target.id);
-      notify.info(t('attendance.calendar.deleted'));
+      notify.info(t("attendance.calendar.deleted"));
       return true;
     } catch (error) {
-      notify.error(t('attendance.calendar.deleteFailed'), { description: errorDetail(error) });
+      notify.error(t("attendance.calendar.deleteFailed"), { description: errorDetail(error) });
       return false;
     }
   };
@@ -62,10 +73,10 @@ export function useAcademicCalendarActions() {
   const restore = async (target: AcademicCalendarEvent): Promise<boolean> => {
     try {
       await restoreMutation.mutateAsync(target.id);
-      notify.success(t('attendance.calendar.restored'));
+      notify.success(t("attendance.calendar.restored"));
       return true;
     } catch (error) {
-      notify.error(t('attendance.calendar.restoreFailed'), { description: errorDetail(error) });
+      notify.error(t("attendance.calendar.restoreFailed"), { description: errorDetail(error) });
       return false;
     }
   };

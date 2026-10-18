@@ -1,8 +1,8 @@
-import React from 'react';
-import { type TaskPriority, type TaskStatus, type AppTranslationKey } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { SEMANTIC_BADGE } from '@/lib/semanticTone';
+import React from "react";
+import { type TaskPriority, type TaskStatus, type AppTranslationKey } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 const PRIORITY_CLS: Record<TaskPriority, string> = {
   low: SEMANTIC_BADGE.muted,
@@ -23,22 +23,34 @@ const STATUS_CLS: Record<TaskStatus, string> = {
 function useTaskPriorityConfig(): Record<string, StatusBadgeConfigItem> {
   const { t } = useTranslation();
   return {
-    low: { label: t('tasks.priority.low' as AppTranslationKey), cls: PRIORITY_CLS.low },
-    medium: { label: t('tasks.priority.medium' as AppTranslationKey), cls: PRIORITY_CLS.medium },
-    high: { label: t('tasks.priority.high' as AppTranslationKey), cls: PRIORITY_CLS.high },
-    urgent: { label: t('tasks.priority.urgent' as AppTranslationKey), cls: PRIORITY_CLS.urgent },
+    low: { label: t("tasks.priority.low" as AppTranslationKey), cls: PRIORITY_CLS.low },
+    medium: { label: t("tasks.priority.medium" as AppTranslationKey), cls: PRIORITY_CLS.medium },
+    high: { label: t("tasks.priority.high" as AppTranslationKey), cls: PRIORITY_CLS.high },
+    urgent: { label: t("tasks.priority.urgent" as AppTranslationKey), cls: PRIORITY_CLS.urgent },
   };
 }
 
 function useTaskStatusConfig(): Record<string, StatusBadgeConfigItem> {
   const { t } = useTranslation();
   return {
-    todo: { label: t('tasks.status.todo' as AppTranslationKey), cls: STATUS_CLS.todo },
-    in_progress: { label: t('tasks.status.in_progress' as AppTranslationKey), cls: STATUS_CLS.in_progress },
-    in_review: { label: t('tasks.status.in_review' as AppTranslationKey), cls: STATUS_CLS.in_review },
-    blocked: { label: t('tasks.status.blocked' as AppTranslationKey), cls: STATUS_CLS.blocked },
-    completed: { label: t('tasks.status.completed' as AppTranslationKey), cls: STATUS_CLS.completed },
-    cancelled: { label: t('tasks.status.cancelled' as AppTranslationKey), cls: STATUS_CLS.cancelled },
+    todo: { label: t("tasks.status.todo" as AppTranslationKey), cls: STATUS_CLS.todo },
+    in_progress: {
+      label: t("tasks.status.in_progress" as AppTranslationKey),
+      cls: STATUS_CLS.in_progress,
+    },
+    in_review: {
+      label: t("tasks.status.in_review" as AppTranslationKey),
+      cls: STATUS_CLS.in_review,
+    },
+    blocked: { label: t("tasks.status.blocked" as AppTranslationKey), cls: STATUS_CLS.blocked },
+    completed: {
+      label: t("tasks.status.completed" as AppTranslationKey),
+      cls: STATUS_CLS.completed,
+    },
+    cancelled: {
+      label: t("tasks.status.cancelled" as AppTranslationKey),
+      cls: STATUS_CLS.cancelled,
+    },
   };
 }
 

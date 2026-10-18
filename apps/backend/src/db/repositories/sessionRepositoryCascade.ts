@@ -1,8 +1,8 @@
-import { and, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
-import { sessions, enrollments } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { sessions, enrollments } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
 
-import { syncEnrolledSessionsTx } from './enrollmentSessionSync.js';
+import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 export async function softDeleteSessionWithCascade(
   tenant: string,
   sessionId: string,
@@ -22,7 +22,7 @@ export async function softDeleteSessionWithCascade(
           isNull(sessions.deletedAt),
         ),
       )
-      .for('update');
+      .for("update");
 
     const sessionRes = await tx
       .update(sessions)
@@ -50,7 +50,9 @@ export async function softDeleteSessionWithCascade(
       .set({
         deletedAt: now,
         deletedBy: deletedBy || null,
-        deletionReason: deletionReason ? `Cascade: parent session deleted (${deletionReason})` : 'Cascade: parent session deleted',
+        deletionReason: deletionReason
+          ? `Cascade: parent session deleted (${deletionReason})`
+          : "Cascade: parent session deleted",
         deletedWithCascade: true,
         updatedAt: now,
       })
@@ -85,7 +87,7 @@ export async function restoreSessionWithCascade(
           isNotNull(sessions.deletedAt),
         ),
       )
-      .for('update');
+      .for("update");
 
     const sessionRes = await tx
       .update(sessions)
@@ -181,7 +183,9 @@ export async function bulkDeleteSessions(
         .set({
           deletedAt: now,
           deletedBy: deletedBy || null,
-          deletionReason: deletionReason ? `Cascade: parent session deleted (${deletionReason})` : 'Cascade: parent session deleted',
+          deletionReason: deletionReason
+            ? `Cascade: parent session deleted (${deletionReason})`
+            : "Cascade: parent session deleted",
           deletedWithCascade: true,
           updatedAt: now,
         })

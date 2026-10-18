@@ -19,7 +19,7 @@ import {
   UserCheck,
   UserCog,
   Users,
-} from 'lucide-react';
+} from "lucide-react";
 
 /** Lucide icons referenced by {@link SYSTEM_MODULES} `icon` string keys. */
 export const MODULE_ICONS: Record<string, LucideIcon> = {

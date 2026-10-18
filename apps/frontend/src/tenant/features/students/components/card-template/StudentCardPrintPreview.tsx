@@ -7,11 +7,15 @@ import React, { useMemo } from "react";
 import { formatBrandingAddress, formatDate, getPageDimensions, type Student } from "@mms/shared";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getPrintBrandingTokens } from "@/lib/printBrandingTokens";
-import { TemplateElementContent } from "@/components/ui/template-editor/templateElementContent";
-import { resolveElementGeometry } from "@/components/ui/template-editor/templateDataResolution";
-import { interpolateTemplateTokens } from "@/components/ui/template-editor/templateEditorUtils";
-import type { CardSide, StudentCardPayload, StudentCardTemplate } from "../../lib/studentCardTemplateTypes";
+import { getPrintBrandingTokens } from "@/lib/ui/printBrandingTokens";
+import { TemplateElementContent } from "@/components/template-editor/templateElementContent";
+import { resolveElementGeometry } from "@/components/template-editor/templateDataResolution";
+import { interpolateTemplateTokens } from "@/components/template-editor/templateEditorUtils";
+import type {
+  CardSide,
+  StudentCardPayload,
+  StudentCardTemplate,
+} from "../../lib/studentCardTemplateTypes";
 
 export interface StudentCardPrintPreviewProps {
   template: StudentCardTemplate;
@@ -44,9 +48,7 @@ export function StudentCardPrintPreview({
 
   const elementsToRender = useMemo(() => {
     if (side === "back") {
-      return template.backElements && template.backElements.length > 0
-        ? template.backElements
-        : [];
+      return template.backElements && template.backElements.length > 0 ? template.backElements : [];
     }
     return template.elements || [];
   }, [side, template.elements, template.backElements]);
@@ -136,7 +138,8 @@ export function StudentCardPrintPreview({
               border: elementStyle.borderWidth
                 ? `${elementStyle.borderWidth}px solid ${elementStyle.borderColor || printTokens.border}`
                 : "none",
-              borderRadius: elementStyle.borderRadius != null ? `${elementStyle.borderRadius}px` : undefined,
+              borderRadius:
+                elementStyle.borderRadius != null ? `${elementStyle.borderRadius}px` : undefined,
               overflow: "hidden",
             }}
           >

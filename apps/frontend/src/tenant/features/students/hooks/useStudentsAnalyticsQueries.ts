@@ -9,7 +9,7 @@ import {
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useMemo } from "react";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import {
   STUDENTS_QUERY_KEY,
   STUDENTS_WIDGET_AGGREGATES_QUERY_KEY,
@@ -29,16 +29,16 @@ export function useStudentNextGrNumber(params: StudentNextGrNumberParams) {
   const { isAuthenticated } = useAuth();
   const enabled = params.enabled ?? true;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.students.nextGrNumber.useQuery({
     queryKey: [...STUDENTS_QUERY_KEY, "next-gr-number", params] as const,
     queryData: {
       query: {
-        registeredDate: params.registeredDate ?? '',
+        registeredDate: params.registeredDate ?? "",
         template: params.template,
         digits: params.digits != null ? String(params.digits) : undefined,
-        restartAnnually: params.restartAnnually != null ? String(params.restartAnnually) : undefined,
-      }
+        restartAnnually:
+          params.restartAnnually != null ? String(params.restartAnnually) : undefined,
+      },
     },
     enabled: isAuthenticated && enabled && Boolean(params.registeredDate),
     staleTime: 15_000,
@@ -74,7 +74,7 @@ export function useStudentsWidgetAggregates(
 
   const { queries, querySignature } = useMemo(() => {
     const resolvedQueries = widgets
-      .filter((widget) => widget.collection === 'students')
+      .filter((widget) => widget.collection === "students")
       .map((widget) => studentsWidgetQueryFromWidget(widget));
 
     const signature = JSON.stringify(
@@ -96,7 +96,20 @@ export function useStudentsWidgetAggregates(
     queryKey: [...STUDENTS_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
     queryFn: async () => {
       const res = await apiContract.students.widgetAggregates({ body: { widgets: queries } });
-      return (res.body as { results?: Record<string, { value?: number; totalCount?: number; chartData?: Array<{ name: string; value: number }> }> } | null)?.results ?? {};
+      return (
+        (
+          res.body as {
+            results?: Record<
+              string,
+              {
+                value?: number;
+                totalCount?: number;
+                chartData?: Array<{ name: string; value: number }>;
+              }
+            >;
+          } | null
+        )?.results ?? {}
+      );
     },
     enabled: isAuthenticated && enabled && queries.length > 0,
     staleTime: 30_000,
@@ -104,4 +117,3 @@ export function useStudentsWidgetAggregates(
 
   return { ...query, data: query.data ?? {} };
 }
-

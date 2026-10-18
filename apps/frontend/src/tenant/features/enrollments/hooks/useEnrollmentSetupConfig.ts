@@ -3,18 +3,18 @@ import {
   normalizeEnrollmentModulePreferences,
   normalizeEnrollmentsSettings,
   type EnrollmentModulePreferences,
-  type EnrollmentsSettings
-} from '@mms/shared';
-import { createModuleSetupConfigHooks } from '@/lib/query/createModuleSetupConfigHooks';
+  type EnrollmentsSettings,
+} from "@mms/shared";
+import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchEnrollmentPreferences,
   saveEnrollmentPreferencesAsync,
   setEnrollmentPreferencesMemory,
-} from '@/tenant/features/enrollments/hooks/enrollmentSetupConfigApi';
+} from "@/tenant/features/enrollments/hooks/enrollmentSetupConfigApi";
 
 export const ENROLLMENTS_PREFERENCES_QUERY_KEY = [
   ENROLLMENTS_MODULE_MANIFEST.collectionKey,
-  'preferences',
+  "preferences",
 ] as const;
 
 const setupConfigHooks = createModuleSetupConfigHooks<EnrollmentModulePreferences>({
@@ -28,7 +28,7 @@ const setupConfigHooks = createModuleSetupConfigHooks<EnrollmentModulePreference
 export const useEnrollmentPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useEnrollmentPreferencesMutation = setupConfigHooks.usePreferencesMutation;
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 /** Composed EnrollmentsSettings from preferences queries. */
 export function useComposedEnrollmentsSettings(): EnrollmentsSettings {

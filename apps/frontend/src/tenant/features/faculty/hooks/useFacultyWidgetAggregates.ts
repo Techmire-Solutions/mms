@@ -1,15 +1,15 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { apiContract } from '@/lib/api';
-import { facultyWidgetQueryFromWidget } from '@mms/shared';
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { apiContract } from "@/lib/api";
+import { facultyWidgetQueryFromWidget } from "@mms/shared";
 import {
   FACULTY_WIDGET_AGGREGATES_QUERY_KEY,
   type FacultyWidgetAggregateWidgetInput,
-} from '@/tenant/features/faculty/hooks/facultyQueryKeys';
+} from "@/tenant/features/faculty/hooks/facultyQueryKeys";
 
 function facultyWidgetAggregateQueries(widgets: FacultyWidgetAggregateWidgetInput[]) {
   return widgets
-    .filter((widget) => widget.collection === 'faculty')
+    .filter((widget) => widget.collection === "faculty")
     .map((widget) => facultyWidgetQueryFromWidget(widget));
 }
 

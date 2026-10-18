@@ -1,5 +1,12 @@
 import React from "react";
-import { AlertCircle, AlertTriangle, CheckCircle2, Info, Loader2, type LucideIcon } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Info,
+  Loader2,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 

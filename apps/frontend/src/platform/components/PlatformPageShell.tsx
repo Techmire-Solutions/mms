@@ -1,42 +1,41 @@
-import React, { Suspense, useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { usePlatformAuth } from '@/platform/lib/PlatformAuthContext';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
-import { AppPageShellSkeleton } from '@/components/common';
-import { PlatformSidebarProvider, usePlatformSidebar } from '@/platform/lib/PlatformSidebarContext';
-import { PlatformBreadcrumbProvider } from '@/platform/lib/PlatformBreadcrumbContext';
-import { PlatformInspectorProvider } from '@/platform/lib/PlatformInspectorContext';
-import { useGlobalShortcut } from '@/hooks/useGlobalShortcut';
-import { AppFooter } from '@/components/ui/AppFooter';
-import { PlatformPageShellHeader } from '@/platform/components/PlatformPageShellHeader';
-import { PlatformSidebar, PlatformMobileSidebar } from '@/platform/components/PlatformSidebar';
-import { PlatformCommandPalette } from '@/platform/components/PlatformCommandPalette';
-import { PlatformAiDrawer } from '@/platform/components/intelligence/PlatformAiDrawer';
-import { PlatformInspectorDrawer } from '@/platform/components/inspector/PlatformInspectorDrawer';
-import { AppShell } from '@/components/common/AppShell';
-import { PlatformLiveRegionProvider } from '@/platform/components/common/PlatformLiveRegion';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import React, { Suspense, useState } from "react";
+import { Outlet } from "react-router-dom";
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { AppPageShellSkeleton } from "@/components/common";
+import { PlatformSidebarProvider, usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
+import { PlatformBreadcrumbProvider } from "@/platform/lib/PlatformBreadcrumbContext";
+import { PlatformInspectorProvider } from "@/platform/lib/PlatformInspectorContext";
+import { useGlobalShortcut } from "@/hooks/useGlobalShortcut";
+import { PlatformPageShellHeader } from "@/platform/components/PlatformPageShellHeader";
+import { PlatformSidebar, PlatformMobileSidebar } from "@/platform/components/PlatformSidebar";
+import { PlatformCommandPalette } from "@/platform/components/PlatformCommandPalette";
+import { PlatformAiDrawer } from "@/platform/components/intelligence/PlatformAiDrawer";
+import { PlatformInspectorDrawer } from "@/platform/components/inspector/PlatformInspectorDrawer";
+import { AppShell } from "@/components/common/AppShell";
+import { PlatformLiveRegionProvider } from "@/platform/components/common/PlatformLiveRegion";
+import { AppFooter, TooltipProvider } from "@shared/ui";
 
-export { PlatformLogoMark } from './common/PlatformLogoMark';
+export { PlatformLogoMark } from "./common/PlatformLogoMark";
 
-const MAX_W: Record<NonNullable<PlatformPageShellProps['width']>, string> = {
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-xl',
-  '7xl': 'w-full max-w-full',
+const MAX_W: Record<NonNullable<PlatformPageShellProps["width"]>, string> = {
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
+  "7xl": "w-full max-w-full",
 };
 
 interface PlatformPageShellProps {
   children?: React.ReactNode;
   /** Max content width — default `lg` for console-style pages. */
-  width?: 'md' | 'lg' | 'xl' | '7xl';
+  width?: "md" | "lg" | "xl" | "7xl";
 }
 
 /** Registers the Cmd/Ctrl+K and Cmd/Ctrl+J shortcuts. */
 function PlatformGlobalShortcuts({ onToggleAi }: { onToggleAi?: () => void }): null {
   const { setCommandPaletteOpen } = usePlatformSidebar();
-  useGlobalShortcut('k', () => setCommandPaletteOpen((prev) => !prev));
-  useGlobalShortcut('j', () => onToggleAi?.());
+  useGlobalShortcut("k", () => setCommandPaletteOpen((prev) => !prev));
+  useGlobalShortcut("j", () => onToggleAi?.());
   return null;
 }
 
@@ -100,10 +99,10 @@ function PlatformAuthenticatedShell({
 /** Shared apex platform page layout — English/LTR only, matching Tenant AppLayout standards. */
 export function PlatformPageShell({
   children,
-  width = 'lg',
+  width = "lg",
 }: PlatformPageShellProps): React.JSX.Element {
   const { isPlatformAuthenticated } = usePlatformAuth();
-  const maxClass = MAX_W[width] ?? 'w-full max-w-full';
+  const maxClass = MAX_W[width] ?? "w-full max-w-full";
   const footer = <AppFooter className="mt-auto" />;
 
   return (

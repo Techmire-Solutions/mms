@@ -1,7 +1,10 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import { useStudentsWorkFilterChips, type UseStudentsWorkFilterChipsParams } from "./useStudentsWorkFilterChips";
+import {
+  useStudentsWorkFilterChips,
+  type UseStudentsWorkFilterChipsParams,
+} from "./useStudentsWorkFilterChips";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

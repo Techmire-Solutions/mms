@@ -2,7 +2,10 @@ import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Faculty } from "@mms/shared";
-import { renderFacultyWorkColumnValue, type RenderFacultyWorkColumnOptions } from "./facultyWorkColumnCell";
+import {
+  renderFacultyWorkColumnValue,
+  type RenderFacultyWorkColumnOptions,
+} from "./facultyWorkColumnCell";
 
 const mockTranslate = ((key: string) => key) as never;
 
@@ -61,10 +64,18 @@ describe("renderFacultyWorkColumnValue", () => {
       employeeId: "EMP-42",
     };
     expect(renderFacultyWorkColumnValue(dated, "employeeId", baseOptions)).toBe("EMP-42");
-    expect(String(renderFacultyWorkColumnValue(dated, "employmentStartDate", baseOptions))).toContain("2023");
-    expect(String(renderFacultyWorkColumnValue(dated, "employmentEndDate", baseOptions))).toContain("2025");
-    expect(String(renderFacultyWorkColumnValue(dated, "designationStartDate", baseOptions))).toContain("2024");
-    expect(String(renderFacultyWorkColumnValue(dated, "designationEndDate", baseOptions))).toContain("2025");
+    expect(
+      String(renderFacultyWorkColumnValue(dated, "employmentStartDate", baseOptions)),
+    ).toContain("2023");
+    expect(String(renderFacultyWorkColumnValue(dated, "employmentEndDate", baseOptions))).toContain(
+      "2025",
+    );
+    expect(
+      String(renderFacultyWorkColumnValue(dated, "designationStartDate", baseOptions)),
+    ).toContain("2024");
+    expect(
+      String(renderFacultyWorkColumnValue(dated, "designationEndDate", baseOptions)),
+    ).toContain("2025");
   });
 
   it("renders employDesignationStatus badge", () => {
@@ -73,7 +84,9 @@ describe("renderFacultyWorkColumnValue", () => {
       employDesignationStatus: "active",
     };
     const html = renderToStaticMarkup(
-      <div>{renderFacultyWorkColumnValue(tenureFaculty, "employDesignationStatus", baseOptions)}</div>,
+      <div>
+        {renderFacultyWorkColumnValue(tenureFaculty, "employDesignationStatus", baseOptions)}
+      </div>,
     );
     expect(html).toContain("Active");
   });
@@ -96,11 +109,19 @@ describe("renderFacultyWorkColumnValue", () => {
       reportingFacultyName: "Dean Ahmad",
       subordinateCount: 3,
     };
-    const supervisorResult = renderFacultyWorkColumnValue(facultyWithHierarchy, "reportingFacultyName", baseOptions);
+    const supervisorResult = renderFacultyWorkColumnValue(
+      facultyWithHierarchy,
+      "reportingFacultyName",
+      baseOptions,
+    );
     const supervisorHtml = renderToStaticMarkup(<div>{supervisorResult}</div>);
     expect(supervisorHtml).toContain("Dean Ahmad");
 
-    const subResult = renderFacultyWorkColumnValue(facultyWithHierarchy, "subordinateCount", baseOptions);
+    const subResult = renderFacultyWorkColumnValue(
+      facultyWithHierarchy,
+      "subordinateCount",
+      baseOptions,
+    );
     const subHtml = renderToStaticMarkup(<div>{subResult}</div>);
     expect(subHtml).toContain("3");
   });
@@ -122,9 +143,7 @@ describe("renderFacultyWorkColumnValue", () => {
       ...mockFaculty,
       room: "Room 101",
     };
-    const customFieldsById = new Map([
-      ["room", { id: "room", label: "Classroom" }],
-    ]);
+    const customFieldsById = new Map([["room", { id: "room", label: "Classroom" }]]);
     const result = renderFacultyWorkColumnValue(customFaculty, "custom:room", {
       ...baseOptions,
       customFieldsById,
@@ -133,4 +152,3 @@ describe("renderFacultyWorkColumnValue", () => {
     expect(result).toBe("Room 101");
   });
 });
-

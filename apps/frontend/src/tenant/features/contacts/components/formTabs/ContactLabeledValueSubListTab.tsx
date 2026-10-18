@@ -43,9 +43,7 @@ export interface ContactLabeledValueSubListTabProps extends ContactSubListTabBas
   /** Optional custom header element (e.g. primary toggle). */
   headerExtras?: (ctx: ContactLabeledValueFieldContext) => ReactNode;
   /** Override default string patch when the value input changes (e.g. phone parse). */
-  onValueChange?: (
-    ctx: ContactLabeledValueFieldContext & { value: string },
-  ) => void;
+  onValueChange?: (ctx: ContactLabeledValueFieldContext & { value: string }) => void;
   onValueBlur?: (index: number) => void;
 }
 
@@ -113,7 +111,10 @@ export function ContactLabeledValueSubListTab({
     ensureSubListItem(listKey, makeEmpty());
   }, [ensureSubListItem, listKey, makeEmpty]);
 
-  const removeItem = useCallback((idx: number) => removeSubListItem(listKey, idx), [removeSubListItem, listKey]);
+  const removeItem = useCallback(
+    (idx: number) => removeSubListItem(listKey, idx),
+    [removeSubListItem, listKey],
+  );
 
   const updateItem = useCallback(
     (idx: number, patch: ListItem) => updateSubListItem(listKey, idx, patch),

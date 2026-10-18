@@ -1,6 +1,6 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { RateLimitOptions } from '@fastify/rate-limit';
-import { buildRateLimitExceededBody } from './rateLimitConfig.js';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { RateLimitOptions } from "@fastify/rate-limit";
+import { buildRateLimitExceededBody } from "./rateLimitConfig.js";
 
 /**
  * A stricter-than-global rate limit that still works when a global limiter is
@@ -30,7 +30,7 @@ export function createStrictRateLimitGuard(
   const check = fastify.createRateLimit({
     allowList: () => false,
     ...options,
-  } as Parameters<FastifyInstance['createRateLimit']>[0]);
+  } as Parameters<FastifyInstance["createRateLimit"]>[0]);
 
   return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     const result = await check(request);
@@ -39,10 +39,10 @@ export function createStrictRateLimitGuard(
     }
 
     const retryAfterSeconds = result.ttlInSeconds ?? 0;
-    reply.header('x-ratelimit-limit', result.max);
-    reply.header('x-ratelimit-remaining', 0);
-    reply.header('x-ratelimit-reset', retryAfterSeconds);
-    reply.header('retry-after', retryAfterSeconds);
+    reply.header("x-ratelimit-limit", result.max);
+    reply.header("x-ratelimit-remaining", 0);
+    reply.header("x-ratelimit-reset", retryAfterSeconds);
+    reply.header("retry-after", retryAfterSeconds);
 
     const exhausted = buildRateLimitExceededBody();
     await reply.status(exhausted.statusCode).send({

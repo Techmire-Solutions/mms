@@ -1,14 +1,14 @@
 import React from "react";
 import { AnimatePresence } from "framer-motion";
-import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import { isManuallyReversibleJournalSource, type JournalReversalRequest } from "@mms/shared";
 import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
 import { JournalEntryDetail } from "@/tenant/features/accounting/components/JournalEntryDetail";
 import { JournalEntryForm } from "@/tenant/features/accounting/components/JournalEntryForm";
 import { JournalReverseDialog } from "@/tenant/features/accounting/components/JournalReverseDialog";
-import type { JournalEntrySave } from "./journalEntriesTypes";
+import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { isVoucherPrintable } from "@/tenant/features/accounting/components/paymentVoucherKind";
+import { isVoucherPrintable } from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
 
 export type JournalModalMode = "new" | "edit" | "view" | null;
@@ -23,7 +23,9 @@ export interface JournalEntriesModalLayerProps {
   entries: JournalEntry[];
   fiscalYears: FiscalYear[];
   onSave: JournalEntrySave;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   onCloseModal: () => void;
   onEditSelected: () => void;
   onRequestReverse: (entry: JournalEntry) => void;
@@ -77,7 +79,7 @@ export function JournalEntriesModalLayer({
         {canWrite && (modal === "new" || modal === "edit") && (
           <JournalEntryForm
             accounts={accounts}
-            entries={(allEntries && allEntries.length > 0) ? allEntries : entries}
+            entries={allEntries && allEntries.length > 0 ? allEntries : entries}
             initial={modal === "edit" ? selected : null}
             fiscalYears={fiscalYears}
             onSave={onSave}
@@ -85,28 +87,43 @@ export function JournalEntriesModalLayer({
             onClose={onCloseModal}
           />
         )}
-        {modal === "view" && selected && (() => {
-          const entry = selected;
-          const reversedBy = entry.ref
-            ? ((allEntries && allEntries.length > 0) ? allEntries : entries).find(
-                (candidate) => candidate.id !== entry.id && !candidate.deletedAt && candidate.reversed_ref === entry.ref,
-              )
-            : undefined;
-          const canReverse = canWrite && !entry.deletedAt && !reversedBy && isManuallyReversibleJournalSource(entry.source_type);
-          return (
-            <JournalEntryDetail
-              entry={entry}
-              accounts={accounts}
-              reversedByRef={reversedBy?.ref}
-              onClose={onCloseModal}
-              onEdit={canWrite && !entry.deletedAt ? onEditSelected : undefined}
-              onReverse={canReverse ? () => onRequestReverse(entry) : undefined}
-              onRestore={canDelete && entry.deletedAt && onRestoreEntry ? () => onRestoreEntry?.(entry.id) : undefined}
-              canRestore={canDelete}
-              onPrintVoucher={isVoucherPrintable(entry, accounts) ? () => void printVoucher(entry) : undefined}
-            />
-          );
-        })()}
+        {modal === "view" &&
+          selected &&
+          (() => {
+            const entry = selected;
+            const reversedBy = entry.ref
+              ? (allEntries && allEntries.length > 0 ? allEntries : entries).find(
+                  (candidate) =>
+                    candidate.id !== entry.id &&
+                    !candidate.deletedAt &&
+                    candidate.reversed_ref === entry.ref,
+                )
+              : undefined;
+            const canReverse =
+              canWrite &&
+              !entry.deletedAt &&
+              !reversedBy &&
+              isManuallyReversibleJournalSource(entry.source_type);
+            return (
+              <JournalEntryDetail
+                entry={entry}
+                accounts={accounts}
+                reversedByRef={reversedBy?.ref}
+                onClose={onCloseModal}
+                onEdit={canWrite && !entry.deletedAt ? onEditSelected : undefined}
+                onReverse={canReverse ? () => onRequestReverse(entry) : undefined}
+                onRestore={
+                  canDelete && entry.deletedAt && onRestoreEntry
+                    ? () => onRestoreEntry?.(entry.id)
+                    : undefined
+                }
+                canRestore={canDelete}
+                onPrintVoucher={
+                  isVoucherPrintable(entry, accounts) ? () => void printVoucher(entry) : undefined
+                }
+              />
+            );
+          })()}
       </AnimatePresence>
 
       <ModuleTrashConfirmDialogs

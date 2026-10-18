@@ -1,18 +1,18 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq } from "drizzle-orm";
 import type {
   BankReconciliationMatch,
   BankStatement,
   OpeningBalance,
   PostingRules,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   accountingBankReconciliations,
   accountingBankStatementLines,
   accountingBankStatements,
   accountingOpeningBalances,
   accountingPostingRules,
-} from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+} from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 export async function getPostingRules(tenant: string): Promise<PostingRules> {
   const subdomain = tenant.trim().toLowerCase();
@@ -66,7 +66,10 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
   });
 }
 
-export async function listOpeningBalances(tenant: string, fiscalYearId: string): Promise<OpeningBalance[]> {
+export async function listOpeningBalances(
+  tenant: string,
+  fiscalYearId: string,
+): Promise<OpeningBalance[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
@@ -213,7 +216,7 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
           workspaceSubdomain: subdomain,
           statementId: record.id,
           date: line.date,
-          description: line.description ?? '',
+          description: line.description ?? "",
           amount: String(line.amount ?? 0),
         })),
       );
@@ -237,7 +240,10 @@ export async function matchBankReconciliation(
         matchedAt: new Date(),
       })
       .onConflictDoUpdate({
-        target: [accountingBankReconciliations.workspaceSubdomain, accountingBankReconciliations.statementLineId],
+        target: [
+          accountingBankReconciliations.workspaceSubdomain,
+          accountingBankReconciliations.statementLineId,
+        ],
         set: {
           journalEntryId: match.journalEntryId,
           journalLineId: match.journalLineId,

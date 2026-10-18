@@ -15,11 +15,11 @@
  * Spec: docs/superpowers/specs/2026-09-24-work-directory-convergence-design.md §5
  * Norms: mms-module-architecture.mdc §3/§7, mms-dry.mdc §1.
  */
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 const ROOT = process.cwd();
-const FE_SRC = path.join(ROOT, 'apps/frontend/src');
+const FE_SRC = path.join(ROOT, "apps/frontend/src");
 
 const IGNORED = /(^|\/)(node_modules|dist|coverage|\.turbo)\//;
 const SOURCE_EXT = /\.(ts|tsx)$/;
@@ -34,7 +34,7 @@ function walk(dir, out = []) {
   }
   for (const entry of entries) {
     const full = path.join(dir, entry.name);
-    const rel = path.relative(ROOT, full).split(path.sep).join('/');
+    const rel = path.relative(ROOT, full).split(path.sep).join("/");
     if (IGNORED.test(`${rel}/`)) continue;
     if (entry.isDirectory()) walk(full, out);
     else if (SOURCE_EXT.test(entry.name)) out.push(rel);
@@ -56,25 +56,25 @@ const entityCardOuterSites = [];
  * directory, so search / card view / column toggles do not apply. Review before adding.
  */
 const RAW_TABLE_ALLOWLIST = new Set([
-  'apps/frontend/src/platform/components/design-system/DesignSystemGallery.tsx',
-  'apps/frontend/src/tenant/features/accounting/components/AccountingDashboardCharts.tsx',
-  'apps/frontend/src/tenant/features/accounting/components/CashFlowStatementPanel.tsx',
-  'apps/frontend/src/tenant/features/accounting/components/FinancialReportSection.tsx',
-  'apps/frontend/src/tenant/features/accounting/components/JournalEntryDetailLines.tsx',
-  'apps/frontend/src/tenant/features/accounting/components/JournalEntryLinesEditor.tsx',
-  'apps/frontend/src/tenant/features/accounting/components/TrialBalance.tsx',
-  'apps/frontend/src/tenant/features/accounting/components/TrialBalanceTypeGroup.tsx',
-  'apps/frontend/src/tenant/features/attendance/components/MarkAttendanceTableView.tsx',
-  'apps/frontend/src/tenant/features/contacts/components/ContactsSyncConflictDiffBody.tsx',
-  'apps/frontend/src/tenant/features/enrollments/components/EnrollmentReports.tsx',
-  'apps/frontend/src/tenant/features/hasanat/components/RedemptionTable.tsx',
-  'apps/frontend/src/tenant/features/obligations/components/ObligationsRepDuesSection.tsx',
-  'apps/frontend/src/tenant/features/obligations/components/ObligationsWakalaSummarySection.tsx',
-  'apps/frontend/src/tenant/features/obligations/components/detail/ObligationCollectionDistributionsSection.tsx',
-  'apps/frontend/src/tenant/features/question-bank/components/PrintablePaper.tsx',
-  'apps/frontend/src/tenant/features/reports/components/ContactReport.tsx',
-  'apps/frontend/src/tenant/features/reports/components/QuestionBankSummaryDataGrid.tsx',
-  'apps/frontend/src/tenant/features/users/components/PermissionMatrixDesktopTable.tsx',
+  "apps/frontend/src/platform/components/design-system/DesignSystemGallery.tsx",
+  "apps/frontend/src/tenant/features/accounting/components/AccountingDashboardCharts.tsx",
+  "apps/frontend/src/tenant/features/accounting/components/CashFlowStatementPanel.tsx",
+  "apps/frontend/src/tenant/features/accounting/components/FinancialReportSection.tsx",
+  "apps/frontend/src/tenant/features/accounting/components/JournalEntryDetailLines.tsx",
+  "apps/frontend/src/tenant/features/accounting/components/JournalEntryLinesEditor.tsx",
+  "apps/frontend/src/tenant/features/accounting/components/TrialBalance.tsx",
+  "apps/frontend/src/tenant/features/accounting/components/TrialBalanceTypeGroup.tsx",
+  "apps/frontend/src/tenant/features/attendance/components/MarkAttendanceTableView.tsx",
+  "apps/frontend/src/tenant/features/contacts/components/ContactsSyncConflictDiffBody.tsx",
+  "apps/frontend/src/tenant/features/enrollments/components/EnrollmentReports.tsx",
+  "apps/frontend/src/tenant/features/hasanat/components/RedemptionTable.tsx",
+  "apps/frontend/src/tenant/features/obligations/components/ObligationsRepDuesSection.tsx",
+  "apps/frontend/src/tenant/features/obligations/components/ObligationsWakalaSummarySection.tsx",
+  "apps/frontend/src/tenant/features/obligations/components/detail/ObligationCollectionDistributionsSection.tsx",
+  "apps/frontend/src/tenant/features/question-bank/components/PrintablePaper.tsx",
+  "apps/frontend/src/tenant/features/reports/components/ContactReport.tsx",
+  "apps/frontend/src/tenant/features/reports/components/QuestionBankSummaryDataGrid.tsx",
+  "apps/frontend/src/tenant/features/users/components/PermissionMatrixDesktopTable.tsx",
 ]);
 
 /**
@@ -88,35 +88,34 @@ const RAW_TABLE_ALLOWLIST = new Set([
  * New Work/setup *Card* composites must use DirectoryCard.
  */
 const ENTITY_CARD_OUTER_ALLOWLIST = new Set([
-  'apps/frontend/src/tenant/features/attendance/components/MarkAttendanceStudentCard.tsx',
+  "apps/frontend/src/tenant/features/attendance/components/MarkAttendanceStudentCard.tsx",
 ]);
 
-const WORK_CARD_COMPOSITE =
-  /(CardItem\.tsx|Card\.tsx|ListCards\.tsx|CardsView\.tsx|Cards\.tsx)$/;
+const WORK_CARD_COMPOSITE = /(CardItem\.tsx|Card\.tsx|ListCards\.tsx|CardsView\.tsx|Cards\.tsx)$/;
 const WORK_CARD_SLOT =
   /(CardHeader|CardActions|CardMetadata|CardSections|CardAnswer|CardInfo|CardItem\.test)/;
 
 function isWorkCardCompositeFile(rel) {
   const base = path.basename(rel);
-  if (!rel.endsWith('.tsx') || TEST_FILE.test(rel)) return false;
+  if (!rel.endsWith(".tsx") || TEST_FILE.test(rel)) return false;
   if (WORK_CARD_SLOT.test(base)) return false;
   return WORK_CARD_COMPOSITE.test(base);
 }
 
 const CONVERGED_MODULES = new Set([
-  'contacts',
-  'students',
-  'faculty',
-  'sessions',
-  'enrollments',
-  'finance',
-  'hasanat',
-  'obligations',
-  'question-bank',
+  "contacts",
+  "students",
+  "faculty",
+  "sessions",
+  "enrollments",
+  "finance",
+  "hasanat",
+  "obligations",
+  "question-bank",
 ]);
 
 for (const rel of files) {
-  const content = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+  const content = fs.readFileSync(path.join(ROOT, rel), "utf8");
 
   if (!TEST_FILE.test(rel)) {
     if (/ModuleStandardBulkActionBar/.test(content)) {
@@ -138,8 +137,9 @@ for (const rel of files) {
   }
 
   const isFeatureSource =
-    (rel.startsWith('apps/frontend/src/tenant/features/') || rel.startsWith('apps/frontend/src/platform/')) &&
-    rel.endsWith('.tsx') &&
+    (rel.startsWith("apps/frontend/src/tenant/features/") ||
+      rel.startsWith("apps/frontend/src/platform/")) &&
+    rel.endsWith(".tsx") &&
     !TEST_FILE.test(rel);
   if (isFeatureSource && /<(Table|table)[\s>]/.test(content) && !RAW_TABLE_ALLOWLIST.has(rel)) {
     rawTableSites.push(rel);
@@ -156,8 +156,17 @@ for (const rel of files) {
   }
 
   // Check tenant feature directory *List.tsx for CSS dual-rendering (table/cards rendered simultaneously via CSS)
-  if (rel.startsWith('apps/frontend/src/tenant/features/') && rel.endsWith('List.tsx') && !TEST_FILE.test(rel)) {
-    if (/\bmd:hidden\b/.test(content) && (/\bmd:block\b/.test(content) || /\bmd:flex\b/.test(content) || /\bhidden\s+md:/.test(content))) {
+  if (
+    rel.startsWith("apps/frontend/src/tenant/features/") &&
+    rel.endsWith("List.tsx") &&
+    !TEST_FILE.test(rel)
+  ) {
+    if (
+      /\bmd:hidden\b/.test(content) &&
+      (/\bmd:block\b/.test(content) ||
+        /\bmd:flex\b/.test(content) ||
+        /\bhidden\s+md:/.test(content))
+    ) {
       cssDualRenderSites.push(rel);
     }
   }
@@ -165,46 +174,46 @@ for (const rel of files) {
 
 const checks = [
   {
-    name: 'Retired ModuleStandardBulkActionBar imports',
+    name: "Retired ModuleStandardBulkActionBar imports",
     count: retiredBulkBarImports.length,
     violators: retiredBulkBarImports,
-    norm: 'mms-dry.mdc §1',
+    norm: "mms-dry.mdc §1",
   },
   {
-    name: 'Retired ModuleWorkDirectoryShell / useWorkDirectoryController imports',
+    name: "Retired ModuleWorkDirectoryShell / useWorkDirectoryController imports",
     count: retiredShellImports.length,
     violators: retiredShellImports,
-    norm: 'mms-module-architecture.mdc §3',
+    norm: "mms-module-architecture.mdc §3",
   },
   {
-    name: 'CSS dual-render in directory *List.tsx',
+    name: "CSS dual-render in directory *List.tsx",
     count: cssDualRenderSites.length,
     violators: cssDualRenderSites,
-    norm: 'mms-module-architecture.mdc §3 (viewMode SSOT)',
+    norm: "mms-module-architecture.mdc §3 (viewMode SSOT)",
   },
   {
-    name: 'selectedCount: 0 shortcut stubs in converged controllers',
+    name: "selectedCount: 0 shortcut stubs in converged controllers",
     count: stubShortcutSites.length,
     violators: stubShortcutSites,
-    norm: 'mms-module-architecture.mdc §7',
+    norm: "mms-module-architecture.mdc §7",
   },
   {
-    name: 'Hand-rolled data tables outside the reviewed allowlist (use DataTable / WorkBatchTable)',
+    name: "Hand-rolled data tables outside the reviewed allowlist (use DataTable / WorkBatchTable)",
     count: rawTableSites.length,
     violators: rawTableSites,
-    norm: 'mms-dry.mdc §1 (Data tables)',
+    norm: "mms-dry.mdc §1 (Data tables)",
   },
   {
-    name: 'Outer EntityCard in Work card composites (use DirectoryCard)',
+    name: "Outer EntityCard in Work card composites (use DirectoryCard)",
     count: entityCardOuterSites.length,
     violators: entityCardOuterSites,
-    norm: 'mms-module-architecture.mdc §7 (DirectoryCard SSOT)',
+    norm: "mms-module-architecture.mdc §7 (DirectoryCard SSOT)",
   },
 ];
 
 let failures = 0;
 for (const check of checks) {
-  const mark = check.count === 0 ? '✓' : '✗';
+  const mark = check.count === 0 ? "✓" : "✗";
   console.log(`${mark} ${check.name}: ${check.count}  [${check.norm}]`);
   if (check.count > 0) {
     failures++;
@@ -214,10 +223,12 @@ for (const check of checks) {
   }
 }
 
-console.log('');
+console.log("");
 if (failures > 0) {
   console.error(`💥 ${failures} Work Directory convergence check(s) failed.`);
   process.exit(1);
 }
 
-console.log(`✅ All Work Directory convergence checks passed (scanned ${files.length} frontend files).`);
+console.log(
+  `✅ All Work Directory convergence checks passed (scanned ${files.length} frontend files).`,
+);

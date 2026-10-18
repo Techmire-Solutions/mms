@@ -1,6 +1,6 @@
 import React from "react";
 import type { Session } from "@mms/shared";
-import { Field, FormSelect } from "@/components/ui/FormPrimitives";
+import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 
@@ -24,7 +24,13 @@ export interface SessionClassSectionSelectProps {
 
 /** Cascading session → class → section picker; changing a level clears the levels below it. */
 export function SessionClassSectionSelect({
-  sessions, value, onChange, levels = "class", idPrefix, required, disabled,
+  sessions,
+  value,
+  onChange,
+  levels = "class",
+  idPrefix,
+  required,
+  disabled,
 }: SessionClassSectionSelectProps): React.JSX.Element {
   const { t } = useTranslation();
   const terms = useAcademicTerms();
@@ -75,7 +81,10 @@ export function SessionClassSectionSelect({
 }
 
 /** Finds the session that owns a class id (for hydrating a picker from a stored class id). */
-export function sessionIdForClass(sessions: readonly Session[], classId: string | null | undefined): string {
+export function sessionIdForClass(
+  sessions: readonly Session[],
+  classId: string | null | undefined,
+): string {
   if (!classId) return "";
   return sessions.find((session) => session.classes.some((cls) => cls.id === classId))?.id ?? "";
 }

@@ -11,19 +11,19 @@ on: # zizmor: ignore[dangerous-triggers]
   workflow_dispatch:
     inputs:
       target_sha:
-        description: 'Commit SHA / Git Ref to deploy (blank for current branch tip)'
+        description: "Commit SHA / Git Ref to deploy (blank for current branch tip)"
         required: false
-        default: ''
+        default: ""
       force_pnpm_install:
-        description: 'Force clean pnpm install on production server'
+        description: "Force clean pnpm install on production server"
         type: boolean
         default: false
       force_apache:
-        description: 'Force Apache vhost re-installation'
+        description: "Force Apache vhost re-installation"
         type: boolean
         default: false
       allow_unverified:
-        description: 'Incident escape hatch — deploy a SHA that is not on main or has no green CI run'
+        description: "Incident escape hatch — deploy a SHA that is not on main or has no green CI run"
         type: boolean
         default: false
 
@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 45
     environment: production
     env:
-      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      PUPPETEER_SKIP_DOWNLOAD: "true"
       DEPLOY_SHA: ${{ (github.event_name == 'workflow_dispatch' && inputs.target_sha != '') && inputs.target_sha || (github.event.workflow_run.head_sha || github.sha) }}
       MMS_FORCE_PNPM_INSTALL: ${{ inputs.force_pnpm_install == true && '1' || '0' }}
       MMS_FORCE_APACHE: ${{ inputs.force_apache == true && '1' || '0' }}
@@ -118,7 +118,7 @@ jobs:
 
       # Build once, promote the same bytes: both the automatic path and a
       # verified manual dispatch deploy the tarball CI built and attested for
-      # this exact commit (artifacts are kept 14 days; older targets need the
+      # this exact commit (artifacts are kept 90 days; older targets need the
       # allow_unverified incident hatch, which rebuilds).
       - name: Download CI release artifact
         if: github.event_name == 'workflow_run' || !inputs.allow_unverified
@@ -145,8 +145,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.allow_unverified
         uses: ./.github/actions/setup-mms
         with:
-          install: 'true'
-          build-shared: 'true'
+          install: "true"
+          build-shared: "true"
 
       - name: Production build & bundle check
         if: github.event_name == 'workflow_dispatch' && inputs.allow_unverified
@@ -193,7 +193,7 @@ jobs:
           PLATFORM_ADMIN_EMAIL: ${{ secrets.PLATFORM_ADMIN_EMAIL }}
           PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
           PLATFORM_ADMIN_NAME: ${{ secrets.PLATFORM_ADMIN_NAME }}
-          MMS_DEPLOY_SKIP_PUBLIC_VERIFY: '1'
+          MMS_DEPLOY_SKIP_PUBLIC_VERIFY: "1"
           MMS_REQUIRE_WILDCARD_TLS: ${{ secrets.MMS_REQUIRE_WILDCARD_TLS }}
         run: |
           bash scripts/ci/ssh-exec.sh scripts/ci/remote/deploy.sh \

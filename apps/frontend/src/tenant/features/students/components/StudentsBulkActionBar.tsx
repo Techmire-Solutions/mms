@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { GraduationCap, BookOpen, IdCard } from "lucide-react";
-import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsBulkEnrollPlacement } from "@mms/shared";
-import { ModuleUniversalBulkActionBar } from "@/components/ui/ModuleUniversalBulkActionBar";
+import {
+  STUDENTS_MODULE_MANIFEST,
+  type Student,
+  type StudentsBulkEnrollPlacement,
+} from "@mms/shared";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
 import { Button } from "@/components/ui/button";
-import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StudentsBulkEnrollModal } from "@/tenant/features/students/components/StudentsBulkEnrollModal";
 import type { StudentsSelectionTargets } from "@/tenant/features/students/hooks/studentsSelectionTargets";

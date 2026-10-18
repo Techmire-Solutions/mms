@@ -89,8 +89,12 @@ export function useWorkBatchTableInternalState<TData extends { id: string | numb
     const fieldKey = col?.sortField || col?.id || effectiveSortField;
 
     return [...data].sort((rowA, rowB) => {
-      const valA = (rowA as Record<string, unknown>)[fieldKey] ?? (col?.id ? (rowA as Record<string, unknown>)[col.id] : undefined);
-      const valB = (rowB as Record<string, unknown>)[fieldKey] ?? (col?.id ? (rowB as Record<string, unknown>)[col.id] : undefined);
+      const valA =
+        (rowA as Record<string, unknown>)[fieldKey] ??
+        (col?.id ? (rowA as Record<string, unknown>)[col.id] : undefined);
+      const valB =
+        (rowB as Record<string, unknown>)[fieldKey] ??
+        (col?.id ? (rowB as Record<string, unknown>)[col.id] : undefined);
       const diff = compareRowValues(valA, valB);
       return effectiveSortDir === "desc" ? -diff : diff;
     });

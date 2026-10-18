@@ -1,13 +1,19 @@
-import { sql } from 'drizzle-orm';
-import { withTenant } from '../tenant-context.js';
-import { lockFacultyHierarchy } from './facultyAssignmentValidation.js';
-import { ConflictError } from '../../lib/httpErrors.js';
+import { sql } from "drizzle-orm";
+import { withTenant } from "../tenant-context.js";
+import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
+import { ConflictError } from "../../lib/httpErrors.js";
 
-export async function guardFacultyAssignmentDependents(tenant: string, ids: string[]): Promise<void> {
+export async function guardFacultyAssignmentDependents(
+  tenant: string,
+  ids: string[],
+): Promise<void> {
   if (!ids.length) return;
   await withTenant(tenant, async (tx) => {
     await lockFacultyHierarchy(tx, tenant);
-    const members = sql.join(ids.map((id) => sql`${id}`), sql`, `);
+    const members = sql.join(
+      ids.map((id) => sql`${id}`),
+      sql`, `,
+    );
 
     // Session FKs are ON DELETE RESTRICT — block soft-delete while *active* sessions
     // still reference faculty (archived sessions must not permanently block delete).
@@ -51,7 +57,7 @@ export async function guardFacultyAssignmentDependents(tenant: string, ids: stri
     `);
     if (sessionLinks.rows.length) {
       throw new ConflictError(
-        'Remove or reassign session faculty links before deleting this faculty member',
+        "Remove or reassign session faculty links before deleting this faculty member",
       );
     }
   });

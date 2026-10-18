@@ -16,7 +16,10 @@ export function formatContactPhoneDisplay(
   const fullPhone = formatPhoneWithCountryCode(rawNumber, countryCodeFallback);
   if (!fullPhone) return { countryCode: countryCodeFallback, formattedNumber: "" };
   const parsed = parsePhoneNumber(fullPhone, countryCodeFallback);
-  return { countryCode: parsed.countryCode || countryCodeFallback, formattedNumber: parsed.number || rawNumber };
+  return {
+    countryCode: parsed.countryCode || countryCodeFallback,
+    formattedNumber: parsed.number || rawNumber,
+  };
 }
 
 /** Formats a full number with country code (kept whole for WhatsApp/messaging). */
@@ -57,7 +60,8 @@ export function resolveContactPhoneDisplay(
 ): { phone: string | null; countryCode: string; phoneDisplay: string } {
   const defaultCountryCode = getFallbackCountryCode(prefs, countryCodesMap, countryCodes);
   const primaryPhone = getPrimaryPhone(contact, defaultCountryCode);
-  const firstPhoneObj = (contact.phones || []).find((p) => (p.number || "").trim().length > 0) || contact.phones?.[0];
+  const firstPhoneObj =
+    (contact.phones || []).find((p) => (p.number || "").trim().length > 0) || contact.phones?.[0];
   const { countryCode, formattedNumber: phoneDisplay } = formatContactPhoneDisplay(
     primaryPhone || firstPhoneObj?.number,
     firstPhoneObj?.countryCode || defaultCountryCode,
@@ -168,4 +172,3 @@ export function resolveAllContactEmails(
 
   return result;
 }
-

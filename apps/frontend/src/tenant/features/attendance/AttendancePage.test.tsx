@@ -52,8 +52,14 @@ vi.mock("@/tenant/features/attendance/hooks/useAttendancePageController", () => 
   }),
 }));
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
-  ModulePageShell: ({ children, headerTitle }: { children: React.ReactNode; headerTitle: string }) => (
+vi.mock("@/components/app/ModulePageShell", () => ({
+  ModulePageShell: ({
+    children,
+    headerTitle,
+  }: {
+    children: React.ReactNode;
+    headerTitle: string;
+  }) => (
     <div data-testid="page-shell">
       <h1>{headerTitle}</h1>
       {children}
@@ -61,7 +67,7 @@ vi.mock("@/components/ui/ModulePageShell", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="tabs">{children}</div>
   ),

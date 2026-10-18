@@ -4,10 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { ContactSubListShell, resolveSubListAllowAdd } from "./ContactSubListCards";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  type ContactBankDetail,
-  DEFAULT_BANK_NAMES,
-} from "@mms/shared";
+import { type ContactBankDetail, DEFAULT_BANK_NAMES } from "@mms/shared";
 import { ContactBankDetailCard } from "./ContactBankDetailCard";
 import { ContactConfigContext } from "@/lib/contacts/contactConfigContextTypes";
 
@@ -38,27 +35,25 @@ export function ContactBankDetailsTab({
       ? contactConfig.bankNames
       : DEFAULT_BANK_NAMES);
 
-  const resolvedOnUpdateBankNameOptions =
-    onUpdateBankNameOptions ?? contactConfig?.updateBankNames;
+  const resolvedOnUpdateBankNameOptions = onUpdateBankNameOptions ?? contactConfig?.updateBankNames;
 
   const showBankName = isFieldEnabled("bankDetails", "bankName");
   const showAccountTitle = isFieldEnabled("bankDetails", "accountTitle");
   const showAccountNumber = isFieldEnabled("bankDetails", "accountNumber");
 
-  const allowAdd = resolveSubListAllowAdd([
-    showBankName,
-    showAccountTitle,
-    showAccountNumber,
-  ]);
+  const allowAdd = resolveSubListAllowAdd([showBankName, showAccountTitle, showAccountNumber]);
 
   const bankDetails = contactDraft.bankDetails || [];
 
-  const emptyBankDetail = useCallback((): ContactBankDetail => ({
-    id: `bnk-${crypto.randomUUID()}`,
-    bankName: "",
-    accountTitle: "",
-    accountNumber: "",
-  }), []);
+  const emptyBankDetail = useCallback(
+    (): ContactBankDetail => ({
+      id: `bnk-${crypto.randomUUID()}`,
+      bankName: "",
+      accountTitle: "",
+      accountNumber: "",
+    }),
+    [],
+  );
 
   const addBankDetail = useCallback(() => {
     addSubListItem("bankDetails", emptyBankDetail());
@@ -68,15 +63,15 @@ export function ContactBankDetailsTab({
     ensureSubListItem("bankDetails", emptyBankDetail());
   }, [ensureSubListItem, emptyBankDetail]);
 
-  const removeBankDetail = useCallback((idx: number) => {
-    removeSubListItem("bankDetails", idx);
-  }, [removeSubListItem]);
+  const removeBankDetail = useCallback(
+    (idx: number) => {
+      removeSubListItem("bankDetails", idx);
+    },
+    [removeSubListItem],
+  );
 
   const updateBankDetail = useCallback(
-    (
-      idx: number,
-      patch: Partial<ContactBankDetail> & Record<string, unknown>,
-    ) => {
+    (idx: number, patch: Partial<ContactBankDetail> & Record<string, unknown>) => {
       updateSubListItem("bankDetails", idx, patch);
     },
     [updateSubListItem],

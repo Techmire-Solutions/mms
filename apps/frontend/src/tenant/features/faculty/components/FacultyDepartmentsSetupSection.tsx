@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import type { FacultyDepartmentEntity } from '@mms/shared';
-import { ConfirmAlertDialog } from '@/components/ui/ConfirmAlertDialog';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ErrorState } from '@/components/ui/ErrorState';
-import { ModuleTierMotion } from '@/components/ui/ModuleTierMotion';
-import { FacultyDepartmentsTable } from './FacultyDepartmentsTable';
-import { FacultyDepartmentFormModal } from './FacultyDepartmentFormModal';
-import { useFacultyDepartmentsController } from '../hooks/useFacultyDepartmentsController';
-import { useFacultyDepartments } from '../hooks/useFacultyDepartments';
+import React, { useState } from "react";
+import type { FacultyDepartmentEntity } from "@mms/shared";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ErrorState } from "@/components/app/ErrorState";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { FacultyDepartmentsTable } from "./FacultyDepartmentsTable";
+import { FacultyDepartmentFormModal } from "./FacultyDepartmentFormModal";
+import { useFacultyDepartmentsController } from "../hooks/useFacultyDepartmentsController";
+import { useFacultyDepartments } from "../hooks/useFacultyDepartments";
 
 /** Departments work surface — same directory chrome as Faculties (toolbar + table/cards). */
 export function FacultyDepartmentsSetupSection({
@@ -46,8 +46,8 @@ export function FacultyDepartmentsSetupSection({
       <ModuleTierMotion tier="work-departments" className="space-y-5">
         {query.isError ? (
           <ErrorState
-            title={t('faculty.setup.departmentsLoadFailed')}
-            description={t('faculty.loadFailedHint')}
+            title={t("faculty.setup.departmentsLoadFailed")}
+            description={t("faculty.loadFailedHint")}
             onRetry={() => void query.refetch()}
           />
         ) : (
@@ -79,14 +79,14 @@ export function FacultyDepartmentsSetupSection({
         <ConfirmAlertDialog
           open={Boolean(deptToDelete)}
           onOpenChange={(open) => !open && setDeptToDelete(null)}
-          title={t('faculty.setup.deleteDepartment')}
+          title={t("faculty.setup.deleteDepartment")}
           description={
             deptToDelete
-              ? t('faculty.setup.deleteDepartmentConfirm', { name: deptToDelete.name })
-              : ''
+              ? t("faculty.setup.deleteDepartmentConfirm", { name: deptToDelete.name })
+              : ""
           }
-          confirmLabel={t('common.delete')}
-          cancelLabel={t('common.cancel')}
+          confirmLabel={t("common.delete")}
+          cancelLabel={t("common.cancel")}
           destructive
           onConfirm={handleConfirmDelete}
         />

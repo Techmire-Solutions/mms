@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ObligationCollectionsListCards } from "./ObligationCollectionsListCards";
-import type { ObligationCollectionListContentProps } from "./obligationCollectionListContentShared";
+import type { ObligationCollectionListContentProps } from "../lib/obligationCollectionListContentShared";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -21,7 +21,6 @@ type Props = Omit<
 >;
 
 const mockSender = { id: "contact-1", name: "Syed Ahmad" };
-const mockObligationType = { id: "type-1", name: "Zakat" };
 
 const mockCollection = {
   id: "col-1",
@@ -120,10 +119,7 @@ describe("ObligationCollectionsListCards", () => {
 
   it("falls back to dash when sender name absent", () => {
     const html = renderToStaticMarkup(
-      <ObligationCollectionsListCards
-        {...baseProps}
-        getContact={() => undefined}
-      />,
+      <ObligationCollectionsListCards {...baseProps} getContact={() => undefined} />,
     );
     // EntityCard.Header displayName="—"
     expect(html).toContain("—");

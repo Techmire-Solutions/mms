@@ -1,11 +1,11 @@
-import React from 'react';
-import { Palette, ImageIcon, Loader2 } from 'lucide-react';
-import { SectionCard } from '@/components/ui/SectionCard';
-import { Button } from '@/components/ui/button';
-import BrandColorPanel from '@/components/branding/BrandColorPanel';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { BrandingThemeMode, LogoColorProportion } from '@mms/shared';
-import { ThemeSettingsLogoColourSource } from './ThemeSettingsLogoColourSource';
+import React from "react";
+import { Palette, ImageIcon, Loader2 } from "lucide-react";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Button } from "@/components/ui/button";
+import BrandColorPanel from "@/components/branding/BrandColorPanel";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { BrandingThemeMode, LogoColorProportion } from "@mms/shared";
+import { ThemeSettingsLogoColourSource } from "./ThemeSettingsLogoColourSource";
 
 export interface ThemeSettingsColoursSectionProps {
   t: TranslationFunction;
@@ -50,8 +50,8 @@ export function ThemeSettingsColoursSection({
 }: ThemeSettingsColoursSectionProps): React.JSX.Element {
   return (
     <SectionCard
-      title={t('theme.coloursTitle')}
-      subtitle={t('theme.coloursSubtitle')}
+      title={t("theme.coloursTitle")}
+      subtitle={t("theme.coloursSubtitle")}
       icon={Palette}
       actions={
         <div className="flex flex-wrap items-center gap-2">
@@ -68,7 +68,7 @@ export function ThemeSettingsColoursSection({
             ) : (
               <ImageIcon className="h-3.5 w-3.5 me-1.5" aria-hidden />
             )}
-            {applyingLogoColors ? t('theme.applyingLogoColors') : t('theme.applyLogoColors')}
+            {applyingLogoColors ? t("theme.applyingLogoColors") : t("theme.applyLogoColors")}
           </Button>
           <Button
             type="button"
@@ -77,7 +77,7 @@ export function ThemeSettingsColoursSection({
             onClick={onGoToInstitution}
             className="min-h-11 px-3 text-xs text-muted-foreground hover:text-foreground"
           >
-            {t('theme.goToInstitution')}
+            {t("theme.goToInstitution")}
           </Button>
         </div>
       }

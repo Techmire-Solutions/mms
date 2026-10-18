@@ -1,26 +1,29 @@
-import { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { toggleDashboardSwitchState } from '@/tenant/features/reports/components/pinnedWidgets/useDashboardSectionSettings';
+import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import { toggleDashboardSwitchState } from "@/tenant/features/reports/components/pinnedWidgets/useDashboardSectionSettings";
 import {
   isRestWidgetCollection,
   persistWidgetRecordToggle,
-} from '@/lib/reports/widgetRecordToggle';
-import { useWidgetCollections } from '@/lib/reports/useReportCollections';
-import type { ReportCollection } from '@/lib/reports/reportMetadata';
-import type { CustomWidget } from '@/lib/reports/pinnedWidgetTypes';
-import { useDashboardConfig } from '@/hooks/useDashboardConfig';
-import { WidgetDrilldownModal, CustomWidgetRenderer } from '@/tenant/features/reports/components/pinnedWidgets/CustomWidgetRenderer';
-import { reportClientError } from '@/lib/clientErrorReporting';
-import { useContactsWidgetAggregates } from '@/tenant/hooks/collections/contacts';
-import { useStudentsWidgetAggregates } from '@/tenant/hooks/collections/students';
-import { useFacultyWidgetAggregates } from '@/tenant/hooks/collections/faculty';
-import { useSessionsWidgetAggregates } from '@/tenant/hooks/collections/sessions';
-import { useEnrollmentsWidgetAggregates } from '@/tenant/hooks/collections/enrollments';
-import { applyContactsWidgetWorkDrillDown } from '@/lib/contacts/contactsWidgetWorkDrillDown';
-import { notify } from '@/lib/notify';
-import { useTranslation } from '@/hooks/useTranslation';
-import { DashboardWidgetsHeader } from '@/components/ui/reports/pinnedWidgets/DashboardWidgetsHeader';
-import { DashboardWidgetsGrid } from '@/components/ui/reports/pinnedWidgets/DashboardWidgetsGrid';
+} from "@/lib/reports/widgetRecordToggle";
+import { useWidgetCollections } from "@/lib/reports/useReportCollections";
+import type { ReportCollection } from "@/lib/reports/reportMetadata";
+import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import { useDashboardConfig } from "@/hooks/useDashboardConfig";
+import {
+  WidgetDrilldownModal,
+  CustomWidgetRenderer,
+} from "@/tenant/features/reports/components/pinnedWidgets/CustomWidgetRenderer";
+import { reportClientError } from "@/lib/clientErrorReporting";
+import { useContactsWidgetAggregates } from "@/tenant/hooks/collections/contacts";
+import { useStudentsWidgetAggregates } from "@/tenant/hooks/collections/students";
+import { useFacultyWidgetAggregates } from "@/tenant/hooks/collections/faculty";
+import { useSessionsWidgetAggregates } from "@/tenant/hooks/collections/sessions";
+import { useEnrollmentsWidgetAggregates } from "@/tenant/hooks/collections/enrollments";
+import { applyContactsWidgetWorkDrillDown } from "@/lib/contacts/contactsWidgetWorkDrillDown";
+import { notify } from "@/lib/notify";
+import { useTranslation } from "@/hooks/useTranslation";
+import { DashboardWidgetsHeader } from "@/components/reports/pinnedWidgets/DashboardWidgetsHeader";
+import { DashboardWidgetsGrid } from "@/components/reports/pinnedWidgets/DashboardWidgetsGrid";
 
 interface DashboardWidgetsProps {
   widgets?: CustomWidget[];
@@ -64,27 +67,27 @@ export function DashboardWidgets({
   useSessionsWidgetAggregates(activeWidgets);
   useEnrollmentsWidgetAggregates(activeWidgets);
 
-  const handleMetricClick = ((widget: CustomWidget) => {
+  const handleMetricClick = (widget: CustomWidget) => {
     if (applyContactsWidgetWorkDrillDown(widget)) return;
     setDrilldownWidget(widget);
-  });
+  };
 
   const handleLocalUnpin = (id: string) => {
     onUnpin?.(id);
   };
 
   const handleToggleSwitchState = (widget: CustomWidget) => {
-    if (widget.switchActionType === 'app_setting') {
-      toggleDashboardSwitchState(widget.switchStateKey || '');
+    if (widget.switchActionType === "app_setting") {
+      toggleDashboardSwitchState(widget.switchStateKey || "");
       return;
     }
 
     const collectionName = widget.switchCollection;
     const recordId = widget.switchRecordId;
-    const targetField = widget.switchField || 'status';
+    const targetField = widget.switchField || "status";
     if (!collectionName || !recordId) return;
     if (!isRestWidgetCollection(collectionName)) {
-      notify.error(t('reports.widgets.errorToggleFailed'));
+      notify.error(t("reports.widgets.errorToggleFailed"));
       return;
     }
     void (async () => {
@@ -95,8 +98,8 @@ export function DashboardWidgets({
           field: targetField,
         });
       } catch (error) {
-        reportClientError(error, { context: 'reports.widgetToggle' });
-        notify.error(t('reports.widgets.errorToggleFailed'));
+        reportClientError(error, { context: "reports.widgetToggle" });
+        notify.error(t("reports.widgets.errorToggleFailed"));
       }
     })();
   };
@@ -105,7 +108,10 @@ export function DashboardWidgets({
 
   return (
     <div className="space-y-4 text-start font-sans mt-5">
-      <DashboardWidgetsHeader gridMode={gridMode} onToggleGridMode={(mode) => updatePref('gridMode', mode)} />
+      <DashboardWidgetsHeader
+        gridMode={gridMode}
+        onToggleGridMode={(mode) => updatePref("gridMode", mode)}
+      />
 
       <DashboardWidgetsGrid
         widgets={activeWidgets}

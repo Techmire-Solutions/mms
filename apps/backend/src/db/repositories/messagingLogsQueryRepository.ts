@@ -1,9 +1,9 @@
-import { and, eq, gte, ilike, isNull, lte, or, sql, desc } from 'drizzle-orm';
-import { messageLogs } from '../schema.js';
-import type { Message } from '@mms/shared';
-import { MESSAGE_LOGS_DEFAULT_PAGE_SIZE, toSqlSearchPattern } from '@mms/shared';
-import { withTenant } from '../tenant-context.js';
-import { logRowToRecord } from './messagingLogsRepository.js';
+import { and, eq, gte, ilike, isNull, lte, or, sql, desc } from "drizzle-orm";
+import { messageLogs } from "../schema.js";
+import type { Message } from "@mms/shared";
+import { MESSAGE_LOGS_DEFAULT_PAGE_SIZE, toSqlSearchPattern } from "@mms/shared";
+import { withTenant } from "../tenant-context.js";
+import { logRowToRecord } from "./messagingLogsRepository.js";
 
 /** Matches messagingLogsQuerySchema pageSize max — defensive for direct callers. */
 const MESSAGE_LOGS_MAX_PAGE_SIZE = 100;
@@ -19,7 +19,7 @@ export interface MessageLogsFilterQuery {
   pageSize?: number;
   limit?: number;
   sortField?: string;
-  sortDir?: 'asc' | 'desc' | '';
+  sortDir?: "asc" | "desc" | "";
   includeDeleted?: boolean | string;
 }
 
@@ -37,7 +37,12 @@ export async function queryFilteredMessageLogs(
   query: MessageLogsFilterQuery = {},
 ): Promise<MessageLogsPageResult> {
   const subdomain = workspaceSubdomain?.trim().toLowerCase();
-  const effectivePageSize = query.pageSize && query.pageSize > 0 ? query.pageSize : (query.limit && query.limit > 0 ? query.limit : MESSAGE_LOGS_DEFAULT_PAGE_SIZE);
+  const effectivePageSize =
+    query.pageSize && query.pageSize > 0
+      ? query.pageSize
+      : query.limit && query.limit > 0
+        ? query.limit
+        : MESSAGE_LOGS_DEFAULT_PAGE_SIZE;
   const pageSize = Math.min(effectivePageSize, MESSAGE_LOGS_MAX_PAGE_SIZE);
 
   if (!subdomain) {
@@ -61,15 +66,15 @@ export async function queryFilteredMessageLogs(
       conditions.push(isNull(messageLogs.deletedAt));
     }
 
-    if (query.channel && query.channel !== 'all') {
+    if (query.channel && query.channel !== "all") {
       conditions.push(eq(messageLogs.channel, query.channel));
     }
 
-    if (query.category && query.category !== 'all') {
+    if (query.category && query.category !== "all") {
       conditions.push(eq(messageLogs.category, query.category));
     }
 
-    if (query.status && query.status !== 'all') {
+    if (query.status && query.status !== "all") {
       conditions.push(eq(messageLogs.status, query.status));
     }
 
@@ -213,32 +218,33 @@ export async function queryMessagingMetrics(
         )
     `);
 
-    const rows = ((result as { rows?: Record<string, unknown>[] }).rows ?? (Array.isArray(result) ? result : [])) as Record<string, unknown>[];
+    const rows = ((result as { rows?: Record<string, unknown>[] }).rows ??
+      (Array.isArray(result) ? result : [])) as Record<string, unknown>[];
     const row = (Array.isArray(rows) ? rows[0] : {}) ?? {};
 
     const num = (key: string): number => Number(row[key] ?? 0) || 0;
-    const total = num('total');
-    const sentCount = num('sent_count');
-    const deliveredCount = num('delivered_count');
+    const total = num("total");
+    const sentCount = num("sent_count");
+    const deliveredCount = num("delivered_count");
     const successfulTotal = sentCount + deliveredCount;
 
     return {
       total,
-      smsCount: num('sms_count'),
-      whatsappCount: num('whatsapp_count'),
-      emailCount: num('email_count'),
+      smsCount: num("sms_count"),
+      whatsappCount: num("whatsapp_count"),
+      emailCount: num("email_count"),
       sentCount,
       deliveredCount,
-      failedCount: num('failed_count'),
-      skippedCount: num('skipped_count'),
-      queuedCount: num('queued_count'),
+      failedCount: num("failed_count"),
+      skippedCount: num("skipped_count"),
+      queuedCount: num("queued_count"),
       successRate: total > 0 ? Math.round((successfulTotal / total) * 100) : 100,
       categoryBreakdown: {
-        general: num('cat_general'),
-        academic: num('cat_academic'),
-        financial: num('cat_financial'),
-        attendance: num('cat_attendance'),
-        emergency: num('cat_emergency'),
+        general: num("cat_general"),
+        academic: num("cat_academic"),
+        financial: num("cat_financial"),
+        attendance: num("cat_attendance"),
+        emergency: num("cat_emergency"),
       },
     };
   });

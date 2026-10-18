@@ -1,10 +1,10 @@
-import { JournalEntriesAdvancedMode } from '@/tenant/features/accounting/components/JournalEntriesAdvancedMode';
-import { JournalEntriesSimpleMode } from '@/tenant/features/accounting/components/JournalEntriesSimpleMode';
-import type { JournalEntriesProps } from '@/tenant/features/accounting/components/journalEntriesTypes';
-import type { JournalEntriesServerQueryProps } from '@/tenant/features/accounting/components/journalEntriesControllerFilters';
-import { useJournalEntriesController } from '@/tenant/features/accounting/components/useJournalEntriesController';
+import { JournalEntriesAdvancedMode } from "@/tenant/features/accounting/components/JournalEntriesAdvancedMode";
+import { JournalEntriesSimpleMode } from "@/tenant/features/accounting/components/JournalEntriesSimpleMode";
+import type { JournalEntriesProps } from "@/tenant/features/accounting/lib/journalEntriesTypes";
+import type { JournalEntriesServerQueryProps } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
+import { useJournalEntriesController } from "@/tenant/features/accounting/components/useJournalEntriesController";
 
-export type { JournalEntriesProps } from '@/tenant/features/accounting/components/journalEntriesTypes';
+export type { JournalEntriesProps } from "@/tenant/features/accounting/lib/journalEntriesTypes";
 
 /**
  * `journalEntriesTypes` keeps the directory-level contract; the server query
@@ -35,7 +35,7 @@ export function JournalEntries(props: JournalEntriesWithQueryProps) {
   const controller = useJournalEntriesController(props);
   const columnVisible = isColumnVisible ?? ALWAYS_COLUMN_VISIBLE;
 
-  if (controller.mode === 'simple') {
+  if (controller.mode === "simple") {
     return (
       <JournalEntriesSimpleMode
         mode={controller.mode}
@@ -106,7 +106,7 @@ export function JournalEntries(props: JournalEntriesWithQueryProps) {
       onShowFiltersChange={controller.setShowFilters}
       onOpenNew={() => {
         controller.setSelected(null);
-        controller.setModal('new');
+        controller.setModal("new");
       }}
       onRequestBulkTrash={controller.requestBulkTrash}
       onConfirmBulkTrash={controller.confirmBulkTrash}
@@ -121,10 +121,10 @@ export function JournalEntries(props: JournalEntriesWithQueryProps) {
         controller.setModal(null);
         controller.setSelected(null);
       }}
-      onEditSelected={() => controller.setModal('edit')}
+      onEditSelected={() => controller.setModal("edit")}
       onViewEntry={(entry) => {
         controller.setSelected(entry);
-        controller.setModal('view');
+        controller.setModal("view");
       }}
       onRequestReverse={controller.requestReverse}
       onConfirmReverse={controller.confirmReverse}

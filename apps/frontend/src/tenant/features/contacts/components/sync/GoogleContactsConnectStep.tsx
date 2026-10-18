@@ -2,9 +2,9 @@ import type React from "react";
 import { ExternalLink, Globe, Link2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldErrorMessage } from "@/components/ui/FormField";
+import { Field, FieldErrorMessage } from "@/components/app/FormField";
 import { FORM_ERROR_BOX } from "@/components/ui/formStyles";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface GoogleContactsConnectStepProps {
@@ -70,10 +70,7 @@ export function GoogleContactsConnectStep({
         </WarningCallout>
       )}
 
-      <FieldErrorMessage
-        message={!showAuthCode ? error : undefined}
-        className={FORM_ERROR_BOX}
-      />
+      <FieldErrorMessage message={!showAuthCode ? error : undefined} className={FORM_ERROR_BOX} />
     </div>
   );
 }

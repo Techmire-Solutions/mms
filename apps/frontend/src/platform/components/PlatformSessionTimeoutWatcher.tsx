@@ -1,5 +1,5 @@
-import type React from 'react';
-import { usePlatformSessionTimeout } from '@/platform/hooks/usePlatformSessionTimeout';
+import type React from "react";
+import { usePlatformSessionTimeout } from "@/platform/hooks/usePlatformSessionTimeout";
 
 export interface PlatformSessionTimeoutWatcherProps {
   enabled: boolean;

@@ -19,4 +19,3 @@ export function useFacultyPageTabPanelProps(
     workTierProps: buildFacultyWorkTierProps(workSource),
   };
 }
-

@@ -6,9 +6,10 @@ import {
   getMultiTierCacheMetrics,
   resetMultiTierCacheMetrics,
   L1_MAX_HEAP_BYTES,
+  type CacheValue,
   type MultiTierCacheOptions,
   type MultiTierCacheMetrics,
-} from './cache/multiTierCache.js';
+} from "./cache/multiTierCache.js";
 import {
   invalidateMultiTierCache,
   evictLocalL1Cache,
@@ -16,8 +17,8 @@ import {
   CACHE_INVALIDATION_CHANNEL,
   CURRENT_NODE_ID,
   type InvalidationParams,
-} from './cache/cacheInvalidation.js';
-import { redisGet, redisSet, redisDel, redisDelPattern } from './redis.js';
+} from "./cache/cacheInvalidation.js";
+import { redisGet, redisSet, redisDel, redisDelPattern } from "./redis.js";
 
 export {
   l1LruCache,
@@ -53,7 +54,7 @@ export async function getCached<T>(key: string): Promise<T | null> {
   if (l2Value !== null && l2Value !== undefined) {
     try {
       const parsed = JSON.parse(l2Value) as T;
-      l1LruCache.set(key, parsed);
+      l1LruCache.set(key, parsed as CacheValue);
       return parsed;
     } catch {
       return null;
@@ -69,7 +70,7 @@ export async function getCached<T>(key: string): Promise<T | null> {
  */
 export async function setCached(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
   const ttlMs = ttlSeconds ? ttlSeconds * 1000 : undefined;
-  l1LruCache.set(key, value, { ttl: ttlMs });
+  l1LruCache.set(key, value as CacheValue, { ttl: ttlMs });
 
   const stringValue = JSON.stringify(value);
   await redisSet(key, stringValue, ttlSeconds);
@@ -98,17 +99,17 @@ export async function invalidateCacheKey(key: string): Promise<void> {
   l1LruCache.delete(key);
   await redisDel(key);
 
-  const parts = key.split(':');
-  if (parts.length >= 4 && parts[0] === 'tenant') {
+  const parts = key.split(":");
+  if (parts.length >= 4 && parts[0] === "tenant") {
     await invalidateMultiTierCache({
       tenantId: parts[1],
       domain: parts[2],
-      key: parts.slice(3).join(':'),
+      key: parts.slice(3).join(":"),
     });
   } else {
     await invalidateMultiTierCache({
-      tenantId: 'global',
-      domain: 'raw',
+      tenantId: "global",
+      domain: "raw",
       key,
     });
   }
@@ -118,10 +119,10 @@ export async function invalidateCacheKey(key: string): Promise<void> {
  * Invalidates keys matching a pattern in both L1 and L2 caches, and broadcasts the invalidation.
  */
 export async function invalidateCachePattern(pattern: string): Promise<void> {
-  if (pattern === '*') {
+  if (pattern === "*") {
     l1LruCache.clear();
   } else {
-    const prefix = pattern.replace(/\*/g, '');
+    const prefix = pattern.replace(/\*/g, "");
     for (const k of l1LruCache.keys()) {
       if (k.startsWith(prefix)) {
         l1LruCache.delete(k);
@@ -131,8 +132,8 @@ export async function invalidateCachePattern(pattern: string): Promise<void> {
 
   await redisDelPattern(pattern);
 
-  const parts = pattern.split(':');
-  if (parts.length >= 3 && parts[0] === 'tenant') {
+  const parts = pattern.split(":");
+  if (parts.length >= 3 && parts[0] === "tenant") {
     await invalidateMultiTierCache({
       tenantId: parts[1],
       domain: parts[2],
@@ -141,6 +142,6 @@ export async function invalidateCachePattern(pattern: string): Promise<void> {
 }
 
 // Ensure subscriber is initialized in non-test environments
-if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
   initCacheInvalidationSubscriber();
 }

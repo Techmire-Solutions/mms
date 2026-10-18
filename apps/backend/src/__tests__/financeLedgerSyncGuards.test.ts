@@ -1,7 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { createFinanceUseCases } from '../finance/use-cases/financeUseCases.js';
-import type { FinanceRepository } from '../finance/repository/financeRepository.js';
-import { runWithTenant } from '../lib/tenantContext.js';
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { createFinanceUseCases } from "../finance/use-cases/financeUseCases.js";
+import type { FinanceRepository } from "../finance/repository/financeRepository.js";
+import { runWithTenant } from "../lib/tenantContext.js";
 
 /**
  * `assertInvoiceAmountsEditable` reads the stored invoice through the module-level
@@ -11,14 +11,16 @@ import { runWithTenant } from '../lib/tenantContext.js';
 const mockAccountingRepo = vi.hoisted(() => ({ findEntryIdBySource: vi.fn() }));
 const mockInvoiceLookup = vi.hoisted(() => ({ findInvoiceById: vi.fn() }));
 
-vi.mock('../db/repositories/accountingRepository.js', () => mockAccountingRepo);
-vi.mock('../finance/repository/financeRepositoryAdapter.js', async (importOriginal) => {
-  const actual = await importOriginal<
-    typeof import('../finance/repository/financeRepositoryAdapter.js')
-  >();
+vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
+vi.mock("../finance/repository/financeRepositoryAdapter.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../finance/repository/financeRepositoryAdapter.js")>();
   return {
     ...actual,
-    financeRepository: { ...actual.financeRepository, findInvoiceById: mockInvoiceLookup.findInvoiceById },
+    financeRepository: {
+      ...actual.financeRepository,
+      findInvoiceById: mockInvoiceLookup.findInvoiceById,
+    },
   };
 });
 
@@ -28,7 +30,9 @@ function createFakeRepo(): FinanceRepository {
     findInvoiceById: vi.fn().mockResolvedValue(null),
     findInvoicesByIds: vi.fn().mockResolvedValue([]),
     saveInvoice: vi.fn().mockResolvedValue(undefined),
-    listInvoicesPage: vi.fn().mockResolvedValue({ invoices: [], total: 0, page: 1, limit: 12, hasMore: false }),
+    listInvoicesPage: vi
+      .fn()
+      .mockResolvedValue({ invoices: [], total: 0, page: 1, limit: 12, hasMore: false }),
     bulkUpdateInvoicesStatus: vi.fn().mockResolvedValue({ succeeded: 2, failed: 0 }),
     bulkSoftDeleteInvoices: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
     bulkRestoreInvoices: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
@@ -38,7 +42,9 @@ function createFakeRepo(): FinanceRepository {
     savePayment: vi.fn().mockResolvedValue(undefined),
     bulkSoftDeletePayments: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
     bulkRestorePayments: vi.fn().mockResolvedValue({ succeeded: 0, failed: 0 }),
-    listPaymentsPage: vi.fn().mockResolvedValue({ payments: [], total: 0, page: 1, limit: 12, hasMore: false }),
+    listPaymentsPage: vi
+      .fn()
+      .mockResolvedValue({ payments: [], total: 0, page: 1, limit: 12, hasMore: false }),
     aggregateFinanceCommandMetrics: vi.fn().mockResolvedValue({
       totalInvoices: 0,
       outstanding: 0,
@@ -62,28 +68,28 @@ function createFakeRepo(): FinanceRepository {
 }
 
 const storedInvoice = {
-  id: 'inv-1',
-  studentId: 'stu-1',
-  status: 'pending',
+  id: "inv-1",
+  studentId: "stu-1",
+  status: "pending",
   baseFee: 100,
   discountAmt: 0,
   finalAmt: 100,
   paidAmt: 0,
   lateFeeAmt: 0,
   creditedAmt: 0,
-  dueDate: '2026-06-01',
+  dueDate: "2026-06-01",
   lines: [],
 };
 
-describe('finance ↔ ledger sync guards', () => {
+describe("finance ↔ ledger sync guards", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockInvoiceLookup.findInvoiceById.mockResolvedValue(storedInvoice);
     mockAccountingRepo.findEntryIdBySource.mockResolvedValue(null);
   });
 
-  describe('bulkUpdateInvoicesStatus', () => {
-    it('refuses to cancel invoices in bulk, which would skip the ledger reversal', async () => {
+  describe("bulkUpdateInvoicesStatus", () => {
+    it("refuses to cancel invoices in bulk, which would skip the ledger reversal", async () => {
       // This endpoint used to accept 'cancelled' and write a bare status, leaving
       // the Dr AR / Cr Income entry posted forever while the invoice read
       // 'cancelled'.
@@ -91,100 +97,108 @@ describe('finance ↔ ledger sync guards', () => {
       const useCases = createFinanceUseCases(repo);
 
       await expect(
-        runWithTenant('demo', () => useCases.bulkUpdateInvoicesStatus(['inv-1'], 'cancelled')),
+        runWithTenant("demo", () => useCases.bulkUpdateInvoicesStatus(["inv-1"], "cancelled")),
       ).rejects.toThrow(/cancel-invoice action/);
       expect(repo.bulkUpdateInvoicesStatus).not.toHaveBeenCalled();
     });
 
-    it('refuses to mark invoices paid in bulk, which would post no payment', async () => {
+    it("refuses to mark invoices paid in bulk, which would post no payment", async () => {
       const repo = createFakeRepo();
       const useCases = createFinanceUseCases(repo);
 
       await expect(
-        runWithTenant('demo', () => useCases.bulkUpdateInvoicesStatus(['inv-1'], 'paid')),
+        runWithTenant("demo", () => useCases.bulkUpdateInvoicesStatus(["inv-1"], "paid")),
       ).rejects.toThrow(/Record a payment/);
       expect(repo.bulkUpdateInvoicesStatus).not.toHaveBeenCalled();
     });
 
-    it('still allows ledger-neutral statuses', async () => {
+    it("still allows ledger-neutral statuses", async () => {
       const repo = createFakeRepo();
       const useCases = createFinanceUseCases(repo);
 
-      const result = await runWithTenant('demo', () =>
-        useCases.bulkUpdateInvoicesStatus(['inv-1', 'inv-2'], 'overdue'),
+      const result = await runWithTenant("demo", () =>
+        useCases.bulkUpdateInvoicesStatus(["inv-1", "inv-2"], "overdue"),
       );
 
       expect(result).toEqual({ succeeded: 2, failed: 0 });
-      expect(repo.bulkUpdateInvoicesStatus).toHaveBeenCalledWith('demo', ['inv-1', 'inv-2'], 'overdue');
+      expect(repo.bulkUpdateInvoicesStatus).toHaveBeenCalledWith(
+        "demo",
+        ["inv-1", "inv-2"],
+        "overdue",
+      );
     });
   });
 
-  describe('updateInvoiceById', () => {
-    it('rejects editing a posted invoice amount', async () => {
+  describe("updateInvoiceById", () => {
+    it("rejects editing a posted invoice amount", async () => {
       // Nothing re-posted the difference, so the ledger mirrored the original
       // figure forever and AR/revenue silently disagreed with the document.
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue('je-invoice');
+      mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-invoice");
       const repo = createFakeRepo();
       const useCases = createFinanceUseCases(repo);
 
       await expect(
-        runWithTenant('demo', () => useCases.updateInvoiceById('inv-1', { finalAmt: 250 } as any)),
+        runWithTenant("demo", () => useCases.updateInvoiceById("inv-1", { finalAmt: 250 } as any)),
       ).rejects.toThrow(/reverse it with a credit note/);
       expect(repo.saveInvoice).not.toHaveBeenCalled();
     });
 
-    it('rejects a late-fee or paid-amount edit on a posted invoice', async () => {
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue('je-invoice');
+    it("rejects a late-fee or paid-amount edit on a posted invoice", async () => {
+      mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-invoice");
       const useCases = createFinanceUseCases(createFakeRepo());
 
       await expect(
-        runWithTenant('demo', () => useCases.updateInvoiceById('inv-1', { lateFeeAmt: 40 } as any)),
+        runWithTenant("demo", () => useCases.updateInvoiceById("inv-1", { lateFeeAmt: 40 } as any)),
       ).rejects.toThrow(/lateFeeAmt/);
       await expect(
-        runWithTenant('demo', () => useCases.updateInvoiceById('inv-1', { paidAmt: 100 } as any)),
+        runWithTenant("demo", () => useCases.updateInvoiceById("inv-1", { paidAmt: 100 } as any)),
       ).rejects.toThrow(/paidAmt/);
     });
 
-    it('allows a non-financial edit on a posted invoice', async () => {
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue('je-invoice');
+    it("allows a non-financial edit on a posted invoice", async () => {
+      mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-invoice");
       const repo = createFakeRepo();
       vi.mocked(repo.findInvoiceById).mockResolvedValue(storedInvoice as any);
       const useCases = createFinanceUseCases(repo);
 
-      await runWithTenant('demo', () => useCases.updateInvoiceById('inv-1', { status: 'partial' } as any));
+      await runWithTenant("demo", () =>
+        useCases.updateInvoiceById("inv-1", { status: "partial" } as any),
+      );
 
       expect(repo.saveInvoice).toHaveBeenCalled();
     });
 
-    it('allows a client that echoes the unchanged amounts back', async () => {
+    it("allows a client that echoes the unchanged amounts back", async () => {
       // The UI sends the whole invoice on any edit; only real differences block.
-      mockAccountingRepo.findEntryIdBySource.mockResolvedValue('je-invoice');
+      mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-invoice");
       const repo = createFakeRepo();
       vi.mocked(repo.findInvoiceById).mockResolvedValue(storedInvoice as any);
       const useCases = createFinanceUseCases(repo);
 
-      await runWithTenant('demo', () =>
-        useCases.updateInvoiceById('inv-1', {
+      await runWithTenant("demo", () =>
+        useCases.updateInvoiceById("inv-1", {
           baseFee: 100,
           discountAmt: 0,
           finalAmt: 100,
           paidAmt: 0,
           lateFeeAmt: 0,
-          status: 'overdue',
+          status: "overdue",
         } as any),
       );
 
       expect(repo.saveInvoice).toHaveBeenCalled();
     });
 
-    it('allows amount edits when the invoice was never posted', async () => {
+    it("allows amount edits when the invoice was never posted", async () => {
       // Workspaces without posting rules keep full editing freedom.
       mockAccountingRepo.findEntryIdBySource.mockResolvedValue(null);
       const repo = createFakeRepo();
       vi.mocked(repo.findInvoiceById).mockResolvedValue(storedInvoice as any);
       const useCases = createFinanceUseCases(repo);
 
-      await runWithTenant('demo', () => useCases.updateInvoiceById('inv-1', { finalAmt: 250 } as any));
+      await runWithTenant("demo", () =>
+        useCases.updateInvoiceById("inv-1", { finalAmt: 250 } as any),
+      );
 
       expect(repo.saveInvoice).toHaveBeenCalled();
     });

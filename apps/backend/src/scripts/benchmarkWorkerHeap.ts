@@ -6,12 +6,12 @@ import {
   QUEUE_BULK_EXPORT,
   QUEUE_MESSAGING_BROADCAST,
   DEFAULT_JOB_OPTIONS,
-} from '../worker/queues/index.js';
-import type { BackgroundJobRecord } from '@mms/shared';
-import { logger } from '../lib/logger.js';
+} from "../worker/queues/index.js";
+import type { BackgroundJobRecord } from "@mms/shared";
+import { logger } from "../lib/logger.js";
 
 async function runBenchmark(): Promise<void> {
-  logger.info('Starting Worker Memory Benchmark (500 Concurrent Tasks)...');
+  logger.info("Starting Worker Memory Benchmark (500 Concurrent Tasks)...");
 
   // Stub queue.add for high-throughput in-memory benchmark
   const queues = [QUEUE_PDF_RENDERING, QUEUE_BULK_EXPORT, QUEUE_MESSAGING_BROADCAST];
@@ -22,41 +22,41 @@ async function runBenchmark(): Promise<void> {
     })) as typeof q.add;
   }
 
-  if (typeof globalThis.gc === 'function') {
+  if (typeof globalThis.gc === "function") {
     globalThis.gc();
   }
   const memBefore = process.memoryUsage();
 
   const jobKinds = [
-    'export-pdf',
-    'export-csv',
-    'whatsapp-broadcast',
-    'fee-receipt-pdf',
-    'export-vcf',
-    'generate-report-card',
+    "export-pdf",
+    "export-csv",
+    "whatsapp-broadcast",
+    "fee-receipt-pdf",
+    "export-vcf",
+    "generate-report-card",
   ];
-  const tenantId = 'benchmark-tenant';
-  const userId = 'bench-user-01';
+  const tenantId = "benchmark-tenant";
+  const userId = "bench-user-01";
 
   const startTime = performance.now();
   const dispatchPromises: Promise<boolean>[] = [];
 
   for (let i = 0; i < 500; i++) {
     const kind = jobKinds[i % jobKinds.length]!;
-    const moduleId = kind.includes('whatsapp') ? 'messaging' : 'contacts';
+    const moduleId = kind.includes("whatsapp") ? "messaging" : "contacts";
     const job: BackgroundJobRecord = {
       id: `bench-job-${i}`,
       moduleId,
       kind,
       label: `Bench Job ${i}`,
-      status: 'pending',
+      status: "pending",
       createdAt: new Date().toISOString(),
     };
 
     dispatchPromises.push(
       dispatchJobToQueue(tenantId, userId, job, {
         index: i,
-        payloadData: `data-chunk-${i}-${'x'.repeat(128)}`,
+        payloadData: `data-chunk-${i}-${"x".repeat(128)}`,
         extraUnusedField: undefined, // test undefined field trimming
       }),
     );
@@ -65,7 +65,7 @@ async function runBenchmark(): Promise<void> {
   const results = await Promise.all(dispatchPromises);
   const durationMs = performance.now() - startTime;
 
-  if (typeof globalThis.gc === 'function') {
+  if (typeof globalThis.gc === "function") {
     globalThis.gc();
   }
   const memAfter = process.memoryUsage();
@@ -82,13 +82,13 @@ async function runBenchmark(): Promise<void> {
       heapDeltaMb: Math.round(heapDeltaMb * 100) / 100,
       jobRetention: DEFAULT_JOB_OPTIONS.removeOnComplete,
     },
-    'Benchmark Completed Successfully',
+    "Benchmark Completed Successfully",
   );
 
   await closeAllQueues();
 
   if (heapDeltaMb > 50) {
-    logger.error({ heapDeltaMb }, 'Heap delta exceeded 50MB bound!');
+    logger.error({ heapDeltaMb }, "Heap delta exceeded 50MB bound!");
     process.exit(1);
   }
 
@@ -96,6 +96,6 @@ async function runBenchmark(): Promise<void> {
 }
 
 runBenchmark().catch((err) => {
-  logger.fatal({ err }, 'Benchmark failed unexpectedly');
+  logger.fatal({ err }, "Benchmark failed unexpectedly");
   process.exit(1);
 });

@@ -1,10 +1,10 @@
-import type { JSX } from 'react';
-import { Printer } from 'lucide-react';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { EntityMessagingActions } from '@/components/ui/EntityMessagingActions';
-import { ModuleRowActionsMenu } from '@/components/ui/ModuleRowActionsMenu';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { ObligationCollection } from '@/lib/data/obligationsData';
+import type { JSX } from "react";
+import { Printer } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { ObligationCollection } from "@/lib/data/obligationsData";
 
 interface ObligationCollectionRowActionsProps {
   collection: ObligationCollection;
@@ -15,7 +15,7 @@ interface ObligationCollectionRowActionsProps {
   hideViewItem?: boolean;
   onView: (collection: ObligationCollection) => void;
   onPrint: (collection: ObligationCollection) => void;
-  onMessage?: (channel: 'sms' | 'whatsapp' | 'email', collections: ObligationCollection[]) => void;
+  onMessage?: (channel: "sms" | "whatsapp" | "email", collections: ObligationCollection[]) => void;
   onTrashAction: (id: string) => void;
   triggerClassName?: string;
 }
@@ -44,10 +44,10 @@ export function ObligationCollectionRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t('obligations.table.actions')}
-      viewLabel={t('obligations.actions.viewShort')}
-      deleteLabel={t('common.delete')}
-      restoreLabel={t('obligations.trash.restore')}
+      triggerLabel={t("obligations.table.actions")}
+      viewLabel={t("obligations.actions.viewShort")}
+      deleteLabel={t("common.delete")}
+      restoreLabel={t("obligations.trash.restore")}
       archived={showDeleted}
       canWrite={canWrite}
       canDelete={canDelete}
@@ -62,21 +62,22 @@ export function ObligationCollectionRowActions({
           <>
             {showPrint ? (
               <DropdownMenuItem onClick={() => onPrint(collection)}>
-                <Printer className="w-3.5 h-3.5 me-2" /> {t('obligations.actions.printShort')}
+                <Printer className="w-3.5 h-3.5 me-2" /> {t("obligations.actions.printShort")}
               </DropdownMenuItem>
             ) : null}
             {showMessaging && onMessage ? (
-              <EntityMessagingActions variant="dropdown"
+              <EntityMessagingActions
+                variant="dropdown"
                 showWhatsApp
                 showSms
                 showEmail={false}
-                onWhatsApp={() => onMessage('whatsapp', [collection])}
-                onSms={() => onMessage('sms', [collection])}
+                onWhatsApp={() => onMessage("whatsapp", [collection])}
+                onSms={() => onMessage("sms", [collection])}
                 onEmail={() => undefined}
                 labels={{
-                  whatsapp: t('obligations.list.actionWhatsApp'),
-                  sms: t('obligations.list.actionSms'),
-                  email: t('messaging.channel.email'),
+                  whatsapp: t("obligations.list.actionWhatsApp"),
+                  sms: t("obligations.list.actionSms"),
+                  email: t("messaging.channel.email"),
                 }}
               />
             ) : null}

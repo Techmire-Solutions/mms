@@ -2,9 +2,7 @@ import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { OnboardingData } from "@/platform/pages/onboarding/OnboardingWizard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Field } from "@/components/ui/FormField";
+import { Checkbox, Field, Input } from "@shared/ui";
 import { AuthEmailField } from "@/components/entry";
 import { AdminSetupPasswordFields } from "@/platform/pages/onboarding/steps/AdminSetupPasswordFields";
 
@@ -30,7 +28,7 @@ export default function AdminSetup({ data, onChange }: AdminSetupProps) {
   const { t } = useTranslation();
 
   const update = (field: keyof OnboardingData, fieldValue: unknown) => {
-    onChange((prev) => ({ ...prev, [field]: fieldValue } as OnboardingData));
+    onChange((prev) => ({ ...prev, [field]: fieldValue }) as OnboardingData);
   };
 
   return (

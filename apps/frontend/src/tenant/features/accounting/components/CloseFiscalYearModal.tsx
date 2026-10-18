@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useEffect } from "react";
 import type { Account, FiscalYear } from "@mms/shared";
 import { Lock } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { FormModal } from "@/components/app/FormModal";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useCloseFiscalYear } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
 import { notify } from "@/lib/notify";
@@ -75,9 +75,7 @@ export function CloseFiscalYearModal({
         // reported as a failed close.
       }
     } catch (error) {
-      setCloseError(
-        accountingErrorMessage(error) ?? t("accounting.settings.fy.closeFailed"),
-      );
+      setCloseError(accountingErrorMessage(error) ?? t("accounting.settings.fy.closeFailed"));
     } finally {
       setClosing(false);
     }
@@ -117,9 +115,7 @@ export function CloseFiscalYearModal({
           id="fy-close-retained-earnings"
           label={t("accounting.settings.fields.retainedEarningsAccount")}
           hint={t("accounting.settings.fy.closeAccountHint")}
-          error={
-            closeAccountId ? undefined : t("accounting.settings.fy.closeAccountRequired")
-          }
+          error={closeAccountId ? undefined : t("accounting.settings.fy.closeAccountRequired")}
         >
           <FormSelect
             id="fy-close-retained-earnings"

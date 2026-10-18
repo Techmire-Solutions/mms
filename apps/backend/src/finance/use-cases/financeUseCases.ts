@@ -1,9 +1,9 @@
-import type { FinanceRepository } from '../repository/financeRepository.js';
-import { financeRepository } from '../repository/financeRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { invoiceRecordSchema, paymentRecordSchema } from '@mms/shared';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
-import { runInTransaction } from '../../db/database.js';
+import type { FinanceRepository } from "../repository/financeRepository.js";
+import { financeRepository } from "../repository/financeRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { invoiceRecordSchema, paymentRecordSchema } from "@mms/shared";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
+import { runInTransaction } from "../../db/database.js";
 import {
   dedupeTrimmedIds,
   getOutstandingAmountForInvoice,
@@ -19,12 +19,18 @@ import {
   type Payment,
   type PaymentCreateInput,
   type PaymentUpdate,
-} from '@mms/shared';
-import { allocateNextInvoiceNumber, replacePaymentAllocations } from '../../db/repositories/financeBillingRepository.js';
-import { createFinanceLifecycleOperations } from './financeRecordLifecycle.js';
-import { tryPostInvoiceJournal, tryPostPaymentJournal } from '../../accounting/ledgerPosting/ledgerPostingService.js';
-import { findEntryIdBySource } from '../../db/repositories/accountingRepository.js';
-import { loadFinanceModulePreferences } from '../../services/financePreferencesService.js';
+} from "@mms/shared";
+import {
+  allocateNextInvoiceNumber,
+  replacePaymentAllocations,
+} from "../../db/repositories/financeBillingRepository.js";
+import { createFinanceLifecycleOperations } from "./financeRecordLifecycle.js";
+import {
+  tryPostInvoiceJournal,
+  tryPostPaymentJournal,
+} from "../../accounting/ledgerPosting/ledgerPostingService.js";
+import { findEntryIdBySource } from "../../db/repositories/accountingRepository.js";
+import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
 
 /**
  * Money fields whose change would invalidate an invoice's already-posted ledger
@@ -33,14 +39,14 @@ import { loadFinanceModulePreferences } from '../../services/financePreferencesS
  * transitively because they recompute the totals.
  */
 const LEDGER_SENSITIVE_INVOICE_AMOUNTS = [
-  'finalAmt',
-  'discountAmt',
-  'lateFeeAmt',
-  'paidAmt',
+  "finalAmt",
+  "discountAmt",
+  "lateFeeAmt",
+  "paidAmt",
 ] as const satisfies readonly (keyof Invoice)[];
 
 /** Invoice statuses that imply a ledger posting and may not be set by a bulk write. */
-const LEDGER_AFFECTING_INVOICE_STATUSES = new Set(['cancelled', 'paid']);
+const LEDGER_AFFECTING_INVOICE_STATUSES = new Set(["cancelled", "paid"]);
 
 /**
  * An invoice that already has a ledger entry may not have its amounts edited in
@@ -71,14 +77,14 @@ async function assertInvoiceAmountsEditable(
   );
   if (changed.length === 0) return;
 
-  const ledgerEntryId = await findEntryIdBySource(tenant, 'invoice', invoiceId);
+  const ledgerEntryId = await findEntryIdBySource(tenant, "invoice", invoiceId);
   if (!ledgerEntryId) return;
 
   throw Object.assign(
     new Error(
-      `This invoice is posted to the ledger — reverse it with a credit note or adjusting entry instead of editing ${changed.join(', ')}`,
+      `This invoice is posted to the ledger — reverse it with a credit note or adjusting entry instead of editing ${changed.join(", ")}`,
     ),
-    { statusCode: 422, type: 'validation_error' },
+    { statusCode: 422, type: "validation_error" },
   );
 }
 
@@ -100,7 +106,7 @@ const EMPTY_FINANCE_METRICS: FinanceCommandMetricsSnapshot = {
 
 function requireRequestTenant(): string {
   const tenant = getRequestTenant();
-  if (!tenant) throw new Error('Tenant context required');
+  if (!tenant) throw new Error("Tenant context required");
   return tenant;
 }
 
@@ -119,8 +125,8 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
       bulkRestore: repo.bulkRestoreInvoices,
     },
     schema: invoiceRecordSchema,
-    websocketCollection: 'finance_invoices',
-    idPrefix: 'inv',
+    websocketCollection: "finance_invoices",
+    idPrefix: "inv",
   });
 
   const paymentCrud = createGenericRelationalService<Payment>({
@@ -132,8 +138,8 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
       bulkRestore: repo.bulkRestorePayments,
     },
     schema: paymentRecordSchema,
-    websocketCollection: 'finance_payments',
-    idPrefix: 'pay',
+    websocketCollection: "finance_payments",
+    idPrefix: "pay",
   });
 
   /**
@@ -152,12 +158,12 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
     loadInvoices: invoiceCrud.loadAll,
     createInvoice: async (record: InvoiceCreateInput): Promise<Invoice> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
-      const year = Number((record.dueDate ?? '').slice(0, 4)) || new Date().getFullYear();
-      let prefix = 'INV';
+      if (!tenant) throw new Error("Tenant context required");
+      const year = Number((record.dueDate ?? "").slice(0, 4)) || new Date().getFullYear();
+      let prefix = "INV";
       try {
         const prefs = await loadFinanceModulePreferences();
-        prefix = prefs?.invoicePrefix?.trim() || 'INV';
+        prefix = prefs?.invoicePrefix?.trim() || "INV";
       } catch {
         // Keep default prefix when preferences are unavailable.
       }
@@ -166,10 +172,10 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
         id: line.id ?? `il-${index + 1}`,
       }));
       const totals = lines.length > 0 ? invoiceTotalsFromLines(lines) : null;
-      const { findStudentsByIds } = await import('../../db/repositories/studentRepository.js');
+      const { findStudentsByIds } = await import("../../db/repositories/studentRepository.js");
       const students = record.studentId ? await findStudentsByIds(tenant, [record.studentId]) : [];
       if (record.studentId && (!students[0] || students[0].deletedAt)) {
-        const err = new Error('Referenced student is archived or does not exist');
+        const err = new Error("Referenced student is archived or does not exist");
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
@@ -177,7 +183,8 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
         ...record,
         studentId: students[0]?.id ?? record.studentId,
         familyContactId: record.familyContactId ?? resolveFamilyContactId(students[0]),
-        invoiceNumber: record.invoiceNumber || (await allocateNextInvoiceNumber(tenant, year, prefix)),
+        invoiceNumber:
+          record.invoiceNumber || (await allocateNextInvoiceNumber(tenant, year, prefix)),
         ...(totals
           ? { baseFee: totals.baseFee, discountAmt: totals.discountAmt, finalAmt: totals.finalAmt }
           : {}),
@@ -188,13 +195,13 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
     },
     updateInvoiceById: async (id: string, record: InvoiceUpdate): Promise<Invoice | null> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       let resolvedStudentId = record.studentId;
       if (record.studentId) {
-        const { findStudentsByIds } = await import('../../db/repositories/studentRepository.js');
+        const { findStudentsByIds } = await import("../../db/repositories/studentRepository.js");
         const students = await findStudentsByIds(tenant, [record.studentId]);
         if (!students[0] || students[0].deletedAt) {
-          const err = new Error('Referenced student is archived or does not exist');
+          const err = new Error("Referenced student is archived or does not exist");
           (err as Error & { statusCode: number }).statusCode = 400;
           throw err;
         }
@@ -205,7 +212,7 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
         ? (rawLines.map((line, index) => ({
             ...line,
             id: line.id ?? `il-${index + 1}`,
-          })) as Invoice['lines'])
+          })) as Invoice["lines"])
         : undefined;
       await assertInvoiceAmountsEditable(tenant, id, rest);
       return invoiceCrud.updateById(id, {
@@ -254,17 +261,17 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
       if (LEDGER_AFFECTING_INVOICE_STATUSES.has(status)) {
         throw Object.assign(
           new Error(
-            status === 'cancelled'
-              ? 'Cancel invoices through the cancel-invoice action so the ledger reversal is posted'
-              : 'Record a payment to mark invoices paid — a bulk status write posts nothing to the ledger',
+            status === "cancelled"
+              ? "Cancel invoices through the cancel-invoice action so the ledger reversal is posted"
+              : "Record a payment to mark invoices paid — a bulk status write posts nothing to the ledger",
           ),
-          { statusCode: 422, type: 'validation_error' },
+          { statusCode: 422, type: "validation_error" },
         );
       }
       const result = await repo.bulkUpdateInvoicesStatus(tenant, cleanIds, status);
-      const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-      broadcastTenantUpdate(tenant, 'collection', 'finance_invoices');
-      broadcastTenantUpdate(tenant, 'collection', 'finance_metrics');
+      const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
+      broadcastTenantUpdate(tenant, "collection", "finance_invoices");
+      broadcastTenantUpdate(tenant, "collection", "finance_metrics");
       return result;
     },
 
@@ -286,13 +293,13 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
     loadPayments: paymentCrud.loadAll,
     updatePaymentById: async (id: string, record: PaymentUpdate): Promise<Payment | null> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       const { allocations: rawAllocations, ...rest } = record;
       const allocations = rawAllocations
         ? (rawAllocations.map((alloc, index) => ({
             ...alloc,
             id: alloc.id ?? `pa-${index + 1}`,
-          })) as Payment['allocations'])
+          })) as Payment["allocations"])
         : undefined;
       return paymentCrud.updateById(id, {
         ...rest,
@@ -342,7 +349,7 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
      */
     createPayment: async (record: PaymentCreateInput): Promise<Payment> => {
       const tenant = getRequestTenant();
-      if (!tenant) throw new Error('Tenant context required');
+      if (!tenant) throw new Error("Tenant context required");
       const resolvedId = String(record.id ?? `pay-${Date.now()}`);
       const normalizedPayment = paymentRecordSchema.parse({ ...record, id: resolvedId }) as Payment;
 
@@ -352,7 +359,7 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
 
         const invoice = await repo.findInvoiceById(tenant, normalizedPayment.invoiceId);
         if (!invoice || invoice.deletedAt) {
-          const err = new Error('Referenced invoice is archived or does not exist');
+          const err = new Error("Referenced invoice is archived or does not exist");
           (err as Error & { statusCode: number }).statusCode = 400;
           throw err;
         }
@@ -360,13 +367,13 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
         const paidAmount = invoice.paidAmt ?? 0;
         const remainingBalance = getOutstandingAmountForInvoice(invoice);
         if (normalizedPayment.amount > remainingBalance) {
-          throw new Error('Payment amount exceeds the remaining invoice balance');
+          throw new Error("Payment amount exceeds the remaining invoice balance");
         }
 
         const newPaid = paidAmount + normalizedPayment.amount;
         await repo.saveInvoice(tenant, {
           ...invoice,
-          status: remainingBalance - normalizedPayment.amount <= 0 ? 'paid' : 'partial',
+          status: remainingBalance - normalizedPayment.amount <= 0 ? "paid" : "partial",
           paidAmt: newPaid,
           paidDate: normalizedPayment.date,
           method: normalizedPayment.method,
@@ -384,13 +391,19 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
         savedPayment.id,
         allocations.length > 0
           ? allocations
-          : [{ id: `alloc-${savedPayment.id}`, invoiceId: savedPayment.invoiceId, amount: savedPayment.amount }],
+          : [
+              {
+                id: `alloc-${savedPayment.id}`,
+                invoiceId: savedPayment.invoiceId,
+                amount: savedPayment.amount,
+              },
+            ],
       );
       await tryPostPaymentJournal(tenant, savedPayment);
 
-      const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-      broadcastTenantUpdate(tenant, 'collection', 'finance_invoices');
-      broadcastTenantUpdate(tenant, 'collection', 'finance_payments');
+      const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
+      broadcastTenantUpdate(tenant, "collection", "finance_invoices");
+      broadcastTenantUpdate(tenant, "collection", "finance_payments");
       return savedPayment;
     },
 
@@ -411,8 +424,8 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
     },
 
     loadFinanceWidgetAggregates: async (
-      queries: import('@mms/shared').WidgetQuery[],
-    ): Promise<Record<string, import('@mms/shared').WidgetAggregateResult>> => {
+      queries: import("@mms/shared").WidgetQuery[],
+    ): Promise<Record<string, import("@mms/shared").WidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateFinanceWidgetQueries(tenant, queries);

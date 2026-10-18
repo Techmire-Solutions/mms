@@ -1,9 +1,9 @@
-import type { FastifyPluginAsync } from 'fastify';
-import { moduleAccessContract, type ModuleAccessResponse } from '@mms/shared';
-import { loadModuleAvailability } from '../../lib/moduleAvailabilityService.js';
-import { authenticateTenant } from '../../middleware/authenticate.js';
-import { sendForbidden } from '../../lib/httpErrors.js';
-import { logger } from '../../lib/logger.js';
+import type { FastifyPluginAsync } from "fastify";
+import { moduleAccessContract, type ModuleAccessResponse } from "@mms/shared";
+import { loadModuleAvailability } from "../../lib/moduleAvailabilityService.js";
+import { authenticateTenant } from "../../middleware/authenticate.js";
+import { sendForbidden } from "../../lib/httpErrors.js";
+import { logger } from "../../lib/logger.js";
 
 /**
  * Authoritative module availability (platform grant + tenant enablement) for the
@@ -13,18 +13,20 @@ import { logger } from '../../lib/logger.js';
  * on every module request.
  */
 const moduleAccessRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.addHook('preHandler', authenticateTenant);
+  fastify.addHook("preHandler", authenticateTenant);
 
   fastify.get(moduleAccessContract.get.path, async (request, reply) => {
     const tenant = request.tenant?.id;
-    if (!tenant) return sendForbidden(reply, 'Missing tenant context');
+    if (!tenant) return sendForbidden(reply, "Missing tenant context");
     try {
       const body: ModuleAccessResponse = { modules: await loadModuleAvailability(tenant) };
-      reply.header('Cache-Control', 'private, no-store');
+      reply.header("Cache-Control", "private, no-store");
       return reply.send(body);
     } catch (err) {
-      logger.error({ err, tenant }, 'Failed to load module availability');
-      return reply.status(503).send({ type: 'service_unavailable', message: 'Module access could not be verified' });
+      logger.error({ err, tenant }, "Failed to load module availability");
+      return reply
+        .status(503)
+        .send({ type: "service_unavailable", message: "Module access could not be verified" });
     }
   });
 };

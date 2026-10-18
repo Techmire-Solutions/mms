@@ -11,20 +11,23 @@ import {
   type ContactExportColumn,
   type ContactsListQuery,
   type FieldConfig,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleExportService,
   type ModuleExportOptions,
   type ModuleExportResult,
-} from '../../lib/createModuleExportService.js';
-import { CsvExportLimitError, normalizeIncludeDeletedFlag } from '../../lib/csvExportStreamFactory.js';
-import { loadContactsByIds, loadContactsPage } from './contactLoadUseCases.js';
-import { loadContactFieldConfig } from './contactConfigService.js';
+} from "../../lib/createModuleExportService.js";
+import {
+  CsvExportLimitError,
+  normalizeIncludeDeletedFlag,
+} from "../../lib/csvExportStreamFactory.js";
+import { loadContactsByIds, loadContactsPage } from "./contactLoadUseCases.js";
+import { loadContactFieldConfig } from "./contactConfigService.js";
 
-const EXPORT_LABELS = { yes: 'Yes', no: 'No' };
+const EXPORT_LABELS = { yes: "Yes", no: "No" };
 
-type ContactsExportQueryInput = Omit<ContactsListQuery, 'includeDeleted'> & {
-  includeDeleted?: ContactsListQuery['includeDeleted'] | 'true' | 'false';
+type ContactsExportQueryInput = Omit<ContactsListQuery, "includeDeleted"> & {
+  includeDeleted?: ContactsListQuery["includeDeleted"] | "true" | "false";
 };
 
 export type { ContactsExportQueryInput };
@@ -44,9 +47,9 @@ async function prepareContactsExport(
   const requestedColumns = options.columns && options.columns.length > 0 ? options.columns : [];
   const config = await loadContactFieldConfig();
   const fieldConfig: FieldConfig | null = config?.fields
-    ? (config.formTabs
-        ? config
-        : { ...config, formTabs: [], enabledTabs: [], requiredTabs: [], version: config.version ?? 1 })
+    ? config.formTabs
+      ? config
+      : { ...config, formTabs: [], enabledTabs: [], requiredTabs: [], version: config.version ?? 1 }
     : null;
   const columns = filterContactExportColumnsForViewer(
     requestedColumns,
@@ -95,11 +98,15 @@ const contactsCsv = createModuleExportService<
     function* gen(): Generator<string, void, undefined> {
       for (let i = 0; i < contacts.length; i += chunkSize) {
         const chunk = contacts.slice(i, i + chunkSize);
-        const sanitizedChunk = sanitizeContactsForViewer(chunk, context.viewerRole, sanitizeSnapshot);
+        const sanitizedChunk = sanitizeContactsForViewer(
+          chunk,
+          context.viewerRole,
+          sanitizeSnapshot,
+        );
         const chunkExportRows = buildContactsExportRows(sanitizedChunk, columns, EXPORT_LABELS);
         const dataRows = chunkExportRows.slice(1);
         if (dataRows.length > 0) {
-          yield '\n' + buildCsvContent(dataRows);
+          yield "\n" + buildCsvContent(dataRows);
         }
       }
     }
@@ -131,7 +138,7 @@ export async function* generateContactsVcfStreamChunks(options?: {
   chunkSize?: number;
   onProgress?: (processed: number, total: number) => void | Promise<void>;
 }): AsyncGenerator<string, { count: number; filename: string }, undefined> {
-  const filename = options?.filename?.trim() || 'contacts.vcf';
+  const filename = options?.filename?.trim() || "contacts.vcf";
   const limit = Math.max(1, options?.chunkSize ?? VCF_PAGE_SIZE);
   let page = 1;
   let count = 0;
@@ -144,8 +151,8 @@ export async function* generateContactsVcfStreamChunks(options?: {
     } as never);
     const contacts = pageResult.contacts as Contact[];
     if (contacts.length > 0) {
-      const chunk = contacts.map(toVCard).join('\r\n');
-      yield count === 0 ? chunk : '\r\n' + chunk;
+      const chunk = contacts.map(toVCard).join("\r\n");
+      yield count === 0 ? chunk : "\r\n" + chunk;
       count += contacts.length;
     }
     await options?.onProgress?.(count, pageResult.total);
@@ -180,8 +187,8 @@ export async function buildContactsVcfExport(options?: {
     );
   }
   return {
-    vcf: chunks.join(''),
-    filename: meta?.filename || options?.filename?.trim() || 'contacts.vcf',
+    vcf: chunks.join(""),
+    filename: meta?.filename || options?.filename?.trim() || "contacts.vcf",
     count: meta?.count ?? 0,
   };
 }

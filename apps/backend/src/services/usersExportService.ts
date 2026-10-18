@@ -8,15 +8,15 @@ import {
   type UserExportColumn,
   type UsersListQuery,
   type WorkspaceUser,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleExportService,
   type ModuleExportQueryInput,
   type ModuleExportOptions,
   type ModuleExportResult,
-} from '../lib/createModuleExportService.js';
-import { normalizeIncludeDeletedFlag } from '../lib/csvExportStreamFactory.js';
-import { loadUsersByIds, loadUsersPage } from './usersService.js';
+} from "../lib/createModuleExportService.js";
+import { normalizeIncludeDeletedFlag } from "../lib/csvExportStreamFactory.js";
+import { loadUsersByIds, loadUsersPage } from "./usersService.js";
 
 export type UsersExportQueryInput = ModuleExportQueryInput<UsersListQuery>;
 export type UsersExportOptions = ModuleExportOptions<UserExportColumn>;
@@ -28,18 +28,12 @@ async function prepareUsersExport(
   options: UsersExportOptions,
 ): Promise<{ columns: UserExportColumn[]; context: undefined }> {
   const requestedColumns =
-    options.columns && options.columns.length > 0
-      ? options.columns
-      : resolveAllUserExportColumns();
+    options.columns && options.columns.length > 0 ? options.columns : resolveAllUserExportColumns();
   const columns = filterUserExportColumnsForViewer(requestedColumns);
   return { columns, context: undefined };
 }
 
-const usersCsv = createModuleExportService<
-  WorkspaceUser,
-  UsersExportQueryInput,
-  UserExportColumn
->({
+const usersCsv = createModuleExportService<WorkspaceUser, UsersExportQueryInput, UserExportColumn>({
   manifest: USERS_MODULE_MANIFEST,
   normalizeQuery: (query, allowDeleted) => ({
     ...query,
@@ -68,7 +62,7 @@ const usersCsv = createModuleExportService<
         const chunkExportRows = buildUsersExportRows(chunk, columns);
         const dataRows = chunkExportRows.slice(1);
         if (dataRows.length > 0) {
-          yield '\n' + buildCsvContent(dataRows);
+          yield "\n" + buildCsvContent(dataRows);
         }
       }
     }

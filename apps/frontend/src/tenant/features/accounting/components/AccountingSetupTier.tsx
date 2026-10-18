@@ -1,13 +1,13 @@
 import React, { lazy, Suspense } from "react";
 import { ACCOUNTING_MODULE_MANIFEST, type Account, type FiscalYear } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 
 const AccountingSettings = lazy(
   () => import("@/tenant/features/accounting/components/AccountingSettings"),
@@ -23,12 +23,14 @@ export interface AccountingSetupTierProps {
   onSaveFiscalYears: (
     updater: FiscalYear[] | ((prev: FiscalYear[]) => FiscalYear[]),
   ) => void | Promise<void>;
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
   /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const AccountingSetupTier = (function AccountingSetupTier({
+export const AccountingSetupTier = function AccountingSetupTier({
   accounts,
   fiscalYears,
   onSaveFiscalYears,
@@ -66,7 +68,9 @@ export const AccountingSetupTier = (function AccountingSetupTier({
                 />
               )}
               {subTabs.sub === "templates" && (
-                <AccountingVoucherTemplateEditor onClose={() => subTabs.handleSubTabChange("preferences")} />
+                <AccountingVoucherTemplateEditor
+                  onClose={() => subTabs.handleSubTabChange("preferences")}
+                />
               )}
             </Suspense>
           )}
@@ -74,6 +78,6 @@ export const AccountingSetupTier = (function AccountingSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default AccountingSetupTier;

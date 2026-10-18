@@ -1,8 +1,8 @@
 import type React from "react";
 import { ShieldCheck } from "lucide-react";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { AttendanceFilters } from "@/tenant/features/attendance/components/AttendanceFilters";
 import { AttendanceRecords } from "@/tenant/features/attendance/components/AttendanceRecords";
 import { AuditLog } from "@/tenant/features/attendance/components/AuditLog";
@@ -43,7 +43,7 @@ export interface AttendanceWorkTierProps {
   onRestoreRecord: (id: string) => Promise<void>;
   onBulkDeleteRecords: (ids: string[]) => Promise<void>;
   onBulkRestoreRecords: (ids: string[]) => Promise<void>;
-  onMessage: (channel: 'sms' | 'whatsapp' | 'email', records: AttendanceRecord[]) => void;
+  onMessage: (channel: "sms" | "whatsapp" | "email", records: AttendanceRecord[]) => void;
   onTotalChange?: (total: number) => void;
   columnProps?: AttendanceColumnProps;
 }
@@ -58,7 +58,7 @@ export function AttendanceWorkTier({
   onFiltersChange,
   activeOpsTab,
   operationsTabs,
-  canDeleteAttendance,
+  canDeleteAttendance: _canDeleteAttendance,
   showDeleted,
   onShowDeletedToggle,
   showActiveLabel: _showActiveLabel,
@@ -84,8 +84,11 @@ export function AttendanceWorkTier({
           icon={ShieldCheck}
           title={<span className="font-bold capitalize">{roleLabel}</span>}
           description={
-            (teacherRoleText || accountantRoleText) ? (
-              <span>{teacherRoleText}{accountantRoleText}</span>
+            teacherRoleText || accountantRoleText ? (
+              <span>
+                {teacherRoleText}
+                {accountantRoleText}
+              </span>
             ) : undefined
           }
         />

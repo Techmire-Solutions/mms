@@ -1,8 +1,8 @@
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { type Faculty, type RepositoryListOptions } from '@mms/shared';
-import { faculty, facultyEmployments } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { type Faculty, type RepositoryListOptions } from "@mms/shared";
+import { faculty, facultyEmployments } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import {
   type FacultyInsert,
   FACULTY_PROJECTION_COLUMNS,
@@ -11,7 +11,7 @@ import {
   hydrateFacultyList,
   facultyUpdateSetValues,
   persistFacultyTx,
-} from './facultyRepositoryColumns.js';
+} from "./facultyRepositoryColumns.js";
 
 export {
   type FacultyInsert,
@@ -34,7 +34,7 @@ export async function listFacultyByWorkspace(
   options?: ListFacultyOptions,
 ): Promise<Faculty[]> {
   const subdomain = tenant.trim().toLowerCase();
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     const conditions = buildTenantSoftDeleteConditions(faculty, subdomain, deletedFilter);
 
@@ -68,7 +68,10 @@ export async function findFacultyById(tenant: string, id: string): Promise<Facul
 }
 
 /** Finds the active faculty record linked to a contact, if one exists. */
-export async function findFacultyByContactId(tenant: string, contactId: string): Promise<Faculty | null> {
+export async function findFacultyByContactId(
+  tenant: string,
+  contactId: string,
+): Promise<Faculty | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
@@ -82,11 +85,13 @@ export async function findFacultyByContactId(tenant: string, contactId: string):
           isNull(facultyEmployments.deletedAt),
         ),
       )
-      .where(and(
-        eq(faculty.workspaceSubdomain, subdomain),
-        eq(facultyEmployments.contactId, contactId),
-        isNull(faculty.deletedAt),
-      ))
+      .where(
+        and(
+          eq(faculty.workspaceSubdomain, subdomain),
+          eq(facultyEmployments.contactId, contactId),
+          isNull(faculty.deletedAt),
+        ),
+      )
       .limit(1);
     if (!rows[0]) return null;
     const [hydrated] = await hydrateFacultyList(tx, subdomain, [rows[0]]);
@@ -106,14 +111,17 @@ export async function findFacultyByIds(tenant: string, ids: string[]): Promise<F
   });
 }
 
-export async function saveFaculty(tenant: string, member: Faculty, options?: { createOnly?: boolean }): Promise<void> {
+export async function saveFaculty(
+  tenant: string,
+  member: Faculty,
+  options?: { createOnly?: boolean },
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await persistFacultyTx(tx, subdomain, member, options);
   });
-  const { syncFacultyLinkedUserRole } = await import(
-    '../../faculty/use-cases/facultyLinkedUserRoleSync.js'
-  );
+  const { syncFacultyLinkedUserRole } =
+    await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
   await syncFacultyLinkedUserRole(subdomain, member);
 }
 
@@ -125,9 +133,8 @@ export async function bulkSaveFaculty(tenant: string, items: Faculty[]): Promise
       await persistFacultyTx(tx, subdomain, item);
     }
   });
-  const { syncFacultyLinkedUserRole } = await import(
-    '../../faculty/use-cases/facultyLinkedUserRoleSync.js'
-  );
+  const { syncFacultyLinkedUserRole } =
+    await import("../../faculty/use-cases/facultyLinkedUserRoleSync.js");
   for (const item of items) {
     await syncFacultyLinkedUserRole(subdomain, item);
   }
@@ -149,7 +156,7 @@ export async function countFacultyByWorkspace(
   options?: ListFacultyOptions,
 ): Promise<number> {
   const subdomain = tenant.trim().toLowerCase();
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     const conditions = buildTenantSoftDeleteConditions(faculty, subdomain, deletedFilter);
 
@@ -167,4 +174,4 @@ export {
   findSubordinates,
   reassignSubordinates,
   findAncestorChain,
-} from './facultyRepositorySubordinates.js';
+} from "./facultyRepositorySubordinates.js";

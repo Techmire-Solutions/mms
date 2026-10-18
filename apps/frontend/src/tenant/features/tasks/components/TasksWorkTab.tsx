@@ -3,15 +3,15 @@
  * @description Tasks Work tier — toolbar, selection, directory, detail drawer.
  */
 
-import React, { useMemo, useState } from 'react';
-import { TASK_STATUSES, type TaskRecord, type TaskStatus } from '@mms/shared';
-import { WorkTaskToolbar } from '@/components/common/work/WorkTaskToolbar';
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useTasksColumnLayout } from '../hooks/useTasksColumnLayout';
-import { TaskDetailDrawer } from './TaskDetailDrawer';
-import { TasksBulkActionBar } from './TasksBulkActionBar';
-import { TasksWorkDirectory } from './TasksWorkDirectory';
+import React, { useMemo, useState } from "react";
+import { TASK_STATUSES, type TaskRecord, type TaskStatus } from "@mms/shared";
+import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useTasksColumnLayout } from "../hooks/useTasksColumnLayout";
+import { TaskDetailDrawer } from "./TaskDetailDrawer";
+import { TasksBulkActionBar } from "./TasksBulkActionBar";
+import { TasksWorkDirectory } from "./TasksWorkDirectory";
 
 export interface TasksWorkTabProps {
   tasks: TaskRecord[];
@@ -42,14 +42,14 @@ export function TasksWorkTab({
   onToggleSelectAll,
   onClearSelection,
   onToggleTrash,
-  onAddNew,
+  onAddNew: _onAddNew,
   onEdit,
   onDelete,
   onRestore,
   onUpdateStatus,
 }: TasksWorkTabProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [viewingTask, setViewingTask] = useState<TaskRecord | null>(null);
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
@@ -68,8 +68,8 @@ export function TasksWorkTab({
     return tasks.filter((task) => {
       if (statusFilter.length > 0 && !statusFilter.includes(task.status)) return false;
       if (!q) return true;
-      const haystack = `${task.title} ${task.description ?? ''} ${
-        task.assignees?.map((a) => a.facultyName).join(' ') ?? ''
+      const haystack = `${task.title} ${task.description ?? ""} ${
+        task.assignees?.map((a) => a.facultyName).join(" ") ?? ""
       }`.toLowerCase();
       return haystack.includes(q);
     });
@@ -80,11 +80,11 @@ export function TasksWorkTab({
   return (
     <div className="space-y-3">
       <WorkTaskToolbar
-        regionLabel={t('nav.tasks')}
-        shownCountLabel={t('tasks.shownCount', { count: filteredTasks.length })}
+        regionLabel={t("nav.tasks")}
+        shownCountLabel={t("tasks.shownCount", { count: filteredTasks.length })}
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder={t('tasks.searchPlaceholder')}
+        searchPlaceholder={t("tasks.searchPlaceholder")}
         statusFilter={{
           activeIds: statusFilter,
           options: TASK_STATUSES.map((status) => ({
@@ -95,7 +95,7 @@ export function TasksWorkTab({
             setStatusFilter((current) =>
               current.includes(id) ? current.filter((s) => s !== id) : [...current, id],
             ),
-          allLabel: t('common.all'),
+          allLabel: t("common.all"),
           onResetAll: () => setStatusFilter([]),
         }}
         trashToggle={
@@ -104,8 +104,8 @@ export function TasksWorkTab({
                 canViewDeleted: canDelete,
                 viewingDeleted,
                 onToggle: onToggleTrash,
-                activeLabel: t('tasks.showActive'),
-                deletedLabel: t('tasks.showDeleted'),
+                activeLabel: t("tasks.showActive"),
+                deletedLabel: t("tasks.showDeleted"),
               }
             : undefined
         }

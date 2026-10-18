@@ -1,28 +1,26 @@
-import React, { Suspense, lazy } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { Scale } from 'lucide-react';
-import { ModulePageShell } from '@/components/ui/ModulePageShell';
-import { ModuleTierMotion } from '@/components/ui/ModuleTierMotion';
-import { ResponsiveAccordionTabs } from '@/components/ui/ResponsiveAccordionTabs';
-import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
-import { obligationsTransferSchema } from '@mms/shared';
-import { useGenericModuleExport } from '@/lib/backgroundJobs/useGenericModuleExport';
-import { ObligationsModalLayer } from '@/tenant/features/obligations/components/ObligationsModalLayer';
-import { ObligationsPageActions } from '@/tenant/features/obligations/components/ObligationsPageActions';
-import { ObligationsWorkTier } from '@/tenant/features/obligations/components/ObligationsWorkTier';
-import { ObligationsCommandMetrics } from '@/tenant/features/obligations/components/ObligationsCommandMetrics';
-import { ObligationsCsvImportDialog } from '@/tenant/features/obligations/components/ObligationsCsvImportDialog';
-import { useObligationsPageController } from '@/tenant/features/obligations/hooks/useObligationsPageController';
+import React, { Suspense, lazy } from "react";
+import { AnimatePresence } from "framer-motion";
+import { Scale } from "lucide-react";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
+import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
+import { obligationsTransferSchema } from "@mms/shared";
+import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
+import { ObligationsModalLayer } from "@/tenant/features/obligations/components/ObligationsModalLayer";
+import { ObligationsPageActions } from "@/tenant/features/obligations/components/ObligationsPageActions";
+import { ObligationsWorkTier } from "@/tenant/features/obligations/components/ObligationsWorkTier";
+import { ObligationsCommandMetrics } from "@/tenant/features/obligations/components/ObligationsCommandMetrics";
+import { ObligationsCsvImportDialog } from "@/tenant/features/obligations/components/ObligationsCsvImportDialog";
+import { useObligationsPageController } from "@/tenant/features/obligations/hooks/useObligationsPageController";
 
 const ObligationsReportsTier = lazy(() =>
-  import('@/tenant/features/obligations/components/ObligationsReportsTier').then((m) => ({
-    default: m.ObligationsReportsTier,
-  }))
+  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
 );
 const ObligationsSetupTier = lazy(() =>
-  import('@/tenant/features/obligations/components/ObligationsSetupTier').then((m) => ({
+  import("@/tenant/features/obligations/components/ObligationsSetupTier").then((m) => ({
     default: m.ObligationsSetupTier,
-  }))
+  })),
 );
 
 /**
@@ -32,20 +30,20 @@ export default function Obligations() {
   const c = useObligationsPageController();
   const [importOpen, setImportOpen] = React.useState(false);
   const { handleExport, isExporting } = useGenericModuleExport({
-    path: '/api/obligations/export/csv',
-    filename: 'obligations.csv',
-    auditPath: '/api/obligations/export-audit',
+    path: "/api/obligations/export/csv",
+    filename: "obligations.csv",
+    auditPath: "/api/obligations/export-audit",
     columns: obligationsTransferSchema.exportColumns,
     canExport: c.canWrite,
   });
 
   return (
     <ModulePageShell
-      seoTitle={`MMS - ${c.t('nav.obligations')}`}
-      seoDescription={c.t('page.obligations.subtitle')}
+      seoTitle={`MMS - ${c.t("nav.obligations")}`}
+      seoDescription={c.t("page.obligations.subtitle")}
       headerIcon={Scale}
-      headerTitle={c.t('nav.obligations')}
-      headerSubtitle={c.t('page.obligations.subtitle')}
+      headerTitle={c.t("nav.obligations")}
+      headerSubtitle={c.t("page.obligations.subtitle")}
       headerActions={
         <ObligationsPageActions
           canWrite={c.canWrite}
@@ -69,47 +67,51 @@ export default function Obligations() {
       >
         <AnimatePresence mode="wait">
           <ModuleTierMotion
-            tier={c.effectiveTab + '-' + (c.effectiveTab === 'setup' ? c.effectiveConfigTab : String(c.showDeleted))}
+            tier={
+              c.effectiveTab +
+              "-" +
+              (c.effectiveTab === "setup" ? c.effectiveConfigTab : String(c.showDeleted))
+            }
             className="space-y-4"
           >
-            {c.effectiveTab === 'reports' && (
+            {c.effectiveTab === "reports" && (
               <Suspense fallback={<RouteStatusFallback />}>
-                <ObligationsReportsTier />
+                <ObligationsReportsTier category="obligations" />
               </Suspense>
             )}
 
-            {c.effectiveTab === 'work' && (
+            {c.effectiveTab === "work" && (
               <div className="space-y-5">
                 <ObligationsWorkTier
-                collections={c.collections}
-                obligationTypes={c.obligationTypes}
-                reps={c.reps}
-                mujtahids={c.mujtahids}
-                listLoadFailed={c.listLoadFailed}
-                canWrite={c.canWrite}
-                canDelete={c.canDelete}
-                showDeleted={c.showDeleted}
-                canWriteMessaging={c.canWriteMessaging}
-                columnLayout={c.columnLayout}
-                onAddNew={() => c.setShowForm(true)}
-                onView={c.setViewCollection}
-                onFilteredCountChange={c.setFilteredCount}
-                onToggleShowDeleted={() => c.setShowDeleted((prev) => !prev)}
-                onDelete={c.handleDelete}
-                onRestore={c.handleRestore}
-                onBulkDelete={c.handleBulkDelete}
-                onBulkRestore={c.handleBulkRestore}
-                onRetry={c.refetchCollections}
-                onMessage={c.handleMessageCollections}
-                selectedIds={c.collectionSelection.selectedIds}
-                onToggleSelectedCollection={c.collectionSelection.toggleSelected}
-                onToggleSelectAll={c.collectionSelection.toggleSelectAll}
-                onClearSelection={c.collectionSelection.clearSelection}
-              />
+                  collections={c.collections}
+                  obligationTypes={c.obligationTypes}
+                  reps={c.reps}
+                  mujtahids={c.mujtahids}
+                  listLoadFailed={c.listLoadFailed}
+                  canWrite={c.canWrite}
+                  canDelete={c.canDelete}
+                  showDeleted={c.showDeleted}
+                  canWriteMessaging={c.canWriteMessaging}
+                  columnLayout={c.columnLayout}
+                  onAddNew={() => c.setShowForm(true)}
+                  onView={c.setViewCollection}
+                  onFilteredCountChange={c.setFilteredCount}
+                  onToggleShowDeleted={() => c.setShowDeleted((prev) => !prev)}
+                  onDelete={c.handleDelete}
+                  onRestore={c.handleRestore}
+                  onBulkDelete={c.handleBulkDelete}
+                  onBulkRestore={c.handleBulkRestore}
+                  onRetry={c.refetchCollections}
+                  onMessage={c.handleMessageCollections}
+                  selectedIds={c.collectionSelection.selectedIds}
+                  onToggleSelectedCollection={c.collectionSelection.toggleSelected}
+                  onToggleSelectAll={c.collectionSelection.toggleSelectAll}
+                  onClearSelection={c.collectionSelection.clearSelection}
+                />
               </div>
             )}
 
-            {c.effectiveTab === 'setup' && (
+            {c.effectiveTab === "setup" && (
               <Suspense fallback={<RouteStatusFallback />}>
                 <ObligationsSetupTier
                   tabs={c.CONFIG_SUB_TABS}
@@ -122,10 +124,14 @@ export default function Obligations() {
                   distributions={c.distributions}
                   onTabChange={c.setActiveConfigTab}
                   onChangeTypes={(next) => c.runSetupSave(() => c.replaceTypes.mutateAsync(next))}
-                  onChangeMujtahids={(next) => c.runSetupSave(() => c.replaceMujtahids.mutateAsync(next))}
+                  onChangeMujtahids={(next) =>
+                    c.runSetupSave(() => c.replaceMujtahids.mutateAsync(next))
+                  }
                   onChangeReps={(next) => c.runSetupSave(() => c.replaceReps.mutateAsync(next))}
                   onChangeWakala={(next) => c.runSetupSave(() => c.replaceWakala.mutateAsync(next))}
-                  onChangeDistributions={(next) => c.runSetupSave(() => c.replaceDistributions.mutateAsync(next))}
+                  onChangeDistributions={(next) =>
+                    c.runSetupSave(() => c.replaceDistributions.mutateAsync(next))
+                  }
                 />
               </Suspense>
             )}
@@ -147,10 +153,26 @@ export default function Obligations() {
         collections={c.collections}
         messagingTarget={c.messagingTarget}
         onSaveCollection={c.handleSaveCollection}
-        onChangeTypes={c.canEditSetup ? (next) => c.runSetupSave(() => c.replaceTypes.mutateAsync(next)) : undefined}
-        onChangeMujtahids={c.canEditSetup ? (next) => c.runSetupSave(() => c.replaceMujtahids.mutateAsync(next)) : undefined}
-        onChangeReps={c.canEditSetup ? (next) => c.runSetupSave(() => c.replaceReps.mutateAsync(next)) : undefined}
-        onChangeWakala={c.canEditSetup ? (next) => c.runSetupSave(() => c.replaceWakala.mutateAsync(next)) : undefined}
+        onChangeTypes={
+          c.canEditSetup
+            ? (next) => c.runSetupSave(() => c.replaceTypes.mutateAsync(next))
+            : undefined
+        }
+        onChangeMujtahids={
+          c.canEditSetup
+            ? (next) => c.runSetupSave(() => c.replaceMujtahids.mutateAsync(next))
+            : undefined
+        }
+        onChangeReps={
+          c.canEditSetup
+            ? (next) => c.runSetupSave(() => c.replaceReps.mutateAsync(next))
+            : undefined
+        }
+        onChangeWakala={
+          c.canEditSetup
+            ? (next) => c.runSetupSave(() => c.replaceWakala.mutateAsync(next))
+            : undefined
+        }
         onRestore={c.handleRestore}
         onCloseForm={() => c.setShowForm(false)}
         onCloseDetail={() => c.setViewCollection(null)}

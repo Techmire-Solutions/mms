@@ -5,11 +5,8 @@ import type {
   TableColumnDescriptor,
   EntityDescriptor,
   CreateEntityDescriptorOptions,
-} from "@/types/entityRegistry";
-import {
-  formatFieldValueDefault,
-  renderFieldValueDefault,
-} from "./entityDescriptorRenderers";
+} from "@/components/common/entityRegistryTypes";
+import { formatFieldValueDefault, renderFieldValueDefault } from "./entityDescriptorRenderers";
 
 export function createEntityDescriptor<T>(
   options: CreateEntityDescriptorOptions<T>,
@@ -43,9 +40,7 @@ export function createEntityDescriptor<T>(
   };
 
   const getCardFields = (): FieldDefinition<T>[] => {
-    return fields.filter(
-      (field) => field.showInCardGrid !== false && field.cardSlot !== "hidden",
-    );
+    return fields.filter((field) => field.showInCardGrid !== false && field.cardSlot !== "hidden");
   };
 
   const getDrawerSections = (): EntityDrawerSection<T>[] => {

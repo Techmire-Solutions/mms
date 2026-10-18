@@ -14,7 +14,7 @@ describe("GoogleContactsConnectStep Component", () => {
         onConnect={vi.fn()}
         onAuthCodeChange={vi.fn()}
         onExchangeCode={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -32,7 +32,7 @@ describe("GoogleContactsConnectStep Component", () => {
         onConnect={vi.fn()}
         onAuthCodeChange={vi.fn()}
         onExchangeCode={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

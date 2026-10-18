@@ -9,7 +9,7 @@ import {
   AuthPageFrame,
   AuthStatusBanner,
 } from "@/components/entry";
-import { PlatformLogoMark } from "@/platform/components/PlatformPageShell";
+import { PlatformLogoMark } from "@/components/common/PlatformLogoMark";
 
 interface WorkspaceDisabledScreenProps {
   madrasaName: string;

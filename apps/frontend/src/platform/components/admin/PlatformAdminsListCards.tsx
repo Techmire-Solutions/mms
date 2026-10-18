@@ -1,25 +1,25 @@
-import React from 'react';
-import type { PlatformUserProfile } from '@mms/shared';
-import { formatDate } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { DirectoryCard } from '@/components/ui/DirectoryCard';
-import { EntityCardMetadata } from '@/components/ui/EntityCardMetadata';
+import React from "react";
+import type { PlatformUserProfile } from "@mms/shared";
+import { formatDate } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
 import {
   PlatformAdminStatusBadges,
   PlatformAdminPermissionsBadges,
-} from '@/platform/components/admin/PlatformAdminBadges';
-import { PlatformAdminActionButtons } from '@/platform/components/admin/PlatformAdminActionButtons';
-import { Checkbox } from '@/components/ui/checkbox';
-import type { EntityDescriptor } from '@/types/entityRegistry';
+} from "@/platform/components/admin/PlatformAdminBadges";
+import { PlatformAdminActionButtons } from "@/platform/components/admin/PlatformAdminActionButtons";
+import { Checkbox } from "@shared/ui";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 export interface PlatformAdminsListCardsProps {
   admins: PlatformUserProfile[];
   descriptor: EntityDescriptor<PlatformUserProfile>;
   onInspect: (admin: PlatformUserProfile) => void;
   onEditAccess: (admin: PlatformUserProfile) => void;
-  onToggleStatus: (admin: PlatformUserProfile, mode: 'disable' | 'enable') => void;
+  onToggleStatus: (admin: PlatformUserProfile, mode: "disable" | "enable") => void;
   onDelete: (admin: PlatformUserProfile) => void;
   verifyPending?: boolean;
   onVerifyEmail?: (adminId: string) => void;
@@ -52,7 +52,11 @@ export function PlatformAdminsListCards({
           key={admin.id}
           entity={admin}
           reducedMotion={reducedMotion}
-          accentClassName={admin.role === 'super_user' ? 'bg-primary/80 group-hover:bg-primary' : 'bg-primary/50 group-hover:bg-primary'}
+          accentClassName={
+            admin.role === "super_user"
+              ? "bg-primary/80 group-hover:bg-primary"
+              : "bg-primary/50 group-hover:bg-primary"
+          }
           className="flex flex-col justify-between cursor-pointer"
           onView={onInspect}
           headerSlot={
@@ -75,7 +79,11 @@ export function PlatformAdminsListCards({
             </div>
           }
           metadataSlot={
-            <EntityCardMetadata descriptor={descriptor} entity={admin} visibleColumnIds={['email']} />
+            <EntityCardMetadata
+              descriptor={descriptor}
+              entity={admin}
+              visibleColumnIds={["email"]}
+            />
           }
           footer={
             <div
@@ -84,7 +92,7 @@ export function PlatformAdminsListCards({
             >
               {admin.createdAt ? (
                 <p className="text-xs text-muted-foreground font-semibold">
-                  {t('platform.profileMemberSince')}: {formatDate(admin.createdAt)}
+                  {t("platform.profileMemberSince")}: {formatDate(admin.createdAt)}
                 </p>
               ) : (
                 <span />

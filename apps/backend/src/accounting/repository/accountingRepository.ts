@@ -10,7 +10,7 @@ import type {
   AccountingReportAggregates,
   AccountingReportQuery,
   LedgerPostingAccounts,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the accounting module (accounts, journal entries,
@@ -26,18 +26,21 @@ export interface AccountingRepository {
   // Accounts
   listAccountsByWorkspace(
     tenant: string,
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<Account[]>;
   findAccountById(tenant: string, id: string): Promise<Account | null>;
   findAccountsByIds(
     tenant: string,
     ids: string[],
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<Account[]>;
   saveAccount(tenant: string, record: Account): Promise<void>;
   bulkSaveAccounts(tenant: string, records: Account[]): Promise<void>;
   replaceAccountsForWorkspace(tenant: string, records: Account[]): Promise<void>;
-  listAccountsPage(tenant: string, query: AccountingListQuery): Promise<AccountingAccountsListPageResult>;
+  listAccountsPage(
+    tenant: string,
+    query: AccountingListQuery,
+  ): Promise<AccountingAccountsListPageResult>;
   bulkSoftDeleteAccounts?(
     tenant: string,
     ids: string[],
@@ -54,10 +57,19 @@ export interface AccountingRepository {
   lockJournalEntries(tenant: string, ids: string[]): Promise<void>;
   listEntriesByWorkspace(
     tenant: string,
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean; limit?: number; offset?: number },
+    options?: {
+      deleted?: "active" | "deleted" | "all";
+      includeDeleted?: boolean;
+      limit?: number;
+      offset?: number;
+    },
   ): Promise<JournalEntry[]>;
   findEntryById(tenant: string, id: string): Promise<JournalEntry | null>;
-  findEntryByRef?(tenant: string, ref: string, options?: { excludeId?: string }): Promise<JournalEntry | null>;
+  findEntryByRef?(
+    tenant: string,
+    ref: string,
+    options?: { excludeId?: string },
+  ): Promise<JournalEntry | null>;
   findActiveEntryRefs?(tenant: string, refs: readonly string[]): Promise<Map<string, string>>;
   /** Issues voucher numbers inside the caller's write transaction; `null` when auto-numbering is off. */
   allocateVoucherNumbers?(
@@ -67,12 +79,15 @@ export interface AccountingRepository {
   findEntriesByIds(
     tenant: string,
     ids: string[],
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<JournalEntry[]>;
   saveEntry(tenant: string, record: JournalEntry): Promise<void>;
   bulkSaveEntries(tenant: string, records: JournalEntry[]): Promise<void>;
   replaceEntriesForWorkspace(tenant: string, records: JournalEntry[]): Promise<void>;
-  listEntriesPage(tenant: string, query: AccountingListQuery): Promise<AccountingEntriesListPageResult>;
+  listEntriesPage(
+    tenant: string,
+    query: AccountingListQuery,
+  ): Promise<AccountingEntriesListPageResult>;
   bulkSoftDeleteEntries?(
     tenant: string,
     ids: string[],
@@ -88,18 +103,21 @@ export interface AccountingRepository {
   // Fiscal years
   listFiscalYearsByWorkspace(
     tenant: string,
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<FiscalYear[]>;
   findFiscalYearById(tenant: string, id: string): Promise<FiscalYear | null>;
   findFiscalYearsByIds(
     tenant: string,
     ids: string[],
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<FiscalYear[]>;
   saveFiscalYear(tenant: string, record: FiscalYear): Promise<void>;
   bulkSaveFiscalYears(tenant: string, records: FiscalYear[]): Promise<void>;
   replaceFiscalYearsForWorkspace(tenant: string, records: FiscalYear[]): Promise<void>;
-  listFiscalYearsPage(tenant: string, query: AccountingListQuery): Promise<AccountingFiscalYearsListPageResult>;
+  listFiscalYearsPage(
+    tenant: string,
+    query: AccountingListQuery,
+  ): Promise<AccountingFiscalYearsListPageResult>;
 
   // Aggregates
   aggregateAccountingCommandMetrics(

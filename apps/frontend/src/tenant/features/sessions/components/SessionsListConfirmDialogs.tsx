@@ -1,5 +1,5 @@
-import { ModuleTrashConfirmDialogs } from '@/components/ui/ModuleTrashConfirmDialogs';
-import { useTranslation } from '@/hooks/useTranslation';
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SessionsListConfirmDialogsProps {
   selectedCount: number;
@@ -38,17 +38,17 @@ export function SessionsListConfirmDialogs({
       onBulkDeleteOpenChange={onBulkDeleteOpenChange}
       bulkRestoreOpen={confirmBulkRestoreOpen}
       onBulkRestoreOpenChange={onBulkRestoreOpenChange}
-      singleDeleteTitle={t('sessions.confirmDeleteTitle')}
-      singleDeleteDescription={t('sessions.confirmDeleteDescription')}
-      bulkDeleteTitle={t('sessions.confirmDeleteTitle')}
-      bulkDeleteDescription={t('sessions.bulkDeleteConfirm', { count: selectedCount })}
-      bulkRestoreTitle={t('sessions.restore')}
-      bulkRestoreDescription={t('sessions.bulkRestoreConfirm', { count: selectedCount })}
-      deleteConfirmLabel={t('sessions.archive')}
-      restoreConfirmLabel={t('sessions.restore')}
-      cancelLabel={t('common.cancel')}
-      deletionReasonLabel={t('sessions.deletionReasonLabel')}
-      deletionReasonPlaceholder={t('sessions.deletionReasonPlaceholder')}
+      singleDeleteTitle={t("sessions.confirmDeleteTitle")}
+      singleDeleteDescription={t("sessions.confirmDeleteDescription")}
+      bulkDeleteTitle={t("sessions.confirmDeleteTitle")}
+      bulkDeleteDescription={t("sessions.bulkDeleteConfirm", { count: selectedCount })}
+      bulkRestoreTitle={t("sessions.restore")}
+      bulkRestoreDescription={t("sessions.bulkRestoreConfirm", { count: selectedCount })}
+      deleteConfirmLabel={t("sessions.archive")}
+      restoreConfirmLabel={t("sessions.restore")}
+      cancelLabel={t("common.cancel")}
+      deletionReasonLabel={t("sessions.deletionReasonLabel")}
+      deletionReasonPlaceholder={t("sessions.deletionReasonPlaceholder")}
       onConfirmSingleDelete={onConfirmDelete}
       onConfirmBulkDelete={onConfirmBulkDelete}
       onConfirmBulkRestore={onConfirmBulkRestore}

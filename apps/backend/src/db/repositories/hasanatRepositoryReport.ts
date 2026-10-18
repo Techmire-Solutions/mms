@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   EMPTY_HASANAT_REPORT_AGGREGATES,
@@ -9,18 +9,18 @@ import {
   type HasanatReportComparisonMonth,
   type HasanatReportComparisonQuery,
   type HasanatReportComparisonSession,
-} from '@mms/shared';
-import { getQueryRows } from '../documentStoreKeys.js';
-import { withTenantRead } from '../tenant-context.js';
+} from "@mms/shared";
+import { getQueryRows } from "../documentStoreKeys.js";
+import { withTenantRead } from "../tenant-context.js";
 
-function activeDistributionWhere(subdomain: string, alias = 'hd'): ReturnType<typeof sql> {
+function activeDistributionWhere(subdomain: string, alias = "hd"): ReturnType<typeof sql> {
   return sql`
     ${sql.raw(`${alias}.workspace_subdomain`)} = ${subdomain}
     AND ${sql.raw(`${alias}.deleted_at`)} IS NULL
   `;
 }
 
-function denominationPointsSql(hdAlias = 'hd', denAlias = 'den'): ReturnType<typeof sql> {
+function denominationPointsSql(hdAlias = "hd", denAlias = "den"): ReturnType<typeof sql> {
   return sql`
     COALESCE(
       ${sql.raw(`${denAlias}.points`)},
@@ -61,7 +61,7 @@ export async function loadHasanatReportAggregatesSql(
 
     const sessionIds = dedupeTrimmedIds(comparisonQuery.sessionIds ?? []);
     if (sessionIds.length > 0) {
-      const pointsExpr = denominationPointsSql('hd', 'den');
+      const pointsExpr = denominationPointsSql("hd", "den");
       const compareSessionResult = await tx.execute(sql`
         WITH selected AS (
           SELECT s.id AS "sessionId"
@@ -89,7 +89,7 @@ export async function loadHasanatReportAggregatesSql(
           COALESCE(SUM(hd.quantity * ${pointsExpr}), 0)::float8 AS hasanat
         FROM session_students ss
         LEFT JOIN hasanat_distributions hd
-          ON ${activeDistributionWhere(subdomain, 'hd')}
+          ON ${activeDistributionWhere(subdomain, "hd")}
           AND ss."studentId" IS NOT NULL
           AND hd.recipient_student_id = ss."studentId"
         LEFT JOIN hasanat_denoms den
@@ -99,10 +99,13 @@ export async function loadHasanatReportAggregatesSql(
       `);
 
       comparison.sessions = ensureAllSessionsInComparison(
-        getQueryRows<Record<string, unknown>>(compareSessionResult).map((row) => ({
-          sessionId: String(row.sessionId ?? ''),
-          hasanat: Number(row.hasanat ?? 0),
-        } satisfies HasanatReportComparisonSession)),
+        getQueryRows<Record<string, unknown>>(compareSessionResult).map(
+          (row) =>
+            ({
+              sessionId: String(row.sessionId ?? ""),
+              hasanat: Number(row.hasanat ?? 0),
+            }) satisfies HasanatReportComparisonSession,
+        ),
         sessionIds,
         (sessionId) => ({ sessionId, hasanat: 0 }),
       );
@@ -115,7 +118,7 @@ export async function loadHasanatReportAggregatesSql(
       const cleanFrom = from?.trim();
       const cleanTo = to?.trim();
       if (!cleanFrom || !cleanTo) return [];
-      const pointsExpr = denominationPointsSql('hd', 'den');
+      const pointsExpr = denominationPointsSql("hd", "den");
       const monthResult = await tx.execute(sql`
         SELECT
           to_char(left(hd.issued_date, 10)::date, 'YYYY-MM') AS "monthKey",
@@ -124,7 +127,7 @@ export async function loadHasanatReportAggregatesSql(
         LEFT JOIN hasanat_denoms den
           ON den.workspace_subdomain = ${subdomain}
           AND den.id = hd.denomination_id
-        WHERE ${activeDistributionWhere(subdomain, 'hd')}
+        WHERE ${activeDistributionWhere(subdomain, "hd")}
           AND hd.issued_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
           AND hd.issued_date >= ${cleanFrom}
           AND hd.issued_date <= ${cleanTo}
@@ -135,7 +138,7 @@ export async function loadHasanatReportAggregatesSql(
       const monthly: HasanatReportComparisonMonth[] = [];
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        if (typeof row?.monthKey === 'string' && /^\d{4}-\d{2}$/.test(row.monthKey)) {
+        if (typeof row?.monthKey === "string" && /^\d{4}-\d{2}$/.test(row.monthKey)) {
           monthly.push({
             monthKey: row.monthKey,
             points: Number(row.points ?? 0),
@@ -145,8 +148,14 @@ export async function loadHasanatReportAggregatesSql(
       return monthly;
     };
 
-    comparison.monthly.a = await loadMonthlyRange(comparisonQuery.rangeAFrom, comparisonQuery.rangeATo);
-    comparison.monthly.b = await loadMonthlyRange(comparisonQuery.rangeBFrom, comparisonQuery.rangeBTo);
+    comparison.monthly.a = await loadMonthlyRange(
+      comparisonQuery.rangeAFrom,
+      comparisonQuery.rangeATo,
+    );
+    comparison.monthly.b = await loadMonthlyRange(
+      comparisonQuery.rangeBFrom,
+      comparisonQuery.rangeBTo,
+    );
     aggregates.comparison = comparison;
     return aggregates;
   });

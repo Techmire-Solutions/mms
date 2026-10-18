@@ -1,9 +1,9 @@
-import React from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { ExportColumn } from '@/components/ui/ExportToolbar';
-import { ReportDataGridContainer } from '@/components/ui/reports/ReportDataGridContainer';
+import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { ExportColumn } from "@/components/app/ExportToolbar";
+import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import type { QuestionBankSummaryRow } from '@/tenant/features/reports/controllers/useQuestionBankReportData';
+import type { QuestionBankSummaryRow } from "@/tenant/features/reports/hooks/useQuestionBankReportData";
 
 export interface QuestionBankSummaryDataGridProps {
   summaryRows: QuestionBankSummaryRow[];
@@ -18,7 +18,7 @@ export function QuestionBankSummaryDataGrid({
 
   return (
     <ReportDataGridContainer
-      title={t('questionBank.analytics.categoryBreakdown')}
+      title={t("questionBank.analytics.categoryBreakdown")}
       columns={exportColumns}
       rows={summaryRows.map((row) => ({ ...row }))}
       moduleId="questionBank"
@@ -26,25 +26,25 @@ export function QuestionBankSummaryDataGrid({
     >
       <div className="hidden md:block">
         <WorkBatchTable
-          data={summaryRows.map(row => ({ ...row, id: `${row.type}-${row.name}` }))}
+          data={summaryRows.map((row) => ({ ...row, id: `${row.type}-${row.name}` }))}
           columns={[
             {
               id: "type",
-              label: t('common.type'),
+              label: t("common.type"),
               headerClassName: "font-bold",
               cellClassName: "text-xs text-muted-foreground uppercase font-bold",
               render: (row) => row.type,
             },
             {
               id: "name",
-              label: t('common.label'),
+              label: t("common.label"),
               headerClassName: "font-bold",
               cellClassName: "font-medium text-foreground",
               render: (row) => row.name,
             },
             {
               id: "questions",
-              label: t('questionBank.questions'),
+              label: t("questionBank.questions"),
               headerClassName: "font-bold",
               cellClassName: "font-semibold text-primary",
               align: "center",
@@ -53,7 +53,7 @@ export function QuestionBankSummaryDataGrid({
             },
             {
               id: "tests",
-              label: t('questionBank.report.generatedTests'),
+              label: t("questionBank.report.generatedTests"),
               headerClassName: "font-bold",
               cellClassName: "text-muted-foreground",
               align: "center",
@@ -78,7 +78,7 @@ export function QuestionBankSummaryDataGrid({
             <div className="text-end">
               <span className="font-mono font-bold text-primary">{row.questions}</span>
               <span className="text-xs text-muted-foreground ms-1">
-                {t('questionBank.questions').toLowerCase()}
+                {t("questionBank.questions").toLowerCase()}
               </span>
             </div>
           </div>

@@ -10,7 +10,7 @@ import type {
   HasanatReportComparisonQuery,
   WidgetQuery,
   WidgetAggregateResult,
-} from '@mms/shared';
+} from "@mms/shared";
 
 /**
  * Sole storage gateway for the hasanat module (denoms, batches, distributions,
@@ -41,13 +41,18 @@ export interface HasanatRepository {
   // Distributions
   listDistributionsByWorkspace(
     tenant: string,
-    options?: { limit?: number; offset?: number; deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: {
+      limit?: number;
+      offset?: number;
+      deleted?: "active" | "deleted" | "all";
+      includeDeleted?: boolean;
+    },
   ): Promise<Distribution[]>;
   findDistributionById(tenant: string, id: string): Promise<Distribution | null>;
   findDistributionsByIds(
     tenant: string,
     ids: string[],
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<Distribution[]>;
   saveDistribution(tenant: string, record: Distribution): Promise<void>;
   bulkSaveDistributions(tenant: string, records: Distribution[]): Promise<void>;

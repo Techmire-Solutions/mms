@@ -19,24 +19,14 @@ export interface UseSessionsSetupPanelStateReturn {
 export function useSessionsSetupPanelState(): UseSessionsSetupPanelStateReturn {
   const config = useSessionConfig();
   const { types } = config;
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    saveSettingsAsync,
-  } = useModuleSettingsEditor<SessionsSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync } =
+    useModuleSettingsEditor<SessionsSettings>({
+      config,
+    });
 
   const typeOptions = types;
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useSessionsSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useSessionsSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,

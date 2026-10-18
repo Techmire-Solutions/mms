@@ -18,24 +18,19 @@
 
 type Labels = Record<string, string | number>;
 
-const PROMETHEUS_CONTENT_TYPE = 'text/plain; version=0.0.4; charset=utf-8';
+const PROMETHEUS_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
 
 /** Escapes a label value per the Prometheus exposition format. */
 function escapeLabelValue(value: string): string {
-  return value
-    .replace(/\\/g, '\\\\')
-    .replace(/\n/g, '\\n')
-    .replace(/"/g, '\\"');
+  return value.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/"/g, '\\"');
 }
 
 /** Renders `{a="1",b="2"}` with labels sorted for stable output. */
 function renderLabels(labels: Labels | undefined, extra?: Labels): string {
   const merged: Labels = { ...(labels ?? {}), ...(extra ?? {}) };
   const keys = Object.keys(merged).sort();
-  if (keys.length === 0) return '';
-  const body = keys
-    .map((key) => `${key}="${escapeLabelValue(String(merged[key]))}"`)
-    .join(',');
+  if (keys.length === 0) return "";
+  const body = keys.map((key) => `${key}="${escapeLabelValue(String(merged[key]))}"`).join(",");
   return `{${body}}`;
 }
 
@@ -56,7 +51,10 @@ interface HistogramDefinition {
 }
 
 export class MetricsRegistry {
-  private readonly counters = new Map<string, { help: string; series: Map<string, CounterSeries> }>();
+  private readonly counters = new Map<
+    string,
+    { help: string; series: Map<string, CounterSeries> }
+  >();
 
   private readonly gauges = new Map<string, GaugeDefinition>();
 
@@ -81,7 +79,7 @@ export class MetricsRegistry {
    * Registers a gauge whose value is computed at scrape time (`collect`).
    * Pull-based so the value is always current and no timers are needed.
    */
-  gauge(name: string, help: string, collect: GaugeDefinition['collect']): this {
+  gauge(name: string, help: string, collect: GaugeDefinition["collect"]): this {
     this.gauges.set(name, { help, collect });
     return this;
   }
@@ -100,7 +98,12 @@ export class MetricsRegistry {
     const key = renderLabels(labels);
     let series = family.series.get(key);
     if (!series) {
-      series = { labels: labels ?? {}, counts: new Array(family.buckets.length).fill(0), sum: 0, count: 0 };
+      series = {
+        labels: labels ?? {},
+        counts: new Array(family.buckets.length).fill(0),
+        sum: 0,
+        count: 0,
+      };
       family.series.set(key, series);
     }
     series.sum += value;
@@ -151,13 +154,13 @@ export class MetricsRegistry {
             `${name}_bucket${renderLabels(series.labels, { le: histogram.buckets[i]! })} ${series.counts[i]}`,
           );
         }
-        lines.push(`${name}_bucket${renderLabels(series.labels, { le: '+Inf' })} ${series.count}`);
+        lines.push(`${name}_bucket${renderLabels(series.labels, { le: "+Inf" })} ${series.count}`);
         lines.push(`${name}_sum${renderLabels(series.labels)} ${series.sum}`);
         lines.push(`${name}_count${renderLabels(series.labels)} ${series.count}`);
       }
     }
 
-    return { contentType: PROMETHEUS_CONTENT_TYPE, body: `${lines.join('\n')}\n` };
+    return { contentType: PROMETHEUS_CONTENT_TYPE, body: `${lines.join("\n")}\n` };
   }
 
   /** Test helper. */
@@ -171,9 +174,9 @@ export class MetricsRegistry {
 export const metrics = new MetricsRegistry();
 
 /** HTTP request counters, labelled by route pattern (bounded cardinality). */
-export const HTTP_REQUESTS_TOTAL = 'mms_http_requests_total';
-export const HTTP_REQUEST_DURATION = 'mms_http_request_duration_seconds';
-export const HTTP_REQUESTS_IN_FLIGHT = 'mms_http_requests_in_flight';
+export const HTTP_REQUESTS_TOTAL = "mms_http_requests_total";
+export const HTTP_REQUEST_DURATION = "mms_http_request_duration_seconds";
+export const HTTP_REQUESTS_IN_FLIGHT = "mms_http_requests_in_flight";
 
 /**
  * Latency buckets in seconds. Weighted towards the sub-second range because a
@@ -184,6 +187,10 @@ export const HTTP_DURATION_BUCKETS = [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5,
 /** Registers the metric families this service always exposes. */
 export function registerDefaultMetrics(): void {
   metrics
-    .counter(HTTP_REQUESTS_TOTAL, 'Total HTTP requests handled, by route pattern and status class.')
-    .histogram(HTTP_REQUEST_DURATION, 'HTTP request duration in seconds, by route pattern.', HTTP_DURATION_BUCKETS);
+    .counter(HTTP_REQUESTS_TOTAL, "Total HTTP requests handled, by route pattern and status class.")
+    .histogram(
+      HTTP_REQUEST_DURATION,
+      "HTTP request duration in seconds, by route pattern.",
+      HTTP_DURATION_BUCKETS,
+    );
 }

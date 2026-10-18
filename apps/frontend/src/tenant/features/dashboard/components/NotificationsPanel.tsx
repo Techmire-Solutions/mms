@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { DashboardNotificationItem } from '@/lib/buildDashboardNotifications';
-import { DASHBOARD_NOTIFICATION_ICONS as ICONS } from '@/lib/dashboardNotificationIcons';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { Badge } from '@/components/ui/badge';
-import { WidgetCard } from '@/components/ui/WidgetCard';
-import { WidgetCardHeader } from '@/components/ui/WidgetCardHeader';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bell, X } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { DashboardNotificationItem } from "@/lib/buildDashboardNotifications";
+import { DASHBOARD_NOTIFICATION_ICONS as ICONS } from "@/lib/ui/dashboardNotificationIcons";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/app/EmptyState";
+import { Badge } from "@/components/ui/badge";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 
 interface NotificationsPanelProps {
   items: DashboardNotificationItem[];
@@ -16,11 +16,12 @@ interface NotificationsPanelProps {
   onOpen?: (item: DashboardNotificationItem) => void;
 }
 
-const SESSION_STORAGE_KEY = 'mms_dashboard_dismissed_notifs';
+const SESSION_STORAGE_KEY = "mms_dashboard_dismissed_notifs";
 
 function getInitialDismissed(): Array<string | number> {
   try {
-    const raw = typeof window !== 'undefined' ? window.sessionStorage?.getItem(SESSION_STORAGE_KEY) : null;
+    const raw =
+      typeof window !== "undefined" ? window.sessionStorage?.getItem(SESSION_STORAGE_KEY) : null;
     return raw ? (JSON.parse(raw) as Array<string | number>) : [];
   } catch {
     return [];
@@ -29,7 +30,7 @@ function getInitialDismissed(): Array<string | number> {
 
 function saveDismissedToSession(ids: Array<string | number>): void {
   try {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
+    if (typeof window !== "undefined" && window.sessionStorage) {
       if (ids.length === 0) {
         window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
       } else {
@@ -57,33 +58,38 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
     return { visible: filtered, urgent: urgentCount };
   })();
 
-  const handleDismiss = ((id: string | number) => {
+  const handleDismiss = (id: string | number) => {
     setDismissed((prev) => {
       const next = [...prev, id];
       saveDismissedToSession(next);
       return next;
     });
-  });
+  };
 
-  const handleRestoreAll = (() => {
+  const handleRestoreAll = () => {
     setDismissed([]);
     saveDismissedToSession([]);
-  });
+  };
 
   return (
     <WidgetCard ariaLabelledby="notifications-heading" accentColor="warning">
       <WidgetCardHeader
         headingId="notifications-heading"
-        icon={<Bell className={`w-4 h-4 text-warning/70 group-hover:text-warning transition-colors shrink-0 ${urgent > 0 ? "animate-pulse" : ""}`} aria-hidden="true" />}
-        title={t('notifications.title')}
+        icon={
+          <Bell
+            className={`w-4 h-4 text-warning/70 group-hover:text-warning transition-colors shrink-0 ${urgent > 0 ? "animate-pulse" : ""}`}
+            aria-hidden="true"
+          />
+        }
+        title={t("notifications.title")}
         badge={
           urgent > 0 && (
             <Badge
               variant="destructive"
               className="text-xs shrink-0 font-bold uppercase tracking-wider"
-              aria-label={t('notifications.urgentCount', { count: urgent })}
+              aria-label={t("notifications.urgentCount", { count: urgent })}
             >
-              {urgent} {t('notifications.urgent')}
+              {urgent} {t("notifications.urgent")}
             </Badge>
           )
         }
@@ -94,7 +100,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
               onClick={handleRestoreAll}
               className="text-xs font-bold shrink-0 min-h-11 px-2 text-primary hover:text-primary/80 transition-colors"
             >
-              {t('notifications.restoreAll')}
+              {t("notifications.restoreAll")}
             </Button>
           )
         }
@@ -106,11 +112,10 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
         aria-atomic="false"
       >
         <AnimatePresence initial={false}>
-
           {visible.length === 0 ? (
             <EmptyState
-              title={t('notifications.empty')}
-              description={t('notifications.emptyHint')}
+              title={t("notifications.empty")}
+              description={t("notifications.emptyHint")}
               icon={Bell}
               compact
               className="select-none px-5"
@@ -124,10 +129,10 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
                   key={notif.id}
                   layout
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
+                  animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   className={`flex items-start gap-1 pe-3 hover:bg-muted/30 transition-colors ${
-                    notif.urgent ? 'bg-destructive/[0.03]' : ''
+                    notif.urgent ? "bg-destructive/[0.03]" : ""
                   }`}
                 >
                   <Button
@@ -149,13 +154,21 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
                           {notif.title}
                         </span>
                         {notif.urgent && (
-                          <Badge pill variant="destructive" className="uppercase tracking-wider flex-shrink-0 select-none">
-                            {t('notifications.urgentLabel')}
+                          <Badge
+                            pill
+                            variant="destructive"
+                            className="uppercase tracking-wider flex-shrink-0 select-none"
+                          >
+                            {t("notifications.urgentLabel")}
                           </Badge>
                         )}
                       </span>
-                      <span className="block text-sm text-muted-foreground mt-0.5 leading-normal">{notif.desc}</span>
-                      <span className="block text-xs text-muted-foreground mt-1 font-medium">{notif.time}</span>
+                      <span className="block text-sm text-muted-foreground mt-0.5 leading-normal">
+                        {notif.desc}
+                      </span>
+                      <span className="block text-xs text-muted-foreground mt-1 font-medium">
+                        {notif.time}
+                      </span>
                     </span>
                   </Button>
                   <Button
@@ -163,7 +176,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
                     size="icon"
                     onClick={() => handleDismiss(notif.id)}
                     className="text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0 mt-2 shadow-none"
-                    aria-label={t('notifications.dismiss', { title: notif.title })}
+                    aria-label={t("notifications.dismiss", { title: notif.title })}
                   >
                     <X className="w-3.5 h-3.5" aria-hidden="true" />
                   </Button>
@@ -178,4 +191,3 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
 }
 
 export default NotificationsPanel;
-

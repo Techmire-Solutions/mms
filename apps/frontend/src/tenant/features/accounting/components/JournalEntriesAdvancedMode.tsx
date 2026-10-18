@@ -10,7 +10,7 @@ import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type {
   JournalMode,
   JournalEntriesAdvancedModeProps,
-} from "./journalEntriesAdvancedModeTypes";
+} from "../lib/journalEntriesAdvancedModeTypes";
 
 export type { JournalMode, JournalEntriesAdvancedModeProps };
 
@@ -67,7 +67,9 @@ export function JournalEntriesAdvancedMode(props: JournalEntriesAdvancedModeProp
         />
       )}
 
-      <p className="m-0 text-xs text-muted-foreground" role="status">{props.pageScopeLabel}</p>
+      <p className="m-0 text-xs text-muted-foreground" role="status">
+        {props.pageScopeLabel}
+      </p>
 
       <JournalEntriesList
         viewMode={viewMode}
@@ -89,7 +91,12 @@ export function JournalEntriesAdvancedMode(props: JournalEntriesAdvancedModeProp
         getColumnWidth={props.getColumnWidth}
         onColumnResize={props.onColumnResize}
         showDeleted={props.showDeleted}
-        hasActiveFilters={props.search.trim().length > 0 || props.statusFilter !== "all" || props.tagFilter !== "all" || Boolean(props.dateFrom || props.dateTo)}
+        hasActiveFilters={
+          props.search.trim().length > 0 ||
+          props.statusFilter !== "all" ||
+          props.tagFilter !== "all" ||
+          Boolean(props.dateFrom || props.dateTo)
+        }
         onClearFilters={() => {
           props.onSearchChange("");
           props.onStatusFilterChange("all");

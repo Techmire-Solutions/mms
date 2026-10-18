@@ -4,20 +4,16 @@ import {
   type AttendanceLookupKind,
   type AttendanceLookupsMap,
   type AttendanceStatus,
-} from '@mms/shared';
-import { apiContract } from '@/lib/api';
-import { createModuleLookupsHooks } from '@/lib/query/createModuleLookupsHooks';
-
-const ATTENDANCE_API = ATTENDANCE_MODULE_MANIFEST.restBasePath;
+} from "@mms/shared";
+import { apiContract } from "@/lib/api";
+import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
 
 export const ATTENDANCE_LOOKUPS_QUERY_KEY = [
   ATTENDANCE_MODULE_MANIFEST.collectionKey,
-  'lookups',
+  "lookups",
 ] as const;
 
-export async function fetchAttendanceLookups(
-  signal?: AbortSignal,
-): Promise<AttendanceLookupsMap> {
+export async function fetchAttendanceLookups(_signal?: AbortSignal): Promise<AttendanceLookupsMap> {
   const res = await apiContract.attendance.getLookups({ query: undefined, extraHeaders: {} });
   return (res.body as { lookups?: AttendanceLookupsMap }).lookups ?? emptyAttendanceLookupsMap;
 }
@@ -26,7 +22,12 @@ export async function putAttendanceLookupKind(
   kind: AttendanceLookupKind,
   items: AttendanceStatus[],
 ): Promise<AttendanceStatus[]> {
-  const res = await apiContract.attendance.updateLookupKind({ params: { kind }, body: { items }, query: undefined, extraHeaders: {} });
+  const res = await apiContract.attendance.updateLookupKind({
+    params: { kind },
+    body: { items },
+    query: undefined,
+    extraHeaders: {},
+  });
   return (res.body as { items?: AttendanceStatus[] }).items ?? [];
 }
 

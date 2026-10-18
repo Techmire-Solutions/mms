@@ -8,8 +8,8 @@ import {
   normalizeTimezone,
   type DateFormatId,
   type GlobalSettings,
-} from '@mms/shared';
-import { getGlobalSettings } from '@/lib/db';
+} from "@mms/shared";
+import { getGlobalSettings } from "@/lib/db";
 
 /** Fields from the global settings draft that participate in live preview. */
 export function globalSettingsPreviewPatch(draft: GlobalSettings): Partial<GlobalSettings> {
@@ -36,14 +36,20 @@ export function previewGlobalSettingsDraft(draft: GlobalSettings): Partial<Globa
   };
 }
 
-export function isGlobalPreferencesDirty(globalSettings: GlobalSettings, baseline: GlobalSettings): boolean {
+export function isGlobalPreferencesDirty(
+  globalSettings: GlobalSettings,
+  baseline: GlobalSettings,
+): boolean {
   return (
     JSON.stringify(globalSettingsPreviewPatch(globalSettings)) !==
     JSON.stringify(globalSettingsPreviewPatch(baseline))
   );
 }
 
-export function isEnabledModulesDraftDirty(globalSettings: GlobalSettings, baseline: GlobalSettings): boolean {
+export function isEnabledModulesDraftDirty(
+  globalSettings: GlobalSettings,
+  baseline: GlobalSettings,
+): boolean {
   return (
     JSON.stringify(normalizeEnabledModules(globalSettings.enabledModules)) !==
     JSON.stringify(normalizeEnabledModules(baseline.enabledModules))

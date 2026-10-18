@@ -1,9 +1,9 @@
-import { hasanatModulePreferences } from '../schema.js';
-import { createWorkspaceSingletonJsonRepo } from './moduleSetupRepoFactories.js';
+import { hasanatModulePreferences } from "../schema.js";
+import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({
   table: hasanatModulePreferences,
-  jsonColumn: 'preferences',
+  jsonColumn: "preferences",
 }); // hasanatModulePreferences);
 
 export const getHasanatModulePreferences = repo.getByWorkspace;

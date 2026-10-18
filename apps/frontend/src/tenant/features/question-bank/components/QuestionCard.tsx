@@ -1,11 +1,14 @@
 import type { JSX } from "react";
 import type { QuestionBankQuestion as Question } from "@mms/shared";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionsRowActions } from "@/tenant/features/question-bank/components/QuestionsRowActions";
-import { renderQuestionMetaChip, SYSTEM_FIELD_IDS } from "@/tenant/features/question-bank/components/questionsListShared";
+import {
+  renderQuestionMetaChip,
+  SYSTEM_FIELD_IDS,
+} from "@/tenant/features/question-bank/components/questionsListShared";
 import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import { QuestionCardAnswerPreview } from "./QuestionCardAnswerPreview";
 
@@ -56,7 +59,10 @@ export function QuestionCard({
   const canEdit = canWrite && !showDeleted;
 
   const visibleCustomFields = config.orderedFields.filter(
-    (field) => !SYSTEM_FIELD_IDS.has(field.id) && config.isFieldEnabled(field.id) && isColumnVisible(field.id),
+    (field) =>
+      !SYSTEM_FIELD_IDS.has(field.id) &&
+      config.isFieldEnabled(field.id) &&
+      isColumnVisible(field.id),
   );
 
   return (

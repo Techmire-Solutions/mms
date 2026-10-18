@@ -17,14 +17,14 @@ export {
   useContactsSavedReportsSource,
   useContactColumnPrefs,
   useContactColumnPrefsMutation,
-} from '@/tenant/features/contacts/hooks/useContacts';
+} from "@/tenant/features/contacts/hooks/useContacts";
 export {
   CONTACTS_LOOKUPS_QUERY_KEY,
   useContactLookupsQuery,
   useContactLookupMutation,
-} from '@/tenant/features/contacts/hooks/useContactLookups';
-export { invalidateContactsQueries } from '@/tenant/features/contacts/hooks/invalidateContactsQueries';
-// Phase 7: contract-driven tsrClient hooks & query factories
+} from "@/tenant/features/contacts/hooks/useContactLookups";
+export { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/invalidateContactsQueries";
+// Contract-driven tsrClient hooks & query factories
 export {
   contactsListQueryOptions,
   contactsInfiniteQueryOptions,
@@ -35,4 +35,4 @@ export {
   useContactsContractCreate,
   useContactsContractUpdate,
   useContactsContractDelete,
-} from '@/tenant/features/contacts/hooks/useContactsTsrHooks';
+} from "@/tenant/features/contacts/hooks/useContactsQueries";

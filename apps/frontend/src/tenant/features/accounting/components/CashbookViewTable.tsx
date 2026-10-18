@@ -1,16 +1,29 @@
 import { formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatGrid, StatRow } from "@/components/ui/StatGrid";
-import { ReportMoneyCard } from "@/components/ui/reports/ReportMoneyCard";
-import { ReportMoneyCardsGrid } from "@/components/ui/reports/ReportMoneyCardsGrid";
-import { ReportMoneySummaryTile } from "@/components/ui/reports/ReportMoneySummaryTile";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatGrid, StatRow } from "@/components/app/StatGrid";
+import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
+import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid";
+import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
-import { resolveVisibleColumns, toColumnResize, type DataTableColumnLayout } from "@/components/common/data-table";
+import {
+  resolveVisibleColumns,
+  toColumnResize,
+  type DataTableColumnLayout,
+} from "@/components/common/data-table";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { buildCashbookFooterCells, type CashbookRow } from "@/tenant/features/accounting/components/cashbookViewShared";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
+import {
+  buildCashbookFooterCells,
+  type CashbookRow,
+} from "@/tenant/features/accounting/lib/cashbookViewShared";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
-import { useCashbookColumns, type CashbookVoucherAction } from "@/tenant/features/accounting/components/useCashbookColumns";
+import {
+  useCashbookColumns,
+  type CashbookVoucherAction,
+} from "@/tenant/features/accounting/components/useCashbookColumns";
 import { PaymentVoucherPrintButton } from "@/tenant/features/accounting/components/PaymentVoucherPrintButton";
 
 /** ReportMoneyCard tile (report) — not DirectoryCard. */
@@ -40,9 +53,7 @@ export function CashbookViewTable({
   const { columns, flowBadge, flowIcon } = useCashbookColumns(formatCurrency, voucher);
 
   if (rows.length === 0) {
-    return (
-      <EmptyState variant="dashed" title={t("accounting.cashbook.noTransactions")} compact />
-    );
+    return <EmptyState variant="dashed" title={t("accounting.cashbook.noTransactions")} compact />;
   }
 
   if (viewMode === "cards") {
@@ -54,7 +65,9 @@ export function CashbookViewTable({
             title={
               <>
                 <p className="text-xs text-muted-foreground m-0">{formatDate(row.date)}</p>
-                <h4 className="font-medium text-sm text-foreground m-0 mt-0.5">{row.description}</h4>
+                <h4 className="font-medium text-sm text-foreground m-0 mt-0.5">
+                  {row.description}
+                </h4>
                 <p className="text-xs text-muted-foreground font-mono m-0">{row.ref}</p>
               </>
             }
@@ -71,20 +84,34 @@ export function CashbookViewTable({
             <StatGrid>
               <StatRow
                 label={t("accounting.cashbook.moneyIn")}
-                value={row.flowType === "in" ? formatCurrency(row.flowAmount) : <span className="text-muted-foreground font-normal">—</span>}
+                value={
+                  row.flowType === "in" ? (
+                    formatCurrency(row.flowAmount)
+                  ) : (
+                    <span className="text-muted-foreground font-normal">—</span>
+                  )
+                }
                 dtClassName="text-success"
                 ddClassName="font-mono font-bold text-success"
               />
               <StatRow
                 label={t("accounting.cashbook.moneyOut")}
-                value={row.flowType === "out" ? formatCurrency(row.flowAmount) : <span className="text-muted-foreground font-normal">—</span>}
+                value={
+                  row.flowType === "out" ? (
+                    formatCurrency(row.flowAmount)
+                  ) : (
+                    <span className="text-muted-foreground font-normal">—</span>
+                  )
+                }
                 dtClassName="text-destructive"
                 ddClassName="font-mono font-bold text-destructive"
               />
             </StatGrid>
           </ReportMoneyCard>
         ))}
-        <ReportMoneySummaryTile label={t("accounting.cashbook.transactionCount", { count: rows.length })}>
+        <ReportMoneySummaryTile
+          label={t("accounting.cashbook.transactionCount", { count: rows.length })}
+        >
           <StatGrid>
             <StatRow
               label={t("accounting.cashbook.moneyIn")}
@@ -104,19 +131,25 @@ export function CashbookViewTable({
     );
   }
 
-  const visibleColumns = columnLayout ? resolveVisibleColumns(columns, columnLayout.columnRegistry) : columns;
+  const visibleColumns = columnLayout
+    ? resolveVisibleColumns(columns, columnLayout.columnRegistry)
+    : columns;
   const footerRow: WorkBatchTableFooterRow = {
-    cells: buildCashbookFooterCells(visibleColumns.map((column) => column.id)).map((cell, index) => ({
-      colSpan: cell.span,
-      className: cell.kind === "label" || cell.kind === "blank"
-        ? "table-footer-label"
-        : `table-amount-cell text-xs ${cell.kind === "moneyIn" ? "text-success" : "text-destructive"}`,
-      content: cell.kind === "label"
-        ? t("accounting.cashbook.transactionCount", { count: rows.length })
-        : cell.kind === "blank"
-        ? null
-        : formatCurrency(cell.kind === "moneyIn" ? totalIn : totalOut),
-    })),
+    cells: buildCashbookFooterCells(visibleColumns.map((column) => column.id)).map(
+      (cell, _index) => ({
+        colSpan: cell.span,
+        className:
+          cell.kind === "label" || cell.kind === "blank"
+            ? "table-footer-label"
+            : `table-amount-cell text-xs ${cell.kind === "moneyIn" ? "text-success" : "text-destructive"}`,
+        content:
+          cell.kind === "label"
+            ? t("accounting.cashbook.transactionCount", { count: rows.length })
+            : cell.kind === "blank"
+              ? null
+              : formatCurrency(cell.kind === "moneyIn" ? totalIn : totalOut),
+      }),
+    ),
   };
 
   return (

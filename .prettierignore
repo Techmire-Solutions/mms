@@ -25,8 +25,15 @@ pnpm-lock.yaml
 # Generated DB migrations SQL (hand-authored style)
 **/migrations_drizzle/**/*.sql
 
+# Unified translation dictionaries (ADR-001 exemption). They are consumed by a
+# line-based parity checker (scripts/i18n/check-translations.ts) that requires
+# one `"key": "value"` per line; Prettier's wrapping breaks it.
+packages/shared/src/i18n/appTranslations*.ts
+
 # Doc / agent / editor dirs (not source)
 .agent/
 .cursor/
 .claude/
+.commandcode/
+.superpowers/
 docs/

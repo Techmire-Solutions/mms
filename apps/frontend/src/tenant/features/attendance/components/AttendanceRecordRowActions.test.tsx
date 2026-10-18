@@ -5,12 +5,20 @@ import { AttendanceRecordRowActions } from "./AttendanceRecordRowActions";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
-  DropdownMenuItem: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-    <button type="button" onClick={onClick}>{children}</button>
+  DropdownMenuItem: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
   ),
 }));
 
-vi.mock("@/components/ui/ModuleRowActionsMenu", () => ({
+vi.mock("@/components/app/ModuleRowActionsMenu", () => ({
   MODULE_ROW_ACTIONS_TRIGGER_CLASS: "module-row-actions-trigger",
   ModuleRowActionsMenu: ({
     extras,
@@ -55,7 +63,7 @@ describe("AttendanceRecordRowActions Component", () => {
         setEditingRecord={vi.fn()}
         setPendingDeleteId={vi.fn()}
         saveEditingRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -77,7 +85,7 @@ describe("AttendanceRecordRowActions Component", () => {
         setEditingRecord={vi.fn()}
         setPendingDeleteId={vi.fn()}
         saveEditingRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 

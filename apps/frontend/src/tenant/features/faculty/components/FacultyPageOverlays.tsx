@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import {
   ModuleDrawerLoadingSkeleton,
   ModuleOverlayLoadingFallback,
-} from "@/components/ui/ModuleOverlayLoadingChrome";
+} from "@/components/app/ModuleOverlayLoadingChrome";
 import { useSessions } from "@/tenant/hooks/collections/sessions";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { FacultyPageConfirmDialogs } from "@/tenant/features/faculty/components/FacultyPageConfirmDialogs";
@@ -31,7 +31,7 @@ const FacultyIdCardModal = lazy(() =>
   })),
 );
 
-export const FacultyPageOverlays = (function FacultyPageOverlays({
+export const FacultyPageOverlays = function FacultyPageOverlays({
   showForm,
   editFaculty,
   onCloseForm,
@@ -69,7 +69,7 @@ export const FacultyPageOverlays = (function FacultyPageOverlays({
   const configPending = false;
   const branding = useBranding();
   const sessionsQuery = useSessions();
-  const sessions = sessionsQuery.data ?? [];
+  const sessions = useMemo(() => sessionsQuery.data ?? [], [sessionsQuery.data]);
   const effectiveEdit = editFaculty;
   const effectiveView = viewFaculty;
   const effectiveIdCards = idCardFaculty;
@@ -82,7 +82,7 @@ export const FacultyPageOverlays = (function FacultyPageOverlays({
 
       return {
         faculty: facultyMember,
-        assignedClasses: assignedClasses.map(cls => `${cls.className} (${cls.sessionName})`),
+        assignedClasses: assignedClasses.map((cls) => `${cls.className} (${cls.sessionName})`),
         qualification: facultyMember.qualification,
         emergencyPhone: facultyMember.phone ? String(facultyMember.phone) : undefined,
       };
@@ -170,7 +170,6 @@ export const FacultyPageOverlays = (function FacultyPageOverlays({
       ) : null}
     </>
   );
-});
+};
 
 export type { FacultyPageOverlaysProps };
-

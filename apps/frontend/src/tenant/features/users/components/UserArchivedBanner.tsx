@@ -1,13 +1,9 @@
 import type { SystemUser } from "@mms/shared";
-import { EntityArchivedBanner } from "@/components/ui/DetailDrawerArchiveChrome";
+import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 import { useTranslation } from "@/hooks/useTranslation";
 
 /** Soft-delete archive banner for user drawer and directory cards. */
-export function UserArchivedBanner({
-  user,
-}: {
-  user: SystemUser;
-}): React.JSX.Element | null {
+export function UserArchivedBanner({ user }: { user: SystemUser }): React.JSX.Element | null {
   const { t } = useTranslation();
   return (
     <EntityArchivedBanner

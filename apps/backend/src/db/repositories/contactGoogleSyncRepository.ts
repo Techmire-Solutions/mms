@@ -1,7 +1,7 @@
-import { and, eq } from 'drizzle-orm';
-import { contactGoogleSyncCredentials } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { encryptSecretAtRest, decryptSecretAtRest } from '../../lib/cryptoAtRest.js';
+import { and, eq } from "drizzle-orm";
+import { contactGoogleSyncCredentials } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { encryptSecretAtRest, decryptSecretAtRest } from "../../lib/cryptoAtRest.js";
 
 export interface ContactGoogleSyncCredentialRecord {
   clientId?: string;
@@ -42,10 +42,12 @@ export async function findContactGoogleSyncCredentials(
         updatedAt: contactGoogleSyncCredentials.updatedAt,
       })
       .from(contactGoogleSyncCredentials)
-      .where(and(
-        eq(contactGoogleSyncCredentials.workspaceSubdomain, tenant),
-        eq(contactGoogleSyncCredentials.userId, userId),
-      ))
+      .where(
+        and(
+          eq(contactGoogleSyncCredentials.workspaceSubdomain, tenant),
+          eq(contactGoogleSyncCredentials.userId, userId),
+        ),
+      )
       .limit(1);
     return rows[0] ? toRecord(rows[0]) : {};
   });
@@ -98,10 +100,12 @@ export async function deleteContactGoogleSyncCredentials(
   await withTenant(tenant, async (tx) => {
     await tx
       .delete(contactGoogleSyncCredentials)
-      .where(and(
-        eq(contactGoogleSyncCredentials.workspaceSubdomain, tenant),
-        eq(contactGoogleSyncCredentials.userId, userId),
-      ));
+      .where(
+        and(
+          eq(contactGoogleSyncCredentials.workspaceSubdomain, tenant),
+          eq(contactGoogleSyncCredentials.userId, userId),
+        ),
+      );
   });
 }
 

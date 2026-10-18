@@ -142,7 +142,12 @@ export function getMinimalTemplate(
         y: 120,
         w: 108,
         h: 12,
-        style: { fontSize: 6.5, textAlign: "right", color: "rgb(100, 116, 139)", fontWeight: "600" },
+        style: {
+          fontSize: 6.5,
+          textAlign: "right",
+          color: "rgb(100, 116, 139)",
+          fontWeight: "600",
+        },
       },
     ],
   };

@@ -1,12 +1,12 @@
-import { useEffect, useRef } from 'react';
-import type { AppTranslationKey } from '@mms/shared';
-import { resolveModuleTierTab } from '@mms/shared';
-import { useFilteredModuleTierTabs } from '@/tenant/hooks/useModuleTierTabs';
-import { usePersistedTabState } from '@/hooks/usePersistedTabState';
+import { useEffect, useRef } from "react";
+import type { AppTranslationKey } from "@mms/shared";
+import { resolveModuleTierTab } from "@mms/shared";
+import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import {
   getUsersConfigTabs,
   getUsersSubTabs,
-} from '@/tenant/features/users/hooks/usersPageTabConfig';
+} from "@/tenant/features/users/hooks/usersPageTabConfig";
 
 export interface UseUsersTabStateOptions {
   canAccessRoles: boolean;
@@ -28,16 +28,16 @@ export function useUsersTabState({
 
   const USERS_CONFIG_TABS = getUsersConfigTabs(canAccessRoles, t);
   const SUB_TABS = getUsersSubTabs(t);
-  const [activeTab, setActiveTab] = usePersistedTabState<string>('users_active_tab', 'work');
-  const [activeSubTab, setActiveSubTab] = usePersistedTabState<string>('users_ops_subtab', 'users');
+  const [activeTab, setActiveTab] = usePersistedTabState<string>("users_active_tab", "work");
+  const [activeSubTab, setActiveSubTab] = usePersistedTabState<string>("users_ops_subtab", "users");
   const [configSubTab, setConfigSubTab] = usePersistedTabState<string>(
-    'users_config_subtab',
-    'permissions',
+    "users_config_subtab",
+    "permissions",
   );
 
   useEffect(() => {
-    if ((!canViewSetup && activeTab === 'setup') || (!canViewReports && activeTab === 'reports')) {
-      setActiveTab('work');
+    if ((!canViewSetup && activeTab === "setup") || (!canViewReports && activeTab === "reports")) {
+      setActiveTab("work");
     }
   }, [canViewSetup, canViewReports, activeTab, setActiveTab]);
 
@@ -55,11 +55,11 @@ export function useUsersTabState({
     activeTab,
     visibleTopTabs.map((tab) => tab.id),
   );
-  const effectiveSubTab = SUB_TABS.find((tab) => tab.id === activeSubTab) ? activeSubTab : 'users';
+  const effectiveSubTab = SUB_TABS.find((tab) => tab.id === activeSubTab) ? activeSubTab : "users";
   const effectiveConfigTab =
     USERS_CONFIG_TABS.find((tab) => tab.id === configSubTab)?.id ??
     USERS_CONFIG_TABS[0]?.id ??
-    'preferences';
+    "preferences";
 
   return {
     USERS_CONFIG_TABS,

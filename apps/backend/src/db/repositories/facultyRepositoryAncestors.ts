@@ -1,4 +1,4 @@
-import type { Faculty } from '@mms/shared';
+import type { Faculty } from "@mms/shared";
 
 /** Organization hierarchy removed — no position-based subordinates. */
 export async function findSubordinates(_tenant: string, _supervisorId: string): Promise<Faculty[]> {

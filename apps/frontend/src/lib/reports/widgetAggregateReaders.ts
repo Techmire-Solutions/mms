@@ -48,7 +48,9 @@ function readTotalFromMetricsQuery(queryKey: readonly unknown[]): number {
   return metrics?.total ?? 0;
 }
 
-export function readContactsWidgetAggregate(widgetId: string): ContactsWidgetAggregateResult | undefined {
+export function readContactsWidgetAggregate(
+  widgetId: string,
+): ContactsWidgetAggregateResult | undefined {
   return readWidgetAggregateFromCache<ContactsWidgetAggregateResult>(
     CONTACTS_WIDGET_AGGREGATES_QUERY_KEY,
     widgetId,
@@ -59,7 +61,9 @@ export function readContactsTotalFromMetrics(): number {
   return readTotalFromMetricsQuery(CONTACTS_METRICS_QUERY_KEY);
 }
 
-export function readStudentsWidgetAggregate(widgetId: string): StudentsWidgetAggregateResult | undefined {
+export function readStudentsWidgetAggregate(
+  widgetId: string,
+): StudentsWidgetAggregateResult | undefined {
   return readWidgetAggregateFromCache<StudentsWidgetAggregateResult>(
     STUDENTS_WIDGET_AGGREGATES_QUERY_KEY,
     widgetId,
@@ -70,7 +74,9 @@ export function readStudentsTotalFromMetrics(): number {
   return readTotalFromMetricsQuery(STUDENTS_METRICS_QUERY_KEY);
 }
 
-export function readFacultyWidgetAggregate(widgetId: string): FacultyWidgetAggregateResult | undefined {
+export function readFacultyWidgetAggregate(
+  widgetId: string,
+): FacultyWidgetAggregateResult | undefined {
   return readWidgetAggregateFromCache<FacultyWidgetAggregateResult>(
     FACULTY_WIDGET_AGGREGATES_QUERY_KEY,
     widgetId,
@@ -81,7 +87,9 @@ export function readFacultyTotalFromMetrics(): number {
   return readTotalFromMetricsQuery(FACULTY_METRICS_QUERY_KEY);
 }
 
-export function readSessionsWidgetAggregate(widgetId: string): SessionsWidgetAggregateResult | undefined {
+export function readSessionsWidgetAggregate(
+  widgetId: string,
+): SessionsWidgetAggregateResult | undefined {
   return readWidgetAggregateFromCache<SessionsWidgetAggregateResult>(
     SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
     widgetId,
@@ -92,7 +100,9 @@ export function readSessionsTotalFromMetrics(): number {
   return readTotalFromMetricsQuery(SESSIONS_METRICS_QUERY_KEY);
 }
 
-export function readEnrollmentsWidgetAggregate(widgetId: string): EnrollmentsWidgetAggregateResult | undefined {
+export function readEnrollmentsWidgetAggregate(
+  widgetId: string,
+): EnrollmentsWidgetAggregateResult | undefined {
   return readWidgetAggregateFromCache<EnrollmentsWidgetAggregateResult>(
     ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY,
     widgetId,
@@ -115,7 +125,6 @@ export function formatGenericWidgetValue(
   } else {
     formattedValue = formatNumber(aggregate.value);
   }
-
 
   let isAlert = false;
   if (widget.thresholdEnabled && widget.thresholdValue !== undefined) {

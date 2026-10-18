@@ -3,14 +3,14 @@ import {
   type FacultyListPageResult,
   type FacultyListQuery,
   type FacultyMember,
-} from '@mms/shared';
-import { and, sql } from 'drizzle-orm';
-import { faculty } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { facultyRowToRecord } from './facultyRepositoryColumns.js';
-import { countSubordinatesBatch } from './facultyRepositorySubordinates.js';
-import { buildListConditions, buildOrderBy } from './facultyRepositoryListQuerySql.js';
-import { facultyWithPrimaryAppointmentFromSql } from './facultyPrimaryAppointmentSql.js';
+} from "@mms/shared";
+import { and, sql } from "drizzle-orm";
+import { faculty } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { facultyRowToRecord } from "./facultyRepositoryColumns.js";
+import { countSubordinatesBatch } from "./facultyRepositorySubordinates.js";
+import { buildListConditions, buildOrderBy } from "./facultyRepositoryListQuerySql.js";
+import { facultyWithPrimaryAppointmentFromSql } from "./facultyPrimaryAppointmentSql.js";
 
 type ListRow = typeof faculty.$inferSelect & {
   departmentId?: string | null;
@@ -34,7 +34,10 @@ export async function listFacultyPage(
 
   return withTenantRead(subdomain, async (tx) => {
     const page = Math.max(1, query.page ?? 1);
-    const limit = Math.min(Math.max(1, query.limit ?? FACULTY_MODULE_MANIFEST.defaultPageSize), 100);
+    const limit = Math.min(
+      Math.max(1, query.limit ?? FACULTY_MODULE_MANIFEST.defaultPageSize),
+      100,
+    );
     const isCursorPaging = Boolean(query.afterId?.trim());
     const offset = isCursorPaging ? 0 : (page - 1) * limit;
 
@@ -47,7 +50,7 @@ export async function listFacultyPage(
     const pageWhere = and(...pageConditions);
 
     const fromSql = facultyWithPrimaryAppointmentFromSql();
-    const sortDir = query.sortDir === 'desc' ? 'desc' : query.sortDir === 'asc' ? 'asc' : undefined;
+    const sortDir = query.sortDir === "desc" ? "desc" : query.sortDir === "asc" ? "asc" : undefined;
     const orderBy = isCursorPaging
       ? sql`${faculty.id} asc`
       : sql`${buildOrderBy(query.sortField, sortDir)}, ${faculty.id} asc`;
@@ -123,9 +126,8 @@ export async function listFacultyPage(
       subordinateCount: subCounts[String(t.id)] ?? 0,
     }));
 
-    const hasMore = isCursorPaging || query.skipCount
-      ? enriched.length === limit
-      : page * limit < total;
+    const hasMore =
+      isCursorPaging || query.skipCount ? enriched.length === limit : page * limit < total;
     const lastItem = enriched[enriched.length - 1];
     return {
       faculty: enriched,

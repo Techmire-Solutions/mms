@@ -2,11 +2,11 @@
  * Deletes orphan document-store Question Bank Setup keys after typed-table backfill (072).
  * Safe to re-run: skips delete when typed Setup rows are missing for that tenant.
  */
-import { eq } from 'drizzle-orm';
-import { parseTenantScopedStorageKey, QUESTION_BANK_MODULE_MANIFEST } from '@mms/shared';
-import * as schema from '../schema.js';
-import { deleteObjectByStorageKey, listObjectStorageKeys } from '../database.js';
-import { withGlobalTenant, type TenantTransaction } from '../tenant-context.js';
+import { eq } from "drizzle-orm";
+import { parseTenantScopedStorageKey, QUESTION_BANK_MODULE_MANIFEST } from "@mms/shared";
+import * as schema from "../schema.js";
+import { deleteObjectByStorageKey, listObjectStorageKeys } from "../database.js";
+import { withGlobalTenant, type TenantTransaction } from "../tenant-context.js";
 
 const SETTINGS_KEY = QUESTION_BANK_MODULE_MANIFEST.settingsObjectKey;
 
@@ -42,7 +42,7 @@ export async function runMigration073(): Promise<void> {
   }
 
   if (candidates.length === 0) {
-    console.log('[Migration 073] No orphan Question Bank Setup object keys to clear.');
+    console.log("[Migration 073] No orphan Question Bank Setup object keys to clear.");
     return;
   }
 
@@ -77,7 +77,7 @@ export async function runMigration073(): Promise<void> {
   }
 
   if (toDelete.length === 0 && skipped === 0) {
-    console.log('[Migration 073] No orphan Question Bank Setup object keys to clear.');
+    console.log("[Migration 073] No orphan Question Bank Setup object keys to clear.");
   } else {
     console.log(
       `[Migration 073] Removed ${toDelete.length} key(s); skipped ${skipped} unsafe key(s).`,

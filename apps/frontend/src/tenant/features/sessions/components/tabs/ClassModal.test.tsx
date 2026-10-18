@@ -4,8 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ClassSchema } from "@mms/shared";
 import { ClassModal } from "./ClassModal";
 
-
-
 vi.mock("@/hooks/useAcademicTerms", () => ({
   useAcademicTerms: () => ({
     session: { singular: "Session", plural: "Sessions" },
@@ -16,11 +14,21 @@ vi.mock("@/hooks/useAcademicTerms", () => ({
 vi.mock("@/hooks/useAcademicCatalog", () => ({
   useAcademicCatalogItems: () => ({ data: [] }),
   useExaminationSubjects: () => ({ data: [] }),
-  useAcademicCatalogActions: () => ({ save: vi.fn(), remove: vi.fn(), restore: vi.fn(), isPending: false }),
+  useAcademicCatalogActions: () => ({
+    save: vi.fn(),
+    remove: vi.fn(),
+    restore: vi.fn(),
+    isPending: false,
+  }),
 }));
 
 vi.mock("@/tenant/hooks/usePermissions", () => ({
-  useModulePermissions: () => ({ canRead: true, canWrite: true, canDelete: false, canEditSetup: false }),
+  useModulePermissions: () => ({
+    canRead: true,
+    canWrite: true,
+    canDelete: false,
+    canEditSetup: false,
+  }),
 }));
 
 declare global {
@@ -45,7 +53,7 @@ vi.mock("@/tenant/hooks/collections/faculty", async (importOriginal) => {
   };
 });
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     error,

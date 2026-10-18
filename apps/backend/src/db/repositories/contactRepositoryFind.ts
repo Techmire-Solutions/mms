@@ -1,10 +1,10 @@
-import { and, eq, inArray } from 'drizzle-orm';
-import type { Contact } from '@mms/shared';
-import { contacts } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { getPreparedContactById } from '../preparedStatements.js';
-import { contactSelectColumns } from './contactRepositoryColumns.js';
-import { hydrateContactsList, hydrateContactsSummaryList } from './contactRepositoryHydrate.js';
+import { and, eq, inArray } from "drizzle-orm";
+import type { Contact } from "@mms/shared";
+import { contacts } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { getPreparedContactById } from "../preparedStatements.js";
+import { contactSelectColumns } from "./contactRepositoryColumns.js";
+import { hydrateContactsList, hydrateContactsSummaryList } from "./contactRepositoryHydrate.js";
 
 type ContactRow = typeof contacts.$inferSelect;
 
@@ -12,7 +12,10 @@ export async function findContactById(tenant: string, id: string): Promise<Conta
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     let rows: ContactRow[];
-    if (process.env.MMS_USE_PREPARED_STATEMENTS !== 'false' && typeof (tx as { execute?: unknown }).execute === 'function') {
+    if (
+      process.env.MMS_USE_PREPARED_STATEMENTS !== "false" &&
+      typeof (tx as { execute?: unknown }).execute === "function"
+    ) {
       try {
         const stmt = getPreparedContactById(tx);
         rows = await stmt.execute({ subdomain, id });
@@ -60,4 +63,3 @@ export async function findContactsSummaryByIds(tenant: string, ids: string[]): P
     return hydrateContactsSummaryList(tx, subdomain, rows);
   });
 }
-

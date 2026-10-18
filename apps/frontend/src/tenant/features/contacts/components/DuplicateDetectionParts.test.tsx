@@ -32,9 +32,7 @@ const mockContact: Contact = {
 
 describe("DuplicateDetectionParts Components", () => {
   it("renders ConfidenceBadge correctly", () => {
-    const html = renderToStaticMarkup(
-      <ConfidenceBadge score={95} prefs={{}} />,
-    );
+    const html = renderToStaticMarkup(<ConfidenceBadge score={95} prefs={{}} />);
     expect(html).toContain("95");
     expect(html).toContain("contacts.duplicates.matchSuffix");
   });

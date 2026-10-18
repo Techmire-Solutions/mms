@@ -3,7 +3,7 @@ import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { StudentsListViews } from "@/tenant/features/students/components/StudentsListViews";
 import { useStudentListController } from "@/tenant/features/students/hooks/useStudentListController";
-import type { StudentsListContentSortField } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";
 

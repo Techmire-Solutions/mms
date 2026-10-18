@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { getContrastRatio } from "@mms/shared";
+import { getContrastRatio, MAX_RESTING_TINT_BY_MODE } from "@mms/shared";
 
 /**
  * Executable form of the WCAG AA contrast contract documented in `src/index.css`.
@@ -28,16 +28,16 @@ const INDEX_CSS = path.resolve(import.meta.dirname, "../index.css");
 const AA_TEXT = 4.5;
 /** WCAG 1.4.11 non-text contrast, for focus indicators and UI boundaries. */
 const AA_NON_TEXT = 3;
-/** Strongest same-token tint used behind same-token text AT REST, per theme.
+/**
+ * Strongest same-token tint used behind same-token text AT REST, per theme.
  *
- * Measured from the codebase, not chosen:
- *   light — `bg-primary/15 text-primary` (calendar.tsx, PermissionMatrixRow.tsx)
- *           plus ~188 `/10` chips;
- *   dark  — only `dark:bg-<role>/10` exists; there is no `dark:bg-<role>/15`.
- * A stronger tint lightens the surface the token is read against, so this is the
- * binding constraint on how light a token may be.
+ * Single-sourced from `@mms/shared`. It used to restate the number, so all three
+ * copies drifted together when the dark value was measured wrong (`0.10`, from the
+ * false claim that "dark — only `dark:bg-<role>/10` exists; there is no
+ * `dark:bg-<role>/15`"): `dark:bg-info/15` and `dark:bg-<role>/20` both existed. The
+ * design contract (`src/index.css`) is `/15` in both modes.
  */
-const MAX_RESTING_TINT = { light: 0.15, dark: 0.1 } as const;
+const MAX_RESTING_TINT = MAX_RESTING_TINT_BY_MODE;
 
 type Hsl = [number, number, number];
 
@@ -170,6 +170,72 @@ describe.each([
         "--muted-foreground on --" + surface,
       );
     }
+  });
+});
+
+describe("design tokens — tint strength contract", () => {
+  /**
+   * `src/index.css` states the rule in prose — "tints stronger than `/15` … must use
+   * `-foreground` or a lighter tint, because no single hue satisfies every step" — and
+   * nothing checked it, so eight call sites sat at `/20` behind the same token's text.
+   * This makes the prose executable.
+   *
+   * EVERY interaction state is in scope, and that was measured rather than assumed: same-token
+   * text on its own tint scores 4.50:1 (light) / 4.51:1 (dark) at `/15`, but **4.13 / 4.12 at
+   * `/20`** and 3.80 at `/25`. WCAG 1.4.3 applies to hovered text too, so `hover:bg-<token>/20`
+   * behind `text-<token>` is a real drop below AA — not an exemption.
+   */
+  it("no tint stronger than the bound carries the same token as text, in any state", () => {
+    const maxAlpha = Math.round(MAX_RESTING_TINT_BY_MODE.light * 100);
+    /**
+     * Scoped to the fill tokens whose parent surface is `--card` / `--background` — the
+     * surfaces this bound is solved against. Excluded, with reasons:
+     *   - `*-foreground`: label tokens used as subtle overlays inside the DARK command
+     *     palette, where the composited surface is dark and the light-surface maths
+     *     behind this bound does not apply;
+     *   - `sidebar-*`: they live on the dark sidebar, which has its own fitted pair
+     *     (`--sidebar-foreground` / `--sidebar-muted-foreground`).
+     */
+    const isCovered = (token: string) =>
+      !token.endsWith("-foreground") && !token.startsWith("sidebar-");
+
+    /** Every candidate class in the literal — all interaction states are in scope. */
+    const candidateClasses = (literal: string) => literal.slice(1, -1).split(/\s+/);
+
+    const offenders: string[] = [];
+
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) return entry.name === "__tests__" ? [] : walk(full);
+        if (!/\.tsx?$/.test(entry.name) || /\.test\.tsx?$/.test(entry.name)) return [];
+        return [full];
+      });
+
+    for (const file of walk(path.resolve(import.meta.dirname, ".."))) {
+      const relative = path.relative(path.resolve(import.meta.dirname, "../.."), file);
+      for (const literal of readFileSync(file, "utf-8").matchAll(/"[^"\n]*"/g)) {
+        const classes = candidateClasses(literal[0]);
+        const textTokens = classes
+          .map((className) => /(?:\w+:)*text-([a-z-]+)$/.exec(className)?.[1])
+          .filter((token) => token !== undefined);
+
+        for (const className of classes) {
+          const tint = /(?:\w+:)*bg-([a-z-]+)\/(\d+)$/.exec(className);
+          if (!tint) continue;
+          const [, token, alphaText] = tint;
+          if (!isCovered(token) || Number(alphaText) <= maxAlpha) continue;
+          if (textTokens.includes(token)) {
+            offenders.push(`${relative} → ${className} with text-${token}`);
+          }
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      `Resting tints stronger than /${maxAlpha} behind the same token's text:\n${offenders.join("\n")}`,
+    ).toEqual([]);
   });
 });
 

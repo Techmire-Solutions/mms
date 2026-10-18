@@ -6,16 +6,13 @@ import {
   type QuestionBankQuestion,
   type QuestionBankTest,
   type QuestionBankResult,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceQuestionsForWorkspace,
   replaceTestsForWorkspace,
   replaceResultsForWorkspace,
-} from '../repositories/questionBankRepository.js';
+} from "../repositories/questionBankRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -39,7 +36,7 @@ export async function runMigration032(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
 
     // 1. Questions
     const legacyQuestions = await getCollectionByStorageName(`${prefix}questions`);
@@ -73,6 +70,6 @@ export async function runMigration032(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 032] No legacy question bank records to import.');
+    console.log("[Migration 032] No legacy question bank records to import.");
   }
 }

@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Phone } from "lucide-react";
-import { CardPrimaryButton, EditableSelect } from "@/components/ui/FormPrimitives";
+import { CardPrimaryButton, EditableSelect } from "@/components/app/FormPrimitives";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolvePhoneLabel } from "@/lib/contacts/contactI18n";

@@ -1,12 +1,20 @@
 import React from "react";
 import { ArrowUpRight, IdCard, MapPin, ShieldCheck, Tag } from "lucide-react";
-import type { Address, EmailAddress, PhoneNumber, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type {
+  Address,
+  EmailAddress,
+  PhoneNumber,
+  StandardMessagingRecipient as MessagingRecipient,
+} from "@mms/shared";
 import { toMessagingRecipient } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { MESSAGING_ICON_BTN, MESSAGING_ICON_BTN_TONES } from "@/components/ui/messagingActionStyles";
+import {
+  MESSAGING_ICON_BTN,
+  MESSAGING_ICON_BTN_TONES,
+} from "@/components/app/messagingActionStyles";
 import { StudentDetailContactChannels } from "./StudentDetailContactChannels";
 
 export interface StudentContactProfileData {
@@ -141,7 +149,10 @@ export function StudentDetailContactSection({
                   key={`student-addr-${idx}`}
                   className="flex items-start gap-2 py-1 px-2.5 rounded-lg bg-muted/30 text-xs text-muted-foreground"
                 >
-                  <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" aria-hidden />
+                  <MapPin
+                    className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5"
+                    aria-hidden
+                  />
                   <span className="truncate flex-1">{formatted}</span>
                   {addr.label && (
                     <span className="text-2xs uppercase tracking-tight font-medium shrink-0">
@@ -172,7 +183,10 @@ export function StudentDetailContactSection({
               <div className="flex items-center gap-1.5 text-muted-foreground col-span-full flex-wrap">
                 <Tag className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden />
                 {tags.map((tag) => (
-                  <span key={tag} className="bg-muted px-1.5 py-0.5 rounded text-2xs font-medium text-foreground">
+                  <span
+                    key={tag}
+                    className="bg-muted px-1.5 py-0.5 rounded text-2xs font-medium text-foreground"
+                  >
                     {tag}
                   </span>
                 ))}

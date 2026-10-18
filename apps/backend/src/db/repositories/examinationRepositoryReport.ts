@@ -1,5 +1,5 @@
-import { toDbDate } from '../../lib/dbDate.js';
-import { sql } from 'drizzle-orm';
+import { toDbDate } from "../../lib/dbDate.js";
+import { sql } from "drizzle-orm";
 import {
   EMPTY_EXAMINATIONS_REPORT_AGGREGATES,
   dedupeTrimmedIds,
@@ -10,11 +10,11 @@ import {
   type ExaminationsReportComparisonMonth,
   type ExaminationsReportComparisonQuery,
   type ExaminationsReportComparisonSession,
-} from '@mms/shared';
-import { getQueryRows } from '../documentStoreKeys.js';
-import { withTenantRead } from '../tenant-context.js';
+} from "@mms/shared";
+import { getQueryRows } from "../documentStoreKeys.js";
+import { withTenantRead } from "../tenant-context.js";
 
-function activeExamWhere(subdomain: string, alias = 'e'): ReturnType<typeof sql> {
+function activeExamWhere(subdomain: string, alias = "e"): ReturnType<typeof sql> {
   return sql`
     ${sql.raw(`${alias}.workspace_subdomain`)} = ${subdomain}
     AND ${sql.raw(`${alias}.deleted_at`)} IS NULL
@@ -78,20 +78,22 @@ export async function loadExaminationsReportAggregatesSql(
         FROM selected sel
         LEFT JOIN session_classes sc ON sc.session_id = sel."sessionId"
         LEFT JOIN exam_classes ec ON ec.class_id = sc.class_id AND ec.workspace_subdomain = ${subdomain}
-        LEFT JOIN exams e ON e.id = ec.exam_id AND ${activeExamWhere(subdomain, 'e')}
+        LEFT JOIN exams e ON e.id = ec.exam_id AND ${activeExamWhere(subdomain, "e")}
         LEFT JOIN exam_results_cte erc ON erc.exam_id = e.id
         GROUP BY sel."sessionId"
       `);
 
       comparison.sessions = ensureAllSessionsInComparison(
-        getQueryRows<Record<string, unknown>>(compareSessionResult).map((row: Record<string, unknown>) => {
-          const total = Number(row.totalCount ?? 0);
-          const pass = Number(row.passCount ?? 0);
-          return {
-            sessionId: String(row.sessionId ?? ''),
-            passRatePct: total > 0 ? Math.round((pass / total) * 100) : 0,
-          } satisfies ExaminationsReportComparisonSession;
-        }),
+        getQueryRows<Record<string, unknown>>(compareSessionResult).map(
+          (row: Record<string, unknown>) => {
+            const total = Number(row.totalCount ?? 0);
+            const pass = Number(row.passCount ?? 0);
+            return {
+              sessionId: String(row.sessionId ?? ""),
+              passRatePct: total > 0 ? Math.round((pass / total) * 100) : 0,
+            } satisfies ExaminationsReportComparisonSession;
+          },
+        ),
         sessionIds,
         (sessionId) => ({ sessionId, passRatePct: 0 }),
       );
@@ -111,7 +113,7 @@ export async function loadExaminationsReportAggregatesSql(
           SUM(CASE WHEN COALESCE(er.marks_obtained, 0) >= COALESCE(e.passing_marks, 0) THEN 1 ELSE 0 END) AS "passCount"
         FROM exams e
         LEFT JOIN exam_results er ON er.exam_id = e.id AND er.workspace_subdomain = ${subdomain}
-        WHERE ${activeExamWhere(subdomain, 'e')}
+        WHERE ${activeExamWhere(subdomain, "e")}
           AND e.date IS NOT NULL
           AND e.date >= ${from}::date
           AND e.date <= ${to}::date
@@ -122,7 +124,7 @@ export async function loadExaminationsReportAggregatesSql(
       const monthly: ExaminationsReportComparisonMonth[] = [];
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        if (typeof row?.monthKey === 'string' && /^\d{4}-\d{2}$/.test(row.monthKey)) {
+        if (typeof row?.monthKey === "string" && /^\d{4}-\d{2}$/.test(row.monthKey)) {
           monthly.push({
             monthKey: row.monthKey,
             passCount: Number(row.passCount ?? 0),
@@ -133,8 +135,14 @@ export async function loadExaminationsReportAggregatesSql(
       return monthly;
     };
 
-    comparison.monthly.a = await loadMonthlyRange(comparisonQuery.rangeAFrom, comparisonQuery.rangeATo);
-    comparison.monthly.b = await loadMonthlyRange(comparisonQuery.rangeBFrom, comparisonQuery.rangeBTo);
+    comparison.monthly.a = await loadMonthlyRange(
+      comparisonQuery.rangeAFrom,
+      comparisonQuery.rangeATo,
+    );
+    comparison.monthly.b = await loadMonthlyRange(
+      comparisonQuery.rangeBFrom,
+      comparisonQuery.rangeBTo,
+    );
     aggregates.comparison = comparison;
     return aggregates;
   });

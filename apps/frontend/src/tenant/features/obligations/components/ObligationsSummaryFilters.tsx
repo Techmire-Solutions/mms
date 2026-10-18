@@ -1,11 +1,11 @@
 import { Filter, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { CARD_STRIPE_INSET } from "@/lib/semanticTone";
-import { DateRangeFilterBar } from "@/components/ui/DateRangeFilterBar";
+import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
+import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface ObligationsSummaryFiltersProps {
@@ -53,7 +53,9 @@ export function ObligationsSummaryFilters({
     <Card accentColor="primary" className={cn("p-4 space-y-3", CARD_STRIPE_INSET)}>
       <header className="flex items-center gap-2 mb-1 ps-1">
         <Filter className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
-        <h2 className="text-sm font-bold text-foreground m-0">{t("obligations.summary.filters.title")}</h2>
+        <h2 className="text-sm font-bold text-foreground m-0">
+          {t("obligations.summary.filters.title")}
+        </h2>
         {hasFilters && (
           <Button
             type="button"
@@ -67,7 +69,10 @@ export function ObligationsSummaryFilters({
       </header>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
         <div className="relative sm:col-span-2 lg:col-span-3">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+          <Search
+            className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+            aria-hidden="true"
+          />
           <Input
             id="obligations-summary-search"
             name="search"

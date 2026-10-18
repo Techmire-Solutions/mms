@@ -1,7 +1,7 @@
-import { activeAcademicCatalogItems } from '@mms/shared';
-import { useAcademicCatalogItems } from '@/hooks/useAcademicCatalog';
-import { useMemo } from 'react';
-import type { ModuleCustomField } from '@mms/shared';
+import { activeAcademicCatalogItems } from "@mms/shared";
+import { useAcademicCatalogItems } from "@/hooks/useAcademicCatalog";
+import { useMemo } from "react";
+import type { ModuleCustomField } from "@mms/shared";
 import {
   getSortedFacultyFields,
   listEnabledCustomFacultyFormFields,
@@ -19,35 +19,38 @@ import {
   type FacultySettings,
   type EnrollmentsSettings,
   type ExaminationsSettings,
-} from '@mms/shared';
-import { createStandardModuleConfigHook, type StandardModuleConfigCore } from './createStandardModuleConfigHook';
+} from "@mms/shared";
+import {
+  createStandardModuleConfigHook,
+  type StandardModuleConfigCore,
+} from "./createStandardModuleConfigHook";
 import {
   STANDARD_MODULES_CONFIG_REGISTRY,
   type StandardModuleConfigExtraMap,
-} from './standardModuleConfigRegistry';
-import { useSessionLookupsQuery } from '@/tenant/features/sessions/hooks/useSessionLookups';
-import { useStudentLookupsQuery } from '@/tenant/features/students/hooks/useStudentLookups';
+} from "./standardModuleConfigRegistry";
+import { useSessionLookupsQuery } from "@/tenant/hooks/collections/sessions";
+import { useStudentLookupsQuery } from "@/tenant/hooks/collections/students";
 import {
   useComposedFacultySettings,
   useFacultyPreferencesMutation,
   useFacultyLookupsQuery,
-} from '@/tenant/hooks/collections/faculty';
+} from "@/tenant/hooks/collections/faculty";
 import {
   useComposedStudentsSettings,
   useStudentPreferencesMutation,
-} from '@/tenant/hooks/collections/students';
+} from "@/tenant/hooks/collections/students";
 import {
   useComposedSessionsSettings,
   useSessionPreferencesMutation,
-} from '@/tenant/hooks/collections/sessions';
+} from "@/tenant/hooks/collections/sessions";
 import {
   useComposedEnrollmentsSettings,
   useEnrollmentPreferencesMutation,
-} from '@/tenant/hooks/collections/enrollments';
+} from "@/tenant/hooks/collections/enrollments";
 import {
   useComposedExaminationsSettings,
   useExaminationPreferencesMutation,
-} from '@/tenant/hooks/collections/examinations';
+} from "@/tenant/hooks/collections/examinations";
 
 const DEFAULT_EMPTY_FACULTY_LOOKUPS_MAP = emptyFacultyLookupsMap();
 
@@ -92,10 +95,8 @@ const useFacultyConfigImpl = createStandardModuleConfigHook<
 
 export function useFacultyConfig() {
   return useFacultyConfigImpl() as StandardModuleConfigCore<FacultySettings> &
-    StandardModuleConfigExtraMap['faculty'];
+    StandardModuleConfigExtraMap["faculty"];
 }
-
-
 
 const useStudentConfigImpl = createStandardModuleConfigHook<
   StudentsSettings,
@@ -123,7 +124,7 @@ const useStudentConfigImpl = createStandardModuleConfigHook<
 
 export function useStudentConfig() {
   return useStudentConfigImpl() as StandardModuleConfigCore<StudentsSettings> &
-    StandardModuleConfigExtraMap['students'];
+    StandardModuleConfigExtraMap["students"];
 }
 
 const useSessionConfigImpl = createStandardModuleConfigHook<
@@ -142,7 +143,7 @@ const useSessionConfigImpl = createStandardModuleConfigHook<
   lookupsFrom: function useSessionConfigLookups() {
     const lookupsQuery = useSessionLookupsQuery();
     const lookups = lookupsQuery.data ?? emptySessionLookupsMap;
-    const programsQuery = useAcademicCatalogItems('programs');
+    const programsQuery = useAcademicCatalogItems("programs");
     return {
       statuses: lookups.statuses,
       /** Active Program names (the session `type` snapshot mirrors the program name). */
@@ -153,14 +154,15 @@ const useSessionConfigImpl = createStandardModuleConfigHook<
 
 export function useSessionConfig() {
   return useSessionConfigImpl() as StandardModuleConfigCore<SessionsSettings> &
-    StandardModuleConfigExtraMap['sessions'];
+    StandardModuleConfigExtraMap["sessions"];
 }
 
 const useEnrollmentConfigImpl = createStandardModuleConfigHook<
   EnrollmentsSettings,
   Record<string, never>
 >({
-  defaultSettings: STANDARD_MODULES_CONFIG_REGISTRY.enrollments.defaultSettings as EnrollmentsSettings,
+  defaultSettings: STANDARD_MODULES_CONFIG_REGISTRY.enrollments
+    .defaultSettings as EnrollmentsSettings,
   defaultFieldDefs: STANDARD_MODULES_CONFIG_REGISTRY.enrollments.defaultFieldDefs,
   useSettings: useComposedEnrollmentsSettings,
   useUpdateSettingsAsync: () => {
@@ -173,14 +175,15 @@ const useEnrollmentConfigImpl = createStandardModuleConfigHook<
 
 export function useEnrollmentConfig() {
   return useEnrollmentConfigImpl() as StandardModuleConfigCore<EnrollmentsSettings> &
-    StandardModuleConfigExtraMap['enrollments'];
+    StandardModuleConfigExtraMap["enrollments"];
 }
 
 const useExaminationConfigImpl = createStandardModuleConfigHook<
   ExaminationsSettings,
   Record<string, never>
 >({
-  defaultSettings: STANDARD_MODULES_CONFIG_REGISTRY.examinations.defaultSettings as ExaminationsSettings,
+  defaultSettings: STANDARD_MODULES_CONFIG_REGISTRY.examinations
+    .defaultSettings as ExaminationsSettings,
   defaultFieldDefs: STANDARD_MODULES_CONFIG_REGISTRY.examinations.defaultFieldDefs,
   useSettings: useComposedExaminationsSettings,
   useUpdateSettingsAsync: () => {
@@ -193,5 +196,5 @@ const useExaminationConfigImpl = createStandardModuleConfigHook<
 
 export function useExaminationConfig() {
   return useExaminationConfigImpl() as StandardModuleConfigCore<ExaminationsSettings> &
-    StandardModuleConfigExtraMap['examinations'];
+    StandardModuleConfigExtraMap["examinations"];
 }

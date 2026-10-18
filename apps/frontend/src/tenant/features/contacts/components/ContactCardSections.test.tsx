@@ -4,8 +4,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Contact } from "@mms/shared";
 import { ContactCardInfoPills } from "./ContactCardSections";
 
-vi.mock("@/components/ui/EntityCardInfoPills", () => ({
-  EntityCardInfoPills: ({ phones, emails }: {
+vi.mock("@/components/app/EntityCardInfoPills", () => ({
+  EntityCardInfoPills: ({
+    phones,
+    emails,
+  }: {
     phones: Array<{ phoneDisplay: string }>;
     emails: Array<{ email: string }>;
   }) => (
@@ -36,10 +39,7 @@ const mockContact: Contact = {
 describe("ContactCardInfoPills Component", () => {
   it("renders phones and emails based on column visibility", () => {
     const html = renderToStaticMarkup(
-      <ContactCardInfoPills
-        contact={mockContact}
-        isColumnVisible={() => true}
-      />,
+      <ContactCardInfoPills contact={mockContact} isColumnVisible={() => true} />,
     );
 
     expect(html).toContain("300 1234567");

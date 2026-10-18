@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import Sessions from "./SessionsPage";
 
-
 vi.mock("@/hooks/useAcademicTerms", () => ({
   useAcademicTerms: () => ({
     session: { singular: "Session", plural: "Sessions" },
@@ -102,7 +101,7 @@ vi.mock("@/tenant/features/sessions/hooks/useSessionsPageController", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
+vi.mock("@/components/app/ModulePageShell", () => ({
   ModulePageShell: ({
     headerTitle,
     headerActions,
@@ -123,7 +122,7 @@ vi.mock("@/components/ui/ModulePageShell", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="accordion-tabs">{children}</div>
   ),

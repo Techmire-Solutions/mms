@@ -1,4 +1,4 @@
-import type { PlatformUserProfile } from '@mms/shared';
+import type { PlatformUserProfile } from "@mms/shared";
 
 export interface PlatformAuthContextType {
   platformUser: PlatformUserProfile | null;
@@ -22,5 +22,4 @@ export interface PlatformAuthContextType {
 /** Result of a platform login attempt. When 2FA is required, the session is not
  *  established until the code is verified via `platformVerify2FA`. */
 export type PlatformLoginOutcome =
-  | { requires2FA: true; challengeId: string }
-  | { requires2FA: false };
+  { requires2FA: true; challengeId: string } | { requires2FA: false };

@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { SessionClassSectionSelect, sessionIdForClass } from "@/components/common/SessionClassSectionSelect";
+import {
+  SessionClassSectionSelect,
+  sessionIdForClass,
+} from "@/components/common/SessionClassSectionSelect";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT, WORK_SURFACE } from "@/components/ui/formStyles";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   coercePaperNumberInput,
   type PaperConfig,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 interface PaperDetailsFormProps {
   config: PaperConfig;
@@ -39,12 +42,18 @@ export function PaperDetailsForm({ config, onChange }: PaperDetailsFormProps): R
         <div className="grid grid-cols-1 gap-3 sm:col-span-2 sm:grid-cols-2 md:col-span-4">
           <SessionClassSectionSelect
             sessions={sessions}
-            value={{ sessionId: sessionId || sessionIdForClass(sessions, config.classId), classId: config.classId, sectionId: "" }}
+            value={{
+              sessionId: sessionId || sessionIdForClass(sessions, config.classId),
+              classId: config.classId,
+              sectionId: "",
+            }}
             idPrefix="paper-link"
             onChange={(next) => {
               setSessionId(next.sessionId);
               onChange("classId", next.classId);
-              const cls = sessions.find((row) => row.id === next.sessionId)?.classes.find((row) => row.id === next.classId);
+              const cls = sessions
+                .find((row) => row.id === next.sessionId)
+                ?.classes.find((row) => row.id === next.classId);
               if (cls) onChange("examClass", cls.name);
             }}
           />
@@ -70,7 +79,9 @@ export function PaperDetailsForm({ config, onChange }: PaperDetailsFormProps): R
               inputMode="numeric"
               className={`${FORM_INPUT} shadow-none`}
               value={config.duration}
-              onChange={(event) => onChange("duration", coercePaperNumberInput(event.target.value, config.duration, 5))}
+              onChange={(event) =>
+                onChange("duration", coercePaperNumberInput(event.target.value, config.duration, 5))
+              }
             />
           </Field>
         </div>
@@ -83,7 +94,12 @@ export function PaperDetailsForm({ config, onChange }: PaperDetailsFormProps): R
               inputMode="numeric"
               className={`${FORM_INPUT} shadow-none`}
               value={config.totalMarks}
-              onChange={(event) => onChange("totalMarks", coercePaperNumberInput(event.target.value, config.totalMarks, 1))}
+              onChange={(event) =>
+                onChange(
+                  "totalMarks",
+                  coercePaperNumberInput(event.target.value, config.totalMarks, 1),
+                )
+              }
             />
           </Field>
         </div>

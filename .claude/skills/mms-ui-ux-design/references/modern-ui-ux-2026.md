@@ -4,7 +4,7 @@ Reviewed 2026-09-24. Rules SSOT: `mms-ui-ux-design.md`, `mms-form-architecture.m
 
 ## Existing MMS architecture
 
-- `apps/frontend/src/components/ui/Modal.tsx` and `apps/frontend/src/components/ui/Drawer.tsx` use React portals. Radix popover/tooltip primitives also use portals. A portal changes DOM placement; it does not put an element in the browser top layer. Native modal dialogs opened with `showModal()` and shown native popovers use the top layer. Preserve current primitives unless an implementation change is actually requested. [MDN top layer](https://developer.mozilla.org/en-US/docs/Glossary/Top_layer)
+- `apps/frontend/src/components/app/Modal.tsx` and `apps/frontend/src/components/app/Drawer.tsx` use React portals. Radix popover/tooltip primitives also use portals. A portal changes DOM placement; it does not put an element in the browser top layer. Native modal dialogs opened with `showModal()` and shown native popovers use the top layer. Preserve current primitives unless an implementation change is actually requested. [MDN top layer](https://developer.mozilla.org/en-US/docs/Glossary/Top_layer)
 - `apps/frontend/src/index.css` maps theme colors including HSL channel variables. Use the matching consumer syntax, such as `hsl(var(--primary))`; bare `var(--primary)` is not a complete color for channel-only values. Do not paste a second theme palette into a component.
 - Use Tailwind `start-0`/`end-4` utilities; `inset-inline-start`/`inset-inline-end` are CSS property names, not prefixes for invented `inset-inline-start-0` utilities. [Tailwind offsets](https://tailwindcss.com/docs/top-right-bottom-left)
 

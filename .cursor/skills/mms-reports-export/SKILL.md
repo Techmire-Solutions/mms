@@ -4,7 +4,7 @@ description: Builds MMS module analytics, CustomReportBuilder, Recharts dashboar
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Reports & Export Workflow
@@ -27,7 +27,7 @@ Saved report definitions remain live logic. An explicitly issued/exported financ
 
 ## Placement
 
-Reports tab **inside** each module — no standalone `/reports` page. Shared UI: `apps/frontend/src/components/ui/reports/` · utils: `@/lib/reports/*`.
+Reports tab **inside** each module — no standalone `/reports` page. Shared UI: `apps/frontend/src/components/reports/` · utils: `@/lib/reports/*`.
 
 ## Data (Query-first)
 

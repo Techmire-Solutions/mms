@@ -11,12 +11,12 @@ import {
   refreshFacultyManagedRolePermissions,
   type UserModulePreferences,
   type WorkspaceRole,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getUserModulePreferencesByWorkspace,
   upsertUserModulePreferences,
-} from '../../db/repositories/userModulePreferencesRepository.js';
-import { invalidateTenantRbac } from '../../services/rbacService.js';
+} from "../../db/repositories/userModulePreferencesRepository.js";
+import { invalidateTenantRbac } from "../../services/rbacService.js";
 
 async function loadPrefs(tenant: string): Promise<UserModulePreferences> {
   const raw = await getUserModulePreferencesByWorkspace(tenant);
@@ -46,7 +46,9 @@ export async function upsertFacultyManagedWorkspaceRole(
   composite: WorkspaceRole,
 ): Promise<void> {
   const prefs = await loadPrefs(tenant);
-  const current = prefs.workspaceRoles?.length ? [...prefs.workspaceRoles] : [...DEFAULT_WORKSPACE_ROLES];
+  const current = prefs.workspaceRoles?.length
+    ? [...prefs.workspaceRoles]
+    : [...DEFAULT_WORKSPACE_ROLES];
   const next = current.filter((r) => r.id !== composite.id);
   next.push(composite);
   await persistRoles(tenant, prefs, next);
@@ -57,11 +59,15 @@ export async function removeFacultyManagedWorkspaceRole(
   tenant: string,
   roleId: string,
 ): Promise<void> {
-  if (!isFacultyManagedRole({ id: roleId, managedBy: 'faculty_designations' })) return;
+  if (!isFacultyManagedRole({ id: roleId, managedBy: "faculty_designations" })) return;
   const prefs = await loadPrefs(tenant);
   const current = prefs.workspaceRoles ?? [];
   if (!current.some((r) => r.id === roleId)) return;
-  await persistRoles(tenant, prefs, current.filter((r) => r.id !== roleId));
+  await persistRoles(
+    tenant,
+    prefs,
+    current.filter((r) => r.id !== roleId),
+  );
 }
 
 /**

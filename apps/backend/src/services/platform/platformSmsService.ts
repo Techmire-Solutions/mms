@@ -1,14 +1,14 @@
 import {
   loadPlatformSmsIntegrationConfig,
   loadPlatformSmsIntegrationSecrets,
-} from './platformSmsIntegrationService.js';
-import { sendTwilioSms } from '../sms/providers/twilioProvider.js';
-import { sendVonageSms } from '../sms/providers/vonageProvider.js';
-import { sendMsg91Sms } from '../sms/providers/msg91Provider.js';
-import { sendInfobipSms } from '../sms/providers/infobipProvider.js';
-import { sendTelesignSms } from '../sms/providers/telesignProvider.js';
-import { sendLogiqueuesSms } from '../sms/providers/logiqueuesProvider.js';
-import type { SmsProviderSender } from '../sms/providers/types.js';
+} from "./platformSmsIntegrationService.js";
+import { sendTwilioSms } from "../sms/providers/twilioProvider.js";
+import { sendVonageSms } from "../sms/providers/vonageProvider.js";
+import { sendMsg91Sms } from "../sms/providers/msg91Provider.js";
+import { sendInfobipSms } from "../sms/providers/infobipProvider.js";
+import { sendTelesignSms } from "../sms/providers/telesignProvider.js";
+import { sendLogiqueuesSms } from "../sms/providers/logiqueuesProvider.js";
+import type { SmsProviderSender } from "../sms/providers/types.js";
 
 export interface SendPlatformSmsInput {
   to: string;
@@ -17,7 +17,7 @@ export interface SendPlatformSmsInput {
 
 export interface SendPlatformSmsResult {
   sent: boolean;
-  reason?: 'not_configured' | 'transport_error';
+  reason?: "not_configured" | "transport_error";
   message?: string;
 }
 
@@ -33,15 +33,19 @@ const PROVIDER_SENDERS: Record<string, SmsProviderSender> = {
 async function dispatchViaActiveProvider(to: string, body: string): Promise<SendPlatformSmsResult> {
   const config = await loadPlatformSmsIntegrationConfig();
   const secrets = await loadPlatformSmsIntegrationSecrets();
-  const accountSecret = secrets.accountSecret ?? '';
+  const accountSecret = secrets.accountSecret ?? "";
 
   if (!accountSecret || !config.senderId) {
-    return { sent: false, reason: 'not_configured' };
+    return { sent: false, reason: "not_configured" };
   }
 
   const send = PROVIDER_SENDERS[config.providerId];
   if (!send) {
-    return { sent: false, reason: 'not_configured', message: `Unsupported SMS provider: ${config.providerId}` };
+    return {
+      sent: false,
+      reason: "not_configured",
+      message: `Unsupported SMS provider: ${config.providerId}`,
+    };
   }
 
   try {
@@ -52,12 +56,12 @@ async function dispatchViaActiveProvider(to: string, body: string): Promise<Send
       apiBaseUrl: config.apiBaseUrl,
     });
     if (!result.success) {
-      return { sent: false, reason: 'transport_error', message: result.error };
+      return { sent: false, reason: "transport_error", message: result.error };
     }
     return { sent: true };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to send SMS';
-    return { sent: false, reason: 'transport_error', message };
+    const message = error instanceof Error ? error.message : "Failed to send SMS";
+    return { sent: false, reason: "transport_error", message };
   }
 }
 
@@ -67,6 +71,8 @@ export async function sendPlatformSms(input: SendPlatformSmsInput): Promise<Send
 }
 
 /** Quick connectivity check for the active provider — sends a real SMS to `testPhone`. */
-export async function verifyPlatformSmsTransport(testPhone: string): Promise<SendPlatformSmsResult> {
-  return dispatchViaActiveProvider(testPhone, 'Your MMS platform SMS integration is working.');
+export async function verifyPlatformSmsTransport(
+  testPhone: string,
+): Promise<SendPlatformSmsResult> {
+  return dispatchViaActiveProvider(testPhone, "Your MMS platform SMS integration is working.");
 }

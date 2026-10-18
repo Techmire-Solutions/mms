@@ -1,14 +1,18 @@
-import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
-import { softDeleteBodySchema, includeDeletedQuerySchema } from '../apiSchemas.js';
-import { sessionCreateBodySchema, sessionUpdateBodySchema, sessionsBulkIdsSchema } from '../schemas/sessions.dto.js';
-import { widgetAggregatesBodySchema } from '../schemas/common.dto.js';
-import { sessionsBulkStatusSchema } from '../sessionsModuleManifest.js';
-import { sessionsReportAggregatesSchema } from '../sessionsReportAggregates.js';
-import { SessionSchema } from '../sessionTypes.js';
-import { academicTerminologySchema } from '../academicTerminology.js';
-import { sessionLookupContractEndpoints } from './sessions.contract.lookups.js';
-import { sessionsListQuerySchema } from '../sessionsListQuery.js';
+import { initContract } from "@ts-rest/core";
+import { z } from "zod";
+import { softDeleteBodySchema, includeDeletedQuerySchema } from "../core/apiSchemas.js";
+import {
+  sessionCreateBodySchema,
+  sessionUpdateBodySchema,
+  sessionsBulkIdsSchema,
+} from "../schemas/sessions.dto.js";
+import { widgetAggregatesBodySchema } from "../schemas/common.dto.js";
+import { sessionsBulkStatusSchema } from "../sessions/sessionsModuleManifest.js";
+import { sessionsReportAggregatesSchema } from "../sessions/sessionsReportAggregates.js";
+import { SessionSchema } from "../sessions/sessionTypes.js";
+import { academicTerminologySchema } from "../sessions/academicTerminology.js";
+import { sessionsListQuerySchema } from "../sessions/sessionsListQuery.js";
+import { sessionLookupContractEndpoints } from "./sessions.contract.lookups.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
@@ -23,7 +27,11 @@ export const sessionListPageResponseSchema = z.object({
 });
 
 /** `{ success: true, succeeded, failed }` bulk-operation envelope. */
-const sessionBulkResultResponseSchema = z.object({ success: z.literal(true), succeeded: z.number(), failed: z.number() });
+const sessionBulkResultResponseSchema = z.object({
+  success: z.literal(true),
+  succeeded: z.number(),
+  failed: z.number(),
+});
 
 /** Normalized Sessions Setup preferences (`SessionModulePreferences`). */
 export const sessionPreferencesResponseSchema = z.object({
@@ -42,15 +50,20 @@ export const sessionPreferencesResponseSchema = z.object({
 
 export const sessionContract = c.router({
   list: {
-    method: 'GET',
-    path: '/api/sessions',
+    method: "GET",
+    path: "/api/sessions",
     query: sessionsListQuerySchema,
-    responses: { 200: sessionListPageResponseSchema, 400: errorResponse, 403: errorResponse, 500: errorResponse },
-    summary: 'List sessions',
+    responses: {
+      200: sessionListPageResponseSchema,
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "List sessions",
   },
   create: {
-    method: 'POST',
-    path: '/api/sessions',
+    method: "POST",
+    path: "/api/sessions",
     body: sessionCreateBodySchema,
     responses: {
       201: z.object({ session: SessionSchema }),
@@ -58,11 +71,11 @@ export const sessionContract = c.router({
       403: errorResponse,
       500: errorResponse,
     },
-    summary: 'Create a session',
+    summary: "Create a session",
   },
   bulkDelete: {
-    method: 'POST',
-    path: '/api/sessions/bulk-delete',
+    method: "POST",
+    path: "/api/sessions/bulk-delete",
     body: sessionsBulkIdsSchema,
     responses: {
       200: sessionBulkResultResponseSchema,
@@ -70,11 +83,11 @@ export const sessionContract = c.router({
       403: errorResponse,
       500: errorResponse,
     },
-    summary: 'Bulk soft-delete sessions',
+    summary: "Bulk soft-delete sessions",
   },
   bulkStatus: {
-    method: 'POST',
-    path: '/api/sessions/bulk-status',
+    method: "POST",
+    path: "/api/sessions/bulk-status",
     body: sessionsBulkStatusSchema,
     responses: {
       200: sessionBulkResultResponseSchema,
@@ -82,11 +95,11 @@ export const sessionContract = c.router({
       403: errorResponse,
       500: errorResponse,
     },
-    summary: 'Bulk update session status',
+    summary: "Bulk update session status",
   },
   bulkRestore: {
-    method: 'POST',
-    path: '/api/sessions/bulk-restore',
+    method: "POST",
+    path: "/api/sessions/bulk-restore",
     body: sessionsBulkIdsSchema,
     responses: {
       200: sessionBulkResultResponseSchema,
@@ -94,95 +107,149 @@ export const sessionContract = c.router({
       403: errorResponse,
       500: errorResponse,
     },
-    summary: 'Bulk restore sessions',
+    summary: "Bulk restore sessions",
   },
   get: {
-    method: 'GET',
-    path: '/api/sessions/:id',
+    method: "GET",
+    path: "/api/sessions/:id",
     pathParams: z.object({ id: z.string() }),
     query: includeDeletedQuerySchema.optional(),
-    responses: { 200: z.object({ session: SessionSchema }), 403: errorResponse, 404: errorResponse, 500: errorResponse },
-    summary: 'Get a single session',
+    responses: {
+      200: z.object({ session: SessionSchema }),
+      403: errorResponse,
+      404: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get a single session",
   },
   update: {
-    method: 'PUT',
-    path: '/api/sessions/:id',
+    method: "PUT",
+    path: "/api/sessions/:id",
     body: sessionUpdateBodySchema,
-    responses: { 200: z.object({ session: SessionSchema }), 400: z.unknown(), 403: z.unknown(), 404: z.unknown(), 500: z.unknown() },
-    summary: 'Update session',
+    responses: {
+      200: z.object({ session: SessionSchema }),
+      400: z.unknown(),
+      403: z.unknown(),
+      404: z.unknown(),
+      500: z.unknown(),
+    },
+    summary: "Update session",
   },
   delete: {
-    method: 'DELETE',
-    path: '/api/sessions/:id',
+    method: "DELETE",
+    path: "/api/sessions/:id",
     body: softDeleteBodySchema.optional(),
-    responses: { 200: z.object({ success: z.literal(true) }), 400: z.unknown(), 403: z.unknown(), 404: z.unknown(), 500: z.unknown() },
-    summary: 'Delete session',
+    responses: {
+      200: z.object({ success: z.literal(true) }),
+      400: z.unknown(),
+      403: z.unknown(),
+      404: z.unknown(),
+      500: z.unknown(),
+    },
+    summary: "Delete session",
   },
   restore: {
-    method: 'POST',
-    path: '/api/sessions/:id/restore',
+    method: "POST",
+    path: "/api/sessions/:id/restore",
     body: z.object({}).optional(),
-    responses: { 200: z.object({ success: z.literal(true) }), 400: z.unknown(), 403: z.unknown(), 404: z.unknown(), 500: z.unknown() },
-    summary: 'Restore session',
+    responses: {
+      200: z.object({ success: z.literal(true) }),
+      400: z.unknown(),
+      403: z.unknown(),
+      404: z.unknown(),
+      500: z.unknown(),
+    },
+    summary: "Restore session",
   },
   exportAudit: {
-    method: 'POST',
-    path: '/api/sessions/export-audit',
+    method: "POST",
+    path: "/api/sessions/export-audit",
     body: z.object({}).optional(),
-    responses: { 200: z.object({ success: z.literal(true) }), 400: z.unknown(), 403: z.unknown(), 404: z.unknown(), 500: z.unknown() },
-    summary: 'Export audit',
+    responses: {
+      200: z.object({ success: z.literal(true) }),
+      400: z.unknown(),
+      403: z.unknown(),
+      404: z.unknown(),
+      500: z.unknown(),
+    },
+    summary: "Export audit",
   },
   widgetAggregates: {
-    method: 'POST',
-    path: '/api/sessions/widget-aggregates',
+    method: "POST",
+    path: "/api/sessions/widget-aggregates",
     body: widgetAggregatesBodySchema,
     responses: {
       200: z.object({
-        results: z.record(z.string(), z.object({
-          value: z.number(),
-          totalCount: z.number(),
-          chartData: z.array(z.object({ name: z.string(), value: z.number() })),
-        })),
+        results: z.record(
+          z.string(),
+          z.object({
+            value: z.number(),
+            totalCount: z.number(),
+            chartData: z.array(z.object({ name: z.string(), value: z.number() })),
+          }),
+        ),
       }),
       400: z.unknown(),
       403: z.unknown(),
       404: z.unknown(),
       500: z.unknown(),
     },
-    summary: 'Widget aggregates',
+    summary: "Widget aggregates",
   },
   reportAggregates: {
-    method: 'GET',
-    path: '/api/sessions/report-aggregates',
-    responses: { 200: sessionsReportAggregatesSchema, 400: z.unknown(), 403: z.unknown(), 404: z.unknown(), 500: z.unknown() },
-    summary: 'Report aggregates',
+    method: "GET",
+    path: "/api/sessions/report-aggregates",
+    responses: {
+      200: sessionsReportAggregatesSchema,
+      400: z.unknown(),
+      403: z.unknown(),
+      404: z.unknown(),
+      500: z.unknown(),
+    },
+    summary: "Report aggregates",
   },
 
   getFieldConfig: {
-    method: 'GET',
-    path: '/api/sessions/field-config',
-    responses: { 200: z.object({ config: z.record(z.string(), z.unknown()).nullable() }), 403: errorResponse, 500: errorResponse },
-    summary: 'Get field config',
+    method: "GET",
+    path: "/api/sessions/field-config",
+    responses: {
+      200: z.object({ config: z.record(z.string(), z.unknown()).nullable() }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get field config",
   },
   updateFieldConfig: {
-    method: 'PUT',
-    path: '/api/sessions/field-config',
+    method: "PUT",
+    path: "/api/sessions/field-config",
     body: z.record(z.string(), z.unknown()),
-    responses: { 200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }), 403: errorResponse, 500: errorResponse },
-    summary: 'Update field config',
+    responses: {
+      200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Update field config",
   },
   getPreferences: {
-    method: 'GET',
-    path: '/api/sessions/preferences',
-    responses: { 200: z.object({ preferences: sessionPreferencesResponseSchema }), 403: errorResponse, 500: errorResponse },
-    summary: 'Get preferences',
+    method: "GET",
+    path: "/api/sessions/preferences",
+    responses: {
+      200: z.object({ preferences: sessionPreferencesResponseSchema }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get preferences",
   },
   updatePreferences: {
-    method: 'PUT',
-    path: '/api/sessions/preferences',
+    method: "PUT",
+    path: "/api/sessions/preferences",
     body: z.record(z.string(), z.unknown()),
-    responses: { 200: z.object({ success: z.literal(true), preferences: sessionPreferencesResponseSchema }), 403: errorResponse, 500: errorResponse },
-    summary: 'Update preferences',
+    responses: {
+      200: z.object({ success: z.literal(true), preferences: sessionPreferencesResponseSchema }),
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Update preferences",
   },
   ...sessionLookupContractEndpoints,
 });

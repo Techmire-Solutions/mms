@@ -1,14 +1,14 @@
-import { SearchableSelectField } from '@/components/ui/SearchableSelectField';
-import React, { useState } from 'react';
-import { useStudentsContractList } from '@/tenant/hooks/collections/students';
-import { useFacultyContractList } from '@/tenant/hooks/collections/faculty';
-import { useTranslation } from '@/hooks/useTranslation';
+import { SearchableSelectField } from "@/components/app/SearchableSelectField";
+import React, { useState } from "react";
+import { useStudentsContractList } from "@/tenant/hooks/collections/students";
+import { useFacultyContractList } from "@/tenant/hooks/collections/faculty";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /** Dropdown page size — searchable select, not a full dump (refine via search when `hasMore`). */
 const PERSON_SELECT_PAGE_SIZE = 50;
 
 export interface RegistryPersonSelectProps {
-  kind: 'student' | 'faculty';
+  kind: "student" | "faculty";
   value: string;
   onChange: (id: string, name?: string) => void;
   onPick?: (id: string, name: string) => void;
@@ -43,22 +43,28 @@ export function RegistryPersonSelect({
   placeholder: customPlaceholder,
 }: RegistryPersonSelectProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
-  const studentsEnabled = kind === 'student';
-  const facultyEnabled = kind === 'faculty';
+  const studentsEnabled = kind === "student";
+  const facultyEnabled = kind === "faculty";
 
-  const studentQuery = useStudentsContractList({
-    page: 1,
-    limit: PERSON_SELECT_PAGE_SIZE,
-    search,
-  }, studentsEnabled);
+  const studentQuery = useStudentsContractList(
+    {
+      page: 1,
+      limit: PERSON_SELECT_PAGE_SIZE,
+      search,
+    },
+    studentsEnabled,
+  );
 
-  const facultyQuery = useFacultyContractList({
-    page: 1,
-    limit: PERSON_SELECT_PAGE_SIZE,
-    search,
-  }, facultyEnabled);
+  const facultyQuery = useFacultyContractList(
+    {
+      page: 1,
+      limit: PERSON_SELECT_PAGE_SIZE,
+      search,
+    },
+    facultyEnabled,
+  );
 
   const studentPage = studentQuery.data;
   const facultyPage = facultyQuery.data;
@@ -73,19 +79,19 @@ export function RegistryPersonSelect({
     : Boolean(facultyPage?.body?.hasMore);
 
   const defaultPlaceholder = studentsEnabled
-    ? t('registryPerson.selectStudent')
-    : t('registryPerson.selectFaculty');
+    ? t("registryPerson.selectStudent")
+    : t("registryPerson.selectFaculty");
 
   const options = (() => {
     const excluded = new Set(excludeIds.map(String));
     return rows
       .filter((row) => !excluded.has(String(row.id)))
-      .toSorted((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+      .toSorted((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
   })();
 
   const valueInOptions = options.some((row) => String(row.id) === value);
   const fallbackId = React.useId();
-  const sanitizedId = fallbackId.replace(/:/g, '');
+  const sanitizedId = fallbackId.replace(/:/g, "");
   const selectId = id || `person-select-${sanitizedId}`;
 
   const selectOptions = (() => {
@@ -102,7 +108,7 @@ export function RegistryPersonSelect({
 
   const handleChange = (pickedId: string) => {
     const selected = options.find((row) => String(row.id) === pickedId);
-    const selectedName = selected?.name ? String(selected.name) : '';
+    const selectedName = selected?.name ? String(selected.name) : "";
     onChange(pickedId, selectedName);
     onPick?.(pickedId, selectedName);
   };
@@ -115,18 +121,20 @@ export function RegistryPersonSelect({
       required={required}
       search={search}
       onSearchChange={setSearch}
-      searchLabel={searchLabel ?? t('registryPerson.searchPlaceholder')}
-      searchPlaceholder={searchPlaceholder ?? t('registryPerson.searchPlaceholder')}
-      loadingLabel={t('common.loading')}
+      searchLabel={searchLabel ?? t("registryPerson.searchPlaceholder")}
+      searchPlaceholder={searchPlaceholder ?? t("registryPerson.searchPlaceholder")}
+      loadingLabel={t("common.loading")}
       isLoading={activeQuery.isFetching}
-      error={activeQuery.isError ? t('errors.state.generic') : undefined}
-      onRetry={() => { void activeQuery.refetch(); }}
-      retryLabel={t('common.retry')}
+      error={activeQuery.isError ? t("errors.state.generic") : undefined}
+      onRetry={() => {
+        void activeQuery.refetch();
+      }}
+      retryLabel={t("common.retry")}
       value={value}
       onChange={handleChange}
       options={selectOptions}
       placeholder={customPlaceholder ?? defaultPlaceholder}
-      hint={hasMore ? t('registryPerson.refineSearch') : undefined}
+      hint={hasMore ? t("registryPerson.refineSearch") : undefined}
     />
   );
 }

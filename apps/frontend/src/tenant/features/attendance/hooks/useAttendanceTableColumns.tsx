@@ -3,7 +3,7 @@ import type { WorkBatchTableColumn } from "@/components/common/work";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";
 import { AttendanceRecordStatusCell } from "@/tenant/features/attendance/components/AttendanceRecordStatusCell";
-import { TimePicker } from "@/components/ui/TimePicker";
+import { TimePicker } from "@/components/app/TimePicker";
 import { formatDate } from "@mms/shared";
 
 export interface UseAttendanceTableColumnsOptions {
@@ -32,9 +32,7 @@ export function useAttendanceTableColumns({
         label: t("attendance.columns.date"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
-          <span className="font-mono text-xs text-foreground">
-            {formatDate(r.date, true)}
-          </span>
+          <span className="font-mono text-xs text-foreground">{formatDate(r.date, true)}</span>
         ),
       });
     }
@@ -45,9 +43,7 @@ export function useAttendanceTableColumns({
         label: t("attendance.columns.class"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
-          <span className="text-foreground">
-            {classLabel(r.classId)}
-          </span>
+          <span className="text-foreground">{classLabel(r.classId)}</span>
         ),
       });
     }
@@ -58,9 +54,7 @@ export function useAttendanceTableColumns({
         label: t("attendance.columns.session"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
-          <span className="text-foreground">
-            {r.sessionName || "—"}
-          </span>
+          <span className="text-foreground">{r.sessionName || "—"}</span>
         ),
       });
     }
@@ -71,9 +65,7 @@ export function useAttendanceTableColumns({
         label: t("attendance.columns.student"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
-          <span className="font-semibold text-foreground">
-            {r.studentName}
-          </span>
+          <span className="font-semibold text-foreground">{r.studentName}</span>
         ),
       });
     }
@@ -110,9 +102,7 @@ export function useAttendanceTableColumns({
               className="w-full min-w-attendance-status max-w-attendance-status text-xs"
             />
           ) : (
-            <span className="text-xs text-muted-foreground font-mono">
-              {r.timeIn || "—"}
-            </span>
+            <span className="text-xs text-muted-foreground font-mono">{r.timeIn || "—"}</span>
           ),
       });
     }
@@ -133,9 +123,7 @@ export function useAttendanceTableColumns({
               className="w-full min-w-attendance-status max-w-attendance-status text-xs"
             />
           ) : (
-            <span className="text-xs text-muted-foreground font-mono">
-              {r.timeOut || "—"}
-            </span>
+            <span className="text-xs text-muted-foreground font-mono">{r.timeOut || "—"}</span>
           ),
       });
     }

@@ -1,10 +1,10 @@
 import { lazy, Suspense, useMemo } from "react";
 import { AnimatePresence } from "framer-motion";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import {
   ModuleDrawerLoadingSkeleton,
   ModuleOverlayLoadingFallback,
-} from "@/components/ui/ModuleOverlayLoadingChrome";
+} from "@/components/app/ModuleOverlayLoadingChrome";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { StudentsPageConfirmDialogs } from "@/tenant/features/students/components/StudentsPageConfirmDialogs";
 import type { StudentsPageOverlaysProps } from "@/tenant/features/students/hooks/studentsPageOverlaysTypes";
@@ -24,7 +24,7 @@ const StudentIdCardModal = lazy(() =>
 );
 import { StudentsCsvImportDialog } from "@/tenant/features/students/components/StudentsCsvImportDialog";
 
-export const StudentsPageOverlays = (function StudentsPageOverlays({
+export const StudentsPageOverlays = function StudentsPageOverlays({
   showStudentForm,
   editStudent,
   onCloseForm,
@@ -81,11 +81,7 @@ export const StudentsPageOverlays = (function StudentsPageOverlays({
         <Suspense fallback={<ModuleOverlayLoadingFallback />}>
           <AnimatePresence>
             {showStudentForm ? (
-              <StudentForm
-                student={editStudent}
-                onClose={onCloseForm}
-                onSave={onSave}
-              />
+              <StudentForm student={editStudent} onClose={onCloseForm} onSave={onSave} />
             ) : null}
             {messagingTarget ? (
               <MessageComposer
@@ -145,12 +141,8 @@ export const StudentsPageOverlays = (function StudentsPageOverlays({
       ) : null}
 
       {importOpen && onCloseImport ? (
-        <StudentsCsvImportDialog
-          open={importOpen}
-          onClose={onCloseImport}
-          canWrite={canWrite}
-        />
+        <StudentsCsvImportDialog open={importOpen} onClose={onCloseImport} canWrite={canWrite} />
       ) : null}
     </>
   );
-});
+};

@@ -41,8 +41,7 @@ export function createModuleLookupsHooks<
   function useLookupMutation() {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: ({ kind, items }: { kind: TKind; items: TItems }) =>
-        putLookupKind(kind, items),
+      mutationFn: ({ kind, items }: { kind: TKind; items: TItems }) => putLookupKind(kind, items),
       onSuccess: (items, variables) => {
         queryClient.setQueryData<TMap>(queryKey, (current) => {
           const base = current ?? defaults();

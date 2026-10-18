@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StudentLeaderboardSection } from "./StudentLeaderboardSection";
-import type { StudentStatItem } from "./performanceAnalyticsUtils";
+import type { StudentStatItem } from "../lib/performanceAnalyticsUtils";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -15,10 +15,8 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ExportToolbar", () => ({
-  ExportToolbar: ({ title }: { title: string }) => (
-    <div data-testid="export-toolbar">{title}</div>
-  ),
+vi.mock("@/components/app/ExportToolbar", () => ({
+  ExportToolbar: ({ title }: { title: string }) => <div data-testid="export-toolbar">{title}</div>,
 }));
 
 describe("StudentLeaderboardSection", () => {
@@ -26,8 +24,24 @@ describe("StudentLeaderboardSection", () => {
   let root: Root;
 
   const mockStats: StudentStatItem[] = [
-    { name: "Ali Raza", class: "Grade 10", avg: 92, overall: 94, scores: [92], totalPts: 92, maxPts: 100 },
-    { name: "Fatima Noor", class: "Grade 10", avg: 88, overall: 90, scores: [88], totalPts: 88, maxPts: 100 },
+    {
+      name: "Ali Raza",
+      class: "Grade 10",
+      avg: 92,
+      overall: 94,
+      scores: [92],
+      totalPts: 92,
+      maxPts: 100,
+    },
+    {
+      name: "Fatima Noor",
+      class: "Grade 10",
+      avg: 88,
+      overall: 90,
+      scores: [88],
+      totalPts: 88,
+      maxPts: 100,
+    },
   ];
 
   beforeEach(() => {

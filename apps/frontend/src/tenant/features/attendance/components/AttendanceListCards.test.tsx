@@ -21,7 +21,16 @@ const mockRecord: AttendanceRecord = {
 };
 
 const mockStatuses: AttendanceStatus[] = [
-  { id: "present", label: "Present", short: "P", color: "#10b981", bg: "bg-success", text: "text-success", border: "border-success", dot: "bg-success" },
+  {
+    id: "present",
+    label: "Present",
+    short: "P",
+    color: "#10b981",
+    bg: "bg-success",
+    text: "text-success",
+    border: "border-success",
+    dot: "bg-success",
+  },
 ];
 
 describe("AttendanceListCards Component", () => {
@@ -41,7 +50,7 @@ describe("AttendanceListCards Component", () => {
         someVisibleSelected={false}
         onToggleSelectAll={vi.fn()}
         onToggleSelectedRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -68,7 +77,7 @@ describe("AttendanceListCards Component", () => {
         someVisibleSelected={false}
         onToggleSelectAll={vi.fn()}
         onToggleSelectedRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -91,7 +100,7 @@ describe("AttendanceListCards Component", () => {
         someVisibleSelected={false}
         onToggleSelectAll={vi.fn()}
         onToggleSelectedRecord={vi.fn()}
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
       />,
     );
 
@@ -99,4 +108,3 @@ describe("AttendanceListCards Component", () => {
     expect(html).toContain("attendance-mobile-time-out-rec-1");
   });
 });
-

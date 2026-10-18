@@ -1,9 +1,9 @@
 import type React from "react";
 import { CheckCircle2, Loader2, Unlink, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FieldErrorMessage } from "@/components/ui/FormField";
+import { FieldErrorMessage } from "@/components/app/FormField";
 import { FORM_ERROR_BOX } from "@/components/ui/formStyles";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { GoogleContactsSyncRunResult } from "@mms/shared";
 
@@ -48,10 +48,7 @@ export function GoogleContactsConnectedState({
         }
       />
 
-      <FieldErrorMessage
-        message={error || undefined}
-        className={FORM_ERROR_BOX}
-      />
+      <FieldErrorMessage message={error || undefined} className={FORM_ERROR_BOX} />
 
       {syncResult && (
         <WarningCallout

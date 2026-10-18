@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   PERMISSION_ACTIONS,
   type PermissionAction,
   type PermissionMap,
   type WorkspaceRole,
-} from '@mms/shared';
+} from "@mms/shared";
 
 export function useRolesPermissionDraft(displayRole: WorkspaceRole | null) {
   const [permDraft, setPermDraft] = useState<PermissionMap | null>(null);
@@ -39,11 +39,17 @@ export function useRolesPermissionDraft(displayRole: WorkspaceRole | null) {
   };
 
   const selectAllDraft = (moduleId: string): void => {
-    setPermDraft((previousPermissions) => (previousPermissions ? { ...previousPermissions, [moduleId]: [...PERMISSION_ACTIONS] } : previousPermissions));
+    setPermDraft((previousPermissions) =>
+      previousPermissions
+        ? { ...previousPermissions, [moduleId]: [...PERMISSION_ACTIONS] }
+        : previousPermissions,
+    );
   };
 
   const clearAllDraft = (moduleId: string): void => {
-    setPermDraft((previousPermissions) => (previousPermissions ? { ...previousPermissions, [moduleId]: [] } : previousPermissions));
+    setPermDraft((previousPermissions) =>
+      previousPermissions ? { ...previousPermissions, [moduleId]: [] } : previousPermissions,
+    );
   };
 
   const resetPermDraft = (): void => {

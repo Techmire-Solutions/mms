@@ -4,7 +4,7 @@ description: Forward-only Drizzle migrations with journal/meta, expand/contract 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Schema & Drizzle Migration Workflow
@@ -61,6 +61,10 @@ pnpm run check:db-projections
 # 3. Typecheck backend and shared contracts
 pnpm typecheck
 ```
+
+## References
+
+- Zero-Downtime Expand/Contract Migrations: `references/drizzle-expand-contract-guide.md`
 
 ## Related skills
 

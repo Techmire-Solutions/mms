@@ -12,8 +12,8 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleWorkBulkActionBar", () => ({
-  ModuleWorkBulkActionBar: ({ countLabel }: any) => (
+vi.mock("@/components/app/ModuleWorkBulkActionBar", () => ({
+  ModuleWorkBulkActionBar: ({ countLabel }: { countLabel?: React.ReactNode }) => (
     <div data-testid="bulk-bar">{countLabel}</div>
   ),
 }));

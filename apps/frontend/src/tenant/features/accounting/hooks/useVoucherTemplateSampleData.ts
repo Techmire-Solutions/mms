@@ -1,10 +1,19 @@
 import { useMemo } from "react";
-import { formatAmountInWords, formatDate, type AppTranslationKey, type BrandingSettings, type TemplateFieldDefinition } from "@mms/shared";
+import {
+  formatAmountInWords,
+  formatDate,
+  type AppTranslationKey,
+  type BrandingSettings,
+  type TemplateFieldDefinition,
+} from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { VOUCHER_KIND_TITLE_KEY } from "@/tenant/features/accounting/components/paymentVoucherKind";
-import { voucherContactLine, type VoucherPrintPayload } from "@/tenant/features/accounting/components/voucherTemplateModel";
+import { VOUCHER_KIND_TITLE_KEY } from "@/tenant/features/accounting/lib/paymentVoucherKind";
+import {
+  voucherContactLine,
+  type VoucherPrintPayload,
+} from "@/tenant/features/accounting/lib/voucherTemplateModel";
 
 type ScalarField = Exclude<keyof VoucherPrintPayload, "lines">;
 
@@ -41,7 +50,9 @@ export interface VoucherTemplateSampleData {
 }
 
 /** Localized, branded sample salary voucher; field palette samples read from the same payload. */
-export function useVoucherTemplateSampleData(branding: BrandingSettings): VoucherTemplateSampleData {
+export function useVoucherTemplateSampleData(
+  branding: BrandingSettings,
+): VoucherTemplateSampleData {
   const { t } = useTranslation();
   const { formatCurrency, activeCurrency } = useAccountingCurrency();
   const { user } = useAuth();
@@ -68,7 +79,12 @@ export function useVoucherTemplateSampleData(branding: BrandingSettings): Vouche
       sourceLabel: t("accounting.journal.voucher.paidFrom"),
       sourceValue: "1000 — Cash In Hand",
       lines: [
-        { account: "1027 — Salaries payable", debit: formatCurrency(SAMPLE_GROSS), credit: "", amount: formatCurrency(SAMPLE_GROSS) },
+        {
+          account: "1027 — Salaries payable",
+          debit: formatCurrency(SAMPLE_GROSS),
+          credit: "",
+          amount: formatCurrency(SAMPLE_GROSS),
+        },
         {
           account: `${t("accounting.journal.voucher.deduction")}: Staff Late Deduction`,
           debit: "",

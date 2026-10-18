@@ -1,14 +1,14 @@
-import type { FacultyLookupKind } from '@mms/shared';
-import { facultyLookups } from '../schema.js';
+import type { FacultyLookupKind } from "@mms/shared";
+import { facultyLookups } from "../schema.js";
 import {
   createModuleLookupsRepo,
   type ModuleLookupRowInput,
   type ModuleLookupDbRow,
-} from './moduleSetupRepoFactories.js';
+} from "./moduleSetupRepoFactories.js";
 
 export type { ModuleLookupDbRow as LookupDbRow };
 
-export interface FacultyLookupRowInput extends Omit<ModuleLookupRowInput, 'kind'> {
+export interface FacultyLookupRowInput extends Omit<ModuleLookupRowInput, "kind"> {
   kind: FacultyLookupKind;
 }
 
@@ -29,4 +29,3 @@ export const replaceFacultyLookupsForKind = (
 export const listAllFacultyLookupsByWorkspace = repo.listAllByWorkspace;
 /** Admin restore wipe+replace for the whole workspace. */
 export const replaceFacultyLookupsForWorkspace = repo.replaceForWorkspace;
-

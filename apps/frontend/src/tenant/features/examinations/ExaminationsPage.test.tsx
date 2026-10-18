@@ -59,8 +59,16 @@ vi.mock("@/tenant/features/examinations/hooks/useExaminationsPageController", ()
   }),
 }));
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
-  ModulePageShell: ({ children, headerActions, metricsStrip }: any) => (
+vi.mock("@/components/app/ModulePageShell", () => ({
+  ModulePageShell: ({
+    children,
+    headerActions,
+    metricsStrip,
+  }: {
+    children?: React.ReactNode;
+    headerActions?: React.ReactNode;
+    metricsStrip?: React.ReactNode;
+  }) => (
     <div data-testid="page-shell">
       {headerActions}
       {metricsStrip}
@@ -69,8 +77,8 @@ vi.mock("@/components/ui/ModulePageShell", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
-  ResponsiveAccordionTabs: ({ children }: any) => <div>{children}</div>,
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
+  ResponsiveAccordionTabs: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock("./components/ExaminationsCommandMetrics", () => ({
@@ -85,8 +93,8 @@ vi.mock("./components/ExaminationsWorkTier", () => ({
   ExaminationsWorkTier: () => <div data-testid="work-tier">Work Tier</div>,
 }));
 
-vi.mock("./components/ExaminationsReportsTier", () => ({
-  ExaminationsReportsTier: () => <div data-testid="reports-tier">Reports Tier</div>,
+vi.mock("@/tenant/components/moduleReports", () => ({
+  ModuleReportsTier: () => <div data-testid="reports-tier">Reports Tier</div>,
 }));
 
 vi.mock("./components/ExaminationsSetupTier", () => ({

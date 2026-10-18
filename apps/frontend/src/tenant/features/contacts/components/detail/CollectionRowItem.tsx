@@ -1,11 +1,11 @@
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { CopyButton } from "@/components/app/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface CollectionRowAction {
@@ -79,7 +79,9 @@ export function CollectionRowItem({
             {label}
           </span>
         </div>
-        <span className="font-semibold text-xs text-foreground block leading-relaxed truncate">{value}</span>
+        <span className="font-semibold text-xs text-foreground block leading-relaxed truncate">
+          {value}
+        </span>
       </div>
       {value && (
         <div className="flex max-w-3/5 flex-shrink-0 flex-wrap items-center justify-end gap-1">

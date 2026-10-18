@@ -1,16 +1,16 @@
-import type React from 'react';
-import { Brain, Plus, Search } from 'lucide-react';
-import { SearchBar } from '@/components/ui/SearchBar';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { SectionCard } from '@/components/ui/SectionCard';
-import { SettingsCallout } from '@/components/ui/SettingsShell';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type { LlmConfig, LlmTestResult } from '@mms/shared';
-import { LlmConfigCard } from '@/tenant/features/settings/components/LlmConfigCard';
-import { LlmConfigTestResultPanel } from '@/tenant/features/settings/components/LlmConfigTestResultPanel';
+import type React from "react";
+import { Brain, Plus, Search } from "lucide-react";
+import { SearchBar } from "@/components/app/SearchBar";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionCard } from "@/components/app/SectionCard";
+import { SettingsCallout } from "@/components/app/SettingsShell";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { LlmConfig, LlmTestResult } from "@mms/shared";
+import { LlmConfigCard } from "@/tenant/features/settings/components/LlmConfigCard";
+import { LlmConfigTestResultPanel } from "@/tenant/features/settings/components/LlmConfigTestResultPanel";
 
-type LlmHealthStatus = 'verified' | 'failed' | 'testing' | 'untested';
+type LlmHealthStatus = "verified" | "failed" | "testing" | "untested";
 
 interface LlmConfigListSectionProps {
   configs: LlmConfig[];
@@ -59,23 +59,21 @@ export function LlmConfigListSection({
   return (
     <>
       <SectionCard
-        title={t('settings.llmTitle')}
-        subtitle={t('settings.llmSubtitle')}
+        title={t("settings.llmTitle")}
+        subtitle={t("settings.llmSubtitle")}
         icon={Brain}
         actions={
           <Button onClick={openAddModal} size="sm" className="gap-2">
-            <Plus className="h-4 w-4" /> {t('settings.llmAddConfig')}
+            <Plus className="h-4 w-4" /> {t("settings.llmAddConfig")}
           </Button>
         }
       >
         <div className="space-y-4">
-          <SettingsCallout>
-            {t('settings.llmNotice')}
-          </SettingsCallout>
+          <SettingsCallout>{t("settings.llmNotice")}</SettingsCallout>
 
           {configs.length > 0 && (
             <SearchBar
-              placeholder={t('settings.llmSearchPlaceholder')}
+              placeholder={t("settings.llmSearchPlaceholder")}
               value={searchQuery}
               onChange={setSearchQuery}
               className="w-full"
@@ -84,20 +82,20 @@ export function LlmConfigListSection({
 
           {configs.length === 0 ? (
             <EmptyState
-              title={t('settings.llmNoConfigsTitle')}
-              description={t('settings.llmNoConfigsDesc')}
+              title={t("settings.llmNoConfigsTitle")}
+              description={t("settings.llmNoConfigsDesc")}
               icon={Brain}
               variant="dashed"
             />
           ) : filtered.length === 0 ? (
-            <EmptyState title={t('settings.llmNoMatches')} icon={Search} compact />
+            <EmptyState title={t("settings.llmNoMatches")} icon={Search} compact />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {filtered.map((config) => (
                 <LlmConfigCard
                   key={config.id}
                   config={config}
-                  status={healthStatuses[config.id] || 'untested'}
+                  status={healthStatuses[config.id] || "untested"}
                   testingId={testingId}
                   isGlobalDirty={isGlobalDirty}
                   t={t}
@@ -112,11 +110,7 @@ export function LlmConfigListSection({
       </SectionCard>
 
       {testResult && (
-        <LlmConfigTestResultPanel
-          testResult={testResult}
-          formatLlmSpeed={formatLlmSpeed}
-          t={t}
-        />
+        <LlmConfigTestResultPanel testResult={testResult} formatLlmSpeed={formatLlmSpeed} t={t} />
       )}
     </>
   );

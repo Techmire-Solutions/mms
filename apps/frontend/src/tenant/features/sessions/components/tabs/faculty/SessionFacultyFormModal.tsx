@@ -1,8 +1,8 @@
 import React from "react";
 import { UserCheck } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormField";
+import { FormModal } from "@/components/app/FormModal";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatFacultyDisplayName, type FacultyMember } from "@mms/shared";

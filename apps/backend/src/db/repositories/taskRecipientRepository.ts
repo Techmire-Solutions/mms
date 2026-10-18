@@ -1,9 +1,9 @@
-import { sql } from 'drizzle-orm';
-import { withTenant } from '../tenant-context.js';
+import { sql } from "drizzle-orm";
+import { withTenant } from "../tenant-context.js";
 
 export interface TaskDelegationOptions {
   canAssignAnywhere?: boolean;
-  delegationScope?: 'descendants' | 'direct_reports';
+  delegationScope?: "descendants" | "direct_reports";
   allowSelfAssignment?: boolean;
 }
 
@@ -27,7 +27,10 @@ export async function findEligibleTaskRecipientRows(
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     const targetFilter = facultyIds
-      ? sql`AND o.faculty_id IN (${sql.join(facultyIds.map((id) => sql`${id}`), sql`, `)})`
+      ? sql`AND o.faculty_id IN (${sql.join(
+          facultyIds.map((id) => sql`${id}`),
+          sql`, `,
+        )})`
       : sql``;
     const result = await tx.execute<TaskRecipientRow>(sql`
       WITH business_day AS (

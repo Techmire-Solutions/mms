@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { EnrollmentDetail } from "./EnrollmentDetail";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -26,8 +26,14 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Drawer", () => ({
-  Drawer: ({ title, subtitle, headerExtra, headerActions, children }: {
+vi.mock("@/components/app/Drawer", () => ({
+  Drawer: ({
+    title,
+    subtitle,
+    headerExtra,
+    headerActions,
+    children,
+  }: {
     title: string;
     subtitle?: string;
     headerExtra?: React.ReactNode;
@@ -97,8 +103,8 @@ describe("EnrollmentDetail Component", () => {
       );
     });
 
-    const paidButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent?.includes("enrollments.payment.paid"),
+    const paidButton = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("enrollments.payment.paid"),
     );
     expect(paidButton).toBeDefined();
 
@@ -132,14 +138,16 @@ describe("EnrollmentDetail Component", () => {
     });
 
     // Mutator buttons must NOT be present when archived
-    const paidButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent?.includes("enrollments.payment.paid"),
+    const paidButton = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("enrollments.payment.paid"),
     );
     expect(paidButton).toBeUndefined();
 
     // Restore action button must be present in header actions
     const restoreButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.getAttribute("aria-label")?.includes("restore") || button.textContent?.includes("restore"),
+      (button) =>
+        button.getAttribute("aria-label")?.includes("restore") ||
+        button.textContent?.includes("restore"),
     );
     expect(restoreButton).toBeDefined();
 

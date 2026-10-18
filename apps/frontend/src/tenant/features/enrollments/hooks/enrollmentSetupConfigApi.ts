@@ -4,15 +4,20 @@ import type { EnrollmentModulePreferences } from "@mms/shared";
 import { normalizeEnrollmentModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<EnrollmentModulePreferences>({
-  fetchPreferencesFn: async (signal) => {
-    const res = await apiContract.enrollments.getPreferences({ query: undefined, extraHeaders: {} });
+  fetchPreferencesFn: async (_signal) => {
+    const res = await apiContract.enrollments.getPreferences({
+      query: undefined,
+      extraHeaders: {},
+    });
     return (res.body as { preferences: EnrollmentModulePreferences }).preferences;
   },
   savePreferencesFn: async (prefs) => {
     const res = await apiContract.enrollments.updatePreferences({ body: prefs });
     return (res.body as { preferences: EnrollmentModulePreferences }).preferences;
   },
-  normalizePrefs: normalizeEnrollmentModulePreferences as (prefs: unknown) => EnrollmentModulePreferences,
+  normalizePrefs: normalizeEnrollmentModulePreferences as (
+    prefs: unknown,
+  ) => EnrollmentModulePreferences,
 });
 
 export const setEnrollmentPreferencesMemory = api.setPreferencesMemory;

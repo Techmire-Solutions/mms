@@ -3,61 +3,68 @@ import {
   isBackupExcludedObjectKey,
   isServerOnlyObjectKey,
   parseTenantScopedStorageKey,
-} from '@mms/shared';
-import { eq } from 'drizzle-orm';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { withTenant } from './tenant-context.js';
-import * as schema from './schema.js';
-import { logger } from '../lib/logger.js';
+} from "@mms/shared";
+import { eq } from "drizzle-orm";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { withTenant } from "./tenant-context.js";
+import * as schema from "./schema.js";
+import { logger } from "../lib/logger.js";
 
-export async function getAllData(): Promise<{ collections: Record<string, unknown[]>; objects: Record<string, unknown> }> {
+export async function getAllData(): Promise<{
+  collections: Record<string, unknown[]>;
+  objects: Record<string, unknown>;
+}> {
   try {
     const tenant = getRequestTenant();
-    return await withTenant(tenant, async (tx) => {
-      const collections: Record<string, unknown[]> = {};
-      const colRows = await tx
-        .select({
-          name: schema.collections.name,
-          data: schema.collections.data,
-        })
-        .from(schema.collections);
-      for (const row of colRows) {
-        if (row.name === WORKSPACES_COLLECTION) continue;
-        const parsed = parseTenantScopedStorageKey(row.name);
-        if (tenant) {
-          if (!parsed || parsed.subdomain !== tenant) continue;
-          collections[parsed.logicalKey] = row.data;
-        } else if (!parsed) {
-          collections[row.name] = row.data;
+    return await withTenant(
+      tenant,
+      async (tx) => {
+        const collections: Record<string, unknown[]> = {};
+        const colRows = await tx
+          .select({
+            name: schema.collections.name,
+            data: schema.collections.data,
+          })
+          .from(schema.collections);
+        for (const row of colRows) {
+          if (row.name === WORKSPACES_COLLECTION) continue;
+          const parsed = parseTenantScopedStorageKey(row.name);
+          if (tenant) {
+            if (!parsed || parsed.subdomain !== tenant) continue;
+            collections[parsed.logicalKey] = row.data;
+          } else if (!parsed) {
+            collections[row.name] = row.data;
+          }
         }
-      }
 
-      const objects: Record<string, unknown> = {};
-      const objRows = await tx
-        .select({
-          key: schema.objects.key,
-          data: schema.objects.data,
-        })
-        .from(schema.objects);
-      for (const row of objRows) {
-        const parsed = parseTenantScopedStorageKey(row.key);
-        const logicalKey = parsed?.logicalKey ?? row.key;
-        if (isServerOnlyObjectKey(logicalKey)) continue;
-        // platform_settings is platform-authoritative — never round-trip via backup.
-        if (isBackupExcludedObjectKey(logicalKey)) continue;
+        const objects: Record<string, unknown> = {};
+        const objRows = await tx
+          .select({
+            key: schema.objects.key,
+            data: schema.objects.data,
+          })
+          .from(schema.objects);
+        for (const row of objRows) {
+          const parsed = parseTenantScopedStorageKey(row.key);
+          const logicalKey = parsed?.logicalKey ?? row.key;
+          if (isServerOnlyObjectKey(logicalKey)) continue;
+          // platform_settings is platform-authoritative — never round-trip via backup.
+          if (isBackupExcludedObjectKey(logicalKey)) continue;
 
-        if (tenant) {
-          if (!parsed || parsed.subdomain !== tenant) continue;
-          objects[parsed.logicalKey] = row.data;
-        } else if (!parsed) {
-          objects[row.key] = row.data;
+          if (tenant) {
+            if (!parsed || parsed.subdomain !== tenant) continue;
+            objects[parsed.logicalKey] = row.data;
+          } else if (!parsed) {
+            objects[row.key] = row.data;
+          }
         }
-      }
 
-      return { collections, objects };
-    }, { allowGlobal: !tenant });
+        return { collections, objects };
+      },
+      { allowGlobal: !tenant },
+    );
   } catch (error) {
-    logger.error({ err: error }, 'Error retrieving all database data');
+    logger.error({ err: error }, "Error retrieving all database data");
     throw error;
   }
 }
@@ -65,50 +72,70 @@ export async function getAllData(): Promise<{ collections: Record<string, unknow
 /** Lists all collection storage names (including tenant-prefixed). */
 export async function listCollectionStorageNames(): Promise<string[]> {
   const tenant = getRequestTenant();
-  return withTenant(tenant, async (tx) => {
-    const colRows = await tx.select({ name: schema.collections.name }).from(schema.collections);
-    return colRows.map((row) => row.name);
-  }, { allowGlobal: !tenant });
+  return withTenant(
+    tenant,
+    async (tx) => {
+      const colRows = await tx.select({ name: schema.collections.name }).from(schema.collections);
+      return colRows.map((row) => row.name);
+    },
+    { allowGlobal: !tenant },
+  );
 }
 
 /** Reads a collection by exact storage name (no tenant prefixing). */
 export async function getCollectionByStorageName(name: string): Promise<unknown[] | null> {
   const tenant = getRequestTenant();
-  return withTenant(tenant, async (tx) => {
-    const rows = await tx
-      .select({ data: schema.collections.data })
-      .from(schema.collections)
-      .where(eq(schema.collections.name, name))
-      .limit(1);
-    const row = rows[0];
-    if (!row) return null;
-    return row.data;
-  }, { allowGlobal: !tenant });
+  return withTenant(
+    tenant,
+    async (tx) => {
+      const rows = await tx
+        .select({ data: schema.collections.data })
+        .from(schema.collections)
+        .where(eq(schema.collections.name, name))
+        .limit(1);
+      const row = rows[0];
+      if (!row) return null;
+      return row.data;
+    },
+    { allowGlobal: !tenant },
+  );
 }
 
 /** Deletes a collection row by exact storage name. */
 export async function deleteCollectionByStorageName(name: string): Promise<void> {
   const tenant = getRequestTenant();
-  await withTenant(tenant, async (tx) => {
-    await tx.delete(schema.collections).where(eq(schema.collections.name, name));
-  }, { allowGlobal: !tenant });
+  await withTenant(
+    tenant,
+    async (tx) => {
+      await tx.delete(schema.collections).where(eq(schema.collections.name, name));
+    },
+    { allowGlobal: !tenant },
+  );
 }
 
 /** Deletes an object row by exact storage key. */
 export async function deleteObjectByStorageKey(key: string): Promise<void> {
   const tenant = getRequestTenant();
-  await withTenant(tenant, async (tx) => {
-    await tx.delete(schema.objects).where(eq(schema.objects.key, key));
-  }, { allowGlobal: !tenant });
+  await withTenant(
+    tenant,
+    async (tx) => {
+      await tx.delete(schema.objects).where(eq(schema.objects.key, key));
+    },
+    { allowGlobal: !tenant },
+  );
 }
 
 /** Lists all object storage keys (including tenant-prefixed). */
 export async function listObjectStorageKeys(): Promise<string[]> {
   const tenant = getRequestTenant();
-  return withTenant(tenant, async (tx) => {
-    const objRows = await tx.select({ key: schema.objects.key }).from(schema.objects);
-    return objRows.map((row) => row.key);
-  }, { allowGlobal: !tenant });
+  return withTenant(
+    tenant,
+    async (tx) => {
+      const objRows = await tx.select({ key: schema.objects.key }).from(schema.objects);
+      return objRows.map((row) => row.key);
+    },
+    { allowGlobal: !tenant },
+  );
 }
 
 /**
@@ -157,14 +184,18 @@ export async function listTenantCollectionLogicalKeys(): Promise<string[]> {
 /** Reads an object by exact storage key (no tenant prefixing). */
 export async function getObjectByStorageKey(key: string): Promise<unknown | null> {
   const tenant = getRequestTenant();
-  return withTenant(tenant, async (tx) => {
-    const rows = await tx
-      .select({ data: schema.objects.data })
-      .from(schema.objects)
-      .where(eq(schema.objects.key, key))
-      .limit(1);
-    const row = rows[0];
-    if (!row) return null;
-    return row.data;
-  }, { allowGlobal: !tenant });
+  return withTenant(
+    tenant,
+    async (tx) => {
+      const rows = await tx
+        .select({ data: schema.objects.data })
+        .from(schema.objects)
+        .where(eq(schema.objects.key, key))
+        .limit(1);
+      const row = rows[0];
+      if (!row) return null;
+      return row.data;
+    },
+    { allowGlobal: !tenant },
+  );
 }

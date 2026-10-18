@@ -2,10 +2,10 @@ import React from "react";
 import { CalendarDays } from "lucide-react";
 import type { AttendanceSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ToggleRow } from "@/components/ui/ToggleRow";
+import { SectionCard } from "@/components/app/SectionCard";
+import { ToggleRow } from "@/components/app/ToggleRow";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { WorkingDaysPicker } from "@/components/common/WorkingDaysPicker";
 
 export interface AttendanceTeachingDaysSectionProps {
@@ -19,12 +19,22 @@ export interface AttendanceTeachingDaysSectionProps {
 
 /** Workspace teaching days + holiday marking policy (drive the instructional-day guard and rates). */
 export function AttendanceTeachingDaysSection({
-  settingsDraft, upd, isPrefsDirty, saving, saved, onSave,
+  settingsDraft,
+  upd,
+  isPrefsDirty,
+  saving,
+  saved,
+  onSave,
 }: AttendanceTeachingDaysSectionProps): React.JSX.Element {
   const { t } = useTranslation();
 
   return (
-    <SectionCard accentColor="primary" icon={CalendarDays} title={t("attendance.settings.teachingDays")} className={SETUP_SECTION_CARD_CLASS}>
+    <SectionCard
+      accentColor="primary"
+      icon={CalendarDays}
+      title={t("attendance.settings.teachingDays")}
+      className={SETUP_SECTION_CARD_CLASS}
+    >
       <div className="space-y-4">
         <WorkingDaysPicker
           label={t("attendance.settings.workingDays")}

@@ -1,9 +1,6 @@
 import type React from "react";
 import { useCallback, useMemo } from "react";
-import {
-  FormCollectionShell,
-  FormListFieldCard,
-} from "@/components/ui/FormPrimitives";
+import { FormCollectionShell, FormListFieldCard } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type {
   FacultyDepartmentEntity,
@@ -14,13 +11,13 @@ import type {
 } from "@mms/shared";
 import { FacultyCatalogCreateOverlays } from "./FacultyCatalogCreateOverlays";
 import { FacultyFormDesignationCard } from "./FacultyFormDesignationCard";
-import { buildDesignationDraftPatch } from "./facultyFormDesignationDraft";
+import { buildDesignationDraftPatch } from "../lib/facultyFormDesignationDraft";
 import {
   employDesignationRowsFromFaculty,
   flatDraftPatchFromEmployDesignationRows,
   newEmployDesignationFormRow,
   pickPrimaryEmployDesignationRow,
-} from "./facultyEmployDesignationFormDraft";
+} from "../lib/facultyEmployDesignationFormDraft";
 import { useFacultyFormCatalogQuickCreate } from "../hooks/useFacultyFormCatalogQuickCreate";
 
 export interface FacultyFormDesignationSectionProps {
@@ -43,7 +40,9 @@ function resolveFormRows(draft: Partial<FacultyMember>): FacultyEmployDesignatio
 }
 
 /** Employ Designation collection — one card per tenure row for this contact's employment. */
-export function FacultyFormDesignationSection(props: FacultyFormDesignationSectionProps): React.JSX.Element | null {
+export function FacultyFormDesignationSection(
+  props: FacultyFormDesignationSectionProps,
+): React.JSX.Element | null {
   const {
     facultyDraft = {},
     errors,
@@ -57,12 +56,17 @@ export function FacultyFormDesignationSection(props: FacultyFormDesignationSecti
   const { t } = useTranslation();
   const catalogCreate = useFacultyFormCatalogQuickCreate();
 
-  const showAny = isFieldEnabled("designation") || isFieldEnabled("designationId")
-    || isFieldEnabled("designationStartDate") || isFieldEnabled("designationEndDate")
-    || isFieldEnabled("employDesignationStatus") || isFieldEnabled("profileStatus");
+  const showAny =
+    isFieldEnabled("designation") ||
+    isFieldEnabled("designationId") ||
+    isFieldEnabled("designationStartDate") ||
+    isFieldEnabled("designationEndDate") ||
+    isFieldEnabled("employDesignationStatus") ||
+    isFieldEnabled("profileStatus");
 
   const rows = useMemo(
     () => (showAny ? resolveFormRows(facultyDraft) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the specific draft fields the resolver reads; depending on the whole `facultyDraft` object (new each render) would recompute this on every keystroke.
     [
       showAny,
       facultyDraft.designationId,
@@ -75,16 +79,19 @@ export function FacultyFormDesignationSection(props: FacultyFormDesignationSecti
   );
   const primaryClientId = pickPrimaryEmployDesignationRow(rows)?.clientId;
 
-  const commitRows = useCallback((nextRows: FacultyEmployDesignationFormRow[]) => {
-    const primary = pickPrimaryEmployDesignationRow(nextRows);
-    const designation = primary?.designationId
-      ? designationOptions.find((d) => d.id === primary.designationId)
-      : undefined;
-    onDraftChange({
-      ...flatDraftPatchFromEmployDesignationRows(nextRows),
-      ...(designation ? buildDesignationDraftPatch(designation, departmentEntities) : {}),
-    });
-  }, [departmentEntities, designationOptions, onDraftChange]);
+  const commitRows = useCallback(
+    (nextRows: FacultyEmployDesignationFormRow[]) => {
+      const primary = pickPrimaryEmployDesignationRow(nextRows);
+      const designation = primary?.designationId
+        ? designationOptions.find((d) => d.id === primary.designationId)
+        : undefined;
+      onDraftChange({
+        ...flatDraftPatchFromEmployDesignationRows(nextRows),
+        ...(designation ? buildDesignationDraftPatch(designation, departmentEntities) : {}),
+      });
+    },
+    [departmentEntities, designationOptions, onDraftChange],
+  );
 
   if (!showAny) return null;
 
@@ -94,12 +101,13 @@ export function FacultyFormDesignationSection(props: FacultyFormDesignationSecti
 
   const handleDesignationCatalogChange = (clientId: string, designationId: string) => {
     const designation = designationOptions.find((d) => d.id === designationId);
-    const nextRows = rows.map((row) => (
-      row.clientId === clientId ? { ...row, designationId } : row
-    ));
-    const catalogPatch = clientId === primaryClientId && designation
-      ? buildDesignationDraftPatch(designation, departmentEntities)
-      : {};
+    const nextRows = rows.map((row) =>
+      row.clientId === clientId ? { ...row, designationId } : row,
+    );
+    const catalogPatch =
+      clientId === primaryClientId && designation
+        ? buildDesignationDraftPatch(designation, departmentEntities)
+        : {};
     onDraftChange({
       ...flatDraftPatchFromEmployDesignationRows(nextRows),
       ...catalogPatch,
@@ -165,7 +173,9 @@ export function FacultyFormDesignationSection(props: FacultyFormDesignationSecti
         designationDefaultDepartmentId={
           typeof facultyDraft.departmentId === "string" ? facultyDraft.departmentId : undefined
         }
-        onDepartmentCreated={(department) => onDraftChange({ department: department.name, departmentId: department.id })}
+        onDepartmentCreated={(department) =>
+          onDraftChange({ department: department.name, departmentId: department.id })
+        }
         onDesignationCreated={applyDesignation}
       />
     </>

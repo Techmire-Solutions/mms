@@ -1,9 +1,6 @@
 import React from "react";
 import { Globe, Check, Type } from "lucide-react";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RequiredMark } from "@/components/ui/FormField";
+import { Input, Label, RequiredMark, SectionCard } from "@shared/ui";
 import { FieldHint, NAME_MAX } from "@/components/branding/BrandingShared";
 import type { CreateMadrasaController } from "@/platform/pages/onboarding/steps/useCreateMadrasaController";
 
@@ -11,14 +8,10 @@ interface CreateMadrasaIdentitySectionProps {
   controller: CreateMadrasaController;
 }
 
-export function CreateMadrasaIdentitySection({ controller }: CreateMadrasaIdentitySectionProps): React.ReactElement {
-  const {
-    t,
-    appDomain,
-    data,
-    handleNameChange,
-    handleSubdomainChange,
-  } = controller;
+export function CreateMadrasaIdentitySection({
+  controller,
+}: CreateMadrasaIdentitySectionProps): React.ReactElement {
+  const { t, appDomain, data, handleNameChange, handleSubdomainChange } = controller;
 
   return (
     <SectionCard
@@ -29,7 +22,9 @@ export function CreateMadrasaIdentitySection({ controller }: CreateMadrasaIdenti
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <Label htmlFor="onboarding-name">{t("branding.madrasaName")} <RequiredMark /></Label>
+            <Label htmlFor="onboarding-name">
+              {t("branding.madrasaName")} <RequiredMark />
+            </Label>
             <span className="text-xs text-muted-foreground" aria-live="polite">
               {data.name.length}/{NAME_MAX}
             </span>
@@ -71,7 +66,10 @@ export function CreateMadrasaIdentitySection({ controller }: CreateMadrasaIdenti
             </div>
           </div>
           {data.subdomain && (
-            <p id="onboarding-subdomain-url" className="flex items-center gap-1 text-xs text-muted-foreground">
+            <p
+              id="onboarding-subdomain-url"
+              className="flex items-center gap-1 text-xs text-muted-foreground"
+            >
               <Check className="h-3 w-3 text-primary" aria-hidden />
               {t("onboarding.madrasa.yourUrl")}{" "}
               <span className="font-medium text-foreground">

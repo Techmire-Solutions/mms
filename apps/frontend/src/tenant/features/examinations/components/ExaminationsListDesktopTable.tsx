@@ -1,7 +1,7 @@
 import React from "react";
 import { formatDate } from "@mms/shared";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ExaminationsRowActions } from "@/tenant/features/examinations/components/ExaminationsRowActions";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
@@ -9,11 +9,13 @@ import type { Exam } from "@/lib/data/examinationData";
 import {
   getExamMeta,
   type ExaminationsListContentProps,
-} from "@/tenant/features/examinations/components/examinationsListContentShared";
+} from "@/tenant/features/examinations/lib/examinationsListContentShared";
 
 export type ExaminationsListDesktopTableProps = ExaminationsListContentProps;
 
-export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTableProps): React.JSX.Element {
+export function ExaminationsListDesktopTable(
+  props: ExaminationsListDesktopTableProps,
+): React.JSX.Element {
   const {
     exams,
     selectedIds,
@@ -151,8 +153,7 @@ export function ExaminationsListDesktopTable(props: ExaminationsListDesktopTable
               allSelected: allVisibleSelected,
               someSelected: someVisibleSelected,
               selectAllAriaLabel: t("examinations.trash.selectAll"),
-              selectRowAriaLabel: (exam) =>
-                t("examinations.trash.selectExam", { name: exam.name }),
+              selectRowAriaLabel: (exam) => t("examinations.trash.selectExam", { name: exam.name }),
             }
           : undefined
       }

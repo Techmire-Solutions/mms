@@ -1,15 +1,15 @@
-import * as React from "react"
-import { type Dropdown } from "react-day-picker"
+import * as React from "react";
+import { type Dropdown } from "react-day-picker";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-export type CalendarDropdownProps = React.ComponentProps<typeof Dropdown>
+export type CalendarDropdownProps = React.ComponentProps<typeof Dropdown>;
 
 /**
  * Month/year caption control for DayPicker — Radix Select (not native select)
@@ -24,16 +24,16 @@ export function CalendarDropdown({
   disabled,
 }: CalendarDropdownProps): React.JSX.Element {
   const handleValueChange = (next: string) => {
-    if (!onChange) return
+    if (!onChange) return;
     onChange({
       target: { value: next },
-    } as React.ChangeEvent<HTMLSelectElement>)
-  }
+    } as React.ChangeEvent<HTMLSelectElement>);
+  };
 
-  const stringValue = value == null ? undefined : String(value)
+  const stringValue = value == null ? undefined : String(value);
 
-  const isMonths = options && options.length === 12
-  const resolvedAriaLabel = ariaLabel || (isMonths ? "Select month" : "Select year")
+  const isMonths = options && options.length === 12;
+  const resolvedAriaLabel = ariaLabel || (isMonths ? "Select month" : "Select year");
 
   return (
     <Select value={stringValue} onValueChange={handleValueChange} disabled={disabled}>
@@ -46,10 +46,7 @@ export function CalendarDropdown({
       >
         <SelectValue />
       </SelectTrigger>
-      <SelectContent
-        className="max-h-56 rounded-xl surface-overlay p-1"
-        position="popper"
-      >
+      <SelectContent className="max-h-56 rounded-xl surface-overlay p-1" position="popper">
         {options?.map((option) => (
           <SelectItem
             key={option.value}
@@ -62,5 +59,5 @@ export function CalendarDropdown({
         ))}
       </SelectContent>
     </Select>
-  )
+  );
 }

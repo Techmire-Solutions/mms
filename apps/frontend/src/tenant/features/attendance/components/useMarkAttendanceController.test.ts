@@ -1,9 +1,9 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { useMarkAttendanceController } from "./useMarkAttendanceController";
+import { useMarkAttendanceController } from "../hooks/useMarkAttendanceController";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const mocks = vi.hoisted(() => ({
   useEnrollmentsCollection: vi.fn(() => []),
@@ -59,7 +59,7 @@ describe("useMarkAttendanceController Hook", () => {
   });
 
   it("initializes controller state with filters and records", async () => {
-    let hookResult: any = null;
+    let hookResult!: ReturnType<typeof useMarkAttendanceController>;
 
     function TestComponent() {
       hookResult = useMarkAttendanceController({

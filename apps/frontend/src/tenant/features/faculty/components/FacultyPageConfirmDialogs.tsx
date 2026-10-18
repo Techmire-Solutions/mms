@@ -1,4 +1,4 @@
-import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { FacultyDeleteTarget } from "@/tenant/features/faculty/hooks/useFacultyPageOverlayState";
 
@@ -59,5 +59,3 @@ export function FacultyPageConfirmDialogs({
     />
   );
 }
-
-

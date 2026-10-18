@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Calendar } from "lucide-react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { FormModal } from "@/components/ui/FormModal";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Calendar, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/app/DatePicker";
+import { FormModal } from "@/components/app/FormModal";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
@@ -15,6 +16,11 @@ interface AccountingFiscalYearModalProps {
   initial: Partial<FiscalYear> | null;
   onSave: (fiscalYear: FiscalYear) => void | Promise<void>;
   onClose: () => void;
+  /**
+   * Hands off to the confirmed close flow. `closed` is never a status option in
+   * this form, so an existing open year offers this entry point instead.
+   */
+  onRequestClose?: (fiscalYearId: string) => void;
 }
 
 const blankFiscalYear: Partial<FiscalYear> = {
@@ -29,6 +35,7 @@ export function AccountingFiscalYearModal({
   initial,
   onSave,
   onClose,
+  onRequestClose,
 }: AccountingFiscalYearModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const isEdit = !!initial?.id;
@@ -53,9 +60,11 @@ export function AccountingFiscalYearModal({
   const validate = () => {
     const validationErrors: Record<string, string> = {};
     if (!form.label?.trim()) validationErrors.label = t("accounting.settings.fy.validation.label");
-    if (!form.startDate) validationErrors.startDate = t("accounting.settings.fy.validation.startDate");
+    if (!form.startDate)
+      validationErrors.startDate = t("accounting.settings.fy.validation.startDate");
     if (!form.endDate) validationErrors.endDate = t("accounting.settings.fy.validation.endDate");
-    if (form.startDate && form.endDate && form.startDate >= form.endDate) validationErrors.endDate = t("accounting.settings.fy.validation.endAfterStart");
+    if (form.startDate && form.endDate && form.startDate >= form.endDate)
+      validationErrors.endDate = t("accounting.settings.fy.validation.endAfterStart");
     return validationErrors;
   };
 
@@ -172,14 +181,22 @@ export function AccountingFiscalYearModal({
           id="financial-year-status"
           label={t("accounting.settings.fy.status")}
           error={errors.status}
-          hint={isClosed ? t("accounting.settings.fy.closedLockedHint") : undefined}
+          hint={
+            isClosed
+              ? t("accounting.settings.fy.closedLockedHint")
+              : isEdit && onRequestClose
+                ? t("accounting.settings.fy.closeHint")
+                : undefined
+          }
         >
           <FormSelect
             id="financial-year-status"
             name="status"
-            value={isClosed ? "closed" : (form.status || "upcoming")}
+            value={isClosed ? "closed" : form.status || "upcoming"}
             disabled={isClosed}
-            onChange={(statusValue) => updateFormField("status", statusValue as FiscalYear["status"] | "upcoming")}
+            onChange={(statusValue) =>
+              updateFormField("status", statusValue as FiscalYear["status"] | "upcoming")
+            }
             options={
               isClosed
                 ? [{ value: "closed", label: t("accounting.settings.fy.status.closed") }]
@@ -190,6 +207,18 @@ export function AccountingFiscalYearModal({
             }
           />
         </Field>
+        {isEdit && !isClosed && onRequestClose && initial?.id && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onRequestClose(initial.id as string)}
+            className="min-h-11 gap-1.5"
+          >
+            <Lock className="size-4" aria-hidden="true" />
+            {t("accounting.settings.fy.close")}
+          </Button>
+        )}
       </form>
     </FormModal>
   );

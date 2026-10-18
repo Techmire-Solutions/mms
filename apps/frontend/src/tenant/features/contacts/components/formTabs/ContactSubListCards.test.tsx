@@ -2,17 +2,11 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Plus } from "lucide-react";
-import { FormListFieldCard } from "@/components/ui/FormPrimitives";
+import { FormListFieldCard } from "@/components/app/FormPrimitives";
 import { ContactSubListShell, resolveSubListAllowAdd } from "./ContactSubListCards";
 
-vi.mock("@/components/ui/EmptyState", () => ({
-  EmptyState: ({
-    title,
-    action,
-  }: {
-    title: string;
-    action?: React.ReactNode;
-  }) => (
+vi.mock("@/components/app/EmptyState", () => ({
+  EmptyState: ({ title, action }: { title: string; action?: React.ReactNode }) => (
     <div>
       <p>{title}</p>
       {action}

@@ -1,11 +1,10 @@
-import React from 'react';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { WorkBatchTable } from '@/components/common/work';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import { formatDirectoryPageCountLabel } from '@/lib/formatDirectoryPageCountLabel';
-import type { AttendanceRecord, AttendanceStatus } from '@/lib/data/attendanceData';
-import { useAttendanceTableColumns } from '@/tenant/features/attendance/hooks/useAttendanceTableColumns';
-
+import React from "react";
+import { EmptyState } from "@/components/app/EmptyState";
+import { WorkBatchTable } from "@/components/common/work";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
+import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";
+import { useAttendanceTableColumns } from "@/tenant/features/attendance/hooks/useAttendanceTableColumns";
 
 export interface AttendanceListDesktopTableProps {
   paginatedRecords: AttendanceRecord[];
@@ -47,8 +46,8 @@ export function AttendanceListDesktopTable({
   t,
 }: AttendanceListDesktopTableProps): React.JSX.Element {
   const recordsCountLabel = formatDirectoryPageCountLabel(paginatedRecords.length, t, {
-    singular: 'attendance.item.record',
-    plural: 'attendance.item.records',
+    singular: "attendance.item.record",
+    plural: "attendance.item.records",
   });
   const selectedSet = React.useMemo(() => new Set(selectedIds), [selectedIds]);
 
@@ -66,36 +65,36 @@ export function AttendanceListDesktopTable({
       data={paginatedRecords}
       columns={columns}
       selection={
-          canDelete
-            ? {
-                selectedIds,
-                onSelectOne: (id) => onToggleSelectedRecord(id, !selectedSet.has(id)),
-                onSelectAll: () => onToggleSelectAll(!allVisibleSelected),
-                allSelected: allVisibleSelected,
-                someSelected: someVisibleSelected,
-                selectAllAriaLabel: t("attendance.trash.selectAll"),
-                selectRowAriaLabel: (r) =>
-                  t("attendance.trash.selectRecord", { student: r.studentName }),
-              }
-            : undefined
-        }
-        columnResize={{
-          getColumnWidth,
-          onColumnResize,
-        }}
-        renderRowActions={renderRowActions}
-        actionsLabel={t("attendance.table.actions")}
-        emptyState={
-          <EmptyState
-            title={t("attendance.empty.records")}
-            description={t("attendance.empty.recordsHint")}
-            compact
-          />
-        }
-        footerCount={{
-          selectedCountLabel: t("attendance.selectedCount", { count: selectedIds.length }),
-          pageCountLabel: recordsCountLabel,
-        }}
-      />
+        canDelete
+          ? {
+              selectedIds,
+              onSelectOne: (id) => onToggleSelectedRecord(id, !selectedSet.has(id)),
+              onSelectAll: () => onToggleSelectAll(!allVisibleSelected),
+              allSelected: allVisibleSelected,
+              someSelected: someVisibleSelected,
+              selectAllAriaLabel: t("attendance.trash.selectAll"),
+              selectRowAriaLabel: (r) =>
+                t("attendance.trash.selectRecord", { student: r.studentName }),
+            }
+          : undefined
+      }
+      columnResize={{
+        getColumnWidth,
+        onColumnResize,
+      }}
+      renderRowActions={renderRowActions}
+      actionsLabel={t("attendance.table.actions")}
+      emptyState={
+        <EmptyState
+          title={t("attendance.empty.records")}
+          description={t("attendance.empty.recordsHint")}
+          compact
+        />
+      }
+      footerCount={{
+        selectedCountLabel: t("attendance.selectedCount", { count: selectedIds.length }),
+        pageCountLabel: recordsCountLabel,
+      }}
+    />
   );
 }

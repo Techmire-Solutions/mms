@@ -7,7 +7,7 @@
 **Method:** Structural audit against three objectives: (1) maximize shared UI reuse
 across platform and tenants, (2) enforce SSOT for design tokens, state contracts, and
 component APIs, (3) DRY via composition/inversion-of-control over multi-conditional
-tenant logic. Measured against **ADR 0001** (`docs/adr/0001-shared-package-and-dry-reuse.md`),
+tenant logic. Measured against **ADR 014** (`docs/adr/014-shared-package-and-dry-reuse.md`),
 which already mandates both `@mms/shared` as SSOT and platform reuse of
 `src/components/**` — this audit is largely a compliance review of that ADR.
 
@@ -76,8 +76,7 @@ Response shapes that cross the network are declared locally instead of in
 `@mms/shared`: `AuditListResponse`/`AuditVerificationResult`/`AuditExportPayload`
 (`apps/frontend/src/tenant/hooks/collections/audit.ts:24-57`),
 `AttachmentUploadResponse` (`apps/frontend/src/lib/attachmentUpload.ts:3`),
-`ImageUploadResponse` (`apps/frontend/src/lib/imageUpload.ts:11`),
-`ModuleColumnPreferencesResponse` (`apps/frontend/src/lib/moduleColumnPreferencesApi.ts:3`).
+`ImageUploadResponse` (`apps/frontend/src/lib/imageUpload.ts:11`).
 The audit ones at least compose shared entity types (`ModernAuditEvent`), so drift is
 limited to the envelope.
 

@@ -1,16 +1,12 @@
 import React from "react";
-import {
-  DEFAULT_CURRENCIES,
-  type AppTranslationKey,
-  type FinanceSettings,
-} from "@mms/shared";
+import { DEFAULT_CURRENCIES, type AppTranslationKey, type FinanceSettings } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { Field } from "@/components/ui/FormPrimitives";
+import { ToggleRow } from "@/components/app/ToggleRow";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const ALL_PAYMENT_METHODS = ["cash", "bank_transfer", "cheque", "online", "card", "other"] as const;
@@ -22,7 +18,7 @@ export interface FinancePreferencesSectionProps {
 }
 
 export function FinancePreferencesSection({
-  settings,
+  settings: _settings,
   settingsDraft,
   upd,
 }: FinancePreferencesSectionProps): React.JSX.Element {
@@ -51,7 +47,6 @@ export function FinancePreferencesSection({
             }))}
           />
         </Field>
-
 
         <Field id="due-days" label={t("finance.settings.dueDays")}>
           <Input
@@ -136,7 +131,11 @@ export function FinancePreferencesSection({
         </Field>
       </div>
 
-      <div className="space-y-2 pt-2 border-t border-border/60" role="group" aria-label={t("finance.settings.flags")}>
+      <div
+        className="space-y-2 pt-2 border-t border-border/60"
+        role="group"
+        aria-label={t("finance.settings.flags")}
+      >
         <ToggleRow
           label={t("finance.settings.sendEmail")}
           description={t("finance.settings.sendEmailDescription")}

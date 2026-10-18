@@ -5,10 +5,9 @@ import { User, Shield } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformProfile } from "@/platform/hooks/usePlatformProfile";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { SubTabBar, type SubTab } from "@/components/ui/SubTabBar";
-import { CardSkeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
-import { ModulePageShell } from "@/components/ui/ModulePageShell";
+import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
+import { ErrorState, CardSkeleton } from "@shared/ui";
+import { ModulePageShell } from "@/components/app/ModulePageShell";
 
 import { containerVariants, itemVariants as cardVariants } from "@/platform/lib/animations";
 import { PlatformProfileCard } from "./account/PlatformProfileCard";
@@ -63,11 +62,7 @@ export default function PlatformAccount(): React.JSX.Element {
           />
         ) : (
           <div className="space-y-6">
-            <SubTabBar
-              tabs={tabs}
-              value={activeTab}
-              onChange={(key) => handleTabChange(key)}
-            />
+            <SubTabBar tabs={tabs} value={activeTab} onChange={(key) => handleTabChange(key)} />
 
             <AnimatePresence mode="wait">
               <motion.div
@@ -89,7 +84,10 @@ export default function PlatformAccount(): React.JSX.Element {
                     </motion.div>
 
                     <motion.div variants={cardVariants} className="lg:col-span-2">
-                      <PlatformProfileNameForm initialName={profile.name ?? ""} initialPhone={profile.phone} />
+                      <PlatformProfileNameForm
+                        initialName={profile.name ?? ""}
+                        initialPhone={profile.phone}
+                      />
                     </motion.div>
                   </motion.div>
                 )}

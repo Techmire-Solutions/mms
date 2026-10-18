@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import { customFieldKeyFromColumnKey, type Faculty, type FacultyCustomField } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { resolveFacultyFieldDisplayText } from "@/tenant/features/faculty/components/facultyFieldDisplay";
+import { resolveFacultyFieldDisplayText } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 
 export interface RenderFacultyWorkColumnOptions {
   t: TranslationFunction;
@@ -22,24 +22,12 @@ export function renderFacultyWorkColumnValue(
 ): ReactNode {
   const { t, statusConfig, customFieldsById, statusBadgeSize, emptyFallback } = options;
   if (columnKey === "status") {
-    return (
-      <StatusBadge
-        status={faculty.status}
-        config={statusConfig}
-        size={statusBadgeSize}
-      />
-    );
+    return <StatusBadge status={faculty.status} config={statusConfig} size={statusBadgeSize} />;
   }
   if (columnKey === "employDesignationStatus" || columnKey === "profileStatus") {
     const tenureStatus = faculty.employDesignationStatus || faculty.profileStatus;
     if (!tenureStatus) return emptyFallback;
-    return (
-      <StatusBadge
-        status={tenureStatus}
-        config={statusConfig}
-        size={statusBadgeSize}
-      />
-    );
+    return <StatusBadge status={tenureStatus} config={statusConfig} size={statusBadgeSize} />;
   }
   if (columnKey === "designation") {
     const value = resolveFacultyFieldDisplayText(faculty, columnKey, {
@@ -54,13 +42,11 @@ export function renderFacultyWorkColumnValue(
     );
   }
   if (columnKey === "reportingFacultyId" || columnKey === "reportingFacultyName") {
-    const value = faculty.reportingFacultyName || resolveFacultyFieldDisplayText(faculty, columnKey, { t, notSpecifiedFallback: false });
+    const value =
+      faculty.reportingFacultyName ||
+      resolveFacultyFieldDisplayText(faculty, columnKey, { t, notSpecifiedFallback: false });
     if (value === undefined || value === "") return emptyFallback;
-    return (
-      <span className="text-sm font-medium text-foreground truncate block">
-        {value}
-      </span>
-    );
+    return <span className="text-sm font-medium text-foreground truncate block">{value}</span>;
   }
   if (columnKey === "subordinateCount") {
     const count = faculty.subordinateCount ?? 0;
@@ -81,4 +67,3 @@ export function renderFacultyWorkColumnValue(
   if (value === undefined || value === "") return emptyFallback;
   return value;
 }
-

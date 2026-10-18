@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildStudentsWorkTierProps, type StudentsWorkTierSource } from "./studentsPageWorkTierProps";
+import {
+  buildStudentsWorkTierProps,
+  type StudentsWorkTierSource,
+} from "./studentsPageWorkTierProps";
 
 const mockSource: StudentsWorkTierSource = {
   studentSearch: "Ahmad",

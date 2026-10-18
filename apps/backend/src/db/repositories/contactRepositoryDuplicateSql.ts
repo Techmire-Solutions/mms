@@ -1,5 +1,5 @@
-import { sql, type SQL } from 'drizzle-orm';
-import { contacts } from '../schema.js';
+import { sql, type SQL } from "drizzle-orm";
+import { contacts } from "../schema.js";
 
 /** Digits-only phone comparison key (last 10 when >= 10) — `normalizePhoneForComparison`. */
 export function phoneComparisonKeySql(numberExpr: SQL): SQL {

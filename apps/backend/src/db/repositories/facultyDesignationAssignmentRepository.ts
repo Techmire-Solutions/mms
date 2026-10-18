@@ -1,8 +1,8 @@
-import { and, desc, eq, gte, isNull, lte, or } from 'drizzle-orm';
-import type { FacultyDesignationAssignment } from '@mms/shared';
-import { facultyAssignments, facultyDesignations } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { listFacultyDesignations } from './facultyDesignationRepository.js';
+import { and, desc, eq, gte, isNull, lte, or } from "drizzle-orm";
+import type { FacultyDesignationAssignment } from "@mms/shared";
+import { facultyAssignments, facultyDesignations } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { listFacultyDesignations } from "./facultyDesignationRepository.js";
 
 function iso(value: Date): string {
   return value.toISOString();
@@ -65,16 +65,23 @@ export async function listFacultyDesignationAssignments(
 ): Promise<FacultyDesignationAssignment[]> {
   const workspaceSubdomain = tenant.trim().toLowerCase();
   return withTenantRead(workspaceSubdomain, async (tx) => {
-    const rows = await tx.select(FA_PROJECTION_COLUMNS).from(facultyAssignments)
-      .innerJoin(facultyDesignations, and(
-        eq(facultyDesignations.workspaceSubdomain, facultyAssignments.workspaceSubdomain),
-        eq(facultyDesignations.id, facultyAssignments.designationId),
-      ))
-      .where(and(
-        eq(facultyAssignments.workspaceSubdomain, workspaceSubdomain),
-        eq(facultyAssignments.facultyId, facultyId),
-        isNull(facultyAssignments.deletedAt),
-      ))
+    const rows = await tx
+      .select(FA_PROJECTION_COLUMNS)
+      .from(facultyAssignments)
+      .innerJoin(
+        facultyDesignations,
+        and(
+          eq(facultyDesignations.workspaceSubdomain, facultyAssignments.workspaceSubdomain),
+          eq(facultyDesignations.id, facultyAssignments.designationId),
+        ),
+      )
+      .where(
+        and(
+          eq(facultyAssignments.workspaceSubdomain, workspaceSubdomain),
+          eq(facultyAssignments.facultyId, facultyId),
+          isNull(facultyAssignments.deletedAt),
+        ),
+      )
       .orderBy(desc(facultyAssignments.startDate));
     const definitions = await listFacultyDesignations(workspaceSubdomain, { limit: null });
     const rolesByDesignation = new Map(definitions.map((d) => [d.id, d.assignableRoles]));
@@ -90,20 +97,27 @@ export async function findCurrentFacultyDesignationAssignment(
 ): Promise<FacultyDesignationAssignment | null> {
   const workspaceSubdomain = tenant.trim().toLowerCase();
   return withTenantRead(workspaceSubdomain, async (tx) => {
-    const rows = await tx.select(FA_PROJECTION_COLUMNS).from(facultyAssignments)
-      .innerJoin(facultyDesignations, and(
-        eq(facultyDesignations.workspaceSubdomain, facultyAssignments.workspaceSubdomain),
-        eq(facultyDesignations.id, facultyAssignments.designationId),
-      ))
-      .where(and(
-        eq(facultyAssignments.workspaceSubdomain, workspaceSubdomain),
-        eq(facultyAssignments.facultyId, facultyId),
-        eq(facultyAssignments.isPrimary, true),
-        eq(facultyAssignments.status, 'active'),
-        isNull(facultyAssignments.deletedAt),
-        lte(facultyAssignments.startDate, onDate),
-        or(isNull(facultyAssignments.endDate), gte(facultyAssignments.endDate, onDate)),
-      ))
+    const rows = await tx
+      .select(FA_PROJECTION_COLUMNS)
+      .from(facultyAssignments)
+      .innerJoin(
+        facultyDesignations,
+        and(
+          eq(facultyDesignations.workspaceSubdomain, facultyAssignments.workspaceSubdomain),
+          eq(facultyDesignations.id, facultyAssignments.designationId),
+        ),
+      )
+      .where(
+        and(
+          eq(facultyAssignments.workspaceSubdomain, workspaceSubdomain),
+          eq(facultyAssignments.facultyId, facultyId),
+          eq(facultyAssignments.isPrimary, true),
+          eq(facultyAssignments.status, "active"),
+          isNull(facultyAssignments.deletedAt),
+          lte(facultyAssignments.startDate, onDate),
+          or(isNull(facultyAssignments.endDate), gte(facultyAssignments.endDate, onDate)),
+        ),
+      )
       .limit(1);
     if (!rows[0]) return null;
     const definitions = await listFacultyDesignations(workspaceSubdomain, { limit: null });

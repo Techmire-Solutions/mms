@@ -16,7 +16,7 @@ MODE="${1:-static}"
 ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 cd "$ROOT"
 
-SRC_GLOBS=("apps/frontend/src/components/ui" "apps/frontend/src/tenant/features" "apps/frontend/src/platform")
+SRC_GLOBS=("apps/frontend/src/components" "apps/frontend/src/tenant/features" "apps/frontend/src/platform")
 
 if [[ "$MODE" == "full" ]]; then
   echo "🔍 Running axe gate (Playwright)…"

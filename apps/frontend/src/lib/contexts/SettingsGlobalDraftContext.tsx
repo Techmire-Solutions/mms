@@ -1,8 +1,8 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext } from "react";
 import {
   useGlobalSettingsDraft,
   type UseGlobalSettingsDraftResult,
-} from '@/tenant/features/settings/hooks/useGlobalSettingsDraft';
+} from "@/tenant/features/settings/hooks/useGlobalSettingsDraft";
 
 const SettingsGlobalDraftContext = createContext<UseGlobalSettingsDraftResult | null>(null);
 
@@ -14,14 +14,16 @@ export function SettingsGlobalDraftProvider({
 }): React.JSX.Element {
   const draft = useGlobalSettingsDraft();
   return (
-    <SettingsGlobalDraftContext.Provider value={draft}>{children}</SettingsGlobalDraftContext.Provider>
+    <SettingsGlobalDraftContext.Provider value={draft}>
+      {children}
+    </SettingsGlobalDraftContext.Provider>
   );
 }
 
 export function useSettingsGlobalDraft(): UseGlobalSettingsDraftResult {
   const settingsGlobalDraft = useContext(SettingsGlobalDraftContext);
   if (!settingsGlobalDraft) {
-    throw new Error('useSettingsGlobalDraft must be used within SettingsGlobalDraftProvider');
+    throw new Error("useSettingsGlobalDraft must be used within SettingsGlobalDraftProvider");
   }
   return settingsGlobalDraft;
 }

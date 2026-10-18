@@ -1,8 +1,4 @@
-import type {
-  QuestionBankQuestion,
-  QuestionBankTest,
-  QuestionBankResult,
-} from "@mms/shared";
+import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/shared";
 
 export const QUESTION_BANK_METADATA_FIELDS = {
   questions: {
@@ -15,9 +11,7 @@ export const QUESTION_BANK_METADATA_FIELDS = {
       { value: "questionLanguage", label: "Question Language" },
       { value: "marks", label: "Marks", isNumeric: true },
     ],
-    numericFields: [
-      { value: "marks", label: "Marks" },
-    ],
+    numericFields: [{ value: "marks", label: "Marks" }],
   },
   tests: {
     name: "Generated Tests",
@@ -29,9 +23,7 @@ export const QUESTION_BANK_METADATA_FIELDS = {
       { value: "duration", label: "Duration", isNumeric: true },
       { value: "createdAt", label: "Created Date" },
     ],
-    numericFields: [
-      { value: "duration", label: "Duration" },
-    ],
+    numericFields: [{ value: "duration", label: "Duration" }],
   },
   assessment_results: {
     name: "Assessment Results",

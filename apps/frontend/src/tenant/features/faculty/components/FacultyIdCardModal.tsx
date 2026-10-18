@@ -1,9 +1,9 @@
 import { useRef, type JSX } from "react";
 import { Printer, IdCard } from "lucide-react";
 import { formatDate, facultyFieldLabelKey, type Faculty } from "@mms/shared";
-import { Modal } from "@/components/ui/Modal";
+import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
-import { UserAvatar } from "@/components/ui/UserAvatar";
+import { UserAvatar } from "@/components/app/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -42,7 +42,11 @@ export function FacultyIdCardModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={isBatch ? t("faculty.idCard.batchPrint", { count: items.length }) : t("faculty.idCard.title")}
+      title={
+        isBatch
+          ? t("faculty.idCard.batchPrint", { count: items.length })
+          : t("faculty.idCard.title")
+      }
       icon={IdCard}
       size="lg"
       footer={
@@ -74,7 +78,8 @@ export function FacultyIdCardModal({
           className="id-card-print-container grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-dialog-scroll overflow-y-auto p-2 print:grid-cols-2 print:gap-3 print:max-h-none print:overflow-visible print:p-0"
         >
           {items.map(({ faculty, assignedClasses, qualification, emergencyPhone }) => {
-            const displayPhone = emergencyPhone || (faculty.phone ? String(faculty.phone) : undefined);
+            const displayPhone =
+              emergencyPhone || (faculty.phone ? String(faculty.phone) : undefined);
 
             return (
               <div
@@ -92,7 +97,12 @@ export function FacultyIdCardModal({
                     </p>
                   </div>
                   {faculty.employeeId ? (
-                    <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                    <Badge
+                      as="span"
+                      size="sm"
+                      tone="primary"
+                      className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+                    >
                       {t("faculty.employeeIdPrefix")}: {faculty.employeeId}
                     </Badge>
                   ) : null}
@@ -161,10 +171,14 @@ export function FacultyIdCardModal({
                 {/* Footer */}
                 <div className="flex items-center justify-between border-t border-border/40 pt-2 mt-3 text-4xs text-muted-foreground">
                   <div className="flex items-center gap-1 font-mono tracking-widest text-4xs uppercase">
-                    <span>{t("faculty.idCard.idLabel")}: {String(faculty.id).slice(0, 10)}</span>
+                    <span>
+                      {t("faculty.idCard.idLabel")}: {String(faculty.id).slice(0, 10)}
+                    </span>
                   </div>
                   <div>
-                    <span>{t("faculty.idCard.issueDate")}: {formatDate(new Date())}</span>
+                    <span>
+                      {t("faculty.idCard.issueDate")}: {formatDate(new Date())}
+                    </span>
                   </div>
                 </div>
               </div>

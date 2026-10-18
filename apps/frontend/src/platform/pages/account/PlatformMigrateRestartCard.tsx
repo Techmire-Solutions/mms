@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { ServerCog } from "lucide-react";
 import { MIGRATE_AND_RESTART_CONFIRM } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button, SectionCard, TypedConfirmDialog } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import {
@@ -11,7 +10,6 @@ import {
 } from "@/platform/hooks/usePlatformSettings";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { notify } from "@/lib/notify";
-import { TypedConfirmDialog } from "@/components/ui/TypedConfirmDialog";
 
 export function PlatformMigrateRestartCard(): React.JSX.Element | null {
   const { t } = useTranslation();
@@ -57,9 +55,9 @@ export function PlatformMigrateRestartCard(): React.JSX.Element | null {
         accentColor="indigo"
         className="text-start"
       >
-        <ActionButton
+        <Button
           type="button"
-          variant="secondary"
+          variant="outline"
           className="w-full font-bold"
           loading={waitingForReady}
           disabled={isBusy}
@@ -73,7 +71,7 @@ export function PlatformMigrateRestartCard(): React.JSX.Element | null {
           {waitingForReady
             ? t("platform.profileMigrateRestartWaiting")
             : t("platform.profileMigrateRestartButton")}
-        </ActionButton>
+        </Button>
       </SectionCard>
 
       <TypedConfirmDialog

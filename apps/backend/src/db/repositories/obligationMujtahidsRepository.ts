@@ -1,7 +1,7 @@
-import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Mujtahid, type MujtahidRep } from '@mms/shared';
-import { mujtahids, mujtahidReps } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Mujtahid, type MujtahidRep } from "@mms/shared";
+import { mujtahids, mujtahidReps } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 type MujtahidRow = typeof mujtahids.$inferSelect;
 
@@ -96,7 +96,7 @@ export async function bulkSaveMujtahids(tenant: string, records: Mujtahid[]): Pr
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Mujtahid>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -124,11 +124,14 @@ export async function bulkSaveMujtahids(tenant: string, records: Mujtahid[]): Pr
   });
 }
 
-export async function replaceMujtahidsForWorkspace(tenant: string, records: Mujtahid[]): Promise<void> {
+export async function replaceMujtahidsForWorkspace(
+  tenant: string,
+  records: Mujtahid[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Mujtahid>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -229,7 +232,9 @@ export async function findMujtahidRepsByIds(tenant: string, ids: string[]): Prom
         updatedAt: mujtahidReps.updatedAt,
       })
       .from(mujtahidReps)
-      .where(and(eq(mujtahidReps.workspaceSubdomain, subdomain), inArray(mujtahidReps.id, cleanIds)));
+      .where(
+        and(eq(mujtahidReps.workspaceSubdomain, subdomain), inArray(mujtahidReps.id, cleanIds)),
+      );
     return rows.map(mujtahidRepRowToRecord);
   });
 }
@@ -263,7 +268,7 @@ export async function bulkSaveMujtahidReps(tenant: string, records: MujtahidRep[
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, MujtahidRep>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -293,11 +298,14 @@ export async function bulkSaveMujtahidReps(tenant: string, records: MujtahidRep[
   });
 }
 
-export async function replaceMujtahidRepsForWorkspace(tenant: string, records: MujtahidRep[]): Promise<void> {
+export async function replaceMujtahidRepsForWorkspace(
+  tenant: string,
+  records: MujtahidRep[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, MujtahidRep>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -309,7 +317,9 @@ export async function replaceMujtahidRepsForWorkspace(tenant: string, records: M
     } else {
       await tx
         .delete(mujtahidReps)
-        .where(and(eq(mujtahidReps.workspaceSubdomain, subdomain), notInArray(mujtahidReps.id, keepIds)));
+        .where(
+          and(eq(mujtahidReps.workspaceSubdomain, subdomain), notInArray(mujtahidReps.id, keepIds)),
+        );
 
       await tx
         .insert(mujtahidReps)

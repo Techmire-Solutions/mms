@@ -19,7 +19,7 @@ vi.mock("./ContactSubListCards", () => ({
   resolveSubListAllowAdd: () => true,
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   TYPE_SELECT_WIDTH: "w-32",
   FormCardTypeSelect: ({
     label,
@@ -43,7 +43,10 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
     <div data-testid="editable-select">{value}</div>
   ),
   CardPrimaryButton: () => null,
-  FormListFieldCard: ({ children, typeSelect }: {
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
@@ -60,7 +63,13 @@ describe("ContactAddressesTab Component", () => {
       <ContactAddressesTab
         contactDraft={{
           addresses: [
-            { line1: "123 Main St", city: "Karachi", state: "Sindh", country: "Pakistan", label: "home" },
+            {
+              line1: "123 Main St",
+              city: "Karachi",
+              state: "Sindh",
+              country: "Pakistan",
+              label: "home",
+            },
           ],
         }}
         getLocalId={() => "loc-1"}

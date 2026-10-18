@@ -1,4 +1,4 @@
-export { contactRowToRecord } from './contactRepositoryMappers.js';
+export { contactRowToRecord } from "./contactRepositoryMappers.js";
 export {
   hydrateContact,
   hydrateContactsList,
@@ -9,7 +9,7 @@ export {
   findContactById,
   findContactsByIds,
   findContactsSummaryByIds,
-} from './contactRepositoryHydrate.js';
+} from "./contactRepositoryHydrate.js";
 export {
   persistContactTx,
   saveContact,
@@ -18,4 +18,4 @@ export {
   bulkRestoreContactsSql,
   replaceContactsForWorkspace,
   contactRepo,
-} from './contactRepositoryPersist.js';
+} from "./contactRepositoryPersist.js";

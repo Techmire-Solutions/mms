@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import type { PlatformUserProfile } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { TypedConfirmDialog } from "@/components/ui/TypedConfirmDialog";
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
+import React, { useEffect, useState } from "react";
+import type { PlatformUserProfile } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { TypedConfirmDialog } from "@shared/ui";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import {
   useDeletePlatformAdmin,
   useSetPlatformAdminDisabled,
-} from '@/platform/hooks/usePlatformAdmins';
+} from "@/platform/hooks/usePlatformAdmins";
 
-type AdminDangerMode = 'disable' | 'enable' | 'delete';
+type AdminDangerMode = "disable" | "enable" | "delete";
 
 interface PlatformAdminDangerDialogProps {
   admin: PlatformUserProfile;
@@ -26,47 +26,47 @@ export function PlatformAdminDangerDialog({
   const { t } = useTranslation();
   const setDisabled = useSetPlatformAdminDisabled();
   const deleteAdmin = useDeletePlatformAdmin();
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const pending = setDisabled.isPending || deleteAdmin.isPending;
 
   useEffect(() => {
     if (open) {
-      setPassword('');
+      setPassword("");
       setError(null);
     }
   }, [open, mode, admin.id]);
 
   const titleKey =
-    mode === 'delete'
-      ? 'platform.deleteAdminTitle'
-      : mode === 'disable'
-        ? 'platform.disableAdminTitle'
-        : 'platform.enableAdminTitle';
+    mode === "delete"
+      ? "platform.deleteAdminTitle"
+      : mode === "disable"
+        ? "platform.disableAdminTitle"
+        : "platform.enableAdminTitle";
   const descKey =
-    mode === 'delete'
-      ? 'platform.deleteAdminDesc'
-      : mode === 'disable'
-        ? 'platform.disableAdminDesc'
-        : 'platform.enableAdminDesc';
+    mode === "delete"
+      ? "platform.deleteAdminDesc"
+      : mode === "disable"
+        ? "platform.disableAdminDesc"
+        : "platform.enableAdminDesc";
   const saveKey =
-    mode === 'delete'
-      ? 'platform.deleteAdminConfirm'
-      : mode === 'disable'
-        ? 'platform.disableAdminConfirm'
-        : 'platform.enableAdminConfirm';
+    mode === "delete"
+      ? "platform.deleteAdminConfirm"
+      : mode === "disable"
+        ? "platform.disableAdminConfirm"
+        : "platform.enableAdminConfirm";
 
   const handleConfirm = async (): Promise<void> => {
     if (!password.trim()) return;
     setError(null);
     try {
-      if (mode === 'delete') {
+      if (mode === "delete") {
         await deleteAdmin.mutateAsync({ adminId: admin.id, password });
       } else {
         await setDisabled.mutateAsync({
           adminId: admin.id,
-          disabled: mode === 'disable',
+          disabled: mode === "disable",
           password,
         });
       }
@@ -86,12 +86,12 @@ export function PlatformAdminDangerDialog({
       onPasswordChange={setPassword}
       passwordInputId={`platform-admin-danger-password-${admin.id}`}
       passwordInputName="adminDangerPassword"
-      passwordLabel={t('platform.adminPasswordConfirm')}
+      passwordLabel={t("platform.adminPasswordConfirm")}
       error={error}
       pending={pending}
       confirmButtonLabel={t(saveKey)}
-      confirmVariant={mode === 'delete' || mode === 'disable' ? 'destructive' : 'default'}
-      destructiveTitle={mode === 'delete' || mode === 'disable'}
+      confirmVariant={mode === "delete" || mode === "disable" ? "destructive" : "default"}
+      destructiveTitle={mode === "delete" || mode === "disable"}
       onConfirm={handleConfirm}
     />
   );

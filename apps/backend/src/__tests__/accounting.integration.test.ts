@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildApp } from '../app.js';
-import { accountantToken, guardianToken } from './helpers/tokens.js';
-import { accountingContract, type Account, type JournalEntry, type FiscalYear } from '@mms/shared';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { buildApp } from "../app.js";
+import { accountantToken, guardianToken } from "./helpers/tokens.js";
+import { accountingContract, type Account, type JournalEntry, type FiscalYear } from "@mms/shared";
 
 /** Returns an ISO date string for N days before today (time-independent). */
 function daysAgo(n: number): string {
@@ -10,31 +10,33 @@ function daysAgo(n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-vi.mock('../db/database.js', () => ({
+vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock('../services/auth/authArtifactService.js', () => ({
+vi.mock("../services/auth/authArtifactService.js", () => ({
   purgeExpiredAuthArtifacts: vi.fn().mockResolvedValue(undefined),
   putAuthArtifact: vi.fn(),
   takeAuthArtifact: vi.fn(),
 }));
 
-vi.mock('../services/workspaceService.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../services/workspaceService.js')>();
+vi.mock("../services/workspaceService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/workspaceService.js")>();
   const demoWorkspace = {
-    id: 'ws-demo',
-    subdomain: 'demo',
-    madrasaName: 'Demo Madrasa',
-    createdAt: '2026-01-01T00:00:00.000Z',
+    id: "ws-demo",
+    subdomain: "demo",
+    madrasaName: "Demo Madrasa",
+    createdAt: "2026-01-01T00:00:00.000Z",
     enabled: true,
   };
   return {
     ...actual,
-    getWorkspaceBySubdomain: vi.fn().mockImplementation(async (subdomain: string) =>
-      subdomain === 'demo' ? demoWorkspace : null,
-    ),
+    getWorkspaceBySubdomain: vi
+      .fn()
+      .mockImplementation(async (subdomain: string) =>
+        subdomain === "demo" ? demoWorkspace : null,
+      ),
   };
 });
 
@@ -56,7 +58,7 @@ const mockLoadAccountingReportAggregates = vi.fn();
 const mockDeleteAccountById = vi.fn();
 const mockBulkSoftDeleteAccounts = vi.fn();
 
-vi.mock('../accounting/use-cases/accountingUseCases.js', () => ({
+vi.mock("../accounting/use-cases/accountingUseCases.js", () => ({
   accountingUseCases: {
     loadAccounts: (...args: unknown[]) => mockLoadAccounts(...args),
     loadAccountsPage: (...args: unknown[]) => mockLoadAccountsPage(...args),
@@ -72,7 +74,8 @@ vi.mock('../accounting/use-cases/accountingUseCases.js', () => ({
     bulkSoftDeleteJournalEntries: (...args: unknown[]) => mockBulkSoftDeleteJournalEntries(...args),
     bulkRestoreJournalEntries: (...args: unknown[]) => mockBulkRestoreJournalEntries(...args),
     loadAccountingCommandMetrics: (...args: unknown[]) => mockLoadAccountingCommandMetrics(...args),
-    loadAccountingReportAggregates: (...args: unknown[]) => mockLoadAccountingReportAggregates(...args),
+    loadAccountingReportAggregates: (...args: unknown[]) =>
+      mockLoadAccountingReportAggregates(...args),
     createJournalEntry: vi.fn(),
     updateJournalEntryById: vi.fn(),
     deleteAccountById: (...args: unknown[]) => mockDeleteAccountById(...args),
@@ -87,67 +90,69 @@ vi.mock('../accounting/use-cases/accountingUseCases.js', () => ({
 
 const mockSeedDefaultChart = vi.fn();
 
-vi.mock('../accounting/use-cases/seedDefaultChartOfAccounts.js', () => ({
+vi.mock("../accounting/use-cases/seedDefaultChartOfAccounts.js", () => ({
   seedDefaultChartOfAccountsUseCase: (...args: unknown[]) => mockSeedDefaultChart(...args),
 }));
 
 const mockGetUserColumnPreferencesForModule = vi.fn();
 const mockSetUserColumnPreferencesForModule = vi.fn();
 
-vi.mock('../services/userColumnPreferencesService.js', () => ({
-  getUserColumnPreferencesForModule: (...args: unknown[]) => mockGetUserColumnPreferencesForModule(...args),
-  setUserColumnPreferencesForModule: (...args: unknown[]) => mockSetUserColumnPreferencesForModule(...args),
+vi.mock("../services/userColumnPreferencesService.js", () => ({
+  getUserColumnPreferencesForModule: (...args: unknown[]) =>
+    mockGetUserColumnPreferencesForModule(...args),
+  setUserColumnPreferencesForModule: (...args: unknown[]) =>
+    mockSetUserColumnPreferencesForModule(...args),
 }));
 
 const sampleAccount: Account = {
-  id: 'acc-1',
-  code: '1000',
-  name: 'Cash',
-  type: 'Asset',
-  subtype: 'Current Asset',
-  description: 'Main Cash',
+  id: "acc-1",
+  code: "1000",
+  name: "Cash",
+  type: "Asset",
+  subtype: "Current Asset",
+  description: "Main Cash",
   isActive: true,
 };
 
 const sampleEntry: JournalEntry = {
-  id: 'je-1',
+  id: "je-1",
   date: daysAgo(5),
-  ref: 'JE-0001',
-  description: 'Initial Seed',
-  status: 'posted',
-  created_by: 'System',
-  tags: ['Opening'],
+  ref: "JE-0001",
+  description: "Initial Seed",
+  status: "posted",
+  created_by: "System",
+  tags: ["Opening"],
   attachments: [],
-  fiscal_year: 'fy-2026',
+  fiscal_year: "fy-2026",
   lines: [
     {
-      id: 'l1',
-      account_id: 'acc-1',
+      id: "l1",
+      account_id: "acc-1",
       debit: 100,
       credit: 0,
-      description: 'Debit Cash',
+      description: "Debit Cash",
     },
     {
-      id: 'l2',
-      account_id: 'acc-2',
+      id: "l2",
+      account_id: "acc-2",
       debit: 0,
       credit: 100,
-      description: 'Credit Capital',
+      description: "Credit Capital",
     },
   ],
 };
 
 const sampleFiscalYear: FiscalYear = {
-  id: 'fy-2026',
-  label: 'FY 2026',
-  startDate: '2026-01-01',
-  endDate: '2026-12-31',
-  status: 'active',
+  id: "fy-2026",
+  label: "FY 2026",
+  startDate: "2026-01-01",
+  endDate: "2026-12-31",
+  status: "active",
 };
 
-describe('accounting REST routes', () => {
+describe("accounting REST routes", () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_SECRET = "test-secret";
     mockLoadAccounts.mockReset().mockResolvedValue([sampleAccount]);
     mockUpsertAccounts.mockReset().mockResolvedValue([sampleAccount]);
     mockLoadEntries.mockReset().mockResolvedValue([sampleEntry]);
@@ -192,28 +197,28 @@ describe('accounting REST routes', () => {
     vi.restoreAllMocks();
   });
 
-  it('GET /api/accounting/accounts requires auth', async () => {
+  it("GET /api/accounting/accounts requires auth", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/accounts',
-      headers: { host: 'demo.localhost' },
+      method: "GET",
+      url: "/api/accounting/accounts",
+      headers: { host: "demo.localhost" },
     });
     expect(res.statusCode).toBe(401);
     await app.close();
   });
 
-  it('GET /api/accounting/accounts returns 403 for unauthorized roles', async () => {
+  it("GET /api/accounting/accounts returns 403 for unauthorized roles", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/accounts',
+      method: "GET",
+      url: "/api/accounting/accounts",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${guardianToken(app, {
-          id: 'u-unauthorized',
-          email: 'unauth@test.com',
-          name: 'Unauthorized',
+          id: "u-unauthorized",
+          email: "unauth@test.com",
+          name: "Unauthorized",
         })}`,
       },
     });
@@ -221,13 +226,13 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-  it('GET /api/accounting/accounts loads accounts for authorized users', async () => {
+  it("GET /api/accounting/accounts loads accounts for authorized users", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/accounts',
+      method: "GET",
+      url: "/api/accounting/accounts",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
     });
@@ -237,15 +242,15 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-  it('PUT /api/accounting/accounts/bulk updates accounts', async () => {
+  it("PUT /api/accounting/accounts/bulk updates accounts", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'PUT',
-      url: '/api/accounting/accounts/bulk',
+      method: "PUT",
+      url: "/api/accounting/accounts/bulk",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
-        'content-type': 'application/json',
+        "content-type": "application/json",
       },
       body: JSON.stringify([sampleAccount]),
     });
@@ -255,13 +260,13 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-  it('GET /api/accounting/entries loads journal entries', async () => {
+  it("GET /api/accounting/entries loads journal entries", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/entries',
+      method: "GET",
+      url: "/api/accounting/entries",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
     });
@@ -271,15 +276,15 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-  it('PUT /api/accounting/entries/bulk updates journal entries', async () => {
+  it("PUT /api/accounting/entries/bulk updates journal entries", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'PUT',
-      url: '/api/accounting/entries/bulk',
+      method: "PUT",
+      url: "/api/accounting/entries/bulk",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
-        'content-type': 'application/json',
+        "content-type": "application/json",
       },
       body: JSON.stringify([sampleEntry]),
     });
@@ -289,13 +294,13 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-  it('GET /api/accounting/fiscal-years loads fiscal years', async () => {
+  it("GET /api/accounting/fiscal-years loads fiscal years", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/fiscal-years',
+      method: "GET",
+      url: "/api/accounting/fiscal-years",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
     });
@@ -305,15 +310,15 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-  it('PUT /api/accounting/fiscal-years/bulk updates fiscal years', async () => {
+  it("PUT /api/accounting/fiscal-years/bulk updates fiscal years", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'PUT',
-      url: '/api/accounting/fiscal-years/bulk',
+      method: "PUT",
+      url: "/api/accounting/fiscal-years/bulk",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
-        'content-type': 'application/json',
+        "content-type": "application/json",
       },
       body: JSON.stringify([sampleFiscalYear]),
     });
@@ -323,13 +328,13 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-  it('GET /api/accounting/metrics loads SQL metrics for authorized roles', async () => {
+  it("GET /api/accounting/metrics loads SQL metrics for authorized roles", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/metrics',
+      method: "GET",
+      url: "/api/accounting/metrics",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
     });
@@ -354,17 +359,17 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-  it('GET /api/accounting/metrics returns 403 for roles without read access', async () => {
+  it("GET /api/accounting/metrics returns 403 for roles without read access", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/metrics',
+      method: "GET",
+      url: "/api/accounting/metrics",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${guardianToken(app, {
-          id: 'u-unauthorized',
-          email: 'unauth@test.com',
-          name: 'Unauthorized',
+          id: "u-unauthorized",
+          email: "unauth@test.com",
+          name: "Unauthorized",
         })}`,
       },
     });
@@ -373,42 +378,48 @@ describe('accounting REST routes', () => {
     await app.close();
   });
 
-
-
-  it('DELETE /api/accounting/entries/:id soft-deletes journal entry', async () => {
+  it("DELETE /api/accounting/entries/:id soft-deletes journal entry", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'DELETE',
-      url: '/api/accounting/entries/je-1',
+      method: "DELETE",
+      url: "/api/accounting/entries/je-1",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockDeleteJournalEntryById).toHaveBeenCalledWith('je-1', 'u-accountant');
+    expect(mockDeleteJournalEntryById).toHaveBeenCalledWith("je-1", "u-accountant");
     await app.close();
   });
 
-  it('POST /api/accounting/entries/:id/restore restores journal entry', async () => {
+  it("POST /api/accounting/entries/:id/restore restores journal entry", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'POST',
-      url: '/api/accounting/entries/je-1/restore',
+      method: "POST",
+      url: "/api/accounting/entries/je-1/restore",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockRestoreJournalEntryById).toHaveBeenCalledWith('je-1', 'u-accountant');
+    expect(mockRestoreJournalEntryById).toHaveBeenCalledWith("je-1", "u-accountant");
     await app.close();
   });
 
-  it('GET /api/accounting/report-aggregates returns server-side aggregates for accountant', async () => {
+  it("GET /api/accounting/report-aggregates returns server-side aggregates for accountant", async () => {
     mockLoadAccountingReportAggregates.mockResolvedValueOnce({
       trialBalance: [
-        { id: 'acc-1', code: '1000', name: 'Cash', type: 'Asset', totalDebit: 500, totalCredit: 100, balance: 400 },
+        {
+          id: "acc-1",
+          code: "1000",
+          name: "Cash",
+          type: "Asset",
+          totalDebit: 500,
+          totalCredit: 100,
+          balance: 400,
+        },
       ],
       revenue: 1000,
       expenses: 600,
@@ -423,10 +434,10 @@ describe('accounting REST routes', () => {
 
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/report-aggregates?dateFrom=2026-01-01&dateTo=2026-12-31',
+      method: "GET",
+      url: "/api/accounting/report-aggregates?dateFrom=2026-01-01&dateTo=2026-12-31",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
     });
@@ -437,23 +448,23 @@ describe('accounting REST routes', () => {
     expect(body.netSurplus).toBe(400);
     expect(body.trialBalance).toHaveLength(1);
     expect(mockLoadAccountingReportAggregates).toHaveBeenCalledWith({
-      dateFrom: '2026-01-01',
-      dateTo: '2026-12-31',
+      dateFrom: "2026-01-01",
+      dateTo: "2026-12-31",
     });
     await app.close();
   });
 
-  it('GET /api/accounting/report-aggregates rejects unauthorized users with 403', async () => {
+  it("GET /api/accounting/report-aggregates rejects unauthorized users with 403", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/accounting/report-aggregates',
+      method: "GET",
+      url: "/api/accounting/report-aggregates",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${guardianToken(app, {
-          id: 'u-unauthorized',
-          email: 'unauth@test.com',
-          name: 'Unauthorized',
+          id: "u-unauthorized",
+          email: "unauth@test.com",
+          name: "Unauthorized",
         })}`,
       },
     });
@@ -475,12 +486,12 @@ describe('accounting REST routes', () => {
  * This test makes that failure loud. It is also what caught the `replace*`
  * operations being advertised while the served handler was an additive upsert.
  */
-describe('accounting contract ↔ registered routes', () => {
+describe("accounting contract ↔ registered routes", () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_SECRET = "test-secret";
   });
 
-  it('registers every operation declared in accountingContract', async () => {
+  it("registers every operation declared in accountingContract", async () => {
     const app = await buildApp();
     const operations = Object.entries(
       accountingContract as unknown as Record<string, { method: string; path: string }>,
@@ -488,7 +499,10 @@ describe('accounting contract ↔ registered routes', () => {
     expect(operations.length).toBeGreaterThan(0);
 
     const missing = operations
-      .filter(([, operation]) => !app.hasRoute({ method: operation.method as never, url: operation.path }))
+      .filter(
+        ([, operation]) =>
+          !app.hasRoute({ method: operation.method as never, url: operation.path }),
+      )
       .map(([name, operation]) => `${name}: ${operation.method} ${operation.path}`);
 
     expect(missing).toEqual([]);
@@ -501,73 +515,79 @@ describe('accounting contract ↔ registered routes', () => {
  * ledger entries") existed on the use case but was reachable from no HTTP route,
  * so the UI's only delete was an unguarded `isActive: false` bulk write.
  */
-describe('account archive routes', () => {
+describe("account archive routes", () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_SECRET = "test-secret";
     mockDeleteAccountById.mockReset();
     mockBulkSoftDeleteAccounts.mockReset();
   });
 
-  it('DELETE /api/accounting/accounts/:id requires auth', async () => {
+  it("DELETE /api/accounting/accounts/:id requires auth", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'DELETE',
-      url: '/api/accounting/accounts/acc-1',
-      headers: { host: 'demo.localhost' },
+      method: "DELETE",
+      url: "/api/accounting/accounts/acc-1",
+      headers: { host: "demo.localhost" },
     });
     expect(res.statusCode).toBe(401);
     await app.close();
   });
 
-  it('DELETE /api/accounting/accounts/:id archives through the guarded use case', async () => {
+  it("DELETE /api/accounting/accounts/:id archives through the guarded use case", async () => {
     mockDeleteAccountById.mockResolvedValue(true);
     const app = await buildApp();
     const res = await app.inject({
-      method: 'DELETE',
-      url: '/api/accounting/accounts/acc-1',
+      method: "DELETE",
+      url: "/api/accounting/accounts/acc-1",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
-      payload: { deletionReason: 'no longer used' },
+      payload: { deletionReason: "no longer used" },
     });
 
     expect(res.statusCode).toBe(200);
     expect(JSON.parse(res.body)).toEqual({ success: true, archived: true });
-    expect(mockDeleteAccountById).toHaveBeenCalledWith('acc-1', expect.any(String), 'no longer used');
+    expect(mockDeleteAccountById).toHaveBeenCalledWith(
+      "acc-1",
+      expect.any(String),
+      "no longer used",
+    );
     await app.close();
   });
 
-  it('DELETE /api/accounting/accounts/:id surfaces the ledger guard as 400', async () => {
+  it("DELETE /api/accounting/accounts/:id surfaces the ledger guard as 400", async () => {
     mockDeleteAccountById.mockRejectedValue(
-      Object.assign(new Error('Cannot archive account with active ledger entries'), { statusCode: 400 }),
+      Object.assign(new Error("Cannot archive account with active ledger entries"), {
+        statusCode: 400,
+      }),
     );
     const app = await buildApp();
     const res = await app.inject({
-      method: 'DELETE',
-      url: '/api/accounting/accounts/acc-1',
+      method: "DELETE",
+      url: "/api/accounting/accounts/acc-1",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
     });
 
     expect(res.statusCode).toBe(400);
-    expect(res.body).toContain('active ledger entries');
+    expect(res.body).toContain("active ledger entries");
     await app.close();
   });
 
-  it('POST /api/accounting/accounts/bulk-delete reports partial archives', async () => {
+  it("POST /api/accounting/accounts/bulk-delete reports partial archives", async () => {
     mockBulkSoftDeleteAccounts.mockResolvedValue({ succeeded: 1, failed: 1 });
     const app = await buildApp();
     const res = await app.inject({
-      method: 'POST',
-      url: '/api/accounting/accounts/bulk-delete',
+      method: "POST",
+      url: "/api/accounting/accounts/bulk-delete",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${accountantToken(app)}`,
       },
-      payload: { ids: ['acc-1', 'acc-2'] },
+      payload: { ids: ["acc-1", "acc-2"] },
     });
 
     expect(res.statusCode).toBe(200);
@@ -576,56 +596,67 @@ describe('account archive routes', () => {
   });
 });
 
-describe('default chart of accounts seed route', () => {
+describe("default chart of accounts seed route", () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_SECRET = "test-secret";
     mockSeedDefaultChart.mockReset();
   });
 
   const seed = async (authorization?: string) => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'POST',
-      url: '/api/accounting/accounts/seed-default',
-      headers: { host: 'demo.localhost', ...(authorization ? { authorization } : {}) },
+      method: "POST",
+      url: "/api/accounting/accounts/seed-default",
+      headers: { host: "demo.localhost", ...(authorization ? { authorization } : {}) },
     });
     await app.close();
     return res;
   };
 
-  it('requires auth', async () => {
+  it("requires auth", async () => {
     const res = await seed();
     expect(res.statusCode).toBe(401);
     expect(mockSeedDefaultChart).not.toHaveBeenCalled();
   });
 
-  it('denies roles without account write access', async () => {
+  it("denies roles without account write access", async () => {
     const app = await buildApp();
-    const token = guardianToken(app, { id: 'u-guardian', email: 'guardian@test.com', name: 'Guardian' });
+    const token = guardianToken(app, {
+      id: "u-guardian",
+      email: "guardian@test.com",
+      name: "Guardian",
+    });
     await app.close();
     const res = await seed(`Bearer ${token}`);
     expect(res.statusCode).toBe(403);
     expect(mockSeedDefaultChart).not.toHaveBeenCalled();
   });
 
-  it('seeds for an accountant and returns the created count', async () => {
-    mockSeedDefaultChart.mockResolvedValue({ count: 61, defaultsApplied: { retainedEarnings: true, cashAccount: false } });
+  it("seeds for an accountant and returns the created count", async () => {
+    mockSeedDefaultChart.mockResolvedValue({
+      count: 61,
+      defaultsApplied: { retainedEarnings: true, cashAccount: false },
+    });
     const app = await buildApp();
     const token = accountantToken(app);
     await app.close();
     const res = await seed(`Bearer ${token}`);
     expect(res.statusCode).toBe(201);
-    expect(res.json()).toEqual({ success: true, count: 61, defaultsApplied: { retainedEarnings: true, cashAccount: false } });
+    expect(res.json()).toEqual({
+      success: true,
+      count: 61,
+      defaultsApplied: { retainedEarnings: true, cashAccount: false },
+    });
   });
 
-  it('returns 409 when a chart already exists', async () => {
-    const { ConflictError } = await import('../lib/httpErrors.js');
-    mockSeedDefaultChart.mockRejectedValue(new ConflictError('A Chart of Accounts already exists'));
+  it("returns 409 when a chart already exists", async () => {
+    const { ConflictError } = await import("../lib/httpErrors.js");
+    mockSeedDefaultChart.mockRejectedValue(new ConflictError("A Chart of Accounts already exists"));
     const app = await buildApp();
     const token = accountantToken(app);
     await app.close();
     const res = await seed(`Bearer ${token}`);
     expect(res.statusCode).toBe(409);
-    expect(res.json()).toMatchObject({ type: 'conflict' });
+    expect(res.json()).toMatchObject({ type: "conflict" });
   });
 });

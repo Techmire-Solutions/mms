@@ -11,7 +11,7 @@ import {
   sql,
   type SQL,
   type AnyColumn,
-} from 'drizzle-orm';
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -20,16 +20,13 @@ import {
   type HasanatCommandMetricsSnapshot,
   type HasanatListQuery,
   type HasanatDistributionsListPageResult,
-} from '@mms/shared';
-import { hasanatBatches, hasanatDenoms, hasanatDistributions } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { distributionRowToRecord } from './hasanatRepository.js';
+} from "@mms/shared";
+import { hasanatBatches, hasanatDenoms, hasanatDistributions } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { distributionRowToRecord } from "./hasanatRepository.js";
 
-function buildDistributionsListConditions(
-  subdomain: string,
-  query: HasanatListQuery,
-): SQL[] {
+function buildDistributionsListConditions(subdomain: string, query: HasanatListQuery): SQL[] {
   const conditions: SQL[] = [eq(hasanatDistributions.workspaceSubdomain, subdomain)];
 
   // Manifest softDelete.workExcludesDeleted — Work = active, trash = deleted-only.
@@ -60,40 +57,40 @@ function buildDistributionsListConditions(
 }
 
 const DISTRIBUTION_SORT_FIELDS = new Set([
-  'recipientName',
-  'denominationName',
-  'reason',
-  'status',
-  'issuedDate',
-  'updatedAt',
+  "recipientName",
+  "denominationName",
+  "reason",
+  "status",
+  "issuedDate",
+  "updatedAt",
 ]);
 
-function buildDistributionsOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
+function buildDistributionsOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
   const field = sortField?.trim();
   let column: AnyColumn = hasanatDistributions.updatedAt;
   if (field && DISTRIBUTION_SORT_FIELDS.has(field)) {
     switch (field) {
-      case 'recipientName':
+      case "recipientName":
         column = hasanatDistributions.recipientName;
         break;
-      case 'denominationName':
+      case "denominationName":
         column = hasanatDistributions.denominationName;
         break;
-      case 'reason':
+      case "reason":
         column = hasanatDistributions.reason;
         break;
-      case 'status':
+      case "status":
         column = hasanatDistributions.status;
         break;
-      case 'issuedDate':
+      case "issuedDate":
         column = hasanatDistributions.issuedDate;
         break;
-      case 'updatedAt':
+      case "updatedAt":
       default:
         column = hasanatDistributions.updatedAt;
     }
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }
 
 type DistributionRow = typeof hasanatDistributions.$inferSelect;
@@ -125,7 +122,7 @@ export async function listDistributionsPage(
   });
 }
 
-const pad2 = (n: number) => String(n).padStart(2, '0');
+const pad2 = (n: number) => String(n).padStart(2, "0");
 const localDateStr = (d: Date) =>
   `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 

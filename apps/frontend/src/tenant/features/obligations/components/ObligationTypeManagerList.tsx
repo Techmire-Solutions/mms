@@ -1,7 +1,7 @@
 import { Pencil, Trash2 } from "lucide-react";
-import { type ObligationType } from '@/lib/data/obligationsData';
-import { EmptyState } from "@/components/ui/EmptyState";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { type ObligationType } from "@/lib/data/obligationsData";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import {
   DataTable,
   DataTableRowActions,
@@ -45,18 +45,27 @@ export function ObligationTypeManagerList({
       id: "quantity",
       label: t("obligations.types.colQuantity"),
       searchValue: (type) => quantityConfig[quantityKey(type)]?.label,
-      render: (type) => <StatusBadge status={quantityKey(type)} config={quantityConfig} size="sm" />,
+      render: (type) => (
+        <StatusBadge status={quantityKey(type)} config={quantityConfig} size="sm" />
+      ),
     },
     {
       id: "designated",
       label: t("obligations.types.colDesignated"),
       searchValue: (type) => designatedConfig[type.designated_for]?.label ?? type.designated_for,
-      render: (type) => <StatusBadge status={type.designated_for} config={designatedConfig} size="sm" />,
+      render: (type) => (
+        <StatusBadge status={type.designated_for} config={designatedConfig} size="sm" />
+      ),
     },
   ];
 
   const filters: DataTableFilter<ObligationType>[] = [
-    { id: "quantity", label: t("obligations.types.colQuantity"), options: toOptions(quantityConfig), getValue: quantityKey },
+    {
+      id: "quantity",
+      label: t("obligations.types.colQuantity"),
+      options: toOptions(quantityConfig),
+      getValue: quantityKey,
+    },
     {
       id: "designated",
       label: t("obligations.types.colDesignated"),

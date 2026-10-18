@@ -7,7 +7,12 @@ describe("WorkingDaysPicker", () => {
   it("given selected days, should render a labelled group with seven localized day toggles", () => {
     // Arrange / Act
     const html = renderToStaticMarkup(
-      <WorkingDaysPicker label="Weekly working days" description="Hint" value={["Saturday", "sunday"]} onChange={vi.fn()} />,
+      <WorkingDaysPicker
+        label="Weekly working days"
+        description="Hint"
+        value={["Saturday", "sunday"]}
+        onChange={vi.fn()}
+      />,
     );
 
     // Assert

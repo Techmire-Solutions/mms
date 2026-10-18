@@ -1,5 +1,5 @@
-import { ModuleTrashConfirmDialogs } from '@/components/ui/ModuleTrashConfirmDialogs';
-import { useTranslation } from '@/hooks/useTranslation';
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface EnrollmentsListConfirmDialogsProps {
   pendingDeleteId: string | null;
@@ -41,17 +41,17 @@ export function EnrollmentsListConfirmDialogs({
       onBulkDeleteOpenChange={onBulkDeleteOpenChange}
       bulkRestoreOpen={bulkRestoreOpen}
       onBulkRestoreOpenChange={onBulkRestoreOpenChange}
-      singleDeleteTitle={t('enrollments.confirmDeleteTitle')}
-      singleDeleteDescription={t('enrollments.confirmDeleteDescription')}
-      bulkDeleteTitle={t('enrollments.confirmBulkDeleteTitle', { count: bulkDeleteCount })}
-      bulkDeleteDescription={t('enrollments.confirmBulkDeleteDescription')}
-      bulkRestoreTitle={t('enrollments.confirmBulkRestoreTitle', { count: bulkDeleteCount })}
-      bulkRestoreDescription={t('enrollments.confirmBulkRestoreDescription')}
-      deleteConfirmLabel={t('enrollments.archive')}
-      restoreConfirmLabel={t('enrollments.restore')}
-      cancelLabel={t('common.cancel')}
-      deletionReasonLabel={t('enrollments.deletionReasonLabel')}
-      deletionReasonPlaceholder={t('enrollments.deletionReasonPlaceholder')}
+      singleDeleteTitle={t("enrollments.confirmDeleteTitle")}
+      singleDeleteDescription={t("enrollments.confirmDeleteDescription")}
+      bulkDeleteTitle={t("enrollments.confirmBulkDeleteTitle", { count: bulkDeleteCount })}
+      bulkDeleteDescription={t("enrollments.confirmBulkDeleteDescription")}
+      bulkRestoreTitle={t("enrollments.confirmBulkRestoreTitle", { count: bulkDeleteCount })}
+      bulkRestoreDescription={t("enrollments.confirmBulkRestoreDescription")}
+      deleteConfirmLabel={t("enrollments.archive")}
+      restoreConfirmLabel={t("enrollments.restore")}
+      cancelLabel={t("common.cancel")}
+      deletionReasonLabel={t("enrollments.deletionReasonLabel")}
+      deletionReasonPlaceholder={t("enrollments.deletionReasonPlaceholder")}
       onConfirmSingleDelete={onConfirmDelete}
       onConfirmBulkDelete={onConfirmBulkDelete}
       onConfirmBulkRestore={onConfirmBulkRestore}

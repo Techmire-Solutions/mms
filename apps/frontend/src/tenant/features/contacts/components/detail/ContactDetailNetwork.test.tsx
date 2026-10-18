@@ -11,7 +11,10 @@ vi.mock("./contactDetailChannelHelpers", () => ({
 }));
 
 vi.mock("./ContactNetworkLinkCard", () => ({
-  ContactNetworkLinkCard: ({ displayName, relationshipLabel }: {
+  ContactNetworkLinkCard: ({
+    displayName,
+    relationshipLabel,
+  }: {
     displayName: string;
     relationshipLabel: string;
   }) => (

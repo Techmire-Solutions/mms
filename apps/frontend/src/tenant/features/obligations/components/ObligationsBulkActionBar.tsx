@@ -1,7 +1,7 @@
-import type { ReactElement } from 'react';
-import { Receipt } from 'lucide-react';
-import { OBLIGATIONS_MODULE_MANIFEST } from '@mms/shared';
-import { ModuleUniversalBulkActionBar } from '@/components/ui/ModuleUniversalBulkActionBar';
+import type { ReactElement } from "react";
+import { Receipt } from "lucide-react";
+import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { ModuleUniversalBulkActionBar } from "@/components/app/ModuleUniversalBulkActionBar";
 
 export interface ObligationsBulkActionBarProps {
   selectedCount: number;

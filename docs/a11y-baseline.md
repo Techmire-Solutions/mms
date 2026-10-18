@@ -161,16 +161,14 @@ The component now drops the widget role when marked decorative, so the two ARIA
 contracts cannot contradict. Covered by
 `apps/frontend/src/components/ui/ProgressBar.test.tsx`.
 
-**Recommended follow-up (not done — it is a product decision).** Honouring
-`aria-hidden` makes the violation go away, but it does not make the data
-available: those bars carry real information (attendance rate, fee collection,
-session utilisation) that is currently conveyed only visually. The more
-accessible end state is to REMOVE `aria-hidden` at those call sites and give each
-bar an accessible name via `aria-label`/`aria-labelledby` describing what it
-measures ("Attendance rate for Grade 5"). That needs per-site labelling decisions
-about context, which is why it is flagged here rather than done unilaterally.
-`ProgressBar` supports it already: omit `aria-hidden` and it exposes the widget
-with its value.
+**Reviewed (2026-10-14) — no change needed.** The bars flagged here are *decorative*:
+each call site already renders the measured value as adjacent visible text (e.g. the
+balance-sheet row's `name: amount` spans; the profile card's `Completeness NN%`).
+Removing `aria-hidden` and adding an `aria-label` would duplicate that for screen
+readers, so honouring `aria-hidden` — which `ProgressBar` does by dropping the widget
+role — is the correct end state, not a stopgap. Residual (optional): a few sites put
+an `aria-label` on a role-less wrapper `<div>` (e.g. `AccountingDashboardSnapshots`),
+which AT ignores — dead but harmless.
 
 ### Status: RESOLVED — entry deleted
 
@@ -194,17 +192,12 @@ explicit about the difference. Two things make it good enough to act on:
 
 If it recurs, the right move is to fix it, not to re-add the entry.
 
-### Related follow-up (still open, and a product decision)
+### Related follow-up — reviewed, no change (see the note above)
 
-Honouring `aria-hidden` makes the *violation* go away, but it does not make the data
-available: those bars carry real information (attendance rate, fee collection,
-session utilisation) that is currently conveyed only visually. The more accessible
-end state is to REMOVE `aria-hidden` at those call sites and give each bar an
-accessible name via `aria-label`/`aria-labelledby` describing what it measures
-("Attendance rate for Grade 5"). That needs per-site labelling decisions about
-context, which is why it is flagged here rather than done unilaterally.
-`ProgressBar` supports it already: omit `aria-hidden` and it exposes the widget with
-its value.
+The eight call sites pass `aria-hidden` on genuinely decorative bars whose values are
+also shown as adjacent text, so exposing the bar would duplicate the announcement.
+`ProgressBar` already drops the widget role when `aria-hidden` is set, which resolves
+the original ARIA conflict without losing information.
 
 ## Regenerating the baseline
 
@@ -251,10 +244,22 @@ hidden from assistive tech inside a populated component
 (`ClassCard`'s capacity row, `Step4ClassAssignment`'s remaining-spots block). Neither
 could ever have surfaced here, because neither component renders without records.
 
-Closing it means seeding the tenant before the sweep — either an API seed or making
-the existing `tenantOperations` UI helpers robust (they are currently fragile enough
-that `registerStudentJaneDoe` failed mid-flow when I tried to reuse it). Until then,
-treat this gate as covering the shell and the empty state, not the modules.
+Closing it means seeding the tenant before the sweep. **Partially closed:**
+`e2e/tests/a11y/a11y-populated.spec.ts` provisions a tenant via the API, runs the backend
+`seed-20-contacts.ts` + `seed-20-students.ts` + `seed-20-sessions.ts` + `seed-20-faculty.ts` +
+`seed-20-invoices.ts` (20 deterministic, idempotent records each), and audits the **populated** contacts
+Work table (incl. a best-effort row detail drawer) at 1440 and 375, the populated students / sessions /
+faculty / finance Work tables (+ drawer) at 1440, the dashboard's populated metric widgets at 1440, and
+the new-enrollment wizard's opening step at 1440.
+
+Those populated audits now **gate** — the `advisory: true` flag was dropped after the first clean passes
+(2026-10-14): serious/critical WCAG 2.1 A/AA violations fail the build, same as the shell sweep. The
+precondition — that rows genuinely rendered — is a hard assertion, so an accidentally-empty page fails
+loudly instead of producing a meaningless green.
+
+**Still to cover** (each needs its own seed→audit): richer charts/metrics and the remaining enrollment
+wizard steps (the gate currently covers the wizard's opening student step). The old UI-helper path
+(`registerStudentJaneDoe`, …) remains too fragile to reuse for seeding.
 
 ## Adjacent guards
 

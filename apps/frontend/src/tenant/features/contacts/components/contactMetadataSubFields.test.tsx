@@ -68,7 +68,9 @@ describe("contactMetadataSubFields", () => {
       expect(instHtml).toContain("Madrasa University");
 
       const fieldHtml = renderToStaticMarkup(
-        <div>{renderEducationSubField("education_fieldOfStudy", mockContact, renderJoinedList)}</div>,
+        <div>
+          {renderEducationSubField("education_fieldOfStudy", mockContact, renderJoinedList)}
+        </div>,
       );
       expect(fieldHtml).toContain("Computing");
     });
@@ -86,7 +88,9 @@ describe("contactMetadataSubFields", () => {
       expect(titleHtml).toContain("Senior Instructor");
 
       const orgHtml = renderToStaticMarkup(
-        <div>{renderExperienceSubField("experienceOrganization", mockContact, renderJoinedList)}</div>,
+        <div>
+          {renderExperienceSubField("experienceOrganization", mockContact, renderJoinedList)}
+        </div>,
       );
       expect(orgHtml).toContain("Darul Uloom");
 
@@ -97,7 +101,9 @@ describe("contactMetadataSubFields", () => {
     });
 
     it("returns null for non-experience colId", () => {
-      expect(renderExperienceSubField("education_degree", mockContact, renderJoinedList)).toBeNull();
+      expect(
+        renderExperienceSubField("education_degree", mockContact, renderJoinedList),
+      ).toBeNull();
     });
   });
 

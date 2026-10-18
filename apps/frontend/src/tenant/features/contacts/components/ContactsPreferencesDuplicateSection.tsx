@@ -5,10 +5,10 @@ import type { ContactPreferences } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field } from "@/components/ui/FormPrimitives";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, FORM_LABEL, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { getDuplicateFieldLabel } from "@/lib/contacts/contactI18n";
 
 /** Toggleable duplicate-detection fields (subset of the canonical field-id set). */
@@ -37,8 +37,8 @@ export function ContactsPreferencesDuplicateSection({
   const { t } = useTranslation();
   const detectionFields = prefs.duplicateDetectionFields ?? ["name", "phone", "email", "cnic"];
 
-  const [namePrefixesDraft, setNamePrefixesDraft] = useState(
-    () => (prefs.namePrefixesToIgnore ?? []).join(", "),
+  const [namePrefixesDraft, setNamePrefixesDraft] = useState(() =>
+    (prefs.namePrefixesToIgnore ?? []).join(", "),
   );
 
   useEffect(() => {
@@ -61,7 +61,9 @@ export function ContactsPreferencesDuplicateSection({
       className={SETUP_SECTION_CARD_CLASS}
     >
       <div className="space-y-4">
-        <p className="text-xs text-muted-foreground">{t("contacts.setup.duplicateDetectionDesc")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("contacts.setup.duplicateDetectionDesc")}
+        </p>
         <fieldset className="space-y-2">
           <legend className={FORM_LABEL}>{t("contacts.setup.duplicateFields")}</legend>
           <div className="flex flex-wrap gap-3">
@@ -145,7 +147,9 @@ export function ContactsPreferencesDuplicateSection({
                 const parsed = Number(e.target.value);
                 onUpdatePreference(
                   "duplicateDetectionThresholdMedium",
-                  Number.isFinite(parsed) ? parsed : (prefs.duplicateDetectionThresholdMedium ?? 75),
+                  Number.isFinite(parsed)
+                    ? parsed
+                    : (prefs.duplicateDetectionThresholdMedium ?? 75),
                 );
               }}
             />

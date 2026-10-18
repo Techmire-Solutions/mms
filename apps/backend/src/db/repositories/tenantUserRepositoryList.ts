@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, isNull, sql, type SQL } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -6,11 +6,11 @@ import {
   toSqlSearchPattern,
   type UsersCommandMetricsSnapshot,
   type UsersListQuery,
-} from '@mms/shared';
-import { tenantUsers } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { rowToTenantUser, type TenantUserRow } from './tenantUserRepository.js';
+} from "@mms/shared";
+import { tenantUsers } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { rowToTenantUser, type TenantUserRow } from "./tenantUserRepository.js";
 
 // List-page projection excludes bcrypt passwordHash so credential hashes are never pulled.
 const TENANT_USER_LIST_COLUMNS = {
@@ -31,7 +31,13 @@ const TENANT_USER_LIST_COLUMNS = {
 } as const;
 
 const USER_SORT_FIELDS = new Set([
-  'name', 'email', 'role', 'status', 'createdDate', 'lastLogin', 'createdAt',
+  "name",
+  "email",
+  "role",
+  "status",
+  "createdDate",
+  "lastLogin",
+  "createdAt",
 ]);
 
 function statusExpr(): SQL {
@@ -48,44 +54,52 @@ function buildSearchSql(search: string): SQL | null {
   )`;
 }
 
-function buildOrderBy(sortField: string | undefined, sortDir: 'asc' | 'desc' | '' | undefined): SQL {
-  const dir = sortDir === 'desc' ? 'desc' : 'asc';
+function buildOrderBy(
+  sortField: string | undefined,
+  sortDir: "asc" | "desc" | "" | undefined,
+): SQL {
+  const dir = sortDir === "desc" ? "desc" : "asc";
   const field = sortField?.trim();
   if (!field || !USER_SORT_FIELDS.has(field)) {
     return sql`${tenantUsers.name} asc`;
   }
-  if (field === 'name') {
-    return dir === 'desc'
+  if (field === "name") {
+    return dir === "desc"
       ? sql`lower(${tenantUsers.name}) desc nulls last`
       : sql`lower(${tenantUsers.name}) asc nulls last`;
   }
-  if (field === 'email') {
-    return dir === 'desc'
+  if (field === "email") {
+    return dir === "desc"
       ? sql`lower(${tenantUsers.loginEmail}) desc nulls last`
       : sql`lower(${tenantUsers.loginEmail}) asc nulls last`;
   }
-  if (field === 'role') {
-    return dir === 'desc'
+  if (field === "role") {
+    return dir === "desc"
       ? sql`lower(${tenantUsers.role}) desc nulls last`
       : sql`lower(${tenantUsers.role}) asc nulls last`;
   }
-  if (field === 'status') {
+  if (field === "status") {
     const statusSort = statusExpr();
-    return dir === 'desc' ? sql`${statusSort} desc nulls last` : sql`${statusSort} asc nulls last`;
+    return dir === "desc" ? sql`${statusSort} desc nulls last` : sql`${statusSort} asc nulls last`;
   }
-  if (field === 'createdDate' || field === 'createdAt') {
-    return dir === 'desc'
+  if (field === "createdDate" || field === "createdAt") {
+    return dir === "desc"
       ? sql`${tenantUsers.createdAt} desc nulls last`
       : sql`${tenantUsers.createdAt} asc nulls last`;
   }
-  if (field === 'lastLogin') {
+  if (field === "lastLogin") {
     const lastLoginSort = sql`NULLIF(trim(COALESCE(${tenantUsers.profileJson}->>'lastLogin', '')), '')`;
-    return dir === 'desc' ? sql`${lastLoginSort} desc nulls last` : sql`${lastLoginSort} asc nulls last`;
+    return dir === "desc"
+      ? sql`${lastLoginSort} desc nulls last`
+      : sql`${lastLoginSort} asc nulls last`;
   }
   return sql`${tenantUsers.name} asc`;
 }
 
-function buildListConditions(subdomain: string, query: UsersListQuery & { includeDeleted?: boolean }): SQL[] {
+function buildListConditions(
+  subdomain: string,
+  query: UsersListQuery & { includeDeleted?: boolean },
+): SQL[] {
   const conditions: SQL[] = [eq(tenantUsers.workspaceSubdomain, subdomain)];
 
   if (isQueryFlagTrue(query.includeDeleted)) {
@@ -99,17 +113,19 @@ function buildListConditions(subdomain: string, query: UsersListQuery & { includ
     conditions.push(inArray(tenantUsers.id, ids));
   }
 
-  if (query.role?.trim() && query.role !== 'all') {
+  if (query.role?.trim() && query.role !== "all") {
     conditions.push(eq(tenantUsers.role, query.role.trim()));
   }
 
   const rawStatuses = dedupeTrimmedIds(query.status);
   if (rawStatuses.length > 0) {
     const statuses = rawStatuses.map((status) => status.toLowerCase());
-    conditions.push(sql`${statusExpr()} IN (${sql.join(
-      statuses.map((status) => sql`${status}`),
-      sql`, `,
-    )})`);
+    conditions.push(
+      sql`${statusExpr()} IN (${sql.join(
+        statuses.map((status) => sql`${status}`),
+        sql`, `,
+      )})`,
+    );
   }
 
   const search = query.search?.trim();
@@ -128,7 +144,14 @@ function buildListConditions(subdomain: string, query: UsersListQuery & { includ
 export async function listTenantUsersPage(
   tenant: string,
   query: UsersListQuery & { includeDeleted?: boolean; afterId?: string; skipCount?: boolean },
-): Promise<{ rows: TenantUserRow[]; total: number; page: number; limit: number; hasMore: boolean; nextCursor?: string }> {
+): Promise<{
+  rows: TenantUserRow[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+  nextCursor?: string;
+}> {
   const subdomain = tenant.trim().toLowerCase();
 
   return withTenantRead(subdomain, async (tx) => {

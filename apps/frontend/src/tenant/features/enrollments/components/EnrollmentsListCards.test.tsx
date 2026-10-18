@@ -14,12 +14,14 @@ vi.mock("@/hooks/useReducedMotion", () => ({
   useReducedMotion: () => false,
 }));
 
-vi.mock("@/components/ui/EntityCardsGrid", () => ({
-  EntityCardsGrid: ({ items, renderItem }: { items: Enrollment[]; renderItem: (item: Enrollment) => React.ReactNode }) => (
-    <div data-testid="directory-cards">
-      {items.map((item) => renderItem(item))}
-    </div>
-  ),
+vi.mock("@/components/app/EntityCardsGrid", () => ({
+  EntityCardsGrid: ({
+    items,
+    renderItem,
+  }: {
+    items: Enrollment[];
+    renderItem: (item: Enrollment) => React.ReactNode;
+  }) => <div data-testid="directory-cards">{items.map((item) => renderItem(item))}</div>,
 }));
 
 vi.mock("./EnrollmentRowActions", () => ({

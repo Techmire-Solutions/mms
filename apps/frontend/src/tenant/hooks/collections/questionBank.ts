@@ -20,7 +20,7 @@ export {
   useQuestionBankReportAggregates,
 } from "@/tenant/features/question-bank/hooks/useQuestionBankApi";
 export { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
-export { invalidateQuestionBankQueries } from '@/tenant/features/question-bank/hooks/invalidateQuestionBankQueries';
+export { invalidateQuestionBankQueries } from "@/tenant/features/question-bank/hooks/invalidateQuestionBankQueries";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   questionBankQuestionsListQueryOptions,
@@ -31,5 +31,4 @@ export {
   useQuestionBankContractBulkRestore,
   useQuestionBankContractDeleteQuestion,
   useQuestionBankContractRestoreQuestion,
-} from '@/tenant/features/question-bank/hooks/useQuestionBankTsrHooks';
-
+} from "@/tenant/features/question-bank/hooks/useQuestionBankQueries";

@@ -13,11 +13,12 @@ paths:
 
 # MMS UI, UX & Design System
 
-**Workflow skills:** design intelligence → `ui-ux-pro-max` · primitives/shells → `mms-frontend` · axe/§4 verify → `mms-a11y-smoke` · FormModal norms → `mms-form-architecture`.
+**Workflow skills:** design intelligence → `ui-ux-pro-max` · shared UI governance → `mms-shared-ui` · primitives/shells → `mms-frontend` · axe/§4 verify → `mms-a11y-smoke` · FormModal norms → `mms-form-architecture`.
 
 ## 1. Central Primitives Enforcement
+- **Shared UI SSOT (`@shared/ui`):** All foundational design-system primitives (`Button`, `Badge`, `Input`, `Select`, `Switch`, `Checkbox`, `Textarea`, `Slider`, `Label`, `Card`, `Table`, `Modal`, `DropdownMenu`, `Popover`, `Tooltip`, `Skeleton`, `Avatar`) live in `@shared/ui` (`packages/ui`). Platform Console imports directly from `@shared/ui`. Tenant Console imports either directly or via `@/components/ui/*` facades. Hand-rolled or duplicate UI component implementations across consoles are strictly banned.
 - **Banned Raw Controls:** Never emit raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<table>`, `<dialog>`, or native checkboxes/switches where design system primitives exist.
-- **Sanctioned Primitives (`@/components/ui/*` & `@/components/common/*`):**
+- **Sanctioned Primitives (`@shared/ui` primitives, `@/components/ui/*` facades, `@/components/app/*` composites, `@/components/common/*` engines):**
   - **Inputs & Controls:** `Button` (min 44×44px), `Input`, `LeadingIconInput`, `FormSelect`, `EditableSelect`, `Textarea`, `Checkbox`, `Switch`.
   - **Overlays & Drawers:** `FormModal` (portal shell), `DetailSheet` / `DetailDrawerShell` (drawer with archive banner and `WarningCallout`), `Popover`, `Tooltip`, `DropdownMenu`.
   - **Layout & Shells:** `AppShell` (universal frame), `ModulePageShell` / `ModuleScaffold` (page shell), `Table` (mandate `@tanstack/react-virtual` when rows > 30).
@@ -28,7 +29,7 @@ paths:
 ## 2. Design Tokens & Surface Styling
 - **Semantic Tokens Only:** Use `index.css` theme mapping (`hsl(var(--primary))`; no standalone `oklch()`). Zero raw hex colors or arbitrary Tailwind brackets (`bg-gray-100`, `rounded-[2rem]`). Print styles quarantined in `lib/printTemplateStyles.ts`.
 - **Token-Exemption Register:** Exclusively allowed in `ThemeModeSelector.tsx`, `printTemplateStyles.ts`, `printBrandingTokens.ts`, `documentFavicon.ts`, `qrCodeGenerator.ts`, `extractLogoBrandColors.ts`, `ErdMermaidDiagram.tsx`, `themeScope.ts`, `Brand*.tsx`, and `template-editor/`.
-- **Micro-Typography & Sizing:** `text-2xs` (10px) for compact meta, `text-3xs` (11px) for pills. Semantic z-index: `z-modal` (50), `z-modal-priority` (60), `z-popover` (70), `z-toast` (100). Never write arbitrary font-size or z-index bracket classes (`z-[100]`).
+- **Micro-Typography & Sizing:** `text-4xs` (10px floor), `text-3xs` (11px) for pills, `text-2xs` (12px) for compact meta. Semantic z-index: `z-modal` (50), `z-modal-priority` (60), `z-popover` (70), `z-toast` (100). Never write arbitrary font-size or z-index bracket classes (`z-[100]`).
 - **Touch Target Floor:** Mandatory `min-h-11 min-w-11` (44×44px) on all interactive triggers, buttons, inputs, and action icons. Never use `min-h-[44px]`.
 - **Surfaces & Insets:** Use `WORK_SURFACE` / `WORK_SURFACE_INNER` for panels, `FORM_CARD` for forms (`formStyles.ts`). Use `color-mix(in srgb, var(--primary) 20%, transparent)` for tints. Outer card primitives govern padding (`p-4` / `px-5 py-4`); no child-level inline offsets (`ms-1`). Honor `useReducedMotion()`.
 
@@ -51,7 +52,7 @@ paths:
 - **Contrast & Reading Order:** Support `prefers-contrast` and `forced-colors`. DOM order must match RTL visual reading order; positive `tabindex` is banned.
 
 ## 6. Single Source of Truth (SSOT) Entity UI Registry
-- **Declarative Descriptor:** Primary entities define descriptors via `createEntityDescriptor<T>()` (`@/components/common/entityRegistry`, `@/types/entityRegistry`).
+- **Declarative Descriptor:** Primary entities define descriptors via `createEntityDescriptor<T>()` (`@/components/common/entityRegistry`, types at `@/components/common/entityRegistryTypes`).
 - **Automatic Derivations:** Single schema drives `getTableColumns()`, `getCardFields()`, `formatFieldValue()`, and `getDrawerSections()`.
 - **Zero Forking:** Directory views, cards, filter chips, and detail sheets must consume descriptors; never duplicate ad-hoc column lists or attribute layouts.
 
@@ -71,6 +72,5 @@ paths:
   - Visual Polish: Pair badge colors with localized text via `t()`. Micro-interactions 150–300ms ease-out, respecting `prefers-reduced-motion`.
   - Keyboard & Focus: Visible focus rings (`focus-visible:ring-2`), no blocked paste, focus return on dismiss.
 
-## 9. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify interactive controls with axe smoke (`e2e/tests/a11y-shell.spec.ts`, skill `mms-a11y-smoke`) for zero serious/critical violations. Spot-check 375 / 768 / 1024px viewports and RTL (`dir="rtl"`).
+## 9. Verification Standards
+- **Verification Gates:** Verify interactive controls with axe smoke (`e2e/tests/a11y/a11y-shell.spec.ts`, skill `mms-a11y-smoke`) for zero serious/critical violations. Spot-check 375 / 768 / 1024px viewports and RTL (`dir="rtl"`).

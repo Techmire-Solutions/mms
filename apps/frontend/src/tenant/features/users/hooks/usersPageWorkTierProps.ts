@@ -1,16 +1,12 @@
-import type {
-  ActivityLog,
-  SystemUser,
-  UsersListPageResult,
-} from '@mms/shared';
+import type { ActivityLog, SystemUser, UsersListPageResult } from "@mms/shared";
 import type {
   UsersWorkSubTab,
   UsersWorkTierProps,
-} from '@/tenant/features/users/components/UsersWorkTier';
-import type { useUsersDirectoryFilters } from '@/tenant/features/users/hooks/useUsersDirectoryFilters';
-import type { useUserColumnLayout } from '@/tenant/features/users/hooks/useUserColumnLayout';
-import type { useUserActivityColumnLayout } from '@/tenant/features/users/hooks/useUserActivityColumnLayout';
-import type { useUsersPageActions } from '@/tenant/features/users/hooks/useUsersPageActions';
+} from "@/tenant/features/users/components/UsersWorkTier";
+import type { useUsersDirectoryFilters } from "@/tenant/features/users/hooks/useUsersDirectoryFilters";
+import type { useUserColumnLayout } from "@/tenant/features/users/hooks/useUserColumnLayout";
+import type { useUserActivityColumnLayout } from "@/tenant/features/users/hooks/useUserActivityColumnLayout";
+import type { useUsersPageActions } from "@/tenant/features/users/hooks/useUsersPageActions";
 
 export interface BuildUsersWorkTierSource {
   tabs: UsersWorkSubTab[];
@@ -38,7 +34,7 @@ export interface BuildUsersWorkTierSource {
   onResetPassword: (user: SystemUser) => void;
   onAddUser: () => void;
   onInviteUser: () => void;
-  onMessageUsers: (channel: 'sms' | 'whatsapp' | 'email', users: SystemUser[]) => void;
+  onMessageUsers: (channel: "sms" | "whatsapp" | "email", users: SystemUser[]) => void;
 }
 
 /**
@@ -85,10 +81,18 @@ export function buildUsersWorkTierProps(source: BuildUsersWorkTierSource): Users
     onRetryLogs: source.onRetryLogs,
     onViewUser: source.onViewUser,
     onEditUser: source.onEditUser,
-    onDeleteUser: (id) => { void actions.handleDeleteUser(id); },
-    onRestoreUser: (id) => { void actions.handleRestoreUser(id); },
-    onBulkDeleteUsers: (ids) => { void actions.handleBulkDelete(ids); },
-    onBulkRestoreUsers: (ids) => { void actions.handleBulkRestore(ids); },
+    onDeleteUser: (id) => {
+      void actions.handleDeleteUser(id);
+    },
+    onRestoreUser: (id) => {
+      void actions.handleRestoreUser(id);
+    },
+    onBulkDeleteUsers: (ids) => {
+      void actions.handleBulkDelete(ids);
+    },
+    onBulkRestoreUsers: (ids) => {
+      void actions.handleBulkRestore(ids);
+    },
     onResetPassword: source.onResetPassword,
     onAddUser: source.onAddUser,
     onInviteUser: source.onInviteUser,

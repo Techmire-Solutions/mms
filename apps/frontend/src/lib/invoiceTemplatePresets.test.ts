@@ -5,8 +5,8 @@ import {
   buildModernPreset,
   buildThermalPreset,
   getAvailablePresets,
-} from "./invoiceTemplatePresets.js";
-import { getPageDimensions, type BrandingInfo } from "./invoiceTemplateTypes.js";
+} from "./invoiceTemplatePresets";
+import { getPageDimensions, type BrandingInfo } from "./invoiceTemplateTypes";
 
 const mockBranding: BrandingInfo = {
   madrasaName: "Al-Huda Academy",
@@ -123,4 +123,3 @@ describe("invoiceTemplatePresets", () => {
     });
   });
 });
-

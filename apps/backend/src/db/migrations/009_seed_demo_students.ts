@@ -5,18 +5,18 @@ import {
   tenantCollectionKey,
   tenantObjectKey,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,
   listCollectionStorageNames,
   saveCollection,
   saveObject,
-} from '../database.js';
+} from "../database.js";
 
-const STUDENTS_COLLECTION = 'students';
-const CONTACTS_COLLECTION = 'contacts';
-const STUDENTS_SETTINGS_KEY = 'students_settings';
+const STUDENTS_COLLECTION = "students";
+const CONTACTS_COLLECTION = "contacts";
+const STUDENTS_SETTINGS_KEY = "students_settings";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -73,10 +73,8 @@ export async function runMigration009(): Promise<void> {
   let changed = false;
 
   if (subdomains.size === 0) {
-    if (
-      await seedTenantStudents(STUDENTS_COLLECTION, CONTACTS_COLLECTION, STUDENTS_SETTINGS_KEY)
-    ) {
-      console.log('[Migration 009] Initialized student storage (legacy storage)');
+    if (await seedTenantStudents(STUDENTS_COLLECTION, CONTACTS_COLLECTION, STUDENTS_SETTINGS_KEY)) {
+      console.log("[Migration 009] Initialized student storage (legacy storage)");
       changed = true;
     }
   } else {
@@ -95,6 +93,6 @@ export async function runMigration009(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 009] Student storage migration completed.');
+    console.log("[Migration 009] Student storage migration completed.");
   }
 }

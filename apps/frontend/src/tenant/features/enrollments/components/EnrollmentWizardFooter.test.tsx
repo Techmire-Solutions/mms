@@ -8,7 +8,7 @@ describe("EnrollmentWizardFooter Component", () => {
   it("renders Next button when not on final step", () => {
     const html = renderToStaticMarkup(
       <EnrollmentWizardFooter
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
         step={0}
         steps={[
           { id: "student", label: "Student", icon: User },
@@ -31,7 +31,7 @@ describe("EnrollmentWizardFooter Component", () => {
   it("renders Submit button on final step", () => {
     const html = renderToStaticMarkup(
       <EnrollmentWizardFooter
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
         step={1}
         steps={[
           { id: "student", label: "Student", icon: User },

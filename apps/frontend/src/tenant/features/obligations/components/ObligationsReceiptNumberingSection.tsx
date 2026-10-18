@@ -5,11 +5,11 @@ import {
   type SequenceNumberingConfig,
   type ObligationsSettings,
 } from "@mms/shared";
-import { SequenceNumberingCard } from "@/components/ui/sequence-numbering";
-import { ModuleSetupSaveFooter } from "@/components/ui/ModuleSetupSaveFooter";
+import { SequenceNumberingCard } from "@/components/sequence-numbering";
+import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useObligationsSettings } from "@/tenant/features/obligations/hooks/useObligationsSettings";
 import { notify } from "@/lib/notify";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export function ObligationsReceiptNumberingSection(): React.JSX.Element {
   const { t } = useTranslation();
@@ -19,7 +19,7 @@ export function ObligationsReceiptNumberingSection(): React.JSX.Element {
 
   const isDirty = useMemo(
     () => JSON.stringify(draft) !== JSON.stringify(settings),
-    [draft, settings]
+    [draft, settings],
   );
 
   useEffect(() => {
@@ -28,10 +28,7 @@ export function ObligationsReceiptNumberingSection(): React.JSX.Element {
     }
   }, [settings, isDirty]);
 
-  const config = useMemo(
-    () => obligationsSettingsToSequenceConfig(draft),
-    [draft]
-  );
+  const config = useMemo(() => obligationsSettingsToSequenceConfig(draft), [draft]);
 
   const handleChange = useCallback((next: SequenceNumberingConfig) => {
     setDraft((prev) => ({

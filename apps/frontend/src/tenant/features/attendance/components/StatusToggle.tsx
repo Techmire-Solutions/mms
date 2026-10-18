@@ -4,7 +4,7 @@ import type { AttendanceStatus } from "@/lib/data/attendanceData";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { AppTranslationKey } from "@mms/shared";
-import { attendanceStatusLabel } from "@/lib/attendanceStatusUi";
+import { attendanceStatusLabel } from "@/lib/ui/attendanceStatusUi";
 
 export interface StatusToggleProps {
   value: string;
@@ -13,20 +13,20 @@ export interface StatusToggleProps {
 
 /**
  * StatusToggle
- * 
+ *
  * Provides a button group to toggle between different attendance statuses.
- * 
+ *
  * @param props - The component props.
  * @returns The rendered toggle component.
  */
 export function StatusToggle({ value, onChange }: StatusToggleProps): React.JSX.Element {
   const { statuses } = useAttendanceConfig();
   const { t } = useTranslation();
-  
+
   return (
-    <div 
-      role="group" 
-      aria-label={t("attendance.filter.status")} 
+    <div
+      role="group"
+      aria-label={t("attendance.filter.status")}
       className="flex max-w-full overflow-x-auto rounded-lg border border-border text-xs font-bold"
     >
       {statuses.map((status: AttendanceStatus) => {

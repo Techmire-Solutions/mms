@@ -14,7 +14,7 @@ export function useDistributionsTrashState({
   showDeleted = false,
   selectedIds = [],
   onDelete,
-  onRestore,
+  onRestore: _onRestore,
   onBulkDelete,
   onBulkRestore,
   onClearSelection,

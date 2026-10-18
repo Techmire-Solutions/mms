@@ -1,4 +1,4 @@
-import type { ContactLike, NamedEntity } from '@mms/shared';
+import type { ContactLike, NamedEntity } from "@mms/shared";
 import {
   createHasanatDistributionLookupMap,
   createNamedEntityLookupMap,
@@ -28,7 +28,7 @@ import {
   stripWorkspaceUserProfileFields,
   type HasanatDistributionLike,
   type SessionLike,
-} from '@mms/shared';
+} from "@mms/shared";
 
 type Row = Record<string, unknown>;
 
@@ -58,44 +58,44 @@ function withUserActor(
 export function normalizeCollectionRows(key: string, rows: Row[]): Row[] {
   if (!rows || !Array.isArray(rows)) return [];
   switch (key) {
-    case 'students':
+    case "students":
       return rows.map((row) => normalizeStoredStudent(row));
-    case 'faculty':
+    case "faculty":
       return rows.map((row) => normalizeStoredFaculty(row));
-    case 'enrollments':
-    case 'attendance_records':
-    case 'finance_invoices':
+    case "enrollments":
+    case "attendance_records":
+    case "finance_invoices":
       return normalizeStudentLinkedRows(rows);
-    case 'finance_payments':
-      return normalizeStudentLinkedRows(rows, 'studentId', 'studentName').map((row) =>
-        normalizeUserActorField(row, 'receivedByUserId', 'receivedBy'),
+    case "finance_payments":
+      return normalizeStudentLinkedRows(rows, "studentId", "studentName").map((row) =>
+        normalizeUserActorField(row, "receivedByUserId", "receivedBy"),
       );
-    case 'sessions':
+    case "sessions":
       return normalizeSessionsCollection(rows as SessionLike[]) as Row[];
-    case 'users':
+    case "users":
       return rows.map((row) => stripWorkspaceUserProfileFields(row));
-    case 'user_activity_logs':
+    case "user_activity_logs":
       return rows.map((row) => normalizeActivityLog(row));
-    case 'hasanat_distributions':
+    case "hasanat_distributions":
       return rows.map((row) =>
         normalizeUserActorField(
           normalizeHasanatDistribution(row as HasanatDistributionLike),
-          'issuedByUserId',
-          'issuedBy',
+          "issuedByUserId",
+          "issuedBy",
         ),
       );
-    case 'hasanat_redemptions':
+    case "hasanat_redemptions":
       return rows.map((row) =>
-        normalizeUserActorField(normalizeHasanatRedemption(row), 'approvedByUserId', 'approvedBy'),
+        normalizeUserActorField(normalizeHasanatRedemption(row), "approvedByUserId", "approvedBy"),
       );
-    case 'hasanat_batches':
-      return rows.map((row) => normalizeUserActorField(row, 'addedByUserId', 'addedBy'));
-    case 'assessment_results':
-    case 'exam_results':
+    case "hasanat_batches":
+      return rows.map((row) => normalizeUserActorField(row, "addedByUserId", "addedBy"));
+    case "assessment_results":
+    case "exam_results":
       return rows.map((row) => normalizeAssessmentResult(row));
-    case 'hasanat_payouts':
+    case "hasanat_payouts":
       return rows.map((row) =>
-        normalizeUserActorField(normalizeHasanatPayout(row), 'approvedByUserId', 'approvedBy'),
+        normalizeUserActorField(normalizeHasanatPayout(row), "approvedByUserId", "approvedBy"),
       );
     default:
       return rows;
@@ -118,59 +118,76 @@ export function hydrateCollectionRows(
   const facultyRows = context.faculty ?? [];
 
   switch (key) {
-    case 'students':
+    case "students":
       return hydrateStudentListFromContacts(rows as never, context.contacts) as Row[];
-    case 'faculty':
+    case "faculty":
       return hydrateFacultyListFromContacts(rows as never, context.contacts) as Row[];
-    case 'enrollments':
-    case 'attendance_records':
-    case 'finance_invoices':
+    case "enrollments":
+    case "attendance_records":
+    case "finance_invoices":
       return hydrateStudentLinkedRows(rows, asNamedMap(context.students));
-    case 'finance_payments': {
+    case "finance_payments": {
       const userMap = asNamedMap(context.users);
-      return hydrateStudentLinkedRows(rows, asNamedMap(context.students), 'studentId', 'studentName').map((row) =>
-        withUserActor(row, 'receivedByUserId', 'receivedBy', userMap, true),
-      );
+      return hydrateStudentLinkedRows(
+        rows,
+        asNamedMap(context.students),
+        "studentId",
+        "studentName",
+      ).map((row) => withUserActor(row, "receivedByUserId", "receivedBy", userMap, true));
     }
-    case 'sessions':
+    case "sessions":
       return hydrateSessionsCollection(rows as SessionLike[], asNamedMap(facultyRows)) as Row[];
-    case 'users':
+    case "users":
       return hydrateWorkspaceUserProfileList(rows, context.contacts);
-    case 'user_activity_logs':
+    case "user_activity_logs":
       return hydrateActivityLogList(rows, asNamedMap(context.users));
-    case 'hasanat_distributions': {
+    case "hasanat_distributions": {
       const userMap = asNamedMap(context.users);
       const studentMap = asNamedMap(context.students);
       const facultyMap = asNamedMap(facultyRows);
       return rows.map((row) =>
         withUserActor(
           hydrateHasanatDistribution(row as HasanatDistributionLike, studentMap, facultyMap),
-          'issuedByUserId',
-          'issuedBy',
+          "issuedByUserId",
+          "issuedBy",
           userMap,
           true,
         ),
       );
     }
-    case 'hasanat_redemptions': {
+    case "hasanat_redemptions": {
       const userMap = asNamedMap(context.users);
-      const distMap = createHasanatDistributionLookupMap(context.distributions as HasanatDistributionLike[]);
+      const distMap = createHasanatDistributionLookupMap(
+        context.distributions as HasanatDistributionLike[],
+      );
       return rows.map((row) =>
-        withUserActor(hydrateHasanatRedemption(row, distMap), 'approvedByUserId', 'approvedBy', userMap, true),
+        withUserActor(
+          hydrateHasanatRedemption(row, distMap),
+          "approvedByUserId",
+          "approvedBy",
+          userMap,
+          true,
+        ),
       );
     }
-    case 'hasanat_batches': {
+    case "hasanat_batches": {
       const userMap = asNamedMap(context.users);
-      return rows.map((row) => withUserActor(row, 'addedByUserId', 'addedBy', userMap, true));
+      return rows.map((row) => withUserActor(row, "addedByUserId", "addedBy", userMap, true));
     }
-    case 'assessment_results':
-    case 'exam_results':
+    case "assessment_results":
+    case "exam_results":
       return hydrateAssessmentResultList(rows, asNamedMap(context.students));
-    case 'hasanat_payouts': {
+    case "hasanat_payouts": {
       const userMap = asNamedMap(context.users);
       const studentMap = asNamedMap(context.students);
       return rows.map((row) =>
-        withUserActor(hydrateHasanatPayout(row, studentMap), 'approvedByUserId', 'approvedBy', userMap, true),
+        withUserActor(
+          hydrateHasanatPayout(row, studentMap),
+          "approvedByUserId",
+          "approvedBy",
+          userMap,
+          true,
+        ),
       );
     }
     default:

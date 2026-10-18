@@ -1,4 +1,4 @@
-import { purgeExpiredAuthArtifacts } from './authArtifactService.js';
+import { purgeExpiredAuthArtifacts } from "./authArtifactService.js";
 
 const DEFAULT_AUTH_ARTIFACT_PURGE_MS = 15 * 60 * 1000;
 
@@ -14,7 +14,7 @@ export function startAuthArtifactPurgeScheduler(
     try {
       await purgeExpiredAuthArtifacts();
     } catch (error) {
-      log.warn({ err: error }, 'auth artifact purge failed');
+      log.warn({ err: error }, "auth artifact purge failed");
     }
   };
 
@@ -24,7 +24,7 @@ export function startAuthArtifactPurgeScheduler(
   }, intervalMs);
   timer.unref?.();
 
-  log.info({ intervalMs }, 'auth artifact purge scheduler started');
+  log.info({ intervalMs }, "auth artifact purge scheduler started");
 
   return () => {
     clearInterval(timer);

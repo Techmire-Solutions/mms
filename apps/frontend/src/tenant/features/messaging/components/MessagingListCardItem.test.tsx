@@ -1,10 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  MessagingListCardItem,
-  getMessagingChannelAccentBarClass,
-} from "./MessagingListCardItem";
+import { MessagingListCardItem, getMessagingChannelAccentBarClass } from "./MessagingListCardItem";
 import type { Message } from "@mms/shared";
 
 declare global {

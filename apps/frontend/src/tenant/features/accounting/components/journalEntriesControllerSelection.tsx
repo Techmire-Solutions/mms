@@ -1,19 +1,23 @@
-import type { Dispatch, FormEvent, ReactNode, SetStateAction } from 'react';
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from '@/components/ui/ModuleRowActionsMenu';
-import type { JournalEntry } from '@/lib/data/accountingData';
-import { JournalEntryRowActions } from '@/tenant/features/accounting/components/JournalEntryRowActions';
+import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
+import type { JournalEntry } from "@/lib/data/accountingData";
+import { JournalEntryRowActions } from "@/tenant/features/accounting/components/JournalEntryRowActions";
 import {
   extractAmountFromNaturalLanguage,
   parseNaturalLanguage,
   type QuickActionType,
-} from '@/tenant/features/accounting/components/journalEntriesQuickActions';
+} from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
 
 export function createJournalNlHandlers(
   nlInput: string,
   setNlInput: Dispatch<SetStateAction<string>>,
   setNlSuggestion: Dispatch<SetStateAction<QuickActionType | null>>,
   setSimpleModal: Dispatch<
-    SetStateAction<{ prefillType: QuickActionType | null; initialAmount?: string; initialDescription?: string } | null>
+    SetStateAction<{
+      prefillType: QuickActionType | null;
+      initialAmount?: string;
+      initialDescription?: string;
+    } | null>
   >,
 ) {
   const handleNlSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -26,7 +30,7 @@ export function createJournalNlHandlers(
       initialAmount: amount ?? undefined,
       initialDescription: description || undefined,
     });
-    setNlInput('');
+    setNlInput("");
     setNlSuggestion(null);
   };
 
@@ -43,7 +47,7 @@ interface JournalEntryActionsRendererDeps {
   canDelete: boolean;
   showDeleted: boolean;
   setSelected: Dispatch<SetStateAction<JournalEntry | null>>;
-  setModal: Dispatch<SetStateAction<'new' | 'edit' | 'view' | null>>;
+  setModal: Dispatch<SetStateAction<"new" | "edit" | "view" | null>>;
   handlePost: (entry: JournalEntry) => void | Promise<void>;
   requestRowTrash: (id: string) => void;
   handleReverse: (entry: JournalEntry) => void | Promise<void>;
@@ -72,11 +76,11 @@ export function createJournalEntryActionsRenderer(
       hideViewItem={options.hideViewItem}
       onView={(journalEntry) => {
         deps.setSelected(journalEntry);
-        deps.setModal('view');
+        deps.setModal("view");
       }}
       onEdit={(journalEntry) => {
         deps.setSelected(journalEntry);
-        deps.setModal('edit');
+        deps.setModal("edit");
       }}
       onPost={(journalEntry) => {
         void deps.handlePost(journalEntry);

@@ -1,49 +1,53 @@
-import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { PlatformSidebarNav } from './PlatformSidebarNav';
-import { LayoutDashboard } from 'lucide-react';
-import type { PlatformNavItem } from '@/platform/lib/platformNav';
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { PlatformSidebarNav } from "./PlatformSidebarNav";
+import { LayoutDashboard } from "lucide-react";
+import type { PlatformNavItem } from "@/platform/lib/platformNav";
 
-let currentDir = 'ltr';
+let currentDir = "ltr";
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
     dir: currentDir,
   }),
 }));
 
-vi.mock('react-router-dom', () => ({
-  useLocation: () => ({ pathname: '/platform/dashboard' }),
-  Link: ({ children, to, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }) => (
+vi.mock("react-router-dom", () => ({
+  useLocation: () => ({ pathname: "/platform/dashboard" }),
+  Link: ({
+    children,
+    to,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }) => (
     <a href={to} {...props}>
       {children}
     </a>
   ),
 }));
 
-const mockSections: { section: 'overview'; items: PlatformNavItem[] }[] = [
+const mockSections: { section: "overview"; items: PlatformNavItem[] }[] = [
   {
-    section: 'overview',
+    section: "overview",
     items: [
       {
-        id: 'dashboard',
-        path: '/platform/dashboard',
-        labelKey: 'dashboard.title',
+        id: "dashboard",
+        path: "/platform/dashboard",
+        labelKey: "dashboard.title",
         icon: LayoutDashboard,
-        section: 'overview',
+        section: "overview",
         isVisible: () => true,
       },
     ],
   },
 ];
 
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider } from "@shared/ui";
 
-describe('PlatformSidebarNav', () => {
-  it('renders navigation links in expanded mode', () => {
-    currentDir = 'ltr';
+describe("PlatformSidebarNav", () => {
+  it("renders navigation links in expanded mode", () => {
+    currentDir = "ltr";
     const html = renderToStaticMarkup(
       <TooltipProvider>
         <PlatformSidebarNav
@@ -56,12 +60,12 @@ describe('PlatformSidebarNav', () => {
       </TooltipProvider>,
     );
 
-    expect(html).toContain('dashboard.title');
-    expect(html).toContain('platform.navAria');
+    expect(html).toContain("dashboard.title");
+    expect(html).toContain("platform.navAria");
   });
 
-  it('renders collapsed sidebar without errors in LTR', () => {
-    currentDir = 'ltr';
+  it("renders collapsed sidebar without errors in LTR", () => {
+    currentDir = "ltr";
     const html = renderToStaticMarkup(
       <TooltipProvider>
         <PlatformSidebarNav
@@ -75,11 +79,11 @@ describe('PlatformSidebarNav', () => {
     );
 
     expect(html).toBeDefined();
-    expect(html).toContain('platform.navAria');
+    expect(html).toContain("platform.navAria");
   });
 
-  it('renders collapsed sidebar without errors in RTL', () => {
-    currentDir = 'rtl';
+  it("renders collapsed sidebar without errors in RTL", () => {
+    currentDir = "rtl";
     const html = renderToStaticMarkup(
       <TooltipProvider>
         <PlatformSidebarNav
@@ -93,6 +97,6 @@ describe('PlatformSidebarNav', () => {
     );
 
     expect(html).toBeDefined();
-    expect(html).toContain('platform.navAria');
+    expect(html).toContain("platform.navAria");
   });
 });

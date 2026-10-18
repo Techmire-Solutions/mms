@@ -1,8 +1,8 @@
-import { sql } from 'drizzle-orm';
-import { loadBackendEnv } from '../config/loadEnv.js';
-import { closeDatabase, initializeDatabaseConnection } from '../db/dbConnection.js';
-import { withGlobalTenant } from '../db/tenant-context.js';
-import { logger } from '../lib/logger.js';
+import { sql } from "drizzle-orm";
+import { loadBackendEnv } from "../config/loadEnv.js";
+import { closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
+import { withGlobalTenant } from "../db/tenant-context.js";
+import { logger } from "../lib/logger.js";
 
 loadBackendEnv();
 
@@ -45,7 +45,7 @@ async function main(): Promise<void> {
       return result.rows.length;
     });
     total += updated;
-    if (updated > 0) logger.info({ updated, total }, '[backfill:attendance-sections] batch');
+    if (updated > 0) logger.info({ updated, total }, "[backfill:attendance-sections] batch");
     if (updated < BATCH) break;
   }
   console.log(`[backfill:attendance-sections] stamped ${total} attendance row(s).`);
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
 }
 
 main().catch(async (error: unknown) => {
-  logger.error({ err: error }, 'backfill:attendance-sections failed');
+  logger.error({ err: error }, "backfill:attendance-sections failed");
   process.exitCode = 1;
   await closeDatabase();
 });

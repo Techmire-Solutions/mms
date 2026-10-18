@@ -4,7 +4,7 @@ description: Audits and fixes MMS translation coverage across en/ar/ur/fa — mi
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS i18n Completeness
@@ -24,11 +24,11 @@ Advisory: pair translation parity with [accounting policy applicability](../mms-
 
 | File | Role |
 |---|---|
-| `packages/shared/src/appTranslationsEn.ts` | **source of truth** — add the key here first |
-| `packages/shared/src/appTranslationsAr.ts` | Arabic |
-| `packages/shared/src/appTranslationsUr.ts` | Urdu |
-| `packages/shared/src/appTranslationsFa.ts` | Farsi |
-| `packages/shared/src/appTranslations.ts` | aggregation/lookup used by the runtime |
+| `packages/shared/src/i18n/appTranslationsEn.ts` | **source of truth** — add the key here first |
+| `packages/shared/src/i18n/appTranslationsAr.ts` | Arabic |
+| `packages/shared/src/i18n/appTranslationsUr.ts` | Urdu |
+| `packages/shared/src/i18n/appTranslationsFa.ts` | Farsi |
+| `packages/shared/src/i18n/appTranslations.ts` | aggregation/lookup used by the runtime |
 
 Locales are `en`, `ar`, `ur`, `fa`; `ar`/`ur`/`fa` are RTL, `en` is LTR.
 

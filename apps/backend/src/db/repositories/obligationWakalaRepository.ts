@@ -1,7 +1,7 @@
-import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type WakalaType } from '@mms/shared';
-import { wakalaTypes } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type WakalaType } from "@mms/shared";
+import { wakalaTypes } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 type WakalaTypeRow = typeof wakalaTypes.$inferSelect;
 
@@ -102,7 +102,7 @@ export async function bulkSaveWakalaTypes(tenant: string, records: WakalaType[])
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, WakalaType>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -132,11 +132,14 @@ export async function bulkSaveWakalaTypes(tenant: string, records: WakalaType[])
   });
 }
 
-export async function replaceWakalaTypesForWorkspace(tenant: string, records: WakalaType[]): Promise<void> {
+export async function replaceWakalaTypesForWorkspace(
+  tenant: string,
+  records: WakalaType[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, WakalaType>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -148,7 +151,9 @@ export async function replaceWakalaTypesForWorkspace(tenant: string, records: Wa
     } else {
       await tx
         .delete(wakalaTypes)
-        .where(and(eq(wakalaTypes.workspaceSubdomain, subdomain), notInArray(wakalaTypes.id, keepIds)));
+        .where(
+          and(eq(wakalaTypes.workspaceSubdomain, subdomain), notInArray(wakalaTypes.id, keepIds)),
+        );
 
       await tx
         .insert(wakalaTypes)

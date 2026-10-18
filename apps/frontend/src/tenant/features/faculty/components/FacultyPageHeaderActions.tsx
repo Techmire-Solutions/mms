@@ -1,10 +1,5 @@
-import {
-  Award,
-  Download,
-  Upload,
-  UserPlus,
-} from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Award, Download, Upload, UserPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,9 +50,9 @@ export function FacultyPageHeaderActions({
       {canExport ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <ActionButton variant="ghost" icon={Download}>
+            <Button variant="ghost" icon={Download}>
               {t("faculty.io.export")}
-            </ActionButton>
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
             {FACULTY_IO_ENTITY_IDS.map((entity) => (
@@ -76,9 +71,9 @@ export function FacultyPageHeaderActions({
       {canWrite ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <ActionButton variant="ghost" icon={Upload}>
+            <Button variant="ghost" icon={Upload}>
               {t("faculty.io.import")}
-            </ActionButton>
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
             {FACULTY_IO_ENTITY_IDS.map((entity) => (
@@ -95,15 +90,15 @@ export function FacultyPageHeaderActions({
       ) : null}
 
       {canWrite && onAddDesignation ? (
-        <ActionButton variant="ghost" icon={Award} onClick={onAddDesignation}>
+        <Button variant="ghost" icon={Award} onClick={onAddDesignation}>
           {t("faculty.designations.addDesignation")}
-        </ActionButton>
+        </Button>
       ) : null}
 
       {canWrite && onAddFaculty ? (
-        <ActionButton variant="primary" icon={UserPlus} onClick={onAddFaculty}>
+        <Button variant="primary" icon={UserPlus} onClick={onAddFaculty}>
           {t("action.addFaculty")}
-        </ActionButton>
+        </Button>
       ) : null}
     </>
   );

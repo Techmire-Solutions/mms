@@ -1,11 +1,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { SessionSortField } from "@/tenant/features/sessions/components/sessionPageTypes";
+import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPageTypes";
 import type { Session } from "@/lib/data/sessionsData";
-import type { SessionsWorkColumnLayout } from "@/tenant/features/sessions/components/sessionsWorkListViewsShared";
+import type { SessionsWorkColumnLayout } from "@/tenant/features/sessions/lib/sessionsWorkListViewsShared";
 import { renderSessionWorkColumnValue } from "@/tenant/features/sessions/components/sessionWorkColumnCell";
 import { SessionListRowActions } from "@/tenant/features/sessions/components/SessionListRowActions";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
@@ -55,7 +55,10 @@ export function SessionsListDesktopTable({
 }: SessionsListDesktopTableProps): React.JSX.Element {
   const { t } = useTranslation();
   const selectedSet = React.useMemo(() => new Set(selectedIds), [selectedIds]);
-  const columnOptions = React.useMemo(() => ({ t, statusConfig, typeConfig }), [t, statusConfig, typeConfig]);
+  const columnOptions = React.useMemo(
+    () => ({ t, statusConfig, typeConfig }),
+    [t, statusConfig, typeConfig],
+  );
 
   const columns = React.useMemo<WorkBatchTableColumn<Session>[]>(() => {
     const cols: WorkBatchTableColumn<Session>[] = [];
@@ -93,7 +96,8 @@ export function SessionsListDesktopTable({
         id: "startDate",
         label: t("sessions.columns.startDate"),
         cellClassName: "text-xs text-muted-foreground",
-        render: (sessionItem) => renderSessionWorkColumnValue(sessionItem, "startDate", columnOptions),
+        render: (sessionItem) =>
+          renderSessionWorkColumnValue(sessionItem, "startDate", columnOptions),
       });
     }
 
@@ -102,7 +106,8 @@ export function SessionsListDesktopTable({
         id: "endDate",
         label: t("sessions.columns.endDate"),
         cellClassName: "text-xs text-muted-foreground",
-        render: (sessionItem) => renderSessionWorkColumnValue(sessionItem, "endDate", columnOptions),
+        render: (sessionItem) =>
+          renderSessionWorkColumnValue(sessionItem, "endDate", columnOptions),
       });
     }
 
@@ -111,7 +116,8 @@ export function SessionsListDesktopTable({
         id: "duration",
         label: t("sessions.columns.duration"),
         cellClassName: "text-xs text-muted-foreground",
-        render: (sessionItem) => renderSessionWorkColumnValue(sessionItem, "duration", columnOptions),
+        render: (sessionItem) =>
+          renderSessionWorkColumnValue(sessionItem, "duration", columnOptions),
       });
     }
 
@@ -130,7 +136,8 @@ export function SessionsListDesktopTable({
         id: "currency",
         label: t("sessions.columns.currency"),
         cellClassName: "text-xs text-muted-foreground",
-        render: (sessionItem) => renderSessionWorkColumnValue(sessionItem, "currency", columnOptions),
+        render: (sessionItem) =>
+          renderSessionWorkColumnValue(sessionItem, "currency", columnOptions),
       });
     }
 
@@ -139,7 +146,8 @@ export function SessionsListDesktopTable({
         id: "enrolled",
         label: t("sessions.columns.enrolled"),
         cellClassName: "text-xs text-muted-foreground",
-        render: (sessionItem) => renderSessionWorkColumnValue(sessionItem, "enrolled", columnOptions),
+        render: (sessionItem) =>
+          renderSessionWorkColumnValue(sessionItem, "enrolled", columnOptions),
       });
     }
 
@@ -157,7 +165,8 @@ export function SessionsListDesktopTable({
         id: "description",
         label: t("sessions.columns.description"),
         cellClassName: "text-xs text-muted-foreground max-w-cell-sm truncate",
-        render: (sessionItem) => renderSessionWorkColumnValue(sessionItem, "description", columnOptions),
+        render: (sessionItem) =>
+          renderSessionWorkColumnValue(sessionItem, "description", columnOptions),
       });
     }
 
@@ -171,43 +180,44 @@ export function SessionsListDesktopTable({
       className="table-fixed"
       tableBodyClassName="divide-y divide-border/50"
       stickyColumnId="name"
-        sort={{
-          field: sortField,
-          dir: sortDir,
-          onSort: (field) => onSort(field as SessionSortField),
-        }}
-        columnResize={{
-          getColumnWidth: columnLayout.getColumnWidth,
-          onColumnResize: columnLayout.setColumnWidth,
-        }}
-        selection={
-          canSelectSessions
-            ? {
-                selectedIds,
-                onSelectOne: (id) => onToggleSelectedSession(String(id), !selectedSet.has(String(id))),
-                onSelectAll: () => onToggleSelectAll(!allVisibleSelected),
-                allSelected: allVisibleSelected,
-                someSelected: someVisibleSelected,
-                selectAllAriaLabel: t("sessions.table.selectAll"),
-                selectRowAriaLabel: (sessionItem) => sessionItem.name,
-              }
-            : undefined
-        }
-        renderRowActions={
-          canDelete
-            ? (sessionItem) => (
-                <SessionListRowActions
-                  session={sessionItem}
-                  showDeleted={showDeleted}
-                  canDelete={canDelete}
-                  onRequestDelete={onRequestDelete}
-                  onRestore={onRestore}
-                  triggerClassName={MODULE_ROW_ACTIONS_TRIGGER_CLASS}
-                />
-              )
-            : undefined
-        }
-        actionsLabel={canDelete ? t("common.actions") : undefined}
-      />
+      sort={{
+        field: sortField,
+        dir: sortDir,
+        onSort: (field) => onSort(field as SessionSortField),
+      }}
+      columnResize={{
+        getColumnWidth: columnLayout.getColumnWidth,
+        onColumnResize: columnLayout.setColumnWidth,
+      }}
+      selection={
+        canSelectSessions
+          ? {
+              selectedIds,
+              onSelectOne: (id) =>
+                onToggleSelectedSession(String(id), !selectedSet.has(String(id))),
+              onSelectAll: () => onToggleSelectAll(!allVisibleSelected),
+              allSelected: allVisibleSelected,
+              someSelected: someVisibleSelected,
+              selectAllAriaLabel: t("sessions.table.selectAll"),
+              selectRowAriaLabel: (sessionItem) => sessionItem.name,
+            }
+          : undefined
+      }
+      renderRowActions={
+        canDelete
+          ? (sessionItem) => (
+              <SessionListRowActions
+                session={sessionItem}
+                showDeleted={showDeleted}
+                canDelete={canDelete}
+                onRequestDelete={onRequestDelete}
+                onRestore={onRestore}
+                triggerClassName={MODULE_ROW_ACTIONS_TRIGGER_CLASS}
+              />
+            )
+          : undefined
+      }
+      actionsLabel={canDelete ? t("common.actions") : undefined}
+    />
   );
 }

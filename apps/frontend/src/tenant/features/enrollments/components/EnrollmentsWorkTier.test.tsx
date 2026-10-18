@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: ({ value }: { value: string }) => <div data-testid="sub-tab-bar">Active: {value}</div>,
 }));
 
@@ -74,7 +74,7 @@ describe("EnrollmentsWorkTier Component", () => {
           isColumnVisible: () => true,
           getColumnWidth: () => 120,
           onColumnResize: vi.fn(),
-          columnCustomizer: {} as any,
+          columnCustomizer: {} as unknown as never,
         }}
       />,
     );

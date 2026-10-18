@@ -1,10 +1,7 @@
-import { parseTenantScopedStorageKey } from '@mms/shared';
-import {
-  deleteCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
+import { parseTenantScopedStorageKey } from "@mms/shared";
+import { deleteCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 
-const OVERDUE_OBLIGATIONS_COLLECTION = 'overdue_obligations';
+const OVERDUE_OBLIGATIONS_COLLECTION = "overdue_obligations";
 
 /**
  * Removes retired `overdue_obligations` document collections from all tenants.
@@ -23,6 +20,6 @@ export async function runMigration034(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 034] Purged retired overdue_obligations collections.');
+    console.log("[Migration 034] Purged retired overdue_obligations collections.");
   }
 }

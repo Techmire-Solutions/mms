@@ -50,9 +50,7 @@ const defaultProps = {
 
 describe("StudentFormTabContent Component", () => {
   it("renders unified vertical layout with contact, guardians, registration, and notes sections", () => {
-    const html = renderToStaticMarkup(
-      <StudentFormTabContent {...defaultProps} />,
-    );
+    const html = renderToStaticMarkup(<StudentFormTabContent {...defaultProps} />);
 
     // Top Section: Contact Association
     expect(html).toContain("students.form.contactLabel");

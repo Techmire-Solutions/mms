@@ -1,11 +1,11 @@
-import type { ExaminationsRepository } from '../repository/examinationsRepository.js';
-import { examinationsRepository } from '../repository/examinationsRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
+import type { ExaminationsRepository } from "../repository/examinationsRepository.js";
+import { examinationsRepository } from "../repository/examinationsRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import {
   defineTenantBulkCollectionService,
   upsertWithBroadcast,
-} from '../../services/tenantBulkService.js';
+} from "../../services/tenantBulkService.js";
 import {
   dedupeTrimmedIds,
   type Exam,
@@ -20,7 +20,7 @@ import {
   type ExaminationsReportComparisonQuery,
   type ExaminationsReportAggregates,
   EMPTY_EXAMINATIONS_REPORT_AGGREGATES,
-} from '@mms/shared';
+} from "@mms/shared";
 
 const EMPTY_EXAMINATIONS_METRICS: ExaminationsCommandMetricsSnapshot = {
   total: 0,
@@ -42,15 +42,21 @@ const EMPTY_EXAMINATIONS_METRICS: ExaminationsCommandMetricsSnapshot = {
  */
 export function createExaminationsUseCases(repo: ExaminationsRepository = examinationsRepository) {
   const examBulkService = defineTenantBulkCollectionService<Exam>(
-    { listByWorkspace: repo.listExamsByWorkspace, replaceForWorkspace: repo.replaceExamsForWorkspace },
+    {
+      listByWorkspace: repo.listExamsByWorkspace,
+      replaceForWorkspace: repo.replaceExamsForWorkspace,
+    },
     examListSchema,
-    'exams',
+    "exams",
   );
 
   const examResultBulkService = defineTenantBulkCollectionService<ExamResult>(
-    { listByWorkspace: repo.listExamResultsByWorkspace, replaceForWorkspace: repo.replaceExamResultsForWorkspace },
+    {
+      listByWorkspace: repo.listExamResultsByWorkspace,
+      replaceForWorkspace: repo.replaceExamResultsForWorkspace,
+    },
     examResultListSchema,
-    'exam_results',
+    "exam_results",
   );
 
   const examCrud = createGenericRelationalService<Exam>({
@@ -62,8 +68,8 @@ export function createExaminationsUseCases(repo: ExaminationsRepository = examin
       bulkRestore: repo.bulkRestoreExams,
     },
     schema: examRecordSchema,
-    websocketCollection: 'exams',
-    idPrefix: 'ex',
+    websocketCollection: "exams",
+    idPrefix: "ex",
   });
 
   return {
@@ -120,9 +126,9 @@ export function createExaminationsUseCases(repo: ExaminationsRepository = examin
     },
 
     upsertExams: (records: Exam[]) =>
-      upsertWithBroadcast(examListSchema, records, repo.bulkSaveExams, 'exams'),
+      upsertWithBroadcast(examListSchema, records, repo.bulkSaveExams, "exams"),
     upsertExamResults: (records: ExamResult[]) =>
-      upsertWithBroadcast(examResultListSchema, records, repo.bulkSaveExamResults, 'exam_results'),
+      upsertWithBroadcast(examResultListSchema, records, repo.bulkSaveExamResults, "exam_results"),
 
     createExam: examCrud.create,
     updateExamById: examCrud.updateById,

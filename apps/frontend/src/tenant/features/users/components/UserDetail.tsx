@@ -1,26 +1,26 @@
-import React, { lazy, Suspense, useState } from 'react';
-import { Shield } from 'lucide-react';
+import React, { lazy, Suspense, useState } from "react";
+import { Shield } from "lucide-react";
 import {
   filterRbacModulesForSettings,
   formatDate,
   resolveWorkspaceRole,
   type SystemUser,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useGlobalSettings } from '@/tenant/hooks/useGlobalSettings';
-import { useWorkspaceRoles } from '@/tenant/hooks/useWorkspaceRoles';
-import { Drawer } from '@/components/ui/Drawer';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
+import { Drawer } from "@/components/app/Drawer";
 import {
   DetailDrawerArchivedBanner,
   DetailDrawerRestoreOrEditAction,
-} from '@/components/ui/DetailDrawerArchiveChrome';
-import { UserRoleBadge, UserStatusBadge } from '@/tenant/features/users/components/UserBadges';
-import { notify } from '@/lib/notify';
-import { usePermissions } from '@/tenant/hooks/usePermissions';
-import { useUsersContractVerifyEmail } from '@/tenant/hooks/collections/users';
-import { UserDetailSections } from '@/tenant/features/users/components/UserDetailSections';
+} from "@/components/app/DetailDrawerArchiveChrome";
+import { UserRoleBadge, UserStatusBadge } from "@/tenant/features/users/components/UserBadges";
+import { notify } from "@/lib/notify";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
+import { useUsersContractVerifyEmail } from "@/tenant/hooks/collections/users";
+import { UserDetailSections } from "@/tenant/features/users/components/UserDetailSections";
 
-const MessageComposer = lazy(() => import('@/tenant/components/messaging/TenantMessageComposer'));
+const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
 
 export interface UserDetailProps {
   user: SystemUser;
@@ -49,14 +49,14 @@ export function UserDetail({
         params: { id: String(user.id) },
         body: {},
       });
-      notify.success(t('users.emailVerifiedSuccess'));
+      notify.success(t("users.emailVerifiedSuccess"));
     } catch {
-      notify.error(t('errors.state.generic'));
+      notify.error(t("errors.state.generic"));
     }
   };
 
   const [messagingTarget, setMessagingTarget] = useState<{
-    channel: 'sms' | 'whatsapp' | 'email';
+    channel: "sms" | "whatsapp" | "email";
     recipients: Array<{ id: string; name: string; phone: string; email: string }>;
   } | null>(null);
 
@@ -68,15 +68,15 @@ export function UserDetail({
   const effectivePerms = workspaceRole?.permissions ?? {};
 
   const fmtDate = (ts: string): string => {
-    if (!ts) return t('users.never');
+    if (!ts) return t("users.never");
     return formatDate(ts, globalSettings.dateFormat, false);
   };
 
-  const handleCompose = (channel: 'sms' | 'whatsapp' | 'email') => {
+  const handleCompose = (channel: "sms" | "whatsapp" | "email") => {
     if (isArchived) return;
     setMessagingTarget({
       channel,
-      recipients: [{ id: user.id, name: user.name, phone: user.phone || '', email: user.email }],
+      recipients: [{ id: user.id, name: user.name, phone: user.phone || "", email: user.email }],
     });
   };
 
@@ -85,15 +85,15 @@ export function UserDetail({
       <Drawer
         onClose={onClose}
         title={user.name}
-        subtitle={isArchived ? t('users.detail.archivedSubtitle') : user.email}
+        subtitle={isArchived ? t("users.detail.archivedSubtitle") : user.email}
         icon={Shield}
         headerActions={
           <DetailDrawerRestoreOrEditAction
             isArchived={isArchived}
             canRestore={canDelete && canManageThisUser}
             canEdit={Boolean(onEdit && canManageThisUser)}
-            restoreLabel={t('users.trash.restore')}
-            editLabel={t('users.edit')}
+            restoreLabel={t("users.trash.restore")}
+            editLabel={t("users.edit")}
             onRestore={onRestore ? () => onRestore(String(user.id)) : undefined}
             onEdit={onEdit ? () => onEdit(user) : undefined}
           />
@@ -102,7 +102,7 @@ export function UserDetail({
         {isArchived ? (
           <DetailDrawerArchivedBanner
             deletedAt={user.deletedAt}
-            describe={(formattedDate) => t('users.detail.archivedBanner', { date: formattedDate })}
+            describe={(formattedDate) => t("users.detail.archivedBanner", { date: formattedDate })}
           />
         ) : null}
 

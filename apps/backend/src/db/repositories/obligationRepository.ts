@@ -7,7 +7,7 @@ export {
   saveObligationType,
   bulkSaveObligationTypes,
   replaceObligationTypesForWorkspace,
-} from './obligationTypesRepository.js';
+} from "./obligationTypesRepository.js";
 export {
   mujtahidRowToRecord,
   listMujtahidsByWorkspace,
@@ -23,7 +23,7 @@ export {
   saveMujtahidRep,
   bulkSaveMujtahidReps,
   replaceMujtahidRepsForWorkspace,
-} from './obligationMujtahidsRepository.js';
+} from "./obligationMujtahidsRepository.js";
 export {
   wakalaTypeRowToRecord,
   listWakalaTypesByWorkspace,
@@ -32,7 +32,7 @@ export {
   saveWakalaType,
   bulkSaveWakalaTypes,
   replaceWakalaTypesForWorkspace,
-} from './obligationWakalaRepository.js';
+} from "./obligationWakalaRepository.js";
 export {
   obligationDistributionRowToRecord,
   listObligationDistributionsByWorkspace,
@@ -41,7 +41,7 @@ export {
   saveObligationDistribution,
   bulkSaveObligationDistributions,
   replaceObligationDistributionsForWorkspace,
-} from './obligationDistributionsRepository.js';
+} from "./obligationDistributionsRepository.js";
 export {
   obligationCollectionRowToRecord,
   listObligationCollectionsByWorkspace,
@@ -53,4 +53,4 @@ export {
   bulkSoftDeleteObligationCollections,
   bulkRestoreObligationCollections,
   deleteObligationsByWorkspace,
-} from './obligationCollectionsRepository.js';
+} from "./obligationCollectionsRepository.js";

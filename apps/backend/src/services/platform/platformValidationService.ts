@@ -1,7 +1,5 @@
-import {
-  type PlatformPasswordForgotResult,
-} from '@mms/shared';
-import { isDevCredentialLoggingEnabled } from '../../lib/devLogging.js';
+import { type PlatformPasswordForgotResult } from "@mms/shared";
+import { isDevCredentialLoggingEnabled } from "../../lib/devLogging.js";
 
 /**
  * Normalizes OTP dispatching results for non-production environments to avoid code duplication in password reset flows.
@@ -16,5 +14,3 @@ export function buildDevForgotResult(
   }
   return result;
 }
-
-

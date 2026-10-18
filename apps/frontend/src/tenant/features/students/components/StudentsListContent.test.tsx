@@ -71,9 +71,7 @@ describe("StudentsListContent Component", () => {
   });
 
   it("renders cards view of students when viewMode is cards", () => {
-    const html = renderToStaticMarkup(
-      <StudentsListContent {...defaultProps} viewMode="cards" />,
-    );
+    const html = renderToStaticMarkup(<StudentsListContent {...defaultProps} viewMode="cards" />);
 
     expect(html).toContain("Zayd Harith");
   });

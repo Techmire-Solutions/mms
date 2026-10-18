@@ -1,11 +1,11 @@
 import React, { lazy, Suspense, useRef } from "react";
 import { SESSIONS_MODULE_MANIFEST, type AcademicCatalogKind } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
@@ -17,7 +17,9 @@ const SessionsTerminologySettings = lazy(
   () => import("@/tenant/features/sessions/components/SessionsTerminologySettings"),
 );
 const CatalogListManager = lazy(() =>
-  import("@/components/common/catalog/CatalogListManager").then((m) => ({ default: m.CatalogListManager })),
+  import("@/components/common/catalog/CatalogListManager").then((m) => ({
+    default: m.CatalogListManager,
+  })),
 );
 
 type SessionsSetupSubTab = (typeof SESSIONS_MODULE_MANIFEST.setupSubTabs)[number];
@@ -33,7 +35,7 @@ export interface SessionsSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const SessionsSetupTier = (function SessionsSetupTier({
+export const SessionsSetupTier = function SessionsSetupTier({
   onPrefsDirtyChange,
 }: SessionsSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -43,7 +45,8 @@ export const SessionsSetupTier = (function SessionsSetupTier({
   const subTabs = useModuleSetupSubTabs({
     initialKey: SESSIONS_MODULE_MANIFEST.setupSubTabs[0],
     // Preferences and Terminology both edit `session_module_preferences` drafts.
-    isDirty: (key: string) => (key === "preferences" || key === "terminology") && prefsDirtyRef.current,
+    isDirty: (key: string) =>
+      (key === "preferences" || key === "terminology") && prefsDirtyRef.current,
     onDiscard: (key: string) => {
       if (key !== "preferences" && key !== "terminology") return;
       prefsDirtyRef.current = false;
@@ -56,7 +59,10 @@ export const SessionsSetupTier = (function SessionsSetupTier({
     onPrefsDirtyChange?.(dirty);
   };
 
-  const tabs = SESSIONS_MODULE_MANIFEST.setupSubTabs.map((key) => ({ key, label: t(`sessions.setup.${key}`) }));
+  const tabs = SESSIONS_MODULE_MANIFEST.setupSubTabs.map((key) => ({
+    key,
+    label: t(`sessions.setup.${key}`),
+  }));
   const catalog = CATALOG_BY_SUB_TAB[subTabs.sub as SessionsSetupSubTab];
 
   return (
@@ -67,7 +73,12 @@ export const SessionsSetupTier = (function SessionsSetupTier({
           {!canEditSetup ? <SetupReadOnlyMessage title={t("sessions.setup.readOnly")} /> : null}
           <Suspense fallback={<ModulePanelSuspenseFallback />}>
             {catalog ? (
-              <CatalogListManager key={catalog} kind={catalog} canWrite={canEditSetup} canDelete={canEditSetup && canDelete} />
+              <CatalogListManager
+                key={catalog}
+                kind={catalog}
+                canWrite={canEditSetup}
+                canDelete={canEditSetup && canDelete}
+              />
             ) : null}
             {subTabs.sub === "terminology" && canEditSetup ? (
               <SessionsTerminologySettings onDirtyChange={handlePrefsDirtyChange} />
@@ -92,6 +103,6 @@ export const SessionsSetupTier = (function SessionsSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default SessionsSetupTier;

@@ -6,14 +6,11 @@ import {
   FieldErrorMessage,
   FormCardTypeSelect,
   TYPE_SELECT_WIDTH,
-} from "@/components/ui/FormPrimitives";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
-import { FormListFieldCard } from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { FormListFieldCard } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  type ContactBankDetail,
-  DEFAULT_BANK_NAMES,
-} from "@mms/shared";
+import { type ContactBankDetail, DEFAULT_BANK_NAMES } from "@mms/shared";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +26,10 @@ export interface ContactBankDetailCardProps {
   isFieldRequired?: (group: string, field: string) => boolean;
   getListItemError?: (group: string, field: string, index: number) => string | undefined;
   getLocalId: (group: string, index: number) => string;
-  updateBankDetail: (idx: number, patch: Partial<ContactBankDetail> & Record<string, unknown>) => void;
+  updateBankDetail: (
+    idx: number,
+    patch: Partial<ContactBankDetail> & Record<string, unknown>,
+  ) => void;
   removeBankDetail: (idx: number) => void;
 }
 

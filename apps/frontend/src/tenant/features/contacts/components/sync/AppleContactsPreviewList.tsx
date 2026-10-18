@@ -29,7 +29,10 @@ export function AppleContactsPreviewList({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0 flex items-center gap-2">
           {fileName && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted text-xs font-medium text-foreground max-w-48 truncate" title={fileName}>
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted text-xs font-medium text-foreground max-w-48 truncate"
+              title={fileName}
+            >
               <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <span className="truncate">{fileName}</span>
             </span>
@@ -53,7 +56,9 @@ export function AppleContactsPreviewList({
             key={contactIndex}
             className="flex min-w-0 items-center justify-between gap-2 px-3 py-1.5 rounded-lg hover:bg-muted/50 text-sm"
           >
-            <span className="min-w-0 flex-1 truncate font-medium text-foreground">{getDisplayName(contact)}</span>
+            <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+              {getDisplayName(contact)}
+            </span>
             <span className="text-xs text-muted-foreground shrink-0 ms-2">
               {getPrimaryPhone(contact) || getPrimaryEmail(contact) || ""}
             </span>
@@ -72,7 +77,11 @@ export function AppleContactsPreviewList({
           disabled={importing}
           className="flex items-center gap-2 px-5 min-h-11 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 transition-colors shadow-none"
         >
-          {importing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+          {importing ? (
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          ) : (
+            <Upload className="w-4 h-4" />
+          )}
           <span>{t("contacts.sync.importCount", { count: previewList.length })}</span>
         </Button>
         <Button

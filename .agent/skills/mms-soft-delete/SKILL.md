@@ -1,10 +1,10 @@
 ---
 name: mms-soft-delete
-description: Implements, verifies, or audits the MMS Soft-Delete System — column sextuple, 3-tier index strategy, partial unique indexes, BEFORE DELETE triggers, RLS policies, dynamic query ASTs, and trash UX. Use when adding or changing soft-delete, trash directories, restore handlers, DDL migrations, or auditing deletion lifecycles. Do NOT use for ephemeral scratchpad data (hard-delete directly per mms-data-layer.md) immutable audit log events (use mms-audit-trail), or posted-journal corrections (use mms-finance-accounting).
+description: Implements, verifies, or audits the MMS Soft-Delete System — column sextuple, 3-tier index strategy, partial unique indexes, BEFORE DELETE triggers, RLS policies, dynamic query ASTs, and trash UX. Use when adding or changing soft-delete, trash directories, restore handlers, DDL migrations, or auditing deletion lifecycles. Do NOT use for ephemeral scratchpad data (hard-delete directly per mms-data-layer.md), immutable audit log events (use mms-audit-trail), or posted-journal corrections (use mms-finance-accounting).
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 ---
 
 # MMS Soft-Delete System Workflow
@@ -55,7 +55,7 @@ Financial posted ledgers are append-only/reversal-driven; see ledger controls be
 - **URL Sync & Toggle**: Mount `ModuleTrashToggle` in toolbar; sync state to `?view=trash` via `useSearchParams()`. Preserves search and active filters across toggles.
 - **Bulk Actions**: Mount `BulkSelectionRestoreAction` in trash mode via `BulkSelectionBar`.
 - **Optimistic Undo**: Non-financial single-record deletes show instant 5–10s Undo toast calling restore.
-- **Detail Drawer**: Display `EntityArchivedBanner` / `DetailDrawerArchivedBanner` (from `@/components/ui/DetailDrawerArchiveChrome`) or a module wrapper (e.g. `StudentArchivedBanner`) with deletion metadata + Restore CTA; hide Edit and communication buttons.
+- **Detail Drawer**: Display `EntityArchivedBanner` / `DetailDrawerArchivedBanner` (from `@/components/app/DetailDrawerArchiveChrome`) or a module wrapper (e.g. `StudentArchivedBanner`) with deletion metadata + Restore CTA; hide Edit and communication buttons.
 
 ## 4. Verification
 

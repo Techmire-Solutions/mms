@@ -2,10 +2,10 @@ import {
   resolvePlatformSessionPolicy,
   resolveTenantSessionPolicy,
   type SessionTimeoutPolicy,
-} from '@mms/shared';
+} from "@mms/shared";
 
 function envInt(name: string): number | undefined {
-  const v = Number.parseInt(process.env[name] ?? '', 10);
+  const v = Number.parseInt(process.env[name] ?? "", 10);
   return Number.isFinite(v) && v > 0 ? v : undefined;
 }
 
@@ -18,7 +18,7 @@ export function tenantSessionPolicy(sessionTimeoutMinutes?: number): SessionTime
   return resolveTenantSessionPolicy(
     sessionTimeoutMinutes,
     undefined,
-    envInt('MMS_SESSION_ABSOLUTE_TIMEOUT_MINUTES'),
+    envInt("MMS_SESSION_ABSOLUTE_TIMEOUT_MINUTES"),
   );
 }
 
@@ -30,8 +30,8 @@ export function tenantSessionPolicy(sessionTimeoutMinutes?: number): SessionTime
  */
 export function platformSessionPolicy(): SessionTimeoutPolicy {
   return resolvePlatformSessionPolicy(
-    envInt('PLATFORM_SESSION_IDLE_MINUTES'),
-    envInt('PLATFORM_SESSION_WARN_SECONDS'),
-    envInt('PLATFORM_SESSION_ABSOLUTE_MINUTES'),
+    envInt("PLATFORM_SESSION_IDLE_MINUTES"),
+    envInt("PLATFORM_SESSION_WARN_SECONDS"),
+    envInt("PLATFORM_SESSION_ABSOLUTE_MINUTES"),
   );
 }

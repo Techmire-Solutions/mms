@@ -9,13 +9,13 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleTierMotion", () => ({
+vi.mock("@/components/app/ModuleTierMotion", () => ({
   ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="module-tier-motion">{children}</div>
   ),
 }));
 
-vi.mock("@/components/ui/SetupReadOnlyMessage", () => ({
+vi.mock("@/components/app/SetupReadOnlyMessage", () => ({
   SetupReadOnlyMessage: ({ title }: { title: string }) => (
     <div data-testid="setup-read-only-message">{title}</div>
   ),
@@ -38,11 +38,7 @@ describe("AccountingSetupTier Component", () => {
   it("renders accounting setup tier in editable mode", () => {
     mockCanEditSetup = true;
     const html = renderToStaticMarkup(
-      <AccountingSetupTier
-        accounts={[]}
-        fiscalYears={[]}
-        onSaveFiscalYears={vi.fn()}
-      />,
+      <AccountingSetupTier accounts={[]} fiscalYears={[]} onSaveFiscalYears={vi.fn()} />,
     );
     expect(html).toContain("module-tier-motion");
     expect(html).toBeDefined();
@@ -51,11 +47,7 @@ describe("AccountingSetupTier Component", () => {
   it("renders read-only message when canEditSetup is false", () => {
     mockCanEditSetup = false;
     const html = renderToStaticMarkup(
-      <AccountingSetupTier
-        accounts={[]}
-        fiscalYears={[]}
-        onSaveFiscalYears={vi.fn()}
-      />,
+      <AccountingSetupTier accounts={[]} fiscalYears={[]} onSaveFiscalYears={vi.fn()} />,
     );
     expect(html).toContain("setup-read-only-message");
     expect(html).toContain("accounting.setup.readOnly");

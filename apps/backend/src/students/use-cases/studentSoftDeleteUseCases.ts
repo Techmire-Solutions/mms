@@ -1,15 +1,15 @@
-import type { Student } from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { activeDb, runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import type { StudentsRepository } from '../repository/studentsRepository.js';
-import { studentsRepository } from '../repository/studentsRepositoryAdapter.js';
-import { emitOutboxEvent } from '../../services/outboxEventService.js';
-import { recordModernAuditEvent } from '../../services/auditTrailService.js';
-import { buildStudentForensicSnapshot } from '../../services/forensicSnapshotService.js';
-import { nowIso } from '../../lib/softDeleteHelpers.js';
-import { cascadeSoftDeleteEnrollmentsForStudents } from '../../db/repositories/studentEnrollmentCascade.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
+import type { Student } from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { activeDb, runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import type { StudentsRepository } from "../repository/studentsRepository.js";
+import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
+import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { buildStudentForensicSnapshot } from "../../services/forensicSnapshotService.js";
+import { nowIso } from "../../lib/softDeleteHelpers.js";
+import { cascadeSoftDeleteEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
 export async function softDeleteStudentById(
   id: string,
@@ -78,8 +78,8 @@ export async function bulkSoftDeleteStudents(
       );
 
       for (const s of toSave) {
-        await emitOutboxEvent('entity.soft_deleted', {
-          entityType: 'students',
+        await emitOutboxEvent("entity.soft_deleted", {
+          entityType: "students",
           entityId: String(s.id),
           tenantId: tenant,
           deletedAt: s.deletedAt ?? now,
@@ -90,9 +90,9 @@ export async function bulkSoftDeleteStudents(
         });
         await recordModernAuditEvent({
           workspaceSubdomain: tenant,
-          tableName: 'students',
+          tableName: "students",
           recordId: String(s.id),
-          actionType: 'DELETE',
+          actionType: "DELETE",
           oldState: s,
           minimizeDelta: false,
         });
@@ -102,8 +102,8 @@ export async function bulkSoftDeleteStudents(
   });
   if (result.succeeded > 0) {
     const tenant = getRequestTenant();
-    if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: 'students' });
-    await broadcastCollection('students');
+    if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
+    await broadcastCollection("students");
   }
   return result;
 }

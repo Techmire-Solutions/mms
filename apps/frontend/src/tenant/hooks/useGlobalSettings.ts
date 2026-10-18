@@ -27,4 +27,3 @@ export function useGlobalSettings(): GlobalSettings {
 
   return settings;
 }
-

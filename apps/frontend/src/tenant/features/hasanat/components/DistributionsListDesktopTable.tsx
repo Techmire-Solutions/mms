@@ -1,5 +1,5 @@
 import React from "react";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/ui/ModuleRowActionsMenu";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DistributionsRowActions } from "@/tenant/features/hasanat/components/DistributionsRowActions";
 import { WorkBatchTable } from "@/components/common/work";
@@ -7,11 +7,13 @@ import { useDistributionsTableColumns } from "@/tenant/features/hasanat/hooks/us
 import {
   getDistributionStatuses,
   type DistributionsListContentProps,
-} from "@/tenant/features/hasanat/components/distributionsListShared";
+} from "@/tenant/features/hasanat/lib/distributionsListShared";
 
 type DistributionsListDesktopTableProps = DistributionsListContentProps;
 
-export function DistributionsListDesktopTable(props: DistributionsListDesktopTableProps): React.JSX.Element {
+export function DistributionsListDesktopTable(
+  props: DistributionsListDesktopTableProps,
+): React.JSX.Element {
   const {
     distributions,
     denoms,
@@ -57,7 +59,8 @@ export function DistributionsListDesktopTable(props: DistributionsListDesktopTab
         canDelete
           ? {
               selectedIds,
-              onSelectOne: (id) => onToggleSelectedDistribution(String(id), !selectedIdsSet.has(String(id))),
+              onSelectOne: (id) =>
+                onToggleSelectedDistribution(String(id), !selectedIdsSet.has(String(id))),
               onSelectAll: () => onToggleSelectAll(!allVisibleSelected),
               allSelected: allVisibleSelected,
               someSelected: someVisibleSelected,
@@ -84,11 +87,7 @@ export function DistributionsListDesktopTable(props: DistributionsListDesktopTab
           canRestoreRows={canRestoreRows}
           canDeleteRows={canDeleteRows}
           triggerClassName={MODULE_ROW_ACTIONS_TRIGGER_CLASS}
-          onMessage={
-            onMessage
-              ? (channel, dist) => onMessage(channel, [dist])
-              : undefined
-          }
+          onMessage={onMessage ? (channel, dist) => onMessage(channel, [dist]) : undefined}
           onChangeStatus={onChangeStatus}
           onTrashAction={onTrashAction}
         />

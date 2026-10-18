@@ -1,9 +1,9 @@
-import { sql } from 'drizzle-orm';
-import { withGlobalTenant } from '../db/tenant-context.js';
-import { logger } from '../lib/logger.js';
-import { broadcastTenantUpdate } from '../lib/livePush.js';
-import { LEADER_LOCK_SESSION_LIFECYCLE, tryAcquireLeaderLease } from '../lib/leaderElection.js';
-import { recordModernAuditEvent } from '../services/auditTrailService.js';
+import { sql } from "drizzle-orm";
+import { withGlobalTenant } from "../db/tenant-context.js";
+import { logger } from "../lib/logger.js";
+import { broadcastTenantUpdate } from "../lib/livePush.js";
+import { LEADER_LOCK_SESSION_LIFECYCLE, tryAcquireLeaderLease } from "../lib/leaderElection.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
 
 /** Hourly so each workspace flips on its own local business day. */
 const INTERVAL_MS = 60 * 60 * 1000;
@@ -26,12 +26,18 @@ export async function runSessionAutoStart(): Promise<Array<{ workspace: string; 
       RETURNING s.workspace_subdomain AS workspace, s.id
     `);
     for (const row of result.rows) {
-      await recordModernAuditEvent(tx, { workspaceSubdomain: row.workspace, tableName: 'sessions', recordId: row.id,
-        actionType: 'UPDATE', newState: { status: 'in_progress', reason: 'Auto-start on start date' } });
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: row.workspace,
+        tableName: "sessions",
+        recordId: row.id,
+        actionType: "UPDATE",
+        newState: { status: "in_progress", reason: "Auto-start on start date" },
+      });
     }
     return result.rows;
   });
-  for (const workspace of new Set(started.map((row) => row.workspace))) broadcastTenantUpdate(workspace, 'collection', 'sessions');
+  for (const workspace of new Set(started.map((row) => row.workspace)))
+    broadcastTenantUpdate(workspace, "collection", "sessions");
   return started;
 }
 
@@ -51,9 +57,10 @@ export function scheduleSessionLifecycle(isWorkerRunning: () => boolean, delayMs
       if (!lease) return;
       try {
         const started = await runSessionAutoStart();
-        if (started.length > 0) logger.info({ count: started.length }, '[SessionLifecycle] Auto-started sessions');
+        if (started.length > 0)
+          logger.info({ count: started.length }, "[SessionLifecycle] Auto-started sessions");
       } catch (err) {
-        logger.error({ err }, '[SessionLifecycle] Auto-start sweep failed');
+        logger.error({ err }, "[SessionLifecycle] Auto-start sweep failed");
       } finally {
         await lease.release();
       }

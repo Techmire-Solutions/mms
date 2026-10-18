@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: () => <div data-testid="sub-tab-bar">SubTabBar</div>,
 }));
 
@@ -21,27 +21,30 @@ vi.mock("./ResultsView", () => ({
   ResultsView: () => <div data-testid="results-view">Results View</div>,
 }));
 
-const mockExamLayout: any = {
+const mockExamLayout = {
   isColumnVisible: () => true,
   getColumnWidth: () => undefined,
   setColumnWidth: vi.fn(),
   columnRegistry: {},
   updateUserColumnLayout: vi.fn(),
   customizerLabels: {},
-};
+} as unknown as React.ComponentProps<typeof ExaminationsWorkTier>["examColumnLayout"];
 
-const mockResultsLayout: any = {
+const mockResultsLayout = {
   isColumnVisible: () => true,
   columnRegistry: {},
   updateUserColumnLayout: vi.fn(),
   customizerLabels: {},
-};
+} as unknown as React.ComponentProps<typeof ExaminationsWorkTier>["resultsColumnLayout"];
 
 describe("ExaminationsWorkTier Component", () => {
   it("renders examinations list when subtab is exams", () => {
     const html = renderToStaticMarkup(
       <ExaminationsWorkTier
-        tabs={[{ id: "exams", label: "Exams" }, { id: "results", label: "Results" }]}
+        tabs={[
+          { id: "exams", label: "Exams" },
+          { id: "results", label: "Results" },
+        ]}
         activeSubTab="exams"
         showDeleted={false}
         listLoadFailed={false}
@@ -72,7 +75,10 @@ describe("ExaminationsWorkTier Component", () => {
   it("renders results view when subtab is results", () => {
     const html = renderToStaticMarkup(
       <ExaminationsWorkTier
-        tabs={[{ id: "exams", label: "Exams" }, { id: "results", label: "Results" }]}
+        tabs={[
+          { id: "exams", label: "Exams" },
+          { id: "results", label: "Results" },
+        ]}
         activeSubTab="results"
         showDeleted={false}
         listLoadFailed={false}

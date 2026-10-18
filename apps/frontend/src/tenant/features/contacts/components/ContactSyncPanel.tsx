@@ -1,11 +1,11 @@
 import React from "react";
 import { Info } from "lucide-react";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Contact } from "@mms/shared";
 import { GoogleContactsPanel } from "./sync/GoogleContactsPanel";
 import { AppleContactsPanel } from "./sync/AppleContactsPanel";
-import { ModuleSetupContent } from "@/components/ui/ModuleSetupContent";
+import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export interface ContactSyncPanelProps {
   onImport: (contacts: Contact[]) => void | Promise<void>;

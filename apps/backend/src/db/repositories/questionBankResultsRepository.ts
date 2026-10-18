@@ -1,5 +1,5 @@
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type QuestionBankResult } from '@mms/shared';
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type QuestionBankResult } from "@mms/shared";
 import {
   questions,
   questionCategories,
@@ -12,9 +12,9 @@ import {
   testSectionQuestions,
   assessmentResults,
   assessmentAnswers,
-} from '../schema.js';
-import { withTenant, withTenantRead, type TenantTransaction } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+} from "../schema.js";
+import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type ResultRow = typeof assessmentResults.$inferSelect;
 
@@ -63,7 +63,7 @@ async function syncResultChildren(
     workspaceSubdomain: subdomain,
     resultId: record.id,
     questionId: qId,
-    studentAnswer: record.answers?.[qId] ?? '',
+    studentAnswer: record.answers?.[qId] ?? "",
     score: String(record.scores?.[qId] ?? 0),
   }));
   if (answerRows.length > 0) {
@@ -91,7 +91,12 @@ export async function listResultsByWorkspace(
         deletionReason: assessmentResults.deletionReason,
       })
       .from(assessmentResults)
-      .where(and(eq(assessmentResults.workspaceSubdomain, subdomain), isNull(assessmentResults.deletedAt)))
+      .where(
+        and(
+          eq(assessmentResults.workspaceSubdomain, subdomain),
+          isNull(assessmentResults.deletedAt),
+        ),
+      )
       .limit(limit)
       .offset(offset);
     if (rows.length === 0) return [];
@@ -126,12 +131,19 @@ export async function listResultsByWorkspace(
     }
 
     return rows.map((r) =>
-      resultRowToRecord(r as unknown as ResultRow, answersByRes.get(r.id) ?? {}, scoresByRes.get(r.id) ?? {}),
+      resultRowToRecord(
+        r as unknown as ResultRow,
+        answersByRes.get(r.id) ?? {},
+        scoresByRes.get(r.id) ?? {},
+      ),
     );
   });
 }
 
-export async function findResultById(tenant: string, id: string): Promise<QuestionBankResult | null> {
+export async function findResultById(
+  tenant: string,
+  id: string,
+): Promise<QuestionBankResult | null> {
   const cleanId = id?.trim();
   if (!cleanId) return null;
   const subdomain = tenant.trim().toLowerCase();
@@ -148,7 +160,9 @@ export async function findResultById(tenant: string, id: string): Promise<Questi
         deletionReason: assessmentResults.deletionReason,
       })
       .from(assessmentResults)
-      .where(and(eq(assessmentResults.workspaceSubdomain, subdomain), eq(assessmentResults.id, cleanId)))
+      .where(
+        and(eq(assessmentResults.workspaceSubdomain, subdomain), eq(assessmentResults.id, cleanId)),
+      )
       .limit(1);
     const row = rows[0];
     if (!row) return null;
@@ -183,14 +197,14 @@ export async function findResultById(tenant: string, id: string): Promise<Questi
 export async function findResultsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<QuestionBankResult[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(assessmentResults.deletedAt)
       : isAll
@@ -250,7 +264,11 @@ export async function findResultsByIds(
     }
 
     return rows.map((r) =>
-      resultRowToRecord(r as unknown as ResultRow, answersByRes.get(r.id) ?? {}, scoresByRes.get(r.id) ?? {}),
+      resultRowToRecord(
+        r as unknown as ResultRow,
+        answersByRes.get(r.id) ?? {},
+        scoresByRes.get(r.id) ?? {},
+      ),
     );
   });
 }
@@ -265,7 +283,7 @@ export async function saveResult(tenant: string, record: QuestionBankResult): Pr
         workspaceSubdomain: subdomain,
         testId: record.testId,
         studentId: record.studentId,
-        studentName: record.studentName ?? '',
+        studentName: record.studentName ?? "",
         submittedAt: record.submittedAt,
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
@@ -277,7 +295,7 @@ export async function saveResult(tenant: string, record: QuestionBankResult): Pr
         set: {
           testId: record.testId,
           studentId: record.studentId,
-          studentName: record.studentName ?? '',
+          studentName: record.studentName ?? "",
           submittedAt: record.submittedAt,
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
@@ -300,13 +318,16 @@ function flattenAnswerRows(subdomain: string, records: QuestionBankResult[]) {
       workspaceSubdomain: subdomain,
       resultId: record.id,
       questionId: qId,
-      studentAnswer: record.answers?.[qId] ?? '',
-      score: record.scores?.[qId] != null ? String(record.scores[qId]) : '0',
+      studentAnswer: record.answers?.[qId] ?? "",
+      score: record.scores?.[qId] != null ? String(record.scores[qId]) : "0",
     }));
   });
 }
 
-export async function bulkSaveResults(tenant: string, records: QuestionBankResult[]): Promise<void> {
+export async function bulkSaveResults(
+  tenant: string,
+  records: QuestionBankResult[],
+): Promise<void> {
   if (records.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
 
@@ -327,7 +348,7 @@ export async function bulkSaveResults(tenant: string, records: QuestionBankResul
           workspaceSubdomain: subdomain,
           testId: record.testId,
           studentId: record.studentId,
-          studentName: record.studentName ?? '',
+          studentName: record.studentName ?? "",
           submittedAt: record.submittedAt,
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
@@ -365,7 +386,10 @@ export async function bulkSaveResults(tenant: string, records: QuestionBankResul
   });
 }
 
-export async function replaceResultsForWorkspace(tenant: string, records: QuestionBankResult[]): Promise<void> {
+export async function replaceResultsForWorkspace(
+  tenant: string,
+  records: QuestionBankResult[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
 
   const dedupedMap = new Map<string, QuestionBankResult>();
@@ -386,7 +410,7 @@ export async function replaceResultsForWorkspace(tenant: string, records: Questi
         workspaceSubdomain: subdomain,
         testId: record.testId,
         studentId: record.studentId,
-        studentName: record.studentName ?? '',
+        studentName: record.studentName ?? "",
         submittedAt: record.submittedAt,
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
@@ -407,7 +431,9 @@ export async function deleteQuestionBankByWorkspace(workspaceSubdomain: string):
   await withTenant(subdomain, async (tx) => {
     await tx.delete(assessmentAnswers).where(eq(assessmentAnswers.workspaceSubdomain, subdomain));
     await tx.delete(assessmentResults).where(eq(assessmentResults.workspaceSubdomain, subdomain));
-    await tx.delete(testSectionQuestions).where(eq(testSectionQuestions.workspaceSubdomain, subdomain));
+    await tx
+      .delete(testSectionQuestions)
+      .where(eq(testSectionQuestions.workspaceSubdomain, subdomain));
     await tx.delete(testSections).where(eq(testSections.workspaceSubdomain, subdomain));
     await tx.delete(testQuestions).where(eq(testQuestions.workspaceSubdomain, subdomain));
     await tx.delete(tests).where(eq(tests.workspaceSubdomain, subdomain));

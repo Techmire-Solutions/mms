@@ -1,12 +1,12 @@
-import React from 'react';
-import { RotateCcw, Trash2 } from 'lucide-react';
-import { formatDate } from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { StatusBadge, type StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
-import { useTranslation } from '@/hooks/useTranslation';
-import { WorkBatchTable, type WorkBatchTableColumn } from '@/components/common/work';
-import type { Payment } from '@/lib/data/financeData';
+import React from "react";
+import { RotateCcw, Trash2 } from "lucide-react";
+import { formatDate } from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/app/EmptyState";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { useTranslation } from "@/hooks/useTranslation";
+import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
+import type { Payment } from "@/lib/data/financeData";
 
 export interface PaymentsListDesktopTableProps {
   payments: Payment[];
@@ -94,7 +94,9 @@ export function PaymentsListDesktopTable({
         id: "method",
         label: t("finance.columns.method"),
         noWrap: true,
-        render: (payment: Payment) => <StatusBadge status={payment.method} config={methodConfig} size="sm" />,
+        render: (payment: Payment) => (
+          <StatusBadge status={payment.method} config={methodConfig} size="sm" />
+        ),
       });
     }
 

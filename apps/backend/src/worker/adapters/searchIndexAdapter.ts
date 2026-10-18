@@ -1,4 +1,4 @@
-import { logger } from '../../lib/logger.js';
+import { logger } from "../../lib/logger.js";
 
 /**
  * Interface contract for the search index adapter.
@@ -17,11 +17,7 @@ export interface SearchIndexAdapter {
    * Add or replace a document in the search index.
    * Called when `entity.restored` is processed.
    */
-  indexDocument(
-    entityType: string,
-    entityId: string,
-    doc: Record<string, unknown>,
-  ): Promise<void>;
+  indexDocument(entityType: string, entityId: string, doc: Record<string, unknown>): Promise<void>;
 }
 
 /**
@@ -35,13 +31,13 @@ export const defaultSearchAdapter: SearchIndexAdapter = {
   async deleteDocument(entityType, entityId) {
     logger.info(
       { entityType, entityId },
-      '[SearchAdapter] STUB: would delete document from search index',
+      "[SearchAdapter] STUB: would delete document from search index",
     );
   },
   async indexDocument(entityType, entityId, doc) {
     logger.info(
       { entityType, entityId, docKeys: Object.keys(doc) },
-      '[SearchAdapter] STUB: would index document in search index',
+      "[SearchAdapter] STUB: would index document in search index",
     );
   },
 };

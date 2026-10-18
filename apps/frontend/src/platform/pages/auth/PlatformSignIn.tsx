@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PlatformAuthLayout from "@/platform/components/PlatformAuthLayout";
 import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
 import { useSignInCredentialsForm } from "@/components/entry/useSignInCredentialsForm";
-import { createEmptyOtp, isOtpComplete } from "@/components/ui/OtpInput";
+import { createEmptyOtp, isOtpComplete } from "@shared/ui";
 import { useResendCountdown } from "@/hooks/useResendCountdown";
 import { usePlatformAuth, type PlatformLoginOutcome } from "@/platform/lib/PlatformAuthContext";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
@@ -17,12 +17,8 @@ type SignInStep = "credentials" | "twoFactor";
 export default function PlatformSignIn(): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const {
-    platformLogin,
-    platformVerify2FA,
-    platformResend2FA,
-    isPlatformLoginSubmitting,
-  } = usePlatformAuth();
+  const { platformLogin, platformVerify2FA, platformResend2FA, isPlatformLoginSubmitting } =
+    usePlatformAuth();
 
   const [step, setStep] = useState<SignInStep>("credentials");
   const [challengeId, setChallengeId] = useState("");
@@ -107,9 +103,7 @@ export default function PlatformSignIn(): React.JSX.Element {
   };
 
   const subtitle =
-    step === "twoFactor"
-      ? t("platform.twoFactorSubtitle")
-      : t("platform.signInSubtitle");
+    step === "twoFactor" ? t("platform.twoFactorSubtitle") : t("platform.signInSubtitle");
 
   return (
     <>

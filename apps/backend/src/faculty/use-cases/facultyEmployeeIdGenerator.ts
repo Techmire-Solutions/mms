@@ -1,11 +1,8 @@
-import { eq } from 'drizzle-orm';
-import {
-  formatDeterministicEmployeeId,
-  DEFAULT_FACULTY_SETTINGS,
-} from '@mms/shared';
-import { facultySetupConfig } from '../../db/schema/faculty.js';
-import { withTenant, type TenantTransaction } from '../../db/tenant-context.js';
-import type { NextEmployeeIdResult } from './facultyEmployeeIdService.js';
+import { eq } from "drizzle-orm";
+import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
+import { facultySetupConfig } from "../../db/schema/faculty.js";
+import { withTenant, type TenantTransaction } from "../../db/tenant-context.js";
+import type { NextEmployeeIdResult } from "./facultyEmployeeIdService.js";
 
 /**
  * Atomically generates the next faculty employee ID using SELECT ... FOR UPDATE on faculty_setup_config.
@@ -20,15 +17,15 @@ export async function generateNextFacultyEmployeeId(
   const executeAtomicIncrement = async (tx: TenantTransaction): Promise<NextEmployeeIdResult> => {
     const currentYear = new Date().getFullYear();
 
-    if (!tx || typeof tx.select !== 'function') {
+    if (!tx || typeof tx.select !== "function") {
       const year = currentYear;
       const employeeId = formatDeterministicEmployeeId(
         1,
         {
           prefix: DEFAULT_FACULTY_SETTINGS.employeeIdPrefix,
-          yearFormat: 'YYYY',
+          yearFormat: "YYYY",
           sequenceDigits: 4,
-          delimiter: '',
+          delimiter: "",
         },
         new Date(year, 0, 1),
       );
@@ -53,7 +50,7 @@ export async function generateNextFacultyEmployeeId(
       .select(configProjection)
       .from(facultySetupConfig)
       .where(eq(facultySetupConfig.workspaceSubdomain, subdomain))
-      .for('update');
+      .for("update");
 
     if (!row) {
       await tx
@@ -74,11 +71,12 @@ export async function generateNextFacultyEmployeeId(
         .select(configProjection)
         .from(facultySetupConfig)
         .where(eq(facultySetupConfig.workspaceSubdomain, subdomain))
-        .for('update');
+        .for("update");
     }
 
     const prefix = row?.prefix ?? DEFAULT_FACULTY_SETTINGS.employeeIdPrefix;
-    const yearFormat = (row?.yearFormat ?? DEFAULT_FACULTY_SETTINGS.employeeIdYearFormat) as 'YYYY' | 'YY' | 'NONE';
+    const yearFormat = (row?.yearFormat ?? DEFAULT_FACULTY_SETTINGS.employeeIdYearFormat) as
+      "YYYY" | "YY" | "NONE";
     const sequenceDigits = row?.sequenceDigits ?? DEFAULT_FACULTY_SETTINGS.employeeIdSequenceDigits;
     const delimiter = row?.delimiter ?? DEFAULT_FACULTY_SETTINGS.employeeIdDelimiter;
     const lastYear = row?.lastYear ?? currentYear;
@@ -109,7 +107,7 @@ export async function generateNextFacultyEmployeeId(
       nextSeq,
       {
         prefix,
-        yearFormat: yearFormat === 'YY' ? 'YY' : 'YYYY',
+        yearFormat: yearFormat === "YY" ? "YY" : "YYYY",
         sequenceDigits,
         delimiter,
       },

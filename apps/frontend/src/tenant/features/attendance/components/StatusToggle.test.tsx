@@ -20,11 +20,9 @@ vi.mock("@/hooks/useStandardModuleConfig", () => ({
 
 describe("StatusToggle Component", () => {
   it("renders status buttons and toggles", () => {
-    const html = renderToStaticMarkup(
-      <StatusToggle value="present" onChange={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<StatusToggle value="present" onChange={vi.fn()} />);
 
-    expect(html).toContain("aria-pressed=\"true\"");
+    expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("P");
     expect(html).toContain("A");
   });

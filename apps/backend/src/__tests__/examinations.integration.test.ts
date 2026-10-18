@@ -1,25 +1,34 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildApp } from '../app.js';
-import { adminToken, assistantTeacherToken, guardianToken, teacherToken } from './helpers/tokens.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { buildApp } from "../app.js";
+import {
+  adminToken,
+  assistantTeacherToken,
+  guardianToken,
+  teacherToken,
+} from "./helpers/tokens.js";
 
-vi.mock('../db/database.js', () => ({
+vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock('../services/auth/authArtifactService.js', () => ({
+vi.mock("../services/auth/authArtifactService.js", () => ({
   purgeExpiredAuthArtifacts: vi.fn().mockResolvedValue(undefined),
   putAuthArtifact: vi.fn(),
   takeAuthArtifact: vi.fn(),
 }));
 
-vi.mock('../services/workspaceService.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../services/workspaceService.js')>();
+vi.mock("../services/workspaceService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/workspaceService.js")>();
   return {
     ...actual,
-    getWorkspaceBySubdomain: vi.fn().mockImplementation(async (subdomain: string) =>
-      subdomain === 'demo' ? { id: 'ws-demo', subdomain: 'demo', madrasaName: 'Demo Madrasa', enabled: true } : null,
-    ),
+    getWorkspaceBySubdomain: vi
+      .fn()
+      .mockImplementation(async (subdomain: string) =>
+        subdomain === "demo"
+          ? { id: "ws-demo", subdomain: "demo", madrasaName: "Demo Madrasa", enabled: true }
+          : null,
+      ),
   };
 });
 
@@ -27,7 +36,7 @@ const mockLoadExams = vi.fn();
 const mockLoadExamsPage = vi.fn();
 const mockLoadExaminationsCommandMetrics = vi.fn();
 
-vi.mock('../examinations/use-cases/examinationsUseCases.js', () => ({
+vi.mock("../examinations/use-cases/examinationsUseCases.js", () => ({
   examinationsUseCases: {
     loadExams: (...args: unknown[]) => mockLoadExams(...args),
     loadExamsPage: (...args: unknown[]) => mockLoadExamsPage(...args),
@@ -40,15 +49,16 @@ vi.mock('../examinations/use-cases/examinationsUseCases.js', () => ({
     restoreExamById: vi.fn(),
     bulkSoftDeleteExams: vi.fn(),
     bulkRestoreExams: vi.fn(),
-    loadExaminationsCommandMetrics: (...args: unknown[]) => mockLoadExaminationsCommandMetrics(...args),
+    loadExaminationsCommandMetrics: (...args: unknown[]) =>
+      mockLoadExaminationsCommandMetrics(...args),
     loadExaminationsWidgetAggregates: vi.fn().mockResolvedValue({}),
     loadExaminationsReportAggregates: vi.fn().mockResolvedValue({}),
   },
 }));
 
-describe('examinations REST routes integration', () => {
+describe("examinations REST routes integration", () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_SECRET = "test-secret";
     mockLoadExams.mockReset().mockResolvedValue([]);
   });
 
@@ -56,25 +66,25 @@ describe('examinations REST routes integration', () => {
     vi.restoreAllMocks();
   });
 
-  it('GET /api/examinations/exams requires auth header', async () => {
+  it("GET /api/examinations/exams requires auth header", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/examinations/exams',
-      headers: { host: 'demo.localhost' },
+      method: "GET",
+      url: "/api/examinations/exams",
+      headers: { host: "demo.localhost" },
     });
     expect(res.statusCode).toBe(401);
     await app.close();
   });
 
-  it('GET /api/examinations/exams returns 200 for authorized teacher', async () => {
+  it("GET /api/examinations/exams returns 200 for authorized teacher", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/examinations/exams',
+      method: "GET",
+      url: "/api/examinations/exams",
       headers: {
-        host: 'demo.localhost',
-        authorization: `Bearer ${teacherToken(app, { name: 'Teacher User' })}`,
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app, { name: "Teacher User" })}`,
       },
     });
     expect(res.statusCode).toBe(200);
@@ -83,9 +93,9 @@ describe('examinations REST routes integration', () => {
   });
 });
 
-describe('examinations exams pagination', () => {
+describe("examinations exams pagination", () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_SECRET = "test-secret";
     mockLoadExamsPage.mockReset().mockResolvedValue({
       exams: [],
       total: 0,
@@ -99,9 +109,9 @@ describe('examinations exams pagination', () => {
     vi.restoreAllMocks();
   });
 
-  it('GET /api/examinations/exams returns paginated shape and forwards filters', async () => {
+  it("GET /api/examinations/exams returns paginated shape and forwards filters", async () => {
     mockLoadExamsPage.mockResolvedValueOnce({
-      exams: [{ id: 'e-1', name: 'Midterm', subject: 'Quran', status: 'upcoming' }],
+      exams: [{ id: "e-1", name: "Midterm", subject: "Quran", status: "upcoming" }],
       total: 1,
       page: 1,
       limit: 10,
@@ -109,16 +119,16 @@ describe('examinations exams pagination', () => {
     });
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/examinations/exams?page=1&limit=10&search=mid&status=upcoming',
+      method: "GET",
+      url: "/api/examinations/exams?page=1&limit=10&search=mid&status=upcoming",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({
-      exams: [{ id: 'e-1', name: 'Midterm', subject: 'Quran', status: 'upcoming' }],
+      exams: [{ id: "e-1", name: "Midterm", subject: "Quran", status: "upcoming" }],
       total: 1,
       page: 1,
       limit: 10,
@@ -128,17 +138,17 @@ describe('examinations exams pagination', () => {
       expect.objectContaining({
         page: 1,
         limit: 10,
-        search: 'mid',
-        status: 'upcoming',
+        search: "mid",
+        status: "upcoming",
         includeDeleted: false,
       }),
     );
     await app.close();
   });
 
-  it('includeDeleted=true forwards deleted-only request for admins', async () => {
+  it("includeDeleted=true forwards deleted-only request for admins", async () => {
     mockLoadExamsPage.mockResolvedValueOnce({
-      exams: [{ id: 'e-2', name: 'Old Exam', deletedAt: '2026-07-27T12:00:00.000Z' }],
+      exams: [{ id: "e-2", name: "Old Exam", deletedAt: "2026-07-27T12:00:00.000Z" }],
       total: 1,
       page: 1,
       limit: 12,
@@ -146,27 +156,29 @@ describe('examinations exams pagination', () => {
     });
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/examinations/exams?page=1&includeDeleted=true',
+      method: "GET",
+      url: "/api/examinations/exams?page=1&includeDeleted=true",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${adminToken(app)}`,
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockLoadExamsPage).toHaveBeenCalledWith(expect.objectContaining({ includeDeleted: true }));
-    expect(typeof res.json().exams[0]?.deletedAt).toBe('string');
+    expect(mockLoadExamsPage).toHaveBeenCalledWith(
+      expect.objectContaining({ includeDeleted: true }),
+    );
+    expect(typeof res.json().exams[0]?.deletedAt).toBe("string");
     expect(res.json().exams[0]?.deletedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     await app.close();
   });
 
-  it('forbids includeDeleted for roles without delete access', async () => {
+  it("forbids includeDeleted for roles without delete access", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/examinations/exams?page=1&includeDeleted=true',
+      method: "GET",
+      url: "/api/examinations/exams?page=1&includeDeleted=true",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${assistantTeacherToken(app)}`,
       },
     });
@@ -176,9 +188,9 @@ describe('examinations exams pagination', () => {
   });
 });
 
-describe('examinations metrics REST', () => {
+describe("examinations metrics REST", () => {
   beforeEach(() => {
-    process.env.JWT_SECRET = 'test-secret';
+    process.env.JWT_SECRET = "test-secret";
     mockLoadExaminationsCommandMetrics.mockReset().mockResolvedValue({
       total: 3,
       upcoming: 1,
@@ -196,14 +208,14 @@ describe('examinations metrics REST', () => {
     vi.restoreAllMocks();
   });
 
-  it('GET /api/examinations/metrics loads SQL metrics for authorized roles', async () => {
+  it("GET /api/examinations/metrics loads SQL metrics for authorized roles", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/examinations/metrics',
+      method: "GET",
+      url: "/api/examinations/metrics",
       headers: {
-        host: 'demo.localhost',
-        authorization: `Bearer ${teacherToken(app, { name: 'Teacher User' })}`,
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app, { name: "Teacher User" })}`,
       },
     });
     expect(res.statusCode).toBe(200);
@@ -224,17 +236,17 @@ describe('examinations metrics REST', () => {
     await app.close();
   });
 
-  it('GET /api/examinations/metrics returns 403 for roles without read access', async () => {
+  it("GET /api/examinations/metrics returns 403 for roles without read access", async () => {
     const app = await buildApp();
     const res = await app.inject({
-      method: 'GET',
-      url: '/api/examinations/metrics',
+      method: "GET",
+      url: "/api/examinations/metrics",
       headers: {
-        host: 'demo.localhost',
+        host: "demo.localhost",
         authorization: `Bearer ${guardianToken(app, {
-          id: 'u-unauthorized',
-          email: 'unauth@test.com',
-          name: 'Unauthorized',
+          id: "u-unauthorized",
+          email: "unauth@test.com",
+          name: "Unauthorized",
         })}`,
       },
     });

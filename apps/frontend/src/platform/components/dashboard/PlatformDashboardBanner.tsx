@@ -4,9 +4,9 @@ import { Radio, Building2, ArrowUpRight, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { Button } from "@/components/ui/button";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@shared/ui";
+import { WORK_SURFACE } from "@shared/ui";
+import { Badge } from "@shared/ui";
 import { itemVariants } from "@/platform/lib/animations";
 import { ROUTES } from "@/lib/config/routes";
 import { cn } from "@/lib/utils";
@@ -36,14 +36,19 @@ export function PlatformDashboardBanner({
     >
       <div className="relative z-elevated space-y-4">
         <div className="flex flex-wrap items-center gap-2.5">
-          <Badge tone="primary" pill size="md" className="font-bold uppercase tracking-wider shadow-2xs">
+          <Badge
+            tone="primary"
+            pill
+            size="md"
+            className="font-bold uppercase tracking-wider shadow-2xs"
+          >
             {t("platform.consoleTitle")}
           </Badge>
           <Badge tone="success" pill size="md" dot pulse className="font-semibold shadow-2xs">
             {t("platform.statusOperational")}
           </Badge>
           <span className="text-xs font-mono text-muted-foreground ms-auto hidden sm:inline-flex items-center gap-1.5 bg-muted/60 px-2.5 py-1 rounded-lg border border-border/60">
-            <Radio className="w-3 h-3 text-success" /> {t('platform.banner.realtimePulse')}
+            <Radio className="w-3 h-3 text-success" /> {t("platform.banner.realtimePulse")}
           </span>
         </div>
 
@@ -55,9 +60,7 @@ export function PlatformDashboardBanner({
               })}
             </h1>
             <p className="text-sm font-medium text-muted-foreground max-w-xl leading-relaxed mt-1 text-pretty">
-              {isSuperUser
-                ? t("platform.superConsoleDesc")
-                : t("platform.operatorConsoleDesc")}
+              {isSuperUser ? t("platform.superConsoleDesc") : t("platform.operatorConsoleDesc")}
             </p>
           </div>
 

@@ -10,15 +10,16 @@ export {
   bulkSoftDeleteContactsSql,
   bulkRestoreContactsSql,
   replaceContactsForWorkspace,
-} from './contactRepositoryCore.js';
-export { listContactsPage } from './contactRepositoryList.js';
-export type { ContactUniqueLookupValues } from './contactRepositoryLookup.js';
+} from "./contactRepositoryCore.js";
+export { listContactsPage } from "./contactRepositoryList.js";
+export type { ContactUniqueLookupValues } from "./contactRepositoryLookup.js";
 export {
   findExistingNormalizedContactNames,
-  findActiveContactsMatchingUniqueValues,} from './contactRepositoryLookup.js';
-export type { ContactDuplicateCandidateKeys } from './contactRepositoryDuplicates.js';
+  findActiveContactsMatchingUniqueValues,
+} from "./contactRepositoryLookup.js";
+export type { ContactDuplicateCandidateKeys } from "./contactRepositoryDuplicates.js";
 export {
   findContactDuplicateCandidateIds,
   findContactDuplicateBlockedIds,
   reparentContactReferences,
-} from './contactRepositoryDuplicates.js';
+} from "./contactRepositoryDuplicates.js";

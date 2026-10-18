@@ -1,7 +1,7 @@
-import { RELATIONAL_REPLACE_MAPPING } from './relationalReplaceMapping.js';
+import { RELATIONAL_REPLACE_MAPPING } from "./relationalReplaceMapping.js";
 
 /** Credential columns that must never leave the server in a snapshot payload. */
-const CREDENTIAL_FIELDS = ['passwordHash'] as const;
+const CREDENTIAL_FIELDS = ["passwordHash"] as const;
 
 // Rows are freshly pulled from each table solely for the backup snapshot and are
 // not shared elsewhere, so remove credential columns in place — avoids cloning
@@ -9,7 +9,7 @@ const CREDENTIAL_FIELDS = ['passwordHash'] as const;
 export function stripCredentials(rows: unknown[]): unknown[] {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    if (!row || typeof row !== 'object' || Array.isArray(row)) continue;
+    if (!row || typeof row !== "object" || Array.isArray(row)) continue;
     const rec = row as Record<string, unknown>;
     for (const field of CREDENTIAL_FIELDS) {
       delete rec[field];
@@ -36,7 +36,7 @@ export async function loadRelationalSnapshotCollections(
 
     const repoModule = (await import(mapping.importPath)) as Record<string, unknown>;
     const listRows = repoModule[mapping.snapshotFnName];
-    if (typeof listRows !== 'function') {
+    if (typeof listRows !== "function") {
       throw new Error(
         `Backup snapshot helper "${mapping.snapshotFnName}" missing for collection "${logicalKey}"`,
       );

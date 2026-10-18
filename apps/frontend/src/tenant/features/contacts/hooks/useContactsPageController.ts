@@ -1,11 +1,9 @@
 import { useCallback } from "react";
-import { CONTACTS_MODULE_MANIFEST, resolveModuleTierTab } from "@mms/shared";
-import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactColumns } from "@/lib/contexts/ContactConfigContext";
 import { useGoogleContactsOAuthListener } from "@/lib/contacts/googleContactsOAuthListener";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
-import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { useModuleTierPageNav } from "@/tenant/hooks/useModuleTierPageNav";
 import { useContactsConflictPanel } from "@/tenant/features/contacts/hooks/useContactsConflictPanel";
 import { useContactsCrudActions } from "@/tenant/features/contacts/hooks/useContactsCrudActions";
 import { useContactsDirectory } from "@/tenant/features/contacts/hooks/useContactsDirectory";
@@ -29,28 +27,25 @@ export function useContactsPageController() {
     canWrite,
     canDelete,
     canExport,
-    canReports: canViewReports,
-    canViewSetup,
     canEditSetup,
-  } = useModulePermissions(CONTACTS_MODULE_MANIFEST);
+    visibleTabs: visibleTopTabs,
+    setActiveTab,
+    effectiveTab,
+  } = useModuleTierPageNav({
+    manifest: CONTACTS_MODULE_MANIFEST,
+    workLabelKey: "nav.contacts",
+    storageKey: "contacts_active_tab",
+  });
   const bulkActions = CONTACTS_MODULE_MANIFEST.work.bulkActions;
   const tableColumns = useContactColumns();
   const { t } = useTranslation();
   const crud = useContactsCrudActions();
   const { logExportAudit, handleError } = crud;
 
-  const visibleTopTabs = useFilteredModuleTierTabs({
-    canViewSetup,
-    canViewReports,
-    workLabelKey: "nav.contacts",
-  });
   const overlay = useContactsPageOverlayState();
   const { pendingCount, conflictCount, flushing, flush, openConflictReview } =
     useContactsConflictPanel(overlay.setConflictPanelOpen);
   const messaging = useContactsMessagingActions();
-
-  const [activeTab, setActiveTab] = usePersistedTabState<string>("contacts_active_tab", "work");
-  const effectiveTab = resolveModuleTierTab(activeTab, visibleTopTabs.map((tab) => tab.id));
 
   const handleGoogleContactsOAuth = useCallback(() => {
     setActiveTab("setup");

@@ -18,16 +18,19 @@ mms/
 └── .agent/             # Tri-mirrored agent configuration (.agent, .cursor, .claude)
 ```
 
+Repository documentation is indexed in [`docs/README.md`](docs/README.md); decisions live in
+[`docs/adr/`](docs/adr/).
+
 ### Layer Constraints & Responsibilities
 
-| Layer | Path | Responsibilities & Boundaries |
-|-------|------|-------------------------------|
-| **Shared Contracts (SSOT)** | `packages/shared/` | Strict Zod 4 DTOs, TypeScript interfaces, module manifests, pure math/formatting utils. **Zero** DOM, React, Fastify, or SQL dependencies. |
-| **Frontend UI Primitives** | `apps/frontend/src/components/ui/` | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports. |
-| **Frontend Shared Lib** | `apps/frontend/src/lib/` | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting. |
+| Layer                        | Path                                          | Responsibilities & Boundaries                                                                                                                    |
+| ---------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Shared Contracts (SSOT)**  | `packages/shared/`                            | Strict Zod 4 DTOs, TypeScript interfaces, module manifests, pure math/formatting utils. **Zero** DOM, React, Fastify, or SQL dependencies.       |
+| **Frontend UI Primitives**   | `apps/frontend/src/components/ui/`            | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports.                                        |
+| **Frontend Shared Lib**      | `apps/frontend/src/lib/`                      | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting.                                                  |
 | **Frontend Tenant Features** | `apps/frontend/src/tenant/features/{module}/` | Module pages, presentation sub-components, custom hooks. Cross-feature imports are forbidden; communication occurs via facades or `@mms/shared`. |
-| **Backend API Routes** | `apps/backend/src/routes/` | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots. |
-| **Backend Clean Domain** | `apps/backend/src/{module}/` | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters). |
+| **Backend API Routes**       | `apps/backend/src/routes/`                    | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots.                                                   |
+| **Backend Clean Domain**     | `apps/backend/src/{module}/`                  | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters).                                    |
 
 ---
 
@@ -36,6 +39,7 @@ mms/
 MMS enforces end-to-end contract type safety through `@ts-rest` contracts and Fastify REST endpoints backed by Zod schemas in `@mms/shared`.
 
 ### Core API Namespaces
+
 - **Tenant Auth & Session:** `/api/auth/*` — Session cookies, password login, OTP verification, 2FA, tenant switching.
 - **Tenant Domain Modules:**
   - `/api/students/*` — Student directory, admissions, enrollments, guardianship.
@@ -69,7 +73,7 @@ MMS uses React 19 with a strict separation of concerns:
 1. **Server State (SSOT):** Managed exclusively by TanStack Query v5 (`@tanstack/react-query`). Query options factories and tuple query keys ensure predictable cache invalidation and background refetching.
 2. **Local Client State:** Lightweight Zustand 5 stores for transient UI states (sidebar toggles, modal dialogs, search filters).
 3. **Presentation vs Logic Decoupling:**
-   - Source files must remain under the **200-line hard cap**.
+   - Source files must remain under the **300-line hard cap** (ratcheted by `pnpm run check:code-norms`; prefer ≤220 for new shells).
    - UI components receive render props and trigger callbacks; all data queries, cache invalidations, and computations live in custom hooks.
 4. **BiDi & Semantic Styling:** Tailwind CSS v4 design tokens (`bg-primary`, `text-foreground`, `border-success`, `bg-destructive`) and logical spacing (`ms-`, `me-`, `ps-`, `pe-`) support right-to-left (Arabic/Urdu) and left-to-right (English) layouts.
 
@@ -82,18 +86,24 @@ Backend modules follow Clean Architecture principles:
 ```
 apps/backend/src/{module}/
 ├── use-cases/
-│   ├── {module}UseCases.ts          # Composition root & DI wiring
-│   ├── create{Entity}UseCase.ts     # Business logic interactor
-│   └── get{Entity}UseCase.ts
+│   ├── {module}UseCases.ts          # Composition root (factory + singleton) & DI wiring
+│   └── {concern}UseCases.ts         # Business logic interactors
 └── repository/
-    ├── {module}Repository.ts        # Storage interface definition
-    └── {module}RepositoryAdapter.ts # Drizzle ORM implementation
+    ├── {module}Repository.ts        # Port: storage interface (types only)
+    └── {module}RepositoryAdapter.ts # Adapter: binds the port to db/repositories SQL
 ```
 
+- **Ports & Adapters over `db/repositories/`:** the real Drizzle/SQL lives in
+  `apps/backend/src/db/repositories/**` — the only layer that imports `drizzle-orm`. The domain
+  `{module}/repository/{module}RepositoryAdapter.ts` is a thin binding of that SQL to the module's port
+  (it contains no SQL itself). The enforced direction is
+  `routes → use-cases → port → adapter → db/repositories`. Route files must not import
+  `db/repositories`/`drizzle-orm` (`check:backend-boundaries`, baseline 0); use-case/service storage
+  imports are ratcheted down by `check:backend-structure`.
 - **PostgreSQL 16 & Drizzle ORM:** Normalized 3NF/BCNF schemas, typed columns, foreign keys with referential integrity.
 - **Tenant Isolation:** Transaction-scoped Row Level Security (`SET LOCAL app.current_tenant = ...`).
 - **Soft Deletion:** Tenant entity tables implement `deleted_at timestamp with time zone` with partial indexes (`WHERE deleted_at IS NULL`).
-- **Compiled Prepared Statements & Column Projections:** High-throughput read lookups utilize compiled PostgreSQL prepared statements via modularized descriptors (`preparedStatements.ts` and `preparedColumns.ts`), enforcing strict typing without `any` and adhering to the 200 LOC ceiling.
+- **Compiled Prepared Statements & Column Projections:** High-throughput read lookups utilize compiled PostgreSQL prepared statements via modularized descriptors (`preparedStatements.ts` and `preparedColumns.ts`), enforcing strict typing without `any` and adhering to the 300 LOC ceiling.
 - **Relational Soft-Delete Guardrails:** Dynamic query wrappers in `dbClient.ts` inject soft-delete conditions (`isNull(deletedAt)`) across nested relations with strongly typed helper callbacks.
 - **Asynchronous Workers:** Long-running exports, imports, and bulk message dispatches are executed in background BullMQ 6 worker queues backed by Redis 7.
 
@@ -114,6 +124,7 @@ To prevent critical system disruptions, the following infrastructure zones requi
 ## 7. Automated Verification & Quality Gates
 
 All contributions and agent executions must pass the four-tier verification gate:
+
 1. `pnpm typecheck` — Strict TypeScript checking across all workspaces.
 2. `pnpm test` / `vitest run` — Unit, component, and API integration suites.
 3. `node scripts/check-code-norms.mjs` — Zero new `any` annotations, zero raw hex colors, and file size constraints.

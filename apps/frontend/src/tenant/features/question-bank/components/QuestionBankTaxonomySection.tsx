@@ -6,7 +6,7 @@ import type {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { SectionLabel } from "@/components/ui/SectionLabel";
+import { SectionLabel } from "@/components/app/SectionLabel";
 import { cn } from "@/lib/utils";
 
 export interface QuestionBankTaxonomySectionProps {
@@ -30,7 +30,11 @@ export function QuestionBankTaxonomySection({
         <SectionLabel as="h4" weight="bold" tracking="wide">
           {t("questionBank.typesTitle")}
         </SectionLabel>
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t("questionBank.typesTitle")}>
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label={t("questionBank.typesTitle")}
+        >
           {questionTypes.map((entry) => (
             <Button
               key={entry.id}
@@ -41,7 +45,7 @@ export function QuestionBankTaxonomySection({
               className={cn(
                 "rounded-full border px-3 text-xs font-semibold transition-colors min-h-11",
                 entry.enabled
-                  ? "border-primary bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
+                  ? "border-primary bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
                   : "border-border text-muted-foreground hover:bg-muted",
               )}
             >
@@ -55,7 +59,11 @@ export function QuestionBankTaxonomySection({
         <SectionLabel as="h4" weight="bold" tracking="wide">
           {t("questionBank.difficultiesTitle")}
         </SectionLabel>
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t("questionBank.difficultiesTitle")}>
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label={t("questionBank.difficultiesTitle")}
+        >
           {difficultyLevels.map((entry) => (
             <Button
               key={entry.id}
@@ -66,7 +74,7 @@ export function QuestionBankTaxonomySection({
               className={cn(
                 "rounded-full border px-3 text-xs font-semibold transition-colors min-h-11",
                 entry.enabled
-                  ? "border-primary bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
+                  ? "border-primary bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
                   : "border-border text-muted-foreground hover:bg-muted",
               )}
             >

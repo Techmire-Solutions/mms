@@ -1,9 +1,6 @@
 import React from "react";
-import {
-  enrollmentsTransferSchema,
-  type EnrollmentTransferEntity,
-} from "@mms/shared";
-import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
+import { enrollmentsTransferSchema, type EnrollmentTransferEntity } from "@mms/shared";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface EnrollmentsCsvImportDialogProps {
   open: boolean;

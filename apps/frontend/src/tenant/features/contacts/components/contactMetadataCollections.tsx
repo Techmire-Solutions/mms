@@ -1,5 +1,10 @@
 import { Globe, ExternalLink } from "lucide-react";
-import { formatSocialPlatformUrl, mergeStoredAndDerivedSiblingLinks, type AppTranslationKey, type Contact } from "@mms/shared";
+import {
+  formatSocialPlatformUrl,
+  mergeStoredAndDerivedSiblingLinks,
+  type AppTranslationKey,
+  type Contact,
+} from "@mms/shared";
 import { formatLocalizedRelationshipLabel } from "@/lib/contacts/formatLocalizedRelationshipLabel";
 
 export function renderSocialMetadata({
@@ -12,8 +17,7 @@ export function renderSocialMetadata({
   t: (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 }): React.ReactNode {
   const socials = (contact.socials || []).filter(
-    (social) =>
-      (social.platform || "").trim().length > 0 || (social.url || "").trim().length > 0,
+    (social) => (social.platform || "").trim().length > 0 || (social.url || "").trim().length > 0,
   );
   if (socials.length === 0) return emptyNode;
 
@@ -24,7 +28,8 @@ export function renderSocialMetadata({
         const url = (social.url || "").trim();
         const href = url ? formatSocialPlatformUrl(platform, url) : undefined;
         const displayUrl = url ? url.replace(/^https?:\/\//i, "").replace(/\/$/, "") : "";
-        const label = platform && displayUrl ? `${platform}: ${displayUrl}` : (platform || displayUrl);
+        const label =
+          platform && displayUrl ? `${platform}: ${displayUrl}` : platform || displayUrl;
 
         if (href) {
           return (
@@ -34,7 +39,7 @@ export function renderSocialMetadata({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(event) => event.stopPropagation()}
-              className="inline-flex items-center min-h-11 gap-1 px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-semibold transition-colors truncate max-w-cell-trunc"
+              className="inline-flex items-center min-h-11 gap-1 px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/15 text-primary border border-primary/20 text-xs font-semibold transition-colors truncate max-w-cell-trunc"
               title={`${platform || t("contacts.form.link")}: ${url}`}
             >
               <Globe className="w-3 h-3 shrink-0 text-primary" />
@@ -73,10 +78,7 @@ export function renderRelationshipMetadata({
 }): React.ReactNode {
   const peers = contactsMap ? [...contactsMap.values()] : [];
   const list = mergeStoredAndDerivedSiblingLinks(contact, peers).filter(
-    (link) =>
-      (link.name || "").trim() ||
-      link.contactId ||
-      (link.relationship || "").trim(),
+    (link) => (link.name || "").trim() || link.contactId || (link.relationship || "").trim(),
   );
   if (list.length === 0) return emptyNode;
 
@@ -87,11 +89,7 @@ export function renderRelationshipMetadata({
       name = linked ? linked.name : `${t("contacts.table.contactIdPrefix")}${link.contactId}`;
     }
     const relationship = link.relationship
-      ? formatLocalizedRelationshipLabel(
-          link.relationship.trim(),
-          linked?.gender ?? link.gender,
-          t,
-        )
+      ? formatLocalizedRelationshipLabel(link.relationship.trim(), linked?.gender ?? link.gender, t)
       : "";
     if (name && relationship) return `${name} (${relationship})`;
     return name || relationship;
@@ -163,9 +161,7 @@ export function renderSkillsMetadata({
   contact: Contact;
   emptyNode: React.ReactNode;
 }): React.ReactNode {
-  const skills = (contact.skills || []).filter(
-    (s) => (s.name || "").trim(),
-  );
+  const skills = (contact.skills || []).filter((s) => (s.name || "").trim());
   if (skills.length === 0) return emptyNode;
 
   return (
@@ -187,4 +183,3 @@ export function renderSkillsMetadata({
     </div>
   );
 }
-

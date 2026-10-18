@@ -6,16 +6,13 @@ import {
   type Account,
   type JournalEntry,
   type FiscalYear,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceAccountsForWorkspace,
   replaceEntriesForWorkspace,
   replaceFiscalYearsForWorkspace,
-} from '../repositories/accountingRepository.js';
+} from "../repositories/accountingRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -39,7 +36,7 @@ export async function runMigration031(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
 
     // 1. Accounts
     const legacyAccounts = await getCollectionByStorageName(`${prefix}accounting_accounts`);
@@ -73,6 +70,6 @@ export async function runMigration031(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 031] No legacy accounting records to import.');
+    console.log("[Migration 031] No legacy accounting records to import.");
   }
 }

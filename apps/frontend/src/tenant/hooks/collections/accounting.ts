@@ -12,13 +12,13 @@ export {
   useAccountingMetrics,
   ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/accounting/hooks/useAccountingApi";
-export { invalidateAccountingQueries } from '@/tenant/features/accounting/hooks/invalidateAccountingQueries';
+export { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
 export {
   useComposedAccountingSettings,
   useAccountingPreferencesMutation,
   useAccountingPreferencesQuery,
   ACCOUNTING_PREFERENCES_QUERY_KEY,
-} from '@/tenant/features/accounting/hooks/useAccountingSetupConfig';
+} from "@/tenant/features/accounting/hooks/useAccountingSetupConfig";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   accountingAccountsListQueryOptions,
@@ -34,9 +34,8 @@ export {
   useAccountingContractRestoreEntry,
   useAccountingContractBulkDeleteEntries,
   useAccountingContractBulkRestoreEntries,
-} from '@/tenant/features/accounting/hooks/useAccountingTsrHooks';
+} from "@/tenant/features/accounting/hooks/useAccountingContractHooks";
 export {
   type JournalEntryFilterState,
   EMPTY_JOURNAL_ENTRY_FILTERS,
-} from '@/tenant/features/accounting/components/journalEntriesControllerFilters';
-
+} from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";

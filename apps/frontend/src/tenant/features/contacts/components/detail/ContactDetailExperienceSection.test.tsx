@@ -27,9 +27,7 @@ const mockContact: Contact = {
 
 describe("ContactDetailExperienceSection Component", () => {
   it("renders experience details correctly", () => {
-    const html = renderToStaticMarkup(
-      <ContactDetailExperienceSection contact={mockContact} />,
-    );
+    const html = renderToStaticMarkup(<ContactDetailExperienceSection contact={mockContact} />);
 
     expect(html).toContain("Senior Lead");
     expect(html).toContain("Tech Systems");

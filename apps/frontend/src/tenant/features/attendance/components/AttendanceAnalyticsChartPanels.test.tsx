@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceAnalyticsChartPanels } from "./AttendanceAnalyticsChartPanels";
 
-vi.mock("@/components/ui/SafeResponsiveContainer", () => {
+vi.mock("@/components/app/SafeResponsiveContainer", () => {
   const MockContainer = ({ children }: { children: React.ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   );
@@ -13,18 +13,23 @@ vi.mock("@/components/ui/SafeResponsiveContainer", () => {
   };
 });
 
-
-vi.mock("@/components/ui/ChartGrid", () => ({
+vi.mock("@/components/app/ChartGrid", () => ({
   ChartGrid: () => <div data-testid="chart-grid" />,
   chartAxisTick: () => ({}),
 }));
 
 vi.mock("recharts", () => ({
-  BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="bar-chart">{children}</div>
+  ),
   Bar: () => null,
-  AreaChart: ({ children }: { children: React.ReactNode }) => <div data-testid="area-chart">{children}</div>,
+  AreaChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="area-chart">{children}</div>
+  ),
   Area: () => null,
-  PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
+  PieChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pie-chart">{children}</div>
+  ),
   Pie: () => null,
   Cell: () => null,
   XAxis: () => null,
@@ -36,13 +41,13 @@ describe("AttendanceAnalyticsChartPanels Component", () => {
   it("renders class rate, trend, and distribution charts", () => {
     const html = renderToStaticMarkup(
       <AttendanceAnalyticsChartPanels
-        t={((k: string) => k) as any}
+        t={((k: string) => k) as unknown as never}
         colors={["#000"]}
         classStats={[{ name: "Class 1A", rate: 95 }]}
         monthlyTrend={[{ month: "Jan", rate: 90 }]}
         studentRates={[{ id: "student-1", name: "Ali", rate: 98 }]}
         pieData={[{ name: "Present", value: 40 }]}
-        statuses={[{ id: "present", label: "Present" } as any]}
+        statuses={[{ id: "present", label: "Present" } as unknown as never]}
         totalStats={{ present: 40 }}
       />,
     );

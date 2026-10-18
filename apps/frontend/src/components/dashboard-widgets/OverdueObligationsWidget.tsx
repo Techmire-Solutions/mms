@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetCardHeader } from "@/components/ui/WidgetCardHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 import { AlertTriangle, Bell, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -47,7 +47,8 @@ export default function OverdueObligationsWidget({ title }: { title?: string }) 
 
   const [expanded, setExpanded] = useState(true);
   const [remindedIds, setRemindedIds] = useState<Set<string>>(new Set());
-  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } = useMessageComposerState();
+  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
+    useMessageComposerState();
 
   const {
     searchQuery,
@@ -68,24 +69,29 @@ export default function OverdueObligationsWidget({ title }: { title?: string }) 
     [overdueStudents],
   );
 
-  const handleRemind = useCallback((overdueStudent: OverdueStudent) => {
-    const student = studentMap.get(String(overdueStudent.id));
-    const phone = student?.phone || "";
-    if (!phone) return;
-    openComposer("sms", [{
-      id: overdueStudent.id,
-      name: overdueStudent.name,
-      phone,
-      email: student?.email || "",
-      amount: overdueStudent.amount,
-      dueDate: overdueStudent.dueDate,
-    }]);
-    setRemindedIds((prev) => {
-      const next = new Set(prev);
-      next.add(overdueStudent.id);
-      return next;
-    });
-  }, [studentMap, openComposer]);
+  const handleRemind = useCallback(
+    (overdueStudent: OverdueStudent) => {
+      const student = studentMap.get(String(overdueStudent.id));
+      const phone = student?.phone || "";
+      if (!phone) return;
+      openComposer("sms", [
+        {
+          id: overdueStudent.id,
+          name: overdueStudent.name,
+          phone,
+          email: student?.email || "",
+          amount: overdueStudent.amount,
+          dueDate: overdueStudent.dueDate,
+        },
+      ]);
+      setRemindedIds((prev) => {
+        const next = new Set(prev);
+        next.add(overdueStudent.id);
+        return next;
+      });
+    },
+    [studentMap, openComposer],
+  );
 
   const handleRemindAll = useCallback(() => {
     const recipients = filteredStudents
@@ -118,7 +124,10 @@ export default function OverdueObligationsWidget({ title }: { title?: string }) 
         variant="destructive"
         headingId="overdue-obligations-heading"
         icon={
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/15" aria-hidden="true">
+          <div
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/15"
+            aria-hidden="true"
+          >
             <AlertTriangle className="w-4 h-4 text-destructive animate-pulse" />
           </div>
         }
@@ -127,11 +136,7 @@ export default function OverdueObligationsWidget({ title }: { title?: string }) 
         actions={
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {canWriteMessaging && (
-              <Button
-                variant="destructive"
-                size="caps"
-                onClick={handleRemindAll}
-              >
+              <Button variant="destructive" size="caps" onClick={handleRemindAll}>
                 <Bell className="w-3 h-3" aria-hidden="true" />
                 {t("dashboard.widgets.remindAll")}
               </Button>
@@ -144,7 +149,11 @@ export default function OverdueObligationsWidget({ title }: { title?: string }) 
               aria-label={t("dashboard.widgets.toggleOverdueList")}
               className="rounded-lg hover:bg-destructive/15 text-destructive hover:text-destructive transition-colors shadow-none cursor-pointer"
             >
-              {expanded ? <ChevronUp className="w-4 h-4" aria-hidden="true" /> : <ChevronDown className="w-4 h-4" aria-hidden="true" />}
+              {expanded ? (
+                <ChevronUp className="w-4 h-4" aria-hidden="true" />
+              ) : (
+                <ChevronDown className="w-4 h-4" aria-hidden="true" />
+              )}
             </Button>
           </div>
         }

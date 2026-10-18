@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Gift } from "lucide-react";
 import { type Redemption, type Distribution } from "@/lib/data/hasanatData";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field } from "@/components/ui/FormPrimitives";
+import { DatePicker } from "@/components/app/DatePicker";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { generateClientEntityId, todayISO } from "@mms/shared";
 import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 
 interface RedeemModalProps {
   open: boolean;
@@ -20,7 +20,9 @@ interface RedeemModalProps {
 
 export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModalProps) {
   const { t } = useTranslation();
-  const activeDistributions = distributions.filter((distribution) => distribution.status === "active");
+  const activeDistributions = distributions.filter(
+    (distribution) => distribution.status === "active",
+  );
   const [approvedByName, setApprovedByName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -44,7 +46,9 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     }
   };
 
-  const selectedDistribution = activeDistributions.find((distribution) => distribution.id === data.distributionId);
+  const selectedDistribution = activeDistributions.find(
+    (distribution) => distribution.id === data.distributionId,
+  );
 
   React.useEffect(() => {
     if (open) {
@@ -81,7 +85,8 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     }
 
     setSubmitError(null);
-    const approvedBy = approvedByName || (data.approvedByUserId ? `User #${data.approvedByUserId}` : "");
+    const approvedBy =
+      approvedByName || (data.approvedByUserId ? `User #${data.approvedByUserId}` : "");
     setSubmitting(true);
     try {
       await onSave({
@@ -119,7 +124,12 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
         }}
         className="space-y-4"
       >
-        <Field id="dist-sel" label={t("hasanat.fieldRecipient")} required error={errors.distributionId}>
+        <Field
+          id="dist-sel"
+          label={t("hasanat.fieldRecipient")}
+          required
+          error={errors.distributionId}
+        >
           <FormSelect
             id="dist-sel"
             name="distributionId"
@@ -134,7 +144,13 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
         {selectedDistribution && (
           <p className="text-xs text-muted-foreground mt-1 m-0">{selectedDistribution.reason}</p>
         )}
-        <Field id="reward-given" errorId="reward-error" label={t("hasanat.columns.redemption.reward")} required error={errors.reward}>
+        <Field
+          id="reward-given"
+          errorId="reward-error"
+          label={t("hasanat.columns.redemption.reward")}
+          required
+          error={errors.reward}
+        >
           <Input
             id="reward-given"
             name="reward"
@@ -145,7 +161,12 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
           />
         </Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field id="pts-used" label={t("hasanat.columns.redemption.pointsUsed")} required error={errors.pointsUsed}>
+          <Field
+            id="pts-used"
+            label={t("hasanat.columns.redemption.pointsUsed")}
+            required
+            error={errors.pointsUsed}
+          >
             <Input
               id="pts-used"
               name="pointsUsed"
@@ -154,8 +175,11 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
               className={FORM_INPUT}
               value={data.pointsUsed || ""}
               onChange={(event) => {
-                const sanitized = event.target.value.replace(/[^0-9]/g, '');
-                updateField("pointsUsed", (sanitized ? Number(sanitized) : 0) as Redemption['pointsUsed']);
+                const sanitized = event.target.value.replace(/[^0-9]/g, "");
+                updateField(
+                  "pointsUsed",
+                  (sanitized ? Number(sanitized) : 0) as Redemption["pointsUsed"],
+                );
               }}
               placeholder="0"
             />

@@ -40,7 +40,7 @@ describe("ContactCardHeader", () => {
         isSelected={false}
         displayName="Sayyida Fatima"
         onSelect={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("Sayyida Fatima");
@@ -58,7 +58,7 @@ describe("ContactCardHeader", () => {
         displayName="Sayyida Fatima"
         onSelect={vi.fn()}
         isColumnVisible={(key) => key === "gender" || key === "isSyed"}
-      />
+      />,
     );
 
     expect(html).toContain("Sayyida Fatima");
@@ -74,7 +74,7 @@ describe("ContactCardHeader", () => {
         displayName="Sayyida Fatima"
         onSelect={vi.fn()}
         isColumnVisible={(key) => key === "syed"}
-      />
+      />,
     );
 
     expect(html).toContain("Sayyida Fatima");
@@ -90,7 +90,7 @@ describe("ContactCardHeader", () => {
         displayName="Ali Hassan"
         onSelect={vi.fn()}
         isColumnVisible={() => true}
-      />
+      />,
     );
 
     expect(html).toContain("Ali Hassan");
@@ -106,7 +106,7 @@ describe("ContactCardHeader", () => {
         displayName="Sayyida Fatima"
         onSelect={vi.fn()}
         isColumnVisible={() => false}
-      />
+      />,
     );
 
     expect(html).toContain("Sayyida Fatima");
@@ -121,7 +121,7 @@ describe("ContactCardHeader", () => {
         isSelected={true}
         displayName="Sayyida Fatima"
         onSelect={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain('aria-checked="true"');
@@ -134,7 +134,7 @@ describe("ContactCardHeader", () => {
         isSelected={false}
         displayName="Sayyida Fatima"
         onSelect={vi.fn()}
-      />
+      />,
     );
 
     expect(html).toContain("SF");

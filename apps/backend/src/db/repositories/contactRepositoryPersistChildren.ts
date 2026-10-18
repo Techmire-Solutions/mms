@@ -1,17 +1,17 @@
-import type { Contact } from '@mms/shared';
-import { type TenantTransaction } from '../tenant-context.js';
+import type { Contact } from "@mms/shared";
+import { type TenantTransaction } from "../tenant-context.js";
 import {
   syncContactPersonalChildrenTx,
   bulkInsertContactPersonalChildrenTx,
-} from './contactPersistPersonalChildren.js';
+} from "./contactPersistPersonalChildren.js";
 import {
   syncContactProfessionalChildrenTx,
   bulkInsertContactProfessionalChildrenTx,
-} from './contactPersistProfessionalChildren.js';
+} from "./contactPersistProfessionalChildren.js";
 import {
   syncContactEngagementChildrenTx,
   bulkInsertContactEngagementChildrenTx,
-} from './contactPersistEngagementChildren.js';
+} from "./contactPersistEngagementChildren.js";
 
 type Transaction = TenantTransaction;
 

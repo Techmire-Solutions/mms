@@ -1,17 +1,13 @@
-import type { FastifyInstance } from 'fastify';
-import {
-  healthResponseSchema,
-  readyResponseSchema,
-  readyErrorResponseSchema,
-} from '@mms/shared';
-import { getPoolMetrics, pingDatabase } from '../../db/database.js';
-import { checkIsRedisConnected } from '../../lib/redis.js';
-import { isShuttingDown } from '../../lib/lifecycle.js';
-import { getMultiTierCacheMetrics } from '../../lib/cache/index.js';
+import type { FastifyInstance } from "fastify";
+import { healthResponseSchema, readyResponseSchema, readyErrorResponseSchema } from "@mms/shared";
+import { getPoolMetrics, pingDatabase } from "../../db/database.js";
+import { checkIsRedisConnected } from "../../lib/redis.js";
+import { isShuttingDown } from "../../lib/lifecycle.js";
+import { getMultiTierCacheMetrics } from "../../lib/cache/index.js";
 
 function safeGetPoolMetrics() {
   try {
-    return typeof getPoolMetrics === 'function' ? getPoolMetrics() : null;
+    return typeof getPoolMetrics === "function" ? getPoolMetrics() : null;
   } catch {
     return null;
   }
@@ -19,7 +15,7 @@ function safeGetPoolMetrics() {
 
 export default async function healthRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get(
-    '/health',
+    "/health",
     {
       schema: {
         response: {
@@ -33,7 +29,7 @@ export default async function healthRoutes(fastify: FastifyInstance): Promise<vo
         pool && (pool.waitingCount > 5 || (pool.replica && pool.replica.waitingCount > 5)),
       );
       return {
-        status: isDegraded ? 'DEGRADED' : 'OK',
+        status: isDegraded ? "DEGRADED" : "OK",
         timestamp: new Date().toISOString(),
         pool,
         redis: {
@@ -45,7 +41,7 @@ export default async function healthRoutes(fastify: FastifyInstance): Promise<vo
   );
 
   fastify.get(
-    '/ready',
+    "/ready",
     {
       schema: {
         response: {
@@ -60,32 +56,32 @@ export default async function healthRoutes(fastify: FastifyInstance): Promise<vo
       // database ping also keeps shutdown fast.
       if (isShuttingDown()) {
         return reply.status(503).send({
-          type: 'server_error',
-          status: 'not_ready',
-          database: 'draining',
-          redis: 'draining',
+          type: "server_error",
+          status: "not_ready",
+          database: "draining",
+          redis: "draining",
         });
       }
 
       const dbOk = await pingDatabase();
       const isRedisRequired = Boolean(
-        process.env.REDIS_URL && process.env.NODE_ENV !== 'test' && !process.env.VITEST,
+        process.env.REDIS_URL && process.env.NODE_ENV !== "test" && !process.env.VITEST,
       );
       const redisConnected = checkIsRedisConnected();
       const redisOk = !isRedisRequired || redisConnected;
 
       if (!dbOk || !redisOk) {
         return reply.status(503).send({
-          type: 'server_error',
-          status: 'not_ready',
-          database: dbOk ? 'connected' : 'disconnected',
-          redis: redisConnected ? 'connected' : 'disconnected',
+          type: "server_error",
+          status: "not_ready",
+          database: dbOk ? "connected" : "disconnected",
+          redis: redisConnected ? "connected" : "disconnected",
         });
       }
       return {
-        status: 'ready',
-        database: 'connected',
-        redis: redisConnected ? 'connected' : (isRedisRequired ? 'disconnected' : 'optional'),
+        status: "ready",
+        database: "connected",
+        redis: redisConnected ? "connected" : isRedisRequired ? "disconnected" : "optional",
         timestamp: new Date().toISOString(),
       };
     },

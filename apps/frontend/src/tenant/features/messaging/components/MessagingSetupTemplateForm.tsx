@@ -1,16 +1,16 @@
-import type React from 'react';
-import { Edit3, Plus } from 'lucide-react';
-import type { MessageCategory } from '@mms/shared';
-import { FormSelect } from '@/components/ui/FormSelect';
-import { Field } from '@/components/ui/FormPrimitives';
-import { FORM_INPUT_ERROR } from '@/components/ui/formStyles';
-import { FormModal } from '@/components/ui/FormModal';
-import { Input } from '@/components/ui/input';
-import { MessagingMessageBodyField } from '@/components/ui/MessagingMessageBodyField';
-import { cn } from '@/lib/utils';
-import { useTranslation } from '@/hooks/useTranslation';
+import type React from "react";
+import { Edit3, Plus } from "lucide-react";
+import type { MessageCategory } from "@mms/shared";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
+import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
+import { FormModal } from "@/components/app/FormModal";
+import { Input } from "@/components/ui/input";
+import { MessagingMessageBodyField } from "@/components/app/MessagingMessageBodyField";
+import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
-const TEMPLATE_FORM_ID = 'messaging-setup-template-form';
+const TEMPLATE_FORM_ID = "messaging-setup-template-form";
 
 interface MessagingSetupTemplateFormProps {
   open: boolean;
@@ -18,7 +18,7 @@ interface MessagingSetupTemplateFormProps {
   label: string;
   body: string;
   category: MessageCategory;
-  channel: 'all' | 'sms' | 'whatsapp' | 'email';
+  channel: "all" | "sms" | "whatsapp" | "email";
   templateCategorySelectOptions: Array<{ value: string; label: string }>;
   channelSelectOptions: Array<{ value: string; label: string }>;
   errors?: Record<string, string>;
@@ -31,7 +31,7 @@ interface MessagingSetupTemplateFormProps {
   onBodyChange: (value: string) => void;
   onBodyBlur?: () => void;
   onCategoryChange: (value: MessageCategory) => void;
-  onChannelChange: (value: 'all' | 'sms' | 'whatsapp' | 'email') => void;
+  onChannelChange: (value: "all" | "sms" | "whatsapp" | "email") => void;
 }
 
 export function MessagingSetupTemplateForm({
@@ -66,19 +66,19 @@ export function MessagingSetupTemplateForm({
     <FormModal
       open={open}
       onClose={onReset}
-      title={editingId ? t('messaging.editPreset') : t('messaging.createPreset')}
-      subtitle={t('messaging.createPresetDesc')}
+      title={editingId ? t("messaging.editPreset") : t("messaging.createPreset")}
+      subtitle={t("messaging.createPresetDesc")}
       icon={editingId ? Edit3 : Plus}
-      cancelLabel={t('common.cancel')}
-      saveLabel={editingId ? t('messaging.updateTemplate') : t('messaging.saveTemplate')}
+      cancelLabel={t("common.cancel")}
+      saveLabel={editingId ? t("messaging.updateTemplate") : t("messaging.saveTemplate")}
       onSave={trySave}
       saving={saving}
       saveDisabled={saveDisabled}
       isDirty={isDirty}
-      discardUnsavedTitle={t('settings.unsavedChanges')}
-      discardUnsavedDescription={t('messaging.setup.discardUnsavedTemplateConfirm')}
-      discardConfirmLabel={t('common.yes')}
-      discardCancelLabel={t('common.cancel')}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("messaging.setup.discardUnsavedTemplateConfirm")}
+      discardConfirmLabel={t("common.yes")}
+      discardCancelLabel={t("common.cancel")}
       formId={TEMPLATE_FORM_ID}
     >
       <form
@@ -88,26 +88,26 @@ export function MessagingSetupTemplateForm({
           trySave();
         }}
         onKeyDown={(event) => {
-          if (!(event.metaKey || event.ctrlKey) || event.key !== 'Enter') return;
+          if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") return;
           if (event.nativeEvent.isComposing) return;
           event.preventDefault();
           trySave();
         }}
         className="space-y-3"
       >
-        <Field id="tplLabel" label={t('messaging.templateLabel')} required error={errors.label}>
+        <Field id="tplLabel" label={t("messaging.templateLabel")} required error={errors.label}>
           <Input
             id="tplLabel"
             name="tplLabel"
             value={label}
             onChange={(event) => onLabelChange(event.target.value)}
-            placeholder={t('messaging.templateLabelPlaceholder')}
+            placeholder={t("messaging.templateLabelPlaceholder")}
             required
             className={cn(errors.label && FORM_INPUT_ERROR)}
           />
         </Field>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <Field id="tplCategory" label={t('messaging.category')}>
+          <Field id="tplCategory" label={t("messaging.category")}>
             <FormSelect
               id="tplCategory"
               name="category"
@@ -116,7 +116,7 @@ export function MessagingSetupTemplateForm({
               options={templateCategorySelectOptions}
             />
           </Field>
-          <Field id="tplChannel" label={t('messaging.targetChannel')}>
+          <Field id="tplChannel" label={t("messaging.targetChannel")}>
             <FormSelect
               id="tplChannel"
               name="channel"
@@ -131,7 +131,7 @@ export function MessagingSetupTemplateForm({
           value={body}
           onChange={onBodyChange}
           onBlur={onBodyBlur}
-          placeholder={t('messaging.templateBodyPlaceholder')}
+          placeholder={t("messaging.templateBodyPlaceholder")}
           required
           error={errors.body}
         />

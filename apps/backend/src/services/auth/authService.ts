@@ -1,20 +1,29 @@
-import { randomUUID } from 'node:crypto';
-import type { FastifyReply } from 'fastify';
-import type { JWT } from '@fastify/jwt';
-import { requiresTwoFactor, type BrandingSocialLink } from '@mms/shared';
-import { validateCredentials, createUser, type PublicUser } from './userService.js';
-import { createWorkspace, assertWorkspaceActive, upsertWorkspaceBranding } from '../workspaceService.js';
-import { upsertContactModulePreferences } from '../../db/repositories/contactModulePreferencesRepository.js';
-import type { Workspace } from '@mms/shared';
-import { buildBrandingFromOnboarding } from '@mms/shared';
-import { assertPasswordMeetsPolicy, getJwtExpiresIn, loadGlobalSettings, saveGlobalSettings } from '../globalSettingsService.js';
-import { runWithTenant } from '../../lib/tenantContext.js';
-import { seedTenantDefaults } from '../tenantSeedService.js';
-import { saveObject } from '../../db/database.js';
-import { createTwoFactorChallenge, issueRefreshToken } from './twoFactorService.js';
-import { setAuthCookies } from './authCookieService.js';
-import { clearPlatformAccessCookie } from '../platform/platformCookieService.js';
-import { unblockTenant } from '../session.service.js';
+import { randomUUID } from "node:crypto";
+import type { FastifyReply } from "fastify";
+import type { JWT } from "@fastify/jwt";
+import { requiresTwoFactor, type BrandingSocialLink } from "@mms/shared";
+import { validateCredentials, createUser, type PublicUser } from "./userService.js";
+import {
+  createWorkspace,
+  assertWorkspaceActive,
+  upsertWorkspaceBranding,
+} from "../workspaceService.js";
+import { upsertContactModulePreferences } from "../../db/repositories/contactModulePreferencesRepository.js";
+import type { Workspace } from "@mms/shared";
+import { buildBrandingFromOnboarding } from "@mms/shared";
+import {
+  assertPasswordMeetsPolicy,
+  getJwtExpiresIn,
+  loadGlobalSettings,
+  saveGlobalSettings,
+} from "../globalSettingsService.js";
+import { runWithTenant } from "../../lib/tenantContext.js";
+import { seedTenantDefaults } from "../tenantSeedService.js";
+import { saveObject } from "../../db/database.js";
+import { createTwoFactorChallenge, issueRefreshToken } from "./twoFactorService.js";
+import { setAuthCookies } from "./authCookieService.js";
+import { clearPlatformAccessCookie } from "../platform/platformCookieService.js";
+import { unblockTenant } from "../authSessionService.js";
 
 /** Public user shape re-exported for route usage. */
 export type { PublicUser as User };
@@ -59,9 +68,9 @@ export interface OnboardResult extends AuthResult {
   workspace: Workspace;
 }
 
-import { parseSessionTimeoutMinutes } from '@mms/shared';
-import { resetSessionClock, tenantSessionScope } from '../sessionClockService.js';
-import { tenantSessionPolicy } from '../sessionPolicyService.js';
+import { parseSessionTimeoutMinutes } from "@mms/shared";
+import { resetSessionClock, tenantSessionScope } from "../sessionClockService.js";
+import { tenantSessionPolicy } from "../sessionPolicyService.js";
 
 export async function establishSession(
   user: PublicUser,
@@ -72,7 +81,7 @@ export async function establishSession(
   const accessExpiresIn = await getJwtExpiresIn();
   const jti = randomUUID();
   const accessToken = jwtSigner.sign(
-    { ...user, twoFactorVerified, tokenType: 'access', jti },
+    { ...user, twoFactorVerified, tokenType: "access", jti },
     { expiresIn: accessExpiresIn },
   );
   const refreshToken = await issueRefreshToken(user);
@@ -98,7 +107,7 @@ export async function loginUser(
     await assertWorkspaceActive(workspaceSubdomain);
   } catch (error: unknown) {
     const err = error as Error & { statusCode?: number; type?: string };
-    if (err.statusCode === 403 && err.type === 'workspace_disabled') {
+    if (err.statusCode === 403 && err.type === "workspace_disabled") {
       throw err;
     }
     return null;
@@ -107,15 +116,15 @@ export async function loginUser(
   const user = await validateCredentials(email, password, workspaceSubdomain);
   if (!user) return null;
 
-  const { getTenantUsersSettings } = await import('../users/usersSettingsService.js');
+  const { getTenantUsersSettings } = await import("../users/usersSettingsService.js");
   const usersSettings = await getTenantUsersSettings();
   if (usersSettings.requireEmailVerification && !user.emailVerifiedAt) {
-    const err = new Error('Verify your email before signing in') as Error & {
+    const err = new Error("Verify your email before signing in") as Error & {
       statusCode?: number;
       type?: string;
     };
     err.statusCode = 403;
-    err.type = 'email_not_verified';
+    err.type = "email_not_verified";
     throw err;
   }
 
@@ -134,7 +143,7 @@ export async function completeTwoFactorLogin(
   jwtSigner: JWT,
   reply: FastifyReply,
 ): Promise<AuthResult | null> {
-  const { verifyTwoFactorChallenge } = await import('./twoFactorService.js');
+  const { verifyTwoFactorChallenge } = await import("./twoFactorService.js");
   const user = await verifyTwoFactorChallenge(challengeId, code);
   if (!user) return null;
   await assertWorkspaceActive(user.workspaceSubdomain);
@@ -161,7 +170,7 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
     await seedTenantDefaults();
 
     if (input.modules) {
-      const { SYSTEM_MODULES } = await import('@mms/shared');
+      const { SYSTEM_MODULES } = await import("@mms/shared");
       const globalSettings = await loadGlobalSettings(workspace.subdomain);
       const enabledModules: Record<string, boolean> = {};
       const inputModulesSet = new Set(input.modules);
@@ -174,10 +183,13 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
         }
       }
 
-      await saveGlobalSettings({
-        ...globalSettings,
-        enabledModules,
-      }, workspace.subdomain);
+      await saveGlobalSettings(
+        {
+          ...globalSettings,
+          enabledModules,
+        },
+        workspace.subdomain,
+      );
     }
 
     const branding = buildBrandingFromOnboarding({
@@ -203,28 +215,28 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
       socialLinks: input.socialLinks,
     });
     await upsertWorkspaceBranding(workspace.subdomain, branding);
-    await saveObject('branding', branding);
+    await saveObject("branding", branding);
 
     await upsertContactModulePreferences(workspace.subdomain, {
-      defaultCountry: input.country?.trim() || '',
-      defaultProvince: input.region?.trim() || '',
-      defaultCity: input.city?.trim() || '',
+      defaultCountry: input.country?.trim() || "",
+      defaultProvince: input.region?.trim() || "",
+      defaultCity: input.city?.trim() || "",
       showDetailedSolarAge: false,
       showLunarDob: false,
       showDetailedLunarAge: false,
     });
 
     await assertPasswordMeetsPolicy(input.password);
-    await createUser(input.email, input.adminName, input.password, 'admin', workspace.subdomain, {
+    await createUser(input.email, input.adminName, input.password, "admin", workspace.subdomain, {
       mustChangePassword: true,
     });
   });
 
   const user = await runWithTenant(workspace.subdomain, async () =>
-    validateCredentials(input.email, input.password, workspace.subdomain)
+    validateCredentials(input.email, input.password, workspace.subdomain),
   );
   if (!user) {
-    throw new Error('Failed to create workspace administrator.');
+    throw new Error("Failed to create workspace administrator.");
   }
 
   // Organization blueprints removed — industryType retained for module recommendations only.

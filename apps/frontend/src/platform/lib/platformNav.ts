@@ -1,11 +1,22 @@
 import type React from "react";
-import { LayoutDashboard, Building2, BarChart3, Users, User, Server, Activity, Waypoints, Settings, Palette } from "lucide-react";
+import {
+  LayoutDashboard,
+  Building2,
+  BarChart3,
+  Users,
+  User,
+  Server,
+  Activity,
+  Waypoints,
+  Settings,
+  Palette,
+} from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
 import type { AppTranslationKey } from "@mms/shared";
 import type { PlatformPermissionsState } from "@/platform/hooks/usePlatformPermissions";
 
 /** SaaS console nav sections — Overview → Workspaces → Access → Operations → Account. */
-export type PlatformNavSection = 'overview' | 'workspaces' | 'access' | 'ops' | 'account';
+export type PlatformNavSection = "overview" | "workspaces" | "access" | "ops" | "account";
 
 export interface PlatformNavItem {
   id: string;
@@ -106,16 +117,13 @@ export const PLATFORM_NAV_ITEMS: readonly PlatformNavItem[] = [
 /**
  * Filtered navigation items for the currently logged-in platform user.
  */
-export function getVisiblePlatformNavItems(
-  perms: PlatformPermissionsState,
-): PlatformNavItem[] {
+export function getVisiblePlatformNavItems(perms: PlatformPermissionsState): PlatformNavItem[] {
   return PLATFORM_NAV_ITEMS.filter((item) => item.isVisible(perms));
 }
 
-
 export function getVisiblePlatformNavSections(perms: PlatformPermissionsState) {
   const grouped = Object.groupBy(getVisiblePlatformNavItems(perms), (item) => item.section);
-  const order: PlatformNavSection[] = ['overview', 'workspaces', 'access', 'ops', 'account'];
+  const order: PlatformNavSection[] = ["overview", "workspaces", "access", "ops", "account"];
   return order
     .filter((section) => (grouped[section]?.length ?? 0) > 0)
     .map((section) => ({

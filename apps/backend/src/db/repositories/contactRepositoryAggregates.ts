@@ -3,5 +3,5 @@ export {
   aggregateContactsCommandMetrics,
   aggregateContactsReportAnalytics,
   aggregateContactsMonthlyCreatedCounts,
-} from './contactRepositoryMetrics.js';
-export { aggregateContactsWidgetQueries } from './contactRepositoryWidgets.js';
+} from "./contactRepositoryMetrics.js";
+export { aggregateContactsWidgetQueries } from "./contactRepositoryWidgets.js";

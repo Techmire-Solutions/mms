@@ -2,7 +2,7 @@ import type React from "react";
 import { WifiOff, CloudUpload, AlertTriangle } from "lucide-react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { WarningCallout } from "@/components/app/WarningCallout";
 
 export interface ContactsOfflineBannerProps {
   t: TranslationFunction;

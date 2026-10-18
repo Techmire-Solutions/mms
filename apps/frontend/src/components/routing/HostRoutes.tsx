@@ -4,7 +4,7 @@ import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 
 const TenantRoutes = React.lazy(() => import("@/tenant/routes/TenantRoutes"));
 const ApexRoutesWithSuspense = React.lazy(() =>
-  import("@/platform/routes/ApexRoutes").then((m) => ({ default: m.ApexRoutesWithSuspense }))
+  import("@/platform/routes/ApexRoutes").then((m) => ({ default: m.ApexRoutesWithSuspense })),
 );
 
 /**

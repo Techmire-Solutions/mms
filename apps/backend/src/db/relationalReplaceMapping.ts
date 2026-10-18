@@ -1,7 +1,7 @@
-import { RELATIONAL_REPLACE_MAPPING } from './relationalReplaceMappingEntries.js';
+import { RELATIONAL_REPLACE_MAPPING } from "./relationalReplaceMappingEntries.js";
 
-export type { RelationalCollectionMapping } from './relationalReplaceMappingEntries.js';
-export { RELATIONAL_REPLACE_MAPPING } from './relationalReplaceMappingEntries.js';
+export type { RelationalCollectionMapping } from "./relationalReplaceMappingEntries.js";
+export { RELATIONAL_REPLACE_MAPPING } from "./relationalReplaceMappingEntries.js";
 
 /**
  * Stable collection restore order for FK-safe admin backup restore.

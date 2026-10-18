@@ -1,11 +1,8 @@
 import type React from "react";
 import { Tag } from "lucide-react";
-import { DetailAttributeRow } from "@/components/ui/DetailAttributeRow";
-import {
-  DetailSectionCard,
-  type DetailSectionCardProps,
-} from "@/components/ui/DetailSectionCard";
-import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
+import { DetailSectionCard, type DetailSectionCardProps } from "@/components/app/DetailSectionCard";
+import { getGenderIcon, getGenderIconClass } from "@/lib/ui/genderUi";
 import { ICON_MAP } from "./contactDetailStyles";
 
 export interface FieldGroupCardProps {

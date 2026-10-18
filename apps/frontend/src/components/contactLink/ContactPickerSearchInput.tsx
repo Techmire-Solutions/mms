@@ -2,7 +2,7 @@ import React from "react";
 import { Search, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FORM_LABEL, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { FieldErrorMessage, RequiredMark } from "@/components/ui/FormField";
+import { FieldErrorMessage, RequiredMark } from "@/components/app/FormField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ContactPickerMenu } from "./ContactPickerMenu";
@@ -92,7 +92,7 @@ export function ContactPickerSearchInput({
           name={resolvedName}
           className={cn(
             "ps-9.5",
-            allowCreate ? (query ? "pe-16" : "pe-10") : (query ? "pe-9" : "pe-3"),
+            allowCreate ? (query ? "pe-16" : "pe-10") : query ? "pe-9" : "pe-3",
             isInvalid && FORM_INPUT_ERROR,
           )}
           placeholder={searchPlaceholder ?? t("contacts.searchPlaceholder")}

@@ -1,19 +1,18 @@
 import type React from "react";
 import { Calendar, Wallet } from "lucide-react";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { SectionCard } from "@/components/app/SectionCard";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { FORM_INPUT, FORM_TEXTAREA } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Session } from "@/lib/data/sessionsData";
-import type { SessionFormDraft } from "@/tenant/features/sessions/components/sessionFormShared";
-
+import type { SessionFormDraft } from "@/tenant/features/sessions/lib/sessionFormShared";
 
 export interface SessionSelectOption {
   value: string;
@@ -55,7 +54,13 @@ export function SessionDetailsSection({
         title={t("sessions.form.sectionDetails")}
         className="shadow-sm text-start"
       >
-        {structureLocked ? <WarningCallout density="banner" title={t("sessions.lock.title")} description={t("sessions.lock.hint")} /> : null}
+        {structureLocked ? (
+          <WarningCallout
+            density="banner"
+            title={t("sessions.lock.title")}
+            description={t("sessions.lock.hint")}
+          />
+        ) : null}
         <Field label={t("sessions.form.name")} id="session-name" required error={errors.name}>
           <div className="relative flex items-center group/input">
             <Calendar className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
@@ -101,14 +106,19 @@ export function SessionDetailsSection({
               id="session-status"
               name="status"
               value={sessionDraft.status || "active"}
-              onChange={(val) => onDraftChange({ status: val as Session['status'] })}
+              onChange={(val) => onDraftChange({ status: val as Session["status"] })}
               options={statusOptions}
             />
           </Field>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label={t("sessions.form.startDate")} required error={errors.startDate} id="session-start-date">
+          <Field
+            label={t("sessions.form.startDate")}
+            required
+            error={errors.startDate}
+            id="session-start-date"
+          >
             <DatePicker
               id="session-start-date"
               name="startDate"
@@ -120,7 +130,12 @@ export function SessionDetailsSection({
             />
           </Field>
 
-          <Field label={t("sessions.form.endDate")} required error={errors.endDate} id="session-end-date">
+          <Field
+            label={t("sessions.form.endDate")}
+            required
+            error={errors.endDate}
+            id="session-end-date"
+          >
             <DatePicker
               id="session-end-date"
               name="endDate"

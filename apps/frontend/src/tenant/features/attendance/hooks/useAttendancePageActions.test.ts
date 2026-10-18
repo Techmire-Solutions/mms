@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { useAttendancePageActions } from "./useAttendancePageActions";
 
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -53,7 +53,7 @@ describe("useAttendancePageActions Hook", () => {
   });
 
   it("handles update, delete, restore, and bulk actions for attendance records", async () => {
-    let hookResult: any = null;
+    let hookResult!: ReturnType<typeof useAttendancePageActions>;
 
     function TestComponent() {
       hookResult = useAttendancePageActions();

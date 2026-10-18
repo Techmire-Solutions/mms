@@ -56,10 +56,7 @@ export function WorkQueueItem<TData extends { id: string | number }>({
     >
       {/* Checkbox */}
       {hasSelection && onSelectOne && (
-        <div
-          className="flex shrink-0 items-center pt-0.5"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="flex shrink-0 items-center pt-0.5" onClick={(e) => e.stopPropagation()}>
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelectOne(idStr)}
@@ -80,27 +77,17 @@ export function WorkQueueItem<TData extends { id: string | number }>({
                 <span className="text-sm font-medium text-foreground">{itemTitle}</span>
               )}
               {priority && (
-                <Badge
-                  size="sm"
-                  tone={PRIORITY_BADGES[priority].tone}
-                  className="text-3xs"
-                >
+                <Badge size="sm" tone={PRIORITY_BADGES[priority].tone} className="text-3xs">
                   {PRIORITY_BADGES[priority].label}
                 </Badge>
               )}
               {status && (
-                <Badge
-                  size="sm"
-                  tone={status.tone ?? "secondary"}
-                  className="text-3xs"
-                >
+                <Badge size="sm" tone={status.tone ?? "secondary"} className="text-3xs">
                   {status.label}
                 </Badge>
               )}
             </div>
-            {itemDesc && (
-              <div className="text-xs text-muted-foreground">{itemDesc}</div>
-            )}
+            {itemDesc && <div className="text-xs text-muted-foreground">{itemDesc}</div>}
           </>
         )}
       </div>

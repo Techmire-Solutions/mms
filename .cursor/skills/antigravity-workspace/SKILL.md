@@ -4,7 +4,7 @@ description: Orients Antigravity agents to the MMS workspace layout — .agent r
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 allowed-tools: Read Grep Glob Bash(bash .agent/scripts/sync-all.sh) Bash(node scripts/verify-rules-integrity.mjs)
 ---
 
@@ -69,8 +69,8 @@ bash .agent/skills/mms-dev-setup/scripts/verify-env.sh
 ## Architecture blueprints & docs
 
 - `docs/architecture.md`
-- `docs/adr/0001-shared-package-and-dry-reuse.md`
-- `docs/MigrationPlan.md`
+- `docs/adr/README.md` (ADR journal index)
+- `docs/archive/MigrationPlan.md`
 - `.agent/skills/README.md`
 
 ## Sync policy

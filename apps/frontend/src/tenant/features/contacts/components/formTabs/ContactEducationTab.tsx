@@ -39,18 +39,27 @@ export function ContactEducationTab({
   const showFieldOfStudy = isFieldEnabled("education", "fieldOfStudy");
   const showYear = isFieldEnabled("education", "year");
   const showGrade = isFieldEnabled("education", "grade");
-  const allowAdd = resolveSubListAllowAdd([showDegree, showInstitution, showFieldOfStudy, showYear, showGrade]);
+  const allowAdd = resolveSubListAllowAdd([
+    showDegree,
+    showInstitution,
+    showFieldOfStudy,
+    showYear,
+    showGrade,
+  ]);
 
   const educations = contactDraft.education || [];
 
-  const emptyEducation = useCallback((): ContactEducation => ({
-    degree: defaultDegree || degreeOptions[0] || "",
-    institution: "",
-    fieldOfStudy: "",
-    year: "",
-    grade: "",
-    isCurrentlyEnrolled: false,
-  }), [defaultDegree, degreeOptions]);
+  const emptyEducation = useCallback(
+    (): ContactEducation => ({
+      degree: defaultDegree || degreeOptions[0] || "",
+      institution: "",
+      fieldOfStudy: "",
+      year: "",
+      grade: "",
+      isCurrentlyEnrolled: false,
+    }),
+    [defaultDegree, degreeOptions],
+  );
 
   const addEducation = useCallback(() => {
     addSubListItem("education", emptyEducation());
@@ -60,9 +69,12 @@ export function ContactEducationTab({
     ensureSubListItem("education", emptyEducation());
   }, [ensureSubListItem, emptyEducation]);
 
-  const removeEducation = useCallback((idx: number) => {
-    removeSubListItem("education", idx);
-  }, [removeSubListItem]);
+  const removeEducation = useCallback(
+    (idx: number) => {
+      removeSubListItem("education", idx);
+    },
+    [removeSubListItem],
+  );
 
   const updateEducation = useCallback(
     (idx: number, patch: Partial<ContactEducation> & Record<string, unknown>) => {

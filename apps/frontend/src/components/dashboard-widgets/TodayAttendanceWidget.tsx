@@ -1,28 +1,28 @@
 import React from "react";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetCardHeader } from "@/components/ui/WidgetCardHeader";
-import { SectionLabel } from "@/components/ui/SectionLabel";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
+import { SectionLabel } from "@/components/app/SectionLabel";
+import { EmptyState } from "@/components/app/EmptyState";
 import { UserCheck, Users, AlertTriangle, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/lib/config/routes";
-import { type AttendanceStatus } from '@/lib/data/attendanceData';
+import { type AttendanceStatus } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useAttendanceRecordsCollection } from "@/tenant/hooks/collections/attendance";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useTranslation } from "@/hooks/useTranslation";
-import { rateToneClass } from "@/lib/semanticTone";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { rateToneClass } from "@/lib/ui/semanticTone";
+import { ProgressBar } from "@/components/app/ProgressBar";
 import { Badge } from "@/components/ui/badge";
 import { type AppTranslationKey, formatDate } from "@mms/shared";
 import { useTodayAttendanceStats } from "./useTodayAttendanceStats";
 
 /**
  * TodayAttendanceWidget
- * 
+ *
  * Displays a summary of attendance records for the current day or the most recent day.
  * Includes overall statistics, status counts, and a breakdown by class.
- * 
+ *
  * @returns {React.ReactElement} The rendered widget component.
  */
 export default function TodayAttendanceWidget({ title }: { title?: string }) {
@@ -31,14 +31,8 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
   const attendanceRecords = useAttendanceRecordsCollection();
   const sessions = useSessionsCollection();
 
-  const {
-    displayRecords,
-    displayDate,
-    isToday,
-    stats,
-    rate,
-    classBreakdown,
-  } = useTodayAttendanceStats(attendanceRecords, sessions);
+  const { displayRecords, displayDate, isToday, stats, rate, classBreakdown } =
+    useTodayAttendanceStats(attendanceRecords, sessions);
 
   const { text: rateColor, bar: rateBarColor } = rateToneClass(rate);
 
@@ -49,7 +43,12 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
         headingLevel={2}
         headingId="todays-attendance-heading"
         icon={<UserCheck className="w-4 h-4 shrink-0 text-primary" aria-hidden="true" />}
-        title={title || (isToday ? t("dashboard.widgets.todaysAttendanceSummary") : t("dashboard.widgets.latestAttendanceSummary"))}
+        title={
+          title ||
+          (isToday
+            ? t("dashboard.widgets.todaysAttendanceSummary")
+            : t("dashboard.widgets.latestAttendanceSummary"))
+        }
         badge={
           !isToday && (
             <Badge pill tone="muted" className="font-bold border-border/40">
@@ -58,7 +57,10 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
           )
         }
         actions={
-          <Link to={ROUTES.attendance} className="inline-flex min-h-11 items-center gap-1 text-xs text-primary font-bold hover:underline">
+          <Link
+            to={ROUTES.attendance}
+            className="inline-flex min-h-11 items-center gap-1 text-xs text-primary font-bold hover:underline"
+          >
             {t("dashboard.widgets.viewAll")} <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         }
@@ -72,7 +74,10 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
             compact
             className="uppercase tracking-wider"
             action={
-              <Link to={ROUTES.attendance} className="inline-flex min-h-11 items-center text-xs text-primary font-bold hover:underline">
+              <Link
+                to={ROUTES.attendance}
+                className="inline-flex min-h-11 items-center text-xs text-primary font-bold hover:underline"
+              >
                 {t("dashboard.widgets.markAttendance")}
               </Link>
             }
@@ -83,7 +88,9 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
             <div className="flex items-center gap-4 select-none">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-muted-foreground font-semibold">{t("dashboard.widgets.overallRate")}</span>
+                  <span className="text-xs text-muted-foreground font-semibold">
+                    {t("dashboard.widgets.overallRate")}
+                  </span>
                   <span className={`text-sm font-bold tabular-nums ${rateColor}`}>{rate}%</span>
                 </div>
                 <ProgressBar
@@ -95,8 +102,12 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
                 />
               </div>
               <div className="text-end">
-                <p className={`text-2xl font-black tabular-nums leading-none m-0 ${rateColor}`}>{rate}%</p>
-                <p className="text-xs text-muted-foreground mt-1 m-0 font-medium">{t("dashboard.widgets.studentsCount", { count: stats.total })}</p>
+                <p className={`text-2xl font-black tabular-nums leading-none m-0 ${rateColor}`}>
+                  {rate}%
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 m-0 font-medium">
+                  {t("dashboard.widgets.studentsCount", { count: stats.total })}
+                </p>
               </div>
             </div>
 
@@ -105,9 +116,14 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
               {statuses.map((status: AttendanceStatus) => {
                 const count = stats[status.id] || 0;
                 return (
-                  <div key={status.id} className={`min-w-0 rounded-xl ${status.bg} ${status.text} border ${status.border} px-2 py-2.5 text-center shadow-xs transition-all duration-300 interactive-scale`}>
+                  <div
+                    key={status.id}
+                    className={`min-w-0 rounded-xl ${status.bg} ${status.text} border ${status.border} px-2 py-2.5 text-center shadow-xs transition-all duration-300 interactive-scale`}
+                  >
                     <p className="text-base font-black tabular-nums leading-none mb-1">{count}</p>
-                    <p className="text-xs font-bold uppercase tracking-wider opacity-90 m-0 truncate">{t(`attendance.status.${status.id}` as AppTranslationKey)}</p>
+                    <p className="text-xs font-bold uppercase tracking-wider opacity-90 m-0 truncate">
+                      {t(`attendance.status.${status.id}` as AppTranslationKey)}
+                    </p>
                   </div>
                 );
               })}
@@ -123,10 +139,14 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
 
             {/* Class breakdown */}
             <div className="space-y-3">
-              <SectionLabel as="h3" tracking="wider" className="select-none">{t("dashboard.widgets.byClass")}</SectionLabel>
+              <SectionLabel as="h3" tracking="wider" className="select-none">
+                {t("dashboard.widgets.byClass")}
+              </SectionLabel>
               {classBreakdown.map((classStats) => (
                 <div key={classStats.classId} className="flex min-w-0 items-center gap-3">
-                  <span className="w-28 shrink-0 truncate text-xs font-bold text-foreground">{classStats.name}</span>
+                  <span className="w-28 shrink-0 truncate text-xs font-bold text-foreground">
+                    {classStats.name}
+                  </span>
                   <ProgressBar
                     className="min-w-0 flex-1 gap-3"
                     value={classStats.rate}

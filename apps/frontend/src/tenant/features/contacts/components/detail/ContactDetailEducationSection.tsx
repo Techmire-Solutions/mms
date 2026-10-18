@@ -2,13 +2,13 @@ import React from "react";
 import { GraduationCap, School, Calendar, Award } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import { CopyButton } from "@/components/ui/CopyButton";
+import { CopyButton } from "@/components/app/CopyButton";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 
 export interface ContactDetailEducationSectionProps {
@@ -23,7 +23,10 @@ export function ContactDetailEducationSection({
 
   if (educationList.length === 0) {
     return (
-      <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.education")}>
+      <DetailSectionCard
+        className={COLLECTION_CONTAINER_CLASS}
+        title={t("contacts.detail.education")}
+      >
         <div className="p-3 text-xs text-muted-foreground italic">
           {t("contacts.detail.emptyEducation")}
         </div>
@@ -32,10 +35,15 @@ export function ContactDetailEducationSection({
   }
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.detail.education")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.detail.education")}
+    >
       {educationList.map((edu, idx) => {
         const fullDetails = [
-          edu.fieldOfStudy ? `${t("contacts.fields.educationFieldOfStudy")}: ${edu.fieldOfStudy}` : null,
+          edu.fieldOfStudy
+            ? `${t("contacts.fields.educationFieldOfStudy")}: ${edu.fieldOfStudy}`
+            : null,
           edu.year ? `${t("contacts.fields.educationYear")}: ${edu.year}` : null,
           edu.grade ? `${t("contacts.fields.educationGrade")}: ${edu.grade}` : null,
         ]

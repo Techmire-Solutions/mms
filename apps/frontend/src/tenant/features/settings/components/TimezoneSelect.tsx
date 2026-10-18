@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronsUpDown, Loader2, MapPin } from 'lucide-react';
+import React, { useState } from "react";
+import { ChevronsUpDown, Loader2, MapPin } from "lucide-react";
 import {
   DEFAULT_GLOBAL_SETTINGS,
   detectBrowserTimezone,
@@ -7,18 +7,18 @@ import {
   getTimezoneOptions,
   groupTimezoneOptions,
   normalizeTimezone,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { cn } from '@/lib/utils';
-import { notify } from '@/lib/notify';
-import { detectTimezoneFromLocation } from '@/lib/detectTimezoneFromLocation';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+import { notify } from "@/lib/notify";
+import { detectTimezoneFromLocation } from "@/lib/detectTimezoneFromLocation";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import {
   filterGroupedTimezones,
   timezoneDetectionErrorKey,
-} from '@/tenant/features/settings/components/timezoneSelectUtils';
-import { TimezoneSelectPopoverContent } from '@/tenant/features/settings/components/TimezoneSelectPopoverContent';
+} from "@/tenant/features/settings/lib/timezoneSelectUtils";
+import { TimezoneSelectPopoverContent } from "@/tenant/features/settings/components/TimezoneSelectPopoverContent";
 
 interface TimezoneSelectProps {
   id?: string;
@@ -38,7 +38,7 @@ export default function TimezoneSelect({
 }: TimezoneSelectProps): React.JSX.Element {
   const { t, language } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [detecting, setDetecting] = useState(false);
 
   const normalizedValue = normalizeTimezone(value, DEFAULT_GLOBAL_SETTINGS.timezone);
@@ -51,7 +51,7 @@ export default function TimezoneSelect({
     onChange(timezone);
     if (closePopover) {
       setOpen(false);
-      setQuery('');
+      setQuery("");
     }
   };
 
@@ -67,29 +67,29 @@ export default function TimezoneSelect({
       if (result.ok) {
         applyTimezone(result.timezone, true);
         const label = formatTimezoneLabel(result.timezone, language);
-        notify.success(t('global.timezoneDetectSuccess'), {
+        notify.success(t("global.timezoneDetectSuccess"), {
           description:
-            result.source === 'geolocation'
-              ? t('global.timezoneDetectSuccessGps', { label })
-              : t('global.timezoneDetectSuccessDevice', { label }),
+            result.source === "geolocation"
+              ? t("global.timezoneDetectSuccessGps", { label })
+              : t("global.timezoneDetectSuccessDevice", { label }),
         });
         return;
       }
 
       const errorKey = timezoneDetectionErrorKey(result.code);
       const useFallback =
-        result.code !== 'permission_denied' && result.code !== 'geolocation_unsupported';
+        result.code !== "permission_denied" && result.code !== "geolocation_unsupported";
 
       if (useFallback) {
         applyTimezone(result.fallbackTimezone, true);
         notify.warning(t(errorKey), {
-          description: t('global.timezoneDetectFallback', {
+          description: t("global.timezoneDetectFallback", {
             label: formatTimezoneLabel(result.fallbackTimezone, language),
           }),
         });
       } else {
         notify.error(t(errorKey), {
-          description: t('global.timezoneDetectDeniedHint'),
+          description: t("global.timezoneDetectDeniedHint"),
         });
       }
     } finally {
@@ -99,7 +99,7 @@ export default function TimezoneSelect({
 
   const handleOpenChange = (isOpen: boolean): void => {
     setOpen(isOpen);
-    if (!isOpen) setQuery('');
+    if (!isOpen) setQuery("");
   };
 
   return (
@@ -113,11 +113,11 @@ export default function TimezoneSelect({
             role="combobox"
             aria-expanded={open}
             aria-haspopup="listbox"
-            aria-label={t('global.timezone')}
+            aria-label={t("global.timezone")}
             disabled={disabled}
             className={cn(
-              'h-auto min-h-11 w-full justify-between px-3 py-2 font-normal sm:flex-1',
-              !normalizedValue && 'text-muted-foreground',
+              "h-auto min-h-11 w-full justify-between px-3 py-2 font-normal sm:flex-1",
+              !normalizedValue && "text-muted-foreground",
             )}
           >
             <span className="truncate text-start text-sm">{selectedLabel}</span>
@@ -144,14 +144,16 @@ export default function TimezoneSelect({
         disabled={disabled || detecting}
         onClick={() => void handleLocationDetect()}
         className="min-h-11 shrink-0 gap-2 px-3.5"
-        aria-label={t('global.timezoneDetectLocation')}
+        aria-label={t("global.timezoneDetectLocation")}
       >
         {detecting ? (
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
         ) : (
           <MapPin className="h-4 w-4" aria-hidden />
         )}
-        <span>{detecting ? t('global.timezoneDetecting') : t('global.timezoneDetectLocation')}</span>
+        <span>
+          {detecting ? t("global.timezoneDetecting") : t("global.timezoneDetectLocation")}
+        </span>
       </Button>
     </div>
   );

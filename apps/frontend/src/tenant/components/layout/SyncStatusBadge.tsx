@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CloudOff, Loader2 } from "lucide-react";
 import { getSyncStatus, type SyncStatus } from "@/lib/db";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -14,7 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
  * Displays a compact indicator of the current background server sync status.
  * Hidden when idle. Shows a spinner when syncing and a red badge with tooltip on error.
  */
-export default function SyncStatusBadge(): React.JSX.Element | null {
+export function SyncStatusBadge(): React.JSX.Element | null {
   const { t } = useTranslation();
   const [status, setStatus] = useState<SyncStatus>(getSyncStatus);
 
@@ -65,3 +60,5 @@ export default function SyncStatusBadge(): React.JSX.Element | null {
     </TooltipProvider>
   );
 }
+
+export default SyncStatusBadge;

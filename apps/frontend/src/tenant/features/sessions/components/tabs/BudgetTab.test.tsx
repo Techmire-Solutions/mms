@@ -87,13 +87,7 @@ describe("BudgetTab", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(
-        <BudgetTab
-          session={mockSession}
-          onUpdate={vi.fn()}
-          canMutate={true}
-        />
-      );
+      root.render(<BudgetTab session={mockSession} onUpdate={vi.fn()} canMutate={true} />);
     });
 
     // Overview cards
@@ -112,17 +106,11 @@ describe("BudgetTab", () => {
     const root = createRoot(container!);
 
     await act(async () => {
-      root.render(
-        <BudgetTab
-          session={mockSession}
-          onUpdate={onUpdate}
-          canMutate={true}
-        />
-      );
+      root.render(<BudgetTab session={mockSession} onUpdate={onUpdate} canMutate={true} />);
     });
 
     const deleteBtn = document.body.querySelector<HTMLButtonElement>(
-      'button[aria-label="Delete Book Sales"]'
+      'button[aria-label="Delete Book Sales"]',
     );
     expect(deleteBtn).not.toBeNull();
 
@@ -132,8 +120,8 @@ describe("BudgetTab", () => {
 
     expect(document.body.textContent).toContain("sessions.budget.confirmDeleteTitle");
 
-    const confirmBtn = Array.from(document.body.querySelectorAll("button")).find(
-      (b) => b.textContent?.includes("common.delete")
+    const confirmBtn = Array.from(document.body.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("common.delete"),
     );
     expect(confirmBtn).toBeDefined();
 
@@ -154,7 +142,7 @@ describe("BudgetTab", () => {
             ],
           }),
         ],
-      })
+      }),
     );
   });
 });

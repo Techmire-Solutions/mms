@@ -18,22 +18,12 @@ export interface UseHasanatSetupPanelStateReturn {
 /** Hasanat Setup panel state — encapsulates config, editor draft, dirty check, and save actions. */
 export function useHasanatSetupPanelState(): UseHasanatSetupPanelStateReturn {
   const config = useHasanatConfig();
-  const {
-    settings,
-    settingsDraft,
-    saved,
-    setSaved,
-    upd,
-    saveSettingsAsync,
-  } = useModuleSettingsEditor<HasanatSettings>({
-    config,
-  });
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync } =
+    useModuleSettingsEditor<HasanatSettings>({
+      config,
+    });
 
-  const {
-    saving,
-    isPrefsDirty,
-    handleSave,
-  } = useHasanatSetupSaveActions({
+  const { saving, isPrefsDirty, handleSave } = useHasanatSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,

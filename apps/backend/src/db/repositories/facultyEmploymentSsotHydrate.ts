@@ -2,10 +2,10 @@
  * @file facultyEmploymentSsotHydrate.ts
  * @description Overlay employment SSOT fields onto faculty rows (expand dual-read).
  */
-import { and, eq, inArray, isNull } from 'drizzle-orm';
-import { isFacultyStatus, type FacultyMember } from '@mms/shared';
-import { facultyEmployments } from '../schema.js';
-import type { AppDb } from '../tenant-context.js';
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import { isFacultyStatus, type FacultyMember } from "@mms/shared";
+import { facultyEmployments } from "../schema.js";
+import type { AppDb } from "../tenant-context.js";
 
 /**
  * When `employment_id` is set, prefer contact / employee code / lifecycle status /
@@ -16,11 +16,13 @@ export async function attachEmploymentSsotFields(
   subdomain: string,
   rows: FacultyMember[],
 ): Promise<FacultyMember[]> {
-  const employmentIds = [...new Set(
-    rows
-      .map((row) => row.employmentId)
-      .filter((id): id is string => typeof id === 'string' && id.trim().length > 0),
-  )];
+  const employmentIds = [
+    ...new Set(
+      rows
+        .map((row) => row.employmentId)
+        .filter((id): id is string => typeof id === "string" && id.trim().length > 0),
+    ),
+  ];
   if (employmentIds.length === 0) return rows;
 
   const empRows = await tx
@@ -33,11 +35,13 @@ export async function attachEmploymentSsotFields(
       employmentEndDate: facultyEmployments.employmentEndDate,
     })
     .from(facultyEmployments)
-    .where(and(
-      eq(facultyEmployments.workspaceSubdomain, subdomain),
-      inArray(facultyEmployments.id, employmentIds),
-      isNull(facultyEmployments.deletedAt),
-    ));
+    .where(
+      and(
+        eq(facultyEmployments.workspaceSubdomain, subdomain),
+        inArray(facultyEmployments.id, employmentIds),
+        isNull(facultyEmployments.deletedAt),
+      ),
+    );
   const byId = new Map(empRows.map((row) => [row.id, row]));
 
   return rows.map((member) => {
@@ -76,7 +80,7 @@ export function preferEmployDesignationPrimary(member: FacultyMember): FacultyMe
   const list = member.employDesignations;
   if (!Array.isArray(list) || list.length === 0) return member;
   const activeOpen = list.filter(
-    (row) => row.employDesignationStatus === 'active' && !row.designationEndDate?.trim(),
+    (row) => row.employDesignationStatus === "active" && !row.designationEndDate?.trim(),
   );
   const primary = activeOpen[activeOpen.length - 1] ?? list[list.length - 1];
   if (!primary?.designationId) return member;
@@ -87,6 +91,7 @@ export function preferEmployDesignationPrimary(member: FacultyMember): FacultyMe
     designationEndDate: primary.designationEndDate ?? null,
     employDesignationStatus: primary.employDesignationStatus ?? member.employDesignationStatus,
     employDesignationId: primary.employDesignationId ?? member.employDesignationId,
-    profileStatus: primary.employDesignationStatus === 'inactive' ? 'inactive' : member.profileStatus,
+    profileStatus:
+      primary.employDesignationStatus === "inactive" ? "inactive" : member.profileStatus,
   };
 }

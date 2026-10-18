@@ -1,8 +1,8 @@
-import type { FastifyPluginAsync } from 'fastify';
-import { authenticateTenant } from '../../../middleware/authenticate.js';
-import { auditEventRoutes } from './auditEventRoutes.js';
-import { auditIntegrityRoutes } from './auditIntegrityRoutes.js';
-import { auditPrivacyRoutes } from './auditPrivacyRoutes.js';
+import type { FastifyPluginAsync } from "fastify";
+import { authenticateTenant } from "../../../middleware/authenticate.js";
+import { auditEventRoutes } from "./auditEventRoutes.js";
+import { auditIntegrityRoutes } from "./auditIntegrityRoutes.js";
+import { auditPrivacyRoutes } from "./auditPrivacyRoutes.js";
 
 /**
  * Modern 5-dimension audit trail routes barrel plugin.
@@ -12,7 +12,7 @@ import { auditPrivacyRoutes } from './auditPrivacyRoutes.js';
  * - auditPrivacyRoutes: Crypto-shredding right-to-erasure, retention floors and purging
  */
 export const auditRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.addHook('preHandler', authenticateTenant);
+  fastify.addHook("preHandler", authenticateTenant);
 
   await fastify.register(auditEventRoutes);
   await fastify.register(auditIntegrityRoutes);

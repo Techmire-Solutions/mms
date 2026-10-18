@@ -1,15 +1,15 @@
 import {
   normalizeAttendanceModulePreferences,
   type AttendanceModulePreferences,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getAttendanceModulePreferences,
   setAttendanceModulePreferences,
-} from '../db/repositories/attendanceModulePreferencesRepository.js';
-import { createModulePreferencesService } from '../lib/createModulePreferencesService.js';
+} from "../db/repositories/attendanceModulePreferencesRepository.js";
+import { createModulePreferencesService } from "../lib/createModulePreferencesService.js";
 
 const service = createModulePreferencesService<AttendanceModulePreferences>({
-  broadcastKey: 'attendance',
+  broadcastKey: "attendance",
   getByWorkspace: getAttendanceModulePreferences,
   upsert: setAttendanceModulePreferences,
   normalize: normalizeAttendanceModulePreferences,

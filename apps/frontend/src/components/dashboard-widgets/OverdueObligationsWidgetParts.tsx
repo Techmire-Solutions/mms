@@ -1,8 +1,8 @@
 import { Bell } from "lucide-react";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@/components/app/StatusBadge";
 
 export interface OverdueStudent {
   id: string;
@@ -72,7 +72,11 @@ export function OverdueRemindButton({
       size="caps"
       onClick={() => onRemind(overdueStudent)}
       disabled={reminded || !hasPhone}
-      aria-label={reminded ? t("dashboard.widgets.reminderSentTo", { name: overdueStudent.name }) : t("dashboard.widgets.sendReminderTo", { name: overdueStudent.name })}
+      aria-label={
+        reminded
+          ? t("dashboard.widgets.reminderSentTo", { name: overdueStudent.name })
+          : t("dashboard.widgets.sendReminderTo", { name: overdueStudent.name })
+      }
       className={className}
     >
       <Bell className="w-2.5 h-2.5" aria-hidden="true" />

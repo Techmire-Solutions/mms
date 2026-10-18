@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { usePersistedTabState } from '@/hooks/usePersistedTabState';
-import { useModuleShortcuts } from '@/hooks/useModuleShortcuts';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useDirectoryTrashState } from '@/hooks/useDirectoryTrashState';
-import { useFilteredModuleTierTabs } from '@/tenant/hooks/useModuleTierTabs';
-import { useModulePermissions } from '@/tenant/hooks/usePermissions';
+import { useState, useEffect } from "react";
+import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
+import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   OBLIGATIONS_MODULE_MANIFEST,
   resolveModuleTierTab,
   type AppTranslationKey,
   type ObligationCollection,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   useObligationsTypesCollection,
   useObligationsMujtahidsCollection,
@@ -20,16 +20,19 @@ import {
   useObligationsCollections,
   useObligationsCollectionsCollection,
   useObligationsMutations,
-} from '@/tenant/features/obligations/hooks/useObligationsApi';
-import { useObligationColumnLayout } from '@/tenant/features/obligations/hooks/useObligationColumnLayout';
-import { useWorkSelection } from '@/hooks/useWorkSelection';
-import { useMessageComposerState } from '@/hooks/useMessageComposerState';
-import { useObligationsPageActions } from './useObligationsPageActions';
+} from "@/tenant/features/obligations/hooks/useObligationsApi";
+import { useObligationColumnLayout } from "@/tenant/features/obligations/hooks/useObligationColumnLayout";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
+import { useMessageComposerState } from "@/hooks/useMessageComposerState";
+import { useObligationsPageActions } from "./useObligationsPageActions";
 
-const SETUP_TAB_LABEL_KEYS: Record<(typeof OBLIGATIONS_MODULE_MANIFEST.setupSubTabs)[number], AppTranslationKey> = {
-  wakala: 'obligations.wakala',
-  numbering: 'obligations.setup.tabs.numbering',
-  invoice_template: 'obligations.setup.tabs.invoiceTemplate',
+const SETUP_TAB_LABEL_KEYS: Record<
+  (typeof OBLIGATIONS_MODULE_MANIFEST.setupSubTabs)[number],
+  AppTranslationKey
+> = {
+  wakala: "obligations.wakala",
+  numbering: "obligations.setup.tabs.numbering",
+  invoice_template: "obligations.setup.tabs.invoiceTemplate",
 };
 
 export function useObligationsPageController() {
@@ -46,12 +49,13 @@ export function useObligationsPageController() {
     canViewReports,
     workLabelKey: "nav.obligations",
   });
-  const CONFIG_SUB_TABS = (() => OBLIGATIONS_MODULE_MANIFEST.setupSubTabs.map((id) => ({
+  const CONFIG_SUB_TABS = (() =>
+    OBLIGATIONS_MODULE_MANIFEST.setupSubTabs.map((id) => ({
       id,
       label: t(SETUP_TAB_LABEL_KEYS[id]),
     })))();
-  const [activeTab, setActiveTab] = usePersistedTabState<string>('obligations_active_tab', 'work');
-  const [activeConfigTab, setActiveConfigTab] = useState('wakala');
+  const [activeTab, setActiveTab] = usePersistedTabState<string>("obligations_active_tab", "work");
+  const [activeConfigTab, setActiveConfigTab] = useState("wakala");
   const [showDeleted, setShowDeleted] = useDirectoryTrashState();
 
   const collectionSelection = useWorkSelection<string>();
@@ -86,7 +90,8 @@ export function useObligationsPageController() {
   const [filteredCount, setFilteredCount] = useState(0);
   const columnLayout = useObligationColumnLayout();
 
-  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } = useMessageComposerState();
+  const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
+    useMessageComposerState();
 
   const {
     handleMessageCollections,
@@ -115,7 +120,7 @@ export function useObligationsPageController() {
   }, [collections.length]);
 
   useModuleShortcuts({
-    searchInputId: 'obligations-search-input',
+    searchInputId: "obligations-search-input",
     selectedCount: collectionSelection.selectedIds.length,
     hasActiveFilters: false,
     clearFilters: () => {},
@@ -123,17 +128,19 @@ export function useObligationsPageController() {
     canWrite,
     showDeleted,
     onCreate: () => {
-      setActiveTab('work');
+      setActiveTab("work");
       setShowForm(true);
     },
-    enabled: activeTab === 'work',
+    enabled: activeTab === "work",
   });
 
   const effectiveTab = resolveModuleTierTab(
     activeTab,
     PAGE_TABS.map((tab) => tab.id),
   );
-  const effectiveConfigTab = CONFIG_SUB_TABS.find((tab) => tab.id === activeConfigTab) ? activeConfigTab : 'wakala';
+  const effectiveConfigTab = CONFIG_SUB_TABS.find((tab) => tab.id === activeConfigTab)
+    ? activeConfigTab
+    : "wakala";
   const listLoadFailed = collectionsResult.isError;
 
   return {
@@ -180,6 +187,8 @@ export function useObligationsPageController() {
     replaceDistributions,
     setActiveConfigTab,
     collectionSelection,
-    refetchCollections: () => { void collectionsResult.refetch(); },
+    refetchCollections: () => {
+      void collectionsResult.refetch();
+    },
   };
 }

@@ -19,7 +19,7 @@ vi.mock("./ContactSubListCards", () => ({
   resolveSubListAllowAdd: () => true,
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
+vi.mock("@/components/app/FormPrimitives", () => ({
   TYPE_SELECT_WIDTH: "w-32",
   FormCardTypeSelect: ({
     label,
@@ -43,9 +43,14 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
     <div data-testid="editable-select">{value}</div>
   ),
   FormCheckboxCard: ({ label, checked }: { label: string; checked: boolean }) => (
-    <div data-testid="checkbox-card">{label}: {checked ? "yes" : "no"}</div>
+    <div data-testid="checkbox-card">
+      {label}: {checked ? "yes" : "no"}
+    </div>
   ),
-  FormListFieldCard: ({ children, typeSelect }: {
+  FormListFieldCard: ({
+    children,
+    typeSelect,
+  }: {
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
@@ -62,7 +67,13 @@ describe("ContactEducationTab Component", () => {
       <ContactEducationTab
         contactDraft={{
           education: [
-            { degree: "BS CS", institution: "FAST", fieldOfStudy: "Computer Science", year: "2020", grade: "A" },
+            {
+              degree: "BS CS",
+              institution: "FAST",
+              fieldOfStudy: "Computer Science",
+              year: "2020",
+              grade: "A",
+            },
           ],
         }}
         getLocalId={() => "loc-1"}

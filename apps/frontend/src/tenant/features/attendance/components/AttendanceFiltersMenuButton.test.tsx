@@ -9,7 +9,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleFiltersMenuButton", () => ({
+vi.mock("@/components/app/ModuleFiltersMenuButton", () => ({
   ModuleFilterDropdown: ({ children, label }: { children: React.ReactNode; label: string }) => (
     <div data-testid="filter-dropdown">
       <span>{label}</span>
@@ -30,7 +30,7 @@ describe("AttendanceFiltersMenuButton Component", () => {
       <AttendanceFiltersMenuButton
         statusFilter="all"
         activeFilterCount={0}
-        statuses={[{ id: "present", label: "Present" } as any]}
+        statuses={[{ id: "present", label: "Present" } as unknown as never]}
         statusLabel={(id) => id.toUpperCase()}
         onChangeStatus={vi.fn()}
         onClearFilters={vi.fn()}

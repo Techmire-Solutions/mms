@@ -1,14 +1,20 @@
 import { useState } from "react";
-import { type Payment } from '@/lib/data/financeData';
-import { PAYMENT_METHOD_BADGE, SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { type Payment } from "@/lib/data/financeData";
+import { PAYMENT_METHOD_BADGE, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type ModuleColumnCustomizerProps } from "@/components/ui/ModuleColumnCustomizer";
+import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { type AppTranslationKey } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { ModuleTrashConfirmDialogs } from "@/components/ui/ModuleTrashConfirmDialogs";
-import { PaymentsListContent, PAYMENT_TRACKER_COLUMN_KEYS } from "@/tenant/features/finance/components/PaymentsListContent";
-import { PaymentMethodSummary, PaymentSelectionBar } from "@/tenant/features/finance/components/PaymentsListFilters";
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
+import {
+  PaymentsListContent,
+  PAYMENT_TRACKER_COLUMN_KEYS,
+} from "@/tenant/features/finance/components/PaymentsListContent";
+import {
+  PaymentMethodSummary,
+  PaymentSelectionBar,
+} from "@/tenant/features/finance/components/PaymentsListFilters";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 const METHOD_LABEL_KEYS: Record<string, AppTranslationKey> = {
   Cash: "finance.paymentMethod.cash",
@@ -55,7 +61,7 @@ export function PaymentsList({
   getColumnWidth,
   onColumnResize,
   columnCustomizer,
-  onRowClick,
+  onRowClick: _onRowClick,
 }: PaymentsListProps): React.JSX.Element {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
@@ -63,36 +69,46 @@ export function PaymentsList({
   const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
   const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
-  const paymentsByMethod = payments.reduce<Record<string, { amount: number; count: number }>>((amountByMethod, payment) => {
-    const current = amountByMethod[payment.method] ?? { amount: 0, count: 0 };
-    amountByMethod[payment.method] = {
-      amount: current.amount + payment.amount,
-      count: current.count + 1,
-    };
-    return amountByMethod;
-  }, {});
+  const paymentsByMethod = payments.reduce<Record<string, { amount: number; count: number }>>(
+    (amountByMethod, payment) => {
+      const current = amountByMethod[payment.method] ?? { amount: 0, count: 0 };
+      amountByMethod[payment.method] = {
+        amount: current.amount + payment.amount,
+        count: current.count + 1,
+      };
+      return amountByMethod;
+    },
+    {},
+  );
 
   const columnVisible = isColumnVisible ?? ALWAYS_COLUMN_VISIBLE;
   const visibleColCount =
-    PAYMENT_TRACKER_COLUMN_KEYS.filter(columnVisible).length +
-    (canDelete ? 2 : 0);
+    PAYMENT_TRACKER_COLUMN_KEYS.filter(columnVisible).length + (canDelete ? 2 : 0);
   const selectedSet = new Set(selectedIds);
-  const allSelected = payments.length > 0 && payments.every((payment) => selectedSet.has(payment.id));
+  const allSelected =
+    payments.length > 0 && payments.every((payment) => selectedSet.has(payment.id));
 
   const methodConfig = (() => {
-    const entries = Object.keys(PAYMENT_METHOD_BADGE).map((method) => [
-      method,
-      {
-        label: t(METHOD_LABEL_KEYS[method] ?? "finance.paymentMethod.other"),
-        cls: PAYMENT_METHOD_BADGE[method] || SEMANTIC_BADGE.muted,
-      },
-    ] as const);
+    const entries = Object.keys(PAYMENT_METHOD_BADGE).map(
+      (method) =>
+        [
+          method,
+          {
+            label: t(METHOD_LABEL_KEYS[method] ?? "finance.paymentMethod.other"),
+            cls: PAYMENT_METHOD_BADGE[method] || SEMANTIC_BADGE.muted,
+          },
+        ] as const,
+    );
     return Object.fromEntries(entries);
   })() as Record<string, StatusBadgeConfigItem>;
 
   return (
     <section aria-label={t("finance.payments")} className="space-y-4">
-      <PaymentMethodSummary paymentsByMethod={paymentsByMethod} methodConfig={methodConfig} formatCurrency={formatCurrency} />
+      <PaymentMethodSummary
+        paymentsByMethod={paymentsByMethod}
+        methodConfig={methodConfig}
+        formatCurrency={formatCurrency}
+      />
       {canDelete && (
         <PaymentSelectionBar
           selectedCount={selectedIds.length}
@@ -116,7 +132,12 @@ export function PaymentsList({
         getColumnWidth={getColumnWidth}
         onColumnResize={onColumnResize}
         onTogglePayment={(paymentId, checked) => onTogglePayment?.(paymentId, checked)}
-        onToggleAll={(checked) => onToggleSelectAll?.(checked, payments.map((payment) => payment.id))}
+        onToggleAll={(checked) =>
+          onToggleSelectAll?.(
+            checked,
+            payments.map((payment) => payment.id),
+          )
+        }
         onRequestDelete={setPendingDeleteId}
         onRestore={onRestore}
       />

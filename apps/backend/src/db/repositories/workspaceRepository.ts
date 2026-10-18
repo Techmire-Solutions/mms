@@ -1,19 +1,19 @@
-import { eq } from 'drizzle-orm';
+import { eq } from "drizzle-orm";
 import {
   type Workspace,
   type BrandingSettings,
   type GlobalSettings,
   mergeGlobalSettings,
   SYSTEM_MODULES,
-} from '@mms/shared';
-import { activeDb } from '../dbConnection.js';
-import { workspaces as workspacesTable } from '../schema.js';
+} from "@mms/shared";
+import { activeDb } from "../dbConnection.js";
+import { workspaces as workspacesTable } from "../schema.js";
 import {
   decryptLlmApiKey,
   decryptLlmConfigs,
   encryptLlmApiKey,
   encryptLlmConfigs,
-} from './workspaceLlmSecrets.js';
+} from "./workspaceLlmSecrets.js";
 
 // ---------------------------------------------------------------------------
 // In-process TTL cache for workspace rows.
@@ -98,46 +98,47 @@ function rowToWorkspace(ws: {
 /** Map nullable workspace columns back to a BrandingSettings shape. */
 function rowToBranding(ws: typeof workspacesTable.$inferSelect): BrandingSettings {
   return {
-    madrasaName:        ws.madrasaName,
-    tagline:            ws.tagline            ?? '',
-    primaryColor:       ws.primaryColor       ?? '',
-    secondaryColor:     ws.secondaryColor     ?? '',
-    cornerStyle:        (ws.cornerStyle as BrandingSettings['cornerStyle']) ?? 'rounded',
-    logoUrl:            ws.logoUrl            ?? '',
-    faviconUrl:         ws.faviconUrl         ?? '',
-    footerText:         ws.footerText         ?? '',
-    email:              ws.email              ?? '',
-    phone:              ws.phone              ?? '',
-    website:            ws.website            ?? '',
-    legalName:          ws.legalName          ?? '',
-    registrationNumber: ws.registrationNumber ?? '',
-    addressLine1:       ws.addressLine1       ?? '',
-    addressLine2:       ws.addressLine2       ?? '',
-    city:               ws.city               ?? '',
-    region:             ws.region             ?? '',
-    postalCode:         ws.postalCode         ?? '',
-    country:            ws.country            ?? '',
-    socialLinks:        (ws.socialLinks as BrandingSettings['socialLinks']) ?? [],
+    madrasaName: ws.madrasaName,
+    tagline: ws.tagline ?? "",
+    primaryColor: ws.primaryColor ?? "",
+    secondaryColor: ws.secondaryColor ?? "",
+    cornerStyle: (ws.cornerStyle as BrandingSettings["cornerStyle"]) ?? "rounded",
+    logoUrl: ws.logoUrl ?? "",
+    faviconUrl: ws.faviconUrl ?? "",
+    footerText: ws.footerText ?? "",
+    email: ws.email ?? "",
+    phone: ws.phone ?? "",
+    website: ws.website ?? "",
+    legalName: ws.legalName ?? "",
+    registrationNumber: ws.registrationNumber ?? "",
+    addressLine1: ws.addressLine1 ?? "",
+    addressLine2: ws.addressLine2 ?? "",
+    city: ws.city ?? "",
+    region: ws.region ?? "",
+    postalCode: ws.postalCode ?? "",
+    country: ws.country ?? "",
+    socialLinks: (ws.socialLinks as BrandingSettings["socialLinks"]) ?? [],
   };
 }
 
 /** Map nullable workspace columns back to a GlobalSettings shape (with defaults). */
 function rowToGlobalSettings(ws: typeof workspacesTable.$inferSelect): GlobalSettings {
   const overrides: Partial<GlobalSettings> = {};
-  if (ws.language) overrides.language = ws.language as GlobalSettings['language'];
+  if (ws.language) overrides.language = ws.language as GlobalSettings["language"];
   if (ws.timezone) overrides.timezone = ws.timezone;
   if (ws.dateFormat) overrides.dateFormat = ws.dateFormat;
   if (ws.emailNotifications != null) overrides.emailNotifications = ws.emailNotifications;
   if (ws.smsNotifications != null) overrides.smsNotifications = ws.smsNotifications;
   if (ws.twoFactor != null) overrides.twoFactor = ws.twoFactor;
   if (ws.sessionTimeout != null) overrides.sessionTimeout = ws.sessionTimeout;
-  if (ws.passwordPolicy) overrides.passwordPolicy = ws.passwordPolicy as GlobalSettings['passwordPolicy'];
-  if (ws.theme) overrides.theme = ws.theme as GlobalSettings['theme'];
+  if (ws.passwordPolicy)
+    overrides.passwordPolicy = ws.passwordPolicy as GlobalSettings["passwordPolicy"];
+  if (ws.theme) overrides.theme = ws.theme as GlobalSettings["theme"];
   if (ws.enabledModules) overrides.enabledModules = ws.enabledModules as Record<string, boolean>;
-  if (ws.llmProvider) overrides.llmProvider = ws.llmProvider as GlobalSettings['llmProvider'];
+  if (ws.llmProvider) overrides.llmProvider = ws.llmProvider as GlobalSettings["llmProvider"];
   const llmApiKey = decryptLlmApiKey(ws.llmApiKey);
   if (llmApiKey) overrides.llmApiKey = llmApiKey;
-  const llmConfigs = decryptLlmConfigs(ws.llmConfigs as GlobalSettings['llmConfigs'] | null);
+  const llmConfigs = decryptLlmConfigs(ws.llmConfigs as GlobalSettings["llmConfigs"] | null);
   if (llmConfigs) overrides.llmConfigs = llmConfigs;
   return mergeGlobalSettings(overrides);
 }
@@ -158,11 +159,18 @@ export async function listWorkspaceRows(options?: {
     })
     .from(workspacesTable);
 
-  const rows = (options?.limit !== undefined || options?.offset !== undefined)
-    ? await (query as unknown as { limit: (l: number) => { offset: (o: number) => Promise<typeof workspacesTable.$inferSelect[]> } })
-        .limit(Math.min(Math.max(options?.limit ?? 500, 1), 5000))
-        .offset(Math.max(options?.offset ?? 0, 0))
-    : await query;
+  const rows =
+    options?.limit !== undefined || options?.offset !== undefined
+      ? await (
+          query as unknown as {
+            limit: (l: number) => {
+              offset: (o: number) => Promise<(typeof workspacesTable.$inferSelect)[]>;
+            };
+          }
+        )
+          .limit(Math.min(Math.max(options?.limit ?? 500, 1), 5000))
+          .offset(Math.max(options?.offset ?? 0, 0))
+      : await query;
 
   return rows.map(rowToWorkspace);
 }
@@ -324,7 +332,9 @@ export async function getWorkspaceWithBranding(subdomain: string): Promise<{
 }
 
 /** Read all global settings for a workspace. Returns null when workspace not found. */
-export async function getWorkspaceGlobalSettings(subdomain: string): Promise<GlobalSettings | null> {
+export async function getWorkspaceGlobalSettings(
+  subdomain: string,
+): Promise<GlobalSettings | null> {
   try {
     const ws = await loadWorkspaceRow(subdomain);
     return ws ? rowToGlobalSettings(ws) : null;
@@ -341,18 +351,23 @@ export async function insertWorkspaceRow(values: {
   country?: string | null;
   enabled?: boolean;
 }): Promise<void> {
-  await activeDb().insert(workspacesTable).values({
-    id: values.id,
-    subdomain: values.subdomain,
-    madrasaName: values.madrasaName,
-    tagline: values.tagline || null,
-    country: values.country || null,
-    enabled: values.enabled ?? true,
-  });
+  await activeDb()
+    .insert(workspacesTable)
+    .values({
+      id: values.id,
+      subdomain: values.subdomain,
+      madrasaName: values.madrasaName,
+      tagline: values.tagline || null,
+      country: values.country || null,
+      enabled: values.enabled ?? true,
+    });
   invalidateWorkspaceCache(values.subdomain);
 }
 
-export async function updateWorkspaceEnabledRow(subdomain: string, enabled: boolean): Promise<void> {
+export async function updateWorkspaceEnabledRow(
+  subdomain: string,
+  enabled: boolean,
+): Promise<void> {
   await activeDb()
     .update(workspacesTable)
     .set({ enabled })
@@ -383,26 +398,26 @@ export async function upsertWorkspaceBranding(
   await activeDb()
     .update(workspacesTable)
     .set({
-      madrasaName:        b.madrasaName.trim(),
-      tagline:            b.tagline?.trim()            || null,
-      primaryColor:       b.primaryColor               || null,
-      secondaryColor:     b.secondaryColor             || null,
-      cornerStyle:        b.cornerStyle                || null,
-      logoUrl:            b.logoUrl                    || null,
-      faviconUrl:         b.faviconUrl                 || null,
-      footerText:         b.footerText                 || null,
-      email:              b.email                      || null,
-      phone:              b.phone                      || null,
-      website:            b.website                    || null,
-      legalName:          b.legalName                  || null,
-      registrationNumber: b.registrationNumber         || null,
-      addressLine1:       b.addressLine1               || null,
-      addressLine2:       b.addressLine2               || null,
-      city:               b.city                       || null,
-      region:             b.region                     || null,
-      postalCode:         b.postalCode                 || null,
-      country:            b.country                    || null,
-      socialLinks:        b.socialLinks?.length ? b.socialLinks : null,
+      madrasaName: b.madrasaName.trim(),
+      tagline: b.tagline?.trim() || null,
+      primaryColor: b.primaryColor || null,
+      secondaryColor: b.secondaryColor || null,
+      cornerStyle: b.cornerStyle || null,
+      logoUrl: b.logoUrl || null,
+      faviconUrl: b.faviconUrl || null,
+      footerText: b.footerText || null,
+      email: b.email || null,
+      phone: b.phone || null,
+      website: b.website || null,
+      legalName: b.legalName || null,
+      registrationNumber: b.registrationNumber || null,
+      addressLine1: b.addressLine1 || null,
+      addressLine2: b.addressLine2 || null,
+      city: b.city || null,
+      region: b.region || null,
+      postalCode: b.postalCode || null,
+      country: b.country || null,
+      socialLinks: b.socialLinks?.length ? b.socialLinks : null,
     })
     .where(eq(workspacesTable.subdomain, subdomain));
   invalidateWorkspaceCache(subdomain);
@@ -416,19 +431,19 @@ export async function upsertWorkspaceGlobalSettings(
   await activeDb()
     .update(workspacesTable)
     .set({
-      language:           g.language           || null,
-      timezone:           g.timezone           || null,
-      dateFormat:         g.dateFormat         || null,
+      language: g.language || null,
+      timezone: g.timezone || null,
+      dateFormat: g.dateFormat || null,
       emailNotifications: g.emailNotifications,
-      smsNotifications:   g.smsNotifications,
-      twoFactor:          g.twoFactor,
-      sessionTimeout:     g.sessionTimeout     || null,
-      passwordPolicy:     g.passwordPolicy     || null,
-      theme:              g.theme              || null,
-      enabledModules:     g.enabledModules,
-      llmProvider:        g.llmProvider        || null,
-      llmApiKey:          encryptLlmApiKey(g.llmApiKey),
-      llmConfigs:         encryptLlmConfigs(g.llmConfigs),
+      smsNotifications: g.smsNotifications,
+      twoFactor: g.twoFactor,
+      sessionTimeout: g.sessionTimeout || null,
+      passwordPolicy: g.passwordPolicy || null,
+      theme: g.theme || null,
+      enabledModules: g.enabledModules,
+      llmProvider: g.llmProvider || null,
+      llmApiKey: encryptLlmApiKey(g.llmApiKey),
+      llmConfigs: encryptLlmConfigs(g.llmConfigs),
     })
     .where(eq(workspacesTable.subdomain, subdomain));
   invalidateWorkspaceCache(subdomain);
@@ -481,7 +496,6 @@ export async function deleteWorkspaceRow(subdomain: string): Promise<void> {
   await activeDb().delete(workspacesTable).where(eq(workspacesTable.subdomain, subdomain));
   invalidateWorkspaceCache(subdomain);
 }
-
 
 /** IANA timezone of a workspace (business-day authority); null when unset. */
 export async function findWorkspaceTimezone(subdomain: string): Promise<string | null> {

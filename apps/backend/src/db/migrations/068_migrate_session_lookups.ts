@@ -3,37 +3,37 @@ import {
   SESSION_LOOKUP_LEGACY_COLLECTION_KEYS,
   isSessionLookupLegacyCollectionKey,
   type SessionLookupKind,
-} from '@mms/shared';
-import { and, eq } from 'drizzle-orm';
-import { getDb } from '../dbClient.js';
-import * as schema from '../schema.js';
-import { withGlobalTenant } from '../tenant-context.js';
+} from "@mms/shared";
+import { and, eq } from "drizzle-orm";
+import { getDb } from "../dbClient.js";
+import * as schema from "../schema.js";
+import { withGlobalTenant } from "../tenant-context.js";
 
 function slugifyLabel(label: string, index: number): string {
   const base = label
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
     .slice(0, 48);
-  return `${base || 'item'}-${index}`;
+  return `${base || "item"}-${index}`;
 }
 
 function normalizeStringItems(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const out: string[] = [];
   for (const entry of raw) {
-    if (typeof entry === 'string' && entry.trim()) {
+    if (typeof entry === "string" && entry.trim()) {
       out.push(entry.trim());
       continue;
     }
-    if (entry && typeof entry === 'object') {
+    if (entry && typeof entry === "object") {
       const record = entry as Record<string, unknown>;
       const candidate =
-        (typeof record.label === 'string' && record.label) ||
-        (typeof record.name === 'string' && record.name) ||
-        (typeof record.id === 'string' && record.id) ||
-        '';
+        (typeof record.label === "string" && record.label) ||
+        (typeof record.name === "string" && record.name) ||
+        (typeof record.id === "string" && record.id) ||
+        "";
       if (candidate.trim()) out.push(candidate.trim());
     }
   }
@@ -97,7 +97,7 @@ export async function runMigration068(): Promise<void> {
 
   if (migratedTenants === 0) {
     console.log(
-      `[Migration 068] No session lookup collections to migrate (legacy: ${Object.keys(SESSION_LOOKUP_LEGACY_COLLECTION_KEYS).join(', ')}).`,
+      `[Migration 068] No session lookup collections to migrate (legacy: ${Object.keys(SESSION_LOOKUP_LEGACY_COLLECTION_KEYS).join(", ")}).`,
     );
   } else {
     console.log(

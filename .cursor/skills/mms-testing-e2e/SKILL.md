@@ -4,7 +4,7 @@ description: Automated testing guide for MMS — Vitest unit/integration tests, 
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 compatibility: Requires Node 24+, Playwright browsers (pnpm --filter e2e-tests exec playwright install), and a live PostgreSQL for test:db.
 allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --filter *)
 ---
@@ -24,8 +24,8 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 - **Backend API & RBAC**: `pnpm --filter mms-backend test` (Fastify `inject()` + `vi.hoisted()` in-memory repository mocks).
 - **Database Integration**: `pnpm --filter mms-backend test:db` (Real PostgreSQL suite for RLS, transaction locks, and SQL aggregates).
 - **Frontend Components & Hooks**: `pnpm --filter mms-frontend test` (Vitest + happy-dom for TanStack Query facades, modals, and forms).
-- **Playwright E2E**: `pnpm test:e2e` (Playwright project root is `e2e/`).
-- **Responsive & A11y Smoke**: Specs live at `e2e/tests/responsive-shell.spec.ts` and `e2e/tests/a11y-shell.spec.ts`; run via `pnpm test:e2e tests/responsive-shell.spec.ts` and `pnpm test:e2e tests/a11y-shell.spec.ts`. Auth bootstrap: `e2e/helpers/tenantBootstrap.ts`.
+- **Playwright E2E**: `pnpm test:e2e` (Playwright project root is `e2e/`). For execution commands and directory layout, see [references/playwright-test-guide.md](references/playwright-test-guide.md).
+- **Responsive & A11y Smoke**: Specs live at `e2e/tests/responsive/responsive-shell.spec.ts` and `e2e/tests/a11y/a11y-shell.spec.ts`; run via `pnpm test:e2e tests/responsive/responsive-shell.spec.ts` and `pnpm test:e2e tests/a11y/a11y-shell.spec.ts`. Auth bootstrap: `e2e/helpers/tenantBootstrap.ts`.
 
 ## 2. Testing Quality Invariants
 

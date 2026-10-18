@@ -1,23 +1,23 @@
-import { useState, useEffect } from 'react';
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
-import { useDeleteWorkspace } from '@/platform/hooks/usePlatformWorkspaces';
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useState, useEffect } from "react";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import { useDeleteWorkspace } from "@/platform/hooks/usePlatformWorkspaces";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function useWorkspaceDeleteState() {
   const { t } = useTranslation();
   const deleteWorkspace = useDeleteWorkspace();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [targetWorkspace, setTargetWorkspace] = useState<PlatformWorkspaceRowData | null>(null);
-  const [password, setPassword] = useState('');
-  const [confirmSubdomain, setConfirmSubdomain] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmSubdomain, setConfirmSubdomain] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!confirmOpen) {
       setTargetWorkspace(null);
-      setPassword('');
-      setConfirmSubdomain('');
+      setPassword("");
+      setConfirmSubdomain("");
       setPasswordError(null);
     }
   }, [confirmOpen]);
@@ -30,11 +30,11 @@ export function useWorkspaceDeleteState() {
   const handleDelete = (): void => {
     if (!targetWorkspace) return;
     if (confirmSubdomain.trim().toLowerCase() !== targetWorkspace.subdomain.toLowerCase()) {
-      setPasswordError(t('platform.deleteWorkspaceConfirmSubdomainMismatch'));
+      setPasswordError(t("platform.deleteWorkspaceConfirmSubdomainMismatch"));
       return;
     }
     if (!password.trim()) {
-      setPasswordError(t('platform.deleteWorkspacePasswordHint'));
+      setPasswordError(t("platform.deleteWorkspacePasswordHint"));
       return;
     }
     setPasswordError(null);

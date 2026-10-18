@@ -2,12 +2,9 @@ import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveEmailLabel } from "@/lib/contacts/contactI18n";
 import { CollectionRowItem } from "./ContactDetailShared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import {
-  DetailCollectionEmpty,
-  withPrimaryEmail,
-} from "./contactDetailChannelHelpers";
+import { DetailCollectionEmpty, withPrimaryEmail } from "./contactDetailChannelHelpers";
 import { buildDetailEmailMessagingActions } from "./contactDetailMessagingActions";
 
 export interface ContactDetailEmailsSectionProps {
@@ -25,7 +22,10 @@ export function ContactDetailEmailsSection({
   const emails = contact.emails && contact.emails.length > 0 ? contact.emails : [];
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.form.emailsLabel")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.form.emailsLabel")}
+    >
       {emails.length === 0 ? (
         <DetailCollectionEmpty title={t("contacts.detail.emptyEmails")} />
       ) : (

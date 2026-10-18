@@ -1,23 +1,19 @@
-import React, { createContext, useContext, useEffect } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import {
-  getLanguageDirection,
-  isRtlLanguage,
-  applyDocumentLanguage,
-  type AppLanguageCode,
-} from '@mms/shared';
-import { ensureLocaleFontsLoaded } from '@/lib/localeFonts';
+import React, { createContext, useContext, useEffect, useMemo } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getLanguageDirection, isRtlLanguage, type AppLanguageCode } from "@mms/shared";
+import { applyDocumentLanguage } from "@/lib/documentLanguage";
+import { ensureLocaleFontsLoaded } from "@/lib/localeFonts";
 
 export interface DirectionContextValue {
-  dir: 'ltr' | 'rtl';
+  dir: "ltr" | "rtl";
   isRtl: boolean;
   language: string;
 }
 
 const DirectionContext = createContext<DirectionContextValue>({
-  dir: 'ltr',
+  dir: "ltr",
   isRtl: false,
-  language: 'en',
+  language: "en",
 });
 
 export interface DirectionProviderProps {
@@ -38,28 +34,28 @@ export function DirectionProvider({ children }: DirectionProviderProps): React.J
     applyDocumentLanguage(language);
     ensureLocaleFontsLoaded(language as AppLanguageCode);
 
-    if (typeof document !== 'undefined') {
+    if (typeof document !== "undefined") {
       const root = document.documentElement;
-      root.setAttribute('dir', dir);
-      root.setAttribute('lang', language);
+      root.setAttribute("dir", dir);
+      root.setAttribute("lang", language);
 
       // Manage typography script classes on the document element
-      root.classList.remove('font-arabic', 'font-urdu', 'font-persian');
-      if (language === 'ar') {
-        root.classList.add('font-arabic');
-      } else if (language === 'ur') {
-        root.classList.add('font-urdu');
-      } else if (language === 'fa') {
-        root.classList.add('font-persian');
+      root.classList.remove("font-arabic", "font-urdu", "font-persian");
+      if (language === "ar") {
+        root.classList.add("font-arabic");
+      } else if (language === "ur") {
+        root.classList.add("font-urdu");
+      } else if (language === "fa") {
+        root.classList.add("font-persian");
       }
     }
   }, [language, dir]);
 
-  const value = (() => ({
-      dir,
-      isRtl,
-      language,
-    }))() as DirectionContextValue;
+  // Stable identity so direction consumers don't re-render on unrelated parent renders.
+  const value = useMemo<DirectionContextValue>(
+    () => ({ dir, isRtl, language }),
+    [dir, isRtl, language],
+  );
 
   return <DirectionContext.Provider value={value}>{children}</DirectionContext.Provider>;
 }

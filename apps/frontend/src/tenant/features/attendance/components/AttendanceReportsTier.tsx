@@ -1,7 +1,7 @@
 import type React from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SubTabBar } from "@/components/ui/SubTabBar";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SubTabBar } from "@/components/app/SubTabBar";
 import { AttendanceAnalytics } from "@/tenant/features/attendance/components/AttendanceAnalytics";
 import { KPISummary, ModuleReports } from "@/tenant/components/moduleReports";
 

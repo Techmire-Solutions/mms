@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getRequestTenant: vi.fn(),
@@ -14,52 +14,52 @@ const mocks = vi.hoisted(() => ({
   accounting: vi.fn(),
 }));
 
-vi.mock('../lib/tenantContext.js', () => ({
+vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: mocks.getRequestTenant,
 }));
-vi.mock('../db/tenant-context.js', () => ({
+vi.mock("../db/tenant-context.js", () => ({
   withTenant: mocks.withTenant,
 }));
-vi.mock('../students/use-cases/studentUseCases.js', () => ({
+vi.mock("../students/use-cases/studentUseCases.js", () => ({
   studentUseCases: { loadStudentsCommandMetrics: mocks.students },
 }));
-vi.mock('../faculty/use-cases/facultyUseCases.js', () => ({
+vi.mock("../faculty/use-cases/facultyUseCases.js", () => ({
   facultyUseCases: {
     loadFacultyCommandMetrics: mocks.faculty,
   },
 }));
-vi.mock('../contacts/use-cases/contactUseCases.js', () => ({
+vi.mock("../contacts/use-cases/contactUseCases.js", () => ({
   contactUseCases: { loadContactsCommandMetrics: mocks.contacts },
 }));
-vi.mock('../services/sessionService.js', () => ({
+vi.mock("../services/sessionService.js", () => ({
   loadSessionsCommandMetrics: mocks.sessions,
 }));
-vi.mock('../db/repositories/attendanceRepositoryList.js', () => ({
+vi.mock("../db/repositories/attendanceRepositoryList.js", () => ({
   aggregateAttendanceCommandMetrics: mocks.attendance,
 }));
-vi.mock('../services/financeService.js', () => ({
+vi.mock("../services/financeService.js", () => ({
   loadFinanceCommandMetrics: mocks.finance,
 }));
-vi.mock('../services/hasanatService.js', () => ({
+vi.mock("../services/hasanatService.js", () => ({
   loadHasanatCommandMetrics: mocks.hasanat,
 }));
-vi.mock('../services/questionBankMetricsService.js', () => ({
+vi.mock("../services/questionBankMetricsService.js", () => ({
   loadQuestionBankCommandMetrics: mocks.questionBank,
 }));
-vi.mock('../services/accountingService.js', () => ({
+vi.mock("../services/accountingService.js", () => ({
   loadAccountingCommandMetrics: mocks.accounting,
 }));
 
-import { loadDashboardSummary } from '../services/dashboardSummaryService.js';
-import { clearInMemoryRedisFallback } from '../lib/redis.js';
+import { loadDashboardSummary } from "../services/dashboardSummaryService.js";
+import { clearInMemoryRedisFallback } from "../lib/redis.js";
 
-describe('loadDashboardSummary', () => {
+describe("loadDashboardSummary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearInMemoryRedisFallback();
-    mocks.getRequestTenant.mockReturnValue(' DarulQuran ');
-    mocks.withTenant.mockImplementation(
-      async (_tenant: string, action: () => Promise<unknown>) => action(),
+    mocks.getRequestTenant.mockReturnValue(" DarulQuran ");
+    mocks.withTenant.mockImplementation(async (_tenant: string, action: () => Promise<unknown>) =>
+      action(),
     );
     mocks.students.mockResolvedValue({ total: 1441 });
     mocks.faculty.mockResolvedValue({ total: 60 });
@@ -72,27 +72,26 @@ describe('loadDashboardSummary', () => {
     mocks.accounting.mockResolvedValue({ revenue: 500 });
   });
 
-  it('returns one complete tenant snapshot', async () => {
-    const summary = await loadDashboardSummary('2026-08-31', 'admin');
+  it("returns one complete tenant snapshot", async () => {
+    const summary = await loadDashboardSummary("2026-08-31", "admin");
 
     expect(summary.students).toEqual({ total: 1441 });
     expect(summary.faculty).toEqual({ total: 60 });
     expect(summary.contacts).toEqual({ total: 1543 });
-    expect(mocks.attendance).toHaveBeenCalledWith('darulquran', {
-      selectedDate: '2026-08-31',
+    expect(mocks.attendance).toHaveBeenCalledWith("darulquran", {
+      selectedDate: "2026-08-31",
     });
-    expect(mocks.withTenant).toHaveBeenCalledWith(
-      'darulquran',
-      expect.any(Function),
-      { readOnly: true, statementTimeoutMs: 10000 },
-    );
+    expect(mocks.withTenant).toHaveBeenCalledWith("darulquran", expect.any(Function), {
+      readOnly: true,
+      statementTimeoutMs: 10000,
+    });
   });
 
-  it('rejects the snapshot if any metric fails instead of returning partial zeros', async () => {
-    mocks.contacts.mockRejectedValueOnce(new Error('contacts query failed'));
+  it("rejects the snapshot if any metric fails instead of returning partial zeros", async () => {
+    mocks.contacts.mockRejectedValueOnce(new Error("contacts query failed"));
 
-    await expect(loadDashboardSummary('2026-08-31', 'admin')).rejects.toThrow(
-      'contacts query failed',
+    await expect(loadDashboardSummary("2026-08-31", "admin")).rejects.toThrow(
+      "contacts query failed",
     );
   });
 });

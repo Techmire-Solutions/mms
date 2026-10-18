@@ -1,6 +1,6 @@
-import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm';
-import { students } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
+import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { students } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
 
 /**
  * Active students whose GR matches any of the given values (case-insensitive).
@@ -12,11 +12,7 @@ export async function findActiveGrNumberOwnersSql(
 ): Promise<Map<string, string>> {
   const subdomain = tenant.trim().toLowerCase();
   const normalized = [
-    ...new Set(
-      grNumbers
-        .map((gr) => gr.trim().toLowerCase())
-        .filter((gr) => gr.length > 0),
-    ),
+    ...new Set(grNumbers.map((gr) => gr.trim().toLowerCase()).filter((gr) => gr.length > 0)),
   ];
   if (normalized.length === 0) return new Map();
 
@@ -40,7 +36,7 @@ export async function findActiveGrNumberOwnersSql(
       );
     const owners = new Map<string, string>();
     for (const row of rows) {
-      const key = (row.grNumber ?? '').trim().toLowerCase();
+      const key = (row.grNumber ?? "").trim().toLowerCase();
       if (key) owners.set(key, String(row.id));
     }
     return owners;
@@ -57,11 +53,7 @@ export async function findActiveStudentIdOwnersSql(
 ): Promise<Map<string, string>> {
   const subdomain = tenant.trim().toLowerCase();
   const normalized = [
-    ...new Set(
-      studentIds
-        .map((sid) => sid.trim().toLowerCase())
-        .filter((sid) => sid.length > 0),
-    ),
+    ...new Set(studentIds.map((sid) => sid.trim().toLowerCase()).filter((sid) => sid.length > 0)),
   ];
   if (normalized.length === 0) return new Map();
 
@@ -85,7 +77,7 @@ export async function findActiveStudentIdOwnersSql(
       );
     const owners = new Map<string, string>();
     for (const row of rows) {
-      const key = (row.studentId ?? '').trim().toLowerCase();
+      const key = (row.studentId ?? "").trim().toLowerCase();
       if (key) owners.set(key, String(row.id));
     }
     return owners;

@@ -27,9 +27,7 @@ const mockContact: Contact = {
 
 describe("ContactDetailSkillsSection Component", () => {
   it("renders skills details correctly", () => {
-    const html = renderToStaticMarkup(
-      <ContactDetailSkillsSection contact={mockContact} />,
-    );
+    const html = renderToStaticMarkup(<ContactDetailSkillsSection contact={mockContact} />);
 
     expect(html).toContain("Arabic Grammar");
     expect(html).toContain("Language");

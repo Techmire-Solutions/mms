@@ -1,10 +1,11 @@
-import React from 'react';
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from '@mms/shared';
-import WorkspaceLogo from '@/platform/components/WorkspaceLogo';
-import { tenantUrl } from '@/lib/config/tenantConfig';
-import { CopyButton } from '@/components/ui/CopyButton';
-import { ExternalLink, Mail } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from "react";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import WorkspaceLogo from "@/platform/components/WorkspaceLogo";
+import { tenantUrl } from "@/lib/config/tenantConfig";
+import { CopyButton } from "@shared/ui";
+import { ExternalLink, Mail } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
 
 interface WorkspaceIdentityCellProps {
   workspace: PlatformWorkspaceRowData;
@@ -16,8 +17,8 @@ export function WorkspaceIdentityCell({
   appDomain,
 }: WorkspaceIdentityCellProps): React.JSX.Element {
   const { t } = useTranslation();
-  const tenantLink = tenantUrl(workspace.subdomain, '/');
-  const openTitle = `${t('platform.openWorkspace')} (${workspace.subdomain}.${appDomain})`;
+  const tenantLink = tenantUrl(workspace.subdomain, "/");
+  const openTitle = `${t("platform.openWorkspace")} (${workspace.subdomain}.${appDomain})`;
 
   return (
     <div className="flex items-center gap-3.5">
@@ -45,9 +46,7 @@ export function WorkspaceIdentityCell({
           </a>
         </div>
         {workspace.tagline ? (
-          <p className="text-xs font-medium text-muted-foreground truncate">
-            {workspace.tagline}
-          </p>
+          <p className="text-xs font-medium text-muted-foreground truncate">{workspace.tagline}</p>
         ) : null}
         <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <div
@@ -60,13 +59,15 @@ export function WorkspaceIdentityCell({
           <CopyButton
             text={tenantLink}
             className="min-h-11 min-w-11 p-0 text-muted-foreground hover:text-foreground opacity-60 hover:opacity-100 transition-opacity rounded-md cursor-pointer"
-            showToast
+            onCopy={() => notify.success(t("contacts.table.copied"))}
           />
         </div>
         {workspace.adminEmail ? (
           <div className="text-2xs font-semibold text-muted-foreground flex items-center gap-1">
             <Mail className="w-3 h-3 text-primary/70 shrink-0" aria-hidden />
-            <span className="truncate" title={`Admin: ${workspace.adminEmail}`}>{workspace.adminEmail}</span>
+            <span className="truncate" title={`Admin: ${workspace.adminEmail}`}>
+              {workspace.adminEmail}
+            </span>
           </div>
         ) : null}
       </div>

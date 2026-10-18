@@ -1,18 +1,17 @@
 import type React from "react";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { getGenderAccentBarClass } from "@/lib/directoryCardAccent";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { getGenderAccentBarClass } from "@/lib/ui/directoryCardAccent";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveFacultyPrimaryChannels } from "@/lib/faculty/facultyPrimaryChannels";
 import { FacultyArchivedBanner } from "@/tenant/features/faculty/components/FacultyArchivedBanner";
 import { FacultyCardActions } from "@/tenant/features/faculty/components/FacultyCardActions";
 import { FacultyCardHeader } from "@/tenant/features/faculty/components/FacultyCardHeader";
 import { FacultyCardMetadata } from "@/tenant/features/faculty/components/FacultyCardMetadata";
-import { resolveFacultyCardFaceVisibility } from "@/tenant/features/faculty/components/facultyCardFaceVisibility";
-import { facultyRowIdentity } from "@/tenant/features/faculty/components/facultyFieldDisplay";
+import { resolveFacultyCardFaceVisibility } from "@/tenant/features/faculty/lib/facultyCardFaceVisibility";
+import { facultyRowIdentity } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 import type { useFacultyEntityDescriptor } from "@/tenant/features/faculty/hooks/useFacultyEntityDescriptor";
-import type { FacultyListContentProps } from "@/tenant/features/faculty/components/facultyListContentShared";
+import type { FacultyListContentProps } from "@/tenant/features/faculty/lib/facultyListContentShared";
 import type { Faculty } from "@mms/shared";
-
 
 export interface FacultyCardItemProps {
   faculty: Faculty;
@@ -78,9 +77,7 @@ export function FacultyCardItem(props: FacultyCardItemProps): React.JSX.Element 
       onEdit={onEdit}
       reducedMotion={reducedMotion}
       accentClassName={
-        isColumnVisible("gender")
-          ? getGenderAccentBarClass(isSelected, faculty.gender)
-          : undefined
+        isColumnVisible("gender") ? getGenderAccentBarClass(isSelected, faculty.gender) : undefined
       }
       header={{
         displayName,

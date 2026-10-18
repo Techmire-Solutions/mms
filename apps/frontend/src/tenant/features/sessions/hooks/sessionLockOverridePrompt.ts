@@ -1,6 +1,6 @@
-import { useSyncExternalStore } from 'react';
-import type { SessionEditViolation } from '@mms/shared';
-import { isApiError } from '@/lib/apiError';
+import { useSyncExternalStore } from "react";
+import type { SessionEditViolation } from "@mms/shared";
+import { isApiError } from "@/lib/apiError";
 
 interface PromptState {
   violations: SessionEditViolation[];
@@ -13,13 +13,18 @@ const emit = () => listeners.forEach((listener) => listener());
 
 /** Violation codes from a `409 session_locked` response ("…: startDate, category"). */
 export function sessionLockViolations(error: unknown): SessionEditViolation[] | null {
-  if (!isApiError(error) || error.status !== 409 || error.type !== 'session_locked') return null;
-  const list = error.message.split(':').pop() ?? '';
-  return list.split(',').map((code) => code.trim()).filter(Boolean) as SessionEditViolation[];
+  if (!isApiError(error) || error.status !== 409 || error.type !== "session_locked") return null;
+  const list = error.message.split(":").pop() ?? "";
+  return list
+    .split(",")
+    .map((code) => code.trim())
+    .filter(Boolean) as SessionEditViolation[];
 }
 
 /** Opens the override dialog; resolves with the reason, or null when cancelled. */
-export function requestSessionLockOverride(violations: SessionEditViolation[]): Promise<string | null> {
+export function requestSessionLockOverride(
+  violations: SessionEditViolation[],
+): Promise<string | null> {
   current?.resolve(null);
   return new Promise((resolve) => {
     current = { violations, resolve };
@@ -36,7 +41,10 @@ export function respondSessionLockOverride(reason: string | null): void {
 
 export function useSessionLockOverridePrompt(): PromptState | null {
   return useSyncExternalStore(
-    (listener) => { listeners.add(listener); return () => listeners.delete(listener); },
+    (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
     () => current,
     () => null,
   );

@@ -1,13 +1,13 @@
-import type { QuestionBankRepository } from '../repository/questionBankRepository.js';
-import { questionBankRepository } from '../repository/questionBankRepositoryAdapter.js';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { createGenericRelationalService } from '../../services/genericRelationalService.js';
+import type { QuestionBankRepository } from "../repository/questionBankRepository.js";
+import { questionBankRepository } from "../repository/questionBankRepositoryAdapter.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import {
   defineTenantBulkCollectionService,
   upsertWithBroadcast,
-} from '../../services/tenantBulkService.js';
-import { broadcastCollection } from '../../services/websocketService.js';
-import { getQuestionBankModulePreferencesForWorkspace } from '../../db/repositories/questionBankModulePreferencesRepository.js';
+} from "../../services/tenantBulkService.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import { getQuestionBankModulePreferencesForWorkspace } from "../../db/repositories/questionBankModulePreferencesRepository.js";
 import {
   type QuestionBankQuestion,
   type QuestionBankTest,
@@ -26,7 +26,7 @@ import {
   questionBankResultRecordSchema,
   normalizeQuestionBankQuestion,
   normalizeQuestionBankModulePreferences,
-} from '@mms/shared';
+} from "@mms/shared";
 
 const EMPTY_METRICS: QuestionBankCommandMetricsSnapshot = {
   total: 0,
@@ -46,21 +46,30 @@ const EMPTY_METRICS: QuestionBankCommandMetricsSnapshot = {
  */
 export function createQuestionBankUseCases(repo: QuestionBankRepository = questionBankRepository) {
   const questionBulkService = defineTenantBulkCollectionService<QuestionBankQuestion>(
-    { listByWorkspace: repo.listQuestionsByWorkspace, replaceForWorkspace: repo.replaceQuestionsForWorkspace },
+    {
+      listByWorkspace: repo.listQuestionsByWorkspace,
+      replaceForWorkspace: repo.replaceQuestionsForWorkspace,
+    },
     questionBankQuestionListSchema,
-    'questions',
+    "questions",
   );
 
   const testBulkService = defineTenantBulkCollectionService<QuestionBankTest>(
-    { listByWorkspace: repo.listTestsByWorkspace, replaceForWorkspace: repo.replaceTestsForWorkspace },
+    {
+      listByWorkspace: repo.listTestsByWorkspace,
+      replaceForWorkspace: repo.replaceTestsForWorkspace,
+    },
     questionBankTestListSchema,
-    'tests',
+    "tests",
   );
 
   const resultBulkService = defineTenantBulkCollectionService<QuestionBankResult>(
-    { listByWorkspace: repo.listResultsByWorkspace, replaceForWorkspace: repo.replaceResultsForWorkspace },
+    {
+      listByWorkspace: repo.listResultsByWorkspace,
+      replaceForWorkspace: repo.replaceResultsForWorkspace,
+    },
     questionBankResultListSchema,
-    'assessment_results',
+    "assessment_results",
   );
 
   const questionCrud = createGenericRelationalService<QuestionBankQuestion>({
@@ -72,8 +81,8 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
       bulkRestore: repo.bulkRestoreQuestions,
     },
     schema: questionBankQuestionRecordSchema,
-    websocketCollection: 'questions',
-    idPrefix: 'q',
+    websocketCollection: "questions",
+    idPrefix: "q",
     normalizeFn: normalizeQuestionBankQuestion,
   });
 
@@ -103,16 +112,29 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
     loadResults: async (): Promise<QuestionBankResult[]> => resultBulkService.load(),
 
     upsertQuestions: (records: QuestionBankQuestion[]) =>
-      upsertWithBroadcast(questionBankQuestionListSchema, records, repo.bulkSaveQuestions, 'questions'),
+      upsertWithBroadcast(
+        questionBankQuestionListSchema,
+        records,
+        repo.bulkSaveQuestions,
+        "questions",
+      ),
     upsertTests: (records: QuestionBankTest[]) =>
-      upsertWithBroadcast(questionBankTestListSchema, records, repo.bulkSaveTests, 'tests'),
+      upsertWithBroadcast(questionBankTestListSchema, records, repo.bulkSaveTests, "tests"),
     upsertResults: (records: QuestionBankResult[]) =>
-      upsertWithBroadcast(questionBankResultListSchema, records, repo.bulkSaveResults, 'assessment_results'),
+      upsertWithBroadcast(
+        questionBankResultListSchema,
+        records,
+        repo.bulkSaveResults,
+        "assessment_results",
+      ),
 
     createQuestion: questionCrud.create,
     updateQuestionById: questionCrud.updateById,
 
-    loadQuestionById: async (id: string, includeDeleted = false): Promise<QuestionBankQuestion | null> => {
+    loadQuestionById: async (
+      id: string,
+      includeDeleted = false,
+    ): Promise<QuestionBankQuestion | null> => {
       const tenant = getRequestTenant();
       const cleanId = id?.trim();
       if (!tenant || !cleanId) return null;
@@ -122,7 +144,10 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
       return record;
     },
 
-    loadQuestionsByIds: async (ids: string[], includeDeleted = false): Promise<QuestionBankQuestion[]> => {
+    loadQuestionsByIds: async (
+      ids: string[],
+      includeDeleted = false,
+    ): Promise<QuestionBankQuestion[]> => {
       const tenant = getRequestTenant();
       if (!tenant) return [];
       const cleanIds = dedupeTrimmedIds(ids);
@@ -135,7 +160,7 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
       if (!tenant) return;
       const parsed = questionBankQuestionRecordSchema.parse(record);
       await repo.saveQuestion(tenant, parsed);
-      await broadcastCollection('questions');
+      await broadcastCollection("questions");
     },
 
     loadTestById: async (id: string, includeDeleted = false): Promise<QuestionBankTest | null> => {
@@ -161,10 +186,13 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
       if (!tenant) return;
       const parsed = questionBankTestRecordSchema.parse(record);
       await repo.saveTest(tenant, parsed);
-      await broadcastCollection('tests');
+      await broadcastCollection("tests");
     },
 
-    loadResultById: async (id: string, includeDeleted = false): Promise<QuestionBankResult | null> => {
+    loadResultById: async (
+      id: string,
+      includeDeleted = false,
+    ): Promise<QuestionBankResult | null> => {
       const tenant = getRequestTenant();
       const cleanId = id?.trim();
       if (!tenant || !cleanId) return null;
@@ -174,7 +202,10 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
       return record;
     },
 
-    loadResultsByIds: async (ids: string[], includeDeleted = false): Promise<QuestionBankResult[]> => {
+    loadResultsByIds: async (
+      ids: string[],
+      includeDeleted = false,
+    ): Promise<QuestionBankResult[]> => {
       const tenant = getRequestTenant();
       if (!tenant) return [];
       const cleanIds = dedupeTrimmedIds(ids);
@@ -187,7 +218,7 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
       if (!tenant) return;
       const parsed = questionBankResultRecordSchema.parse(record);
       await repo.saveResult(tenant, parsed);
-      await broadcastCollection('assessment_results');
+      await broadcastCollection("assessment_results");
     },
 
     deleteQuestionById: questionCrud.deleteById,
@@ -196,8 +227,8 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
     bulkRestoreQuestions: questionCrud.bulkRestoreByIds,
 
     loadQuestionBankWidgetAggregates: async (
-      queries: import('@mms/shared').WidgetQuery[],
-    ): Promise<Record<string, import('@mms/shared').WidgetAggregateResult>> => {
+      queries: import("@mms/shared").WidgetQuery[],
+    ): Promise<Record<string, import("@mms/shared").WidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateQuestionBankWidgetQueries(tenant, queries);

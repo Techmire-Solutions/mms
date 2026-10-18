@@ -1,13 +1,13 @@
 import React from "react";
 import type { HTMLMotionProps } from "framer-motion";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { EntityCard } from "@/components/app/EntityCard";
 import { useWorkCardAction } from "@/hooks/useWorkCardAction";
 import type { getAttendanceStatusInfo } from "@/lib/data/attendanceData";
 import { MarkAttendanceFieldControl } from "./MarkAttendanceFieldControl";
 import { cn } from "@/lib/utils";
 import type { ModuleFieldDef } from "@mms/shared";
-import type { AttendanceRow } from "./markAttendanceTypes";
+import type { AttendanceRow } from "../lib/markAttendanceTypes";
 
 /** EntityCard tile (workshop) — not DirectoryCard. */
 export interface MarkAttendanceStudentCardProps {
@@ -32,11 +32,7 @@ export function MarkAttendanceStudentCard({
   });
 
   return (
-    <EntityCard
-      className={cn("space-y-3 p-4", statusInfo?.bg)}
-      {...cardProps}
-      {...motionProps}
-    >
+    <EntityCard className={cn("space-y-3 p-4", statusInfo?.bg)} {...cardProps} {...motionProps}>
       <EntityCard.Header
         id={row.studentId}
         displayName={row.name}

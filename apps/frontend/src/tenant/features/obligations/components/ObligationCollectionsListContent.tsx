@@ -1,13 +1,15 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ObligationCollectionsListCards } from "@/tenant/features/obligations/components/ObligationCollectionsListCards";
 import { ObligationCollectionsListDesktopTable } from "@/tenant/features/obligations/components/ObligationCollectionsListDesktopTable";
-import type { ObligationCollectionListContentProps } from "@/tenant/features/obligations/components/obligationCollectionListContentShared";
+import type { ObligationCollectionListContentProps } from "@/tenant/features/obligations/lib/obligationCollectionListContentShared";
 import { Plus, Receipt } from "lucide-react";
 
-export function ObligationCollectionsListContent(props: ObligationCollectionListContentProps): React.JSX.Element {
+export function ObligationCollectionsListContent(
+  props: ObligationCollectionListContentProps,
+): React.JSX.Element {
   const { t } = useTranslation();
   const { collections, search, typeFilter, canWrite, showDeleted, onAddNew } = props;
 

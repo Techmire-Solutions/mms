@@ -1,20 +1,22 @@
 import React, { lazy, Suspense, useRef } from "react";
 import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 
 const AttendanceSettings = lazy(
   () => import("@/tenant/features/attendance/components/AttendanceSettings"),
 );
 const AcademicCalendarManager = lazy(() =>
-  import("@/tenant/features/attendance/components/calendar/AcademicCalendarManager").then((m) => ({ default: m.AcademicCalendarManager })),
+  import("@/tenant/features/attendance/components/calendar/AcademicCalendarManager").then((m) => ({
+    default: m.AcademicCalendarManager,
+  })),
 );
 
 export interface AttendanceSetupTierProps {
@@ -22,7 +24,7 @@ export interface AttendanceSetupTierProps {
   onPrefsDirtyChange?: (isDirty: boolean) => void;
 }
 
-export const AttendanceSetupTier = (function AttendanceSetupTier({
+export const AttendanceSetupTier = function AttendanceSetupTier({
   onPrefsDirtyChange,
 }: AttendanceSetupTierProps = {}): React.JSX.Element {
   const { t } = useTranslation();
@@ -41,17 +43,25 @@ export const AttendanceSetupTier = (function AttendanceSetupTier({
     prefsDirtyRef.current = dirty;
     onPrefsDirtyChange?.(dirty);
   };
-  const tabs = ATTENDANCE_MODULE_MANIFEST.setupSubTabs.map((key) => ({ key, label: t(`attendance.setup.${key}`) }));
+  const tabs = ATTENDANCE_MODULE_MANIFEST.setupSubTabs.map((key) => ({
+    key,
+    label: t(`attendance.setup.${key}`),
+  }));
 
   return (
     <ModuleTierMotion tier="setup">
       <ErrorBoundary>
         <div className="space-y-4">
           <SubTabBar tabs={tabs} value={subTabs.sub} onChange={subTabs.handleSubTabChange} />
-          {!canEditSetup ? <SetupReadOnlyMessage title={t("attendance.settings.readOnly")} /> : null}
+          {!canEditSetup ? (
+            <SetupReadOnlyMessage title={t("attendance.settings.readOnly")} />
+          ) : null}
           <Suspense fallback={<ModulePanelSuspenseFallback />}>
             {subTabs.sub === "calendar" ? (
-              <AcademicCalendarManager canWrite={canEditSetup} canDelete={canEditSetup && canDelete} />
+              <AcademicCalendarManager
+                canWrite={canEditSetup}
+                canDelete={canEditSetup && canDelete}
+              />
             ) : null}
             {subTabs.sub === "preferences" && canEditSetup ? (
               <AttendanceSettings onPrefsDirtyChange={handlePrefsDirtyChange} />
@@ -73,6 +83,6 @@ export const AttendanceSetupTier = (function AttendanceSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default AttendanceSetupTier;

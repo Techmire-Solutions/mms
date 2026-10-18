@@ -5,16 +5,16 @@ import {
   type FieldDefinition,
   type FacultySettings,
   type TabDefinition,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleFieldConfigService,
   requireFieldConfigTenant,
-} from '../../lib/createModuleFieldConfigService.js';
+} from "../../lib/createModuleFieldConfigService.js";
 import {
   getFacultyFieldConfigByWorkspace,
   upsertFacultyFieldConfig,
-} from '../../db/repositories/facultyFieldConfigRepository.js';
-import { getFacultyModulePreferencesByWorkspace } from '../../db/repositories/facultyModulePreferencesRepository.js';
+} from "../../db/repositories/facultyFieldConfigRepository.js";
+import { getFacultyModulePreferencesByWorkspace } from "../../db/repositories/facultyModulePreferencesRepository.js";
 
 const facultyFieldConfig = createModuleFieldConfigService<
   Record<string, unknown>,
@@ -23,7 +23,7 @@ const facultyFieldConfig = createModuleFieldConfigService<
   Record<string, FieldDefinition[]> | undefined,
   ReturnType<typeof stripFacultyFieldConfigForPersist>
 >({
-  broadcastKey: 'faculty',
+  broadcastKey: "faculty",
   getByWorkspace: getFacultyFieldConfigByWorkspace,
   upsert: upsertFacultyFieldConfig,
   toDocument: async (raw, tenant) => {
@@ -31,7 +31,7 @@ const facultyFieldConfig = createModuleFieldConfigService<
     return composeFacultySettings(raw, prefs);
   },
   stripForPersist: stripFacultyFieldConfigForPersist,
-  reloadFailedMessage: 'Failed to reload faculty field config after save',
+  reloadFailedMessage: "Failed to reload faculty field config after save",
 });
 
 export const loadFacultyFieldConfig = facultyFieldConfig.load;

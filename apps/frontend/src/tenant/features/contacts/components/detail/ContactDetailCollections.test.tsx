@@ -22,12 +22,16 @@ vi.mock("./ContactDetailChannelSections", () => ({
   ContactDetailAddressesSection: () => <div data-testid="addresses-section">Addresses Section</div>,
   ContactDetailSocialsSection: () => <div data-testid="socials-section">Socials Section</div>,
   ContactDetailEducationSection: () => <div data-testid="education-section">Education Section</div>,
-  ContactDetailExperienceSection: () => <div data-testid="experience-section">Experience Section</div>,
+  ContactDetailExperienceSection: () => (
+    <div data-testid="experience-section">Experience Section</div>
+  ),
   ContactDetailSkillsSection: () => <div data-testid="skills-section">Skills Section</div>,
 }));
 
 vi.mock("./ContactDetailCustomCollections", () => ({
-  ContactDetailCustomCollections: () => <div data-testid="custom-collections">Custom Collections</div>,
+  ContactDetailCustomCollections: () => (
+    <div data-testid="custom-collections">Custom Collections</div>
+  ),
 }));
 
 const mockContact: Contact = {

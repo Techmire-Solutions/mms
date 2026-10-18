@@ -1,7 +1,7 @@
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/ui/entityCardChrome";
-import { EntityCardFooterActions } from "@/components/ui/EntityCardFooterActions";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
+import { EntityCardFooterActions } from "@/components/app/EntityCardFooterActions";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { Faculty } from '@mms/shared';
+import type { Faculty } from "@mms/shared";
 import { FacultyListRowActions } from "@/tenant/features/faculty/components/FacultyListRowActions";
 
 export interface FacultyCardActionsProps {

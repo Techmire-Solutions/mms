@@ -1,18 +1,26 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
 import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
   type Message,
   type MessageLogCreateDto,
   type MessageTemplate,
-} from '@mms/shared';
-import { tsrClient } from '@/lib/api';
-import { notifyApiFailure } from '@/lib/apiErrorNotify';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { useTranslation } from '@/hooks/useTranslation';
+} from "@mms/shared";
+import { tsrClient } from "@/lib/api";
+import { notifyApiFailure } from "@/lib/apiErrorNotify";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
-export const MESSAGING_TEMPLATES_QUERY_KEY = ['messaging', 'templates'] as const;
-export const MESSAGING_LOGS_QUERY_KEY = ['messaging', 'logs'] as const;
-export const MESSAGING_METRICS_QUERY_KEY = ['messaging', 'metrics'] as const;
+export const MESSAGING_TEMPLATES_QUERY_KEY = ["messaging", "templates"] as const;
+export const MESSAGING_LOGS_QUERY_KEY = ["messaging", "logs"] as const;
+export const MESSAGING_METRICS_QUERY_KEY = ["messaging", "metrics"] as const;
+
+/** Invalidate messaging templates/logs/metrics Query keys (mutations + live push). */
+export function invalidateMessagingQueries(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: MESSAGING_TEMPLATES_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: MESSAGING_LOGS_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: MESSAGING_METRICS_QUERY_KEY });
+}
 
 export interface MessageLogsPageResult {
   logs: Message[];
@@ -30,16 +38,18 @@ export interface RecordDispatchesInput {
 
 export function useMessageTemplates(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.messaging.listTemplates.useQuery({
     queryKey: MESSAGING_TEMPLATES_QUERY_KEY,
     queryData: { query: {} },
     staleTime: 30_000,
     enabled: options?.enabled !== false && isAuthenticated,
   });
-  
-  const templates = (query.data?.status === 200) ? ((query.data.body as { templates?: MessageTemplate[] } | null)?.templates ?? []) : [];
-  
+
+  const templates =
+    query.data?.status === 200
+      ? ((query.data.body as { templates?: MessageTemplate[] } | null)?.templates ?? [])
+      : [];
+
   return { ...query, templates };
 }
 
@@ -56,11 +66,9 @@ export function useMessageLogs(options?: {
 }) {
   const { isAuthenticated } = useAuth();
   const page = options?.page && options.page > 0 ? options.page : 1;
-  const pageSize = options?.pageSize && options.pageSize > 0
-    ? options.pageSize
-    : MESSAGE_LOGS_DEFAULT_PAGE_SIZE;
+  const pageSize =
+    options?.pageSize && options.pageSize > 0 ? options.pageSize : MESSAGE_LOGS_DEFAULT_PAGE_SIZE;
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.messaging.listLogs.useQuery({
     queryKey: [
       ...MESSAGING_LOGS_QUERY_KEY,
@@ -77,13 +85,13 @@ export function useMessageLogs(options?: {
       query: {
         page,
         pageSize,
-        ...(options?.channel && options.channel !== 'all' ? { channel: options.channel } : {}),
-        ...(options?.category && options.category !== 'all' ? { category: options.category } : {}),
+        ...(options?.channel && options.channel !== "all" ? { channel: options.channel } : {}),
+        ...(options?.category && options.category !== "all" ? { category: options.category } : {}),
         ...(options?.search?.trim() ? { search: options.search.trim() } : {}),
-        ...(options?.status && options.status !== 'all' ? { status: options.status } : {}),
+        ...(options?.status && options.status !== "all" ? { status: options.status } : {}),
         ...(options?.startDate?.trim() ? { startDate: options.startDate.trim() } : {}),
         ...(options?.endDate?.trim() ? { endDate: options.endDate.trim() } : {}),
-      }
+      },
     },
     staleTime: 15_000,
     enabled: options?.enabled !== false && isAuthenticated,
@@ -97,7 +105,7 @@ export function useMessageLogs(options?: {
     pageSize?: number;
     hasMore?: boolean;
   };
-  
+
   return {
     ...query,
     logs: res.logs ?? [],
@@ -114,14 +122,13 @@ export function useMessagingMetrics(options?: {
   endDate?: string;
 }) {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.messaging.getMetrics.useQuery({
     queryKey: [...MESSAGING_METRICS_QUERY_KEY, options?.startDate, options?.endDate],
     queryData: {
       query: {
         startDate: options?.startDate?.trim() || undefined,
         endDate: options?.endDate?.trim() || undefined,
-      }
+      },
     },
     staleTime: 15_000,
     enabled: options?.enabled !== false && isAuthenticated,
@@ -133,34 +140,28 @@ export function useMessagingMutations() {
   const { t } = useTranslation();
 
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: MESSAGING_TEMPLATES_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: MESSAGING_LOGS_QUERY_KEY });
-    void queryClient.invalidateQueries({ queryKey: MESSAGING_METRICS_QUERY_KEY });
+    invalidateMessagingQueries(queryClient);
   };
 
   const onError = (error: unknown) => {
     notifyApiFailure(error, t);
   };
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const saveTemplate = tsrClient.messaging.saveTemplate.useMutation({
     onSuccess: () => invalidate(),
     onError,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const deleteTemplate = tsrClient.messaging.deleteTemplate.useMutation({
     onSuccess: () => invalidate(),
     onError,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const recordDispatches = tsrClient.messaging.recordLogs.useMutation({
     onSuccess: () => invalidate(),
     onError,
   });
 
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const clearLogs = tsrClient.messaging.clearLogs.useMutation({
     onSuccess: () => invalidate(),
     onError,
@@ -171,11 +172,9 @@ export function useMessagingMutations() {
     deleteTemplate: {
       ...deleteTemplate,
       mutateAsync: (id: string) =>
-        (
-          deleteTemplate.mutateAsync as (arg: {
-            params: { id: string };
-          }) => Promise<unknown>
-        )({ params: { id } }),
+        (deleteTemplate.mutateAsync as (arg: { params: { id: string } }) => Promise<unknown>)({
+          params: { id },
+        }),
     },
     recordDispatches,
     clearLogs: {

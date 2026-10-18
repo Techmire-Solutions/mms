@@ -1,7 +1,7 @@
 import type { Contact } from "@mms/shared";
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCard } from "@/components/ui/EntityCard";
+import { EntityCard } from "@/components/app/EntityCard";
 
 export interface ContactCardHeaderProps {
   contact: Contact;

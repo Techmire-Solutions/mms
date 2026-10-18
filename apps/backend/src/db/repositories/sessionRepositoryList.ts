@@ -1,4 +1,16 @@
-import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, or, sql, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -6,20 +18,20 @@ import {
   type SessionsCommandMetricsSnapshot,
   type SessionsListPageResult,
   type SessionsListQuery,
-} from '@mms/shared';
-import { sessions } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { findSessionsSummaryByIds } from './sessionRepository.js';
+} from "@mms/shared";
+import { sessions } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { findSessionsSummaryByIds } from "./sessionRepository.js";
 
 const SESSION_SORT_FIELDS = new Set([
-  'name',
-  'type',
-  'status',
-  'baseFee',
-  'startDate',
-  'endDate',
-  'updatedAt',
+  "name",
+  "type",
+  "status",
+  "baseFee",
+  "startDate",
+  "endDate",
+  "updatedAt",
 ]);
 
 function buildSearchSql(search: string): SQL | null {
@@ -33,34 +45,37 @@ function buildSearchSql(search: string): SQL | null {
   )!;
 }
 
-function buildOrderBy(sortField: string | undefined, sortDir: 'asc' | 'desc' | '' | undefined): SQL {
-  const dir = sortDir === 'desc' ? 'desc' : 'asc';
+function buildOrderBy(
+  sortField: string | undefined,
+  sortDir: "asc" | "desc" | "" | undefined,
+): SQL {
+  const dir = sortDir === "desc" ? "desc" : "asc";
   const field = sortField?.trim();
   if (!field || !SESSION_SORT_FIELDS.has(field)) {
     return sql`${sessions.id} asc`;
   }
-  if (field === 'updatedAt') {
-    return dir === 'desc'
+  if (field === "updatedAt") {
+    return dir === "desc"
       ? sql`${sessions.updatedAt} desc nulls last`
       : sql`${sessions.updatedAt} asc nulls last`;
   }
-  if (field === 'name') {
-    return dir === 'desc' ? desc(sessions.name) : asc(sessions.name);
+  if (field === "name") {
+    return dir === "desc" ? desc(sessions.name) : asc(sessions.name);
   }
-  if (field === 'status') {
-    return dir === 'desc' ? desc(sessions.status) : asc(sessions.status);
+  if (field === "status") {
+    return dir === "desc" ? desc(sessions.status) : asc(sessions.status);
   }
-  if (field === 'type') {
-    return dir === 'desc' ? desc(sessions.type) : asc(sessions.type);
+  if (field === "type") {
+    return dir === "desc" ? desc(sessions.type) : asc(sessions.type);
   }
-  if (field === 'baseFee') {
-    return dir === 'desc' ? desc(sessions.baseFee) : asc(sessions.baseFee);
+  if (field === "baseFee") {
+    return dir === "desc" ? desc(sessions.baseFee) : asc(sessions.baseFee);
   }
-  if (field === 'startDate') {
-    return dir === 'desc' ? desc(sessions.startDate) : asc(sessions.startDate);
+  if (field === "startDate") {
+    return dir === "desc" ? desc(sessions.startDate) : asc(sessions.startDate);
   }
-  if (field === 'endDate') {
-    return dir === 'desc' ? desc(sessions.endDate) : asc(sessions.endDate);
+  if (field === "endDate") {
+    return dir === "desc" ? desc(sessions.endDate) : asc(sessions.endDate);
   }
   return sql`${sessions.id} asc`;
 }
@@ -207,22 +222,23 @@ export async function aggregateSessionsCommandMetrics(
         AND s.deleted_at IS NULL
     `);
 
-    const rows = ((result as { rows?: Record<string, unknown>[] }).rows ?? (Array.isArray(result) ? result : [])) as Record<string, unknown>[];
+    const rows = ((result as { rows?: Record<string, unknown>[] }).rows ??
+      (Array.isArray(result) ? result : [])) as Record<string, unknown>[];
     const row = (Array.isArray(rows) ? rows[0] : {}) ?? {};
 
     const num = (k: string): number => Number(row[k] ?? 0) || 0;
 
     return {
-      total: num('total'),
-      active: num('active'),
-      upcoming: num('upcoming'),
-      completed: num('completed'),
-      cancelled: num('cancelled'),
-      totalEnrolled: num('total_enrolled'),
-      totalCapacity: num('total_capacity'),
-      totalClasses: num('total_classes'),
-      sessionsThisWeek: num('sessions_this_week'),
-      sessionsLastWeek: num('sessions_last_week'),
+      total: num("total"),
+      active: num("active"),
+      upcoming: num("upcoming"),
+      completed: num("completed"),
+      cancelled: num("cancelled"),
+      totalEnrolled: num("total_enrolled"),
+      totalCapacity: num("total_capacity"),
+      totalClasses: num("total_classes"),
+      sessionsThisWeek: num("sessions_this_week"),
+      sessionsLastWeek: num("sessions_last_week"),
     };
   });
 }
@@ -239,7 +255,7 @@ export async function bulkUpdateSessionsStatusSql(
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
   if (!subdomain || uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
-  const normalizedStatus = status.trim().toLowerCase() || 'active';
+  const normalizedStatus = status.trim().toLowerCase() || "active";
 
   return withTenant(subdomain, async (tx) => {
     const updated = await tx

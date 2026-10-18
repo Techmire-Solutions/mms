@@ -1,8 +1,8 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Enrollment } from '@mms/shared';
-import { enrollments, enrollmentTimelineEvents, type EnrollmentSelectRow } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import { dedupeTrimmedIds, type Enrollment } from "@mms/shared";
+import { enrollments, enrollmentTimelineEvents, type EnrollmentSelectRow } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type EnrollmentRow = EnrollmentSelectRow;
 type TimelineEventRow = typeof enrollmentTimelineEvents.$inferSelect;
@@ -28,9 +28,9 @@ export function enrollmentRowToRecord(
     discountPct: Number(row.discountPct ?? 0),
     discountAmt: Number(row.discountAmt ?? 0),
     finalFee: Number(row.finalFee ?? 0),
-    status: row.status as Enrollment['status'],
+    status: row.status as Enrollment["status"],
     invoiceId: row.invoiceId ?? null,
-    paymentStatus: row.paymentStatus as Enrollment['paymentStatus'],
+    paymentStatus: row.paymentStatus as Enrollment["paymentStatus"],
     notes: row.notes,
     timeline: timelineEvents.map((t) => ({
       id: t.id,
@@ -85,12 +85,7 @@ export async function listEnrollmentsByWorkspace(
         updatedAt: enrollments.updatedAt,
       })
       .from(enrollments)
-      .where(
-        and(
-          eq(enrollments.workspaceSubdomain, subdomain),
-          isNull(enrollments.deletedAt),
-        ),
-      )
+      .where(and(eq(enrollments.workspaceSubdomain, subdomain), isNull(enrollments.deletedAt)))
       .limit(limit)
       .offset(offset);
 
@@ -108,25 +103,30 @@ export async function listEnrollmentsByWorkspace(
       .where(
         and(
           eq(enrollmentTimelineEvents.workspaceSubdomain, subdomain),
-          inArray(enrollmentTimelineEvents.enrollmentId, rows.map((r) => r.id)),
+          inArray(
+            enrollmentTimelineEvents.enrollmentId,
+            rows.map((r) => r.id),
+          ),
         ),
       );
 
-    const timelineMap = new Map<string, Array<{ id: number; enrollmentId: string; ts: string; event: string; by: string }>>();
+    const timelineMap = new Map<
+      string,
+      Array<{ id: number; enrollmentId: string; ts: string; event: string; by: string }>
+    >();
     for (const t of timelineRows) {
       const arr = timelineMap.get(t.enrollmentId) ?? [];
       arr.push(t);
       timelineMap.set(t.enrollmentId, arr);
     }
 
-    return rows.map((row) => enrollmentRowToRecord(row, (timelineMap.get(row.id) ?? []) as TimelineEventRow[]));
+    return rows.map((row) =>
+      enrollmentRowToRecord(row, (timelineMap.get(row.id) ?? []) as TimelineEventRow[]),
+    );
   });
 }
 
-export async function findEnrollmentById(
-  tenant: string,
-  id: string,
-): Promise<Enrollment | null> {
+export async function findEnrollmentById(tenant: string, id: string): Promise<Enrollment | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
@@ -162,12 +162,7 @@ export async function findEnrollmentById(
         updatedAt: enrollments.updatedAt,
       })
       .from(enrollments)
-      .where(
-        and(
-          eq(enrollments.workspaceSubdomain, subdomain),
-          eq(enrollments.id, id),
-        ),
-      );
+      .where(and(eq(enrollments.workspaceSubdomain, subdomain), eq(enrollments.id, id)));
     const row = rows[0];
     if (!row) return null;
 

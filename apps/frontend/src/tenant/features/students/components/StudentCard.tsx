@@ -1,13 +1,13 @@
 import type React from "react";
 import { toMessagingRecipient } from "@mms/shared";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { getGenderAccentBarClass } from "@/lib/directoryCardAccent";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { getGenderAccentBarClass } from "@/lib/ui/directoryCardAccent";
 import { StudentArchivedBanner } from "@/tenant/features/students/components/StudentArchivedBanner";
 import { StudentCardActions } from "@/tenant/features/students/components/StudentCardActions";
 import { StudentCardHeader } from "@/tenant/features/students/components/StudentCardHeader";
 import { StudentCardMetadata } from "@/tenant/features/students/components/StudentCardMetadata";
 import { type useStudentEntityDescriptor } from "@/tenant/features/students/hooks/useStudentEntityDescriptor";
-import type { StudentsListCardsProps } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListCardsProps } from "@/tenant/features/students/lib/studentsListTypes";
 
 export interface StudentCardComponentProps {
   student: StudentsListCardsProps["paginatedStudents"][number];
@@ -26,7 +26,10 @@ export interface StudentCardComponentProps {
   onEdit: (student: StudentsListCardsProps["paginatedStudents"][number]) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
-  onOpenComposer?: (channel: "sms" | "whatsapp" | "email", recipients: ReturnType<typeof toMessagingRecipient>[]) => void;
+  onOpenComposer?: (
+    channel: "sms" | "whatsapp" | "email",
+    recipients: ReturnType<typeof toMessagingRecipient>[],
+  ) => void;
 }
 
 export function StudentCard({
@@ -67,9 +70,7 @@ export function StudentCard({
       onEdit={onEdit}
       reducedMotion={reducedMotion}
       accentClassName={
-        isColumnVisible("gender")
-          ? getGenderAccentBarClass(isSelected, student.gender)
-          : undefined
+        isColumnVisible("gender") ? getGenderAccentBarClass(isSelected, student.gender) : undefined
       }
       header={{
         displayName,
@@ -115,7 +116,11 @@ export function StudentCard({
           descriptor={descriptor}
         />
       }
-      banner={viewingDeleted || student.deletedAt ? <StudentArchivedBanner student={student} /> : undefined}
+      banner={
+        viewingDeleted || student.deletedAt ? (
+          <StudentArchivedBanner student={student} />
+        ) : undefined
+      }
       footer={
         <StudentCardActions
           student={student}

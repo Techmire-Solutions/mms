@@ -5,13 +5,13 @@ import {
   type AttendanceLookupKind,
   type AttendanceLookupsMap,
   type AttendanceStatus,
-} from '@mms/shared';
-import { getRequestTenant } from '../lib/tenantContext.js';
-import { broadcastCollection } from '../lib/livePush.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../lib/tenantContext.js";
+import { broadcastCollection } from "../lib/livePush.js";
 import {
   listAttendanceLookupsByWorkspace,
   replaceAttendanceLookupsForKind,
-} from '../db/repositories/attendanceLookupsRepository.js';
+} from "../db/repositories/attendanceLookupsRepository.js";
 
 type LookupDbRow = {
   id: string;
@@ -23,22 +23,25 @@ type LookupDbRow = {
 
 function rowsToAttendanceStatuses(rows: LookupDbRow[]): AttendanceStatus[] {
   return rows.map((row) => {
-    const lastColon = row.id.lastIndexOf(':');
+    const lastColon = row.id.lastIndexOf(":");
     const id = lastColon >= 0 ? row.id.slice(lastColon + 1) : row.id;
     return {
       id,
       label: row.label,
-      short: typeof row.meta?.short === 'string' ? row.meta.short : row.label.charAt(0).toUpperCase(),
-      color: typeof row.meta?.color === 'string' ? row.meta.color : 'muted',
-      bg: typeof row.meta?.bg === 'string' ? row.meta.bg : 'bg-muted',
-      text: typeof row.meta?.text === 'string' ? row.meta.text : 'text-muted-foreground',
-      border: typeof row.meta?.border === 'string' ? row.meta.border : 'border-border',
-      dot: typeof row.meta?.dot === 'string' ? row.meta.dot : 'bg-muted-foreground',
+      short:
+        typeof row.meta?.short === "string" ? row.meta.short : row.label.charAt(0).toUpperCase(),
+      color: typeof row.meta?.color === "string" ? row.meta.color : "muted",
+      bg: typeof row.meta?.bg === "string" ? row.meta.bg : "bg-muted",
+      text: typeof row.meta?.text === "string" ? row.meta.text : "text-muted-foreground",
+      border: typeof row.meta?.border === "string" ? row.meta.border : "border-border",
+      dot: typeof row.meta?.dot === "string" ? row.meta.dot : "bg-muted-foreground",
     };
   });
 }
 
-export async function loadAttendanceLookupsMap(tenant = getRequestTenant()): Promise<AttendanceLookupsMap> {
+export async function loadAttendanceLookupsMap(
+  tenant = getRequestTenant(),
+): Promise<AttendanceLookupsMap> {
   const empty = emptyAttendanceLookupsMap;
   if (!tenant) return empty;
 
@@ -71,7 +74,7 @@ export async function replaceAttendanceLookupKind(
   items: AttendanceStatus[],
   tenant = getRequestTenant(),
 ): Promise<AttendanceStatus[]> {
-  if (!tenant) throw new Error('Tenant context required');
+  if (!tenant) throw new Error("Tenant context required");
 
   await replaceAttendanceLookupsForKind(
     tenant,
@@ -91,6 +94,6 @@ export async function replaceAttendanceLookupKind(
       sortOrder: index,
     })),
   );
-  await broadcastCollection('attendance_records'); // Broadcast to the main attendance channel
+  await broadcastCollection("attendance_records"); // Broadcast to the main attendance channel
   return items;
 }

@@ -53,12 +53,17 @@ describe("contacts export column helpers", () => {
       version: 1,
       fields: {
         basic: [
-          { key: "bloodGroup", label: "Blood Group", type: "text" as const, enabled: true, order: 8, required: false },
+          {
+            key: "bloodGroup",
+            label: "Blood Group",
+            type: "text" as const,
+            enabled: true,
+            order: 8,
+            required: false,
+          },
         ],
       },
-      formTabs: [
-        { key: "custom_medical", label: "Medical History", enabled: true, order: 10 },
-      ],
+      formTabs: [{ key: "custom_medical", label: "Medical History", enabled: true, order: 10 }],
     };
 
     const columns = defaultContactsExportColumns(fakeT, fieldConfig);

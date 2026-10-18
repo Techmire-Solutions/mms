@@ -1,6 +1,6 @@
 import React, { useId, useMemo } from "react";
 import { WEEKDAY_NAMES, type WeekdayName } from "@mms/shared";
-import { FormCheckboxCard } from "@/components/ui/FormCheckboxCard";
+import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface WorkingDaysPickerProps {
@@ -13,7 +13,13 @@ export interface WorkingDaysPickerProps {
 }
 
 /** Weekly teaching days (Attendance preferences, per-session override); names localized via Intl. */
-export function WorkingDaysPicker({ value, onChange, label, description, disabled }: WorkingDaysPickerProps): React.JSX.Element {
+export function WorkingDaysPicker({
+  value,
+  onChange,
+  label,
+  description,
+  disabled,
+}: WorkingDaysPickerProps): React.JSX.Element {
   const { language } = useTranslation();
   const baseId = useId();
   const selected = new Set(value.map((day) => day.toLowerCase()));
@@ -31,9 +37,16 @@ export function WorkingDaysPicker({ value, onChange, label, description, disable
   };
 
   return (
-    <fieldset className="min-w-0 space-y-2" aria-describedby={description ? `${baseId}-desc` : undefined}>
+    <fieldset
+      className="min-w-0 space-y-2"
+      aria-describedby={description ? `${baseId}-desc` : undefined}
+    >
       <legend className="text-sm font-semibold text-foreground">{label}</legend>
-      {description ? <p id={`${baseId}-desc`} className="text-xs text-muted-foreground">{description}</p> : null}
+      {description ? (
+        <p id={`${baseId}-desc`} className="text-xs text-muted-foreground">
+          {description}
+        </p>
+      ) : null}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
         {WEEKDAY_NAMES.map((day, index) => (
           <FormCheckboxCard

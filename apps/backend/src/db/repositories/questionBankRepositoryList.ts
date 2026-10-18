@@ -10,7 +10,7 @@ import {
   asc,
   desc,
   sql,
-} from 'drizzle-orm';
+} from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
@@ -18,7 +18,7 @@ import {
   type QuestionBankCommandMetricsSnapshot,
   type QuestionBankListQuery,
   type QuestionBankListPageResult,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   assessmentResults,
   questions,
@@ -27,10 +27,10 @@ import {
   questionTags,
   questionCitations,
   tests,
-} from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { runListPage } from './listPageHelper.js';
-import { questionRowToRecord } from './questionBankRepository.js';
+} from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { runListPage } from "./listPageHelper.js";
+import { questionRowToRecord } from "./questionBankRepository.js";
 
 function buildQuestionsListConditions(subdomain: string, query: QuestionBankListQuery): SQL[] {
   const conditions: SQL[] = [eq(questions.workspaceSubdomain, subdomain)];
@@ -67,40 +67,40 @@ function buildQuestionsListConditions(subdomain: string, query: QuestionBankList
 }
 
 const QUESTION_SORT_FIELDS = new Set([
-  'text',
-  'difficulty',
-  'type',
-  'questionLanguage',
-  'updatedAt',
-  'createdAt',
+  "text",
+  "difficulty",
+  "type",
+  "questionLanguage",
+  "updatedAt",
+  "createdAt",
 ]);
 
-function buildQuestionsOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
+function buildQuestionsOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
   const field = sortField?.trim();
   let column: AnyColumn = questions.updatedAt;
   if (field && QUESTION_SORT_FIELDS.has(field)) {
     switch (field) {
-      case 'createdAt':
+      case "createdAt":
         column = questions.createdAt;
         break;
-      case 'text':
+      case "text":
         column = questions.text;
         break;
-      case 'difficulty':
+      case "difficulty":
         column = questions.difficulty;
         break;
-      case 'type':
+      case "type":
         column = questions.type;
         break;
-      case 'questionLanguage':
+      case "questionLanguage":
         column = questions.questionLanguage;
         break;
-      case 'updatedAt':
+      case "updatedAt":
       default:
         column = questions.updatedAt;
     }
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }
 
 export async function listQuestionsPage(
@@ -211,7 +211,7 @@ export async function listQuestionsPage(
       const arr = citsByQ.get(ci.questionId) ?? [];
       let parsedCit: Record<string, unknown> = {};
       try {
-        parsedCit = JSON.parse(ci.citation || '{}');
+        parsedCit = JSON.parse(ci.citation || "{}");
       } catch {
         // ignore
       }

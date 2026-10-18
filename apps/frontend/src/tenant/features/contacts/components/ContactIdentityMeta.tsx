@@ -2,7 +2,7 @@ import React from "react";
 import {
   PersonIdentityMeta,
   type PersonIdentityMetaProps,
-} from "@/components/ui/PersonIdentityMeta";
+} from "@/components/app/PersonIdentityMeta";
 
 export type ContactIdentityMetaProps = Omit<PersonIdentityMetaProps, "syedLabel">;
 
@@ -10,7 +10,7 @@ export type ContactIdentityMetaProps = Omit<PersonIdentityMetaProps, "syedLabel"
  * Shared gender + Syed meta row for contact table, cards, and detail header.
  * Thin Contacts wrapper over PersonIdentityMeta.
  */
-export const ContactIdentityMeta = (function ContactIdentityMeta({
+export const ContactIdentityMeta = function ContactIdentityMeta({
   gender,
   isSyed,
   className,
@@ -35,4 +35,4 @@ export const ContactIdentityMeta = (function ContactIdentityMeta({
       {children}
     </PersonIdentityMeta>
   );
-});
+};

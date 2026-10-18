@@ -1,15 +1,15 @@
 import {
   normalizeEnrollmentModulePreferences,
   type EnrollmentModulePreferences,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getEnrollmentModulePreferencesByWorkspace,
   upsertEnrollmentModulePreferences,
-} from '../db/repositories/enrollmentModulePreferencesRepository.js';
-import { createModulePreferencesService } from '../lib/createModulePreferencesService.js';
+} from "../db/repositories/enrollmentModulePreferencesRepository.js";
+import { createModulePreferencesService } from "../lib/createModulePreferencesService.js";
 
 const service = createModulePreferencesService<EnrollmentModulePreferences>({
-  broadcastKey: 'enrollments',
+  broadcastKey: "enrollments",
   getByWorkspace: getEnrollmentModulePreferencesByWorkspace,
   upsert: upsertEnrollmentModulePreferences,
   normalize: normalizeEnrollmentModulePreferences,

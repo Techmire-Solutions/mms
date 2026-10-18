@@ -10,8 +10,14 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleWorkTableHeader", () => ({
-  ModuleWorkTableHeader: () => <thead data-testid="table-header"><tr><th>Header</th></tr></thead>,
+vi.mock("@/components/app/ModuleWorkTableHeader", () => ({
+  ModuleWorkTableHeader: () => (
+    <thead data-testid="table-header">
+      <tr>
+        <th>Header</th>
+      </tr>
+    </thead>
+  ),
 }));
 
 vi.mock("./EnrollmentRowActions", () => ({

@@ -1,17 +1,17 @@
-import { getObject, saveObject } from '@/lib/db';
+import { getObject, saveObject } from "@/lib/db";
 
-const DASHBOARD_SECTION_KEY = 'dashboard_section_settings';
+const DASHBOARD_SECTION_KEY = "dashboard_section_settings";
 
 /** Reads the current boolean state for a given `switchStateKey`. */
 export function readDashboardSwitchState(switchStateKey: string): boolean {
-  if (switchStateKey.startsWith('section_')) {
-    const sectionKey = switchStateKey.replace('section_', '');
+  if (switchStateKey.startsWith("section_")) {
+    const sectionKey = switchStateKey.replace("section_", "");
     const settings = getObject<Record<string, boolean>>(DASHBOARD_SECTION_KEY, {});
     return !!settings[sectionKey];
   }
   return (
     getObject<unknown>(switchStateKey, false) === true ||
-    getObject<unknown>(switchStateKey, 'false') === 'true'
+    getObject<unknown>(switchStateKey, "false") === "true"
   );
 }
 
@@ -20,8 +20,8 @@ export function readDashboardSwitchState(switchStateKey: string): boolean {
  * `local-database-update` event so all subscribers re-read.
  */
 export function toggleDashboardSwitchState(switchStateKey: string): void {
-  if (switchStateKey.startsWith('section_')) {
-    const sectionKey = switchStateKey.replace('section_', '');
+  if (switchStateKey.startsWith("section_")) {
+    const sectionKey = switchStateKey.replace("section_", "");
     const settings = getObject<Record<string, boolean>>(DASHBOARD_SECTION_KEY, {});
     settings[sectionKey] = !settings[sectionKey];
     saveObject(DASHBOARD_SECTION_KEY, settings);
@@ -29,5 +29,5 @@ export function toggleDashboardSwitchState(switchStateKey: string): void {
     const isEnabled = readDashboardSwitchState(switchStateKey);
     saveObject(switchStateKey, !isEnabled);
   }
-  window.dispatchEvent(new Event('local-database-update'));
+  window.dispatchEvent(new Event("local-database-update"));
 }

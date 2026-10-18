@@ -67,7 +67,9 @@ vi.mock("@/lib/notify", () => ({
 }));
 
 function renderHasanatControllerHook() {
-  const result: { current: any } = {} as { current: any };
+  const result: { current: ReturnType<typeof useHasanatCardsPageController> } = {} as {
+    current: ReturnType<typeof useHasanatCardsPageController>;
+  };
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);

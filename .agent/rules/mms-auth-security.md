@@ -40,9 +40,5 @@ description: Authentication session cookies, JWT token scopes, tenant isolation 
 - **Hard-Delete Guard:** Schema `forbid_hard_delete()` trigger blocks SQL deletes. Bypass requires `SET LOCAL app.allow_hard_purge = 'true'`.
 
 ## 5. Audit Trail Security, Governance & Trace Context
-- **W3C Trace Context:** Propagate `traceparent` into `AsyncLocalStorage` to bind as `correlation_id` in audit records.
-- **Privilege Hardening:** Database user has `INSERT`-only on audit tables (`UPDATE`/`DELETE` revoked). Viewing audit logs is an auditable event.
+- **Security & Privilege Hardening:** Audit trail cryptographic chaining, RFC 8785 canonical JSON, and outbox transactions follow `mms-data-layer.md` §5. Propagate W3C `traceparent` via `AsyncLocalStorage` (`AsyncContextFrame`) as `correlation_id`. Database user has `INSERT`-only rights on audit tables; viewing audit logs is an auditable event.
 
-## 6. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

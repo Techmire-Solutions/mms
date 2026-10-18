@@ -1,20 +1,20 @@
-import { type FastifyInstance, type FastifyRequest } from 'fastify';
-import { z } from 'zod';
-import type { ZodType } from 'zod';
+import { type FastifyInstance, type FastifyRequest } from "fastify";
+import { z } from "zod";
+import type { ZodType } from "zod";
 
-import type { User } from '@mms/shared';
+import type { User } from "@mms/shared";
 import {
   countResponseSchema,
   entityResolveBodySchema,
   widgetAggregatesBodySchema,
   type widgetQuerySchema,
   linkedContactIdsQuerySchema,
-} from '@mms/shared';
-import { canReadCollection, canWriteCollection } from './rbacCanHelpers.js';
-import { sendForbidden, sendDatabaseError } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
-import { getRequestTenant } from './tenantContext.js';
-import { redisGet, redisSet, redisKeys } from './redis.js';
+} from "@mms/shared";
+import { canReadCollection, canWriteCollection } from "./rbacCanHelpers.js";
+import { sendForbidden, sendDatabaseError } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
+import { getRequestTenant } from "./tenantContext.js";
+import { redisGet, redisSet, redisKeys } from "./redis.js";
 
 type WidgetQuery = z.infer<typeof widgetQuerySchema>;
 
@@ -30,11 +30,8 @@ export interface MetricsRouteOptions {
 /**
  * Registers a standard metrics endpoint with RBAC checks, Redis caching, and error handling.
  */
-export function registerMetricsRoute(
-  fastify: FastifyInstance,
-  options: MetricsRouteOptions,
-): void {
-  const { path = '/metrics', collection, loadMetricsFn, errorMessagePrefix } = options;
+export function registerMetricsRoute(fastify: FastifyInstance, options: MetricsRouteOptions): void {
+  const { path = "/metrics", collection, loadMetricsFn, errorMessagePrefix } = options;
 
   fastify.get(path, async (request, reply) => {
     const user = request.user as User;
@@ -44,7 +41,7 @@ export function registerMetricsRoute(
     // Role is part of the key: metrics are RBAC-filtered per caller, so a
     // shared tenant+collection key could serve one role's numbers to another.
     const cacheKey = tenant
-      ? redisKeys.metrics(tenant, `${collection}:${user.role ?? 'user'}`)
+      ? redisKeys.metrics(tenant, `${collection}:${user.role ?? "user"}`)
       : null;
     if (cacheKey) {
       const cached = await redisGet(cacheKey);
@@ -80,11 +77,8 @@ export interface CountRouteOptions {
 /**
  * Registers a standard count endpoint with RBAC checks.
  */
-export function registerCountRoute(
-  fastify: FastifyInstance,
-  options: CountRouteOptions,
-): void {
-  const { path = '/count', collection, loadCountFn, errorMessagePrefix } = options;
+export function registerCountRoute(fastify: FastifyInstance, options: CountRouteOptions): void {
+  const { path = "/count", collection, loadCountFn, errorMessagePrefix } = options;
 
   fastify.get(
     path,
@@ -120,11 +114,15 @@ export interface ResolveRouteOptions {
 /**
  * Registers a standard resolve endpoint with RBAC checks.
  */
-export function registerResolveRoute(
-  fastify: FastifyInstance,
-  options: ResolveRouteOptions,
-): void {
-  const { path = '/resolve', collection, loadByIdsFn, responseKey, aliases, errorMessagePrefix } = options;
+export function registerResolveRoute(fastify: FastifyInstance, options: ResolveRouteOptions): void {
+  const {
+    path = "/resolve",
+    collection,
+    loadByIdsFn,
+    responseKey,
+    aliases,
+    errorMessagePrefix,
+  } = options;
 
   fastify.post(path, async (request, reply) => {
     const user = request.user as User;
@@ -160,7 +158,7 @@ export function registerWidgetAggregatesRoute(
   fastify: FastifyInstance,
   options: WidgetAggregatesRouteOptions,
 ): void {
-  const { path = '/widget-aggregates', collection, loadAggregatesFn, errorMessagePrefix } = options;
+  const { path = "/widget-aggregates", collection, loadAggregatesFn, errorMessagePrefix } = options;
 
   fastify.post(path, async (request, reply) => {
     const user = request.user as User;
@@ -191,7 +189,12 @@ export function registerLinkedContactIdsRoute(
   fastify: FastifyInstance,
   options: LinkedContactIdsRouteOptions,
 ): void {
-  const { path = '/linked-contact-ids', collection, loadLinkedContactIdsFn, errorMessagePrefix } = options;
+  const {
+    path = "/linked-contact-ids",
+    collection,
+    loadLinkedContactIdsFn,
+    errorMessagePrefix,
+  } = options;
 
   fastify.get(path, async (request, reply) => {
     const user = request.user as User;
@@ -202,7 +205,10 @@ export function registerLinkedContactIdsRoute(
       const contactIds = await loadLinkedContactIdsFn(parsed.data.excludeId);
       return reply.send({ contactIds });
     } catch {
-      return sendDatabaseError(reply, `Failed to load linked contact ids for ${errorMessagePrefix}`);
+      return sendDatabaseError(
+        reply,
+        `Failed to load linked contact ids for ${errorMessagePrefix}`,
+      );
     }
   });
 }
@@ -223,7 +229,7 @@ export function registerBulkPutRoute<T>(
   fastify: FastifyInstance,
   options: BulkPutRouteOptions<T>,
 ): void {
-  const { path = '/bulk', collection, schema, saveFn, responseKey, errorMessagePrefix } = options;
+  const { path = "/bulk", collection, schema, saveFn, responseKey, errorMessagePrefix } = options;
 
   fastify.put(path, async (request, reply) => {
     const user = request.user as User;
@@ -235,7 +241,7 @@ export function registerBulkPutRoute<T>(
       return reply.send({ [responseKey]: updated });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return replyValidationError(reply, error.issues.map((issue) => issue.message).join('; '));
+        return replyValidationError(reply, error.issues.map((issue) => issue.message).join("; "));
       }
       request.log.error(error, `Failed to replace ${errorMessagePrefix}`);
       return sendDatabaseError(reply, `Failed to replace ${errorMessagePrefix}`);

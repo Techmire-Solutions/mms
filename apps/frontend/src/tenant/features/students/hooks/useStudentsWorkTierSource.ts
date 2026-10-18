@@ -29,7 +29,9 @@ export interface BuildStudentsWorkSourceParams {
   bulkStatusPending: boolean;
 }
 
-export function buildStudentsWorkSource(params: BuildStudentsWorkSourceParams): StudentsWorkTierSource {
+export function buildStudentsWorkSource(
+  params: BuildStudentsWorkSourceParams,
+): StudentsWorkTierSource {
   const {
     directory,
     formState,

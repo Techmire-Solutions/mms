@@ -34,15 +34,26 @@ echo "=================================================="
 
 gate "Staged secrets" pnpm run check:secrets
 gate "Rules & skills integrity" node scripts/verify-rules-integrity.mjs
+gate "i18n completeness (en/ar/ur/fa)" pnpm run check:i18n
+gate "@mms/shared purity & boundaries" pnpm run check:shared-purity
+gate "@mms/shared structure" pnpm run check:shared-structure
+gate "Faculty domain legacy surface" pnpm run check:faculty-domain
 gate "Migration index quality" pnpm run check:migration-indexes
+gate "Migrations are forward-only" pnpm run check:migrations-forward-only
 gate "Work directory convergence" pnpm run check:work-directory
+gate "Frontend structure ratchets" pnpm run check:frontend-structure
+gate "Shared UI architecture & governance" pnpm run check:shared-ui
+gate "Documentation ratchets" pnpm run check:docs
 if [[ "$SCOPE" == "affected" ]]; then
   gate "DB projection hygiene (changed files)" node scripts/check-db-projections.mjs --changed
+  gate "Backend route→storage boundary (changed files)" node scripts/check-backend-boundaries.mjs --changed
+  gate "Backend structural ratchets" pnpm run check:backend-structure
   gate "Code norms (changed files)" node scripts/check-code-norms.mjs --changed
   gate "TypeScript typecheck (affected vs ${MMS_CI_BASE:-main})" typecheck_affected
   gate "ESLint (changed files)" lint_changed
 else
   gate "DB projection hygiene" pnpm run check:db-projections
+  gate "Backend route→storage boundary" pnpm run check:backend-boundaries
   gate "Code norms ratchet" pnpm run check:code-norms
   gate "TypeScript typecheck" pnpm typecheck
   gate "ESLint" pnpm lint

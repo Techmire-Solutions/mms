@@ -1,13 +1,13 @@
-import { randomUUID } from 'node:crypto';
-import type { FacultyDepartmentImportBody, FacultyDesignationImportBody } from '@mms/shared';
+import { randomUUID } from "node:crypto";
+import type { FacultyDepartmentImportBody, FacultyDesignationImportBody } from "@mms/shared";
 import {
   listFacultyDepartments,
   saveFacultyDepartment,
-} from '../../db/repositories/facultyDepartmentRepository.js';
+} from "../../db/repositories/facultyDepartmentRepository.js";
 import {
   listFacultyDesignations,
   saveFacultyDesignation,
-} from '../../db/repositories/facultyDesignationRepository.js';
+} from "../../db/repositories/facultyDesignationRepository.js";
 
 export interface CatalogImportJobContext {
   tenant: string;
@@ -21,9 +21,13 @@ export interface CatalogImportJobResult {
   total: number;
 }
 
-const norm = (value: string | null | undefined): string => (value ?? '').trim().toLowerCase();
+const norm = (value: string | null | undefined): string => (value ?? "").trim().toLowerCase();
 
-async function reportProgress(context: CatalogImportJobContext, index: number, total: number): Promise<void> {
+async function reportProgress(
+  context: CatalogImportJobContext,
+  index: number,
+  total: number,
+): Promise<void> {
   if ((index + 1) % 10 === 0 || index + 1 === total) {
     await context.updateProgress(index + 1, total);
   }
@@ -31,7 +35,7 @@ async function reportProgress(context: CatalogImportJobContext, index: number, t
 
 /** Upsert departments by name (case-insensitive). */
 export async function runFacultyDepartmentsImportJob(
-  payload: { rows: FacultyDepartmentImportBody['rows'] },
+  payload: { rows: FacultyDepartmentImportBody["rows"] },
   context: CatalogImportJobContext,
 ): Promise<CatalogImportJobResult> {
   const rows = payload.rows ?? [];
@@ -51,7 +55,7 @@ export async function runFacultyDepartmentsImportJob(
         id,
         name: row.name,
         description: row.description ?? null,
-        status: row.status ?? 'active',
+        status: row.status ?? "active",
         updatedBy: context.userId,
       });
       idByName.set(key, id);
@@ -70,7 +74,7 @@ export async function runFacultyDepartmentsImportJob(
  * in a second pass so forward references inside the same file resolve.
  */
 export async function runFacultyDesignationsImportJob(
-  payload: { rows: FacultyDesignationImportBody['rows'] },
+  payload: { rows: FacultyDesignationImportBody["rows"] },
   context: CatalogImportJobContext,
 ): Promise<CatalogImportJobResult> {
   const rows = payload.rows ?? [];
@@ -83,7 +87,9 @@ export async function runFacultyDesignationsImportJob(
   const existing = await listFacultyDesignations(context.tenant, { limit: null });
   const keyOf = (departmentId: string, name: string) => `${departmentId}::${norm(name)}`;
   const idByKey = new Map(existing.map((d) => [keyOf(d.departmentId, d.name), d.id]));
-  const parentIdByKey = new Map(existing.map((d) => [keyOf(d.departmentId, d.name), d.parentDesignationId ?? null]));
+  const parentIdByKey = new Map(
+    existing.map((d) => [keyOf(d.departmentId, d.name), d.parentDesignationId ?? null]),
+  );
 
   // First pass: upsert rows without parents (keeps existing parent when already linked).
   const saved: Array<{ id: string; departmentId: string; row: (typeof rows)[number] }> = [];
@@ -99,7 +105,7 @@ export async function runFacultyDesignationsImportJob(
         departmentId,
         name: row.name,
         parentDesignationId: parentIdByKey.get(key) ?? null,
-        status: row.status ?? 'active',
+        status: row.status ?? "active",
         updatedBy: context.userId,
       });
       idByKey.set(key, id);
@@ -115,8 +121,9 @@ export async function runFacultyDesignationsImportJob(
   for (const entry of saved) {
     const parentName = entry.row.parentDesignation?.trim();
     if (!parentName) continue;
-    const parentId = idByKey.get(keyOf(entry.departmentId, parentName))
-      ?? [...idByKey.entries()].find(([key]) => key.endsWith(`::${norm(parentName)}`))?.[1];
+    const parentId =
+      idByKey.get(keyOf(entry.departmentId, parentName)) ??
+      [...idByKey.entries()].find(([key]) => key.endsWith(`::${norm(parentName)}`))?.[1];
     if (!parentId || parentId === entry.id) continue;
     try {
       await saveFacultyDesignation(context.tenant, {
@@ -124,7 +131,7 @@ export async function runFacultyDesignationsImportJob(
         departmentId: entry.departmentId,
         name: entry.row.name,
         parentDesignationId: parentId,
-        status: entry.row.status ?? 'active',
+        status: entry.row.status ?? "active",
         updatedBy: context.userId,
       });
     } catch {
@@ -135,10 +142,7 @@ export async function runFacultyDesignationsImportJob(
   return { imported, failed: total - imported, total };
 }
 
-export function buildCatalogImportJobLabel(
-  entity: string,
-  result: CatalogImportJobResult,
-): string {
+export function buildCatalogImportJobLabel(entity: string, result: CatalogImportJobResult): string {
   if (result.failed > 0) {
     return `Imported ${result.imported}/${result.total} ${entity} (${result.failed} failed)`;
   }

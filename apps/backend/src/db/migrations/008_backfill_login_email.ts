@@ -6,12 +6,12 @@ import {
   WORKSPACES_COLLECTION,
   type ContactLike,
   type Workspace,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,
   saveCollection,
-} from '../database.js';
+} from "../database.js";
 
 type Row = Record<string, unknown>;
 
@@ -34,21 +34,19 @@ async function discoverTenantSubdomains(): Promise<Set<string>> {
 
 function backfillUserAuthFields(user: Row, contacts: ContactLike[]): Row {
   const hydrated = hydrateWorkspaceUserProfile(user, contacts) as Row;
-  const hasPassword = typeof user.passwordHash === 'string' && user.passwordHash.length > 0;
+  const hasPassword = typeof user.passwordHash === "string" && user.passwordHash.length > 0;
   if (!hasPassword) return user;
 
   const loginEmail = resolveTenantLoginEmail(
     user as Row & { loginEmail?: string; email?: string },
-    typeof hydrated.email === 'string' ? hydrated.email : undefined,
+    typeof hydrated.email === "string" ? hydrated.email : undefined,
   );
   if (!loginEmail) return user;
 
   const next: Row = { ...user, loginEmail };
   if (!next.emailVerifiedAt) {
     next.emailVerifiedAt =
-      typeof user.createdAt === 'string'
-        ? user.createdAt
-        : new Date().toISOString();
+      typeof user.createdAt === "string" ? user.createdAt : new Date().toISOString();
   }
   return next;
 }
@@ -61,7 +59,7 @@ export async function runMigration008(): Promise<void> {
   let changed = false;
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
     const usersKey = `${prefix}users`;
     const contactsKey = `${prefix}contacts`;
     const users = await getCollectionByStorageName(usersKey);
@@ -78,6 +76,6 @@ export async function runMigration008(): Promise<void> {
   }
 
   if (changed) {
-    console.log('[Migration 008] Backfilled loginEmail and emailVerifiedAt on auth users.');
+    console.log("[Migration 008] Backfilled loginEmail and emailVerifiedAt on auth users.");
   }
 }

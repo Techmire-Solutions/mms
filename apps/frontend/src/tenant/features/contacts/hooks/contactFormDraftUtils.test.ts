@@ -112,7 +112,9 @@ describe("buildInitialContactDraft", () => {
       socialPlatforms: ["Facebook"],
       relationshipOptions: ["Parent"],
     });
-    expect(draft.socials).toEqual([{ platform: "LinkedIn", url: "https://linkedin.com/in/fatima" }]);
+    expect(draft.socials).toEqual([
+      { platform: "LinkedIn", url: "https://linkedin.com/in/fatima" },
+    ]);
     expect(draft.relationshipContacts).toEqual([{ relationship: "Guardian", contactId: "c_999" }]);
   });
 
@@ -131,4 +133,3 @@ describe("buildInitialContactDraft", () => {
     expect(draft.nickname).toBeUndefined();
   });
 });
-

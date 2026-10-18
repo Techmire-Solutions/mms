@@ -5,7 +5,6 @@ import { DEFAULT_STUDENT_COLUMN_REGISTRY, type Student } from "@mms/shared";
 import type { useStudentColumnLayout } from "@/tenant/features/students/hooks/useStudentColumnLayout";
 import { StudentsWorkTier } from "./StudentsWorkTier";
 
-
 vi.mock("@/hooks/useAcademicTerms", () => ({
   useAcademicTerms: () => ({
     session: { singular: "Session", plural: "Sessions" },

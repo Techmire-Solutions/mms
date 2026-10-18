@@ -1,16 +1,13 @@
-import { and, sql } from 'drizzle-orm';
-import type {
-  FacultyWidgetAggregateResult,
-  FacultyWidgetQuery,
-} from '@mms/shared';
-import { withTenantRead } from '../tenant-context.js';
+import { and, sql } from "drizzle-orm";
+import type { FacultyWidgetAggregateResult, FacultyWidgetQuery } from "@mms/shared";
+import { withTenantRead } from "../tenant-context.js";
 import {
   activeWorkspaceWhere,
   resolveChartLimit,
   resolveFacultyFieldExpr,
   widgetFilterSql,
-} from './facultyRepositoryWidgetFilters.js';
-import { facultyWithPrimaryAppointmentFromSql } from './facultyPrimaryAppointmentSql.js';
+} from "./facultyRepositoryWidgetFilters.js";
+import { facultyWithPrimaryAppointmentFromSql } from "./facultyPrimaryAppointmentSql.js";
 
 /** SQL widget aggregates for faculty — LATERAL primary appointment for dept/desig grouping. */
 export async function aggregateFacultyWidgetQueries(
@@ -39,7 +36,7 @@ export async function aggregateFacultyWidgetQueries(
         const chartLimit = resolveChartLimit(query);
 
         let value = 0;
-        if (query.operation === 'count' || query.operation === 'percentage') {
+        if (query.operation === "count" || query.operation === "percentage") {
           const countResult = await tx.execute<{ count: number }>(sql`
             SELECT count(*)::int AS count
             ${fromSql}
@@ -47,13 +44,13 @@ export async function aggregateFacultyWidgetQueries(
           `);
           const filteredCount = Number(countResult.rows[0]?.count ?? 0);
           value =
-            query.operation === 'percentage'
+            query.operation === "percentage"
               ? totalCount > 0
                 ? Math.round((filteredCount / totalCount) * 100)
                 : 0
               : filteredCount;
-        } else if (query.operation === 'sum' || query.operation === 'avg') {
-          const target = query.targetField?.trim() || '';
+        } else if (query.operation === "sum" || query.operation === "avg") {
+          const target = query.targetField?.trim() || "";
           if (target) {
             const targetExpr = resolveFacultyFieldExpr(target);
             const aggResult = await tx.execute<{ sum: number; count: number }>(sql`
@@ -65,18 +62,18 @@ export async function aggregateFacultyWidgetQueries(
             `);
             const sum = Number(aggResult.rows[0]?.sum ?? 0);
             const count = Number(aggResult.rows[0]?.count ?? 0);
-            value = query.operation === 'sum' ? sum : count > 0 ? Math.round(sum / count) : 0;
+            value = query.operation === "sum" ? sum : count > 0 ? Math.round(sum / count) : 0;
           }
         }
 
-        const xAxis = query.xAxisField?.trim() || 'status';
+        const xAxis = query.xAxisField?.trim() || "status";
         const xAxisExpr = resolveFacultyFieldExpr(xAxis);
         const groupExpr = sql`COALESCE(NULLIF(trim(${xAxisExpr}::text), ''), 'Unknown')`;
 
         const target =
-          (query.operation === 'sum' || query.operation === 'avg')
-            ? (query.targetField?.trim() || '')
-            : '';
+          query.operation === "sum" || query.operation === "avg"
+            ? query.targetField?.trim() || ""
+            : "";
 
         let chartData: { name: string; value: number }[];
         if (target) {
@@ -97,7 +94,7 @@ export async function aggregateFacultyWidgetQueries(
               const count = Number(row.count ?? 0);
               return {
                 name: row.name,
-                value: query.operation === 'sum' ? sum : count > 0 ? Math.round(sum / count) : 0,
+                value: query.operation === "sum" ? sum : count > 0 ? Math.round(sum / count) : 0,
               };
             })
             .sort((a, b) => b.value - a.value)

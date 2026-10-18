@@ -71,7 +71,7 @@ describe("EnrollmentsList Component", () => {
         onCancel={vi.fn()}
         onToggleSelectAll={vi.fn()}
         onToggleSelectedEnrollment={vi.fn()}
-        columnCustomizer={{} as any}
+        columnCustomizer={{} as unknown as never}
       />,
     );
 

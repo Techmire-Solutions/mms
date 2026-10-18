@@ -1,17 +1,13 @@
-import {
-  DEFAULT_GLOBAL_SETTINGS,
-  detectBrowserTimezone,
-  normalizeTimezone,
-} from '@mms/shared';
+import { DEFAULT_GLOBAL_SETTINGS, detectBrowserTimezone, normalizeTimezone } from "@mms/shared";
 
-export type TimezoneDetectionSource = 'geolocation' | 'device';
+export type TimezoneDetectionSource = "geolocation" | "device";
 
 export type TimezoneDetectionFailure =
-  | 'geolocation_unsupported'
-  | 'permission_denied'
-  | 'position_unavailable'
-  | 'timeout'
-  | 'timezone_lookup_failed';
+  | "geolocation_unsupported"
+  | "permission_denied"
+  | "position_unavailable"
+  | "timeout"
+  | "timezone_lookup_failed";
 
 export type TimezoneDetectionResult =
   | { ok: true; timezone: string; source: TimezoneDetectionSource }
@@ -20,7 +16,7 @@ export type TimezoneDetectionResult =
 const DEFAULT_TIMEOUT_MS = 12_000;
 
 function isGeolocationSupported(): boolean {
-  return typeof navigator !== 'undefined' && 'geolocation' in navigator;
+  return typeof navigator !== "undefined" && "geolocation" in navigator;
 }
 
 function getCurrentPosition(timeoutMs: number): Promise<GeolocationPosition> {
@@ -36,13 +32,13 @@ function getCurrentPosition(timeoutMs: number): Promise<GeolocationPosition> {
 function mapGeolocationError(error: GeolocationPositionError): TimezoneDetectionFailure {
   switch (error.code) {
     case error.PERMISSION_DENIED:
-      return 'permission_denied';
+      return "permission_denied";
     case error.POSITION_UNAVAILABLE:
-      return 'position_unavailable';
+      return "position_unavailable";
     case error.TIMEOUT:
-      return 'timeout';
+      return "timeout";
     default:
-      return 'position_unavailable';
+      return "position_unavailable";
   }
 }
 
@@ -54,7 +50,7 @@ export async function resolveTimezoneFromCoordinates(
   longitude: number,
 ): Promise<string | null> {
   try {
-    const tzLookup = (await import('@photostructure/tz-lookup')).default as (
+    const tzLookup = (await import("@photostructure/tz-lookup")).default as (
       lat: number,
       lon: number,
     ) => string;
@@ -77,7 +73,7 @@ export async function detectTimezoneFromLocation(options?: {
   );
 
   if (!isGeolocationSupported()) {
-    return { ok: false, code: 'geolocation_unsupported', fallbackTimezone };
+    return { ok: false, code: "geolocation_unsupported", fallbackTimezone };
   }
 
   const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -90,15 +86,15 @@ export async function detectTimezoneFromLocation(options?: {
     );
 
     if (!timezone) {
-      return { ok: false, code: 'timezone_lookup_failed', fallbackTimezone };
+      return { ok: false, code: "timezone_lookup_failed", fallbackTimezone };
     }
 
-    return { ok: true, timezone, source: 'geolocation' };
+    return { ok: true, timezone, source: "geolocation" };
   } catch (error) {
     const code =
       error instanceof GeolocationPositionError
         ? mapGeolocationError(error)
-        : 'position_unavailable';
+        : "position_unavailable";
     return { ok: false, code, fallbackTimezone };
   }
 }

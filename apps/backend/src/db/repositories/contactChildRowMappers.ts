@@ -10,7 +10,7 @@ import type {
   RelationshipContact,
   ContactActivity,
   ContactAttachment,
-} from '@mms/shared';
+} from "@mms/shared";
 import type {
   contactPhones,
   contactEmails,
@@ -23,7 +23,7 @@ import type {
   contactActivities,
   contactAttachments,
   contactBankDetails,
-} from '../schema.js';
+} from "../schema.js";
 
 type PhoneRow = typeof contactPhones.$inferSelect;
 type EmailRow = typeof contactEmails.$inferSelect;
@@ -40,19 +40,19 @@ type BankDetailRow = typeof contactBankDetails.$inferSelect;
 export function mapChildPhones(phones: PhoneRow[] = []): PhoneNumber[] {
   return phones.map((p) => {
     const phone: PhoneNumber = {
-      label: p.label || 'Main',
+      label: p.label || "Main",
       number: p.number,
       isPrimary: p.isPrimary,
     };
     if (p.countryCode) phone.countryCode = p.countryCode;
-    if (p.whatsappStatus) phone.whatsappStatus = p.whatsappStatus as PhoneNumber['whatsappStatus'];
+    if (p.whatsappStatus) phone.whatsappStatus = p.whatsappStatus as PhoneNumber["whatsappStatus"];
     return phone;
   });
 }
 
 export function mapChildEmails(emails: EmailRow[] = []): EmailAddress[] {
   return emails.map((e) => ({
-    label: e.label || 'Primary',
+    label: e.label || "Primary",
     address: e.address,
     isPrimary: e.isPrimary,
     isVerified: e.isVerified,
@@ -131,7 +131,9 @@ export function mapChildSkills(skills: SkillRow[] = []): ContactSkill[] {
   });
 }
 
-export function mapChildRelationships(relationships: RelationshipRow[] = []): RelationshipContact[] {
+export function mapChildRelationships(
+  relationships: RelationshipRow[] = [],
+): RelationshipContact[] {
   return relationships.map((r) => {
     const item: RelationshipContact = {
       inferred: r.inferred,
@@ -150,7 +152,7 @@ export function mapChildActivities(activities: ActivityRow[] = []): ContactActiv
   return activities.map((act) => {
     const item: ContactActivity = {
       id: act.id,
-      type: act.type as ContactActivity['type'],
+      type: act.type as ContactActivity["type"],
       content: act.content,
       date: act.date,
     };

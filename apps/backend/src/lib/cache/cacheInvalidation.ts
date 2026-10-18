@@ -1,9 +1,9 @@
-import { randomUUID } from 'node:crypto';
-import { l1LruCache, buildCacheKey } from './multiTierCache.js';
-import { getRedisClient, getRedisSubscriberClient, redisDel, redisDelPattern } from '../redis.js';
-import { logger } from '../logger.js';
+import { randomUUID } from "node:crypto";
+import { l1LruCache, buildCacheKey } from "./multiTierCache.js";
+import { getRedisClient, getRedisSubscriberClient, redisDel, redisDelPattern } from "../redis.js";
+import { logger } from "../logger.js";
 
-export const CACHE_INVALIDATION_CHANNEL = 'mms:cache-invalidation';
+export const CACHE_INVALIDATION_CHANNEL = "mms:cache-invalidation";
 
 export const CURRENT_NODE_ID = randomUUID();
 
@@ -71,7 +71,10 @@ export async function invalidateMultiTierCache(params: InvalidationParams): Prom
       await redisDelPattern(pattern);
     }
   } catch (err) {
-    logger.warn({ err, tenantId, domain, key }, 'Failed to delete from L2 Redis cache during invalidation');
+    logger.warn(
+      { err, tenantId, domain, key },
+      "Failed to delete from L2 Redis cache during invalidation",
+    );
   }
 
   // 3. Publish cross-node invalidation event via Redis Pub/Sub
@@ -87,7 +90,7 @@ export async function invalidateMultiTierCache(params: InvalidationParams): Prom
     try {
       await client.publish(CACHE_INVALIDATION_CHANNEL, JSON.stringify(payload));
     } catch (err) {
-      logger.warn({ err, payload }, 'Failed to publish cache invalidation event to Redis channel');
+      logger.warn({ err, payload }, "Failed to publish cache invalidation event to Redis channel");
     }
   }
 }
@@ -119,24 +122,26 @@ export function initCacheInvalidationSubscriber(): () => void {
 
       evictLocalL1Cache(payload.tenantId, payload.domain, payload.key);
     } catch (err) {
-      logger.warn({ err, message }, 'Failed to process cache invalidation message from pub/sub');
+      logger.warn({ err, message }, "Failed to process cache invalidation message from pub/sub");
     }
   };
 
-  subscriber.subscribe(CACHE_INVALIDATION_CHANNEL, (err) => {
-    if (err) {
-      logger.warn({ err }, 'Failed to subscribe to cache invalidation channel');
-    }
-  }).catch((err) => {
-    logger.warn({ err }, 'Failed to initiate cache invalidation subscription');
-  });
+  subscriber
+    .subscribe(CACHE_INVALIDATION_CHANNEL, (err) => {
+      if (err) {
+        logger.warn({ err }, "Failed to subscribe to cache invalidation channel");
+      }
+    })
+    .catch((err) => {
+      logger.warn({ err }, "Failed to initiate cache invalidation subscription");
+    });
 
-  subscriber.on('message', handleMessage);
+  subscriber.on("message", handleMessage);
 
   return () => {
     try {
       subscriber.unsubscribe(CACHE_INVALIDATION_CHANNEL).catch(() => {});
-      subscriber.off('message', handleMessage);
+      subscriber.off("message", handleMessage);
       isSubscriberInitialized = false;
     } catch {
       // Ignored during shutdown

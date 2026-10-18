@@ -1,17 +1,14 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { buildDashboardMetricCard } from './buildDashboardMetricCard';
-import type { DashboardMetricTrends } from './dashboardMetricTrends';
-import type { DashboardCollectionData } from './useDashboardData';
-import type { CustomWidget } from '@/lib/reports/pinnedWidgetTypes';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import type {
-  AttendanceCommandMetricsSnapshot,
-  SessionsCommandMetricsSnapshot,
-} from '@mms/shared';
-import { queryClientInstance } from '@/lib/queryClient';
-import { STUDENTS_WIDGET_AGGREGATES_QUERY_KEY } from '@/tenant/hooks/collections/students';
+import { afterEach, describe, expect, it } from "vitest";
+import { buildDashboardMetricCard } from "./buildDashboardMetricCard";
+import type { DashboardMetricTrends } from "./dashboardMetricTrends";
+import type { DashboardCollectionData } from "./useDashboardData";
+import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { AttendanceCommandMetricsSnapshot, SessionsCommandMetricsSnapshot } from "@mms/shared";
+import { queryClientInstance } from "@/lib/queryClient";
+import { STUDENTS_WIDGET_AGGREGATES_QUERY_KEY } from "@/tenant/hooks/collections/students";
 
-describe('buildDashboardMetricCard', () => {
+describe("buildDashboardMetricCard", () => {
   afterEach(() => {
     queryClientInstance.removeQueries({ queryKey: STUDENTS_WIDGET_AGGREGATES_QUERY_KEY });
   });
@@ -64,17 +61,17 @@ describe('buildDashboardMetricCard', () => {
 
   const mockT = ((key: string) => key) as unknown as TranslationFunction;
 
-  it('builds student metric card with resolved title and trends', () => {
+  it("builds student metric card with resolved title and trends", () => {
     const widget: CustomWidget = {
-      id: 'def-card-admin-students',
-      widgetType: 'card',
-      role: 'admin',
-      collection: 'students',
+      id: "def-card-admin-students",
+      widgetType: "card",
+      role: "admin",
+      collection: "students",
       isPinnedToDashboard: true,
-      title: 'Total Students',
-      category: 'students',
-      operation: 'count',
-      color: 'emerald',
+      title: "Total Students",
+      category: "students",
+      operation: "count",
+      color: "emerald",
     };
 
     const card = buildDashboardMetricCard({
@@ -84,16 +81,16 @@ describe('buildDashboardMetricCard', () => {
       t: mockT,
     });
 
-    expect(card.id).toBe('def-card-admin-students');
-    expect(card.value).toBe('120');
+    expect(card.id).toBe("def-card-admin-students");
+    expect(card.value).toBe("120");
     expect(card.trend).toBe(7);
   });
 
-  it('does not let a late aggregate overwrite a seeded summary card', () => {
+  it("does not let a late aggregate overwrite a seeded summary card", () => {
     queryClientInstance.setQueryData(
-      [...STUDENTS_WIDGET_AGGREGATES_QUERY_KEY, 'stale-saved-filter'],
+      [...STUDENTS_WIDGET_AGGREGATES_QUERY_KEY, "stale-saved-filter"],
       {
-        'def-card-admin-students': {
+        "def-card-admin-students": {
           value: 0,
           totalCount: 120,
           chartData: [],
@@ -103,35 +100,35 @@ describe('buildDashboardMetricCard', () => {
 
     const card = buildDashboardMetricCard({
       widget: {
-        id: 'def-card-admin-students',
-        widgetType: 'card',
-        role: 'admin',
-        collection: 'students',
+        id: "def-card-admin-students",
+        widgetType: "card",
+        role: "admin",
+        collection: "students",
         isPinnedToDashboard: false,
-        title: 'Total Students',
-        category: 'students',
-        operation: 'count',
-        color: 'emerald',
+        title: "Total Students",
+        category: "students",
+        operation: "count",
+        color: "emerald",
       },
       data: mockData,
       trends: mockTrends,
       t: mockT,
     });
 
-    expect(card.value).toBe('120');
+    expect(card.value).toBe("120");
   });
 
-  it('maps attendance trend metric correctly via TREND_METRIC_KEY_MAP', () => {
+  it("maps attendance trend metric correctly via TREND_METRIC_KEY_MAP", () => {
     const widget: CustomWidget = {
-      id: 'def-card-admin-attendance',
-      widgetType: 'card',
-      role: 'admin',
-      collection: 'attendance_records',
+      id: "def-card-admin-attendance",
+      widgetType: "card",
+      role: "admin",
+      collection: "attendance_records",
       isPinnedToDashboard: true,
-      operation: 'percentage',
-      title: 'Attendance Rate',
-      category: 'students',
-      color: 'blue',
+      operation: "percentage",
+      title: "Attendance Rate",
+      category: "students",
+      color: "blue",
     };
 
     const card = buildDashboardMetricCard({
@@ -141,22 +138,22 @@ describe('buildDashboardMetricCard', () => {
       t: mockT,
     });
 
-    expect(card.value).toBe('92%');
+    expect(card.value).toBe("92%");
     expect(card.trend).toBe(5);
   });
 
-  it('handles fallback widget trend when trendMetric is not mapped directly', () => {
+  it("handles fallback widget trend when trendMetric is not mapped directly", () => {
     const widget: CustomWidget = {
-      id: 'custom-unmapped-widget',
-      widgetType: 'card',
-      role: 'admin',
-      collection: 'finance_invoices',
+      id: "custom-unmapped-widget",
+      widgetType: "card",
+      role: "admin",
+      collection: "finance_invoices",
       isPinnedToDashboard: true,
       trend: 42,
-      title: 'Custom Invoices',
-      category: 'finance',
-      operation: 'count',
-      color: 'blue',
+      title: "Custom Invoices",
+      category: "finance",
+      operation: "count",
+      color: "blue",
     };
 
     const card = buildDashboardMetricCard({

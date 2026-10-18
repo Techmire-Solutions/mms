@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { AuditLog } from "./AuditLog";
 
-
 vi.mock("@/hooks/useAcademicTerms", () => ({
   useAcademicTerms: () => ({
     session: { singular: "Session", plural: "Sessions" },
@@ -11,7 +10,7 @@ vi.mock("@/hooks/useAcademicTerms", () => ({
     section: { singular: "Section", plural: "Sections" },
   }),
 }));
-(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
@@ -59,7 +58,9 @@ describe("AuditLog Component", () => {
   it("renders audit log entries list after loading", async () => {
     await act(async () => {
       const root = createRoot(container!);
-      root.render(React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" } }));
+      root.render(
+        React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" } }),
+      );
     });
 
     expect(container!.innerHTML).toContain("attendance.audit.title");
@@ -70,7 +71,12 @@ describe("AuditLog Component", () => {
   it("renders audit log in cards mode without table", async () => {
     await act(async () => {
       const root = createRoot(container!);
-      root.render(React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" }, viewMode: "cards" }));
+      root.render(
+        React.createElement(AuditLog, {
+          filters: { classId: "cls-1", date: "2025-01-01" },
+          viewMode: "cards",
+        }),
+      );
     });
 
     expect(container!.innerHTML).toContain("admin");
@@ -80,7 +86,12 @@ describe("AuditLog Component", () => {
   it("renders audit log in table mode", async () => {
     await act(async () => {
       const root = createRoot(container!);
-      root.render(React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" }, viewMode: "table" }));
+      root.render(
+        React.createElement(AuditLog, {
+          filters: { classId: "cls-1", date: "2025-01-01" },
+          viewMode: "table",
+        }),
+      );
     });
 
     expect(container!.innerHTML).toContain("admin");

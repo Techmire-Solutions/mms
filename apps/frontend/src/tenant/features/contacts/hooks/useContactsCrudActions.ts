@@ -7,7 +7,12 @@ export function useContactsCrudActions() {
   const { t, handleError, notifyBulkResult, notifyArchivedWithUndo } = useContactsCrudNotify();
   const { logExportAudit } = useContactMutations();
   const write = useContactsCrudWriteActions({ t, handleError, notifyBulkResult });
-  const remove = useContactsCrudDeleteActions({ t, handleError, notifyBulkResult, notifyArchivedWithUndo });
+  const remove = useContactsCrudDeleteActions({
+    t,
+    handleError,
+    notifyBulkResult,
+    notifyArchivedWithUndo,
+  });
 
   return {
     updateContact: write.updateContact,

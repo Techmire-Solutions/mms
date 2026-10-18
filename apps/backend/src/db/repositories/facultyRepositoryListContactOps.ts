@@ -2,11 +2,11 @@
  * @file facultyRepositoryListContactOps.ts
  * @description Faculty contact-link probes via faculty_employments SSOT.
  */
-import { and, eq, isNotNull, isNull, ne, sql, type SQL } from 'drizzle-orm';
-import type { FacultyMember } from '@mms/shared';
-import { faculty, facultyEmployments } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { FACULTY_PROJECTION_COLUMNS, facultyRowToRecord } from './facultyRepositoryColumns.js';
+import { and, eq, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
+import type { FacultyMember } from "@mms/shared";
+import { faculty, facultyEmployments } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { FACULTY_PROJECTION_COLUMNS, facultyRowToRecord } from "./facultyRepositoryColumns.js";
 
 function activeEmploymentJoin(subdomain: string): SQL {
   return and(
@@ -38,9 +38,7 @@ export async function listFacultyLinkedContactIdsSql(
       .from(faculty)
       .innerJoin(facultyEmployments, activeEmploymentJoin(subdomain))
       .where(and(...conditions));
-    return rows
-      .map((row) => row.contactId)
-      .filter((id): id is string => Boolean(id && id.trim()));
+    return rows.map((row) => row.contactId).filter((id): id is string => Boolean(id && id.trim()));
   });
 }
 
@@ -90,7 +88,7 @@ export async function findFacultyRegistrationConflictSql(
     contactId?: string | number;
     employeeId?: string;
   },
-): Promise<'contact' | 'employeeId' | null> {
+): Promise<"contact" | "employeeId" | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const exclude = input.excludeId?.trim();
@@ -100,7 +98,7 @@ export async function findFacultyRegistrationConflictSql(
     ];
     if (exclude) baseConditions.push(ne(faculty.id, exclude));
 
-    if (input.contactId != null && String(input.contactId).trim() !== '') {
+    if (input.contactId != null && String(input.contactId).trim() !== "") {
       const contactId = String(input.contactId).trim();
       const rows = await tx
         .select({ id: faculty.id })
@@ -108,7 +106,7 @@ export async function findFacultyRegistrationConflictSql(
         .innerJoin(facultyEmployments, activeEmploymentJoin(subdomain))
         .where(and(...baseConditions, eq(facultyEmployments.contactId, contactId)))
         .limit(1);
-      if (rows.length > 0) return 'contact';
+      if (rows.length > 0) return "contact";
     }
 
     const employeeId = input.employeeId?.trim().toLowerCase();
@@ -124,7 +122,7 @@ export async function findFacultyRegistrationConflictSql(
           ),
         )
         .limit(1);
-      if (rows.length > 0) return 'employeeId';
+      if (rows.length > 0) return "employeeId";
     }
 
     return null;

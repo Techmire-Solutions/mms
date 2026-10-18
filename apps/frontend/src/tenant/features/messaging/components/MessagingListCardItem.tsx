@@ -7,16 +7,16 @@ import {
   type Message,
 } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { ChannelBadge } from "@/components/ui/ChannelBadge";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { EntityCardMetaTile } from "@/components/ui/EntityCardMetaTile";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { ChannelBadge } from "@/components/app/ChannelBadge";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { EntityCard } from "@/components/app/EntityCard";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import { SEMANTIC_TEXT } from "@/lib/semanticTone";
+import { SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
-import { getMessagingChannelAccentBarClass } from "./messagingCardTokens";
+import { getMessagingChannelAccentBarClass } from "../lib/messagingCardTokens";
 import { MessagingListCardActions } from "./MessagingListCardActions";
 
 export { getMessagingChannelAccentBarClass };
@@ -118,9 +118,7 @@ export function MessagingListCardItem({
               <div className="flex items-start justify-between gap-2 mt-0.5">
                 <div className="min-w-0 flex-1">
                   {log.channel === "email" && log.subject && (
-                    <p className="font-semibold text-foreground mb-1 truncate">
-                      {log.subject}
-                    </p>
+                    <p className="font-semibold text-foreground mb-1 truncate">{log.subject}</p>
                   )}
                   <p className="line-clamp-2 leading-relaxed whitespace-pre-wrap">{log.body}</p>
                 </div>
@@ -145,7 +143,9 @@ export function MessagingListCardItem({
       }
       banner={
         isFailed ? (
-          <div className={`flex items-center gap-1.5 text-3xs font-medium ${SEMANTIC_TEXT.destructive}`}>
+          <div
+            className={`flex items-center gap-1.5 text-3xs font-medium ${SEMANTIC_TEXT.destructive}`}
+          >
             <AlertCircle className="h-3 w-3 shrink-0" />
             <span className="truncate">{t("messaging.loadFailedHint")}</span>
           </div>

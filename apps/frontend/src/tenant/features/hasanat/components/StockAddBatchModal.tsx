@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { Package } from 'lucide-react';
-import { type Denomination, type StockBatch } from '@/lib/data/hasanatData';
-import { DatePicker } from '@/components/ui/DatePicker';
-import { FormModal } from '@/components/ui/FormModal';
-import { Field } from '@/components/ui/FormPrimitives';
-import { UserActorSelect } from '@/tenant/components/selectors/UserActorSelect';
-import { FORM_INPUT } from '@/components/ui/formStyles';
-import { Input } from '@/components/ui/input';
-import { FormSelectWithQuickCreate } from '@/components/ui/FormPrimitives';
-import { generateClientEntityId, todayISO } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { DenominationModal } from './DenominationModal';
+import React, { useState } from "react";
+import { Package } from "lucide-react";
+import { type Denomination, type StockBatch } from "@/lib/data/hasanatData";
+import { DatePicker } from "@/components/app/DatePicker";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
+import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
+import { FORM_INPUT } from "@/components/ui/formStyles";
+import { Input } from "@/components/ui/input";
+import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
+import { generateClientEntityId, todayISO } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { DenominationModal } from "./DenominationModal";
 
 interface StockAddBatchModalProps {
   open: boolean;
@@ -33,11 +33,11 @@ export function StockAddBatchModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [data, setData] = useState<Partial<StockBatch>>({
-    denominationId: denoms[0]?.id || '',
+    denominationId: denoms[0]?.id || "",
     quantity: 0,
     addedDate: todayISO(),
-    addedByUserId: '',
-    note: '',
+    addedByUserId: "",
+    note: "",
   });
 
   const updateField = <K extends keyof StockBatch>(field: K, value: StockBatch[K]) => {
@@ -51,16 +51,18 @@ export function StockAddBatchModal({
     }
   };
 
-  const selectedDenomination = denoms.find((denomination) => denomination.id === data.denominationId);
+  const selectedDenomination = denoms.find(
+    (denomination) => denomination.id === data.denominationId,
+  );
 
   React.useEffect(() => {
     if (open) {
       setData({
-        denominationId: denoms[0]?.id || '',
+        denominationId: denoms[0]?.id || "",
         quantity: 0,
         addedDate: todayISO(),
-        addedByUserId: '',
-        note: '',
+        addedByUserId: "",
+        note: "",
       });
       setErrors({});
       setSubmitError(null);
@@ -70,15 +72,15 @@ export function StockAddBatchModal({
   const handleSave = async () => {
     const newErrors: Record<string, string> = {};
     if (!data.denominationId) {
-      newErrors.denominationId = t('common.required');
+      newErrors.denominationId = t("common.required");
     }
     if (!data.quantity || Number(data.quantity) < 1) {
-      newErrors.quantity = t('common.required');
+      newErrors.quantity = t("common.required");
     }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setSubmitError(t('common.formPleaseFixErrors'));
+      setSubmitError(t("common.formPleaseFixErrors"));
       return;
     }
 
@@ -88,10 +90,10 @@ export function StockAddBatchModal({
     try {
       await onSave({
         ...data,
-        id: generateClientEntityId('bat'),
+        id: generateClientEntityId("bat"),
         quantity: Number(data.quantity),
         remaining: Number(data.quantity),
-        denominationName: denomination?.name || '',
+        denominationName: denomination?.name || "",
       } as StockBatch);
     } finally {
       setSubmitting(false);
@@ -102,10 +104,10 @@ export function StockAddBatchModal({
     <FormModal
       open={open}
       onClose={onClose}
-      title={t('hasanat.stock.addBatchTitle')}
+      title={t("hasanat.stock.addBatchTitle")}
       icon={Package}
-      cancelLabel={t('common.cancel')}
-      saveLabel={t('hasanat.stock.addBatchAction')}
+      cancelLabel={t("common.cancel")}
+      saveLabel={t("hasanat.stock.addBatchAction")}
       saving={submitting}
       error={submitError || undefined}
       onSave={handleSave}
@@ -121,65 +123,91 @@ export function StockAddBatchModal({
         }}
         className="space-y-3"
       >
-        <Field id="batch-denom" label={t('hasanat.form.denomination')} required error={errors.denominationId}>
+        <Field
+          id="batch-denom"
+          label={t("hasanat.form.denomination")}
+          required
+          error={errors.denominationId}
+        >
           <FormSelectWithQuickCreate
             id="batch-denom"
             name="denominationId"
-            value={data.denominationId || ''}
-            onChange={(value) => updateField('denominationId', value)}
-            options={denoms.filter((denomination) => denomination.active).map((denomination) => ({
-              value: denomination.id,
-              label: `${denomination.icon} ${denomination.name} (${t('hasanat.form.pointsShort', { points: denomination.points })})`,
-            }))}
-            canAdd={typeof onDenomsChange === 'function'}
+            value={data.denominationId || ""}
+            onChange={(value) => updateField("denominationId", value)}
+            options={denoms
+              .filter((denomination) => denomination.active)
+              .map((denomination) => ({
+                value: denomination.id,
+                label: `${denomination.icon} ${denomination.name} (${t("hasanat.form.pointsShort", { points: denomination.points })})`,
+              }))}
+            canAdd={typeof onDenomsChange === "function"}
             onOpenAdd={() => setCreateDenomOpen(true)}
-            addAriaLabel={t('hasanat.denominations.new')}
+            addAriaLabel={t("hasanat.denominations.new")}
           />
         </Field>
         {selectedDenomination && (
-          <div className="h-10 rounded-xl flex items-center gap-2 px-3 text-white text-sm font-semibold" style={{ background: selectedDenomination.color }}>
-            <span aria-hidden="true">{selectedDenomination.icon}</span><span>{selectedDenomination.name}</span>
+          <div
+            className="h-10 rounded-xl flex items-center gap-2 px-3 text-white text-sm font-semibold"
+            style={{ background: selectedDenomination.color }}
+          >
+            <span aria-hidden="true">{selectedDenomination.icon}</span>
+            <span>{selectedDenomination.name}</span>
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field id="batch-qty" label={t('hasanat.form.quantity')} required error={errors.quantity}>
+          <Field id="batch-qty" label={t("hasanat.form.quantity")} required error={errors.quantity}>
             <Input
               id="batch-qty"
               name="quantity"
               type="text"
               inputMode="numeric"
               className={FORM_INPUT}
-              value={data.quantity || ''}
+              value={data.quantity || ""}
               onChange={(event) => {
-                const sanitized = event.target.value.replace(/[^0-9]/g, '');
-                updateField('quantity', (sanitized ? Number(sanitized) : 0) as StockBatch['quantity']);
+                const sanitized = event.target.value.replace(/[^0-9]/g, "");
+                updateField(
+                  "quantity",
+                  (sanitized ? Number(sanitized) : 0) as StockBatch["quantity"],
+                );
               }}
               placeholder="0"
             />
           </Field>
-          <Field id="add-date" label={t('hasanat.stock.date')}>
-            <DatePicker id="add-date" name="addedDate" value={data.addedDate || ''} onChange={(value) => updateField('addedDate', value)} />
+          <Field id="add-date" label={t("hasanat.stock.date")}>
+            <DatePicker
+              id="add-date"
+              name="addedDate"
+              value={data.addedDate || ""}
+              onChange={(value) => updateField("addedDate", value)}
+            />
           </Field>
         </div>
         <UserActorSelect
           id="added-by"
-          label={t('hasanat.stock.addedBy')}
-          value={data.addedByUserId || ''}
-          onChange={(id) => updateField('addedByUserId', id)}
+          label={t("hasanat.stock.addedBy")}
+          value={data.addedByUserId || ""}
+          onChange={(id) => updateField("addedByUserId", id)}
           allowEmpty
         />
-        <Field id="batch-note" label={t('hasanat.stock.note')}>
-          <Input id="batch-note" name="note" className={FORM_INPUT} value={data.note || ''} onChange={(event) => updateField('note', event.target.value)} placeholder={t('hasanat.stock.notePlaceholder')} />
+        <Field id="batch-note" label={t("hasanat.stock.note")}>
+          <Input
+            id="batch-note"
+            name="note"
+            className={FORM_INPUT}
+            value={data.note || ""}
+            onChange={(event) => updateField("note", event.target.value)}
+            placeholder={t("hasanat.stock.notePlaceholder")}
+          />
         </Field>
       </form>
-      {typeof onDenomsChange === 'function' ? (
+      {typeof onDenomsChange === "function" ? (
         <DenominationModal
           open={createDenomOpen}
           denom={null}
           onClose={() => setCreateDenomOpen(false)}
           onSave={async (denom) => {
             await onDenomsChange([...denoms, denom]);
-            updateField('denominationId', denom.id);
+            updateField("denominationId", denom.id);
             setCreateDenomOpen(false);
           }}
         />

@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { ModuleTableSelectionCell } from "@/components/ui/ModuleTableSelectionCell";
-import { workTableStickyCellBg } from "@/components/ui/tableWorkSticky";
+import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
+import { workTableStickyCellBg } from "@/components/app/tableWorkSticky";
 import { cn } from "@/lib/utils";
 import type { ListRowMotionFn } from "@/hooks/useListRowMotion";
 import type { WorkBatchTableColumn } from "./WorkBatchTable";
@@ -47,9 +47,7 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
   } = props;
 
   const idStr = String(row.id);
-  const rowAriaLabel = selectRowAriaLabel
-    ? selectRowAriaLabel(row)
-    : `Select row ${idStr}`;
+  const rowAriaLabel = selectRowAriaLabel ? selectRowAriaLabel(row) : `Select row ${idStr}`;
 
   const hasNestedInteractive = hasSelection || Boolean(renderRowActions);
   // Clickable <tr role="button"> wrapping checkboxes/switches fails axe nested-interactive.
@@ -92,9 +90,7 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
       {columns.map((col) => {
         const isSticky = stickyColumnId === col.id;
         const customCellClass =
-          typeof col.cellClassName === "function"
-            ? col.cellClassName(row)
-            : col.cellClassName;
+          typeof col.cellClassName === "function" ? col.cellClassName(row) : col.cellClassName;
 
         return (
           <TableCell

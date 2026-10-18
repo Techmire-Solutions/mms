@@ -1,5 +1,6 @@
-import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query';
-import { apiJson } from '@/lib/apiClient';
+import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
 import type {
   AuditRetentionRegime,
   AuditActionType,
@@ -9,11 +10,11 @@ import type {
   AuditExportPayload,
   AuditMerkleRootsResponse,
   AuditErasureResponse,
-} from '@mms/shared';
+} from "@mms/shared";
 
-export const AUDIT_EVENTS_QUERY_KEY = ['audit', 'events'] as const;
-export const AUDIT_MERKLE_ROOTS_QUERY_KEY = ['audit', 'merkle-roots'] as const;
-export const AUDIT_ANOMALIES_QUERY_KEY = ['audit', 'anomalies'] as const;
+export const AUDIT_EVENTS_QUERY_KEY = ["audit", "events"] as const;
+export const AUDIT_MERKLE_ROOTS_QUERY_KEY = ["audit", "merkle-roots"] as const;
+export const AUDIT_ANOMALIES_QUERY_KEY = ["audit", "anomalies"] as const;
 
 export interface AuditListFilters {
   limit?: number;
@@ -34,24 +35,37 @@ export type {
 export interface ExecuteErasureParams {
   subjectId: string;
   regime: AuditRetentionRegime;
-  erasureType: 'CRYPTO_SHRED' | 'REDACT_APPEND';
+  erasureType: "CRYPTO_SHRED" | "REDACT_APPEND";
   reason?: string;
 }
 
-export function auditEventsQueryOptions(filters: AuditListFilters = {}) {
-  const params = new URLSearchParams();
-  if (filters.limit) params.set('limit', String(filters.limit));
-  if (filters.offset) params.set('offset', String(filters.offset));
-  if (filters.tableName) params.set('tableName', filters.tableName);
-  if (filters.recordId) params.set('recordId', filters.recordId);
-  if (filters.actionType) params.set('actionType', filters.actionType);
+/** Throws an `ApiError` on a non-200 contract envelope (preserves the old throw-on-!ok). */
+function assertOk(response: { status: number; body: unknown }, context: string): void {
+  if (response.status === 200) return;
+  const errorBody = response.body as { message?: string; type?: string } | undefined;
+  throw new ApiError(response.status, errorBody?.message ?? context, errorBody?.type);
+}
 
-  const queryStr = params.toString();
-  const path = `/api/audit/events${queryStr ? `?${queryStr}` : ''}`;
+export function auditEventsQueryOptions(filters: AuditListFilters = {}) {
+  const query = {
+    ...(filters.limit ? { limit: filters.limit } : {}),
+    ...(filters.offset ? { offset: filters.offset } : {}),
+    ...(filters.tableName ? { tableName: filters.tableName } : {}),
+    ...(filters.recordId ? { recordId: filters.recordId } : {}),
+    ...(filters.actionType ? { actionType: filters.actionType } : {}),
+  };
 
   return queryOptions({
     queryKey: [...AUDIT_EVENTS_QUERY_KEY, filters] as const,
-    queryFn: ({ signal }) => apiJson<AuditListResponse>(path, { signal }),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.audit.listEvents({
+        query,
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load audit events");
+      return response.body as AuditListResponse;
+    },
     staleTime: 30_000,
   });
 }
@@ -63,7 +77,14 @@ export function useAuditEventsQuery(filters: AuditListFilters = {}) {
 export function useAuditMerkleRootsQuery() {
   return useQuery({
     queryKey: AUDIT_MERKLE_ROOTS_QUERY_KEY,
-    queryFn: ({ signal }) => apiJson<AuditMerkleRootsResponse>('/api/audit/merkle-roots', { signal }),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.audit.listMerkleRoots({
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load Merkle roots");
+      return response.body as AuditMerkleRootsResponse;
+    },
     staleTime: 60_000,
   });
 }
@@ -71,10 +92,11 @@ export function useAuditMerkleRootsQuery() {
 export function useAuditVerifyMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () =>
-      apiJson<AuditVerificationResult>('/api/audit/verify', {
-        method: 'POST',
-      }),
+    mutationFn: async () => {
+      const response = await apiContract.audit.verifyChain({});
+      assertOk(response, "Audit verification failed");
+      return response.body as AuditVerificationResult;
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: AUDIT_EVENTS_QUERY_KEY });
     },
@@ -84,12 +106,11 @@ export function useAuditVerifyMutation() {
 export function useAuditErasureMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (params: ExecuteErasureParams) =>
-      apiJson<AuditErasureResponse>('/api/audit/erasure', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
-      }),
+    mutationFn: async (params: ExecuteErasureParams) => {
+      const response = await apiContract.audit.executeErasure({ body: params });
+      assertOk(response, "Audit erasure failed");
+      return response.body as AuditErasureResponse;
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: AUDIT_EVENTS_QUERY_KEY });
     },
@@ -99,8 +120,15 @@ export function useAuditErasureMutation() {
 export function useAuditAnomaliesQuery(windowHours = 24) {
   return useQuery({
     queryKey: [...AUDIT_ANOMALIES_QUERY_KEY, windowHours] as const,
-    queryFn: ({ signal }) =>
-      apiJson<AuditAnomalyReport>(`/api/audit/anomalies?windowHours=${windowHours}`, { signal }),
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.audit.getAnomalies({
+        query: { windowHours },
+        signal,
+        fetchOptions: { signal },
+      });
+      assertOk(response, "Failed to load audit anomalies");
+      return response.body as AuditAnomalyReport;
+    },
     staleTime: 60_000,
   });
 }

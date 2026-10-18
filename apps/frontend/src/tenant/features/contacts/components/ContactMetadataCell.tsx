@@ -39,7 +39,10 @@ export function ContactMetadataCell({
     <span className="text-muted-foreground">{t("contacts.table.emptyDash")}</span>
   );
 
-  const renderJoinedList = (items: (string | undefined | null)[], showTitle = false): React.ReactNode => {
+  const renderJoinedList = (
+    items: (string | undefined | null)[],
+    showTitle = false,
+  ): React.ReactNode => {
     const valid = items.filter(Boolean) as string[];
     if (valid.length === 0) return renderDash();
     const joined = valid.join(", ");
@@ -62,7 +65,11 @@ export function ContactMetadataCell({
   });
 
   if (variant === "table") {
-    return <TableCell className="px-4 py-3" style={style}>{cellContent}</TableCell>;
+    return (
+      <TableCell className="px-4 py-3" style={style}>
+        {cellContent}
+      </TableCell>
+    );
   }
 
   return <>{cellContent}</>;

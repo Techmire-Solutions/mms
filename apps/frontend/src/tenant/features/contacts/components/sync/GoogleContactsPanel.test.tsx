@@ -39,9 +39,7 @@ vi.mock("./GoogleContactsConnectedState", () => ({
 
 describe("GoogleContactsPanel Component", () => {
   it("renders panel and connected state", () => {
-    const html = renderToStaticMarkup(
-      <GoogleContactsPanel canWrite={true} />,
-    );
+    const html = renderToStaticMarkup(<GoogleContactsPanel canWrite={true} />);
 
     expect(html).toContain("contacts.sync.googleTitle");
     expect(html).toContain("Connected State");

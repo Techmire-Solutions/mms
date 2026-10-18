@@ -56,7 +56,7 @@ export function useContactsSyncConflictRow({
     setFieldPicks((prev) => ({ ...prev, [field]: pick }));
   };
 
-  const handleKeepMine = (async () => {
+  const handleKeepMine = async () => {
     setApplying(true);
     try {
       requeueContactsSyncConflict(entry.id);
@@ -65,15 +65,15 @@ export function useContactsSyncConflictRow({
     } finally {
       setApplying(false);
     }
-  });
+  };
 
-  const handleUseServer = (() => {
+  const handleUseServer = () => {
     dismissContactsSyncConflict(entry.id);
     onResolved();
     notify.info(t("contacts.sync.conflictUseServer"));
-  });
+  };
 
-  const handleApplyMerge = (async () => {
+  const handleApplyMerge = async () => {
     if (!local) return;
     setApplying(true);
     try {
@@ -93,7 +93,7 @@ export function useContactsSyncConflictRow({
     } finally {
       setApplying(false);
     }
-  });
+  };
 
   return {
     expanded,

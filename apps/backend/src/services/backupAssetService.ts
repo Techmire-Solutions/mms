@@ -1,8 +1,8 @@
-import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
-import { join, normalize, relative, dirname } from 'node:path';
-import { resolveUploadsRoot } from '../config/uploadConfig.js';
-import type { TenantDatabaseSnapshot } from '@mms/shared';
-import { logger } from '../lib/logger.js';
+import { readFile, writeFile, mkdir, stat } from "node:fs/promises";
+import { join, normalize, relative, dirname } from "node:path";
+import { resolveUploadsRoot } from "../config/uploadConfig.js";
+import type { TenantDatabaseSnapshot } from "@mms/shared";
+import { logger } from "../lib/logger.js";
 
 const UPLOADS_PATH_REGEX = /^\/uploads\/([a-zA-Z0-9_\-/.]+)$/;
 
@@ -35,8 +35,8 @@ export function collectReferencedAssetUrls(snapshot: TenantDatabaseSnapshot): Se
  */
 export function collectAssetUrlsFromValue(value: unknown, urls: Set<string>): void {
   if (!value) return;
-  if (typeof value === 'string') {
-    if (value.length >= 10 && value.includes('/uploads/')) {
+  if (typeof value === "string") {
+    if (value.length >= 10 && value.includes("/uploads/")) {
       const trimmed = value.trim();
       if (UPLOADS_PATH_REGEX.test(trimmed)) {
         urls.add(trimmed);
@@ -50,7 +50,7 @@ export function collectAssetUrlsFromValue(value: unknown, urls: Set<string>): vo
     }
     return;
   }
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     const obj = value as Record<string, unknown>;
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -72,7 +72,7 @@ export function resolveSafeUploadDiskPath(urlPath: string): string | null {
   const target = normalize(join(root, relativePath));
 
   const rel = relative(root, target);
-  if (rel.startsWith('..') || rel.startsWith('/') || rel.includes('..')) {
+  if (rel.startsWith("..") || rel.startsWith("/") || rel.includes("..")) {
     return null; // Path traversal attempt
   }
 
@@ -96,11 +96,11 @@ export async function readAssetBase64(url: string): Promise<string | null> {
     const fileStat = await stat(diskPath);
     if (!fileStat.isFile()) return null;
     if (fileStat.size > MAX_BACKUP_ASSET_FILE_BYTES) {
-      logger.warn({ url, size: fileStat.size }, 'Skipping asset exceeding 25MB limit');
+      logger.warn({ url, size: fileStat.size }, "Skipping asset exceeding 25MB limit");
       return null;
     }
     const buffer = await readFile(diskPath);
-    return buffer.toString('base64');
+    return buffer.toString("base64");
   } catch {
     return null;
   }
@@ -124,7 +124,7 @@ export async function exportBackupAssetsForSnapshot(
       const fileStat = await stat(diskPath);
       if (!fileStat.isFile()) continue;
       if (fileStat.size > MAX_BACKUP_ASSET_FILE_BYTES) {
-        logger.warn({ url, size: fileStat.size }, 'Skipping asset exceeding 25MB limit');
+        logger.warn({ url, size: fileStat.size }, "Skipping asset exceeding 25MB limit");
         continue;
       }
       totalBytes += fileStat.size;
@@ -137,7 +137,7 @@ export async function exportBackupAssetsForSnapshot(
       const base64 = await readAssetBase64(url);
       if (base64 != null) assets[url] = base64;
     } catch (error) {
-      if (error instanceof Error && error.message.startsWith('Backup asset set exceeds')) {
+      if (error instanceof Error && error.message.startsWith("Backup asset set exceeds")) {
         throw error;
       }
       // Missing file on disk — skip gracefully so backup export doesn't fail
@@ -151,26 +151,29 @@ export async function exportBackupAssetsForSnapshot(
  * Restores binary image and attachment files from a backup payload to the uploads directory.
  */
 export async function restoreTenantAssets(assets: Record<string, string>): Promise<void> {
-  if (!assets || typeof assets !== 'object') return;
+  if (!assets || typeof assets !== "object") return;
 
   for (const [urlPath, base64Data] of Object.entries(assets)) {
-    if (typeof urlPath !== 'string' || typeof base64Data !== 'string') continue;
+    if (typeof urlPath !== "string" || typeof base64Data !== "string") continue;
 
     const diskPath = resolveSafeUploadDiskPath(urlPath);
     if (!diskPath) continue;
 
     try {
-      const commaIdx = base64Data.indexOf(',');
+      const commaIdx = base64Data.indexOf(",");
       const cleanBase64 = commaIdx >= 0 ? base64Data.slice(commaIdx + 1) : base64Data;
       if (!cleanBase64) continue;
 
-      const buffer = Buffer.from(cleanBase64, 'base64');
+      const buffer = Buffer.from(cleanBase64, "base64");
       if (buffer.length === 0) continue;
 
       await mkdir(dirname(diskPath), { recursive: true });
       await writeFile(diskPath, buffer);
     } catch (err) {
-      logger.error({ urlPath, err: err instanceof Error ? err.message : 'error' }, 'Failed to restore asset');
+      logger.error(
+        { urlPath, err: err instanceof Error ? err.message : "error" },
+        "Failed to restore asset",
+      );
     }
   }
 }

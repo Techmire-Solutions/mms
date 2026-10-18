@@ -31,8 +31,7 @@ export function useDirectoryTrashState(): UseDirectoryTrashStateReturn {
     (action: boolean | ((prev: boolean) => boolean)) => {
       setSearchParams(
         (prev) => {
-          const current =
-            prev.get("view") === "trash" || prev.get("archived") === "true";
+          const current = prev.get("view") === "trash" || prev.get("archived") === "true";
           const nextVal = typeof action === "function" ? action(current) : action;
           const next = new URLSearchParams(prev);
           if (nextVal) {

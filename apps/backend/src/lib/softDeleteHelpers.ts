@@ -2,7 +2,7 @@
  * Unified soft-delete lifecycle record builders and timestamp utilities.
  */
 
-import { sql, type SQLWrapper } from 'drizzle-orm';
+import { sql, type SQLWrapper } from "drizzle-orm";
 
 export function nowIso(): string {
   return new Date().toISOString();
@@ -37,14 +37,14 @@ type IncludeDeletedTx = {
  * (FORCE RLS soft-delete policies require `app.include_deleted = 'true'`).
  */
 export async function enableIncludeDeleted(tx: IncludeDeletedTx): Promise<void> {
-  if (typeof tx?.execute === 'function') {
+  if (typeof tx?.execute === "function") {
     await tx.execute(sql`SELECT set_config('app.include_deleted', 'true', true)`);
   }
 }
 
 /** Whether a soft-delete list filter needs the include_deleted GUC under FORCE RLS. */
 export function softDeleteFilterNeedsIncludeDeleted(
-  deletedFilter: 'active' | 'deleted' | 'all',
+  deletedFilter: "active" | "deleted" | "all",
 ): boolean {
-  return deletedFilter === 'deleted' || deletedFilter === 'all';
+  return deletedFilter === "deleted" || deletedFilter === "all";
 }

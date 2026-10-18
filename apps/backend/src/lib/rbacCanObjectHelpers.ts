@@ -1,12 +1,13 @@
-import type { User } from '@mms/shared';
-import { PLATFORM_SUPER_USERS_OBJECT_KEY, roleHasPermission } from '@mms/shared';
-import { LRUCache } from 'lru-cache';
+import type { User } from "@mms/shared";
+import { PLATFORM_SUPER_USERS_OBJECT_KEY, roleHasPermission } from "@mms/shared";
+import { LRUCache } from "lru-cache";
 import {
   OBJECT_READ_PERMISSION,
   OBJECT_WRITE_PERMISSION,
   WRITE_ROLES,
   isAllowedObjectKey,
-} from './rbacPermissionMaps.js';
+  isStaffWriteObjectKey,
+} from "./rbacPermissionMaps.js";
 
 const canReadObjectCache = new LRUCache<string, boolean>({ max: 2048 });
 const canWriteObjectCache = new LRUCache<string, boolean>({ max: 2048 });
@@ -30,7 +31,11 @@ function computeCanReadObject(user: User, key: string): boolean {
   if (mapped) {
     return roleHasPermission(user.role, mapped);
   }
-  return WRITE_ROLES.has(user.role);
+  if (isStaffWriteObjectKey(key)) {
+    return WRITE_ROLES.has(user.role);
+  }
+  // Allowed but unmapped and not an explicit staff key — deny (fail closed).
+  return false;
 }
 
 /**
@@ -59,7 +64,7 @@ function computeCanWriteObject(user: User, key: string): boolean {
   }
   // Legacy document-store key for module grants (now on workspaces.granted_modules).
   // Tenants must never write this key even if a leftover objects row exists.
-  if (key === 'platform_settings') {
+  if (key === "platform_settings") {
     return false;
   }
   if (!isAllowedObjectKey(key)) {
@@ -69,7 +74,11 @@ function computeCanWriteObject(user: User, key: string): boolean {
   if (mapped) {
     return roleHasPermission(user.role, mapped);
   }
-  return WRITE_ROLES.has(user.role);
+  if (isStaffWriteObjectKey(key)) {
+    return WRITE_ROLES.has(user.role);
+  }
+  // Allowed but unmapped and not an explicit staff key — deny (fail closed).
+  return false;
 }
 
 /**
@@ -93,7 +102,7 @@ export function canBulkSync(user: User): boolean {
   if (!user || !user.role) {
     return false;
   }
-  return roleHasPermission(user.role, 'settings.global.write');
+  return roleHasPermission(user.role, "settings.global.write");
 }
 
 /** Bulk sync download — same privilege as canBulkSync / settings.global.write. */

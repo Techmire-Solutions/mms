@@ -1,11 +1,7 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { useBodyScrollLock } from "./useBodyScrollLock";
 import { useFocusTrap } from "./useFocusTrap";
-import {
-  isAnotherLayerFocused,
-  isTopmostOverlayLayer,
-  useOverlayLayer,
-} from "@/lib/overlayStack";
+import { isAnotherLayerFocused, isTopmostOverlayLayer, useOverlayLayer } from "@/lib/overlayStack";
 
 export interface UseOverlayBehaviorOptions {
   /** Whether the overlay is visible/active. */

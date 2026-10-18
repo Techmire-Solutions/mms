@@ -1,7 +1,7 @@
 import React from "react";
 import { todayISO } from "@mms/shared";
-import type { AttendanceRecord } from '@/lib/data/attendanceData';
-import type { Session } from '@/lib/data/sessionsData';
+import type { AttendanceRecord } from "@/lib/data/attendanceData";
+import type { Session } from "@/lib/data/sessionsData";
 
 export interface ClassBreakdown {
   classId: string;
@@ -42,7 +42,9 @@ export function useTodayAttendanceStats(
     const todayRecs = attendanceRecords.filter((rec) => rec.date === today);
     let dispRecs = todayRecs;
     if (dispRecs.length === 0) {
-      const dates = Array.from(new Set(attendanceRecords.map((rec) => rec.date))).sort().reverse();
+      const dates = Array.from(new Set(attendanceRecords.map((rec) => rec.date)))
+        .sort()
+        .reverse();
       dispRecs = dates.length > 0 ? attendanceRecords.filter((rec) => rec.date === dates[0]) : [];
     }
 
@@ -75,7 +77,9 @@ export function useTodayAttendanceStats(
       excused: statusCounts.excused || 0,
       total: statusCounts.total,
       rate: statusCounts.total
-        ? Math.round((((statusCounts.present || 0) + (statusCounts.late || 0)) / statusCounts.total) * 100)
+        ? Math.round(
+            (((statusCounts.present || 0) + (statusCounts.late || 0)) / statusCounts.total) * 100,
+          )
         : 0,
     })) as ClassBreakdown[];
 

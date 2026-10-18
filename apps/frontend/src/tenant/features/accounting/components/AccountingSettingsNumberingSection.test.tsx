@@ -10,8 +10,16 @@ vi.mock("@/hooks/useTranslation", () => ({
 vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
   useVoucherNumbering: () => ({
     data: {
-      autoGenerate: true, prefix: "JV", delimiter: "/", yearFormat: "NONE", sequenceDigits: 4,
-      startingSequence: 1, rolloverPolicy: "never", currentSequence: 41, periodYear: 0, nextVoucherNumber: "JV/0042",
+      autoGenerate: true,
+      prefix: "JV",
+      delimiter: "/",
+      yearFormat: "NONE",
+      sequenceDigits: 4,
+      startingSequence: 1,
+      rolloverPolicy: "never",
+      currentSequence: 41,
+      periodYear: 0,
+      nextVoucherNumber: "JV/0042",
     },
   }),
   useSaveVoucherNumbering: () => ({ mutateAsync: vi.fn(), isPending: false }),

@@ -1,19 +1,23 @@
 import React, { useRef, lazy, Suspense } from "react";
 import { CONTACTS_MODULE_MANIFEST, DEFAULT_SETTINGS_SUB_TABS } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SubTabBar } from "@/components/ui/SubTabBar";
-import { ConfirmAlertDialog } from "@/components/ui/ConfirmAlertDialog";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { SetupReadOnlyMessage } from "@/components/ui/SetupReadOnlyMessage";
+import { SubTabBar } from "@/components/app/SubTabBar";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
 import { shouldOpenContactsSyncSetup } from "@/lib/contacts/googleContactsOAuth";
 import { resolveRegistryLabel } from "@/lib/contacts/contactI18n";
 import type { Contact } from "@mms/shared";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
-import { ModulePanelSuspenseFallback } from "@/components/ui/ModulePanelSuspenseFallback";
-import { ModuleTierMotion } from "@/components/ui/ModuleTierMotion";
+import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
+import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 
-const ContactsSetupPanel = lazy(() => import("@/tenant/features/contacts/components/ContactsSetupPanel"));
-const ContactSyncPanel = lazy(() => import("@/tenant/features/contacts/components/ContactSyncPanel"));
+const ContactsSetupPanel = lazy(
+  () => import("@/tenant/features/contacts/components/ContactsSetupPanel"),
+);
+const ContactSyncPanel = lazy(
+  () => import("@/tenant/features/contacts/components/ContactSyncPanel"),
+);
 
 export interface ContactsSetupTierProps {
   onImport: (list: Contact[]) => void | Promise<void>;
@@ -21,7 +25,7 @@ export interface ContactsSetupTierProps {
   canEditSetup: boolean;
 }
 
-export const ContactsSetupTier = (function ContactsSetupTier({
+export const ContactsSetupTier = function ContactsSetupTier({
   onImport,
   canWrite,
   canEditSetup,
@@ -50,9 +54,7 @@ export const ContactsSetupTier = (function ContactsSetupTier({
   })();
 
   const subTabs = useModuleSetupSubTabs({
-    initialKey: shouldOpenContactsSyncSetup()
-      ? "sync"
-      : settingsSubTabs[0]?.key || "preferences",
+    initialKey: shouldOpenContactsSyncSetup() ? "sync" : settingsSubTabs[0]?.key || "preferences",
     isDirty: (currentKey) => {
       if (currentKey === "preferences") return dirtyRef.current.prefs;
       return false;
@@ -78,9 +80,7 @@ export const ContactsSetupTier = (function ContactsSetupTier({
           <Suspense fallback={<ModulePanelSuspenseFallback />}>
             {subTabs.showPrefs &&
               (canEditSetup ? (
-                <ContactsSetupPanel
-                  onPrefsDirtyChange={setPrefsDirty}
-                />
+                <ContactsSetupPanel onPrefsDirtyChange={setPrefsDirty} />
               ) : (
                 <SetupReadOnlyMessage title={t("contacts.setup.readOnly")} />
               ))}
@@ -107,6 +107,6 @@ export const ContactsSetupTier = (function ContactsSetupTier({
       </ErrorBoundary>
     </ModuleTierMotion>
   );
-});
+};
 
 export default ContactsSetupTier;

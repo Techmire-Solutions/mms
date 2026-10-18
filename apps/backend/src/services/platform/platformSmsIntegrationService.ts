@@ -3,13 +3,13 @@ import {
   type SmsIntegrationConfig,
   type SmsIntegrationSecrets,
   type SmsProviderId,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getPlatformSmsIntegrationRow,
   upsertPlatformSmsIntegrationConfigRow,
   upsertPlatformSmsIntegrationSecretsRow,
-} from '../../db/repositories/platformSmsIntegrationRepository.js';
-import { type PlatformSmsIntegrationRow } from '../../db/schema/platform.js';
+} from "../../db/repositories/platformSmsIntegrationRepository.js";
+import { type PlatformSmsIntegrationRow } from "../../db/schema/platform.js";
 
 function rowToConfig(row: PlatformSmsIntegrationRow): SmsIntegrationConfig {
   const overrides: Partial<SmsIntegrationConfig> = {
@@ -50,7 +50,9 @@ export async function loadPlatformSmsIntegrationSecrets(): Promise<SmsIntegratio
   return secrets;
 }
 
-export async function savePlatformSmsIntegrationSecrets(secrets: SmsIntegrationSecrets): Promise<void> {
+export async function savePlatformSmsIntegrationSecrets(
+  secrets: SmsIntegrationSecrets,
+): Promise<void> {
   await upsertPlatformSmsIntegrationSecretsRow(secrets);
 }
 

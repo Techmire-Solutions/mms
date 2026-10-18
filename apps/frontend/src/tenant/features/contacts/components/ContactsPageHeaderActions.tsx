@@ -1,6 +1,6 @@
 import type React from "react";
 import { UserPlus, AlertTriangle, Download, Loader2, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ContactsPageHeaderActionsProps {
@@ -35,17 +35,17 @@ export function ContactsPageHeaderActions({
   return (
     <>
       {canRead && !viewingDeleted && (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={openingDuplicates ? Loader2 : AlertTriangle}
           onClick={onOpenDuplicates}
           disabled={openingDuplicates}
         >
           {t("contacts.duplicates")}
-        </ActionButton>
+        </Button>
       )}
       {canExport && !viewingDeleted && (
-        <ActionButton
+        <Button
           variant="ghost"
           icon={Download}
           onClick={onExport}
@@ -53,17 +53,17 @@ export function ContactsPageHeaderActions({
           aria-busy={isExporting}
         >
           {t("common.export")}
-        </ActionButton>
+        </Button>
       )}
       {canWrite && !viewingDeleted && (
-        <ActionButton variant="ghost" icon={Upload} onClick={onImport}>
+        <Button variant="ghost" icon={Upload} onClick={onImport}>
           {t("contacts.import")}
-        </ActionButton>
+        </Button>
       )}
       {canWrite && !viewingDeleted && (
-        <ActionButton variant="primary" icon={UserPlus} onClick={onAddContact}>
+        <Button variant="primary" icon={UserPlus} onClick={onAddContact}>
           {t("contacts.addContact")}
-        </ActionButton>
+        </Button>
       )}
     </>
   );

@@ -1,12 +1,24 @@
-import { eq, ilike, or, isNull, isNotNull, exists, type SQL, type AnyColumn, desc, asc, sql } from 'drizzle-orm';
-import { isQueryFlagTrue, toSqlSearchPattern, type AccountingListQuery } from '@mms/shared';
+import {
+  eq,
+  ilike,
+  or,
+  isNull,
+  isNotNull,
+  exists,
+  type SQL,
+  type AnyColumn,
+  desc,
+  asc,
+  sql,
+} from "drizzle-orm";
+import { isQueryFlagTrue, toSqlSearchPattern, type AccountingListQuery } from "@mms/shared";
 import {
   accountingAccounts,
   accountingEntries,
   accountingFiscalYears,
   accountingEntryTags,
   accountingJournalLines,
-} from '../schema.js';
+} from "../schema.js";
 
 export function buildAccountListConditions(subdomain: string, query: AccountingListQuery): SQL[] {
   const conditions: SQL[] = [eq(accountingAccounts.workspaceSubdomain, subdomain)];
@@ -115,7 +127,10 @@ export function buildEntryListConditions(subdomain: string, query: AccountingLis
   return conditions;
 }
 
-export function buildFiscalYearListConditions(subdomain: string, query: AccountingListQuery): SQL[] {
+export function buildFiscalYearListConditions(
+  subdomain: string,
+  query: AccountingListQuery,
+): SQL[] {
   const conditions: SQL[] = [eq(accountingFiscalYears.workspaceSubdomain, subdomain)];
 
   if (isQueryFlagTrue(query.includeDeleted)) {
@@ -138,49 +153,49 @@ export function buildFiscalYearListConditions(subdomain: string, query: Accounti
   return conditions;
 }
 
-export function buildAccountOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
-  const field = sortField?.trim() || 'createdAt';
+export function buildAccountOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
+  const field = sortField?.trim() || "createdAt";
   let column: AnyColumn;
   switch (field) {
-    case 'createdAt':
+    case "createdAt":
       column = accountingAccounts.createdAt;
       break;
-    case 'id':
+    case "id":
       column = accountingAccounts.id;
       break;
-    case 'code':
+    case "code":
       column = accountingAccounts.code;
       break;
-    case 'name':
+    case "name":
       column = accountingAccounts.name;
       break;
-    case 'type':
+    case "type":
       column = accountingAccounts.type;
       break;
     default:
       column = accountingAccounts.createdAt;
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }
 
-export function buildEntryOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
-  const field = sortField?.trim() || 'createdAt';
+export function buildEntryOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
+  const field = sortField?.trim() || "createdAt";
   let column: AnyColumn;
   switch (field) {
-    case 'createdAt':
+    case "createdAt":
       column = accountingEntries.createdAt;
       break;
-    case 'id':
+    case "id":
       column = accountingEntries.id;
       break;
-    case 'date':
+    case "date":
       column = accountingEntries.date;
       break;
-    case 'ref':
-    case 'reference':
+    case "ref":
+    case "reference":
       column = accountingEntries.ref;
       break;
-    case 'status':
+    case "status":
       column = accountingEntries.status;
       break;
     default:
@@ -190,36 +205,36 @@ export function buildEntryOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' |
   // non-unique sort key (a date is shared by every entry booked that day) two
   // requests can order the tied rows differently, showing a row on two pages
   // while skipping another entirely.
-  return sortDir === 'asc'
+  return sortDir === "asc"
     ? sql`${asc(column)}, ${asc(accountingEntries.id)}`
     : sql`${desc(column)}, ${desc(accountingEntries.id)}`;
 }
 
-export function buildFiscalYearOrderBy(sortField?: string, sortDir?: 'asc' | 'desc' | ''): SQL {
-  const field = sortField?.trim() || 'createdAt';
+export function buildFiscalYearOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
+  const field = sortField?.trim() || "createdAt";
   let column: AnyColumn;
   switch (field) {
-    case 'createdAt':
+    case "createdAt":
       column = accountingFiscalYears.createdAt;
       break;
-    case 'id':
+    case "id":
       column = accountingFiscalYears.id;
       break;
-    case 'label':
-    case 'name':
+    case "label":
+    case "name":
       column = accountingFiscalYears.label;
       break;
-    case 'startDate':
+    case "startDate":
       column = accountingFiscalYears.startDate;
       break;
-    case 'endDate':
+    case "endDate":
       column = accountingFiscalYears.endDate;
       break;
-    case 'status':
+    case "status":
       column = accountingFiscalYears.status;
       break;
     default:
       column = accountingFiscalYears.createdAt;
   }
-  return sortDir === 'asc' ? asc(column) : desc(column);
+  return sortDir === "asc" ? asc(column) : desc(column);
 }

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bell, Languages } from 'lucide-react';
+import React from "react";
+import { Bell, Languages } from "lucide-react";
 import {
   APP_LANGUAGES,
   DEFAULT_GLOBAL_SETTINGS,
@@ -10,27 +10,27 @@ import {
   resolveNotificationChannel,
   type AppLanguageCode,
   type DateFormatId,
-} from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useSettingsGlobalDraft } from '@/lib/contexts/SettingsGlobalDraftContext';
-import { FormSelect } from '@/components/ui/FormSelect';
-import { Label } from '@/components/ui/label';
-import { SectionCard } from '@/components/ui/SectionCard';
-import { SettingsFormActions } from '@/components/ui/SettingsFormActions';
-import DateFormatSelect from '@/tenant/features/settings/components/DateFormatSelect';
-import EmailIntegrationPanel from '@/tenant/features/settings/components/EmailIntegrationPanel';
-import SmsIntegrationPanel from '@/tenant/features/settings/components/SmsIntegrationPanel';
-import TimezoneSelect from '@/tenant/features/settings/components/TimezoneSelect';
-import { GlobalSettingsSecuritySection } from '@/tenant/features/settings/components/GlobalSettingsSecuritySection';
-import { SettingsAdminOnlyNotice } from '@/tenant/features/settings/components/SettingsAdminOnlyNotice';
-import { usePermissions } from '@/tenant/hooks/usePermissions';
-import { Badge } from '@/components/ui/badge';
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useSettingsGlobalDraft } from "@/lib/contexts/SettingsGlobalDraftContext";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Label } from "@/components/ui/label";
+import { SectionCard } from "@/components/app/SectionCard";
+import { SettingsFormActions } from "@/components/app/SettingsFormActions";
+import DateFormatSelect from "@/tenant/features/settings/components/DateFormatSelect";
+import EmailIntegrationPanel from "@/tenant/features/settings/components/EmailIntegrationPanel";
+import SmsIntegrationPanel from "@/tenant/features/settings/components/SmsIntegrationPanel";
+import TimezoneSelect from "@/tenant/features/settings/components/TimezoneSelect";
+import { GlobalSettingsSecuritySection } from "@/tenant/features/settings/components/GlobalSettingsSecuritySection";
+import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
+import { Badge } from "@/components/ui/badge";
 import {
   SettingsCallout,
   SettingsFieldGroup,
   SettingsPanel,
   SettingsToggleRow,
-} from '@/components/ui/SettingsShell';
+} from "@/components/app/SettingsShell";
 
 /**
  * Regional preferences (everyone), notifications and security (admin only).
@@ -39,17 +39,10 @@ import {
 export default function GlobalSettings(): React.JSX.Element {
   const { t } = useTranslation();
   const { can } = usePermissions();
-  const canWriteGlobal = can('settings.global.write');
+  const canWriteGlobal = can("settings.global.write");
 
-  const {
-    data,
-    isGlobalDirty,
-    saved,
-    saving,
-    upd,
-    handleSaveGlobal,
-    handleDiscardGlobal,
-  } = useSettingsGlobalDraft();
+  const { data, isGlobalDirty, saved, saving, upd, handleSaveGlobal, handleDiscardGlobal } =
+    useSettingsGlobalDraft();
 
   const notificationChannel = (() => resolveNotificationChannel(data))();
 
@@ -61,11 +54,11 @@ export default function GlobalSettings(): React.JSX.Element {
       saved={saved}
       footer={
         <SettingsFormActions
-          saveLabel={t('global.saveSettings')}
-          savingLabel={t('global.saving')}
+          saveLabel={t("global.saveSettings")}
+          savingLabel={t("global.saving")}
           onSave={handleSaveGlobal}
           onDiscard={handleDiscardGlobal}
-          discardLabel={t('theme.discardChanges')}
+          discardLabel={t("theme.discardChanges")}
           dirty={isGlobalDirty}
           saving={saving}
           saved={saved}
@@ -73,19 +66,19 @@ export default function GlobalSettings(): React.JSX.Element {
       }
     >
       <SectionCard
-        title={t('global.regionalTitle')}
-        subtitle={t('global.regionalDesc')}
+        title={t("global.regionalTitle")}
+        subtitle={t("global.regionalDesc")}
         icon={Languages}
       >
         <SettingsFieldGroup>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="language">{t('global.language')}</Label>
+            <Label htmlFor="language">{t("global.language")}</Label>
             <FormSelect
               id="language"
               name="language"
               value={data.language}
               onChange={(next) => {
-                upd('language', next as AppLanguageCode);
+                upd("language", next as AppLanguageCode);
               }}
               options={APP_LANGUAGES.map((lang) => ({
                 value: lang.code,
@@ -93,71 +86,86 @@ export default function GlobalSettings(): React.JSX.Element {
               }))}
             />
             <p className="text-xs text-muted-foreground">
-              {isRtlLanguage(data.language) ? t('global.rtlLayout') : t('global.ltrLayout')}
+              {isRtlLanguage(data.language) ? t("global.rtlLayout") : t("global.ltrLayout")}
             </p>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="timezone">{t('global.timezone')}</Label>
+            <Label htmlFor="timezone">{t("global.timezone")}</Label>
             <TimezoneSelect
               id="timezone"
               value={data.timezone}
               onChange={(v) =>
-                upd('timezone', normalizeTimezone(v, DEFAULT_GLOBAL_SETTINGS.timezone))
+                upd("timezone", normalizeTimezone(v, DEFAULT_GLOBAL_SETTINGS.timezone))
               }
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="dateFormat">{t('global.dateFormat')}</Label>
+            <Label htmlFor="dateFormat">{t("global.dateFormat")}</Label>
             <DateFormatSelect
               id="dateFormat"
               value={data.dateFormat}
               language={data.language}
               onChange={(v) =>
                 upd(
-                  'dateFormat',
+                  "dateFormat",
                   normalizeDateFormat(v, DEFAULT_GLOBAL_SETTINGS.dateFormat as DateFormatId),
                 )
               }
             />
-            <p className="text-xs text-muted-foreground">{t('global.dateFormatNote')}</p>
+            <p className="text-xs text-muted-foreground">{t("global.dateFormatNote")}</p>
           </div>
         </SettingsFieldGroup>
         <div className="mt-4">
-          <SettingsCallout>{t('global.timezoneNote')}</SettingsCallout>
+          <SettingsCallout>{t("global.timezoneNote")}</SettingsCallout>
         </div>
       </SectionCard>
 
       {canWriteGlobal ? (
         <>
-          <SectionCard title={t('global.notifications')} subtitle={t('global.notificationsDesc')} icon={Bell}>
+          <SectionCard
+            title={t("global.notifications")}
+            subtitle={t("global.notificationsDesc")}
+            icon={Bell}
+          >
             <div className="space-y-3">
-              <SettingsCallout>{t('global.notificationsNote')}</SettingsCallout>
-              <div className="flex flex-wrap items-center gap-2 text-xs font-medium" aria-live="polite">
-                <span className="text-muted-foreground">{t('global.notificationsActiveChannel')}:</span>
-                {notificationChannel === 'email' && (
-                  <Badge as="span" tone="primary" size="sm">{t('global.notificationsChannelEmail')}</Badge>
+              <SettingsCallout>{t("global.notificationsNote")}</SettingsCallout>
+              <div
+                className="flex flex-wrap items-center gap-2 text-xs font-medium"
+                aria-live="polite"
+              >
+                <span className="text-muted-foreground">
+                  {t("global.notificationsActiveChannel")}:
+                </span>
+                {notificationChannel === "email" && (
+                  <Badge as="span" tone="primary" size="sm">
+                    {t("global.notificationsChannelEmail")}
+                  </Badge>
                 )}
-                {notificationChannel === 'sms' && (
-                  <Badge as="span" tone="primary" size="sm">{t('global.notificationsChannelSms')}</Badge>
+                {notificationChannel === "sms" && (
+                  <Badge as="span" tone="primary" size="sm">
+                    {t("global.notificationsChannelSms")}
+                  </Badge>
                 )}
-                {notificationChannel === 'none' && (
-                  <Badge as="span" tone="warning" size="sm">{t('global.notificationsChannelNone')}</Badge>
+                {notificationChannel === "none" && (
+                  <Badge as="span" tone="warning" size="sm">
+                    {t("global.notificationsChannelNone")}
+                  </Badge>
                 )}
               </div>
               <SettingsToggleRow
                 id="emailNotifications"
-                label={t('global.emailNotifications')}
-                description={t('global.emailNotificationsDesc')}
+                label={t("global.emailNotifications")}
+                description={t("global.emailNotificationsDesc")}
                 checked={Boolean(data.emailNotifications)}
-                onCheckedChange={(v) => upd('emailNotifications', v)}
+                onCheckedChange={(v) => upd("emailNotifications", v)}
               />
               {data.emailNotifications ? <EmailIntegrationPanel /> : null}
               <SettingsToggleRow
                 id="smsNotifications"
-                label={t('global.smsNotifications')}
-                description={t('global.smsNotificationsDesc')}
+                label={t("global.smsNotifications")}
+                description={t("global.smsNotificationsDesc")}
                 checked={Boolean(data.smsNotifications)}
-                onCheckedChange={(v) => upd('smsNotifications', v)}
+                onCheckedChange={(v) => upd("smsNotifications", v)}
               />
               {data.smsNotifications ? <SmsIntegrationPanel /> : null}
             </div>

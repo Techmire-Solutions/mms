@@ -1,7 +1,7 @@
 import { SESSION_LIFECYCLE_STATES, type SessionLifecycleState } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
 const LIFECYCLE_TONE: Record<SessionLifecycleState, string> = {
   draft: SEMANTIC_BADGE.muted,

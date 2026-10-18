@@ -10,7 +10,7 @@ export {
   deleteInvoice,
   bulkSoftDeleteInvoices,
   bulkRestoreInvoices,
-} from './financeInvoicesRepository.js';
+} from "./financeInvoicesRepository.js";
 export {
   paymentRowToRecord,
   listPaymentsByWorkspace,
@@ -23,6 +23,4 @@ export {
   bulkSoftDeletePayments,
   bulkRestorePayments,
   deleteFinanceByWorkspace,
-} from './financePaymentsRepository.js';
-
-
+} from "./financePaymentsRepository.js";

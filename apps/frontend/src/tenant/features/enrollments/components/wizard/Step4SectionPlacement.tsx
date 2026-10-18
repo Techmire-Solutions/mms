@@ -1,6 +1,6 @@
 import React from "react";
-import type { Class } from '@/lib/data/sessionsData';
-import { Field, FormSelect } from "@/components/ui/FormPrimitives";
+import type { Class } from "@/lib/data/sessionsData";
+import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
@@ -18,16 +18,20 @@ export interface Step4SectionPlacementProps {
 
 /** First active section with free seats — the default placement for a newly selected class. */
 export function defaultSectionId(sessionClass: Class | null | undefined): string {
-  const sections = (sessionClass?.sections ?? []).filter((section) => section.status !== 'closed');
+  const sections = (sessionClass?.sections ?? []).filter((section) => section.status !== "closed");
   const open = sections.find((section) => (section.enrolled ?? 0) < (section.capacity ?? 0));
-  return (open ?? sections[0])?.id ?? '';
+  return (open ?? sections[0])?.id ?? "";
 }
 
 /** Section + roll number within the chosen class (sections with no seats left are disabled). */
-export function Step4SectionPlacement({ sessionClass, value, onChange }: Step4SectionPlacementProps): React.JSX.Element | null {
+export function Step4SectionPlacement({
+  sessionClass,
+  value,
+  onChange,
+}: Step4SectionPlacementProps): React.JSX.Element | null {
   const { t } = useTranslation();
   const terms = useAcademicTerms();
-  const sections = (sessionClass.sections ?? []).filter((section) => section.status !== 'closed');
+  const sections = (sessionClass.sections ?? []).filter((section) => section.status !== "closed");
   if (sections.length === 0) return null;
 
   return (
@@ -39,7 +43,10 @@ export function Step4SectionPlacement({ sessionClass, value, onChange }: Step4Se
           onChange={(sectionId) => onChange({ ...value, sectionId })}
           options={sections.map((section) => {
             const enrolled = section.enrolled ?? 0;
-            return { value: section.id, label: `${section.name} (${enrolled}/${section.capacity})` };
+            return {
+              value: section.id,
+              label: `${section.name} (${enrolled}/${section.capacity})`,
+            };
           })}
         />
       </Field>

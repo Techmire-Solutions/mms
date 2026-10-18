@@ -8,7 +8,9 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const mockSaveMutateAsync = vi.fn().mockResolvedValue({ id: "dept-3", name: "Fiqh & Law", code: "fiqh-law" });
+const mockSaveMutateAsync = vi
+  .fn()
+  .mockResolvedValue({ id: "dept-3", name: "Fiqh & Law", code: "fiqh-law" });
 const mockDeleteMutateAsync = vi.fn().mockResolvedValue(undefined);
 let mockDepartmentsData = [
   { id: "dept-1", workspaceSubdomain: "tenant", name: "Quranic Studies", code: "quranic-studies" },
@@ -32,7 +34,7 @@ vi.mock("@/tenant/features/faculty/hooks/useFacultyDepartments", () => ({
   }),
 }));
 
-vi.mock("@/tenant/features/faculty/hooks/useFacultyTsrHooks", () => ({
+vi.mock("@/tenant/features/faculty/hooks/useFacultyTsrQueries", () => ({
   useFacultyContractList: () => ({
     data: { faculty: [{ id: "fac-1", name: "Prof. Tariq" }] },
     isLoading: false,
@@ -66,8 +68,18 @@ describe("FacultyDepartmentsSetupSection", () => {
     mockSaveMutateAsync.mockClear();
     mockDeleteMutateAsync.mockClear();
     mockDepartmentsData = [
-      { id: "dept-1", workspaceSubdomain: "tenant", name: "Quranic Studies", code: "quranic-studies" },
-      { id: "dept-2", workspaceSubdomain: "tenant", name: "Hadith Sciences", code: "hadith-sciences" },
+      {
+        id: "dept-1",
+        workspaceSubdomain: "tenant",
+        name: "Quranic Studies",
+        code: "quranic-studies",
+      },
+      {
+        id: "dept-2",
+        workspaceSubdomain: "tenant",
+        name: "Hadith Sciences",
+        code: "hadith-sciences",
+      },
     ];
   });
 

@@ -11,7 +11,10 @@ export function BrandSemanticPreviewTableTab({ activeOnPrimaryBg }: BrandSemanti
     <div className="space-y-3.5 bg-muted/10 p-4">
       {/* Search Input Mockup */}
       <div className="relative max-w-sm">
-        <Search className="absolute start-3 top-3.5 h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+        <Search
+          className="absolute start-3 top-3.5 h-3.5 w-3.5 text-muted-foreground"
+          aria-hidden
+        />
         <input
           type="text"
           readOnly
@@ -41,7 +44,9 @@ export function BrandSemanticPreviewTableTab({ activeOnPrimaryBg }: BrandSemanti
               SA
             </div>
             <div>
-              <p className="text-xs font-semibold text-foreground">{t("theme.previewTableRowTitle")}</p>
+              <p className="text-xs font-semibold text-foreground">
+                {t("theme.previewTableRowTitle")}
+              </p>
               <p className="text-2xs text-muted-foreground">{t("theme.previewTableRowSubtitle")}</p>
             </div>
           </div>

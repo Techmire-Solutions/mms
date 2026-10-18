@@ -2,11 +2,11 @@
  * @file FacultyFiltersMenuButton.tsx
  * @description Faculty Work Filters dropdown shell.
  */
-import { SlidersHorizontal } from 'lucide-react';
-import type { FacultySortField, FacultyQuickFilter } from '@mms/shared';
-import { ModuleFilterDropdown } from '@/components/ui/ModuleFiltersMenuButton';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FacultyFiltersMenuPanel } from './FacultyFiltersMenuPanel';
+import { SlidersHorizontal } from "lucide-react";
+import type { FacultySortField, FacultyQuickFilter } from "@mms/shared";
+import { ModuleFilterDropdown } from "@/components/app/ModuleFiltersMenuButton";
+import { useTranslation } from "@/hooks/useTranslation";
+import { FacultyFiltersMenuPanel } from "./FacultyFiltersMenuPanel";
 
 export interface FacultyFiltersMenuButtonProps {
   filterStatus: string[];
@@ -43,10 +43,10 @@ export function FacultyFiltersMenuButton(props: FacultyFiltersMenuButtonProps): 
 
   return (
     <ModuleFilterDropdown
-      label={t('faculty.filters')}
+      label={t("faculty.filters")}
       activeCount={activeFilterCount}
       icon={SlidersHorizontal}
-      clearLabel={t('faculty.clearFilters')}
+      clearLabel={t("faculty.clearFilters")}
       onClear={onClearFilters}
     >
       <FacultyFiltersMenuPanel {...panelProps} />

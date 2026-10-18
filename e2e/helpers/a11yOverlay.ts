@@ -1,5 +1,5 @@
-import { expect, type Page } from '@playwright/test';
-import { assertNoSeriousA11yViolations } from './a11y.js';
+import { expect, type Page } from "@playwright/test";
+import { assertNoSeriousA11yViolations } from "./a11y.js";
 
 /**
  * Discovers and triggers an overlay (dialog or drawer/FormModal),
@@ -9,7 +9,7 @@ import { assertNoSeriousA11yViolations } from './a11y.js';
 export async function auditOverlay(
   page: Page,
   context: string,
-  kind: 'dialog' | 'drawer',
+  kind: "dialog" | "drawer",
 ): Promise<boolean> {
   const mainDialogTrigger = page.locator('#main-content button[aria-haspopup="dialog"]').first();
   const primaryCta = page
@@ -17,10 +17,10 @@ export async function auditOverlay(
       '[data-testid="add-record-cta"], #main-content button:has-text("Add"), #main-content button:has-text("New")',
     )
     .first();
-  const rowTrigger = page.locator('table tbody tr button').first();
+  const rowTrigger = page.locator("table tbody tr button").first();
 
   const trigger =
-    kind === 'dialog'
+    kind === "dialog"
       ? (await mainDialogTrigger.count()) > 0
         ? mainDialogTrigger
         : page.locator('button[aria-haspopup="dialog"]').first()
@@ -36,7 +36,7 @@ export async function auditOverlay(
   await trigger.click({ timeout: 3_000 }).catch(() => undefined);
   const overlay = page.locator('[role="dialog"]').first();
   const opened = await overlay
-    .waitFor({ state: 'visible', timeout: kind === 'dialog' ? 5_000 : 3_000 })
+    .waitFor({ state: "visible", timeout: kind === "dialog" ? 5_000 : 3_000 })
     .then(() => true)
     .catch(() => false);
 
@@ -54,27 +54,27 @@ export async function auditOverlay(
   await assertNoSeriousA11yViolations(page, { context: `${context} (${kind})` });
 
   // Suppress overlay scrim under print media
-  const backdrop = page.locator('[data-overlay-backdrop]').first();
+  const backdrop = page.locator("[data-overlay-backdrop]").first();
   if ((await backdrop.count()) > 0) {
-    await page.emulateMedia({ media: 'print' });
+    await page.emulateMedia({ media: "print" });
     const printDisplay = await backdrop.evaluate((el) => getComputedStyle(el).display);
-    await page.emulateMedia({ media: 'screen' });
+    await page.emulateMedia({ media: "screen" });
     expect(
       printDisplay,
       `the overlay scrim still prints under print media (display: ${printDisplay})`,
-    ).toBe('none');
+    ).toBe("none");
   }
 
   // Dismiss via Escape and assert clean closure
-  await page.keyboard.press('Escape');
+  await page.keyboard.press("Escape");
   const closed = await overlay
-    .waitFor({ state: 'hidden', timeout: 3_000 })
+    .waitFor({ state: "hidden", timeout: 3_000 })
     .then(() => true)
     .catch(() => false);
 
   if (!closed) {
     // Attempt cleanup dismiss to avoid corrupting subsequent audits
-    await page.keyboard.press('Escape').catch(() => undefined);
+    await page.keyboard.press("Escape").catch(() => undefined);
     const closeBtn = page
       .locator(
         '[role="dialog"] button[aria-label*="close" i], [role="dialog"] button:has-text("Cancel")',

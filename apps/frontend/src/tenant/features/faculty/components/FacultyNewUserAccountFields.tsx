@@ -1,14 +1,11 @@
 import type React from "react";
 import { AlertCircle, Shield } from "lucide-react";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PasswordInput } from "@/components/app/PasswordInput";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  workspaceRoleDescription,
-  type WorkspaceRole,
-} from "@mms/shared";
+import { workspaceRoleDescription, type WorkspaceRole } from "@mms/shared";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
 export interface FacultyNewUserAccountFieldsProps {
@@ -52,7 +49,11 @@ export function FacultyNewUserAccountFields({
           onChange={(role) => onUserAccountDraftChange({ ...userAccountDraft, role })}
           options={roleOptions}
         />
-        {roleOptions.length === 0 ? <p className="mt-1 text-xs text-destructive">{t("faculty.designations.noAssignableRoles")}</p> : null}
+        {roleOptions.length === 0 ? (
+          <p className="mt-1 text-xs text-destructive">
+            {t("faculty.designations.noAssignableRoles")}
+          </p>
+        ) : null}
         {selectedRoleObj ? (
           <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
             <Shield className="w-3.5 h-3.5 text-primary shrink-0" />

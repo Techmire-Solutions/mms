@@ -7,7 +7,7 @@ import {
   AuthSubmitButton,
   AuthTextField,
 } from "@/components/entry";
-import { PasswordStrengthMeter } from "@/components/ui/PasswordStrengthMeter";
+import { PasswordStrengthMeter } from "@shared/ui";
 import PlatformAuthLayout from "@/platform/components/PlatformAuthLayout";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
@@ -28,7 +28,7 @@ interface PlatformSetupRegisterFormProps {
 
 export function PlatformSetupRegisterForm({
   t,
-  smtpConfigured,
+  smtpConfigured: _smtpConfigured,
   name,
   setName,
   email,
@@ -42,7 +42,12 @@ export function PlatformSetupRegisterForm({
 }: PlatformSetupRegisterFormProps): React.JSX.Element {
   return (
     <PlatformAuthLayout title={t("platform.setupTitle")} subtitle={t("platform.setupSubtitle")}>
-      <form onSubmit={(event) => void onRegister(event)} className="space-y-4" noValidate aria-busy={loading}>
+      <form
+        onSubmit={(event) => void onRegister(event)}
+        className="space-y-4"
+        noValidate
+        aria-busy={loading}
+      >
         <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary font-bold text-xs shrink-0">
             👑

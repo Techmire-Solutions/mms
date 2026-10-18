@@ -1,7 +1,7 @@
-import type { FastifyReply, FastifyRequest } from 'fastify';
-import { secureCookieBase } from '../../lib/cookieOptions.js';
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { secureCookieBase } from "../../lib/cookieOptions.js";
 
-export const PLATFORM_ACCESS_COOKIE = 'mms_platform_access';
+export const PLATFORM_ACCESS_COOKIE = "mms_platform_access";
 
 export function attachPlatformTokenFromCookie(request: FastifyRequest): void {
   const cookies = request.cookies as Record<string, string | undefined> | undefined;

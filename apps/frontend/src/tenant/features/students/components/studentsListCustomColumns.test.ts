@@ -3,7 +3,7 @@ import { formatDate, formatDateTime } from "@mms/shared";
 import {
   formatStudentsListContentCustomValue,
   studentCustomFieldKeyFromColumn,
-} from "@/tenant/features/students/components/studentsListCustomColumns";
+} from "@/tenant/features/students/lib/studentsListCustomColumns";
 
 const t = (key: "common.yes" | "common.no" | "students.table.emptyDash"): string => {
   switch (key) {
@@ -36,7 +36,9 @@ describe("formatStudentsListContentCustomValue", () => {
   });
 
   it("formats date/datetime strings via regex detection", () => {
-    expect(formatStudentsListContentCustomValue("2020-01-02", t)).toBe(formatDate("2020-01-02", true));
+    expect(formatStudentsListContentCustomValue("2020-01-02", t)).toBe(
+      formatDate("2020-01-02", true),
+    );
     expect(formatStudentsListContentCustomValue("2020-01-02T10:00:00", t)).toBe(
       formatDateTime("2020-01-02T10:00:00", true),
     );

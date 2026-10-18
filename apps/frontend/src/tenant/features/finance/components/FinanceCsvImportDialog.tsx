@@ -1,9 +1,6 @@
 import React from "react";
-import {
-  financeTransferSchema,
-  type FinanceTransferEntity,
-} from "@mms/shared";
-import { StandardModuleCsvImportDialog } from "@/components/ui/StandardModuleCsvImportDialog";
+import { financeTransferSchema, type FinanceTransferEntity } from "@mms/shared";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface FinanceCsvImportDialogProps {
   open: boolean;

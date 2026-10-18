@@ -1,7 +1,12 @@
-import { useMemo } from 'react';
-import { ACADEMIC_TERM_KEYS, resolveAcademicTerm, type AcademicTermKey, type AcademicTermLabel } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useSessionConfig } from '@/hooks/useStandardModuleConfig';
+import { useMemo } from "react";
+import {
+  ACADEMIC_TERM_KEYS,
+  resolveAcademicTerm,
+  type AcademicTermKey,
+  type AcademicTermLabel,
+} from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
 
 export type AcademicTerms = Record<AcademicTermKey, AcademicTermLabel>;
 

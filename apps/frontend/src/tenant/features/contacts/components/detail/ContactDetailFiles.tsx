@@ -5,11 +5,11 @@ import { formatDate, type Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DashedFileDropZone } from "@/components/ui/DashedFileDropZone";
+import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import {
   MESSAGING_ICON_BTN,
   MESSAGING_ICON_BTN_TONES,
-} from "@/components/ui/messagingActionStyles";
+} from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 import { DetailCollectionEmpty } from "./contactDetailChannelHelpers";
 
@@ -68,7 +68,10 @@ export function ContactDetailFiles({
         ) : (
           <Card className="divide-y divide-border/50 p-0">
             {contact.attachments.map((file) => (
-              <div key={file.id} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+              <div
+                key={file.id}
+                className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="p-2 rounded-lg bg-muted text-muted-foreground">
                     <FileText className="w-5 h-5" />
@@ -76,7 +79,11 @@ export function ContactDetailFiles({
                   <div className="min-w-0">
                     <h5 className="text-xs font-bold text-foreground truncate">{file.name}</h5>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {new Intl.NumberFormat(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(file.size / 1024)} {t("contacts.detail.kbLabel")} · {formatDate(file.date)}
+                      {new Intl.NumberFormat(undefined, {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      }).format(file.size / 1024)}{" "}
+                      {t("contacts.detail.kbLabel")} · {formatDate(file.date)}
                     </p>
                   </div>
                 </div>

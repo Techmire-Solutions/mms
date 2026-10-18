@@ -12,7 +12,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "env": ["VITE_APP_DOMAIN", "MMS_APP_DOMAIN"]
+      "env": ["VITE_APP_DOMAIN", "MMS_APP_DOMAIN", "MMS_REACT_COMPILER"]
     },
     "dev": {
       "dependsOn": ["^build"],

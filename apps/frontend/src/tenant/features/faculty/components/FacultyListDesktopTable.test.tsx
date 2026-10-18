@@ -105,11 +105,7 @@ describe("FacultyListDesktopTable Component", () => {
       name: `Faculty Member ${index + 1}`,
     }));
     const html = renderToStaticMarkup(
-      <FacultyListDesktopTable
-        {...defaultProps}
-        faculty={manyFaculty}
-        selectedIds={[]}
-      />,
+      <FacultyListDesktopTable {...defaultProps} faculty={manyFaculty} selectedIds={[]} />,
     );
 
     expect(html).toContain("max-h-150 overflow-y-auto");

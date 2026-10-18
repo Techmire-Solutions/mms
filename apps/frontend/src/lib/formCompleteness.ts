@@ -1,7 +1,7 @@
-import type { ModuleFieldDef } from '@mms/shared';
-import { hasFieldValue } from '@mms/shared';
+import type { ModuleFieldDef } from "@mms/shared";
+import { hasFieldValue } from "@mms/shared";
 
-const DEFAULT_SKIP_TYPES = new Set(['boolean', 'ai_summary']);
+const DEFAULT_SKIP_TYPES = new Set(["boolean", "ai_summary"]);
 
 export { hasFieldValue };
 

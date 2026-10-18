@@ -19,7 +19,7 @@ import {
   getStoragePrefix,
   safeSetItem,
   syncToServer,
-} from "@/lib/dbStorageCore.js";
+} from "@/lib/dbStorageCore";
 
 async function fetchSnapshot(path: string): Promise<TenantDatabaseSnapshot> {
   const response = await apiFetch(path, {
@@ -73,7 +73,7 @@ export async function syncDatabase(): Promise<void> {
     const tenantSnapshot = await fetchTenantSnapshot();
     applySnapshotToLocalCache(tenantSnapshot);
   } catch (error) {
-    reportClientError(error, { context: 'db.syncDatabase' });
+    reportClientError(error, { context: "db.syncDatabase" });
   }
 }
 
@@ -130,7 +130,7 @@ export async function importDatabase(jsonString: string): Promise<void> {
 
     dispatchLocalDatabaseUpdate();
   } catch (error) {
-    reportClientError(error, { context: 'db.importDatabase' });
+    reportClientError(error, { context: "db.importDatabase" });
     throw error;
   }
 }
@@ -145,6 +145,9 @@ export async function exportEncryptedTenantBackup(
   const plaintext = await exportTenantBackup();
   const envelope = JSON.parse(plaintext) as WorkspaceBackupEnvelope;
   const subdomain = getCurrentSubdomain();
-  const encrypted = await encryptWorkspaceBackup(plaintext, credentials, { subdomain, tenantLabel });
+  const encrypted = await encryptWorkspaceBackup(plaintext, credentials, {
+    subdomain,
+    tenantLabel,
+  });
   return { encrypted, stats: envelope.stats };
 }

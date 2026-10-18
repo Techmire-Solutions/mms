@@ -1,16 +1,28 @@
-import React, { useState, useMemo, useCallback, Suspense, type ChangeEvent, type DragEvent } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  Suspense,
+  type ChangeEvent,
+  type DragEvent,
+} from "react";
 import { Camera, X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type Contact, getDisplayName, getInitials, IMAGE_UPLOAD_MAX_INPUT_BYTES } from "@mms/shared";
+import {
+  type Contact,
+  getDisplayName,
+  getInitials,
+  IMAGE_UPLOAD_MAX_INPUT_BYTES,
+} from "@mms/shared";
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
-import { genderAvatarGradient } from "@/lib/semanticTone";
+import { genderAvatarGradient } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
 const AvatarCropper = React.lazy(() =>
-  import("@/components/ui/AvatarCropper").then((m) => ({ default: m.AvatarCropper })),
+  import("@/components/app/AvatarCropper").then((m) => ({ default: m.AvatarCropper })),
 );
 
 export interface ContactBasicAvatarSectionProps {
@@ -38,10 +50,7 @@ export function ContactBasicAvatarSection({
     [contactDraft, t],
   );
   const avatarGradient = genderAvatarGradient(contactDraft.gender || "neutral");
-  const initials = useMemo(
-    () => getInitials(previewDisplayName, 2) || "?",
-    [previewDisplayName],
-  );
+  const initials = useMemo(() => getInitials(previewDisplayName, 2) || "?", [previewDisplayName]);
 
   const handleDrop = useCallback(
     (e: DragEvent<HTMLDivElement>) => {
@@ -77,7 +86,13 @@ export function ContactBasicAvatarSection({
   return (
     <div className="mb-2 flex flex-col items-center gap-6 border-b border-border/60 pb-6 @sm:flex-row">
       {cropSrc && (
-        <Suspense fallback={<div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs"><Skeleton className="w-full max-w-md h-96 rounded-2xl" /></div>}>
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-modal flex items-center justify-center p-4 bg-background/80 backdrop-blur-xs">
+              <Skeleton className="w-full max-w-md h-96 rounded-2xl" />
+            </div>
+          }
+        >
           <AvatarCropper
             src={cropSrc}
             onCrop={(url) => {
@@ -125,7 +140,10 @@ export function ContactBasicAvatarSection({
             htmlFor={avatarInputId}
             className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-foreground/40 text-white opacity-0 group-hover:opacity-100 focus-within:opacity-100 backdrop-blur-subtle transition-opacity duration-300"
           >
-            <Camera className="h-6 w-6 scale-90 transition-transform duration-300 group-hover:scale-100" aria-hidden />
+            <Camera
+              className="h-6 w-6 scale-90 transition-transform duration-300 group-hover:scale-100"
+              aria-hidden
+            />
             <input
               id={avatarInputId}
               name="avatarFile"
@@ -165,9 +183,7 @@ export function ContactBasicAvatarSection({
       </div>
 
       <div className="min-w-0 flex-1 text-center @sm:text-start">
-        <h3 className="truncate text-base font-bold text-foreground">
-          {previewDisplayName}
-        </h3>
+        <h3 className="truncate text-base font-bold text-foreground">{previewDisplayName}</h3>
         <div className="mt-1.5 flex flex-wrap items-center justify-center gap-2 @sm:justify-start">
           <ContactIdentityMeta
             gender={contactDraft.gender}

@@ -5,7 +5,7 @@ import { School } from "lucide-react";
 import { FacultyPageView } from "./FacultyPageView";
 import type { FacultyPageTabId } from "@/tenant/features/faculty/facultyPageWorkSubTabs";
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
+vi.mock("@/components/app/ModulePageShell", () => ({
   ModulePageShell: ({
     headerTitle,
     children,
@@ -30,7 +30,7 @@ vi.mock("@/tenant/features/faculty/components/FacultyCommandMetrics", () => ({
   FacultyCommandMetrics: () => <div data-testid="faculty-metrics">Faculty Metrics</div>,
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="accordion-tabs">{children}</div>
   ),
@@ -107,9 +107,7 @@ describe("FacultyPageView Component", () => {
   };
 
   it("shows dashboard IO without duplicate tab IO on faculties", () => {
-    const html = renderToStaticMarkup(
-      <FacultyPageView {...baseProps} activeTab="faculties" />,
-    );
+    const html = renderToStaticMarkup(<FacultyPageView {...baseProps} activeTab="faculties" />);
 
     expect(html).toContain("Faculty Team");
     expect(html).toContain("Dashboard IO");
@@ -119,9 +117,7 @@ describe("FacultyPageView Component", () => {
   });
 
   it("shows dashboard IO without duplicate tab IO on designations", () => {
-    const html = renderToStaticMarkup(
-      <FacultyPageView {...baseProps} activeTab="designations" />,
-    );
+    const html = renderToStaticMarkup(<FacultyPageView {...baseProps} activeTab="designations" />);
 
     expect(html).toContain("Dashboard IO");
     expect(html).not.toContain("Tab IO");
@@ -130,12 +126,9 @@ describe("FacultyPageView Component", () => {
   });
 
   it("keeps dashboard IO on reports without scoped tab IO", () => {
-    const html = renderToStaticMarkup(
-      <FacultyPageView {...baseProps} activeTab="reports" />,
-    );
+    const html = renderToStaticMarkup(<FacultyPageView {...baseProps} activeTab="reports" />);
 
     expect(html).toContain("Dashboard IO");
     expect(html).not.toContain("Tab IO");
   });
 });
-

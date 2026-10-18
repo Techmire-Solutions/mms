@@ -4,11 +4,11 @@ import { User, Settings, Search } from "lucide-react";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { ROUTES } from "@/lib/config/routes";
 import { Button } from "@/components/ui/button";
-import { UserNavDropdown } from "@/components/ui/UserNavDropdown";
+import { UserNavDropdown } from "@/components/app/UserNavDropdown";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import SyncStatusBadge from "@/tenant/components/layout/SyncStatusBadge";
+import { SyncStatusBadge } from "@/tenant/components/layout/SyncStatusBadge";
 import { TenantBackgroundJobsTray } from "@/tenant/components/layout/TenantBackgroundJobsTray";
 import { TenantNotificationsPopover } from "@/tenant/components/layout/TenantNotificationsPopover";
 
@@ -22,7 +22,11 @@ export interface TopBarActionsProps {
 /**
  * Notifications, sync status, and user session menu — shared across desktop and mobile headers.
  */
-export default function TopBarActions({ compact = false, onOpenCommandPalette, className }: TopBarActionsProps): React.JSX.Element {
+export default function TopBarActions({
+  compact = false,
+  onOpenCommandPalette,
+  className,
+}: TopBarActionsProps): React.JSX.Element {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
 

@@ -1,9 +1,9 @@
-import { eq, sql } from 'drizzle-orm';
-import type { Account } from '@mms/shared';
-import { accountingAccounts } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
-import { evictAccountingModulePreferencesCache } from './accountingModulePreferencesRepository.js';
-import { fillCashAccountIfEmpty, fillRetainedEarningsIfEmpty } from './accountingSeedDefaults.js';
+import { eq, sql } from "drizzle-orm";
+import type { Account } from "@mms/shared";
+import { accountingAccounts } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
+import { evictAccountingModulePreferencesCache } from "./accountingModulePreferencesRepository.js";
+import { fillCashAccountIfEmpty, fillRetainedEarningsIfEmpty } from "./accountingSeedDefaults.js";
 
 /** Seeded account ids to use for workspace settings that are still unset. */
 export interface SeedAccountDefaults {
@@ -36,10 +36,20 @@ export async function seedAccountsIfEmpty(
 ): Promise<SeedAccountsResult> {
   const subdomain = tenant.trim().toLowerCase();
   const result = await withTenant(subdomain, async (tx): Promise<SeedAccountsResult> => {
-    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${subdomain}), hashtext('accounting:coa-seed'))`);
-    const existing = await tx.$count(accountingAccounts, eq(accountingAccounts.workspaceSubdomain, subdomain));
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${subdomain}), hashtext('accounting:coa-seed'))`,
+    );
+    const existing = await tx.$count(
+      accountingAccounts,
+      eq(accountingAccounts.workspaceSubdomain, subdomain),
+    );
     if (existing > 0) return { seeded: false, existing };
-    if (records.length === 0) return { seeded: true, count: 0, defaultsApplied: { retainedEarnings: false, cashAccount: false } };
+    if (records.length === 0)
+      return {
+        seeded: true,
+        count: 0,
+        defaultsApplied: { retainedEarnings: false, cashAccount: false },
+      };
 
     const now = new Date();
     await tx.insert(accountingAccounts).values(
@@ -49,8 +59,8 @@ export async function seedAccountsIfEmpty(
         code: record.code,
         name: record.name,
         type: record.type,
-        subtype: record.subtype ?? '',
-        description: record.description ?? '',
+        subtype: record.subtype ?? "",
+        description: record.description ?? "",
         isActive: record.isActive ?? true,
         createdAt: now,
         updatedAt: now,
@@ -58,12 +68,21 @@ export async function seedAccountsIfEmpty(
     );
     const seededIds = new Set(records.map((record) => record.id));
     const retainedEarnings = defaults.retainedEarningsAccountId
-      ? await fillRetainedEarningsIfEmpty(tx, subdomain, defaults.retainedEarningsAccountId, seededIds)
+      ? await fillRetainedEarningsIfEmpty(
+          tx,
+          subdomain,
+          defaults.retainedEarningsAccountId,
+          seededIds,
+        )
       : false;
     const cashAccount = defaults.cashAccountId
       ? await fillCashAccountIfEmpty(tx, subdomain, defaults.cashAccountId)
       : false;
-    return { seeded: true, count: records.length, defaultsApplied: { retainedEarnings, cashAccount } };
+    return {
+      seeded: true,
+      count: records.length,
+      defaultsApplied: { retainedEarnings, cashAccount },
+    };
   });
   if (result.seeded && result.defaultsApplied.retainedEarnings) {
     await evictAccountingModulePreferencesCache(subdomain);

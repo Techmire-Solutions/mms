@@ -2,7 +2,7 @@ import React from "react";
 import { FileText } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { type QuestionBankTest, formatDate } from "@mms/shared";
 
@@ -22,7 +22,9 @@ export function SavedPapersPanel({
   onOpenPaper,
 }: SavedPapersPanelProps): React.ReactElement {
   const { t } = useTranslation();
-  const sortedPapers = [...papers].sort((first, second) => second.createdAt.localeCompare(first.createdAt));
+  const sortedPapers = [...papers].sort((first, second) =>
+    second.createdAt.localeCompare(first.createdAt),
+  );
 
   return (
     <section className={`${WORK_SURFACE} p-4`} aria-label={t("questionBank.savedPapers")}>
@@ -49,7 +51,10 @@ export function SavedPapersPanel({
                 className={`rounded-lg border p-3 ${isActive ? "border-primary bg-primary/5" : "border-border bg-muted/20"}`}
               >
                 <div className="mb-3 flex items-start gap-2">
-                  <FileText className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" aria-hidden="true" />
+                  <FileText
+                    className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary"
+                    aria-hidden="true"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="m-0 truncate text-xs font-bold text-foreground">{paper.name}</p>
                     <p className="m-0 text-xs text-muted-foreground">

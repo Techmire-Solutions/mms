@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { ClipboardCheck } from "lucide-react";
 import type { RegistrationApplication, RegistrationReview } from "@mms/shared";
-import { Field } from "@/components/ui/FormPrimitives";
-import { FormModal } from "@/components/ui/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormModal } from "@/components/app/FormModal";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleRow } from "@/components/ui/ToggleRow";
-import { WarningCallout } from "@/components/ui/WarningCallout";
+import { ToggleRow } from "@/components/app/ToggleRow";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export type AdmissionsDecision = RegistrationReview["decision"];
@@ -20,7 +20,14 @@ export interface AdmissionsDecisionModalProps {
 }
 
 /** Confirms a review decision; reject needs a reason, approval can reuse a matched student. */
-export function AdmissionsDecisionModal({ open, decision, applications, isPending, onClose, onConfirm }: AdmissionsDecisionModalProps): React.JSX.Element {
+export function AdmissionsDecisionModal({
+  open,
+  decision,
+  applications,
+  isPending,
+  onClose,
+  onConfirm,
+}: AdmissionsDecisionModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const [reason, setReason] = useState("");
   const [useMatch, setUseMatch] = useState(true);
@@ -40,7 +47,11 @@ export function AdmissionsDecisionModal({ open, decision, applications, isPendin
       open={open}
       onClose={onClose}
       title={t(`enrollments.admissions.decision.${decision}`)}
-      subtitle={single ? `${single.fullName} · ${single.reference}` : t("enrollments.admissions.selectedCount", { count: applications.length })}
+      subtitle={
+        single
+          ? `${single.fullName} · ${single.reference}`
+          : t("enrollments.admissions.selectedCount", { count: applications.length })
+      }
       icon={ClipboardCheck}
       size="sm"
       cancelLabel={t("common.cancel")}
@@ -52,27 +63,51 @@ export function AdmissionsDecisionModal({ open, decision, applications, isPendin
       discardUnsavedDescription={t("enrollments.admissions.discardDescription")}
       discardConfirmLabel={t("common.yes")}
       discardCancelLabel={t("common.cancel")}
-      onSave={() => void (async () => {
-        const done = await onConfirm({
-          ids: applications.map((app) => app.id),
-          decision,
-          reason: reason.trim() || null,
-          existingStudentId: decision === "approve" && useMatch ? matchedStudentId : null,
-        });
-        if (done) onClose();
-      })()}
+      onSave={() =>
+        void (async () => {
+          const done = await onConfirm({
+            ids: applications.map((app) => app.id),
+            decision,
+            reason: reason.trim() || null,
+            existingStudentId: decision === "approve" && useMatch ? matchedStudentId : null,
+          });
+          if (done) onClose();
+        })()
+      }
     >
       <div className="space-y-3 py-1 text-start">
         {decision === "approve" && ineligible > 0 ? (
-          <WarningCallout title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })} />
+          <WarningCallout
+            title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })}
+          />
         ) : null}
         {decision === "approve" && matchedStudentId ? (
-          <ToggleRow label={t("enrollments.admissions.useMatch")} description={t("enrollments.admissions.useMatchHint")} value={useMatch} onChange={setUseMatch} />
+          <ToggleRow
+            label={t("enrollments.admissions.useMatch")}
+            description={t("enrollments.admissions.useMatchHint")}
+            value={useMatch}
+            onChange={setUseMatch}
+          />
         ) : null}
-        {decision === "approve" ? <p className="text-pretty text-sm text-muted-foreground">{t("enrollments.admissions.approveHint")}</p> : null}
-        <Field id="admissions-reason" label={t("enrollments.admissions.reason")} required={reasonRequired}>
-          <Textarea id="admissions-reason" name="reason" rows={3} maxLength={500} value={reason} disabled={isPending}
-            onChange={(event) => setReason(event.target.value)} />
+        {decision === "approve" ? (
+          <p className="text-pretty text-sm text-muted-foreground">
+            {t("enrollments.admissions.approveHint")}
+          </p>
+        ) : null}
+        <Field
+          id="admissions-reason"
+          label={t("enrollments.admissions.reason")}
+          required={reasonRequired}
+        >
+          <Textarea
+            id="admissions-reason"
+            name="reason"
+            rows={3}
+            maxLength={500}
+            value={reason}
+            disabled={isPending}
+            onChange={(event) => setReason(event.target.value)}
+          />
         </Field>
       </div>
     </FormModal>

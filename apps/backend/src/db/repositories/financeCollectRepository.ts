@@ -1,22 +1,22 @@
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type CreditNote, type Invoice } from '@mms/shared';
-import { financeCreditNotes, financeInvoices } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { invoiceRowToRecord } from './financeInvoicesRepository.js';
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type CreditNote, type Invoice } from "@mms/shared";
+import { financeCreditNotes, financeInvoices } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { invoiceRowToRecord } from "./financeInvoicesRepository.js";
 
-const OPEN_STATUSES = ['pending', 'overdue', 'partial'] as const;
+const OPEN_STATUSES = ["pending", "overdue", "partial"] as const;
 
 export async function markOverdueInvoices(tenant: string, today: string): Promise<number> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     const updated = await tx
       .update(financeInvoices)
-      .set({ status: 'overdue', updatedAt: new Date() })
+      .set({ status: "overdue", updatedAt: new Date() })
       .where(
         and(
           eq(financeInvoices.workspaceSubdomain, subdomain),
           isNull(financeInvoices.deletedAt),
-          inArray(financeInvoices.status, ['pending', 'partial']),
+          inArray(financeInvoices.status, ["pending", "partial"]),
           sql`${financeInvoices.dueDate} < ${today}`,
         ),
       )
@@ -87,12 +87,17 @@ export async function applyLateFeeAmounts(
     await tx.execute(sql`
       UPDATE ${financeInvoices}
       SET late_fee_amt = CASE ${sql.join(
-        fees.map((fee) => sql`WHEN ${financeInvoices.id} = ${fee.invoiceId} THEN ${String(fee.amount)}`),
+        fees.map(
+          (fee) => sql`WHEN ${financeInvoices.id} = ${fee.invoiceId} THEN ${String(fee.amount)}`,
+        ),
         sql` `,
       )} END,
       updated_at = now()
       WHERE ${financeInvoices.workspaceSubdomain} = ${subdomain}
-        AND ${financeInvoices.id} IN (${sql.join(fees.map((fee) => sql`${fee.invoiceId}`), sql`, `)})
+        AND ${financeInvoices.id} IN (${sql.join(
+          fees.map((fee) => sql`${fee.invoiceId}`),
+          sql`, `,
+        )})
         AND ${financeInvoices.deletedAt} IS NULL
     `);
   });
@@ -120,7 +125,10 @@ export async function markInvoicesReminded(tenant: string, invoiceIds: string[])
   });
 }
 
-export async function listCreditNotesForInvoice(tenant: string, invoiceId: string): Promise<CreditNote[]> {
+export async function listCreditNotesForInvoice(
+  tenant: string,
+  invoiceId: string,
+): Promise<CreditNote[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
@@ -133,7 +141,10 @@ export async function listCreditNotesForInvoice(tenant: string, invoiceId: strin
       })
       .from(financeCreditNotes)
       .where(
-        and(eq(financeCreditNotes.workspaceSubdomain, subdomain), eq(financeCreditNotes.invoiceId, invoiceId)),
+        and(
+          eq(financeCreditNotes.workspaceSubdomain, subdomain),
+          eq(financeCreditNotes.invoiceId, invoiceId),
+        ),
       );
     return rows.map((row) => ({
       id: row.id,
@@ -153,7 +164,7 @@ export async function saveCreditNote(tenant: string, note: CreditNote): Promise<
       workspaceSubdomain: subdomain,
       invoiceId: note.invoiceId,
       amount: String(note.amount),
-      reason: note.reason ?? '',
+      reason: note.reason ?? "",
       updatedAt: new Date(),
     });
   });

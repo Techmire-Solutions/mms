@@ -1,13 +1,16 @@
-import type { FastifyInstance } from 'fastify';
-import type { ZodTypeAny } from 'zod';
-import type { Permission, User } from '@mms/shared';
-import { roleHasPermission } from '@mms/shared';
-import { sendForbidden } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
-import { moduleSetupAuditBodySchema } from '@mms/shared';
-import { recordModernAuditEvent, mapActionStringToAuditType } from '../services/auditTrailService.js';
-import { getRequestTenant } from './tenantContext.js';
-import { logger } from './logger.js';
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeAny } from "zod";
+import type { Permission, User } from "@mms/shared";
+import { roleHasPermission } from "@mms/shared";
+import { sendForbidden } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
+import { moduleSetupAuditBodySchema } from "@mms/shared";
+import {
+  recordModernAuditEvent,
+  mapActionStringToAuditType,
+} from "../services/auditTrailService.js";
+import { getRequestTenant } from "./tenantContext.js";
+import { logger } from "./logger.js";
 
 export type RegisterModuleSetupAuditRouteOptions = {
   setupWritePermission: Permission;
@@ -24,7 +27,7 @@ export function registerModuleSetupAuditRoute(
 ): void {
   const bodySchema = options.bodySchema ?? moduleSetupAuditBodySchema;
 
-  fastify.post('/setup-audit', async (request, reply) => {
+  fastify.post("/setup-audit", async (request, reply) => {
     const user = request.user as User;
     if (!roleHasPermission(user.role, options.setupWritePermission)) {
       return sendForbidden(reply);
@@ -46,7 +49,10 @@ export function registerModuleSetupAuditRoute(
         ? { summary: data.summary, action: options.auditAction }
         : { action: options.auditAction },
     }).catch((err: unknown) =>
-      logger.error({ err: err instanceof Error ? err.message : String(err) }, 'audit event append failed'),
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        "audit event append failed",
+      ),
     );
     return reply.send({ success: true });
   });

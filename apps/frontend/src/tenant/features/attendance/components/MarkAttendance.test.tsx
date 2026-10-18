@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkAttendance } from "./MarkAttendance";
 
-vi.mock("./useMarkAttendanceController", () => ({
-  useMarkAttendanceController: (props: any) => ({
+vi.mock("../hooks/useMarkAttendanceController", () => ({
+  useMarkAttendanceController: (props: { filters: Record<string, unknown> }) => ({
     filters: props.filters,
     t: (key: string) => key,
     isOffline: false,
@@ -52,7 +52,11 @@ vi.mock("./MarkAttendanceGrid", () => ({
 }));
 
 vi.mock("@/tenant/features/attendance/hooks/useInstructionalDayStatus", () => ({
-  useInstructionalDayStatus: () => ({ instructional: true, allowExtraClass: false, isLoading: false }),
+  useInstructionalDayStatus: () => ({
+    instructional: true,
+    allowExtraClass: false,
+    isLoading: false,
+  }),
 }));
 
 vi.mock("./MarkAttendanceActions", () => ({

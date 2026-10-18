@@ -20,7 +20,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 }));
 
 vi.mock("@/tenant/features/obligations/hooks/useObligationLookups", () => ({
-  useMergedObligationContacts: (ids: (string | number | null | undefined)[]) => [
+  useMergedObligationContacts: (_ids: (string | number | null | undefined)[]) => [
     { id: "c-1", name: "Muhammad Ali" },
     { id: "c-2", name: "Sayyid Kazim" },
   ],
@@ -30,7 +30,9 @@ vi.mock("@/tenant/features/obligations/hooks/useObligationLookups", () => ({
 vi.mock("@/tenant/features/obligations/components/invoice/PrintInvoiceModal", () => ({
   PrintInvoiceModal: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="print-invoice-modal">
-      <button type="button" onClick={onClose}>Close Print</button>
+      <button type="button" onClick={onClose}>
+        Close Print
+      </button>
     </div>
   ),
 }));
@@ -139,7 +141,7 @@ describe("ObligationCollectionDetail Component", () => {
           distributions={mockDistributions}
           wakalaTypes={mockWakalaTypes}
           onClose={vi.fn()}
-        />
+        />,
       );
     });
 
@@ -165,7 +167,7 @@ describe("ObligationCollectionDetail Component", () => {
           distributions={mockDistributions}
           wakalaTypes={mockWakalaTypes}
           onClose={vi.fn()}
-        />
+        />,
       );
     });
 
@@ -188,7 +190,7 @@ describe("ObligationCollectionDetail Component", () => {
           distributions={[]}
           wakalaTypes={mockWakalaTypes}
           onClose={vi.fn()}
-        />
+        />,
       );
     });
 
@@ -216,7 +218,7 @@ describe("ObligationCollectionDetail Component", () => {
           onClose={vi.fn()}
           canDelete={true}
           onRestore={onRestore}
-        />
+        />,
       );
     });
 
@@ -225,7 +227,7 @@ describe("ObligationCollectionDetail Component", () => {
 
     // Click restore action
     const restoreBtn = document.body.querySelector<HTMLButtonElement>(
-      'button[aria-label="common.restore"]'
+      'button[aria-label="common.restore"]',
     );
     expect(restoreBtn).not.toBeNull();
 
@@ -249,12 +251,12 @@ describe("ObligationCollectionDetail Component", () => {
           distributions={mockDistributions}
           wakalaTypes={mockWakalaTypes}
           onClose={vi.fn()}
-        />
+        />,
       );
     });
 
-    const printBtn = Array.from(document.body.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("obligations.actions.printShort")
+    const printBtn = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("obligations.actions.printShort"),
     );
     expect(printBtn).toBeDefined();
 

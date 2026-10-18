@@ -32,5 +32,7 @@ export default function ModuleAccessRoute(): React.JSX.Element {
     decision.moduleId !== undefined &&
     access.availability?.[decision.moduleId]?.granted === true;
 
-  return <ModuleAccessDeniedState code={decision.code} showModuleSettingsLink={showModuleSettingsLink} />;
+  return (
+    <ModuleAccessDeniedState code={decision.code} showModuleSettingsLink={showModuleSettingsLink} />
+  );
 }

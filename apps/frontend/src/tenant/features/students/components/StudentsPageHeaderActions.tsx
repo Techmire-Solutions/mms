@@ -1,5 +1,5 @@
 import { UserPlus, Download, Upload } from "lucide-react";
-import { ActionButton } from "@/components/ui/ActionButton";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface StudentsPageHeaderActionsProps {
@@ -24,19 +24,19 @@ export function StudentsPageHeaderActions({
   return (
     <>
       {canExport && !viewingDeleted ? (
-        <ActionButton variant="ghost" icon={Download} onClick={onExport}>
+        <Button variant="ghost" icon={Download} onClick={onExport}>
           {t("common.export")}
-        </ActionButton>
+        </Button>
       ) : null}
       {canWrite && !viewingDeleted && onImport ? (
-        <ActionButton variant="secondary" icon={Upload} onClick={onImport}>
+        <Button variant="outline" icon={Upload} onClick={onImport}>
           {t("common.import")}
-        </ActionButton>
+        </Button>
       ) : null}
       {canWrite && !viewingDeleted ? (
-        <ActionButton variant="primary" icon={UserPlus} onClick={onAddStudent}>
+        <Button variant="primary" icon={UserPlus} onClick={onAddStudent}>
           {t("action.addStudent")}
-        </ActionButton>
+        </Button>
       ) : null}
     </>
   );

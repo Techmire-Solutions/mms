@@ -3,7 +3,7 @@ import { ShieldCheck, Lock, ShieldAlert } from "lucide-react";
 import { PlatformLogoMark } from "@/platform/components/PlatformPageShell";
 import { AuthCardShell, AuthFormHeading, AuthPageFrame } from "@/components/entry";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@shared/ui";
 
 export interface PlatformAuthLayoutProps {
   children: React.ReactNode;
@@ -53,7 +53,12 @@ export default function PlatformAuthLayout({
               <PlatformLogoMark />
 
               <div className="flex justify-center">
-                <Badge tone="primary" pill size="lg" className="font-black uppercase tracking-wider shadow-xs">
+                <Badge
+                  tone="primary"
+                  pill
+                  size="lg"
+                  className="font-black uppercase tracking-wider shadow-xs"
+                >
                   <ShieldAlert className="w-3.5 h-3.5 shrink-0" aria-hidden />
                   {t("platform.consoleTitle")}
                 </Badge>

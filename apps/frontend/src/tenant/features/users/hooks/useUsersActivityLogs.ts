@@ -1,9 +1,9 @@
-import type { SystemUser } from '@mms/shared';
+import type { SystemUser } from "@mms/shared";
 import {
   extractActivityLogs,
   useActivityLogs,
   useUsersByIds,
-} from '@/tenant/features/users/hooks/useUsersApi';
+} from "@/tenant/features/users/hooks/useUsersApi";
 
 export interface UseUsersActivityLogsOptions {
   enabled: boolean;

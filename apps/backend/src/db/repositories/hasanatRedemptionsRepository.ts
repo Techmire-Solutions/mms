@@ -1,19 +1,19 @@
-import { and, eq, inArray, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Redemption } from '@mms/shared';
+import { and, eq, inArray, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Redemption } from "@mms/shared";
 import {
   hasanatDenoms,
   hasanatBatches,
   hasanatDistributions,
   hasanatRedemptions,
-} from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+} from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 type RedempRow = typeof hasanatRedemptions.$inferSelect;
 function redemptionRowToRecord(row: RedempRow): Redemption {
   const redemption: Redemption = {
     id: row.id,
     distributionId: row.distributionId,
-    studentName: row.studentName ?? '',
+    studentName: row.studentName ?? "",
     reward: row.reward,
     pointsUsed: row.pointsUsed,
     date: row.date,
@@ -25,7 +25,10 @@ function redemptionRowToRecord(row: RedempRow): Redemption {
   return redemption;
 }
 
-export async function listRedemptionsByWorkspace(tenant: string, options?: { limit?: number; offset?: number }): Promise<Redemption[]> {
+export async function listRedemptionsByWorkspace(
+  tenant: string,
+  options?: { limit?: number; offset?: number },
+): Promise<Redemption[]> {
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 1000, 1), 10000);
   const offset = Math.max(options?.offset ?? 0, 0);
@@ -123,7 +126,7 @@ export async function saveRedemption(tenant: string, record: Redemption): Promis
         id: record.id,
         workspaceSubdomain: subdomain,
         distributionId: record.distributionId,
-        studentName: record.studentName ?? '',
+        studentName: record.studentName ?? "",
         reward: record.reward,
         pointsUsed: record.pointsUsed ?? 0,
         date: record.date,
@@ -135,7 +138,7 @@ export async function saveRedemption(tenant: string, record: Redemption): Promis
         target: [hasanatRedemptions.workspaceSubdomain, hasanatRedemptions.id],
         set: {
           distributionId: record.distributionId,
-          studentName: record.studentName ?? '',
+          studentName: record.studentName ?? "",
           reward: record.reward,
           pointsUsed: record.pointsUsed ?? 0,
           date: record.date,
@@ -152,7 +155,7 @@ export async function bulkSaveRedemptions(tenant: string, records: Redemption[])
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Redemption>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -166,7 +169,7 @@ export async function bulkSaveRedemptions(tenant: string, records: Redemption[])
           id: r.id,
           workspaceSubdomain: subdomain,
           distributionId: r.distributionId,
-          studentName: r.studentName ?? '',
+          studentName: r.studentName ?? "",
           reward: r.reward,
           pointsUsed: r.pointsUsed ?? 0,
           date: r.date,
@@ -191,11 +194,14 @@ export async function bulkSaveRedemptions(tenant: string, records: Redemption[])
   });
 }
 
-export async function replaceRedemptionsForWorkspace(tenant: string, records: Redemption[]): Promise<void> {
+export async function replaceRedemptionsForWorkspace(
+  tenant: string,
+  records: Redemption[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Redemption>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -208,7 +214,7 @@ export async function replaceRedemptionsForWorkspace(tenant: string, records: Re
           id: r.id,
           workspaceSubdomain: subdomain,
           distributionId: r.distributionId,
-          studentName: r.studentName ?? '',
+          studentName: r.studentName ?? "",
           reward: r.reward,
           pointsUsed: r.pointsUsed ?? 0,
           date: r.date,
@@ -225,7 +231,9 @@ export async function deleteHasanatByWorkspace(workspaceSubdomain: string): Prom
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await tx.delete(hasanatRedemptions).where(eq(hasanatRedemptions.workspaceSubdomain, subdomain));
-    await tx.delete(hasanatDistributions).where(eq(hasanatDistributions.workspaceSubdomain, subdomain));
+    await tx
+      .delete(hasanatDistributions)
+      .where(eq(hasanatDistributions.workspaceSubdomain, subdomain));
     await tx.delete(hasanatBatches).where(eq(hasanatBatches.workspaceSubdomain, subdomain));
     await tx.delete(hasanatDenoms).where(eq(hasanatDenoms.workspaceSubdomain, subdomain));
   });

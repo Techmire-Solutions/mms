@@ -1,14 +1,14 @@
 import React from "react";
 import { type AttendanceRecord } from "@/lib/data/attendanceData";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { AttendanceRecordRowActions } from "./AttendanceRecordRowActions";
 import { AttendanceListContent } from "./AttendanceListContent";
 import { AttendanceListFilters } from "./AttendanceListFilters";
 import { AttendanceBulkActionBar } from "./AttendanceBulkActionBar";
 import { AttendanceRecordsConfirmDialogs } from "./AttendanceRecordsConfirmDialogs";
-import { useAttendanceRecordsState } from "./useAttendanceRecordsState";
-import type { AttendanceRecordsProps } from "./attendanceRecordsTypes";
+import { useAttendanceRecordsState } from "../hooks/useAttendanceRecordsState";
+import type { AttendanceRecordsProps } from "../lib/attendanceRecordsTypes";
 
 export type { AttendanceRecordsProps };
 
@@ -27,22 +27,23 @@ export function AttendanceRecords(props: AttendanceRecordsProps): React.JSX.Elem
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
   const state = useAttendanceRecordsState(props);
 
-  const createRowActionsRenderer = (variant: "table" | "cards") => (attendanceRecord: AttendanceRecord) => (
-    <AttendanceRecordRowActions
-      attendanceRecord={attendanceRecord}
-      editingRecord={state.editingRecord}
-      canWriteAttendance={state.canWriteAttendance}
-      canDeleteAttendance={state.canDeleteAttendance}
-      showDeleted={showDeleted}
-      variant={variant}
-      onMessage={onMessage}
-      onRestoreRecord={onRestoreRecord}
-      setEditingRecord={state.setEditingRecord}
-      setPendingDeleteId={state.setPendingDeleteId}
-      saveEditingRecord={state.saveEditingRecord}
-      t={state.t}
-    />
-  );
+  const createRowActionsRenderer =
+    (variant: "table" | "cards") => (attendanceRecord: AttendanceRecord) => (
+      <AttendanceRecordRowActions
+        attendanceRecord={attendanceRecord}
+        editingRecord={state.editingRecord}
+        canWriteAttendance={state.canWriteAttendance}
+        canDeleteAttendance={state.canDeleteAttendance}
+        showDeleted={showDeleted}
+        variant={variant}
+        onMessage={onMessage}
+        onRestoreRecord={onRestoreRecord}
+        setEditingRecord={state.setEditingRecord}
+        setPendingDeleteId={state.setPendingDeleteId}
+        saveEditingRecord={state.saveEditingRecord}
+        t={state.t}
+      />
+    );
 
   return (
     <section className="space-y-4" aria-busy={state.attendancePageQuery.isFetching}>

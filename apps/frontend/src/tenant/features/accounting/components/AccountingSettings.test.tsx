@@ -75,7 +75,7 @@ vi.mock("./AccountingSettingsPreferences", () => ({
   },
 }));
 
-vi.mock("@/components/ui/ModuleSetupSaveFooter", () => ({
+vi.mock("@/components/app/ModuleSetupSaveFooter", () => ({
   ModuleSetupSaveFooter: ({ dirty }: { dirty: boolean }) => (
     <div data-testid="save-footer" data-dirty={String(dirty)}>
       Save Footer
@@ -87,7 +87,7 @@ vi.mock("./AccountingFiscalYearModal", () => ({
   AccountingFiscalYearModal: () => null,
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 
@@ -103,11 +103,7 @@ describe("AccountingSettings Component", () => {
 
   it("renders preferences, fiscal year modal, and save footer", () => {
     const html = renderToStaticMarkup(
-      <AccountingSettings
-        accounts={[]}
-        fiscalYears={[]}
-        onSaveFiscalYears={vi.fn()}
-      />,
+      <AccountingSettings accounts={[]} fiscalYears={[]} onSaveFiscalYears={vi.fn()} />,
     );
     expect(html).toContain("Accounting Preferences Section");
     expect(html).toContain("Save Footer");
@@ -116,11 +112,7 @@ describe("AccountingSettings Component", () => {
   it("disables the Preferences save until the stored preferences have loaded", () => {
     mocks.prefsReady = false;
     const html = renderToStaticMarkup(
-      <AccountingSettings
-        accounts={[]}
-        fiscalYears={[]}
-        onSaveFiscalYears={vi.fn()}
-      />,
+      <AccountingSettings accounts={[]} fiscalYears={[]} onSaveFiscalYears={vi.fn()} />,
     );
 
     expect(html).toContain("accounting.settings.prefsLoading");
@@ -131,11 +123,7 @@ describe("AccountingSettings Component", () => {
     mocks.prefsReady = false;
     mocks.prefsLoadFailed = true;
     const html = renderToStaticMarkup(
-      <AccountingSettings
-        accounts={[]}
-        fiscalYears={[]}
-        onSaveFiscalYears={vi.fn()}
-      />,
+      <AccountingSettings accounts={[]} fiscalYears={[]} onSaveFiscalYears={vi.fn()} />,
     );
 
     expect(html).toContain("accounting.settings.prefsLoadFailed");
@@ -166,8 +154,7 @@ describe("AccountingSettings Component", () => {
     });
 
     const requestClose = mocks.preferencesProps?.onRequestCloseFiscalYear as
-      | ((fiscalYearId: string) => void)
-      | undefined;
+      ((fiscalYearId: string) => void) | undefined;
     expect(typeof requestClose).toBe("function");
 
     await act(async () => {
@@ -192,7 +179,13 @@ describe("AccountingSettings Component", () => {
       root.render(
         <AccountingSettings
           accounts={[
-            { id: "a3100", code: "3100", name: "Retained Earnings", type: "Equity", isActive: true } as never,
+            {
+              id: "a3100",
+              code: "3100",
+              name: "Retained Earnings",
+              type: "Equity",
+              isActive: true,
+            } as never,
           ]}
           fiscalYears={[
             {
@@ -209,15 +202,14 @@ describe("AccountingSettings Component", () => {
     });
 
     const requestClose = mocks.preferencesProps?.onRequestCloseFiscalYear as
-      | ((fiscalYearId: string) => void)
-      | undefined;
+      ((fiscalYearId: string) => void) | undefined;
 
     await act(async () => {
       requestClose?.("fy1");
     });
 
-    const confirmButton = [...document.body.querySelectorAll("button")].find(
-      (button) => button.textContent?.includes("accounting.settings.fy.close"),
+    const confirmButton = [...document.body.querySelectorAll("button")].find((button) =>
+      button.textContent?.includes("accounting.settings.fy.close"),
     );
     expect(confirmButton).toBeDefined();
     expect((confirmButton as HTMLButtonElement).disabled).toBe(false);

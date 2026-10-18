@@ -1,11 +1,11 @@
 import { BookOpen, Plus } from "lucide-react";
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
-import { ActionButton } from "@/components/ui/ActionButton";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
-import { type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
+import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { SessionSortField } from "@/tenant/features/sessions/components/sessionPageTypes";
+import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPageTypes";
 import type { Session } from "@/lib/data/sessionsData";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { SessionsBulkActionBar } from "@/tenant/features/sessions/components/SessionsBulkActionBar";
@@ -141,12 +141,16 @@ export function SessionsList({
           <EmptyState
             icon={BookOpen}
             title={showDeleted ? t("sessions.empty.trashTitle") : t("sessions.empty.title")}
-            description={showDeleted ? t("sessions.empty.trashSubtitle") : t("sessions.empty.subtitle")}
-            action={!showDeleted && canWrite ? (
-              <ActionButton variant="primary" icon={Plus} onClick={onCreateSession}>
-                {t("sessions.action.new")}
-              </ActionButton>
-            ) : undefined}
+            description={
+              showDeleted ? t("sessions.empty.trashSubtitle") : t("sessions.empty.subtitle")
+            }
+            action={
+              !showDeleted && canWrite ? (
+                <Button variant="primary" icon={Plus} onClick={onCreateSession}>
+                  {t("sessions.action.new")}
+                </Button>
+              ) : undefined
+            }
           />
         ) : viewMode === "table" ? (
           <SessionsListDesktopTable

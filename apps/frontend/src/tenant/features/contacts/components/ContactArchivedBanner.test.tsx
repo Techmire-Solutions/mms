@@ -34,18 +34,14 @@ const deletedContact: Contact = {
 
 describe("ContactArchivedBanner Component", () => {
   it("renders banner with deletion reason when contact is archived", () => {
-    const html = renderToStaticMarkup(
-      <ContactArchivedBanner contact={deletedContact} />,
-    );
+    const html = renderToStaticMarkup(<ContactArchivedBanner contact={deletedContact} />);
 
     expect(html).toContain("Archived on");
     expect(html).toContain("Graduated");
   });
 
   it("returns null when contact is not deleted", () => {
-    const html = renderToStaticMarkup(
-      <ContactArchivedBanner contact={activeContact} />,
-    );
+    const html = renderToStaticMarkup(<ContactArchivedBanner contact={activeContact} />);
 
     expect(html).toBe("");
   });

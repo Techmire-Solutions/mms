@@ -1,13 +1,9 @@
-import type React from 'react';
-import { Brain } from 'lucide-react';
-import { FormModal } from '@/components/ui/FormModal';
-import type { TranslationFunction } from '@/lib/contexts/TranslationContext';
-import {
-  type LlmConfig,
-  type LlmProviderType,
-  type LlmTestResult,
-} from '@mms/shared';
-import { LlmConfigModalBody } from '@/tenant/features/settings/components/LlmConfigModalBody';
+import type React from "react";
+import { Brain } from "lucide-react";
+import { FormModal } from "@/components/app/FormModal";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { type LlmConfig, type LlmProviderType, type LlmTestResult } from "@mms/shared";
+import { LlmConfigModalBody } from "@/tenant/features/settings/components/LlmConfigModalBody";
 
 interface LlmConfigModalProps {
   modalOpen: boolean;
@@ -82,13 +78,13 @@ export function LlmConfigModal({
     <FormModal
       open={modalOpen}
       onClose={() => setModalOpen(false)}
-      title={editingConfig ? t('settings.llmModalEditTitle') : t('settings.llmModalAddTitle')}
-      subtitle={t('settings.llmModalDescription')}
+      title={editingConfig ? t("settings.llmModalEditTitle") : t("settings.llmModalAddTitle")}
+      subtitle={t("settings.llmModalDescription")}
       icon={Brain}
       size="md"
       tall
-      cancelLabel={t('common.cancel')}
-      saveLabel={t('settings.llmModalApplyChanges')}
+      cancelLabel={t("common.cancel")}
+      saveLabel={t("settings.llmModalApplyChanges")}
       onSave={handleSaveModalConfig}
       saveDisabled={!formName.trim()}
       formId="llm-config-modal-form"

@@ -4,10 +4,13 @@ import { type Redemption, type Distribution } from "@/lib/data/hasanatData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
 import { formatDate, formatNumber, HASANAT_MODULE_MANIFEST } from "@mms/shared";
-import { useHasanatRedemptionsCollection, useHasanatMutations } from "@/tenant/features/hasanat/hooks/useHasanatApi";
+import {
+  useHasanatRedemptionsCollection,
+  useHasanatMutations,
+} from "@/tenant/features/hasanat/hooks/useHasanatApi";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { EmptyState } from "@/components/app/EmptyState";
+import { SectionHeader } from "@/components/app/SectionHeader";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import {
   DataTable,
@@ -70,7 +73,9 @@ export function RedemptionTracker({
       fixed: true,
       noWrap: true,
       searchValue: (r) => r.studentName,
-      render: (r) => <span className="text-sm font-semibold text-foreground">{r.studentName || "—"}</span>,
+      render: (r) => (
+        <span className="text-sm font-semibold text-foreground">{r.studentName || "—"}</span>
+      ),
     },
     { id: "reward", label: t("hasanat.columns.redemption.reward"), render: (r) => r.reward },
     {
@@ -98,12 +103,19 @@ export function RedemptionTracker({
     },
   ];
 
-  const rewardOptions = [...new Set(redemptions.map((r) => r.reward).filter(Boolean))].map((reward) => ({
-    value: reward,
-    label: reward,
-  }));
+  const rewardOptions = [...new Set(redemptions.map((r) => r.reward).filter(Boolean))].map(
+    (reward) => ({
+      value: reward,
+      label: reward,
+    }),
+  );
   const filters: DataTableFilter<Redemption>[] = [
-    { id: "reward", label: t("hasanat.columns.redemption.reward"), options: rewardOptions, getValue: (r) => r.reward },
+    {
+      id: "reward",
+      label: t("hasanat.columns.redemption.reward"),
+      options: rewardOptions,
+      getValue: (r) => r.reward,
+    },
   ];
 
   return (
@@ -118,14 +130,14 @@ export function RedemptionTracker({
         })}
         actions={
           canWrite && (
-              <Button
-                type="button"
-                onClick={() => setShowModal(true)}
-                className="flex items-center gap-1.5 min-h-11 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {t("hasanat.recordRedemption")}
-              </Button>
-            )
+            <Button
+              type="button"
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-1.5 min-h-11 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {t("hasanat.recordRedemption")}
+            </Button>
+          )
         }
       />
 
@@ -144,7 +156,9 @@ export function RedemptionTracker({
             motionProps={rowMotion(index * 0.04)}
           />
         )}
-        emptyState={<EmptyState variant="dashed" icon={Gift} title={t("hasanat.empty.redemptions")} />}
+        emptyState={
+          <EmptyState variant="dashed" icon={Gift} title={t("hasanat.empty.redemptions")} />
+        }
       />
 
       {canWrite && (

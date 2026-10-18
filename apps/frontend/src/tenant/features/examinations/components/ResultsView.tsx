@@ -3,14 +3,17 @@ import { AnimatePresence } from "framer-motion";
 import { StudentResultCard } from "@/tenant/features/examinations/components/StudentResultCard";
 import { CertificatePreview } from "@/tenant/features/examinations/components/CertificatePreview";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleColumnCustomizer } from "@/components/ui/ModuleColumnCustomizer";
+import { ModuleColumnCustomizer } from "@/components/app/ModuleColumnCustomizer";
 import { Button } from "@/components/ui/button";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import { useResultsViewData } from "@/tenant/features/examinations/components/useResultsViewData";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { useResultsViewData } from "@/tenant/features/examinations/hooks/useResultsViewData";
 import { ResultsViewStats } from "@/tenant/features/examinations/components/ResultsViewStats";
 import { ResultsViewRankingsList } from "@/tenant/features/examinations/components/ResultsViewRankingsList";
-import type { RankedResult, ResultsViewProps } from "@/tenant/features/examinations/components/resultsViewTypes";
-import type { StatusBadgeConfigItem } from '@/components/ui/StatusBadge';
+import type {
+  RankedResult,
+  ResultsViewProps,
+} from "@/tenant/features/examinations/lib/resultsViewTypes";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 
@@ -45,10 +48,16 @@ export function ResultsView({
 
   return (
     <section className="space-y-5" aria-labelledby="results-view-title">
-      <h2 id="results-view-title" className="sr-only">{t("examinations.results")}</h2>
+      <h2 id="results-view-title" className="sr-only">
+        {t("examinations.results")}
+      </h2>
 
       <div className="flex flex-wrap items-center gap-2 justify-between">
-        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("examinations.selectExam")}>
+        <div
+          className="flex flex-wrap gap-2"
+          role="radiogroup"
+          aria-label={t("examinations.selectExam")}
+        >
           {exams.map((examOption) => {
             const isSelected = selectedExam === examOption.id;
             return (
@@ -97,7 +106,10 @@ export function ResultsView({
             exam={exam!}
             allResults={rankedResults}
             onClose={() => setSelectedStudent(null)}
-            onCertificate={() => { setCertStudent(selectedStudent); setSelectedStudent(null); }}
+            onCertificate={() => {
+              setCertStudent(selectedStudent);
+              setSelectedStudent(null);
+            }}
           />
         )}
         {certStudent && (

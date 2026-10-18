@@ -19,10 +19,7 @@ function withEmptyCollectionRows(
   const relationshipContacts = draft.relationshipContacts ?? [];
   return {
     ...draft,
-    socials:
-      socials.length > 0
-        ? socials
-        : [{ platform: socialPlatforms[0] ?? "", url: "" }],
+    socials: socials.length > 0 ? socials : [{ platform: socialPlatforms[0] ?? "", url: "" }],
     relationshipContacts:
       relationshipContacts.length > 0
         ? relationshipContacts
@@ -99,5 +96,3 @@ export function buildInitialContactDraft({
     relationshipOptions,
   );
 }
-
-

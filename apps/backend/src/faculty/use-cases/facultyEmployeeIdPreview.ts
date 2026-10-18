@@ -1,10 +1,7 @@
-import { eq } from 'drizzle-orm';
-import {
-  formatDeterministicEmployeeId,
-  DEFAULT_FACULTY_SETTINGS,
-} from '@mms/shared';
-import { facultySetupConfig } from '../../db/schema/faculty.js';
-import { withTenantRead } from '../../db/tenant-context.js';
+import { eq } from "drizzle-orm";
+import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
+import { facultySetupConfig } from "../../db/schema/faculty.js";
+import { withTenantRead } from "../../db/tenant-context.js";
 
 export interface NextEmployeeIdResult {
   employeeId: string;
@@ -16,7 +13,7 @@ export interface EmployeeIdPreviewResult {
   nextEmployeeId: string;
   config: {
     prefix: string;
-    yearFormat: 'YYYY' | 'YY' | 'NONE';
+    yearFormat: "YYYY" | "YY" | "NONE";
     sequenceDigits: number;
     delimiter: string;
     currentSequence: number;
@@ -27,14 +24,16 @@ export interface EmployeeIdPreviewResult {
 /**
  * Previews the next employee ID without incrementing the sequence in the database.
  */
-export async function previewNextFacultyEmployeeId(tenant: string): Promise<EmployeeIdPreviewResult> {
+export async function previewNextFacultyEmployeeId(
+  tenant: string,
+): Promise<EmployeeIdPreviewResult> {
   const subdomain = tenant.trim().toLowerCase();
   const currentYear = new Date().getFullYear();
   const fallbackConfig = {
-    prefix: DEFAULT_FACULTY_SETTINGS.employeeIdPrefix ?? 'FAC',
-    yearFormat: (DEFAULT_FACULTY_SETTINGS.employeeIdYearFormat ?? 'YYYY') as 'YYYY' | 'YY' | 'NONE',
+    prefix: DEFAULT_FACULTY_SETTINGS.employeeIdPrefix ?? "FAC",
+    yearFormat: (DEFAULT_FACULTY_SETTINGS.employeeIdYearFormat ?? "YYYY") as "YYYY" | "YY" | "NONE",
     sequenceDigits: DEFAULT_FACULTY_SETTINGS.employeeIdSequenceDigits ?? 4,
-    delimiter: DEFAULT_FACULTY_SETTINGS.employeeIdDelimiter ?? '',
+    delimiter: DEFAULT_FACULTY_SETTINGS.employeeIdDelimiter ?? "",
     currentSequence: DEFAULT_FACULTY_SETTINGS.employeeIdCurrentSequence ?? 0,
     lastYear: currentYear,
   };
@@ -46,7 +45,7 @@ export async function previewNextFacultyEmployeeId(tenant: string): Promise<Empl
       nextSeq,
       {
         prefix: config.prefix,
-        yearFormat: config.yearFormat === 'YY' ? 'YY' : 'YYYY',
+        yearFormat: config.yearFormat === "YY" ? "YY" : "YYYY",
         sequenceDigits: config.sequenceDigits,
         delimiter: config.delimiter,
       },
@@ -57,7 +56,7 @@ export async function previewNextFacultyEmployeeId(tenant: string): Promise<Empl
 
   try {
     return await withTenantRead(subdomain, async (tx) => {
-      if (!tx || typeof tx.select !== 'function') {
+      if (!tx || typeof tx.select !== "function") {
         return formatPreview(fallbackConfig);
       }
 
@@ -75,7 +74,7 @@ export async function previewNextFacultyEmployeeId(tenant: string): Promise<Empl
 
       return formatPreview({
         prefix: row?.prefix ?? fallbackConfig.prefix,
-        yearFormat: (row?.yearFormat ?? fallbackConfig.yearFormat) as 'YYYY' | 'YY' | 'NONE',
+        yearFormat: (row?.yearFormat ?? fallbackConfig.yearFormat) as "YYYY" | "YY" | "NONE",
         sequenceDigits: row?.sequenceDigits ?? fallbackConfig.sequenceDigits,
         delimiter: row?.delimiter ?? fallbackConfig.delimiter,
         currentSequence: row?.currentSequence ?? fallbackConfig.currentSequence,

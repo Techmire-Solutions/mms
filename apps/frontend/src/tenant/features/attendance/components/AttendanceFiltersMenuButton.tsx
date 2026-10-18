@@ -1,11 +1,11 @@
-import React from 'react';
-import { SlidersHorizontal } from 'lucide-react';
+import React from "react";
+import { SlidersHorizontal } from "lucide-react";
 import {
   ModuleFilterDropdown,
   ModuleFilterRadioGroup,
-} from '@/components/ui/ModuleFiltersMenuButton';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { AttendanceStatus } from '@/lib/data/attendanceData';
+} from "@/components/app/ModuleFiltersMenuButton";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { AttendanceStatus } from "@/lib/data/attendanceData";
 
 export interface AttendanceFiltersMenuButtonProps {
   statusFilter: string;
@@ -29,16 +29,16 @@ export function AttendanceFiltersMenuButton({
 
   return (
     <ModuleFilterDropdown
-      label={t('attendance.filters')}
+      label={t("attendance.filters")}
       activeCount={activeFilterCount}
       icon={SlidersHorizontal}
-      clearLabel={t('attendance.clearFilters')}
+      clearLabel={t("attendance.clearFilters")}
       onClear={onClearFilters}
     >
       <ModuleFilterRadioGroup
-        label={t('attendance.filter.status')}
+        label={t("attendance.filter.status")}
         options={[
-          { value: 'all', label: t('attendance.filter.all') },
+          { value: "all", label: t("attendance.filter.all") },
           ...statuses.map((status) => ({
             value: status.id,
             label: statusLabel(status.id),

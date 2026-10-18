@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { isFacultyCatalogRowActive, type FacultyDepartmentEntity } from "@mms/shared";
-import { Field, FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { Field, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface FacultyDepartmentSelectFieldProps {
@@ -50,12 +50,7 @@ export function FacultyDepartmentSelectField({
   }, [departmentEntities, departmentId, departmentOptions, value]);
 
   return (
-    <Field
-      label={t("faculty.field.department")}
-      id={id}
-      required={required}
-      error={error}
-    >
+    <Field label={t("faculty.field.department")} id={id} required={required} error={error}>
       <FormSelectWithQuickCreate
         id={id}
         name={id}

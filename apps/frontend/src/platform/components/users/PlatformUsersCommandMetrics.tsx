@@ -1,10 +1,10 @@
-import { getPlatformAdminMetrics } from '@/platform/lib/platformAdminMetrics';
-import React from 'react';
-import { ShieldCheck, UserCheck, Crown } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ModuleCommandMetricsGrid } from '@/components/ui/ModuleCommandMetricsGrid';
-import { StatsSkeleton } from '@/components/ui/LoadingState';
-import type { PlatformUserProfile } from '@mms/shared';
+import { getPlatformAdminMetrics } from "@/platform/lib/platformAdminMetrics";
+import React from "react";
+import { ShieldCheck, UserCheck, Crown } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { StatsSkeleton } from "@shared/ui";
+import type { PlatformUserProfile } from "@mms/shared";
 
 export interface PlatformUsersCommandMetricsProps {
   admins: PlatformUserProfile[] | undefined;
@@ -31,21 +31,21 @@ export function PlatformUsersCommandMetrics({
       items={[
         {
           icon: ShieldCheck,
-          label: t('platform.manageAdmins'),
+          label: t("platform.manageAdmins"),
           value: total,
-          accent: 'primary',
+          accent: "primary",
         },
         {
           icon: UserCheck,
-          label: t('platform.workspaceActive'),
+          label: t("platform.workspaceActive"),
           value: active,
-          accent: 'success',
+          accent: "success",
         },
         {
           icon: Crown,
-          label: t('platform.roleSuperUser'),
+          label: t("platform.roleSuperUser"),
           value: superUsers,
-          accent: 'warning',
+          accent: "warning",
         },
       ]}
     />

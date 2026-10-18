@@ -4,17 +4,22 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { DEFAULT_CONTACT_PREFERENCES } from "@mms/shared";
 import { DuplicateDetectionModal } from "./DuplicateDetectionModal";
 
-vi.mock("@/components/ui/Modal", () => ({
-  Modal: ({ open, title, children }: {
+vi.mock("@/components/app/Modal", () => ({
+  Modal: ({
+    open,
+    title,
+    children,
+  }: {
     open: boolean;
     title: string;
     children: React.ReactNode;
-  }) => (open ? (
-    <div data-testid="modal">
-      <h2>{title}</h2>
-      <div>{children}</div>
-    </div>
-  ) : null),
+  }) =>
+    open ? (
+      <div data-testid="modal">
+        <h2>{title}</h2>
+        <div>{children}</div>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({

@@ -1,8 +1,8 @@
 import type React from "react";
 import { Clock, Building2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { Field, FormCheckboxCard } from "@/components/ui/FormPrimitives";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
+import { Field, FormCheckboxCard } from "@/components/app/FormPrimitives";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { cn } from "@/lib/utils";
 import type { ContactSkill } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from "node:crypto";
 import {
   billingPeriodFromDate,
   buildInvoiceDraftFromEnrollment,
@@ -14,31 +14,38 @@ import {
   type GenerateInvoicesBody,
   type GenerateInvoicesResult,
   type Invoice,
-} from '@mms/shared';
-import { getRequestTenant, requireTenant } from '../../lib/tenantContext.js';
-import { loadFinanceModulePreferences } from '../../services/financePreferencesService.js';
-import { allocateInvoiceNumberBatch, listFeeStructures } from '../../db/repositories/financeBillingRepository.js';
-import { bulkSaveInvoices } from '../../db/repositories/financeInvoicesRepository.js';
-import { linkEnrollmentInvoiceIds } from '../../db/repositories/enrollmentRepositoryPersist.js';
+} from "@mms/shared";
+import { getRequestTenant, requireTenant } from "../../lib/tenantContext.js";
+import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
+import {
+  allocateInvoiceNumberBatch,
+  listFeeStructures,
+} from "../../db/repositories/financeBillingRepository.js";
+import { bulkSaveInvoices } from "../../db/repositories/financeInvoicesRepository.js";
+import { linkEnrollmentInvoiceIds } from "../../db/repositories/enrollmentRepositoryPersist.js";
 import {
   listBillableEnrollments,
   listEnrollmentInvoiceMarks,
-} from '../../db/repositories/financeInvoiceGenerationRepository.js';
-import { financeUseCases } from './financeUseCases.js';
-import { logger } from '../../lib/logger.js';
+} from "../../db/repositories/financeInvoiceGenerationRepository.js";
+import { financeUseCases } from "./financeUseCases.js";
+import { logger } from "../../lib/logger.js";
 
-function resolveFrequency(enrollment: EnrollmentBillingSource, structures: FeeStructure[]): FeeFrequency {
+function resolveFrequency(
+  enrollment: EnrollmentBillingSource,
+  structures: FeeStructure[],
+): FeeFrequency {
   const exact = structures.find(
     (structure) =>
-      structure.isActive
-      && structure.session === enrollment.sessionName
-      && structure.className === enrollment.className,
+      structure.isActive &&
+      structure.session === enrollment.sessionName &&
+      structure.className === enrollment.className,
   );
   if (exact) return exact.frequency;
   const sessionOnly = structures.find(
-    (structure) => structure.isActive && structure.session === enrollment.sessionName && !structure.className,
+    (structure) =>
+      structure.isActive && structure.session === enrollment.sessionName && !structure.className,
   );
-  return sessionOnly?.frequency ?? 'monthly';
+  return sessionOnly?.frequency ?? "monthly";
 }
 
 async function persistGeneratedInvoices(
@@ -61,7 +68,9 @@ async function persistGeneratedInvoices(
   return invoices;
 }
 
-export async function generateInvoices(input: GenerateInvoicesBody): Promise<GenerateInvoicesResult> {
+export async function generateInvoices(
+  input: GenerateInvoicesBody,
+): Promise<GenerateInvoicesResult> {
   const tenant = requireTenant();
   const [prefs, structures, enrollments] = await Promise.all([
     loadFinanceModulePreferences(),
@@ -72,18 +81,26 @@ export async function generateInvoices(input: GenerateInvoicesBody): Promise<Gen
       enrollmentIds: input.enrollmentIds,
     }),
   ]);
-  const dueDays = Math.max(1, Number.parseInt(prefs?.dueDays ?? DEFAULT_FINANCE_SETTINGS.dueDays, 10) || 30);
+  const dueDays = Math.max(
+    1,
+    Number.parseInt(prefs?.dueDays ?? DEFAULT_FINANCE_SETTINGS.dueDays, 10) || 30,
+  );
   const prefix = prefs?.invoicePrefix?.trim() || DEFAULT_FINANCE_SETTINGS.invoicePrefix;
   const marks = await listEnrollmentInvoiceMarks(
     tenant,
     enrollments.map((enrollment) => enrollment.id),
   );
   const billedThisPeriod = new Set(
-    marks.filter((mark) => mark.billingPeriod === input.billingPeriod).map((mark) => mark.enrollmentId),
+    marks
+      .filter((mark) => mark.billingPeriod === input.billingPeriod)
+      .map((mark) => mark.enrollmentId),
   );
   const billedAny = new Set(marks.map((mark) => mark.enrollmentId));
   const drafts = enrollments
-    .filter((enrollment) => isEnrollmentBillable(enrollment) && (enrollment.finalFee > 0 || enrollment.baseFee > 0))
+    .filter(
+      (enrollment) =>
+        isEnrollmentBillable(enrollment) && (enrollment.finalFee > 0 || enrollment.baseFee > 0),
+    )
     .filter(
       (enrollment) =>
         !shouldSkipGeneratedInvoice({
@@ -93,9 +110,13 @@ export async function generateInvoices(input: GenerateInvoicesBody): Promise<Gen
         }),
     )
     .map((enrollment) => buildInvoiceDraftFromEnrollment(enrollment, input.billingPeriod, dueDays));
-  const { findStudentsByIds } = await import('../../db/repositories/studentRepository.js');
-  const students = await findStudentsByIds(tenant, [...new Set(drafts.map((draft) => draft.studentId))]);
-  const familyByStudent = new Map(students.map((student) => [student.id, resolveFamilyContactId(student)]));
+  const { findStudentsByIds } = await import("../../db/repositories/studentRepository.js");
+  const students = await findStudentsByIds(tenant, [
+    ...new Set(drafts.map((draft) => draft.studentId)),
+  ]);
+  const familyByStudent = new Map(
+    students.map((student) => [student.id, resolveFamilyContactId(student)]),
+  );
   const draftsWithFamily = drafts.map((draft) => ({
     ...draft,
     familyContactId: familyByStudent.get(draft.studentId) ?? null,
@@ -107,14 +128,20 @@ export async function generateInvoices(input: GenerateInvoicesBody): Promise<Gen
       .filter((invoice) => invoice.enrollmentId)
       .map((invoice) => ({ enrollmentId: invoice.enrollmentId as string, invoiceId: invoice.id })),
   );
-  const { broadcastTenantUpdate } = await import('../../services/websocketService.js');
-  broadcastTenantUpdate(tenant, 'collection', 'finance_invoices');
-  broadcastTenantUpdate(tenant, 'collection', 'finance_metrics');
-  broadcastTenantUpdate(tenant, 'collection', 'enrollments');
-  return { created: created.length, skipped: enrollments.length - created.length, eligible: enrollments.length };
+  const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
+  broadcastTenantUpdate(tenant, "collection", "finance_invoices");
+  broadcastTenantUpdate(tenant, "collection", "finance_metrics");
+  broadcastTenantUpdate(tenant, "collection", "enrollments");
+  return {
+    created: created.length,
+    skipped: enrollments.length - created.length,
+    eligible: enrollments.length,
+  };
 }
 
-export async function maybeGenerateInvoiceForEnrollment(enrollment: Enrollment): Promise<Enrollment> {
+export async function maybeGenerateInvoiceForEnrollment(
+  enrollment: Enrollment,
+): Promise<Enrollment> {
   const tenant = getRequestTenant();
   if (!tenant || !isEnrollmentBillable(enrollment)) return enrollment;
   if ((enrollment.finalFee || 0) <= 0 && (enrollment.baseFee || 0) <= 0) return enrollment;
@@ -129,10 +156,10 @@ export async function maybeGenerateInvoiceForEnrollment(enrollment: Enrollment):
       enrollmentIds: [enrollment.id],
     });
     if (result.created === 0) return enrollment;
-    const { findEnrollmentById } = await import('../../db/repositories/enrollmentRepository.js');
+    const { findEnrollmentById } = await import("../../db/repositories/enrollmentRepository.js");
     return (await findEnrollmentById(tenant, enrollment.id)) ?? enrollment;
   } catch (error) {
-    logger.warn({ err: error }, 'Enrollment invoice generation skipped');
+    logger.warn({ err: error }, "Enrollment invoice generation skipped");
     return enrollment;
   }
 }

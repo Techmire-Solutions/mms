@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto';
-import type { FastifyReply } from 'fastify';
+import { randomUUID } from "node:crypto";
+import type { FastifyReply } from "fastify";
 import {
   type BackgroundJobRecord,
   type Contact,
@@ -9,27 +9,29 @@ import {
   roleHasPermission,
   sanitizeContactForViewer,
   sanitizeContactsForViewer,
-} from '@mms/shared';
-import { createCollectionAuditHelper } from '../../../lib/createCollectionAuditHelper.js';
+} from "@mms/shared";
+import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
 import {
   canReadContacts,
   canWriteContacts,
   canDeleteContacts,
-} from '../../../services/rbacService.js';
-import { enqueueBackgroundJob, getUserBackgroundJob } from '../../../services/backgroundJobWorkerService.js';
-import { getRequestTenant } from '../../../lib/tenantContext.js';
-import { sendForbidden } from '../../../lib/httpErrors.js';
-import { loadContactFieldConfig } from '../../../services/contactConfigService.js';
+} from "../../../services/rbacService.js";
+import {
+  enqueueBackgroundJob,
+  getUserBackgroundJob,
+} from "../../../services/backgroundJobWorkerService.js";
+import { getRequestTenant } from "../../../lib/tenantContext.js";
+import { sendForbidden } from "../../../lib/httpErrors.js";
+import { loadContactFieldConfig } from "../../../contacts/use-cases/contactConfigService.js";
 
 import {
   type ParsedUniqueConstraintError,
   parsePostgresUniqueError,
   handleContactWriteError,
   formatContactWriteError,
-} from './contactRouteErrors.js';
+} from "./contactRouteErrors.js";
 
-export type ContactPermission = 'read' | 'write' | 'delete';
-
+export type ContactPermission = "read" | "write" | "delete";
 
 export {
   type ParsedUniqueConstraintError,
@@ -37,7 +39,6 @@ export {
   handleContactWriteError,
   formatContactWriteError,
 };
-
 
 /** Contacts permission gate: sends a 403 reply and returns false when not granted. */
 export function requireContactPermission(
@@ -47,8 +48,8 @@ export function requireContactPermission(
 ): boolean {
   const required = Array.isArray(permission) ? permission : [permission];
   const granted = required.every((entry) => {
-    if (entry === 'read') return canReadContacts(user);
-    if (entry === 'write') return canWriteContacts(user);
+    if (entry === "read") return canReadContacts(user);
+    if (entry === "write") return canWriteContacts(user);
     return canDeleteContacts(user);
   });
   if (!granted) void sendForbidden(reply);
@@ -69,7 +70,7 @@ export async function enqueueContactBackgroundJob(options: {
 }): Promise<BackgroundJobRecord> {
   const tenant = getRequestTenant();
   if (!tenant) {
-    throw new Error('Tenant context is required to enqueue contact background job');
+    throw new Error("Tenant context is required to enqueue contact background job");
   }
 
   const userId = String(options.user.id);
@@ -81,7 +82,7 @@ export async function enqueueContactBackgroundJob(options: {
     id: jobId,
     moduleId: options.moduleId,
     kind: options.kind,
-    status: 'running',
+    status: "running",
     label: options.label,
     createdAt: new Date().toISOString(),
   };
@@ -118,4 +119,4 @@ export async function sanitizeOneForUser(contact: Contact, user: User): Promise<
 }
 
 /** Contacts audit helper — shared factory, same shape as Faculty/Students. */
-export const auditContact = createCollectionAuditHelper('contacts');
+export const auditContact = createCollectionAuditHelper("contacts");

@@ -16,9 +16,7 @@ export interface StandardModuleConfigSettingsLike {
   requiredTabs?: string[];
 }
 
-export interface StandardModuleConfigCore<
-  TSettings extends StandardModuleConfigSettingsLike,
-> {
+export interface StandardModuleConfigCore<TSettings extends StandardModuleConfigSettingsLike> {
   settings: TSettings;
   orderedFields: ModuleFieldDef[];
   fields: Record<string, { enabled: boolean; required: boolean }>;
@@ -76,21 +74,18 @@ export function createStandardModuleConfigHook<
           ...(settingsDraft ?? {}),
         };
       },
-      [defaultSettings, settings],
+      [settings],
     );
 
     const updateAsyncFn = useModuleUpdate();
     const updateAsyncRef = useRef(updateAsyncFn);
     updateAsyncRef.current = updateAsyncFn;
 
-    const updateSettingsAsync = useCallback(
-      async (settingsDraft: TSettings): Promise<void> => {
-        if (updateAsyncRef.current) {
-          await updateAsyncRef.current(settingsDraft);
-        }
-      },
-      [],
-    );
+    const updateSettingsAsync = useCallback(async (settingsDraft: TSettings): Promise<void> => {
+      if (updateAsyncRef.current) {
+        await updateAsyncRef.current(settingsDraft);
+      }
+    }, []);
 
     const updateSettings = useCallback(
       (settingsDraft: TSettings): void => {
@@ -108,18 +103,15 @@ export function createStandardModuleConfigHook<
         customFieldsFrom
           ? customFieldsFrom(settings)
           : ((settings.customFields ?? []) as ModuleCustomField[]),
-      [customFieldsFrom, settings],
+      [settings],
     );
 
-    const fieldOrder = settings.fieldOrder ?? defaultSettings.fieldOrder ?? [];
-
-    const orderedFields = useMemo(
-      () =>
-        orderedFieldsFrom
-          ? orderedFieldsFrom({ fieldOrder, settings })
-          : getSortedFields(defaultFieldDefs, fieldOrder, fields, customFields),
-      [orderedFieldsFrom, defaultFieldDefs, fieldOrder, settings, fields, customFields],
-    );
+    const orderedFields = useMemo(() => {
+      const fieldOrder = settings.fieldOrder ?? defaultSettings.fieldOrder ?? [];
+      return orderedFieldsFrom
+        ? orderedFieldsFrom({ fieldOrder, settings })
+        : getSortedFields(defaultFieldDefs, fieldOrder, fields, customFields);
+    }, [settings, fields, customFields]);
 
     const reloadConfig = useCallback(() => {}, []);
     const loadSettings = useCallback(() => settings, [settings]);
@@ -148,8 +140,8 @@ export function createStandardModuleConfigHook<
       isFieldEnabled,
       isFieldRequired,
     };
-    
-    const enhanceForCore = useEnhance ?? (() => ({} as TExtra));
+
+    const enhanceForCore = useEnhance ?? (() => ({}) as TExtra);
     const enhanced = enhanceForCore(core);
 
     return {

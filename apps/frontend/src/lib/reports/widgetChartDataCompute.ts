@@ -8,8 +8,8 @@ import {
   readFacultyWidgetAggregate,
   readSessionsWidgetAggregate,
   readEnrollmentsWidgetAggregate,
-} from "./widgetAggregateReaders.js";
-import { getFilteredRecords } from "./widgetCollectionSnapshot.js";
+} from "./widgetAggregateReaders";
+import { getFilteredRecords } from "./widgetCollectionSnapshot";
 
 export interface WidgetChartDataPoint {
   name: string;

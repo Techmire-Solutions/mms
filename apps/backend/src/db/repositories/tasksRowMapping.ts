@@ -1,5 +1,5 @@
-import type { TaskRecord, TaskPriority, TaskStatus } from '@mms/shared';
-import { tasks } from '../schema.js';
+import type { TaskRecord, TaskPriority, TaskStatus } from "@mms/shared";
+import { tasks } from "../schema.js";
 
 export const SELECT_COLS = {
   id: tasks.id,
@@ -27,10 +27,9 @@ export const SELECT_COLS = {
   updatedBy: tasks.updatedBy,
 } as const;
 
-
 export function mapTaskRow(
   r: typeof tasks.$inferSelect,
-  assigneesMap: Map<string, TaskRecord['assignees']>,
+  assigneesMap: Map<string, TaskRecord["assignees"]>,
 ): TaskRecord {
   return {
     id: r.id,
@@ -49,4 +48,3 @@ export function mapTaskRow(
     deletedAt: r.deletedAt ? r.deletedAt.toISOString() : null,
   };
 }
-

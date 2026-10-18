@@ -3,9 +3,8 @@ import { resolvePlatformSessionPolicy, type SessionTimeoutPolicy } from "@mms/sh
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
-import { SessionTimeoutModal } from "@/components/session/SessionTimeoutModal";
-import { apiJson } from "@/lib/apiClient";
-import { PLATFORM_AUTH_PATHS } from "@/lib/apiClientHelpers";
+import { SessionTimeoutModal } from "@shared/ui";
+import { apiContract } from "@/lib/api";
 
 interface PlatformSessionTimeoutOptions {
   enabled: boolean;
@@ -36,9 +35,10 @@ export function usePlatformSessionTimeout({
       return;
     }
     let active = true;
-    apiJson<SessionTimeoutPolicy>(PLATFORM_AUTH_PATHS.sessionPolicy)
-      .then((p) => {
-        if (active) setPolicy(p);
+    apiContract.platform
+      .getSessionPolicy({})
+      .then((response) => {
+        if (active && response.status === 200) setPolicy(response.body as SessionTimeoutPolicy);
       })
       .catch(() => {
         /* keep the last known policy on a transient failure */
@@ -79,6 +79,11 @@ export function usePlatformSessionTimeout({
       onExtend={handleExtend}
       onSignOut={handleTimeout}
       busy={busy}
+      title={t("session.timeoutTitle")}
+      subtitle={t("session.timeoutDesc")}
+      staySignedInLabel={t("session.staySignedIn")}
+      signOutNowLabel={t("session.signOutNow")}
+      countdownMessage={(sec) => t("session.timeoutCountdown", { seconds: String(sec) })}
     />
   );
 }

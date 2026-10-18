@@ -12,7 +12,10 @@ import { notify } from "@/lib/notify";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { DUPLICATE_ERROR_KEYS } from "@/tenant/features/students/hooks/studentFormValidation";
-import { buildContactSelectPatch, resolveStudentGrForSave } from "@/tenant/features/students/hooks/studentFormHandlers";
+import {
+  buildContactSelectPatch,
+  resolveStudentGrForSave,
+} from "@/tenant/features/students/hooks/studentFormHandlers";
 import {
   confirmPendingStudentSave,
   runStudentSaveFlow,
@@ -75,10 +78,10 @@ export function useStudentFormActionHandlers({
     setPendingSaveData(null);
   }, [setDuplicateConfirmOpen, setPendingSaveData, setTypedDuplicateReason]);
 
-  const handleDuplicateDialogOpenChange = ((open: boolean) => {
+  const handleDuplicateDialogOpenChange = (open: boolean) => {
     if (!open) clearDuplicatePrompt();
     else setDuplicateConfirmOpen(true);
-  });
+  };
 
   const savingRef = useRef(false);
 

@@ -1,5 +1,5 @@
-import { Readable } from 'node:stream';
-import { buildCsvContent, isQueryFlagTrue } from '@mms/shared';
+import { Readable } from "node:stream";
+import { buildCsvContent, isQueryFlagTrue } from "@mms/shared";
 
 export type CsvExportMeta = { count: number; filename: string };
 
@@ -15,11 +15,7 @@ export type CsvStreamFactoryOptions<TRow, TCol extends { label: string }> = {
   columns: TCol[];
   includeIds?: string[];
   loadByIds: (ids: string[]) => Promise<TRow[]>;
-  loadPage: (
-    page: number,
-    limit: number,
-    afterId?: string,
-  ) => Promise<CsvExportPageResult<TRow>>;
+  loadPage: (page: number, limit: number, afterId?: string) => Promise<CsvExportPageResult<TRow>>;
   /** Yield CSV data chunks for one batch (no header). */
   yieldDataChunks: (
     rows: TRow[],
@@ -97,7 +93,7 @@ export function streamCsvExportFromGenerator(
 export class CsvExportLimitError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'CsvExportLimitError';
+    this.name = "CsvExportLimitError";
   }
 }
 
@@ -119,7 +115,7 @@ export async function buildCsvExportFromGenerator(
   let step = await generator.next();
   while (!step.done) {
     const chunk = step.value;
-    totalBytes += Buffer.byteLength(chunk, 'utf8');
+    totalBytes += Buffer.byteLength(chunk, "utf8");
     if (totalBytes > maxBytes) {
       throw new CsvExportLimitError(
         `Export exceeds maximum of ${maxBytes} bytes. Use the streaming download instead.`,
@@ -149,7 +145,7 @@ export async function buildCsvExportFromGenerator(
     );
   }
   return {
-    csv: chunks.join(''),
+    csv: chunks.join(""),
     filename: meta?.filename || fallbackFilename,
     count: meta?.count ?? 0,
   };

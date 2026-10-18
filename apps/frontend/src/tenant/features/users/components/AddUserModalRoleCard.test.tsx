@@ -27,7 +27,7 @@ const mockRole: WorkspaceRole = {
 describe("RoleCard Component", () => {
   it("renders with radio role, accessible label, and unselected state", () => {
     const html = renderToStaticMarkup(
-      <RoleCard role={mockRole} selected={false} onSelect={vi.fn()} />
+      <RoleCard role={mockRole} selected={false} onSelect={vi.fn()} />,
     );
 
     expect(html).toContain('role="radio"');
@@ -41,7 +41,7 @@ describe("RoleCard Component", () => {
 
   it("renders selected state with check icon and aria-checked=true", () => {
     const html = renderToStaticMarkup(
-      <RoleCard role={mockRole} selected={true} onSelect={vi.fn()} />
+      <RoleCard role={mockRole} selected={true} onSelect={vi.fn()} />,
     );
 
     expect(html).toContain('role="radio"');

@@ -5,23 +5,23 @@ import {
   type FacultyDuplicateReason,
   type FacultyRecord,
   type FacultyCommandMetricsSnapshot,
-} from '@mms/shared';
-import { serverMetricsQueryOptions, useServerMetrics } from '@/hooks/useServerMetrics';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { useTranslation } from '@/hooks/useTranslation';
+} from "@mms/shared";
+import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
-import { apiContract } from '@/lib/api';
-import { queryOptions, useQuery } from '@tanstack/react-query';
-import { uniqueRegistryIds } from '@/lib/registryResolve';
+import { apiContract } from "@/lib/api";
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { uniqueRegistryIds } from "@/lib/registryResolve";
 import {
   FACULTY_QUERY_KEY,
   type FacultyNextEmployeeIdParams,
   type FacultyWidgetAggregateWidgetInput,
-} from '@/tenant/features/faculty/hooks/facultyQueryKeys';
+} from "@/tenant/features/faculty/hooks/facultyQueryKeys";
 import {
   type FacultyListPageResult,
   type FacultyPaginatedParams,
-} from '@/tenant/features/faculty/hooks/facultyListQueryBuilders';
+} from "@/tenant/features/faculty/hooks/facultyListQueryBuilders";
 
 export type {
   FacultyListPageResult,
@@ -39,7 +39,7 @@ export function facultyCommandMetricsQueryOptions() {
 
 /** Fetches all pages matching Work filters for export (parity with Students §8). */
 export async function fetchAllFacultyForQuery(
-  params: Omit<FacultyPaginatedParams, 'page' | 'enabled'>,
+  params: Omit<FacultyPaginatedParams, "page" | "enabled">,
   onProgress?: (fetched: number, total: number) => void,
   messages?: { exportLimitExceeded: string },
 ): Promise<FacultyRecord[]> {
@@ -50,7 +50,7 @@ export async function fetchAllFacultyForQuery(
 
   for (;;) {
     const response = await apiContract.faculty.list({
-      query: { ...(params), page, limit },
+      query: { ...params, page, limit },
     });
     const facultyPage = response.body as FacultyListPageResult;
     const items = (facultyPage.faculty ?? []) as FacultyRecord[];
@@ -61,7 +61,7 @@ export async function fetchAllFacultyForQuery(
     if (page >= 200) {
       throw new Error(
         messages?.exportLimitExceeded ??
-          'Faculty export exceeds the 100,000-record safety limit; narrow the filters.',
+          "Faculty export exceeds the 100,000-record safety limit; narrow the filters.",
       );
     }
     page += 1;
@@ -75,14 +75,14 @@ export function useFacultyLinkedContactIds(excludeId?: string, enabled = true) {
   const { t } = useTranslation();
 
   return useQuery({
-    queryKey: [...FACULTY_QUERY_KEY, 'linked-contact-ids', excludeId ?? ''] as const,
+    queryKey: [...FACULTY_QUERY_KEY, "linked-contact-ids", excludeId ?? ""] as const,
     queryFn: async ({ signal }) => {
       const res = await apiContract.faculty.linkedContactIds({
         query: { excludeId },
         fetchOptions: { signal },
       });
       if (res.status !== 200) {
-        throw new Error(t('faculty.errors.loadLinkedContactIds'));
+        throw new Error(t("faculty.errors.loadLinkedContactIds"));
       }
       const body = res.body as { contactIds?: Array<string | number> } | undefined;
       return body?.contactIds ?? [];
@@ -96,7 +96,7 @@ export function useFacultyLinkedContactIds(excludeId?: string, enabled = true) {
 export function facultyResolveQueryOptions(ids: (string | number | null | undefined)[]) {
   const normalized = uniqueRegistryIds(ids);
   return queryOptions({
-    queryKey: [...FACULTY_QUERY_KEY, 'resolve', normalized.join(',')] as const,
+    queryKey: [...FACULTY_QUERY_KEY, "resolve", normalized.join(",")] as const,
     queryFn: async ({ signal }) => {
       const res = await apiContract.faculty.resolve({
         body: { ids: normalized },
@@ -124,7 +124,7 @@ export function useFacultyNextEmployeeId(params: FacultyNextEmployeeIdParams = {
   const enabled = params.enabled ?? true;
 
   return useQuery({
-    queryKey: [...FACULTY_QUERY_KEY, 'next-employee-id', params] as const,
+    queryKey: [...FACULTY_QUERY_KEY, "next-employee-id", params] as const,
     queryFn: async ({ signal }) => {
       const res = await apiContract.faculty.nextEmployeeId({
         query: {
@@ -137,10 +137,10 @@ export function useFacultyNextEmployeeId(params: FacultyNextEmployeeIdParams = {
         fetchOptions: { signal },
       });
       if (res.status !== 200) {
-        throw new Error(t('faculty.errors.loadNextEmployeeId'));
+        throw new Error(t("faculty.errors.loadNextEmployeeId"));
       }
       const body = res.body as { employeeId?: string } | undefined;
-      return typeof body?.employeeId === 'string' ? body.employeeId : '';
+      return typeof body?.employeeId === "string" ? body.employeeId : "";
     },
     enabled: isAuthenticated && enabled,
     staleTime: 15_000,
@@ -154,7 +154,7 @@ export async function checkFacultyRegistrationDuplicate(
 ): Promise<FacultyDuplicateReason | null> {
   const res = await apiContract.faculty.duplicateCheck({ body: input });
   if (res.status !== 200) {
-    throw new Error(messages?.duplicateCheckFailed ?? 'Duplicate check failed');
+    throw new Error(messages?.duplicateCheckFailed ?? "Duplicate check failed");
   }
   return (res.body as { reason?: FacultyDuplicateReason | null } | null)?.reason ?? null;
 }
@@ -170,15 +170,15 @@ export function useFacultyMetrics(options?: { enabled?: boolean }) {
 export {
   facultyWidgetAggregatesQueryOptions,
   useFacultyWidgetAggregates,
-} from '@/tenant/features/faculty/hooks/useFacultyWidgetAggregates';
+} from "@/tenant/features/faculty/hooks/useFacultyWidgetAggregates";
 
 /** One-shot employee-id backfill for active faculty missing one (Setup writers). */
-export async function migrateFacultyEmployeeIds(
-  messages?: { migrationFailed: string },
-): Promise<{ updated: number }> {
+export async function migrateFacultyEmployeeIds(messages?: {
+  migrationFailed: string;
+}): Promise<{ updated: number }> {
   const res = await apiContract.faculty.migrateEmployeeIds({ body: {} });
   if (res.status !== 200) {
-    throw new Error(messages?.migrationFailed ?? 'Migration failed');
+    throw new Error(messages?.migrationFailed ?? "Migration failed");
   }
   return { updated: (res.body as { updated?: number } | null)?.updated ?? 0 };
 }

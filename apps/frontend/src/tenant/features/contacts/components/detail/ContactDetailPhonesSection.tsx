@@ -1,16 +1,10 @@
-import {
-  type Contact,
-  PuppeteerWhatsAppProvider,
-} from "@mms/shared";
+import { type Contact, PuppeteerWhatsAppProvider } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactPhoneFull, resolvePhoneLabel } from "@/lib/contacts/contactI18n";
 import { CollectionRowItem } from "./ContactDetailShared";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
-import {
-  DetailCollectionEmpty,
-  withPrimaryPhone,
-} from "./contactDetailChannelHelpers";
+import { DetailCollectionEmpty, withPrimaryPhone } from "./contactDetailChannelHelpers";
 import { buildDetailPhoneMessagingActions } from "./contactDetailMessagingActions";
 
 export interface ContactDetailPhonesSectionProps {
@@ -34,7 +28,10 @@ export function ContactDetailPhonesSection({
   const phones = contact.phones && contact.phones.length > 0 ? contact.phones : [];
 
   return (
-    <DetailSectionCard className={COLLECTION_CONTAINER_CLASS} title={t("contacts.form.phonesLabel")}>
+    <DetailSectionCard
+      className={COLLECTION_CONTAINER_CLASS}
+      title={t("contacts.form.phonesLabel")}
+    >
       {phones.length === 0 ? (
         <DetailCollectionEmpty title={t("contacts.detail.emptyPhones")} />
       ) : (
@@ -60,9 +57,7 @@ export function ContactDetailPhonesSection({
                     onWhatsApp && hasWa
                       ? () => onWhatsApp([withPrimaryPhone(contact, phone)])
                       : undefined,
-                  onSms: onSms
-                    ? () => onSms([withPrimaryPhone(contact, phone)])
-                    : undefined,
+                  onSms: onSms ? () => onSms([withPrimaryPhone(contact, phone)]) : undefined,
                 })
               : [];
 

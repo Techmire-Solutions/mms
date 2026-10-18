@@ -1,6 +1,6 @@
-import type { User } from '@mms/shared';
+import type { User } from "@mms/shared";
 
-const SESSION_KEY = 'mms_query_cache_session_v2';
+const SESSION_KEY = "mms_query_cache_session_v2";
 interface CacheSession {
   identity: string;
   key: string;
@@ -8,10 +8,16 @@ interface CacheSession {
 
 export function readQueryCacheSession(): CacheSession | undefined {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null');
-    if (value && typeof value === 'object' && 'identity' in value && 'key' in value
-      && typeof value.identity === 'string' && typeof value.key === 'string'
-      && value.key.startsWith('mms_query_cache_v2:')) {
+    const value: unknown = JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null");
+    if (
+      value &&
+      typeof value === "object" &&
+      "identity" in value &&
+      "key" in value &&
+      typeof value.identity === "string" &&
+      typeof value.key === "string" &&
+      value.key.startsWith("mms_query_cache_v2:")
+    ) {
       return { identity: value.identity, key: value.key };
     }
   } catch {
@@ -21,7 +27,12 @@ export function readQueryCacheSession(): CacheSession | undefined {
 }
 
 export function tenantCacheIdentity(user: User): string {
-  return JSON.stringify([user.workspaceSubdomain, user.id, user.role, Boolean(user.mustChangePassword)]);
+  return JSON.stringify([
+    user.workspaceSubdomain,
+    user.id,
+    user.role,
+    Boolean(user.mustChangePassword),
+  ]);
 }
 
 export function resolveQueryCacheSession(identity: string): CacheSession | undefined {

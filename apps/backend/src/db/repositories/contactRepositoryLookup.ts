@@ -1,9 +1,9 @@
-import { and, eq, isNull, notInArray, sql, type SQL } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Contact } from '@mms/shared';
-import { contacts, contactPhones, contactEmails } from '../schema.js';
+import { and, eq, isNull, notInArray, sql, type SQL } from "drizzle-orm";
+import { dedupeTrimmedIds, type Contact } from "@mms/shared";
+import { contacts, contactPhones, contactEmails } from "../schema.js";
 
-import { withTenantRead } from '../tenant-context.js';
-import { hydrateContactsList } from './contactRepositoryCore.js';
+import { withTenantRead } from "../tenant-context.js";
+import { hydrateContactsList } from "./contactRepositoryCore.js";
 
 export interface ContactUniqueLookupValues {
   /** Digits-only phone numbers to match against contact_phones / scalar phone. */
@@ -17,10 +17,9 @@ export interface ContactUniqueLookupValues {
 import {
   scalarFieldSql,
   findExistingNormalizedContactNames,
-} from './contactRepositoryLookupSql.js';
+} from "./contactRepositoryLookupSql.js";
 
 export { findExistingNormalizedContactNames };
-
 
 /**
  * Active contacts that may collide on any of the candidate unique values.
@@ -78,7 +77,10 @@ export async function findActiveContactsMatchingUniqueValues(
             '[^0-9]',
             '',
             'g'
-          ) IN (${sql.join(phoneDigits.map((digit) => sql`${digit}`), sql`, `)})
+          ) IN (${sql.join(
+            phoneDigits.map((digit) => sql`${digit}`),
+            sql`, `,
+          )})
       )
     )`);
   }
@@ -91,7 +93,10 @@ export async function findActiveContactsMatchingUniqueValues(
         WHERE e.workspace_subdomain = ${contacts.workspaceSubdomain}
           AND e.contact_id = ${contacts.id}
           AND lower(trim(COALESCE(e.address, '')))
-            IN (${sql.join(emails.map((email) => sql`${email}`), sql`, `)})
+            IN (${sql.join(
+              emails.map((email) => sql`${email}`),
+              sql`, `,
+            )})
       )
     )`);
   }

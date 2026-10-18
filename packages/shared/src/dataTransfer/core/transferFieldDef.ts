@@ -3,9 +3,9 @@
  * @description Single-source-of-truth (SSOT) field definition for module import/export.
  */
 
-import type { ExportColumn } from './exportTypes.js';
-import type { CsvImportFieldMapping } from '../../csvImportMapper.js';
-import type { CsvTemplateColumn } from '../../csvTemplateGenerator.js';
+import type { ExportColumn } from "./exportTypes.js";
+import type { CsvImportFieldMapping } from "../../core/csvImportMapper.js";
+import type { CsvTemplateColumn } from "../../core/csvTemplateGenerator.js";
 
 /**
  * Definition of a single data-transfer field.

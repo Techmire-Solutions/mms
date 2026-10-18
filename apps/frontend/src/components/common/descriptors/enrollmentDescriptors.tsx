@@ -1,6 +1,6 @@
 import type { Enrollment } from "@mms/shared";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 
 export const enrollmentsEntityDescriptor: EntityDescriptor<Enrollment> =
@@ -63,7 +63,11 @@ export const enrollmentsEntityDescriptor: EntityDescriptor<Enrollment> =
           pending: { label: "Pending", tone: "warning", className: SEMANTIC_BADGE.warning },
           enrolled: { label: "Enrolled", tone: "success", className: SEMANTIC_BADGE.success },
           completed: { label: "Completed", tone: "info", className: SEMANTIC_BADGE.info },
-          withdrawn: { label: "Withdrawn", tone: "destructive", className: SEMANTIC_BADGE.destructive },
+          withdrawn: {
+            label: "Withdrawn",
+            tone: "destructive",
+            className: SEMANTIC_BADGE.destructive,
+          },
           cancelled: { label: "Cancelled", tone: "muted", className: SEMANTIC_BADGE.muted },
         },
       },

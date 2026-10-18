@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Shield } from 'lucide-react';
-import type { PlatformAdminPermissions, PlatformUserProfile } from '@mms/shared';
-import { normalizePlatformAdminPermissions } from '@mms/shared';
-import { FormModal } from '@/components/ui/FormModal';
-import { Field } from '@/components/ui/FormField';
-import { Input } from '@/components/ui/input';
-import { useTranslation } from '@/hooks/useTranslation';
-import { getPlatformErrorMessage } from '@/platform/lib/platformAuthErrors';
-import { useUpdatePlatformAdminPermissions } from '@/platform/hooks/usePlatformAdmins';
-import { PlatformAdminPermissionsFields } from '@/platform/components/PlatformAdminPermissionsFields';
+import React, { useEffect, useState } from "react";
+import { Shield } from "lucide-react";
+import type { PlatformAdminPermissions, PlatformUserProfile } from "@mms/shared";
+import { normalizePlatformAdminPermissions } from "@mms/shared";
+import { FormModal } from "@/components/app/FormModal";
+import { Field, Input } from "@shared/ui";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { useUpdatePlatformAdminPermissions } from "@/platform/hooks/usePlatformAdmins";
+import { PlatformAdminPermissionsFields } from "@/platform/components/PlatformAdminPermissionsFields";
 
 interface PlatformEditAdminAccessDialogProps {
   admin: PlatformUserProfile;
@@ -26,13 +25,13 @@ export function PlatformEditAdminAccessDialog({
   const [permissions, setPermissions] = useState<PlatformAdminPermissions>(() =>
     normalizePlatformAdminPermissions(admin.permissions),
   );
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setPermissions(normalizePlatformAdminPermissions(admin.permissions));
-      setPassword('');
+      setPassword("");
       setError(null);
     }
   }, [open, admin]);
@@ -40,7 +39,7 @@ export function PlatformEditAdminAccessDialog({
   const handleSave = async (): Promise<void> => {
     setError(null);
     if (!password.trim()) {
-      setError(t('platform.validationConfirmPlatformPassword'));
+      setError(t("platform.validationConfirmPlatformPassword"));
       return;
     }
     try {
@@ -59,13 +58,13 @@ export function PlatformEditAdminAccessDialog({
     <FormModal
       open={open}
       onClose={() => onOpenChange(false)}
-      title={t('platform.editAdminAccessTitle')}
+      title={t("platform.editAdminAccessTitle")}
       subtitle={`${admin.name} · ${admin.email}`}
       icon={Shield}
       size="sm"
       error={error ?? undefined}
-      cancelLabel={t('common.cancel')}
-      saveLabel={t('platform.editAdminAccessSave')}
+      cancelLabel={t("common.cancel")}
+      saveLabel={t("platform.editAdminAccessSave")}
       onSave={handleSave}
       saving={updatePermissions.isPending}
       dir="ltr"
@@ -88,17 +87,13 @@ export function PlatformEditAdminAccessDialog({
           onChange={setPermissions}
           disabled={updatePermissions.isPending}
         />
-        <Field
-          id="edit-admin-step-up"
-          label={t('platform.confirmPlatformPassword')}
-          required
-        >
+        <Field id="edit-admin-step-up" label={t("platform.confirmPlatformPassword")} required>
           <Input
             id="edit-admin-step-up"
             name="platformPassword"
             type="password"
             autoComplete="current-password"
-            placeholder={t('platform.confirmPlatformPasswordHint')}
+            placeholder={t("platform.confirmPlatformPasswordHint")}
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);

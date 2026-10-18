@@ -9,7 +9,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { FORM_LABEL } from "@/components/ui/formStyles";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
-import { type StatsSummary, sumScores, testTotalMarks } from '@/tenant/features/question-bank/components/autoGradingShared';
+import {
+  type StatsSummary,
+  sumScores,
+  testTotalMarks,
+} from "@/tenant/features/question-bank/lib/autoGradingShared";
 import { AutoGradingResultRow } from "@/tenant/features/question-bank/components/AutoGradingResultRow";
 import { AutoGradingStats } from "@/tenant/features/question-bank/components/AutoGradingStats";
 
@@ -57,7 +61,11 @@ export function AutoGrading({ tests, results, questions }: AutoGradingProps): Re
         <span id="auto-grading-title" className={FORM_LABEL}>
           {t("questionBank.grading.selectTest")}
         </span>
-        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("questionBank.grading.selectTestAria")}>
+        <div
+          className="flex flex-wrap gap-2"
+          role="radiogroup"
+          aria-label={t("questionBank.grading.selectTestAria")}
+        >
           {tests.map((item) => {
             const isSelected = selectedTest === item.id;
             const count = resultsCountByTestId.get(item.id) ?? 0;
@@ -83,7 +91,12 @@ export function AutoGrading({ tests, results, questions }: AutoGradingProps): Re
       {test && (
         <>
           {stats && (
-            <AutoGradingStats stats={stats} test={test} questions={questions} submittedCount={testResults.length} />
+            <AutoGradingStats
+              stats={stats}
+              test={test}
+              questions={questions}
+              submittedCount={testResults.length}
+            />
           )}
 
           <ReportDataGridContainer
@@ -115,7 +128,12 @@ export function AutoGrading({ tests, results, questions }: AutoGradingProps): Re
               {testResults
                 .sort((a, b) => sumScores(b.scores) - sumScores(a.scores))
                 .map((result) => (
-                  <AutoGradingResultRow key={result.id} result={result} test={test} questions={questionsById} />
+                  <AutoGradingResultRow
+                    key={result.id}
+                    result={result}
+                    test={test}
+                    questions={questionsById}
+                  />
                 ))}
             </div>
           </ReportDataGridContainer>

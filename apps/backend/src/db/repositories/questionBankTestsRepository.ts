@@ -1,15 +1,10 @@
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type QuestionBankTest } from '@mms/shared';
-import {
-  tests,
-  testQuestions,
-  testSections,
-  testSectionQuestions,
-} from '../schema.js';
-import { withTenant, withTenantRead, type TenantTransaction } from '../tenant-context.js';
-import { syncTestChildren, testRowToRecord } from './questionBankTestsSync.js';
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type QuestionBankTest } from "@mms/shared";
+import { tests, testQuestions, testSections, testSectionQuestions } from "../schema.js";
+import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { syncTestChildren, testRowToRecord } from "./questionBankTestsSync.js";
 
-export { testRowToRecord } from './questionBankTestsSync.js';
+export { testRowToRecord } from "./questionBankTestsSync.js";
 
 export async function listTestsByWorkspace(
   tenant: string,
@@ -56,10 +51,7 @@ export async function listTestsByWorkspace(
         })
         .from(testQuestions)
         .where(
-          and(
-            eq(testQuestions.workspaceSubdomain, subdomain),
-            inArray(testQuestions.testId, tIds),
-          ),
+          and(eq(testQuestions.workspaceSubdomain, subdomain), inArray(testQuestions.testId, tIds)),
         ),
       tx
         .select({
@@ -71,10 +63,7 @@ export async function listTestsByWorkspace(
         })
         .from(testSections)
         .where(
-          and(
-            eq(testSections.workspaceSubdomain, subdomain),
-            inArray(testSections.testId, tIds),
-          ),
+          and(eq(testSections.workspaceSubdomain, subdomain), inArray(testSections.testId, tIds)),
         ),
     ]);
 
@@ -86,21 +75,22 @@ export async function listTestsByWorkspace(
     }
 
     const secIds = allSections.map((s) => s.id);
-    const allSecQs = secIds.length > 0
-      ? await tx
-          .select({
-            sectionId: testSectionQuestions.sectionId,
-            sortOrder: testSectionQuestions.sortOrder,
-            questionId: testSectionQuestions.questionId,
-          })
-          .from(testSectionQuestions)
-          .where(
-            and(
-              eq(testSectionQuestions.workspaceSubdomain, subdomain),
-              inArray(testSectionQuestions.sectionId, secIds),
-            ),
-          )
-      : [];
+    const allSecQs =
+      secIds.length > 0
+        ? await tx
+            .select({
+              sectionId: testSectionQuestions.sectionId,
+              sortOrder: testSectionQuestions.sortOrder,
+              questionId: testSectionQuestions.questionId,
+            })
+            .from(testSectionQuestions)
+            .where(
+              and(
+                eq(testSectionQuestions.workspaceSubdomain, subdomain),
+                inArray(testSectionQuestions.sectionId, secIds),
+              ),
+            )
+        : [];
 
     const qBySec = new Map<string, Array<{ index: number; qId: string }>>();
     for (const sq of allSecQs) {
@@ -117,16 +107,12 @@ export async function listTestsByWorkspace(
     }
 
     return rows.map((r) => {
-      const testQs = (qByTest.get(r.id) ?? [])
-        .sort((a, b) => a.index - b.index)
-        .map((q) => q.qId);
+      const testQs = (qByTest.get(r.id) ?? []).sort((a, b) => a.index - b.index).map((q) => q.qId);
 
       const testSecs = (secByTest.get(r.id) ?? [])
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((s) => {
-          const sqs = (qBySec.get(s.id) ?? [])
-            .sort((a, b) => a.index - b.index)
-            .map((q) => q.qId);
+          const sqs = (qBySec.get(s.id) ?? []).sort((a, b) => a.index - b.index).map((q) => q.qId);
           return {
             id: s.id,
             title: s.title,
@@ -181,10 +167,7 @@ export async function findTestById(tenant: string, id: string): Promise<Question
         })
         .from(testQuestions)
         .where(
-          and(
-            eq(testQuestions.workspaceSubdomain, subdomain),
-            eq(testQuestions.testId, cleanId),
-          ),
+          and(eq(testQuestions.workspaceSubdomain, subdomain), eq(testQuestions.testId, cleanId)),
         ),
       tx
         .select({
@@ -196,30 +179,28 @@ export async function findTestById(tenant: string, id: string): Promise<Question
         })
         .from(testSections)
         .where(
-          and(
-            eq(testSections.workspaceSubdomain, subdomain),
-            eq(testSections.testId, cleanId),
-          ),
+          and(eq(testSections.workspaceSubdomain, subdomain), eq(testSections.testId, cleanId)),
         ),
     ]);
 
     const testQs = allTQs.sort((a, b) => a.sortOrder - b.sortOrder).map((q) => q.questionId);
     const secIds = allSections.map((s) => s.id);
-    const allSecQs = secIds.length > 0
-      ? await tx
-          .select({
-            sectionId: testSectionQuestions.sectionId,
-            sortOrder: testSectionQuestions.sortOrder,
-            questionId: testSectionQuestions.questionId,
-          })
-          .from(testSectionQuestions)
-          .where(
-            and(
-              eq(testSectionQuestions.workspaceSubdomain, subdomain),
-              inArray(testSectionQuestions.sectionId, secIds),
-            ),
-          )
-      : [];
+    const allSecQs =
+      secIds.length > 0
+        ? await tx
+            .select({
+              sectionId: testSectionQuestions.sectionId,
+              sortOrder: testSectionQuestions.sortOrder,
+              questionId: testSectionQuestions.questionId,
+            })
+            .from(testSectionQuestions)
+            .where(
+              and(
+                eq(testSectionQuestions.workspaceSubdomain, subdomain),
+                inArray(testSectionQuestions.sectionId, secIds),
+              ),
+            )
+        : [];
 
     const qBySec = new Map<string, Array<{ index: number; qId: string }>>();
     for (const sq of allSecQs) {
@@ -231,9 +212,7 @@ export async function findTestById(tenant: string, id: string): Promise<Question
     const testSecs = allSections
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((s) => {
-        const sqs = (qBySec.get(s.id) ?? [])
-          .sort((a, b) => a.index - b.index)
-          .map((q) => q.qId);
+        const sqs = (qBySec.get(s.id) ?? []).sort((a, b) => a.index - b.index).map((q) => q.qId);
         return {
           id: s.id,
           title: s.title,
@@ -249,14 +228,14 @@ export async function findTestById(tenant: string, id: string): Promise<Question
 export async function findTestsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<QuestionBankTest[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(tests.deletedAt)
       : isAll
@@ -265,10 +244,7 @@ export async function findTestsByIds(
           ? isNotNull(tests.deletedAt)
           : isNull(tests.deletedAt);
 
-    const conditions = [
-      eq(tests.workspaceSubdomain, subdomain),
-      inArray(tests.id, cleanIds),
-    ];
+    const conditions = [eq(tests.workspaceSubdomain, subdomain), inArray(tests.id, cleanIds)];
     if (deletedCond) conditions.push(deletedCond);
 
     const rows = await tx
@@ -306,10 +282,7 @@ export async function findTestsByIds(
         })
         .from(testQuestions)
         .where(
-          and(
-            eq(testQuestions.workspaceSubdomain, subdomain),
-            inArray(testQuestions.testId, tIds),
-          ),
+          and(eq(testQuestions.workspaceSubdomain, subdomain), inArray(testQuestions.testId, tIds)),
         ),
       tx
         .select({
@@ -321,10 +294,7 @@ export async function findTestsByIds(
         })
         .from(testSections)
         .where(
-          and(
-            eq(testSections.workspaceSubdomain, subdomain),
-            inArray(testSections.testId, tIds),
-          ),
+          and(eq(testSections.workspaceSubdomain, subdomain), inArray(testSections.testId, tIds)),
         ),
     ]);
 
@@ -336,21 +306,22 @@ export async function findTestsByIds(
     }
 
     const secIds = allSections.map((s) => s.id);
-    const allSecQs = secIds.length > 0
-      ? await tx
-          .select({
-            sectionId: testSectionQuestions.sectionId,
-            sortOrder: testSectionQuestions.sortOrder,
-            questionId: testSectionQuestions.questionId,
-          })
-          .from(testSectionQuestions)
-          .where(
-            and(
-              eq(testSectionQuestions.workspaceSubdomain, subdomain),
-              inArray(testSectionQuestions.sectionId, secIds),
-            ),
-          )
-      : [];
+    const allSecQs =
+      secIds.length > 0
+        ? await tx
+            .select({
+              sectionId: testSectionQuestions.sectionId,
+              sortOrder: testSectionQuestions.sortOrder,
+              questionId: testSectionQuestions.questionId,
+            })
+            .from(testSectionQuestions)
+            .where(
+              and(
+                eq(testSectionQuestions.workspaceSubdomain, subdomain),
+                inArray(testSectionQuestions.sectionId, secIds),
+              ),
+            )
+        : [];
 
     const qBySec = new Map<string, Array<{ index: number; qId: string }>>();
     for (const sq of allSecQs) {
@@ -367,16 +338,12 @@ export async function findTestsByIds(
     }
 
     return rows.map((r) => {
-      const testQs = (qByTest.get(r.id) ?? [])
-        .sort((a, b) => a.index - b.index)
-        .map((q) => q.qId);
+      const testQs = (qByTest.get(r.id) ?? []).sort((a, b) => a.index - b.index).map((q) => q.qId);
 
       const testSecs = (secByTest.get(r.id) ?? [])
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((s) => {
-          const sqs = (qBySec.get(s.id) ?? [])
-            .sort((a, b) => a.index - b.index)
-            .map((q) => q.qId);
+          const sqs = (qBySec.get(s.id) ?? []).sort((a, b) => a.index - b.index).map((q) => q.qId);
           return {
             id: s.id,
             title: s.title,
@@ -400,7 +367,7 @@ export async function saveTest(tenant: string, record: QuestionBankTest): Promis
         workspaceSubdomain: subdomain,
         name: record.name,
         categoryId: record.categoryId ?? null,
-        difficulty: record.difficulty ?? 'mixed',
+        difficulty: record.difficulty ?? "mixed",
         duration: record.duration ?? 60,
         examClass: record.examClass ?? null,
         classId: record.classId ?? null,
@@ -416,7 +383,7 @@ export async function saveTest(tenant: string, record: QuestionBankTest): Promis
         set: {
           name: record.name,
           categoryId: record.categoryId ?? null,
-          difficulty: record.difficulty ?? 'mixed',
+          difficulty: record.difficulty ?? "mixed",
           duration: record.duration ?? 60,
           examClass: record.examClass ?? null,
           classId: record.classId ?? null,
@@ -458,7 +425,7 @@ async function insertTestChildrenTx(
       workspaceSubdomain: subdomain,
       testId: record.id,
       title: sec.title,
-      instructions: sec.instructions ?? '',
+      instructions: sec.instructions ?? "",
       sortOrder: i,
     })),
   );
@@ -502,7 +469,7 @@ export async function bulkSaveTests(tenant: string, records: QuestionBankTest[])
           workspaceSubdomain: subdomain,
           name: record.name,
           categoryId: record.categoryId ?? null,
-          difficulty: record.difficulty ?? 'mixed',
+          difficulty: record.difficulty ?? "mixed",
           duration: record.duration ?? 60,
           examClass: record.examClass ?? null,
           classId: record.classId ?? null,
@@ -544,12 +511,33 @@ export async function bulkSaveTests(tenant: string, records: QuestionBankTest[])
     }
 
     const deleteOps: Promise<unknown>[] = [
-      tx.delete(testSections).where(and(eq(testSections.workspaceSubdomain, subdomain), inArray(testSections.testId, testIds))),
-      tx.delete(testQuestions).where(and(eq(testQuestions.workspaceSubdomain, subdomain), inArray(testQuestions.testId, testIds))),
+      tx
+        .delete(testSections)
+        .where(
+          and(
+            eq(testSections.workspaceSubdomain, subdomain),
+            inArray(testSections.testId, testIds),
+          ),
+        ),
+      tx
+        .delete(testQuestions)
+        .where(
+          and(
+            eq(testQuestions.workspaceSubdomain, subdomain),
+            inArray(testQuestions.testId, testIds),
+          ),
+        ),
     ];
     if (sectionIds.length > 0) {
       deleteOps.push(
-        tx.delete(testSectionQuestions).where(and(eq(testSectionQuestions.workspaceSubdomain, subdomain), inArray(testSectionQuestions.sectionId, sectionIds))),
+        tx
+          .delete(testSectionQuestions)
+          .where(
+            and(
+              eq(testSectionQuestions.workspaceSubdomain, subdomain),
+              inArray(testSectionQuestions.sectionId, sectionIds),
+            ),
+          ),
       );
     }
     await Promise.all(deleteOps);
@@ -558,7 +546,10 @@ export async function bulkSaveTests(tenant: string, records: QuestionBankTest[])
   });
 }
 
-export async function replaceTestsForWorkspace(tenant: string, records: QuestionBankTest[]): Promise<void> {
+export async function replaceTestsForWorkspace(
+  tenant: string,
+  records: QuestionBankTest[],
+): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
 
   const dedupedMap = new Map<string, QuestionBankTest>();
@@ -568,7 +559,9 @@ export async function replaceTestsForWorkspace(tenant: string, records: Question
   const uniqueRecords = Array.from(dedupedMap.values());
 
   await withTenant(subdomain, async (tx) => {
-    await tx.delete(testSectionQuestions).where(eq(testSectionQuestions.workspaceSubdomain, subdomain));
+    await tx
+      .delete(testSectionQuestions)
+      .where(eq(testSectionQuestions.workspaceSubdomain, subdomain));
     await tx.delete(testSections).where(eq(testSections.workspaceSubdomain, subdomain));
     await tx.delete(testQuestions).where(eq(testQuestions.workspaceSubdomain, subdomain));
     await tx.delete(tests).where(eq(tests.workspaceSubdomain, subdomain));
@@ -581,7 +574,7 @@ export async function replaceTestsForWorkspace(tenant: string, records: Question
         workspaceSubdomain: subdomain,
         name: record.name,
         categoryId: record.categoryId ?? null,
-        difficulty: record.difficulty ?? 'mixed',
+        difficulty: record.difficulty ?? "mixed",
         duration: record.duration ?? 60,
         examClass: record.examClass ?? null,
         classId: record.classId ?? null,

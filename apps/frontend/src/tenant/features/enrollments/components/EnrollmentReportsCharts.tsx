@@ -1,8 +1,8 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
-import { chartAxisTick } from "@/components/ui/ChartGrid";
+import { chartAxisTick } from "@/components/app/ChartGrid";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { ENROLLMENT_STATUSES } from "@/lib/data/enrollmentData";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
@@ -13,11 +13,18 @@ interface EnrollmentReportsChartsProps {
   aggregates: EnrollmentsReportAggregates;
 }
 
-export function EnrollmentReportsCharts({ aggregates }: EnrollmentReportsChartsProps): React.JSX.Element {
+export function EnrollmentReportsCharts({
+  aggregates,
+}: EnrollmentReportsChartsProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { formatCurrency } = useFinanceCurrency();
+  const { formatCurrency: _formatCurrency } = useFinanceCurrency();
   const palette = useBrandPalette();
-  const COLORS = (() => [palette.primary, palette.secondary, palette.charts[0], palette.charts[3]])();
+  const COLORS = (() => [
+    palette.primary,
+    palette.secondary,
+    palette.charts[0],
+    palette.charts[3],
+  ])();
 
   const { statusCounts, bySession } = aggregates;
 
@@ -31,10 +38,14 @@ export function EnrollmentReportsCharts({ aggregates }: EnrollmentReportsChartsP
   const statusData = ENROLLMENT_STATUSES.map((status) => ({
     name: statusLabels[status.id as keyof typeof statusLabels] ?? status.id,
     value:
-      status.id === "pending" ? statusCounts.pending
-        : status.id === "confirmed" ? statusCounts.confirmed
-          : status.id === "cancelled" ? statusCounts.cancelled
-            : status.id === "completed" ? statusCounts.completed
+      status.id === "pending"
+        ? statusCounts.pending
+        : status.id === "confirmed"
+          ? statusCounts.confirmed
+          : status.id === "cancelled"
+            ? statusCounts.cancelled
+            : status.id === "completed"
+              ? statusCounts.completed
               : 0,
   }));
 
@@ -46,8 +57,18 @@ export function EnrollmentReportsCharts({ aggregates }: EnrollmentReportsChartsP
         heightClass="h-chart-md"
       >
         <PieChart>
-          <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} paddingAngle={3}>
-            {statusData.map((status, index) => <Cell key={status.name} fill={COLORS[index % COLORS.length]} />)}
+          <Pie
+            data={statusData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={70}
+            paddingAngle={3}
+          >
+            {statusData.map((status, index) => (
+              <Cell key={status.name} fill={COLORS[index % COLORS.length]} />
+            ))}
           </Pie>
           <Tooltip formatter={(value) => [`${value}`, t("enrollments.metrics.total")]} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
@@ -59,13 +80,25 @@ export function EnrollmentReportsCharts({ aggregates }: EnrollmentReportsChartsP
         accentColor="info"
         heightClass="h-chart-md"
         empty={bySession.length === 0}
-        emptyNode={<EmptyState title={t("enrollments.reports.noData")} compact icon={null} className="h-chart-md" />}
+        emptyNode={
+          <EmptyState
+            title={t("enrollments.reports.noData")}
+            compact
+            icon={null}
+            className="h-chart-md"
+          />
+        }
       >
         <BarChart data={bySession} barSize={20}>
           <XAxis dataKey="name" tick={chartAxisTick(10)} tickLine={false} />
           <YAxis tick={chartAxisTick(10)} tickLine={false} axisLine={false} />
           <Tooltip formatter={(value) => [`${value}`, t("enrollments.reports.bySession")]} />
-          <Bar dataKey="count" fill={COLORS[0]} radius={[4, 4, 0, 0]} name={t("enrollments.reports.bySession")} />
+          <Bar
+            dataKey="count"
+            fill={COLORS[0]}
+            radius={[4, 4, 0, 0]}
+            name={t("enrollments.reports.bySession")}
+          />
         </BarChart>
       </ReportChartCard>
     </div>

@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Users, Filter, Clock, AlertTriangle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactsMetrics } from "@/tenant/features/contacts/hooks/useContacts";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 
 export interface ContactsCommandMetricsProps {
   shown: number;
@@ -38,8 +38,18 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
 
   const items = useMemo(
     () => [
-      { icon: Users, label: t("contacts.metrics.total"), value: metrics.total, accent: "primary" as const },
-      { icon: Filter, label: t("contacts.metrics.filtered"), value: shown, accent: "info" as const },
+      {
+        icon: Users,
+        label: t("contacts.metrics.total"),
+        value: metrics.total,
+        accent: "primary" as const,
+      },
+      {
+        icon: Filter,
+        label: t("contacts.metrics.filtered"),
+        value: shown,
+        accent: "info" as const,
+      },
       {
         icon: Clock,
         label: t("contacts.metrics.pendingSync"),
@@ -55,7 +65,16 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
         onClick: conflictCount > 0 ? onReviewConflicts : undefined,
       },
     ],
-    [t, metrics.total, shown, pendingCount, flushing, onFlushPending, conflictCount, onReviewConflicts],
+    [
+      t,
+      metrics.total,
+      shown,
+      pendingCount,
+      flushing,
+      onFlushPending,
+      conflictCount,
+      onReviewConflicts,
+    ],
   );
 
   return <ModuleCommandMetricsGrid items={items} />;

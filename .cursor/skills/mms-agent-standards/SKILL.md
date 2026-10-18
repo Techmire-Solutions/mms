@@ -4,7 +4,7 @@ description: Authors and verifies the MMS agent-standards corpus itself — rule
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-04
+  last-verified: 2026-10-16
 allowed-tools: Read Grep Glob Write Edit Bash(node scripts/verify-rules-integrity.mjs) Bash(bash .agent/scripts/sync-all.sh)
 ---
 
@@ -78,4 +78,6 @@ A skill nobody invokes is invisible cost: all 39 descriptions load on every turn
 
 ## Related skills
 
-`antigravity-workspace` (orientation + sync policy), `mms-code-review` (using the standards), `mms-docs-auditor` agent (drift hunting).
+`antigravity-workspace`, `mms-code-review`, `mms-ci-ratchets`.
+
+Claude agent: `mms-docs-auditor` (`.claude/agents/mms-docs-auditor.mdc`).

@@ -19,10 +19,7 @@ const mockContact: Contact = {
 describe("ContactDetailEmailsSection Component", () => {
   it("renders email rows correctly", () => {
     const html = renderToStaticMarkup(
-      <ContactDetailEmailsSection
-        contact={mockContact}
-        emailLabels={["personal", "work"]}
-      />,
+      <ContactDetailEmailsSection contact={mockContact} emailLabels={["personal", "work"]} />,
     );
 
     expect(html).toContain("zayd@example.com");

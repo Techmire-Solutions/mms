@@ -37,7 +37,7 @@ vi.mock("@/tenant/features/contacts/hooks/useContactFormDraft", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/FormModal", () => ({
+vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     children,
@@ -65,18 +65,14 @@ vi.mock("./ContactFormFooterStart", () => ({
   ContactFormFooterStart: () => <div data-testid="footer-start">Footer Start</div>,
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 
 describe("ContactForm Component", () => {
   it("renders create contact form modal", () => {
     const html = renderToStaticMarkup(
-      <ContactForm
-        open={true}
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <ContactForm open={true} onClose={vi.fn()} onSave={vi.fn()} />,
     );
 
     expect(html).toContain("contacts.form.addTitle");

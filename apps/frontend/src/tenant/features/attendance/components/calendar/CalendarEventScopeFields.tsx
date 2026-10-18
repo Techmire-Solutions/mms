@@ -1,6 +1,6 @@
 import React from "react";
 import { ACADEMIC_CALENDAR_SCOPES, type AcademicCalendarScope } from "@mms/shared";
-import { Field, FormSelect } from "@/components/ui/FormPrimitives";
+import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
@@ -20,7 +20,11 @@ export interface CalendarEventScopeFieldsProps {
 }
 
 /** Scope cascade for a calendar event: workspace → session → class → section. */
-export function CalendarEventScopeFields({ value, onChange, disabled }: CalendarEventScopeFieldsProps): React.JSX.Element {
+export function CalendarEventScopeFields({
+  value,
+  onChange,
+  disabled,
+}: CalendarEventScopeFieldsProps): React.JSX.Element {
   const { t } = useTranslation();
   const terms = useAcademicTerms();
   const sessions = useSessionsCollection();
@@ -41,10 +45,19 @@ export function CalendarEventScopeFields({ value, onChange, disabled }: Calendar
           value={value.scope}
           disabled={disabled}
           onChange={(next) => {
-            const scope = (ACADEMIC_CALENDAR_SCOPES as readonly string[]).includes(next) ? (next as AcademicCalendarScope) : "workspace";
-            onChange({ ...value, scope, ...(scope === "workspace" ? { sessionId: "", classId: "", sectionId: "" } : {}) });
+            const scope = (ACADEMIC_CALENDAR_SCOPES as readonly string[]).includes(next)
+              ? (next as AcademicCalendarScope)
+              : "workspace";
+            onChange({
+              ...value,
+              scope,
+              ...(scope === "workspace" ? { sessionId: "", classId: "", sectionId: "" } : {}),
+            });
           }}
-          options={ACADEMIC_CALENDAR_SCOPES.map((scope) => ({ value: scope, label: scopeLabel[scope] }))}
+          options={ACADEMIC_CALENDAR_SCOPES.map((scope) => ({
+            value: scope,
+            label: scopeLabel[scope],
+          }))}
         />
       </Field>
       {needsSession ? (
@@ -52,7 +65,9 @@ export function CalendarEventScopeFields({ value, onChange, disabled }: Calendar
           sessions={sessions}
           value={value}
           onChange={(next) => onChange({ ...value, ...next })}
-          levels={value.scope === "section" ? "section" : value.scope === "class" ? "class" : "session"}
+          levels={
+            value.scope === "section" ? "section" : value.scope === "class" ? "class" : "session"
+          }
           idPrefix="calendar-event"
           required
           disabled={disabled}

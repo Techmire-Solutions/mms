@@ -2,28 +2,31 @@ import React, { useEffect, Suspense } from "react";
 import { isApexHost } from "@mms/shared/tenantUtils";
 import { SETTINGS_PREVIEW_EVENT } from "@/lib/settingsPreview";
 import { getAppDomain } from "@/lib/config/tenantConfig";
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { useIsTenantHost } from '@/lib/host/useIsTenantHost';
-const UserNotRegisteredError = React.lazy(() => import('@/components/routing/UserNotRegisteredError'));
-const HostRoutes = React.lazy(() => import('@/components/routing/HostRoutes'));
-import RouterBridge from '@/components/routing/RouterBridge';
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useIsTenantHost } from "@/lib/host/useIsTenantHost";
+const UserNotRegisteredError = React.lazy(
+  () => import("@/components/routing/UserNotRegisteredError"),
+);
+const HostRoutes = React.lazy(() => import("@/components/routing/HostRoutes"));
+import RouterBridge from "@/components/routing/RouterBridge";
 import { isEntryPath } from "@/lib/config/routes";
-import RouteStatusFallback from '@/components/routing/RouteStatusFallback';
-import { AppProviders } from '@/providers/AppProviders';
-import { NetworkStatusIndicator } from '@/components/ui/NetworkStatusIndicator';
+import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
+import { AppProviders } from "@/providers/AppProviders";
+import { NetworkStatusIndicator } from "@/components/app/NetworkStatusIndicator";
 
 const AuthenticatedApp = (): React.JSX.Element | null => {
   const isTenantHost = useIsTenantHost();
   const { isLoadingAuth, authError, authChecked } = useAuth();
 
   if (isTenantHost) {
-    const isEntry = typeof window !== 'undefined' && isEntryPath(window.location.pathname, { isApex: false });
+    const isEntry =
+      typeof window !== "undefined" && isEntryPath(window.location.pathname, { isApex: false });
     const bootLoading = !isEntry && isLoadingAuth && !authChecked;
     if (bootLoading) {
       return <RouteStatusFallback fullScreen />;
     }
 
-    if (authError?.type === 'user_not_registered') {
+    if (authError?.type === "user_not_registered") {
       return (
         <Suspense fallback={<RouteStatusFallback fullScreen />}>
           <UserNotRegisteredError />
@@ -45,13 +48,15 @@ const AuthenticatedApp = (): React.JSX.Element | null => {
 
 function App(): React.JSX.Element {
   const isApexBoot =
-    typeof window !== "undefined" &&
-    isApexHost(window.location.hostname, getAppDomain());
+    typeof window !== "undefined" && isApexHost(window.location.hostname, getAppDomain());
 
   useEffect(() => {
     const applyTheme = isApexBoot
-      ? () => import('@/platform/lib/brandingEntryTheme').then(({ applyApexPlatformTheme }) => applyApexPlatformTheme('en'))
-      : () => import('@/lib/brandingTheme').then(({ applyAppTheme }) => applyAppTheme());
+      ? () =>
+          import("@/lib/branding/apexPlatformTheme").then(({ applyApexPlatformTheme }) =>
+            applyApexPlatformTheme("en"),
+          )
+      : () => import("@/lib/brandingTheme").then(({ applyAppTheme }) => applyAppTheme());
 
     void applyTheme();
 

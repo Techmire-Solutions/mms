@@ -1,38 +1,32 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { and, eq, sql } from 'drizzle-orm';
-import { readFileSync } from 'node:fs';
-import { resolve, dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { and, eq, sql } from "drizzle-orm";
+import { readFileSync } from "node:fs";
+import { resolve, dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   initializeDatabaseConnection,
   pingDatabase,
   closeDatabase,
   beginLongLivedTenantTransaction,
-} from '../../db/dbConnection.js';
-import { applyDrizzleMigrations } from '../../db/dbInit.js';
-import {
-  workspaces,
-  students,
-  sessions,
-  sessionClasses,
-  enrollments,
-} from '../../db/schema.js';
+} from "../../db/dbConnection.js";
+import { applyDrizzleMigrations } from "../../db/dbInit.js";
+import { workspaces, students, sessions, sessionClasses, enrollments } from "../../db/schema.js";
 import {
   cascadeSoftDeleteEnrollmentsForStudents,
   restoreCascadedEnrollmentsForStudents,
-} from '../../db/repositories/studentEnrollmentCascade.js';
+} from "../../db/repositories/studentEnrollmentCascade.js";
 
-const TEST_SUBDOMAIN = 'stu-cascade-test';
-const STUDENT_ID = 'stu-cascade-1';
-const SESSION_ID = 'ses-cascade-1';
-const CLASS_ID = 'cls-cascade-1';
-const ENROLLMENT_ID = 'enr-cascade-1';
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const TEST_SUBDOMAIN = "stu-cascade-test";
+const STUDENT_ID = "stu-cascade-1";
+const SESSION_ID = "ses-cascade-1";
+const CLASS_ID = "cls-cascade-1";
+const ENROLLMENT_ID = "enr-cascade-1";
+const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 function applyDatabaseUrlFromEnvFile(): void {
   if (process.env.DATABASE_URL) return;
   try {
-    const content = readFileSync(join(backendRoot, '.env'), 'utf-8');
+    const content = readFileSync(join(backendRoot, ".env"), "utf-8");
     const match = content.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
     if (match) process.env.DATABASE_URL = match[1].trim();
   } catch {
@@ -66,9 +60,9 @@ beforeAll(async () => {
     await seedTx.tx
       .insert(workspaces)
       .values({
-        id: 'ws-stu-cascade-test',
+        id: "ws-stu-cascade-test",
         subdomain: TEST_SUBDOMAIN,
-        madrasaName: 'Student Cascade Test Workspace',
+        madrasaName: "Student Cascade Test Workspace",
         enabled: true,
       })
       .onConflictDoNothing();
@@ -90,15 +84,9 @@ afterAll(async () => {
       await cleanupTx.tx
         .delete(sessionClasses)
         .where(eq(sessionClasses.workspaceSubdomain, TEST_SUBDOMAIN));
-      await cleanupTx.tx
-        .delete(sessions)
-        .where(eq(sessions.workspaceSubdomain, TEST_SUBDOMAIN));
-      await cleanupTx.tx
-        .delete(students)
-        .where(eq(students.workspaceSubdomain, TEST_SUBDOMAIN));
-      await cleanupTx.tx
-        .delete(workspaces)
-        .where(eq(workspaces.subdomain, TEST_SUBDOMAIN));
+      await cleanupTx.tx.delete(sessions).where(eq(sessions.workspaceSubdomain, TEST_SUBDOMAIN));
+      await cleanupTx.tx.delete(students).where(eq(students.workspaceSubdomain, TEST_SUBDOMAIN));
+      await cleanupTx.tx.delete(workspaces).where(eq(workspaces.subdomain, TEST_SUBDOMAIN));
       await cleanupTx.commit();
     } catch {
       await cleanupTx.rollback().catch(() => undefined);
@@ -107,8 +95,8 @@ afterAll(async () => {
   await closeDatabase();
 });
 
-describe('student soft-delete enrollment cascade (real Postgres)', () => {
-  it('cascades soft-delete to enrollments and restores only cascade-deleted rows', async (ctx) => {
+describe("student soft-delete enrollment cascade (real Postgres)", () => {
+  it("cascades soft-delete to enrollments and restores only cascade-deleted rows", async (ctx) => {
     if (!dbAvailable) {
       ctx.skip();
       return;
@@ -123,40 +111,36 @@ describe('student soft-delete enrollment cascade (real Postgres)', () => {
       await setupTx.tx
         .delete(sessionClasses)
         .where(eq(sessionClasses.workspaceSubdomain, TEST_SUBDOMAIN));
-      await setupTx.tx
-        .delete(sessions)
-        .where(eq(sessions.workspaceSubdomain, TEST_SUBDOMAIN));
-      await setupTx.tx
-        .delete(students)
-        .where(eq(students.workspaceSubdomain, TEST_SUBDOMAIN));
+      await setupTx.tx.delete(sessions).where(eq(sessions.workspaceSubdomain, TEST_SUBDOMAIN));
+      await setupTx.tx.delete(students).where(eq(students.workspaceSubdomain, TEST_SUBDOMAIN));
 
       await setupTx.tx.insert(students).values({
         id: STUDENT_ID,
         workspaceSubdomain: TEST_SUBDOMAIN,
-        grNumber: 'gr-cascade-001',
-        status: 'active',
+        grNumber: "gr-cascade-001",
+        status: "active",
       });
       await setupTx.tx.insert(sessions).values({
         id: SESSION_ID,
         workspaceSubdomain: TEST_SUBDOMAIN,
-        name: 'Cascade Session',
+        name: "Cascade Session",
       });
       await setupTx.tx.insert(sessionClasses).values({
         id: CLASS_ID,
         workspaceSubdomain: TEST_SUBDOMAIN,
         sessionId: SESSION_ID,
-        name: 'Cascade Class',
+        name: "Cascade Class",
       });
       await setupTx.tx.insert(enrollments).values({
         id: ENROLLMENT_ID,
         workspaceSubdomain: TEST_SUBDOMAIN,
         studentId: STUDENT_ID,
-        studentName: 'Cascade Student',
+        studentName: "Cascade Student",
         sessionId: SESSION_ID,
-        sessionName: 'Cascade Session',
+        sessionName: "Cascade Session",
         classId: CLASS_ID,
-        className: 'Cascade Class',
-        enrolledDate: '2026-01-01',
+        className: "Cascade Class",
+        enrolledDate: "2026-01-01",
       });
       await setupTx.commit();
     } catch (error) {
@@ -164,29 +148,24 @@ describe('student soft-delete enrollment cascade (real Postgres)', () => {
       throw error;
     }
 
-    const deletedAt = new Date('2026-03-01T12:00:00.000Z');
+    const deletedAt = new Date("2026-03-01T12:00:00.000Z");
     const cascadeTx = await beginLongLivedTenantTransaction(TEST_SUBDOMAIN);
     try {
       await cascadeTx.tx
         .update(students)
         .set({
           deletedAt,
-          deletedBy: 'u-admin',
-          deletionReason: 'Left country',
+          deletedBy: "u-admin",
+          deletionReason: "Left country",
         })
-        .where(
-          and(
-            eq(students.workspaceSubdomain, TEST_SUBDOMAIN),
-            eq(students.id, STUDENT_ID),
-          ),
-        );
+        .where(and(eq(students.workspaceSubdomain, TEST_SUBDOMAIN), eq(students.id, STUDENT_ID)));
 
       await cascadeSoftDeleteEnrollmentsForStudents(
         cascadeTx.tx,
         TEST_SUBDOMAIN,
         [STUDENT_ID],
-        'u-admin',
-        'Left country',
+        "u-admin",
+        "Left country",
         deletedAt,
       );
       await cascadeTx.commit();
@@ -243,7 +222,7 @@ describe('student soft-delete enrollment cascade (real Postgres)', () => {
     const restoreTx = await beginLongLivedTenantTransaction(TEST_SUBDOMAIN);
     try {
       await restoreTx.tx.execute(sql`SELECT set_config('app.include_deleted', 'true', true)`);
-      const restoredAt = new Date('2026-03-02T12:00:00.000Z');
+      const restoredAt = new Date("2026-03-02T12:00:00.000Z");
       await restoreTx.tx
         .update(students)
         .set({
@@ -251,20 +230,15 @@ describe('student soft-delete enrollment cascade (real Postgres)', () => {
           deletedBy: null,
           deletionReason: null,
           restoredAt,
-          restoredBy: 'u-admin',
+          restoredBy: "u-admin",
         })
-        .where(
-          and(
-            eq(students.workspaceSubdomain, TEST_SUBDOMAIN),
-            eq(students.id, STUDENT_ID),
-          ),
-        );
+        .where(and(eq(students.workspaceSubdomain, TEST_SUBDOMAIN), eq(students.id, STUDENT_ID)));
 
       await restoreCascadedEnrollmentsForStudents(
         restoreTx.tx,
         TEST_SUBDOMAIN,
         [STUDENT_ID],
-        'u-admin',
+        "u-admin",
         restoredAt,
       );
 

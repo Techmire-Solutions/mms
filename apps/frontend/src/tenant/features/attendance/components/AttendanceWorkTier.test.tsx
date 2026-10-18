@@ -20,7 +20,7 @@ vi.mock("@/tenant/features/attendance/components/AuditLog", () => ({
   AuditLog: () => <div data-testid="audit-log">Audit Log Component</div>,
 }));
 
-vi.mock("@/components/ui/SubTabBar", () => ({
+vi.mock("@/components/app/SubTabBar", () => ({
   SubTabBar: ({ tabs }: { tabs: { label: string }[] }) => (
     <div data-testid="sub-tab-bar">{tabs.map((t) => t.label).join(", ")}</div>
   ),
@@ -35,7 +35,7 @@ describe("AttendanceWorkTier Component", () => {
         roleLabel="Admin"
         teacherRoleText={null}
         accountantRoleText={null}
-        filters={{ date: "2025-01-01", session: "all", classId: "all" } as any}
+        filters={{ date: "2025-01-01", session: "all", classId: "all" } as unknown as never}
         onFiltersChange={vi.fn()}
         activeOpsTab="mark"
         operationsTabs={[

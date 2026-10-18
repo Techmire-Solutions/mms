@@ -55,7 +55,6 @@ export type {
   Session,
 };
 
-
 export function validateSessions(sessionInput: unknown): Session[] {
   if (!Array.isArray(sessionInput)) return [];
   const valid: Session[] = [];

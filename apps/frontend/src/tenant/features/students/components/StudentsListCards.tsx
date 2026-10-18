@@ -2,15 +2,14 @@ import type React from "react";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { useStudentEntityDescriptor } from "@/tenant/features/students/hooks/useStudentEntityDescriptor";
-import type { StudentsListCardsProps } from "@/tenant/features/students/components/studentsListTypes";
+import type { StudentsListCardsProps } from "@/tenant/features/students/lib/studentsListTypes";
 
 export type { StudentsListCardsProps };
 
 import { StudentCard } from "@/tenant/features/students/components/StudentCard";
 export type { StudentCardComponentProps } from "@/tenant/features/students/components/StudentCard";
-
 
 export function StudentsListCards({
   paginatedStudents,
@@ -78,4 +77,3 @@ export function StudentsListCards({
     />
   );
 }
-

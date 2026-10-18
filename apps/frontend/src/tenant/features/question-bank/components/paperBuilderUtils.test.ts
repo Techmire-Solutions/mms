@@ -9,7 +9,7 @@ import {
   getPaperQuestionIds,
   normalizePaperSections,
   type PaperSection,
-} from "@/tenant/features/question-bank/components/paperBuilderUtils";
+} from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 const sections: PaperSection[] = [
   { id: "section-a", title: "A", instructions: "", questionIds: ["q1", "q2"] },
@@ -33,7 +33,12 @@ describe("paperBuilderUtils", () => {
   it("normalizes paper sections before persistence", () => {
     expect(
       normalizePaperSections([
-        { id: "section-a", title: "  ", instructions: "  Read carefully  ", questionIds: ["q1", ""] },
+        {
+          id: "section-a",
+          title: "  ",
+          instructions: "  Read carefully  ",
+          questionIds: ["q1", ""],
+        },
         { id: "section-b", title: "  Essay  ", instructions: "  ", questionIds: [] },
       ]),
     ).toEqual([
@@ -110,7 +115,7 @@ describe("paperBuilderUtils", () => {
    */
   describe("openPaperPrintWindow print-script contract", () => {
     const src = readFileSync(
-      path.resolve(import.meta.dirname, "./paperBuilderUtils.ts"),
+      path.resolve(import.meta.dirname, "../lib/paperBuilderUtils.ts"),
       "utf-8",
     );
 

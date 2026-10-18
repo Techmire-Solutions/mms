@@ -1,8 +1,11 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
-import { MODULE_METRICS_DEFAULT_PERIOD_DAYS, type AttendanceCommandMetricsSnapshot } from '@mms/shared';
-import { attendance } from '../schema.js';
-import { withTenantRead } from '../tenant-context.js';
-import { loadCountableAttendanceSql } from './attendanceCountableSql.js';
+import { and, eq, isNull, sql } from "drizzle-orm";
+import {
+  MODULE_METRICS_DEFAULT_PERIOD_DAYS,
+  type AttendanceCommandMetricsSnapshot,
+} from "@mms/shared";
+import { attendance } from "../schema.js";
+import { withTenantRead } from "../tenant-context.js";
+import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -21,16 +24,11 @@ export async function aggregateAttendanceCommandMetrics(
     options?.selectedDate && DATE_RE.test(options.selectedDate)
       ? options.selectedDate
       : new Date().toISOString().slice(0, 10);
-  const periodStart = new Date(Date.now() - periodDays * 86_400_000)
-    .toISOString()
-    .slice(0, 10);
+  const periodStart = new Date(Date.now() - periodDays * 86_400_000).toISOString().slice(0, 10);
 
   const countable = (await loadCountableAttendanceSql(subdomain))('"attendance"');
   return withTenantRead(subdomain, async (tx) => {
-    const active = and(
-      eq(attendance.workspaceSubdomain, subdomain),
-      isNull(attendance.deletedAt),
-    );
+    const active = and(eq(attendance.workspaceSubdomain, subdomain), isNull(attendance.deletedAt));
 
     const [row] = await tx
       .select({

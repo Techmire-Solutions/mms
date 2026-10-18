@@ -2,20 +2,20 @@
  * @file facultySoftDeleteUseCases.ts
  * @description Soft-delete faculty members (single + bulk) with subordinate guards.
  */
-import { dedupeTrimmedIds, type Faculty } from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../lib/livePush.js';
-import type { FacultyRepository } from '../repository/facultyRepository.js';
-import { facultyRepository } from '../repository/facultyRepositoryAdapter.js';
-import { nowIso } from '../../lib/softDeleteHelpers.js';
-import { restoreFacultyById, bulkRestoreFaculty } from './facultyRestoreUseCases.js';
-import { cascadeFacultySoftDeleteSideEffects } from './facultySoftDeleteCascade.js';
+import { dedupeTrimmedIds, type Faculty } from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
+import type { FacultyRepository } from "../repository/facultyRepository.js";
+import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
+import { nowIso } from "../../lib/softDeleteHelpers.js";
+import { restoreFacultyById, bulkRestoreFaculty } from "./facultyRestoreUseCases.js";
+import { cascadeFacultySoftDeleteSideEffects } from "./facultySoftDeleteCascade.js";
 import {
   guardBulkSubordinatesOnDelete,
   guardSubordinatesOnDelete,
   SubordinateReassignmentError,
-} from './facultySoftDeleteGuards.js';
+} from "./facultySoftDeleteGuards.js";
 
 export { restoreFacultyById, bulkRestoreFaculty };
 export { SubordinateReassignmentError };
@@ -54,7 +54,7 @@ export async function softDeleteFacultyById(
     return { succeeded: 1, failed: 0 };
   });
 
-  if (result.succeeded > 0) await broadcastCollection('faculty');
+  if (result.succeeded > 0) await broadcastCollection("faculty");
   return result.succeeded === 1;
 }
 
@@ -104,6 +104,6 @@ export async function bulkSoftDeleteFaculty(
     return { succeeded, failed };
   });
 
-  if (result.succeeded > 0) await broadcastCollection('faculty');
+  if (result.succeeded > 0) await broadcastCollection("faculty");
   return result;
 }

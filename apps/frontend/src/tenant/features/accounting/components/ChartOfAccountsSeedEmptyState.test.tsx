@@ -10,7 +10,13 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/notify", () => ({
-  notify: { success: mocks.notifySuccess, error: mocks.notifyError, info: vi.fn(), warning: vi.fn(), message: vi.fn() },
+  notify: {
+    success: mocks.notifySuccess,
+    error: mocks.notifyError,
+    info: vi.fn(),
+    warning: vi.fn(),
+    message: vi.fn(),
+  },
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -21,9 +27,24 @@ vi.mock("@/tenant/features/accounting/hooks/useSeedDefaultChart", () => ({
   useSeedDefaultChart: () => ({ mutateAsync: mocks.seedMutateAsync, isPending: false }),
 }));
 
-vi.mock("@/components/ui/ConfirmAlertDialog", () => ({
-  ConfirmAlertDialog: ({ open, title, onConfirm }: { open: boolean; title: string; onConfirm: () => Promise<void> }) =>
-    open ? <button type="button" data-testid="confirm" aria-label={title} onClick={() => void onConfirm()} /> : null,
+vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+  ConfirmAlertDialog: ({
+    open,
+    title,
+    onConfirm,
+  }: {
+    open: boolean;
+    title: string;
+    onConfirm: () => Promise<void>;
+  }) =>
+    open ? (
+      <button
+        type="button"
+        data-testid="confirm"
+        aria-label={title}
+        onClick={() => void onConfirm()}
+      />
+    ) : null,
 }));
 
 import { ChartOfAccountsSeedEmptyState } from "./ChartOfAccountsSeedEmptyState";
@@ -51,7 +72,11 @@ describe("ChartOfAccountsSeedEmptyState", () => {
   });
 
   const render = (canWrite: boolean): void => {
-    act(() => root.render(<ChartOfAccountsSeedEmptyState canWrite={canWrite} onAddAccount={onAddAccount} />));
+    act(() =>
+      root.render(
+        <ChartOfAccountsSeedEmptyState canWrite={canWrite} onAddAccount={onAddAccount} />,
+      ),
+    );
   };
 
   const button = (label: string): HTMLButtonElement | undefined =>
@@ -86,7 +111,8 @@ describe("ChartOfAccountsSeedEmptyState", () => {
 
     expect(mocks.seedMutateAsync).toHaveBeenCalledTimes(1);
     expect(mocks.notifySuccess).toHaveBeenCalledWith("accounting.coa.seed.success", {
-      description: "accounting.coa.seed.successCount accounting.coa.seed.retainedEarningsSet accounting.coa.seed.cashAccountSet",
+      description:
+        "accounting.coa.seed.successCount accounting.coa.seed.retainedEarningsSet accounting.coa.seed.cashAccountSet",
     });
   });
 

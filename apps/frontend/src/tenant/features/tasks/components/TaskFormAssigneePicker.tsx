@@ -1,9 +1,9 @@
-import React from 'react';
-import { UserCheck } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FormSelect } from '@/components/ui/FormSelect';
-import { Badge } from '@/components/ui/badge';
-import type { EligibleAssigneeItem } from '@/tenant/features/tasks/hooks/useTasksApi';
+import React from "react";
+import { UserCheck } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Badge } from "@/components/ui/badge";
+import type { EligibleAssigneeItem } from "@/tenant/features/tasks/hooks/useTasksApi";
 
 export interface SelectedAssignee {
   facultyId: string;
@@ -29,7 +29,7 @@ export function TaskFormAssigneePicker({
   return (
     <div>
       <label htmlFor={pickerId} className="block text-sm font-medium text-foreground mb-1">
-        {t('tasks.assignees')}
+        {t("tasks.assignees")}
       </label>
       <FormSelect
         id={pickerId}
@@ -37,12 +37,12 @@ export function TaskFormAssigneePicker({
         onChange={(facultyId) => {
           if (facultyId) onAddAssignee(facultyId);
         }}
-        placeholder={t('tasks.noAssignees')}
+        placeholder={t("tasks.noAssignees")}
         options={eligibleList
           .filter((item) => !selectedAssignees.some((a) => a.facultyId === item.facultyId))
           .map((f) => ({
             value: f.facultyId,
-            label: `${f.name}${f.isSelf ? ' • Self' : ''}`,
+            label: `${f.name}${f.isSelf ? " • Self" : ""}`,
           }))}
       />
 

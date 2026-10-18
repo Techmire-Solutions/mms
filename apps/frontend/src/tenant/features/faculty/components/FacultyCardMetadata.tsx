@@ -1,9 +1,9 @@
 import type { Faculty, FacultyCustomField, ModuleColumnRegistryEntry } from "@mms/shared";
-import { EntityCardMetadata } from "@/components/ui/EntityCardMetadata";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
-import type { EntityDescriptor } from "@/types/entityRegistry";
+import { EntityCardMetadata } from "@/components/app/EntityCardMetadata";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getFacultyVisibleWorkColumns } from "@/tenant/features/faculty/components/facultyListVisibleColumns";
+import { getFacultyVisibleWorkColumns } from "@/tenant/features/faculty/lib/facultyListVisibleColumns";
 import { renderFacultyWorkColumnValue } from "@/tenant/features/faculty/components/facultyWorkColumnCell";
 
 export interface FacultyCardMetadataProps {
@@ -63,5 +63,3 @@ export function FacultyCardMetadata({
     />
   );
 }
-
-

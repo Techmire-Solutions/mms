@@ -1,15 +1,15 @@
-import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
-import { platformAiQueryRequestSchema } from '@mms/shared';
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { platformAiQueryRequestSchema } from "@mms/shared";
 import {
   authenticatePlatform,
   requirePlatformPermission,
   type PlatformAuthenticatedRequest,
-} from '../../middleware/authenticatePlatform.js';
-import { parseRequest, replyValidationError } from '../../lib/zodRequest.js';
-import { synthesizePlatformAiDiagnostics } from '../../services/platform/platformAiService.js';
-import { AUTH_RATE_LIMIT } from '../../lib/rateLimitConfig.js';
-import { createStrictRateLimitGuard } from '../../lib/rateLimitGuard.js';
-import { insertPlatformActivityLog } from '../../db/repositories/platformActivityLogsRepository.js';
+} from "../../middleware/authenticatePlatform.js";
+import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
+import { synthesizePlatformAiDiagnostics } from "../../services/platform/platformAiService.js";
+import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
+import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
+import { insertPlatformActivityLog } from "../../platform/use-cases/platformUseCases.js";
 
 export default async function platformAiRoutes(
   fastify: FastifyInstance,
@@ -18,9 +18,9 @@ export default async function platformAiRoutes(
   const aiRateLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
 
   fastify.post(
-    '/query',
+    "/query",
     {
-      preHandler: [authenticatePlatform, requirePlatformPermission('system'), aiRateLimit],
+      preHandler: [authenticatePlatform, requirePlatformPermission("system"), aiRateLimit],
     },
     async (request, reply) => {
       const parsed = parseRequest(platformAiQueryRequestSchema, request.body);
@@ -34,17 +34,17 @@ export default async function platformAiRoutes(
         await insertPlatformActivityLog({
           userId: platformUser.id,
           userEmail: platformUser.email,
-          action: 'ai_query',
-          targetResource: 'platform_ai',
-          metadataMessage: 'Platform AI diagnostics query',
+          action: "ai_query",
+          targetResource: "platform_ai",
+          metadataMessage: "Platform AI diagnostics query",
           ipAddress: request.ip,
         });
         return reply.send(result);
       } catch (error: unknown) {
         void error;
         return reply.status(500).send({
-          type: 'internal_error',
-          message: 'Failed to generate platform diagnostics',
+          type: "internal_error",
+          message: "Failed to generate platform diagnostics",
         });
       }
     },

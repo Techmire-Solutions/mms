@@ -1,19 +1,21 @@
 import React from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { Account, SalaryEntryInput } from "@mms/shared";
-import { FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
-import { useAccountQuickCreate } from "./useAccountQuickCreate";
+import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
 
 interface SpecializedEntrySalaryAccountFieldsProps {
   form: UseFormReturn<SalaryEntryInput>;
   accounts: Account[];
   expenseAccounts: Account[];
   paymentAccounts: Account[];
-  onAccountsChange?: (updater: Account[] | ((prev: Account[]) => Account[])) => Promise<void> | void;
+  onAccountsChange?: (
+    updater: Account[] | ((prev: Account[]) => Account[]),
+  ) => Promise<void> | void;
 }
 
 export function SpecializedEntrySalaryAccountFields({
@@ -62,7 +64,9 @@ export function SpecializedEntrySalaryAccountFields({
                   })),
                 ]}
                 canAdd={accountQuickCreate.canAdd}
-                onOpenAdd={() => accountQuickCreate.openCreate({ kind: "field", field: "debitAcc" })}
+                onOpenAdd={() =>
+                  accountQuickCreate.openCreate({ kind: "field", field: "debitAcc" })
+                }
                 addAriaLabel={t("accounting.coa.addAccount")}
               />
             </FormControl>
@@ -93,7 +97,9 @@ export function SpecializedEntrySalaryAccountFields({
                   })),
                 ]}
                 canAdd={accountQuickCreate.canAdd}
-                onOpenAdd={() => accountQuickCreate.openCreate({ kind: "field", field: "creditAcc" })}
+                onOpenAdd={() =>
+                  accountQuickCreate.openCreate({ kind: "field", field: "creditAcc" })
+                }
                 addAriaLabel={t("accounting.coa.addAccount")}
               />
             </FormControl>

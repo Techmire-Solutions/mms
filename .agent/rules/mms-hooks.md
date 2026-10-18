@@ -10,6 +10,7 @@ description: Frontend React hooks standards, TanStack Query factories, page cont
 ## 1. Server State (TanStack Query)
 - **Query Factories & Toast:** Wrap colocated `queryOptions` / `mutationOptions` factories (`@/lib/query/*`). Toast via `notify.*` + `t()` at call site after `mutateAsync`; ban global `MutationCache` toast buses.
 - **Cross-Module Facades:** Hook implementations stay in `tenant/features/{module}/hooks/`. Cross-feature imports must use `@/tenant/hooks/collections/{module}` facades. Platform hooks colocate in `@/platform/hooks/` and must not cross tenant boundaries.
+- **Where Logic Lives:** Feature logic files belong in `features/{module}/hooks/` (hooks) or `features/{module}/lib/` (helpers, drafts, types) — never directly under `features/{module}/components/`, which holds UI only (`check:frontend-structure`).
 
 ## 2. Legacy Data Layer (`useLiveCollection` Ban)
 - **Hard Ban on REST Entities:** `useLiveCollection` and `getCollection` are banned for REST-migrated entities (Contacts, Students, Faculty, Finance). Restricted solely to non-migrated settings singletons (`branding`, `global_settings`).
@@ -38,8 +39,5 @@ description: Frontend React hooks standards, TanStack Query factories, page cont
 ## 8. New Hooks Checklist
 - Pass `signal` to `apiFetch`; set `enabled: isAuthenticated` (or `isPlatformAuthenticated`).
 - Zero ad-hoc polling loops (use WebSockets or documented `refetchInterval`).
-- Enforce strict 200-line hard cap per hook file.
+- Enforce the 300-line hard cap per hook file (prefer ≤220).
 
-## 9. Workflow & Output Speed Rules
-- **Zero Output Bloat:** Output surgical diffs or targeted snippets only. Never rewrite entire files unless creating a new file from scratch. Omit conversational filler.
-- **Verification Gates:** Verify with `pnpm typecheck` and scoped tests before marking tasks done. If standards are modified, execute `bash .agent/scripts/sync-all.sh` and verify with `node scripts/verify-rules-integrity.mjs`.

@@ -1,26 +1,26 @@
-import React, { type JSX } from 'react';
-import type { ModuleColumnRegistryEntry } from '@mms/shared';
-import { AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { MessagingFiltersMenuButton } from './MessagingFiltersMenuButton';
-import { WorkTaskToolbar } from '@/components/common/work';
-import type { WorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
-import { useTranslation } from '@/hooks/useTranslation';
-import { cn } from '@/lib/utils';
-import { type ModuleColumnCustomizerLabels } from '@/components/ui/ModuleColumnCustomizer';
+import React, { type JSX } from "react";
+import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MessagingFiltersMenuButton } from "./MessagingFiltersMenuButton";
+import { WorkTaskToolbar } from "@/components/common/work";
+import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
+import { type ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 
-export const MESSAGING_WORK_SEARCH_INPUT_ID = 'messaging-work-search';
+export const MESSAGING_WORK_SEARCH_INPUT_ID = "messaging-work-search";
 
 export interface MessagingListFiltersProps {
   viewMode: WorkDirectoryViewMode;
   onViewModeChange: (mode: WorkDirectoryViewMode) => void;
   search: string;
   onSearchChange: (value: string) => void;
-  channel: 'all' | 'sms' | 'whatsapp' | 'email';
-  onChannelChange: (channel: 'all' | 'sms' | 'whatsapp' | 'email') => void;
+  channel: "all" | "sms" | "whatsapp" | "email";
+  onChannelChange: (channel: "all" | "sms" | "whatsapp" | "email") => void;
   channelOptions: Array<{ value: string; label: string }>;
-  status: 'all' | 'sent' | 'delivered' | 'failed' | 'skipped';
-  onStatusChange: (status: 'all' | 'sent' | 'delivered' | 'failed' | 'skipped') => void;
+  status: "all" | "sent" | "delivered" | "failed" | "skipped";
+  onStatusChange: (status: "all" | "sent" | "delivered" | "failed" | "skipped") => void;
   statusOptions: Array<{ value: string; label: string }>;
   category: string;
   onCategoryChange: (category: string) => void;
@@ -74,34 +74,36 @@ export function MessagingListFilters({
     const end = new Date();
     const start = new Date();
     if (days === 0) {
-      const todayStr = end.toISOString().split('T')[0]!;
+      const todayStr = end.toISOString().split("T")[0]!;
       onStartDateChange(todayStr);
       onEndDateChange(todayStr);
       return;
     }
     start.setDate(end.getDate() - days);
-    onStartDateChange(start.toISOString().split('T')[0]!);
-    onEndDateChange(end.toISOString().split('T')[0]!);
+    onStartDateChange(start.toISOString().split("T")[0]!);
+    onEndDateChange(end.toISOString().split("T")[0]!);
   };
 
   const clearDates = (): void => {
-    onStartDateChange('');
-    onEndDateChange('');
+    onStartDateChange("");
+    onEndDateChange("");
   };
 
-  const isFailedOnly = status === 'failed';
+  const isFailedOnly = status === "failed";
 
   return (
     <WorkTaskToolbar
-      shownCountLabel={shownCount != null ? t("contacts.shownCount", { count: shownCount }) : undefined}
-      regionLabel={t('messaging.title')}
+      shownCountLabel={
+        shownCount != null ? t("contacts.shownCount", { count: shownCount }) : undefined
+      }
+      regionLabel={t("messaging.title")}
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder={t('messaging.search.placeholder')}
+      searchPlaceholder={t("messaging.search.placeholder")}
       searchId="messaging-work-search"
       hasActiveFilters={hasActiveFilters}
       onClearFilters={onClearFilters}
-      clearFiltersLabel={t('common.clearFilters')}
+      clearFiltersLabel={t("common.clearFilters")}
       filterChips={filterChips}
       filterButton={
         <MessagingFiltersMenuButton
@@ -125,30 +127,38 @@ export function MessagingListFilters({
           t={t}
         />
       }
-      viewModeToggle={viewMode !== undefined && onViewModeChange !== undefined ? {
-        viewMode: viewMode,
-        onViewModeChange: onViewModeChange,
-      } : undefined}
-      columnCustomizer={columnRegistry && updateUserColumnLayout && columnCustomizerLabels ? {
-        registry: columnRegistry,
-        onUpdate: updateUserColumnLayout,
-        onReset: onResetColumnLayout,
-        labels: columnCustomizerLabels,
-      } : undefined}
+      viewModeToggle={
+        viewMode !== undefined && onViewModeChange !== undefined
+          ? {
+              viewMode: viewMode,
+              onViewModeChange: onViewModeChange,
+            }
+          : undefined
+      }
+      columnCustomizer={
+        columnRegistry && updateUserColumnLayout && columnCustomizerLabels
+          ? {
+              registry: columnRegistry,
+              onUpdate: updateUserColumnLayout,
+              onReset: onResetColumnLayout,
+              labels: columnCustomizerLabels,
+            }
+          : undefined
+      }
     >
       <Button
-        variant={isFailedOnly ? 'default' : 'outline'}
+        variant={isFailedOnly ? "default" : "outline"}
         size="sm"
-        onClick={() => onStatusChange(isFailedOnly ? 'all' : 'failed')}
+        onClick={() => onStatusChange(isFailedOnly ? "all" : "failed")}
         className={cn(
           "gap-2 h-9",
-          isFailedOnly 
+          isFailedOnly
             ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent shadow-sm"
-            : "border-destructive/30 text-destructive hover:bg-destructive/10"
+            : "border-destructive/30 text-destructive hover:bg-destructive/10",
         )}
       >
         <AlertTriangle className="w-4 h-4" />
-        <span>{t('messaging.status.failed')}</span>
+        <span>{t("messaging.status.failed")}</span>
       </Button>
     </WorkTaskToolbar>
   );

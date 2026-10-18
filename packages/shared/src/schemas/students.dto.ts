@@ -1,19 +1,29 @@
-import { z } from 'zod';
-import { stripStudentClientSoftDeleteFields } from '../studentUtils.js';
-import { deepSanitizeStrings } from './sanitize.js';
-import {
-  STUDENT_WRITE_SYSTEM_KEYS,
-} from '../studentValidation.js';
+import { z } from "zod";
+import { stripStudentClientSoftDeleteFields } from "../students/studentUtils.js";
+import { deepSanitizeStrings } from "./sanitize.js";
+import { STUDENT_WRITE_SYSTEM_KEYS } from "../students/studentValidation.js";
 
 const STUDENT_WRITE_SYSTEM_KEY_SET = new Set<string>(STUDENT_WRITE_SYSTEM_KEYS);
 
 const studentWriteBaseObjectSchema = z
   .object({
     id: z.union([z.string(), z.number()]).optional(),
-    contactId: z.union([z.string(), z.number()]).nullish().transform((v) => (v === null ? undefined : v)),
-    fatherContactId: z.union([z.string(), z.number()]).nullish().transform((v) => (v === null ? undefined : v)),
-    motherContactId: z.union([z.string(), z.number()]).nullish().transform((v) => (v === null ? undefined : v)),
-    guardianContactId: z.union([z.string(), z.number()]).nullish().transform((v) => (v === null ? undefined : v)),
+    contactId: z
+      .union([z.string(), z.number()])
+      .nullish()
+      .transform((v) => (v === null ? undefined : v)),
+    fatherContactId: z
+      .union([z.string(), z.number()])
+      .nullish()
+      .transform((v) => (v === null ? undefined : v)),
+    motherContactId: z
+      .union([z.string(), z.number()])
+      .nullish()
+      .transform((v) => (v === null ? undefined : v)),
+    guardianContactId: z
+      .union([z.string(), z.number()])
+      .nullish()
+      .transform((v) => (v === null ? undefined : v)),
     studentId: z.string().optional(),
     grNumber: z.string().optional(),
     status: z.string().optional(),
@@ -58,7 +68,7 @@ export function buildStudentWriteSchema(extraFieldKeys: string[] = []): z.ZodTyp
       : studentWriteBaseObjectSchema;
 
   return z.preprocess((raw) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
     const stripped = stripStudentClientSoftDeleteFields(raw as Record<string, unknown>);
     return deepSanitizeStrings(stripped);
   }, shapeSchema);
@@ -72,7 +82,7 @@ export const studentWriteSchema = buildStudentWriteSchema();
  * Used at the @ts-rest contract gateway boundary.
  */
 export const studentWireWriteSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   const stripped = stripStudentClientSoftDeleteFields(raw as Record<string, unknown>);
   return deepSanitizeStrings(stripped);
 }, studentWriteBaseObjectSchema.passthrough());
@@ -83,41 +93,57 @@ export const studentWireWriteSchema = z.preprocess((raw) => {
  */
 export const studentsBulkEnrollBodySchema = z
   .object({
-    studentIds: z.array(z.union([z.string(), z.number()])).min(1).max(500),
+    studentIds: z
+      .array(z.union([z.string(), z.number()]))
+      .min(1)
+      .max(500),
     sessionId: z.string().min(1),
     classId: z.string().min(1).optional(),
     sectionId: z.string().min(1).optional(),
-    mode: z.enum(['add', 'remove']).default('add'),
+    mode: z.enum(["add", "remove"]).default("add"),
   })
   .strict()
-  .refine((body) => body.mode === 'remove' || Boolean(body.classId), { message: 'Class is required', path: ['classId'] });
+  .refine((body) => body.mode === "remove" || Boolean(body.classId), {
+    message: "Class is required",
+    path: ["classId"],
+  });
 
 export type StudentsBulkEnrollBody = z.infer<typeof studentsBulkEnrollBodySchema>;
 /** Bulk-enroll target chosen in the UI (student ids come from the selection). */
-export type StudentsBulkEnrollPlacement = Omit<StudentsBulkEnrollBody, 'studentIds'>;
+export type StudentsBulkEnrollPlacement = Omit<StudentsBulkEnrollBody, "studentIds">;
 
-const studentsDuplicateCheckBodyBaseSchema = z.object({
-  excludeId: z.string().optional(),
-  contactId: z.union([z.string(), z.number()]).optional(),
-  email: z.string().max(320).optional(),
-  name: z.string().max(500).optional(),
-  dob: z.string().max(32).optional(),
-  grNumber: z.string().max(64).optional(),
-}).strict();
+const studentsDuplicateCheckBodyBaseSchema = z
+  .object({
+    excludeId: z.string().optional(),
+    contactId: z.union([z.string(), z.number()]).optional(),
+    email: z.string().max(320).optional(),
+    name: z.string().max(500).optional(),
+    dob: z.string().max(32).optional(),
+    grNumber: z.string().max(64).optional(),
+  })
+  .strict();
 
 export type StudentsDuplicateCheckBody = z.infer<typeof studentsDuplicateCheckBodyBaseSchema>;
 
-export const studentsDuplicateCheckBodySchema: z.ZodType<StudentsDuplicateCheckBody> = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, studentsDuplicateCheckBodyBaseSchema);
+export const studentsDuplicateCheckBodySchema: z.ZodType<StudentsDuplicateCheckBody> = z.preprocess(
+  (raw) => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+    return deepSanitizeStrings(raw);
+  },
+  studentsDuplicateCheckBodyBaseSchema,
+);
 
-const studentsBulkStatusBaseSchema = z.object({
-  ids: z.array(z.union([z.string(), z.number()])).min(1).max(500),
-  status: z.string().min(1).max(64),
-}).strict();
+const studentsBulkStatusBaseSchema = z
+  .object({
+    ids: z
+      .array(z.union([z.string(), z.number()]))
+      .min(1)
+      .max(500),
+    status: z.string().min(1).max(64),
+  })
+  .strict();
 
 export const studentsBulkStatusSchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, studentsBulkStatusBaseSchema);

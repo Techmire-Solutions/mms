@@ -3,8 +3,8 @@ import { ReceiptText } from "lucide-react";
 import type { StandardMessagingRecipient } from "@mms/shared";
 import { getOutstandingAmountForInvoice } from "@mms/shared";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { ModuleRowActionsMenu } from "@/components/ui/ModuleRowActionsMenu";
-import { PersonMessagingRowActionsExtras } from "@/components/ui/PersonMessagingRowActionsExtras";
+import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
+import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Invoice } from "@/lib/data/financeData";
 
@@ -78,9 +78,13 @@ export function InvoicesRowActions({
       triggerClassName={triggerClassName}
       extras={
         <>
-          {!showDeleted && canWrite && invoice.status !== "paid" && invoice.status !== "cancelled" ? (
+          {!showDeleted &&
+          canWrite &&
+          invoice.status !== "paid" &&
+          invoice.status !== "cancelled" ? (
             <DropdownMenuItem onClick={() => onRecord(invoice)}>
-              <ReceiptText className="w-3.5 h-3.5 me-2" /> {t("finance.recordPaymentFor", { id: invoice.id })}
+              <ReceiptText className="w-3.5 h-3.5 me-2" />{" "}
+              {t("finance.recordPaymentFor", { id: invoice.id })}
             </DropdownMenuItem>
           ) : null}
           <PersonMessagingRowActionsExtras

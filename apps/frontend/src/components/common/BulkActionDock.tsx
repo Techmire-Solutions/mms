@@ -10,7 +10,7 @@ import {
   BulkSelectionMessagingActions,
   BulkSelectionStatusAction,
   type BulkSelectionMessageChannel,
-} from "@/components/ui/BulkSelectionActions";
+} from "@/components/app/BulkSelectionActions";
 
 export type BulkActionDockPlacement = "floating" | "inline";
 export type BulkActionDockTone = "glass" | "tint" | "plain";
@@ -140,9 +140,7 @@ export function BulkActionDock({
           exit={{ opacity: 0, y: enterY }}
           transition={{ duration: 0.15, ease: "easeOut" }}
           className={cn(
-            placement === "floating"
-              ? PLACEMENT.floating
-              : cn(PLACEMENT.inline, INLINE_TONE[tone]),
+            placement === "floating" ? PLACEMENT.floating : cn(PLACEMENT.inline, INLINE_TONE[tone]),
             className,
           )}
         >

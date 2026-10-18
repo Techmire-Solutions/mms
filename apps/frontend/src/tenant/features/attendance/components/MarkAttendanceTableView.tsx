@@ -1,12 +1,12 @@
 import React from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "@/components/app/EmptyState";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import type { WorkBatchTableColumn } from "@/components/common/work/workBatchTableTypes";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getAttendanceStatusInfo, type AttendanceStatus } from "@/lib/data/attendanceData";
 import { MarkAttendanceFieldControl } from "./MarkAttendanceFieldControl";
 import type { ModuleFieldDef } from "@mms/shared";
-import type { AttendanceRow } from "./markAttendanceTypes";
+import type { AttendanceRow } from "../lib/markAttendanceTypes";
 
 export interface MarkAttendanceTableViewProps {
   rows: AttendanceRow[];
@@ -22,7 +22,7 @@ export function MarkAttendanceTableView({
   onFieldChange,
 }: MarkAttendanceTableViewProps): React.JSX.Element {
   const { t } = useTranslation();
-  
+
   const columns: WorkBatchTableColumn<AttendanceRow & { id: string }>[] = [
     {
       id: "rollNo",

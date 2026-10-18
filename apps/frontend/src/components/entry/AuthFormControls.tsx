@@ -17,23 +17,29 @@ export function AuthBackLink({
   const commonClasses =
     "inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 font-medium text-primary transition-colors hover:text-primary/80 hover:underline disabled:pointer-events-none disabled:opacity-50";
 
+  const content = (
+    <>
+      <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
+      {label}
+    </>
+  );
+
   return (
     <p className="text-center text-xs text-muted-foreground">
       {to ? (
-        <Link to={to} className={commonClasses}>
-          <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
-          {label}
-        </Link>
+        <Button variant="link" asChild className={commonClasses}>
+          <Link to={to}>{content}</Link>
+        </Button>
       ) : (
-        <button
+        <Button
           type="button"
+          variant="link"
           onClick={onClick}
           disabled={disabled}
           className={commonClasses}
         >
-          <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
-          {label}
-        </button>
+          {content}
+        </Button>
       )}
     </p>
   );

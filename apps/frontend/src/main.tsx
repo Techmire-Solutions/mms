@@ -1,29 +1,31 @@
-import './bootstrapZodCsp'
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from '@/App'
-import '@/index.css'
-import { isApexHost } from '@mms/shared/tenantUtils'
-import { getAppDomain } from '@/lib/config/tenantConfig'
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+import "./bootstrapZodCsp";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "@/App";
+import "@/index.css";
+import { isApexHost } from "@mms/shared/tenantUtils";
+import { getAppDomain } from "@/lib/config/tenantConfig";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 
 // Error reporting is non-interactive: initialize it without blocking first
 // paint. The Sentry SDK (~170KB) now lives behind the lazy
 // clientErrorReporting -> clientErrorReportingCore dynamic-import boundary.
-void import('@/lib/clientErrorReporting').then(({ initErrorReporting }) => initErrorReporting())
+void import("@/lib/clientErrorReporting").then(({ initErrorReporting }) => initErrorReporting());
 
-void import('@/lib/documentFavicon').then(({ applyPlatformDocumentFavicon, applyTenantDocumentFavicon }) => {
-  if (typeof window !== 'undefined' && isApexHost(window.location.hostname, getAppDomain())) {
-    applyPlatformDocumentFavicon();
-    void import('@/platform/lib/brandingEntryTheme').then(({ applyApexPlatformTheme }) => {
-      applyApexPlatformTheme('en');
-    });
-  } else {
-    // Drop the static platform favicon from index.html before React mounts.
-    applyTenantDocumentFavicon({});
-    void import('@/lib/brandingTheme').then(({ applyAppTheme }) => applyAppTheme());
-  }
-});
+void import("@/lib/documentFavicon").then(
+  ({ applyPlatformDocumentFavicon, applyTenantDocumentFavicon }) => {
+    if (typeof window !== "undefined" && isApexHost(window.location.hostname, getAppDomain())) {
+      applyPlatformDocumentFavicon();
+      void import("@/lib/branding/apexPlatformTheme").then(({ applyApexPlatformTheme }) => {
+        applyApexPlatformTheme("en");
+      });
+    } else {
+      // Drop the static platform favicon from index.html before React mounts.
+      applyTenantDocumentFavicon({});
+      void import("@/lib/brandingTheme").then(({ applyAppTheme }) => applyAppTheme());
+    }
+  },
+);
 
 // DEV ONLY: suppress the Recharts v3 false-positive dimension warnings that
 // fire during mount. The global console must stay unpatched in production —
@@ -32,8 +34,8 @@ if (import.meta.env.DEV) {
   const originalWarn = console.warn;
   console.warn = (...args: unknown[]) => {
     if (
-      typeof args[0] === 'string' &&
-      args[0].includes('The width(-1) and height(-1) of chart should be greater than 0')
+      typeof args[0] === "string" &&
+      args[0].includes("The width(-1) and height(-1) of chart should be greater than 0")
     ) {
       return;
     }
@@ -41,7 +43,7 @@ if (import.meta.env.DEV) {
   };
 }
 
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Failed to find the root element with ID 'root'.");
 }
@@ -60,11 +62,5 @@ ReactDOM.createRoot(rootElement).render(
   import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
 );
 
-// Register Service Worker in production browser environment for offline client resilience
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !import.meta.env.DEV) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // Non-blocking fallback
-    });
-  });
-}
+// The service worker is registered by vite-plugin-pwa (`injectRegister: 'auto'`,
+// which injects `/registerSW.js`). Do not register it a second time here.

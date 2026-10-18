@@ -17,10 +17,7 @@ export {
   requeueAllContactsSyncConflicts,
 } from "@/lib/contacts/contactsSyncOutboxConflicts";
 
-export {
-  enqueueContactsOutbox,
-  flushContactsOutbox,
-} from "@/lib/contacts/contactsSyncOutboxFlush";
+export { enqueueContactsOutbox, flushContactsOutbox } from "@/lib/contacts/contactsSyncOutboxFlush";
 
 export function describeContactsOutboxEntry(entry: ContactsOutboxEntry): {
   title: string;

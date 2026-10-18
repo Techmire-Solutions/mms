@@ -5,9 +5,9 @@
 import React from "react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SubTabBar, type SubTab } from "@/components/ui/SubTabBar";
-import { DetailDrawerRestoreOrEditAction } from "@/components/ui/DetailDrawerArchiveChrome";
-import { DrawerUpdatedStamp } from "@/components/ui/DrawerUpdatedStamp";
+import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
+import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";
+import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import { ContactArchivedBanner } from "@/tenant/features/contacts/components/ContactArchivedBanner";
 
 export interface ContactDetailDrawerHeaderActionsProps {
@@ -91,4 +91,3 @@ export function ContactDetailDrawerFooter({
     />
   );
 }
-

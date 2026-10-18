@@ -3,19 +3,28 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ExaminationFormFields } from "./ExaminationFormFields";
 
-
 vi.mock("@/hooks/useAcademicCatalog", () => ({
   useAcademicCatalogItems: () => ({ data: [] }),
   useExaminationSubjects: () => ({ data: [] }),
-  useAcademicCatalogActions: () => ({ save: vi.fn(), remove: vi.fn(), restore: vi.fn(), isPending: false }),
+  useAcademicCatalogActions: () => ({
+    save: vi.fn(),
+    remove: vi.fn(),
+    restore: vi.fn(),
+    isPending: false,
+  }),
 }));
 
 vi.mock("@/tenant/hooks/usePermissions", () => ({
-  useModulePermissions: () => ({ canRead: true, canWrite: true, canDelete: false, canEditSetup: false }),
+  useModulePermissions: () => ({
+    canRead: true,
+    canWrite: true,
+    canDelete: false,
+    canEditSetup: false,
+  }),
 }));
 
-vi.mock("@/components/ui/SectionCard", () => ({
-  SectionCard: ({ children, title }: any) => (
+vi.mock("@/components/app/SectionCard", () => ({
+  SectionCard: ({ children, title }: { children?: React.ReactNode; title?: React.ReactNode }) => (
     <div data-testid="section-card">
       <h3>{title}</h3>
       {children}
@@ -23,8 +32,8 @@ vi.mock("@/components/ui/SectionCard", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormPrimitives", () => ({
-  Field: ({ children, label }: any) => (
+vi.mock("@/components/app/FormPrimitives", () => ({
+  Field: ({ children, label }: { children?: React.ReactNode; label?: React.ReactNode }) => (
     <div>
       <label>{label}</label>
       {children}
@@ -32,10 +41,19 @@ vi.mock("@/components/ui/FormPrimitives", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/FormSelect", () => ({
-  FormSelect: ({ options, value }: any) => (
-    <select data-testid="form-select" defaultValue={value}>
-      {options.map((o: any) => (
+vi.mock("@/components/app/FormSelect", () => ({
+  FormSelect: ({
+    options,
+    value,
+  }: {
+    options: Array<{ value: string; label: React.ReactNode }>;
+    value?: unknown;
+  }) => (
+    <select
+      data-testid="form-select"
+      defaultValue={value as string | number | readonly string[] | undefined}
+    >
+      {options.map((o: { value: string; label: React.ReactNode }) => (
         <option key={o.value} value={o.value}>
           {o.label}
         </option>
@@ -44,15 +62,20 @@ vi.mock("@/components/ui/FormSelect", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/DatePicker", () => ({
-  DatePicker: ({ value }: any) => <input data-testid="date-picker" defaultValue={value} />,
+vi.mock("@/components/app/DatePicker", () => ({
+  DatePicker: ({ value }: { value?: unknown }) => (
+    <input
+      data-testid="date-picker"
+      defaultValue={value as string | number | readonly string[] | undefined}
+    />
+  ),
 }));
 
 describe("ExaminationFormFields Component", () => {
   it("renders exam input fields and assigned classes", () => {
     const html = renderToStaticMarkup(
       <ExaminationFormFields
-        t={((key: string) => key) as any}
+        t={((key: string) => key) as unknown as never}
         errors={{}}
         examDraft={{
           name: "Annual Exam",

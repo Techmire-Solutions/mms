@@ -8,17 +8,14 @@ import {
   type MessageTemplate,
   type Message,
   type WhatsAppTemplate,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   bulkSaveMessageTemplates,
   bulkSaveMessageLogs,
   listMessageTemplatesByWorkspace,
   listMessageLogsByWorkspace,
-} from '../repositories/messagingRepository.js';
+} from "../repositories/messagingRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -38,34 +35,34 @@ async function discoverTenantSubdomains(): Promise<Set<string>> {
 }
 
 function asTemplate(raw: unknown): MessageTemplate | null {
-  if (!raw || typeof raw !== 'object') return null;
+  if (!raw || typeof raw !== "object") return null;
   const row = raw as Record<string, unknown>;
   const parsed = messageTemplateSchema.safeParse({
-    id: String(row.id ?? ''),
-    label: String(row.label ?? ''),
-    body: String(row.body ?? ''),
-    category: row.category ?? 'general',
-    channel: row.channel ?? 'all',
-    updatedAt: typeof row.updatedAt === 'string' ? row.updatedAt : undefined,
+    id: String(row.id ?? ""),
+    label: String(row.label ?? ""),
+    body: String(row.body ?? ""),
+    category: row.category ?? "general",
+    channel: row.channel ?? "all",
+    updatedAt: typeof row.updatedAt === "string" ? row.updatedAt : undefined,
   });
   return parsed.success ? parsed.data : null;
 }
 
 function whatsappToTemplate(raw: unknown): MessageTemplate | null {
-  if (!raw || typeof raw !== 'object') return null;
+  if (!raw || typeof raw !== "object") return null;
   const row = raw as WhatsAppTemplate;
   if (!row.id || !row.label || !row.body) return null;
   return {
     id: String(row.id),
     label: String(row.label),
     body: String(row.body),
-    category: 'general',
-    channel: 'whatsapp',
+    category: "general",
+    channel: "whatsapp",
   };
 }
 
 function asMessage(raw: unknown): Message | null {
-  if (!raw || typeof raw !== 'object') return null;
+  if (!raw || typeof raw !== "object") return null;
   const parsed = messageRecordSchema.safeParse(raw);
   return parsed.success ? (parsed.data as Message) : null;
 }
@@ -87,7 +84,7 @@ export async function runMigration035(): Promise<void> {
   const storageNames = await listCollectionStorageNames();
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
     const templateCandidates: MessageTemplate[] = [];
     const logCandidates: Message[] = [];
 
@@ -96,10 +93,10 @@ export async function runMigration035(): Promise<void> {
       const logical = storageName.slice(prefix.length);
 
       const isTemplates =
-        logical === 'whatsappTemplates' ||
-        logical.startsWith('whatsappTemplates_u:') ||
-        logical.startsWith('messages_templates_u:');
-      const isLogs = logical === 'messages' || logical.startsWith('messages_u:');
+        logical === "whatsappTemplates" ||
+        logical.startsWith("whatsappTemplates_u:") ||
+        logical.startsWith("messages_templates_u:");
+      const isLogs = logical === "messages" || logical.startsWith("messages_u:");
 
       if (!isTemplates && !isLogs) continue;
 
@@ -108,9 +105,10 @@ export async function runMigration035(): Promise<void> {
 
       if (isTemplates) {
         for (const row of rows) {
-          const tpl = logical.startsWith('whatsappTemplates') || logical === 'whatsappTemplates'
-            ? whatsappToTemplate(row) ?? asTemplate(row)
-            : asTemplate(row) ?? whatsappToTemplate(row);
+          const tpl =
+            logical.startsWith("whatsappTemplates") || logical === "whatsappTemplates"
+              ? (whatsappToTemplate(row) ?? asTemplate(row))
+              : (asTemplate(row) ?? whatsappToTemplate(row));
           if (tpl) templateCandidates.push(tpl);
         }
       }
@@ -145,6 +143,6 @@ export async function runMigration035(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 035] No legacy messaging collections to import.');
+    console.log("[Migration 035] No legacy messaging collections to import.");
   }
 }

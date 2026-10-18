@@ -36,6 +36,9 @@ regexes = [
 #  - frontend `mms_*` constants are localStorage KEYS, not credentials;
 #    `generic-api-key` matches them because they contain "key" and are long
 #    identifiers.
+#  - the extracted template-data modules (`lib/*TemplateData.ts`) carry the same
+#    reviewed `key:` preset identifiers as the `*TemplateEditor.tsx` components
+#    they were split from.
 #  - test files use obviously-fake values throughout.
 #  - .env.example contains commented placeholders only.
 #  - scratch/naming_report.txt was removed from the tree but remains in history;
@@ -46,6 +49,7 @@ paths = [
   '''apps/frontend/src/lib/contactConfig/prefsStorage\.ts''',
   '''apps/frontend/src/lib/twoFactor\.ts''',
   '''apps/frontend/src/tenant/features/(hasanat|examinations)/components/.*TemplateEditor\.tsx''',
+  '''apps/frontend/src/tenant/features/(hasanat|examinations)/lib/.*TemplateData\.ts''',
   '''apps/backend/src/__tests__/.*\.ts''',
   '''packages/shared/src/__tests__/.*\.ts''',
   '''apps/backend/\.env\.example''',

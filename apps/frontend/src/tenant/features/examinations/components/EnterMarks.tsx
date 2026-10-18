@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionFilterField } from "@/components/common/SectionFilterField";
 import { cn } from "@/lib/utils";
-import { useEnterMarksStudents } from "./useEnterMarksStudents";
+import { useEnterMarksStudents } from "../hooks/useEnterMarksStudents";
 import { EnterMarksTable } from "./EnterMarksTable";
 
 export interface EnterMarksProps {
@@ -25,7 +25,9 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
   const { classNamesById, students: allStudents, sections } = useEnterMarksStudents(exam);
   const [sectionId, setSectionId] = useState<string>("");
   // Saving only the visible section never overwrites marks of other sections (bulk upsert by id).
-  const students = sectionId ? allStudents.filter((student) => student.sectionId === sectionId) : allStudents;
+  const students = sectionId
+    ? allStudents.filter((student) => student.sectionId === sectionId)
+    : allStudents;
 
   useEffect(() => {
     if (!exam) return;
@@ -130,7 +132,12 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
             </span>
           </div>
 
-          <SectionFilterField id="marks-section" sections={sections} value={sectionId} onChange={setSectionId} />
+          <SectionFilterField
+            id="marks-section"
+            sections={sections}
+            value={sectionId}
+            onChange={setSectionId}
+          />
 
           <EnterMarksTable
             exam={exam}

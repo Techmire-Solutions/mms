@@ -1,7 +1,7 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
-  - 'e2e'
+  - "apps/*"
+  - "packages/*"
+  - "e2e"
 
 confirmModulesPurge: false
 
@@ -30,9 +30,29 @@ minimumReleaseAgeExclude:
   - pg-connection-string@2.14.0
   - pg-protocol@1.15.0
   - pg@8.22.0
-  - '@types/node@26.0.1'
+  - "@types/node@26.0.1"
   - react-hook-form@7.80.0
   - fastify@5.11.2
+  - "@oxc-transform-react/binding-android-arm-eabi@0.154.0"
+  - "@oxc-transform-react/binding-android-arm64@0.154.0"
+  - "@oxc-transform-react/binding-darwin-arm64@0.154.0"
+  - "@oxc-transform-react/binding-darwin-x64@0.154.0"
+  - "@oxc-transform-react/binding-freebsd-x64@0.154.0"
+  - "@oxc-transform-react/binding-linux-arm-gnueabihf@0.154.0"
+  - "@oxc-transform-react/binding-linux-arm-musleabihf@0.154.0"
+  - "@oxc-transform-react/binding-linux-arm64-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-arm64-musl@0.154.0"
+  - "@oxc-transform-react/binding-linux-ppc64-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-riscv64-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-riscv64-musl@0.154.0"
+  - "@oxc-transform-react/binding-linux-s390x-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-x64-gnu@0.154.0"
+  - "@oxc-transform-react/binding-linux-x64-musl@0.154.0"
+  - "@oxc-transform-react/binding-openharmony-arm64@0.154.0"
+  - "@oxc-transform-react/binding-win32-arm64-msvc@0.154.0"
+  - "@oxc-transform-react/binding-win32-ia32-msvc@0.154.0"
+  - "@oxc-transform-react/binding-win32-x64-msvc@0.154.0"
+  - oxc-transform-react@0.154.0
 
 peerDependencyRules:
   allowAny:

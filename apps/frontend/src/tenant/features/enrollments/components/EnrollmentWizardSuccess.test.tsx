@@ -7,9 +7,9 @@ describe("EnrollmentWizardSuccess Component", () => {
   it("renders success submission message", () => {
     const html = renderToStaticMarkup(
       <EnrollmentWizardSuccess
-        t={((k: string) => k) as any}
-        student={{ id: "std-1", name: "Bilal Ahmad" } as any}
-        session={{ id: "ses-1", name: "Spring 2025" } as any}
+        t={((k: string) => k) as unknown as never}
+        student={{ id: "std-1", name: "Bilal Ahmad" } as unknown as never}
+        session={{ id: "ses-1", name: "Spring 2025" } as unknown as never}
       />,
     );
 

@@ -16,12 +16,12 @@ declare global {
   }
 }
 
-type CoreModule = typeof import('./clientErrorReportingCore');
+type CoreModule = typeof import("./clientErrorReportingCore");
 
 let corePromise: Promise<CoreModule> | null = null;
 
 function loadCore(): Promise<CoreModule> {
-  corePromise ??= import('./clientErrorReportingCore');
+  corePromise ??= import("./clientErrorReportingCore");
   return corePromise;
 }
 
@@ -31,7 +31,7 @@ function loadCore(): Promise<CoreModule> {
 export function initErrorReporting(): void {
   const dsn =
     (import.meta.env.VITE_SENTRY_DSN as string | undefined) ||
-    (typeof window !== 'undefined' ? window._MMS_SENTRY_DSN : undefined);
+    (typeof window !== "undefined" ? window._MMS_SENTRY_DSN : undefined);
   if (!dsn) {
     return;
   }
@@ -41,11 +41,11 @@ export function initErrorReporting(): void {
       try {
         core.initSentry(dsn);
       } catch (initError) {
-        console.error('[MMS] Failed to initialize Sentry:', initError);
+        console.error("[MMS] Failed to initialize Sentry:", initError);
       }
     })
     .catch((loadError) => {
-      console.error('[MMS] Failed to load error-reporting module:', loadError);
+      console.error("[MMS] Failed to load error-reporting module:", loadError);
     });
 }
 
@@ -55,7 +55,7 @@ export function initErrorReporting(): void {
  */
 export function reportClientError(error: unknown, context?: Record<string, unknown>): void {
   if (import.meta.env.DEV) {
-    console.error('[MMS client error]', error, context);
+    console.error("[MMS client error]", error, context);
     return;
   }
 
@@ -65,7 +65,7 @@ export function reportClientError(error: unknown, context?: Record<string, unkno
       // Reporting must never mask the original failure.
     });
 
-  console.error('[MMS]', error instanceof Error ? error.message : String(error));
+  console.error("[MMS]", error instanceof Error ? error.message : String(error));
 }
 
 /**
@@ -76,7 +76,7 @@ export function reportClientError(error: unknown, context?: Record<string, unkno
  */
 export function reportClientWarn(error: unknown, context?: Record<string, unknown>): void {
   if (import.meta.env.DEV) {
-    console.warn('[MMS client warning]', error, context);
+    console.warn("[MMS client warning]", error, context);
     return;
   }
 
@@ -86,5 +86,5 @@ export function reportClientWarn(error: unknown, context?: Record<string, unknow
       // Reporting must never mask the original failure.
     });
 
-  console.warn('[MMS]', error instanceof Error ? error.message : String(error));
+  console.warn("[MMS]", error instanceof Error ? error.message : String(error));
 }

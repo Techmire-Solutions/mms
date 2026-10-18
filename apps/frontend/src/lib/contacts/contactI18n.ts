@@ -20,10 +20,7 @@ export {
   resolveSyncFieldLabel,
 } from "@/lib/contacts/contactOptionI18n";
 
-export {
-  DUPLICATE_REASON_I18N,
-  ACTIVITY_TYPE_I18N,
-} from "@/lib/contacts/contactI18nKeys";
+export { DUPLICATE_REASON_I18N, ACTIVITY_TYPE_I18N } from "@/lib/contacts/contactI18nKeys";
 
 export {
   formatContactDobWithAge,

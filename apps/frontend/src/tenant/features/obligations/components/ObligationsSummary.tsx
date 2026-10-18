@@ -17,17 +17,19 @@ import {
 } from "@/tenant/features/obligations/hooks/useObligationsApi";
 import { formatMoney } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { ModuleCommandMetricsGrid } from "@/components/ui/ModuleCommandMetricsGrid";
+import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/ErrorState";
+import { ErrorState } from "@/components/app/ErrorState";
 import { ObligationsRepDuesSection } from "./ObligationsRepDuesSection";
 
 const ObligationsSummaryChartsSection = lazy(() =>
-  import("./ObligationsSummaryChartsSection").then((mod) => ({ default: mod.ObligationsSummaryChartsSection })),
+  import("./ObligationsSummaryChartsSection").then((mod) => ({
+    default: mod.ObligationsSummaryChartsSection,
+  })),
 );
 import { ObligationsTypeBreakdownSection } from "./ObligationsTypeBreakdownSection";
 import { ObligationsWakalaSummarySection } from "./ObligationsWakalaSummarySection";
-import { useObligationsSummaryModel } from "./useObligationsSummaryModel";
+import { useObligationsSummaryModel } from "../hooks/useObligationsSummaryModel";
 import { ObligationsSummaryFilters } from "./ObligationsSummaryFilters";
 import { PinnedWidgets } from "@/tenant/components/reports";
 
@@ -53,7 +55,12 @@ export function ObligationsSummary() {
   };
 
   const model = useObligationsSummaryModel(
-    collections, obligationTypes, reps, mujtahids, wakalaTypes, distributions,
+    collections,
+    obligationTypes,
+    reps,
+    mujtahids,
+    wakalaTypes,
+    distributions,
   );
 
   const isError =
@@ -110,10 +117,30 @@ export function ObligationsSummary() {
       <section aria-label={model.t("obligations.summary.kpi.aria")}>
         <ModuleCommandMetricsGrid
           items={[
-            { icon: Receipt, label: model.t("obligations.summary.kpi.totalCollections"), value: model.totalRecords, accent: "primary" },
-            { icon: TrendingUp, label: model.t("obligations.summary.kpi.totalAmountReceived"), value: formatCurrency(model.totalAmount), accent: "success" },
-            { icon: Users, label: model.t("obligations.summary.kpi.activeReps"), value: model.uniqueReps, accent: "info" },
-            { icon: Layers, label: model.t("obligations.summary.kpi.obligationTypes"), value: model.typeBreakdown.length, accent: "warning" },
+            {
+              icon: Receipt,
+              label: model.t("obligations.summary.kpi.totalCollections"),
+              value: model.totalRecords,
+              accent: "primary",
+            },
+            {
+              icon: TrendingUp,
+              label: model.t("obligations.summary.kpi.totalAmountReceived"),
+              value: formatCurrency(model.totalAmount),
+              accent: "success",
+            },
+            {
+              icon: Users,
+              label: model.t("obligations.summary.kpi.activeReps"),
+              value: model.uniqueReps,
+              accent: "info",
+            },
+            {
+              icon: Layers,
+              label: model.t("obligations.summary.kpi.obligationTypes"),
+              value: model.typeBreakdown.length,
+              accent: "warning",
+            },
           ]}
         />
       </section>

@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import { formatDate, formatMoney } from "@mms/shared";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Session } from "@/lib/data/sessionsData";
-import { getSessionEnrollmentTotals } from "@/tenant/features/sessions/components/sessionsWorkListViewsShared";
+import { getSessionEnrollmentTotals } from "@/tenant/features/sessions/lib/sessionsWorkListViewsShared";
 
 /** Enrollment totals + capacity meta for the Session card progress bar. */
 export function getSessionCapacityMeta(session: Session) {

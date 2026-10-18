@@ -14,7 +14,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import {
+  useWorkDirectoryViewMode,
+  type WorkDirectoryViewMode,
+} from "@/hooks/useWorkDirectoryViewMode";
 
 export interface SyncDiff {
   field: string;
@@ -73,34 +76,45 @@ export function ContactsSyncConflictDiffBody({
 
       {local && diffs.length > 0 ? (
         <>
-          <p className="text-xs font-semibold text-foreground">{t("contacts.sync.conflictDiffTitle")}</p>
+          <p className="text-xs font-semibold text-foreground">
+            {t("contacts.sync.conflictDiffTitle")}
+          </p>
           {viewMode === "cards" ? (
             <div className="space-y-3">
               {diffs.map((diff) => (
-                <article
-                  key={diff.field}
-                  className={`${WORK_SURFACE_INNER} space-y-2 p-3`}
-                >
-                  <p className="text-xs font-semibold text-foreground">{resolveSyncFieldLabel(diff.field, t)}</p>
+                <article key={diff.field} className={`${WORK_SURFACE_INNER} space-y-2 p-3`}>
+                  <p className="text-xs font-semibold text-foreground">
+                    {resolveSyncFieldLabel(diff.field, t)}
+                  </p>
                   <div className="space-y-2">
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">{t("contacts.sync.conflictLocal")}</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">
+                        {t("contacts.sync.conflictLocal")}
+                      </p>
                       <Button
                         type="button"
                         variant="ghost"
                         onClick={() => onTogglePick(diff.field, "local")}
-                        className={conflictPickButtonClass(fieldPicks[diff.field] === "local", false)}
+                        className={conflictPickButtonClass(
+                          fieldPicks[diff.field] === "local",
+                          false,
+                        )}
                       >
                         {diff.local}
                       </Button>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">{t("contacts.sync.conflictServer")}</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">
+                        {t("contacts.sync.conflictServer")}
+                      </p>
                       <Button
                         type="button"
                         variant="ghost"
                         onClick={() => onTogglePick(diff.field, "server")}
-                        className={conflictPickButtonClass(fieldPicks[diff.field] === "server", false)}
+                        className={conflictPickButtonClass(
+                          fieldPicks[diff.field] === "server",
+                          false,
+                        )}
                       >
                         {diff.server}
                       </Button>
@@ -127,7 +141,10 @@ export function ContactsSyncConflictDiffBody({
                 </TableHeader>
                 <TableBody>
                   {diffs.map((diff) => (
-                    <TableRow key={diff.field} className="border-t border-border/50 hover:bg-transparent">
+                    <TableRow
+                      key={diff.field}
+                      className="border-t border-border/50 hover:bg-transparent"
+                    >
                       <TableCell className="py-1 pe-2 font-medium">
                         {resolveSyncFieldLabel(diff.field, t)}
                       </TableCell>
@@ -136,7 +153,10 @@ export function ContactsSyncConflictDiffBody({
                           type="button"
                           variant="ghost"
                           onClick={() => onTogglePick(diff.field, "local")}
-                          className={conflictPickButtonClass(fieldPicks[diff.field] === "local", true)}
+                          className={conflictPickButtonClass(
+                            fieldPicks[diff.field] === "local",
+                            true,
+                          )}
                         >
                           {diff.local}
                         </Button>
@@ -146,7 +166,10 @@ export function ContactsSyncConflictDiffBody({
                           type="button"
                           variant="ghost"
                           onClick={() => onTogglePick(diff.field, "server")}
-                          className={conflictPickButtonClass(fieldPicks[diff.field] === "server", true)}
+                          className={conflictPickButtonClass(
+                            fieldPicks[diff.field] === "server",
+                            true,
+                          )}
                         >
                           {diff.server}
                         </Button>
@@ -160,7 +183,9 @@ export function ContactsSyncConflictDiffBody({
         </>
       ) : local ? (
         <p className="text-xs text-muted-foreground">
-          {serverContact ? t("contacts.sync.conflictDiffEmpty") : t("contacts.sync.conflictNoServer")}
+          {serverContact
+            ? t("contacts.sync.conflictDiffEmpty")
+            : t("contacts.sync.conflictNoServer")}
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">{t("contacts.sync.conflictDeleteHint")}</p>

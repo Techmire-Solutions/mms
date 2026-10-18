@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import type { KeyboardEvent } from "react";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export interface WorkCardEntity {
   id: string | number;
@@ -28,7 +28,7 @@ export interface UseWorkCardActionOptions<TEntity extends WorkCardEntity> {
   canSelect?: boolean;
 }
 
-export interface UseWorkCardActionReturn<TEntity extends WorkCardEntity> {
+export interface UseWorkCardActionReturn<_TEntity extends WorkCardEntity> {
   isSelected: boolean;
   /** Stable toggle handler — passes current !isSelected to onToggleSelected. */
   onSelect: () => void;
@@ -83,8 +83,7 @@ export function useWorkCardAction<TEntity extends WorkCardEntity>({
       return selectedIds.has(entity.id) || selectedIds.has(String(entity.id));
     }
     return (
-      selectedIds.includes(entity.id as never) ||
-      selectedIds.includes(String(entity.id) as never)
+      selectedIds.includes(entity.id as never) || selectedIds.includes(String(entity.id) as never)
     );
   }, [selectedIds, entity.id]);
 
@@ -176,4 +175,3 @@ export function useWorkCardAction<TEntity extends WorkCardEntity>({
     cardProps,
   };
 }
-

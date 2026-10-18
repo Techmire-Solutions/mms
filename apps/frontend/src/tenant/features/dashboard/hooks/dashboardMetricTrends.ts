@@ -1,5 +1,5 @@
-import { calcPercentChange, type DashboardMetricTrends } from '@mms/shared';
-import type { useDashboardData } from '@/tenant/features/dashboard/hooks/useDashboardData';
+import { calcPercentChange, type DashboardMetricTrends } from "@mms/shared";
+import type { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
 
 /** Percent change helper used by dashboard metric trends. */
 export const percentChange = calcPercentChange;
@@ -33,7 +33,8 @@ export function computeDashboardMetricTrends(data: DashboardData): DashboardMetr
   const contactTrend = computeGrowthTrend(contactsTotal, contactMetricsNew);
 
   const attendanceTrend =
-    (attendanceMetrics?.selectedDatePresentRate ?? 0) - (attendanceMetrics?.priorDatePresentRate ?? 0);
+    (attendanceMetrics?.selectedDatePresentRate ?? 0) -
+    (attendanceMetrics?.priorDatePresentRate ?? 0);
 
   const feesTrend = percentChange(
     financeMetrics?.collectedThisMonth ?? 0,

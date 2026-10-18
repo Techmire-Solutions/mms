@@ -1,21 +1,31 @@
-import React from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ActionButton } from '@/components/ui/ActionButton';
+import React from "react";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@shared/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import type { WorkspaceSortDirection, WorkspaceSortField } from '@/platform/components/platformWorkspaceListData';
-import { cn } from '@/lib/utils';
+} from "@shared/ui";
+import type {
+  WorkspaceSortDirection,
+  WorkspaceSortField,
+} from "@/platform/components/platformWorkspaceListData";
+import { cn } from "@/lib/utils";
 
-const SORT_MENU_ITEMS: { field: WorkspaceSortField; labelKey: 'platform.sort.name' | 'platform.sort.subdomain' | 'platform.sort.createdAt' | 'platform.sort.status' }[] = [
-  { field: 'name', labelKey: 'platform.sort.name' },
-  { field: 'subdomain', labelKey: 'platform.sort.subdomain' },
-  { field: 'createdAt', labelKey: 'platform.sort.createdAt' },
-  { field: 'status', labelKey: 'platform.sort.status' },
+const SORT_MENU_ITEMS: {
+  field: WorkspaceSortField;
+  labelKey:
+    | "platform.sort.name"
+    | "platform.sort.subdomain"
+    | "platform.sort.createdAt"
+    | "platform.sort.status";
+}[] = [
+  { field: "name", labelKey: "platform.sort.name" },
+  { field: "subdomain", labelKey: "platform.sort.subdomain" },
+  { field: "createdAt", labelKey: "platform.sort.createdAt" },
+  { field: "status", labelKey: "platform.sort.status" },
 ];
 
 export interface PlatformWorkspaceSortMenuProps {
@@ -35,14 +45,14 @@ export function PlatformWorkspaceSortMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <ActionButton
-          variant="secondary"
+        <Button
+          variant="outline"
           size="sm"
           icon={ArrowUpDown}
           className="rounded-xl border-border/80 hover:bg-muted/80 select-none cursor-pointer"
         >
-          {t('platform.sort.sortBy')}
-        </ActionButton>
+          {t("platform.sort.sortBy")}
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52 p-1.5 rounded-xl shadow-md">
         {SORT_MENU_ITEMS.map((item) => {
@@ -58,7 +68,7 @@ export function PlatformWorkspaceSortMenu({
             >
               <span>{t(item.labelKey)}</span>
               {isActive ? (
-                sortDirection === 'asc' ? (
+                sortDirection === "asc" ? (
                   <ArrowUp className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden />
                 ) : (
                   <ArrowDown className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden />

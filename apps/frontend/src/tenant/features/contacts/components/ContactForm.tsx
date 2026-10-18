@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState, useMemo, useEffect, useId } from "react";
 import { User } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
+import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import type { Contact } from "@mms/shared";
@@ -14,7 +14,7 @@ import {
   computeContactTabErrorCounts,
   buildContactFormVisibleTabs,
   buildContactValidationErrorSummary,
-} from "@/tenant/features/contacts/components/contactFormTabUtils";
+} from "@/tenant/features/contacts/lib/contactFormTabUtils";
 
 export interface ContactFormProps {
   open?: boolean;
@@ -93,7 +93,8 @@ export function ContactForm({
     : (visibleTabs[0]?.key ?? "basic");
 
   const validationErrorSummary = useMemo(
-    () => buildContactValidationErrorSummary(Boolean(draft.lookupsError), draft.validationErrors, t),
+    () =>
+      buildContactValidationErrorSummary(Boolean(draft.lookupsError), draft.validationErrors, t),
     [draft.lookupsError, draft.validationErrors, t],
   );
 

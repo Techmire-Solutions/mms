@@ -1,11 +1,11 @@
 import type React from "react";
 import { Clock, GraduationCap, Hash } from "lucide-react";
-import { Field, EditableSelect } from "@/components/ui/FormPrimitives";
+import { Field, EditableSelect } from "@/components/app/FormPrimitives";
 import { Badge } from "@/components/ui/badge";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   formatDateTime,
@@ -69,8 +69,20 @@ export function StudentRegistrationSection({
     ? formatDateTime(studentDraft.registeredDate, true)
     : t("students.table.emptyDash");
 
-  const grLabel = resolveStudentFieldLabel(fields, "registration", "grNumber", "students.form.grNumber", t);
-  const statusLabel = resolveStudentFieldLabel(fields, "registration", "status", "students.form.status", t);
+  const grLabel = resolveStudentFieldLabel(
+    fields,
+    "registration",
+    "grNumber",
+    "students.form.grNumber",
+    t,
+  );
+  const statusLabel = resolveStudentFieldLabel(
+    fields,
+    "registration",
+    "status",
+    "students.form.status",
+    t,
+  );
   const registeredLabel = resolveStudentFieldLabel(
     fields,
     "registration",
@@ -82,11 +94,10 @@ export function StudentRegistrationSection({
   const rawStatuses = statuses ?? statusSelectOptions.map((opt) => opt.value);
   const grError = getFieldError("grNumber");
   const statusError = getFieldError("status");
-  const grHint = isGrAutoAssigned || (autoGenerateId && isCreate)
-    ? t("students.form.grNumberHint")
-    : undefined;
+  const grHint =
+    isGrAutoAssigned || (autoGenerateId && isCreate) ? t("students.form.grNumberHint") : undefined;
   const grPlaceholder = isGrAutoAssigned
-    ? (nextGrNumber || t("students.form.grAutoAssigned"))
+    ? nextGrNumber || t("students.form.grAutoAssigned")
     : t("students.form.grNumberPlaceholder");
 
   return (
@@ -117,14 +128,12 @@ export function StudentRegistrationSection({
                   placeholder={grPlaceholder}
                   disabled={grInputDisabled}
                   iconPaddingClass={FORM_INPUT}
-                  className={cn(
-                    "ps-10",
-                    isGrAutoAssigned && "pe-24",
-                    grError && FORM_INPUT_ERROR,
-                  )}
+                  className={cn("ps-10", isGrAutoAssigned && "pe-24", grError && FORM_INPUT_ERROR)}
                 />
                 {isGrAutoAssigned ? (
-                  <Badge as="span" size="sm"
+                  <Badge
+                    as="span"
+                    size="sm"
                     tone="primary"
                     className="pointer-events-none absolute end-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider"
                   >

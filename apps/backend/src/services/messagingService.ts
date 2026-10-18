@@ -1,4 +1,4 @@
-import { messagingUseCases } from '../messaging/use-cases/messagingUseCases.js';
+import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 
 /**
  * Thin re-export of the messaging use-cases facade.

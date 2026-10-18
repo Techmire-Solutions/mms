@@ -77,7 +77,7 @@ vi.mock("@/tenant/features/enrollments/hooks/useEnrollmentsPageState", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModulePageShell", () => ({
+vi.mock("@/components/app/ModulePageShell", () => ({
   ModulePageShell: ({
     headerTitle,
     headerActions,
@@ -98,7 +98,7 @@ vi.mock("@/components/ui/ModulePageShell", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/ResponsiveAccordionTabs", () => ({
+vi.mock("@/components/app/ResponsiveAccordionTabs", () => ({
   ResponsiveAccordionTabs: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="accordion-tabs">{children}</div>
   ),
@@ -112,16 +112,20 @@ vi.mock("./components/EnrollmentsPageHeaderActions", () => ({
   EnrollmentsPageHeaderActions: () => <div data-testid="header-actions">Header Actions</div>,
 }));
 
-let capturedWorkTierProps: any = null;
+let capturedWorkTierProps: {
+  columnProps?: { columnCustomizer?: { onResetLayout?: unknown } };
+} | null = null;
 vi.mock("./components/EnrollmentsWorkTier", () => ({
-  EnrollmentsWorkTier: (props: any) => {
+  EnrollmentsWorkTier: (props: {
+    columnProps?: { columnCustomizer?: { onResetLayout?: unknown } };
+  }) => {
     capturedWorkTierProps = props;
     return <div data-testid="work-tier">Work Tier</div>;
   },
 }));
 
-vi.mock("./components/EnrollmentsReportsTier", () => ({
-  EnrollmentsReportsTier: () => <div data-testid="reports-tier">Reports Tier</div>,
+vi.mock("@/tenant/components/moduleReports", () => ({
+  ModuleReportsTier: () => <div data-testid="reports-tier">Reports Tier</div>,
 }));
 
 vi.mock("./components/EnrollmentsSetupTier", () => ({
@@ -145,6 +149,8 @@ describe("EnrollmentsPage Component", () => {
   it("wires resetColumnLayout to columnCustomizer.onResetLayout", () => {
     renderToStaticMarkup(<EnrollmentsPage />);
     expect(capturedWorkTierProps?.columnProps?.columnCustomizer?.onResetLayout).toBeDefined();
-    expect(typeof capturedWorkTierProps?.columnProps?.columnCustomizer?.onResetLayout).toBe("function");
+    expect(typeof capturedWorkTierProps?.columnProps?.columnCustomizer?.onResetLayout).toBe(
+      "function",
+    );
   });
 });

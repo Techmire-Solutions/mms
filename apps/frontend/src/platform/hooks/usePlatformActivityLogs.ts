@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiJson } from '@/lib/apiClient';
-import { usePlatformPermissions } from '@/platform/hooks/usePlatformPermissions';
+import { useQuery } from "@tanstack/react-query";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 
 export interface PlatformActivityLogItem {
   id: string;
@@ -18,9 +19,9 @@ export interface PlatformActivityLogsResponse {
   logs: PlatformActivityLogItem[];
 }
 
-import { PLATFORM_ACTIVITY_LOGS_QUERY_KEY } from '@/platform/lib/platformQueryKeys';
+import { PLATFORM_ACTIVITY_LOGS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
-export { PLATFORM_ACTIVITY_LOGS_QUERY_KEY } from '@/platform/lib/platformQueryKeys';
+export { PLATFORM_ACTIVITY_LOGS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
 export function usePlatformActivityLogs(): {
   data: PlatformActivityLogItem[] | undefined;
@@ -34,10 +35,20 @@ export function usePlatformActivityLogs(): {
   const query = useQuery({
     queryKey: PLATFORM_ACTIVITY_LOGS_QUERY_KEY,
     queryFn: async ({ signal }) => {
-      const res = await apiJson<{ logs: PlatformActivityLogItem[] }>('/api/platform/admin/system/activity-logs', {
+      const response = await apiContract.platform.getActivityLogs({
+        query: {},
         signal,
+        fetchOptions: { signal },
       });
-      return res.logs;
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load platform activity logs",
+          errorBody?.type,
+        );
+      }
+      return (response.body as { logs: PlatformActivityLogItem[] }).logs;
     },
     enabled: isPlatformAuthenticated && canSystem,
     staleTime: 30_000,

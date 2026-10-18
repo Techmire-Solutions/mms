@@ -3,8 +3,12 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ContactIdentityMeta } from "./ContactIdentityMeta";
 
-vi.mock("@/components/ui/PersonIdentityMeta", () => ({
-  PersonIdentityMeta: ({ gender, isSyed, children }: {
+vi.mock("@/components/app/PersonIdentityMeta", () => ({
+  PersonIdentityMeta: ({
+    gender,
+    isSyed,
+    children,
+  }: {
     gender?: string;
     isSyed?: boolean;
     children?: React.ReactNode;

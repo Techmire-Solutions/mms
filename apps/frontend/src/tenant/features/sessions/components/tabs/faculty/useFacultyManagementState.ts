@@ -21,11 +21,17 @@ export function useFacultyManagementState(
     modalOpen,
   );
 
-  const facultyList = (facultyData?.body?.faculty ?? []) as FacultyMember[];
+  const facultyList = useMemo(
+    () => (facultyData?.body?.faculty ?? []) as FacultyMember[],
+    [facultyData?.body?.faculty],
+  );
 
   const selectedFacultyIds = facultyId ? [facultyId] : [];
   const { data: selectedFacultyData } = useFacultyByIds(selectedFacultyIds);
-  const selectedFaculty = (selectedFacultyData ?? []) as FacultyMember[];
+  const selectedFaculty = useMemo(
+    () => (selectedFacultyData ?? []) as FacultyMember[],
+    [selectedFacultyData],
+  );
 
   const allFaculty = useMemo(() => {
     const map = new Map<string, FacultyMember>();
@@ -73,7 +79,9 @@ export function useFacultyManagementState(
     try {
       const selectedMember = allFaculty.find((f) => String(f.id) === String(facultyId));
       const resolvedName = selectedMember
-        ? formatFacultyDisplayName(selectedMember) || editingFaculty?.facultyName || "Faculty Member"
+        ? formatFacultyDisplayName(selectedMember) ||
+          editingFaculty?.facultyName ||
+          "Faculty Member"
         : editingFaculty?.facultyName || "Faculty Member";
 
       const finalRole = role === "Custom" ? customRole.trim() || "Instructor" : role;

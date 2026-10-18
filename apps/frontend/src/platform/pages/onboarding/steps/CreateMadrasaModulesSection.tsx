@@ -1,7 +1,7 @@
 import React from "react";
 import { LayoutDashboard } from "lucide-react";
 import { SYSTEM_MODULES } from "@mms/shared";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@shared/ui";
 import { PlatformModuleSelectCard } from "@/platform/components/workspace/PlatformModuleSelectCard";
 import { PlatformModulePresetsBar } from "@/platform/components/workspace/PlatformModulePresetsBar";
 import type { CreateMadrasaController } from "@/platform/pages/onboarding/steps/useCreateMadrasaController";
@@ -10,7 +10,9 @@ interface CreateMadrasaModulesSectionProps {
   controller: CreateMadrasaController;
 }
 
-export function CreateMadrasaModulesSection({ controller }: CreateMadrasaModulesSectionProps): React.JSX.Element {
+export function CreateMadrasaModulesSection({
+  controller,
+}: CreateMadrasaModulesSectionProps): React.JSX.Element {
   const { t, data, onChange } = controller;
 
   const toggleModule = (moduleId: string, checked: boolean) => {

@@ -8,15 +8,15 @@ import {
   type Enrollment,
   type EnrollmentExportColumn,
   type EnrollmentsListQuery,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   createModuleExportService,
   type ModuleExportQueryInput,
   type ModuleExportOptions,
   type ModuleExportResult,
-} from '../lib/createModuleExportService.js';
-import { normalizeIncludeDeletedFlag } from '../lib/csvExportStreamFactory.js';
-import { loadEnrollmentsByIds, loadEnrollmentsPage } from './enrollmentService.js';
+} from "../lib/createModuleExportService.js";
+import { normalizeIncludeDeletedFlag } from "../lib/csvExportStreamFactory.js";
+import { loadEnrollmentsByIds, loadEnrollmentsPage } from "./enrollmentService.js";
 
 export type EnrollmentsExportQueryInput = ModuleExportQueryInput<EnrollmentsListQuery>;
 export type EnrollmentsExportOptions = ModuleExportOptions<EnrollmentExportColumn>;
@@ -68,7 +68,7 @@ const enrollmentsCsv = createModuleExportService<
         const chunkExportRows = buildEnrollmentsExportRows(chunk, columns);
         const dataRows = chunkExportRows.slice(1);
         if (dataRows.length > 0) {
-          yield '\n' + buildCsvContent(dataRows);
+          yield "\n" + buildCsvContent(dataRows);
         }
       }
     }

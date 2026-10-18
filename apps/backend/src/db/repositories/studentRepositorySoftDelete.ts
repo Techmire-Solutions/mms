@@ -1,9 +1,9 @@
-import { and, eq, inArray, isNull, isNotNull } from 'drizzle-orm';
-import { dedupeTrimmedIds } from '@mms/shared';
-import { students } from '../schema.js';
-import { withTenant } from '../tenant-context.js';
-import { invalidateMultiTierCache } from '../../lib/cache/index.js';
-import { enableIncludeDeleted } from '../../lib/softDeleteHelpers.js';
+import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
+import { dedupeTrimmedIds } from "@mms/shared";
+import { students } from "../schema.js";
+import { withTenant } from "../tenant-context.js";
+import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 
 /**
  * Single-statement atomic bulk soft-delete for students (per mms-data-layer.md §6.9).
@@ -41,7 +41,7 @@ export async function bulkSoftDeleteStudentsSql(
       failed: uniqueIds.length - updated.length,
     };
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'students' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
   return res;
 }
 
@@ -84,6 +84,6 @@ export async function bulkRestoreStudentsSql(
       failed: uniqueIds.length - updated.length,
     };
   });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: 'students' });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
   return res;
 }

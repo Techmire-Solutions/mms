@@ -19,23 +19,44 @@ export interface UseSessionsPageCrudActionsParams {
   detailSession: Session | null;
   setDetailSession: (session: Session | null) => void;
   createSession: { mutateAsync: (session: Session) => Promise<{ session?: Session }> };
-  updateSession: { mutateAsync: (payload: { id: string; session: Session }) => Promise<{ session?: Session }> };
+  updateSession: {
+    mutateAsync: (payload: { id: string; session: Session }) => Promise<{ session?: Session }>;
+  };
   deleteSession: {
     mutate: (
       payload: { id: string; deletionReason?: string },
       options: { onSuccess?: () => void; onError?: (err: unknown) => void },
     ) => void;
   };
-  restoreSession: { mutate: (id: string, options: { onSuccess?: () => void; onError?: (err: unknown) => void }) => void };
+  restoreSession: {
+    mutate: (
+      id: string,
+      options: { onSuccess?: () => void; onError?: (err: unknown) => void },
+    ) => void;
+  };
   bulkDeleteSessions: {
     mutate: (
       payload: { ids: string[]; deletionReason?: string },
-      options: { onSuccess?: (result: { succeeded: number; failed: number }) => void; onError?: (error: unknown) => void },
+      options: {
+        onSuccess?: (result: { succeeded: number; failed: number }) => void;
+        onError?: (error: unknown) => void;
+      },
     ) => void;
   };
-  bulkRestoreSessions: { mutate: (ids: string[], options: { onSuccess?: (result: { succeeded: number; failed: number }) => void; onError?: (error: unknown) => void }) => void };
+  bulkRestoreSessions: {
+    mutate: (
+      ids: string[],
+      options: {
+        onSuccess?: (result: { succeeded: number; failed: number }) => void;
+        onError?: (error: unknown) => void;
+      },
+    ) => void;
+  };
   bulkUpdateSessionStatus: {
-    mutateAsync: (payload: { ids: string[]; status: string }) => Promise<{ success: boolean; succeeded: number; failed: number }>;
+    mutateAsync: (payload: {
+      ids: string[];
+      status: string;
+    }) => Promise<{ success: boolean; succeeded: number; failed: number }>;
   };
   selectedIds: string[];
   setSelectedIds: Dispatch<SetStateAction<string[]>>;

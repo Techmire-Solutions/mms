@@ -1,17 +1,12 @@
-import React, { useMemo } from 'react';
-import { Building2 } from 'lucide-react';
-import type { PlatformWorkspaceRow } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { usePlatformInspector } from '@/platform/lib/PlatformInspectorContext';
-import { Button } from '@/components/ui/button';
-import {
-  WorkBatchTable,
-  type WorkBatchTableColumn,
-} from '@/components/common/work/WorkBatchTable';
-import { ListPagination } from '@/components/ui/ListPagination';
-import { WorkspaceStatusBadge } from '@/platform/components/workspace/WorkspaceStatusBadge';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { PlatformDashboardFleetRowMenu } from '@/platform/components/dashboard/PlatformDashboardFleetRowMenu';
+import React, { useMemo } from "react";
+import { Building2 } from "lucide-react";
+import type { PlatformWorkspaceRow } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
+import { Button, EmptyState, ListPagination } from "@shared/ui";
+import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
+import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
+import { PlatformDashboardFleetRowMenu } from "@/platform/components/dashboard/PlatformDashboardFleetRowMenu";
 
 export interface PlatformDashboardFleetTableProps {
   rows: PlatformWorkspaceRow[];
@@ -23,7 +18,7 @@ export interface PlatformDashboardFleetTableProps {
   onToggleSelect: (subdomain: string) => void;
   onToggleSelectAll: (checked: boolean) => void;
   onPageChange: (page: number) => void;
-  sortDir: 'asc' | 'desc';
+  sortDir: "asc" | "desc";
   onToggleSort: () => void;
   onRequestExport: () => void;
 }
@@ -48,19 +43,16 @@ export function PlatformDashboardFleetTable({
   const { t } = useTranslation();
   const { openInspector } = usePlatformInspector();
 
-  const data: FleetRow[] = useMemo(
-    () => rows.map((r) => ({ ...r, id: r.subdomain })),
-    [rows],
-  );
+  const data: FleetRow[] = useMemo(() => rows.map((r) => ({ ...r, id: r.subdomain })), [rows]);
 
   const allSelected = rows.length > 0 && rows.every((r) => selected.has(r.subdomain));
 
   const columns: WorkBatchTableColumn<FleetRow>[] = useMemo(
     () => [
       {
-        id: 'name',
-        label: t('platform.sort.name'),
-        sortField: 'name',
+        id: "name",
+        label: t("platform.sort.name"),
+        sortField: "name",
         render: (row) => (
           <div className="min-w-0">
             <p className="text-sm font-bold text-foreground truncate">{row.madrasaName}</p>
@@ -69,8 +61,8 @@ export function PlatformDashboardFleetTable({
         ),
       },
       {
-        id: 'status',
-        label: t('platform.workspaceActive'),
+        id: "status",
+        label: t("platform.workspaceActive"),
         render: (row) => <WorkspaceStatusBadge enabled={row.enabled} />,
       },
     ],
@@ -80,8 +72,8 @@ export function PlatformDashboardFleetTable({
   const empty = (
     <EmptyState
       icon={Building2}
-      title={t('platform.fleetEmptyTitle')}
-      description={t('platform.fleetEmptyHint')}
+      title={t("platform.fleetEmptyTitle")}
+      description={t("platform.fleetEmptyHint")}
     />
   );
 
@@ -94,7 +86,7 @@ export function PlatformDashboardFleetTable({
           className="min-h-11 rounded-xl text-xs font-bold cursor-pointer"
           onClick={onRequestExport}
         >
-          {t('platform.workspaces.exportSelected')} ({selected.size})
+          {t("platform.workspaces.exportSelected")} ({selected.size})
         </Button>
       ) : (
         <span />
@@ -104,7 +96,13 @@ export function PlatformDashboardFleetTable({
         total={total}
         limit={pageSize}
         onPageChange={onPageChange}
-        i18nNamespace="platform"
+        labels={{
+          previous: t("platform.pagination.previous"),
+          next: t("platform.pagination.next"),
+          range: (from, to, tot) => t("platform.pagination.range", { from, to, total: tot }),
+          pageOf: (p, tp) => t("platform.pagination.pageOf", { page: p, totalPages: tp }),
+          label: t("platform.pagination.label"),
+        }}
       />
     </div>
   );
@@ -116,9 +114,9 @@ export function PlatformDashboardFleetTable({
         columns={columns}
         isLoading={isLoading}
         emptyState={empty}
-        caption={t('platform.fleetDirectory')}
+        caption={t("platform.fleetDirectory")}
         sort={{
-          field: 'name',
+          field: "name",
           dir: sortDir,
           onSort: () => onToggleSort(),
         }}
@@ -128,14 +126,14 @@ export function PlatformDashboardFleetTable({
           onSelectAll: () => onToggleSelectAll(!allSelected),
           allSelected,
           someSelected: selected.size > 0 && !allSelected,
-          selectAllAriaLabel: t('platform.workspaces.selectAll'),
+          selectAllAriaLabel: t("platform.workspaces.selectAll"),
           selectRowAriaLabel: (row) =>
-            t('platform.workspaces.selectItem', { name: row.madrasaName }),
+            t("platform.workspaces.selectItem", { name: row.madrasaName }),
         }}
         renderRowActions={(row) => <PlatformDashboardFleetRowMenu row={row} />}
         onRowClick={(row) =>
           openInspector({
-            kind: 'workspace',
+            kind: "workspace",
             subdomain: row.subdomain,
             madrasaName: row.madrasaName,
             enabled: row.enabled,

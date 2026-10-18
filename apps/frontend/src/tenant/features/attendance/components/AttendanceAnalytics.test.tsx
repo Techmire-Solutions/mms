@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceAnalytics } from "./AttendanceAnalytics";
 
-vi.mock("./useAttendanceAnalyticsModel", () => ({
+vi.mock("../hooks/useAttendanceAnalyticsModel", () => ({
   useAttendanceAnalyticsModel: () => ({
     t: (key: string) => key,
     overallRate: 92,
@@ -23,8 +23,8 @@ vi.mock("./useAttendanceAnalyticsModel", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/ModuleCommandMetricsGrid", () => ({
-  ModuleCommandMetricsGrid: ({ items }: { items: { label: string; value: any }[] }) => (
+vi.mock("@/components/app/ModuleCommandMetricsGrid", () => ({
+  ModuleCommandMetricsGrid: ({ items }: { items: { label: string; value: unknown }[] }) => (
     <div data-testid="metrics-grid">{items.map((i) => `${i.label}:${i.value}`).join(", ")}</div>
   ),
 }));
@@ -37,9 +37,7 @@ vi.mock("./AttendanceAnalyticsInsights", () => ({
 
 describe("AttendanceAnalytics Component", () => {
   it("renders metrics grid and insights", () => {
-    const html = renderToStaticMarkup(
-      <AttendanceAnalytics filters={{}} />,
-    );
+    const html = renderToStaticMarkup(<AttendanceAnalytics filters={{}} />);
 
     expect(html).toContain("attendance.analytics.kpi.overallAttendance:92%");
     expect(html).toContain("Insights");
@@ -48,7 +46,11 @@ describe("AttendanceAnalytics Component", () => {
   it("renders chart panels", () => {
     const html = renderToStaticMarkup(
       <AttendanceAnalyticsChartPanels
-        t={((key: string) => key) as unknown as Parameters<typeof AttendanceAnalyticsChartPanels>[0]["t"]}
+        t={
+          ((key: string) => key) as unknown as Parameters<
+            typeof AttendanceAnalyticsChartPanels
+          >[0]["t"]
+        }
         colors={["#000"]}
         classStats={[]}
         monthlyTrend={[]}

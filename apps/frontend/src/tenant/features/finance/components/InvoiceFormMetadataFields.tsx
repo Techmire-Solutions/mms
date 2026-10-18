@@ -1,13 +1,13 @@
 import React from "react";
 import { School, Calendar, DollarSign, Tag } from "lucide-react";
-import { DatePicker } from "@/components/ui/DatePicker";
+import { DatePicker } from "@/components/app/DatePicker";
 import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
-import { FormSelect } from "@/components/ui/FormSelect";
-import { Field } from "@/components/ui/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { InvoiceDraft } from "@/tenant/features/finance/components/invoiceFormDraft";
+import type { InvoiceDraft } from "@/tenant/features/finance/lib/invoiceFormDraft";
 
 export interface InvoiceFormMetadataFieldsProps {
   draft: InvoiceDraft;
@@ -24,12 +24,7 @@ export function InvoiceFormMetadataFields({
 }: InvoiceFormMetadataFieldsProps): React.JSX.Element {
   return (
     <>
-      <Field
-        id="invoice-class"
-        label={t("finance.form.class")}
-        required
-        error={errors.class}
-      >
+      <Field id="invoice-class" label={t("finance.form.class")} required error={errors.class}>
         <div className="relative flex items-center group/input">
           <School className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
           <Input
@@ -43,12 +38,7 @@ export function InvoiceFormMetadataFields({
         </div>
       </Field>
 
-      <Field
-        id="invoice-session"
-        label={t("finance.form.session")}
-        required
-        error={errors.session}
-      >
+      <Field id="invoice-session" label={t("finance.form.session")} required error={errors.session}>
         <div className="relative flex items-center group/input">
           <Calendar className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
           <Input
@@ -99,10 +89,7 @@ export function InvoiceFormMetadataFields({
         />
       </Field>
 
-      <Field
-        id="invoice-discount-type"
-        label={t("finance.form.discountType")}
-      >
+      <Field id="invoice-discount-type" label={t("finance.form.discountType")}>
         <FormSelect
           id="invoice-discount-type"
           name="discountType"

@@ -1,17 +1,12 @@
-import React, { useMemo, type JSX, type ReactNode } from 'react';
-import {
-  getDisplayName,
-  getPrimaryEmail,
-  getPrimaryPhone,
-  type Contact,
-} from '@mms/shared';
-import { EntityCardMetaTile } from '@/components/ui/EntityCardMetaTile';
-import { EntityCardsGrid } from "@/components/ui/EntityCardsGrid";
-import { EntityCard } from "@/components/ui/EntityCard";
-import { DirectoryCard } from "@/components/ui/DirectoryCard";
-import { useTranslation } from '@/hooks/useTranslation';
-import type { MessagingSelectedMap } from '@/tenant/features/messaging/components/messagingWorkPanelShared';
-import { MissingFieldBadge } from './messagingRecipientsShared';
+import React, { useMemo, type JSX, type ReactNode } from "react";
+import { getDisplayName, getPrimaryEmail, getPrimaryPhone, type Contact } from "@mms/shared";
+import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
+import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
+import { EntityCard } from "@/components/app/EntityCard";
+import { DirectoryCard } from "@/components/app/DirectoryCard";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { MessagingSelectedMap } from "@/tenant/features/messaging/lib/messagingWorkPanelShared";
+import { MissingFieldBadge } from "./messagingRecipientsShared";
 
 export interface MessagingWorkRecipientsCardsProps {
   contacts: Contact[];
@@ -60,23 +55,23 @@ function MessagingRecipientCard({
         avatar: contact.avatar,
       }}
       metadataSlot={
-        (showPhoneCol || showEmailCol) ? (
+        showPhoneCol || showEmailCol ? (
           <EntityCard.MetaGrid>
             {showPhoneCol && (
-              <EntityCardMetaTile label={t('contacts.form.primaryPhone')}>
+              <EntityCardMetaTile label={t("contacts.form.primaryPhone")}>
                 {phone ? (
                   <span className="font-mono text-xs">{phone}</span>
                 ) : (
-                  <MissingFieldBadge label={t('messaging.missingPhone')} />
+                  <MissingFieldBadge label={t("messaging.missingPhone")} />
                 )}
               </EntityCardMetaTile>
             )}
             {showEmailCol && (
-              <EntityCardMetaTile label={t('contacts.form.primaryEmail')}>
+              <EntityCardMetaTile label={t("contacts.form.primaryEmail")}>
                 {email ? (
                   <span className="text-xs">{email}</span>
                 ) : (
-                  <MissingFieldBadge label={t('messaging.missingEmail')} />
+                  <MissingFieldBadge label={t("messaging.missingEmail")} />
                 )}
               </EntityCardMetaTile>
             )}
@@ -115,8 +110,8 @@ export function MessagingWorkRecipientsCards({
       onSelectAll={() => onToggleAllVisible(!allVisibleSelected)}
       allSelected={allVisibleSelected}
       someSelected={someVisibleSelected}
-      selectAllLabel={t('messaging.selectAllVisible')}
-      deselectAllLabel={t('common.deselect')}
+      selectAllLabel={t("messaging.selectAllVisible")}
+      deselectAllLabel={t("common.deselect")}
       selectedCountLabel={selectedCountLabel}
       pageCountLabel={pageCountLabel}
       checkboxIdPrefix="messaging-recipients-select-cards"

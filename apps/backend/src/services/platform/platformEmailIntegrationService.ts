@@ -3,13 +3,13 @@ import {
   type EmailIntegrationConfig,
   type EmailIntegrationSecrets,
   type EmailProviderId,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   getPlatformEmailIntegrationRow,
   upsertPlatformEmailIntegrationConfigRow,
   upsertPlatformEmailIntegrationSecretsRow,
-} from '../../db/repositories/platformEmailIntegrationRepository.js';
-import { type PlatformEmailIntegrationRow } from '../../db/schema/platform.js';
+} from "../../db/repositories/platformEmailIntegrationRepository.js";
+import { type PlatformEmailIntegrationRow } from "../../db/schema/platform.js";
 
 function rowToConfig(row: PlatformEmailIntegrationRow): EmailIntegrationConfig {
   const overrides: Partial<EmailIntegrationConfig> = {
@@ -53,7 +53,9 @@ export async function loadPlatformEmailIntegrationSecrets(): Promise<EmailIntegr
   return secrets;
 }
 
-export async function savePlatformEmailIntegrationSecrets(secrets: EmailIntegrationSecrets): Promise<void> {
+export async function savePlatformEmailIntegrationSecrets(
+  secrets: EmailIntegrationSecrets,
+): Promise<void> {
   await upsertPlatformEmailIntegrationSecretsRow(secrets);
 }
 

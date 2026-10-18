@@ -1,7 +1,7 @@
-import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type ObligationType } from '@mms/shared';
-import { obligationTypes } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type ObligationType } from "@mms/shared";
+import { obligationTypes } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 type ObligationTypeRow = typeof obligationTypes.$inferSelect;
 
@@ -10,7 +10,7 @@ export function obligationTypeRowToRecord(row: ObligationTypeRow): ObligationTyp
     id: row.id,
     name: row.name,
     quantity_based: row.quantityBased,
-    designated_for: row.designatedFor as ObligationType['designated_for'],
+    designated_for: row.designatedFor as ObligationType["designated_for"],
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
   };
@@ -35,7 +35,10 @@ export async function listObligationTypesByWorkspace(tenant: string): Promise<Ob
   });
 }
 
-export async function findObligationTypeById(tenant: string, id: string): Promise<ObligationType | null> {
+export async function findObligationTypeById(
+  tenant: string,
+  id: string,
+): Promise<ObligationType | null> {
   const trimmedId = id?.trim();
   if (!trimmedId) return null;
   const subdomain = tenant.trim().toLowerCase();
@@ -51,14 +54,19 @@ export async function findObligationTypeById(tenant: string, id: string): Promis
         updatedAt: obligationTypes.updatedAt,
       })
       .from(obligationTypes)
-      .where(and(eq(obligationTypes.workspaceSubdomain, subdomain), eq(obligationTypes.id, trimmedId)))
+      .where(
+        and(eq(obligationTypes.workspaceSubdomain, subdomain), eq(obligationTypes.id, trimmedId)),
+      )
       .limit(1);
     const row = rows[0];
     return row ? obligationTypeRowToRecord(row) : null;
   });
 }
 
-export async function findObligationTypesByIds(tenant: string, ids: string[]): Promise<ObligationType[]> {
+export async function findObligationTypesByIds(
+  tenant: string,
+  ids: string[],
+): Promise<ObligationType[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
@@ -74,7 +82,12 @@ export async function findObligationTypesByIds(tenant: string, ids: string[]): P
         updatedAt: obligationTypes.updatedAt,
       })
       .from(obligationTypes)
-      .where(and(eq(obligationTypes.workspaceSubdomain, subdomain), inArray(obligationTypes.id, cleanIds)));
+      .where(
+        and(
+          eq(obligationTypes.workspaceSubdomain, subdomain),
+          inArray(obligationTypes.id, cleanIds),
+        ),
+      );
     return rows.map(obligationTypeRowToRecord);
   });
 }
@@ -89,7 +102,7 @@ export async function saveObligationType(tenant: string, record: ObligationType)
         workspaceSubdomain: subdomain,
         name: record.name,
         quantityBased: Boolean(record.quantity_based),
-        designatedFor: record.designated_for ?? 'Both',
+        designatedFor: record.designated_for ?? "Both",
         createdAt: record.created_at ? new Date(record.created_at) : new Date(),
         updatedAt: record.updated_at ? new Date(record.updated_at) : new Date(),
       })
@@ -98,19 +111,22 @@ export async function saveObligationType(tenant: string, record: ObligationType)
         set: {
           name: record.name,
           quantityBased: Boolean(record.quantity_based),
-          designatedFor: record.designated_for ?? 'Both',
+          designatedFor: record.designated_for ?? "Both",
           updatedAt: new Date(),
         },
       });
   });
 }
 
-export async function bulkSaveObligationTypes(tenant: string, records: ObligationType[]): Promise<void> {
+export async function bulkSaveObligationTypes(
+  tenant: string,
+  records: ObligationType[],
+): Promise<void> {
   if (records.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, ObligationType>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -125,7 +141,7 @@ export async function bulkSaveObligationTypes(tenant: string, records: Obligatio
           workspaceSubdomain: subdomain,
           name: record.name,
           quantityBased: Boolean(record.quantity_based),
-          designatedFor: record.designated_for ?? 'Both',
+          designatedFor: record.designated_for ?? "Both",
           createdAt: record.created_at ? new Date(record.created_at) : new Date(),
           updatedAt: record.updated_at ? new Date(record.updated_at) : new Date(),
         })),
@@ -149,7 +165,7 @@ export async function replaceObligationTypesForWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, ObligationType>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
@@ -161,7 +177,12 @@ export async function replaceObligationTypesForWorkspace(
     } else {
       await tx
         .delete(obligationTypes)
-        .where(and(eq(obligationTypes.workspaceSubdomain, subdomain), notInArray(obligationTypes.id, keepIds)));
+        .where(
+          and(
+            eq(obligationTypes.workspaceSubdomain, subdomain),
+            notInArray(obligationTypes.id, keepIds),
+          ),
+        );
 
       await tx
         .insert(obligationTypes)
@@ -171,7 +192,7 @@ export async function replaceObligationTypesForWorkspace(
             workspaceSubdomain: subdomain,
             name: record.name,
             quantityBased: Boolean(record.quantity_based),
-            designatedFor: record.designated_for ?? 'Both',
+            designatedFor: record.designated_for ?? "Both",
             createdAt: record.created_at ? new Date(record.created_at) : new Date(),
             updatedAt: record.updated_at ? new Date(record.updated_at) : new Date(),
           })),

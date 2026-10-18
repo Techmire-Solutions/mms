@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   ZoomIn,
   ZoomOut,
@@ -8,9 +8,9 @@ import {
   Copy,
   Check,
   Download,
-} from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ActionButton } from '@/components/ui/ActionButton';
+} from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@shared/ui";
 
 export interface ErdCanvasToolbarProps {
   zoom: number;
@@ -43,90 +43,90 @@ export function ErdCanvasToolbar({
   return (
     <div
       role="toolbar"
-      aria-label={t('platform.erdDiagram')}
+      aria-label={t("platform.erdDiagram")}
       className="flex flex-wrap items-center justify-between gap-2 border-b border-border/40 pb-3"
     >
       {/* Zoom controls */}
       <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border/50">
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           icon={ZoomOut}
           onClick={onZoomOut}
           disabled={zoom <= 0.5}
           className="min-w-11 p-0 rounded-lg hover:bg-muted"
-          title={t('platform.erdZoomOut')}
-          aria-label={t('platform.erdZoomOut')}
+          title={t("platform.erdZoomOut")}
+          aria-label={t("platform.erdZoomOut")}
         />
 
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           onClick={onResetZoom}
           className="px-2.5 text-xs font-mono font-bold text-foreground hover:bg-muted/80 rounded-lg transition-colors"
-          title={t('platform.erdResetZoom')}
-          aria-label={t('platform.erdResetZoom')}
+          title={t("platform.erdResetZoom")}
+          aria-label={t("platform.erdResetZoom")}
         >
           {zoomPercent}%
-        </ActionButton>
+        </Button>
 
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           icon={ZoomIn}
           onClick={onZoomIn}
           disabled={zoom >= 2.0}
           className="min-w-11 p-0 rounded-lg hover:bg-muted"
-          title={t('platform.erdZoomIn')}
-          aria-label={t('platform.erdZoomIn')}
+          title={t("platform.erdZoomIn")}
+          aria-label={t("platform.erdZoomIn")}
         />
 
-        <ActionButton
+        <Button
           variant="ghost"
           size="sm"
           icon={RotateCcw}
           onClick={onResetZoom}
           className="min-w-11 p-0 rounded-lg hover:bg-muted text-muted-foreground"
-          title={t('platform.erdResetZoom')}
-          aria-label={t('platform.erdResetZoom')}
+          title={t("platform.erdResetZoom")}
+          aria-label={t("platform.erdResetZoom")}
         />
       </div>
 
       {/* Action buttons */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <ActionButton
-          variant="secondary"
+        <Button
+          variant="outline"
           size="sm"
           icon={copied ? Check : Copy}
           onClick={onCopySource}
-          title={copied ? t('platform.erdCopied') : t('platform.erdCopySource')}
-          aria-label={copied ? t('platform.erdCopied') : t('platform.erdCopySource')}
-          className={copied ? 'text-success border-success/30' : undefined}
+          title={copied ? t("platform.erdCopied") : t("platform.erdCopySource")}
+          aria-label={copied ? t("platform.erdCopied") : t("platform.erdCopySource")}
+          className={copied ? "text-success border-success/30" : undefined}
         >
-          {copied ? t('platform.erdCopied') : t('platform.erdCopySource')}
-        </ActionButton>
+          {copied ? t("platform.erdCopied") : t("platform.erdCopySource")}
+        </Button>
 
-        <ActionButton
-          variant="secondary"
+        <Button
+          variant="outline"
           size="sm"
           icon={Download}
           onClick={onDownloadSvg}
           disabled={!canDownload}
-          title={t('platform.erdDownloadSvg')}
-          aria-label={t('platform.erdDownloadSvg')}
+          title={t("platform.erdDownloadSvg")}
+          aria-label={t("platform.erdDownloadSvg")}
         >
-          {t('platform.erdDownloadSvg')}
-        </ActionButton>
+          {t("platform.erdDownloadSvg")}
+        </Button>
 
-        <ActionButton
+        <Button
           type="button"
-          variant="secondary"
+          variant="outline"
           size="sm"
           icon={isFullscreen ? Minimize2 : Maximize2}
           onClick={onToggleFullscreen}
           className="min-w-11"
-          title={isFullscreen ? t('platform.erdExitFullscreen') : t('platform.erdFullscreen')}
-          aria-label={isFullscreen ? t('platform.erdExitFullscreen') : t('platform.erdFullscreen')}
+          title={isFullscreen ? t("platform.erdExitFullscreen") : t("platform.erdFullscreen")}
+          aria-label={isFullscreen ? t("platform.erdExitFullscreen") : t("platform.erdFullscreen")}
         />
       </div>
     </div>

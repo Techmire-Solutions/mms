@@ -1,31 +1,38 @@
-import React, { useState } from 'react';
-import { normalizeBrandingHex } from '@mms/shared';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/ui/Modal';
-import { notify } from '@/lib/notify';
+import React, { useState } from "react";
+import { normalizeBrandingHex } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/app/Modal";
+import { notify } from "@/lib/notify";
 
 export function parseImportCandidate(raw: string): { primary: string; secondary: string } | null {
   if (!raw.trim()) return null;
   try {
     const trimmed = raw.trim();
-    let primary = '';
-    let secondary = '';
+    let primary = "";
+    let secondary = "";
 
-    if (trimmed.startsWith('{')) {
-      const parsed = JSON.parse(trimmed) as { primary?: string; accent?: string; secondary?: string };
-      primary = parsed.primary ?? '';
-      secondary = parsed.accent ?? parsed.secondary ?? '';
-    } else if (trimmed.includes(',') || trimmed.includes(' ')) {
-      const parts = trimmed.split(/[, ]+/).map((p) => p.trim()).filter(Boolean);
-      primary = parts[0] ?? '';
-      secondary = parts[1] ?? '';
+    if (trimmed.startsWith("{")) {
+      const parsed = JSON.parse(trimmed) as {
+        primary?: string;
+        accent?: string;
+        secondary?: string;
+      };
+      primary = parsed.primary ?? "";
+      secondary = parsed.accent ?? parsed.secondary ?? "";
+    } else if (trimmed.includes(",") || trimmed.includes(" ")) {
+      const parts = trimmed
+        .split(/[, ]+/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      primary = parts[0] ?? "";
+      secondary = parts[1] ?? "";
     }
 
-    const normPrimary = normalizeBrandingHex(primary, '');
-    const normSecondary = normalizeBrandingHex(secondary, '');
+    const normPrimary = normalizeBrandingHex(primary, "");
+    const normSecondary = normalizeBrandingHex(secondary, "");
 
     if (!normPrimary || !normSecondary) return null;
     return { primary: normPrimary, secondary: normSecondary };
@@ -46,28 +53,28 @@ export function BrandColorImportModal({
   onImport,
 }: BrandColorImportModalProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [importRawText, setImportRawText] = useState('');
+  const [importRawText, setImportRawText] = useState("");
 
   const parsedCandidate = parseImportCandidate(importRawText);
 
   const handleClose = (): void => {
     onClose();
-    setImportRawText('');
+    setImportRawText("");
   };
 
   const handleConfirmImport = (): void => {
     if (!parsedCandidate) return;
     onImport(parsedCandidate.primary, parsedCandidate.secondary);
-    setImportRawText('');
-    notify.success(t('theme.pastePaletteSuccess'));
+    setImportRawText("");
+    notify.success(t("theme.pastePaletteSuccess"));
   };
 
   return (
     <Modal
       open={open}
       onClose={handleClose}
-      title={t('theme.importPaletteTitle')}
-      subtitle={t('theme.importPaletteDesc')}
+      title={t("theme.importPaletteTitle")}
+      subtitle={t("theme.importPaletteDesc")}
       size="sm"
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
@@ -78,7 +85,7 @@ export function BrandColorImportModal({
             onClick={handleClose}
             className="min-h-10 px-3 text-xs text-muted-foreground hover:text-foreground"
           >
-            {t('common.cancel')}
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -88,19 +95,19 @@ export function BrandColorImportModal({
             onClick={handleConfirmImport}
             className="min-h-10 px-4 text-xs font-semibold"
           >
-            {t('theme.importPaletteAction')}
+            {t("theme.importPaletteAction")}
           </Button>
         </div>
       }
     >
       <div className="space-y-4 py-1">
         <div className="space-y-2">
-          <Label htmlFor="import-palette-input">{t('theme.importPaletteInputLabel')}</Label>
+          <Label htmlFor="import-palette-input">{t("theme.importPaletteInputLabel")}</Label>
           <Textarea
             id="import-palette-input"
             value={importRawText}
             onChange={(e) => setImportRawText(e.target.value)}
-            placeholder={t('theme.importPalettePlaceholder')}
+            placeholder={t("theme.importPalettePlaceholder")}
             rows={4}
             autoFocus
             className="font-mono text-xs"
@@ -123,14 +130,12 @@ export function BrandColorImportModal({
               <p className="text-xs font-semibold text-foreground truncate">
                 {parsedCandidate.primary} & {parsedCandidate.secondary}
               </p>
-              <p className="text-2xs text-success font-semibold truncate">
-                Valid palette detected
-              </p>
+              <p className="text-2xs text-success font-semibold truncate">Valid palette detected</p>
             </div>
           </div>
         ) : importRawText.trim() ? (
           <p className="text-xs text-destructive font-medium px-1">
-            {t('theme.pastePaletteInvalid')}
+            {t("theme.pastePaletteInvalid")}
           </p>
         ) : null}
       </div>

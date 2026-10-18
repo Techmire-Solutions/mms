@@ -2,10 +2,10 @@ import type {
   FacultyCommandMetricsSnapshot,
   FacultyWidgetAggregateResult,
   FacultyWidgetQuery,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import type { FacultyRepository } from '../repository/facultyRepository.js';
-import { facultyRepository } from '../repository/facultyRepositoryAdapter.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import type { FacultyRepository } from "../repository/facultyRepository.js";
+import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
 
 export async function loadFacultyCommandMetrics(
   repo: FacultyRepository = facultyRepository,
@@ -32,4 +32,3 @@ export async function loadFacultyWidgetAggregates(
   if (!tenant) return {};
   return repo.aggregateWidgetQueries(tenant, queries);
 }
-

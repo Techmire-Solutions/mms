@@ -1,11 +1,11 @@
-import { toDbDate } from '../../lib/dbDate.js';
-import { and, eq, inArray, isNull, isNotNull, sql } from 'drizzle-orm';
-import { dedupeTrimmedIds, type Exam, type RepositoryListOptions } from '@mms/shared';
-import { buildTenantSoftDeleteConditions } from '../../services/genericRelationalService.js';
-import { exams, examClasses } from '../schema.js';
-import { withTenant, withTenantRead } from '../tenant-context.js';
-import { mapAuditTimestamps } from './repositoryMappers.js';
-import { resolveCatalogRefsTx } from './academicCatalogSnapshot.js';
+import { toDbDate } from "../../lib/dbDate.js";
+import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
+import { dedupeTrimmedIds, type Exam, type RepositoryListOptions } from "@mms/shared";
+import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
+import { exams, examClasses } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { mapAuditTimestamps } from "./repositoryMappers.js";
+import { resolveCatalogRefsTx } from "./academicCatalogSnapshot.js";
 
 type ExamRow = typeof exams.$inferSelect;
 
@@ -14,13 +14,13 @@ export function examRowToRecord(row: ExamRow, classIds: string[] = []): Exam {
     id: row.id,
     name: row.name,
     subject: row.subject,
-    subjectId: row.subjectId ?? '',
+    subjectId: row.subjectId ?? "",
     totalMarks: row.totalMarks,
     passingMarks: row.passingMarks,
-    date: row.date ?? '',
+    date: row.date ?? "",
     duration: row.duration,
     classIds,
-    status: row.status as Exam['status'],
+    status: row.status as Exam["status"],
     description: row.description,
     ...mapAuditTimestamps(row),
   };
@@ -37,7 +37,7 @@ export async function listExamsByWorkspace(
   const subdomain = tenant.trim().toLowerCase();
   const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
   const offset = Math.max(options?.offset ?? 0, 0);
-  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? 'all' : 'active');
+  const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     const conditions = buildTenantSoftDeleteConditions(exams, subdomain, deletedFilter);
     const examRows = await tx
@@ -77,10 +77,7 @@ export async function listExamsByWorkspace(
       })
       .from(examClasses)
       .where(
-        and(
-          eq(examClasses.workspaceSubdomain, subdomain),
-          inArray(examClasses.examId, examIds),
-        ),
+        and(eq(examClasses.workspaceSubdomain, subdomain), inArray(examClasses.examId, examIds)),
       );
 
     const classMap = new Map<string, string[]>();
@@ -134,12 +131,7 @@ export async function findExamById(tenant: string, id: string): Promise<Exam | n
         classId: examClasses.classId,
       })
       .from(examClasses)
-      .where(
-        and(
-          eq(examClasses.workspaceSubdomain, subdomain),
-          eq(examClasses.examId, trimmedId),
-        ),
-      );
+      .where(and(eq(examClasses.workspaceSubdomain, subdomain), eq(examClasses.examId, trimmedId)));
 
     return examRowToRecord(
       row,
@@ -151,14 +143,14 @@ export async function findExamById(tenant: string, id: string): Promise<Exam | n
 export async function findExamsByIds(
   tenant: string,
   ids: string[],
-  options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+  options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
 ): Promise<Exam[]> {
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === 'deleted';
-    const isAll = options?.deleted === 'all';
+    const isDeletedOnly = options?.deleted === "deleted";
+    const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(exams.deletedAt)
       : isAll
@@ -167,10 +159,7 @@ export async function findExamsByIds(
           ? isNotNull(exams.deletedAt)
           : isNull(exams.deletedAt);
 
-    const conditions = [
-      eq(exams.workspaceSubdomain, subdomain),
-      inArray(exams.id, cleanIds),
-    ];
+    const conditions = [eq(exams.workspaceSubdomain, subdomain), inArray(exams.id, cleanIds)];
     if (deletedCond) conditions.push(deletedCond);
 
     const examRows = await tx
@@ -208,10 +197,7 @@ export async function findExamsByIds(
       })
       .from(examClasses)
       .where(
-        and(
-          eq(examClasses.workspaceSubdomain, subdomain),
-          inArray(examClasses.examId, examIds),
-        ),
+        and(eq(examClasses.workspaceSubdomain, subdomain), inArray(examClasses.examId, examIds)),
       );
 
     const classMap = new Map<string, string[]>();
@@ -228,7 +214,9 @@ export async function findExamsByIds(
 export async function saveExam(tenant: string, record: Exam): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    const [subjectRef] = await resolveCatalogRefsTx(tx, 'subjects', subdomain, [{ id: record.subjectId, name: record.subject }]);
+    const [subjectRef] = await resolveCatalogRefsTx(tx, "subjects", subdomain, [
+      { id: record.subjectId, name: record.subject },
+    ]);
     await tx
       .insert(exams)
       .values({
@@ -241,8 +229,8 @@ export async function saveExam(tenant: string, record: Exam): Promise<void> {
         passingMarks: record.passingMarks ?? 50,
         date: toDbDate(record.date),
         duration: record.duration ?? 60,
-        status: record.status ?? 'upcoming',
-        description: record.description ?? '',
+        status: record.status ?? "upcoming",
+        description: record.description ?? "",
         deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
         deletedBy: record.deletedBy ?? null,
         deletionReason: record.deletionReason ?? null,
@@ -258,8 +246,8 @@ export async function saveExam(tenant: string, record: Exam): Promise<void> {
           passingMarks: record.passingMarks ?? 50,
           date: toDbDate(record.date),
           duration: record.duration ?? 60,
-          status: record.status ?? 'upcoming',
-          description: record.description ?? '',
+          status: record.status ?? "upcoming",
+          description: record.description ?? "",
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
           deletionReason: record.deletionReason ?? null,
@@ -269,12 +257,7 @@ export async function saveExam(tenant: string, record: Exam): Promise<void> {
 
     await tx
       .delete(examClasses)
-      .where(
-        and(
-          eq(examClasses.workspaceSubdomain, subdomain),
-          eq(examClasses.examId, record.id),
-        ),
-      );
+      .where(and(eq(examClasses.workspaceSubdomain, subdomain), eq(examClasses.examId, record.id)));
 
     const validClassIds = (record.classIds ?? []).filter(Boolean);
     if (validClassIds.length > 0) {
@@ -294,14 +277,19 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Exam>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
   if (uniqueRecords.length === 0) return;
 
   await withTenant(subdomain, async (tx) => {
-    const subjectRefs = await resolveCatalogRefsTx(tx, 'subjects', subdomain, uniqueRecords.map((r) => ({ id: r.subjectId, name: r.subject })));
+    const subjectRefs = await resolveCatalogRefsTx(
+      tx,
+      "subjects",
+      subdomain,
+      uniqueRecords.map((r) => ({ id: r.subjectId, name: r.subject })),
+    );
     await tx
       .insert(exams)
       .values(
@@ -315,8 +303,8 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
           passingMarks: r.passingMarks ?? 50,
           date: toDbDate(r.date),
           duration: r.duration ?? 60,
-          status: r.status ?? 'upcoming',
-          description: r.description ?? '',
+          status: r.status ?? "upcoming",
+          description: r.description ?? "",
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
@@ -346,10 +334,7 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
     await tx
       .delete(examClasses)
       .where(
-        and(
-          eq(examClasses.workspaceSubdomain, subdomain),
-          inArray(examClasses.examId, examIds),
-        ),
+        and(eq(examClasses.workspaceSubdomain, subdomain), inArray(examClasses.examId, examIds)),
       );
 
     const classPairs: Array<{
@@ -360,7 +345,7 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
     const pairSet = new Set<string>();
     for (const r of uniqueRecords) {
       for (const rawClassId of r.classIds ?? []) {
-        const classId = typeof rawClassId === 'string' ? rawClassId.trim() : String(rawClassId);
+        const classId = typeof rawClassId === "string" ? rawClassId.trim() : String(rawClassId);
         if (classId) {
           const key = `${r.id}:${classId}`;
           if (!pairSet.has(key)) {
@@ -384,13 +369,18 @@ export async function replaceExamsForWorkspace(tenant: string, records: Exam[]):
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, Exam>();
   for (const r of records) {
-    const cleanId = typeof r.id === 'string' ? r.id.trim() : String(r.id);
+    const cleanId = typeof r.id === "string" ? r.id.trim() : String(r.id);
     if (cleanId) uniqueMap.set(cleanId, { ...r, id: cleanId });
   }
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
-    const subjectRefs = await resolveCatalogRefsTx(tx, 'subjects', subdomain, uniqueRecords.map((r) => ({ id: r.subjectId, name: r.subject })));
+    const subjectRefs = await resolveCatalogRefsTx(
+      tx,
+      "subjects",
+      subdomain,
+      uniqueRecords.map((r) => ({ id: r.subjectId, name: r.subject })),
+    );
     await tx.delete(examClasses).where(eq(examClasses.workspaceSubdomain, subdomain));
     await tx.delete(exams).where(eq(exams.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
@@ -405,8 +395,8 @@ export async function replaceExamsForWorkspace(tenant: string, records: Exam[]):
           passingMarks: r.passingMarks ?? 50,
           date: toDbDate(r.date),
           duration: r.duration ?? 60,
-          status: r.status ?? 'upcoming',
-          description: r.description ?? '',
+          status: r.status ?? "upcoming",
+          description: r.description ?? "",
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,
           deletionReason: r.deletionReason ?? null,
@@ -422,7 +412,7 @@ export async function replaceExamsForWorkspace(tenant: string, records: Exam[]):
       const pairSet = new Set<string>();
       for (const r of uniqueRecords) {
         for (const rawClassId of r.classIds ?? []) {
-          const classId = typeof rawClassId === 'string' ? rawClassId.trim() : String(rawClassId);
+          const classId = typeof rawClassId === "string" ? rawClassId.trim() : String(rawClassId);
           if (classId) {
             const key = `${r.id}:${classId}`;
             if (!pairSet.has(key)) {

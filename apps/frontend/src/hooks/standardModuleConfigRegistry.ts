@@ -45,8 +45,8 @@ import {
   type FacultySettings,
   type UsersSettings,
   type QuestionBankSettings,
-} from '@mms/shared';
-import type { AttendanceStatus } from '@/lib/data/attendanceData';
+} from "@mms/shared";
+import type { AttendanceStatus } from "@/lib/data/attendanceData";
 
 export const STANDARD_MODULES_CONFIG_REGISTRY = {
   accounting: {
@@ -100,7 +100,7 @@ export const STANDARD_MODULES_CONFIG_REGISTRY = {
     defaultSettings: DEFAULT_USERS_SETTINGS,
     defaultFieldDefs: DEFAULT_USERS_FIELD_DEFS,
   },
-  'question-bank': {
+  "question-bank": {
     settingsObjectKey: QUESTION_BANK_MODULE_MANIFEST.settingsObjectKey,
     defaultSettings: DEFAULT_QUESTION_BANK_SETTINGS,
     defaultFieldDefs: DEFAULT_QUESTION_BANK_FIELD_DEFS,
@@ -121,7 +121,7 @@ export type StandardModuleSettingsMap = {
   students: StudentsSettings;
   faculty: FacultySettings;
   users: UsersSettings;
-  'question-bank': QuestionBankSettings;
+  "question-bank": QuestionBankSettings;
 };
 
 export type StandardModuleConfigExtraMap = {
@@ -143,5 +143,5 @@ export type StandardModuleConfigExtraMap = {
     genderFilters: string[];
   };
   users: Record<string, never>;
-  'question-bank': Record<string, never>;
+  "question-bank": Record<string, never>;
 };

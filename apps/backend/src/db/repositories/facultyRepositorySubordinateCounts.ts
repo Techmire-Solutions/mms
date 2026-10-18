@@ -1,5 +1,5 @@
-import type { TenantTransaction } from '../tenant-context.js';
-import { withTenant } from '../tenant-context.js';
+import type { TenantTransaction } from "../tenant-context.js";
+import { withTenant } from "../tenant-context.js";
 
 /** Organization positions removed — supervisor position resolution is unavailable. */
 export async function resolveSupervisorPrimaryPositionId(

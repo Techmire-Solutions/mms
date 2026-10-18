@@ -12,7 +12,9 @@ vi.mock("@/hooks/useAcademicTerms", () => ({
   }),
 }));
 
-const sessions = [SessionSchema.parse({ id: "s1", name: "Hifz 2026", classes: [{ id: "c1", name: "Darja 1" }] })];
+const sessions = [
+  SessionSchema.parse({ id: "s1", name: "Hifz 2026", classes: [{ id: "c1", name: "Darja 1" }] }),
+];
 
 describe("SessionClassSectionSelect", () => {
   it("given a class id, should resolve the owning session (empty for unknown ids)", () => {
@@ -27,8 +29,24 @@ describe("SessionClassSectionSelect", () => {
     const value = { sessionId: "s1", classId: "c1", sectionId: "" };
 
     // Act
-    const sessionOnly = renderToStaticMarkup(<SessionClassSectionSelect sessions={sessions} value={value} onChange={vi.fn()} levels="session" idPrefix="t" />);
-    const withSection = renderToStaticMarkup(<SessionClassSectionSelect sessions={sessions} value={value} onChange={vi.fn()} levels="section" idPrefix="t" />);
+    const sessionOnly = renderToStaticMarkup(
+      <SessionClassSectionSelect
+        sessions={sessions}
+        value={value}
+        onChange={vi.fn()}
+        levels="session"
+        idPrefix="t"
+      />,
+    );
+    const withSection = renderToStaticMarkup(
+      <SessionClassSectionSelect
+        sessions={sessions}
+        value={value}
+        onChange={vi.fn()}
+        levels="section"
+        idPrefix="t"
+      />,
+    );
 
     // Assert
     expect(sessionOnly).toContain('id="t-session"');

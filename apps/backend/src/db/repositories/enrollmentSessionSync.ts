@@ -1,4 +1,4 @@
-import { sql, type SQL } from 'drizzle-orm';
+import { sql, type SQL } from "drizzle-orm";
 
 export interface EnrolledSessionSyncScope {
   studentIds?: readonly string[];
@@ -9,7 +9,11 @@ export interface EnrolledSessionSyncScope {
 /** Any Drizzle client/transaction able to run raw SQL (cascades pass the base client type). */
 type SqlExecutor = { execute: (query: SQL) => PromiseLike<unknown> };
 
-const list = (ids: readonly string[]) => sql.join(ids.map((id) => sql`${id}`), sql`, `);
+const list = (ids: readonly string[]) =>
+  sql.join(
+    ids.map((id) => sql`${id}`),
+    sql`, `,
+  );
 
 /**
  * `enrollments` is the source of truth for student ↔ session membership; this keeps the
@@ -18,7 +22,11 @@ const list = (ids: readonly string[]) => sql.join(ids.map((id) => sql`${id}`), s
  * - removes a pair only when the student has enrollment history in that session but no
  *   active enrollment (legacy class-less pairs without any enrollment are left untouched).
  */
-export async function syncEnrolledSessionsTx(tx: SqlExecutor, subdomain: string, scope: EnrolledSessionSyncScope): Promise<void> {
+export async function syncEnrolledSessionsTx(
+  tx: SqlExecutor,
+  subdomain: string,
+  scope: EnrolledSessionSyncScope,
+): Promise<void> {
   const filters: SQL[] = [];
   if (scope.studentIds?.length) filters.push(sql`e.student_id IN (${list(scope.studentIds)})`);
   if (scope.sessionIds?.length) filters.push(sql`e.session_id IN (${list(scope.sessionIds)})`);

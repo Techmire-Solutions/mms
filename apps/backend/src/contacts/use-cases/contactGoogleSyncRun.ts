@@ -1,38 +1,36 @@
-import type { Contact, GoogleContactsSyncRunResult } from '@mms/shared';
+import type { Contact, GoogleContactsSyncRunResult } from "@mms/shared";
 import {
   mergeContacts,
   collectUniqueContactFieldValues,
   listUniqueContactFieldRefs,
-} from '@mms/shared';
-import { getRequestTenant } from '../../lib/tenantContext.js';
-import { runInTransaction } from '../../db/database.js';
-import { broadcastCollection } from '../../services/websocketService.js';
+} from "@mms/shared";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import { runInTransaction } from "../../db/database.js";
+import { broadcastCollection } from "../../lib/livePush.js";
 import {
   loadContactRuntimeDefaults,
   loadExistingNormalizedContactNames,
   findContactsMatchingUniqueValues,
-} from './contactLoadUseCases.js';
-import { bulkSaveContacts } from './contactWriteUseCases.js';
+} from "./contactLoadUseCases.js";
+import { bulkSaveContacts } from "./contactWriteUseCases.js";
 import {
   prepareContactRecord,
   assertContactUniqueFields,
   ContactUniqueFieldError,
-} from './contactValidationUseCases.js';
-import { invalidateDuplicateScanCache } from './contactDuplicateScanUseCases.js';
-import { loadContactFieldConfig } from './contactConfigService.js';
+} from "./contactValidationUseCases.js";
+import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import { loadContactFieldConfig } from "./contactConfigService.js";
 import {
   mapGoogleConnectionToContact,
   extractPhoneKeys,
   extractEmails,
   hasMeaningfulChanges,
   PeerContactIndex,
-} from './contactGoogleSyncMapping.js';
-
+} from "./contactGoogleSyncMapping.js";
 
 export type { GoogleContactsSyncRunResult };
 
-import { fetchGoogleConnectionsWithRefresh } from './contactGooglePeopleApi.js';
-
+import { fetchGoogleConnectionsWithRefresh } from "./contactGooglePeopleApi.js";
 
 /** Fetch Google Contacts server-side; enriches existing contacts or creates new contacts. */
 export async function runGoogleContactsSync(userId: string): Promise<GoogleContactsSyncRunResult> {
@@ -56,17 +54,20 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
 
   const allPhoneDigits = [...new Set(mapped.flatMap(extractPhoneKeys))];
   const allEmails = [...new Set(mapped.flatMap(extractEmails))];
-  const candidateNames = mapped.map((contact) => contact.name?.toLowerCase().trim() || '').filter(Boolean);
+  const candidateNames = mapped
+    .map((contact) => contact.name?.toLowerCase().trim() || "")
+    .filter(Boolean);
 
   const peerContacts = await findContactsMatchingUniqueValues({
     phoneDigits: allPhoneDigits,
     emails: allEmails,
-    scalars: candidateNames.map((name) => ({ fieldKey: 'name', normalized: name })),
+    scalars: candidateNames.map((name) => ({ fieldKey: "name", normalized: name })),
   }).catch(() => []);
 
-  const existingNames = peerContacts.length === 0 && candidateNames.length > 0
-    ? await loadExistingNormalizedContactNames(candidateNames)
-    : new Set<string>();
+  const existingNames =
+    peerContacts.length === 0 && candidateNames.length > 0
+      ? await loadExistingNormalizedContactNames(candidateNames)
+      : new Set<string>();
 
   const acceptedInserts: Contact[] = [];
   const acceptedUpdates: Contact[] = [];
@@ -96,7 +97,7 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
           try {
             const prepared = await prepareContactRecord(merged, match.id);
             await assertContactUniqueFields(tenant, prepared, {
-              language: 'en',
+              language: "en",
               excludeContactIds: [match.id],
             });
             acceptedUpdates.push(prepared);
@@ -145,7 +146,7 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
           // so `assertContactUniqueFields` still reports the identical conflicts
           // without rescanning every previously accepted insert.
           await assertContactUniqueFields(tenant, prepared, {
-            language: 'en',
+            language: "en",
             additionalPeers: collidingContacts,
           });
 
@@ -184,7 +185,7 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
   const imported = acceptedInserts.length;
   const updated = acceptedUpdates.length;
   if (imported > 0 || updated > 0) {
-    await broadcastCollection('contacts');
+    await broadcastCollection("contacts");
   }
 
   return {

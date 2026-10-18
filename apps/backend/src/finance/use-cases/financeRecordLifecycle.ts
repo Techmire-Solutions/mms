@@ -1,10 +1,10 @@
-import type { Invoice, Payment } from '@mms/shared';
-import type { FinanceRepository } from '../repository/financeRepository.js';
-import { withTenant } from '../../db/tenant-context.js';
+import type { Invoice, Payment } from "@mms/shared";
+import type { FinanceRepository } from "../repository/financeRepository.js";
+import { withTenant } from "../../db/tenant-context.js";
 import {
   tryPostArchiveReversalJournal,
   tryPostRestoreJournal,
-} from '../../accounting/ledgerPosting/ledgerPostingService.js';
+} from "../../accounting/ledgerPosting/ledgerPostingService.js";
 
 /**
  * Ledger and subledger consequences of archiving or restoring a finance record.
@@ -18,7 +18,7 @@ import {
 
 type ArchivableRepo = Pick<
   FinanceRepository,
-  'findInvoicesByIds' | 'findPaymentsByIds' | 'saveInvoice'
+  "findInvoicesByIds" | "findPaymentsByIds" | "saveInvoice"
 >;
 
 /** Late fees post under their own source key, so the invoice entry alone is not the whole posting. */
@@ -48,7 +48,7 @@ function applyCollectedDelta(invoice: Invoice, delta: number): Invoice {
   return {
     ...invoice,
     paidAmt,
-    status: paidAmt <= 0 ? 'pending' : paidAmt >= totalDue ? 'paid' : 'partial',
+    status: paidAmt <= 0 ? "pending" : paidAmt >= totalDue ? "paid" : "partial",
   };
 }
 
@@ -77,7 +77,7 @@ async function applyPaymentDeltas(
   for (const invoice of invoices) {
     // A cancelled invoice has already had its posting reversed; re-deriving its
     // status from the collected amount would silently revive it.
-    if (invoice.status === 'cancelled') continue;
+    if (invoice.status === "cancelled") continue;
     const delta = deltaByInvoice.get(invoice.id);
     if (!delta) continue;
     await repo.saveInvoice(tenant, applyCollectedDelta(invoice, delta));
@@ -96,7 +96,7 @@ export async function onInvoicesArchived(
     for (const source of invoicePostingSources(invoice)) {
       await tryPostArchiveReversalJournal(
         tenant,
-        'invoice',
+        "invoice",
         source.sourceId,
         invoice.deletedAt,
         source.label,
@@ -117,10 +117,10 @@ export async function onInvoicesRestored(
 ): Promise<void> {
   for (const { invoice, archivedAt } of restored) {
     const label = invoice.invoiceNumber ?? invoice.id;
-    await tryPostRestoreJournal(tenant, 'invoice', invoice.id, archivedAt, `Restore ${label}`);
+    await tryPostRestoreJournal(tenant, "invoice", invoice.id, archivedAt, `Restore ${label}`);
     await tryPostRestoreJournal(
       tenant,
-      'invoice',
+      "invoice",
       `latefee:${invoice.id}`,
       archivedAt,
       `Restore late fee ${label}`,
@@ -142,7 +142,7 @@ export async function onPaymentsArchived(
   for (const payment of archived) {
     await tryPostArchiveReversalJournal(
       tenant,
-      'payment',
+      "payment",
       payment.id,
       payment.deletedAt as string,
       `Archive payment ${payment.id}`,
@@ -167,7 +167,7 @@ export async function onPaymentsRestored(
   for (const { payment, archivedAt } of restored) {
     await tryPostRestoreJournal(
       tenant,
-      'payment',
+      "payment",
       payment.id,
       archivedAt,
       `Restore payment ${payment.id}`,

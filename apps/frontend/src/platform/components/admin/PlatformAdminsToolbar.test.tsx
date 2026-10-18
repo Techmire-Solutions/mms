@@ -1,21 +1,21 @@
-import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { PlatformAdminsToolbar } from './PlatformAdminsToolbar';
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { PlatformAdminsToolbar } from "./PlatformAdminsToolbar";
 
-vi.mock('@/hooks/useTranslation', () => ({
+vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string>) => {
       const map: Record<string, string> = {
-        'platform.manageAdmins': 'Platform Administrators',
-        'platform.searchAdminsPlaceholder': 'Search admins…',
-        'platform.roleAll': 'All',
-        'platform.roleSuperUser': 'Super Users',
-        'platform.roleAdmin': 'Admins',
-        'platform.exportAdminsCsv': 'Export CSV',
-        'common.clearFilters': 'Clear Filters',
+        "platform.manageAdmins": "Platform Administrators",
+        "platform.searchAdminsPlaceholder": "Search admins…",
+        "platform.roleAll": "All",
+        "platform.roleSuperUser": "Super Users",
+        "platform.roleAdmin": "Admins",
+        "platform.exportAdminsCsv": "Export CSV",
+        "common.clearFilters": "Clear Filters",
       };
-      if (key === 'platform.workspaces.shownCount' && params) {
+      if (key === "platform.workspaces.shownCount" && params) {
         return `${params.shown} of ${params.total}`;
       }
       return map[key] ?? key;
@@ -23,8 +23,8 @@ vi.mock('@/hooks/useTranslation', () => ({
   }),
 }));
 
-describe('PlatformAdminsToolbar', () => {
-  it('renders search bar, role tabs, and export button via WorkTaskToolbar', () => {
+describe("PlatformAdminsToolbar", () => {
+  it("renders search bar, role tabs, and export button via WorkTaskToolbar", () => {
     const html = renderToStaticMarkup(
       <PlatformAdminsToolbar
         shownCount={5}
@@ -43,9 +43,9 @@ describe('PlatformAdminsToolbar', () => {
       />,
     );
 
-    expect(html).toContain('Platform Administrators');
-    expect(html).toContain('Search admins…');
-    expect(html).toContain('Export CSV');
-    expect(html).toContain('Super Users');
+    expect(html).toContain("Platform Administrators");
+    expect(html).toContain("Search admins…");
+    expect(html).toContain("Export CSV");
+    expect(html).toContain("Super Users");
   });
 });

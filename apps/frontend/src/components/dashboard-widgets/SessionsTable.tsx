@@ -4,13 +4,13 @@ import { Users, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import type { SessionsReportTodaySession } from "@mms/shared";
 import { useSessionsReportAggregates } from "@/tenant/hooks/collections/sessions";
-import { WidgetCard } from "@/components/ui/WidgetCard";
-import { WidgetCardHeader } from "@/components/ui/WidgetCardHeader";
+import { WidgetCard } from "@/components/app/WidgetCard";
+import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { SearchBar } from "@/components/ui/SearchBar";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { ListPagination } from "@/components/ui/ListPagination";
+import { SearchBar } from "@/components/app/SearchBar";
+import { EmptyState } from "@/components/app/EmptyState";
+import { ListPagination } from "@/components/app/ListPagination";
 import { Badge } from "@/components/ui/badge";
 import { useLocalPagination } from "@/hooks/useLocalPagination";
 import { ROUTES } from "@/lib/config/routes";
@@ -43,7 +43,11 @@ function mapTodayRows(
   }));
 }
 
-const SESSION_SEARCH_FIELDS = (session: UpcomingSessionItem) => [session.name, session.teacher, session.room];
+const SESSION_SEARCH_FIELDS = (session: UpcomingSessionItem) => [
+  session.name,
+  session.teacher,
+  session.room,
+];
 
 /**
  * Today's scheduled sessions widget — rows from report-aggregates (or parent `items`).
@@ -104,7 +108,12 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
 
       <div className="divide-y divide-border/40 min-h-chart-md">
         {paginatedSessions.length === 0 ? (
-          <EmptyState title={t("sessions.report.noData")} compact icon={null} className="select-none" />
+          <EmptyState
+            title={t("sessions.report.noData")}
+            compact
+            icon={null}
+            className="select-none"
+          />
         ) : (
           paginatedSessions.map((session, sessionIndex) => (
             <motion.article
@@ -137,7 +146,9 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
 
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-foreground truncate m-0">{session.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 m-0 font-medium">{session.teacher}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 m-0 font-medium">
+                  {session.teacher}
+                </p>
               </div>
 
               <div className="hidden sm:flex items-center gap-3.5 text-xs text-muted-foreground flex-shrink-0 font-semibold select-none">

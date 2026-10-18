@@ -1,10 +1,10 @@
-import type { FastifyInstance } from 'fastify';
-import type { ZodType } from 'zod';
+import type { FastifyInstance } from "fastify";
+import type { ZodType } from "zod";
 
-import { isQueryFlagTrue, type User } from '@mms/shared';
-import { canReadCollection, canWriteCollection } from './rbacCanHelpers.js';
-import { sendForbidden, sendDatabaseError } from './httpErrors.js';
-import { parseRequest, replyValidationError } from './zodRequest.js';
+import { isQueryFlagTrue, type User } from "@mms/shared";
+import { canReadCollection, canWriteCollection } from "./rbacCanHelpers.js";
+import { sendForbidden, sendDatabaseError } from "./httpErrors.js";
+import { parseRequest, replyValidationError } from "./zodRequest.js";
 
 export interface PaginatedListRouteOptions<TQuery, TPageResult> {
   path?: string;
@@ -20,10 +20,7 @@ export interface PaginatedListRouteOptions<TQuery, TPageResult> {
 export function registerPaginatedListRoute<
   TQuery extends { page?: number; limit?: number; includeDeleted?: string | boolean },
   TPageResult,
->(
-  fastify: FastifyInstance,
-  options: PaginatedListRouteOptions<TQuery, TPageResult>,
-): void {
+>(fastify: FastifyInstance, options: PaginatedListRouteOptions<TQuery, TPageResult>): void {
   const {
     path,
     collection,
@@ -35,7 +32,7 @@ export function registerPaginatedListRoute<
     responseTransform,
   } = options;
 
-  fastify.get(path || '/', async (request, reply) => {
+  fastify.get(path || "/", async (request, reply) => {
     const user = request.user as User;
     if (!canReadCollection(user, collection)) {
       return sendForbidden(reply);

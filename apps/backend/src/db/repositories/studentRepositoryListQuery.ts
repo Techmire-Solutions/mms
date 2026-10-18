@@ -1,11 +1,11 @@
-import { eq, isNotNull, isNull, ne, sql, type SQL } from 'drizzle-orm';
+import { eq, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
 import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   toSqlSearchPattern,
   type StudentsListQuery,
-} from '@mms/shared';
+} from "@mms/shared";
 import {
   students,
   studentEnrolledSessions,
@@ -13,11 +13,18 @@ import {
   contacts,
   contactPhones,
   contactEmails,
-} from '../schema.js';
+} from "../schema.js";
 
-export { buildOrderBy } from './studentRepositoryListSort.js';
+export { buildOrderBy } from "./studentRepositoryListSort.js";
 export const STUDENT_SORT_FIELDS = new Set([
-  'name', 'grNumber', 'status', 'gender', 'registeredDate', 'dob', 'studentId', 'updatedAt',
+  "name",
+  "grNumber",
+  "status",
+  "gender",
+  "registeredDate",
+  "dob",
+  "studentId",
+  "updatedAt",
 ]);
 
 export function statusExpr(): SQL {
@@ -90,7 +97,12 @@ export function buildListConditions(
   const rawStatuses = dedupeTrimmedIds(query.status);
   if (rawStatuses.length > 0) {
     const statuses = rawStatuses.map((status) => status.toLowerCase());
-    conditions.push(sql`${statusExpr()} IN (${sql.join(statuses.map((s) => sql`${s}`), sql`, `)})`);
+    conditions.push(
+      sql`${statusExpr()} IN (${sql.join(
+        statuses.map((s) => sql`${s}`),
+        sql`, `,
+      )})`,
+    );
   }
 
   if (query.gender?.trim()) {
@@ -103,14 +115,14 @@ export function buildListConditions(
   }
 
   const quickFilter = query.quickFilter;
-  if (quickFilter && quickFilter !== 'all') {
-    if (quickFilter === 'new') {
+  if (quickFilter && quickFilter !== "all") {
+    if (quickFilter === "new") {
       const since = sql`now() - (${MODULE_METRICS_DEFAULT_PERIOD_DAYS} * interval '1 day')`;
       conditions.push(sql`COALESCE(
         CASE WHEN ${students.registeredDate} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}' THEN ${students.registeredDate}::timestamptz ELSE NULL END,
         ${students.createdAt}
       ) >= ${since}`);
-    } else if (quickFilter === 'missingGr') {
+    } else if (quickFilter === "missingGr") {
       conditions.push(sql`(${students.grNumber} is null or trim(${students.grNumber}) = '')`);
     } else {
       conditions.push(sql`${statusExpr()} = ${quickFilter}`);
@@ -150,7 +162,10 @@ export function buildListConditions(
   const fatherName = query.fatherName?.trim().toLowerCase();
   const relationshipConditions: SQL[] = [];
   if (relatedContactIds.length > 0) {
-    const ids = sql.join(relatedContactIds.map((id) => sql`${id}`), sql`, `);
+    const ids = sql.join(
+      relatedContactIds.map((id) => sql`${id}`),
+      sql`, `,
+    );
     relationshipConditions.push(
       sql`${students.fatherContactId} IN (${ids})`,
       sql`${students.motherContactId} IN (${ids})`,

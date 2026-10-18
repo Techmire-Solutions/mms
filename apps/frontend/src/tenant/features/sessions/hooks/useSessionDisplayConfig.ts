@@ -1,6 +1,6 @@
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { SEMANTIC_BADGE } from "@/lib/semanticTone";
+import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { sessionLifecycleDisplay } from "@/tenant/features/sessions/hooks/sessionLifecycleDisplay";
 
 interface UseSessionDisplayConfigParams {
@@ -8,10 +8,7 @@ interface UseSessionDisplayConfigParams {
   t: TranslationFunction;
 }
 
-export function useSessionDisplayConfig({
-  types,
-  t,
-}: UseSessionDisplayConfigParams) {
+export function useSessionDisplayConfig({ types, t }: UseSessionDisplayConfigParams) {
   const lifecycle = sessionLifecycleDisplay(t);
   const statusOptions: string[] = lifecycle.statusOptions;
   // Program names from the tenant catalog (Sessions → Setup → Programs).

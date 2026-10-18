@@ -42,7 +42,8 @@ const TenantContext = createContext<TenantContextValue | undefined>(undefined);
 export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const hostname = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const appDomain = useDeploymentAppDomain();
-  const subdomain = (() => (typeof window !== "undefined" ? parseTenantFromHost(hostname, appDomain) : null))();
+  const subdomain = (() =>
+    typeof window !== "undefined" ? parseTenantFromHost(hostname, appDomain) : null)();
   const isApex = (() => (typeof window !== "undefined" ? isApexHost(hostname, appDomain) : true))();
 
   const tenantLookupEnabled = !isApex && Boolean(subdomain);
@@ -50,21 +51,20 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     data: workspaceLookup,
     error: workspaceError,
     isPending,
-    isFetching,
     isError,
     isFetched,
     refetch,
   } = useWorkspaceBySubdomain(subdomain, tenantLookupEnabled);
   const workspaceLoading = tenantLookupEnabled && isPending && !isFetched;
-  const lookupBody = workspaceLookup?.body as { workspace?: PublicWorkspace; branding?: PublicBranding | null } | undefined;
+  const lookupBody = workspaceLookup?.body as
+    { workspace?: PublicWorkspace; branding?: PublicBranding | null } | undefined;
   const workspace = lookupBody?.workspace ?? null;
   const notFound = isWorkspaceNotFoundError(workspaceError) || workspaceLookup?.status === 404;
   const workspaceMissing =
     tenantLookupEnabled &&
     !workspaceLoading &&
     (notFound || (isFetched && !isError && workspace === null));
-  const workspaceLookupFailed =
-    tenantLookupEnabled && !workspaceLoading && isError && !notFound;
+  const workspaceLookupFailed = tenantLookupEnabled && !workspaceLoading && isError && !notFound;
   // Missing tenants hard-redirect to apex Tenant Not Found — skip branding fetch.
   const publicBranding = lookupBody?.branding ?? null;
 
@@ -85,36 +85,52 @@ export const TenantProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [subdomain, lookupBody]);
 
-  const workspaceUrl = subdomain
-    ? buildTenantUrl(subdomain, "/", getTenantUrlOptions())
-    : null;
+  const workspaceUrl = subdomain ? buildTenantUrl(subdomain, "/", getTenantUrlOptions()) : null;
 
-  const refetchWorkspace = () => {
+  const refetchWorkspace = React.useCallback(() => {
     void refetch();
-  };
+  }, [refetch]);
 
-  const redirectToApex = (path = "/") => {
+  const redirectToApex = React.useCallback((path = "/") => {
     window.location.href = buildApexUrl(path, getTenantUrlOptions());
-  };
+  }, []);
 
-  const redirectToTenant = (targetSubdomain: string, path = "/") => {
+  const redirectToTenant = React.useCallback((targetSubdomain: string, path = "/") => {
     window.location.href = buildTenantUrl(targetSubdomain, path, getTenantUrlOptions());
-  };
+  }, []);
 
-  const value: TenantContextValue = {
-    appDomain,
-    subdomain,
-    isApex,
-    workspace,
-    publicBranding,
-    workspaceLoading,
-    workspaceMissing,
-    workspaceLookupFailed,
-    workspaceUrl,
-    refetchWorkspace,
-    redirectToApex,
-    redirectToTenant,
-  };
+  // Stable value identity — this context is consumed by TranslationProvider, so an
+  // unstable object here cascades a re-render through every `useTranslation` consumer.
+  const value = React.useMemo<TenantContextValue>(
+    () => ({
+      appDomain,
+      subdomain,
+      isApex,
+      workspace,
+      publicBranding,
+      workspaceLoading,
+      workspaceMissing,
+      workspaceLookupFailed,
+      workspaceUrl,
+      refetchWorkspace,
+      redirectToApex,
+      redirectToTenant,
+    }),
+    [
+      appDomain,
+      subdomain,
+      isApex,
+      workspace,
+      publicBranding,
+      workspaceLoading,
+      workspaceMissing,
+      workspaceLookupFailed,
+      workspaceUrl,
+      refetchWorkspace,
+      redirectToApex,
+      redirectToTenant,
+    ],
+  );
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;
 };

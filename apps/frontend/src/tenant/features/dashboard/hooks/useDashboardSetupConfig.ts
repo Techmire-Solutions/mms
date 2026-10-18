@@ -1,21 +1,19 @@
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { QueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/contexts/AuthContext';
-import { useTranslation } from '@/hooks/useTranslation';
-import { notify } from '@/lib/notify';
-import {
-  DEFAULT_DASHBOARD_PREFERENCES,
-  normalizeDashboardPreferences,
-} from '@mms/shared';
-import { buildDefaultCustomWidgets } from '@/lib/reports/widgetDefaults';
-import type { CustomWidget } from '@/lib/reports/pinnedWidgetTypes';
-import { tsrClient } from '@/lib/api';
-import { fetchDashboardSummaryAsync } from './dashboardApi';
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import { notify } from "@/lib/notify";
+import { DEFAULT_DASHBOARD_PREFERENCES, normalizeDashboardPreferences } from "@mms/shared";
+import { buildDefaultCustomWidgets } from "@/lib/reports/widgetDefaults";
+import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import { tsrClient } from "@/lib/api";
+import { fetchDashboardSummaryAsync } from "./dashboardApi";
 
-export const DASHBOARD_PREFERENCES_QUERY_KEY = ['dashboard', 'preferences'] as const;
-export const DASHBOARD_WIDGETS_QUERY_KEY = ['dashboard', 'widgets'] as const;
+export const DASHBOARD_PREFERENCES_QUERY_KEY = ["dashboard", "preferences"] as const;
+export const DASHBOARD_WIDGETS_QUERY_KEY = ["dashboard", "widgets"] as const;
+export const DASHBOARD_SUMMARY_QUERY_KEY_ROOT = ["dashboard", "summary"] as const;
 export const DASHBOARD_SUMMARY_QUERY_KEY = (date?: string, role?: string) =>
-  ['dashboard', 'summary', { date, role }] as const;
+  [...DASHBOARD_SUMMARY_QUERY_KEY_ROOT, { date, role }] as const;
 
 /** Pure seeded default widgets, computed once — placeholder while the server query loads. */
 const DEFAULT_WIDGETS_PLACEHOLDER: CustomWidget[] = buildDefaultCustomWidgets();
@@ -23,7 +21,7 @@ const DEFAULT_WIDGETS_PLACEHOLDER: CustomWidget[] = buildDefaultCustomWidgets();
 export function invalidateDashboardQueries(queryClient: QueryClient): void {
   queryClient.invalidateQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
   queryClient.invalidateQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
-  queryClient.invalidateQueries({ queryKey: ['dashboard', 'summary'] });
+  queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY_ROOT });
 }
 
 export function useDashboardSummaryQuery(
@@ -48,10 +46,8 @@ export function useDashboardSummaryQuery(
   };
 }
 
-
 export function useDashboardPreferencesQuery() {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.dashboard.getPreferences.useQuery({
     queryKey: DASHBOARD_PREFERENCES_QUERY_KEY,
     enabled: isAuthenticated,
@@ -68,7 +64,6 @@ export function useDashboardPreferencesQuery() {
 export function useDashboardPreferencesMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.dashboard.putPreferences.useMutation({
     onSuccess: (res: { status: number; body?: { preferences?: unknown } }) => {
       if (res.status === 200 && res.body?.preferences) {
@@ -76,13 +71,12 @@ export function useDashboardPreferencesMutation() {
         invalidateDashboardQueries(queryClient);
       }
     },
-    onError: () => notify.error(t('dashboard.toast.prefSaveFailed')),
+    onError: () => notify.error(t("dashboard.toast.prefSaveFailed")),
   });
 }
 
 export function useDashboardWidgetsQuery() {
   const { isAuthenticated } = useAuth();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   const query = tsrClient.dashboard.getWidgets.useQuery({
     queryKey: DASHBOARD_WIDGETS_QUERY_KEY,
     enabled: isAuthenticated,
@@ -99,7 +93,6 @@ export function useDashboardWidgetsQuery() {
 export function useDashboardWidgetsMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.dashboard.putWidgets.useMutation({
     onSuccess: (res: { status: number; body?: { widgets?: unknown } }) => {
       if (res.status === 200 && res.body?.widgets) {
@@ -107,18 +100,17 @@ export function useDashboardWidgetsMutation() {
         invalidateDashboardQueries(queryClient);
       }
     },
-    onError: () => notify.error(t('dashboard.toast.saveFailed')),
+    onError: () => notify.error(t("dashboard.toast.saveFailed")),
   });
 }
 
 export function useDashboardWidgetDeleteMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.dashboard.deleteWidget.useMutation({
     onSuccess: (_data: unknown, variables: unknown) => {
       const widgetId =
-        typeof variables === 'string'
+        typeof variables === "string"
           ? variables
           : (variables as { params?: { id?: string } })?.params?.id;
       if (widgetId) {
@@ -136,14 +128,13 @@ export function useDashboardWidgetDeleteMutation() {
       }
       invalidateDashboardQueries(queryClient);
     },
-    onError: () => notify.error(t('dashboard.toast.deleteFailed')),
+    onError: () => notify.error(t("dashboard.toast.deleteFailed")),
   });
 }
 
 export function useDashboardWidgetsReorderMutation() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  // @ts-expect-error - TS union discrimination limit with ts-rest
   return tsrClient.dashboard.reorderWidgets.useMutation({
     onMutate: async ({ body }: { body: { order: Array<{ id: string; sortOrder: number }> } }) => {
       await queryClient.cancelQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
@@ -177,7 +168,7 @@ export function useDashboardWidgetsReorderMutation() {
       if (context?.previousResponse) {
         queryClient.setQueryData(DASHBOARD_WIDGETS_QUERY_KEY, context.previousResponse);
       }
-      notify.error(t('dashboard.toast.saveFailed'));
+      notify.error(t("dashboard.toast.saveFailed"));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });

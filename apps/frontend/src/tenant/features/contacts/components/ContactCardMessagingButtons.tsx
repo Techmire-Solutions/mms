@@ -1,6 +1,6 @@
 import type React from "react";
 import { type Contact, hasWhatsApp } from "@mms/shared";
-import { EntityMessagingActions } from "@/components/ui/EntityMessagingActions";
+import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface HasContactCardFaceChannelsParams {
@@ -56,7 +56,8 @@ export function ContactCardMessagingButtons({
   const { t } = useTranslation();
 
   return (
-    <EntityMessagingActions variant="icon-row"
+    <EntityMessagingActions
+      variant="icon-row"
       primaryPhone={phone}
       primaryEmail={email}
       showArchived={showArchived}
@@ -70,9 +71,7 @@ export function ContactCardMessagingButtons({
       whatsappAriaLabel={t("contacts.detail.whatsappContact", { name: displayName })}
       smsAriaLabel={t("contacts.detail.smsContact", { name: displayName })}
       emailAriaLabel={t("contacts.detail.emailNamedContact", { name: displayName })}
-      onWhatsApp={
-        onWhatsApp && hasWhatsApp(contact) ? () => onWhatsApp([contact]) : undefined
-      }
+      onWhatsApp={onWhatsApp && hasWhatsApp(contact) ? () => onWhatsApp([contact]) : undefined}
       onSms={onSms && phone ? () => onSms([contact]) : undefined}
       onEmail={onEmail && email ? () => onEmail([contact]) : undefined}
     />

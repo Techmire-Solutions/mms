@@ -2,8 +2,8 @@ import type React from "react";
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
 import type { StudentsBulkEnrollPlacement } from "@mms/shared";
-import { FormModal } from "@/components/ui/FormModal";
-import { Field, FormSelect } from "@/components/ui/FormPrimitives";
+import { FormModal } from "@/components/app/FormModal";
+import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
@@ -19,7 +19,13 @@ export interface StudentsBulkEnrollModalProps {
 type Mode = StudentsBulkEnrollPlacement["mode"];
 
 /** Bulk enroll selected students into one class/section, or cancel their enrollment in a session. */
-export function StudentsBulkEnrollModal({ open, onClose, selectedCount, onConfirm, isPending = false }: StudentsBulkEnrollModalProps): React.JSX.Element | null {
+export function StudentsBulkEnrollModal({
+  open,
+  onClose,
+  selectedCount,
+  onConfirm,
+  isPending = false,
+}: StudentsBulkEnrollModalProps): React.JSX.Element | null {
   const { t } = useTranslation();
   const terms = useAcademicTerms();
   const sessions = useSessionsCollection();
@@ -37,9 +43,11 @@ export function StudentsBulkEnrollModal({ open, onClose, selectedCount, onConfir
 
   const handleSave = async () => {
     if (!ready) return;
-    await onConfirm(mode === "remove"
-      ? { mode, sessionId }
-      : { mode, sessionId, classId, ...(sectionId ? { sectionId } : {}) });
+    await onConfirm(
+      mode === "remove"
+        ? { mode, sessionId }
+        : { mode, sessionId, classId, ...(sectionId ? { sectionId } : {}) },
+    );
     setSessionId("");
     setClassId("");
     setSectionId("");
@@ -60,7 +68,9 @@ export function StudentsBulkEnrollModal({ open, onClose, selectedCount, onConfir
       saveDisabled={isPending || !ready}
     >
       <div className="space-y-5 text-start">
-        <p className="m-0 text-sm text-muted-foreground">{t("students.bulkEnrollClassDesc", { count: selectedCount })}</p>
+        <p className="m-0 text-sm text-muted-foreground">
+          {t("students.bulkEnrollClassDesc", { count: selectedCount })}
+        </p>
         <Field id="bulk-enroll-mode" label={t("students.bulkEnrollMode")} required>
           <FormSelect
             id="bulk-enroll-mode"
@@ -76,9 +86,15 @@ export function StudentsBulkEnrollModal({ open, onClose, selectedCount, onConfir
           <FormSelect
             id="bulk-enroll-session"
             value={sessionId}
-            onChange={(value) => { setSessionId(value); setClassId(""); setSectionId(""); }}
+            onChange={(value) => {
+              setSessionId(value);
+              setClassId("");
+              setSectionId("");
+            }}
             placeholder={t("students.bulkEnrollSelectSessions")}
-            options={sessions.filter((s) => !s.deletedAt).map((s) => ({ value: String(s.id), label: s.name }))}
+            options={sessions
+              .filter((s) => !s.deletedAt)
+              .map((s) => ({ value: String(s.id), label: s.name }))}
           />
         </Field>
         {mode === "add" ? (
@@ -88,7 +104,10 @@ export function StudentsBulkEnrollModal({ open, onClose, selectedCount, onConfir
                 id="bulk-enroll-class"
                 value={classId}
                 disabled={!session}
-                onChange={(value) => { setClassId(value); setSectionId(""); }}
+                onChange={(value) => {
+                  setClassId(value);
+                  setSectionId("");
+                }}
                 options={(session?.classes ?? []).map((c) => ({ value: c.id, label: c.name }))}
               />
             </Field>
@@ -99,7 +118,10 @@ export function StudentsBulkEnrollModal({ open, onClose, selectedCount, onConfir
                   value={sectionId}
                   onChange={setSectionId}
                   placeholder={t("common.allSections")}
-                  options={sections.map((section) => ({ value: section.id, label: `${section.name} (${section.enrolled ?? 0}/${section.capacity})` }))}
+                  options={sections.map((section) => ({
+                    value: section.id,
+                    label: `${section.name} (${section.enrolled ?? 0}/${section.capacity})`,
+                  }))}
                 />
               </Field>
             ) : null}

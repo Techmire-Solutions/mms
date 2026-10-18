@@ -5,15 +5,12 @@ import {
   type Workspace,
   type Invoice,
   type Payment,
-} from '@mms/shared';
-import {
-  getCollectionByStorageName,
-  listCollectionStorageNames,
-} from '../database.js';
+} from "@mms/shared";
+import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceInvoicesForWorkspace,
   replacePaymentsForWorkspace,
-} from '../repositories/financeRepository.js';
+} from "../repositories/financeRepository.js";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();
@@ -37,7 +34,7 @@ export async function runMigration028(): Promise<void> {
   const subdomains = await discoverTenantSubdomains();
 
   for (const subdomain of subdomains) {
-    const prefix = tenantCollectionKey(subdomain, '');
+    const prefix = tenantCollectionKey(subdomain, "");
 
     // 1. Finance Invoices
     const legacyInvoices = await getCollectionByStorageName(`${prefix}finance_invoices`);
@@ -61,6 +58,6 @@ export async function runMigration028(): Promise<void> {
   }
 
   if (!changed) {
-    console.log('[Migration 028] No legacy finance records to import.');
+    console.log("[Migration 028] No legacy finance records to import.");
   }
 }

@@ -6,9 +6,9 @@ import {
   FormCardTypeSelect,
   FormCheckboxCard,
   TYPE_SELECT_WIDTH,
-} from "@/components/ui/FormPrimitives";
-import { LeadingIconInput } from "@/components/ui/LeadingIconInput";
-import { FormListFieldCard } from "@/components/ui/FormPrimitives";
+} from "@/components/app/FormPrimitives";
+import { LeadingIconInput } from "@/components/app/LeadingIconInput";
+import { FormListFieldCard } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ContactEducation } from "@mms/shared";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
@@ -145,9 +145,7 @@ export function ContactEducationEntryCard({
                   spellCheck={false}
                   enterKeyHint="next"
                   value={
-                    edu.isCurrentlyEnrolled
-                      ? t("contacts.form.currentlyStudying")
-                      : edu.year || ""
+                    edu.isCurrentlyEnrolled ? t("contacts.form.currentlyStudying") : edu.year || ""
                   }
                   disabled={Boolean(edu.isCurrentlyEnrolled)}
                   required={!edu.isCurrentlyEnrolled && isFieldRequired("education", "year")}

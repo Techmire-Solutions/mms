@@ -1,7 +1,7 @@
 import type React from "react";
 import { AnimatePresence } from "framer-motion";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { FormModal } from "@/components/ui/FormModal";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { FormModal } from "@/components/app/FormModal";
 import { EnrollmentDetail } from "@/tenant/features/enrollments/components/EnrollmentDetail";
 import { EnrollmentsListConfirmDialogs } from "@/tenant/features/enrollments/components/EnrollmentsListConfirmDialogs";
 import { EnrollmentWizard } from "@/tenant/features/enrollments/components/EnrollmentWizard";
@@ -83,10 +83,7 @@ export function EnrollmentsModalLayer({
         panelClassName="h-modal-tall max-h-modal-tall"
       >
         <ErrorBoundary>
-          <EnrollmentWizard
-            onComplete={onCompleteWizard}
-            onCancel={onCloseWizard}
-          />
+          <EnrollmentWizard onComplete={onCompleteWizard} onCancel={onCloseWizard} />
         </ErrorBoundary>
       </FormModal>
 

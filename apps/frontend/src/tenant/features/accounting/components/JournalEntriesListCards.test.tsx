@@ -6,7 +6,7 @@ import type { JournalEntry } from "@/lib/data/accountingData";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
-    t: (key: string, params?: any) => {
+    t: (key: string, params?: { ref?: string | number; count?: string | number }) => {
       if (params?.ref) return `${key}:${params.ref}`;
       if (params?.count) return `${key}:${params.count}`;
       return key;
@@ -107,6 +107,6 @@ describe("JournalEntriesListCards Component", () => {
       />,
     );
 
-    expect(html).toContain("data-selected=\"true\"");
+    expect(html).toContain('data-selected="true"');
   });
 });

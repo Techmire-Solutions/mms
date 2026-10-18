@@ -1,13 +1,13 @@
-import { useCallback, useEffect } from 'react';
-import { useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect } from "react";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
   DASHBOARD_MODULE_MANIFEST,
   DEFAULT_DASHBOARD_PREFERENCES,
   type DashboardPreferences,
-} from '@mms/shared';
-import { getOrInitializeCustomWidgets } from '@/lib/reports/widgetDefaults';
-import type { CustomWidget } from '@/lib/reports/pinnedWidgetTypes';
-import { usePermissions } from '@/tenant/hooks/usePermissions';
+} from "@mms/shared";
+import { getOrInitializeCustomWidgets } from "@/lib/reports/widgetDefaults";
+import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
 import {
   useDashboardPreferencesQuery,
   useDashboardPreferencesMutation,
@@ -15,7 +15,7 @@ import {
   useDashboardWidgetsMutation,
   useDashboardWidgetDeleteMutation,
   useDashboardWidgetsReorderMutation,
-} from '@/tenant/hooks/collections/dashboard';
+} from "@/tenant/hooks/collections/dashboard";
 
 /**
  * One-time local→server seed: reads the legacy browser `kpi_custom_widgets` store once
@@ -52,7 +52,7 @@ export function useDashboardConfig() {
   // One-time local→server widget seed. Runs only when the server query has settled
   // empty AND the user may write — viewers keep the local fallback (read-only display).
   useEffect(() => {
-    if (widgetsQuery.status !== 'success') return;
+    if (widgetsQuery.status !== "success") return;
     if (serverWidgets.length > 0 || !canWriteDashboard) return;
     if (dashboardWidgetSeedAttempts.has(queryClient)) return;
 
@@ -83,10 +83,13 @@ export function useDashboardConfig() {
   const toggleCardVisibility = (cardId: string) => {
     const disabledCardIds = prefs.disabledCardIds;
     const s = new Set(disabledCardIds);
-    if (s.has(cardId)) { s.delete(cardId); } else { s.add(cardId); }
-    updatePref('disabledCardIds', [...s]);
+    if (s.has(cardId)) {
+      s.delete(cardId);
+    } else {
+      s.add(cardId);
+    }
+    updatePref("disabledCardIds", [...s]);
   };
-
 
   /** Upsert only the affected widget (inserts new, updates existing; leaves others untouched). Resolves on success so builder flows can await before closing (§7). */
   const saveWidget = (savedWidget: CustomWidget) =>

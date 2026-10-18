@@ -7,7 +7,11 @@ import { useDuplicateDetectionState } from "@/tenant/features/contacts/hooks/use
 
 export interface DuplicateDetectionProps {
   onClose: () => void;
-  onMerge: (keepId: string | number, deleteId: string | number, mergedData: Contact) => Promise<void>;
+  onMerge: (
+    keepId: string | number,
+    deleteId: string | number,
+    mergedData: Contact,
+  ) => Promise<void>;
   canWrite?: boolean;
 }
 

@@ -76,7 +76,10 @@ export const obligationCollectionsRelations = relations(obligationCollections, (
     references: [obligationTypes.workspaceSubdomain, obligationTypes.id],
   }),
   rep: one(mujtahidReps, {
-    fields: [obligationCollections.workspaceSubdomain, obligationCollections.mujtahidRepresentativeId],
+    fields: [
+      obligationCollections.workspaceSubdomain,
+      obligationCollections.mujtahidRepresentativeId,
+    ],
     references: [mujtahidReps.workspaceSubdomain, mujtahidReps.id],
   }),
 }));

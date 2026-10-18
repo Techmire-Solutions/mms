@@ -1,16 +1,16 @@
-import React, { type JSX, type ReactNode, useMemo } from 'react';
+import React, { type JSX, type ReactNode, useMemo } from "react";
 import {
   getDisplayName,
   getInitials,
   getPrimaryEmail,
   getPrimaryPhone,
   type Contact,
-} from '@mms/shared';
-import { WorkBatchTable, type WorkBatchTableColumn } from '@/components/common/work';
-import { useTranslation } from '@/hooks/useTranslation';
-import type { MessagingSelectedMap } from '@/tenant/features/messaging/components/messagingWorkPanelShared';
-import { SEMANTIC_TEXT, SEMANTIC_BG } from '@/lib/semanticTone';
-import { MissingFieldBadge } from './messagingRecipientsShared';
+} from "@mms/shared";
+import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { MessagingSelectedMap } from "@/tenant/features/messaging/lib/messagingWorkPanelShared";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
+import { MissingFieldBadge } from "./messagingRecipientsShared";
 
 export interface MessagingWorkRecipientsTableProps {
   contacts: Contact[];
@@ -34,7 +34,7 @@ export function MessagingWorkRecipientsTable({
   selectedById,
   allVisibleSelected,
   someVisibleSelected,
-  selectedCount,
+  selectedCount: _selectedCount,
   selectedCountLabel,
   pageCountLabel,
   showRecipientCol,
@@ -57,14 +57,16 @@ export function MessagingWorkRecipientsTable({
 
     if (showRecipientCol) {
       cols.push({
-        id: 'recipient',
-        label: t('messaging.recipient'),
-        cellClassName: 'px-4 py-2 font-medium text-foreground',
+        id: "recipient",
+        label: t("messaging.recipient"),
+        cellClassName: "px-4 py-2 font-medium text-foreground",
         render: (contact: Contact) => {
           const displayName = getDisplayName(contact);
           return (
             <div className="flex items-center gap-2">
-              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${SEMANTIC_BG.primary} text-xs font-black ${SEMANTIC_TEXT.primary}`}>
+              <span
+                className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${SEMANTIC_BG.primary} text-xs font-black ${SEMANTIC_TEXT.primary}`}
+              >
                 {getInitials(displayName)}
               </span>
               <span className="truncate">{displayName}</span>
@@ -76,24 +78,24 @@ export function MessagingWorkRecipientsTable({
 
     if (showPhoneCol) {
       cols.push({
-        id: 'phone',
-        label: t('contacts.form.primaryPhone'),
-        cellClassName: 'px-4 py-2 font-mono',
+        id: "phone",
+        label: t("contacts.form.primaryPhone"),
+        cellClassName: "px-4 py-2 font-mono",
         render: (contact: Contact) => {
           const phone = getPrimaryPhone(contact);
-          return phone ?? <MissingFieldBadge label={t('messaging.missingPhone')} />;
+          return phone ?? <MissingFieldBadge label={t("messaging.missingPhone")} />;
         },
       });
     }
 
     if (showEmailCol) {
       cols.push({
-        id: 'email',
-        label: t('contacts.form.primaryEmail'),
-        cellClassName: 'px-4 py-2',
+        id: "email",
+        label: t("contacts.form.primaryEmail"),
+        cellClassName: "px-4 py-2",
         render: (contact: Contact) => {
           const email = getPrimaryEmail(contact);
-          return email ?? <MissingFieldBadge label={t('messaging.missingEmail')} />;
+          return email ?? <MissingFieldBadge label={t("messaging.missingEmail")} />;
         },
       });
     }
@@ -114,8 +116,9 @@ export function MessagingWorkRecipientsTable({
         onSelectAll: () => onToggleAllVisible(!allVisibleSelected),
         allSelected: allVisibleSelected,
         someSelected: someVisibleSelected,
-        selectAllAriaLabel: t('messaging.selectAllVisible'),
-        selectRowAriaLabel: (contact) => t('messaging.selectRecipient', { name: getDisplayName(contact) }),
+        selectAllAriaLabel: t("messaging.selectAllVisible"),
+        selectRowAriaLabel: (contact) =>
+          t("messaging.selectRecipient", { name: getDisplayName(contact) }),
       }}
       columnResize={{
         getColumnWidth,

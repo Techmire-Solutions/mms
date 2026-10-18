@@ -1,9 +1,9 @@
 import React from "react";
 import { Wallet } from "lucide-react";
-import { FormModal } from "@/components/ui/FormModal";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { FormModal } from "@/components/app/FormModal";
+import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Class } from "@/lib/data/sessionsData";
 
@@ -44,7 +44,11 @@ export function BudgetAddModal({
     <FormModal
       open={open}
       onClose={onClose}
-      title={budgetType === "income" ? t("sessions.budget.addIncomeTitle") : t("sessions.budget.addExpenseTitle")}
+      title={
+        budgetType === "income"
+          ? t("sessions.budget.addIncomeTitle")
+          : t("sessions.budget.addExpenseTitle")
+      }
       icon={Wallet}
       cancelLabel={t("common.cancel")}
       saveLabel={t("common.save")}

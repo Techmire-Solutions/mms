@@ -1,12 +1,17 @@
-import { sql } from 'drizzle-orm';
-import { activeDb, getReadReplicaDb, hasActiveTransaction, withActiveTransaction } from './dbConnection.js';
-import type { DbClient } from './dbConnection.js';
+import { sql } from "drizzle-orm";
+import {
+  activeDb,
+  getReadReplicaDb,
+  hasActiveTransaction,
+  withActiveTransaction,
+} from "./dbConnection.js";
+import type { DbClient } from "./dbConnection.js";
 
-import { tracer } from '../config/telemetry.js';
-import { applyTenantTransactionGuards } from './tenantTransactionGuards.js';
-import { logger } from '../lib/logger.js';
+import { tracer } from "../config/telemetry.js";
+import { applyTenantTransactionGuards } from "./tenantTransactionGuards.js";
+import { logger } from "../lib/logger.js";
 
-export type TenantTransaction = Parameters<Parameters<DbClient['transaction']>[0]>[0];
+export type TenantTransaction = Parameters<Parameters<DbClient["transaction"]>[0]>[0];
 export type AppDb = TenantTransaction;
 
 export interface WithTenantOptions {
@@ -52,17 +57,17 @@ export function withTenant<T>(
 export async function withTenant<T>(
   tenantId: string | null | undefined,
   callback: (tx: TenantTransaction) => Promise<T>,
-  options: WithTenantOptions = {}
+  options: WithTenantOptions = {},
 ): Promise<T> {
-  const resolvedTenantId = tenantId || '';
+  const resolvedTenantId = tenantId || "";
 
   // Defensive guard: a tenant id of the literal strings "undefined"/"null"
   // indicates a caller binding an unset request property instead of a real
   // workspace subdomain. Fail loudly rather than running RLS against a
   // non-existent tenant.
-  if (resolvedTenantId === 'undefined' || resolvedTenantId === 'null') {
+  if (resolvedTenantId === "undefined" || resolvedTenantId === "null") {
     throw new Error(
-      `withTenant received the literal string "${resolvedTenantId}" as tenant id — a caller is binding an unset request property. Check that authentication middleware decorates request.tenant.`
+      `withTenant received the literal string "${resolvedTenantId}" as tenant id — a caller is binding an unset request property. Check that authentication middleware decorates request.tenant.`,
     );
   }
 
@@ -70,20 +75,22 @@ export async function withTenant<T>(
   // transaction, so it must be requested explicitly.
   if (!resolvedTenantId && options.allowGlobal !== true) {
     throw new Error(
-      '[withTenant] empty tenant id — refusing to run with RLS bypassed. ' +
-        'Pass a real workspace subdomain, or { allowGlobal: true } for intentional platform/global work.',
+      "[withTenant] empty tenant id — refusing to run with RLS bypassed. " +
+        "Pass a real workspace subdomain, or { allowGlobal: true } for intentional platform/global work.",
     );
   }
 
-  if (typeof hasActiveTransaction === 'function' && hasActiveTransaction()) {
+  if (typeof hasActiveTransaction === "function" && hasActiveTransaction()) {
     const active = activeDb();
     // Capture the outer transaction's RLS context first: `SET LOCAL` persists
     // until the transaction ends, so without restoring it, queries the outer
     // callback runs *after* this nested block would execute under the nested
     // tenant (a cross-tenant read/write window).
-    const previousResult = await (active as unknown as {
-      execute: (query: unknown) => Promise<{ rows?: Array<Record<string, unknown>> }>;
-    }).execute(
+    const previousResult = await (
+      active as unknown as {
+        execute: (query: unknown) => Promise<{ rows?: Array<Record<string, unknown>> }>;
+      }
+    ).execute(
       sql`SELECT
         current_setting('app.current_tenant', true) AS tenant,
         current_setting('app.rls_bypass', true) AS bypass`,
@@ -102,10 +109,10 @@ export async function withTenant<T>(
       try {
         const previousBypass = previous?.bypass;
         const previousTenant = previous?.tenant;
-        if (previousBypass === 'on') {
+        if (previousBypass === "on") {
           // Outer scope was global (RLS bypassed) — restore that.
-          await applyTenantTransactionGuards(active as unknown as AppDb, '');
-        } else if (typeof previousTenant === 'string' && previousTenant) {
+          await applyTenantTransactionGuards(active as unknown as AppDb, "");
+        } else if (typeof previousTenant === "string" && previousTenant) {
           await applyTenantTransactionGuards(active as unknown as AppDb, previousTenant);
         }
       } catch {
@@ -124,8 +131,8 @@ export async function withTenant<T>(
     if (options.readOnly) {
       try {
         pool = activeDb();
-        if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
-          logger.warn('Read replica unavailable — executing this transaction on the primary');
+        if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+          logger.warn("Read replica unavailable — executing this transaction on the primary");
         }
       } catch {
         // handled by the degradation branch below
@@ -136,30 +143,30 @@ export async function withTenant<T>(
     // Fail closed in production: running tenant work without a transaction/RLS
     // boundary is a correctness and isolation hazard. Tests mock use cases but
     // not the DB connection layer, so keep a no-op boundary there.
-    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+    if (process.env.NODE_ENV === "test" || process.env.VITEST) {
       return callback({} as TenantTransaction);
     }
     throw new Error(
-      '[withTenant] no database client available — cannot run tenant work without a transaction boundary.',
+      "[withTenant] no database client available — cannot run tenant work without a transaction boundary.",
       { cause: poolError },
     );
   }
 
-  if (typeof pool.transaction !== 'function') {
-    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+  if (typeof pool.transaction !== "function") {
+    if (process.env.NODE_ENV === "test" || process.env.VITEST) {
       return callback({} as TenantTransaction);
     }
     throw new Error(
-      '[withTenant] active database client does not support transactions — cannot run tenant work without a transaction boundary.',
+      "[withTenant] active database client does not support transactions — cannot run tenant work without a transaction boundary.",
     );
   }
 
   return tracer.withSpan(
-    'drizzle.transaction',
+    "drizzle.transaction",
     {
-      'db.system': 'postgresql',
-      'tenant.id': resolvedTenantId || 'platform',
-      'db.read_only': options.readOnly ?? false,
+      "db.system": "postgresql",
+      "tenant.id": resolvedTenantId || "platform",
+      "db.read_only": options.readOnly ?? false,
     },
     async () => {
       return pool.transaction(
@@ -173,10 +180,10 @@ export async function withTenant<T>(
           // scope so nested runInTransaction()/activeDb() consumers join it rather
           // than opening a second pool client and a second transaction.
           return withActiveTransaction(tx as unknown as DbClient, () =>
-            callback(tx as unknown as TenantTransaction)
+            callback(tx as unknown as TenantTransaction),
           );
         },
-        options.readOnly ? { accessMode: 'read only' } : undefined,
+        options.readOnly ? { accessMode: "read only" } : undefined,
       );
     },
   );
@@ -204,11 +211,10 @@ export async function withTenantRead<T>(
 ): Promise<T> {
   // Mirrors `withTenant`'s overloads, so a nullable tenant here also requires an
   // explicit `allowGlobal` rather than failing at runtime.
-  return withTenant(
-    tenantId as string,
-    callback,
-    { ...options, readOnly: true } as WithTenantOptions,
-  );
+  return withTenant(tenantId as string, callback, {
+    ...options,
+    readOnly: true,
+  } as WithTenantOptions);
 }
 
 /**
@@ -228,4 +234,3 @@ export async function withGlobalTenant<T>(
 ): Promise<T> {
   return withTenant(null, callback, { ...options, allowGlobal: true });
 }
-

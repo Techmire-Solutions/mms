@@ -1,15 +1,15 @@
-import React from 'react';
-import { BookOpen, Check, X } from 'lucide-react';
+import React from "react";
+import { BookOpen, Check, X } from "lucide-react";
 import {
   PERMISSION_ACTIONS,
   type PermissionAction,
   type PermissionMap,
   type RbacModuleDef,
   type RbacPermissionMatrixGroup,
-} from '@mms/shared';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/useTranslation';
-import { PermissionMatrixMobileRow } from '@/tenant/features/users/components/PermissionMatrixMobileRow';
+} from "@mms/shared";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/useTranslation";
+import { PermissionMatrixMobileRow } from "@/tenant/features/users/components/PermissionMatrixMobileRow";
 
 export interface PermissionMatrixMobileListProps {
   groups: readonly RbacPermissionMatrixGroup[];
@@ -76,17 +76,15 @@ export function PermissionMatrixMobileList({
                     className="h-7 px-2 text-2xs font-semibold text-primary hover:bg-primary/10 gap-1 rounded-md"
                   >
                     {groupChecked ? <X className="h-3 w-3" /> : <Check className="h-3 w-3" />}
-                    <span>{groupChecked ? t('common.deselect') : t('users.permissions.colAll')}</span>
+                    <span>
+                      {groupChecked ? t("common.deselect") : t("users.permissions.colAll")}
+                    </span>
                   </Button>
                 ) : null}
               </div>
             ) : null}
             {group.modules.map((moduleItem: RbacModuleDef) => (
-              <PermissionMatrixMobileRow
-                key={moduleItem.id}
-                mod={moduleItem}
-                {...matrixActions}
-              />
+              <PermissionMatrixMobileRow key={moduleItem.id} mod={moduleItem} {...matrixActions} />
             ))}
           </section>
         );

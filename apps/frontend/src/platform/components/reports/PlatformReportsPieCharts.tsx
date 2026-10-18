@@ -1,8 +1,8 @@
-import { PlatformDistributionTooltip } from '@/platform/components/reports/platformChartTooltips';
-import React from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ReportChartCard } from '@/components/ui/reports/ReportChartCard';
+import { PlatformDistributionTooltip } from "@/platform/components/reports/platformChartTooltips";
+import React from "react";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { useTranslation } from "@/hooks/useTranslation";
+import { ReportChartCard } from "@/components/reports/ReportChartCard";
 
 const LEGEND_FORMATTER = (value: string) => (
   <span className="text-xs font-semibold text-foreground">{value}</span>
@@ -26,13 +26,25 @@ export function PlatformReportsPieCharts({
   const { t } = useTranslation();
 
   const statusChartData = [
-    { name: t('platform.workspaceActive'), value: activeWorkspaces, color: 'hsl(var(--success))' },
-    { name: t('platform.workspaceInactive'), value: disabledWorkspaces, color: 'hsl(var(--destructive))' },
+    { name: t("platform.workspaceActive"), value: activeWorkspaces, color: "hsl(var(--success))" },
+    {
+      name: t("platform.workspaceInactive"),
+      value: disabledWorkspaces,
+      color: "hsl(var(--destructive))",
+    },
   ];
 
   const verificationChartData = [
-    { name: t('platform.emailVerificationRequired'), value: verifyRequiredCount, color: 'hsl(var(--primary))' },
-    { name: t('platform.emailVerificationOptional'), value: verifyOptionalCount, color: 'hsl(var(--muted-foreground))' },
+    {
+      name: t("platform.emailVerificationRequired"),
+      value: verifyRequiredCount,
+      color: "hsl(var(--primary))",
+    },
+    {
+      name: t("platform.emailVerificationOptional"),
+      value: verifyOptionalCount,
+      color: "hsl(var(--muted-foreground))",
+    },
   ];
 
   const renderPie = (data: typeof statusChartData, keyPrefix: string) => (
@@ -56,23 +68,27 @@ export function PlatformReportsPieCharts({
     </PieChart>
   );
 
-  const emptyNode = <p className="text-xs text-muted-foreground">{t('apex.noMadrasasYet')}</p>;
+  const emptyNode = <p className="text-xs text-muted-foreground">{t("apex.noMadrasasYet")}</p>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       <ReportChartCard
-        title={t('platform.workspaceDistribution')}
-        subtitle={t('platform.visualizerSubtitle')}
-        heightClass="h-64" empty={totalWorkspaces === 0} emptyNode={emptyNode}
+        title={t("platform.workspaceDistribution")}
+        subtitle={t("platform.visualizerSubtitle")}
+        heightClass="h-64"
+        empty={totalWorkspaces === 0}
+        emptyNode={emptyNode}
       >
-        {renderPie(statusChartData, 'status')}
+        {renderPie(statusChartData, "status")}
       </ReportChartCard>
       <ReportChartCard
-        title={t('platform.reports.emailVerificationBreakdown')}
-        subtitle={t('platform.reports.emailVerificationBreakdownSub')}
-        heightClass="h-64" empty={totalWorkspaces === 0} emptyNode={emptyNode}
+        title={t("platform.reports.emailVerificationBreakdown")}
+        subtitle={t("platform.reports.emailVerificationBreakdownSub")}
+        heightClass="h-64"
+        empty={totalWorkspaces === 0}
+        emptyNode={emptyNode}
       >
-        {renderPie(verificationChartData, 'verify')}
+        {renderPie(verificationChartData, "verify")}
       </ReportChartCard>
     </div>
   );

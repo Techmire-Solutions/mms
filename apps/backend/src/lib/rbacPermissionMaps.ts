@@ -19,8 +19,51 @@ import {
   USERS_MODULE_MANIFEST,
   TASKS_MODULE_MANIFEST,
   type Permission,
-} from '@mms/shared';
-export const WRITE_ROLES = new Set(['admin', 'accountant', 'faculty', 'teacher', 'assistant_teacher']);
+} from "@mms/shared";
+export const WRITE_ROLES = new Set([
+  "admin",
+  "accountant",
+  "faculty",
+  "teacher",
+  "assistant_teacher",
+]);
+
+/**
+ * Allowed object keys that intentionally ride the staff write-role set instead of a
+ * single permission (frontend-persisted dashboard / template / widget configuration
+ * that staff own). Every other key in `ALLOWED_OBJECTS` MUST be mapped in
+ * `OBJECT_READ_PERMISSION` / `OBJECT_WRITE_PERMISSION`; an allowed key that is neither
+ * mapped nor listed here is denied (fail closed), so adding a new allowed key can no
+ * longer silently widen access to staff roles. `rbacPermissionMapCoverage.test.ts`
+ * enforces this completeness.
+ */
+export const STAFF_WRITE_OBJECT_KEYS: ReadonlySet<string> = new Set([
+  DASHBOARD_PREFERENCES_KEY,
+  INVOICE_TEMPLATE_OBJECT_KEY,
+  STUDENT_CARD_TEMPLATE_OBJECT_KEY,
+  "kpi_custom_widgets",
+  "mms_dashboard_disabled_cards",
+  "dashboard_section_settings",
+  "report_custom_visuals",
+]);
+
+/** Dynamic per-user widget object-key prefixes that likewise use the staff write-role set. */
+const STAFF_WRITE_OBJECT_KEY_PREFIXES = [
+  "kpi_config_",
+  "prev_kpi_titles_",
+  "prev_kpi_ids_",
+  "kpi_custom_cards_",
+] as const;
+
+export function isStaffWriteObjectKey(key: string): boolean {
+  return (
+    STAFF_WRITE_OBJECT_KEYS.has(key) ||
+    STAFF_WRITE_OBJECT_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))
+  );
+}
+
+/** Allowed collections that intentionally ride the staff write-role set (no dedicated permission). */
+export const STAFF_WRITE_COLLECTION_KEYS: ReadonlySet<string> = new Set(["currencies"]);
 
 export const COLLECTION_READ_PERMISSION: Record<string, Permission> = {
   tasks: TASKS_MODULE_MANIFEST.permissions.read,
@@ -54,10 +97,10 @@ export const COLLECTION_READ_PERMISSION: Record<string, Permission> = {
   tests: QUESTION_BANK_MODULE_MANIFEST.permissions.read,
   assessment_results: QUESTION_BANK_MODULE_MANIFEST.permissions.read,
   users: USERS_MODULE_MANIFEST.permissions.read,
-  user_activity_logs: 'analytics.view',
+  user_activity_logs: "analytics.view",
   message_templates: MESSAGING_MODULE_MANIFEST.permissions.read,
   message_logs: MESSAGING_MODULE_MANIFEST.permissions.read,
-  backups: 'settings.global.write',
+  backups: "settings.global.write",
 };
 
 export const COLLECTION_WRITE_PERMISSION: Record<string, Permission> = {
@@ -92,10 +135,10 @@ export const COLLECTION_WRITE_PERMISSION: Record<string, Permission> = {
   tests: QUESTION_BANK_MODULE_MANIFEST.permissions.write,
   assessment_results: QUESTION_BANK_MODULE_MANIFEST.permissions.write,
   users: USERS_MODULE_MANIFEST.permissions.write,
-  user_activity_logs: 'analytics.view',
+  user_activity_logs: "analytics.view",
   message_templates: MESSAGING_MODULE_MANIFEST.permissions.write,
   message_logs: MESSAGING_MODULE_MANIFEST.permissions.write,
-  backups: 'settings.global.write',
+  backups: "settings.global.write",
 };
 
 /** Distinct delete permission when the module manifest defines one; else write. */
@@ -116,40 +159,37 @@ export const COLLECTION_DELETE_PERMISSION: Record<string, Permission> = {
 // resolving to `roleHasPermission(role, 'settings.global.write' | 'settings.branding.write')`
 // rather than falling through to `canWriteObject`'s unrelated `WRITE_ROLES` default.
 export const OBJECT_READ_PERMISSION: Record<string, Permission> = {
-  global_settings: 'configuration.view',
+  global_settings: "configuration.view",
   // Legacy objects key for module grants (now workspaces.granted_modules). Apex SQL
   // table platform_settings is TLS-only and is not served via /api/db objects.
-  platform_settings: 'configuration.view',
-  branding: 'configuration.view',
-  [EMAIL_INTEGRATION_OBJECT_KEY]: 'settings.global.write',
-  sms_integration: 'settings.global.write',
+  platform_settings: "configuration.view",
+  branding: "configuration.view",
+  [EMAIL_INTEGRATION_OBJECT_KEY]: "settings.global.write",
+  sms_integration: "settings.global.write",
 };
 
 export const OBJECT_WRITE_PERMISSION: Record<string, Permission> = {
-  global_settings: 'settings.global.write',
-  branding: 'settings.branding.write',
-  [EMAIL_INTEGRATION_OBJECT_KEY]: 'settings.global.write',
-  sms_integration: 'settings.global.write',
+  global_settings: "settings.global.write",
+  branding: "settings.branding.write",
+  [EMAIL_INTEGRATION_OBJECT_KEY]: "settings.global.write",
+  sms_integration: "settings.global.write",
 };
 
-export const ALLOWED_COLLECTIONS = new Set([
-  'currencies',
-  'backups',
-]);
+export const ALLOWED_COLLECTIONS = new Set(["currencies", "backups"]);
 
 export const ALLOWED_OBJECTS = new Set([
-  'global_settings',
-  'platform_settings',
-  'branding',
+  "global_settings",
+  "platform_settings",
+  "branding",
   EMAIL_INTEGRATION_OBJECT_KEY,
-  'sms_integration',
+  "sms_integration",
   DASHBOARD_PREFERENCES_KEY,
   INVOICE_TEMPLATE_OBJECT_KEY,
   STUDENT_CARD_TEMPLATE_OBJECT_KEY,
-  'kpi_custom_widgets',
-  'mms_dashboard_disabled_cards',
-  'dashboard_section_settings',
-  'report_custom_visuals',
+  "kpi_custom_widgets",
+  "mms_dashboard_disabled_cards",
+  "dashboard_section_settings",
+  "report_custom_visuals",
 ]);
 
 export function isAllowedCollectionName(collectionName: string): boolean {
@@ -157,9 +197,11 @@ export function isAllowedCollectionName(collectionName: string): boolean {
 }
 
 export function isAllowedObjectKey(key: string): boolean {
-  return ALLOWED_OBJECTS.has(key)
-    || key.startsWith('kpi_config_')
-    || key.startsWith('prev_kpi_titles_')
-    || key.startsWith('prev_kpi_ids_')
-    || key.startsWith('kpi_custom_cards_');
+  return (
+    ALLOWED_OBJECTS.has(key) ||
+    key.startsWith("kpi_config_") ||
+    key.startsWith("prev_kpi_titles_") ||
+    key.startsWith("prev_kpi_ids_") ||
+    key.startsWith("kpi_custom_cards_")
+  );
 }

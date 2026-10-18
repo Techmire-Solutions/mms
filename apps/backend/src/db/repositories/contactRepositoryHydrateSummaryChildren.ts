@@ -1,9 +1,9 @@
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 import {
   type Transaction,
   type ContactChildMaps,
   createEmptyContactChildMaps,
-} from './contactRepositoryHydrateTypes.js';
+} from "./contactRepositoryHydrateTypes.js";
 
 /**
  * Consolidated O(1) SQL query aggregating summary child collections via json_agg.
@@ -107,12 +107,17 @@ export async function loadContactSummaryChildMapsAggregated(
         FROM contact_relationships r
         WHERE r.contact_id = c.id AND r.workspace_subdomain = ${subdomain}
       ), '[]'::json) AS relationships
-    FROM (VALUES ${sql.join(contactIds.map((id) => sql`(${id}::text)`), sql`, `)}) AS c(id)
+    FROM (VALUES ${sql.join(
+      contactIds.map((id) => sql`(${id}::text)`),
+      sql`, `,
+    )}) AS c(id)
   `);
 
-  const rows = (Array.isArray(queryResult)
-    ? queryResult
-    : ((queryResult as { rows?: Record<string, unknown>[] })?.rows ?? [])) as Record<string, unknown>[];
+  const rows = (
+    Array.isArray(queryResult)
+      ? queryResult
+      : ((queryResult as { rows?: Record<string, unknown>[] })?.rows ?? [])
+  ) as Record<string, unknown>[];
   for (const row of rows) {
     const contactId = String(row.contactId);
     if (Array.isArray(row.phones)) result.phonesMap.set(contactId, row.phones);

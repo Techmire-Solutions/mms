@@ -1,16 +1,22 @@
-import { useState, useCallback } from 'react';
-import type { User } from '@mms/shared';
-import { clear2FAState, getPendingChallengeId, mark2FAVerified, resend2FACode, setPendingChallengeId } from '@/lib/twoFactor';
-import { apiFetch, apiJson, isApiError } from '@/lib/apiClient';
-import { AUTH_PATHS } from '@/lib/apiClientHelpers';
-import { isAuthErrorType, parseAuthError, type AuthError } from '@/lib/authErrors';
+import { useState, useCallback } from "react";
+import type { User } from "@mms/shared";
+import {
+  clear2FAState,
+  getPendingChallengeId,
+  mark2FAVerified,
+  resend2FACode,
+  setPendingChallengeId,
+} from "@/lib/twoFactor";
+import { apiFetch, apiJson, isApiError } from "@/lib/apiClient";
+import { AUTH_PATHS } from "@/lib/apiClientHelpers";
+import { isAuthErrorType, parseAuthError, type AuthError } from "@/lib/authErrors";
 import {
   AuthFailureError,
   buildConnectionAuthError,
   type LoginApiResponse,
   type OnboardPayload,
   type OnboardResult,
-} from '@/lib/contexts/authContextHelpers';
+} from "@/lib/contexts/authContextHelpers";
 
 export interface UseAuthLoginOperationsParams {
   setUser: (user: User | null) => void;
@@ -41,7 +47,7 @@ export function useAuthLoginOperations({
     setAuthError(null);
     try {
       const response = await apiFetch(AUTH_PATHS.login, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({ email, password }),
       });
 
@@ -54,7 +60,11 @@ export function useAuthLoginOperations({
           setUser(authResponse.user);
           setIsAuthenticated(false);
           setAuthChecked(true);
-          return { user: authResponse.user, requires2FA: true, challengeId: authResponse.challengeId };
+          return {
+            user: authResponse.user,
+            requires2FA: true,
+            challengeId: authResponse.challengeId,
+          };
         }
 
         await applyAuthSession(authResponse.user);
@@ -83,10 +93,10 @@ export function useAuthLoginOperations({
     try {
       const challengeId = getPendingChallengeId();
       if (!challengeId) {
-        throw new Error('No pending 2FA challenge found');
+        throw new Error("No pending 2FA challenge found");
       }
       const response = await apiJson<{ user: User }>(AUTH_PATHS.twoFactorVerify, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({ challengeId, code }),
       });
       await applyAuthSession(response.user);
@@ -95,7 +105,7 @@ export function useAuthLoginOperations({
     } catch (error) {
       const authErr: AuthError = isApiError(error)
         ? {
-            type: isAuthErrorType(error.type) ? error.type : 'invalid_credentials',
+            type: isAuthErrorType(error.type) ? error.type : "invalid_credentials",
             message: error.message,
           }
         : buildConnectionAuthError(error);
@@ -116,7 +126,7 @@ export function useAuthLoginOperations({
     if (!isAuthenticated) return;
     setIsExtendingSession(true);
     try {
-      await apiFetch(AUTH_PATHS.sessionExtend, { method: 'POST' });
+      await apiFetch(AUTH_PATHS.sessionExtend, { method: "POST" });
     } finally {
       setIsExtendingSession(false);
     }
@@ -125,7 +135,7 @@ export function useAuthLoginOperations({
   const onboard = async (onboardingPayload: OnboardPayload): Promise<OnboardResult> => {
     setAuthError(null);
     return apiJson<OnboardResult>(AUTH_PATHS.onboard, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(onboardingPayload),
     });
   };
@@ -133,7 +143,7 @@ export function useAuthLoginOperations({
   const exchangeHandoff = async (code: string): Promise<void> => {
     setAuthError(null);
     const authResponse = await apiJson<{ user: User }>(AUTH_PATHS.handoff, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ code }),
     });
     await applyAuthSession(authResponse.user);
@@ -142,22 +152,26 @@ export function useAuthLoginOperations({
 
   const requestPasswordOtp = async (email: string): Promise<void> => {
     await apiJson(AUTH_PATHS.forgotPassword, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ email }),
     });
   };
 
   const verifyPasswordOtp = async (email: string, code: string): Promise<void> => {
     await apiJson(AUTH_PATHS.forgotPasswordVerify, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ email, code }),
     });
   };
 
-  const resetPasswordWithOtp = async (email: string, code: string, password: string): Promise<void> => {
+  const resetPasswordWithOtp = async (
+    email: string,
+    code: string,
+    password: string,
+  ): Promise<void> => {
     setAuthError(null);
     const authResponse = await apiJson<{ user: User }>(AUTH_PATHS.forgotPasswordReset, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({ email, code, password }),
     });
     await applyAuthSession(authResponse.user);

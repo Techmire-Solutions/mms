@@ -4,17 +4,14 @@ import CustomReportBuilder from "@/tenant/features/reports/components/CustomRepo
 import ComparisonMode from "@/tenant/features/reports/components/ComparisonMode";
 import DynamicChartVisualizer from "@/tenant/features/reports/components/DynamicChartVisualizer";
 import DynamicCardBuilder from "@/tenant/features/reports/components/DynamicCardBuilder";
-import SavedReports from "@/components/ui/reports/SavedReports";
+import SavedReports from "@/components/reports/SavedReports";
 import ContactsSavedReports from "@/tenant/features/reports/components/ContactsSavedReports";
 import { getObject, saveObject } from "@/lib/db";
 import { type VisualizerConfig } from "@/lib/reports/reportMetadata";
 import { useGenericSavedReportsSource } from "@/hooks/useSavedReportsSource";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import {
-  GENERIC_SAVED_REPORT_CATEGORIES,
-  type GenericSavedReportCategory,
-} from "@mms/shared";
+import { GENERIC_SAVED_REPORT_CATEGORIES, type GenericSavedReportCategory } from "@mms/shared";
 
 export type ModuleReportCategory =
   | "students"
@@ -50,22 +47,35 @@ interface ModuleReportsToolPanelsProps {
 
 export function getInitialReportCollection(category: ModuleReportCategory) {
   switch (category) {
-    case "students": return "students" as const;
-    case "faculty": return "faculty" as const;
-    case "sessions": return "sessions" as const;
+    case "students":
+      return "students" as const;
+    case "faculty":
+      return "faculty" as const;
+    case "sessions":
+      return "sessions" as const;
     case "finance":
     case "financial":
-    case "accounting": return "finance_invoices" as const;
-    case "attendance": return "attendance_records" as const;
-    case "hasanat": return "hasanat_distributions" as const;
-    case "contacts": return "contacts" as const;
-    case "questionBank": return "questions" as const;
-    case "examinations": return "assessment_results" as const;
-    case "enrollments": return "enrollments" as const;
-    case "obligations": return "finance_invoices" as const;
+    case "accounting":
+      return "finance_invoices" as const;
+    case "attendance":
+      return "attendance_records" as const;
+    case "hasanat":
+      return "hasanat_distributions" as const;
+    case "contacts":
+      return "contacts" as const;
+    case "questionBank":
+      return "questions" as const;
+    case "examinations":
+      return "assessment_results" as const;
+    case "enrollments":
+      return "enrollments" as const;
+    case "obligations":
+      return "finance_invoices" as const;
     case "messaging":
-    case "users": return "contacts" as const;
-    default: return undefined;
+    case "users":
+      return "contacts" as const;
+    default:
+      return undefined;
   }
 }
 
@@ -111,23 +121,48 @@ export function ModuleReportsToolPanels({
   return (
     <AnimatePresence mode="wait">
       {activeTab === "compare" && (
-        <motion.div key="compare" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-          <div className="pb-4"><ComparisonMode category={category} onClose={onClosePanel} /></div>
+        <motion.div
+          key="compare"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="overflow-hidden"
+        >
+          <div className="pb-4">
+            <ComparisonMode category={category} onClose={onClosePanel} />
+          </div>
         </motion.div>
       )}
       {activeTab === "builder" && (
-        <motion.div key="builder" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-          <div className="pb-4"><CustomReportBuilder initialSource={category} onClose={onClosePanel} /></div>
+        <motion.div
+          key="builder"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="overflow-hidden"
+        >
+          <div className="pb-4">
+            <CustomReportBuilder initialSource={category} onClose={onClosePanel} />
+          </div>
         </motion.div>
       )}
       {activeTab === "visualizer" && (
-        <motion.div key="visualizer" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+        <motion.div
+          key="visualizer"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="overflow-hidden"
+        >
           <div className="pb-4">
             <DynamicChartVisualizer
               initialConfig={visualizerEditConfig}
               onSave={(updatedConfig) => {
                 try {
-                  const customVisuals = getObject<Record<string, VisualizerConfig>>("report_custom_visuals", {});
+                  const customVisuals = getObject<Record<string, VisualizerConfig>>(
+                    "report_custom_visuals",
+                    {},
+                  );
                   customVisuals[updatedConfig.id] = updatedConfig;
                   saveObject("report_custom_visuals", customVisuals);
                   window.dispatchEvent(new Event("local-database-update"));
@@ -144,12 +179,26 @@ export function ModuleReportsToolPanels({
         </motion.div>
       )}
       {activeTab === "cardBuilder" && (
-        <motion.div key="cardBuilder" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-          <div className="pb-4"><DynamicCardBuilder initialCollection={getInitialCollection()} /></div>
+        <motion.div
+          key="cardBuilder"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="overflow-hidden"
+        >
+          <div className="pb-4">
+            <DynamicCardBuilder initialCollection={getInitialCollection()} />
+          </div>
         </motion.div>
       )}
       {activeTab === "saved" && (
-        <motion.div key="saved" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+        <motion.div
+          key="saved"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="overflow-hidden"
+        >
           <div className="pb-4">
             {category === "contacts" ? (
               <ContactsSavedReports />

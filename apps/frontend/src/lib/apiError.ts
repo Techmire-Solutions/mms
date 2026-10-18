@@ -27,9 +27,10 @@ export class ApiError extends Error {
     code?: string,
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.status = status;
-    this.type = type ?? (status === 401 ? 'auth_required' : status === 403 ? 'forbidden' : 'request_failed');
+    this.type =
+      type ?? (status === 401 ? "auth_required" : status === 403 ? "forbidden" : "request_failed");
     this.requestId = requestId;
     this.errors = errors;
     this.retryAfterSeconds = retryAfterSeconds;

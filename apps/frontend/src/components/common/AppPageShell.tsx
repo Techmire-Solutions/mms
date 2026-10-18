@@ -1,5 +1,5 @@
 import React from "react";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { cn } from "@/lib/utils";
 
 export interface AppPageShellProps {
@@ -43,7 +43,7 @@ export function AppPageShell({
       <div
         className={cn(
           "box-border mx-auto w-full min-w-0 max-w-7xl space-y-8 sm:space-y-10",
-          className
+          className,
         )}
         aria-busy={isBusy === true ? "true" : undefined}
       >

@@ -1,12 +1,12 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
-import { DetailSectionCard } from "@/components/ui/DetailSectionCard";
-import { UserAvatar } from "@/components/ui/UserAvatar";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { UserAvatar } from "@/components/app/UserAvatar";
+import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import type { StatusBadgeConfigItem } from "@/components/ui/StatusBadge";
+import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export interface SiblingStudentItem {
   id: string;
@@ -60,7 +60,8 @@ export function StudentDetailSiblingsSection({
               onKeyDown={handleKeyDown}
               className={cn(
                 "p-3 transition-colors",
-                isInteractive && "hover:bg-muted/60 cursor-pointer focus:outline-none focus-visible:bg-muted/60",
+                isInteractive &&
+                  "hover:bg-muted/60 cursor-pointer focus:outline-none focus-visible:bg-muted/60",
               )}
             >
               <div className="flex items-center justify-between gap-3">
@@ -73,24 +74,31 @@ export function StudentDetailSiblingsSection({
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-foreground truncate" title={sibling.name}>
+                      <span
+                        className="text-xs font-bold text-foreground truncate"
+                        title={sibling.name}
+                      >
                         {sibling.name}
                       </span>
                       {sibling.grNumber ? (
-                        <Badge as="span" size="sm" tone="primary" className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                        <Badge
+                          as="span"
+                          size="sm"
+                          tone="primary"
+                          className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
+                        >
                           {t("students.grPrefix")}: {sibling.grNumber}
                         </Badge>
                       ) : null}
                       {sibling.status && (
-                        <StatusBadge
-                          status={sibling.status}
-                          size="sm"
-                          config={statusBadgeConfig}
-                        />
+                        <StatusBadge status={sibling.status} size="sm" config={statusBadgeConfig} />
                       )}
                     </div>
                     {sibling.sessionNames.length > 0 && (
-                      <p className="text-3xs text-muted-foreground truncate mt-0.5" title={sibling.sessionNames.join(", ")}>
+                      <p
+                        className="text-3xs text-muted-foreground truncate mt-0.5"
+                        title={sibling.sessionNames.join(", ")}
+                      >
                         {sibling.sessionNames.join(", ")}
                       </p>
                     )}
@@ -98,7 +106,10 @@ export function StudentDetailSiblingsSection({
                 </div>
 
                 {isInteractive && (
-                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 rtl:rotate-180" aria-hidden />
+                  <ChevronRight
+                    className="w-4 h-4 text-muted-foreground shrink-0 rtl:rotate-180"
+                    aria-hidden
+                  />
                 )}
               </div>
             </div>

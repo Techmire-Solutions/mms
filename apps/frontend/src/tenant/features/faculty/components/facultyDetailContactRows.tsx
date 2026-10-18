@@ -1,18 +1,11 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
-import {
-  facultyFieldLabelKey,
-  type Contact,
-  type Faculty,
-} from "@mms/shared";
-import { ContactPhoneAction, ContactEmailAction } from "@/components/ui/ContactAction";
+import { facultyFieldLabelKey, type Contact, type Faculty } from "@mms/shared";
+import { ContactPhoneAction, ContactEmailAction } from "@/components/app/ContactAction";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import {
-  resolveAllContactPhones,
-  resolveAllContactEmails,
-} from "@/lib/contacts/contactI18n";
+import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18nFormat";
-import { getGenderIcon, getGenderIconClass } from "@/lib/genderUi";
+import { getGenderIcon, getGenderIconClass } from "@/lib/ui/genderUi";
 import type { FacultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
 import { FacultyDetailAttributeRow } from "@/tenant/features/faculty/components/FacultyDetailAttributeRow";
 
@@ -44,8 +37,6 @@ export function buildFacultyContactRows({
       value={faculty.gender ? formatContactGenderLabel(faculty.gender, t) : emptyDash}
     />,
   );
-
-
 
   const contact: Partial<Contact> = {
     phone: faculty.phone,
@@ -111,4 +102,3 @@ export function buildFacultyContactRows({
 
   return contactRows;
 }
-

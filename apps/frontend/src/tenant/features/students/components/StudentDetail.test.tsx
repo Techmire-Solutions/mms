@@ -8,7 +8,7 @@ vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
 }));
 
-vi.mock("@/tenant/features/students/components/useStudentDetailModel", () => ({
+vi.mock("@/tenant/features/students/hooks/useStudentDetailModel", () => ({
   useStudentDetailModel: (_student: Student) => ({
     t: (key: string, params?: Record<string, string | number>) => {
       if (params?.gr) return `GR: ${params.gr}`;
@@ -33,8 +33,14 @@ vi.mock("@/tenant/features/students/components/useStudentDetailModel", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/Drawer", () => ({
-  Drawer: ({ title, subtitle, children, headerActions, footer }: {
+vi.mock("@/components/app/Drawer", () => ({
+  Drawer: ({
+    title,
+    subtitle,
+    children,
+    headerActions,
+    footer,
+  }: {
     title: string;
     subtitle: string;
     children: React.ReactNode;

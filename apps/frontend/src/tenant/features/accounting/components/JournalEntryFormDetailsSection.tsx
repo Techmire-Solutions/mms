@@ -1,13 +1,13 @@
 import React from "react";
 import { BookOpen } from "lucide-react";
-import { type FiscalYear } from '@/lib/data/accountingData';
-import { SectionCard } from "@/components/ui/SectionCard";
-import { Field } from "@/components/ui/FormField";
+import { type FiscalYear } from "@/lib/data/accountingData";
+import { SectionCard } from "@/components/app/SectionCard";
+import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/DatePicker";
-import { FormSelect } from "@/components/ui/FormSelect";
+import { DatePicker } from "@/components/app/DatePicker";
+import { FormSelect } from "@/components/app/FormSelect";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { DraftForm } from "./journalEntryFormTypes";
+import type { DraftForm } from "../lib/journalEntryFormTypes";
 import { NextVoucherNumberHint } from "./NextVoucherNumberHint";
 
 interface JournalEntryFormDetailsSectionProps {
@@ -18,7 +18,13 @@ interface JournalEntryFormDetailsSectionProps {
   fiscalYears: FiscalYear[];
 }
 
-export function JournalEntryFormDetailsSection({ t, form, setForm, errors, fiscalYears }: JournalEntryFormDetailsSectionProps): React.JSX.Element {
+export function JournalEntryFormDetailsSection({
+  t,
+  form,
+  setForm,
+  errors,
+  fiscalYears,
+}: JournalEntryFormDetailsSectionProps): React.JSX.Element {
   return (
     <SectionCard
       accentColor="primary"
@@ -43,17 +49,15 @@ export function JournalEntryFormDetailsSection({ t, form, setForm, errors, fisca
           />
         </Field>
 
-        <Field
-          id="journal-entry-financial-year"
-          label={t("accounting.journal.form.financialYear")}
-        >
+        <Field id="journal-entry-financial-year" label={t("accounting.journal.form.financialYear")}>
           <FormSelect
             id="journal-entry-financial-year"
             name="fiscalYear"
             value={form.fiscal_year_id || form.fiscal_year || ""}
             onChange={(fiscalYearValue) => {
               const selected = (fiscalYears || []).find(
-                (fiscalYear) => fiscalYear.id === fiscalYearValue || fiscalYear.label === fiscalYearValue,
+                (fiscalYear) =>
+                  fiscalYear.id === fiscalYearValue || fiscalYear.label === fiscalYearValue,
               );
               setForm({
                 ...form,
@@ -74,7 +78,9 @@ export function JournalEntryFormDetailsSection({ t, form, setForm, errors, fisca
           label={
             <>
               {t("accounting.journal.dashboard.wizard.refNo")}{" "}
-              <span className="normal-case font-normal text-foreground">{t("accounting.journal.dashboard.wizard.optional")}</span>
+              <span className="normal-case font-normal text-foreground">
+                {t("accounting.journal.dashboard.wizard.optional")}
+              </span>
             </>
           }
           error={errors.ref}

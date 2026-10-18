@@ -1,23 +1,22 @@
-import { and, eq } from 'drizzle-orm';
-import { logger } from '../lib/logger.js';
+import { and, eq } from "drizzle-orm";
+import { logger } from "../lib/logger.js";
 
 export class QueueUnavailableError extends Error {
-  constructor(message = 'Failed to enqueue background job. The task queue service may be unavailable.') {
+  constructor(
+    message = "Failed to enqueue background job. The task queue service may be unavailable.",
+  ) {
     super(message);
-    this.name = 'QueueUnavailableError';
+    this.name = "QueueUnavailableError";
   }
 }
-import type { BackgroundJobRecord } from '@mms/shared';
-import { runWithTenant } from '../lib/tenantContext.js';
-import { getBackgroundJobModuleDenial } from '../lib/backgroundJobModuleAccess.js';
-import { withTenant } from '../db/tenant-context.js';
-import { backgroundJobs } from '../db/schema.js';
-import {
-  rowToJobRecord,
-  createDatabaseBackgroundJob,
-} from './backgroundJobService.js';
-import { dispatchJobToQueue } from '../worker/queues/index.js';
-import { publishJobEvent } from '../worker/pubsub/jobPubSub.js';
+import type { BackgroundJobRecord } from "@mms/shared";
+import { runWithTenant } from "../lib/tenantContext.js";
+import { getBackgroundJobModuleDenial } from "../lib/backgroundJobModuleAccess.js";
+import { withTenant } from "../db/tenant-context.js";
+import { backgroundJobs } from "../db/schema.js";
+import { rowToJobRecord, createDatabaseBackgroundJob } from "./backgroundJobService.js";
+import { dispatchJobToQueue } from "../worker/queues/index.js";
+import { publishJobEvent } from "../worker/pubsub/jobPubSub.js";
 
 export interface BackgroundJobRunContext {
   tenant: string;
@@ -46,7 +45,7 @@ async function patchJob(
   jobId: string,
   patch: Partial<BackgroundJobRecord>,
 ): Promise<BackgroundJobRecord> {
-  if (!tenantId) throw new Error('Tenant context is required to patch background job');
+  if (!tenantId) throw new Error("Tenant context is required to patch background job");
 
   const updateValues: {
     status?: string;
@@ -113,7 +112,7 @@ export async function executeJob(
       await patchJob(tenant, userId, jobId, { progress: { current, total } });
       const percent = total > 0 ? Math.round((current / total) * 100) : 0;
       await publishJobEvent({
-        event: 'job-progress',
+        event: "job-progress",
         tenantId: tenant,
         userId,
         jobId,
@@ -124,12 +123,12 @@ export async function executeJob(
     },
     complete: async (patch) => {
       await patchJob(tenant, userId, jobId, {
-        status: 'completed',
+        status: "completed",
         completedAt: new Date().toISOString(),
         ...patch,
       });
       await publishJobEvent({
-        event: 'job-completed',
+        event: "job-completed",
         tenantId: tenant,
         userId,
         jobId,
@@ -142,12 +141,12 @@ export async function executeJob(
     },
     fail: async (error) => {
       await patchJob(tenant, userId, jobId, {
-        status: 'failed',
+        status: "failed",
         error,
         completedAt: new Date().toISOString(),
       });
       await publishJobEvent({
-        event: 'job-failed',
+        event: "job-failed",
         tenantId: tenant,
         userId,
         jobId,
@@ -186,7 +185,7 @@ export async function executeJob(
       await runner(payload, runContext);
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Background job failed';
+    const message = error instanceof Error ? error.message : "Background job failed";
     await runContext.fail(message);
     // Re-throw so BullMQ applies its retry/backoff policy and the DLQ handler
     // fires on the final attempt. Without this, BullMQ records the job as
@@ -197,8 +196,8 @@ export async function executeJob(
   }
 }
 
-/** 
- * Forcefully fails a job in the database and broadcasts the event. 
+/**
+ * Forcefully fails a job in the database and broadcasts the event.
  * Useful for Dead-Letter Queue (DLQ) handlers when a job exhausts retries.
  */
 export async function markJobPermanentlyFailed(
@@ -210,13 +209,13 @@ export async function markJobPermanentlyFailed(
   error: string,
 ): Promise<void> {
   await patchJob(tenantId, userId, jobId, {
-    status: 'failed',
+    status: "failed",
     error,
     completedAt: new Date().toISOString(),
   });
-  
+
   await publishJobEvent({
-    event: 'job-failed',
+    event: "job-failed",
     tenantId,
     userId,
     jobId,
@@ -237,31 +236,59 @@ export async function enqueueBackgroundJob(
   // Create job with 'pending' status in PostgreSQL
   const pendingJob: BackgroundJobRecord = {
     ...job,
-    status: 'pending',
+    status: "pending",
   };
-  await runWithTenant(tenant, () => createDatabaseBackgroundJob(tenant, userId, pendingJob, payload));
+  await runWithTenant(tenant, () =>
+    createDatabaseBackgroundJob(tenant, userId, pendingJob, payload),
+  );
 
   // Dispatch to BullMQ Queue
   const enqueued = await dispatchJobToQueue(tenant, userId, pendingJob, payload);
-  
+
   if (!enqueued) {
-    logger.warn(
-      { jobId: job.id, moduleId: job.moduleId, kind: job.kind },
-      'Queue service unavailable (Redis unreachable or timed out); falling back to in-process background job execution',
-    );
-    setImmediate(() => {
-      executeJob(tenant, userId, pendingJob.id, pendingJob.moduleId, pendingJob.kind, payload).catch((err) => {
-        logger.error({ jobId: job.id, err }, 'In-process fallback background job execution failed');
+    // Heavy export/PDF jobs must not run on the API event loop: the sandboxed
+    // worker owns the heap ceiling, execution timeout, retry/backoff and DLQ.
+    // Fail the job and let the caller surface a 503, unless an operator has
+    // explicitly opted into the dev-only in-process fallback.
+    if (process.env.MMS_ALLOW_IN_PROCESS_JOB_FALLBACK === "true") {
+      logger.warn(
+        { jobId: pendingJob.id, moduleId: pendingJob.moduleId, kind: pendingJob.kind },
+        "Queue service unavailable; MMS_ALLOW_IN_PROCESS_JOB_FALLBACK is set — running in-process (no sandbox, no retry/DLQ)",
+      );
+      setImmediate(() => {
+        executeJob(
+          tenant,
+          userId,
+          pendingJob.id,
+          pendingJob.moduleId,
+          pendingJob.kind,
+          payload,
+        ).catch((err) => {
+          logger.error(
+            { jobId: pendingJob.id, err },
+            "In-process fallback background job execution failed",
+          );
+        });
       });
-    });
-    return pendingJob;
+      return pendingJob;
+    }
+
+    logger.error(
+      { jobId: pendingJob.id, moduleId: pendingJob.moduleId, kind: pendingJob.kind },
+      "Queue service unavailable (Redis unreachable or timed out); rejecting background job",
+    );
+    await markJobPermanentlyFailed(
+      tenant,
+      userId,
+      pendingJob.id,
+      pendingJob.moduleId,
+      pendingJob.kind,
+      "Background job queue is unavailable.",
+    );
+    throw new QueueUnavailableError();
   }
 
-  return job;
+  return pendingJob;
 }
 
-export {
-  getUserBackgroundJob,
-  getUserBackgroundJobPayload,
-} from './backgroundJobService.js';
-
+export { getUserBackgroundJob, getUserBackgroundJobPayload } from "./backgroundJobService.js";

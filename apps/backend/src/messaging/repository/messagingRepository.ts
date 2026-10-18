@@ -1,8 +1,8 @@
-import type { MessageTemplate, Message, MessagingMetricsDto } from '@mms/shared';
+import type { MessageTemplate, Message, MessagingMetricsDto } from "@mms/shared";
 import type {
   MessageLogsFilterQuery,
   MessageLogsPageResult,
-} from '../../db/repositories/messagingRepository.js';
+} from "../../db/repositories/messagingRepository.js";
 
 /**
  * Sole storage gateway for the messaging module (templates + logs).
@@ -29,7 +29,7 @@ export interface MessagingRepository {
   findMessageLogsByIds(
     tenant: string,
     ids: string[],
-    options?: { deleted?: 'active' | 'deleted' | 'all'; includeDeleted?: boolean },
+    options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<Message[]>;
   saveMessageLog(tenant: string, record: Message): Promise<void>;
   bulkSaveMessageLogs(tenant: string, records: Message[]): Promise<void>;

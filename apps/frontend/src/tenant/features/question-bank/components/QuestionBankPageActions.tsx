@@ -30,13 +30,7 @@ export function QuestionBankPageActions({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {canExport && onExport ? (
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={onExport}
-          disabled={isExporting}
-        >
+        <Button type="button" size="sm" variant="outline" onClick={onExport} disabled={isExporting}>
           <Download className="h-3.5 w-3.5" />
           {t("common.export")}
         </Button>
@@ -56,4 +50,3 @@ export function QuestionBankPageActions({
     </div>
   );
 }
-

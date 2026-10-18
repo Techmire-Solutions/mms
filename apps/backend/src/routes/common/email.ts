@@ -1,51 +1,51 @@
-import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
-import type { User } from '@mms/shared';
-import { isEmailProviderId, mergeEmailIntegrationConfig } from '@mms/shared';
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import type { User } from "@mms/shared";
+import { isEmailProviderId, mergeEmailIntegrationConfig } from "@mms/shared";
 import {
   loadEmailIntegrationConfig,
   markEmailIntegrationTestResult,
   saveEmailIntegrationConfig,
   saveEmailIntegrationSecrets,
-} from '../../services/email/emailIntegrationService.js';
-import {
-  sendTenantEmail,
-  verifyEmailTransport,
-} from '../../services/email/emailService.js';
-import { loadGlobalSettings } from '../../services/globalSettingsService.js';
-import { authenticateTenant } from '../../middleware/authenticate.js';
-import { canWriteObject } from '../../services/rbacService.js';
-import {
-  emailIntegrationBodySchema,
-  verificationCodeBodySchema,
-} from '@mms/shared';
-import { parseRequest, replyValidationError } from '../../lib/zodRequest.js';
-import { sendForbidden } from '../../lib/httpErrors.js';
-import { AUTH_RATE_LIMIT } from '../../lib/rateLimitConfig.js';
-import { createStrictRateLimitGuard } from '../../lib/rateLimitGuard.js';
+} from "../../services/email/emailIntegrationService.js";
+import { sendTenantEmail, verifyEmailTransport } from "../../services/email/emailService.js";
+import { loadGlobalSettings } from "../../services/globalSettingsService.js";
+import { authenticateTenant } from "../../middleware/authenticate.js";
+import { canWriteObject } from "../../services/rbacService.js";
+import { emailIntegrationBodySchema, verificationCodeBodySchema } from "@mms/shared";
+import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
+import { sendForbidden } from "../../lib/httpErrors.js";
+import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
+import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
 
 export default async function emailRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
-  fastify.addHook('preHandler', authenticateTenant);
+  fastify.addHook("preHandler", authenticateTenant);
 
   // Sending mail is a side-effect with cost and abuse potential — keep it on
   // the strict auth budget rather than the 300/min global default.
   const emailSendLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
 
-  fastify.get('/integration', async (request, reply) => {
+  fastify.get("/integration", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteObject(user, 'email_integration')) {
-      return sendForbidden(reply, 'Administrator access is required for email integration settings');
+    if (!canWriteObject(user, "email_integration")) {
+      return sendForbidden(
+        reply,
+        "Administrator access is required for email integration settings",
+      );
     }
     const config = await loadEmailIntegrationConfig();
     return reply.send(config);
   });
 
-  fastify.put('/integration', async (request, reply) => {
+  fastify.put("/integration", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteObject(user, 'email_integration')) {
-      return sendForbidden(reply, 'Administrator access is required for email integration settings');
+    if (!canWriteObject(user, "email_integration")) {
+      return sendForbidden(
+        reply,
+        "Administrator access is required for email integration settings",
+      );
     }
 
     const parsed = parseRequest(emailIntegrationBodySchema, request.body);
@@ -53,7 +53,7 @@ export default async function emailRoutes(
     const body = parsed.data;
 
     if (!isEmailProviderId(body.providerId)) {
-      return replyValidationError(reply, 'Unsupported email provider');
+      return replyValidationError(reply, "Unsupported email provider");
     }
 
     const current = await loadEmailIntegrationConfig();
@@ -81,16 +81,19 @@ export default async function emailRoutes(
     return reply.send(saved);
   });
 
-  fastify.post('/integration/test', async (request, reply) => {
+  fastify.post("/integration/test", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteObject(user, 'email_integration')) {
-      return sendForbidden(reply, 'Administrator access is required for email integration settings');
+    if (!canWriteObject(user, "email_integration")) {
+      return sendForbidden(
+        reply,
+        "Administrator access is required for email integration settings",
+      );
     }
 
     const verify = await verifyEmailTransport();
     if (!verify.sent) {
       await markEmailIntegrationTestResult(false, verify.message ?? verify.reason);
-      return replyValidationError(reply, verify.message ?? 'Email is not configured', {
+      return replyValidationError(reply, verify.message ?? "Email is not configured", {
         reason: verify.reason,
       });
     }
@@ -99,15 +102,15 @@ export default async function emailRoutes(
     const testSend = await sendTenantEmail(
       {
         to: user.email,
-        subject: 'MMS email test',
-        text: 'Your madrasa workspace email integration is working.',
+        subject: "MMS email test",
+        text: "Your madrasa workspace email integration is working.",
       },
       settings,
     );
 
     if (!testSend.sent) {
       await markEmailIntegrationTestResult(false, testSend.message ?? testSend.reason);
-      return replyValidationError(reply, testSend.message ?? 'Test email could not be sent', {
+      return replyValidationError(reply, testSend.message ?? "Test email could not be sent", {
         reason: testSend.reason,
       });
     }
@@ -116,7 +119,7 @@ export default async function emailRoutes(
     return reply.send({ success: true, config: saved });
   });
 
-  fastify.post('/verification-code', { preHandler: emailSendLimit }, async (request, reply) => {
+  fastify.post("/verification-code", { preHandler: emailSendLimit }, async (request, reply) => {
     const user = request.user as User;
     const parsed = parseRequest(verificationCodeBodySchema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
@@ -126,19 +129,19 @@ export default async function emailRoutes(
     const result = await sendTenantEmail(
       {
         to: user.email,
-        subject: 'MMS verification code',
+        subject: "MMS verification code",
         text: `Your verification code is ${code}. It expires in 10 minutes.`,
       },
       settings,
     );
 
     if (!result.sent) {
-      return replyValidationError(reply, result.message ?? 'Verification email could not be sent', {
+      return replyValidationError(reply, result.message ?? "Verification email could not be sent", {
         reason: result.reason,
         delivered: false,
       });
     }
 
-    return reply.send({ delivered: true, channel: 'email' });
+    return reply.send({ delivered: true, channel: "email" });
   });
 }

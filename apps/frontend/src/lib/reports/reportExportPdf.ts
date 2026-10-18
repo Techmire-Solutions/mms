@@ -1,8 +1,5 @@
 import { formatDate, todayISO } from "@mms/shared";
-import {
-  extractExportTable,
-  type ExportColumn,
-} from "./reportExportCore";
+import { extractExportTable, type ExportColumn } from "./reportExportCore";
 
 export interface PdfExportOptions {
   title: string;
@@ -71,8 +68,7 @@ export async function exportReportPdf({
     body: tableData as (string | number)[][],
     startY: 26,
     styles: {
-      fontSize:
-        resolvedOrientation === "l" || resolvedOrientation === "landscape" ? 8 : 10,
+      fontSize: resolvedOrientation === "l" || resolvedOrientation === "landscape" ? 8 : 10,
     },
   });
 

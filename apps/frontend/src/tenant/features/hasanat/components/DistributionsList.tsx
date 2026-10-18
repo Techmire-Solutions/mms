@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useWorkDirectoryViewMode } from '@/hooks/useWorkDirectoryViewMode';
+import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { HasanatTrashDialogs } from "./HasanatTrashDialogs";
-import { ModuleWorkListStateShell } from "@/components/ui/ModuleWorkListStateShell";
+import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DistributeModal } from "./DistributeModal";
 import { DistributionsListContent } from "./DistributionsListContent";
@@ -9,7 +9,7 @@ import { DistributionsListFilters } from "./DistributionsListFilters";
 import { HasanatBulkActionBar } from "./HasanatBulkActionBar";
 import { useDistributionsList } from "../hooks/useDistributionsList";
 import { useDistributionsTrashState } from "../hooks/useDistributionsTrashState";
-import type { DistributionsListProps } from "./distributionsListTypes";
+import type { DistributionsListProps } from "../lib/distributionsListTypes";
 
 export type { DistributionsListProps };
 
@@ -50,9 +50,12 @@ export function DistributionsList(props: DistributionsListProps) {
   const trash = useDistributionsTrashState(props);
 
   const selectedSet = new Set(selectedIds);
-  const allVisibleSelected = list.pageDistributions.length > 0
-    && list.pageDistributions.every((distribution) => selectedSet.has(distribution.id));
-  const someVisibleSelected = selectedSet.size > 0 && list.pageDistributions.some((distribution) => selectedSet.has(distribution.id));
+  const allVisibleSelected =
+    list.pageDistributions.length > 0 &&
+    list.pageDistributions.every((distribution) => selectedSet.has(distribution.id));
+  const someVisibleSelected =
+    selectedSet.size > 0 &&
+    list.pageDistributions.some((distribution) => selectedSet.has(distribution.id));
 
   useEffect(() => {
     onClearSelection?.();
@@ -95,7 +98,9 @@ export function DistributionsList(props: DistributionsListProps) {
         isError={list.pageQuery.isError}
         isLoading={list.pageQuery.isLoading}
         isFetching={list.pageQuery.isFetching}
-        onRetry={() => { void list.pageQuery.refetch(); }}
+        onRetry={() => {
+          void list.pageQuery.refetch();
+        }}
         errorTitle={t("hasanat.loadFailed")}
         errorHint={t("hasanat.loadFailedHint")}
         viewMode={viewMode}
@@ -128,13 +133,24 @@ export function DistributionsList(props: DistributionsListProps) {
           canRestoreRows={!!onRestore}
           canDeleteRows={!!onDelete}
           onMessage={onMessage}
-          onRowClick={onRowClick ? (id) => {
-            const distribution = list.pageDistributions.find((item) => item.id === id);
-            if (distribution) onRowClick(distribution);
-          } : undefined}
+          onRowClick={
+            onRowClick
+              ? (id) => {
+                  const distribution = list.pageDistributions.find((item) => item.id === id);
+                  if (distribution) onRowClick(distribution);
+                }
+              : undefined
+          }
           onChangeStatus={list.changeStatus}
-          onToggleSelectedDistribution={(id, checked) => onToggleSelectedDistribution?.(id, checked)}
-          onToggleSelectAll={(checked) => onToggleSelectAll?.(checked, list.pageDistributions.map((d) => d.id))}
+          onToggleSelectedDistribution={(id, checked) =>
+            onToggleSelectedDistribution?.(id, checked)
+          }
+          onToggleSelectAll={(checked) =>
+            onToggleSelectAll?.(
+              checked,
+              list.pageDistributions.map((d) => d.id),
+            )
+          }
           onTrashAction={(id) => {
             if (showDeleted) void onRestore?.(id);
             else trash.setPendingTrashId(id);

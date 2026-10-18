@@ -6,32 +6,32 @@ import type { useFinancePageController } from "@/tenant/features/finance/hooks/u
 const InvoiceDetail = lazy(() =>
   import("@/tenant/features/finance/components/InvoiceDetail").then((m) => ({
     default: m.InvoiceDetail,
-  }))
+  })),
 );
 const InvoiceForm = lazy(() =>
   import("@/tenant/features/finance/components/InvoiceForm").then((m) => ({
     default: m.InvoiceForm,
-  }))
+  })),
 );
 const FinanceGenerateInvoicesDialog = lazy(() =>
   import("@/tenant/features/finance/components/FinanceGenerateInvoicesDialog").then((m) => ({
     default: m.FinanceGenerateInvoicesDialog,
-  }))
+  })),
 );
 const PaymentForm = lazy(() =>
   import("@/tenant/features/finance/components/PaymentForm").then((m) => ({
     default: m.PaymentForm,
-  }))
+  })),
 );
 const PaymentDetail = lazy(() =>
   import("@/tenant/features/finance/components/PaymentDetail").then((m) => ({
     default: m.PaymentDetail,
-  }))
+  })),
 );
 const InvoiceReceiptModal = lazy(() =>
   import("@/tenant/features/finance/components/InvoiceReceiptModal").then((m) => ({
     default: m.InvoiceReceiptModal,
-  }))
+  })),
 );
 const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantMessageComposer"));
 
@@ -102,10 +102,7 @@ export function FinanceOverlays({
 
       {receiptInvoices.length > 0 && (
         <Suspense fallback={null}>
-          <InvoiceReceiptModal
-            invoices={receiptInvoices}
-            onClose={onCloseReceipts}
-          />
+          <InvoiceReceiptModal invoices={receiptInvoices} onClose={onCloseReceipts} />
         </Suspense>
       )}
 

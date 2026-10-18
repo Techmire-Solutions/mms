@@ -1,6 +1,6 @@
 import { DEFAULT_CURRENCIES, formatMoney } from "@mms/shared";
 import { useFinanceConfig, useAccountingConfig } from "./useStandardModuleConfig";
-import { useAccountingPreferencesQuery } from "@/tenant/features/accounting/hooks/useAccountingSetupConfig";
+import { useAccountingPreferencesQuery } from "@/tenant/hooks/collections/accounting";
 
 export interface UseCurrencyOptions {
   currencyCode?: string;
@@ -11,8 +11,7 @@ export function useCurrency({ currencyCode, decimalPlaces }: UseCurrencyOptions 
   const activeCurrency = (() => {
     return (
       DEFAULT_CURRENCIES.find((c) => c.code === currencyCode) ||
-      DEFAULT_CURRENCIES[0] ||
-      { symbol: "$", code: "USD", name: "US Dollar" }
+      DEFAULT_CURRENCIES[0] || { symbol: "$", code: "USD", name: "US Dollar" }
     );
   })();
 
@@ -73,4 +72,3 @@ export function useAccountingCurrency() {
     settings,
   };
 }
-

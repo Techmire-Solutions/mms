@@ -1,5 +1,5 @@
 import React from "react";
-import { Field, FormSelectWithQuickCreate } from "@/components/ui/FormPrimitives";
+import { Field, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Mujtahid, MujtahidRep, ObligationType } from "@/lib/data/obligationsData";
 
@@ -57,9 +57,7 @@ export function WakalaStep2Representative({
         />
       </Field>
       {availableReps.length === 0 && (
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t("obligations.wakala.noRepYet")}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("obligations.wakala.noRepYet")}</p>
       )}
     </div>
   );
