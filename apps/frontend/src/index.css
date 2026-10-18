@@ -1466,16 +1466,14 @@
  * "The contrast-color() CSS function resolves to black or white, maximizing the contrast ratio"
  * "For browsers that support it, RCS (Relative Color Syntax) provides the most robust automated fallback"
  */
-@supports (color: oklch(from red l c h)) {
-  @utility text-contrast-auto {
+@utility text-contrast-auto {
+  @supports (color: oklch(from red l c h)) {
     --threshold: 0.623;
     --l: max(0, sign(var(--threshold) - l));
     color: oklch(from var(--contrast-bg, currentColor) var(--l) 0 h);
   }
-}
 
-@supports (color: contrast-color(red)) {
-  @utility text-contrast-auto {
+  @supports (color: contrast-color(red)) {
     color: contrast-color(var(--contrast-bg, currentColor));
   }
 }
