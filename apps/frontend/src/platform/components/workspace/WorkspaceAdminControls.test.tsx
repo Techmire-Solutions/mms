@@ -9,12 +9,6 @@ vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("@/components/app/CopyButton", () => ({
-  CopyButton: ({ text, label }: { text: string; label: string }) => (
-    <button data-copy={text}>{label}</button>
-  ),
-}));
-
 function markup(node: React.ReactNode): HTMLDivElement {
   const container = document.createElement("div");
   container.innerHTML = renderToStaticMarkup(node);

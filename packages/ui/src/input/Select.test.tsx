@@ -8,6 +8,7 @@ import {
   selectBrandClass,
   isRadixSelectPortalTarget,
 } from "./Select";
+import { useFormSelectSearch } from "./useFormSelectSearch";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -96,5 +97,56 @@ describe("Select component & branded-select-styling", () => {
 
     expect(isRadixSelectPortalTarget(childEl)).toBe(true);
     expect(isRadixSelectPortalTarget(portalContainer)).toBe(true);
+  });
+
+  it("protects IME composition when pressing Enter in search field", async () => {
+    let picked: string | null = null;
+    function TestSearch() {
+      const search = useFormSelectSearch({
+        options: [
+          { value: "1", label: "Alpha" },
+          { value: "2", label: "Beta" },
+        ],
+        value: "",
+        onPick: (val) => {
+          picked = val;
+        },
+      });
+      return (
+        <input
+          data-testid="search-input"
+          onKeyDown={search.handleSearchKeyDown}
+        />
+      );
+    }
+
+    await act(async () => {
+      root.render(<TestSearch />);
+    });
+
+    const input = container.querySelector<HTMLInputElement>("input");
+    expect(input).not.toBeNull();
+
+    // 1. Simulating IME composition Enter keydown (isComposing: true)
+    input?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+        isComposing: true,
+      }),
+    );
+    expect(picked).toBeNull();
+
+    // 2. Simulating standard Enter keydown (isComposing: false)
+    input?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+        isComposing: false,
+      }),
+    );
+    expect(picked).toBe("1");
   });
 });

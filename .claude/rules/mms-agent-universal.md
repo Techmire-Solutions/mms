@@ -4,11 +4,11 @@ description: Universal agent cognition, planning, DRY reuse, communication econo
 
 # MMS Agent Universal Standards
 
-**Workflow skills:** orientation / sync → `antigravity-workspace` · PR review → `mms-code-review` · UI design → `ui-ux-pro-max`. Ownership matrix → `.cursor/rules/README.md`.
+**Workflow skills:** orientation / sync → `antigravity-workspace` · PR review → `mms-code-review` · UI design → `ui-ux-pro-max` · modern web guidance → `modern-web-guidance`. Ownership matrix → `.cursor/rules/README.md`.
 
 ## 1. Cognition & Behaviour
 - **Plan-First Protocol:** For every request, systematically execute the three-phase lifecycle:
-  1. *Discovery & Plan:* Read and understand intent, search relevant codebase locations, inspect existing patterns/abstractions (`@mms/shared`, hooks, UI primitives), and evaluate constraints (tenant RLS, strict TS, 300 LOC cap). For UI, query `ui-ux-pro-max` (`mms-ui-ux-design.md` §8).
+  1. *Discovery & Plan:* Read and understand intent, search relevant codebase locations, inspect existing patterns/abstractions (`@mms/shared`, hooks, UI primitives), and evaluate constraints (tenant RLS, strict TS, 300 LOC cap). For UI, query `ui-ux-pro-max` (`mms-ui-ux-design.md` §8) and consult `modern-web-guidance` (`AGENTS.md`) for HTML/CSS and client-side JS.
   2. *Actionable Task List:* Formulate an explicit, structured task checklist (`- [ ]`) breaking the implementation into discrete, sequenced phases (e.g., Types/Schemas → Backend/API → Frontend/Hooks → Components → Verification).
   3. *Iterative Execution & Verification:* Execute task-by-task against the checklist. Mark tasks in-flight (`- [/]`) and completed (`- [x]`). Run targeted verifications (typecheck, lint, or tests) after each phase before proceeding.
 - **Reuse First (DRY):** Search existing utilities and components (`@mms/shared`, `@shared/ui`, `@/components/app`, `@/components/common`, `@/hooks`) before writing new code. Keep shared behaviour configurable; verify consumers (`mms-dry.md` §1–§2).
@@ -26,7 +26,7 @@ description: Universal agent cognition, planning, DRY reuse, communication econo
 - **Concurrency & Signals:** Pass `AbortSignal` into `apiFetch` and `queryFn`; combine via `AbortSignal.any()`. Clear timers and observers.
 - **TypeScript:** Strict mode. Use `unknown` + narrowing (never `any`, never `as unknown as T`). Native immutability: `toSorted()`, `toReversed()`, `toSpliced()`, `Object.groupBy()`. Zero `enum` or `namespace`.
 - **Node.js 24:** Native built-ins (`node:` imports, `new URL()`, `using` / `await using`) (`mms-dependencies.md`).
-- **A11y & UI:** Semantic HTML5, Tailwind utilities, landmarks (`<main>`, `<nav>`, `<header>`), 44×44px touch floor (`mms-ui-ux-design.md` §2, §8).
+- **A11y, Modern Web & UI:** Semantic HTML5, modern Baseline standards via `modern-web-guidance` (`pnpx modern-web-guidance@latest search "<query>"`), Tailwind utilities, landmarks (`<main>`, `<nav>`, `<header>`), 44×44px touch floor (`mms-ui-ux-design.md` §2, §8).
 - **Git Boundaries:** Conventional Commits. Protected `main`. NEVER run `git add`, `commit`, or `push` unless explicitly told "commit". Never push to GitHub under any circumstance unless explicitly instructed by the user. Always run full local CI (`pnpm ci:local`) and ensure 100% clean pass before committing.
 - **Shell Commands:** Explicit working directory or single-shot `cd <dir> && <cmd>`. Never leave shell in un-reset directory.
 - **Enforcement:** Norms are machine-enforced (lint, ratchet, test, hook) or explicitly labelled advisory.

@@ -3,7 +3,7 @@ import { type AccountingSettings, type FiscalYear } from "@mms/shared";
 import { Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/app/FormSelect";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";

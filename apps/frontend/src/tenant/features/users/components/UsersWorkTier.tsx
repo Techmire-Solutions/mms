@@ -7,7 +7,7 @@ import type {
 } from "@mms/shared";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { ErrorState } from "@/components/app/ErrorState";
-import { CardSkeleton } from "@/components/app/LoadingState";
+import { CardSkeleton } from "@shared/ui";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { DataTableColumnLayout } from "@/components/common/data-table";
 import { useTranslation } from "@/hooks/useTranslation";

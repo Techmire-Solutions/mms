@@ -10,7 +10,7 @@ import {
 } from "@/tenant/features/hasanat/hooks/useHasanatApi";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import {
   DataTable,

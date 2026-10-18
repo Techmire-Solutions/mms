@@ -1,23 +1,30 @@
 import React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "../utils";
 
 export interface SectionHeaderProps {
+  /** Heading title text or node. */
   title: React.ReactNode;
+  /** Leading icon node. */
   icon?: React.ReactNode;
   /** Chip tone override, e.g. "bg-success/10 text-success". */
   iconClassName?: string;
+  /** Subtitle text or node. */
   subtitle?: React.ReactNode;
   /** Trailing count/text rendered inside the title block. */
   badge?: React.ReactNode;
+  /** Action buttons/elements aligned opposite the title. */
   actions?: React.ReactNode;
+  /** Heading semantic level (h2 default, or h3). */
   headingLevel?: 2 | 3;
+  /** Optional heading HTML ID. */
   headingId?: string;
   /** "stacked" (responsive column, default) or "row" (flat flex-wrap). */
   layout?: "stacked" | "row";
   /** sm alignment for stacked layouts. */
   align?: "start" | "center";
-  /** Drop the default bottom margin. */
+  /** Drop the default bottom margin (mb-3). */
   noMargin?: boolean;
+  /** Additional container classes. */
   className?: string;
 }
 
@@ -78,3 +85,5 @@ export function SectionHeader({
     </header>
   );
 }
+
+export default SectionHeader;

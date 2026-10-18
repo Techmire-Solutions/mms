@@ -1,7 +1,7 @@
 import React from "react";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { ToggleRow } from "@/components/app/ToggleRow";
+import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { EnrollmentsSettings } from "@mms/shared";

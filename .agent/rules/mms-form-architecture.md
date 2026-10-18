@@ -5,7 +5,7 @@ description: FormModal shell, Zod form validation, decimal currency formatting, 
 
 # MMS Form Architecture
 
-**Workflow skills:** form authoring → `mms-form-architecture` · form UX guidelines → `ui-ux-pro-max` · shell a11y & focus-return → `mms-a11y-smoke`.
+**Workflow skills:** form authoring → `mms-form-architecture` · modern web guidance → `modern-web-guidance` · form UX guidelines → `ui-ux-pro-max` · shell a11y & focus-return → `mms-a11y-smoke`.
 **Page boundary:** Work directory / DetailSheet / FormModal triad → `mms-module-architecture.md` + skill `mms-module-page`.
 
 ## 1. FormModal Shell & Primitives
@@ -24,6 +24,7 @@ description: FormModal shell, Zod form validation, decimal currency formatting, 
 - **Layout & Structure:** Enforce single-column flows (`COLLECTION_BODY`) inside `space-y-3`. Multi-column sections use CSS Subgrid or `@container` queries. Enabled registry fields must render (ban hardcoded allowlists). Client-side dynamic form compilers are banned. Gate entry and save CTAs with `canWrite`.
 
 ## 2. State & React 19 Standards
+- **Modern Web Form Standards:** Follow `modern-web-guidance` guides (`forms`, `validate-input-after-interaction`, `brand-consistent-forms`, `required-field-feedback`, `ime-safe-enter-submit`, `sms-otp-form`, `autofill-highlight-inputs`). Standardize `inputMode`, `autoComplete`, IME-safe Enter submission (`isComposing`), and dynamic height with `field-sizing: content` on `Textarea` (`form-fields-automatically-fit-contents`).
 - **State Management:** Controlled state (or RHF + zodResolver for complex wizards) validated against `@mms/shared` Zod schemas. RSC `"use server"` actions and native `action=` submissions are banned.
 - **Form Controls & A11y:** Initialize fields (`""` for strings, `[]` for arrays) to prevent uncontrolled warnings. Controls require `name` and `id` (`useId()` fallback + `<label htmlFor={id}>`). React 19 native `ref` on custom controls (ban `forwardRef`).
 - **Semantic Hints:** Mobile hints mandatory: Currency (`inputMode="decimal"`), Phone (`type="tel" inputMode="tel" autoComplete="tel"`), OTP (`inputMode="numeric" autoComplete="one-time-code"`), Email (`type="email"`).

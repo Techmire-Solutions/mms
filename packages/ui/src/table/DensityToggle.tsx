@@ -6,11 +6,17 @@ import { cn } from "../utils";
 /** Aligns with platform workspace density (`usePlatformDensity`). */
 export type DensityMode = "compact" | "standard" | "comfortable";
 
+export const DEFAULT_DENSITY_LABELS: Record<DensityMode, string> = {
+  compact: "Compact",
+  standard: "Standard",
+  comfortable: "Comfortable",
+};
+
 export interface DensityToggleProps {
   density: DensityMode;
   onChange: (d: DensityMode) => void;
-  ariaLabel: string;
-  labels: Record<DensityMode, string>;
+  ariaLabel?: string;
+  labels?: Partial<Record<DensityMode, string>>;
   className?: string;
 }
 
@@ -27,10 +33,12 @@ const MODES: { value: DensityMode; lines: number }[] = [
 export function DensityToggle({
   density,
   onChange,
-  ariaLabel,
+  ariaLabel = "Layout density",
   labels,
   className,
 }: DensityToggleProps): React.JSX.Element {
+  const resolvedLabels: Record<DensityMode, string> = { ...DEFAULT_DENSITY_LABELS, ...labels };
+
   return (
     <div
       role="radiogroup"
@@ -42,7 +50,7 @@ export function DensityToggle({
     >
       {MODES.map(({ value }) => {
         const isSelected = density === value;
-        const label = labels[value];
+        const label = resolvedLabels[value];
         return (
           <Tooltip key={value} delayDuration={300}>
             <TooltipTrigger asChild>

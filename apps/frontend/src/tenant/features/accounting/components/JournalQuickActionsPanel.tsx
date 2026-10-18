@@ -3,7 +3,7 @@ import { CheckCircle2, DollarSign, Download, Plus, Sparkles } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";

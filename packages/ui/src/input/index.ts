@@ -60,3 +60,9 @@ export {
   type FormSelectSearchState,
   type UseFormSelectSearchArgs,
 } from "./useFormSelectSearch";
+export {
+  ToggleRow,
+  type ToggleRowProps,
+  type ToggleRowVariant,
+} from "./ToggleRow";
+

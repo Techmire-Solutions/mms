@@ -13,7 +13,7 @@ import {
   CardContent,
   Button,
   Input,
-  Switch,
+  ToggleRow,
   Label,
   ErrorState,
   CardSkeleton,
@@ -70,22 +70,15 @@ export function PlatformGlobalSettingsPanel(): React.JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div>
-              <Label htmlFor="sync-tls" className="text-xs font-medium cursor-pointer">
-                {t("platform.settings.syncTlsLabel")}
-              </Label>
-              <div className="text-3xs text-muted-foreground">
-                {t("platform.settings.syncTlsDesc")}
-              </div>
-            </div>
-            <Switch
-              id="sync-tls"
-              checked={syncTls}
-              onCheckedChange={setSyncTls}
-              aria-label={t("platform.settings.syncTlsAria")}
-            />
-          </div>
+          <ToggleRow
+            id="sync-tls"
+            variant="bordered"
+            label={t("platform.settings.syncTlsLabel")}
+            description={t("platform.settings.syncTlsDesc")}
+            checked={syncTls}
+            onCheckedChange={setSyncTls}
+            ariaLabel={t("platform.settings.syncTlsAria")}
+          />
 
           <div className="space-y-1.5">
             <Label htmlFor="certbot-email" className="text-xs font-medium text-foreground">

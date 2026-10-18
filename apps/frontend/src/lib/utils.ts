@@ -35,3 +35,5 @@ export {
 } from "@mms/shared";
 
 export { optimizeImage } from "./imageOptimization";
+
+export { isImeSafeEnter } from "@shared/ui";

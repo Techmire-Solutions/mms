@@ -9,3 +9,10 @@ export {
   type ReviewRowItem,
 } from "./ReviewList";
 export { UserAvatar, USER_STATUS_COLORS, getInitials, type UserAvatarProps } from "./UserAvatar";
+export { LogoMark, PlatformLogoMark, type LogoMarkProps } from "./LogoMark";
+export {
+  WorkspaceLogo,
+  type WorkspaceLogoProps,
+  type WorkspaceLogoSize,
+} from "./WorkspaceLogo";
+

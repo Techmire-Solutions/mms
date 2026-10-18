@@ -1,9 +1,8 @@
 import React from "react";
 import { ShieldCheck, Lock, ShieldAlert } from "lucide-react";
-import { PlatformLogoMark } from "@/platform/components/PlatformPageShell";
 import { AuthCardShell, AuthFormHeading, AuthPageFrame } from "@/components/entry";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Badge } from "@shared/ui";
+import { Badge, PlatformLogoMark } from "@shared/ui";
 
 export interface PlatformAuthLayoutProps {
   children: React.ReactNode;

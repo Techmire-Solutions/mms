@@ -4,7 +4,7 @@ import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsG
 import { Skeleton } from "@/components/ui/skeleton";
 import { AttendanceAnalyticsInsights } from "@/tenant/features/attendance/components/AttendanceAnalyticsInsights";
 import { useAttendanceAnalyticsModel } from "@/tenant/features/attendance/hooks/useAttendanceAnalyticsModel";
-import { StatsSkeleton } from "@/components/app/LoadingState";
+import { StatsSkeleton } from "@shared/ui";
 import { ErrorState } from "@/components/app/ErrorState";
 
 const AttendanceAnalyticsChartPanels = lazy(() =>

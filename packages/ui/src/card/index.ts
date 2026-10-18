@@ -30,3 +30,5 @@ export {
 } from "./CredentialsResultCard";
 export { AppFooter, type AppFooterProps } from "./AppFooter";
 export { IntegrationPanelChrome, type IntegrationPanelChromeProps } from "./IntegrationPanelChrome";
+export { SectionHeader, type SectionHeaderProps } from "./SectionHeader";
+

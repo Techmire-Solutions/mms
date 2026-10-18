@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
+import { isImeSafeEnter } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { parseMoneyInput } from "../lib/simpleTransactionMoney";
 
@@ -68,7 +69,7 @@ export function SimpleTransactionAmountInput({
             onBlur={onBlur}
             onChange={(event) => onChange(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
+              if (event.key === "Enter" && isImeSafeEnter(event)) {
                 event.preventDefault();
                 onProceed?.();
               }

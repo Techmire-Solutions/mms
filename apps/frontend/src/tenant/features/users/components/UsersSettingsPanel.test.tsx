@@ -18,9 +18,6 @@ vi.mock("@/components/app/SectionCard", () => ({
   ),
 }));
 
-vi.mock("@/components/app/ToggleRow", () => ({
-  ToggleRow: ({ label }: { label: React.ReactNode }) => <div data-testid="toggle-row">{label}</div>,
-}));
 
 vi.mock("@/components/app/ModuleSetupSaveFooter", () => ({
   ModuleSetupSaveFooter: () => <div data-testid="save-footer">Save Footer</div>,

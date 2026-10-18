@@ -3,7 +3,7 @@ import { CalendarDays } from "lucide-react";
 import type { AttendanceSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionCard } from "@/components/app/SectionCard";
-import { ToggleRow } from "@/components/app/ToggleRow";
+import { ToggleRow } from "@shared/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { WorkingDaysPicker } from "@/components/common/WorkingDaysPicker";

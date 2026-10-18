@@ -69,4 +69,27 @@ describe("ProgressBar component - Modern Web Guidance: accessibility", () => {
     const progress = container.querySelector('[role="progressbar"]');
     expect(progress).toBeNull();
   });
+
+  it("renders as decorative element when aria-hidden is boolean true", async () => {
+    await act(async () => {
+      root.render(<ProgressBar value={40} aria-hidden={true} />);
+    });
+
+    const progress = container.querySelector('[role="progressbar"]');
+    expect(progress).toBeNull();
+  });
+
+  it("clamps the reported aria-valuenow value to 0-100", async () => {
+    await act(async () => {
+      root.render(<ProgressBar value={-10} aria-label="Negative" />);
+    });
+    let progress = container.querySelector('[role="progressbar"]');
+    expect(progress?.getAttribute("aria-valuenow")).toBe("0");
+
+    await act(async () => {
+      root.render(<ProgressBar value={999} aria-label="Overflow" />);
+    });
+    progress = container.querySelector('[role="progressbar"]');
+    expect(progress?.getAttribute("aria-valuenow")).toBe("100");
+  });
 });

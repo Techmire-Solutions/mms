@@ -1,8 +1,7 @@
 import React from "react";
 import { MessageSquare } from "lucide-react";
 import { type AppTranslationKey, type SmsProviderId } from "@mms/shared";
-import { FormSelect, Input, Label, PasswordInput } from "@shared/ui";
-import { PlatformIntegrationPanelChrome } from "@/platform/components/settings/PlatformIntegrationPanelChrome";
+import { FormSelect, Input, IntegrationPanelChrome, Label, PasswordInput } from "@shared/ui";
 import { usePlatformSmsIntegrationPanel } from "@/platform/components/settings/usePlatformSmsIntegrationPanel";
 
 /** One active SMS provider at a time, for platform apex 2FA/alerts. */
@@ -25,7 +24,7 @@ export function PlatformSmsIntegrationPanel(): React.JSX.Element {
   } = usePlatformSmsIntegrationPanel();
 
   return (
-    <PlatformIntegrationPanelChrome
+    <IntegrationPanelChrome
       icon={MessageSquare}
       title={t("sms.integrationTitle")}
       description={t("platformSms.integrationDesc")}
@@ -121,6 +120,6 @@ export function PlatformSmsIntegrationPanel(): React.JSX.Element {
           />
         </div>
       )}
-    </PlatformIntegrationPanelChrome>
+    </IntegrationPanelChrome>
   );
 }

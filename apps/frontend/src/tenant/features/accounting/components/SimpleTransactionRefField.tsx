@@ -1,5 +1,6 @@
 import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
+import { isImeSafeEnter } from "@/lib/utils";
 import { NextVoucherNumberHint } from "./NextVoucherNumberHint";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -39,7 +40,7 @@ export function SimpleTransactionRefField({
         value={refValue}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === "Enter") {
+          if (event.key === "Enter" && isImeSafeEnter(event)) {
             event.preventDefault();
             if (!isDuplicateRef) {
               onProceed?.();

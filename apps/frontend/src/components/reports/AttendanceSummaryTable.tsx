@@ -3,7 +3,7 @@ import { UserCheck } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
 import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
-import { TableCellLink } from "@/components/app/TableCellLink";
+import { TableCellLink } from "@shared/ui";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
