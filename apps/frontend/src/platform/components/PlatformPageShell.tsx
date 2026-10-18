@@ -16,8 +16,6 @@ import { AppShell } from "@/components/common/AppShell";
 import { PlatformLiveRegionProvider } from "@/platform/components/common/PlatformLiveRegion";
 import { AppFooter, TooltipProvider } from "@shared/ui";
 
-export { PlatformLogoMark } from "./common/PlatformLogoMark";
-
 const MAX_W: Record<NonNullable<PlatformPageShellProps["width"]>, string> = {
   md: "max-w-md",
   lg: "max-w-lg",

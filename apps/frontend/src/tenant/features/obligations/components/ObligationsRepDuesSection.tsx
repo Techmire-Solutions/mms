@@ -11,7 +11,7 @@ import { Users } from "lucide-react";
 import { useMemo } from "react";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { ObligationsRepDuesCardsView } from "./ObligationsRepDuesCardsView";
 
 export interface RepSummaryEntry {

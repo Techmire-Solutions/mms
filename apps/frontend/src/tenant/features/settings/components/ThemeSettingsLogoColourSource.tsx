@@ -58,6 +58,10 @@ export function ThemeSettingsLogoColourSource({
               <img
                 src={logoUrl}
                 alt={t("theme.logoSourceAlt")}
+                width={48}
+                height={48}
+                loading="lazy"
+                decoding="async"
                 className="h-12 w-12 shrink-0 rounded-lg border border-border object-contain bg-background p-1 shadow-sm"
               />
               <div className="min-w-0 space-y-0.5">

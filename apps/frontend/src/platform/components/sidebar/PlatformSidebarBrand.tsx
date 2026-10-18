@@ -34,6 +34,11 @@ export function PlatformSidebarBrand({
             <img
               src="/platform-logo.webp"
               alt="Platform Logo"
+              width={36}
+              height={36}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
               className="h-full w-full object-contain"
               onError={() => setLogoError(true)}
             />

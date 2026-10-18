@@ -6,7 +6,7 @@ import { FormModal } from "@/components/app/FormModal";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/app/DatePicker";
-import { ToggleRow } from "@/components/app/ToggleRow";
+import { ToggleRow } from "@shared/ui";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";

@@ -1,8 +1,7 @@
 import React from "react";
 import { Mail } from "lucide-react";
 import { type AppTranslationKey, type EmailProviderId } from "@mms/shared";
-import { FormSelect, Input, Label, PasswordInput } from "@shared/ui";
-import { PlatformIntegrationPanelChrome } from "@/platform/components/settings/PlatformIntegrationPanelChrome";
+import { FormSelect, Input, IntegrationPanelChrome, Label, PasswordInput } from "@shared/ui";
 import { usePlatformEmailIntegrationPanel } from "@/platform/components/settings/usePlatformEmailIntegrationPanel";
 
 /**
@@ -27,7 +26,7 @@ export function PlatformEmailIntegrationPanel(): React.JSX.Element {
   } = usePlatformEmailIntegrationPanel();
 
   return (
-    <PlatformIntegrationPanelChrome
+    <IntegrationPanelChrome
       icon={Mail}
       title={t("email.integrationTitle")}
       description={t("platformEmail.integrationDesc")}
@@ -137,6 +136,6 @@ export function PlatformEmailIntegrationPanel(): React.JSX.Element {
           </div>
         </>
       )}
-    </PlatformIntegrationPanelChrome>
+    </IntegrationPanelChrome>
   );
 }

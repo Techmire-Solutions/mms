@@ -12,7 +12,7 @@ import {
 } from "@/lib/faculty/facultyAssignment";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ClassCard } from "@/tenant/features/sessions/components/tabs/ClassCard";

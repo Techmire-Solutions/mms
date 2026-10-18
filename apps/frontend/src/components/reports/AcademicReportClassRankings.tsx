@@ -2,7 +2,7 @@ import React from "react";
 import { Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";
-import { TableCellLink } from "@/components/app/TableCellLink";
+import { TableCellLink } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 import type { ClassRankingItem } from "./academicReportTypes";

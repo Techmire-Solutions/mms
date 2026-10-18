@@ -4,7 +4,7 @@ import { DistributionFormModal } from "@/tenant/features/obligations/components/
 import { WakalaFormModal } from "@/tenant/features/obligations/components/WakalaFormModal";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { WakalaTypeCard } from "@/tenant/features/obligations/components/WakalaTypeCard";
 import { useWakalaTypeManager } from "@/tenant/features/obligations/hooks/useWakalaTypeManager";

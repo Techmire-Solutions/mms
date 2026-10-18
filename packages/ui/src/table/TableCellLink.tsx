@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import React from "react";
+import { Button } from "../button/Button";
+import { cn } from "../utils";
 
 export interface TableCellLinkProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Muted subtitle link (font-normal, muted-foreground). */
@@ -49,3 +50,5 @@ export function TableCellLink({
     </Button>
   );
 }
+
+export default TableCellLink;

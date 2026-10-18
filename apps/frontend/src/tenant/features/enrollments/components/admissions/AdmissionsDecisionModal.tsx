@@ -4,7 +4,7 @@ import type { RegistrationApplication, RegistrationReview } from "@mms/shared";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleRow } from "@/components/app/ToggleRow";
+import { ToggleRow } from "@shared/ui";
 import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 

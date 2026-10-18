@@ -5,14 +5,25 @@ import { cn } from "../utils";
 export interface CardSkeletonProps {
   count?: number;
   className?: string;
+  "data-testid"?: string;
 }
 
 /**
  * A skeleton loader for card-based layouts.
  */
-export function CardSkeleton({ count = 3, className = "" }: CardSkeletonProps): React.JSX.Element {
+export function CardSkeleton({
+  count = 3,
+  className = "",
+  ...props
+}: CardSkeletonProps): React.JSX.Element {
   return (
-    <div className={cn("grid gap-4", className)} role="status" aria-live="polite" aria-busy="true">
+    <div
+      data-testid={props["data-testid"] ?? "card-skeleton"}
+      className={cn("grid gap-4", className)}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="rounded-xl border border-border bg-card p-5 space-y-3">
           <div className="flex items-center gap-3">

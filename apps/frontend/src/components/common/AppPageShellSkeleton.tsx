@@ -1,6 +1,6 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TableSkeleton, StatsSkeleton } from "@/components/app/LoadingState";
+import { TableSkeleton, StatsSkeleton } from "@shared/ui";
 import { cn } from "@/lib/utils";
 
 export type AppPageShellSkeletonSlot = "header" | "metrics" | "tabs" | "filterbar" | "table";

@@ -2,7 +2,7 @@ import React from "react";
 import { Globe, Ban, Download, RefreshCw } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SubTabBar } from "@/components/app/SubTabBar";
-import { Button } from "@shared/ui";
+import { Button, DensityToggle } from "@shared/ui";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { PlatformWorkspaceSortMenu } from "@/platform/components/PlatformWorkspaceSortMenu";
 import type {
@@ -12,7 +12,6 @@ import type {
 
 import type { PlatformDensity } from "@/platform/hooks/usePlatformDensity";
 import { toColumnCustomizer, type DataTableColumnLayout } from "@/components/common/data-table";
-import { PlatformWorkspaceDensityToggle } from "@/platform/components/workspace/PlatformWorkspaceDensityToggle";
 
 export interface PlatformWorkspaceToolbarProps {
   shownCount: number;
@@ -83,9 +82,15 @@ export function PlatformWorkspaceToolbar({
       filterButton={
         <div className="flex items-center gap-2">
           {onDensityChange && viewMode === "table" && (
-            <PlatformWorkspaceDensityToggle
+            <DensityToggle
               density={density ?? "standard"}
-              onDensityChange={onDensityChange}
+              onChange={onDensityChange}
+              ariaLabel={t("dashboard.layoutDensity")}
+              labels={{
+                compact: t("dashboard.densityCompact"),
+                standard: t("dashboard.densityStandard"),
+                comfortable: t("dashboard.densityComfortable"),
+              }}
             />
           )}
           <PlatformWorkspaceSortMenu

@@ -482,6 +482,16 @@
     scrollbar-color: hsl(var(--border)) transparent;
   }
 
+  /*
+   * Modern Web Guidance: adapt-scrollbar-to-contrast-preferences
+   * Enforces high-contrast thumb and track styling for users who prefer higher contrast interfaces.
+   */
+  @media (prefers-contrast: more) {
+    * {
+      scrollbar-color: hsl(var(--foreground)) hsl(var(--background));
+    }
+  }
+
   html {
     max-width: 100%;
     overflow-x: hidden;
@@ -813,6 +823,14 @@
 @utility content-visibility-deferred {
   content-visibility: auto;
   contain-intrinsic-size: auto none auto 220px;
+}
+
+/*
+ * Modern Web Guidance: form-fields-automatically-fit-contents
+ * Native field-sizing: content allowing form textareas/inputs to grow with their content.
+ */
+@utility field-sizing-content {
+  field-sizing: content;
 }
 
 /*
@@ -1348,10 +1366,16 @@
     border-radius: var(--radius-md);
     padding-inline: 0.75rem;
     padding-block: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 1rem;
     line-height: 1.5;
     width: 100%;
     cursor: pointer;
+  }
+
+  @media (min-width: 40rem) {
+    .brand-select {
+      font-size: 0.875rem;
+    }
   }
 
   .brand-select::picker(select) {
@@ -1429,9 +1453,7 @@
 }
 
 @container table-header scroll-state(stuck: inset-block-start) {
-  .stuck-elevated {
-    box-shadow: var(--shadow-xs);
-    border-bottom: 1px solid var(--color-border);
+  tr {
     background-color: var(--color-background);
   }
 }

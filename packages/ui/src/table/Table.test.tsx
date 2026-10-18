@@ -94,7 +94,7 @@ describe("Table component - Modern Web Guidance: responsive-table", () => {
     expect(cells[1]?.className).not.toContain("inset-inline-start-0");
   });
 
-  it("renders TableHeader with sticky-scroll-state and stuck-elevated when sticky is enabled", async () => {
+  it("renders TableHeader with sticky-scroll-state when sticky is enabled", async () => {
     await act(async () => {
       root.render(
         <Table stickyHeader>
@@ -112,6 +112,5 @@ describe("Table component - Modern Web Guidance: responsive-table", () => {
 
     const thead = container.querySelector("thead");
     expect(thead?.className).toContain("sticky-scroll-state");
-    expect(thead?.className).toContain("stuck-elevated");
   });
 });

@@ -6,6 +6,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { isImeSafeEnter } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { getJournalTagLabel } from "../lib/journalEntriesListShared";
 import type { DraftForm } from "../lib/journalEntryFormTypes";
@@ -110,7 +111,7 @@ export function JournalEntryFormTagsSection({
             value={customTagInput}
             onChange={(event) => setCustomTagInput(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") {
+              if (event.key === "Enter" && isImeSafeEnter(event)) {
                 event.preventDefault();
                 handleAddCustomTag();
               }

@@ -5,7 +5,7 @@ import { ExportToolbar } from "@/components/app/ExportToolbar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BarChart2 } from "lucide-react";
 
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { Badge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import type { TypeBreakdownEntry } from "./ObligationsSummaryChartsSection";

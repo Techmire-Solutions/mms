@@ -4,7 +4,7 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionCard } from "@/components/app/SectionCard";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
-import { ToggleRow } from "@/components/app/ToggleRow";
+import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { WarningCallout } from "@/components/app/WarningCallout";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";

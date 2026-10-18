@@ -54,6 +54,10 @@ export function AccountProfileHeaderCard({
                 <img
                   src={profile.contact.avatar}
                   alt={name}
+                  width={96}
+                  height={96}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />
               ) : (

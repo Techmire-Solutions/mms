@@ -2,6 +2,7 @@ import React, { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "../utils";
 import { useUiConfig } from "../theme/UiConfigContext";
+import { OVERLAY_BACKDROP } from "../theme/formStyles";
 
 export interface ModalProps {
   open: boolean;
@@ -67,7 +68,7 @@ export function Modal({
     <div
       className={cn(
         "fixed inset-0 flex items-center justify-center p-4 sm:p-6",
-        priority ? "z-[60]" : "z-50",
+        priority ? "z-modal-priority" : "z-modal",
       )}
       role="dialog"
       aria-modal="true"
@@ -77,7 +78,7 @@ export function Modal({
       {/* Backdrop */}
       <div
         data-overlay-backdrop="true"
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in-0 overscroll-contain"
+        className={`fixed inset-0 ${OVERLAY_BACKDROP} transition-opacity animate-in fade-in-0 overscroll-contain`}
         onClick={(event) => {
           if (!dismissible) return;
           // Modern Web Guidance: light-dismiss-a-dialog fallback
@@ -101,7 +102,7 @@ export function Modal({
       <div
         ref={modalRef}
         className={cn(
-          "relative z-10 flex w-full flex-col rounded-xl border border-border bg-card text-card-foreground shadow-2xl animate-in fade-in-0 zoom-in-95 max-h-[90vh] overscroll-contain",
+          "relative z-10 flex w-full flex-col rounded-xl border border-border bg-card text-card-foreground shadow-2xl animate-in fade-in-0 zoom-in-95 max-h-modal overscroll-contain",
           SIZE_MAP[size],
           className,
         )}

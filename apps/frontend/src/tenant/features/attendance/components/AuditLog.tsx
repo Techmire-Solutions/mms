@@ -11,7 +11,7 @@ import { type AttendanceFilterState } from "@/tenant/features/attendance/compone
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormSelect } from "@/components/app/FormSelect";
 import { reportClientError } from "@/lib/clientErrorReporting";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import {
   DataTable,

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { OptionSelectPopover } from "@/components/app/OptionSelectPopover";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT_COMPACT } from "@/components/ui/formStyles";
-import { cn } from "@/lib/utils";
+import { cn, isImeSafeEnter } from "@/lib/utils";
 
 interface EditableSelectProps {
   options: string[];
@@ -109,7 +109,7 @@ export function EditableSelect({
                     value={customValue}
                     onChange={(event) => setCustomValue(event.target.value)}
                     onKeyDown={(event) => {
-                      if (event.key === "Enter") {
+                      if (event.key === "Enter" && isImeSafeEnter(event)) {
                         event.preventDefault();
                         event.stopPropagation();
                         void handleAdd(close);
