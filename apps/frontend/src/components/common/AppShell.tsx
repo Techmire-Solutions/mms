@@ -115,8 +115,9 @@ export function AppShell({
       {/* Main Content Area */}
       <main
         id="main-content"
+        tabIndex={-1}
         className={cn(
-          "flex min-h-screen min-w-0 max-w-full flex-col transition-[padding] duration-150 ease-out",
+          "flex min-h-screen min-w-0 max-w-full flex-col outline-none transition-[padding] duration-150 ease-out",
           topBar || mobileHeader ? "pt-14 lg:pt-16" : "",
           sidebar ? (sidebarCollapsed ? "lg:ps-sidebar-collapsed" : "lg:ps-sidebar") : "",
           className,

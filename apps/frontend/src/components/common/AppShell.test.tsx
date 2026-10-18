@@ -28,6 +28,7 @@ describe("AppShell — Universal Layout Shell", () => {
 
     expect(html).toContain('href="#main-content"');
     expect(html).toContain('id="main-content"');
+    expect(html).toContain('tabindex="-1"');
     expect(html).toContain("Page Body");
   });
 

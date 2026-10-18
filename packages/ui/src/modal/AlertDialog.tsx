@@ -16,10 +16,11 @@ export const AlertDialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-modal-priority data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-modal-priority data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 overscroll-contain",
       OVERLAY_BACKDROP,
       className,
     )}
+    data-overlay-backdrop="true"
     {...props}
     ref={ref}
   />
@@ -35,7 +36,7 @@ export const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed start-1/2 top-1/2 z-modal-priority grid w-dialog-mobile max-w-lg -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2 gap-4 border border-border bg-background p-6 shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:w-full sm:rounded-lg",
+        "fixed start-1/2 top-1/2 z-modal-priority grid w-dialog-mobile max-w-lg -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2 gap-4 border border-border bg-background p-6 shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:w-full sm:rounded-lg overscroll-contain",
         className,
       )}
       {...props}

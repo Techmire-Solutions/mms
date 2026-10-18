@@ -49,7 +49,7 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
     >
       <TabsPrimitive.List
         className={cn(
-          "flex h-auto w-full shrink-0 flex-row gap-1 overflow-x-auto rounded-xl border border-border bg-muted/20 p-1.5",
+          "flex h-auto w-full shrink-0 flex-row gap-1 overflow-x-auto rounded-xl border border-border bg-muted/20 p-1.5 mask-fade-inline-end md:[mask-image:none]",
           "md:w-56 md:min-w-56 md:flex-col md:overflow-x-visible md:overflow-y-auto md:rounded-none md:border-0 md:border-e md:border-border/60 md:bg-transparent md:p-0 md:pe-4 md:space-y-1",
           "@md:w-56 @md:min-w-56 @md:flex-col @md:overflow-x-visible @md:overflow-y-auto @md:rounded-none @md:border-0 @md:border-e @md:border-border/60 @md:bg-transparent @md:p-0 @md:pe-4 @md:space-y-1",
         )}

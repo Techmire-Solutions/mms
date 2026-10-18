@@ -58,6 +58,27 @@ describe("Modal & ConfirmDialog components", () => {
     expect(container.textContent).not.toContain("Hidden Modal");
   });
 
+  it("renders backdrop with data-overlay-backdrop and handles light-dismiss click", async () => {
+    const handleClose = vi.fn();
+    await act(async () => {
+      root.render(
+        <Modal open={true} onClose={handleClose} dismissible={true} title="Light Dismiss Modal">
+          <div>Content</div>
+        </Modal>,
+      );
+    });
+
+    const dialog = container.querySelector('[role="dialog"]');
+    expect(dialog?.getAttribute("closedby")).toBe("any");
+
+    const backdrop = container.querySelector("[data-overlay-backdrop='true']") as HTMLDivElement;
+    expect(backdrop).toBeTruthy();
+    expect(backdrop.className).toContain("overscroll-contain");
+
+    backdrop.click();
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
   it("calls onClose when close button is clicked", async () => {
     const handleClose = vi.fn();
     await act(async () => {

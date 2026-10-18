@@ -20,6 +20,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Modern Web Guidance: respect-os-text-scale (opt into OS-level dynamic type and accessibility text scaling) -->
+    <meta name="text-scale" content="scale" />
     <meta
       name="description"
       content="Secure portal to manage students, attendance, finance, examinations, and question banks for Madrasa Management System (MMS) workspaces."
@@ -57,6 +59,7 @@
         "
       >
         <div
+          class="mms-initial-spinner"
           style="
             width: 32px;
             height: 32px;
@@ -70,6 +73,11 @@
           @keyframes mms-spin {
             to {
               transform: rotate(360deg);
+            }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .mms-initial-spinner {
+              animation-duration: 6s !important;
             }
           }
           .dark #root > div {

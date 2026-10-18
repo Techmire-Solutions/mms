@@ -27,6 +27,8 @@ export interface ToastProps
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: React.ReactNode;
+  /** Modern Web Guidance: persistent-toast-notifications. Optional popover mode ("manual" | "auto") for Top Layer promotion. */
+  popover?: "manual" | "auto";
 }
 
 export function Toast({
@@ -36,12 +38,14 @@ export function Toast({
   description,
   action,
   onClose,
+  popover,
   ...props
 }: ToastProps): React.JSX.Element {
   return (
     <div
       role="status"
       aria-live="polite"
+      popover={popover}
       className={cn(toastVariants({ variant }), className)}
       {...props}
     >
@@ -56,6 +60,7 @@ export function Toast({
         <button
           type="button"
           onClick={onClose}
+          popoverTargetAction={popover ? "hide" : undefined}
           className="rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100"
           aria-label="Close"
         >

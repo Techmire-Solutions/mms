@@ -37,6 +37,7 @@ import {
   formatHijriDate,
   formatSolarHijriDate,
 } from "./utils.js";
+import { isCalendarSupported } from "../settings/settingsDateFormattersCore.js";
 import {
   normalizeContactForEdit,
   syncContactScalarFields,
@@ -519,6 +520,18 @@ describe("formatHijriDate", () => {
 
   it("returns empty string for invalid date string", () => {
     expect(formatHijriDate("not-a-date")).toBe("");
+  });
+});
+
+describe("isCalendarSupported", () => {
+  it("returns true for standard supported calendars like gregorian, islamic, and persian", () => {
+    expect(isCalendarSupported("gregory")).toBe(true);
+    expect(isCalendarSupported("islamic")).toBe(true);
+    expect(isCalendarSupported("persian")).toBe(true);
+  });
+
+  it("returns false for invalid calendar identifiers", () => {
+    expect(isCalendarSupported("nonexistent-calendar-xyz")).toBe(false);
   });
 });
 

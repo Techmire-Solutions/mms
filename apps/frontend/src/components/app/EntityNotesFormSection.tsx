@@ -52,6 +52,7 @@ export function EntityNotesFormSection({
             value={value || ""}
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
+            autoResize={true}
             className={cn(FORM_TEXTAREA, "min-h-30")}
           />
         </Field>

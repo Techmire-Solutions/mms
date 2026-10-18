@@ -93,6 +93,9 @@ export default function MobileSidebar({
                 className={`h-8 w-8 shrink-0 rounded-lg ${LOGO_IMAGE} border-sidebar-border`}
                 width={32}
                 height={32}
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 onError={() => setLogoError(true)}
               />
             ) : (

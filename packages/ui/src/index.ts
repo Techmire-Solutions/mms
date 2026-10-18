@@ -31,4 +31,4 @@ export * from "./feedback/index";
 export * from "./data-display/index";
 
 // Utilities
-export { cn } from "./utils";
+export { cn, isImeSafeEnter } from "./utils";

@@ -23,6 +23,12 @@ export interface ProgressBarProps extends HTMLAttributes<HTMLDivElement> {
   transition?: { duration?: number; ease?: string | number[] } | Record<string, unknown>;
   /** Track overrides (e.g. `w-16`, `bg-border`, `shadow-inner`). */
   trackClassName?: string;
+  /**
+   * Optional custom formatter for aria-valuetext to announce human-readable
+   * units or metrics to assistive screen readers (e.g. (val) => `${val}% completed`).
+   * Modern Web Guidance: accessibility.
+   */
+  formatValueText?: (value: number) => string;
   "data-testid"?: string;
 }
 
@@ -41,11 +47,20 @@ export function ProgressBar({
   animated = false,
   transition,
   trackClassName,
+  formatValueText,
   className,
   ...props
 }: ProgressBarProps): React.JSX.Element {
   const pct = Math.min(100, Math.max(0, value));
   const isDecorative = props["aria-hidden"] === true || props["aria-hidden"] === "true";
+  const valueText =
+    props["aria-valuetext"] ??
+    (formatValueText
+      ? formatValueText(pct)
+      : typeof label === "string"
+        ? label
+        : undefined);
+
   const durationStyle =
     animated &&
     transition &&
@@ -91,12 +106,14 @@ export function ProgressBar({
       aria-valuenow={Math.round(pct)}
       aria-valuemin={0}
       aria-valuemax={100}
+      aria-valuetext={valueText}
       className={cn("flex items-center gap-2", className)}
       {...props}
     >
       {bar}
     </div>
   );
+
 }
 
 ProgressBar.displayName = "ProgressBar";

@@ -186,6 +186,22 @@ export function formatLongDate(date: string | Date | null | undefined): string {
 }
 
 /**
+ * Helper to check if a specific calendar system is supported by the runtime environment.
+ * Leverages Intl.supportedValuesOf('calendar') per modern web platform standards.
+ */
+export function isCalendarSupported(calendarId: string): boolean {
+  try {
+    if (typeof Intl !== "undefined" && typeof Intl.supportedValuesOf === "function") {
+      return Intl.supportedValuesOf("calendar").includes(calendarId);
+    }
+    new Intl.DateTimeFormat(`en-u-ca-${calendarId}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Formats a Date object or date string as a Hijri date using active global settings.
  * Supports lunar Hijri with Umm al-Qura calendar extension when available.
  */
@@ -203,8 +219,9 @@ export function formatHijriDate(
 
   const intlLocale = getIntlLocaleForLanguage(language);
   const calendarType = options?.calendar ?? "islamic-umalqura";
+  const effectiveCalendar = isCalendarSupported(calendarType) ? calendarType : "islamic";
   try {
-    return new Intl.DateTimeFormat(`${intlLocale}-u-ca-${calendarType}`, {
+    return new Intl.DateTimeFormat(`${intlLocale}-u-ca-${effectiveCalendar}`, {
       timeZone: timezone,
       day: "numeric",
       month: "long",

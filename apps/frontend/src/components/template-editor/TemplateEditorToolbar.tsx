@@ -87,7 +87,7 @@ export function TemplateEditorToolbar<TPayload = Record<string, unknown>>({
 }: TemplateEditorToolbarProps<TPayload>): React.JSX.Element {
   return (
     <header className="flex items-center border-b border-border bg-card/95 backdrop-blur-sm flex-shrink-0 min-h-16 print:hidden relative">
-      <div className="flex items-center gap-1 px-3 py-1.5 overflow-x-auto overflow-y-hidden flex-1 min-w-0 [mask-image:linear-gradient(to_right,black_calc(100%-48px),transparent_100%)] rtl:[mask-image:linear-gradient(to_left,black_calc(100%-48px),transparent_100%)]">
+      <div className="flex items-center gap-1 px-3 py-1.5 overflow-x-auto overflow-y-hidden flex-1 min-w-0 mask-fade-inline-end">
         <TemplateEditorToolbarTitle
           title={title}
           titleId={titleId}

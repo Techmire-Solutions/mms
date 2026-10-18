@@ -313,7 +313,12 @@
 
 /* Tenant branding tokens — HSL components injected by applyBrandingTheme() */
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
+  /*
+   * Modern Web Guidance: calculate-with-intrinsic-sizes
+   * Enables seamless CSS keyword interpolation to and from intrinsic sizes (e.g. height: 0 to auto).
+   */
+  interpolate-size: allow-keywords;
   --font-sans:
     "Plus Jakarta Sans", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Noto Sans Arabic", sans-serif;
@@ -402,6 +407,14 @@
   --oklch-border: oklch(0.9 0.02 75);
 }
 
+:root:has(> head > meta[name="color-scheme"][content="dark"]) {
+  color-scheme: dark;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="light"]) {
+  color-scheme: light;
+}
+
 .dark {
   color-scheme: dark;
   --surface-base: 32 10% 7%;
@@ -472,6 +485,8 @@
   html {
     max-width: 100%;
     overflow-x: hidden;
+    scrollbar-gutter: stable;
+    accent-color: hsl(var(--primary));
     -webkit-tap-highlight-color: transparent;
     /*
      * WCAG 2.4.11 Focus Not Obscured: offset scroll so focused elements are not
@@ -487,6 +502,19 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    /*
+     * Modern Web Guidance: visually-stable-font-fallbacks
+     * Normalizes the visual size of fallback fonts based on the primary font's aspect ratio,
+     * preventing Cumulative Layout Shift (CLS) when webfonts load or swap.
+     */
+    font-size-adjust: from-font;
+    /*
+     * Modern Web Guidance: typography
+     * "Use unitless numbers for line-height (e.g., 1.5) to ensure relative scaling."
+     * "Use overflow-wrap: break-word (or anywhere) to contain long URLs."
+     */
+    line-height: 1.5;
+    overflow-wrap: break-word;
   }
 
   h1,
@@ -496,6 +524,7 @@
   h5,
   h6 {
     text-wrap: balance;
+    font-size-adjust: cap-height from-font;
   }
 
   p {
@@ -542,6 +571,167 @@
     color: hsl(var(--foreground));
   }
 
+  /*
+   * Modern Web Guidance: component-specific-light-dark-theme
+   * Force dark color-scheme on isolated code blocks or dark surfaces while
+   * explicitly pairing background and text tokens to prevent contrast issues.
+   */
+  pre.code-block,
+  .dark-surface {
+    color-scheme: dark;
+    background-color: hsl(var(--muted) / 0.5);
+    color: hsl(var(--foreground));
+  }
+
+  /*
+   * Modern Web Guidance: prevent-page-scroll-under-modal-dialog
+   * Pure CSS scroll containment for modals and dialogs without mutating body overflow.
+   */
+  dialog:modal {
+    overscroll-behavior: contain;
+  }
+
+  dialog::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  [data-overlay-backdrop] {
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+
+  [role="dialog"][aria-modal="true"] {
+    overscroll-behavior: contain;
+  }
+
+  /*
+   * Modern Web Guidance: persistent-toast-notifications
+   * Discrete transition behavior for Top Layer popover overlays and toasts.
+   */
+  [popover] {
+    transition-behavior: allow-discrete;
+  }
+
+  /*
+   * Modern Web Guidance: switch
+   * Native HTML5 switch control styling with accent-color and focus-visible ring.
+   */
+  input[type="checkbox"][switch] {
+    accent-color: hsl(var(--primary));
+    cursor: pointer;
+    margin: 0;
+  }
+
+  input[type="checkbox"][switch]:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /*
+   * Modern Web Guidance: slider & brand-consistent-forms
+   * Style native <input type="range"> with custom track, thumb, and fill while preserving
+   * native accessibility, touch/keyboard interactions, and BiDi layout direction.
+   */
+  input[type="range"] {
+    --slider-track-size: 0.375rem;
+    --slider-thumb-size: 1rem;
+    --slider-track-radius: 9999px;
+    --slider-thumb-radius: 9999px;
+    --slider-track-color: hsl(var(--muted));
+    --slider-fill-color: hsl(var(--primary));
+    --slider-thumb-color: hsl(var(--primary));
+    --slider-direction: to right;
+
+    /* Reverse gradient direction for right-to-left layouts */
+    &:dir(rtl) {
+      --slider-direction: to left;
+    }
+
+    accent-color: hsl(var(--primary));
+    appearance: none;
+    inline-size: 100%;
+    block-size: 2rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[type="range"]:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 4px;
+  }
+
+  /* WebKit/Blink track and thumb */
+  input[type="range"]::-webkit-slider-runnable-track {
+    block-size: var(--slider-track-size);
+    border: 0;
+    border-radius: var(--slider-track-radius);
+    background-color: var(--slider-track-color);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    inline-size: var(--slider-thumb-size);
+    block-size: var(--slider-thumb-size);
+    margin-block-start: calc((var(--slider-track-size) - var(--slider-thumb-size)) / 2);
+    border: 1px solid hsl(var(--background));
+    border-radius: var(--slider-thumb-radius);
+    background-color: var(--slider-thumb-color);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  /* Firefox track, progress, and thumb */
+  input[type="range"]::-moz-range-track {
+    block-size: var(--slider-track-size);
+    border: 0;
+    border-radius: var(--slider-track-radius);
+    background-color: var(--slider-track-color);
+  }
+
+  input[type="range"]::-moz-range-progress {
+    block-size: var(--slider-track-size);
+    border-radius: var(--slider-track-radius);
+    background-color: var(--slider-fill-color);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    inline-size: var(--slider-thumb-size);
+    block-size: var(--slider-thumb-size);
+    border: 1px solid hsl(var(--background));
+    border-radius: var(--slider-thumb-radius);
+    background-color: var(--slider-thumb-color);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  input[type="range"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /*
+   * Modern Web Guidance: autofill-highlight-inputs
+   * Theme browser-autofilled inputs to match application surface tokens cleanly.
+   */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: hsl(var(--foreground));
+    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--background)) inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
   #root {
     max-width: 100%;
     overflow-x: hidden;
@@ -571,19 +761,227 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+
+    /*
+     * Modern Web Guidance: spinner
+     * Slow down loading spinner animations to 6s rather than stopping them entirely,
+     * ensuring users with motion sensitivities still receive active processing feedback.
+     */
+    .animate-spin,
+    .loading-spinner,
+    [data-loading-spinner] {
+      animation-duration: 6s !important;
+      animation-iteration-count: infinite !important;
+    }
+  }
+
+  /*
+   * Modern Web Guidance: spinner
+   * Native HTML5 <progress> styling as an accessible indeterminate spinner.
+   */
+  progress.loading-spinner:indeterminate {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    vertical-align: middle;
+  }
+
+  progress.loading-spinner:indeterminate::-webkit-progress-bar {
+    display: none;
+    background: none;
+  }
+
+  progress.loading-spinner:indeterminate::-webkit-progress-value {
+    display: none;
+    background: none;
+  }
+
+  progress.loading-spinner:indeterminate::-moz-progress-bar {
+    display: none;
+    background: none;
+  }
+}
+
+/*
+ * Modern Web Guidance: defer-rendering-heavy-content
+ * Skips off-screen layout and paint passes while preserving intrinsic size metrics.
+ */
+@utility content-visibility-deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 220px;
+}
+
+/*
+ * Modern Web Guidance: soft-edge-content-fade
+ * Directional and dual-edge linear gradient mask utilities for fading scroll overflow.
+ */
+@utility mask-fade-inline-end {
+  -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+  mask-image: linear-gradient(to right, black 88%, transparent 100%);
+  :dir(rtl) & {
+    -webkit-mask-image: linear-gradient(to left, black 88%, transparent 100%);
+    mask-image: linear-gradient(to left, black 88%, transparent 100%);
+  }
+}
+
+@utility mask-fade-inline-both {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+/*
+ * Modern Web Guidance: soft-edge-content-fade
+ * Vertical scroll indicators utilizing CSS masking without interfering with text selection or click events.
+ */
+@utility mask-fade-block-end {
+  -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+}
+
+@utility mask-fade-block-both {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+/*
+ * Modern Web Guidance: accessibility, css
+ * Touch target floor utility ensuring interactive elements scale to 44px on coarse pointers
+ */
+@utility touch-target-coarse {
+  min-inline-size: 1.5rem;
+  min-block-size: 1.5rem;
+  @media (pointer: coarse) {
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
+}
+
+/*
+ * Modern Web Guidance: scrollability-affordance-hints
+ * Container scroll-state queries and directional affordance indicators.
+ */
+@utility scroll-state-container {
+  container-type: scroll-state;
+  position: relative;
+}
+
+.scroll-indicator-top,
+.scroll-indicator-bottom {
+  position: sticky;
+  left: 0;
+  right: 0;
+  height: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.scroll-indicator-top {
+  top: 0;
+  margin-bottom: -0.75rem;
+  background: linear-gradient(to bottom, hsl(var(--foreground) / 0.08), transparent);
+}
+
+.scroll-indicator-bottom {
+  bottom: 0;
+  margin-top: -0.75rem;
+  background: linear-gradient(to top, hsl(var(--foreground) / 0.08), transparent);
+}
+
+@container scroll-state(scrollable: top) {
+  .scroll-indicator-top {
+    opacity: 1;
+  }
+}
+
+@container scroll-state(scrollable: bottom) {
+  .scroll-indicator-bottom {
+    opacity: 1;
+  }
+}
+
+/*
+ * Modern Web Guidance: precise-text-alignment
+ * Trims font internal leading ("ghost space") to cap-height and alphabetic baseline
+ * so container padding exactly hugs text boundaries and aligns flush with adjacent icons.
+ */
+@utility text-box-trim-cap {
+  text-box: trim-both cap alphabetic;
+}
+
+/*
+ * Modern Web Guidance: faster-spa-view-transitions
+ * Skips layout and paint passes on retained inactive SPA views while preserving
+ * cached rendering states in memory for near-instant restoration on tab switch.
+ */
+@utility spa-view-hidden {
+  content-visibility: hidden;
+  position: absolute;
+  pointer-events: none;
+}
+
+@supports not (content-visibility: hidden) {
+  .spa-view-hidden {
+    display: none;
+  }
+}
+
+/*
+ * Modern Web Guidance: dark-mode & component-specific-light-dark-theme
+ * Dual-mode surface and border utilities utilizing native CSS light-dark().
+ */
+@utility surface-adaptive {
+  background-color: light-dark(hsl(var(--card)), hsl(var(--muted) / 0.4));
+  color: light-dark(hsl(var(--card-foreground)), hsl(var(--foreground)));
+}
+
+@utility border-adaptive {
+  border-color: light-dark(hsl(var(--border) / 0.8), hsl(var(--border) / 0.4));
+}
+
+/*
+ * Modern Web Guidance: position-aware-tooltips
+ * Enables anchored container queries and adaptive flip fallbacks for tooltips and popovers.
+ */
+@utility anchored-container {
+  container-type: anchored;
+  position-try-fallbacks: flip-block, flip-inline;
+}
+
+/*
+ * Modern Web Guidance: animate-element-entry-exit
+ * Declarative entry transition using @starting-style with reduced-motion fallback.
+ */
+@utility animate-fade-entry {
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-entry {
+    transition-duration: 0.01ms !important;
+    transform: none !important;
   }
 }
 
 @utility font-arabic {
   font-family: var(--font-arabic);
+  font-size-adjust: from-font;
 }
 
 @utility font-urdu {
   font-family: var(--font-urdu);
+  font-size-adjust: from-font;
 }
 
 @utility font-persian {
   font-family: var(--font-persian);
+  font-size-adjust: from-font;
 }
 
 @utility surface-base {
@@ -711,6 +1109,47 @@
   &:hover {
     background-color: var(--color-surface-credit-row);
   }
+}
+
+/*
+ * Modern Web Guidance: typography
+ * "Avoid long lines of text: Cap paragraph blocks to a maximum of 80 characters width."
+ * "Use overflow-wrap: break-word (or anywhere) to contain long URLs."
+ */
+@utility prose-readable {
+  max-width: 80ch;
+  overflow-wrap: break-word;
+}
+
+/*
+ * Modern Web Guidance: typography — Responsive Typography
+ * "DO combine viewport-relative and font-relative units in clamp() for font sizes
+ *  that scale with the viewport size while ensuring they stay within a desired range."
+ * "DON'T use vw alone for font-size without clamp(), as it can scale text too small
+ *  or too large on extreme screens."
+ */
+@utility fluid-heading {
+  font-size: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+/*
+ * Modern Web Guidance: scrollspy
+ * "MANDATORY: The container of markers must have scroll-target-group: auto"
+ * "Use the :target-current pseudo-class on your navigation links to apply styles
+ *  when their target section is visible in the scroll container."
+ * The escaped \:target-current class is applied by the IntersectionObserver fallback
+ * hook (useScrollspy.ts) for Firefox and Safari.
+ */
+@utility scrollspy-nav {
+  scroll-target-group: auto;
+}
+
+.scrollspy-nav a:target-current,
+.scrollspy-nav a.\:target-current {
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 ::-webkit-scrollbar {
@@ -847,3 +1286,160 @@
 [data-density] tr th {
   block-size: var(--row-h, 3.25rem);
 }
+
+/*
+ * Modern Web Guidance: color (Forced Colors Mode) & adapt-scrollbar-to-contrast-preferences
+ * High contrast overrides preserving visible focus indicators and accessible scrollbars.
+ */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  html,
+  body {
+    scrollbar-color: CanvasText Canvas;
+  }
+}
+
+/*
+ * Modern Web Guidance: branded-select-styling
+ * "The customizable select API offers a declarative, CSS-driven way to style <select>
+ *  elements to perfectly match your brand's design system."
+ * "Apply appearance: base-select to both the <select> element and the ::picker(select)
+ *  pseudo-element."
+ * Progressive enhancement only — applies exclusively in browsers that support
+ * appearance: base-select (Chrome 135+, Edge 135+, Safari 27). Existing Radix
+ * <SelectTrigger> is unaffected. Consumers opting in to a native <select> must add
+ * the .brand-select class (exported as selectBrandClass from @shared/ui).
+ */
+@supports (appearance: base-select) {
+  .brand-select,
+  .brand-select::picker(select) {
+    appearance: base-select;
+  }
+
+  .brand-select {
+    /* Inherit the design token surface so it matches FormField inputs */
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    border: 1px solid var(--color-input);
+    border-radius: var(--radius-md);
+    padding-inline: 0.75rem;
+    padding-block: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .brand-select::picker(select) {
+    background-color: var(--color-popover);
+    color: var(--color-popover-foreground);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.25rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .brand-select::picker-icon {
+    color: var(--color-muted-foreground);
+  }
+
+  .brand-select option::checkmark {
+    color: var(--color-primary);
+  }
+
+  .brand-select option {
+    padding-inline: 0.5rem;
+    padding-block: 0.375rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .brand-select option:hover {
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
+}
+
+/*
+ * Modern Web Guidance: scroll-progress-indicator
+ * "This code grows the #progress element on scroll using an anonymous scroll-timeline,
+ *  created by the scroll() function."
+ * "Purely decorative visual scroll progress bars MUST set aria-hidden="true""
+ * "Use the prefers-reduced-motion media query to disable or reduce your animations"
+ */
+@keyframes grow-scroll-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@utility scroll-progress-bar {
+  transform-origin: 0% 50%;
+  animation: grow-scroll-progress auto linear;
+  animation-timeline: scroll();
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress-bar {
+    animation: none;
+    transform: none;
+    display: none;
+  }
+}
+
+/*
+ * Modern Web Guidance: state-aware-sticky-headers
+ * "Set container-type: scroll-state on the position: sticky element"
+ * "Use the @container scroll-state(...) query to apply styles when the header is stuck."
+ * "You can also use logical properties like stuck: inset-block-start"
+ */
+@utility sticky-scroll-state {
+  position: sticky;
+  top: 0;
+  container-type: scroll-state;
+  container-name: table-header;
+  z-index: 20;
+}
+
+@container table-header scroll-state(stuck: inset-block-start) {
+  .stuck-elevated {
+    box-shadow: var(--shadow-xs);
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-background);
+  }
+}
+
+/*
+ * Modern Web Guidance: visual-effects
+ * "Use mix-blend-mode and background-blend-mode for lighting overlays (limit scope with isolation: isolate)"
+ * "Many patterns can be created via CSS gradients + hard stops... more flexible and performant than SVGs"
+ */
+@utility surface-isolation {
+  isolation: isolate;
+}
+
+@utility pattern-stripes {
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklch, var(--color-foreground) 4%, transparent) 0 8px,
+    transparent 8px 16px
+  );
+}
+
+@utility pattern-dots {
+  background-image: radial-gradient(
+    color-mix(in oklch, var(--color-foreground) 10%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+}
+

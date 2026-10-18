@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
+import { isImeSafeEnter } from "@shared/ui";
 
 interface TagsInputProps {
   selected?: string[];
@@ -43,7 +44,9 @@ export function TagsInput({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-    if ((event.key === "Enter" || event.key === ",") && inputVal.trim()) {
+    const isEnter = isImeSafeEnter(event);
+    const isComma = event.key === ",";
+    if ((isEnter || isComma) && inputVal.trim()) {
       event.preventDefault();
       addCustom(inputVal);
     } else if (event.key === "Backspace" && !inputVal && selected.length > 0) {

@@ -1,10 +1,10 @@
-import React from "react";
 import {
   CardSkeleton,
   StatsSkeleton,
   ChartSkeleton,
   TableSkeleton,
   Skeleton,
+  Spinner,
   type CardSkeletonProps,
   type StatsSkeletonProps,
   type ChartSkeletonProps,
@@ -16,6 +16,8 @@ export {
   StatsSkeleton,
   ChartSkeleton,
   TableSkeleton,
+  Skeleton,
+  Spinner,
   type CardSkeletonProps,
   type StatsSkeletonProps,
   type ChartSkeletonProps,
@@ -37,10 +39,7 @@ export const PageLoader = function PageLoader(): React.ReactElement {
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
           <span className="text-primary font-display text-xl font-bold">م</span>
         </div>
-        <div
-          className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"
-          aria-hidden="true"
-        />
+        <Spinner size="md" variant="primary" label="Loading application..." />
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ export {
   SelectScrollUpButton,
   SelectScrollDownButton,
   isRadixSelectPortalTarget,
+  selectBrandClass,
 } from "./Select";
 export { Switch, type SwitchProps } from "./Switch";
 export { Label, type LabelProps } from "./Label";

@@ -11,7 +11,7 @@ export interface TableContextValue {
 export interface TableProps extends React.ComponentProps<"table"> {
   containerClassName?: string;
   stickyHeader?: boolean;
-  scrollRegionLabel?: string;
+  scrollRegionLabel?: string | false;
   ref?: React.Ref<HTMLTableElement>;
 }
 
@@ -39,6 +39,8 @@ export interface TableHeadProps extends Omit<React.ComponentProps<"th">, "align"
   align?: TableCellAlign;
   variant?: TableCellVariant;
   isFocusable?: boolean;
+  /** Modern Web Guidance: responsive-table. Pins the column header horizontally during scrolling. */
+  isSticky?: boolean;
   /** Whether this column can be sorted */
   sortable?: boolean;
   /** The field identifier used for sorting */
@@ -59,6 +61,8 @@ export interface TableCellProps extends Omit<React.ComponentProps<"td">, "align"
   variant?: TableCellVariant;
   isFocusable?: boolean;
   asHeader?: boolean;
+  /** Modern Web Guidance: responsive-table. Pins the cell or row-header horizontally during scrolling. */
+  isSticky?: boolean;
   ref?: React.Ref<HTMLTableCellElement>;
 }
 

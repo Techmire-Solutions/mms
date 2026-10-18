@@ -3,7 +3,7 @@
  * @description Shared collapsible inspector section used by every properties-panel block.
  */
 
-import React, { useId } from "react";
+import React, { useEffect, useId, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AppTranslationKey } from "@mms/shared";
@@ -21,12 +21,9 @@ export interface TemplateEditorSectionProps {
 /**
  * One collapsible section pattern for the whole inspector.
  *
- * Three sections each hand-rolled their own toggle button before this: raw
- * `<button>`s below the 44px touch floor, a hardcoded `aria-controls` id that
- * pointed at an element which did not exist while collapsed (`aria-valid-attr-value`
- * violation, and a collision if two editors were mounted), and `<p>` elements where
- * headings belong. The panel stays mounted and is hidden with `hidden` so the
- * `aria-controls` target always exists.
+ * The panel stays mounted and uses `hidden="until-found"` (Modern Web Guidance:
+ * search-hidden-content) so native in-page searches (Cmd+F / Ctrl+F) reveal hidden
+ * text and trigger `beforematch` to synchronize open state and `aria-expanded`.
  */
 export function TemplateEditorSection({
   titleKey,
@@ -39,6 +36,29 @@ export function TemplateEditorSection({
 }: TemplateEditorSectionProps): React.JSX.Element {
   const headingId = useId();
   const panelId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+
+    if (!isOpen) {
+      el.setAttribute("hidden", "until-found");
+    } else {
+      el.removeAttribute("hidden");
+    }
+
+    const handleBeforeMatch = () => {
+      if (!isOpen) {
+        onToggle();
+      }
+    };
+
+    el.addEventListener("beforematch", handleBeforeMatch);
+    return () => {
+      el.removeEventListener("beforematch", handleBeforeMatch);
+    };
+  }, [isOpen, onToggle]);
 
   return (
     <section className="pt-2 border-t border-border">
@@ -64,17 +84,18 @@ export function TemplateEditorSection({
         </button>
       </h3>
       {/*
-       * CSS grid-rows trick: animates between `grid-rows-[0fr]` (collapsed) and
-       * `grid-rows-[1fr]` (expanded) with no JS height measurement.
-       * The panel is never `hidden` from the DOM so `aria-controls` always has a valid target.
+       * Modern Web Guidance: search-hidden-content
+       * When collapsed, `hidden="until-found"` allows browser find-in-page to search
+       * nested text. `beforematch` invokes `onToggle()` to synchronize visual and ARIA states.
        */}
       <div
+        ref={panelRef}
         id={panelId}
         role="group"
         aria-labelledby={headingId}
         aria-hidden={!isOpen}
-        className={`grid transition-[grid-template-rows] duration-200 ease-in-out ${
-          isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        className={`transition-[grid-template-rows] duration-200 ease-in-out ${
+          isOpen ? "grid grid-rows-[1fr]" : "grid-rows-[0fr]"
         }`}
       >
         <div className={`min-h-0 overflow-hidden mt-1 ${isOpen ? panelClassName : ""}`}>

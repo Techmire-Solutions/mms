@@ -25,6 +25,11 @@ function syncDocumentChrome(mode: BrandingThemeMode, primaryHex: string): void {
   root.style.colorScheme = mode;
   root.dataset.theme = mode;
 
+  const metaColorScheme = document.querySelector('meta[name="color-scheme"]') as HTMLMetaElement | null;
+  if (metaColorScheme) {
+    metaColorScheme.content = mode;
+  }
+
   const themeColor = brandingPrimaryToThemeColor(primaryHex);
   let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
   if (!meta) {

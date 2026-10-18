@@ -21,6 +21,9 @@ export function AuthTextField({
   inputMode,
   icon: Icon,
   spellCheck,
+  autoCapitalize,
+  autoCorrect,
+  enterKeyHint,
 }: {
   id: string;
   label: string;
@@ -37,6 +40,9 @@ export function AuthTextField({
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   icon?: LucideIcon;
   spellCheck?: boolean;
+  autoCapitalize?: string;
+  autoCorrect?: string;
+  enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
 }): React.JSX.Element {
   const errorId = `${id}-error`;
 
@@ -58,8 +64,11 @@ export function AuthTextField({
           name={name}
           autoComplete={autoComplete}
           inputMode={inputMode}
+          enterKeyHint={enterKeyHint}
           autoFocus={autoFocus}
           spellCheck={spellCheck}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
           required={required}
           disabled={disabled}
           value={value}
@@ -67,6 +76,7 @@ export function AuthTextField({
           onChange={(event) => onChange(event.target.value)}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
+          aria-errormessage={error ? errorId : undefined}
           className={cn(
             "h-11",
             Icon && "ps-9",
