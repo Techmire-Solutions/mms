@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { cn } from "../utils";
 
 export const badgeVariants = cva(
-  "inline-flex items-center rounded-md border font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-md border font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 [text-box:trim-both_cap_alphabetic]",
   {
     variants: {
       variant: {

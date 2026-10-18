@@ -107,4 +107,15 @@ describe("DataTable component", () => {
     nextBtn.click();
     expect(handlePageChange).toHaveBeenCalledWith(2);
   });
+
+  it("provides keyboard-accessible scrollable region container", async () => {
+    await act(async () => {
+      root.render(<DataTable data={mockData} columns={mockColumns} />);
+    });
+
+    const scrollRegion = container.querySelector('[role="region"]');
+    expect(scrollRegion).toBeTruthy();
+    expect(scrollRegion?.getAttribute("aria-label")).toBe("Scrollable table");
+    expect(scrollRegion?.getAttribute("tabindex")).toBe("0");
+  });
 });

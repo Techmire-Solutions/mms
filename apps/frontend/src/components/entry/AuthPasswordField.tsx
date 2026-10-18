@@ -38,6 +38,7 @@ export function AuthPasswordField({
   forgotPasswordLabel,
   name = "password",
   describedBy,
+  enterKeyHint = "go",
 }: {
   id: string;
   label: string;
@@ -53,6 +54,7 @@ export function AuthPasswordField({
   forgotPasswordLabel?: string;
   name?: string;
   describedBy?: string;
+  enterKeyHint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
 }): React.JSX.Element {
   const errorId = `${id}-error`;
   const describedByIds =
@@ -70,11 +72,14 @@ export function AuthPasswordField({
         autoFocus={autoFocus}
         value={value}
         placeholder={placeholder}
+        enterKeyHint={enterKeyHint}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={Boolean(error)}
         aria-describedby={describedByIds}
+        aria-errormessage={error ? errorId : undefined}
         className={cn(error && "border-destructive focus-visible:ring-destructive/25")}
       />
+
       {error ? (
         <p id={errorId} className={FORM_ERROR} role="alert">
           {error}

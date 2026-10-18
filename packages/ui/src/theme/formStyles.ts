@@ -11,6 +11,13 @@ export const FORM_ERROR_BOX =
 export const FORM_INPUT_ERROR =
   "border-destructive focus-visible:ring-destructive focus-visible:border-destructive";
 
+/**
+ * Modern Web Guidance: style-form-controls-validity
+ * Unified user-interacted validation classes using :user-invalid and aria-invalid.
+ */
+export const FORM_INPUT_USER_VALIDATION =
+  "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/30 aria-invalid:focus-visible:border-destructive user-invalid:border-destructive user-invalid:focus-visible:ring-destructive/30 user-invalid:focus-visible:border-destructive";
+
 /** Shared label class for modal / registry-driven forms. */
 export const FORM_LABEL =
   "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-foreground";
@@ -41,7 +48,7 @@ export const FORM_CHECKBOX =
   "peer relative h-4 w-4 shrink-0 cursor-pointer rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']";
 
 export const CARD_SURFACE =
-  "relative overflow-hidden group/card rounded-2xl border border-foreground/10 bg-card text-card-foreground shadow-xs transition-colors duration-150 ease-out motion-reduce:transition-none";
+  "relative overflow-clip group/card rounded-2xl border border-foreground/10 bg-card text-card-foreground shadow-xs transition-colors duration-150 ease-out motion-reduce:transition-none";
 
 /** Unified form card container style — matching the centralized Card component. */
 export const FORM_CARD = `${CARD_SURFACE} group`;

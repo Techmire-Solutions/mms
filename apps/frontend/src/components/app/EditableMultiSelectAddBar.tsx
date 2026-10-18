@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { FORM_INPUT_COMPACT } from "@/components/ui/formStyles";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { cn } from "@/lib/utils";
+import { isImeSafeEnter } from "@shared/ui";
 
 const INPUT_CLASS = cn("h-auto min-w-0 flex-1", FORM_INPUT_COMPACT);
 
@@ -38,7 +39,8 @@ export const EditableMultiSelectAddBar = React.memo(function EditableMultiSelect
             }
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === ",") {
+            const isEnter = isImeSafeEnter(e);
+            if (isEnter || e.key === ",") {
               e.preventDefault();
               e.stopPropagation();
               onAdd();

@@ -17,16 +17,23 @@ afterEach(() => {
   document.documentElement.removeAttribute("lang");
   document.documentElement.removeAttribute("dir");
   document.querySelector('meta[name="theme-color"]')?.remove();
+  document.querySelector('meta[name="color-scheme"]')?.remove();
   vi.restoreAllMocks();
 });
 
 describe("explicit document theme ownership", () => {
   it("replaces every tenant token and locale when returning to the platform", () => {
+    const metaCs = document.createElement("meta");
+    metaCs.name = "color-scheme";
+    metaCs.content = "light dark";
+    document.head.appendChild(metaCs);
+
     applyDocumentTheme(
       { ...DEFAULT_BRANDING_SETTINGS, primaryColor: "#006699", secondaryColor: "#663399" },
       "dark",
       "ur",
     );
+    expect(metaCs.content).toBe("dark");
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(document.documentElement.dir).toBe("rtl");
     applyApexPlatformTheme();

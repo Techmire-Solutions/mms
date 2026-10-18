@@ -11,6 +11,7 @@ export function TableHead({
   align,
   variant,
   isFocusable,
+  isSticky,
   tabIndex,
   sortable,
   sortKey,
@@ -74,6 +75,7 @@ export function TableHead({
         alignClass,
         isFocusable &&
           "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset",
+        isSticky && "sticky inset-inline-start-0 z-20 bg-background/95 backdrop-blur-xs shadow-2xs",
         isSortable && "group",
         className,
       )}

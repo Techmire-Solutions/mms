@@ -1,4 +1,5 @@
 import { useState, useEffect, useDeferredValue, useMemo } from "react";
+import { isImeSafeEnter } from "@shared/ui";
 
 export interface UseCommandPaletteSearchOptions<T> {
   filterItems: (query: string) => readonly T[];
@@ -33,7 +34,7 @@ export function useCommandPaletteSearch<T>({
       setSelectedIndex(() =>
         items.length > 0 ? (selectedIndex - 1 + items.length) % items.length : 0,
       );
-    } else if (e.key === "Enter") {
+    } else if (e.key === "Enter" && isImeSafeEnter(e)) {
       e.preventDefault();
       if (items[selectedIndex]) {
         onSelect(items[selectedIndex]);

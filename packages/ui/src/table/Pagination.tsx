@@ -65,7 +65,7 @@ export function Pagination({
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 touch-target-coarse"
             disabled={currentPage <= 1}
             onClick={() => onPageChange(currentPage - 1)}
             aria-label={labels.previous}
@@ -76,7 +76,7 @@ export function Pagination({
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 touch-target-coarse"
             disabled={currentPage >= totalPages}
             onClick={() => onPageChange(currentPage + 1)}
             aria-label={labels.next}

@@ -26,7 +26,7 @@ export function ResponsiveAccordionTabsDesktop({
         <div
           role="tablist"
           aria-label={sectionAriaLabel}
-          className="flex gap-0 overflow-x-auto border-b border-border"
+          className="flex gap-0 overflow-x-auto border-b border-border mask-fade-inline-end"
         >
           {tabs.map((tab) => {
             const Icon = tab.icon;

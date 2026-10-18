@@ -19,6 +19,7 @@ describe("EntityNotesFormSection", () => {
     expect(html).toContain("Notes");
     expect(html).toContain("Existing note text");
     expect(html).toContain("Internal notes");
+    expect(html).toContain("[field-sizing:content]");
   });
 
   it("shows field error when provided", () => {

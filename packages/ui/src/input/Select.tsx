@@ -141,3 +141,15 @@ export function isRadixSelectPortalTarget(target: EventTarget | null): boolean {
     Boolean(target.closest("[data-radix-select-content], [data-radix-select-viewport]"))
   );
 }
+
+/**
+ * Modern Web Guidance: branded-select-styling
+ * CSS class name to apply to a native `<select>` element to opt-in to
+ * `appearance: base-select` progressive enhancement in supporting browsers
+ * (Chrome 135+, Edge 135+, Safari 27). Browsers without support degrade gracefully
+ * to the OS-native select picker.
+ *
+ * Feature gated via `@supports (appearance: base-select)` in index.css.
+ * @see https://developer.chrome.com/docs/css-ui/customizable-select
+ */
+export const selectBrandClass = "brand-select";

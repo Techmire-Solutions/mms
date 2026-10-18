@@ -3,7 +3,9 @@ import { apiFetch, apiJson } from "@/lib/apiClient";
 import { triggerFileDownload } from "@/lib/download";
 
 export async function fetchBackgroundJobs(): Promise<BackgroundJobRecord[]> {
-  const jobsResponse = await apiJson<{ jobs: BackgroundJobRecord[] }>(BACKGROUND_JOBS_API_PATH);
+  const jobsResponse = await apiJson<{ jobs: BackgroundJobRecord[] }>(BACKGROUND_JOBS_API_PATH, {
+    priority: "low",
+  });
   return jobsResponse?.jobs ?? [];
 }
 
@@ -27,6 +29,7 @@ export async function dismissBackgroundJobRemote(jobId: string): Promise<void> {
 export async function clearFinishedBackgroundJobsRemote(): Promise<void> {
   await apiJson<{ success: boolean }>(`${BACKGROUND_JOBS_API_PATH}/clear-finished`, {
     method: "POST",
+    priority: "low",
   });
 }
 

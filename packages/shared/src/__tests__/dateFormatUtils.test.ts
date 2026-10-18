@@ -26,6 +26,8 @@ import {
   normalizeTimeHHmm,
   splitIsoDateTime,
   combineIsoDateAndTime,
+  formatRelativeTime,
+  formatDuration,
   DATE_FORMAT_PRESET_IDS,
   DATE_PICKER_YEAR_PAST,
   DATE_PICKER_YEAR_FUTURE,
@@ -424,6 +426,87 @@ describe("dateFormatUtils", () => {
       expect(combineIsoDateAndTime("", "14:30")).toBeNull();
       expect(combineIsoDateAndTime(null, "14:30")).toBeNull();
       expect(combineIsoDateAndTime("invalid", "14:30")).toBeNull();
+    });
+  });
+
+  describe("formatRelativeTime", () => {
+    const base = new Date("2026-10-18T12:00:00.000Z");
+
+    it("formats relative past seconds and minutes in English", () => {
+      const tenSecAgo = new Date(base.getTime() - 10 * 1000);
+      expect(formatRelativeTime(tenSecAgo, "en", base)).toBe("10 seconds ago");
+
+      const fiveMinAgo = new Date(base.getTime() - 5 * 60 * 1000);
+      expect(formatRelativeTime(fiveMinAgo, "en", base)).toBe("5 minutes ago");
+    });
+
+    it("formats relative hours, days, months, and years", () => {
+      const twoHoursAgo = new Date(base.getTime() - 2 * 60 * 60 * 1000);
+      expect(formatRelativeTime(twoHoursAgo, "en", base)).toBe("2 hours ago");
+
+      const yesterday = new Date(base.getTime() - 24 * 60 * 60 * 1000);
+      expect(formatRelativeTime(yesterday, "en", base)).toBe("yesterday");
+
+      const twoDaysAgo = new Date(base.getTime() - 48 * 60 * 60 * 1000);
+      expect(formatRelativeTime(twoDaysAgo, "en", base)).toBe("2 days ago");
+
+      const threeMonthsAgo = new Date(base.getTime() - 90 * 24 * 60 * 60 * 1000);
+      expect(formatRelativeTime(threeMonthsAgo, "en", base)).toBe("3 months ago");
+    });
+
+    it("formats relative future durations", () => {
+      const inFiveMin = new Date(base.getTime() + 5 * 60 * 1000);
+      expect(formatRelativeTime(inFiveMin, "en", base)).toBe("in 5 minutes");
+
+      const tomorrow = new Date(base.getTime() + 24 * 60 * 60 * 1000);
+      expect(formatRelativeTime(tomorrow, "en", base)).toBe("tomorrow");
+    });
+
+    it("formats relative time in Arabic and Urdu locales", () => {
+      const twoHoursAgo = new Date(base.getTime() - 2 * 60 * 60 * 1000);
+      const arabic = formatRelativeTime(twoHoursAgo, "ar", base);
+      expect(arabic).toBeTruthy();
+      expect(typeof arabic).toBe("string");
+
+      const urdu = formatRelativeTime(twoHoursAgo, "ur", base);
+      expect(urdu).toBeTruthy();
+      expect(typeof urdu).toBe("string");
+    });
+
+    it("handles invalid or empty inputs gracefully", () => {
+      expect(formatRelativeTime("invalid-date", "en", base)).toBe("");
+      expect(formatRelativeTime("", "en", base)).toBe("");
+    });
+  });
+
+  describe("formatDuration", () => {
+    it("formats durations into English long format", () => {
+      const result = formatDuration({ hours: 1, minutes: 30 });
+      expect(result).toMatch(/1\s+hour.*30\s+minute/i);
+    });
+
+    it("formats short and digital styles", () => {
+      const shortResult = formatDuration({ hours: 2, minutes: 15 }, { style: "short" });
+      expect(typeof shortResult).toBe("string");
+      expect(shortResult.length).toBeGreaterThan(0);
+    });
+
+    it("supports multi-locale formatting in Arabic, Urdu, and Persian", () => {
+      const arabic = formatDuration({ hours: 2, minutes: 15 }, { languageOrLocale: "ar" });
+      expect(typeof arabic).toBe("string");
+      expect(arabic.length).toBeGreaterThan(0);
+
+      const urdu = formatDuration({ hours: 2, minutes: 15 }, { languageOrLocale: "ur" });
+      expect(typeof urdu).toBe("string");
+      expect(urdu.length).toBeGreaterThan(0);
+
+      const persian = formatDuration({ hours: 2, minutes: 15 }, { languageOrLocale: "fa" });
+      expect(typeof persian).toBe("string");
+      expect(persian.length).toBeGreaterThan(0);
+    });
+
+    it("handles zero or empty duration objects gracefully", () => {
+      expect(formatDuration({})).toBe("0 seconds");
     });
   });
 });

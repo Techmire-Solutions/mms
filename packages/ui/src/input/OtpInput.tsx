@@ -34,12 +34,35 @@ export function OtpInput({
     inputs.current[index]?.focus();
   };
 
-  const handleChange = (index: number, digit: string): void => {
-    if (!/^\d?$/.test(digit)) return;
+  const handleChange = (index: number, rawValue: string): void => {
+    // Modern Web Guidance: sms-otp-form
+    // Support multi-character autofill when mobile browsers deliver full OTP code into input
+    const cleaned = rawValue.replace(/\D/g, "");
+    if (!cleaned) {
+      const updatedValue = [...value];
+      updatedValue[index] = "";
+      onChange(updatedValue);
+      return;
+    }
+
+    if (cleaned.length > 1) {
+      const updatedCode = [...value];
+      for (let i = 0; i < length; i++) {
+        const offset = i - index;
+        if (offset >= 0 && offset < cleaned.length) {
+          updatedCode[i] = cleaned[offset] ?? "";
+        }
+      }
+      onChange(updatedCode);
+      const nextFocus = Math.min(index + cleaned.length - 1, length - 1);
+      focusIndex(nextFocus);
+      return;
+    }
+
     const updatedValue = [...value];
-    updatedValue[index] = digit;
+    updatedValue[index] = cleaned;
     onChange(updatedValue);
-    if (digit && index < length - 1) {
+    if (index < length - 1) {
       focusIndex(index + 1);
     }
   };
@@ -95,7 +118,7 @@ export function OtpInput({
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            maxLength={1}
+            maxLength={length}
             value={digit}
             disabled={disabled}
             onChange={(event) => handleChange(index, event.target.value)}

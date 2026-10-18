@@ -8,6 +8,7 @@ import { useDatePickerState } from "@/components/app/useDatePickerState";
 import { DatePickerCalendarContent } from "@/components/app/DatePickerCalendarContent";
 import { keepOpenForChrome, resolveDatePickerHiddenValue } from "@/components/app/datePickerBounds";
 import type { DatePickerProps } from "@/components/app/datePickerTypes";
+import { isImeSafeEnter } from "@shared/ui";
 
 export type { DatePickerProps };
 
@@ -56,7 +57,7 @@ export function DatePicker({
   const hiddenValue = resolveDatePickerHiddenValue(value, state.isYearMode);
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
+    if (isImeSafeEnter(event)) {
       event.preventDefault();
       state.handleBlur();
       state.setOpen(false);

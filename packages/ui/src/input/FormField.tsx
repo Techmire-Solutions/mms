@@ -32,14 +32,29 @@ export function FormField({
   const errorId = error ? `${fieldId}-error` : undefined;
   const hintId = hint ? `${fieldId}-hint` : undefined;
 
+  // Modern Web Guidance: accessible-error-announcement
+  const enhancedChildren = React.Children.map(children, (child) => {
+    if (!React.isValidElement(child)) return child;
+    const childProps = child.props as Record<string, unknown>;
+    return React.cloneElement(child, {
+      "aria-invalid": childProps["aria-invalid"] ?? (error ? true : undefined),
+      "aria-errormessage": childProps["aria-errormessage"] ?? errorId,
+      "aria-describedby": childProps["aria-describedby"] ?? (error ? errorId : hintId),
+    } as Record<string, unknown>);
+  });
+
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
+    <div className={cn("group/form-field flex flex-col gap-1.5", className)}>
       {label && (
-        <Label htmlFor={fieldId} required={required}>
+        <Label
+          htmlFor={fieldId}
+          required={required}
+          className="group-has-[:user-invalid]/form-field:text-destructive transition-colors"
+        >
           {label}
         </Label>
       )}
-      <div id={fieldId}>{children}</div>
+      <div id={fieldId}>{enhancedChildren}</div>
       {hint && !error && (
         <p id={hintId} className="text-xs text-muted-foreground">
           {hint}
@@ -175,6 +190,7 @@ export function Field({
       children?: React.ReactNode;
       "aria-invalid"?: boolean;
       "aria-describedby"?: string;
+      "aria-errormessage"?: string;
     };
     const isNativeInput =
       typeof node.type === "string" && ["input", "textarea", "select"].includes(node.type);
@@ -186,6 +202,7 @@ export function Field({
       children?: React.ReactNode;
       "aria-invalid"?: boolean;
       "aria-describedby"?: string;
+      "aria-errormessage"?: string;
     }>;
 
     if (isInputLike) {
@@ -199,6 +216,7 @@ export function Field({
         name: assignedName,
         "aria-invalid": props["aria-invalid"] ?? Boolean(error),
         "aria-describedby": props["aria-describedby"] || describedBy,
+        "aria-errormessage": props["aria-errormessage"] || (error ? errorId : undefined),
       });
     }
 
@@ -212,9 +230,14 @@ export function Field({
   const enhancedChildren = React.Children.map(children, injectIdAndName);
 
   return (
-    <div id={id ? `${id}-container` : undefined} data-field-key={id}>
+    <div id={id ? `${id}-container` : undefined} data-field-key={id} className="group/field">
       {aiHint ? (
-        <div className={cn(FORM_LABEL, "flex items-center gap-1.5")}>
+        <div
+          className={cn(
+            FORM_LABEL,
+            "flex items-center gap-1.5 group-has-[:user-invalid]/field:text-destructive transition-colors",
+          )}
+        >
           <label htmlFor={resolvedId} className="cursor-pointer">
             <span>{label}</span>
             {required && <RequiredMark />}
@@ -230,7 +253,13 @@ export function Field({
           </button>
         </div>
       ) : (
-        <label htmlFor={resolvedId} className={FORM_LABEL}>
+        <label
+          htmlFor={resolvedId}
+          className={cn(
+            FORM_LABEL,
+            "group-has-[:user-invalid]/field:text-destructive transition-colors",
+          )}
+        >
           <span>{label}</span>
           {required && <RequiredMark />}
         </label>
