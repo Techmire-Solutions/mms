@@ -89,7 +89,7 @@ export function LlmConfigCard({
                 />
               )}
             </span>
-            <h4 className="min-w-0 truncate text-sm font-bold">{config.name}</h4>
+            <h4 title={config.name} className="min-w-0 truncate text-sm font-bold">{config.name}</h4>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {config.isDefaultText && (

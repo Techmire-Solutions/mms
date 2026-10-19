@@ -92,7 +92,7 @@ export function Badge({
         tone && BADGE_TONES[tone],
         pill && "rounded-full",
         isInteractive &&
-          "cursor-pointer select-none active:scale-95 hover:opacity-90 transition-transform",
+          "cursor-pointer select-none active:scale-95 hover:opacity-90 transition-transform touch-target-coarse",
         className,
       )}
       {...props}

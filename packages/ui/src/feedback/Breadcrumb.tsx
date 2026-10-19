@@ -45,7 +45,7 @@ export function Breadcrumb({
                 ) : (
                   <a
                     href={item.href}
-                    className="font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    className="inline-flex min-h-11 items-center font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   >
                     {linkContent}
                   </a>

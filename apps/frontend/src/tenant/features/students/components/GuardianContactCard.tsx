@@ -48,9 +48,9 @@ export function GuardianContactCard({
           <SectionLabel toneClassName={badgeTone} className="mb-0.5 block bg-transparent border-0">
             {label}
           </SectionLabel>
-          <h5 className="text-xs font-bold text-foreground truncate">{name}</h5>
+          <h5 title={name} className="text-xs font-bold text-foreground truncate">{name}</h5>
           {(phone || email) && (
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">{phone || email}</p>
+            <p title={phone || email} className="text-xs text-muted-foreground mt-0.5 truncate">{phone || email}</p>
           )}
         </div>
       </div>

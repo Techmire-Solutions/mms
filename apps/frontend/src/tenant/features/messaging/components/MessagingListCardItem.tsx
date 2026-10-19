@@ -118,7 +118,7 @@ export function MessagingListCardItem({
               <div className="flex items-start justify-between gap-2 mt-0.5">
                 <div className="min-w-0 flex-1">
                   {log.channel === "email" && log.subject && (
-                    <p className="font-semibold text-foreground mb-1 truncate">{log.subject}</p>
+                    <p title={log.subject} className="font-semibold text-foreground mb-1 truncate">{log.subject}</p>
                   )}
                   <p className="line-clamp-2 leading-relaxed whitespace-pre-wrap">{log.body}</p>
                 </div>

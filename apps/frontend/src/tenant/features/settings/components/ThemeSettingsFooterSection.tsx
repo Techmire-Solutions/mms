@@ -78,7 +78,7 @@ export function ThemeSettingsFooterSection({
               const name = madrasaName.trim() || t("theme.authPreviewNamePlaceholder");
               onFooterChange(t("theme.templateStandardText", { year: String(year), name }));
             }}
-            className="min-h-7 h-7 text-2xs px-2.5 rounded-full border-border/80 text-muted-foreground hover:text-foreground"
+            className="min-h-7 h-7 touch-target-coarse text-2xs px-2.5 rounded-full border-border/80 text-muted-foreground hover:text-foreground"
           >
             {t("theme.templateStandard")}
           </Button>
@@ -91,7 +91,7 @@ export function ThemeSettingsFooterSection({
               const name = madrasaName.trim() || t("theme.authPreviewNamePlaceholder");
               onFooterChange(t("theme.templateEducationalText", { year: String(year), name }));
             }}
-            className="min-h-7 h-7 text-2xs px-2.5 rounded-full border-border/80 text-muted-foreground hover:text-foreground"
+            className="min-h-7 h-7 touch-target-coarse text-2xs px-2.5 rounded-full border-border/80 text-muted-foreground hover:text-foreground"
           >
             {t("theme.templateEducational")}
           </Button>
@@ -104,7 +104,7 @@ export function ThemeSettingsFooterSection({
               const name = madrasaName.trim() || t("theme.authPreviewNamePlaceholder");
               onFooterChange(t("theme.templateCommunityText", { year: String(year), name }));
             }}
-            className="min-h-7 h-7 text-2xs px-2.5 rounded-full border-border/80 text-muted-foreground hover:text-foreground"
+            className="min-h-7 h-7 touch-target-coarse text-2xs px-2.5 rounded-full border-border/80 text-muted-foreground hover:text-foreground"
           >
             {t("theme.templateCommunity")}
           </Button>

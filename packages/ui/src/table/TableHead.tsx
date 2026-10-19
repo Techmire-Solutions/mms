@@ -86,7 +86,7 @@ export function TableHead({
           type="button"
           onClick={handleClick}
           className={cn(
-            "inline-flex items-center gap-1.5 font-inherit text-inherit hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-xs",
+            "inline-flex min-h-11 -my-0.5 items-center gap-1.5 font-inherit text-inherit hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-xs",
             isRightAligned && "flex-row-reverse",
           )}
           title={screenReaderLabel}

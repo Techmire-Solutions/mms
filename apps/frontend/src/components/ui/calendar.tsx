@@ -47,7 +47,7 @@ function Calendar({
         ),
         day_button: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-8 w-8 min-h-8 min-w-8 p-0 font-medium text-xs aria-selected:opacity-100 rounded-lg hover:bg-muted/80 transition-all duration-150 cursor-pointer",
+          "relative h-8 w-8 min-h-8 min-w-8 p-0 font-medium text-xs aria-selected:opacity-100 rounded-lg hover:bg-muted/80 transition-all duration-150 cursor-pointer before:absolute before:-inset-1.5 before:content-['']",
         ),
         range_start: "day-range-start",
         range_end: "day-range-end",
@@ -95,7 +95,7 @@ function Calendar({
             <button
               type="button"
               className={cn(
-                "h-8 w-8 min-h-8 min-w-8 p-0 font-medium text-xs transition-all duration-100 flex items-center justify-center select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "relative h-8 w-8 min-h-8 min-w-8 p-0 font-medium text-xs transition-all duration-100 flex items-center justify-center select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background before:absolute before:-inset-1.5 before:content-['']",
                 // Unselected default
                 !isSelected &&
                   !isRangeMiddle &&

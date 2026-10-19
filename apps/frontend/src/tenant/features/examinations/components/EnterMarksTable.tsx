@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Users, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,16 @@ export function EnterMarksTable({
     );
   })();
 
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const isVirtualized = filteredStudents.length > 30;
+  const rowVirtualizer = useVirtualizer({
+    count: filteredStudents.length,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => 72,
+    overscan: 8,
+    enabled: isVirtualized,
+  });
+
   return (
     <Card accentColor="primary" className="p-0 overflow-hidden">
       <div
@@ -68,12 +79,57 @@ export function EnterMarksTable({
         </div>
       </div>
       <div
-        className={cn("divide-y divide-border/50 max-h-150 overflow-y-auto", CARD_STRIPE_INSET)}
+        ref={listRef}
+        className={cn(
+          "max-h-150 overflow-y-auto",
+          !isVirtualized && "divide-y divide-border/50",
+          CARD_STRIPE_INSET,
+        )}
         role="list"
       >
         {filteredStudents.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
             {t("examinations.empty.results")}
+          </div>
+        ) : isVirtualized ? (
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const student = filteredStudents[virtualRow.index];
+              if (!student) return null;
+              return (
+                <div
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={rowVirtualizer.measureElement}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                  className={cn(
+                    virtualRow.index < filteredStudents.length - 1 &&
+                      "border-b border-border/50",
+                  )}
+                >
+                  <EnterMarksStudentRow
+                    student={student}
+                    index={virtualRow.index}
+                    exam={exam}
+                    classNameText={classNamesById.get(student.classId) || student.classId}
+                    markValue={marks[String(student.id)] ?? ""}
+                    onMarkChange={onMarkChange}
+                  />
+                </div>
+              );
+            })}
           </div>
         ) : (
           filteredStudents.map((student, index) => (

@@ -1,11 +1,16 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   BulkActionDock,
   BulkSelectionDeleteAction,
   BulkSelectionRestoreAction,
 } from "@/components/common/BulkActionDock";
+
+vi.mock("@/hooks/useTranslation", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 
 describe("BulkActionDock", () => {
   it("renders bulk selection count and actions", () => {

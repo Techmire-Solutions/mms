@@ -3,6 +3,11 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 
+vi.mock("@/hooks/useTranslation", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
+
 vi.mock("@/hooks/useReducedMotion", () => ({
   useReducedMotion: () => false,
 }));

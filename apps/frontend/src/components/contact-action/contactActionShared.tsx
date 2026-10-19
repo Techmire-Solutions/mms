@@ -8,6 +8,7 @@ import {
 } from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
 import { notify } from "@/lib/notify";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export type ContactActionVariant = "stacked" | "inline" | "pill" | "actions-only" | "drawer";
 
@@ -101,10 +102,11 @@ interface ActionCopyButtonProps {
 export const ActionCopyButton = function ActionCopyButton({
   text,
   copyToastMessage,
-  tooltipCopyText = "Copy",
-  tooltipCopiedText = "Copied",
+  tooltipCopyText,
+  tooltipCopiedText,
   className,
 }: ActionCopyButtonProps): React.JSX.Element {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = (e: React.MouseEvent): void => {
@@ -122,7 +124,14 @@ export const ActionCopyButton = function ActionCopyButton({
       .catch(() => undefined);
   };
 
-  const label = copied ? tooltipCopiedText : tooltipCopyText;
+  const translatedCopy = t("common.copy");
+  const translatedCopied = t("common.copied");
+  const defaultCopy = translatedCopy === "common.copy" ? "Copy" : translatedCopy;
+  const defaultCopied = translatedCopied === "common.copied" ? "Copied" : translatedCopied;
+
+  const label = copied
+    ? (tooltipCopiedText ?? defaultCopied)
+    : (tooltipCopyText ?? defaultCopy);
 
   return (
     <ActionIconButton

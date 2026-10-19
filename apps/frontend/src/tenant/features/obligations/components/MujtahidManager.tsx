@@ -105,7 +105,7 @@ export function MujtahidManager({
                   ) : (
                     <ChevronRight className="w-4 h-4 shrink-0" aria-hidden="true" />
                   )}
-                  <span className="min-w-0 truncate">{mujtahid.name}</span>
+                  <span title={mujtahid.name} className="min-w-0 truncate">{mujtahid.name}</span>
                   <Badge as="span" pill tone="muted" className="px-1.5 font-bold shrink-0">
                     {t("obligations.mujtahids.repsCount", { count: mujtahidReps.length })}
                   </Badge>
@@ -157,7 +157,7 @@ export function MujtahidManager({
                         key={representative.id}
                         className="flex min-w-0 items-center justify-between gap-2 border-b border-border px-6 py-2.5 last:border-0"
                       >
-                        <span className="min-w-0 truncate text-sm text-foreground">
+                        <span title={representative.name} className="min-w-0 truncate text-sm text-foreground">
                           {representative.name}
                         </span>
                         <div className="flex shrink-0 items-center gap-1">

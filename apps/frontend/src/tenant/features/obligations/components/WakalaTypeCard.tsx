@@ -54,11 +54,11 @@ export function WakalaTypeCard({
       >
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h3 className="m-0 min-w-0 truncate text-sm font-bold text-foreground">{typeName}</h3>
+            <h3 title={typeName} className="m-0 min-w-0 truncate text-sm font-bold text-foreground">{typeName}</h3>
             <span className="shrink-0 text-xs text-muted-foreground">
               {t("obligations.wakala.via")}
             </span>
-            <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+            <span title={repName} className="min-w-0 truncate text-sm font-semibold text-foreground">
               {repName}
             </span>
           </div>

@@ -137,7 +137,7 @@ export function CashFlowStatementPanel({
             columns={[
               {
                 id: "label",
-                label: "Label",
+                label: t("common.label"),
                 cellClassName: (row) =>
                   row.type === "header"
                     ? "font-semibold text-foreground"
@@ -146,7 +146,7 @@ export function CashFlowStatementPanel({
               },
               {
                 id: "amount",
-                label: "Amount",
+                label: t("finance.columns.amount"),
                 variant: "currency",
                 cellClassName: (row) => (row.type === "header" ? "" : "text-muted-foreground"),
                 render: (row) => formatCurrency(row.amount),
