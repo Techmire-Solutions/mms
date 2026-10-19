@@ -3,6 +3,7 @@ import { CheckCheck, CircleCheck, CircleX, Clock3, Search } from "lucide-react";
 import {
   formatDate,
   REGISTRATION_APPLICATION_STATUSES,
+  SEAT_AVAILABLE_REVIEW_NOTE,
   type RegistrationApplication,
   type RegistrationApplicationStatus,
 } from "@mms/shared";
@@ -101,6 +102,10 @@ export function AdmissionsPanel({ canWrite }: { canWrite: boolean }): React.JSX.
         row.eligibilityReasons.length > 0 ? (
           <span className="text-xs text-destructive">
             {row.eligibilityReasons.map((reason) => t(`apply.reasons.${reason}`)).join(" ")}
+          </span>
+        ) : row.reviewReason === SEAT_AVAILABLE_REVIEW_NOTE ? (
+          <span className="text-xs font-medium text-success">
+            {t("enrollments.admissions.seatAvailable")}
           </span>
         ) : row.matchedStudentId ? (
           <span className="text-xs text-info">{t("enrollments.admissions.possibleMatch")}</span>

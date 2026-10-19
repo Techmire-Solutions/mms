@@ -2,7 +2,13 @@ import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 
 /** Typed timeline events written by the server for mid-session operations. */
-export const ENROLLMENT_EVENT_TYPES = ["placed", "transferred", "withdrawn"] as const;
+export const ENROLLMENT_EVENT_TYPES = [
+  "placed",
+  "transferred",
+  "withdrawn",
+  "readmitted",
+  "suspended",
+] as const;
 export type EnrollmentEventType = (typeof ENROLLMENT_EVENT_TYPES)[number];
 
 const reasonSchema = z.string().trim().min(3, "Give a reason").max(500);
@@ -26,6 +32,27 @@ export const enrollmentWithdrawBodySchema = z
   })
   .strict();
 export type EnrollmentWithdrawBody = z.infer<typeof enrollmentWithdrawBodySchema>;
+
+/** Bring a withdrawn student back from a date (optionally into another class/section). */
+export const enrollmentReadmitBodySchema = z
+  .object({
+    classId: z.string().trim().min(1).max(64).optional(),
+    sectionId: z.string().trim().min(1).max(64).nullable().optional(),
+    effectiveOn: isoDateSchema,
+    reason: reasonSchema,
+  })
+  .strict();
+export type EnrollmentReadmitBody = z.infer<typeof enrollmentReadmitBodySchema>;
+
+/** Suspension / long leave: an approved leave range; those days do not count toward rates. */
+export const enrollmentSuspendBodySchema = z
+  .object({ fromOn: isoDateSchema, toOn: isoDateSchema, reason: reasonSchema })
+  .strict()
+  .refine((body) => body.toOn >= body.fromOn, {
+    message: "The leave must end on or after it starts",
+    path: ["toOn"],
+  });
+export type EnrollmentSuspendBody = z.infer<typeof enrollmentSuspendBodySchema>;
 
 /** One dated placement of an enrollment (class × section over [startOn, endOn]). */
 export const enrollmentPlacementSchema = z

@@ -72,6 +72,7 @@ import {
   normalizeReportComparisonQuery,
   reportComparisonQueryActive,
 } from "../reports/reportComparisonQuery.js";
+import { enrollmentHoldsSeat } from "./enrollmentsModuleManifest.js";
 
 /** Optional ComparisonMode params for GET /report-aggregates. */
 export type EnrollmentsReportComparisonQuery = BaseReportComparisonQuery;
@@ -177,7 +178,7 @@ export function computeEnrollmentsReportPanels(
     else if (status === "completed") statusCounts.completed += 1;
 
     const fee = Number(enrollment.finalFee) || 0;
-    if (status !== "cancelled") due += fee;
+    if (enrollmentHoldsSeat(status)) due += fee;
     if (enrollment.paymentStatus === "paid") paid += fee;
 
     const sessionId = enrollment.sessionId || "";
@@ -190,7 +191,7 @@ export function computeEnrollmentsReportPanels(
       };
     }
     sessionStatsById[sessionId].count += 1;
-    if (status !== "cancelled") {
+    if (enrollmentHoldsSeat(status)) {
       sessionStatsById[sessionId].revenue += fee;
     }
   }

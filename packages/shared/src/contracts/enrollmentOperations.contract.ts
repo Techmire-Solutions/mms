@@ -3,6 +3,8 @@ import { z } from "zod";
 import { enrollmentRecordSchema } from "../enrollments/enrollmentsModuleManifest.js";
 import {
   enrollmentPlacementSchema,
+  enrollmentReadmitBodySchema,
+  enrollmentSuspendBodySchema,
   enrollmentTransferBodySchema,
   enrollmentWithdrawBodySchema,
   withdrawalBillingOutcomeSchema,
@@ -55,5 +57,21 @@ export const enrollmentOperationsContract = c.router({
       }),
     },
     summary: "Withdraw an enrollment from a date and release its seat",
+  },
+  readmit: {
+    method: "POST",
+    path: "/api/enrollments/:id/readmit",
+    pathParams: enrollmentParams,
+    body: enrollmentReadmitBodySchema,
+    responses: operationResponses,
+    summary: "Re-admit a withdrawn enrollment from a date",
+  },
+  suspend: {
+    method: "POST",
+    path: "/api/enrollments/:id/suspend",
+    pathParams: enrollmentParams,
+    body: enrollmentSuspendBodySchema,
+    responses: operationResponses,
+    summary: "Suspend an enrollment for a date range (approved leave)",
   },
 });

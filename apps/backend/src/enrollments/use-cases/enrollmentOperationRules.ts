@@ -41,6 +41,7 @@ export function findTransferTarget(
   enrollment: Pick<Enrollment, "classId" | "sectionId">,
   classId: string,
   sectionId: string | null,
+  options: { allowSamePlacement?: boolean } = {},
 ): TransferTarget {
   const cls = (session.classes ?? []).find((row) => row.id === classId);
   if (!cls) return { error: "The class is not part of this enrollment's session" };
@@ -50,8 +51,24 @@ export function findTransferTarget(
     : activeSections[0];
   if (sectionId && !section) return { error: "The section is not an active section of the class" };
   const resolvedSectionId = section?.id ?? null;
-  if (cls.id === enrollment.classId && resolvedSectionId === (enrollment.sectionId ?? null))
+  if (
+    !options.allowSamePlacement &&
+    cls.id === enrollment.classId &&
+    resolvedSectionId === (enrollment.sectionId ?? null)
+  )
     return { error: "The student is already in this class and section" };
   const seatsLeft = section ? remainingSeats({ sections: [section] }) : remainingSeats(cls);
   return { cls, sectionId: resolvedSectionId, seatsLeft };
+}
+
+/** Why `effectiveOn` cannot re-admit this withdrawn enrollment, or null when it can. */
+export function readmitWindowError(
+  enrollment: Pick<Enrollment, "endOn">,
+  effectiveOn: string,
+  today: string,
+): string | null {
+  if (effectiveOn > today) return "The effective date cannot be in the future";
+  if (enrollment.endOn && effectiveOn <= enrollment.endOn)
+    return `Re-admission must start after the last day (${enrollment.endOn})`;
+  return null;
 }

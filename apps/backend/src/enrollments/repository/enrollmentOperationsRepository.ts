@@ -18,4 +18,6 @@ export interface EnrollmentOperationsRepository {
   listEnrollmentPlacements: OperationsStore["listEnrollmentPlacements"];
   applyEnrollmentTransfer: OperationsStore["applyEnrollmentTransfer"];
   applyEnrollmentWithdrawal: OperationsStore["applyEnrollmentWithdrawal"];
+  applyEnrollmentReadmission: OperationsStore["applyEnrollmentReadmission"];
+  recordEnrollmentSuspension: OperationsStore["recordEnrollmentSuspension"];
 }

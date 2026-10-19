@@ -46,7 +46,12 @@ export function useMarkAttendanceController({
     if (!filters.classId) return [];
     return enrollments
       .filter((enrollment) =>
-        isEnrollmentInAttendanceRoster(enrollment, filters.classId, filters.sectionId),
+        isEnrollmentInAttendanceRoster(
+          enrollment,
+          filters.classId,
+          filters.sectionId,
+          filters.date,
+        ),
       )
       .map((enrollment) => enrollment.studentId);
   })();
@@ -62,6 +67,7 @@ export function useMarkAttendanceController({
       enrolledStudents,
       t("common.unnamedStudent"),
       filters.sectionId,
+      filters.date,
     );
   })();
 

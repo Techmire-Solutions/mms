@@ -173,3 +173,26 @@ export const ENROLLMENTS_MODULE_MANIFEST = {
 } as const;
 
 export type EnrollmentsModuleTier = (typeof ENROLLMENTS_MODULE_MANIFEST.tiers)[number];
+
+/**
+ * Whether the enrollment counts on `day` (YYYY-MM-DD) for rosters: it holds a seat, or was withdrawn
+ * after that day; and the student had started by then (`startOn`, else `enrolledDate`).
+ */
+export function enrollmentActiveOn(
+  enrollment: {
+    status: string;
+    startOn?: string | null;
+    endOn?: string | null;
+    enrolledDate?: string | null;
+  },
+  day: string,
+): boolean {
+  const start = enrollment.startOn || enrollment.enrolledDate;
+  if (start && /^\d{4}-\d{2}-\d{2}/.test(start) && day < start.slice(0, 10)) return false;
+  if (enrollmentHoldsSeat(enrollment.status)) return true;
+  return (
+    enrollment.status === "withdrawn" &&
+    Boolean(enrollment.endOn) &&
+    day <= String(enrollment.endOn)
+  );
+}

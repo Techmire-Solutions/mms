@@ -1,8 +1,10 @@
 import type { EnrollmentOperationsRepository } from "./enrollmentOperationsRepository.js";
 import {
   applyEnrollmentTransfer,
+  applyEnrollmentReadmission,
   applyEnrollmentWithdrawal,
   listEnrollmentPlacements,
+  recordEnrollmentSuspension,
 } from "../../db/repositories/enrollmentOperationsRepository.js";
 import { findEnrollmentById } from "../../db/repositories/enrollmentRepositoryHydrate.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
@@ -20,4 +22,6 @@ export const enrollmentOperationsRepository: EnrollmentOperationsRepository = {
   listEnrollmentPlacements,
   applyEnrollmentTransfer,
   applyEnrollmentWithdrawal,
+  applyEnrollmentReadmission,
+  recordEnrollmentSuspension,
 };

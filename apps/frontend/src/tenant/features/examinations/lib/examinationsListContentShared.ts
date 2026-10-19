@@ -1,5 +1,6 @@
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { enrollmentHoldsSeat } from "@mms/shared";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Exam } from "@/lib/data/examinationData";
 
@@ -43,7 +44,7 @@ export function getExamMeta(
       .filter(
         (enrollment) =>
           classIdSet.has(enrollment.classId) &&
-          enrollment.status !== "cancelled" &&
+          enrollmentHoldsSeat(enrollment.status) &&
           enrollment.status !== "completed",
       )
       .map((enrollment) => String(enrollment.studentId)),

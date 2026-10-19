@@ -224,3 +224,6 @@ export type AdmissionsMetrics = z.infer<typeof admissionsMetricsSchema>;
 /** Error type returned (422) when a public application fails eligibility. */
 export const REGISTRATION_INELIGIBLE_ERROR_TYPE = "registration_ineligible";
 export type RegistrationIneligibleReasons = EligibilityReason[];
+
+/** Review note set when a freed seat brings a waitlisted application back to review (Phase 9c). */
+export const SEAT_AVAILABLE_REVIEW_NOTE = "Seat available — a place opened in this class";

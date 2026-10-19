@@ -5,6 +5,8 @@ import {
   enrollmentRecordSchema,
   type Enrollment,
   type EnrollmentPlacement,
+  type EnrollmentReadmitBody,
+  type EnrollmentSuspendBody,
   type EnrollmentTransferBody,
   type EnrollmentWithdrawBody,
   type WithdrawalBillingOutcome,
@@ -60,5 +62,21 @@ export function withdrawEnrollmentMutationOptions() {
             body: JSON.stringify(body),
           }),
         ),
+  });
+}
+
+export function readmitEnrollmentMutationOptions() {
+  return mutationOptions({
+    mutationKey: ["enrollments", "readmit"] as const,
+    mutationFn: ({ id, body }: { id: string; body: EnrollmentReadmitBody }) =>
+      post(`${base(id)}/readmit`, body),
+  });
+}
+
+export function suspendEnrollmentMutationOptions() {
+  return mutationOptions({
+    mutationKey: ["enrollments", "suspend"] as const,
+    mutationFn: ({ id, body }: { id: string; body: EnrollmentSuspendBody }) =>
+      post(`${base(id)}/suspend`, body),
   });
 }
