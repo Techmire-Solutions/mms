@@ -61,6 +61,8 @@ export type DifficultyFilter = typeof ALL_FILTER | Question["difficulty"];
 export interface PaperConfig {
   name: string;
   examClass: string;
+  /** Linked `session_classes.id` (empty = label only). */
+  classId: string;
   totalMarks: number;
   duration: number;
   instructions: string;
@@ -128,6 +130,7 @@ export function createPaperDraftFromTest(
     config: {
       name: test.name,
       examClass: test.examClass ?? "",
+      classId: test.classId ?? "",
       totalMarks: test.totalMarks ?? 100,
       duration: test.duration,
       instructions: test.instructions ?? "",

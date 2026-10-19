@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import type { SessionsReportAggregates } from "@mms/shared";
 import { getQueryRows } from "../documentStoreKeys.js";
 import { withTenantRead } from "../tenant-context.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 const WEEKDAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
@@ -21,11 +22,11 @@ export async function loadSessionsReportAggregatesSql(
         c.id AS "classId",
         s.name AS session,
         c.name AS class,
-        c.enrolled AS enrolled,
+        ce.enrolled AS enrolled,
         c.capacity AS capacity,
         CASE
           WHEN c.capacity > 0
-            THEN ROUND((c.enrolled::numeric / c.capacity::numeric) * 100)::int
+            THEN ROUND((ce.enrolled::numeric / c.capacity::numeric) * 100)::int
           ELSE 0
         END AS rate,
         s.status AS status
@@ -33,6 +34,7 @@ export async function loadSessionsReportAggregatesSql(
       INNER JOIN session_classes c
         ON c.workspace_subdomain = s.workspace_subdomain
         AND c.session_id = s.id
+      CROSS JOIN LATERAL (SELECT count(*)::int AS enrolled FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}) ce
       WHERE s.workspace_subdomain = ${subdomain}
         AND s.deleted_at IS NULL
       ORDER BY s.name ASC, c.name ASC
@@ -95,7 +97,7 @@ export async function loadSessionsReportAggregatesSql(
           ELSE ''
         END AS time,
         COALESCE(c.room, '') AS room,
-        c.enrolled AS students,
+        (SELECT count(*)::int FROM enrollments e WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}) AS students,
         CASE WHEN tt.id IS NOT NULL THEN 'live' ELSE 'upcoming' END AS status
       FROM sessions s
       INNER JOIN session_classes c
@@ -112,7 +114,7 @@ export async function loadSessionsReportAggregatesSql(
       ) AS tt ON true
       WHERE s.workspace_subdomain = ${subdomain}
         AND s.deleted_at IS NULL
-        AND lower(trim(s.status)) = 'active'
+        AND s.status = 'in_progress'
       ORDER BY name ASC
     `);
 

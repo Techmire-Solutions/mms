@@ -23,6 +23,7 @@ import { sessions } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
 import { findSessionsSummaryByIds } from "./sessionRepository.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 const SESSION_SORT_FIELDS = new Set([
   "name",
@@ -185,30 +186,34 @@ export async function aggregateSessionsCommandMetrics(
     const result = await tx.execute(sql`
       SELECT
         COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE lower(s.status) = 'active')::int AS active,
-        COUNT(*) FILTER (WHERE lower(s.status) = 'upcoming')::int AS upcoming,
+        -- Lifecycle buckets (migration 0169): active = in progress, upcoming = draft or open.
+        COUNT(*) FILTER (WHERE s.status = 'in_progress')::int AS active,
+        COUNT(*) FILTER (WHERE s.status IN ('draft', 'open'))::int AS upcoming,
         COUNT(*) FILTER (WHERE lower(s.status) = 'completed')::int AS completed,
         COUNT(*) FILTER (WHERE lower(s.status) = 'cancelled')::int AS cancelled,
         COALESCE(SUM(cls.total_enrolled), 0)::int AS total_enrolled,
         COALESCE(SUM(cls.total_capacity), 0)::int AS total_capacity,
         COALESCE(SUM(cls.class_count), 0)::int AS total_classes,
         COUNT(*) FILTER (WHERE
-          s.start_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND (s.start_date)::date >= (CURRENT_DATE - INTERVAL '6 days')
-          AND (s.start_date)::date <= CURRENT_DATE
+          s.start_date >= (CURRENT_DATE - INTERVAL '6 days')
+          AND s.start_date <= CURRENT_DATE
         )::int AS sessions_this_week,
         COUNT(*) FILTER (WHERE
-          s.start_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND (s.start_date)::date >= (CURRENT_DATE - INTERVAL '13 days')
-          AND (s.start_date)::date <= (CURRENT_DATE - INTERVAL '7 days')
+          s.start_date >= (CURRENT_DATE - INTERVAL '13 days')
+          AND s.start_date <= (CURRENT_DATE - INTERVAL '7 days')
         )::int AS sessions_last_week
       FROM sessions s
       LEFT JOIN LATERAL (
         SELECT
-          SUM(c.enrolled)::int AS total_enrolled,
+          SUM(ce.enrolled)::int AS total_enrolled,
           SUM(c.capacity)::int AS total_capacity,
           COUNT(*)::int AS class_count
         FROM session_classes c
+        CROSS JOIN LATERAL (
+          SELECT count(*)::int AS enrolled FROM enrollments e
+          WHERE e.workspace_subdomain = c.workspace_subdomain AND e.session_id = c.session_id
+            AND e.class_id = c.id AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}
+        ) ce
         WHERE c.workspace_subdomain = s.workspace_subdomain
           AND c.session_id = s.id
       ) cls ON true

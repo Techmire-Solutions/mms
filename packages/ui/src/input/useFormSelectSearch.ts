@@ -1,4 +1,5 @@
 import { useMemo, useState, type KeyboardEvent } from "react";
+import { isImeSafeEnter } from "../utils";
 
 export interface FormSelectSearchOption {
   value: string;
@@ -75,7 +76,7 @@ export function useFormSelectSearch({ options, value, onPick }: UseFormSelectSea
     } else if (event.key === "End" && event.ctrlKey) {
       event.preventDefault();
       moveTo(filtered.length - 1);
-    } else if (event.key === "Enter") {
+    } else if (event.key === "Enter" && isImeSafeEnter(event)) {
       event.preventDefault();
       const option = filtered[highlightedIndex];
       if (option) pick(option);

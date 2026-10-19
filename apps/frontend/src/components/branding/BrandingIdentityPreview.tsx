@@ -25,6 +25,10 @@ export default function BrandingIdentityPreview({
           <img
             src={data.logoUrl}
             alt={data.madrasaName.trim() || t("branding.previewNameFallback")}
+            width={56}
+            height={56}
+            loading="lazy"
+            decoding="async"
             className="h-14 w-14 shrink-0 rounded-xl border border-border bg-background object-cover"
           />
         ) : (

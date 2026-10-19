@@ -76,8 +76,13 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
   { prefix: "/api/openapi.json", reason: "public API description", paths: ["/api/openapi.json"] },
   {
     prefix: "/api/public/",
-    reason: "unauthenticated deployment config",
-    paths: ["/api/public/deployment-config"],
+    reason:
+      "unauthenticated deployment config and public registration (subdomain-scoped, PII-free)",
+    paths: [
+      "/api/public/deployment-config",
+      "/api/public/registrations",
+      "/api/public/registrations/:slug",
+    ],
   },
   {
     prefix: "/api/auth/",

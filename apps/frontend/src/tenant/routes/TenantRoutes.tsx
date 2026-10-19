@@ -21,6 +21,8 @@ const ForgotPassword = React.lazy(() => import("@/tenant/pages/auth/ForgotPasswo
 const TwoFactorAuth = React.lazy(() => import("@/tenant/pages/auth/TwoFactorAuth"));
 const ForcePasswordChange = React.lazy(() => import("@/tenant/pages/auth/ForcePasswordChange"));
 const InstitutionSetup = React.lazy(() => import("@/tenant/pages/setup/InstitutionSetup"));
+const OpenRegistrations = React.lazy(() => import("@/tenant/pages/apply/OpenRegistrationsPage"));
+const RegistrationForm = React.lazy(() => import("@/tenant/pages/apply/RegistrationFormPage"));
 
 /** Module + landing routes derived from the registry; each page is code-split. */
 const TENANT_APP_ROUTES = TENANT_APP_ENTRIES.map((entry) => ({
@@ -105,6 +107,23 @@ function TenantRoutesInner(): React.JSX.Element {
           element={
             <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
               <TwoFactorAuth />
+            </React.Suspense>
+          }
+        />
+        {/* Public admissions: no sign-in, reachable whether or not someone is logged in. */}
+        <Route
+          path={ROUTES.apply}
+          element={
+            <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
+              <OpenRegistrations />
+            </React.Suspense>
+          }
+        />
+        <Route
+          path={`${ROUTES.apply}/:slug`}
+          element={
+            <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
+              <RegistrationForm />
             </React.Suspense>
           }
         />

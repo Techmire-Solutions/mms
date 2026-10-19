@@ -3,6 +3,7 @@ import { Save, CheckCircle2, Loader2 } from "lucide-react";
 import { type Exam, type ExamResult } from "@/lib/data/examinationData";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import { SectionFilterField } from "@/components/common/SectionFilterField";
 import { cn } from "@/lib/utils";
 import { useEnterMarksStudents } from "../hooks/useEnterMarksStudents";
 import { EnterMarksTable } from "./EnterMarksTable";
@@ -21,7 +22,12 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
   const [saved, setSaved] = useState<boolean>(false);
 
   const exam = exams.find((examOption) => examOption.id === selectedExam);
-  const { classNamesById, students } = useEnterMarksStudents(exam);
+  const { classNamesById, students: allStudents, sections } = useEnterMarksStudents(exam);
+  const [sectionId, setSectionId] = useState<string>("");
+  // Saving only the visible section never overwrites marks of other sections (bulk upsert by id).
+  const students = sectionId
+    ? allStudents.filter((student) => student.sectionId === sectionId)
+    : allStudents;
 
   useEffect(() => {
     if (!exam) return;
@@ -33,6 +39,7 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
       });
     setMarks(prefilledMarks);
     setSaved(false);
+    setSectionId("");
   }, [selectedExam, exam, results]);
 
   const hasInvalidMarks = (() => {
@@ -124,6 +131,13 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
               <strong className="text-foreground">{students.length}</strong>
             </span>
           </div>
+
+          <SectionFilterField
+            id="marks-section"
+            sections={sections}
+            value={sectionId}
+            onChange={setSectionId}
+          />
 
           <EnterMarksTable
             exam={exam}

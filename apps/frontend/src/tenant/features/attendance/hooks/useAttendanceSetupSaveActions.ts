@@ -19,6 +19,7 @@ const PREF_KEYS = [
   "allowManualOverride",
   "offlineEnabled",
   "geoTagging",
+  "allowExtraClassOnHolidays",
   "defaultViewLayout",
 ] as const;
 

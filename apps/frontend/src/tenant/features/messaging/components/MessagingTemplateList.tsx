@@ -5,7 +5,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { DirectoryCard } from "@/components/app/DirectoryCard";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import {
   DataTable,
   type DataTableColumn,

@@ -1,11 +1,14 @@
 import { and, eq } from "drizzle-orm";
-import { type Session } from "@mms/shared";
+import { normalizeSessionStatus, type Session } from "@mms/shared";
 import { randomUUID } from "node:crypto";
 import { sessions, sessionFaculty } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
 import { mapAuditToInsert } from "./repositoryMappers.js";
 import { persistSessionClassesTx } from "./sessionRepositoryPersistClasses.js";
+import { resolveSessionCatalogRefsTx } from "./sessionCatalogRefs.js";
+import { replaceSessionWorkingDaysTx } from "./sessionWorkingDays.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { toDbDate } from "../../lib/dbDate.js";
 
 export {
   softDeleteSessionWithCascade,
@@ -28,9 +31,11 @@ export function sessionWriteValues(
     workspaceSubdomain: subdomain,
     name: record.name,
     type: record.type || "academic",
-    status: record.status || "active",
-    startDate: record.startDate || "",
-    endDate: record.endDate || "",
+    categoryId: record.categoryId || null,
+    programId: record.programId || null,
+    status: normalizeSessionStatus(record.status),
+    startDate: toDbDate(record.startDate),
+    endDate: toDbDate(record.endDate),
     baseFee: String(record.baseFee ?? 0),
     currency: record.currency ?? "PKR",
     description: record.description ?? null,
@@ -48,11 +53,8 @@ export function sessionUpdateSetValues(subdomain: string, record: Session) {
   return setFields;
 }
 
-async function persistSessionTx(
-  tx: Transaction,
-  subdomain: string,
-  record: Session,
-): Promise<void> {
+async function persistSessionTx(tx: Transaction, subdomain: string, input: Session): Promise<void> {
+  const record = await resolveSessionCatalogRefsTx(tx, subdomain, input);
   const sessionId = String(record.id);
 
   // 1. Upsert session row
@@ -63,6 +65,8 @@ async function persistSessionTx(
       target: [sessions.workspaceSubdomain, sessions.id],
       set: sessionUpdateSetValues(subdomain, record),
     });
+
+  await replaceSessionWorkingDaysTx(tx, subdomain, sessionId, record.workingDays);
 
   // 2. Persist Session Faculty
   await tx

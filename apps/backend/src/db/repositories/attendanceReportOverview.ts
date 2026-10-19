@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { type AttendanceReportOverview } from "@mms/shared";
 import { getQueryRows } from "../documentStoreKeys.js";
 import type { TenantTransaction } from "../tenant-context.js";
+import type { CountableAttendanceSql } from "./attendanceCountableSql.js";
 
 /**
  * Attendance report *overview* aggregate. Split out of
@@ -26,9 +27,11 @@ function mapStudentRate(row: Record<string, unknown>) {
   };
 }
 
+/** Only rows counting toward rates (instructional days, not on leave) are aggregated. */
 export async function loadAttendanceOverview(
   tx: TenantTransaction,
   subdomain: string,
+  countable: CountableAttendanceSql,
   classId?: string,
 ): Promise<AttendanceReportOverview> {
   const attendanceClassFilter = classId ? sql`AND a.class_id = ${classId}` : sql``;
@@ -57,6 +60,7 @@ export async function loadAttendanceOverview(
       ON a.workspace_subdomain = sc.workspace_subdomain
      AND a.class_id = sc.id
      AND a.deleted_at IS NULL
+     AND ${countable("a")}
     WHERE sc.workspace_subdomain = ${subdomain}
       AND s.deleted_at IS NULL
       ${sessionClassFilter}
@@ -72,6 +76,7 @@ export async function loadAttendanceOverview(
     FROM attendance a
     WHERE a.workspace_subdomain = ${subdomain}
       AND a.deleted_at IS NULL
+      AND ${countable("a")}
       ${attendanceClassFilter}
     GROUP BY 1
     ORDER BY 1
@@ -92,6 +97,7 @@ export async function loadAttendanceOverview(
     FROM attendance a
     WHERE a.workspace_subdomain = ${subdomain}
       AND a.deleted_at IS NULL
+      AND ${countable("a")}
       AND a.date ~ '^[0-9]{4}-(0[1-9]|1[0-2])-[0-9]{2}'
       ${attendanceClassFilter}
     GROUP BY 1
@@ -118,6 +124,7 @@ export async function loadAttendanceOverview(
     FROM attendance a
     WHERE a.workspace_subdomain = ${subdomain}
       AND a.deleted_at IS NULL
+      AND ${countable("a")}
       ${attendanceClassFilter}
     GROUP BY a.student_id
   `);

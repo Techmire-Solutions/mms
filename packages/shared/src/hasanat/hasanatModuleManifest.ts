@@ -77,6 +77,8 @@ export const distributionRecordSchema = z
     recipientFacultyId: z.string().nullable().optional(),
     recipientName: z.string().optional().default(""),
     recipientClass: z.string().default(""),
+    /** `session_classes.id` at issue time; `recipientClass` is the display snapshot. */
+    classId: z.string().nullable().optional(),
     quantity: z.number().default(1),
     reason: z.string().default(""),
     issuedDate: z.string(),
@@ -105,6 +107,7 @@ export const distributionRecordInsertSchema = z
     recipientFacultyId: z.string().nullable().optional(),
     recipientName: z.string().optional().default(""),
     recipientClass: z.string().optional().default(""),
+    classId: z.string().nullable().optional(),
     quantity: z.number().positive().default(1),
     reason: z.string().optional().default(""),
     issuedDate: isoDateSchema,

@@ -49,6 +49,8 @@ export const ROUTES = {
   onboarding: "/onboarding",
   /** Apex-only: unknown tenant host redirected here with `?subdomain=` */
   tenantNotFound: "/tenant-not-found",
+  /** Public admissions (no sign-in): open sessions board and `/apply/:slug` forms. */
+  apply: "/apply",
 } as const;
 
 /**

@@ -1,6 +1,5 @@
-import type { WorkspaceTableViewProps } from "./WorkspaceTableView";
+import { WorkspaceTableView, type WorkspaceTableViewProps } from "./WorkspaceTableView";
 import React from "react";
-import { PlatformWorkspaceVirtualTable } from "@/platform/components/workspace/PlatformWorkspaceVirtualTable";
 import { WorkspaceListCards } from "@/platform/components/workspace/WorkspaceListCards";
 
 export interface PlatformWorkspaceDirectoryViewProps extends WorkspaceTableViewProps {
@@ -33,7 +32,7 @@ export function PlatformWorkspaceDirectoryView({
 }: PlatformWorkspaceDirectoryViewProps): React.JSX.Element {
   if (viewMode === "table") {
     return (
-      <PlatformWorkspaceVirtualTable
+      <WorkspaceTableView
         workspaces={workspaces}
         descriptor={descriptor}
         columnLayout={columnLayout}

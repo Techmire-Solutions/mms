@@ -87,6 +87,9 @@ export default function AppLayout(): React.JSX.Element {
                 className={`h-7 w-7 max-w-full shrink-0 rounded-md ${LOGO_IMAGE}`}
                 width={28}
                 height={28}
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 onError={() => setLogoError(true)}
               />
             ) : (

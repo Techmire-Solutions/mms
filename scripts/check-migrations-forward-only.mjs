@@ -8,7 +8,8 @@
  *
  * This closes it generally. A migration file that already exists at the change base
  * must be **byte-identical** now, and must still exist. Adding new migrations is
- * always allowed. Renames surface as a delete of the old path, so they fail too.
+ * always allowed, as is appending entries to Drizzle's meta/_journal.json (existing
+ * entries stay frozen). Renames surface as a delete of the old path, so they fail too.
  *
  * Why not a hash manifest: 166 migrations would need a committed hash list that any
  * whitespace touch would false-fail. Comparing against the change base gives the same
@@ -35,6 +36,25 @@ const MIGRATION_DIRS = [
 ];
 
 const isMigration = (rel) => MIGRATION_DIRS.some((dir) => rel.startsWith(dir));
+
+/** Drizzle's journal must grow with every new migration; only its existing entries are frozen. */
+const JOURNAL = "apps/backend/src/db/migrations_drizzle/meta/_journal.json";
+
+function isAppendOnlyJournal(atBase, now) {
+  try {
+    const before = JSON.parse(atBase);
+    const after = JSON.parse(now);
+    const { entries: beforeEntries = [], ...beforeHeader } = before;
+    const { entries: afterEntries = [], ...afterHeader } = after;
+    return (
+      JSON.stringify(beforeHeader) === JSON.stringify(afterHeader) &&
+      afterEntries.length >= beforeEntries.length &&
+      beforeEntries.every((entry, i) => JSON.stringify(entry) === JSON.stringify(afterEntries[i]))
+    );
+  } catch {
+    return false;
+  }
+}
 
 function git(args) {
   try {
@@ -82,7 +102,7 @@ for (const rel of new Set(files)) {
   const now = readCurrent(rel);
   if (now === null) {
     violations.push({ file: rel, reason: "deleted" });
-  } else if (now !== atBase) {
+  } else if (now !== atBase && !(rel === JOURNAL && isAppendOnlyJournal(atBase, now))) {
     violations.push({ file: rel, reason: "modified" });
   }
 }

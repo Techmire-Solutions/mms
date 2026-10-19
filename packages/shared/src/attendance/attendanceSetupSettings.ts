@@ -49,6 +49,7 @@ export function normalizeAttendanceSettings(raw: unknown): AttendanceSettings {
     allowManualOverride: DEFAULT_ATTENDANCE_SETTINGS.allowManualOverride, // managed by preferences
     offlineEnabled: DEFAULT_ATTENDANCE_SETTINGS.offlineEnabled, // managed by preferences
     geoTagging: DEFAULT_ATTENDANCE_SETTINGS.geoTagging, // managed by preferences
+    allowExtraClassOnHolidays: DEFAULT_ATTENDANCE_SETTINGS.allowExtraClassOnHolidays, // managed by preferences
     defaultViewLayout: DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout, // managed by preferences
     fields: resolveAttendanceFieldsMap(
       safe.fields && typeof safe.fields === "object" && !Array.isArray(safe.fields)
@@ -86,6 +87,7 @@ export function composeAttendanceSettings(
     allowManualOverride: prefs.allowManualOverride,
     offlineEnabled: prefs.offlineEnabled,
     geoTagging: prefs.geoTagging,
+    allowExtraClassOnHolidays: prefs.allowExtraClassOnHolidays,
     defaultViewLayout: prefs.defaultViewLayout,
     formTabs: formTabs ?? fieldConfig?.formTabs,
   };
@@ -112,6 +114,7 @@ export function stripAttendanceFieldConfigForPersist(
     allowManualOverride: _allowManualOverride,
     offlineEnabled: _offlineEnabled,
     geoTagging: _geoTagging,
+    allowExtraClassOnHolidays: _allowExtraClassOnHolidays,
     defaultViewLayout: _defaultViewLayout,
     ...fieldConfigOnly
   } = config;

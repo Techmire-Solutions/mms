@@ -123,6 +123,10 @@ export function ContactBasicAvatarSection({
             <img
               src={contactDraft.avatar}
               alt={previewDisplayName}
+              width={80}
+              height={80}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
             />
           ) : (

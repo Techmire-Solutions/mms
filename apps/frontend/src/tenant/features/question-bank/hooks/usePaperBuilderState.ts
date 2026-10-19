@@ -22,6 +22,7 @@ export function usePaperBuilderState({
   const [config, setConfig] = useState<PaperConfig>(() => ({
     name: "",
     examClass: "",
+    classId: "",
     totalMarks: 100,
     duration: defaultDuration,
     instructions: "",

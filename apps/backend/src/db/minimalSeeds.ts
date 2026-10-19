@@ -85,7 +85,6 @@ export async function getMinimalCollectionsForSeed(): Promise<Record<string, unk
     addressLabels: [...DEFAULT_ADDRESS_LABELS],
     countryCodes: curatedContactCountryCodes(),
     sessionStatuses: [...defaultSessionLookupItems.statuses],
-    sessionTypes: [...defaultSessionLookupItems.types],
     attendanceStatuses: clone(DEFAULT_ATTENDANCE_STATUSES),
   };
 }

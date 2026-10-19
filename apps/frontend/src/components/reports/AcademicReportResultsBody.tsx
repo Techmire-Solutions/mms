@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Trophy } from "lucide-react";
 import { StatusBadge } from "@/components/app/StatusBadge";
-import { TableCellLink } from "@/components/app/TableCellLink";
+import { TableCellLink } from "@shared/ui";
 import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";

@@ -5,3 +5,5 @@ export * from "./ClassDetailFeesTab";
 export * from "./ClassDetailScheduleTab";
 export * from "./ClassDetailBudgetTab";
 export * from "./ClassDetailScholarshipTab";
+export * from "./classDetailTabs";
+export * from "./ClassDetailSectionsTab";

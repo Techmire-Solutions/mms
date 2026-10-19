@@ -1,3 +1,4 @@
+import { toDbDate } from "../../lib/dbDate.js";
 import { sql } from "drizzle-orm";
 import {
   EMPTY_EXAMINATIONS_REPORT_AGGREGATES,
@@ -102,21 +103,20 @@ export async function loadExaminationsReportAggregatesSql(
       rawFrom: string | undefined,
       rawTo: string | undefined,
     ): Promise<ExaminationsReportComparisonMonth[]> => {
-      const from = rawFrom?.trim();
-      const to = rawTo?.trim();
+      const from = toDbDate(rawFrom);
+      const to = toDbDate(rawTo);
       if (!from || !to) return [];
       const monthResult = await tx.execute(sql`
         SELECT
-          to_char(left(NULLIF(trim(e.date), ''), 10)::date, 'YYYY-MM') AS "monthKey",
+          to_char(e.date, 'YYYY-MM') AS "monthKey",
           COUNT(er.id) AS "totalCount",
           SUM(CASE WHEN COALESCE(er.marks_obtained, 0) >= COALESCE(e.passing_marks, 0) THEN 1 ELSE 0 END) AS "passCount"
         FROM exams e
         LEFT JOIN exam_results er ON er.exam_id = e.id AND er.workspace_subdomain = ${subdomain}
         WHERE ${activeExamWhere(subdomain, "e")}
-          AND NULLIF(trim(e.date), '') IS NOT NULL
-          AND NULLIF(trim(e.date), '') ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND left(NULLIF(trim(e.date), ''), 10) >= ${from}
-          AND left(NULLIF(trim(e.date), ''), 10) <= ${to}
+          AND e.date IS NOT NULL
+          AND e.date >= ${from}::date
+          AND e.date <= ${to}::date
         GROUP BY 1
         ORDER BY 1 ASC
       `);

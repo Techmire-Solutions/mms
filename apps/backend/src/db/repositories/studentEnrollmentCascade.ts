@@ -2,6 +2,7 @@ import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { enrollments } from "../schema.js";
 import type { DbClient } from "../dbConnection.js";
 
+import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 /**
  * Soft-deletes active enrollments for the given students and marks them as
  * cascade-deleted so restore can reverse only those rows.
@@ -33,6 +34,7 @@ export async function cascadeSoftDeleteEnrollmentsForStudents(
         isNull(enrollments.deletedAt),
       ),
     );
+  await syncEnrolledSessionsTx(tx, subdomain, { studentIds });
 }
 
 /**
@@ -67,4 +69,5 @@ export async function restoreCascadedEnrollmentsForStudents(
         eq(enrollments.deletedWithCascade, true),
       ),
     );
+  await syncEnrolledSessionsTx(tx, subdomain, { studentIds });
 }

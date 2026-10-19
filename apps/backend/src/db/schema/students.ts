@@ -11,6 +11,7 @@ import {
   numeric,
   check,
   jsonb,
+  date,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -41,6 +42,9 @@ export const students = pgTable(
     status: varchar("status", { length: 50 }).notNull().default("active"),
     registeredDate: varchar("registered_date", { length: 35 }),
     enrollmentDate: varchar("enrollment_date", { length: 35 }),
+    /** Expand columns (migration 0173): trigger-synced `date` copies of the varchar dates above. */
+    registeredOn: date("registered_on", { mode: "string" }),
+    enrollmentOn: date("enrollment_on", { mode: "string" }),
     discountType: varchar("discount_type", { length: 100 }),
     discountPct: numeric("discount_pct", { precision: 5, scale: 2 }),
     registrationType: varchar("registration_type", { length: 100 }),
@@ -190,6 +194,8 @@ export * from "./studentSetupTables.js";
 /* ========================================================================= */
 
 export type StudentRow = typeof students.$inferSelect;
+/** Row as read by the app: the 0173 expand columns are trigger-maintained and not read yet. */
+export type StudentSelectRow = Omit<StudentRow, "registeredOn" | "enrollmentOn">;
 export type InsertStudentRow = typeof students.$inferInsert;
 export type StudentEnrolledSessionRow = typeof studentEnrolledSessions.$inferSelect;
 export type InsertStudentEnrolledSessionRow = typeof studentEnrolledSessions.$inferInsert;

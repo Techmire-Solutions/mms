@@ -3,7 +3,7 @@ import { formatMonthName, normalizeSessionsViewLayout, type SessionsSettings } f
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
-import { ToggleRow } from "@/components/app/ToggleRow";
+import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";

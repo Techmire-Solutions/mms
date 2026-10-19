@@ -16,6 +16,7 @@ import {
   financePaymentAllocations,
 } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { resolveFeeStructureClassRefsTx } from "./feeStructureClassRefs.js";
 
 function feeStructureFromRows(
   structure: typeof financeFeeStructures.$inferSelect,
@@ -26,6 +27,9 @@ function feeStructureFromRows(
     name: structure.name,
     session: structure.session,
     className: structure.className,
+    sessionId: structure.sessionId,
+    classId: structure.classId,
+    programId: structure.programId,
     frequency: isFeeFrequency(structure.frequency) ? structure.frequency : "monthly",
     isActive: structure.isActive,
     items: items
@@ -76,6 +80,9 @@ export async function listFeeStructures(tenant: string): Promise<FeeStructure[]>
           name: financeFeeStructures.name,
           session: financeFeeStructures.session,
           className: financeFeeStructures.className,
+          sessionId: financeFeeStructures.sessionId,
+          classId: financeFeeStructures.classId,
+          programId: financeFeeStructures.programId,
           frequency: financeFeeStructures.frequency,
           isActive: financeFeeStructures.isActive,
           createdAt: financeFeeStructures.createdAt,
@@ -101,31 +108,27 @@ export async function listFeeStructures(tenant: string): Promise<FeeStructure[]>
   });
 }
 
-export async function saveFeeStructure(tenant: string, record: FeeStructure): Promise<void> {
+export async function saveFeeStructure(tenant: string, input: FeeStructure): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
+    const record = await resolveFeeStructureClassRefsTx(tx, subdomain, input);
+    const fields = {
+      name: record.name,
+      session: record.session ?? "",
+      className: record.className ?? "",
+      sessionId: record.sessionId ?? null,
+      classId: record.classId ?? null,
+      programId: record.programId ?? null,
+      frequency: record.frequency ?? "monthly",
+      isActive: record.isActive ?? true,
+      updatedAt: new Date(),
+    };
     await tx
       .insert(financeFeeStructures)
-      .values({
-        id: record.id,
-        workspaceSubdomain: subdomain,
-        name: record.name,
-        session: record.session ?? "",
-        className: record.className ?? "",
-        frequency: record.frequency ?? "monthly",
-        isActive: record.isActive ?? true,
-        updatedAt: new Date(),
-      })
+      .values({ id: record.id, workspaceSubdomain: subdomain, ...fields })
       .onConflictDoUpdate({
         target: [financeFeeStructures.workspaceSubdomain, financeFeeStructures.id],
-        set: {
-          name: record.name,
-          session: record.session ?? "",
-          className: record.className ?? "",
-          frequency: record.frequency ?? "monthly",
-          isActive: record.isActive ?? true,
-          updatedAt: new Date(),
-        },
+        set: fields,
       });
     await tx
       .delete(financeFeeItems)

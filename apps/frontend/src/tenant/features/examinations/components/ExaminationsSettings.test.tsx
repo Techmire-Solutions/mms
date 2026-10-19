@@ -42,10 +42,6 @@ vi.mock("@/components/app/SectionCard", () => ({
   ),
 }));
 
-vi.mock("@/components/app/ToggleRow", () => ({
-  ToggleRow: ({ label }: { label: React.ReactNode }) => <div data-testid="toggle-row">{label}</div>,
-}));
-
 vi.mock("@/components/app/FormSelect", () => ({
   FormSelect: () => <div data-testid="form-select">FormSelect</div>,
 }));

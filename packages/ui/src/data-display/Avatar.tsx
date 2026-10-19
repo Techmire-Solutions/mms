@@ -34,14 +34,29 @@ export function Avatar({ className, size, ref, ...props }: AvatarProps) {
   );
 }
 
+export interface AvatarImageProps extends React.ComponentProps<typeof AvatarPrimitive.Image> {
+  fetchPriority?: "high" | "low" | "auto";
+}
+
+/**
+ * Modern Web Guidance: optimize-image-priority
+ * Standardizes async decoding, defaults loading to lazy unless fetchPriority is high.
+ */
 export function AvatarImage({
   className,
   ref,
+  loading,
+  decoding = "async",
+  fetchPriority,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+}: AvatarImageProps) {
+  const resolvedLoading = loading ?? (fetchPriority === "high" ? "eager" : "lazy");
   return (
     <AvatarPrimitive.Image
       ref={ref}
+      loading={resolvedLoading}
+      decoding={decoding}
+      fetchPriority={fetchPriority}
       className={cn(
         "aspect-square h-full w-full object-cover transition-opacity duration-200",
         className,

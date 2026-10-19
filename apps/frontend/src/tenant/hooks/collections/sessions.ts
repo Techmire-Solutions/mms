@@ -11,6 +11,7 @@ export {
   useSessions,
   useSessionsPaginated,
   useSessionsCollection,
+  useSessionDetail,
   useSessionsWidgetAggregates,
   useSessionsReportAggregates,
   useSessionMutations,

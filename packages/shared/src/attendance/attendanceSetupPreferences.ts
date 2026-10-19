@@ -20,6 +20,7 @@ export const attendancePreferencesPutBodySchema = z
     allowManualOverride: z.boolean().optional(),
     offlineEnabled: z.boolean().optional(),
     geoTagging: z.boolean().optional(),
+    allowExtraClassOnHolidays: z.boolean().optional(),
     defaultViewLayout: z.string().optional(),
   })
   .passthrough();
@@ -41,6 +42,7 @@ export interface AttendanceModulePreferences {
   allowManualOverride: boolean;
   offlineEnabled: boolean;
   geoTagging: boolean;
+  allowExtraClassOnHolidays: boolean;
   defaultViewLayout: string;
 }
 
@@ -63,6 +65,7 @@ export function normalizeAttendanceModulePreferences(raw: unknown): AttendanceMo
       allowManualOverride: DEFAULT_ATTENDANCE_SETTINGS.allowManualOverride,
       offlineEnabled: DEFAULT_ATTENDANCE_SETTINGS.offlineEnabled,
       geoTagging: DEFAULT_ATTENDANCE_SETTINGS.geoTagging,
+      allowExtraClassOnHolidays: DEFAULT_ATTENDANCE_SETTINGS.allowExtraClassOnHolidays,
       defaultViewLayout: DEFAULT_ATTENDANCE_SETTINGS.defaultViewLayout || "list",
     };
   }
@@ -128,6 +131,7 @@ export function normalizeAttendanceModulePreferences(raw: unknown): AttendanceMo
       typeof prefs.geoTagging === "boolean"
         ? prefs.geoTagging
         : DEFAULT_ATTENDANCE_SETTINGS.geoTagging,
+    allowExtraClassOnHolidays: prefs.allowExtraClassOnHolidays === true,
     defaultViewLayout:
       typeof prefs.defaultViewLayout === "string"
         ? prefs.defaultViewLayout

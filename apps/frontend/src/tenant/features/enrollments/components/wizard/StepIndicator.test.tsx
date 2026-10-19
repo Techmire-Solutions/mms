@@ -10,14 +10,18 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/app/WizardStepIndicator", () => ({
-  WizardStepIndicator: ({ steps, current }: { steps: { label: string }[]; current: number }) => (
-    <div data-testid="step-indicator">
-      <span>Current: {current}</span>
-      <span>{steps.map((s) => s.label).join(", ")}</span>
-    </div>
-  ),
-}));
+vi.mock("@shared/ui", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>("@shared/ui");
+  return {
+    ...actual,
+    WizardStepIndicator: ({ steps, current }: { steps: { label: string }[]; current: number }) => (
+      <div data-testid="step-indicator">
+        <span>Current: {current}</span>
+        <span>{steps.map((s) => s.label).join(", ")}</span>
+      </div>
+    ),
+  };
+});
 
 describe("StepIndicator Component", () => {
   it("renders wizard step indicator", () => {

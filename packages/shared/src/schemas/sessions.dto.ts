@@ -23,7 +23,13 @@ export const sessionCreateBodySchema = z.preprocess((raw) => {
   return deepSanitizeStrings(stripped);
 }, sessionCreateBodyBaseSchema);
 
-const sessionUpdateBodyBaseSchema = sessionCreateBodyBaseSchema.partial().strict();
+const sessionUpdateBodyBaseSchema = sessionCreateBodyBaseSchema
+  .partial()
+  .extend({
+    /** Required (with Sessions setup rights) to make locked changes to a started session; audited. */
+    lockOverrideReason: z.string().trim().min(3).max(500).optional(),
+  })
+  .strict();
 
 export const sessionUpdateBodySchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;

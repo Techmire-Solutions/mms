@@ -13,9 +13,10 @@ paths:
 
 # MMS UI, UX & Design System
 
-**Workflow skills:** design intelligence → `ui-ux-pro-max` · shared UI governance → `mms-shared-ui` · primitives/shells → `mms-frontend` · axe/§4 verify → `mms-a11y-smoke` · FormModal norms → `mms-form-architecture`.
+**Workflow skills:** design intelligence → `ui-ux-pro-max` · modern web guidance → `modern-web-guidance` · shared UI governance → `mms-shared-ui` · primitives/shells → `mms-frontend` · axe/§4 verify → `mms-a11y-smoke` · FormModal norms → `mms-form-architecture`.
 
 ## 1. Central Primitives Enforcement
+- **Modern Web Standards:** All UI primitives, dialogs, drawers, popovers, and layout elements adhere to `modern-web-guidance` (`pnpx modern-web-guidance@latest search "<query>"`). Implement top layer popovers (`declarative-dialog-popover-control`), backdrop light-dismiss (`light-dismiss-a-dialog`), body scroll locking (`prevent-page-scroll-under-modal-dialog`), entry/exit transitions (`@starting-style`), and motion scaling (`respect-os-text-scale`, `prefers-reduced-motion`).
 - **Shared UI SSOT (`@shared/ui`):** All foundational design-system primitives (`Button`, `Badge`, `Input`, `Select`, `Switch`, `Checkbox`, `Textarea`, `Slider`, `Label`, `Card`, `Table`, `Modal`, `DropdownMenu`, `Popover`, `Tooltip`, `Skeleton`, `Avatar`) live in `@shared/ui` (`packages/ui`). Platform Console imports directly from `@shared/ui`. Tenant Console imports either directly or via `@/components/ui/*` facades. Hand-rolled or duplicate UI component implementations across consoles are strictly banned.
 - **Banned Raw Controls:** Never emit raw `<button>`, `<input>`, `<select>`, `<textarea>`, `<table>`, `<dialog>`, or native checkboxes/switches where design system primitives exist.
 - **Sanctioned Primitives (`@shared/ui` primitives, `@/components/ui/*` facades, `@/components/app/*` composites, `@/components/common/*` engines):**
@@ -71,6 +72,7 @@ paths:
   - Text Resilience: Headings use `text-wrap: balance`; layouts reflow cleanly at 375, 768, 1024, 1440px. Chips/tags wrap or use `+n` disclosure.
   - Visual Polish: Pair badge colors with localized text via `t()`. Micro-interactions 150–300ms ease-out, respecting `prefers-reduced-motion`.
   - Keyboard & Focus: Visible focus rings (`focus-visible:ring-2`), no blocked paste, focus return on dismiss.
+  - Modern Web Standards Compliance: Cross-check against `modern-web-guidance` guides for all web UI controls (forms, dialogs, popovers, scrollbars, text balancing, animations). Ensure proper disclosure of applied guides.
 
 ## 9. Verification Standards
 - **Verification Gates:** Verify interactive controls with axe smoke (`e2e/tests/a11y/a11y-shell.spec.ts`, skill `mms-a11y-smoke`) for zero serious/critical violations. Spot-check 375 / 768 / 1024px viewports and RTL (`dir="rtl"`).

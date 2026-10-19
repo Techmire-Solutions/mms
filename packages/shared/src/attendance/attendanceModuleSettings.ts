@@ -20,6 +20,8 @@ export interface AttendanceSettings {
   allowManualOverride: boolean;
   offlineEnabled: boolean;
   geoTagging: boolean;
+  /** Policy: allow marking attendance on holidays / weekly off-days as an audited extra class. */
+  allowExtraClassOnHolidays: boolean;
   defaultViewLayout?: string;
   fields?: Record<string, unknown>;
   customFields?: [];
@@ -45,6 +47,7 @@ export const DEFAULT_ATTENDANCE_SETTINGS: AttendanceSettings = {
   allowManualOverride: true,
   offlineEnabled: false,
   geoTagging: false,
+  allowExtraClassOnHolidays: false,
   defaultViewLayout: "list",
   fields: {
     basic: INITIAL_ATTENDANCE_FIELD_SEED.basic.map((f) => ({ ...f })),

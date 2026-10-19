@@ -1,6 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { Session } from "@/lib/data/sessionsData";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
+import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   createSessionBulkDeleteHandler,
   createSessionBulkRestoreHandler,
@@ -61,8 +63,10 @@ export interface UseSessionsPageCrudActionsParams {
 }
 
 export function useSessionsPageCrudActions(params: UseSessionsPageCrudActionsParams) {
-  const handleSave = createSessionSaveHandler(params);
-  const handleUpdate = createSessionUpdateHandler(params);
+  // Sessions setup rights may override the post-start edit lock (with a reason).
+  const { canEditSetup } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
+  const handleSave = createSessionSaveHandler({ ...params, canOverrideLock: canEditSetup });
+  const handleUpdate = createSessionUpdateHandler({ ...params, canOverrideLock: canEditSetup });
   const handleDelete = createSessionDeleteHandler(params);
   const handleRestore = createSessionRestoreHandler(params);
   const handleBulkDelete = createSessionBulkDeleteHandler(params);

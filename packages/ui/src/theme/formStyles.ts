@@ -24,7 +24,7 @@ export const FORM_LABEL =
 
 /** Shared text input — full width, 44px min height, primary focus ring. */
 export const FORM_INPUT =
-  "w-full rounded-lg border border-border bg-background px-3 py-2.5 min-h-11 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation";
+  "w-full rounded-lg border border-border bg-background px-3 py-2.5 min-h-11 text-base sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation";
 
 export const FORM_SELECT = `${FORM_INPUT} cursor-pointer`;
 

@@ -42,6 +42,9 @@ import {
 } from "../db/repositories/sessionRepositoryPersist.js";
 import { findPaymentsByIds } from "../db/repositories/financePaymentsRepository.js";
 import { findEnrollmentsByIds } from "../db/repositories/enrollmentRepositoryHydrate.js";
+vi.mock("../attendance/use-cases/attendanceSectionStamp.js", () => ({
+  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => records),
+}));
 
 vi.mock("../db/database.js", () => ({
   runInTransaction: vi.fn((cb: () => unknown) => cb()),
@@ -436,6 +439,8 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       const enrollmentsUpdateSpy = vi.fn().mockResolvedValue([]);
 
       const fakeTx = {
+        // Enrolled-session sync (enrollmentSessionSync) runs raw SQL in the same transaction.
+        execute: vi.fn().mockResolvedValue({ rows: [] }),
         select: vi.fn(() => ({
           from: vi.fn(() => ({
             where: vi.fn(() => ({
@@ -474,6 +479,8 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       let enrollmentsRestored = false;
 
       const fakeTx = {
+        // Enrolled-session sync (enrollmentSessionSync) runs raw SQL in the same transaction.
+        execute: vi.fn().mockResolvedValue({ rows: [] }),
         select: vi.fn(() => ({
           from: vi.fn(() => ({
             where: vi.fn(() => ({
@@ -535,6 +542,8 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       ];
 
       const fakeTx = {
+        // Enrolled-session sync (enrollmentSessionSync) runs raw SQL in the same transaction.
+        execute: vi.fn().mockResolvedValue({ rows: [] }),
         select: vi.fn(() => ({
           from: vi.fn(() => ({
             where: vi.fn(() => ({
@@ -1091,7 +1100,7 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       });
     });
 
-    it("createAttendanceRecord throws 400 when session is archived", async () => {
+    it("createAttendanceRecord throws 400 when the class session is archived", async () => {
       const cases = createAttendanceUseCases({} as any, {
         findStudentById: vi.fn().mockResolvedValue({ id: "st-1", deletedAt: null }),
         findSessionById: vi
@@ -1110,7 +1119,7 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
         ),
       ).rejects.toMatchObject({
         statusCode: 400,
-        message: expect.stringContaining("session is archived"),
+        message: expect.stringContaining("class is archived"),
       });
     });
 

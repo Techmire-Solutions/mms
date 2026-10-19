@@ -12,11 +12,12 @@ vi.mock("../db/tenant-context.js", () => ({
   withTenantRead: (...args: unknown[]) => mockWithTenantTransaction(...args),
 }));
 
-vi.mock("../db/repositories/enrollmentRepository.js", () => ({
+vi.mock("../db/repositories/enrollmentProjection.js", () => ({
   enrollmentRowToRecord: (row: Record<string, unknown>, timeline: unknown[] = []) => ({
     ...row,
     timeline,
   }),
+  loadTimelineMapTx: async () => new Map(),
 }));
 
 function createSelectMock(selectQueue: unknown[][]) {

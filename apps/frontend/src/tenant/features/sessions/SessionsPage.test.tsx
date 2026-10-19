@@ -3,6 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import Sessions from "./SessionsPage";
 
+vi.mock("@/hooks/useAcademicTerms", () => ({
+  useAcademicTerms: () => ({
+    session: { singular: "Session", plural: "Sessions" },
+    class: { singular: "Class", plural: "Classes" },
+    section: { singular: "Section", plural: "Sections" },
+  }),
+}));
 vi.mock("@/tenant/features/sessions/hooks/useSessionsPageController", () => ({
   useSessionsPageController: () => ({
     t: (key: string) => key,
@@ -136,7 +143,7 @@ vi.mock("./components/SessionsDialogLayer", () => ({
 describe("SessionsPage Component", () => {
   it("renders page shell, metrics, and work tier using controller hook", () => {
     const html = renderToStaticMarkup(<Sessions />);
-    expect(html).toContain("nav.sessions");
+    expect(html).toContain("Sessions"); // header uses the tenant Session term (useAcademicTerms)
     expect(html).toContain("Command Metrics");
     expect(html).toContain("Work Tier");
     expect(html).toContain("Dialog Layer");

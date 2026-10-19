@@ -16,7 +16,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  Switch,
+  ToggleRow,
   CardSkeleton,
 } from "@shared/ui";
 import { PlatformEmailIntegrationPanel } from "@/platform/components/settings/PlatformEmailIntegrationPanel";
@@ -77,45 +77,24 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
               </Badge>
             )}
           </div>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div>
-              <label
-                htmlFor="platform-email-notifications"
-                className="text-xs font-medium cursor-pointer"
-              >
-                {t("global.emailNotifications")}
-              </label>
-              <div className="text-3xs text-muted-foreground">
-                {t("global.emailNotificationsDesc")}
-              </div>
-            </div>
-            <Switch
-              id="platform-email-notifications"
-              checked={emailOn}
-              onCheckedChange={(checked) => updateSettings.mutate({ emailNotifications: checked })}
-              aria-label={t("global.emailNotifications")}
-            />
-          </div>
 
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div>
-              <label
-                htmlFor="platform-sms-notifications"
-                className="text-xs font-medium cursor-pointer"
-              >
-                {t("global.smsNotifications")}
-              </label>
-              <div className="text-3xs text-muted-foreground">
-                {t("global.smsNotificationsDesc")}
-              </div>
-            </div>
-            <Switch
-              id="platform-sms-notifications"
-              checked={smsOn}
-              onCheckedChange={(checked) => updateSettings.mutate({ smsNotifications: checked })}
-              aria-label={t("global.smsNotifications")}
-            />
-          </div>
+          <ToggleRow
+            id="platform-email-notifications"
+            variant="bordered"
+            label={t("global.emailNotifications")}
+            description={t("global.emailNotificationsDesc")}
+            checked={emailOn}
+            onCheckedChange={(checked) => updateSettings.mutate({ emailNotifications: checked })}
+          />
+
+          <ToggleRow
+            id="platform-sms-notifications"
+            variant="bordered"
+            label={t("global.smsNotifications")}
+            description={t("global.smsNotificationsDesc")}
+            checked={smsOn}
+            onCheckedChange={(checked) => updateSettings.mutate({ smsNotifications: checked })}
+          />
         </CardContent>
       </Card>
 

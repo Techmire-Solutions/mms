@@ -4,7 +4,7 @@ import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { type Denomination } from "@/lib/data/hasanatData";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DenominationModal } from "@/tenant/features/hasanat/components/DenominationModal";

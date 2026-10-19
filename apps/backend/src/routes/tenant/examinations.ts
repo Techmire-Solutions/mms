@@ -12,6 +12,8 @@ import { examinationsUseCases } from "../../examinations/use-cases/examinationsU
 import { examinationSetupConfigRoutes } from "./examinationSetupConfigRoutes.js";
 import { examinationsReportRoutes } from "./examinations/examinationsReportRoutes.js";
 import { examinationContractRouter } from "./examinations/examinationContractRouter.js";
+import { examinationSubjectsRouter } from "./examinations/examinationSubjectsRouter.js";
+import { scopeAndStampExamResults } from "./examinations/examResultsWriteGuard.js";
 import { examinationsExportRoutes } from "./examinations/examinationsExportRoutes.js";
 
 const EXAMS_COLLECTION = EXAMINATIONS_MODULE_MANIFEST.collectionKey;
@@ -62,6 +64,7 @@ export default async function examinationsRoutes(
         collection: RESULTS_COLLECTION,
         schema: examResultListSchema,
         saveFn: examinationsUseCases.upsertExamResults,
+        beforeSave: scopeAndStampExamResults,
         responseKey: "results",
         errorMessagePrefix: "exam results",
 
@@ -72,4 +75,5 @@ export default async function examinationsRoutes(
   );
 
   await fastify.register(examinationContractRouter);
+  await fastify.register(examinationSubjectsRouter);
 }

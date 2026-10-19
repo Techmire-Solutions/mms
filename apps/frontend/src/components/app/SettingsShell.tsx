@@ -1,8 +1,7 @@
 import React from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { ToggleRow } from "@shared/ui";
 import { cn } from "@/lib/utils";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 
@@ -112,42 +111,8 @@ interface SettingsToggleRowProps {
   disabled?: boolean;
 }
 
-export function SettingsToggleRow({
-  id,
-  label,
-  description,
-  checked,
-  onCheckedChange,
-  disabled = false,
-}: SettingsToggleRowProps): React.JSX.Element {
-  return (
-    <div
-      className={cn(
-        "flex items-center justify-between gap-4 rounded-xl border px-3.5 py-3.5 transition-colors",
-        checked
-          ? "border-primary/20 bg-primary/5"
-          : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20",
-      )}
-    >
-      <div className="min-w-0 flex-1">
-        <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer">
-          {label}
-        </Label>
-        {description ? (
-          <p id={`${id}-desc`} className="mt-0.5 text-xs text-muted-foreground">
-            {description}
-          </p>
-        ) : null}
-      </div>
-      <Switch
-        id={id}
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-        disabled={disabled}
-        aria-describedby={description ? `${id}-desc` : undefined}
-      />
-    </div>
-  );
+export function SettingsToggleRow(props: SettingsToggleRowProps): React.JSX.Element {
+  return <ToggleRow variant="card" {...props} />;
 }
 
 export function SettingsFieldGroup({

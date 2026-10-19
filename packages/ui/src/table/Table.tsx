@@ -61,7 +61,7 @@ export function TableHeader({ className, sticky, ref, ...props }: TableHeaderPro
       className={cn(
         "[&_tr]:border-b",
         isSticky &&
-          "sticky top-0 z-10 bg-background/95 backdrop-blur-xs shadow-2xs sticky-scroll-state stuck-elevated transition-shadow",
+          "sticky top-0 z-10 bg-background/95 backdrop-blur-xs shadow-2xs sticky-scroll-state transition-shadow",
         className,
       )}
       {...props}

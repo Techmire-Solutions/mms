@@ -29,6 +29,7 @@ export function testRowToRecord(
   };
 
   if (row.examClass) test.examClass = row.examClass;
+  if (row.classId) test.classId = row.classId;
   if (row.totalMarks != null) test.totalMarks = row.totalMarks;
   if (row.instructions) test.instructions = row.instructions;
   if (sections.length > 0) test.sections = sections;

@@ -5,8 +5,7 @@ import { X } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { AuthPageBackdrop } from "@/components/entry/AuthPageShell";
-import { PlatformLogoMark } from "@/platform/components/PlatformPageShell";
-import { Button, WizardStepIndicator } from "@shared/ui";
+import { Button, PlatformLogoMark, WizardStepIndicator } from "@shared/ui";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface WizardStepConfig {

@@ -3,13 +3,17 @@ import { User } from "lucide-react";
 import { Drawer } from "@/components/app/Drawer";
 import { type Enrollment } from "@/lib/data/enrollmentData";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
+import { StatusBadge } from "@/components/app/StatusBadge";
+import {
+  enrollmentPaymentBadgeConfig,
+  enrollmentStatusBadgeConfig,
+} from "@/lib/ui/enrollmentStatusBadge";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentArchivedBanner } from "@/tenant/features/enrollments/components/EnrollmentArchivedBanner";
 import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";
 import { EnrollmentDetailSections } from "@/tenant/features/enrollments/components/EnrollmentDetailSections";
+import { EnrollmentOperationsPanel } from "@/tenant/features/enrollments/components/EnrollmentOperationsPanel";
 
 export interface EnrollmentDetailProps {
   enrollment: Enrollment | null | undefined;
@@ -37,18 +41,9 @@ export const EnrollmentDetail = function EnrollmentDetail({
   const { formatCurrency } = useFinanceCurrency();
   const student = resolvedStudents[0];
 
-  const statusConfig = (() => ({
-    pending: { label: t("enrollments.status.pending"), cls: SEMANTIC_BADGE.warning },
-    confirmed: { label: t("enrollments.status.confirmed"), cls: SEMANTIC_BADGE.success },
-    cancelled: { label: t("enrollments.status.cancelled"), cls: SEMANTIC_BADGE.destructive },
-    completed: { label: t("enrollments.status.completed"), cls: SEMANTIC_BADGE.info },
-  }))() as Record<string, StatusBadgeConfigItem>;
+  const statusConfig = enrollmentStatusBadgeConfig(t);
 
-  const paymentConfig = (() => ({
-    paid: { label: t("enrollments.payment.paid"), cls: SEMANTIC_BADGE.success },
-    pending: { label: t("enrollments.payment.pending"), cls: SEMANTIC_BADGE.warning },
-    none: { label: t("enrollments.payment.none"), cls: SEMANTIC_BADGE.muted },
-  }))() as Record<string, StatusBadgeConfigItem>;
+  const paymentConfig = enrollmentPaymentBadgeConfig(t);
 
   if (!enrollment) return null;
 
@@ -99,6 +94,11 @@ export const EnrollmentDetail = function EnrollmentDetail({
         isArchived={isArchived}
         onStatusChange={onStatusChange}
         onPaymentStatusChange={onPaymentStatusChange}
+      />
+      <EnrollmentOperationsPanel
+        enrollment={enrollment}
+        canWrite={canWrite}
+        isArchived={isArchived}
       />
     </Drawer>
   );

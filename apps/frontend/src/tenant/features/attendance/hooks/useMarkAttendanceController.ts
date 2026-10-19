@@ -13,6 +13,7 @@ import {
   buildDefaultRows,
   enrolledStudentsForClass,
   isEnrollmentInAttendanceRoster,
+  existingRecordsForRoster,
   resolveSessionAndClassInfo,
 } from "@/tenant/features/attendance/lib/markAttendanceRowUtils";
 import {
@@ -44,7 +45,9 @@ export function useMarkAttendanceController({
   const studentIds = (() => {
     if (!filters.classId) return [];
     return enrollments
-      .filter((enrollment) => isEnrollmentInAttendanceRoster(enrollment, filters.classId))
+      .filter((enrollment) =>
+        isEnrollmentInAttendanceRoster(enrollment, filters.classId, filters.sectionId),
+      )
       .map((enrollment) => enrollment.studentId);
   })();
 
@@ -58,15 +61,13 @@ export function useMarkAttendanceController({
       enrollments,
       enrolledStudents,
       t("common.unnamedStudent"),
+      filters.sectionId,
     );
   })();
 
   const [rows, setRows] = useState<AttendanceRow[]>(() => {
     if (!filters.classId || !filters.date) return [];
-    const existing = records.filter(
-      (attendanceRecord) =>
-        attendanceRecord.classId === filters.classId && attendanceRecord.date === filters.date,
-    );
+    const existing = existingRecordsForRoster(records, filters, students);
     if (existing.length > 0) {
       return attendanceRowsFromRecords(existing);
     }
@@ -93,14 +94,11 @@ export function useMarkAttendanceController({
   }, []);
 
   const studentRosterKey = students.map((student) => `${student.id}-${student.name}`).join("|");
-  const stableKey = `${filters.classId}:${filters.date}:${studentRosterKey}`;
+  const stableKey = `${filters.classId}:${filters.sectionId ?? ""}:${filters.date}:${studentRosterKey}`;
 
   useEffect(() => {
     if (!filters.classId || !filters.date) return;
-    const existing = records.filter(
-      (attendanceRecord) =>
-        attendanceRecord.classId === filters.classId && attendanceRecord.date === filters.date,
-    );
+    const existing = existingRecordsForRoster(records, filters, students);
     let nextRows: AttendanceRow[];
     if (existing.length > 0) {
       nextRows = attendanceRowsFromRecords(existing);

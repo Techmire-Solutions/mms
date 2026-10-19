@@ -2,8 +2,25 @@ import type { Permission } from "../auth/permissions.js";
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 
-export const ENROLLMENT_STATUSES = ["pending", "confirmed", "cancelled", "completed"] as const;
+export const ENROLLMENT_STATUSES = [
+  "pending",
+  "confirmed",
+  "cancelled",
+  "completed",
+  "withdrawn",
+] as const;
 export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
+
+/** Statuses that no longer occupy a seat (class `enrolled`, capacity, session membership). */
+export const SEAT_RELEASED_ENROLLMENT_STATUSES = [
+  "cancelled",
+  "withdrawn",
+] as const satisfies readonly EnrollmentStatus[];
+
+/** Whether an enrollment with this status still holds a seat in its class. */
+export function enrollmentHoldsSeat(status: string): boolean {
+  return !(SEAT_RELEASED_ENROLLMENT_STATUSES as readonly string[]).includes(status);
+}
 
 export const ENROLLMENT_PAYMENT_STATUSES = ["paid", "pending", "none"] as const;
 export type EnrollmentPaymentStatus = (typeof ENROLLMENT_PAYMENT_STATUSES)[number];
@@ -14,6 +31,14 @@ export const enrollmentTimelineItemSchema = z
     ts: z.string(),
     event: z.string(),
     by: z.string(),
+    /** Server-written typed event (transfer, withdrawal…); absent on free-text entries. */
+    eventType: z.string().nullable().optional(),
+    effectiveOn: z.string().nullable().optional(),
+    reason: z.string().nullable().optional(),
+    fromClassId: z.string().nullable().optional(),
+    toClassId: z.string().nullable().optional(),
+    fromSectionId: z.string().nullable().optional(),
+    toSectionId: z.string().nullable().optional(),
   })
   .strict();
 
@@ -28,7 +53,15 @@ export const enrollmentRecordSchema = z
     sessionName: z.string().optional().default(""),
     classId: z.string(),
     className: z.string().optional().default(""),
+    /** `session_class_sections.id`; defaults to the class's first section on write. */
+    sectionId: z.string().optional(),
+    /** Roll number within the section. */
+    rollNo: z.string().max(64).optional(),
     enrolledDate: z.string(),
+    /** Enrollment window: late join (start) and withdrawal (end). Null start = `enrolledDate`. */
+    startOn: z.string().nullable().optional(),
+    endOn: z.string().nullable().optional(),
+    endReason: z.string().nullable().optional(),
     baseFee: z.number().default(0),
     discountType: z.string().optional().default("none"),
     discountLabel: z.string().optional().default(""),
@@ -60,7 +93,13 @@ export const enrollmentRecordInsertSchema = z
     sessionName: z.string().optional().default(""),
     classId: z.string().min(1, "Class is required"),
     className: z.string().optional().default(""),
+    /** `session_class_sections.id`; defaults to the class's first section on write. */
+    sectionId: z.string().optional(),
+    /** Roll number within the section. */
+    rollNo: z.string().max(64).optional(),
     enrolledDate: isoDateSchema,
+    /** Late join: first day the student attends (defaults to `enrolledDate`). */
+    startOn: isoDateSchema.nullable().optional(),
     baseFee: z.number().nonnegative().optional().default(0),
     discountType: z.string().optional().default("none"),
     discountLabel: z.string().optional().default(""),

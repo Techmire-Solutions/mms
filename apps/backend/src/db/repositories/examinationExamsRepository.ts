@@ -1,9 +1,11 @@
+import { toDbDate } from "../../lib/dbDate.js";
 import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type Exam, type RepositoryListOptions } from "@mms/shared";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { exams, examClasses } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
+import { resolveCatalogRefsTx } from "./academicCatalogSnapshot.js";
 
 type ExamRow = typeof exams.$inferSelect;
 
@@ -12,9 +14,10 @@ export function examRowToRecord(row: ExamRow, classIds: string[] = []): Exam {
     id: row.id,
     name: row.name,
     subject: row.subject,
+    subjectId: row.subjectId ?? "",
     totalMarks: row.totalMarks,
     passingMarks: row.passingMarks,
-    date: row.date,
+    date: row.date ?? "",
     duration: row.duration,
     classIds,
     status: row.status as Exam["status"],
@@ -43,6 +46,7 @@ export async function listExamsByWorkspace(
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
         subject: exams.subject,
+        subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
         date: exams.date,
@@ -98,6 +102,7 @@ export async function findExamById(tenant: string, id: string): Promise<Exam | n
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
         subject: exams.subject,
+        subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
         date: exams.date,
@@ -163,6 +168,7 @@ export async function findExamsByIds(
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
         subject: exams.subject,
+        subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
         date: exams.date,
@@ -208,16 +214,20 @@ export async function findExamsByIds(
 export async function saveExam(tenant: string, record: Exam): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
+    const [subjectRef] = await resolveCatalogRefsTx(tx, "subjects", subdomain, [
+      { id: record.subjectId, name: record.subject },
+    ]);
     await tx
       .insert(exams)
       .values({
         id: record.id,
         workspaceSubdomain: subdomain,
         name: record.name,
-        subject: record.subject ?? "",
+        subject: subjectRef.name,
+        subjectId: subjectRef.id,
         totalMarks: record.totalMarks ?? 100,
         passingMarks: record.passingMarks ?? 50,
-        date: record.date,
+        date: toDbDate(record.date),
         duration: record.duration ?? 60,
         status: record.status ?? "upcoming",
         description: record.description ?? "",
@@ -230,10 +240,11 @@ export async function saveExam(tenant: string, record: Exam): Promise<void> {
         target: [exams.workspaceSubdomain, exams.id],
         set: {
           name: record.name,
-          subject: record.subject ?? "",
+          subject: subjectRef.name,
+          subjectId: subjectRef.id,
           totalMarks: record.totalMarks ?? 100,
           passingMarks: record.passingMarks ?? 50,
-          date: record.date,
+          date: toDbDate(record.date),
           duration: record.duration ?? 60,
           status: record.status ?? "upcoming",
           description: record.description ?? "",
@@ -273,17 +284,24 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
   if (uniqueRecords.length === 0) return;
 
   await withTenant(subdomain, async (tx) => {
+    const subjectRefs = await resolveCatalogRefsTx(
+      tx,
+      "subjects",
+      subdomain,
+      uniqueRecords.map((r) => ({ id: r.subjectId, name: r.subject })),
+    );
     await tx
       .insert(exams)
       .values(
-        uniqueRecords.map((r) => ({
+        uniqueRecords.map((r, index) => ({
           id: r.id,
           workspaceSubdomain: subdomain,
           name: r.name,
-          subject: r.subject ?? "",
+          subject: subjectRefs[index].name,
+          subjectId: subjectRefs[index].id,
           totalMarks: r.totalMarks ?? 100,
           passingMarks: r.passingMarks ?? 50,
-          date: r.date,
+          date: toDbDate(r.date),
           duration: r.duration ?? 60,
           status: r.status ?? "upcoming",
           description: r.description ?? "",
@@ -298,6 +316,7 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
         set: {
           name: sql`excluded.name`,
           subject: sql`excluded.subject`,
+          subjectId: sql`excluded.subject_id`,
           totalMarks: sql`excluded.total_marks`,
           passingMarks: sql`excluded.passing_marks`,
           date: sql`excluded.date`,
@@ -356,18 +375,25 @@ export async function replaceExamsForWorkspace(tenant: string, records: Exam[]):
   const uniqueRecords = Array.from(uniqueMap.values());
 
   await withTenant(subdomain, async (tx) => {
+    const subjectRefs = await resolveCatalogRefsTx(
+      tx,
+      "subjects",
+      subdomain,
+      uniqueRecords.map((r) => ({ id: r.subjectId, name: r.subject })),
+    );
     await tx.delete(examClasses).where(eq(examClasses.workspaceSubdomain, subdomain));
     await tx.delete(exams).where(eq(exams.workspaceSubdomain, subdomain));
     if (uniqueRecords.length > 0) {
       await tx.insert(exams).values(
-        uniqueRecords.map((r) => ({
+        uniqueRecords.map((r, index) => ({
           id: r.id,
           workspaceSubdomain: subdomain,
           name: r.name,
-          subject: r.subject ?? "",
+          subject: subjectRefs[index].name,
+          subjectId: subjectRefs[index].id,
           totalMarks: r.totalMarks ?? 100,
           passingMarks: r.passingMarks ?? 50,
-          date: r.date,
+          date: toDbDate(r.date),
           duration: r.duration ?? 60,
           status: r.status ?? "upcoming",
           description: r.description ?? "",

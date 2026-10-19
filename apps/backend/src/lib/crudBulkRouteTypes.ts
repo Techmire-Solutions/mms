@@ -12,6 +12,8 @@ export interface BulkRoutesOptions<T> {
   /** Fallback page size when the client omits `limit` (schema path). */
   defaultPageSize?: number;
   saveFn: (data: T) => Promise<unknown>;
+  /** Optional authorization / server-field stamping before save (e.g. teacher scope, `markedBy`). */
+  beforeSave?: (user: User, data: T) => Promise<T>;
   responseKey: string;
   errorMessagePrefix: string;
   /** When true, omits registering the GET endpoint (e.g. handled by @ts-rest contract router). */

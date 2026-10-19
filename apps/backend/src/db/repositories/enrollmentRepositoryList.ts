@@ -21,10 +21,14 @@ import {
   type EnrollmentsListPageResult,
   type EnrollmentsListQuery,
 } from "@mms/shared";
-import { enrollments, enrollmentTimelineEvents } from "../schema.js";
+import { enrollments } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
-import { enrollmentRowToRecord } from "./enrollmentRepository.js";
+import {
+  enrollmentRowToRecord,
+  loadTimelineMapTx,
+  type EnrollmentHydrateRow,
+} from "./enrollmentProjection.js";
 
 const ENROLLMENT_SORT_FIELDS = new Set([
   "studentName",
@@ -123,6 +127,9 @@ const ENROLLMENT_LIST_COLUMNS = {
   classId: enrollments.classId,
   className: enrollments.className,
   enrolledDate: enrollments.enrolledDate,
+  startOn: enrollments.startOn,
+  endOn: enrollments.endOn,
+  endReason: enrollments.endReason,
   baseFee: enrollments.baseFee,
   discountType: enrollments.discountType,
   discountLabel: enrollments.discountLabel,
@@ -161,7 +168,7 @@ export async function listEnrollmentsPage(
       afterId: query.afterId,
       skipCount: query.skipCount,
       defaultPageSize: 12,
-      rowMapper: (row) => row as typeof enrollments.$inferSelect,
+      rowMapper: (row) => row as EnrollmentHydrateRow,
     });
 
     if (result.items.length === 0) {
@@ -174,39 +181,14 @@ export async function listEnrollmentsPage(
       };
     }
 
-    const timelineRows =
-      (await tx
-        .select({
-          id: enrollmentTimelineEvents.id,
-          workspaceSubdomain: enrollmentTimelineEvents.workspaceSubdomain,
-          enrollmentId: enrollmentTimelineEvents.enrollmentId,
-          event: enrollmentTimelineEvents.event,
-          by: enrollmentTimelineEvents.by,
-          ts: enrollmentTimelineEvents.ts,
-          createdAt: enrollmentTimelineEvents.createdAt,
-        })
-        .from(enrollmentTimelineEvents)
-        .where(
-          and(
-            eq(enrollmentTimelineEvents.workspaceSubdomain, subdomain),
-            inArray(
-              enrollmentTimelineEvents.enrollmentId,
-              result.items.map((r) => r.id),
-            ),
-          ),
-        )) ?? [];
-
-    const timelineMap = new Map<string, (typeof enrollmentTimelineEvents.$inferSelect)[]>();
-    for (const t of timelineRows) {
-      const arr = timelineMap.get(t.enrollmentId) ?? [];
-      arr.push(t);
-      timelineMap.set(t.enrollmentId, arr);
-    }
+    const timeline = await loadTimelineMapTx(
+      tx,
+      subdomain,
+      result.items.map((row) => row.id),
+    );
 
     return {
-      enrollments: result.items.map((row) =>
-        enrollmentRowToRecord(row, timelineMap.get(row.id) ?? []),
-      ),
+      enrollments: result.items.map((row) => enrollmentRowToRecord(row, timeline.get(row.id))),
       total: result.total,
       page: result.page,
       limit: result.limit,

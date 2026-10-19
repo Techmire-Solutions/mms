@@ -3,7 +3,9 @@ import { Calendar, Wallet } from "lucide-react";
 import { DatePicker } from "@/components/app/DatePicker";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
+import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
 import { SectionCard } from "@/components/app/SectionCard";
+import { WarningCallout } from "@/components/app/WarningCallout";
 import { FORM_INPUT, FORM_TEXTAREA } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,16 +26,21 @@ interface SessionSectionBaseProps {
 }
 
 interface SessionDetailsSectionProps extends SessionSectionBaseProps {
-  defaultType: string;
-  sessionTypeOptions: SessionSelectOption[];
   statusOptions: SessionSelectOption[];
+  /** Show inline quick-create on catalog pickers (Sessions setup permission). */
+  canCreateCatalog: boolean;
+  /** Pre-selected "Academic Year" category for new sessions. */
+  defaultCategoryId: string;
+  /** Session has started: start date, category and program are locked. */
+  structureLocked?: boolean;
 }
 
 export function SessionDetailsSection({
-  defaultType,
+  canCreateCatalog,
+  defaultCategoryId,
+  structureLocked = false,
   errors,
   sessionDraft,
-  sessionTypeOptions,
   statusOptions,
   onDraftChange,
 }: SessionDetailsSectionProps): React.JSX.Element {
@@ -47,6 +54,13 @@ export function SessionDetailsSection({
         title={t("sessions.form.sectionDetails")}
         className="shadow-sm text-start"
       >
+        {structureLocked ? (
+          <WarningCallout
+            density="banner"
+            title={t("sessions.lock.title")}
+            description={t("sessions.lock.hint")}
+          />
+        ) : null}
         <Field label={t("sessions.form.name")} id="session-name" required error={errors.name}>
           <div className="relative flex items-center group/input">
             <Calendar className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
@@ -62,13 +76,28 @@ export function SessionDetailsSection({
         </Field>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label={t("sessions.form.type")} id="session-type">
-            <FormSelect
-              id="session-type"
-              name="type"
-              value={sessionDraft.type || defaultType}
-              onChange={(val) => onDraftChange({ type: val })}
-              options={sessionTypeOptions}
+          <Field label={t("sessions.form.category")} id="session-category">
+            <AcademicCatalogSelect
+              kind="categories"
+              id="session-category"
+              name="categoryId"
+              value={sessionDraft.categoryId || defaultCategoryId}
+              onChange={(id) => onDraftChange({ categoryId: id })}
+              canCreate={canCreateCatalog}
+              disabled={structureLocked}
+            />
+          </Field>
+
+          <Field label={t("sessions.form.program")} id="session-program">
+            <AcademicCatalogSelect
+              kind="programs"
+              id="session-program"
+              name="programId"
+              value={sessionDraft.programId || ""}
+              onChange={(id) => onDraftChange({ programId: id })}
+              canCreate={canCreateCatalog}
+              disabled={structureLocked}
+              allowNone
             />
           </Field>
 
@@ -96,6 +125,7 @@ export function SessionDetailsSection({
               value={sessionDraft.startDate || undefined}
               onChange={(dateStr) => onDraftChange({ startDate: dateStr })}
               max={sessionDraft.endDate || undefined}
+              disabled={structureLocked}
               required
             />
           </Field>

@@ -12,6 +12,7 @@ import {
 } from "@mms/shared";
 import { getQueryRows } from "../documentStoreKeys.js";
 import { withTenantRead } from "../tenant-context.js";
+import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 import { isPresentOrLateSql, loadAttendanceOverview } from "./attendanceReportOverview.js";
 
 function activeAttendanceWhere(subdomain: string, alias = "a"): ReturnType<typeof sql> {
@@ -20,7 +21,6 @@ function activeAttendanceWhere(subdomain: string, alias = "a"): ReturnType<typeo
     AND ${sql.raw(`${alias}.deleted_at`)} IS NULL
   `;
 }
-
 /** Attendance analytics plus optional ComparisonMode aggregates. */
 export async function loadAttendanceReportAggregatesSql(
   tenant: string,
@@ -29,9 +29,10 @@ export async function loadAttendanceReportAggregatesSql(
   const subdomain = tenant.trim().toLowerCase();
   if (!subdomain) return { ...EMPTY_ATTENDANCE_REPORT_AGGREGATES };
 
+  const countable = await loadCountableAttendanceSql(subdomain);
   return withTenantRead(subdomain, async (tx) => {
     const aggregates: AttendanceReportAggregates = {
-      overview: await loadAttendanceOverview(tx, subdomain, query?.classId),
+      overview: await loadAttendanceOverview(tx, subdomain, countable, query?.classId),
     };
     if (!attendanceReportComparisonQueryActive(query) || !query) {
       return aggregates;
@@ -79,6 +80,7 @@ export async function loadAttendanceReportAggregatesSql(
         FROM session_classes sc
         LEFT JOIN attendance a
           ON ${activeAttendanceWhere(subdomain, "a")}
+          AND ${countable("a")}
           AND sc."classId" IS NOT NULL
           AND a.class_id = sc."classId"
         GROUP BY sc."sessionId"
@@ -110,6 +112,7 @@ export async function loadAttendanceReportAggregatesSql(
           COUNT(*)::int AS total
         FROM attendance a
         WHERE ${activeAttendanceWhere(subdomain, "a")}
+          AND ${countable("a")}
           AND a.date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
           AND left(a.date, 10) >= ${from}
           AND left(a.date, 10) <= ${to}

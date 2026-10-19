@@ -51,6 +51,14 @@ vi.mock("./MarkAttendanceGrid", () => ({
   MarkAttendanceGrid: () => <div data-testid="grid">Attendance Grid</div>,
 }));
 
+vi.mock("@/tenant/features/attendance/hooks/useInstructionalDayStatus", () => ({
+  useInstructionalDayStatus: () => ({
+    instructional: true,
+    allowExtraClass: false,
+    isLoading: false,
+  }),
+}));
+
 vi.mock("./MarkAttendanceActions", () => ({
   MarkAttendanceActions: () => <div data-testid="actions">Attendance Actions</div>,
 }));

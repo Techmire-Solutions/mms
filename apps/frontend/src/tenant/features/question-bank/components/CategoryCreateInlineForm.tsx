@@ -3,6 +3,7 @@ import type { AppTranslationKey } from "@mms/shared";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isImeSafeEnter } from "@/lib/utils";
 
 export interface CategoryCreateInlineFormProps {
   newName: string;
@@ -31,7 +32,7 @@ export function CategoryCreateInlineForm({
         placeholder={t("questionBank.newCategoryName")}
         aria-label={t("questionBank.newCategoryName")}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === "Enter" && isImeSafeEnter(e)) {
             e.preventDefault();
             onCreate();
           }

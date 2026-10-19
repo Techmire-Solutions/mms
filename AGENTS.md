@@ -54,11 +54,17 @@ Start here in Antigravity: **skill `antigravity-workspace`**.
 | ------------------- | -------------------- |
 | `rules/mms-core.md` | `rules/mms-core.mdc` |
 
+## Browser support policy & Modern Web Guidance
+
+**Modern evergreen browsers.** Use Baseline Newly Available web features natively behind feature detection with graceful degradation. No polyfills; no fallbacks for non-Baseline features unless one is required for core functionality.
+
+**Modern Web Guidance (`modern-web-guidance`):** MANDATORY for all HTML/CSS and client-side JS tasks across the whole project. Search guides first (`pnpx modern-web-guidance@latest search "<query>"` / `retrieve "<id>"`) before implementing UI/layout, forms, dialogs/popovers, animations, scroll/motion, or CWV/performance optimizations. Never guess deprecated web APIs; adhere to modern Baseline standards and disclose guide usage.
+
 ## Plan first, task list, then execute — applies to every request
 
 On receiving any request, systematically plan before modifying code:
 
-1. **Discover & Plan**: Inspect the codebase, locate relevant files/abstractions, clarify requirements, and identify boundaries (tenant isolation, 300 LOC cap, strict TS).
+1. **Discover & Plan**: Inspect the codebase, locate relevant files/abstractions, clarify requirements, evaluate modern web guides (`modern-web-guidance`), and identify boundaries (tenant isolation, 300 LOC cap, strict TS).
 2. **Actionable Task List**: Formulate an explicit, ordered task checklist (`- [ ]`) decomposing the work into discrete, verifiable phases.
 3. **Iterative Execution & Verification**: Execute task-by-task against the checklist, update progress (`- [x]`), apply surgical changes, and verify (typecheck/lint/test) after each phase before declaring completion. Never guess APIs or modify code without prior discovery.
 

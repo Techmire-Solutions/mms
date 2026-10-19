@@ -8,7 +8,7 @@ import { UsersCsvImportDialog } from "@/tenant/features/users/components/UsersCs
 import { UsersWorkTier } from "@/tenant/features/users/components/UsersWorkTier";
 import { UsersCommandMetrics } from "@/tenant/features/users/components/UsersCommandMetrics";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
-import { CardSkeleton } from "@/components/app/LoadingState";
+import { CardSkeleton } from "@shared/ui";
 import { useUsersPageController } from "@/tenant/features/users/hooks/useUsersPageController";
 
 const UsersReportsTier = React.lazy(() =>

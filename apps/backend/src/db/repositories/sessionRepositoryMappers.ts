@@ -1,4 +1,5 @@
 import {
+  normalizeSessionStatus,
   type Session,
   type SessionFaculty,
   type Class,
@@ -80,6 +81,7 @@ export function sessionRowToRecord(
       startTime: p.startTime,
       endTime: p.endTime,
       subject: p.subject,
+      subjectId: p.subjectId || "",
       facultyId: p.facultyId || "",
       facultyName: p.facultyName || "",
     });
@@ -92,7 +94,7 @@ export function sessionRowToRecord(
     arr.push({
       id: t.id,
       classId: t.sessionClassId,
-      date: t.date,
+      date: t.date ?? "",
       periods: periodsByTimetable.get(t.id) || [],
     });
     timetablesByClass.set(t.sessionClassId, arr);
@@ -117,8 +119,8 @@ export function sessionRowToRecord(
       id: s.id,
       classId: s.sessionClassId,
       scheduleType: s.scheduleType,
-      startDate: s.startDate,
-      endDate: s.endDate,
+      startDate: s.startDate ?? "",
+      endDate: s.endDate ?? "",
     });
     schedulesByClass.set(s.sessionClassId, arr);
   }
@@ -158,7 +160,7 @@ export function sessionRowToRecord(
     arr.push({
       id: r.id,
       classId: r.sessionClassId,
-      date: r.date,
+      date: r.date ?? "",
       item: r.item,
       quantity: r.quantity,
       pricePerUnit: Number(r.pricePerUnit) || 0,
@@ -215,6 +217,7 @@ export function sessionRowToRecord(
       facultyId: raw.facultyId || "",
       facultyName: raw.facultyName || "",
       room: raw.room || "",
+      programId: raw.programId || "",
       fees: feesByClass.get(raw.id) || [],
       schedules: schedulesByClass.get(raw.id) || [],
       budgets: budgetsByClass.get(raw.id) || [],
@@ -229,8 +232,10 @@ export function sessionRowToRecord(
   return {
     id: rowNorm.id,
     name: rowNorm.name,
-    status: (rowNorm.status === "inactive" ? "inactive" : "active") as "active" | "inactive",
+    status: normalizeSessionStatus(rowNorm.status),
     type: rowNorm.type || "academic",
+    categoryId: rowNorm.categoryId || "",
+    programId: rowNorm.programId || "",
     startDate: rowNorm.startDate || "",
     endDate: rowNorm.endDate || "",
     baseFee: Number(rowNorm.baseFee) || 0,

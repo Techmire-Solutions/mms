@@ -58,6 +58,8 @@ export const preparedSessionColumns = {
   workspaceSubdomain: sessions.workspaceSubdomain,
   name: sessions.name,
   type: sessions.type,
+  categoryId: sessions.categoryId,
+  programId: sessions.programId,
   status: sessions.status,
   startDate: sessions.startDate,
   endDate: sessions.endDate,

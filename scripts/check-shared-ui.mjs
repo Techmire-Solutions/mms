@@ -251,6 +251,16 @@ const BANNED_LOCAL_PRIMITIVES = new Set([
   "UserAvatar.tsx",
   "UserNavDropdown.tsx",
   "IntegrationPanelChrome.tsx",
+  "LogoMark.tsx",
+  "PlatformLogoMark.tsx",
+  "PlatformIntegrationPanelChrome.tsx",
+  "PlatformWorkspaceDensityToggle.tsx",
+  "PlatformWorkspaceVirtualTable.tsx",
+  "WorkspaceLogo.tsx",
+  "ToggleRow.tsx",
+  "TableCellLink.tsx",
+  "SectionHeader.tsx",
+  "LoadingState.tsx",
 ]);
 
 for (const file of [...platformFiles, ...tenantFiles]) {

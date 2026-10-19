@@ -6,6 +6,7 @@ import { SessionsDialogLayer } from "@/tenant/features/sessions/components/Sessi
 import { SessionsWorkTier } from "@/tenant/features/sessions/components/SessionsWorkTier";
 import { SessionsCommandMetrics } from "@/tenant/features/sessions/components/SessionsCommandMetrics";
 import { useSessionsPageController } from "@/tenant/features/sessions/hooks/useSessionsPageController";
+import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 
 const SessionsReportsTier = lazy(() =>
   import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
@@ -18,14 +19,15 @@ const SessionsSetupTier = lazy(() =>
 
 export default function Sessions(): React.JSX.Element {
   const c = useSessionsPageController();
+  const terms = useAcademicTerms();
   const [importOpen, setImportOpen] = useState(false);
 
   return (
     <ModuleTierPage
       spec={{
-        seoTitle: `MMS - ${c.t("nav.sessions")}`,
+        seoTitle: `MMS - ${terms.session.plural}`,
         subtitleKey: "page.sessions.subtitle",
-        headerTitleKey: "nav.sessions",
+        headerTitle: terms.session.plural,
         headerIcon: Calendar,
         panelIdPrefix: "sessions-tab",
       }}

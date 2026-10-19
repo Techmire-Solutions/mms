@@ -732,14 +732,16 @@ describe("students routes", () => {
       },
       payload: {
         studentIds: ["s1", "s2"],
-        sessionIds: ["sess-1", "sess-2"],
+        sessionId: "sess-1",
+        classId: "cls-1",
         mode: "add",
       },
     });
     expect(res.statusCode).toBe(200);
     expect(mockBulkEnrollStudents).toHaveBeenCalledWith({
       studentIds: ["s1", "s2"],
-      sessionIds: ["sess-1", "sess-2"],
+      sessionId: "sess-1",
+      classId: "cls-1",
       mode: "add",
     });
     expect(mockRecordAudit).toHaveBeenCalledWith(
@@ -748,6 +750,23 @@ describe("students routes", () => {
         summary: expect.stringContaining("Updated session enrollments (add) for 2 student(s)"),
       }),
     );
+    await app.close();
+  });
+
+  it("POST /api/students/bulk-enroll rejects add without a class (enrollments need a class)", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/students/bulk-enroll",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+      },
+      payload: { studentIds: ["s1"], sessionId: "sess-1", mode: "add" },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(mockBulkEnrollStudents).not.toHaveBeenCalled();
     await app.close();
   });
 });

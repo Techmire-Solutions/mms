@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
-import { SectionHeader } from "@/components/app/SectionHeader";
+import { SectionHeader } from "@shared/ui";
 import { ObligationTypeFormModal } from "@/tenant/features/obligations/components/ObligationTypeFormModal";
 import { ObligationTypeManagerList } from "@/tenant/features/obligations/components/ObligationTypeManagerList";
 import {

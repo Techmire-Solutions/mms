@@ -13,6 +13,18 @@ import { facultyContract } from "./faculty.contract.js";
 import { userContract } from "./users.contract.js";
 import { messagingContract } from "./messaging.contract.js";
 import { sessionContract } from "./sessions.contract.js";
+import {
+  academicCatalogContract,
+  examinationSubjectsContract,
+} from "./academicCatalog.contract.js";
+import { academicCalendarContract } from "./academicCalendar.contract.js";
+import {
+  admissionsContract,
+  publicRegistrationContract,
+  registrationLinksContract,
+} from "./registration.contract.js";
+import { sessionSectionsContract } from "./sessionSections.contract.js";
+import { enrollmentOperationsContract } from "./enrollmentOperations.contract.js";
 import { questionBankContract } from "./questionBank.contract.js";
 import { accountingContract } from "./accounting.contract.js";
 import { hasanatContract } from "./hasanat.contract.js";
@@ -50,6 +62,14 @@ export const rootContract = c.router({
   users: userContract,
   messaging: messagingContract,
   sessions: sessionContract,
+  academicCatalogs: academicCatalogContract,
+  examinationSubjects: examinationSubjectsContract,
+  academicCalendar: academicCalendarContract,
+  registrationLinks: registrationLinksContract,
+  admissions: admissionsContract,
+  enrollmentOperations: enrollmentOperationsContract,
+  publicRegistration: publicRegistrationContract,
+  sessionSections: sessionSectionsContract,
   questionBank: questionBankContract,
   accounting: accountingContract,
   hasanat: hasanatContract,
@@ -93,6 +113,14 @@ export {
   userContract,
   messagingContract,
   sessionContract,
+  academicCatalogContract,
+  examinationSubjectsContract,
+  academicCalendarContract,
+  registrationLinksContract,
+  admissionsContract,
+  enrollmentOperationsContract,
+  publicRegistrationContract,
+  sessionSectionsContract,
   questionBankContract,
   accountingContract,
   hasanatContract,
@@ -126,6 +154,14 @@ export type DomainContracts = {
   users: typeof userContract;
   messaging: typeof messagingContract;
   sessions: typeof sessionContract;
+  academicCatalogs: typeof academicCatalogContract;
+  examinationSubjects: typeof examinationSubjectsContract;
+  academicCalendar: typeof academicCalendarContract;
+  registrationLinks: typeof registrationLinksContract;
+  admissions: typeof admissionsContract;
+  enrollmentOperations: typeof enrollmentOperationsContract;
+  publicRegistration: typeof publicRegistrationContract;
+  sessionSections: typeof sessionSectionsContract;
   questionBank: typeof questionBankContract;
   accounting: typeof accountingContract;
   hasanat: typeof hasanatContract;

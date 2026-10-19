@@ -5,7 +5,7 @@ import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 
-export type ExamStudent = Student & { classId: string; rollNo: string };
+export type ExamStudent = Student & { classId: string; sectionId: string; rollNo: string };
 
 export function useEnterMarksStudents(exam?: Exam) {
   const sessions = useSessionsCollection();
@@ -58,15 +58,31 @@ export function useEnterMarksStudents(exam?: Exam) {
         result.push({
           ...student,
           classId: enrollment.classId,
-          rollNo: student.grNumber ?? "",
+          sectionId: enrollment.sectionId ?? "",
+          rollNo: enrollment.rollNo || student.grNumber || "",
         });
       }
     }
     return result;
   }, [enrollments, exam?.classIds, resolvedStudents]);
 
+  const sections = useMemo(() => {
+    const classIds = new Set(exam?.classIds ?? []);
+    return sessions.flatMap((session) =>
+      (session.classes ?? [])
+        .filter((sessionClass) => classIds.has(sessionClass.id))
+        .flatMap((sessionClass) =>
+          (sessionClass.sections ?? []).map((section) => ({
+            ...section,
+            name: classIds.size > 1 ? `${sessionClass.name} – ${section.name}` : section.name,
+          })),
+        ),
+    );
+  }, [sessions, exam?.classIds]);
+
   return {
     classNamesById,
     students,
+    sections,
   };
 }
