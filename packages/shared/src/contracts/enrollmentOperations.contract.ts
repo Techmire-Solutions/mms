@@ -5,6 +5,7 @@ import {
   enrollmentPlacementSchema,
   enrollmentTransferBodySchema,
   enrollmentWithdrawBodySchema,
+  withdrawalBillingOutcomeSchema,
 } from "../enrollments/enrollmentOperations.js";
 
 const c = initContract();
@@ -46,7 +47,13 @@ export const enrollmentOperationsContract = c.router({
     path: "/api/enrollments/:id/withdraw",
     pathParams: enrollmentParams,
     body: enrollmentWithdrawBodySchema,
-    responses: operationResponses,
+    responses: {
+      ...operationResponses,
+      200: z.object({
+        enrollment: enrollmentRecordSchema,
+        billing: withdrawalBillingOutcomeSchema,
+      }),
+    },
     summary: "Withdraw an enrollment from a date and release its seat",
   },
 });

@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { isApiError } from "@/lib/apiError";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useFinanceCurrency } from "@/hooks/useCurrency";
 import {
   ENROLLMENT_PLACEMENTS_QUERY_KEY,
   enrollmentPlacementsQueryOptions,
@@ -24,6 +25,7 @@ const detail = (error: unknown) =>
 /** Transfer / withdraw with call-site toasts; each resolves true when the change was saved. */
 export function useEnrollmentOperations() {
   const { t } = useTranslation();
+  const { formatCurrency } = useFinanceCurrency();
   const queryClient = useQueryClient();
   const onSettled = () => {
     invalidateEnrollmentsQueries(queryClient);
@@ -35,8 +37,12 @@ export function useEnrollmentOperations() {
 
   const transfer = async (id: string, body: EnrollmentTransferBody): Promise<boolean> => {
     try {
-      await transferMutation.mutateAsync({ id, body });
-      notify.success(t("enrollments.ops.transferred"));
+      const moved = await transferMutation.mutateAsync({ id, body });
+      notify.success(t("enrollments.ops.transferred"), {
+        description: t("enrollments.ops.feeFromNextPeriod", {
+          amount: formatCurrency(moved.finalFee),
+        }),
+      });
       return true;
     } catch (error) {
       notify.error(t("enrollments.ops.transferFailed"), { description: detail(error) });
@@ -46,8 +52,20 @@ export function useEnrollmentOperations() {
 
   const withdraw = async (id: string, body: EnrollmentWithdrawBody): Promise<boolean> => {
     try {
-      await withdrawMutation.mutateAsync({ id, body });
-      notify.success(t("enrollments.ops.withdrawnToast"));
+      const { billing } = await withdrawMutation.mutateAsync({ id, body });
+      notify.success(t("enrollments.ops.withdrawnToast"), {
+        description:
+          billing.cancelled.length > 0
+            ? t("enrollments.ops.invoicesCancelled", { count: billing.cancelled.length })
+            : undefined,
+      });
+      if (billing.review.length > 0) {
+        notify.warning(t("enrollments.ops.invoicesNeedReview", { count: billing.review.length }), {
+          description: billing.review
+            .map((invoice) => invoice.invoiceNumber ?? invoice.id)
+            .join(", "),
+        });
+      }
       return true;
     } catch (error) {
       notify.error(t("enrollments.ops.withdrawFailed"), { description: detail(error) });

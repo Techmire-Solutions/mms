@@ -37,6 +37,8 @@ export interface FinanceRepository {
     options?: { includeDeleted?: boolean },
   ): Promise<Invoice[]>;
   saveInvoice(tenant: string, record: Invoice): Promise<void>;
+  /** Live invoice ids raised for one enrollment (any billing period). */
+  findInvoiceIdsByEnrollment(tenant: string, enrollmentId: string): Promise<string[]>;
   listInvoicesPage(tenant: string, query: FinanceListQuery): Promise<FinanceInvoicesListPageResult>;
   bulkUpdateInvoicesStatus(
     tenant: string,

@@ -54,7 +54,7 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
       try {
         return {
           status: 200 as const,
-          body: { enrollment: await ops.withdraw(tenantOf(request), params.id, body, user) },
+          body: await ops.withdraw(tenantOf(request), params.id, body, user),
         };
       } catch (error) {
         return handleContractError(request, error, {

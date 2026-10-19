@@ -7,6 +7,8 @@ import {
   type EnrollmentPlacement,
   type EnrollmentTransferBody,
   type EnrollmentWithdrawBody,
+  type WithdrawalBillingOutcome,
+  withdrawalBillingOutcomeSchema,
 } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
@@ -43,7 +45,20 @@ export function transferEnrollmentMutationOptions() {
 export function withdrawEnrollmentMutationOptions() {
   return mutationOptions({
     mutationKey: ["enrollments", "withdraw"] as const,
-    mutationFn: ({ id, body }: { id: string; body: EnrollmentWithdrawBody }) =>
-      post(`${base(id)}/withdraw`, body),
+    mutationFn: async ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: EnrollmentWithdrawBody;
+    }): Promise<{ enrollment: Enrollment; billing: WithdrawalBillingOutcome }> =>
+      z
+        .object({ enrollment: enrollmentRecordSchema, billing: withdrawalBillingOutcomeSchema })
+        .parse(
+          await apiJson<unknown>(`${base(id)}/withdraw`, {
+            method: "POST",
+            body: JSON.stringify(body),
+          }),
+        ),
   });
 }

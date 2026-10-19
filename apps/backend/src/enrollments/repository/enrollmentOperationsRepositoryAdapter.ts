@@ -8,6 +8,7 @@ import { findEnrollmentById } from "../../db/repositories/enrollmentRepositoryHy
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import { getEnrollmentModulePreferencesByWorkspace } from "../../db/repositories/enrollmentModulePreferencesRepository.js";
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
+import { findStudentsByIds } from "../../db/repositories/studentRepositoryHydrate.js";
 
 /** Drizzle-backed adapter for {@link EnrollmentOperationsRepository}. */
 export const enrollmentOperationsRepository: EnrollmentOperationsRepository = {
@@ -15,6 +16,7 @@ export const enrollmentOperationsRepository: EnrollmentOperationsRepository = {
   findSessionById,
   getEnrollmentModulePreferencesByWorkspace,
   findWorkspaceTimezone,
+  findStudentsByIds,
   listEnrollmentPlacements,
   applyEnrollmentTransfer,
   applyEnrollmentWithdrawal,

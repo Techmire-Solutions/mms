@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   enrollmentTransferBodySchema,
   enrollmentWithdrawBodySchema,
+  withdrawalInvoicePlan,
 } from "./enrollmentOperations.js";
 import { enrollmentHoldsSeat } from "./enrollmentsModuleManifest.js";
 
@@ -53,5 +54,46 @@ describe("enrollment operation bodies", () => {
         status: "cancelled",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("withdrawalInvoicePlan", () => {
+  const invoice = (id: string, billingPeriod: string, extra: Record<string, unknown> = {}) => ({
+    id,
+    status: "pending",
+    billingPeriod,
+    paidAmt: 0,
+    creditedAmt: 0,
+    ...extra,
+  });
+
+  it("given untouched invoices after the last month, should cancel them and keep the last month", () => {
+    // Act
+    const plan = withdrawalInvoicePlan(
+      [invoice("mar", "2026-03"), invoice("apr", "2026-04"), invoice("may", "2026-05")],
+      "2026-03-17",
+    );
+
+    // Assert
+    expect(plan.cancel.map((row) => row.id)).toEqual(["apr", "may"]);
+    expect(plan.review).toEqual([]);
+  });
+
+  it("given paid, part-paid, credited or cancelled later invoices, should route them to review or skip them", () => {
+    // Act
+    const plan = withdrawalInvoicePlan(
+      [
+        invoice("paid", "2026-04", { status: "paid", paidAmt: 1000 }),
+        invoice("partial", "2026-05", { status: "partial", paidAmt: 200 }),
+        invoice("credited", "2026-06", { creditedAmt: 50 }),
+        invoice("gone", "2026-07", { status: "cancelled" }),
+        invoice("noPeriod", "", {}),
+      ],
+      "2026-03-31",
+    );
+
+    // Assert
+    expect(plan.cancel).toEqual([]);
+    expect(plan.review.map((row) => row.id)).toEqual(["paid", "partial", "credited"]);
   });
 });
