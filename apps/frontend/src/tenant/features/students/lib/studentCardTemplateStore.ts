@@ -5,6 +5,10 @@ import {
   type TemplateFieldDefinition,
 } from "@mms/shared";
 import { getObject, saveObject } from "@/lib/db";
+import {
+  deleteDocumentTemplateServer,
+  saveDocumentTemplateServer,
+} from "@/lib/templates/documentTemplatesApi";
 import type { BrandingInfo } from "@/lib/invoiceTemplateStore";
 import type { StudentCardPayload, StudentCardTemplate } from "./studentCardTemplateTypes";
 import { getDefaultStudentCardTemplate } from "./studentCardTemplateDefaults";
@@ -179,6 +183,9 @@ export function saveStudentCardTemplate(tmpl: StudentCardTemplate): void {
       new CustomEvent(STUDENT_CARD_TEMPLATE_CHANGED_EVENT, { detail: validTemplate }),
     );
   }
+  void saveDocumentTemplateServer(STORAGE_KEY, validTemplate).catch((err) => {
+    console.warn("[studentCardTemplateStore] Failed to save template to server:", err);
+  });
   notifyListeners();
 }
 
@@ -188,6 +195,9 @@ export function saveStudentCardTemplate(tmpl: StudentCardTemplate): void {
 export function resetStudentCardTemplate(branding?: BrandingInfo): StudentCardTemplate {
   const defaultTmpl = getDefaultStudentCardTemplate(branding);
   saveStudentCardTemplate(defaultTmpl);
+  void deleteDocumentTemplateServer(STORAGE_KEY).catch((err) => {
+    console.warn("[studentCardTemplateStore] Failed to delete template from server:", err);
+  });
   return defaultTmpl;
 }
 

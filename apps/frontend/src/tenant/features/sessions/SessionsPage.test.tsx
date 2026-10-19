@@ -65,7 +65,7 @@ vi.mock("@/tenant/features/sessions/hooks/useSessionsPageController", () => ({
     setDetailSession: vi.fn(),
     handleSort: vi.fn(),
     toggleSelectAll: vi.fn(),
-    toggleSelectedSession: vi.fn(),
+    toggleSelected: vi.fn(),
     setPendingDeleteId: vi.fn(),
     handleRestore: vi.fn(),
     handleBulkDelete: vi.fn(),

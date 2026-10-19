@@ -1,13 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Key } from "lucide-react";
-import {
-  FieldErrorMessage,
-  FormSubmitActions,
-  PasswordInput,
-  PasswordStrengthMeter,
-  SectionCard,
-} from "@shared/ui";
+import { FieldErrorMessage, FormSubmitActions, PasswordInput, SectionCard } from "@shared/ui";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUpdatePlatformPassword } from "@/platform/hooks/usePlatformProfile";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";

@@ -29,7 +29,7 @@ const TENANT_ROUTES_DIR = path.join(BACKEND_SRC, "routes/tenant");
 
 const BASELINE = {
   useCaseStorageImports: 48,
-  servicesStorageImports: 67,
+  servicesStorageImports: 66,
   servicesReexportShims: 0,
   routeAggregatorFiles: 17,
 };

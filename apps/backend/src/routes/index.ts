@@ -41,6 +41,7 @@ import openapiRoutes from "./common/openapi.js";
 import auditRoutes from "./tenant/audit/auditRoutes.js";
 import moduleAccessRoutes from "./tenant/moduleAccess.js";
 import tasksRoutes from "./tenant/tasksRoutes.js";
+import { documentTemplatesRoutes } from "./tenant/templates/documentTemplatesContractRouter.js";
 
 export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(openapiRoutes);
@@ -68,6 +69,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(studentsRoutes);
   await app.register(facultyRoutes);
   await app.register(tasksRoutes);
+  await app.register(documentTemplatesRoutes);
   await app.register(financeRoutes);
   await app.register(enrollmentsRoutes);
   await app.register(obligationsRoutes);

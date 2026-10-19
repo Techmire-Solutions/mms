@@ -8,6 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { TemplateEditor } from "@/components/app/TemplateEditor";
 import { getObject, saveObject } from "@/lib/db";
+import { saveDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
 import { type DocumentTemplate, type TypstReportCardPayload } from "@mms/shared";
 import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
@@ -77,6 +78,9 @@ export function ExaminationTemplateEditor({
 
   const handleSave = (tmpl: DocumentTemplate<TypstReportCardPayload>) => {
     saveObject(EXAMINATION_TEMPLATE_STORAGE_KEY, tmpl);
+    void saveDocumentTemplateServer(EXAMINATION_TEMPLATE_STORAGE_KEY, tmpl).catch((err) => {
+      console.warn("[ExaminationTemplateEditor] Server save failed:", err);
+    });
     notify.success(t("examinations.templateSaved"));
   };
 

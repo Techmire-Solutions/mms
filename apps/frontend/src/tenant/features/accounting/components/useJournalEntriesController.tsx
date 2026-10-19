@@ -12,7 +12,7 @@ import {
   type JournalEntriesServerQueryProps,
 } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import { createJournalNlHandlers } from "@/tenant/features/accounting/components/journalEntriesControllerSelection";
-import { useJournalEntrySelection } from "@/tenant/features/accounting/hooks/useJournalEntrySelection";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useJournalEntriesUiState } from "../hooks/useJournalEntriesUiState";
 import { useJournalEntriesFilterBridge } from "../hooks/useJournalEntriesFilterBridge";
 import { useJournalEntriesActions } from "../hooks/useJournalEntriesActions";
@@ -81,9 +81,9 @@ export function useJournalEntriesController({
     allVisibleSelected,
     someVisibleSelected,
     toggleSelectAll,
-    toggleSelectedEntry,
+    toggleSelected,
     clearSelection,
-  } = useJournalEntrySelection(filtered);
+  } = useWorkSelection(filtered);
 
   useEffect(() => {
     onShortcutStateChange?.({
@@ -164,7 +164,7 @@ export function useJournalEntriesController({
     showDeleted,
     handleNlSubmit,
     handleNlChange,
-    toggleSelectedEntry,
+    toggleSelected,
     toggleSelectAll,
     ...actions,
   };

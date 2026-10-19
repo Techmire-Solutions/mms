@@ -18,7 +18,7 @@ import {
   useEnrollmentsExportActions,
 } from "@/tenant/features/enrollments/hooks/useEnrollmentsExportActions";
 import { useEnrollmentColumnLayout } from "@/tenant/features/enrollments/hooks/useEnrollmentColumnLayout";
-import { useEnrollmentsSelection } from "@/tenant/features/enrollments/hooks/useEnrollmentsSelection";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
 
 export function useEnrollmentsPageState() {
   const { t } = useTranslation();
@@ -85,7 +85,7 @@ export function useEnrollmentsPageState() {
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
   const [confirmBulkRestoreOpen, setConfirmBulkRestoreOpen] = useState(false);
   const columnLayout = useEnrollmentColumnLayout();
-  const selection = useEnrollmentsSelection(enrollments);
+  const selection = useWorkSelection(enrollments);
 
   useEffect(() => {
     selection.setSelectedIds([]);

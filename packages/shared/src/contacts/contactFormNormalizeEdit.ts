@@ -3,8 +3,6 @@ import {
   DEFAULT_ADDRESS_LABELS,
   DEFAULT_EMAIL_LABELS,
   DEFAULT_PHONE_LABELS,
-  DEFAULT_SKILL_CATEGORY_LABELS,
-  DEFAULT_SKILL_PROFICIENCY_LABELS,
   DEFAULT_BANK_LABELS,
   SOCIAL_PLATFORMS,
   type Contact,
@@ -12,25 +10,22 @@ import {
   type EmailAddress as ContactEmail,
   type Address as ContactAddress,
   type SocialLink as ContactSocial,
-  type ContactEducation,
-  type ContactExperience,
-  type ContactSkill,
-  type ContactBankDetail,
-  type RelationshipContact,
 } from "./contactTypes.js";
 import { normalizeToE164 } from "../core/phoneUtils.js";
 import {
   normalizeAddressItem,
-  normalizeEducationItem,
-  normalizeExperienceItem,
-  normalizeSkillItem,
-  normalizeBankDetailItem,
   normalizeEmailItem,
-  normalizeRelationshipContactItem,
   normalizePhoneItem,
   normalizeSocialItem,
   type ContactItemNormalizeDefaults,
 } from "./contactItemNormalize.js";
+import {
+  normalizeEducationList,
+  normalizeExperienceList,
+  normalizeSkillsList,
+  normalizeBankDetailsList,
+  normalizeRelationshipContactsList,
+} from "./contactFormNormalizeSubCollections.js";
 import { stripContactClientSoftDeleteFields } from "./contactSoftDelete.js";
 import { hydrateContactRelationshipFields } from "./contactRelationshipHydrate.js";
 import { getContactTags } from "./contactEntityTypes.js";
@@ -207,81 +202,14 @@ export function normalizeContactForEdit(
     socials = [{ platform: defaults.socialPlatform || "Facebook", url: "" }];
   }
 
-  let education: ContactEducation[] = Array.isArray(merged.education)
-    ? merged.education.map((item) => normalizeEducationItem(item, defaults))
-    : [];
-
-  if (education.length === 0) {
-    education = [
-      {
-        degree: defaults.educationDegree || "Matric / Secondary",
-        institution: "",
-        fieldOfStudy: "",
-        year: "",
-        grade: "",
-      },
-    ];
-  }
-
-  let experience: ContactExperience[] = Array.isArray(merged.experience)
-    ? merged.experience.map((item) => normalizeExperienceItem(item, defaults))
-    : [];
-
-  if (experience.length === 0) {
-    experience = [
-      {
-        title: "",
-        organization: "",
-        employmentType: defaults.employmentType || "Full-time",
-        location: "",
-        startDate: "",
-        endDate: "",
-        isCurrent: false,
-        description: "",
-      },
-    ];
-  }
-
-  let skills: ContactSkill[] = Array.isArray(merged.skills)
-    ? merged.skills.map((item) => normalizeSkillItem(item, defaults))
-    : [];
-
-  if (skills.length === 0) {
-    skills = [
-      {
-        name: "",
-        category: defaults.skillCategory || DEFAULT_SKILL_CATEGORY_LABELS[0] || "Islamic Studies",
-        proficiency:
-          defaults.skillProficiency || DEFAULT_SKILL_PROFICIENCY_LABELS[1] || "Intermediate",
-        yearsOfExperience: "",
-        isCertified: false,
-        issuer: "",
-        description: "",
-      },
-    ];
-  }
-
-  let bankDetails: ContactBankDetail[] = Array.isArray(merged.bankDetails)
-    ? merged.bankDetails.map((item) => normalizeBankDetailItem(item, defaults))
-    : [];
-
-  if (bankDetails.length === 0) {
-    bankDetails = [
-      {
-        bankName: "",
-        accountTitle: "",
-        accountNumber: "",
-      },
-    ];
-  }
-
-  let relationshipContacts: RelationshipContact[] = Array.isArray(merged.relationshipContacts)
-    ? merged.relationshipContacts.map((item) => normalizeRelationshipContactItem(item, defaults))
-    : [];
-
-  if (relationshipContacts.length === 0) {
-    relationshipContacts = [{ relationship: defaults.relationship || "", contactId: "" }];
-  }
+  const education = normalizeEducationList(merged.education, defaults);
+  const experience = normalizeExperienceList(merged.experience, defaults);
+  const skills = normalizeSkillsList(merged.skills, defaults);
+  const bankDetails = normalizeBankDetailsList(merged.bankDetails, defaults);
+  const relationshipContacts = normalizeRelationshipContactsList(
+    merged.relationshipContacts,
+    defaults,
+  );
 
   return {
     ...stripContactClientSoftDeleteFields(merged as Record<string, unknown>),

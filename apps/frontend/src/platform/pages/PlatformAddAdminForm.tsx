@@ -1,15 +1,9 @@
 import React, { useState } from "react";
 import { Mail, User, UserPlus, ShieldPlus } from "lucide-react";
 import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformAdminPermissions } from "@mms/shared";
-import {
-  Button,
-  PasswordInput,
-  LeadingIconInput,
-  PasswordStrengthMeter,
-  Field,
-  SectionCard,
-} from "@shared/ui";
+import { Button, PasswordInput, LeadingIconInput, Field, SectionCard } from "@shared/ui";
 import { FormModal } from "@/components/app/FormModal";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { getPlatformRegisterError } from "@/platform/lib/platformValidation";

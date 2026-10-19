@@ -12,7 +12,7 @@ import {
   foreignKey,
 } from "drizzle-orm/pg-core";
 import { desc, sql } from "drizzle-orm";
-import type { PersistedSavedReportCategory } from "@mms/shared";
+import type { DocumentTemplate, PersistedSavedReportCategory } from "@mms/shared";
 import { workspaces } from "./platform.js";
 import { tenantUsers } from "./contacts.js";
 
@@ -170,6 +170,23 @@ export const dataMigrations = pgTable("data_migrations", {
   appliedAt: timestamp("applied_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
+export const documentTemplates = pgTable(
+  "document_templates",
+  {
+    workspaceSubdomain: text("workspace_subdomain")
+      .notNull()
+      .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+    key: varchar("key", { length: 128 }).notNull(),
+    template: jsonb("template").$type<DocumentTemplate>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workspaceSubdomain, table.key] }),
+    index("document_templates_workspace_key_idx").on(table.workspaceSubdomain, table.key),
+  ],
+);
+
 /* ========================================================================= */
 /*                         ROW INFER TYPES                                   */
 /* ========================================================================= */
@@ -190,3 +207,5 @@ export type DataMigrationRow = typeof dataMigrations.$inferSelect;
 export type InsertDataMigrationRow = typeof dataMigrations.$inferInsert;
 export type UserUiPreferencesRow = typeof userUiPreferences.$inferSelect;
 export type InsertUserUiPreferencesRow = typeof userUiPreferences.$inferInsert;
+export type DocumentTemplateRow = typeof documentTemplates.$inferSelect;
+export type InsertDocumentTemplateRow = typeof documentTemplates.$inferInsert;
