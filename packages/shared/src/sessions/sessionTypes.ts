@@ -379,6 +379,10 @@ export const SessionSchema = z
     endDate: z.string().optional().default(""),
     /** Weekly teaching days for this session; empty/absent = the workspace attendance working days. */
     workingDays: z.array(z.enum(WEEKDAY_NAMES)).max(7).optional(),
+    /** Short-course completion: minimum attendance % (null = not required). */
+    minAttendancePct: z.coerce.number().int().min(0).max(100).nullable().optional(),
+    /** Short-course completion: every class exam must be passed. */
+    requiresExamPass: z.boolean().optional(),
     description: z.string().optional(),
     currency: z.string().optional().default("PKR"),
     baseFee: z.coerce.number().nonnegative().default(0),

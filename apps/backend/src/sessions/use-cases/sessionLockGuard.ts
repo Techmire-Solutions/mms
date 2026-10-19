@@ -6,11 +6,20 @@ import {
   type SessionEditViolation,
 } from "@mms/shared";
 import { HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
+import { todayInTimeZone } from "../../lib/dbDate.js";
+import { sessionsAcademicRepository } from "../repository/sessionsAcademicRepositoryAdapter.js";
 
 /** Caller context for a session update (override needs Sessions setup rights + a reason). */
 export interface SessionLockContext {
   canOverrideLock: boolean;
   lockOverrideReason?: string;
+  /** Workspace business date; enables the past-timetable lock. */
+  today?: string;
+}
+
+/** Today in the workspace timezone (the authority for business dates). */
+export async function workspaceToday(tenant: string): Promise<string> {
+  return todayInTimeZone(await sessionsAcademicRepository.findWorkspaceTimezone(tenant));
 }
 
 export class SessionLockedError extends HttpDomainError {
@@ -38,7 +47,7 @@ export function assertSessionEditable(
       `Cannot move a session from ${normalizeSessionStatus(before.status)} to ${normalizeSessionStatus(after.status)}`,
     );
   }
-  const violations = findSessionEditViolations(before, after);
+  const violations = findSessionEditViolations(before, after, ctx.today);
   if (violations.length === 0) return [];
   const reason = ctx.lockOverrideReason?.trim();
   if (!ctx.canOverrideLock || !reason || reason.length < 3)

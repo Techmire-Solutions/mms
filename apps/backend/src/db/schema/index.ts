@@ -10,6 +10,7 @@ export * from "./sessionSections.js";
 export * from "./academicCalendar.js";
 export * from "./registration.js";
 export * from "./enrollmentPlacements.js";
+export * from "./sessionPromotion.js";
 export * from "./attendance.js";
 export * from "./enrollments.js";
 export * from "./finance.js";

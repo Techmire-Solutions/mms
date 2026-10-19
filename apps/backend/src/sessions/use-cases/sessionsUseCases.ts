@@ -7,9 +7,11 @@ import { NotFoundError } from "../../lib/httpErrors.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import {
   assertSessionEditable,
+  workspaceToday,
   type SessionLockContext,
   assertSessionDateRange,
 } from "./sessionLockGuard.js";
+import { onSessionsCancelled } from "./sessionLifecycleOpsUseCases.js";
 import {
   sessionRecordSchema,
   type SessionRecord,
@@ -110,10 +112,13 @@ export function createSessionsUseCases(
       if (!before) return null;
       const overridden = assertSessionEditable(before, { ...before, ...next } as Session, {
         ...lock,
+        today: lock.today ?? (await workspaceToday(tenant)),
         lockOverrideReason: lockOverrideReason ?? lock.lockOverrideReason,
       });
       assertSessionDateRange({ ...before, ...next });
       const updated = await crud.updateById(id, next as SessionRecord);
+      if (next.status === "cancelled" && before.status !== "cancelled")
+        await onSessionsCancelled(tenant, [id]);
       if (overridden.length > 0) {
         await recordModernAuditEvent({
           workspaceSubdomain: tenant,
@@ -219,6 +224,7 @@ export function createSessionsUseCases(
           ? await repo.bulkUpdateSessionsStatus(tenant, allowed, target)
           : { succeeded: 0, failed: 0 };
       result.failed += ids.length - allowed.length;
+      if (target === "cancelled" && result.succeeded) await onSessionsCancelled(tenant, allowed);
       if (result.succeeded > 0) {
         await broadcastCollection("sessions");
       }

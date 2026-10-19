@@ -20,6 +20,10 @@ export const ENROLLMENT_STATUSES = [
   },
   { id: "completed", label: "Completed", color: "bg-info/10 text-info border-info/30" },
   { id: "withdrawn", label: "Withdrawn", color: "bg-muted text-muted-foreground border-border" },
+  { id: "promoted", label: "Promoted", color: "bg-info/10 text-info border-info/30" },
+  { id: "retained", label: "Retained", color: "bg-warning/10 text-warning border-warning/30" },
+  { id: "graduated", label: "Graduated", color: "bg-success/10 text-success border-success/30" },
+  { id: "left", label: "Left", color: "bg-muted text-muted-foreground border-border" },
 ];
 
 export {

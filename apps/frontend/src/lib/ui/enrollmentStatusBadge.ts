@@ -10,6 +10,10 @@ const STATUS_TONE: Record<EnrollmentStatus, string> = {
   cancelled: SEMANTIC_BADGE.destructive,
   completed: SEMANTIC_BADGE.info,
   withdrawn: SEMANTIC_BADGE.muted,
+  promoted: SEMANTIC_BADGE.info,
+  retained: SEMANTIC_BADGE.warning,
+  graduated: SEMANTIC_BADGE.success,
+  left: SEMANTIC_BADGE.muted,
 };
 
 const STATUS_LABEL: Record<EnrollmentStatus, AppTranslationKey> = {
@@ -18,6 +22,10 @@ const STATUS_LABEL: Record<EnrollmentStatus, AppTranslationKey> = {
   cancelled: "enrollments.status.cancelled",
   completed: "enrollments.status.completed",
   withdrawn: "enrollments.status.withdrawn",
+  promoted: "enrollments.status.promoted",
+  retained: "enrollments.status.retained",
+  graduated: "enrollments.status.graduated",
+  left: "enrollments.status.left",
 };
 
 /** Enrollment status labels (SSOT across directory, drawer, reports and charts). */
@@ -28,6 +36,10 @@ export function enrollmentStatusLabels(t: Translate): Record<EnrollmentStatus, s
     cancelled: t(STATUS_LABEL.cancelled),
     completed: t(STATUS_LABEL.completed),
     withdrawn: t(STATUS_LABEL.withdrawn),
+    promoted: t(STATUS_LABEL.promoted),
+    retained: t(STATUS_LABEL.retained),
+    graduated: t(STATUS_LABEL.graduated),
+    left: t(STATUS_LABEL.left),
   };
 }
 

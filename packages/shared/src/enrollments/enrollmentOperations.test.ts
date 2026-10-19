@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   enrollmentTransferBodySchema,
   enrollmentWithdrawBodySchema,
+  studentStatusEndsEnrollments,
   withdrawalInvoicePlan,
 } from "./enrollmentOperations.js";
 import { enrollmentActiveOn, enrollmentHoldsSeat } from "./enrollmentsModuleManifest.js";
@@ -116,5 +117,20 @@ describe("enrollmentActiveOn", () => {
     expect(enrollmentActiveOn(withdrawn, "2026-04-10")).toBe(true);
     expect(enrollmentActiveOn(withdrawn, "2026-04-11")).toBe(false);
     expect(enrollmentActiveOn({ ...base, status: "cancelled" }, "2026-03-01")).toBe(false);
+  });
+});
+
+describe("studentStatusEndsEnrollments", () => {
+  it("given a move into inactive, transferred or graduated, should end enrollments once", () => {
+    // Assert
+    expect(studentStatusEndsEnrollments("active", "graduated")).toBe(true);
+    expect(studentStatusEndsEnrollments("active", " Transferred ")).toBe(true);
+    expect(studentStatusEndsEnrollments("inactive", "graduated")).toBe(false);
+  });
+
+  it("given suspended or a return to active, should not end enrollments", () => {
+    // Assert
+    expect(studentStatusEndsEnrollments("active", "suspended")).toBe(false);
+    expect(studentStatusEndsEnrollments("inactive", "active")).toBe(false);
   });
 });

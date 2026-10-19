@@ -4,7 +4,7 @@
  */
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, Wallet, UserCheck, Link2 } from "lucide-react";
+import { GraduationCap, Wallet, UserCheck, Link2, History, Award } from "lucide-react";
 import { Drawer } from "@/components/app/Drawer";
 import {
   DetailDrawerRestoreOrEditAction,
@@ -30,14 +30,26 @@ import { ClassesTab } from "@/tenant/features/sessions/components/tabs/ClassesTa
 import { FacultyManagementTab } from "@/tenant/features/sessions/components/tabs/FacultyManagementTab";
 import { BudgetTab } from "@/tenant/features/sessions/components/tabs/BudgetTab";
 import { RegistrationLinksTab } from "@/tenant/features/sessions/components/tabs/RegistrationLinksTab";
+import { SessionActivityTab } from "@/tenant/features/sessions/components/tabs/SessionActivityTab";
+import { SessionCompletionTab } from "@/tenant/features/sessions/components/tabs/SessionCompletionTab";
+import { SessionLifecycleBar } from "@/tenant/features/sessions/components/SessionLifecycleBar";
 
-const TAB_KEYS = ["classes", "faculty", "budget", "registration"] as const;
+const TAB_KEYS = [
+  "classes",
+  "faculty",
+  "budget",
+  "registration",
+  "completion",
+  "activity",
+] as const;
 
 const TAB_ICONS = {
   classes: GraduationCap,
   faculty: UserCheck,
   budget: Wallet,
   registration: Link2,
+  completion: Award,
+  activity: History,
 } as const;
 
 const TAB_COMPONENTS: Record<string, React.ElementType> = {
@@ -45,6 +57,8 @@ const TAB_COMPONENTS: Record<string, React.ElementType> = {
   faculty: FacultyManagementTab,
   budget: BudgetTab,
   registration: RegistrationLinksTab,
+  completion: SessionCompletionTab,
+  activity: SessionActivityTab,
 };
 
 export interface SessionDetailProps {
@@ -136,6 +150,7 @@ export const SessionDetail = function SessionDetail({
               <span className="text-xs text-muted-foreground">{sessionTypeLabel}</span>
             </div>
           ) : null}
+          {canMutate ? <SessionLifecycleBar session={session} /> : null}
         </>
       }
       footer={

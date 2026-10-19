@@ -6,7 +6,11 @@ type PreferencesStore =
 type StudentHydrate = typeof import("../../db/repositories/studentRepositoryHydrate.js");
 type WorkspaceStore = typeof import("../../db/repositories/workspaceRepository.js");
 
-export type { OperationActor } from "../../db/repositories/enrollmentOperationsRepository.js";
+export type {
+  EndedEnrollmentStatus,
+  LiveEnrollmentRow,
+  OperationActor,
+} from "../../db/repositories/enrollmentOperationsRepository.js";
 
 /** Storage gateway for mid-session enrollment operations (transfer, withdrawal, placements). */
 export interface EnrollmentOperationsRepository {
@@ -18,6 +22,7 @@ export interface EnrollmentOperationsRepository {
   listEnrollmentPlacements: OperationsStore["listEnrollmentPlacements"];
   applyEnrollmentTransfer: OperationsStore["applyEnrollmentTransfer"];
   applyEnrollmentWithdrawal: OperationsStore["applyEnrollmentWithdrawal"];
+  listLiveEnrollments: OperationsStore["listLiveEnrollments"];
   applyEnrollmentReadmission: OperationsStore["applyEnrollmentReadmission"];
   recordEnrollmentSuspension: OperationsStore["recordEnrollmentSuspension"];
 }

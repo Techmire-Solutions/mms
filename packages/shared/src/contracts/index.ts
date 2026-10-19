@@ -25,6 +25,9 @@ import {
 } from "./registration.contract.js";
 import { sessionSectionsContract } from "./sessionSections.contract.js";
 import { enrollmentOperationsContract } from "./enrollmentOperations.contract.js";
+import { sessionLifecycleOpsContract } from "./sessionLifecycleOps.contract.js";
+import { sessionRolloverContract } from "./sessionRollover.contract.js";
+import { sessionCompletionContract } from "./sessionCompletion.contract.js";
 import { questionBankContract } from "./questionBank.contract.js";
 import { accountingContract } from "./accounting.contract.js";
 import { hasanatContract } from "./hasanat.contract.js";
@@ -68,6 +71,9 @@ export const rootContract = c.router({
   registrationLinks: registrationLinksContract,
   admissions: admissionsContract,
   enrollmentOperations: enrollmentOperationsContract,
+  sessionLifecycleOps: sessionLifecycleOpsContract,
+  sessionRollover: sessionRolloverContract,
+  sessionCompletion: sessionCompletionContract,
   publicRegistration: publicRegistrationContract,
   sessionSections: sessionSectionsContract,
   questionBank: questionBankContract,
@@ -119,6 +125,9 @@ export {
   registrationLinksContract,
   admissionsContract,
   enrollmentOperationsContract,
+  sessionLifecycleOpsContract,
+  sessionRolloverContract,
+  sessionCompletionContract,
   publicRegistrationContract,
   sessionSectionsContract,
   questionBankContract,
@@ -160,6 +169,9 @@ export type DomainContracts = {
   registrationLinks: typeof registrationLinksContract;
   admissions: typeof admissionsContract;
   enrollmentOperations: typeof enrollmentOperationsContract;
+  sessionLifecycleOps: typeof sessionLifecycleOpsContract;
+  sessionRollover: typeof sessionRolloverContract;
+  sessionCompletion: typeof sessionCompletionContract;
   publicRegistration: typeof publicRegistrationContract;
   sessionSections: typeof sessionSectionsContract;
   questionBank: typeof questionBankContract;

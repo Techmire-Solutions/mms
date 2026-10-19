@@ -31,6 +31,9 @@ export const sessionClassSections = pgTable(
     capacity: integer("capacity").notNull().default(30),
     room: varchar("room", { length: 100 }),
     status: varchar("status", { length: 20 }).notNull().default("active"),
+    /** Set with status `closed` (migration 0176): merged away or closed on this date. */
+    closedOn: date("closed_on", { mode: "string" }),
+    closedReason: varchar("closed_reason", { length: 500 }),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

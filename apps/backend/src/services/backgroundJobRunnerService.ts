@@ -69,6 +69,7 @@ import {
   buildFacultyDesignationsCsvExport,
 } from "./facultyCatalogExportService.js";
 import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
+import { registerSessionRolloverJobRunner } from "../sessions/use-cases/sessionRolloverJob.js";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import type { FacultyImportJobPayload } from "@mms/shared";
 
@@ -135,6 +136,7 @@ export function registerDefaultBackgroundJobRunners(): void {
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;
   const facultyModuleId = FACULTY_MODULE_MANIFEST.moduleId;
   const sessionsModuleId = SESSIONS_MODULE_MANIFEST.moduleId;
+  registerSessionRolloverJobRunner();
 
   registerModuleCsvExportJobRunner({
     moduleId: contactsModuleId,

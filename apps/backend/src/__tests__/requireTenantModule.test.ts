@@ -147,6 +147,7 @@ describe("background job module gate", () => {
     expect(backgroundJobModuleAction("export")).toBe("export");
     expect(backgroundJobModuleAction("export-vcf")).toBe("export");
     expect(backgroundJobModuleAction("import")).toBe("write");
+    expect(backgroundJobModuleAction("promote")).toBe("write");
     expect(backgroundJobModuleAction("duplicate-scan")).toBe("read");
   });
 

@@ -20,6 +20,10 @@ export const ENROLLMENT_COLUMNS = {
   startOn: enrollments.startOn,
   endOn: enrollments.endOn,
   endReason: enrollments.endReason,
+  promotedFromEnrollmentId: enrollments.promotedFromEnrollmentId,
+  completionStatus: enrollments.completionStatus,
+  completedAt: enrollments.completedAt,
+  certificateIssuedAt: enrollments.certificateIssuedAt,
   baseFee: enrollments.baseFee,
   discountType: enrollments.discountType,
   discountLabel: enrollments.discountLabel,
@@ -58,7 +62,17 @@ export type EnrollmentHydrateRow = Pick<
   Partial<
     Pick<
       typeof enrollments.$inferSelect,
-      "sectionId" | "rollNo" | "startOn" | "endOn" | "endReason" | "restoredAt" | "restoredBy"
+      | "sectionId"
+      | "rollNo"
+      | "startOn"
+      | "endOn"
+      | "endReason"
+      | "promotedFromEnrollmentId"
+      | "completionStatus"
+      | "completedAt"
+      | "certificateIssuedAt"
+      | "restoredAt"
+      | "restoredBy"
     >
   > & { notes: string | null };
 
@@ -121,6 +135,13 @@ export function enrollmentRowToRecord(
     startOn: row.startOn ?? null,
     endOn: row.endOn ?? null,
     endReason: row.endReason ?? null,
+    promotedFromEnrollmentId: row.promotedFromEnrollmentId ?? null,
+    completionStatus:
+      row.completionStatus === "completed" || row.completionStatus === "not_completed"
+        ? row.completionStatus
+        : null,
+    completedAt: row.completedAt?.toISOString() ?? null,
+    certificateIssuedAt: row.certificateIssuedAt?.toISOString() ?? null,
     baseFee: Number(row.baseFee ?? 0),
     discountType: row.discountType,
     discountLabel: row.discountLabel,

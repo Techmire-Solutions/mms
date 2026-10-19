@@ -74,6 +74,8 @@ export function useSessionFormController({
       baseFee: Number(draft.baseFee || 0),
       currency: draft.currency || defaultCurrency,
       description: draft.description || "",
+      minAttendancePct: draft.minAttendancePct ? Number(draft.minAttendancePct) : null,
+      requiresExamPass: draft.requiresExamPass ?? false,
       faculty: draft.faculty || session?.faculty || [],
       classes: draft.classes || session?.classes || [],
     }),
@@ -94,6 +96,9 @@ export function useSessionFormController({
       }
       if (draft.baseFee && Number(draft.baseFee) < 0) {
         newErrors.baseFee = t("common.formPleaseFixErrors");
+      }
+      if (draft.minAttendancePct && Number(draft.minAttendancePct) > 100) {
+        newErrors.minAttendancePct = t("sessions.completion.minAttendanceInvalid");
       }
       return newErrors;
     },

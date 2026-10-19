@@ -1,6 +1,9 @@
 type CatalogStore = typeof import("../../db/repositories/academicCatalogRepository.js");
 type LinkStore = typeof import("../../db/repositories/registrationLinkRepository.js");
 type SessionQueries = typeof import("../../db/repositories/sessionRepositoryQueries.js");
+type WorkspaceStore = typeof import("../../db/repositories/workspaceRepository.js");
+type SectionOpsStore = typeof import("../../db/repositories/sectionOperationsRepository.js");
+type ActivityStore = typeof import("../../db/repositories/sessionActivityRepository.js");
 type ScopeStore = typeof import("../../db/repositories/teacherSectionScopeRepository.js");
 type StaffStore = typeof import("../../db/repositories/sectionStaffRepository.js");
 type StudentRoleStore = typeof import("../../db/repositories/sectionStudentRolesRepository.js");
@@ -18,7 +21,13 @@ export interface SessionsAcademicRepository {
   saveRegistrationLink: LinkStore["saveRegistrationLink"];
   softDeleteRegistrationLink: LinkStore["softDeleteRegistrationLink"];
   findSessionById: SessionQueries["findSessionById"];
+  findWorkspaceTimezone: WorkspaceStore["findWorkspaceTimezone"];
   findUntaughtClassDates: ScopeStore["findUntaughtClassDates"];
+  loadSectionRoster: SectionOpsStore["loadSectionRoster"];
+  listSessionActivity: ActivityStore["listSessionActivity"];
+  applySectionMerge: SectionOpsStore["applySectionMerge"];
+  applySectionSplit: SectionOpsStore["applySectionSplit"];
+  applySectionClose: SectionOpsStore["applySectionClose"];
   listSectionStaff: StaffStore["listSectionStaff"];
   assignSectionStaff: StaffStore["assignSectionStaff"];
   endSectionStaff: StaffStore["endSectionStaff"];

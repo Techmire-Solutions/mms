@@ -8,6 +8,7 @@ import {
 } from "@/tenant/features/sessions/components/SessionFormSections";
 import { SessionFormFooter } from "@/tenant/features/sessions/components/SessionFormFooter";
 import { SessionScheduleSection } from "@/tenant/features/sessions/components/SessionScheduleSection";
+import { SessionCompletionCriteriaSection } from "@/tenant/features/sessions/components/SessionCompletionCriteriaSection";
 import { useSessionFormController } from "@/tenant/features/sessions/hooks/useSessionFormController";
 
 export interface SessionFormProps {
@@ -101,6 +102,11 @@ export const SessionForm = function SessionForm({
           errors={errors}
           currencyOptions={currencyOptions}
           defaultCurrency={defaultCurrency}
+          onDraftChange={updateDraft}
+        />
+        <SessionCompletionCriteriaSection
+          sessionDraft={sessionDraft}
+          errors={errors}
           onDraftChange={updateDraft}
         />
       </form>
