@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   BulkSelectionClearAction,
   BulkSelectionDeleteAction,
@@ -104,9 +105,11 @@ export function BulkActionDock({
   children,
   trailing,
   className,
-  "aria-label": ariaLabel = "Bulk actions toolbar",
+  "aria-label": ariaLabel,
   enableEscapeKey = true,
 }: BulkActionDockProps): React.JSX.Element {
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (!enableEscapeKey || selectedCount === 0) return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -120,8 +123,8 @@ export function BulkActionDock({
   const resolvedCountLabel =
     countLabel ??
     (totalCount !== undefined
-      ? `${selectedCount} / ${totalCount} selected`
-      : `${selectedCount} selected`);
+      ? t("common.selectedOfTotal", { selected: selectedCount, total: totalCount })
+      : t("common.selectedCount", { count: selectedCount }));
 
   const resolvedTrailing =
     trailing ??
@@ -134,7 +137,7 @@ export function BulkActionDock({
       {selectedCount > 0 && (
         <motion.div
           role="region"
-          aria-label={ariaLabel}
+          aria-label={ariaLabel ?? t("common.bulkActionsToolbar")}
           initial={{ opacity: 0, y: enterY }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: enterY }}
@@ -160,9 +163,9 @@ export function BulkActionDock({
                 variant="ghost"
                 size="sm"
                 onClick={onSelectAllToggle}
-                className="text-xs h-7 px-2 min-h-7 text-primary hover:text-primary"
+                className="text-xs h-7 px-2 min-h-7 touch-target-coarse text-primary hover:text-primary"
               >
-                {isAllSelected ? "Deselect all" : "Select all"}
+                {isAllSelected ? t("common.deselectAll") : t("common.selectAll")}
               </Button>
             )}
             {placement === "floating" && (children || resolvedTrailing) && <DockSeparator />}

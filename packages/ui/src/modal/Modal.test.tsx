@@ -123,4 +123,25 @@ describe("Modal & ConfirmDialog components", () => {
     expect(handleConfirm).toHaveBeenCalledTimes(1);
     expect(handleOpenChange).toHaveBeenCalledWith(false);
   });
+
+  it("locks body scroll when open and restores on unmount", async () => {
+    expect(document.body.style.overflow).toBe("");
+    await act(async () => {
+      root.render(
+        <Modal open={true} onClose={vi.fn()} title="Scroll Lock Test">
+          <div>Content</div>
+        </Modal>,
+      );
+    });
+    expect(document.body.style.overflow).toBe("hidden");
+
+    await act(async () => {
+      root.render(
+        <Modal open={false} onClose={vi.fn()} title="Scroll Lock Test">
+          <div>Content</div>
+        </Modal>,
+      );
+    });
+    expect(document.body.style.overflow).toBe("");
+  });
 });

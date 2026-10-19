@@ -3,10 +3,14 @@ import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { WorkQueue, type WorkQueuePriority } from "./WorkQueue";
 import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { translateAppParams } from "@mms/shared";
 
 const mockContext = {
   language: "en",
-  t: ((key: string) => key) as TranslationFunction,
+  t: ((
+    key: Parameters<typeof translateAppParams>[0],
+    ...args: [Record<string, string | number>?]
+  ) => translateAppParams(key, "en", ...args)) as TranslationFunction,
   isLoading: false,
   dir: "ltr" as const,
   isRtl: false,

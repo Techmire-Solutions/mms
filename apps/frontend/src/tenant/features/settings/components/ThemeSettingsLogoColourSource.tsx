@@ -91,7 +91,7 @@ export function ThemeSettingsLogoColourSource({
                   variant="ghost"
                   size="sm"
                   onClick={onClearSampleLogo}
-                  className="h-8 min-h-8 px-2 text-2xs text-muted-foreground hover:text-destructive"
+                  className="h-8 min-h-8 touch-target-coarse px-2 text-2xs text-muted-foreground hover:text-destructive"
                 >
                   <X className="h-3.5 w-3.5 me-1" />
                   {t("theme.clearSampleLogo")}
@@ -111,7 +111,7 @@ export function ThemeSettingsLogoColourSource({
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
-                    className="h-8 min-h-8 px-2 text-2xs font-semibold text-muted-foreground hover:text-foreground"
+                    className="h-8 min-h-8 touch-target-coarse px-2 text-2xs font-semibold text-muted-foreground hover:text-foreground"
                     title={t("theme.testLogoButton")}
                   >
                     <Upload className="h-3 w-3 me-1" />
@@ -133,7 +133,7 @@ export function ThemeSettingsLogoColourSource({
                     .join(" · ")}
                 </span>
               </div>
-              <div className="h-3 w-full flex rounded-md overflow-hidden border border-border/60 bg-muted/40 shadow-inner">
+              <div className="h-11 w-full flex rounded-md overflow-hidden border border-border/60 bg-muted/40 shadow-inner">
                 {proportions.map((item, i) => (
                   <div
                     key={`prop-${item.hex}-${i}`}

@@ -37,7 +37,7 @@ export function ThemeSettingsPaletteSection({
               variant="outline"
               size="sm"
               onClick={onApplyBestPair}
-              className="h-7 min-h-7 px-2 text-2xs font-bold text-primary border-primary/30 bg-primary/10 hover:bg-primary/15 rounded-md"
+              className="h-7 min-h-7 touch-target-coarse px-2 text-2xs font-bold text-primary border-primary/30 bg-primary/10 hover:bg-primary/15 rounded-md"
             >
               <Sparkles className="h-3 w-3 me-1" />
               {t("theme.applyLogoPair")}
@@ -62,7 +62,7 @@ export function ThemeSettingsPaletteSection({
                 notify.success(t("theme.copiedHex", { hex }));
               }}
               title={t("theme.copiedHex", { hex })}
-              className="h-7 w-7 rounded-md border border-white/20 shadow-2xs shrink-0 cursor-pointer hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group relative"
+              className="h-7 w-7 touch-target-coarse rounded-md border border-white/20 shadow-2xs shrink-0 cursor-pointer hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group relative"
               style={{ backgroundColor: hex }}
               aria-label={hex}
             >
@@ -77,7 +77,7 @@ export function ThemeSettingsPaletteSection({
                 variant="ghost"
                 size="sm"
                 onClick={() => onPrimaryChange(hex)}
-                className="h-6 min-h-6 px-1.5 text-3xs font-bold text-primary hover:bg-primary/10 rounded-md"
+                className="h-6 min-h-6 touch-target-coarse px-1.5 text-3xs font-bold text-primary hover:bg-primary/10 rounded-md"
                 title={t("theme.setAsPrimary")}
               >
                 {t("theme.setAsPrimary")}
@@ -87,7 +87,7 @@ export function ThemeSettingsPaletteSection({
                 variant="ghost"
                 size="sm"
                 onClick={() => onSecondaryChange(hex)}
-                className="h-6 min-h-6 px-1.5 text-3xs font-bold text-muted-foreground hover:text-foreground rounded-md"
+                className="h-6 min-h-6 touch-target-coarse px-1.5 text-3xs font-bold text-muted-foreground hover:text-foreground rounded-md"
                 title={t("theme.setAsAccent")}
               >
                 {t("theme.setAsAccent")}

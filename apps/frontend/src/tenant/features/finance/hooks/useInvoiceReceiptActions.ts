@@ -128,7 +128,7 @@ export function useInvoiceReceiptActions(
     a.download = `zoho-invoice-${inv.id}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    notify.success("Zoho invoice payload exported");
+    notify.success(t("finance.zohoExported"));
   }, [invoices, t]);
 
   return {

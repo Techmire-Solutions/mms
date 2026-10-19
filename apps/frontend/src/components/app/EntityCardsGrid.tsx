@@ -2,6 +2,7 @@ import React, { useRef, useMemo, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useTranslation } from "@/hooks/useTranslation";
 import { EntityCardsSelectAllBar } from "@/components/app/EntityCardsSelectAllBar";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +29,7 @@ export interface EntityCardsGridProps<T = unknown> {
   cols?: 1 | 2 | 3 | 4;
   // Parameterized list rendering
   items?: readonly T[];
-  renderItem?: (item: T) => ReactNode;
+  renderItem?: (item: T, index: number) => ReactNode;
   selectedIds?: readonly (string | number)[];
   onSelectAll?: () => void;
   allSelected?: boolean;
@@ -54,13 +55,14 @@ export function EntityCardsGrid<T = unknown>({
   onSelectAll,
   allSelected = false,
   someSelected = false,
-  selectAllLabel = "Select All",
-  deselectAllLabel = "Deselect",
+  selectAllLabel,
+  deselectAllLabel,
   selectedCountLabel,
   pageCountLabel,
   checkboxIdPrefix = "entity-cards",
 }: EntityCardsGridProps<T>): React.JSX.Element {
   const reducedMotion = useReducedMotion();
+  const { t } = useTranslation();
   const parentRef = useRef<HTMLDivElement | null>(null);
 
   const isParameterized = items !== undefined && renderItem !== undefined;
@@ -104,10 +106,12 @@ export function EntityCardsGrid<T = unknown>({
           allSelected={allSelected}
           someSelected={someSelected}
           onSelectAll={onSelectAll}
-          selectLabel={selectAllLabel}
-          deselectLabel={deselectAllLabel}
+          selectLabel={selectAllLabel ?? t("common.selectAll")}
+          deselectLabel={deselectAllLabel ?? t("common.deselect")}
           selectedCount={selectedIds?.length ?? 0}
-          selectedCountLabel={selectedCountLabel || `${selectedIds?.length ?? 0} selected`}
+          selectedCountLabel={
+            selectedCountLabel ?? t("common.selectedCount", { count: selectedIds?.length ?? 0 })
+          }
           pageCountLabel={pageCountLabel}
         />
       ) : null}
@@ -138,7 +142,7 @@ export function EntityCardsGrid<T = unknown>({
                   className="pb-4"
                 >
                   <div className={cn("grid gap-4", COLS_MAP[cols], className)}>
-                    {pair.map((item) => renderItem(item))}
+                    {pair.map((item, i) => renderItem(item, virtualRow.index * 2 + i))}
                   </div>
                 </div>
               );
@@ -147,7 +151,7 @@ export function EntityCardsGrid<T = unknown>({
         </div>
       ) : (
         <div className={cn("grid gap-4", COLS_MAP[cols], className)}>
-          {items.map((item) => renderItem(item))}
+          {items.map((item, index) => renderItem(item, index))}
         </div>
       )}
     </>

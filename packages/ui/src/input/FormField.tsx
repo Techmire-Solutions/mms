@@ -247,7 +247,7 @@ export function Field({
             aria-label="AI suggestion"
             aria-expanded={aiOpen}
             onClick={() => setAiOpen((o) => !o)}
-            className="ms-auto inline-flex items-center justify-center w-5 h-5 rounded text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            className="relative ms-auto inline-flex items-center justify-center w-5 h-5 rounded text-primary/60 hover:text-primary hover:bg-primary/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer before:absolute before:-inset-3 before:content-['']"
           >
             <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
           </button>

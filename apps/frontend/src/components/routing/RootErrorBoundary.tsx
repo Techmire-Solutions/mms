@@ -20,7 +20,9 @@ export default function RootErrorBoundary({
             <p className="text-sm text-muted-foreground">
               {translateAppParams("errors.boundary.description", "en")}
             </p>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
+            <Button onClick={() => window.location.reload()}>
+              {translateAppParams("common.retry", "en")}
+            </Button>
           </div>
         </div>
       }
