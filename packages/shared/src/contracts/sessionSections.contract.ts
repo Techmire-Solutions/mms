@@ -7,6 +7,12 @@ import {
   sectionStaffAssignBodySchema,
   sectionStudentRoleBodySchema,
 } from "../sessions/sessionSectionTypes.js";
+import {
+  sectionCloseBodySchema,
+  sectionMergeBodySchema,
+  sectionOperationResultSchema,
+  sectionSplitBodySchema,
+} from "../sessions/sectionOperations.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
@@ -75,5 +81,29 @@ export const sessionSectionsContract = c.router({
     body: sectionAssignmentEndBodySchema,
     responses: { 200: z.object({ role: SectionStudentRoleSchema }), ...writeErrors },
     summary: "End a student role on a date",
+  },
+  merge: {
+    method: "POST",
+    path: "/api/sessions/sections/:sectionId/merge",
+    pathParams: sectionParams,
+    body: sectionMergeBodySchema,
+    responses: { 200: sectionOperationResultSchema, ...writeErrors },
+    summary: "Merge a section into another section of the same class from a date",
+  },
+  split: {
+    method: "POST",
+    path: "/api/sessions/sections/:sectionId/split",
+    pathParams: sectionParams,
+    body: sectionSplitBodySchema,
+    responses: { 200: sectionOperationResultSchema, ...writeErrors },
+    summary: "Move chosen students of a section into a new section from a date",
+  },
+  close: {
+    method: "POST",
+    path: "/api/sessions/sections/:sectionId/close",
+    pathParams: sectionParams,
+    body: sectionCloseBodySchema,
+    responses: { 200: sectionOperationResultSchema, ...writeErrors },
+    summary: "Close an empty section from a date",
   },
 });

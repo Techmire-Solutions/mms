@@ -8,6 +8,9 @@ import { sessionContractRouter } from "./sessions/sessionContractRouter.js";
 import { academicCatalogRouter } from "./sessions/academicCatalogRouter.js";
 import { registrationLinksRouter } from "./sessions/registrationLinksRouter.js";
 import { sessionSectionsRouter } from "./sessions/sessionSectionsRouter.js";
+import { sessionLifecycleOpsRouter } from "./sessions/sessionLifecycleOpsRouter.js";
+import { sessionRolloverRouter } from "./sessions/sessionRolloverRouter.js";
+import { sessionCompletionRouter } from "./sessions/sessionCompletionRouter.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
 
@@ -40,4 +43,7 @@ export default async function sessionsRoutes(
   await fastify.register(academicCatalogRouter);
   await fastify.register(registrationLinksRouter);
   await fastify.register(sessionSectionsRouter);
+  await fastify.register(sessionLifecycleOpsRouter);
+  await fastify.register(sessionRolloverRouter);
+  await fastify.register(sessionCompletionRouter);
 }

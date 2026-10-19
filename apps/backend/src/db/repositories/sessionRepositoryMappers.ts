@@ -241,6 +241,8 @@ export function sessionRowToRecord(
     baseFee: Number(rowNorm.baseFee) || 0,
     currency: rowNorm.currency || "PKR",
     description: rowNorm.description || undefined,
+    minAttendancePct: row.minAttendancePct ?? null,
+    requiresExamPass: row.requiresExamPass ?? false,
     faculty: mappedFaculty,
     classes: mappedClasses,
     ...mapAuditTimestamps(row),

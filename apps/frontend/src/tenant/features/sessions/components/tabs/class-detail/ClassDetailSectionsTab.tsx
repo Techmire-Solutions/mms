@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Users } from "lucide-react";
+import { Combine, Split, Users, XCircle } from "lucide-react";
 import type { FacultyMember, SessionClassSection } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { SectionStaffModal } from "../SectionStaffModal";
 import { useSessionStructureLock } from "../sessionStructureLock";
+import { useSectionOperations } from "@/tenant/features/sessions/hooks/useSectionOperations";
+import { SectionOperationModal, type SectionOperationKind } from "./SectionOperationModal";
 
 interface ClassDetailSectionsTabProps {
   classId: string;
@@ -44,6 +46,11 @@ export function ClassDetailSectionsTab({
   const terms = useAcademicTerms();
   const [staffSection, setStaffSection] = useState<SessionClassSection | null>(null);
   const { locked } = useSessionStructureLock();
+  const [operation, setOperation] = useState<{
+    kind: SectionOperationKind;
+    section: SessionClassSection;
+  } | null>(null);
+  const sectionOps = useSectionOperations();
 
   const update = (id: string, patch: Partial<SessionClassSection>) =>
     onChange(sections.map((section) => (section.id === id ? { ...section, ...patch } : section)));
@@ -144,6 +151,30 @@ export function ClassDetailSectionsTab({
                   {t("sessions.sections.enrolled")}:{" "}
                   <span className="tabular-nums text-foreground">{section.enrolled ?? 0}</span>
                 </span>
+                {saved && section.status !== "closed" ? (
+                  <span className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        ["merge", Combine, "sessions.sections.ops.merge"],
+                        ["split", Split, "sessions.sections.ops.splitAction"],
+                        ["close", XCircle, "sessions.sections.ops.close"],
+                      ] as const
+                    ).map(([kind, Icon, label]) => (
+                      <Button
+                        key={kind}
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="min-h-11"
+                        disabled={sectionOps.isPending}
+                        onClick={() => setOperation({ kind, section })}
+                      >
+                        <Icon className="size-4" aria-hidden />
+                        {t(label)}
+                      </Button>
+                    ))}
+                  </span>
+                ) : null}
                 <Button
                   type="button"
                   size="sm"
@@ -161,6 +192,50 @@ export function ClassDetailSectionsTab({
           );
         })}
       </FormCollectionShell>
+
+      {operation ? (
+        <SectionOperationModal
+          kind={operation.kind}
+          classId={classId}
+          section={operation.section}
+          siblings={sections.filter(
+            (row) =>
+              row.id !== operation.section.id &&
+              row.status !== "closed" &&
+              savedSectionIds.has(row.id),
+          )}
+          isPending={sectionOps.isPending}
+          onDismiss={() => setOperation(null)}
+          onMerge={async (body) => {
+            const done = await sectionOps.merge(operation.section.id, body);
+            if (done) update(operation.section.id, { status: "closed" });
+            return Boolean(done);
+          }}
+          onSplit={async (body) => {
+            const done = await sectionOps.split(operation.section.id, body);
+            // Keep the open draft in step so a later Save does not drop the new section.
+            if (done)
+              onChange([
+                ...sections,
+                {
+                  id: done.sectionId,
+                  classId,
+                  name: body.name,
+                  capacity: body.capacity,
+                  room: "",
+                  status: "active",
+                  enrolled: done.moved,
+                },
+              ]);
+            return Boolean(done);
+          }}
+          onCloseSection={async (body) => {
+            const done = await sectionOps.close(operation.section.id, body);
+            if (done) update(operation.section.id, { status: "closed" });
+            return Boolean(done);
+          }}
+        />
+      ) : null}
 
       {staffSection ? (
         <SectionStaffModal

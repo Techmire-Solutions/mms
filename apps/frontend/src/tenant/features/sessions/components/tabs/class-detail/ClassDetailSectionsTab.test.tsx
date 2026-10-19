@@ -20,6 +20,19 @@ vi.mock("@/hooks/useAcademicTerms", () => ({
 vi.mock("../SectionStaffModal", () => ({
   SectionStaffModal: () => <div data-testid="staff-modal" />,
 }));
+vi.mock("@/tenant/features/sessions/hooks/useSectionOperations", () => ({
+  useSectionOperations: () => ({
+    merge: vi.fn(),
+    split: vi.fn(),
+    close: vi.fn(),
+    isPending: false,
+  }),
+}));
+vi.mock("./SectionOperationModal", () => ({
+  SectionOperationModal: ({ kind }: { kind: string | null }) => (
+    <div data-testid="section-op-modal">{kind}</div>
+  ),
+}));
 
 const sections: SessionClassSection[] = [
   {

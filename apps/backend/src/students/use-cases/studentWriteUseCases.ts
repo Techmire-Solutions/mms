@@ -1,4 +1,4 @@
-import type { StudentRecord, User } from "@mms/shared";
+import { studentStatusEndsEnrollments, type StudentRecord, type User } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { activeDb, runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -15,6 +15,7 @@ import {
 import { recordRestoreEvents } from "./studentAuditEvents.js";
 import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
 import { loadStudentModulePreferences } from "./studentPreferencesService.js";
+import { withdrawEnrollmentsForStudentStatus } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 
 interface CreateStudentResult {
   record: StudentRecord;
@@ -155,11 +156,13 @@ export async function updateStudentById(
       ? (options as { userId?: string }).userId
       : undefined;
 
+  let previousStatus: string | undefined;
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) return null;
     const existing = await actualRepo.findById(tenant, id);
     if (!existing || existing.deletedAt) return null;
+    previousStatus = existing.status;
     const patched = mergeStudentPatch(existing, record);
     const normalized = prepareStudentRecord({
       ...patched,
@@ -176,5 +179,14 @@ export async function updateStudentById(
     return normalized;
   });
   if (saved) await broadcastCollection("students");
+  const tenant = getRequestTenant();
+  if (saved && tenant && studentStatusEndsEnrollments(previousStatus, saved.status)) {
+    await withdrawEnrollmentsForStudentStatus(
+      tenant,
+      id,
+      String(saved.status),
+      user ? { userId: String(user.id), label: user.name || user.email } : undefined,
+    );
+  }
   return saved;
 }

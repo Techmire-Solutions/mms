@@ -11,7 +11,15 @@ import {
   softDeleteRegistrationLink,
 } from "../../db/repositories/registrationLinkRepository.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
+import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
 import { findUntaughtClassDates } from "../../db/repositories/teacherSectionScopeRepository.js";
+import {
+  applySectionClose,
+  applySectionMerge,
+  applySectionSplit,
+  loadSectionRoster,
+} from "../../db/repositories/sectionOperationsRepository.js";
+import { listSessionActivity } from "../../db/repositories/sessionActivityRepository.js";
 import {
   assignSectionStaff,
   endSectionStaff,
@@ -33,7 +41,13 @@ export const sessionsAcademicRepository: SessionsAcademicRepository = {
   saveRegistrationLink,
   softDeleteRegistrationLink,
   findSessionById,
+  findWorkspaceTimezone,
   findUntaughtClassDates,
+  loadSectionRoster,
+  listSessionActivity,
+  applySectionMerge,
+  applySectionSplit,
+  applySectionClose,
   listSectionStaff,
   assignSectionStaff,
   endSectionStaff,

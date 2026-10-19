@@ -66,6 +66,8 @@ export const preparedSessionColumns = {
   baseFee: sessions.baseFee,
   currency: sessions.currency,
   description: sessions.description,
+  minAttendancePct: sessions.minAttendancePct,
+  requiresExamPass: sessions.requiresExamPass,
   deletedAt: sessions.deletedAt,
   deletedBy: sessions.deletedBy,
   deletionReason: sessions.deletionReason,

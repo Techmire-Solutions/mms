@@ -41,6 +41,12 @@ export const enrollments = pgTable(
     startOn: date("start_on", { mode: "string" }),
     endOn: date("end_on", { mode: "string" }),
     endReason: varchar("end_reason", { length: 500 }),
+    /** Rollover (migration 0177): the source-session enrollment this one continues. */
+    promotedFromEnrollmentId: text("promoted_from_enrollment_id"),
+    /** Short-course completion (migration 0178). */
+    completionStatus: varchar("completion_status", { length: 20 }),
+    completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" }),
+    certificateIssuedAt: timestamp("certificate_issued_at", { withTimezone: true, mode: "date" }),
     baseFee: numeric("base_fee", { precision: 12, scale: 2 }).notNull().default("0"),
     discountType: varchar("discount_type", { length: 32 }).notNull().default("none"),
     discountLabel: varchar("discount_label", { length: 120 }).notNull().default(""),

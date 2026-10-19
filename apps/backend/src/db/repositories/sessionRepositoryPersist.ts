@@ -39,6 +39,8 @@ export function sessionWriteValues(
     baseFee: String(record.baseFee ?? 0),
     currency: record.currency ?? "PKR",
     description: record.description ?? null,
+    minAttendancePct: record.minAttendancePct ?? null,
+    requiresExamPass: record.requiresExamPass ?? false,
     ...mapAuditToInsert(record),
   };
 }

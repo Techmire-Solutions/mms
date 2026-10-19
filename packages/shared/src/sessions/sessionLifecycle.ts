@@ -65,16 +65,23 @@ export type SessionEditViolation =
   | "classRemoved"
   | "sectionRemoved"
   | "eligibility"
-  | "capacityBelowEnrolled";
+  | "capacityBelowEnrolled"
+  | "pastTimetable";
 
 /**
  * Edit policy for a started session (same rules on client and server):
  * - completed / cancelled / archived: read-only;
  * - in progress: no change to start date, category or program; no removing classes or sections;
  *   no changing a class's age/gender eligibility; no capacity below current enrollment.
- * Adding classes/sections, extending the end date, raising capacity, timetable and staff edits stay allowed.
+ * - in progress, with `today`: no editing or removing a timetable dated before today (history of
+ *   who taught what), today and later stay editable.
+ * Adding classes/sections, extending the end date, raising capacity and staff edits stay allowed.
  */
-export function findSessionEditViolations(before: Session, after: Session): SessionEditViolation[] {
+export function findSessionEditViolations(
+  before: Session,
+  after: Session,
+  today?: string,
+): SessionEditViolation[] {
   if (isSessionReadOnly(before.status)) {
     return JSON.stringify(editableProjection(before)) === JSON.stringify(editableProjection(after))
       ? []
@@ -96,6 +103,8 @@ export function findSessionEditViolations(before: Session, after: Session): Sess
     }
     if (cls.gender !== next.gender || cls.minAge !== next.minAge || cls.maxAge !== next.maxAge)
       violations.add("eligibility");
+    if (today && pastTimetablesChanged(cls.timetables ?? [], next.timetables ?? [], today))
+      violations.add("pastTimetable");
     if (next.sections !== undefined) {
       const nextSections = new Map(next.sections.map((section) => [section.id, section]));
       for (const section of cls.sections ?? []) {
@@ -109,6 +118,38 @@ export function findSessionEditViolations(before: Session, after: Session): Sess
     }
   }
   return [...violations];
+}
+
+type Timetable = NonNullable<Session["classes"]>[number]["timetables"][number];
+
+const timetableKey = (timetable: Timetable) =>
+  JSON.stringify(
+    timetable.periods.map((period) => [
+      period.startTime,
+      period.endTime,
+      period.subject,
+      period.subjectId ?? "",
+      period.facultyId ?? "",
+      [...(period.assistantFacultyIds ?? [])].sort(),
+    ]),
+  );
+
+/** A timetable dated before `today` was removed or its periods changed. */
+function pastTimetablesChanged(
+  before: readonly Timetable[],
+  after: readonly Timetable[],
+  today: string,
+): boolean {
+  const next = new Map(after.map((timetable) => [timetable.id, timetable]));
+  return before.some((timetable) => {
+    if (!timetable.date || timetable.date.slice(0, 10) >= today) return false;
+    const updated = next.get(timetable.id);
+    return (
+      !updated ||
+      updated.date.slice(0, 10) !== timetable.date.slice(0, 10) ||
+      timetableKey(updated) !== timetableKey(timetable)
+    );
+  });
 }
 
 /** User-editable content only (derived counters, teacher names and timestamps excluded). */

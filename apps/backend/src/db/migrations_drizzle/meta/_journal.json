@@ -1233,6 +1233,27 @@
       "when": 1791104300000,
       "tag": "0175_enrollment_placements",
       "breakpoints": true
+    },
+    {
+      "idx": 176,
+      "version": "7",
+      "when": 1791104400000,
+      "tag": "0176_section_close",
+      "breakpoints": true
+    },
+    {
+      "idx": 177,
+      "version": "7",
+      "when": 1791104500000,
+      "tag": "0177_session_promotion",
+      "breakpoints": true
+    },
+    {
+      "idx": 178,
+      "version": "7",
+      "when": 1791104600000,
+      "tag": "0178_short_courses_workshops",
+      "breakpoints": true
     }
   ]
 }

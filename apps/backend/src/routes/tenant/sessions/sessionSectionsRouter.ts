@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { SESSIONS_MODULE_MANIFEST, sessionSectionsContract, type User } from "@mms/shared";
+import { sectionOperationsUseCases as sectionOps } from "../../../sessions/use-cases/sectionOperationsUseCases.js";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
@@ -134,6 +135,42 @@ export const sessionSectionsRouter: FastifyPluginAsync = async (fastify) => {
         };
       } catch (error) {
         return fail(request, error, "Failed to end student role");
+      }
+    },
+    merge: async ({ params, body, request }: ContractRouteArgs<Contract["merge"]>) => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: await sectionOps.merge(tenantOf(request), params.sectionId, body, user),
+        };
+      } catch (error) {
+        return fail(request, error, "Failed to merge the section");
+      }
+    },
+    split: async ({ params, body, request }: ContractRouteArgs<Contract["split"]>) => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: await sectionOps.split(tenantOf(request), params.sectionId, body, user),
+        };
+      } catch (error) {
+        return fail(request, error, "Failed to split the section");
+      }
+    },
+    close: async ({ params, body, request }: ContractRouteArgs<Contract["close"]>) => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: await sectionOps.close(tenantOf(request), params.sectionId, body, user),
+        };
+      } catch (error) {
+        return fail(request, error, "Failed to close the section");
       }
     },
   } as unknown as RouterImplementation<Contract>);

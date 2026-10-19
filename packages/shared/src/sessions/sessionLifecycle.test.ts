@@ -122,4 +122,57 @@ describe("findSessionEditViolations", () => {
     expect(derivedOnly).toEqual([]);
     expect(renamed).toEqual(["readOnly"]);
   });
+
+  it("given an in-progress session and today, should lock past timetables but not today or later", () => {
+    // Arrange
+    const period = { id: "p1", startTime: "08:00", endTime: "09:00", subject: "Quran" };
+    const timetables = [
+      { id: "tt-past", date: "2026-03-01", periods: [period] },
+      { id: "tt-today", date: "2026-03-10", periods: [period] },
+    ];
+    const base = session({ status: "in_progress" });
+    const before = SessionSchema.parse({
+      ...base,
+      classes: base.classes.map((cls) => ({ ...cls, timetables })),
+    });
+    const editTimetable = (id: string, subject: string): Session =>
+      SessionSchema.parse({
+        ...before,
+        classes: before.classes.map((cls) => ({
+          ...cls,
+          timetables: cls.timetables.map((timetable) =>
+            timetable.id === id
+              ? { ...timetable, periods: [{ ...period, subject, facultyId: "", facultyName: "" }] }
+              : timetable,
+          ),
+        })),
+      });
+
+    // Act
+    const pastEdit = findSessionEditViolations(
+      before,
+      editTimetable("tt-past", "Hadith"),
+      "2026-03-10",
+    );
+    const todayEdit = findSessionEditViolations(
+      before,
+      editTimetable("tt-today", "Hadith"),
+      "2026-03-10",
+    );
+    const pastRemoved = findSessionEditViolations(
+      before,
+      SessionSchema.parse({
+        ...before,
+        classes: before.classes.map((cls) => ({ ...cls, timetables: [] })),
+      }),
+      "2026-03-10",
+    );
+    const withoutToday = findSessionEditViolations(before, editTimetable("tt-past", "Hadith"));
+
+    // Assert
+    expect(pastEdit).toEqual(["pastTimetable"]);
+    expect(todayEdit).toEqual([]);
+    expect(pastRemoved).toEqual(["pastTimetable"]);
+    expect(withoutToday).toEqual([]);
+  });
 });

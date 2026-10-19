@@ -12,6 +12,7 @@ import {
   varchar,
   numeric,
   date,
+  smallint,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -42,6 +43,9 @@ export const sessions = pgTable(
     baseFee: numeric("base_fee", { precision: 12, scale: 2 }).notNull().default("0"),
     currency: varchar("currency", { length: 20 }).notNull().default("PKR"),
     description: text("description"),
+    /** Short-course completion criteria (migration 0178). */
+    minAttendancePct: smallint("min_attendance_pct"),
+    requiresExamPass: boolean("requires_exam_pass").notNull().default(false),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

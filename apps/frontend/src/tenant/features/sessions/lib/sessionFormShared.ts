@@ -3,8 +3,10 @@ import type { Session } from "@/lib/data/sessionsData";
 
 export const SESSION_CURRENCIES = DEFAULT_CURRENCIES.map((currency) => currency.code);
 
-export type SessionFormDraft = Omit<Partial<Session>, "baseFee"> & {
+export type SessionFormDraft = Omit<Partial<Session>, "baseFee" | "minAttendancePct"> & {
   baseFee: string;
+  /** Completion criterion as typed ("" = not required). */
+  minAttendancePct?: string;
 };
 
 export function buildEmptySessionDraft(defaultCurrency: string): SessionFormDraft {
@@ -38,6 +40,8 @@ export function buildSessionDraftFromRecord(
     baseFee: session?.baseFee == null ? "" : String(session.baseFee),
     currency: session?.currency ?? defaultCurrency,
     description: session?.description ?? "",
+    minAttendancePct: session?.minAttendancePct == null ? "" : String(session.minAttendancePct),
+    requiresExamPass: session?.requiresExamPass ?? false,
     faculty: session?.faculty ?? [],
     classes: session?.classes ?? [],
   };
@@ -56,5 +60,7 @@ export function sessionFormDraftSnapshot(draft: SessionFormDraft): string {
     baseFee: draft.baseFee ?? "",
     currency: draft.currency ?? "",
     description: draft.description ?? "",
+    minAttendancePct: draft.minAttendancePct ?? "",
+    requiresExamPass: draft.requiresExamPass ?? false,
   });
 }

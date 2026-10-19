@@ -8,8 +8,30 @@ export const ENROLLMENT_EVENT_TYPES = [
   "withdrawn",
   "readmitted",
   "suspended",
+  "cancelled",
+  "promoted",
+  "retained",
+  "graduated",
+  "left",
 ] as const;
 export type EnrollmentEventType = (typeof ENROLLMENT_EVENT_TYPES)[number];
+
+/** Student statuses that end the student's live enrollments (Phase 9e); `suspended` does not. */
+export const ENROLLMENT_ENDING_STUDENT_STATUSES = ["inactive", "transferred", "graduated"] as const;
+
+/** Whether a student status change from `before` to `after` should withdraw live enrollments. */
+export function studentStatusEndsEnrollments(
+  before: string | null | undefined,
+  after: string | null | undefined,
+): boolean {
+  const ending = (status: string | null | undefined) =>
+    (ENROLLMENT_ENDING_STUDENT_STATUSES as readonly string[]).includes(
+      String(status ?? "")
+        .trim()
+        .toLowerCase(),
+    );
+  return ending(after) && !ending(before);
+}
 
 const reasonSchema = z.string().trim().min(3, "Give a reason").max(500);
 

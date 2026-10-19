@@ -7,7 +7,12 @@ import {
   RotateCcw,
   type LucideIcon,
 } from "lucide-react";
-import { enrollmentHoldsSeat, formatDate, type Enrollment } from "@mms/shared";
+import {
+  enrollmentHoldsSeat,
+  formatDate,
+  type AppTranslationKey,
+  type Enrollment,
+} from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -16,7 +21,16 @@ import {
   useEnrollmentOperations,
   useEnrollmentPlacements,
 } from "@/tenant/features/enrollments/hooks/useEnrollmentOperations";
+import { NotifyGuardiansButton } from "@/tenant/components/messaging/NotifyGuardiansButton";
 import { EnrollmentOperationModal, type EnrollmentOperationKind } from "./EnrollmentOperationModal";
+
+const NOTICE_KEYS: Record<string, AppTranslationKey> = {
+  transferred: "enrollments.ops.notice.transferred",
+  withdrawn: "enrollments.ops.notice.withdrawn",
+  readmitted: "enrollments.ops.notice.readmitted",
+  suspended: "enrollments.ops.notice.suspended",
+  cancelled: "enrollments.ops.notice.cancelled",
+};
 
 export interface EnrollmentOperationsPanelProps {
   enrollment: Enrollment;
@@ -65,7 +79,12 @@ export function EnrollmentOperationsPanel({
     return [cls?.name ?? classId, section?.name].filter(Boolean).join(" · ");
   };
 
-  if (actions.length === 0 && placements.length < 2 && !enrollment.endOn) return null;
+  const lastEvent = [...(enrollment.timeline ?? [])]
+    .reverse()
+    .find((item) => item.eventType && NOTICE_KEYS[item.eventType]);
+  const noticeKey = lastEvent?.eventType ? NOTICE_KEYS[lastEvent.eventType] : undefined;
+
+  if (actions.length === 0 && placements.length < 2 && !enrollment.endOn && !noticeKey) return null;
 
   return (
     <DetailSectionCard title={t("enrollments.ops.title")} className="space-y-3 p-3">
@@ -100,8 +119,19 @@ export function EnrollmentOperationsPanel({
           </ol>
         </section>
       ) : null}
-      {actions.length > 0 ? (
+      {actions.length > 0 || (noticeKey && canWrite) ? (
         <div className="flex flex-wrap gap-2">
+          {noticeKey && canWrite ? (
+            <NotifyGuardiansButton
+              studentIds={[enrollment.studentId]}
+              label={t("enrollments.ops.notifyGuardian")}
+              message={t(noticeKey, {
+                student: enrollment.studentName,
+                date: formatDate(lastEvent?.effectiveOn ?? ""),
+                className: enrollment.className,
+              })}
+            />
+          ) : null}
           {actions.map(({ kind: action, label, icon: Icon, danger }) => (
             <Button
               key={action}

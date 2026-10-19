@@ -8,6 +8,11 @@ export const ENROLLMENT_STATUSES = [
   "cancelled",
   "completed",
   "withdrawn",
+  // Year-end rollover outcomes of the source enrollment (Phase 10).
+  "promoted",
+  "retained",
+  "graduated",
+  "left",
 ] as const;
 export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 
@@ -15,6 +20,10 @@ export type EnrollmentStatus = (typeof ENROLLMENT_STATUSES)[number];
 export const SEAT_RELEASED_ENROLLMENT_STATUSES = [
   "cancelled",
   "withdrawn",
+  "promoted",
+  "retained",
+  "graduated",
+  "left",
 ] as const satisfies readonly EnrollmentStatus[];
 
 /** Whether an enrollment with this status still holds a seat in its class. */
@@ -62,6 +71,12 @@ export const enrollmentRecordSchema = z
     startOn: z.string().nullable().optional(),
     endOn: z.string().nullable().optional(),
     endReason: z.string().nullable().optional(),
+    /** Rollover: the previous session's enrollment this one continues. */
+    promotedFromEnrollmentId: z.string().nullable().optional(),
+    /** Short-course completion (server-set). */
+    completionStatus: z.enum(["completed", "not_completed"]).nullable().optional(),
+    completedAt: z.string().nullable().optional(),
+    certificateIssuedAt: z.string().nullable().optional(),
     baseFee: z.number().default(0),
     discountType: z.string().optional().default("none"),
     discountLabel: z.string().optional().default(""),
