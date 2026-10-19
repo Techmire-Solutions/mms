@@ -45,7 +45,9 @@ export const sessionPromotionClassMap = pgTable(
     sourceClassId: text("source_class_id").notNull(),
     nextClassId: text("next_class_id"),
   },
-  (table) => [primaryKey({ columns: [table.workspaceSubdomain, table.runId, table.sourceClassId] })],
+  (table) => [
+    primaryKey({ columns: [table.workspaceSubdomain, table.runId, table.sourceClassId] }),
+  ],
 );
 
 export type SessionPromotionRunRow = typeof sessionPromotionRuns.$inferSelect;
