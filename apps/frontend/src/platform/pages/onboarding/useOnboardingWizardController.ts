@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  DEFAULT_BRANDING_SETTINGS,
-  DEFAULT_GLOBAL_SETTINGS,
-  isValidSubdomain,
-  validatePasswordPolicy,
-  isValidEmail,
-} from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, isValidSubdomain, isValidEmail } from "@mms/shared";
 import { ROUTES } from "@/lib/config/routes";
 import { applyBrandingTheme } from "@/lib/brandingTheme";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -75,22 +69,8 @@ export function useOnboardingWizardController() {
       return;
     }
 
-    if (data.password !== data.confirmPassword) {
-      setSubmitError(t("onboarding.errorPasswordMismatch"));
-      return;
-    }
-
     if (!data.currentPassword.trim()) {
       setSubmitError(t("platform.validationConfirmPlatformPassword"));
-      return;
-    }
-
-    const policyCheck = validatePasswordPolicy(
-      data.password,
-      DEFAULT_GLOBAL_SETTINGS.passwordPolicy,
-    );
-    if (!policyCheck.valid) {
-      setSubmitError(policyCheck.errorKey ? t(policyCheck.errorKey) : t("onboarding.submitFailed"));
       return;
     }
 
@@ -102,7 +82,7 @@ export function useOnboardingWizardController() {
         tagline: DEFAULT_BRANDING_SETTINGS.tagline,
         adminName: `${data.firstName} ${data.lastName}`.trim(),
         email: data.email,
-        password: data.password,
+        password: data.password?.trim() ? data.password : undefined,
         currentPassword: data.currentPassword,
         subdomain: data.subdomain,
         modules: data.modules,

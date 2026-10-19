@@ -106,10 +106,13 @@ export const authLoginRoutes: FastifyPluginAsync = async (fastify) => {
         }
 
         try {
+          const originHeader = request.headers.origin;
+          const origin = typeof originHeader === "string" ? originHeader : undefined;
           const result = await onboardUser({
             email: body.email,
             adminName: body.adminName,
             password: body.password,
+            origin,
             subdomain: body.subdomain,
             madrasaName: body.madrasaName,
             tagline: body.tagline,

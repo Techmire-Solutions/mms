@@ -116,8 +116,15 @@ test.describe.serial(
       await page.fill("#firstName", "Test");
       await page.fill("#lastName", "Admin");
       await page.fill("#email", adminEmail);
-      await page.fill("#password", adminPassword);
-      await page.fill("#confirmPassword", adminPassword);
+      if (
+        await page
+          .locator("#password")
+          .isVisible()
+          .catch(() => false)
+      ) {
+        await page.fill("#password", adminPassword);
+        await page.fill("#confirmPassword", adminPassword);
+      }
       await page.check("#terms");
 
       // Step 5 Complete + create

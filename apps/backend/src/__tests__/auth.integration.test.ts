@@ -798,6 +798,44 @@ describe("platform auth routes", () => {
     await app.close();
   });
 
+  it("POST /api/auth/onboard accepts payload without admin password and evaluates step-up password", async () => {
+    mockGetStoredPlatformUserById.mockResolvedValue({
+      id: "p-admin",
+      email: "operator@test.com",
+      name: "Platform Operator",
+      passwordHash: "hash",
+      role: "super_user",
+      permissions: { workspaces: true, onboard: true },
+      sessionVersion: 0,
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
+    mockVerifyPlatformUserPassword.mockResolvedValue(false);
+    const app = await buildApp();
+    const token = app.jwt.sign({
+      id: "p-admin",
+      email: "operator@test.com",
+      name: "Platform Operator",
+      role: "super_user",
+      tokenType: "platform_access",
+    });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/auth/onboard",
+      headers: { host: "localhost", origin: "http://localhost" },
+      cookies: { [PLATFORM_ACCESS_COOKIE]: token },
+      payload: {
+        madrasaName: "Test Madrasa",
+        adminName: "Admin",
+        email: "admin@test.com",
+        currentPassword: "wrong-operator-password",
+        subdomain: "testmadrasa",
+      },
+    });
+    expect(res.statusCode).toBe(401);
+    expect(res.json()).toMatchObject({ type: "invalid_current_password" });
+    await app.close();
+  });
+
   it("GET /api/platform/workspaces rejects platform admin without workspaces permission", async () => {
     mockGetStoredPlatformUserById.mockResolvedValue({
       id: "p-admin",

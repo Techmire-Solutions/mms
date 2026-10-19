@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   loadGlobalSettings: vi.fn(),
   sendTenantEmail: vi.fn(),
+  sendPlatformEmail: vi.fn(),
   sendTenantSms: vi.fn(),
   getContactById: vi.fn(),
 }));
@@ -13,6 +14,10 @@ vi.mock("../services/globalSettingsService.js", () => ({
 
 vi.mock("../services/email/emailService.js", () => ({
   sendTenantEmail: mocks.sendTenantEmail,
+}));
+
+vi.mock("../services/platform/platformEmailService.js", () => ({
+  sendPlatformEmail: mocks.sendPlatformEmail,
 }));
 
 vi.mock("../services/sms/smsService.js", () => ({
@@ -46,11 +51,13 @@ describe("tenantPasswordOtpDispatch", () => {
     vi.stubEnv("NODE_ENV", "test");
     mocks.loadGlobalSettings.mockReset();
     mocks.sendTenantEmail.mockReset();
+    mocks.sendPlatformEmail.mockReset();
     mocks.sendTenantSms.mockReset();
     mocks.getContactById.mockReset();
 
     mocks.getContactById.mockResolvedValue({ id: "c-100", phone: "+1234567890" });
     mocks.sendTenantEmail.mockResolvedValue({ sent: true });
+    mocks.sendPlatformEmail.mockResolvedValue({ sent: true });
     mocks.sendTenantSms.mockResolvedValue({ sent: true });
   });
 
@@ -121,6 +128,26 @@ describe("tenantPasswordOtpDispatch", () => {
         expect.anything(),
       );
     });
+
+    it("falls back to platform email if tenant email is not configured", async () => {
+      mocks.loadGlobalSettings.mockResolvedValue({
+        emailNotifications: true,
+        smsNotifications: false,
+      });
+      mocks.sendTenantEmail.mockResolvedValue({ sent: false, reason: "not_configured" });
+      mocks.sendPlatformEmail.mockResolvedValue({ sent: true });
+
+      await dispatchTenantPasswordOtp("teacher@mms.local", mockUser, "654321");
+
+      expect(mocks.sendTenantEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.sendPlatformEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.sendPlatformEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: "teacher@mms.local",
+          text: expect.stringContaining("654321"),
+        }),
+      );
+    });
   });
 
   describe("sendTenantWelcomeEmail", () => {
@@ -147,6 +174,59 @@ describe("tenantPasswordOtpDispatch", () => {
           body: expect.stringContaining("https://demo.mms.local/forgot-password?activate=1"),
         }),
         expect.anything(),
+      );
+    });
+
+    it("falls back to platform email if tenant email is not configured", async () => {
+      mocks.loadGlobalSettings.mockResolvedValue({
+        emailNotifications: true,
+        smsNotifications: false,
+      });
+      mocks.sendTenantEmail.mockResolvedValue({ sent: false, reason: "not_configured" });
+      mocks.sendPlatformEmail.mockResolvedValue({ sent: true });
+
+      const result = await sendTenantWelcomeEmail({
+        workspaceSubdomain: "demo",
+        email: "invited@mms.local",
+        name: "Invited User",
+        origin: "https://demo.mms.local",
+      });
+
+      expect(result.sent).toBe(true);
+      expect(mocks.sendTenantEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.sendPlatformEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.sendPlatformEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: "invited@mms.local",
+          text: expect.stringContaining("https://demo.mms.local/forgot-password?activate=1"),
+        }),
+      );
+    });
+
+    it("formats link on tenant subdomain when origin is apex localhost", async () => {
+      mocks.loadGlobalSettings.mockResolvedValue({
+        emailNotifications: true,
+        smsNotifications: false,
+      });
+
+      const result = await sendTenantWelcomeEmail({
+        workspaceSubdomain: "al-noor",
+        email: "admin@al-noor.local",
+        name: "Admin User",
+        origin: "http://localhost:5173",
+      });
+
+      expect(result.sent).toBe(true);
+      expect(mocks.sendTenantEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: "admin@al-noor.local",
+          text: expect.stringContaining(
+            "http://al-noor.localhost:5173/forgot-password?activate=1&email=admin%40al-noor.local",
+          ),
+          html: expect.stringContaining(
+            'href="http://al-noor.localhost:5173/forgot-password?activate=1&email=admin%40al-noor.local"',
+          ),
+        }),
       );
     });
   });

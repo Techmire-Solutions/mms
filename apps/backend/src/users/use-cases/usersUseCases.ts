@@ -7,7 +7,7 @@ import { getHydratedUsers, saveUsers } from "../../services/auth/userService.js"
 import { invalidateTenantRbac } from "../../services/rbacService.js";
 import { getRawUsers, type PersistedUser } from "../../services/auth/userServiceShared.js";
 import { deleteRefreshTokensForUser } from "../../services/auth/authArtifactService.js";
-import { sendTenantWelcomeEmail } from "../../services/auth/tenantPasswordOtpService.js";
+import { sendTenantWelcomeEmail } from "../../services/auth/tenantPasswordOtpDispatch.js";
 import { hashPassword } from "../../services/auth/passwordService.js";
 import { assertPasswordMeetsPolicy } from "../../services/globalSettingsService.js";
 import { loadContactsByIds } from "../../services/contactService.js";

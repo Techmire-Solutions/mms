@@ -19,12 +19,14 @@ export function useForgotPasswordState(emailFieldId: string) {
   const navigate = useNavigate();
   const settings = useGlobalSettings();
   const activePolicy = settings.passwordPolicy ?? DEFAULT_GLOBAL_SETTINGS.passwordPolicy;
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { requestPasswordOtp, verifyPasswordOtp, resetPasswordWithOtp } = useAuth();
 
   const [view, setView] = useState<ForgotPasswordView>("email");
-  const [flow, setFlow] = useState<ForgotPasswordFlow>("reset");
-  const [email, setEmail] = useState("");
+  const [flow, setFlow] = useState<ForgotPasswordFlow>(() =>
+    searchParams.get("activate") ? "activate" : "reset",
+  );
+  const [email, setEmail] = useState(() => searchParams.get("email")?.trim() || "");
   const [code, setCode] = useState(createEmptyOtp);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,10 +37,14 @@ export function useForgotPasswordState(emailFieldId: string) {
   const resendCountdown = useResendCountdown(view === "otp", 60, resendCycle);
 
   useEffect(() => {
-    if (!searchParams.get("activate")) return;
-    setFlow("activate");
-    setSearchParams({}, { replace: true });
-  }, [searchParams, setSearchParams]);
+    if (searchParams.get("activate")) {
+      setFlow("activate");
+    }
+    const emailParam = searchParams.get("email")?.trim();
+    if (emailParam) {
+      setEmail((prev) => prev || emailParam);
+    }
+  }, [searchParams]);
 
   const handleRequestCode = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();

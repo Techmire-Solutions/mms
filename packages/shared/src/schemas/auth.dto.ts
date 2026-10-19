@@ -14,7 +14,7 @@ const onboardBodyBaseSchema = z
     madrasaName: z.string().min(1),
     adminName: z.string().min(1),
     email: z.string().min(3),
-    password: z.string().min(6),
+    password: z.string().min(6).optional(),
     /** Platform operator password step-up (caller must hold platform session). */
     currentPassword: z.string().min(1),
     subdomain: z.string().min(2),
