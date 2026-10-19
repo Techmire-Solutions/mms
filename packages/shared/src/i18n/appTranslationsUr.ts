@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "./appTranslations.js";
+ import type { AppTranslationKey } from "./appTranslations.js";
 
 /** Urdu UI string pack (RTL). */
 export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
@@ -1222,6 +1222,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "auth.signOut": "سائن آؤٹ",
   "auth.tryDifferentEmail": "دوسری ای میل آزمائیں",
   "auth.twoFactorSubtitle": "اپنی ای میل پر بھیجا گیا 6 ہندسوں کا کوڈ درج کریں",
+  "auth.twoFactorSubtitleBoth": "اپنی ای میل اور SMS پر بھیجا گیا 6 ہندسوں کا کوڈ درج کریں",
   "auth.twoFactorSubtitleEmail": "اپنی ای میل پر بھیجا گیا 6 ہندسوں کا کوڈ درج کریں",
   "auth.twoFactorSubtitleNone": "تصدیقی کوڈ درج کریں (نہ ملے تو منتظم سے رابطہ کریں)",
   "auth.twoFactorSubtitleSms": "SMS پر بھیجا گیا 6 ہندسوں کا کوڈ درج کریں",

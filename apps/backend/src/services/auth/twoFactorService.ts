@@ -114,22 +114,27 @@ async function dispatchTwoFactorCode(
   const channel = resolveNotificationChannel(settings);
   const text = `Your MMS verification code is ${code}. It expires in 10 minutes.`;
 
-  if (channel === "email") {
-    await sendTenantEmail({ to: email, subject: "MMS verification code", text });
-    return;
+  let emailSent = false;
+  let smsSent = false;
+
+  if (channel === "both" || channel === "email") {
+    const emailResult = await sendTenantEmail({ to: email, subject: "MMS verification code", text });
+    emailSent = Boolean(emailResult.sent);
   }
 
-  if (channel === "sms") {
+  if (channel === "both" || channel === "sms") {
     // Users have no phone field of their own — resolve it via the linked contact
     // (Contacts Canonical: profile fields, including phone, live on the contact).
     const contact = contactId != null ? await getContactById(String(contactId)) : null;
     if (contact?.phone) {
       const result = await sendTenantSms({ to: contact.phone, body: text }, settings);
-      if (result.sent) return;
-      logger.warn(
-        { channel, reason: result.reason },
-        "2FA SMS dispatch failed, falling back to log",
-      );
+      smsSent = Boolean(result.sent);
+      if (!result.sent) {
+        logger.warn(
+          { channel, reason: result.reason },
+          "2FA SMS dispatch failed",
+        );
+      }
     } else {
       logger.warn({ channel }, "2FA SMS channel active but the admin has no phone number on file");
     }
@@ -138,10 +143,12 @@ async function dispatchTwoFactorCode(
   // Never log a live credential by default: the log stream is shipped, indexed
   // and retained. Local development can opt in with MMS_LOG_DEV_CREDENTIALS=true;
   // the code is also filtered out by lib/logRedaction.ts as a backstop.
-  if (isDevCredentialLoggingEnabled()) {
-    logger.info({ channel, code }, "2FA code generated (dev credential logging enabled)");
-  } else {
-    logger.info({ channel }, "2FA code generated");
+  if (!emailSent && !smsSent) {
+    if (isDevCredentialLoggingEnabled()) {
+      logger.info({ channel, code }, "2FA code generated (dev credential logging enabled)");
+    } else {
+      logger.info({ channel }, "2FA code generated");
+    }
   }
 }
 

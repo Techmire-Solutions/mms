@@ -53,6 +53,7 @@ export async function handlePlatformLogin(
       user: result.user,
       requires2FA: true,
       challengeId: result.challengeId,
+      channel: result.channel,
     };
     return reply.send(payload);
   }

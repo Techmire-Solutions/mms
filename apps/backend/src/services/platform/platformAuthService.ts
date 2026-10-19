@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import type { FastifyReply } from "fastify";
 import type { JWT } from "@fastify/jwt";
-import type { PlatformUser, PlatformUserProfile } from "@mms/shared";
+import type { NotificationChannel, PlatformUser, PlatformUserProfile } from "@mms/shared";
+import { resolvePlatformNotificationChannel } from "@mms/shared";
 import { verifyPassword, DUMMY_PASSWORD_HASH } from "../auth/passwordService.js";
 import { clearAuthCookies, setCsrfCookie } from "../auth/authCookieService.js";
 import {
@@ -16,6 +17,7 @@ import {
 } from "./platformTwoFactorService.js";
 import { platformSessionScope, resetSessionClock } from "../sessionClockService.js";
 import { platformSessionPolicy } from "../sessionPolicyService.js";
+import { getPlatformSettings } from "./platformSettingsService.js";
 
 const PLATFORM_ACCESS_TTL = "8h";
 
@@ -31,7 +33,13 @@ export type PlatformLoginFailure =
   "invalid_credentials" | "account_disabled" | "two_factor_unavailable";
 
 export type PlatformLoginResult =
-  | { ok: true; user: PlatformUserProfile; requires2FA?: boolean; challengeId?: string }
+  | {
+      ok: true;
+      user: PlatformUserProfile;
+      requires2FA?: boolean;
+      challengeId?: string;
+      channel?: NotificationChannel;
+    }
   | { ok: false; type: PlatformLoginFailure };
 
 export async function issuePlatformSession(
@@ -91,7 +99,14 @@ export async function loginPlatformUser(
     if (!challengeId) {
       return { ok: false, type: "two_factor_unavailable" };
     }
-    return { ok: true, user: toPlatformUserProfile(stored), requires2FA: true, challengeId };
+    const channel = resolvePlatformNotificationChannel(getPlatformSettings());
+    return {
+      ok: true,
+      user: toPlatformUserProfile(stored),
+      requires2FA: true,
+      challengeId,
+      channel,
+    };
   }
 
   await issuePlatformSession(toPublicPlatformUser(stored), jwtSigner, reply, stored.sessionVersion);

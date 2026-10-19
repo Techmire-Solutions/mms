@@ -1220,6 +1220,7 @@ export const APP_TRANSLATIONS_EN = {
   "auth.signOut": "Sign Out",
   "auth.tryDifferentEmail": "Try a different email",
   "auth.twoFactorSubtitle": "Enter the 6-digit code sent to your email",
+  "auth.twoFactorSubtitleBoth": "Enter the 6-digit code sent to your email and SMS",
   "auth.twoFactorSubtitleEmail": "Enter the 6-digit code sent to your email",
   "auth.twoFactorSubtitleNone":
     "Enter the verification code (check with your administrator if you did not receive one)",

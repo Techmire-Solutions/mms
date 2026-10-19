@@ -23,15 +23,19 @@ export function canSendSmsNotifications(settings: GlobalSettings): boolean {
   return settings.smsNotifications === true;
 }
 
-export type NotificationChannel = "email" | "sms" | "none";
+export const NOTIFICATION_CHANNELS = ["email", "sms", "both", "none"] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 
 /**
  * Primary outbound channel for verification codes and system alerts.
- * Email takes precedence when both master toggles are enabled.
+ * Returns "both" when both email and SMS master toggles are enabled.
  */
 export function resolveNotificationChannel(settings: GlobalSettings): NotificationChannel {
-  if (canSendEmailNotifications(settings)) return "email";
-  if (canSendSmsNotifications(settings)) return "sms";
+  const email = canSendEmailNotifications(settings);
+  const sms = canSendSmsNotifications(settings);
+  if (email && sms) return "both";
+  if (email) return "email";
+  if (sms) return "sms";
   return "none";
 }
 
@@ -42,3 +46,4 @@ export function maskEmail(email: string): string {
   const visible = local.charAt(0);
   return `${visible}***@${domain}`;
 }
+

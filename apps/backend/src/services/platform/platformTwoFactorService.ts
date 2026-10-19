@@ -41,27 +41,37 @@ async function dispatchPlatformTwoFactorCode(
   logLabel: string,
 ): Promise<PlatformOtpDispatchResult> {
   const channel = resolvePlatformNotificationChannel(getPlatformSettings());
+  let smsResult: { sent: boolean } = { sent: false };
+  let emailResult: PlatformOtpDispatchResult = { sent: false };
 
-  if (channel === "sms" && user.phone) {
-    const result = await sendPlatformSms({
+  if ((channel === "both" || channel === "sms") && user.phone) {
+    smsResult = await sendPlatformSms({
       to: user.phone,
       body: `Your MMS platform verification code is ${code}. It expires in ${ttlMinutes} minutes.`,
     });
-    if (result.sent) return { sent: true };
-    logger.warn(
-      { channel, reason: result.reason, label: logLabel },
-      "platform 2FA SMS dispatch failed, falling back to email",
-    );
+    if (!smsResult.sent) {
+      logger.warn(
+        { channel, reason: (smsResult as { reason?: string }).reason, label: logLabel },
+        "platform 2FA SMS dispatch failed",
+      );
+    }
   }
 
-  return dispatchPlatformOtp({
-    email: user.email,
-    code,
-    subject: "Your MMS platform verification code",
-    bodyLines: ["Use this verification code to finish signing in to the MMS platform:"],
-    ttlMinutes,
-    logLabel,
-  });
+  if (channel === "both" || channel === "email" || (channel === "sms" && !smsResult.sent) || channel === "none") {
+    emailResult = await dispatchPlatformOtp({
+      email: user.email,
+      code,
+      subject: "Your MMS platform verification code",
+      bodyLines: ["Use this verification code to finish signing in to the MMS platform:"],
+      ttlMinutes,
+      logLabel,
+    });
+  }
+
+  return {
+    sent: smsResult.sent || emailResult.sent,
+    devCode: emailResult.devCode,
+  };
 }
 
 /**

@@ -1,4 +1,4 @@
-export type { PublicUser, PersistedUser } from "./userServiceShared.js";
+export type { PublicUser, PersistedUser, StoredUser } from "./userServiceShared.js";
 export {
   getHydratedUsers,
   saveUsers,

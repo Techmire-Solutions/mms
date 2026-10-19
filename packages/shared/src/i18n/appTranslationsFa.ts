@@ -1222,6 +1222,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "auth.signOut": "خروج",
   "auth.tryDifferentEmail": "امتحان کردن یک ایمیل دیگر",
   "auth.twoFactorSubtitle": "کد ۶ رقمی ارسال شده به ایمیل خود را وارد کنید",
+  "auth.twoFactorSubtitleBoth": "کد ۶ رقمی ارسال شده به ایمیل و پیامک خود را وارد کنید",
   "auth.twoFactorSubtitleEmail": "کد ۶ رقمی ارسال شده به ایمیل خود را وارد کنید",
   "auth.twoFactorSubtitleNone":
     "کد تأیید ارسال شده را وارد کنید (اگر کدی دریافت نکرده‌اید، با مدیر سیستم تماس بگیرید)",

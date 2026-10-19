@@ -301,6 +301,7 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
           email,
           name: name || email,
           origin: origin ?? DEFAULT_INVITE_ORIGIN,
+          phone: phone || (input as { phone?: string }).phone,
         });
         inviteEmailSent = dispatch.sent;
         inviteEmailError = dispatch.error;

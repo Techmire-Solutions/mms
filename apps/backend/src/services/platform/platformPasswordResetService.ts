@@ -3,6 +3,7 @@ import {
   normalizePlatformEmail,
   PLATFORM_OTP_MAX_ATTEMPTS,
   PLATFORM_PASSWORD_RESET_TTL_MINUTES,
+  resolvePlatformNotificationChannel,
 } from "@mms/shared";
 import {
   createArtifactId,
@@ -16,8 +17,15 @@ import { hashPassword } from "../auth/passwordService.js";
 import { isPlatformSmtpConfigured, resolvePlatformAppOrigin } from "./platformEmailService.js";
 import { PlatformError } from "./platformErrorService.js";
 import { dispatchPlatformOtp } from "./platformOtpService.js";
-import { findPlatformUserByEmail, updatePlatformUserPassword } from "./platformUserService.js";
+import { sendPlatformSms } from "./platformSmsService.js";
+import { getPlatformSettings } from "./platformSettingsService.js";
+import {
+  findPlatformUserByEmail,
+  getStoredPlatformUserById,
+  updatePlatformUserPassword,
+} from "./platformUserService.js";
 import { buildDevForgotResult } from "./platformValidationService.js";
+import { logger } from "../../lib/logger.js";
 
 const RESET_TTL_MS = PLATFORM_PASSWORD_RESET_TTL_MINUTES * 60 * 1000;
 
@@ -34,39 +42,71 @@ function buildResetUrl(resetId: string): string {
 }
 
 async function dispatchResetCode(
-  email: string,
+  user: StoredPlatformUser,
   code: string,
   resetId: string,
 ): Promise<{ sent: boolean; devCode?: string }> {
-  return dispatchPlatformOtp({
-    email,
-    code,
-    subject: "Reset your MMS platform password",
-    bodyLines: [
-      "Use this verification code to reset your platform administrator password:",
-      "",
-      `Or open this link: ${buildResetUrl(resetId)}`,
-    ],
-    ttlMinutes: PLATFORM_PASSWORD_RESET_TTL_MINUTES,
-    logLabel: "Platform password reset code",
-  });
+  const channel = resolvePlatformNotificationChannel(getPlatformSettings());
+  let smsResult: { sent: boolean } = { sent: false };
+  let emailResult: { sent: boolean; devCode?: string } = { sent: false };
+
+  if ((channel === "both" || channel === "sms") && user.phone) {
+    smsResult = await sendPlatformSms({
+      to: user.phone,
+      body: `Your MMS platform password reset code is ${code}. It expires in ${PLATFORM_PASSWORD_RESET_TTL_MINUTES} minutes.`,
+    });
+    if (!smsResult.sent) {
+      logger.warn(
+        { channel, reason: (smsResult as { reason?: string }).reason },
+        "Platform password reset SMS dispatch failed",
+      );
+    }
+  }
+
+  if (
+    channel === "both" ||
+    channel === "email" ||
+    (channel === "sms" && !smsResult.sent) ||
+    channel === "none"
+  ) {
+    emailResult = await dispatchPlatformOtp({
+      email: user.email,
+      code,
+      subject: "Reset your MMS platform password",
+      bodyLines: [
+        "Use this verification code to reset your platform administrator password:",
+        "",
+        `Or open this link: ${buildResetUrl(resetId)}`,
+      ],
+      ttlMinutes: PLATFORM_PASSWORD_RESET_TTL_MINUTES,
+      logLabel: "Platform password reset code",
+    });
+  }
+
+  return {
+    sent: smsResult.sent || emailResult.sent,
+    devCode: emailResult.devCode,
+  };
 }
 
-function assertResetEmailDeliverable(dispatch: { sent: boolean; devCode?: string }): void {
+function assertResetDeliverable(dispatch: { sent: boolean; devCode?: string }): void {
   if (dispatch.sent) return;
   if (isDevCredentialLoggingEnabled() && dispatch.devCode) return;
   throw new PlatformError(
     "email_send_failed",
-    "Failed to send password reset email. Configure PLATFORM_RESEND_API_KEY or PLATFORM_SMTP_* and PLATFORM_EMAIL_FROM.",
+    "Failed to send password reset code. Configure notification providers in Platform Settings.",
   );
 }
 
 function assertPlatformSmtpReady(): void {
-  if (process.env.NODE_ENV === "production" && !isPlatformSmtpConfigured()) {
-    throw new PlatformError(
-      "smtp_required",
-      "Platform email is not configured. Set PLATFORM_RESEND_API_KEY or PLATFORM_SMTP_* and PLATFORM_EMAIL_FROM.",
-    );
+  const channel = resolvePlatformNotificationChannel(getPlatformSettings());
+  if (channel === "both" || channel === "email" || channel === "none") {
+    if (process.env.NODE_ENV === "production" && !isPlatformSmtpConfigured()) {
+      throw new PlatformError(
+        "smtp_required",
+        "Platform email is not configured. Set PLATFORM_RESEND_API_KEY or PLATFORM_SMTP_* and PLATFORM_EMAIL_FROM.",
+      );
+    }
   }
 }
 
@@ -98,8 +138,8 @@ export async function requestPlatformPasswordReset(
   );
 
   try {
-    const dispatch = await dispatchResetCode(email, code, resetId);
-    assertResetEmailDeliverable(dispatch);
+    const dispatch = await dispatchResetCode(user, code, resetId);
+    assertResetDeliverable(dispatch);
     return buildDevForgotResult(dispatch, resetId);
   } catch (error) {
     await deleteAuthArtifact(resetId);
@@ -120,6 +160,11 @@ export async function resendPlatformPasswordReset(
     throw new PlatformError("invalid_reset", "Password reset session expired or not found");
   }
 
+  const user = await getStoredPlatformUserById(entry.payload.userId);
+  if (!user || user.disabledAt) {
+    throw new PlatformError("invalid_reset", "Password reset session expired or not found");
+  }
+
   const code = generateOtpCode();
   const updated: PlatformPasswordResetPayload = {
     ...entry.payload,
@@ -130,8 +175,8 @@ export async function resendPlatformPasswordReset(
   await putAuthArtifact("platform_password_reset", updated, RESET_TTL_MS, resetId);
 
   try {
-    const dispatch = await dispatchResetCode(entry.payload.email, code, resetId);
-    assertResetEmailDeliverable(dispatch);
+    const dispatch = await dispatchResetCode(user, code, resetId);
+    assertResetDeliverable(dispatch);
     return buildDevForgotResult(dispatch, resetId);
   } catch (error) {
     await deleteAuthArtifact(resetId);

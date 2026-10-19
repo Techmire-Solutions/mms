@@ -136,6 +136,16 @@ export default function GlobalSettings(): React.JSX.Element {
                 <span className="text-muted-foreground">
                   {t("global.notificationsActiveChannel")}:
                 </span>
+                {notificationChannel === "both" && (
+                  <>
+                    <Badge as="span" tone="primary" size="sm">
+                      {t("global.notificationsChannelEmail")}
+                    </Badge>
+                    <Badge as="span" tone="primary" size="sm">
+                      {t("global.notificationsChannelSms")}
+                    </Badge>
+                  </>
+                )}
                 {notificationChannel === "email" && (
                   <Badge as="span" tone="primary" size="sm">
                     {t("global.notificationsChannelEmail")}

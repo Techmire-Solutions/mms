@@ -1207,6 +1207,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "auth.signOut": "تسجيل الخروج",
   "auth.tryDifferentEmail": "جرب بريداً آخر",
   "auth.twoFactorSubtitle": "أدخل الرمز المكوّن من ٦ أرقام المرسل إلى بريدك",
+  "auth.twoFactorSubtitleBoth": "أدخل الرمز المكوّن من ٦ أرقام المرسل إلى بريدك وعبر الرسائل القصيرة",
   "auth.twoFactorSubtitleEmail": "أدخل الرمز المكوّن من ٦ أرقام المرسل إلى بريدك",
   "auth.twoFactorSubtitleNone": "أدخل رمز التحقق (تواصل مع المسؤول إن لم يصلك رمز)",
   "auth.twoFactorSubtitleSms": "أدخل الرمز المكوّن من ٦ أرقام المرسل عبر الرسائل القصيرة",

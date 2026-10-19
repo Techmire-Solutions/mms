@@ -38,6 +38,8 @@ export default function TwoFactorAuth(): React.JSX.Element {
 
   const twoFactorSubtitleKey = (() => {
     switch (resolveNotificationChannel(settings)) {
+      case "both":
+        return "auth.twoFactorSubtitleBoth" as const;
       case "sms":
         return "auth.twoFactorSubtitleSms" as const;
       case "none":

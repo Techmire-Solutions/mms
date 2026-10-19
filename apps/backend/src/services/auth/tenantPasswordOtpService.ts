@@ -18,10 +18,14 @@ import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
 import { activateInvitedTenantUserRow } from "../../db/repositories/tenantUserRepository.js";
 import { findUserByLoginEmailAndWorkspace, getPublicUserById } from "./userService.js";
 import { establishSession, type AuthResult } from "./authService.js";
-import { sendTenantEmail } from "../email/emailService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { usersRepository } from "../../users/repository/usersRepositoryAdapter.js";
-import { logger } from "../../lib/logger.js";
+import {
+  dispatchTenantPasswordOtp,
+  sendTenantWelcomeEmail,
+} from "./tenantPasswordOtpDispatch.js";
+
+export { sendTenantWelcomeEmail };
 
 const OTP_TTL_MS = TENANT_PASSWORD_OTP_TTL_MINUTES * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60_000;
@@ -48,12 +52,6 @@ export class TenantPasswordOtpError extends Error {
   }
 }
 
-const WELCOME_EMAIL_FAILURE_MESSAGES: Record<string, string> = {
-  notifications_disabled:
-    "Email notifications are turned off in Settings → General → Notifications.",
-  not_configured: "No outgoing mail server is configured in Settings → General → Notifications.",
-};
-
 function otpLookupKey(workspaceSubdomain: string, email: string): string {
   return `tenant-otp:${workspaceSubdomain.trim().toLowerCase()}:${email.trim().toLowerCase()}`;
 }
@@ -70,43 +68,6 @@ async function recordPasswordSetActivity(tenant: string, userId: string): Promis
   };
   await usersRepository.bulkSaveActivityLogs(tenant, [log]);
   await broadcastCollection("user_activity_logs");
-}
-
-/**
- * Sends a plain, tokenless "welcome" link for a newly-created (invite-method) user.
- * The link carries no secret — it's a shortcut into the same OTP flow every user
- * already has (`?activate=1`). Never throws — reports `sent`.
- */
-export async function sendTenantWelcomeEmail(input: {
-  workspaceSubdomain: string;
-  email: string;
-  name: string;
-  origin: string;
-}): Promise<{ sent: boolean; error?: string }> {
-  const link = `${input.origin.replace(/\/$/, "")}/forgot-password?activate=1`;
-  const result = await sendTenantEmail({
-    to: input.email,
-    subject: `You're invited to join ${input.workspaceSubdomain} on MMS`,
-    text: `Hi ${input.name},\n\nYou've been added as a user. Activate your account and set your password:\n${link}`,
-    html: `<p>Hi ${input.name},</p><p>You've been added as a user. Activate your account and set your password:</p><p><a href="${link}">${link}</a></p>`,
-  });
-
-  if (!result.sent) {
-    const error =
-      result.message ||
-      (result.reason && WELCOME_EMAIL_FAILURE_MESSAGES[result.reason]) ||
-      "The welcome email could not be sent.";
-    logger.warn(
-      { email: input.email, reason: result.reason, error },
-      "Tenant welcome email failed to send",
-    );
-    if (process.env.NODE_ENV !== "production") {
-      logger.info({ email: input.email, link }, "Tenant welcome link (dev, email not sent)");
-    }
-    return { sent: false, error };
-  }
-
-  return { sent: true };
 }
 
 /**
@@ -153,16 +114,7 @@ export async function requestTenantPasswordReset(input: {
     { lookupKey },
   );
 
-  const dispatch = await sendTenantEmail({
-    to: email,
-    subject: "Your MMS verification code",
-    text: `Your verification code is ${code}. It expires in ${TENANT_PASSWORD_OTP_TTL_MINUTES} minutes.\n\nIf you didn't request this, you can ignore this email.`,
-    html: `<p>Your verification code is <strong>${code}</strong>.</p><p>It expires in ${TENANT_PASSWORD_OTP_TTL_MINUTES} minutes.</p><p>If you didn't request this, you can ignore this email.</p>`,
-  });
-
-  if (!dispatch.sent && process.env.NODE_ENV !== "production") {
-    logger.info({ email, code }, "Tenant password OTP (dev, email not sent)");
-  }
+  await dispatchTenantPasswordOtp(email, user, code);
 
   return { accepted: true };
 }

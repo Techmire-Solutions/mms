@@ -4,6 +4,10 @@ import { TENANT_AUTH_ERROR_TYPES, type User } from "../auth/tenantAuthTypes.js";
 import { workspaceUserRecordSchema } from "../auth/usersModuleManifest.js";
 import { platformUserProfileDtoSchema } from "./platform.dto.js";
 import type { PlatformUserProfile } from "../auth/platformTypes.js";
+import {
+  NOTIFICATION_CHANNELS,
+  type NotificationChannel,
+} from "../settings/globalSettingsNotificationUtils.js";
 
 const onboardBodyBaseSchema = z
   .object({
@@ -112,10 +116,12 @@ export const platformLoginResponseSchema = z.object({
   user: platformUserProfileDtoSchema,
   requires2FA: z.boolean().optional(),
   challengeId: z.string().optional(),
+  channel: z.enum(NOTIFICATION_CHANNELS).optional(),
 });
 
 export interface PlatformLoginResponse {
   user: PlatformUserProfile;
   requires2FA?: boolean;
   challengeId?: string;
+  channel?: NotificationChannel;
 }

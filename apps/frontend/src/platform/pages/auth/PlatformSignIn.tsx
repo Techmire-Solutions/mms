@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import type { NotificationChannel } from "@mms/shared";
 import PlatformAuthLayout from "@/platform/components/PlatformAuthLayout";
 import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
 import { useSignInCredentialsForm } from "@/components/entry/useSignInCredentialsForm";
@@ -22,6 +23,7 @@ export default function PlatformSignIn(): React.JSX.Element {
 
   const [step, setStep] = useState<SignInStep>("credentials");
   const [challengeId, setChallengeId] = useState("");
+  const [challengeChannel, setChallengeChannel] = useState<NotificationChannel | undefined>();
   const [code, setCode] = useState(createEmptyOtp);
   const [codeError, setCodeError] = useState<string | undefined>();
   const [resendCycle, setResendCycle] = useState(0);
@@ -56,6 +58,7 @@ export default function PlatformSignIn(): React.JSX.Element {
       const outcome: PlatformLoginOutcome = await platformLogin(email.trim(), password);
       if (outcome.requires2FA) {
         setChallengeId(outcome.challengeId);
+        setChallengeChannel(outcome.channel);
         setCode(createEmptyOtp());
         setCodeError(undefined);
         setError(null);
@@ -97,13 +100,24 @@ export default function PlatformSignIn(): React.JSX.Element {
   const backToCredentials = (): void => {
     setStep("credentials");
     setChallengeId("");
+    setChallengeChannel(undefined);
     setCode(createEmptyOtp());
     setCodeError(undefined);
     setError(null);
   };
 
-  const subtitle =
-    step === "twoFactor" ? t("platform.twoFactorSubtitle") : t("platform.signInSubtitle");
+  const subtitle = (() => {
+    if (step !== "twoFactor") return t("platform.signInSubtitle");
+    switch (challengeChannel) {
+      case "sms":
+        return t("auth.twoFactorSubtitleSms");
+      case "both":
+        return t("auth.twoFactorSubtitleBoth");
+      case "email":
+      default:
+        return t("platform.twoFactorSubtitle");
+    }
+  })();
 
   return (
     <>
