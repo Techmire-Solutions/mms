@@ -1,7 +1,4 @@
-import {
-  TENANT_PASSWORD_OTP_TTL_MINUTES,
-  resolveNotificationChannel,
-} from "@mms/shared";
+import { TENANT_PASSWORD_OTP_TTL_MINUTES, resolveNotificationChannel } from "@mms/shared";
 import { loadGlobalSettings } from "../globalSettingsService.js";
 import { sendTenantEmail } from "../email/emailService.js";
 import { sendTenantSms } from "../sms/smsService.js";
@@ -118,4 +115,3 @@ export async function dispatchTenantPasswordOtp(
     logger.info({ email, code }, "Tenant password OTP (dev, not sent)");
   }
 }
-

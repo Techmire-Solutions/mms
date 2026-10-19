@@ -57,7 +57,12 @@ async function dispatchPlatformTwoFactorCode(
     }
   }
 
-  if (channel === "both" || channel === "email" || (channel === "sms" && !smsResult.sent) || channel === "none") {
+  if (
+    channel === "both" ||
+    channel === "email" ||
+    (channel === "sms" && !smsResult.sent) ||
+    channel === "none"
+  ) {
     emailResult = await dispatchPlatformOtp({
       email: user.email,
       code,

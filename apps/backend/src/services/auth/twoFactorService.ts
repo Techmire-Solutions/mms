@@ -118,7 +118,11 @@ async function dispatchTwoFactorCode(
   let smsSent = false;
 
   if (channel === "both" || channel === "email") {
-    const emailResult = await sendTenantEmail({ to: email, subject: "MMS verification code", text });
+    const emailResult = await sendTenantEmail({
+      to: email,
+      subject: "MMS verification code",
+      text,
+    });
     emailSent = Boolean(emailResult.sent);
   }
 
@@ -130,10 +134,7 @@ async function dispatchTwoFactorCode(
       const result = await sendTenantSms({ to: contact.phone, body: text }, settings);
       smsSent = Boolean(result.sent);
       if (!result.sent) {
-        logger.warn(
-          { channel, reason: result.reason },
-          "2FA SMS dispatch failed",
-        );
+        logger.warn({ channel, reason: result.reason }, "2FA SMS dispatch failed");
       }
     } else {
       logger.warn({ channel }, "2FA SMS channel active but the admin has no phone number on file");

@@ -11,7 +11,15 @@ const mockPlatformResend2FA = vi.fn();
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
-  Link: ({ to, children, className }: { to: string; children: React.ReactNode; className?: string }) => (
+  Link: ({
+    to,
+    children,
+    className,
+  }: {
+    to: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
     <a href={to} className={className}>
       {children}
     </a>
@@ -141,4 +149,3 @@ describe("PlatformSignIn 2FA delivery channels", () => {
     expect(container.textContent).toContain("Enter the 6-digit code sent by SMS");
   });
 });
-

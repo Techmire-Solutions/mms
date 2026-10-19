@@ -20,10 +20,7 @@ import { findUserByLoginEmailAndWorkspace, getPublicUserById } from "./userServi
 import { establishSession, type AuthResult } from "./authService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { usersRepository } from "../../users/repository/usersRepositoryAdapter.js";
-import {
-  dispatchTenantPasswordOtp,
-  sendTenantWelcomeEmail,
-} from "./tenantPasswordOtpDispatch.js";
+import { dispatchTenantPasswordOtp, sendTenantWelcomeEmail } from "./tenantPasswordOtpDispatch.js";
 
 export { sendTenantWelcomeEmail };
 

@@ -5,10 +5,7 @@ import {
   usePlatformSettingsQuery,
   useUpdatePlatformSettings,
 } from "@/platform/hooks/usePlatformSettings";
-import {
-  DEFAULT_PLATFORM_SETTINGS,
-  resolvePlatformNotificationChannel,
-} from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS, resolvePlatformNotificationChannel } from "@mms/shared";
 import {
   Badge,
   Card,
@@ -44,13 +41,8 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
           <CardDescription className="text-xs">{t("platform.notificationsDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div
-            className="flex flex-wrap items-center gap-2 text-xs font-medium"
-            aria-live="polite"
-          >
-            <span className="text-muted-foreground">
-              {t("global.notificationsActiveChannel")}:
-            </span>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium" aria-live="polite">
+            <span className="text-muted-foreground">{t("global.notificationsActiveChannel")}:</span>
             {platformChannel === "both" && (
               <>
                 <Badge as="span" tone="primary" size="sm">
