@@ -1,8 +1,16 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import type { FastifyReply } from "fastify";
 import type { JWT } from "@fastify/jwt";
 import { requiresTwoFactor, type BrandingSocialLink } from "@mms/shared";
-import { validateCredentials, createUser, type PublicUser } from "./userService.js";
+import {
+  createUser,
+  findUserByLoginEmailAndWorkspace,
+  validateCredentials,
+  type PublicUser,
+} from "./userService.js";
+import { toPublicUser } from "./userServiceShared.js";
+import { sendTenantWelcomeEmail } from "./tenantPasswordOtpDispatch.js";
+import { resolvePlatformAppOrigin } from "../platform/platformEmailConfig.js";
 import {
   createWorkspace,
   assertWorkspaceActive,
@@ -39,7 +47,8 @@ export interface AuthResult {
 export interface OnboardInput {
   email: string;
   adminName: string;
-  password: string;
+  password?: string;
+  origin?: string;
   subdomain: string;
   madrasaName: string;
   tagline?: string;
@@ -226,17 +235,37 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
       showDetailedLunarAge: false,
     });
 
-    await assertPasswordMeetsPolicy(input.password);
-    await createUser(input.email, input.adminName, input.password, "admin", workspace.subdomain, {
+    const passwordCandidate = input.password?.trim();
+    let adminPassword: string;
+    if (passwordCandidate) {
+      const explicitPassword = input.password ?? passwordCandidate;
+      await assertPasswordMeetsPolicy(explicitPassword);
+      adminPassword = explicitPassword;
+    } else {
+      adminPassword = randomBytes(32).toString("hex");
+    }
+    await createUser(input.email, input.adminName, adminPassword, "admin", workspace.subdomain, {
       mustChangePassword: true,
     });
   });
 
-  const user = await runWithTenant(workspace.subdomain, async () =>
-    validateCredentials(input.email, input.password, workspace.subdomain),
-  );
+  const user = await runWithTenant(workspace.subdomain, async () => {
+    const admin = await findUserByLoginEmailAndWorkspace(input.email, workspace.subdomain);
+    return admin ? toPublicUser(admin) : null;
+  });
   if (!user) {
     throw new Error("Failed to create workspace administrator.");
+  }
+
+  if (!input.password?.trim()) {
+    const inviteOrigin = input.origin || resolvePlatformAppOrigin();
+    await sendTenantWelcomeEmail({
+      workspaceSubdomain: workspace.subdomain,
+      email: input.email,
+      name: input.adminName,
+      origin: inviteOrigin,
+      phone: input.adminPhone,
+    });
   }
 
   // Organization blueprints removed — industryType retained for module recommendations only.

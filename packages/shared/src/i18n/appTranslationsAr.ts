@@ -5365,6 +5365,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "onboarding.admin.lastName": "الاسم الأخير",
   "onboarding.admin.lastNamePlaceholder": "خان",
   "onboarding.admin.password": "كلمة المرور",
+  "onboarding.admin.passwordEmailNotice": "سيتم إرسال رابط التنشيط عبر البريد الإلكتروني إلى هذا العنوان ليقوم المسؤول بتعيين كلمة المرور وتسجيل الدخول.",
   "onboarding.admin.passwordFair": "كلمة مرور مقبولة",
   "onboarding.admin.passwordGood": "كلمة مرور جيدة",
   "onboarding.admin.passwordMismatch": "كلمات المرور غير متطابقة",

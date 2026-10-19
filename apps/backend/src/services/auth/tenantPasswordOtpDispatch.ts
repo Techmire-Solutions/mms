@@ -1,6 +1,12 @@
-import { TENANT_PASSWORD_OTP_TTL_MINUTES, resolveNotificationChannel } from "@mms/shared";
+import {
+  TENANT_PASSWORD_OTP_TTL_MINUTES,
+  buildTenantUrl,
+  resolveAppDomainForRequest,
+  resolveNotificationChannel,
+} from "@mms/shared";
 import { loadGlobalSettings } from "../globalSettingsService.js";
 import { sendTenantEmail } from "../email/emailService.js";
+import { sendPlatformEmail } from "../platform/platformEmailService.js";
 import { sendTenantSms } from "../sms/smsService.js";
 import { getContactById } from "../contactService.js";
 import type { StoredUser } from "./userService.js";
@@ -11,6 +17,34 @@ const WELCOME_EMAIL_FAILURE_MESSAGES: Record<string, string> = {
     "Email notifications are turned off in Settings → General → Notifications.",
   not_configured: "No outgoing mail server is configured in Settings → General → Notifications.",
 };
+
+function buildTenantActivationLink(subdomain: string, origin: string, email?: string): string {
+  const path = email
+    ? `/forgot-password?activate=1&email=${encodeURIComponent(email)}`
+    : "/forgot-password?activate=1";
+  try {
+    const raw =
+      origin.startsWith("http://") || origin.startsWith("https://") ? origin : `http://${origin}`;
+    const parsed = new URL(raw);
+    const isLocalhost =
+      parsed.hostname === "localhost" ||
+      parsed.hostname.endsWith(".localhost") ||
+      parsed.hostname === "127.0.0.1" ||
+      /^127\.\d+\.\d+\.\d+$/.test(parsed.hostname);
+
+    const appDomain = isLocalhost
+      ? "localhost"
+      : resolveAppDomainForRequest(parsed.hostname, process.env.MMS_APP_DOMAIN);
+
+    return buildTenantUrl(subdomain, path, {
+      appDomain,
+      protocol: parsed.protocol,
+      port: parsed.port || null,
+    });
+  } catch {
+    return `${origin.replace(/\/$/, "")}${path}`;
+  }
+}
 
 /**
  * Sends a plain, tokenless "welcome" link for a newly-created (invite-method) user.
@@ -24,7 +58,7 @@ export async function sendTenantWelcomeEmail(input: {
   origin: string;
   phone?: string;
 }): Promise<{ sent: boolean; error?: string }> {
-  const link = `${input.origin.replace(/\/$/, "")}/forgot-password?activate=1`;
+  const link = buildTenantActivationLink(input.workspaceSubdomain, input.origin, input.email);
   const settings = await loadGlobalSettings();
   const channel = resolveNotificationChannel(settings);
   const text = `Hi ${input.name},\n\nYou've been added as a user on MMS. Activate your account and set your password:\n${link}`;
@@ -34,12 +68,28 @@ export async function sendTenantWelcomeEmail(input: {
   let error: string | undefined;
 
   if (channel === "both" || channel === "email" || channel === "none") {
-    const result = await sendTenantEmail({
+    let result = await sendTenantEmail({
       to: input.email,
       subject: `You're invited to join ${input.workspaceSubdomain} on MMS`,
       text,
       html: `<p>Hi ${input.name},</p><p>You've been added as a user. Activate your account and set your password:</p><p><a href="${link}">${link}</a></p>`,
     });
+
+    if (
+      !result.sent &&
+      (result.reason === "not_configured" || result.reason === "notifications_disabled")
+    ) {
+      const platformResult = await sendPlatformEmail({
+        to: input.email,
+        subject: `You're invited to join ${input.workspaceSubdomain} on MMS`,
+        text,
+        html: `<p>Hi ${input.name},</p><p>You've been added as a user. Activate your account and set your password:</p><p><a href="${link}">${link}</a></p>`,
+      });
+      if (platformResult.sent) {
+        result = { sent: true };
+      }
+    }
+
     emailSent = Boolean(result.sent);
     if (!result.sent) {
       error =
@@ -89,12 +139,25 @@ export async function dispatchTenantPasswordOtp(
   let smsSent = false;
 
   if (channel === "both" || channel === "email" || channel === "none") {
-    const res = await sendTenantEmail({
+    let res = await sendTenantEmail({
       to: email,
       subject: "Your MMS verification code",
       text,
       html: `<p>Your verification code is <strong>${code}</strong>.</p><p>It expires in ${TENANT_PASSWORD_OTP_TTL_MINUTES} minutes.</p><p>If you didn't request this, you can ignore this email.</p>`,
     });
+
+    if (!res.sent && (res.reason === "not_configured" || res.reason === "notifications_disabled")) {
+      const platformResult = await sendPlatformEmail({
+        to: email,
+        subject: "Your MMS verification code",
+        text,
+        html: `<p>Your verification code is <strong>${code}</strong>.</p><p>It expires in ${TENANT_PASSWORD_OTP_TTL_MINUTES} minutes.</p><p>If you didn't request this, you can ignore this email.</p>`,
+      });
+      if (platformResult.sent) {
+        res = { sent: true };
+      }
+    }
+
     emailSent = Boolean(res.sent);
   }
 

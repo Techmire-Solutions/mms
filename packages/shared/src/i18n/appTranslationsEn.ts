@@ -5509,6 +5509,7 @@ export const APP_TRANSLATIONS_EN = {
   "onboarding.admin.lastName": "Last name",
   "onboarding.admin.lastNamePlaceholder": "Khan",
   "onboarding.admin.password": "Password",
+  "onboarding.admin.passwordEmailNotice": "An activation link will be emailed to this address for the administrator to set their password and sign in.",
   "onboarding.admin.passwordFair": "Fair password",
   "onboarding.admin.passwordGood": "Good password",
   "onboarding.admin.passwordMismatch": "Passwords do not match",

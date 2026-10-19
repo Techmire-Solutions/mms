@@ -5466,6 +5466,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "onboarding.admin.lastName": "نام خانوادگی",
   "onboarding.admin.lastNamePlaceholder": "خان",
   "onboarding.admin.password": "رمز عبور",
+  "onboarding.admin.passwordEmailNotice": "یک پیوند فعال‌سازی به این نشانی ایمیل ارسال می‌شود تا مدیر گذرواژه خود را تنظیم کرده و وارد سیستم شود.",
   "onboarding.admin.passwordFair": "رمز عبور متوسط",
   "onboarding.admin.passwordGood": "رمز عبور خوب",
   "onboarding.admin.passwordMismatch": "رمزهای عبور مطابقت ندارند",

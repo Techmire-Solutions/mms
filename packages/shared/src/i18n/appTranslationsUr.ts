@@ -5438,6 +5438,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "onboarding.admin.lastName": "آخری نام",
   "onboarding.admin.lastNamePlaceholder": "خان",
   "onboarding.admin.password": "پاس ورڈ",
+  "onboarding.admin.passwordEmailNotice": "ایڈمنسٹریٹر کو اپنا پاس ورڈ سیٹ کرنے اور سائن ان کرنے کے لیے اس پتے پر ایک ایکٹیویشن لنک ای میل کیا جائے گا۔",
   "onboarding.admin.passwordFair": "مناسب پاس ورڈ",
   "onboarding.admin.passwordGood": "اچھا پاس ورڈ",
   "onboarding.admin.passwordMismatch": "پاس ورڈز مطابقت نہیں رکھتے",

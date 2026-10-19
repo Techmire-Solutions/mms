@@ -29,7 +29,7 @@ export interface OnboardPayload {
   tagline: string;
   adminName: string;
   email: string;
-  password: string;
+  password?: string;
   /** Platform operator password step-up. */
   currentPassword: string;
   subdomain: string;

@@ -136,6 +136,32 @@ function ensureE2ePlatformAdmin(): void {
   console.log(output.trim());
 }
 
+function setTenantAdminPassword(tenantSubdomain: string, email: string, password: string): void {
+  const script = [
+    'const { Pool } = require("pg");',
+    'const { scrypt, randomBytes } = require("node:crypto");',
+    'const { promisify } = require("node:util");',
+    "const scryptAsync = promisify(scrypt);",
+    "(async () => {",
+    "  const pool = new Pool({ connectionString: process.env.DATABASE_URL });",
+    '  const salt = randomBytes(16).toString("hex");',
+    "  const key = await scryptAsync(process.env.ADMIN_PASSWORD, salt, 64);",
+    '  const passwordHash = `${salt}:${key.toString("hex")}`;',
+    "  await pool.query(",
+    '    "UPDATE tenant_users SET password_hash = $1, must_change_password = true, updated_at = now() WHERE workspace_subdomain = $2 AND login_email = $3",',
+    "    [passwordHash, process.env.TENANT_SUBDOMAIN, process.env.ADMIN_EMAIL],",
+    "  );",
+    "  await pool.end();",
+    "})().catch((error) => { console.error(error); process.exit(1); });",
+  ].join("\n");
+
+  runGuardedNodeScript(script, {
+    TENANT_SUBDOMAIN: tenantSubdomain.toLowerCase(),
+    ADMIN_EMAIL: email.toLowerCase(),
+    ADMIN_PASSWORD: password,
+  });
+}
+
 /**
  * Safety net for the local DB: re-enables the e2e workspace (targeted by its
  * ephemeral subdomain) and removes the e2e platform admin (exact email only).
@@ -277,8 +303,15 @@ test.describe("Platform Console Critical Workspace Lifecycle", () => {
       await page.locator("#firstName").fill("Platform");
       await page.locator("#lastName").fill("E2E");
       await page.locator("#email").fill(tenantOwnerEmail);
-      await page.locator("#password").fill(tenantOwnerTempPassword);
-      await page.locator("#confirmPassword").fill(tenantOwnerTempPassword);
+      if (
+        await page
+          .locator("#password")
+          .isVisible()
+          .catch(() => false)
+      ) {
+        await page.locator("#password").fill(tenantOwnerTempPassword);
+        await page.locator("#confirmPassword").fill(tenantOwnerTempPassword);
+      }
       await page.locator("#terms").check();
 
       // Step 5 Review + create
@@ -291,6 +324,7 @@ test.describe("Platform Console Critical Workspace Lifecycle", () => {
       await page.getByRole("button", { name: "Create workspace" }).click();
       await page.waitForURL((url) => !url.pathname.includes("/onboarding"), { timeout: 45_000 });
       await expect(platformLanding.first()).toBeVisible({ timeout: 30_000 });
+      setTenantAdminPassword(subdomain, tenantOwnerEmail, tenantOwnerTempPassword);
     });
 
     // ------------------------------------------------------------------

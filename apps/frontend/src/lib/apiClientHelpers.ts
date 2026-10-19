@@ -49,6 +49,9 @@ const TENANT_SESSION_EXCLUDED_PATHS: Set<string> = new Set([
   AUTH_PATHS.twoFactorVerify,
   AUTH_PATHS.twoFactorResend,
   AUTH_PATHS.onboardingStatus,
+  AUTH_PATHS.forgotPassword,
+  AUTH_PATHS.forgotPasswordVerify,
+  AUTH_PATHS.forgotPasswordReset,
 ]);
 
 export function resolveApiUrl(path: string): string {

@@ -13,8 +13,8 @@ export interface OnboardingData {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
-  confirmPassword: string;
+  password?: string;
+  confirmPassword?: string;
   /** Platform operator password for step-up on create. */
   currentPassword: string;
   agreedTerms: boolean;

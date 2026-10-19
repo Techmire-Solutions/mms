@@ -6,7 +6,7 @@ import { isCurrentHostApex } from "@/lib/config/tenantConfig";
 import { getWorkspaceLocalStoragePrefix } from "@/lib/dbStorageCore";
 import { queryClientInstance } from "@/lib/queryClient";
 import { appNavigate } from "@/lib/routing/appNavigate";
-import { ROUTES } from "@/lib/config/routes";
+import { isEntryPath, ROUTES } from "@/lib/config/routes";
 import { clear2FAState } from "@/lib/twoFactor";
 import type { AuthError } from "@/lib/authErrors";
 import {
@@ -104,7 +104,11 @@ export function useAuthSessionSync({
       setUser(null);
       setIsAuthenticated(false);
       setAuthChecked(true);
-      appNavigate(ROUTES.login, { replace: true });
+      const isEntry =
+        typeof window !== "undefined" && isEntryPath(window.location.pathname, { isApex: false });
+      if (!isEntry) {
+        appNavigate(ROUTES.login, { replace: true });
+      }
     };
 
     window.addEventListener("storage", handleStorage);
