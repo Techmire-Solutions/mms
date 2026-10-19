@@ -1,40 +1,22 @@
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Enrollment, type EnrollmentTimelineItem } from "@mms/shared";
+import { dedupeTrimmedIds, type Enrollment } from "@mms/shared";
 import { enrollments, enrollmentTimelineEvents } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { withTenant } from "../tenant-context.js";
 import { recordToInsert } from "./enrollmentRecordToInsert.js";
 import { resolveEnrollmentSectionsTx } from "./enrollmentSectionResolve.js";
 
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
-async function writeTimelineEvents(
-  tx: TenantTransaction,
-  subdomain: string,
-  enrollmentId: string,
-  timeline: EnrollmentTimelineItem[] | undefined,
-): Promise<void> {
-  if (!timeline || timeline.length === 0) return;
-  await tx
-    .delete(enrollmentTimelineEvents)
-    .where(
-      and(
-        eq(enrollmentTimelineEvents.workspaceSubdomain, subdomain),
-        eq(enrollmentTimelineEvents.enrollmentId, enrollmentId),
-      ),
-    );
+import { appendClientTimelineTx, syncPlacementsTx } from "./enrollmentHistoryWrite.js";
+import { findWorkspaceTimezone } from "./workspaceRepository.js";
+import { todayInTimeZone } from "../../lib/dbDate.js";
 
-  await tx.insert(enrollmentTimelineEvents).values(
-    timeline.map((item) => ({
-      workspaceSubdomain: subdomain,
-      enrollmentId,
-      event: item.event,
-      by: item.by,
-      ts: item.ts,
-    })),
-  );
+async function workspaceToday(subdomain: string): Promise<string> {
+  return todayInTimeZone(await findWorkspaceTimezone(subdomain));
 }
 
 export async function saveEnrollment(tenant: string, record: Enrollment): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
+  const today = await workspaceToday(subdomain);
   await withTenant(subdomain, async (tx) => {
     const [placed] = await resolveEnrollmentSectionsTx(tx, subdomain, [record]);
     const values = recordToInsert(subdomain, placed);
@@ -53,6 +35,7 @@ export async function saveEnrollment(tenant: string, record: Enrollment): Promis
           sectionId: values.sectionId,
           rollNo: values.rollNo,
           enrolledDate: values.enrolledDate,
+          startOn: values.startOn,
           baseFee: values.baseFee,
           discountType: values.discountType,
           discountLabel: values.discountLabel,
@@ -73,7 +56,8 @@ export async function saveEnrollment(tenant: string, record: Enrollment): Promis
         },
       });
 
-    await writeTimelineEvents(tx, subdomain, record.id, record.timeline);
+    await appendClientTimelineTx(tx, subdomain, [record]);
+    await syncPlacementsTx(tx, subdomain, [placed], today);
     await syncEnrolledSessionsTx(tx, subdomain, { studentIds: [String(placed.studentId)] });
   });
 }
@@ -81,15 +65,12 @@ export async function saveEnrollment(tenant: string, record: Enrollment): Promis
 export async function bulkSaveEnrollments(tenant: string, records: Enrollment[]): Promise<void> {
   if (records.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
+  const today = await workspaceToday(subdomain);
   await withTenant(subdomain, async (tx) => {
-    const recordIds = records.map((r) => String(r.id));
+    const placed = await resolveEnrollmentSectionsTx(tx, subdomain, records);
     await tx
       .insert(enrollments)
-      .values(
-        (await resolveEnrollmentSectionsTx(tx, subdomain, records)).map((record) =>
-          recordToInsert(subdomain, record),
-        ),
-      )
+      .values(placed.map((record) => recordToInsert(subdomain, record)))
       .onConflictDoUpdate({
         target: [enrollments.workspaceSubdomain, enrollments.id],
         set: {
@@ -102,6 +83,7 @@ export async function bulkSaveEnrollments(tenant: string, records: Enrollment[])
           sectionId: sql`excluded.section_id`,
           rollNo: sql`excluded.roll_no`,
           enrolledDate: sql`excluded.enrolled_date`,
+          startOn: sql`excluded.start_on`,
           baseFee: sql`excluded.base_fee`,
           discountType: sql`excluded.discount_type`,
           discountLabel: sql`excluded.discount_label`,
@@ -122,27 +104,8 @@ export async function bulkSaveEnrollments(tenant: string, records: Enrollment[])
         },
       });
 
-    await tx
-      .delete(enrollmentTimelineEvents)
-      .where(
-        and(
-          eq(enrollmentTimelineEvents.workspaceSubdomain, subdomain),
-          inArray(enrollmentTimelineEvents.enrollmentId, recordIds),
-        ),
-      );
-
-    const allEvents = records.flatMap((record) =>
-      (record.timeline ?? []).map((item) => ({
-        workspaceSubdomain: subdomain,
-        enrollmentId: String(record.id),
-        event: item.event,
-        by: item.by,
-        ts: item.ts,
-      })),
-    );
-    if (allEvents.length > 0) {
-      await tx.insert(enrollmentTimelineEvents).values(allEvents);
-    }
+    await appendClientTimelineTx(tx, subdomain, records);
+    await syncPlacementsTx(tx, subdomain, placed, today);
     await syncEnrolledSessionsTx(tx, subdomain, {
       studentIds: records.map((record) => String(record.studentId)),
     });
@@ -182,6 +145,7 @@ export async function replaceEnrollmentsForWorkspace(
   records: Enrollment[],
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
+  const today = await workspaceToday(subdomain);
   await withTenant(subdomain, async (tx) => {
     await tx
       .delete(enrollmentTimelineEvents)
@@ -192,18 +156,8 @@ export async function replaceEnrollmentsForWorkspace(
       await tx
         .insert(enrollments)
         .values(placed.map((record) => recordToInsert(subdomain, record)));
-      const allEvents = records.flatMap((record) =>
-        (record.timeline ?? []).map((item) => ({
-          workspaceSubdomain: subdomain,
-          enrollmentId: record.id,
-          event: item.event,
-          by: item.by,
-          ts: item.ts,
-        })),
-      );
-      if (allEvents.length > 0) {
-        await tx.insert(enrollmentTimelineEvents).values(allEvents);
-      }
+      await appendClientTimelineTx(tx, subdomain, records);
+      await syncPlacementsTx(tx, subdomain, placed, today);
     }
   });
 }

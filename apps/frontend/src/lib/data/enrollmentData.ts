@@ -19,6 +19,7 @@ export const ENROLLMENT_STATUSES = [
     color: "bg-destructive/10 text-destructive border-destructive/30",
   },
   { id: "completed", label: "Completed", color: "bg-info/10 text-info border-info/30" },
+  { id: "withdrawn", label: "Withdrawn", color: "bg-muted text-muted-foreground border-border" },
 ];
 
 export {

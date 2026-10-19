@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import type { Enrollment } from "@mms/shared";
 import type { TenantTransaction } from "../tenant-context.js";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 type SectionRow = {
   id: string;
@@ -70,7 +71,7 @@ export async function resolveEnrollmentSectionsTx(
         )})
           AS v(id, section_id, roll_no)
           ON e.section_id = v.section_id AND lower(btrim(e.roll_no)) = lower(btrim(v.roll_no)) AND e.id <> v.id
-       WHERE e.workspace_subdomain = ${subdomain} AND e.deleted_at IS NULL AND e.status <> 'cancelled'
+       WHERE e.workspace_subdomain = ${subdomain} AND e.deleted_at IS NULL AND ${enrollmentHoldsSeatSql("e")}
        LIMIT 1
     `);
     if (clash.rows[0])

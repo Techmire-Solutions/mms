@@ -23,6 +23,7 @@ import { enrollmentExportRoutes } from "./enrollments/enrollmentExportRoutes.js"
 import { enrollmentReportRoutes } from "./enrollments/enrollmentReportRoutes.js";
 import { enrollmentSetupConfigRoutes } from "./enrollments/enrollmentSetupConfigRoutes.js";
 import { admissionsRouter } from "./enrollments/admissionsRouter.js";
+import { enrollmentOperationsRouter } from "./enrollments/enrollmentOperationsRouter.js";
 
 const ENROLLMENTS_COLLECTION = ENROLLMENTS_MODULE_MANIFEST.collectionKey;
 
@@ -36,6 +37,7 @@ export default async function enrollmentsRoutes(
   fastify.addHook("preHandler", authenticateTenant);
   registerModuleAccess(fastify, "enrollment");
   await fastify.register(admissionsRouter);
+  await fastify.register(enrollmentOperationsRouter);
 
   await fastify.register(
     async (sub) => {

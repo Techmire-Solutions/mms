@@ -8,6 +8,7 @@ import { ENROLLMENT_STATUSES } from "@/lib/data/enrollmentData";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { EnrollmentsReportAggregates } from "@mms/shared";
+import { enrollmentStatusLabels } from "@/lib/ui/enrollmentStatusBadge";
 
 interface EnrollmentReportsChartsProps {
   aggregates: EnrollmentsReportAggregates;
@@ -28,12 +29,7 @@ export function EnrollmentReportsCharts({
 
   const { statusCounts, bySession } = aggregates;
 
-  const statusLabels = (() => ({
-    pending: t("enrollments.status.pending"),
-    confirmed: t("enrollments.status.confirmed"),
-    cancelled: t("enrollments.status.cancelled"),
-    completed: t("enrollments.status.completed"),
-  }))();
+  const statusLabels: Record<string, string> = enrollmentStatusLabels(t);
 
   const statusData = ENROLLMENT_STATUSES.map((status) => ({
     name: statusLabels[status.id as keyof typeof statusLabels] ?? status.id,
