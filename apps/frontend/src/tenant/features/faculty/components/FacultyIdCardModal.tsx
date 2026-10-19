@@ -117,30 +117,45 @@ export function FacultyIdCardModal({
                       className="w-16 h-16 rounded-xl border-2 border-primary/30 shadow-inner font-bold text-sm"
                     />
                     {faculty.specialization && (
-                      <span title={faculty.specialization} className="mt-1.5 text-4xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 max-w-20 truncate text-center">
+                      <span
+                        title={faculty.specialization}
+                        className="mt-1.5 text-4xs font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 max-w-20 truncate text-center"
+                      >
                         {faculty.specialization}
                       </span>
                     )}
                     {faculty.department && (
-                      <span title={faculty.department} className="mt-1 text-4xs font-medium px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/40 max-w-20 truncate text-center">
+                      <span
+                        title={faculty.department}
+                        className="mt-1 text-4xs font-medium px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/40 max-w-20 truncate text-center"
+                      >
                         {faculty.department}
                       </span>
                     )}
                   </div>
 
                   <div className="min-w-0 flex-1 space-y-1">
-                    <h3 title={faculty.name} className="text-sm font-bold text-foreground truncate leading-tight">
+                    <h3
+                      title={faculty.name}
+                      className="text-sm font-bold text-foreground truncate leading-tight"
+                    >
                       {faculty.name}
                     </h3>
 
                     {assignedClasses.length > 0 && (
-                      <p title={assignedClasses.join(", ")} className="text-3xs font-medium text-primary truncate">
+                      <p
+                        title={assignedClasses.join(", ")}
+                        className="text-3xs font-medium text-primary truncate"
+                      >
                         {assignedClasses.join(", ")}
                       </p>
                     )}
 
                     {(qualification || faculty.qualification) && (
-                      <div title={qualification || faculty.qualification} className="text-3xs text-muted-foreground truncate">
+                      <div
+                        title={qualification || faculty.qualification}
+                        className="text-3xs text-muted-foreground truncate"
+                      >
                         <span className="font-semibold text-foreground/80">
                           {t(facultyFieldLabelKey("qualification"))}:{" "}
                         </span>

@@ -79,16 +79,18 @@ export function WorkQueueItem<TData extends { id: string | number }>({
               {itemTitle && (
                 <span className="text-sm font-medium text-foreground">{itemTitle}</span>
               )}
-              {priority && (() => {
-                const priorityKey = `common.priority.${priority}` as AppTranslationKey;
-                const translated = t(priorityKey);
-                const label = translated === priorityKey ? PRIORITY_BADGES[priority].label : translated;
-                return (
-                  <Badge size="sm" tone={PRIORITY_BADGES[priority].tone} className="text-3xs">
-                    {label}
-                  </Badge>
-                );
-              })()}
+              {priority &&
+                (() => {
+                  const priorityKey = `common.priority.${priority}` as AppTranslationKey;
+                  const translated = t(priorityKey);
+                  const label =
+                    translated === priorityKey ? PRIORITY_BADGES[priority].label : translated;
+                  return (
+                    <Badge size="sm" tone={PRIORITY_BADGES[priority].tone} className="text-3xs">
+                      {label}
+                    </Badge>
+                  );
+                })()}
               {status && (
                 <Badge size="sm" tone={status.tone ?? "secondary"} className="text-3xs">
                   {status.label}

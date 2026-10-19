@@ -115,8 +115,7 @@ export function EnterMarksTable({
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                   className={cn(
-                    virtualRow.index < filteredStudents.length - 1 &&
-                      "border-b border-border/50",
+                    virtualRow.index < filteredStudents.length - 1 && "border-b border-border/50",
                   )}
                 >
                   <EnterMarksStudentRow

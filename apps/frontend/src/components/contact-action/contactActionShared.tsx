@@ -129,9 +129,7 @@ export const ActionCopyButton = function ActionCopyButton({
   const defaultCopy = translatedCopy === "common.copy" ? "Copy" : translatedCopy;
   const defaultCopied = translatedCopied === "common.copied" ? "Copied" : translatedCopied;
 
-  const label = copied
-    ? (tooltipCopiedText ?? defaultCopied)
-    : (tooltipCopyText ?? defaultCopy);
+  const label = copied ? (tooltipCopiedText ?? defaultCopied) : (tooltipCopyText ?? defaultCopy);
 
   return (
     <ActionIconButton

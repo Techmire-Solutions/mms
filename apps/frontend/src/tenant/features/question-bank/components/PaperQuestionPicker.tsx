@@ -93,11 +93,7 @@ export function PaperQuestionPicker({
             const category = categoryById.get(categoryId);
             if (!category) return null;
             return (
-              <CategoryColorChip
-                key={categoryId}
-                name={category.name}
-                color={category.color}
-              />
+              <CategoryColorChip key={categoryId} name={category.name} color={category.color} />
             );
           })}
           <StatusBadge status={question.difficulty} config={difficultyConfig} size="sm" />

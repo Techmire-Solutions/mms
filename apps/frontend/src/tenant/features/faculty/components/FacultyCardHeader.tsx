@@ -53,7 +53,10 @@ export function FacultyCardHeader({
           </Badge>
         ) : null}
         {faculty.designation ? (
-          <span title={faculty.designation} className="mt-1 inline-flex items-center px-1.5 py-0.5 rounded text-3xs font-semibold bg-primary/10 text-primary border border-primary/20 truncate">
+          <span
+            title={faculty.designation}
+            className="mt-1 inline-flex items-center px-1.5 py-0.5 rounded text-3xs font-semibold bg-primary/10 text-primary border border-primary/20 truncate"
+          >
             {faculty.designation}
           </span>
         ) : null}

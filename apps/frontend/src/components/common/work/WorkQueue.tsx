@@ -61,7 +61,11 @@ export function WorkQueue<TData extends { id: string | number }>({
   }
 
   return (
-    <div role="region" aria-label={ariaLabel ?? t("common.workQueue")} className={cn("space-y-3", containerClassName)}>
+    <div
+      role="region"
+      aria-label={ariaLabel ?? t("common.workQueue")}
+      className={cn("space-y-3", containerClassName)}
+    >
       {/* Queue Header */}
       {(title || selection || headerActions) && (
         <div

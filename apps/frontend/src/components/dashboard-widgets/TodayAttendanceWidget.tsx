@@ -144,7 +144,10 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
               </SectionLabel>
               {classBreakdown.map((classStats) => (
                 <div key={classStats.classId} className="flex min-w-0 items-center gap-3">
-                  <span title={classStats.name} className="w-28 shrink-0 truncate text-xs font-bold text-foreground">
+                  <span
+                    title={classStats.name}
+                    className="w-28 shrink-0 truncate text-xs font-bold text-foreground"
+                  >
                     {classStats.name}
                   </span>
                   <ProgressBar

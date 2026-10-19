@@ -122,7 +122,10 @@ export const MessagingTemplateList = function MessagingTemplateList({
             headerSlot={
               <div className="flex min-w-0 items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h4 title={templateLabel(template)} className="truncate text-sm font-semibold text-foreground">
+                  <h4
+                    title={templateLabel(template)}
+                    className="truncate text-sm font-semibold text-foreground"
+                  >
                     {templateLabel(template)}
                   </h4>
                   {template.channel && template.channel !== "all" && (

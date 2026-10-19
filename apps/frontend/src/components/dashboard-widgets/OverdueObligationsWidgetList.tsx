@@ -146,7 +146,10 @@ export function OverdueObligationsWidgetList({
                           size="sm"
                           className="shrink-0"
                         />
-                        <span title={overdueStudent.name} className="font-semibold text-foreground text-xs truncate">
+                        <span
+                          title={overdueStudent.name}
+                          className="font-semibold text-foreground text-xs truncate"
+                        >
                           {overdueStudent.name}
                         </span>
                       </div>
@@ -157,7 +160,10 @@ export function OverdueObligationsWidgetList({
                           className="w-3.5 h-3.5 text-muted-foreground shrink-0"
                           aria-hidden="true"
                         />
-                        <span title={overdueStudent.obligationType} className="text-xs text-foreground font-medium truncate max-w-36">
+                        <span
+                          title={overdueStudent.obligationType}
+                          className="text-xs text-foreground font-medium truncate max-w-36"
+                        >
                           {overdueStudent.obligationType}
                         </span>
                       </div>
