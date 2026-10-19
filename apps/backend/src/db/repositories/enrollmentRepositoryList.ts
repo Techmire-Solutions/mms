@@ -29,6 +29,7 @@ import {
   loadTimelineMapTx,
   type EnrollmentHydrateRow,
 } from "./enrollmentProjection.js";
+import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
 
 const ENROLLMENT_SORT_FIELDS = new Set([
   "studentName",
@@ -224,7 +225,7 @@ export async function aggregateEnrollmentsCommandMetrics(
         pending: sql<number>`count(*) FILTER (WHERE ${enrollments.status} = 'pending')::int`,
         cancelled: sql<number>`count(*) FILTER (WHERE ${enrollments.status} = 'cancelled')::int`,
         completed: sql<number>`count(*) FILTER (WHERE ${enrollments.status} = 'completed')::int`,
-        revenue: sql<number>`coalesce(sum(${enrollments.finalFee}::float8) FILTER (WHERE ${enrollments.status} <> 'cancelled'), 0)::float8`,
+        revenue: sql<number>`coalesce(sum(${enrollments.finalFee}::float8) FILTER (WHERE ${enrollmentHoldsSeatWhere()}), 0)::float8`,
         newThisPeriod: sql<number>`count(*) FILTER (WHERE
           ${enrollments.enrolledDate} IS NOT NULL
           AND ${enrollments.enrolledDate} ~ '^[0-9]{4}'

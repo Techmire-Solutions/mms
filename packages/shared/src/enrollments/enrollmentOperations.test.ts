@@ -4,7 +4,7 @@ import {
   enrollmentWithdrawBodySchema,
   withdrawalInvoicePlan,
 } from "./enrollmentOperations.js";
-import { enrollmentHoldsSeat } from "./enrollmentsModuleManifest.js";
+import { enrollmentActiveOn, enrollmentHoldsSeat } from "./enrollmentsModuleManifest.js";
 
 describe("enrollmentHoldsSeat", () => {
   it("given a live status, should hold the seat", () => {
@@ -95,5 +95,26 @@ describe("withdrawalInvoicePlan", () => {
     // Assert
     expect(plan.cancel).toEqual([]);
     expect(plan.review.map((row) => row.id)).toEqual(["paid", "partial", "credited"]);
+  });
+});
+
+describe("enrollmentActiveOn", () => {
+  const base = { status: "confirmed", enrolledDate: "2026-02-01", startOn: null, endOn: null };
+
+  it("given a live enrollment, should count from its start day onwards", () => {
+    // Assert
+    expect(enrollmentActiveOn(base, "2026-01-31")).toBe(false);
+    expect(enrollmentActiveOn(base, "2026-02-01")).toBe(true);
+    expect(enrollmentActiveOn({ ...base, startOn: "2026-03-01" }, "2026-02-15")).toBe(false);
+  });
+
+  it("given a withdrawal, should count up to the last day only; cancelled never counts", () => {
+    // Arrange
+    const withdrawn = { ...base, status: "withdrawn", endOn: "2026-04-10" };
+
+    // Assert
+    expect(enrollmentActiveOn(withdrawn, "2026-04-10")).toBe(true);
+    expect(enrollmentActiveOn(withdrawn, "2026-04-11")).toBe(false);
+    expect(enrollmentActiveOn({ ...base, status: "cancelled" }, "2026-03-01")).toBe(false);
   });
 });

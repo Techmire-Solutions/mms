@@ -9,6 +9,24 @@ import {
 } from "./enrollmentHistoryWrite.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 
+export interface EnrollmentFeeColumns {
+  baseFee: number;
+  discountType: string;
+  discountLabel: string;
+  discountPct: number;
+  discountAmt: number;
+  finalFee: number;
+}
+
+const feeColumns = (fee: EnrollmentFeeColumns) => ({
+  baseFee: String(fee.baseFee),
+  discountType: fee.discountType,
+  discountLabel: fee.discountLabel,
+  discountPct: String(fee.discountPct),
+  discountAmt: String(fee.discountAmt),
+  finalFee: String(fee.finalFee),
+});
+
 export interface OperationActor {
   userId: string | null;
   label: string;
@@ -56,14 +74,7 @@ export async function applyEnrollmentTransfer(
     from: { classId: string; sectionId: string | null };
     to: { classId: string; className: string; sectionId: string | null };
     /** Fee recomputed for the target class; applies to invoices generated from now on. */
-    fee: {
-      baseFee: number;
-      discountType: string;
-      discountLabel: string;
-      discountPct: number;
-      discountAmt: number;
-      finalFee: number;
-    };
+    fee: EnrollmentFeeColumns;
     effectiveOn: string;
     reason: string;
     actor: OperationActor;
@@ -79,12 +90,7 @@ export async function applyEnrollmentTransfer(
         sectionId: input.to.sectionId,
         // Roll numbers are unique per section; the new section assigns its own.
         rollNo: null,
-        baseFee: String(input.fee.baseFee),
-        discountType: input.fee.discountType,
-        discountLabel: input.fee.discountLabel,
-        discountPct: String(input.fee.discountPct),
-        discountAmt: String(input.fee.discountAmt),
-        finalFee: String(input.fee.finalFee),
+        ...feeColumns(input.fee),
         updatedAt: new Date(),
       })
       .where(enrollmentKey(subdomain, input.enrollmentId));
@@ -157,4 +163,81 @@ export async function applyEnrollmentWithdrawal(
     });
     await syncEnrolledSessionsTx(tx, subdomain, { studentIds: [input.studentId] });
   });
+}
+
+/** Brings a withdrawn enrollment back: confirmed again, window end cleared, new open placement. */
+export async function applyEnrollmentReadmission(
+  tenant: string,
+  input: {
+    enrollmentId: string;
+    studentId: string;
+    to: { classId: string; className: string; sectionId: string | null };
+    fee: EnrollmentFeeColumns;
+    effectiveOn: string;
+    reason: string;
+    actor: OperationActor;
+  },
+): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, async (tx) => {
+    await tx
+      .update(enrollments)
+      .set({
+        status: "confirmed",
+        endOn: null,
+        endReason: null,
+        classId: input.to.classId,
+        className: input.to.className,
+        sectionId: input.to.sectionId,
+        rollNo: null,
+        ...feeColumns(input.fee),
+        updatedAt: new Date(),
+      })
+      .where(enrollmentKey(subdomain, input.enrollmentId));
+    await movePlacementTx(tx, subdomain, {
+      enrollmentId: input.enrollmentId,
+      classId: input.to.classId,
+      sectionId: input.to.sectionId,
+      effectiveOn: input.effectiveOn,
+      reason: input.reason,
+      actorUserId: input.actor.userId,
+    });
+    await insertTypedTimelineEventTx(tx, subdomain, {
+      enrollmentId: input.enrollmentId,
+      eventType: "readmitted",
+      event: `Re-admitted to ${input.to.className}`,
+      actorUserId: input.actor.userId,
+      actorLabel: input.actor.label,
+      effectiveOn: input.effectiveOn,
+      reason: input.reason,
+      toClassId: input.to.classId,
+      toSectionId: input.to.sectionId,
+    });
+    await syncEnrolledSessionsTx(tx, subdomain, { studentIds: [input.studentId] });
+  });
+}
+
+/** Timeline entry for a suspension (the leave range itself is owned by Attendance). */
+export async function recordEnrollmentSuspension(
+  tenant: string,
+  input: {
+    enrollmentId: string;
+    fromOn: string;
+    toOn: string;
+    reason: string;
+    actor: OperationActor;
+  },
+): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, (tx) =>
+    insertTypedTimelineEventTx(tx, subdomain, {
+      enrollmentId: input.enrollmentId,
+      eventType: "suspended",
+      event: `Suspended ${input.fromOn} – ${input.toOn}`,
+      actorUserId: input.actor.userId,
+      actorLabel: input.actor.label,
+      effectiveOn: input.fromOn,
+      reason: input.reason,
+    }),
+  );
 }

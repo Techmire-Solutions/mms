@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { ArrowRightLeft, History, LogOut } from "lucide-react";
+import {
+  ArrowRightLeft,
+  History,
+  LogOut,
+  PauseCircle,
+  RotateCcw,
+  type LucideIcon,
+} from "lucide-react";
 import { enrollmentHoldsSeat, formatDate, type Enrollment } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
@@ -17,7 +24,7 @@ export interface EnrollmentOperationsPanelProps {
   isArchived: boolean;
 }
 
-/** Placement history + Transfer / Withdraw actions for one enrollment (Phase 9 operations). */
+/** Placement history + Transfer / Withdraw / Suspend / Re-admit actions (Phase 9 operations). */
 export function EnrollmentOperationsPanel({
   enrollment,
   canWrite,
@@ -29,13 +36,28 @@ export function EnrollmentOperationsPanel({
   const summary = sessions.find((row) => String(row.id) === enrollment.sessionId) ?? null;
   const session = useSessionDetail(summary);
   const placements = useEnrollmentPlacements(enrollment.id).data ?? [];
-  const { transfer, withdraw, isPending } = useEnrollmentOperations();
+  const { transfer, withdraw, readmit, suspend, isPending } = useEnrollmentOperations();
 
   const canOperate =
     canWrite &&
     !isArchived &&
     enrollmentHoldsSeat(enrollment.status) &&
     enrollment.status !== "completed";
+  const canReadmit = canWrite && !isArchived && enrollment.status === "withdrawn";
+  const actions: {
+    kind: EnrollmentOperationKind;
+    label: string;
+    icon: LucideIcon;
+    danger?: boolean;
+  }[] = canOperate
+    ? [
+        { kind: "transfer", label: t("enrollments.ops.transfer"), icon: ArrowRightLeft },
+        { kind: "suspend", label: t("enrollments.ops.suspend"), icon: PauseCircle },
+        { kind: "withdraw", label: t("enrollments.ops.withdraw"), icon: LogOut, danger: true },
+      ]
+    : canReadmit
+      ? [{ kind: "readmit", label: t("enrollments.ops.readmit"), icon: RotateCcw }]
+      : [];
   const classes = session?.classes ?? [];
   const placementLabel = (classId: string, sectionId: string | null) => {
     const cls = classes.find((row) => row.id === classId);
@@ -43,7 +65,7 @@ export function EnrollmentOperationsPanel({
     return [cls?.name ?? classId, section?.name].filter(Boolean).join(" · ");
   };
 
-  if (!canOperate && placements.length < 2 && !enrollment.endOn) return null;
+  if (actions.length === 0 && placements.length < 2 && !enrollment.endOn) return null;
 
   return (
     <DetailSectionCard title={t("enrollments.ops.title")} className="space-y-3 p-3">
@@ -78,33 +100,25 @@ export function EnrollmentOperationsPanel({
           </ol>
         </section>
       ) : null}
-      {canOperate ? (
+      {actions.length > 0 ? (
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="min-h-11 gap-1.5"
-            disabled={isPending}
-            onClick={() => setKind("transfer")}
-          >
-            <ArrowRightLeft className="size-4" aria-hidden />
-            {t("enrollments.ops.transfer")}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="min-h-11 gap-1.5 text-destructive"
-            disabled={isPending}
-            onClick={() => setKind("withdraw")}
-          >
-            <LogOut className="size-4" aria-hidden />
-            {t("enrollments.ops.withdraw")}
-          </Button>
+          {actions.map(({ kind: action, label, icon: Icon, danger }) => (
+            <Button
+              key={action}
+              type="button"
+              variant="outline"
+              size="sm"
+              className={danger ? "min-h-11 gap-1.5 text-destructive" : "min-h-11 gap-1.5"}
+              disabled={isPending}
+              onClick={() => setKind(action)}
+            >
+              <Icon className="size-4" aria-hidden />
+              {label}
+            </Button>
+          ))}
         </div>
       ) : null}
-      {canOperate ? (
+      {actions.length > 0 ? (
         <EnrollmentOperationModal
           kind={kind}
           enrollment={enrollment}
@@ -113,6 +127,8 @@ export function EnrollmentOperationsPanel({
           onClose={() => setKind(null)}
           onTransfer={(body) => transfer(enrollment.id, body)}
           onWithdraw={(body) => withdraw(enrollment.id, body)}
+          onReadmit={(body) => readmit(enrollment.id, body)}
+          onSuspend={(body) => suspend(enrollment.id, body)}
         />
       ) : null}
     </DetailSectionCard>

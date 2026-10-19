@@ -1,4 +1,4 @@
-import type { ModuleCustomField } from "@mms/shared";
+import { enrollmentActiveOn, enrollmentHoldsSeat, type ModuleCustomField } from "@mms/shared";
 import type { AttendanceRecord, ClassStudent } from "@/lib/data/attendanceData";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Session } from "@/lib/data/sessionsData";
@@ -95,14 +95,16 @@ export function studentRollNo(student: Student | undefined, studentId: string): 
   return numeric ? `STU-${numeric.padStart(3, "0")}` : studentId;
 }
 
+/** On the roster for that day: same class (and section), and the enrollment counts on `date`. */
 export function isEnrollmentInAttendanceRoster(
   enrollment: Enrollment,
   classId: string,
   sectionId?: string,
+  date?: string,
 ): boolean {
   return (
     enrollment.classId === classId &&
-    enrollment.status !== "cancelled" &&
+    (date ? enrollmentActiveOn(enrollment, date) : enrollmentHoldsSeat(enrollment.status)) &&
     (!sectionId || enrollment.sectionId === sectionId)
   );
 }
@@ -130,6 +132,7 @@ export function enrolledStudentsForClass(
   students: Student[],
   unnamedStudentLabel: string,
   sectionId?: string,
+  date?: string,
 ): ClassStudent[] {
   if (!classId) return [];
 
@@ -137,7 +140,7 @@ export function enrolledStudentsForClass(
   const seen = new Set<string>();
 
   return enrollments
-    .filter((enrollment) => isEnrollmentInAttendanceRoster(enrollment, classId, sectionId))
+    .filter((enrollment) => isEnrollmentInAttendanceRoster(enrollment, classId, sectionId, date))
     .flatMap((enrollment) => {
       const studentId = String(enrollment.studentId || "");
       if (!studentId || seen.has(studentId)) return [];

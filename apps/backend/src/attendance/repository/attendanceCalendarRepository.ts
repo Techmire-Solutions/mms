@@ -1,6 +1,7 @@
 type CalendarStore = typeof import("../../db/repositories/academicCalendarRepository.js");
 type DayContextStore = typeof import("../../db/repositories/instructionalDayContext.js");
 type PlacementStore = typeof import("../../db/repositories/enrollmentPlacementLookup.js");
+type LeaveStore = typeof import("../../db/repositories/attendanceLeaveRepository.js");
 type PreferencesStore =
   typeof import("../../db/repositories/attendanceModulePreferencesRepository.js");
 
@@ -18,4 +19,6 @@ export interface AttendanceCalendarRepository {
   loadInstructionalDayContext: DayContextStore["loadInstructionalDayContext"];
   listEnrollmentPlacements: PlacementStore["listEnrollmentPlacements"];
   getAttendanceModulePreferences: PreferencesStore["getAttendanceModulePreferences"];
+  findOverlappingApprovedLeaves: LeaveStore["findOverlappingApprovedLeaves"];
+  insertApprovedLeave: LeaveStore["insertApprovedLeave"];
 }

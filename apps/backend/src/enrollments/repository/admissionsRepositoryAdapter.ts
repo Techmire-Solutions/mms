@@ -22,6 +22,7 @@ import {
   findActivelyEnrolledStudentIds,
 } from "../../db/repositories/enrollmentBulkOps.js";
 import { findLatestEnrollmentId } from "../../db/repositories/enrollmentPlacementLookup.js";
+import { flagOldestWaitlistedApplication } from "../../db/repositories/registrationWaitlistRepository.js";
 
 /** Drizzle-backed adapter for {@link AdmissionsRepository}. */
 export const admissionsRepository: AdmissionsRepository = {
@@ -42,4 +43,5 @@ export const admissionsRepository: AdmissionsRepository = {
   findActivelyEnrolledStudentIds,
   cancelStudentEnrollmentsInSession,
   findLatestEnrollmentId,
+  flagOldestWaitlistedApplication,
 };

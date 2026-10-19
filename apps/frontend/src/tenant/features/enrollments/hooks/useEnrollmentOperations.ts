@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { EnrollmentTransferBody, EnrollmentWithdrawBody } from "@mms/shared";
+import type {
+  AppTranslationKey,
+  EnrollmentReadmitBody,
+  EnrollmentSuspendBody,
+  EnrollmentTransferBody,
+  EnrollmentWithdrawBody,
+} from "@mms/shared";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isApiError } from "@/lib/apiError";
 import { notify } from "@/lib/notify";
@@ -8,6 +14,8 @@ import { useFinanceCurrency } from "@/hooks/useCurrency";
 import {
   ENROLLMENT_PLACEMENTS_QUERY_KEY,
   enrollmentPlacementsQueryOptions,
+  readmitEnrollmentMutationOptions,
+  suspendEnrollmentMutationOptions,
   transferEnrollmentMutationOptions,
   withdrawEnrollmentMutationOptions,
 } from "@/lib/query/enrollmentOperationsQueries";
@@ -34,6 +42,34 @@ export function useEnrollmentOperations() {
   };
   const transferMutation = useMutation({ ...transferEnrollmentMutationOptions(), onSettled });
   const withdrawMutation = useMutation({ ...withdrawEnrollmentMutationOptions(), onSettled });
+  const readmitMutation = useMutation({ ...readmitEnrollmentMutationOptions(), onSettled });
+  const suspendMutation = useMutation({ ...suspendEnrollmentMutationOptions(), onSettled });
+
+  const simple = async <B>(
+    run: (input: { id: string; body: B }) => Promise<unknown>,
+    id: string,
+    body: B,
+    keys: { ok: AppTranslationKey; failed: AppTranslationKey },
+  ): Promise<boolean> => {
+    try {
+      await run({ id, body });
+      notify.success(t(keys.ok));
+      return true;
+    } catch (error) {
+      notify.error(t(keys.failed), { description: detail(error) });
+      return false;
+    }
+  };
+  const readmit = (id: string, body: EnrollmentReadmitBody) =>
+    simple(readmitMutation.mutateAsync, id, body, {
+      ok: "enrollments.ops.readmitted",
+      failed: "enrollments.ops.readmitFailed",
+    });
+  const suspend = (id: string, body: EnrollmentSuspendBody) =>
+    simple(suspendMutation.mutateAsync, id, body, {
+      ok: "enrollments.ops.suspendedToast",
+      failed: "enrollments.ops.suspendFailed",
+    });
 
   const transfer = async (id: string, body: EnrollmentTransferBody): Promise<boolean> => {
     try {
@@ -76,6 +112,12 @@ export function useEnrollmentOperations() {
   return {
     transfer,
     withdraw,
-    isPending: transferMutation.isPending || withdrawMutation.isPending,
+    readmit,
+    suspend,
+    isPending:
+      transferMutation.isPending ||
+      withdrawMutation.isPending ||
+      readmitMutation.isPending ||
+      suspendMutation.isPending,
   };
 }

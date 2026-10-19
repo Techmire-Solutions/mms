@@ -6,6 +6,7 @@ import { standardRequestValidationErrorHandler } from "../../../lib/contractRegi
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { enrollmentOperationsUseCases as ops } from "../../../enrollments/use-cases/enrollmentOperationsUseCases.js";
+import { enrollmentLifecycleUseCases as lifecycle } from "../../../enrollments/use-cases/enrollmentLifecycleUseCases.js";
 
 type Contract = typeof enrollmentOperationsContract;
 const COLLECTION = ENROLLMENTS_MODULE_MANIFEST.collectionKey;
@@ -60,6 +61,36 @@ export const enrollmentOperationsRouter: FastifyPluginAsync = async (fastify) =>
         return handleContractError(request, error, {
           status: 500,
           body: { type: "server_error", message: "Failed to withdraw the enrollment" },
+        });
+      }
+    },
+    readmit: async ({ params, body, request }: ContractRouteArgs<Contract["readmit"]>) => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: { enrollment: await lifecycle.readmit(tenantOf(request), params.id, body, user) },
+        };
+      } catch (error) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "server_error", message: "Failed to re-admit the enrollment" },
+        });
+      }
+    },
+    suspend: async ({ params, body, request }: ContractRouteArgs<Contract["suspend"]>) => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: { enrollment: await lifecycle.suspend(tenantOf(request), params.id, body, user) },
+        };
+      } catch (error) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "server_error", message: "Failed to suspend the enrollment" },
         });
       }
     },

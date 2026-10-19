@@ -4,7 +4,7 @@ import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Enrollment } from "@/lib/data/enrollmentData";
-import type { Student, toMessagingRecipient } from "@mms/shared";
+import { enrollmentHoldsSeat, type Student, type toMessagingRecipient } from "@mms/shared";
 
 export type MessageChannel = "whatsapp" | "sms" | "email";
 
@@ -81,7 +81,7 @@ export function EnrollmentRowActions({
         <>
           {!showDeleted &&
           canWrite &&
-          enrollment.status !== "cancelled" &&
+          enrollmentHoldsSeat(enrollment.status) &&
           enrollment.status !== "completed" ? (
             <DropdownMenuItem onClick={() => onCancel(enrollment.id)}>
               <XCircle className="w-3.5 h-3.5 me-2" /> {t("enrollments.actions.cancelShort")}

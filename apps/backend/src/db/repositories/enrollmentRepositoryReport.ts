@@ -14,6 +14,7 @@ import {
 } from "@mms/shared";
 import { getQueryRows } from "../documentStoreKeys.js";
 import { withTenantRead } from "../tenant-context.js";
+import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 /**
  * SQL report aggregates for EnrollmentChart + EnrollmentReports
@@ -103,7 +104,7 @@ export async function loadEnrollmentsReportAggregatesSql(
         COALESCE(
           sum(
             CASE
-              WHEN lower(trim(e.status)) <> 'cancelled'
+              WHEN ${enrollmentHoldsSeatSql("e")}
               THEN e.final_fee::numeric
               ELSE 0
             END
@@ -139,7 +140,7 @@ export async function loadEnrollmentsReportAggregatesSql(
         COALESCE(
           sum(
             CASE
-              WHEN lower(trim(e.status)) <> 'cancelled'
+              WHEN ${enrollmentHoldsSeatSql("e")}
               THEN e.final_fee::numeric
               ELSE 0
             END
@@ -193,7 +194,7 @@ export async function loadEnrollmentsReportAggregatesSql(
               sessionIds.map((id) => sql`${id}`),
               sql`, `,
             )})
-            AND lower(trim(e.status)) <> 'cancelled'
+            AND ${enrollmentHoldsSeatSql("e")}
           GROUP BY 1
         `);
 

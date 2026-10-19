@@ -1,9 +1,7 @@
 import {
   enrollmentFeeForClass,
-  enrollmentHoldsSeat,
   enrollmentTransferBodySchema,
   enrollmentWithdrawBodySchema,
-  isSessionReadOnly,
   normalizeEnrollmentModulePreferences,
   type Enrollment,
   type EnrollmentPlacement,
@@ -13,53 +11,11 @@ import {
   type WithdrawalBillingOutcome,
 } from "@mms/shared";
 import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
+import { actorOf, afterChange, loadOperable } from "./enrollmentOperationsSupport.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
-import { todayInTimeZone } from "../../lib/dbDate.js";
-import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { broadcastCollection } from "../../lib/livePush.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { settleEnrollmentWithdrawal } from "../../finance/use-cases/financeEnrollmentBillingUseCases.js";
 import { findTransferTarget, operationWindowError } from "./enrollmentOperationRules.js";
-
-async function loadOperable(tenant: string, id: string) {
-  const enrollment = await repo.findEnrollmentById(tenant, id);
-  if (!enrollment || enrollment.deletedAt) throw new NotFoundError("Enrollment not found");
-  if (!enrollmentHoldsSeat(enrollment.status) || enrollment.status === "completed")
-    throw new ConflictError(`A ${enrollment.status} enrollment cannot be changed`);
-  const session = await repo.findSessionById(tenant, enrollment.sessionId);
-  if (!session) throw new NotFoundError("Session not found");
-  if (isSessionReadOnly(session.status))
-    throw new ConflictError("The session is closed; its enrollments are read-only");
-  const placements = await repo.listEnrollmentPlacements(tenant, enrollment.id);
-  const today = todayInTimeZone(await repo.findWorkspaceTimezone(tenant));
-  return { enrollment, session, placements, today };
-}
-
-async function afterChange(
-  tenant: string,
-  user: User,
-  before: Enrollment,
-  action: string,
-  detail: Record<string, unknown>,
-): Promise<Enrollment> {
-  await recordModernAuditEvent({
-    workspaceSubdomain: tenant,
-    tableName: "enrollments",
-    recordId: before.id,
-    actionType: "UPDATE",
-    realUserId: user.id,
-    newState: { operation: action, ...detail },
-  });
-  await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
-  await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-  await broadcastCollection("enrollments");
-  await broadcastCollection("sessions");
-  const after = await repo.findEnrollmentById(tenant, before.id);
-  if (!after) throw new NotFoundError("Enrollment not found");
-  return after;
-}
-
-const actorOf = (user: User) => ({ userId: user.id, label: user.name || user.email });
+import { offerFreedSeat } from "./admissionsWaitlistUseCases.js";
 
 export const enrollmentOperationsUseCases = {
   async placements(tenant: string, id: string): Promise<EnrollmentPlacement[]> {
@@ -100,7 +56,12 @@ export const enrollmentOperationsUseCases = {
       reason: input.reason,
       actor: actorOf(user),
     });
+    const waitlistOffer =
+      target.cls.id !== enrollment.classId
+        ? await offerFreedSeat(tenant, enrollment.classId)
+        : null;
     return afterChange(tenant, user, enrollment, "transfer", {
+      waitlistOfferApplicationId: waitlistOffer?.id ?? null,
       fromClassId: enrollment.classId,
       toClassId: target.cls.id,
       toSectionId: target.sectionId,
@@ -130,11 +91,13 @@ export const enrollmentOperationsUseCases = {
     });
     // Last month is charged in full; later untouched invoices are cancelled (decision 2026-10-19).
     const billing = await settleEnrollmentWithdrawal(enrollment.id, input.effectiveOn);
+    const waitlistOffer = await offerFreedSeat(tenant, enrollment.classId);
     const after = await afterChange(tenant, user, enrollment, "withdraw", {
       effectiveOn: input.effectiveOn,
       reason: input.reason,
       cancelledInvoiceIds: billing.cancelled.map((invoice) => invoice.id),
       invoicesForReview: billing.review.map((invoice) => invoice.id),
+      waitlistOfferApplicationId: waitlistOffer?.id ?? null,
     });
     return { enrollment: after, billing };
   },

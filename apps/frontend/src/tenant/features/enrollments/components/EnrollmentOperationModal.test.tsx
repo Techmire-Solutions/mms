@@ -72,9 +72,20 @@ afterEach(() => {
   container.remove();
 });
 
-type Handlers = Pick<EnrollmentOperationModalProps, "onClose" | "onTransfer" | "onWithdraw">;
+type Handlers = Pick<
+  EnrollmentOperationModalProps,
+  "onClose" | "onTransfer" | "onWithdraw" | "onReadmit" | "onSuspend"
+>;
 
-function render(kind: "transfer" | "withdraw", handlers: Handlers) {
+const makeHandlers = () => ({
+  onClose: vi.fn<Handlers["onClose"]>(),
+  onTransfer: vi.fn<Handlers["onTransfer"]>(),
+  onWithdraw: vi.fn<Handlers["onWithdraw"]>().mockResolvedValue(true),
+  onReadmit: vi.fn<Handlers["onReadmit"]>(),
+  onSuspend: vi.fn<Handlers["onSuspend"]>().mockResolvedValue(true),
+});
+
+function render(kind: EnrollmentOperationModalProps["kind"], handlers: Handlers) {
   act(() =>
     root.render(
       <EnrollmentOperationModal
@@ -85,6 +96,8 @@ function render(kind: "transfer" | "withdraw", handlers: Handlers) {
         onClose={handlers.onClose}
         onTransfer={handlers.onTransfer}
         onWithdraw={handlers.onWithdraw}
+        onReadmit={handlers.onReadmit}
+        onSuspend={handlers.onSuspend}
       />,
     ),
   );
@@ -103,11 +116,7 @@ function typeReason(text: string) {
 describe("EnrollmentOperationModal", () => {
   it("given a withdrawal with a reason, should submit today's date and close when saved", async () => {
     // Arrange
-    const handlers = {
-      onClose: vi.fn<Handlers["onClose"]>(),
-      onTransfer: vi.fn<Handlers["onTransfer"]>(),
-      onWithdraw: vi.fn<Handlers["onWithdraw"]>().mockResolvedValue(true),
-    };
+    const handlers = makeHandlers();
     render("withdraw", handlers);
     const save = container.querySelector("button");
 
@@ -127,11 +136,7 @@ describe("EnrollmentOperationModal", () => {
 
   it("given a transfer, should keep the session fixed and wait for a destination class", () => {
     // Arrange
-    const handlers = {
-      onClose: vi.fn<Handlers["onClose"]>(),
-      onTransfer: vi.fn<Handlers["onTransfer"]>(),
-      onWithdraw: vi.fn<Handlers["onWithdraw"]>(),
-    };
+    const handlers = makeHandlers();
 
     // Act
     render("transfer", handlers);
@@ -147,5 +152,25 @@ describe("EnrollmentOperationModal", () => {
     expect(save).toBeInstanceOf(HTMLButtonElement);
     expect((save as HTMLButtonElement).disabled).toBe(true);
     expect(handlers.onTransfer).not.toHaveBeenCalled();
+  });
+
+  it("given a suspension with a reason, should submit the leave range and close when saved", async () => {
+    // Arrange
+    const handlers = makeHandlers();
+    render("suspend", handlers);
+    const save = container.querySelector("[role='dialog'] > button");
+
+    // Act
+    typeReason("Family travel abroad");
+    await act(async () => (save as HTMLButtonElement).click());
+
+    // Assert
+    expect(container.querySelector("#enrollment-op-to")).toBeInstanceOf(HTMLInputElement);
+    expect(handlers.onSuspend).toHaveBeenCalledWith({
+      fromOn: todayISO(),
+      toOn: todayISO(),
+      reason: "Family travel abroad",
+    });
+    expect(handlers.onClose).toHaveBeenCalledTimes(1);
   });
 });
