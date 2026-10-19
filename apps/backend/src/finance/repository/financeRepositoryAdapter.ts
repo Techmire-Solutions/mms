@@ -21,6 +21,7 @@ import {
 } from "../../db/repositories/financeRepositoryList.js";
 import { loadFinanceReportAggregatesSql } from "../../db/repositories/financeRepositoryReport.js";
 import { aggregateFinanceWidgetQueries } from "../../db/repositories/financeRepositoryWidgets.js";
+import { findInvoiceIdsByEnrollment } from "../../db/repositories/financeInvoiceGenerationRepository.js";
 
 /**
  * Drizzle-backed adapter for {@link FinanceRepository}. Delegates to the
@@ -31,6 +32,7 @@ export const financeRepository: FinanceRepository = {
   findInvoiceById,
   findInvoicesByIds,
   saveInvoice,
+  findInvoiceIdsByEnrollment,
   listInvoicesPage,
   bulkUpdateInvoicesStatus: bulkUpdateInvoicesStatusSql,
   bulkSoftDeleteInvoices,

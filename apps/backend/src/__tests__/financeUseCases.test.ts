@@ -8,6 +8,7 @@ function createFakeRepo(): FinanceRepository {
     listInvoicesByWorkspace: vi.fn().mockResolvedValue([]),
     findInvoiceById: vi.fn().mockResolvedValue(null),
     findInvoicesByIds: vi.fn().mockResolvedValue([]),
+    findInvoiceIdsByEnrollment: async () => [],
     saveInvoice: vi.fn().mockResolvedValue(undefined),
     listInvoicesPage: vi.fn().mockResolvedValue({
       invoices: [],

@@ -3,6 +3,7 @@ type EnrollmentHydrate = typeof import("../../db/repositories/enrollmentReposito
 type SessionQueries = typeof import("../../db/repositories/sessionRepositoryQueries.js");
 type PreferencesStore =
   typeof import("../../db/repositories/enrollmentModulePreferencesRepository.js");
+type StudentHydrate = typeof import("../../db/repositories/studentRepositoryHydrate.js");
 type WorkspaceStore = typeof import("../../db/repositories/workspaceRepository.js");
 
 export type { OperationActor } from "../../db/repositories/enrollmentOperationsRepository.js";
@@ -13,6 +14,7 @@ export interface EnrollmentOperationsRepository {
   findSessionById: SessionQueries["findSessionById"];
   getEnrollmentModulePreferencesByWorkspace: PreferencesStore["getEnrollmentModulePreferencesByWorkspace"];
   findWorkspaceTimezone: WorkspaceStore["findWorkspaceTimezone"];
+  findStudentsByIds: StudentHydrate["findStudentsByIds"];
   listEnrollmentPlacements: OperationsStore["listEnrollmentPlacements"];
   applyEnrollmentTransfer: OperationsStore["applyEnrollmentTransfer"];
   applyEnrollmentWithdrawal: OperationsStore["applyEnrollmentWithdrawal"];

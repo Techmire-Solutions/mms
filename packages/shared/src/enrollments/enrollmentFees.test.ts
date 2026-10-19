@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcEnrollmentFee } from "./enrollmentFees.js";
+import { calcEnrollmentFee, enrollmentFeeForClass } from "./enrollmentFees.js";
 
 describe("calcEnrollmentFee", () => {
   it("given a session discount matching the student type, should apply its percentage over built-ins", () => {
@@ -53,5 +53,32 @@ describe("calcEnrollmentFee", () => {
       finalFee: 500,
       reason: undefined,
     });
+  });
+});
+
+describe("enrollmentFeeForClass", () => {
+  it("given a class discount matching the student, should apply it and skip inactive ones", () => {
+    // Arrange
+    const cls = {
+      discounts: [
+        { discountType: "sibling", percentage: 20, status: "active" },
+        { discountType: "staff", percentage: 90, status: "inactive" },
+      ],
+    };
+
+    // Act
+    const sibling = enrollmentFeeForClass(1000, cls, { discountType: "sibling" });
+    const none = enrollmentFeeForClass(1000, { discounts: [] }, { discountType: "none" });
+
+    // Assert
+    expect(sibling).toEqual({
+      baseFee: 1000,
+      discountType: "sibling",
+      discountLabel: "sibling",
+      discountPct: 20,
+      discountAmt: 200,
+      finalFee: 800,
+    });
+    expect(none.finalFee).toBe(1000);
   });
 });

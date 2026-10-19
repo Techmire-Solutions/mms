@@ -40,3 +40,47 @@ export const enrollmentPlacementSchema = z
   })
   .strict();
 export type EnrollmentPlacement = z.infer<typeof enrollmentPlacementSchema>;
+
+/** Invoice fields the withdrawal billing rule reads. */
+export interface WithdrawalInvoice {
+  id: string;
+  invoiceNumber?: string | null;
+  status: string;
+  billingPeriod?: string | null;
+  paidAmt?: number | null;
+  creditedAmt?: number | null;
+}
+
+/**
+ * Billing effect of a withdrawal on the enrollment's invoices: the period that contains the last
+ * day is charged in full; later periods are cancelled when untouched (no payment, no credit) and
+ * otherwise left for a staff refund decision. Cancelled invoices are ignored.
+ */
+export function withdrawalInvoicePlan(
+  invoices: readonly WithdrawalInvoice[],
+  lastDay: string,
+): { cancel: WithdrawalInvoice[]; review: WithdrawalInvoice[] } {
+  const lastPeriod = lastDay.slice(0, 7);
+  const later = invoices.filter(
+    (invoice) =>
+      invoice.status !== "cancelled" &&
+      Boolean(invoice.billingPeriod) &&
+      String(invoice.billingPeriod).slice(0, 7) > lastPeriod,
+  );
+  const untouched = (invoice: WithdrawalInvoice) =>
+    invoice.status !== "paid" && (invoice.paidAmt ?? 0) <= 0 && (invoice.creditedAmt ?? 0) <= 0;
+  return {
+    cancel: later.filter(untouched),
+    review: later.filter((invoice) => !untouched(invoice)),
+  };
+}
+
+const invoiceRefSchema = z
+  .object({ id: z.string(), invoiceNumber: z.string().nullable() })
+  .strict();
+
+/** What a withdrawal did to the enrollment's invoices (returned to the caller for follow-up). */
+export const withdrawalBillingOutcomeSchema = z
+  .object({ cancelled: z.array(invoiceRefSchema), review: z.array(invoiceRefSchema) })
+  .strict();
+export type WithdrawalBillingOutcome = z.infer<typeof withdrawalBillingOutcomeSchema>;

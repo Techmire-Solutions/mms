@@ -125,3 +125,24 @@ export async function listEnrollmentInvoiceMarks(
       .map((row) => ({ enrollmentId: row.enrollmentId, billingPeriod: row.billingPeriod }));
   });
 }
+
+/** Live invoice ids raised for one enrollment (any period). */
+export async function findInvoiceIdsByEnrollment(
+  tenant: string,
+  enrollmentId: string,
+): Promise<string[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: financeInvoices.id })
+      .from(financeInvoices)
+      .where(
+        and(
+          eq(financeInvoices.workspaceSubdomain, subdomain),
+          isNull(financeInvoices.deletedAt),
+          eq(financeInvoices.enrollmentId, enrollmentId),
+        ),
+      );
+    return rows.map((row) => row.id);
+  });
+}

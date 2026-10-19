@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { SessionSchema, type User } from "@mms/shared";
+import { SessionSchema, type Invoice, type User } from "@mms/shared";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
@@ -9,6 +9,7 @@ import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import { saveEnrollment } from "../../db/repositories/enrollmentRepositoryPersist.js";
 import { findEnrollmentsByIds } from "../../db/repositories/enrollmentRepositoryHydrate.js";
+import { bulkSaveInvoices } from "../../db/repositories/financeInvoicesRepository.js";
 import { bulkEnrollStudentsIntoClass } from "../../enrollments/use-cases/enrollmentBulkEnroll.js";
 import { enrollmentOperationsUseCases as ops } from "../../enrollments/use-cases/enrollmentOperationsUseCases.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
@@ -75,6 +76,7 @@ beforeAll(async () => {
         workspaceSubdomain: TENANT,
         grNumber: `gr-${id}`,
         status: "active",
+        discountType: id === "s1" ? "sibling" : null,
       })),
     );
   });
@@ -84,9 +86,15 @@ beforeAll(async () => {
       id: "ses-ops",
       name: "Ops session",
       status: "in_progress",
+      baseFee: 1000,
       classes: [
         { id: "cls-a", name: "Class A", sections: [{ id: "sec-a1", name: "A1", capacity: 5 }] },
-        { id: "cls-b", name: "Class B", sections: [{ id: "sec-b1", name: "B1", capacity: 1 }] },
+        {
+          id: "cls-b",
+          name: "Class B",
+          sections: [{ id: "sec-b1", name: "B1", capacity: 1 }],
+          discounts: [{ id: "d-sib", discountType: "sibling", percentage: 50 }],
+        },
       ],
     }),
   );
@@ -133,7 +141,14 @@ describe("mid-session enrollment operations (real Postgres)", () => {
     );
 
     // Assert
-    expect(moved).toMatchObject({ classId: "cls-b", className: "Class B", sectionId: "sec-b1" });
+    expect(moved).toMatchObject({
+      classId: "cls-b",
+      className: "Class B",
+      sectionId: "sec-b1",
+      discountType: "sibling",
+      discountPct: 50,
+      finalFee: 500,
+    });
     expect(moved.timeline.at(-1)).toMatchObject({
       eventType: "transferred",
       fromClassId: "cls-a",
@@ -168,16 +183,57 @@ describe("mid-session enrollment operations (real Postgres)", () => {
     await expect(attempt).rejects.toMatchObject({ statusCode: 409 });
   });
 
-  it("given a withdrawal, should end the window, close the placement and release the seat", async () => {
+  it("given a withdrawal, should end the window, release the seat and settle later invoices", async () => {
     // Arrange
     const id = await enrollmentIdOf("s1");
+    const period = (offset: number) => {
+      const [y, m] = today.split("-").map(Number);
+      const day = new Date(Date.UTC(y, m - 1 + offset, 1));
+      return day.toISOString().slice(0, 7);
+    };
+    const invoice = (suffix: string, billingPeriod: string, extra: Partial<Invoice> = {}) => ({
+      id: `inv-ops-${suffix}`,
+      studentId: "s1",
+      studentName: "",
+      class: "Class B",
+      session: "Ops session",
+      baseFee: 1000,
+      discountValue: 0,
+      discountAmt: 0,
+      finalAmt: 500,
+      status: "pending" as const,
+      dueDate: `${billingPeriod}-10`,
+      paidAmt: 0,
+      invoiceNumber: `OPS-${suffix}`,
+      billingPeriod,
+      enrollmentId: id,
+      ...extra,
+    });
+    await bulkSaveInvoices(TENANT, [
+      invoice("now", period(0)),
+      invoice("next", period(1)),
+      invoice("paid", period(2), { status: "paid", paidAmt: 500 }),
+    ]);
 
     // Act
-    const withdrawn = await runWithTenant(TENANT, () =>
+    const { enrollment: withdrawn, billing } = await runWithTenant(TENANT, () =>
       ops.withdraw(TENANT, id, { effectiveOn: today, reason: "Family moved away" }, admin),
     );
 
     // Assert
+    expect(billing).toEqual({
+      cancelled: [{ id: "inv-ops-next", invoiceNumber: "OPS-next" }],
+      review: [{ id: "inv-ops-paid", invoiceNumber: "OPS-paid" }],
+    });
+    const statuses = await withTenant(TENANT, (tx) =>
+      tx.execute<{ id: string; status: string }>(sql`
+        SELECT id, status FROM finance_invoices WHERE workspace_subdomain = ${TENANT} ORDER BY id`),
+    );
+    expect(Object.fromEntries(statuses.rows.map((row) => [row.id, row.status]))).toEqual({
+      "inv-ops-next": "cancelled",
+      "inv-ops-now": "pending",
+      "inv-ops-paid": "paid",
+    });
     expect(withdrawn).toMatchObject({
       status: "withdrawn",
       endOn: today,

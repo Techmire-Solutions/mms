@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
-  calcEnrollmentFee,
+  enrollmentFeeForClass,
   todayISO,
   type Enrollment,
   type StudentsBulkEnrollBody,
@@ -45,15 +45,12 @@ export async function bulkEnrollStudentsIntoClass(
     repo.findStudentsByIds(tenant, studentIds),
     repo.findActivelyEnrolledStudentIds(tenant, session.id, studentIds),
   ]);
-  const discounts = (sessionClass.discounts ?? [])
-    .filter((d) => d.status !== "inactive")
-    .map((d) => ({ id: d.discountType, name: d.discountType, percentage: Number(d.percentage) }));
   const enrolledDate = todayISO();
 
   const records: Enrollment[] = students
     .filter((student) => !student.deletedAt && !already.has(String(student.id)))
     .map((student) => {
-      const fee = calcEnrollmentFee(session.baseFee, student, discounts);
+      const fee = enrollmentFeeForClass(session.baseFee, sessionClass, student);
       return {
         id: `enr-${randomUUID()}`,
         studentId: String(student.id),
@@ -64,12 +61,7 @@ export async function bulkEnrollStudentsIntoClass(
         className: sessionClass.name,
         ...(input.sectionId ? { sectionId: input.sectionId } : {}),
         enrolledDate,
-        baseFee: session.baseFee,
-        discountType: fee.id,
-        discountLabel: fee.label,
-        discountPct: fee.pct,
-        discountAmt: fee.discountAmt,
-        finalFee: fee.finalFee,
+        ...fee,
         status: "pending",
         invoiceId: null,
         paymentStatus: "none",

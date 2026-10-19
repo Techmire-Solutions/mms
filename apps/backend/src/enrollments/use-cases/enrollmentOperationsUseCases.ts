@@ -1,4 +1,5 @@
 import {
+  enrollmentFeeForClass,
   enrollmentHoldsSeat,
   enrollmentTransferBodySchema,
   enrollmentWithdrawBodySchema,
@@ -9,6 +10,7 @@ import {
   type EnrollmentTransferBody,
   type EnrollmentWithdrawBody,
   type User,
+  type WithdrawalBillingOutcome,
 } from "@mms/shared";
 import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
@@ -16,6 +18,7 @@ import { todayInTimeZone } from "../../lib/dbDate.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { settleEnrollmentWithdrawal } from "../../finance/use-cases/financeEnrollmentBillingUseCases.js";
 import { findTransferTarget, operationWindowError } from "./enrollmentOperationRules.js";
 
 async function loadOperable(tenant: string, id: string) {
@@ -85,10 +88,14 @@ export const enrollmentOperationsUseCases = {
     if (target.seatsLeft !== null && target.seatsLeft <= 0)
       throw new ConflictError(`${target.cls.name} has no free seats`);
 
+    const [student] = await repo.findStudentsByIds(tenant, [enrollment.studentId]);
+    const fee = enrollmentFeeForClass(session.baseFee, target.cls, student ?? {});
+
     await repo.applyEnrollmentTransfer(tenant, {
       enrollmentId: enrollment.id,
       from: { classId: enrollment.classId, sectionId: enrollment.sectionId ?? null },
       to: { classId: target.cls.id, className: target.cls.name, sectionId: target.sectionId },
+      fee,
       effectiveOn: input.effectiveOn,
       reason: input.reason,
       actor: actorOf(user),
@@ -97,6 +104,8 @@ export const enrollmentOperationsUseCases = {
       fromClassId: enrollment.classId,
       toClassId: target.cls.id,
       toSectionId: target.sectionId,
+      fromFinalFee: enrollment.finalFee,
+      toFinalFee: fee.finalFee,
       effectiveOn: input.effectiveOn,
       reason: input.reason,
     });
@@ -107,7 +116,7 @@ export const enrollmentOperationsUseCases = {
     id: string,
     body: EnrollmentWithdrawBody,
     user: User,
-  ): Promise<Enrollment> {
+  ): Promise<{ enrollment: Enrollment; billing: WithdrawalBillingOutcome }> {
     const input = enrollmentWithdrawBodySchema.parse(body);
     const { enrollment, placements, today } = await loadOperable(tenant, id);
     const windowError = operationWindowError(enrollment, placements, input.effectiveOn, today);
@@ -119,9 +128,14 @@ export const enrollmentOperationsUseCases = {
       reason: input.reason,
       actor: actorOf(user),
     });
-    return afterChange(tenant, user, enrollment, "withdraw", {
+    // Last month is charged in full; later untouched invoices are cancelled (decision 2026-10-19).
+    const billing = await settleEnrollmentWithdrawal(enrollment.id, input.effectiveOn);
+    const after = await afterChange(tenant, user, enrollment, "withdraw", {
       effectiveOn: input.effectiveOn,
       reason: input.reason,
+      cancelledInvoiceIds: billing.cancelled.map((invoice) => invoice.id),
+      invoicesForReview: billing.review.map((invoice) => invoice.id),
     });
+    return { enrollment: after, billing };
   },
 };

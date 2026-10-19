@@ -63,3 +63,40 @@ export function calcEnrollmentFee(
     reason: pct > 0 ? `${label} of ${pct}% applied.` : undefined,
   };
 }
+
+/** Active discounts of a session class, in the shape `calcEnrollmentFee` matches against. */
+export function classFeeDiscounts(cls: {
+  discounts?: ReadonlyArray<{ discountType: string; percentage: number | string; status?: string }>;
+}): SessionDiscountItem[] {
+  return (cls.discounts ?? [])
+    .filter((discount) => discount.status !== "inactive")
+    .map((discount) => ({
+      id: discount.discountType,
+      name: discount.discountType,
+      percentage: Number(discount.percentage),
+    }));
+}
+
+/** Enrollment fee columns for a student placed in a class (session base fee + class discounts). */
+export function enrollmentFeeForClass(
+  baseFee: number,
+  cls: Parameters<typeof classFeeDiscounts>[0],
+  student: { discountType?: string | null; discountPct?: number | null },
+): {
+  baseFee: number;
+  discountType: string;
+  discountLabel: string;
+  discountPct: number;
+  discountAmt: number;
+  finalFee: number;
+} {
+  const fee = calcEnrollmentFee(baseFee, student, classFeeDiscounts(cls));
+  return {
+    baseFee,
+    discountType: fee.id,
+    discountLabel: fee.label,
+    discountPct: fee.pct,
+    discountAmt: fee.discountAmt,
+    finalFee: fee.finalFee,
+  };
+}

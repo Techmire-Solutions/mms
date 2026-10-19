@@ -55,6 +55,15 @@ export async function applyEnrollmentTransfer(
     enrollmentId: string;
     from: { classId: string; sectionId: string | null };
     to: { classId: string; className: string; sectionId: string | null };
+    /** Fee recomputed for the target class; applies to invoices generated from now on. */
+    fee: {
+      baseFee: number;
+      discountType: string;
+      discountLabel: string;
+      discountPct: number;
+      discountAmt: number;
+      finalFee: number;
+    };
     effectiveOn: string;
     reason: string;
     actor: OperationActor;
@@ -70,6 +79,12 @@ export async function applyEnrollmentTransfer(
         sectionId: input.to.sectionId,
         // Roll numbers are unique per section; the new section assigns its own.
         rollNo: null,
+        baseFee: String(input.fee.baseFee),
+        discountType: input.fee.discountType,
+        discountLabel: input.fee.discountLabel,
+        discountPct: String(input.fee.discountPct),
+        discountAmt: String(input.fee.discountAmt),
+        finalFee: String(input.fee.finalFee),
         updatedAt: new Date(),
       })
       .where(enrollmentKey(subdomain, input.enrollmentId));
