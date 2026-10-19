@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { type Session } from "@mms/shared";
 import {
-  type sessions,
+  type SessionReadRow,
   sessionFaculty,
   sessionClasses,
   sessionClassFees,
@@ -26,10 +26,11 @@ export {
   findClassById,
 } from "./sessionRepositoryQueries.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
+import { periodSubjectSql } from "./academicCatalogNameSql.js";
 
 type Transaction = TenantTransaction;
 
-export type SessionRow = typeof sessions.$inferSelect;
+export type SessionRow = SessionReadRow;
 type SessionFacultyRow = typeof sessionFaculty.$inferSelect;
 type ClassRow = typeof sessionClasses.$inferSelect;
 type FeeRow = typeof sessionClassFees.$inferSelect;
@@ -37,7 +38,7 @@ type ScheduleRow = typeof sessionClassSchedules.$inferSelect;
 type BudgetRow = typeof sessionClassBudgets.$inferSelect;
 type DiscountRow = typeof sessionClassDiscounts.$inferSelect;
 type TimetableRow = typeof sessionClassTimetables.$inferSelect;
-type PeriodRow = typeof sessionClassTimetablePeriods.$inferSelect;
+type PeriodRow = typeof sessionClassTimetablePeriods.$inferSelect & { subject: string };
 type RefreshmentRow = typeof sessionClassRefreshments.$inferSelect;
 type ScholarshipRow = typeof sessionClassScholarships.$inferSelect;
 type EligibilityRow = typeof scholarshipEligibilities.$inferSelect;
@@ -157,7 +158,8 @@ export async function hydrateSessionsListAggregated(
                   'workspaceSubdomain', per.workspace_subdomain,
                   'startTime', per.start_time,
                   'endTime', per.end_time,
-                  'subject', per.subject,
+                  'subject', COALESCE((SELECT j.name FROM subjects j
+                    WHERE j.workspace_subdomain = per.workspace_subdomain AND j.id = per.subject_id), ''),
                   'subjectId', per.subject_id,
                   'facultyId', per.faculty_id,
                   'facultyName', per.faculty_name,
@@ -544,7 +546,7 @@ export async function hydrateSessionsList(
             timetableId: sessionClassTimetablePeriods.timetableId,
             startTime: sessionClassTimetablePeriods.startTime,
             endTime: sessionClassTimetablePeriods.endTime,
-            subject: sessionClassTimetablePeriods.subject,
+            subject: periodSubjectSql,
             subjectId: sessionClassTimetablePeriods.subjectId,
             facultyId: sessionClassTimetablePeriods.facultyId,
             facultyName: sessionClassTimetablePeriods.facultyName,

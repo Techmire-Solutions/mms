@@ -16,7 +16,7 @@ const FIELD_TO_SQL_COLUMN: Record<string, string> = {
   classId: "class_id",
   status: "status",
   paymentStatus: "payment_status",
-  enrolledDate: "enrolled_date",
+  enrolledDate: "enrolled_on",
   baseFee: "base_fee",
   discountType: "discount_type",
   discountLabel: "discount_label",

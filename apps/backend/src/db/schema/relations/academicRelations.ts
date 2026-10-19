@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { workspaces } from "../platform.js";
 import { contacts } from "../contacts.js";
-import { students, studentEnrolledSessions } from "../students.js";
+import { students, studentEnrolledSessionsLegacy } from "../students.js";
 import {
   sessions,
   sessionFaculty,
@@ -88,7 +88,7 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
     fields: [students.workspaceSubdomain, students.guardianContactId],
     references: [contacts.workspaceSubdomain, contacts.id],
   }),
-  enrolledSessions: many(studentEnrolledSessions),
+  legacyEnrolledSessions: many(studentEnrolledSessionsLegacy),
   attendance: many(attendance),
   attendanceLeaves: many(attendanceLeaves),
   enrollments: many(enrollments),
@@ -96,16 +96,25 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
   examResults: many(examResults),
   hasanatDistributions: many(hasanatDistributions),
 }));
-export const studentEnrolledSessionsRelations = relations(studentEnrolledSessions, ({ one }) => ({
-  student: one(students, {
-    fields: [studentEnrolledSessions.workspaceSubdomain, studentEnrolledSessions.studentId],
-    references: [students.workspaceSubdomain, students.id],
+export const studentEnrolledSessionsLegacyRelations = relations(
+  studentEnrolledSessionsLegacy,
+  ({ one }) => ({
+    student: one(students, {
+      fields: [
+        studentEnrolledSessionsLegacy.workspaceSubdomain,
+        studentEnrolledSessionsLegacy.studentId,
+      ],
+      references: [students.workspaceSubdomain, students.id],
+    }),
+    session: one(sessions, {
+      fields: [
+        studentEnrolledSessionsLegacy.workspaceSubdomain,
+        studentEnrolledSessionsLegacy.sessionId,
+      ],
+      references: [sessions.workspaceSubdomain, sessions.id],
+    }),
   }),
-  session: one(sessions, {
-    fields: [studentEnrolledSessions.workspaceSubdomain, studentEnrolledSessions.sessionId],
-    references: [sessions.workspaceSubdomain, sessions.id],
-  }),
-}));
+);
 
 export const sessionsRelations = relations(sessions, ({ one, many }) => ({
   workspace: one(workspaces, {

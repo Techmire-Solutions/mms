@@ -34,9 +34,8 @@ export const enrollments = pgTable(
     sectionId: text("section_id"),
     /** Roll number within the section (unique per section among active enrollments). */
     rollNo: varchar("roll_no", { length: 64 }),
-    enrolledDate: varchar("enrolled_date", { length: 10 }).notNull(),
-    /** Expand column (migration 0173): trigger-synced `date` copy of `enrolled_date`. */
-    enrolledOn: date("enrolled_on", { mode: "string" }),
+    /** `enrolled_on` since migration 0179 (the legacy varchar is trigger-filled until 0180). */
+    enrolledDate: date("enrolled_on", { mode: "string" }),
     /** Enrollment window (migration 0175): late join / withdrawal; null start = `enrolled_on`. */
     startOn: date("start_on", { mode: "string" }),
     endOn: date("end_on", { mode: "string" }),
@@ -83,7 +82,7 @@ export const enrollments = pgTable(
     }),
     index("enrollments_workspace_student_idx").on(table.workspaceSubdomain, table.studentId),
     index("enrollments_workspace_class_idx").on(table.workspaceSubdomain, table.classId),
-    index("enrollments_workspace_date_idx").on(table.workspaceSubdomain, table.enrolledDate),
+    index("enrollments_workspace_enrolled_on_idx").on(table.workspaceSubdomain, table.enrolledDate),
     index("enrollments_workspace_status_idx").on(table.workspaceSubdomain, table.status),
     index("enrollments_workspace_invoice_idx").on(table.workspaceSubdomain, table.invoiceId),
     index("enrollments_workspace_deleted_idx").on(table.workspaceSubdomain, table.deletedAt),
@@ -159,8 +158,7 @@ export const enrollmentModulePreferences = pgTable(
 /* ========================================================================= */
 
 export type EnrollmentRow = typeof enrollments.$inferSelect;
-/** Row as read by the app: `enrolledOn` (0173 expand column) is trigger-maintained and not read yet. */
-export type EnrollmentSelectRow = Omit<EnrollmentRow, "enrolledOn">;
+export type EnrollmentSelectRow = EnrollmentRow;
 export type InsertEnrollmentRow = typeof enrollments.$inferInsert;
 export type EnrollmentTimelineEventRow = typeof enrollmentTimelineEvents.$inferSelect;
 export type InsertEnrollmentTimelineEventRow = typeof enrollmentTimelineEvents.$inferInsert;

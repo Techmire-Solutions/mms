@@ -1,6 +1,7 @@
 import type { Enrollment } from "@mms/shared";
 import type { enrollments } from "../schema.js";
 import { mapAuditToInsert } from "./repositoryMappers.js";
+import { requireDbDate } from "../../lib/dbDate.js";
 
 export type EnrollmentInsert = typeof enrollments.$inferInsert;
 
@@ -17,7 +18,7 @@ export function recordToInsert(tenant: string, record: Enrollment): EnrollmentIn
     className: String(record.className || ""),
     sectionId: record.sectionId || null,
     rollNo: record.rollNo || null,
-    enrolledDate: String(record.enrolledDate || ""),
+    enrolledDate: requireDbDate(record.enrolledDate, "Enrolled date"),
     startOn: record.startOn || null,
     promotedFromEnrollmentId: record.promotedFromEnrollmentId || null,
     baseFee: String(record.baseFee ?? 0),

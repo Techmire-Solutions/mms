@@ -1,11 +1,12 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { type Session } from "@mms/shared";
-import { sessions, sessionClasses } from "../schema.js";
+import { sessions, sessionClasses, type SessionReadRow } from "../schema.js";
 import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { hydrateSessionsList, hydrateSessionsListSummary } from "./sessionRepositoryHydrate.js";
 import { getPreparedSessionById } from "../preparedStatements.js";
 import { attachClassSectionsTx } from "./sessionSectionsHydrate.js";
 import { attachSessionWorkingDaysTx } from "./sessionWorkingDays.js";
+import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
 async function attachSessionChildrenTx(
   tx: TenantTransaction,
@@ -23,7 +24,7 @@ export const sessionSelectColumns = {
   id: sessions.id,
   workspaceSubdomain: sessions.workspaceSubdomain,
   name: sessions.name,
-  type: sessions.type,
+  type: sessionTypeSql,
   categoryId: sessions.categoryId,
   programId: sessions.programId,
   status: sessions.status,
@@ -69,7 +70,7 @@ export async function findSessionById(tenant: string, id: string): Promise<Sessi
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     if (!tx || typeof (tx as { select?: unknown }).select !== "function") return null;
-    let rows: (typeof sessions.$inferSelect)[];
+    let rows: SessionReadRow[];
     if (
       process.env.MMS_USE_PREPARED_STATEMENTS !== "false" &&
       typeof (tx as { execute?: unknown }).execute === "function"

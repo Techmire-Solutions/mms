@@ -76,6 +76,7 @@ export const PURGE_MODULE_TABLES: readonly string[] = [
   "session_field_configs",
   "session_module_preferences",
   // students
+  "student_enrolled_sessions_legacy",
   "student_enrolled_sessions",
   "students",
   "student_lookups",

@@ -9,6 +9,7 @@ import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import { createSessionsUseCases } from "../../sessions/use-cases/sessionsUseCases.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
+import { requireDbDate } from "../../lib/dbDate.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "date-columns-test";
@@ -99,8 +100,8 @@ describe("academic date columns (real Postgres)", () => {
     await expect(update).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("given writes to large tables, should keep the 0173 date copies in sync and let backfills preserve updated_at", async () => {
-    // Arrange
+  it("given release A (0179), should sync the new date columns and the legacy varchars both ways", async () => {
+    // Arrange: the current release writes `registered_on`; the previous one writes the varchar.
     await withTenant(TENANT, (tx) =>
       tx.insert(students).values({
         id: "dt-stu",
@@ -111,36 +112,33 @@ describe("academic date columns (real Postgres)", () => {
       }),
     );
     const read = () =>
-      withTenant(TENANT, (tx) =>
-        tx
-          .select({
-            registeredOn: students.registeredOn,
-            enrollmentOn: students.enrollmentOn,
-            updatedAt: students.updatedAt,
-          })
-          .from(students)
-          .where(eq(students.id, "dt-stu")),
+      withTenant(
+        TENANT,
+        async (tx) =>
+          (
+            await tx.execute<{ on: string | null; legacy: string | null }>(sql`
+            SELECT registered_on::text AS "on", registered_date AS legacy FROM students
+             WHERE workspace_subdomain = ${TENANT} AND id = 'dt-stu'`)
+          ).rows[0],
       );
-    const [inserted] = await read();
+    const fromNew = await read();
 
     // Act
     await withTenant(TENANT, (tx) =>
-      tx
-        .update(students)
-        .set({ enrollmentDate: "2025-09-15T08:00:00Z" })
-        .where(eq(students.id, "dt-stu")),
+      tx.execute(sql`UPDATE students SET registered_date = '2025-10-02T08:00:00Z'
+        WHERE workspace_subdomain = ${TENANT} AND id = 'dt-stu'`),
     );
-    const [synced] = await read();
-    await withTenant(TENANT, async (tx) => {
-      await tx.execute(sql`SELECT set_config('app.preserve_updated_at', 'on', true)`);
-      await tx.update(students).set({ registeredOn: null }).where(eq(students.id, "dt-stu"));
-    });
-    const [preserved] = await read();
+    const fromLegacy = await read();
 
     // Assert
-    expect(inserted.registeredOn).toBe("2025-09-01");
-    expect(synced).toMatchObject({ registeredOn: "2025-09-01", enrollmentOn: "2025-09-15" });
-    expect(preserved.registeredOn).toBe("2025-09-01");
-    expect(preserved.updatedAt.toISOString()).toBe(synced.updatedAt.toISOString());
+    expect(fromNew).toEqual({ on: "2025-09-01", legacy: "2025-09-01" });
+    expect(fromLegacy).toEqual({ on: "2025-10-02", legacy: "2025-10-02T08:00:00Z" });
+  });
+
+  it("given a non-date value on write, should reject it instead of storing NULL", () => {
+    // Act / Assert
+    expect(() => requireDbDate("15/03/2024", "Registered date")).toThrow(/YYYY-MM-DD/);
+    expect(requireDbDate("", "Registered date")).toBeNull();
+    expect(requireDbDate("2024-03-15T09:00:00Z", "Registered date")).toBe("2024-03-15");
   });
 });

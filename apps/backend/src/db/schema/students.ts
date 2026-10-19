@@ -1,5 +1,6 @@
 import {
   pgTable,
+  pgView,
   text,
   timestamp,
   uniqueIndex,
@@ -40,11 +41,9 @@ export const students = pgTable(
     studentId: varchar("student_id", { length: 100 }),
     // Status values enforced at DB level by students_status_check constraint (migration 0162).
     status: varchar("status", { length: 50 }).notNull().default("active"),
-    registeredDate: varchar("registered_date", { length: 35 }),
-    enrollmentDate: varchar("enrollment_date", { length: 35 }),
-    /** Expand columns (migration 0173): trigger-synced `date` copies of the varchar dates above. */
-    registeredOn: date("registered_on", { mode: "string" }),
-    enrollmentOn: date("enrollment_on", { mode: "string" }),
+    /** `*_on` columns since migration 0179 (the legacy varchars are trigger-filled until 0180). */
+    registeredDate: date("registered_on", { mode: "string" }),
+    enrollmentDate: date("enrollment_on", { mode: "string" }),
     discountType: varchar("discount_type", { length: 100 }),
     discountPct: numeric("discount_pct", { precision: 5, scale: 2 }),
     registrationType: varchar("registration_type", { length: 100 }),
@@ -79,9 +78,10 @@ export const students = pgTable(
     index("students_workspace_status_coalesce_updated_at_active_idx")
       .on(table.workspaceSubdomain, sql`COALESCE(${table.status}, 'active')`, table.updatedAt)
       .where(sql`${table.deletedAt} is null`),
-    index("students_workspace_registered_date_active_idx")
-      .on(table.workspaceSubdomain, table.registeredDate)
-      .where(sql`${table.deletedAt} is null`),
+    index("students_workspace_registered_on_idx").on(
+      table.workspaceSubdomain,
+      table.registeredDate,
+    ),
     uniqueIndex("students_workspace_gr_number_active_uidx")
       .on(table.workspaceSubdomain, sql`lower(btrim(${table.grNumber}))`)
       .where(
@@ -140,20 +140,15 @@ export const students = pgTable(
       "students_discount_pct_range_check",
       sql`${table.discountPct} IS NULL OR (${table.discountPct} >= 0 AND ${table.discountPct} <= 100)`,
     ),
-    // P1-5: Enforce valid ISO dates when present.
-    check(
-      "students_registered_date_iso_check",
-      sql`${table.registeredDate} IS NULL OR ${table.registeredDate} = '' OR ${table.registeredDate} ~ '^\d{4}-\d{2}-\d{2}'`,
-    ),
-    check(
-      "students_enrollment_date_iso_check",
-      sql`${table.enrollmentDate} IS NULL OR ${table.enrollmentDate} = '' OR ${table.enrollmentDate} ~ '^\d{4}-\d{2}-\d{2}'`,
-    ),
   ],
 );
 
-export const studentEnrolledSessions = pgTable(
-  "student_enrolled_sessions",
+/**
+ * Legacy memberships with no enrollment history (migration 0179). Read through the
+ * `student_session_memberships` view; a pair is consumed once the student is enrolled in the session.
+ */
+export const studentEnrolledSessionsLegacy = pgTable(
+  "student_enrolled_sessions_legacy",
   {
     id: text("id").notNull(),
     workspaceSubdomain: text("workspace_subdomain")
@@ -166,26 +161,41 @@ export const studentEnrolledSessions = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.studentId, table.id] }),
-    // P1-3: Unique constraint prevents duplicate enrolment rows from concurrent bulk-enroll races.
-    uniqueIndex("student_enrolled_sessions_workspace_student_session_uidx").on(
+    uniqueIndex("student_enrolled_sessions_legacy_pair_uidx").on(
       table.workspaceSubdomain,
       table.studentId,
       table.sessionId,
     ),
-    index("student_enrolled_sessions_workspace_session_idx").on(
+    index("student_enrolled_sessions_legacy_session_idx").on(
       table.workspaceSubdomain,
       table.sessionId,
     ),
     foreignKey({
+      name: "student_enrolled_sessions_legacy_student_fk",
       columns: [table.workspaceSubdomain, table.studentId],
       foreignColumns: [students.workspaceSubdomain, students.id],
     }).onDelete("cascade"),
     foreignKey({
+      name: "student_enrolled_sessions_legacy_session_fk",
       columns: [table.workspaceSubdomain, table.sessionId],
       foreignColumns: [sessions.workspaceSubdomain, sessions.id],
     }).onDelete("cascade"),
   ],
 );
+
+/**
+ * Student ↔ session membership (`student_session_memberships` view, migration 0179): sessions with
+ * a live, seat-holding enrollment, plus legacy pairs from `student_enrolled_sessions_legacy`.
+ * Read-only. The old `student_enrolled_sessions` table is trigger-mirrored until 0180 drops it.
+ */
+export const studentEnrolledSessions = pgView("student_session_memberships", {
+  id: text("id").notNull(),
+  workspaceSubdomain: text("workspace_subdomain").notNull(),
+  studentId: text("student_id").notNull(),
+  sessionId: varchar("session_id", { length: 100 }).notNull(),
+  sortOrder: integer("sort_order").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull(),
+}).existing();
 
 export * from "./studentSetupTables.js";
 
@@ -194,8 +204,8 @@ export * from "./studentSetupTables.js";
 /* ========================================================================= */
 
 export type StudentRow = typeof students.$inferSelect;
-/** Row as read by the app: the 0173 expand columns are trigger-maintained and not read yet. */
-export type StudentSelectRow = Omit<StudentRow, "registeredOn" | "enrollmentOn">;
+export type StudentSelectRow = StudentRow;
 export type InsertStudentRow = typeof students.$inferInsert;
 export type StudentEnrolledSessionRow = typeof studentEnrolledSessions.$inferSelect;
-export type InsertStudentEnrolledSessionRow = typeof studentEnrolledSessions.$inferInsert;
+export type InsertStudentEnrolledSessionLegacyRow =
+  typeof studentEnrolledSessionsLegacy.$inferInsert;

@@ -50,6 +50,7 @@ export const preparedContactColumns = {
 };
 
 import { STUDENT_COLUMNS } from "./repositories/studentRepositoryColumns.js";
+import { sessionTypeSql } from "./repositories/academicCatalogNameSql.js";
 
 export const preparedStudentColumns = STUDENT_COLUMNS;
 
@@ -57,7 +58,7 @@ export const preparedSessionColumns = {
   id: sessions.id,
   workspaceSubdomain: sessions.workspaceSubdomain,
   name: sessions.name,
-  type: sessions.type,
+  type: sessionTypeSql,
   categoryId: sessions.categoryId,
   programId: sessions.programId,
   status: sessions.status,

@@ -49,7 +49,7 @@ export async function generateNextGrNumberBatchSql(
           restartAnnually
             ? and(
                 base,
-                sql`(COALESCE(${students.registeredDate}, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
+                sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
               )
             : base,
         );
@@ -149,7 +149,7 @@ export async function previewNextGrNumberSql(
           restartAnnually
             ? and(
                 base,
-                sql`(COALESCE(${students.registeredDate}, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
+                sql`(COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`} OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`})`,
               )
             : base,
         );

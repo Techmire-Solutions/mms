@@ -31,7 +31,6 @@ export const sessions = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     name: varchar("name", { length: 255 }).notNull(),
-    type: varchar("type", { length: 100 }).notNull().default("academic"),
     /** Session Category (Academic Year, Term, Short Course, …) — `session_categories`. */
     categoryId: text("category_id"),
     /** Optional default Program for the session's classes — `programs`. */
@@ -66,7 +65,6 @@ export const sessions = pgTable(
     index("sessions_workspace_program_idx").on(table.workspaceSubdomain, table.programId),
     index("sessions_workspace_name_idx").on(table.workspaceSubdomain, table.name),
     index("sessions_workspace_status_idx").on(table.workspaceSubdomain, table.status),
-    index("sessions_workspace_type_idx").on(table.workspaceSubdomain, table.type),
     index("sessions_workspace_start_date_idx").on(table.workspaceSubdomain, table.startDate),
     index("sessions_workspace_deleted_idx").on(table.workspaceSubdomain, table.deletedAt),
     index("sessions_workspace_active_idx")
@@ -331,8 +329,6 @@ export const sessionClassTimetablePeriods = pgTable(
     timetableId: text("timetable_id").notNull(),
     startTime: varchar("start_time", { length: 20 }).notNull(),
     endTime: varchar("end_time", { length: 20 }).notNull(),
-    /** Display snapshot of `subjects.name`; `subjectId` is authoritative. */
-    subject: varchar("subject", { length: 150 }).notNull(),
     subjectId: text("subject_id"),
     facultyId: text("faculty_id"),
     facultyName: varchar("faculty_name", { length: 255 }).default(""),
@@ -542,3 +538,6 @@ export type SessionFieldConfigsRow = typeof sessionFieldConfigs.$inferSelect;
 export type InsertSessionFieldConfigsRow = typeof sessionFieldConfigs.$inferInsert;
 export type SessionModulePreferencesRow = typeof sessionModulePreferences.$inferSelect;
 export type InsertSessionModulePreferencesRow = typeof sessionModulePreferences.$inferInsert;
+
+/** Session row as read by the app: `type` is derived from the program (migration 0179). */
+export type SessionReadRow = typeof sessions.$inferSelect & { type: string };

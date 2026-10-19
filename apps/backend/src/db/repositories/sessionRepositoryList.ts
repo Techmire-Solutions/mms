@@ -24,6 +24,7 @@ import { withTenant, withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
 import { findSessionsSummaryByIds } from "./sessionRepository.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
+import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
 const SESSION_SORT_FIELDS = new Set([
   "name",
@@ -41,7 +42,7 @@ function buildSearchSql(search: string): SQL | null {
   const pattern = toSqlSearchPattern(normalized);
   return or(
     ilike(sessions.name, pattern),
-    ilike(sessions.type, pattern),
+    ilike(sessionTypeSql, pattern),
     ilike(sessions.description, pattern),
   )!;
 }
@@ -67,7 +68,7 @@ function buildOrderBy(
     return dir === "desc" ? desc(sessions.status) : asc(sessions.status);
   }
   if (field === "type") {
-    return dir === "desc" ? desc(sessions.type) : asc(sessions.type);
+    return dir === "desc" ? desc(sessionTypeSql) : asc(sessionTypeSql);
   }
   if (field === "baseFee") {
     return dir === "desc" ? desc(sessions.baseFee) : asc(sessions.baseFee);
@@ -99,7 +100,7 @@ function buildListConditions(subdomain: string, query: SessionsListQuery): SQL[]
   const rawTypes = dedupeTrimmedIds(query.type);
   if (rawTypes.length > 0) {
     const types = rawTypes.map((type) => type.toLowerCase());
-    conditions.push(inArray(sql`lower(${sessions.type})`, types));
+    conditions.push(inArray(sql`lower(${sessionTypeSql})`, types));
   }
 
   const search = query.search?.trim();

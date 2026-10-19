@@ -24,9 +24,9 @@ export function resolveStudentFieldExpr(field: string, useJoinedContacts = false
   if (f === "grNumber" || f === "gr_number") return sql`COALESCE(${students.grNumber}, '')`;
   if (f === "studentId" || f === "student_id") return sql`COALESCE(${students.studentId}, '')`;
   if (f === "registeredDate" || f === "registered_date")
-    return sql`COALESCE(${students.registeredDate}, '')`;
+    return sql`COALESCE(${students.registeredDate}::text, '')`;
   if (f === "enrollmentDate" || f === "enrollment_date")
-    return sql`COALESCE(${students.enrollmentDate}, '')`;
+    return sql`COALESCE(${students.enrollmentDate}::text, '')`;
   if (f === "discountType" || f === "discount_type")
     return sql`COALESCE(${students.discountType}, '')`;
   if (f === "discountPct" || f === "discount_pct") return sql`COALESCE(${students.discountPct}, 0)`;

@@ -37,7 +37,8 @@ describe("studentRepositoryList Contacts SSOT", () => {
     expect(listSrc).toContain("fc.id = ${students.fatherContactId}");
   });
 
-  it("guards registeredDate date casting with ISO regex pattern", () => {
-    expect(listSrc).toContain("^[0-9]{4}-[0-9]{2}-[0-9]{2}");
+  it("given registered_date is a date column (migration 0179), should cast it without a text regex guard", () => {
+    expect(listSrc).toContain("${students.registeredDate}::timestamptz");
+    expect(listSrc).not.toContain("^[0-9]{4}-[0-9]{2}-[0-9]{2}");
   });
 });

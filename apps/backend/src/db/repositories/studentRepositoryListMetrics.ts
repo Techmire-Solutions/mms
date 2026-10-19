@@ -23,7 +23,7 @@ export async function aggregateStudentsCommandMetrics(
         inactive: sql<number>`count(*) FILTER (WHERE ${statusExpr()} = 'inactive')::int`,
         suspended: sql<number>`count(*) FILTER (WHERE ${statusExpr()} = 'suspended')::int`,
         newThisPeriod: sql<number>`count(*) FILTER (WHERE COALESCE(
-          CASE WHEN ${students.registeredDate} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}' THEN ${students.registeredDate}::timestamptz ELSE NULL END,
+          ${students.registeredDate}::timestamptz,
           ${students.createdAt}
         ) >= ${sinceInterval})::int`,
       })

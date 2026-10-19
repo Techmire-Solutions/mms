@@ -1,7 +1,7 @@
 import type { AcademicCatalogKind } from "@mms/shared";
 import type { TenantTransaction } from "../tenant-context.js";
 import {
-  findAcademicCatalogByNameTx,
+  ensureAcademicCatalogByNameTx,
   loadAcademicCatalogNamesTx,
 } from "./academicCatalogReferences.js";
 
@@ -12,7 +12,8 @@ export interface CatalogRef {
 
 /**
  * Resolves catalog references for a batch of writes: a live id wins and refreshes the display
- * snapshot from the catalog; otherwise the legacy text is matched by name; unknown ids are dropped.
+ * name from the catalog; otherwise the text is matched by name, and a missing entry is created
+ * so the value is kept (migration 0179 dropped the text columns); unknown ids are dropped.
  */
 export async function resolveCatalogRefsTx(
   tx: TenantTransaction,
@@ -38,7 +39,7 @@ export async function resolveCatalogRefsTx(
     }
     const key = text.toLowerCase();
     if (key && !byName.has(key))
-      byName.set(key, await findAcademicCatalogByNameTx(tx, kind, subdomain, text));
+      byName.set(key, await ensureAcademicCatalogByNameTx(tx, kind, subdomain, text));
     const match = key ? (byName.get(key) ?? null) : null;
     resolved.push(match ? { id: match.id, name: match.name } : { id: null, name: text });
   }

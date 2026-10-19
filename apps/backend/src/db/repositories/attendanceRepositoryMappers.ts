@@ -3,6 +3,14 @@ import type { AttendanceRecord } from "@mms/shared";
 import type { attendance } from "../schema.js";
 
 import { mapAuditTimestamps, mapAuditToInsert } from "./repositoryMappers.js";
+import { requireDbDate } from "../../lib/dbDate.js";
+import { ValidationError } from "../../lib/httpErrors.js";
+
+function attendanceDay(value: string | null | undefined): string {
+  const day = requireDbDate(value, "Attendance date");
+  if (!day) throw new ValidationError("Attendance date is required");
+  return day;
+}
 
 export type AttendanceRow = typeof attendance.$inferSelect;
 export type AttendanceInsert = typeof attendance.$inferInsert;
@@ -58,7 +66,7 @@ export function attendanceRecordToInsert(
     studentId: String(record.studentId || ""),
     studentName: String(record.studentName || ""),
     rollNo: String(record.rollNo || ""),
-    date: String(record.date || ""),
+    date: attendanceDay(record.date),
     status: String(record.status || "present"),
     timeIn: String(record.timeIn || ""),
     timeOut: String(record.timeOut || ""),

@@ -14,7 +14,6 @@ import {
   type ScholarshipEligibility,
 } from "@mms/shared";
 import {
-  type sessions,
   type sessionFaculty,
   type sessionClasses,
   type sessionClassFees,
@@ -26,10 +25,11 @@ import {
   type sessionClassRefreshments,
   type scholarshipEligibilities,
   type sessionClassScholarships,
+  type SessionReadRow,
 } from "../schema.js";
 import { mapAuditTimestamps, nullsToUndefined } from "./repositoryMappers.js";
 
-type SessionRow = typeof sessions.$inferSelect;
+type SessionRow = SessionReadRow;
 type SessionFacultyRow = typeof sessionFaculty.$inferSelect;
 type ClassRow = typeof sessionClasses.$inferSelect;
 type FeeRow = typeof sessionClassFees.$inferSelect;
@@ -37,7 +37,7 @@ type ScheduleRow = typeof sessionClassSchedules.$inferSelect;
 type BudgetRow = typeof sessionClassBudgets.$inferSelect;
 type DiscountRow = typeof sessionClassDiscounts.$inferSelect;
 type TimetableRow = typeof sessionClassTimetables.$inferSelect;
-type PeriodRow = typeof sessionClassTimetablePeriods.$inferSelect;
+type PeriodRow = typeof sessionClassTimetablePeriods.$inferSelect & { subject: string };
 type RefreshmentRow = typeof sessionClassRefreshments.$inferSelect;
 type ScholarshipRow = typeof sessionClassScholarships.$inferSelect;
 type EligibilityRow = typeof scholarshipEligibilities.$inferSelect;

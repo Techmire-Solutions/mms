@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { AcademicCatalogKind } from "@mms/shared";
 import {
@@ -156,4 +157,25 @@ export async function findAcademicCatalogByNameTx(
     )
     .limit(1);
   return row ?? null;
+}
+
+/**
+ * Live entry for `name`, created when missing. Text that arrives without a catalog id (legacy
+ * clients, CSV imports) is never dropped now that the text snapshots are gone (migration 0179).
+ */
+export async function ensureAcademicCatalogByNameTx(
+  tx: TenantTransaction,
+  kind: AcademicCatalogKind,
+  subdomain: string,
+  name: string,
+): Promise<{ id: string; name: string } | null> {
+  const text = name.trim().slice(0, 150);
+  if (!text) return null;
+  const found = await findAcademicCatalogByNameTx(tx, kind, subdomain, text);
+  if (found) return found;
+  await tx
+    .insert(TABLES[kind])
+    .values({ id: randomUUID(), workspaceSubdomain: subdomain, name: text })
+    .onConflictDoNothing();
+  return findAcademicCatalogByNameTx(tx, kind, subdomain, text);
 }

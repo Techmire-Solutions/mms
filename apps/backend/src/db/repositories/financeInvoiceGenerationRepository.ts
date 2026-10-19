@@ -20,7 +20,7 @@ function toBillingSource(row: {
   sessionName: string;
   sessionId: string;
   classId: string;
-  enrolledDate: string;
+  enrolledDate: string | null;
   baseFee: string;
   discountType: string;
   discountPct: string;
@@ -37,7 +37,7 @@ function toBillingSource(row: {
     sessionName: row.sessionName,
     sessionId: row.sessionId,
     classId: row.classId,
-    enrolledDate: row.enrolledDate,
+    enrolledDate: row.enrolledDate ?? "",
     baseFee: Number(row.baseFee ?? 0),
     discountType: row.discountType,
     discountPct: Number(row.discountPct ?? 0),

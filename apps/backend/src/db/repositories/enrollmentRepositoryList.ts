@@ -228,7 +228,6 @@ export async function aggregateEnrollmentsCommandMetrics(
         revenue: sql<number>`coalesce(sum(${enrollments.finalFee}::float8) FILTER (WHERE ${enrollmentHoldsSeatWhere()}), 0)::float8`,
         newThisPeriod: sql<number>`count(*) FILTER (WHERE
           ${enrollments.enrolledDate} IS NOT NULL
-          AND ${enrollments.enrolledDate} ~ '^[0-9]{4}'
           AND (${enrollments.enrolledDate})::timestamptz >= (CURRENT_TIMESTAMP - (${days}::int * INTERVAL '1 day'))
         )::int`,
       })

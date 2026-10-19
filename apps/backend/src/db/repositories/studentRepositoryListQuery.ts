@@ -119,7 +119,7 @@ export function buildListConditions(
     if (quickFilter === "new") {
       const since = sql`now() - (${MODULE_METRICS_DEFAULT_PERIOD_DAYS} * interval '1 day')`;
       conditions.push(sql`COALESCE(
-        CASE WHEN ${students.registeredDate} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}' THEN ${students.registeredDate}::timestamptz ELSE NULL END,
+        ${students.registeredDate}::timestamptz,
         ${students.createdAt}
       ) >= ${since}`);
     } else if (quickFilter === "missingGr") {

@@ -123,7 +123,6 @@ export function collectClassChildRows(
         timetableId,
         startTime: p.startTime,
         endTime: p.endTime,
-        subject: p.subject,
         subjectId: p.subjectId || null,
         facultyId: p.facultyId?.trim() ? p.facultyId.trim() : null,
         facultyName: p.facultyName || "",

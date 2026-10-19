@@ -5,8 +5,6 @@ import { getAttendanceModulePreferences } from "./attendanceModulePreferencesRep
 /** Builds the "counts toward attendance rates" predicate for an attendance table alias. */
 export type CountableAttendanceSql = (alias: string) => SQL;
 
-const ISO_DATE_RE = "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$";
-
 /**
  * Attendance-rate KPI definition (single source of truth for metrics and reports):
  * a row counts only when its date is an instructional day for its class — weekly working days
@@ -22,7 +20,7 @@ export function countableAttendanceSql(
   const weekdays = `{${workspaceWeekdays.join(",")}}`;
   return (alias) => {
     const a = (column: string) => sql.raw(`${alias}.${column}`);
-    const day = sql`left(${a("date")}, 10)::date`;
+    const day = a("date_on");
     const sessionOfClass = sql`COALESCE((SELECT sc.session_id FROM session_classes sc
       WHERE sc.workspace_subdomain = ${a("workspace_subdomain")} AND sc.id = ${a("class_id")} LIMIT 1), ${a("class_id")})`;
     const calendarDecision = sql`CASE WHEN EXISTS (SELECT 1 FROM academic_calendar_events ce0
@@ -47,10 +45,8 @@ export function countableAttendanceSql(
       AND EXISTS (SELECT 1 FROM attendance_leaves lv
         WHERE lv.workspace_subdomain = ${a("workspace_subdomain")} AND lv.student_id = ${a("student_id")}
           AND lower(lv.status) = 'approved' AND ${day} BETWEEN lv.from_date AND lv.to_date))`;
-    return sql`(CASE WHEN ${a("date")} ~ ${ISO_DATE_RE} THEN
-      COALESCE(${calendarDecision}, extract(dow FROM ${day})::int = ANY(COALESCE(${sessionWeekdays}, ${weekdays}::int[])))
-      AND NOT ${onApprovedLeave}
-    ELSE true END)`;
+    return sql`(COALESCE(${calendarDecision}, extract(dow FROM ${day})::int = ANY(COALESCE(${sessionWeekdays}, ${weekdays}::int[])))
+      AND NOT ${onApprovedLeave})`;
   };
 }
 

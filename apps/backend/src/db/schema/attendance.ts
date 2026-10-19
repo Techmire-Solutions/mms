@@ -30,9 +30,11 @@ export const attendance = pgTable(
     studentId: varchar("student_id", { length: 64 }).notNull(),
     studentName: varchar("student_name", { length: 255 }).notNull().default(""),
     rollNo: varchar("roll_no", { length: 64 }).notNull().default(""),
-    date: varchar("date", { length: 10 }).notNull(),
-    /** Expand column (migration 0173): trigger-synced `date` copy of `date`; reads switch in the contract step. */
-    dateOn: date("date_on", { mode: "string" }),
+    /**
+     * The day, read and written as the `date_on` column since migration 0179; the legacy varchar
+     * `date` is filled by a trigger until release B (0180) drops it.
+     */
+    date: date("date_on", { mode: "string" }).notNull(),
     status: varchar("status", { length: 20 }).notNull().default("present"),
     timeIn: varchar("time_in", { length: 10 }).notNull().default(""),
     timeOut: varchar("time_out", { length: 10 }).notNull().default(""),
@@ -51,23 +53,18 @@ export const attendance = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
-    uniqueIndex("attendance_workspace_class_student_date_uidx")
+    uniqueIndex("attendance_workspace_class_student_date_on_uidx")
       .on(table.workspaceSubdomain, table.classId, table.studentId, table.date)
       .where(sql`${table.deletedAt} is null`),
     index("attendance_workspace_active_idx")
       .on(table.workspaceSubdomain)
       .where(sql`${table.deletedAt} is null`),
-    index("attendance_workspace_date_idx").on(table.workspaceSubdomain, table.date),
+    index("attendance_workspace_date_on_idx").on(table.workspaceSubdomain, table.date),
     index("attendance_workspace_status_idx").on(table.workspaceSubdomain, table.status),
-    index("attendance_workspace_class_date_idx").on(
-      table.workspaceSubdomain,
-      table.classId,
-      table.date,
-    ),
-    index("attendance_workspace_class_date_active_idx")
+    index("attendance_workspace_class_date_on_active_idx")
       .on(table.workspaceSubdomain, table.classId, table.date)
       .where(sql`${table.deletedAt} is null`),
-    index("attendance_workspace_class_date_status_active_idx")
+    index("attendance_workspace_class_date_on_status_active_idx")
       .on(table.workspaceSubdomain, table.classId, table.date, table.status)
       .where(sql`${table.deletedAt} is null`),
     foreignKey({

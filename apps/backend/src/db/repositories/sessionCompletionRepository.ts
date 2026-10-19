@@ -46,8 +46,8 @@ export async function loadSessionCompletionFacts(
             FROM attendance a
            WHERE a.workspace_subdomain = e.workspace_subdomain AND a.deleted_at IS NULL
              AND a.student_id = e.student_id AND a.class_id = e.class_id
-             AND (e.start_on IS NULL OR left(a.date, 10) >= e.start_on::text)
-             AND (e.end_on IS NULL OR left(a.date, 10) <= e.end_on::text)
+             AND (e.start_on IS NULL OR a.date_on >= e.start_on)
+             AND (e.end_on IS NULL OR a.date_on <= e.end_on)
              AND ${countable("a")}
         ) att ON true
         LEFT JOIN LATERAL (

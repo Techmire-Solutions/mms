@@ -6,8 +6,9 @@ import { exams, examClasses } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 import { resolveCatalogRefsTx } from "./academicCatalogSnapshot.js";
+import { examSubjectSql } from "./academicCatalogNameSql.js";
 
-type ExamRow = typeof exams.$inferSelect;
+type ExamRow = typeof exams.$inferSelect & { subject: string };
 
 export function examRowToRecord(row: ExamRow, classIds: string[] = []): Exam {
   const exam: Exam = {
@@ -45,7 +46,7 @@ export async function listExamsByWorkspace(
         id: exams.id,
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
-        subject: exams.subject,
+        subject: examSubjectSql,
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
@@ -101,7 +102,7 @@ export async function findExamById(tenant: string, id: string): Promise<Exam | n
         id: exams.id,
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
-        subject: exams.subject,
+        subject: examSubjectSql,
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
@@ -167,7 +168,7 @@ export async function findExamsByIds(
         id: exams.id,
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
-        subject: exams.subject,
+        subject: examSubjectSql,
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
@@ -223,7 +224,6 @@ export async function saveExam(tenant: string, record: Exam): Promise<void> {
         id: record.id,
         workspaceSubdomain: subdomain,
         name: record.name,
-        subject: subjectRef.name,
         subjectId: subjectRef.id,
         totalMarks: record.totalMarks ?? 100,
         passingMarks: record.passingMarks ?? 50,
@@ -240,7 +240,6 @@ export async function saveExam(tenant: string, record: Exam): Promise<void> {
         target: [exams.workspaceSubdomain, exams.id],
         set: {
           name: record.name,
-          subject: subjectRef.name,
           subjectId: subjectRef.id,
           totalMarks: record.totalMarks ?? 100,
           passingMarks: record.passingMarks ?? 50,
@@ -297,7 +296,6 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
           id: r.id,
           workspaceSubdomain: subdomain,
           name: r.name,
-          subject: subjectRefs[index].name,
           subjectId: subjectRefs[index].id,
           totalMarks: r.totalMarks ?? 100,
           passingMarks: r.passingMarks ?? 50,
@@ -315,7 +313,6 @@ export async function bulkSaveExams(tenant: string, records: Exam[]): Promise<vo
         target: [exams.workspaceSubdomain, exams.id],
         set: {
           name: sql`excluded.name`,
-          subject: sql`excluded.subject`,
           subjectId: sql`excluded.subject_id`,
           totalMarks: sql`excluded.total_marks`,
           passingMarks: sql`excluded.passing_marks`,
@@ -389,7 +386,6 @@ export async function replaceExamsForWorkspace(tenant: string, records: Exam[]):
           id: r.id,
           workspaceSubdomain: subdomain,
           name: r.name,
-          subject: subjectRefs[index].name,
           subjectId: subjectRefs[index].id,
           totalMarks: r.totalMarks ?? 100,
           passingMarks: r.passingMarks ?? 50,

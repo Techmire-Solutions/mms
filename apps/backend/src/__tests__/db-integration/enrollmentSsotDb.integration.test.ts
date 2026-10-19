@@ -4,7 +4,12 @@ import { SessionSchema } from "@mms/shared";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { studentEnrolledSessions, students, workspaces } from "../../db/schema.js";
+import {
+  studentEnrolledSessions,
+  studentEnrolledSessionsLegacy,
+  students,
+  workspaces,
+} from "../../db/schema.js";
 import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { bulkSoftDeleteEnrollments } from "../../db/repositories/enrollmentRepositoryPersist.js";
 import { bulkEnrollStudentsIntoClass } from "../../enrollments/use-cases/enrollmentBulkEnroll.js";
@@ -63,7 +68,7 @@ beforeAll(async () => {
   }
   // Legacy class-less membership: no enrollment row exists for it.
   await withTenant(TENANT, (tx) =>
-    tx.insert(studentEnrolledSessions).values({
+    tx.insert(studentEnrolledSessionsLegacy).values({
       id: "s3_legacy",
       workspaceSubdomain: TENANT,
       studentId: "s3",

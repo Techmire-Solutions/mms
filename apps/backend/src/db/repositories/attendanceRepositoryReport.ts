@@ -107,15 +107,14 @@ export async function loadAttendanceReportAggregatesSql(
       const presentOrLate = isPresentOrLateSql("a");
       const monthResult = await tx.execute(sql`
         SELECT
-          to_char(left(a.date, 10)::date, 'YYYY-MM') AS "monthKey",
+          to_char(a.date_on, 'YYYY-MM') AS "monthKey",
           COUNT(*) FILTER (WHERE ${presentOrLate})::int AS "presentCount",
           COUNT(*)::int AS total
         FROM attendance a
         WHERE ${activeAttendanceWhere(subdomain, "a")}
           AND ${countable("a")}
-          AND a.date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND left(a.date, 10) >= ${from}
-          AND left(a.date, 10) <= ${to}
+          AND a.date_on >= ${from}::date
+          AND a.date_on <= ${to}::date
         GROUP BY 1
         ORDER BY 1 ASC
       `);

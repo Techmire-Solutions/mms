@@ -30,7 +30,6 @@ export function sessionWriteValues(
     id: String(record.id),
     workspaceSubdomain: subdomain,
     name: record.name,
-    type: record.type || "academic",
     categoryId: record.categoryId || null,
     programId: record.programId || null,
     status: normalizeSessionStatus(record.status),

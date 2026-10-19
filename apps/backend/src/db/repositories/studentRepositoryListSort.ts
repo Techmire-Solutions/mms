@@ -61,8 +61,8 @@ export function buildOrderBy(
   }
   if (field === "registeredDate") {
     return dir === "desc"
-      ? sql`lower(COALESCE(${students.registeredDate}, '')) desc nulls last`
-      : sql`lower(COALESCE(${students.registeredDate}, '')) asc nulls last`;
+      ? sql`${students.registeredDate} desc nulls last`
+      : sql`${students.registeredDate} asc nulls last`;
   }
   return sql`${students.id} asc`;
 }

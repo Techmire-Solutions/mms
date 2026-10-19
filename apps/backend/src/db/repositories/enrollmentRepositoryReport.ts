@@ -42,19 +42,18 @@ export async function loadEnrollmentsReportAggregatesSql(
         ) AS d
       ),
       active AS (
-        SELECT e.enrolled_date AS enrolled_date
+        SELECT e.enrolled_on AS enrolled_on
         FROM enrollments e
         WHERE e.workspace_subdomain = ${subdomain}
           AND e.deleted_at IS NULL
-          AND e.enrolled_date IS NOT NULL
-          AND e.enrolled_date ~ '^[0-9]{4}'
+          AND e.enrolled_on IS NOT NULL
       )
       SELECT
         m."monthKey",
         (
           SELECT count(*)::int
           FROM active a
-          WHERE left(a.enrolled_date, 10) <= m.month_end
+          WHERE a.enrolled_on::text <= m.month_end
         ) AS students
       FROM months m
       ORDER BY m."monthKey" ASC
@@ -226,15 +225,14 @@ export async function loadEnrollmentsReportAggregatesSql(
         if (!from || !to) return [];
         const monthResult = await tx.execute(sql`
           SELECT
-            to_char(left(e.enrolled_date, 10)::date, 'YYYY-MM') AS "monthKey",
+            to_char(e.enrolled_on, 'YYYY-MM') AS "monthKey",
             count(*)::int AS count
           FROM enrollments e
           WHERE e.workspace_subdomain = ${subdomain}
             AND e.deleted_at IS NULL
-            AND e.enrolled_date IS NOT NULL
-            AND e.enrolled_date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-            AND left(e.enrolled_date, 10) >= ${from}
-            AND left(e.enrolled_date, 10) <= ${to}
+            AND e.enrolled_on IS NOT NULL
+            AND e.enrolled_on::text >= ${from}
+            AND e.enrolled_on::text <= ${to}
           GROUP BY 1
           ORDER BY 1 ASC
         `);
