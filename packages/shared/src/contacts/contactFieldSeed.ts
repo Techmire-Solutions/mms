@@ -4,11 +4,7 @@ import { INITIAL_FIELD_SEED_IDENTITY } from "./contactFieldSeedIdentity.js";
 import { INITIAL_FIELD_SEED_PROFILE } from "./contactFieldSeedProfile.js";
 import { INITIAL_FIELD_SEED_AFFILIATIONS } from "./contactFieldSeedAffiliations.js";
 
-export {
-  INITIAL_FIELD_SEED_IDENTITY,
-  INITIAL_FIELD_SEED_PROFILE,
-  INITIAL_FIELD_SEED_AFFILIATIONS,
-};
+export { INITIAL_FIELD_SEED_IDENTITY, INITIAL_FIELD_SEED_PROFILE, INITIAL_FIELD_SEED_AFFILIATIONS };
 
 // ── Default seed constants ────────────────────────────────────────────────────
 // Single source of truth for all default field, tab, and column definitions.

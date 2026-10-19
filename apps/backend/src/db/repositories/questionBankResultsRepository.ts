@@ -1,9 +1,6 @@
 import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
 import { dedupeTrimmedIds, type QuestionBankResult } from "@mms/shared";
-import {
-  assessmentResults,
-  assessmentAnswers,
-} from "../schema.js";
+import { assessmentResults, assessmentAnswers } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 

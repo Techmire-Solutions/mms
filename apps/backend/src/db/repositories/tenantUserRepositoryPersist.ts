@@ -19,7 +19,6 @@ import {
 export * from "./tenantUserLifecyclePersist.js";
 export * from "./tenantUserProfileHelpers.js";
 
-
 export async function replaceTenantUsersForWorkspace(
   workspaceSubdomain: string,
   users: TenantUserRow[],

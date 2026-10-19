@@ -1,14 +1,7 @@
-import {
-  type User,
-  ATTENDANCE_MODULE_MANIFEST,
-  type attendanceContract,
-} from "@mms/shared";
+import { type User, ATTENDANCE_MODULE_MANIFEST, type attendanceContract } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import {
-  canDeleteCollection,
-  canWriteCollection,
-} from "../../../services/rbacService.js";
+import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { attendanceUseCases } from "../../../attendance/use-cases/attendanceUseCases.js";
 import { assertTeacherClassScope } from "../../../sessions/use-cases/teacherSectionScope.js";

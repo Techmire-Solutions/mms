@@ -247,7 +247,8 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
   },
   {
     prefix: "/api/templates",
-    reason: "generic document template layout persistence (invoices, student cards, report cards, vouchers)",
+    reason:
+      "generic document template layout persistence (invoices, student cards, report cards, vouchers)",
     paths: ["/api/templates/:key"],
   },
 ];

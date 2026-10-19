@@ -1,8 +1,4 @@
-import {
-  type sessionContract,
-  SESSIONS_MODULE_MANIFEST,
-  type User,
-} from "@mms/shared";
+import { type sessionContract, SESSIONS_MODULE_MANIFEST, type User } from "@mms/shared";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { sessionsUseCases } from "../../../sessions/use-cases/sessionsUseCases.js";
 import { handleContractError } from "../../../lib/contractError.js";

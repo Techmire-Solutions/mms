@@ -11,12 +11,7 @@ export async function getDocumentTemplateRepo(
   const [row] = await activeDb()
     .select({ template: documentTemplates.template })
     .from(documentTemplates)
-    .where(
-      and(
-        eq(documentTemplates.workspaceSubdomain, tenant),
-        eq(documentTemplates.key, key),
-      ),
-    );
+    .where(and(eq(documentTemplates.workspaceSubdomain, tenant), eq(documentTemplates.key, key)));
   return (row?.template as DocumentTemplate | undefined) ?? null;
 }
 
@@ -47,18 +42,10 @@ export async function upsertDocumentTemplateRepo(
 }
 
 /** Deletes a custom document template by key (reverting to default/fallback). */
-export async function deleteDocumentTemplateRepo(
-  tenant: string,
-  key: string,
-): Promise<boolean> {
+export async function deleteDocumentTemplateRepo(tenant: string, key: string): Promise<boolean> {
   const result = await activeDb()
     .delete(documentTemplates)
-    .where(
-      and(
-        eq(documentTemplates.workspaceSubdomain, tenant),
-        eq(documentTemplates.key, key),
-      ),
-    );
+    .where(and(eq(documentTemplates.workspaceSubdomain, tenant), eq(documentTemplates.key, key)));
   return (result.rowCount ?? 0) > 0;
 }
 

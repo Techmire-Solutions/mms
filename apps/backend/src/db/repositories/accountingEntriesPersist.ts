@@ -95,7 +95,6 @@ export async function saveEntry(tenant: string, record: JournalEntry): Promise<v
   });
 }
 
-
 /**
  * SET values for the single-record upsert.
  *

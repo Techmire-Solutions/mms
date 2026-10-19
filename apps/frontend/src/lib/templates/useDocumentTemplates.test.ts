@@ -13,7 +13,9 @@ interface SamplePayload {
 
 const fallback: DocumentTemplate<SamplePayload> = {
   pageSize: "A6",
-  elements: [{ id: "el-1", type: "text", label: "Title", x: 0, y: 0, w: 10, h: 10, field: "title" }],
+  elements: [
+    { id: "el-1", type: "text", label: "Title", x: 0, y: 0, w: 10, h: 10, field: "title" },
+  ],
 };
 
 describe("useDocumentTemplates", () => {

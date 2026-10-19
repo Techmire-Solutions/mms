@@ -6,12 +6,7 @@ import { contactsGoogleSyncRoutes } from "./contactsGoogleSync.contract.js";
 
 export * from "./contacts.contract.schemas.js";
 
-export {
-  contactsCrudRoutes,
-  contactsReportsRoutes,
-  contactsSetupRoutes,
-  contactsGoogleSyncRoutes,
-};
+export { contactsCrudRoutes, contactsReportsRoutes, contactsSetupRoutes, contactsGoogleSyncRoutes };
 
 const c = initContract();
 

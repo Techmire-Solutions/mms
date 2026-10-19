@@ -146,7 +146,6 @@ export {
   bulkRestoreAccounts,
 };
 
-
 export async function countActiveJournalLinesForAccount(
   tenant: string,
   accountId: string,

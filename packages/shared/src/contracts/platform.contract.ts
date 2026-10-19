@@ -33,10 +33,7 @@ import {
   platformWorkspacesRoutes,
   platformWorkspacesContract,
 } from "./platformWorkspaces.contract.js";
-import {
-  platformAdminsRoutes,
-  platformAdminsContract,
-} from "./platformAdmins.contract.js";
+import { platformAdminsRoutes, platformAdminsContract } from "./platformAdmins.contract.js";
 
 export {
   platformWorkspacesRoutes,

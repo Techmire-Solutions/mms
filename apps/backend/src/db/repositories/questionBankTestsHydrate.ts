@@ -50,7 +50,10 @@ export async function fetchTestsChildrenTx(
       })
       .from(testQuestions)
       .where(
-        and(eq(testQuestions.workspaceSubdomain, subdomain), inArray(testQuestions.testId, testIds)),
+        and(
+          eq(testQuestions.workspaceSubdomain, subdomain),
+          inArray(testQuestions.testId, testIds),
+        ),
       ),
     tx
       .select({

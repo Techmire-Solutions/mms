@@ -87,12 +87,8 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
   const deleteUserById = (id: string, deletedBy: string, actorRole?: string, ip = "127.0.0.1") =>
     deleteUserByIdHelper(repo, id, deletedBy, actorRole, ip);
 
-  const restoreUserById = (
-    id: string,
-    actorRole?: string,
-    actorId = "system",
-    ip = "127.0.0.1",
-  ) => restoreUserByIdHelper(repo, id, actorRole, actorId, ip);
+  const restoreUserById = (id: string, actorRole?: string, actorId = "system", ip = "127.0.0.1") =>
+    restoreUserByIdHelper(repo, id, actorRole, actorId, ip);
 
   return {
     loadUsersPage: async (

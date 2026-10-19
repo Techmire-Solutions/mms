@@ -5,15 +5,19 @@ import { normalizeObligationsModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<ObligationsModulePreferences>({
   fetchPreferencesFn: async (_signal) => {
-    const res = await apiContract.obligations.getPreferences({ query: undefined, extraHeaders: {} });
+    const res = await apiContract.obligations.getPreferences({
+      query: undefined,
+      extraHeaders: {},
+    });
     return (res.body as { preferences: ObligationsModulePreferences }).preferences;
   },
   savePreferencesFn: async (prefs) => {
     const res = await apiContract.obligations.updatePreferences({ body: prefs });
     return (res.body as { preferences: ObligationsModulePreferences }).preferences;
   },
-  normalizePrefs:
-    normalizeObligationsModulePreferences as (prefs: unknown) => ObligationsModulePreferences,
+  normalizePrefs: normalizeObligationsModulePreferences as (
+    prefs: unknown,
+  ) => ObligationsModulePreferences,
 });
 
 export const setObligationsPreferencesMemory = api.setPreferencesMemory;

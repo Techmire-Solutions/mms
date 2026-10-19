@@ -12,9 +12,7 @@ import { loadContactsByIds } from "../../services/contactService.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { findFacultyByContactId } from "../../db/repositories/facultyRepository.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
-import {
-  resolveFacultyContactRoleAssignment,
-} from "../../faculty/use-cases/facultyUserRoleGuards.js";
+import { resolveFacultyContactRoleAssignment } from "../../faculty/use-cases/facultyUserRoleGuards.js";
 import { upsertFacultyManagedWorkspaceRole } from "../../faculty/use-cases/facultyManagedRolesPrefs.js";
 import {
   type WorkspaceUser,
@@ -105,7 +103,9 @@ export async function createWorkspaceUserHelper(
   const tenant = requireTenant();
 
   let name = String(input.name || "").trim();
-  let email = String(input.email || "").trim().toLowerCase();
+  let email = String(input.email || "")
+    .trim()
+    .toLowerCase();
   let phone = String(input.phone || "").trim();
   const contactId = input.contactId;
   let effectiveRole = input.role;
@@ -156,7 +156,9 @@ export async function createWorkspaceUserHelper(
   }
 
   const existing = await getHydratedUsers();
-  if (existing.some((u) => u.loginEmail?.toLowerCase() === email || u.email?.toLowerCase() === email)) {
+  if (
+    existing.some((u) => u.loginEmail?.toLowerCase() === email || u.email?.toLowerCase() === email)
+  ) {
     throw new HttpDomainError(
       400,
       "duplicate_user_email",
@@ -217,7 +219,8 @@ export async function createWorkspaceUserHelper(
   );
 
   const reloaded = loadWorkspaceUsers ? await loadWorkspaceUsers() : [];
-  const created = reloaded.find((u) => String(u.id) === userId) ?? normalizeWorkspaceUser(userRecord);
+  const created =
+    reloaded.find((u) => String(u.id) === userId) ?? normalizeWorkspaceUser(userRecord);
 
   let inviteEmailSent: boolean | undefined;
   let inviteEmailError: string | undefined;

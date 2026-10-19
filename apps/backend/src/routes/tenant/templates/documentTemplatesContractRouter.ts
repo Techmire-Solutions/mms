@@ -1,9 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import {
-  documentTemplatesContract,
-  type User,
-  roleHasPermission,
-} from "@mms/shared";
+import { documentTemplatesContract, type User, roleHasPermission } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
@@ -86,7 +82,10 @@ export const documentTemplatesRouter = s.router(documentTemplatesContract, {
     } catch (err) {
       return handleContractError(request, err, {
         status: 500,
-        body: { type: "database_error", message: `Failed to save document template "${params.key}"` },
+        body: {
+          type: "database_error",
+          message: `Failed to save document template "${params.key}"`,
+        },
       });
     }
   },
@@ -123,7 +122,10 @@ export const documentTemplatesRouter = s.router(documentTemplatesContract, {
     } catch (err) {
       return handleContractError(request, err, {
         status: 500,
-        body: { type: "database_error", message: `Failed to delete document template "${params.key}"` },
+        body: {
+          type: "database_error",
+          message: `Failed to delete document template "${params.key}"`,
+        },
       });
     }
   },

@@ -7,11 +7,14 @@ import {
   dedupeTrimmedIds,
   type Account,
   type FiscalYear,
+  type AccountingCommandMetricsSnapshot,
 } from "@mms/shared";
 import { upsertWithBroadcast } from "../../services/tenantBulkService.js";
 import type { createGenericRelationalService } from "../../services/genericRelationalService.js";
 
-type CrudService<T extends { id?: string | number }> = ReturnType<typeof createGenericRelationalService<T>>;
+type CrudService<T extends { id?: string | number }> = ReturnType<
+  typeof createGenericRelationalService<T>
+>;
 
 export interface AccountingUseCasesDependencies {
   countActiveJournalLinesForAccount?: (tenant: string, accountId: string) => Promise<number>;
@@ -49,10 +52,10 @@ export async function assertFiscalYearWritesAllowed(
         );
       }
       if (existing.startDate !== year.startDate || existing.endDate !== year.endDate) {
-        throw Object.assign(
-          new Error("A closed fiscal year cannot have its date range changed"),
-          { statusCode: 422, type: "validation_error" },
-        );
+        throw Object.assign(new Error("A closed fiscal year cannot have its date range changed"), {
+          statusCode: 422,
+          type: "validation_error",
+        });
       }
       continue;
     }
@@ -140,3 +143,18 @@ export async function bulkSoftDeleteAccountsHelper(
     failed: result.failed + blockedIds.size,
   };
 }
+
+export const EMPTY_ACCOUNTING_METRICS: AccountingCommandMetricsSnapshot = {
+  totalEntries: 0,
+  posted: 0,
+  draft: 0,
+  activeAccounts: 0,
+  inactiveAccounts: 0,
+  newThisPeriod: 0,
+  postedVolume: 0,
+  revenue: 0,
+  expenses: 0,
+  surplus: 0,
+  assets: 0,
+  liabilities: 0,
+};

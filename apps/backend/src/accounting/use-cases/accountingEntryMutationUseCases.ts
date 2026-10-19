@@ -25,7 +25,9 @@ import {
 } from "./accountingLedgerGuards.js";
 import type { createGenericRelationalService } from "../../services/genericRelationalService.js";
 
-type CrudService<T extends { id?: string | number }> = ReturnType<typeof createGenericRelationalService<T>>;
+type CrudService<T extends { id?: string | number }> = ReturnType<
+  typeof createGenericRelationalService<T>
+>;
 
 export async function upsertEntriesHelper(
   repo: AccountingRepository,

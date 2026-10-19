@@ -39,7 +39,6 @@ export {
   replaceSavedReportsForWorkspace,
 };
 
-
 export async function listSavedReportsByOwner(
   workspaceSubdomain: string,
   category: GenericSavedReportCategory,

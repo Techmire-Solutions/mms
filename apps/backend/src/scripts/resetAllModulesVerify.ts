@@ -86,9 +86,7 @@ export async function verifyPostReset(
     await pool.query<{ count: number }>("SELECT count(*)::int as count FROM platform_settings")
   ).rows[0].count;
   const palCount = (
-    await pool.query<{ count: number }>(
-      "SELECT count(*)::int as count FROM platform_activity_logs",
-    )
+    await pool.query<{ count: number }>("SELECT count(*)::int as count FROM platform_activity_logs")
   ).rows[0].count;
 
   console.log(`\nPlatform Console (PRESERVED):`);

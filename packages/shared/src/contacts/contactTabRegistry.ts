@@ -1,9 +1,6 @@
 /** Contact form/page/detail tab defaults and column registry. */
 import { DEFAULT_MODULE_TIER_TAB_LABELS } from "../settings/moduleTierTabs.js";
-import type {
-  FieldDefinition,
-  TabDefinition,
-} from "./contactFieldSchemaTypes.js";
+import type { FieldDefinition, TabDefinition } from "./contactFieldSchemaTypes.js";
 import { CONTACT_RETIRED_CLASSIFICATION_KEYS } from "./contactRetiredFields.js";
 
 /**

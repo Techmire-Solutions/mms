@@ -2,10 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import type { User, WorkspaceUser } from "@mms/shared";
 import type { userContract } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import {
-  canWriteCollection,
-  canDeleteCollection,
-} from "../../../services/rbacService.js";
+import { canWriteCollection, canDeleteCollection } from "../../../services/rbacService.js";
 import { usersUseCases } from "../../../users/use-cases/usersUseCases.js";
 import {
   dependencyForDiagnosticStage,
@@ -101,10 +98,7 @@ export async function handleUserBulkUpdate({
     };
   }
   try {
-    const updated = await usersUseCases.upsertWorkspaceUsers(
-      body as WorkspaceUser[],
-      user.role,
-    );
+    const updated = await usersUseCases.upsertWorkspaceUsers(body as WorkspaceUser[], user.role);
     return { status: 200 as const, body: { users: updated } };
   } catch (err: unknown) {
     return handleUserRouterError(err, request, "Failed to update workspace users");

@@ -1,8 +1,4 @@
-import {
-  documentTemplateSchema,
-  type DocumentTemplate,
-  type User,
-} from "@mms/shared";
+import { documentTemplateSchema, type DocumentTemplate, type User } from "@mms/shared";
 import { documentsRepositoryAdapter } from "../repository/documentsRepositoryAdapter.js";
 import { broadcastCollection, broadcastTenantUpdate } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";

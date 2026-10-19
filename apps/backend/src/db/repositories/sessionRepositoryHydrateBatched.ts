@@ -9,14 +9,13 @@ import {
   sessionClassBudgets,
   sessionClassDiscounts,
   sessionClassTimetables,
-  sessionClassTimetablePeriods,
   sessionClassRefreshments,
-  scholarshipEligibilities,
   sessionClassScholarships,
 } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
 import { sessionRowToRecord } from "./sessionRepositoryMappers.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
+import { loadTimetablePeriodsAndEligibilities } from "./sessionRepositoryHydratePeriodsEligibilities.js";
 
 type Transaction = TenantTransaction;
 type SessionRow = typeof sessions.$inferSelect;
@@ -112,7 +111,12 @@ export async function hydrateSessionsListBatched(
         createdAt: sessionClassFees.createdAt,
       })
       .from(sessionClassFees)
-      .where(and(eq(sessionClassFees.workspaceSubdomain, subdomain), inArray(sessionClassFees.sessionClassId, classIds))),
+      .where(
+        and(
+          eq(sessionClassFees.workspaceSubdomain, subdomain),
+          inArray(sessionClassFees.sessionClassId, classIds),
+        ),
+      ),
     tx
       .select({
         id: sessionClassSchedules.id,
@@ -124,7 +128,12 @@ export async function hydrateSessionsListBatched(
         createdAt: sessionClassSchedules.createdAt,
       })
       .from(sessionClassSchedules)
-      .where(and(eq(sessionClassSchedules.workspaceSubdomain, subdomain), inArray(sessionClassSchedules.sessionClassId, classIds))),
+      .where(
+        and(
+          eq(sessionClassSchedules.workspaceSubdomain, subdomain),
+          inArray(sessionClassSchedules.sessionClassId, classIds),
+        ),
+      ),
     tx
       .select({
         id: sessionClassBudgets.id,
@@ -136,7 +145,12 @@ export async function hydrateSessionsListBatched(
         createdAt: sessionClassBudgets.createdAt,
       })
       .from(sessionClassBudgets)
-      .where(and(eq(sessionClassBudgets.workspaceSubdomain, subdomain), inArray(sessionClassBudgets.sessionClassId, classIds))),
+      .where(
+        and(
+          eq(sessionClassBudgets.workspaceSubdomain, subdomain),
+          inArray(sessionClassBudgets.sessionClassId, classIds),
+        ),
+      ),
     tx
       .select({
         id: sessionClassDiscounts.id,
@@ -151,7 +165,12 @@ export async function hydrateSessionsListBatched(
         createdAt: sessionClassDiscounts.createdAt,
       })
       .from(sessionClassDiscounts)
-      .where(and(eq(sessionClassDiscounts.workspaceSubdomain, subdomain), inArray(sessionClassDiscounts.sessionClassId, classIds))),
+      .where(
+        and(
+          eq(sessionClassDiscounts.workspaceSubdomain, subdomain),
+          inArray(sessionClassDiscounts.sessionClassId, classIds),
+        ),
+      ),
     tx
       .select({
         id: sessionClassTimetables.id,
@@ -161,7 +180,12 @@ export async function hydrateSessionsListBatched(
         createdAt: sessionClassTimetables.createdAt,
       })
       .from(sessionClassTimetables)
-      .where(and(eq(sessionClassTimetables.workspaceSubdomain, subdomain), inArray(sessionClassTimetables.sessionClassId, classIds))),
+      .where(
+        and(
+          eq(sessionClassTimetables.workspaceSubdomain, subdomain),
+          inArray(sessionClassTimetables.sessionClassId, classIds),
+        ),
+      ),
     tx
       .select({
         id: sessionClassRefreshments.id,
@@ -175,7 +199,12 @@ export async function hydrateSessionsListBatched(
         createdAt: sessionClassRefreshments.createdAt,
       })
       .from(sessionClassRefreshments)
-      .where(and(eq(sessionClassRefreshments.workspaceSubdomain, subdomain), inArray(sessionClassRefreshments.sessionClassId, classIds))),
+      .where(
+        and(
+          eq(sessionClassRefreshments.workspaceSubdomain, subdomain),
+          inArray(sessionClassRefreshments.sessionClassId, classIds),
+        ),
+      ),
     tx
       .select({
         id: sessionClassScholarships.id,
@@ -187,7 +216,12 @@ export async function hydrateSessionsListBatched(
         createdAt: sessionClassScholarships.createdAt,
       })
       .from(sessionClassScholarships)
-      .where(and(eq(sessionClassScholarships.workspaceSubdomain, subdomain), inArray(sessionClassScholarships.sessionClassId, classIds))),
+      .where(
+        and(
+          eq(sessionClassScholarships.workspaceSubdomain, subdomain),
+          inArray(sessionClassScholarships.sessionClassId, classIds),
+        ),
+      ),
   ]);
 
   // 3. Batch load Timetable periods and Scholarship eligibilities
@@ -196,44 +230,12 @@ export async function hydrateSessionsListBatched(
     .map((s) => s.scholarshipEligibilityId)
     .filter((id): id is string => Boolean(id));
 
-  const [periodRows, eligibilityRows] = await Promise.all([
-    timetableIds.length > 0
-      ? tx
-          .select({
-            id: sessionClassTimetablePeriods.id,
-            workspaceSubdomain: sessionClassTimetablePeriods.workspaceSubdomain,
-            timetableId: sessionClassTimetablePeriods.timetableId,
-            startTime: sessionClassTimetablePeriods.startTime,
-            endTime: sessionClassTimetablePeriods.endTime,
-            subject: sessionClassTimetablePeriods.subject,
-            subjectId: sessionClassTimetablePeriods.subjectId,
-            facultyId: sessionClassTimetablePeriods.facultyId,
-            facultyName: sessionClassTimetablePeriods.facultyName,
-            createdAt: sessionClassTimetablePeriods.createdAt,
-          })
-          .from(sessionClassTimetablePeriods)
-          .where(and(eq(sessionClassTimetablePeriods.workspaceSubdomain, subdomain), inArray(sessionClassTimetablePeriods.timetableId, timetableIds)))
-      : Promise.resolve([]),
-    eligibilityIds.length > 0
-      ? tx
-          .select({
-            id: scholarshipEligibilities.id,
-            workspaceSubdomain: scholarshipEligibilities.workspaceSubdomain,
-            orphan: scholarshipEligibilities.orphan,
-            job: scholarshipEligibilities.job,
-            business: scholarshipEligibilities.business,
-            property: scholarshipEligibilities.property,
-            familyMembers: scholarshipEligibilities.familyMembers,
-            onJobMembers: scholarshipEligibilities.onJobMembers,
-            schoolGoingSiblings: scholarshipEligibilities.schoolGoingSiblings,
-            residence: scholarshipEligibilities.residence,
-            notes: scholarshipEligibilities.notes,
-            createdAt: scholarshipEligibilities.createdAt,
-          })
-          .from(scholarshipEligibilities)
-          .where(and(eq(scholarshipEligibilities.workspaceSubdomain, subdomain), inArray(scholarshipEligibilities.id, eligibilityIds)))
-      : Promise.resolve([]),
-  ]);
+  const [periodRows, eligibilityRows] = await loadTimetablePeriodsAndEligibilities(
+    tx,
+    subdomain,
+    timetableIds,
+    eligibilityIds,
+  );
 
   // Group by session and class
   const facultyBySession = new Map<string, typeof facultyRows>();

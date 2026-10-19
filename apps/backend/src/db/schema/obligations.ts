@@ -209,4 +209,3 @@ export const obligationModulePreferences = pgTable(
 
 export type ObligationModulePreferencesRow = typeof obligationModulePreferences.$inferSelect;
 export type InsertObligationModulePreferencesRow = typeof obligationModulePreferences.$inferInsert;
-

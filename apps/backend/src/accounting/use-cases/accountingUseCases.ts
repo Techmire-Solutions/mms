@@ -30,6 +30,7 @@ import {
 } from "./accountingEntryMutationUseCases.js";
 import {
   type AccountingUseCasesDependencies,
+  EMPTY_ACCOUNTING_METRICS,
   upsertAccountsHelper,
   upsertFiscalYearsHelper,
   deleteAccountByIdHelper,
@@ -37,11 +38,6 @@ import {
 } from "./accountingAccountLifecycleUseCases.js";
 
 export type { AccountingUseCasesDependencies };
-
-const EMPTY_ACCOUNTING_METRICS: AccountingCommandMetricsSnapshot = {
-  totalEntries: 0, posted: 0, draft: 0, activeAccounts: 0, inactiveAccounts: 0,
-  newThisPeriod: 0, postedVolume: 0, revenue: 0, expenses: 0, surplus: 0, assets: 0, liabilities: 0,
-};
 
 export function createAccountingUseCases(
   repo: AccountingRepository = accountingRepository,
@@ -107,9 +103,8 @@ export function createAccountingUseCases(
     if (deps?.countActiveJournalLinesForAccount) {
       return deps.countActiveJournalLinesForAccount(tenant, accountId);
     }
-    const { countActiveJournalLinesForAccount } = await import(
-      "../../db/repositories/accountingAccountsRepository.js"
-    );
+    const { countActiveJournalLinesForAccount } =
+      await import("../../db/repositories/accountingAccountsRepository.js");
     return countActiveJournalLinesForAccount(tenant, accountId);
   };
 
@@ -117,9 +112,8 @@ export function createAccountingUseCases(
     if (deps?.countActiveJournalLinesForAccounts) {
       return deps.countActiveJournalLinesForAccounts(tenant, accountIds);
     }
-    const { countActiveJournalLinesForAccounts } = await import(
-      "../../db/repositories/accountingAccountsRepository.js"
-    );
+    const { countActiveJournalLinesForAccounts } =
+      await import("../../db/repositories/accountingAccountsRepository.js");
     return countActiveJournalLinesForAccounts(tenant, accountIds);
   };
 
@@ -209,11 +203,14 @@ export function createAccountingUseCases(
 
     deleteJournalEntryById,
 
-    bulkSoftDeleteJournalEntries: (
-      ids: string[],
-      deletedBy: string,
-      deletionReason?: string,
-    ) => bulkSoftDeleteJournalEntriesHelper(repo, deleteJournalEntryById, ids, deletedBy, deletionReason),
+    bulkSoftDeleteJournalEntries: (ids: string[], deletedBy: string, deletionReason?: string) =>
+      bulkSoftDeleteJournalEntriesHelper(
+        repo,
+        deleteJournalEntryById,
+        ids,
+        deletedBy,
+        deletionReason,
+      ),
 
     deleteAccountById: (id: string, deletedBy: string, deletionReason?: string) =>
       deleteAccountByIdHelper(accountCrud, getActiveLineCount, id, deletedBy, deletionReason),
@@ -221,7 +218,13 @@ export function createAccountingUseCases(
     restoreAccountById: accountCrud.restoreById,
 
     bulkSoftDeleteAccounts: (ids: string[], deletedBy: string, deletionReason?: string) =>
-      bulkSoftDeleteAccountsHelper(accountCrud, getActiveLineCounts, ids, deletedBy, deletionReason),
+      bulkSoftDeleteAccountsHelper(
+        accountCrud,
+        getActiveLineCounts,
+        ids,
+        deletedBy,
+        deletionReason,
+      ),
 
     bulkRestoreAccounts: accountCrud.bulkRestoreByIds,
 

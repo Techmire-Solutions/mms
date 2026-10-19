@@ -60,7 +60,8 @@ export function normalizeObligationsModulePreferences(raw: unknown): Obligations
       receiptSequenceDigits: DEFAULT_OBLIGATIONS_SETTINGS.receiptSequenceDigits ?? 5,
       receiptDelimiter: DEFAULT_OBLIGATIONS_SETTINGS.receiptDelimiter ?? "-",
       receiptStartingSequence: DEFAULT_OBLIGATIONS_SETTINGS.receiptStartingSequence ?? 1,
-      receiptRolloverPolicy: DEFAULT_OBLIGATIONS_SETTINGS.receiptRolloverPolicy ?? "annual_calendar",
+      receiptRolloverPolicy:
+        DEFAULT_OBLIGATIONS_SETTINGS.receiptRolloverPolicy ?? "annual_calendar",
       receiptCurrentSequence: DEFAULT_OBLIGATIONS_SETTINGS.receiptCurrentSequence,
       defaultViewLayout: DEFAULT_OBLIGATIONS_SETTINGS.defaultViewLayout || "list",
     };
@@ -77,7 +78,9 @@ export function normalizeObligationsModulePreferences(raw: unknown): Obligations
         ? prefs.receiptPrefix
         : (DEFAULT_OBLIGATIONS_SETTINGS.receiptPrefix ?? "OBL"),
     receiptYearFormat:
-      prefs.receiptYearFormat === "YYYY" || prefs.receiptYearFormat === "YY" || prefs.receiptYearFormat === "NONE"
+      prefs.receiptYearFormat === "YYYY" ||
+      prefs.receiptYearFormat === "YY" ||
+      prefs.receiptYearFormat === "NONE"
         ? prefs.receiptYearFormat
         : (DEFAULT_OBLIGATIONS_SETTINGS.receiptYearFormat ?? "YYYY"),
     receiptSequenceDigits:
@@ -105,7 +108,7 @@ export function normalizeObligationsModulePreferences(raw: unknown): Obligations
     defaultViewLayout:
       typeof prefs.defaultViewLayout === "string"
         ? prefs.defaultViewLayout
-        : (DEFAULT_OBLIGATIONS_SETTINGS.defaultViewLayout || "list"),
+        : DEFAULT_OBLIGATIONS_SETTINGS.defaultViewLayout || "list",
   };
 }
 

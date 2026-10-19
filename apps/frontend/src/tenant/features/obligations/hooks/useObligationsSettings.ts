@@ -25,7 +25,9 @@ export function saveObligationsSettings(settings: ObligationsSettings): void {
   setObligationsPreferencesMemory(normalized);
   void saveObligationsPreferencesAsync(normalized).catch(() => undefined);
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent(OBLIGATIONS_SETTINGS_CHANGED_EVENT, { detail: normalized }));
+    window.dispatchEvent(
+      new CustomEvent(OBLIGATIONS_SETTINGS_CHANGED_EVENT, { detail: normalized }),
+    );
   }
 }
 

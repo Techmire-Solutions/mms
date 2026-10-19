@@ -1,9 +1,5 @@
 import { type FastifyInstance } from "fastify";
-import {
-  type User,
-  resourceIdParamsSchema,
-  softDeleteBodySchema,
-} from "@mms/shared";
+import { type User, resourceIdParamsSchema, softDeleteBodySchema } from "@mms/shared";
 import { canDeleteCollection } from "./rbacCanHelpers.js";
 import {
   sendForbidden,

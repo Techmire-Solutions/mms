@@ -286,4 +286,3 @@ export {
   registerSingleDeleteRoute,
   registerSingleRestoreRoute,
 };
-

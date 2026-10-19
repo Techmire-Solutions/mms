@@ -261,7 +261,6 @@ export const financeContractRouter: FastifyPluginAsync = async (fastify) => {
         });
       }
     },
-
   } as unknown as RouterImplementation<typeof financeContract>);
 
   await fastify.register(s.plugin(router), {

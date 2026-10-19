@@ -54,4 +54,3 @@ export {
   useObligationsPreferencesMutation,
   useComposedObligationsSettings,
 } from "@/tenant/features/obligations/hooks/useObligationsSetupConfig";
-

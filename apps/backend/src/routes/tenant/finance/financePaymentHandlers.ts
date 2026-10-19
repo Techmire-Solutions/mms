@@ -1,4 +1,9 @@
-import { FINANCE_MODULE_MANIFEST, type User, type financeContract, isQueryFlagTrue } from "@mms/shared";
+import {
+  FINANCE_MODULE_MANIFEST,
+  type User,
+  type financeContract,
+  isQueryFlagTrue,
+} from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { withTenant } from "../../../db/tenant-context.js";

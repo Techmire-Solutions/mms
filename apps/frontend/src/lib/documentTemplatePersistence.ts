@@ -69,7 +69,10 @@ export function createDocumentTemplateStore<TPayload>({
           return serverTemplate;
         }
       } catch (err) {
-        console.warn(`[documentTemplatePersistence] Failed to fetch server template "${key}":`, err);
+        console.warn(
+          `[documentTemplatePersistence] Failed to fetch server template "${key}":`,
+          err,
+        );
       }
       const saved = readObjectLocal<unknown>(key);
       return isDocumentTemplate<TPayload>(saved) ? saved : fallback;

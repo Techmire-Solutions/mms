@@ -21,10 +21,7 @@ export function documentTemplateQueryKey(key: string) {
 }
 
 /** Invalidate cached templates (optionally scoped to a specific key). */
-export function invalidateDocumentTemplatesQueries(
-  queryClient: QueryClient,
-  key?: string,
-): void {
+export function invalidateDocumentTemplatesQueries(queryClient: QueryClient, key?: string): void {
   if (key) {
     void queryClient.invalidateQueries({ queryKey: documentTemplateQueryKey(key) });
   } else {

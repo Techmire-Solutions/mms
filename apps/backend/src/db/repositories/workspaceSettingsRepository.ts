@@ -1,9 +1,5 @@
 import { eq } from "drizzle-orm";
-import {
-  type GlobalSettings,
-  mergeGlobalSettings,
-  SYSTEM_MODULES,
-} from "@mms/shared";
+import { type GlobalSettings, mergeGlobalSettings, SYSTEM_MODULES } from "@mms/shared";
 import { activeDb } from "../dbConnection.js";
 import { workspaces as workspacesTable } from "../schema.js";
 import {
