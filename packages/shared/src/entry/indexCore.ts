@@ -119,6 +119,7 @@ export * from "../core/sequenceNumberingTypes.js";
 export * from "../core/sequenceNumberingAdapters.js";
 export * from "../core/sequenceNumberingUtils.js";
 export * from "../obligations/obligationsModuleSettings.js";
+export * from "../obligations/obligationsSetupConfigTypes.js";
 export * from "../obligations/obligationsReceiptNumberingUtils.js";
 export * from "../obligations/tasksModuleManifest.js";
 export * from "../core/clientEntityIdUtils.js";

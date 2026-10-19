@@ -112,4 +112,8 @@ export interface ObligationsRepository {
     tenant: string,
     query?: ObligationsReportQuery,
   ): Promise<ObligationsReportAggregates>;
+
+  // Preferences
+  getPreferences?(tenant: string): Promise<Record<string, unknown> | null>;
+  setPreferences?(tenant: string, preferences: Record<string, unknown>): Promise<void>;
 }

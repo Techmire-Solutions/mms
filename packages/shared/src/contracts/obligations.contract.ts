@@ -23,6 +23,10 @@ import {
   obligationDistributionListSchema,
   obligationCollectionListSchema,
 } from "../obligations/obligationsModuleManifest.js";
+import {
+  obligationsPreferencesPutBodySchema,
+  obligationsPreferencesResponseSchema,
+} from "../obligations/obligationsSetupConfigTypes.js";
 
 const c = initContract();
 const ok = z.unknown();
@@ -176,5 +180,29 @@ export const obligationContract = c.router({
     body: z.object({ widgets: z.array(z.unknown()) }),
     responses: { 200: z.unknown(), 403: ok, 500: ok },
     summary: "Get widget aggregates",
+  },
+  getPreferences: {
+    method: "GET",
+    path: "/api/obligations/preferences",
+    responses: {
+      200: z.object({ preferences: obligationsPreferencesResponseSchema }),
+      403: ok,
+      500: ok,
+    },
+    summary: "Get obligations module preferences",
+  },
+  updatePreferences: {
+    method: "PUT",
+    path: "/api/obligations/preferences",
+    body: obligationsPreferencesPutBodySchema,
+    responses: {
+      200: z.object({
+        success: z.literal(true),
+        preferences: obligationsPreferencesResponseSchema,
+      }),
+      403: ok,
+      500: ok,
+    },
+    summary: "Update obligations module preferences",
   },
 });

@@ -16,6 +16,7 @@ import { invalidateExaminationsQueries } from "@/tenant/hooks/collections/examin
 import { invalidateQuestionBankQueries } from "@/tenant/hooks/collections/questionBank";
 import { invalidateAccountingQueries } from "@/tenant/hooks/collections/accounting";
 import { invalidateObligationsQueries } from "@/tenant/hooks/collections/obligations";
+import { invalidateDocumentTemplatesQueries } from "@/lib/templates/useDocumentTemplates";
 import {
   DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
   invalidateDashboardQueries,
@@ -115,5 +116,7 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     case "message_logs":
     case "message_templates":
       return invalidateMessagingQueries(queryClient);
+    case "document_templates":
+      return invalidateDocumentTemplatesQueries(queryClient);
   }
 }

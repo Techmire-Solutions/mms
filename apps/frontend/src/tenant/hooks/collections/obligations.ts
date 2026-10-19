@@ -48,3 +48,10 @@ export {
   loadObligationsSettings,
   saveObligationsSettings,
 } from "@/tenant/features/obligations/hooks/useObligationsSettings";
+export {
+  OBLIGATIONS_PREFERENCES_QUERY_KEY,
+  useObligationsPreferencesQuery,
+  useObligationsPreferencesMutation,
+  useComposedObligationsSettings,
+} from "@/tenant/features/obligations/hooks/useObligationsSetupConfig";
+

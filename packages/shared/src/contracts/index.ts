@@ -53,6 +53,7 @@ import {
   platformSettingsContract,
   platformAdminsContract,
 } from "./platform.contract.js";
+import { documentTemplatesContract } from "./documentTemplates.contract.js";
 
 const c = initContract();
 
@@ -96,6 +97,7 @@ export const rootContract = c.router({
   accountingLedger: accountingLedgerContract,
   financeOps: financeOpsContract,
   platform: platformContract,
+  templates: documentTemplatesContract,
 });
 
 export type RootContract = typeof rootContract;
@@ -153,6 +155,7 @@ export {
   platformWorkspacesContract,
   platformSettingsContract,
   platformAdminsContract,
+  documentTemplatesContract,
 };
 export type DomainContracts = {
   students: typeof studentContract;
@@ -194,4 +197,5 @@ export type DomainContracts = {
   accountingLedger: typeof accountingLedgerContract;
   financeOps: typeof financeOpsContract;
   platform: typeof platformContract;
+  templates: typeof documentTemplatesContract;
 };

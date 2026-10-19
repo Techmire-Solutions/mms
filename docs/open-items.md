@@ -137,13 +137,12 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
    - _Settings/branding_ — `useGlobalSettingsDraft`, `useThemeSettingsDraft`, `useBrandingDraft`,
      `BrandingShared`, `InstitutionSetup` → need `/api/settings/global` + `/api/branding` object endpoints
      (or an `AuthContext` session-settings extension).
-   - _Document templates_ — `documentTemplatePersistence` + `invoiceTemplateStore` / student-card / finance /
-     exam / hasanat editors (~15 consumers) → need a generic `/api/templates/:key` object endpoint.
+   - ~~_Document templates_ — `documentTemplatePersistence` + `invoiceTemplateStore` / student-card / finance /
+     exam / hasanat editors (~15 consumers)~~ **RESOLVED** — migrated to server-authoritative relational storage (`document_templates` table with FORCE RLS + `documentTemplatesContract` `GET`/`PUT`/`DELETE /api/templates/:key` routes + TanStack Query hooks + WebSocket live push invalidation + hybrid sync bridge in `documentTemplatePersistence`).
    - _Reports/KPI config_ — `usePinnedWidgetsController`, `useDashboardSectionSettings`, `kpiSummaryCard*`,
      `DynamicCardBuilder`, `ModuleReportsToolPanels` → need `/api/reports/section-settings` + per-module KPI
      config endpoints.
-   - _Module settings_ — `useObligationsSettings` → could reuse the `createModuleSetupConfigHooks` pattern
-     once a settings endpoint exists.
+   - ~~_Module settings_ — `useObligationsSettings`~~ **RESOLVED** — migrated to the standard relational setup configuration architecture (`createModuleSetupConfigHooks` + `obligation_module_preferences` table with FORCE RLS + `obligationContract` `getPreferences`/`updatePreferences` routes + WebSocket live push invalidation).
    - _Backups history_ — `useLiveCollection("backups")` (1 consumer) → need a `backups` collection endpoint.
    _Deliberately NOT removed_ (not dead, despite `pnpm` grep-appearing unused): the one-time local→server
    widget seed in `useDashboardConfig`/`widgetDefaultsStore` is the **active** path that gives new/legacy

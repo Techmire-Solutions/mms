@@ -41,6 +41,10 @@ import {
 } from "../../db/repositories/obligationRepository.js";
 import { aggregateObligationsCommandMetrics } from "../../db/repositories/obligationRepositoryMetrics.js";
 import { aggregateObligationsReport } from "../../db/repositories/obligationRepositoryReport.js";
+import {
+  getObligationModulePreferences,
+  setObligationModulePreferences,
+} from "../../db/repositories/obligationModulePreferencesRepository.js";
 
 /**
  * Drizzle-backed adapter for {@link ObligationsRepository}. Delegates to the
@@ -87,4 +91,6 @@ export const obligationsRepository: ObligationsRepository = {
   bulkRestoreObligationCollections,
   aggregateObligationsCommandMetrics,
   aggregateObligationsReport,
+  getPreferences: getObligationModulePreferences,
+  setPreferences: setObligationModulePreferences,
 };
