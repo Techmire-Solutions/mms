@@ -175,7 +175,7 @@ describe("useJournalEntriesController", () => {
     );
 
     await act(async () => {
-      latest?.toggleSelectedEntry("entry-1", true);
+      latest?.toggleSelected("entry-1", true);
     });
     expect(latest?.selectedIds).toContain("entry-1");
     expect(onShortcutStateChange).toHaveBeenLastCalledWith(

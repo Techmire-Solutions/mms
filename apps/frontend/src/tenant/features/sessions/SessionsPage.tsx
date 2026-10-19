@@ -100,7 +100,7 @@ export default function Sessions(): React.JSX.Element {
               onOpenDetail={c.setDetailSession}
               onSort={c.handleSort}
               onToggleSelectAll={c.toggleSelectAll}
-              onToggleSelectedSession={c.toggleSelectedSession}
+              onToggleSelectedSession={c.toggleSelected}
               onRequestDelete={c.setPendingDeleteId}
               onRestore={c.handleRestore}
               onRequestBulkDelete={() => c.setConfirmBulkDeleteOpen(true)}

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { googleSyncClientConfigResponseSchema } from "./contacts.contract.js";
+import { googleSyncClientConfigResponseSchema } from "./contacts.contract.schemas.js";
 
 /** Google Contacts sync configuration and run routes. */
 export const contactsGoogleSyncRoutes = {

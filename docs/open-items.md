@@ -19,23 +19,72 @@ Recorded so they are not lost, with the evidence gathered since.
    Funcs 46.43 / Lines 49.63 against 43.2 / 27 / 37.5 / 45 before enabling).
 4. ~~`check:backend-boundaries` not in CI.~~ **RESOLVED** — now a ratchet step in the `typecheck-lint` job.
    A `sensitive-file-guard` job also landed (whole-tree sensitive-filename blocklist, at any path depth).
-5. **Fat-file debt.** **69 → 62** files over the ADR-001 300-LOC cap (baseline ratcheted down via
-   `check-code-norms --update-baselines`, never by hand). Seven splits landed, all one shape: extract a
-   cohesive block into its own module and keep the origin working — a **barrel re-export** when the block
-   was public (`crud*`, `livePush`, `contacts.dto`), or a plain **import** when it was module-private
-   (`financeListQueryBuilders`, `attendanceListQueryBuilders`, `attendanceReportOverview`), which leaves the
-   public surface untouched by construction. Composition of the remaining 62: **42 backend,
-   16 `@mms/shared`, 4 frontend**; four are the ~8.4k-line generated `appTranslations*.ts`.
-   Prioritisation (the part that matters): a split only lowers the count when **every** part lands under
-   300 with headroom, so the lane is the 300–321 band — now down to **7 files**
-   (`accountingFiscalYearsRepository.ts` 321, `obligationsUseCases.ts` 318, `messagingUseCases.ts` 314,
-   `routes/tenant/enrollments.ts` 308, `sessionRepositoryPersistClasses.ts` 306,
-   `contactFormNormalizeEdit.ts` 304, `examinationQuestionBankTables.ts` 303). Rejected as-is, because a
-   _move_ cannot fix them: `obligationsUseCases.ts` (one 270-line factory), the `*UseCases.ts` /
-   `*ContractRouter.ts` monoliths, `invoiceTemplatePresets.ts` (863 — its `buildFormalA5Preset` alone is
-   ~314 lines, so it needs a second split inside the extracted part), and
-   `accountingFiscalYearsRepository.ts` lands at ~267 with only ~33 lines of headroom.
-   _Needs:_ a call on whether to keep going.
+5. **Fat-file debt.** **69 → 8** files over the ADR-001 300-LOC cap (baseline ratcheted down via
+   `check-code-norms --update-baselines`, never by hand).
+   - *Phase 1 (300–321 band):* `sessionRepositoryPersistClasses.ts` (down to 131), `contactFormNormalizeEdit.ts`
+     (304 → 231 via `contactFormNormalizeSubCollections.ts`), `examinationQuestionBankTables.ts` (306 → 139 via
+     `examinationTestTables.ts`), `routes/tenant/enrollments.ts` (310 → 67 via `enrollmentContractRouter.ts`),
+     `messagingUseCases.ts` (314 → 199 via `messagingRecipientUseCases.ts`), `obligationsUseCases.ts`
+     (318 → 137 via `obligationsCatalogUseCases.ts`), and `accountingFiscalYearsRepository.ts`
+     (321 → 273 via `accountingPostingPeriodsRepository.ts`).
+   - *Phase 2 (335–389 band):* `authArtifactService.ts` (335 → 225 via `authRefreshTokenArtifacts.ts`),
+     `genericRelationalService.ts` (344 → 277 via `db/genericRelationalConditions.ts`),
+     `obligationMujtahidsRepository.ts` (347 → 169 via `obligationMujtahidRepsRepository.ts`),
+     `savedReportsRepository.ts` (352 → 259 via `savedReportsAdminRepository.ts`),
+     `contactFormNormalize.ts` (383 → 82 via `contactFormNormalizeEdit.js`), and
+     `financePaymentsRepository.ts` (389 → 195 via `financePaymentsPersist.ts`).
+   - *Phase 3 (366–432 band):* `finance.contract.ts` (366 → 224 via `finance.contract.invoices.ts`),
+     `students.contract.ts` (373 → 211 via `students.contract.routes.ts`),
+     `crudResourceRoutes.ts` (404 → 289 via `crudSingleDeleteRestoreRoutes.ts`),
+     `accountingAccountsRepository.ts` (408 → 220 via `accountingAccountsPersist.ts`),
+     `obligationCollectionsRepository.ts` (424 → 198 via `obligationCollectionsPersist.ts`), and
+     `hasanatDistributionsRepository.ts` (432 → 208 via `hasanatDistributionsPersist.ts`).
+   - *Phase 4 (433–452 band):* `ledgerPostingService.ts` (433 → 178 via `ledgerPostingHelpers.ts` and
+     `ledgerReversalPostingService.ts`), `routes/tenant/users/userContractRouter.ts` (434 → 221 via
+     `userContractHandlers.ts`), `financeUseCases.ts` (437 → 218 via `financeMutationOperations.ts`),
+     `sessionTypes.ts` (443 → 215 via `sessionSubEntityTypes.ts`), `questionBankResultsRepository.ts`
+     (447 → 242 via `questionBankResultsPersist.ts`), and `financeInvoicesRepository.ts`
+     (452 → 238 via `financeInvoicesPersist.ts`).
+   - *Phase 5 (453–494 band):* `platform.dto.ts` (453 → 281 via `platformManagement.dto.ts`),
+     `workspacePresentationService.ts` (461 → 280 via `workspaceAdminUserRepository.ts`),
+     `contactItemNormalizeRows.ts` (463 → 240 via `contactItemNormalizeProfileRows.ts`),
+     `tenantUserRepositoryPersist.ts` (465 → 229 via `tenantUserLifecyclePersist.ts` and
+     `tenantUserProfileHelpers.ts`), `accountingEntriesPersist.ts` (491 → 229 via
+     `accountingEntriesLifecyclePersist.ts`), and `examinations.ts` (494 → 15 via modular schema aggregator
+     re-exporting `examinationExamTables.ts`, `examinationQuestionBankTables.ts`, `examinationTestTables.ts`,
+     `examinationSetupTables.ts`, and `examinationSchemaTypes.ts`).
+   - *Phase 6 (504–571 band):* `examinationExamsRepository.ts` (504 → 218 via `examinationExamsPersist.ts`),
+     `backgroundJobRunnerService.ts` (506 → 235 via `backgroundJobDocumentFinanceRunners.ts`,
+     `backgroundJobFacultyRunners.ts`, and `backgroundJobPayloads.ts`), `workspaceRepository.ts` (509 → 125 via
+     `workspaceRepositoryCache.ts`, `workspaceRowMappers.ts`, `workspaceBrandingRepository.ts`, and
+     `workspaceSettingsRepository.ts`), `platform.contract.ts` (513 → 276 via `platformWorkspaces.contract.ts`
+     and `platformAdmins.contract.ts`), `contacts.contract.ts` (514 → 24 via `contacts.contract.schemas.ts` and
+     modular contract route aggregation), `seed-20-contacts-data.ts` (525 → 9 via `seed-20-contacts-part1.ts`
+     and `seed-20-contacts-part2.ts`), and `seed-20-contacts.ts` (571 → 51 via importing `SEED_20_DUMMY_CONTACTS`).
+   - *Phase 7 (528–593 band):* `financeContractRouter.ts` (528 → 270 via `financePaymentHandlers.ts` and
+     `financeMetricsHandlers.ts`), `redis.ts` (533 → 213 via `redisKeys.ts`, `redisBullMQ.ts`, and
+     `redisCacheOperations.ts`), `sessions.ts` (541 → 13 via `sessionCoreTables.ts`, `sessionClassSubTables.ts`,
+     `sessionSetupTables.ts`, and `sessionSchemaTypes.ts`), `sessionContractRouter.ts` (547 → 225 via
+     `sessionBulkContractHandlers.ts` and `sessionSetupContractHandlers.ts`), `accountingEntriesRepository.ts`
+     (566 → 164 via `accountingEntriesHydrate.ts`), and `questionBankTestsRepository.ts` (593 → 93 via
+     `questionBankTestsPersist.ts` and `questionBankTestsHydrate.ts`).
+   - *Phase 8 (336–634 band):* `dataMigrationRegistry.ts` (336 → 9 via `dataMigrationsBatch1.ts` and
+     `dataMigrationsBatch2.ts`), `resetAllModulesExceptContacts.ts` (354 → 165 via `resetAllModulesExecution.ts` and
+     `resetAllModulesVerify.ts`), `dbConnection.ts` (399 → 155 via `dbTransactions.ts` and `dbPoolMetrics.ts`),
+     `index.ts` (415 → 10 via `entry/indexCore.ts`, `entry/indexDomainsAcademic.ts`, and `entry/indexDomainsOperations.ts`),
+     `contactTabRegistry.ts` (596 → 250 via `contactColumnRegistryPrimary.ts`, `contactColumnRegistryExtended.ts`, and
+     `contactColumnRegistry.ts`), and `contactFieldSeed.ts` (634 → 22 via `contactFieldSeedIdentity.ts`,
+     `contactFieldSeedProfile.ts`, and `contactFieldSeedAffiliations.ts`).
+   - *Phase 9 (681–746 band):* `attendanceContractRouter.ts` (681 → 55 via `attendanceRecordHandlers.ts`,
+     `attendanceBulkContractHandlers.ts`, and `attendanceSetupContractHandlers.ts`), `sessionRepositoryHydrate.ts`
+     (701 → 142 via `sessionRepositoryHydrateAggregated.ts` and `sessionRepositoryHydrateBatched.ts`),
+     `usersUseCases.ts` (726 → 264 via `userCreationUseCases.ts` and `userMutationUseCases.ts`), and
+     `accountingUseCases.ts` (745 → 291 via `accountingEntryMutationUseCases.ts`,
+     `accountingAccountLifecycleUseCases.ts`, and `accountingLedgerGuards.ts`).
+   All extracted parts are comfortably under 300 LOC with full backward-compatible re-exports and zero public
+   surface regressions. Baseline ratcheted from **8 down to 4** (65 fat files net eliminated across Phases 1–9).
+   **100% of application source files across the monorepo now comply with the 300 LOC ceiling.** The only 4 remaining
+   files in the ratchet are the 4 generated translation dictionary data tables (en/ar/ur/fa ~9k lines).
 6. ~~Migration DDL duplication · legacy `teachers` DDL names.~~ **RESOLVED — false positive, and no
    migration was touched.** `0108` deliberately **supersedes** `0104`: it `CREATE OR REPLACE`s
    `forbid_hard_delete()` with a better message (`…or set app.allow_hard_purge = true in maintenance

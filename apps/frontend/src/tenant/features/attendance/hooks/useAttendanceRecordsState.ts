@@ -7,7 +7,7 @@ import { ATTENDANCE_MODULE_MANIFEST, type AppTranslationKey } from "@mms/shared"
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { notify } from "@/lib/notify";
-import { useAttendanceSelection } from "@/tenant/features/attendance/hooks/useAttendanceSelection";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useAttendancePaginated } from "@/tenant/features/attendance/hooks/useAttendance";
 import {
   ALWAYS_COLUMN_VISIBLE,
@@ -88,9 +88,9 @@ export function useAttendanceRecordsState({
     allVisibleSelected,
     someVisibleSelected,
     toggleSelectAll,
-    toggleSelectedRecord,
+    toggleSelected,
     clearSelection,
-  } = useAttendanceSelection(pageRecords);
+  } = useWorkSelection(pageRecords);
 
   useEffect(() => {
     clearSelection();
@@ -185,7 +185,7 @@ export function useAttendanceRecordsState({
     allVisibleSelected,
     someVisibleSelected,
     toggleSelectAll,
-    toggleSelectedRecord,
+    toggleSelected,
     statusLabel,
     columnVisible,
     visibleColCount,

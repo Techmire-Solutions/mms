@@ -5,11 +5,11 @@ import {
   Button,
   PasswordInput,
   LeadingIconInput,
-  PasswordStrengthMeter,
   Field,
   SectionCard,
 } from "@shared/ui";
 import { FormModal } from "@/components/app/FormModal";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { getPlatformRegisterError } from "@/platform/lib/platformValidation";

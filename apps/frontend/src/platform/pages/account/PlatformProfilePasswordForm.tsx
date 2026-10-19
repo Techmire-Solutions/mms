@@ -5,9 +5,9 @@ import {
   FieldErrorMessage,
   FormSubmitActions,
   PasswordInput,
-  PasswordStrengthMeter,
   SectionCard,
 } from "@shared/ui";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUpdatePlatformPassword } from "@/platform/hooks/usePlatformProfile";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
