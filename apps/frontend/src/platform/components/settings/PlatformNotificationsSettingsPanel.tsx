@@ -5,7 +5,9 @@ import {
   usePlatformSettingsQuery,
   useUpdatePlatformSettings,
 } from "@/platform/hooks/usePlatformSettings";
+import { DEFAULT_PLATFORM_SETTINGS, resolvePlatformNotificationChannel } from "@mms/shared";
 import {
+  Badge,
   Card,
   CardHeader,
   CardTitle,
@@ -26,6 +28,7 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
 
   const emailOn = Boolean(settings?.emailNotifications);
   const smsOn = Boolean(settings?.smsNotifications);
+  const platformChannel = resolvePlatformNotificationChannel(settings ?? DEFAULT_PLATFORM_SETTINGS);
 
   return (
     <div className="space-y-6 text-start">
@@ -38,6 +41,35 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
           <CardDescription className="text-xs">{t("platform.notificationsDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium" aria-live="polite">
+            <span className="text-muted-foreground">{t("global.notificationsActiveChannel")}:</span>
+            {platformChannel === "both" && (
+              <>
+                <Badge as="span" tone="primary" size="sm">
+                  {t("global.notificationsChannelEmail")}
+                </Badge>
+                <Badge as="span" tone="primary" size="sm">
+                  {t("global.notificationsChannelSms")}
+                </Badge>
+              </>
+            )}
+            {platformChannel === "email" && (
+              <Badge as="span" tone="primary" size="sm">
+                {t("global.notificationsChannelEmail")}
+              </Badge>
+            )}
+            {platformChannel === "sms" && (
+              <Badge as="span" tone="primary" size="sm">
+                {t("global.notificationsChannelSms")}
+              </Badge>
+            )}
+            {platformChannel === "none" && (
+              <Badge as="span" tone="warning" size="sm">
+                {t("global.notificationsChannelNone")}
+              </Badge>
+            )}
+          </div>
+
           <ToggleRow
             id="platform-email-notifications"
             variant="bordered"

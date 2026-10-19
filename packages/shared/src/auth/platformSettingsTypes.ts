@@ -32,12 +32,15 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   smsNotifications: false,
 };
 
-/** Primary outbound channel for platform 2FA/alerts — email wins when both are on. */
+/** Primary outbound channel for platform 2FA/alerts — returns "both" when both are on. */
 export function resolvePlatformNotificationChannel(
   settings: PlatformSettings,
 ): NotificationChannel {
-  if (settings.emailNotifications) return "email";
-  if (settings.smsNotifications) return "sms";
+  const email = Boolean(settings.emailNotifications);
+  const sms = Boolean(settings.smsNotifications);
+  if (email && sms) return "both";
+  if (email) return "email";
+  if (sms) return "sms";
   return "none";
 }
 

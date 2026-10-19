@@ -3,7 +3,11 @@ import {
   platformSettingsUpdateSchema,
   migrateAndRestartSchema,
   MIGRATE_AND_RESTART_CONFIRM,
+  resolvePlatformNotificationChannel,
+  DEFAULT_PLATFORM_SETTINGS,
 } from "../auth/platformSettingsTypes.js";
+import { resolveNotificationChannel } from "../settings/globalSettingsNotificationUtils.js";
+import { DEFAULT_GLOBAL_SETTINGS } from "../settings/globalSettingsCore.js";
 import { platformActivityLogsQuerySchema } from "../schemas/platform.dto.js";
 
 describe("platformSettingsValidation", () => {
@@ -81,6 +85,80 @@ describe("platformSettingsValidation", () => {
       };
       const result = migrateAndRestartSchema.safeParse(invalid);
       expect(result.success).toBe(false);
+    });
+  });
+
+  describe("resolvePlatformNotificationChannel & resolveNotificationChannel", () => {
+    it("returns 'both' when both email and sms notifications are enabled", () => {
+      expect(
+        resolvePlatformNotificationChannel({
+          ...DEFAULT_PLATFORM_SETTINGS,
+          emailNotifications: true,
+          smsNotifications: true,
+        }),
+      ).toBe("both");
+
+      expect(
+        resolveNotificationChannel({
+          ...DEFAULT_GLOBAL_SETTINGS,
+          emailNotifications: true,
+          smsNotifications: true,
+        }),
+      ).toBe("both");
+    });
+
+    it("returns 'email' when only email notifications are enabled", () => {
+      expect(
+        resolvePlatformNotificationChannel({
+          ...DEFAULT_PLATFORM_SETTINGS,
+          emailNotifications: true,
+          smsNotifications: false,
+        }),
+      ).toBe("email");
+
+      expect(
+        resolveNotificationChannel({
+          ...DEFAULT_GLOBAL_SETTINGS,
+          emailNotifications: true,
+          smsNotifications: false,
+        }),
+      ).toBe("email");
+    });
+
+    it("returns 'sms' when only sms notifications are enabled", () => {
+      expect(
+        resolvePlatformNotificationChannel({
+          ...DEFAULT_PLATFORM_SETTINGS,
+          emailNotifications: false,
+          smsNotifications: true,
+        }),
+      ).toBe("sms");
+
+      expect(
+        resolveNotificationChannel({
+          ...DEFAULT_GLOBAL_SETTINGS,
+          emailNotifications: false,
+          smsNotifications: true,
+        }),
+      ).toBe("sms");
+    });
+
+    it("returns 'none' when neither email nor sms notifications are enabled", () => {
+      expect(
+        resolvePlatformNotificationChannel({
+          ...DEFAULT_PLATFORM_SETTINGS,
+          emailNotifications: false,
+          smsNotifications: false,
+        }),
+      ).toBe("none");
+
+      expect(
+        resolveNotificationChannel({
+          ...DEFAULT_GLOBAL_SETTINGS,
+          emailNotifications: false,
+          smsNotifications: false,
+        }),
+      ).toBe("none");
     });
   });
 });

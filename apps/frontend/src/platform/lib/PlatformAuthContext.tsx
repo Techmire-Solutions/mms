@@ -68,7 +68,7 @@ export const PlatformAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         if (res.requires2FA && res.challengeId) {
           // 2FA is required — do not authenticate until the code is verified.
-          return { requires2FA: true, challengeId: res.challengeId };
+          return { requires2FA: true, challengeId: res.challengeId, channel: res.channel };
         }
 
         clearPersistedAuthUser();
