@@ -55,12 +55,16 @@ export const Card = ({
   className,
   accentColor = "primary",
   interactive = false,
+  tabIndex,
+  role,
   ...props
 }: CardProps & { ref?: React.Ref<HTMLDivElement> }) => {
   const hasStripe = accentColor && accentColor !== "none";
   return (
     <div
       ref={ref}
+      tabIndex={interactive ? (tabIndex ?? 0) : tabIndex}
+      role={interactive ? (role ?? "button") : role}
       className={cn(
         CARD_SURFACE,
         interactive &&

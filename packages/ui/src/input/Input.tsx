@@ -90,13 +90,19 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative flex w-full items-center">
         {leftIcon && (
-          <div className="pointer-events-none absolute start-3 flex items-center justify-center text-muted-foreground [&_svg]:size-4">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute start-3 flex items-center justify-center text-muted-foreground [&_svg]:size-4"
+          >
             {leftIcon}
           </div>
         )}
         {inputElement}
         {rightIcon && (
-          <div className="pointer-events-none absolute end-3 flex items-center justify-center text-muted-foreground [&_svg]:size-4">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute end-3 flex items-center justify-center text-muted-foreground [&_svg]:size-4"
+          >
             {rightIcon}
           </div>
         )}

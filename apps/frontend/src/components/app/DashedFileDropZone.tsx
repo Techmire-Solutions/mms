@@ -114,8 +114,8 @@ export function DashedFileDropZone({
 
   const copy = (
     <div className="text-center">
-      <p className="text-sm font-semibold text-foreground">{title}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+      <p className="text-sm font-semibold text-foreground text-balance">{title}</p>
+      <p className="mt-1 text-xs text-muted-foreground text-pretty">{description}</p>
     </div>
   );
 
@@ -154,7 +154,7 @@ export function DashedFileDropZone({
         <Button
           disabled={disabled || isUploading}
           onClick={openPicker}
-          className="mt-2 min-h-11 rounded-xl bg-primary px-6 text-xs font-bold text-primary-foreground shadow-none transition-all hover:scale-105 active:scale-95 motion-reduce:transform-none"
+          className="mt-2 min-h-11 rounded-xl bg-primary px-6 text-xs font-bold text-primary-foreground shadow-none transition-all hover:scale-105 active:scale-95 motion-reduce:transform-none cursor-pointer disabled:cursor-not-allowed"
           type="button"
           aria-label={inputAriaLabel}
         >

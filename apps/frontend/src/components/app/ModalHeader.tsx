@@ -50,12 +50,12 @@ export function ModalHeader({
           <div className="min-w-0">
             <h2
               id={titleId}
-              className="text-base sm:text-lg font-bold text-foreground leading-tight truncate"
+              className="text-base sm:text-lg font-bold text-foreground leading-tight text-balance break-words"
             >
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">{subtitle}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 text-balance break-words">{subtitle}</p>
             )}
           </div>
         </div>

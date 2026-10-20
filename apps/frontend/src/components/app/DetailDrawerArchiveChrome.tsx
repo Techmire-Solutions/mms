@@ -144,7 +144,7 @@ export function DrawerSyncStatusFooter({
     <div className="flex items-center gap-1.5">
       <div
         className={`w-1.5 h-1.5 rounded-full ${isArchived ? "bg-warning" : "bg-success"}`}
-        aria-hidden
+        aria-hidden="true"
       />
       <span
         className={`text-xs font-bold uppercase ${isArchived ? "text-warning" : "text-success"}`}

@@ -48,7 +48,7 @@ export function SubTabBarUnderlineVariant<K extends string>({
                     "h-4 w-4 shrink-0 transition-colors",
                     active ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
                   )}
-                  aria-hidden
+                  aria-hidden="true"
                 />
               )}
               <span>{tab.label}</span>
@@ -90,14 +90,14 @@ export function SubTabBarPillVariant<K extends string>({
               aria-selected={active}
               onClick={() => onChange(tab.key)}
               className={cn(
-                "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-start text-xs font-semibold transition-colors",
+                "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-start text-xs font-semibold transition-colors cursor-pointer",
                 active
                   ? "border-primary/20 bg-card text-primary shadow-xs font-bold"
                   : "border-border/60 bg-muted/20 text-muted-foreground hover:text-foreground",
               )}
             >
               <span className="flex min-w-0 items-center gap-1.5">
-                {tab.icon && <tab.icon className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+                {tab.icon && <tab.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
                 <span className="truncate">{tab.label}</span>
               </span>
               {tab.badge !== undefined && <SubTabBarBadge badge={tab.badge} active={active} />}
@@ -120,7 +120,7 @@ export function SubTabBarPillVariant<K extends string>({
               aria-selected={active}
               onClick={() => onChange(t.key)}
               className={cn(
-                "relative flex min-h-11 min-w-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-2 text-xs sm:text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "relative flex min-h-11 min-w-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-2 text-xs sm:text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer",
                 active
                   ? "bg-card text-foreground font-semibold shadow-xs border border-border/60"
                   : "text-muted-foreground hover:text-foreground hover:bg-card/40",
@@ -132,7 +132,7 @@ export function SubTabBarPillVariant<K extends string>({
                     "h-3.5 w-3.5 transition-colors",
                     active ? "text-primary" : "text-muted-foreground",
                   )}
-                  aria-hidden
+                  aria-hidden="true"
                 />
               )}
               <span>{t.label}</span>

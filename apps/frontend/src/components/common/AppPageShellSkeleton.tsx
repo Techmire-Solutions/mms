@@ -38,7 +38,7 @@ export function AppPageShellSkeleton({
   return (
     <div
       className={cn(
-        "box-border mx-auto w-full min-w-0 max-w-7xl space-y-8 sm:space-y-10 animate-pulse",
+        "box-border mx-auto w-full min-w-0 max-w-7xl space-y-8 sm:space-y-10 animate-pulse motion-reduce:animate-none",
         className,
       )}
       role="status"

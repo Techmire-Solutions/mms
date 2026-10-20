@@ -64,10 +64,15 @@ export function CopyButton({
         variant={variant ?? "outline"}
         onClick={handleCopy}
         aria-label={copied ? (labelCopied ?? label) : label}
+        aria-live="polite"
         className={cn("gap-1.5 text-xs font-semibold rounded-xl cursor-pointer", className)}
       >
-        {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
-        {copied ? (labelCopied ?? label) : label}
+        {copied ? (
+          <Check className="w-3.5 h-3.5 text-success" aria-hidden="true" />
+        ) : (
+          <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+        )}
+        <span>{copied ? (labelCopied ?? label) : label}</span>
       </Button>
     );
   }
@@ -80,13 +85,18 @@ export function CopyButton({
       variant={variant}
       title={copied ? titleCopied : title}
       aria-label={copied ? titleCopied : title}
+      aria-live="polite"
       className={cn(
         DEFAULT_ICON_BTN_CLASS,
         "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity",
         className,
       )}
     >
-      {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? (
+        <Check className="w-3.5 h-3.5 text-success" aria-hidden="true" />
+      ) : (
+        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+      )}
     </Button>
   );
 }

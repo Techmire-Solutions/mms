@@ -74,9 +74,9 @@ export function BackgroundJobsTray({
         size="icon"
         aria-label={t("backgroundJobs.trayLabel")}
         onClick={() => setOpen(true)}
-        className={cn("relative min-h-11 min-w-11 h-11 w-11 rounded-lg", className)}
+        className={cn("relative min-h-11 min-w-11 h-11 w-11 rounded-lg cursor-pointer", className)}
       >
-        <Download className="h-5 w-5 text-muted-foreground" />
+        <Download className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
         {badgeCount > 0 && (
           <Badge
             variant="secondary"
@@ -107,7 +107,7 @@ export function BackgroundJobsTray({
                   type="button"
                   variant="outline"
                   onClick={onRefresh}
-                  className="min-h-11 shrink-0 inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium shadow-none"
+                  className="min-h-11 shrink-0 inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs font-medium shadow-none cursor-pointer"
                 >
                   <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                   {t("backgroundJobs.refresh")}
@@ -127,11 +127,11 @@ export function BackgroundJobsTray({
                   >
                     <div className="flex items-start gap-2 min-w-0">
                       {job.status === "running" ? (
-                        <Loader2 className="w-4 h-4 shrink-0 animate-spin mt-0.5 text-info" />
+                        <Loader2 className="w-4 h-4 shrink-0 animate-spin motion-reduce:animate-none mt-0.5 text-info" aria-hidden="true" />
                       ) : job.status === "failed" ? (
-                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-destructive" />
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-destructive" aria-hidden="true" />
                       ) : (
-                        <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
+                        <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-primary" aria-hidden="true" />
                       )}
                       <div className="min-w-0">
                         <p className="font-medium truncate">{job.label}</p>
@@ -151,13 +151,13 @@ export function BackgroundJobsTray({
                           size="icon"
                           onClick={() => void handleDownload(job.id)}
                           disabled={downloadingId === job.id}
-                          className="text-primary shadow-none"
+                          className="text-primary shadow-none cursor-pointer disabled:cursor-not-allowed min-h-11 min-w-11"
                           aria-label={t("backgroundJobs.download")}
                         >
                           {downloadingId === job.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                           ) : (
-                            <Download className="w-3.5 h-3.5" />
+                            <Download className="w-3.5 h-3.5" aria-hidden="true" />
                           )}
                         </Button>
                       )}
@@ -167,10 +167,10 @@ export function BackgroundJobsTray({
                           variant="ghost"
                           size="icon"
                           onClick={() => onDismiss(job.id)}
-                          className="shadow-none"
+                          className="shadow-none cursor-pointer min-h-11 min-w-11"
                           aria-label={t("backgroundJobs.dismiss")}
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <X className="w-3.5 h-3.5" aria-hidden="true" />
                         </Button>
                       )}
                     </div>
@@ -183,7 +183,7 @@ export function BackgroundJobsTray({
                 type="button"
                 variant="link"
                 onClick={onClearFinished}
-                className="min-h-11 px-2 text-xs text-muted-foreground"
+                className="min-h-11 px-2 text-xs text-muted-foreground cursor-pointer"
               >
                 {t("backgroundJobs.clearFinished")}
               </Button>

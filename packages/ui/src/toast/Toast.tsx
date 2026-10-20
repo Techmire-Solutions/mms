@@ -43,15 +43,17 @@ export function Toast({
 }: ToastProps): React.JSX.Element {
   return (
     <div
-      role="status"
-      aria-live="polite"
+      role={variant === "destructive" ? "alert" : "status"}
+      aria-live={variant === "destructive" ? "assertive" : "polite"}
       popover={popover}
       className={cn(toastVariants({ variant }), className)}
       {...props}
     >
       <div className="flex flex-1 flex-col gap-1">
-        {title && <p className="text-sm font-semibold">{title}</p>}
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        {title && <p className="text-sm font-semibold text-balance break-words">{title}</p>}
+        {description && (
+          <p className="text-xs text-muted-foreground text-pretty break-words">{description}</p>
+        )}
       </div>
 
       {action && <div className="shrink-0">{action}</div>}
@@ -61,10 +63,10 @@ export function Toast({
           type="button"
           onClick={onClose}
           popoverTargetAction={popover ? "hide" : undefined}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 cursor-pointer"
           aria-label="Close"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       )}
     </div>
@@ -121,14 +123,19 @@ export function ToastTitle({
   className,
   ...props
 }: React.ComponentProps<"div">): React.JSX.Element {
-  return <div className={cn("text-sm font-semibold", className)} {...props} />;
+  return (
+    <div
+      className={cn("text-sm font-semibold text-balance break-words", className)}
+      {...props}
+    />
+  );
 }
 
 export function ToastDescription({
   className,
   ...props
 }: React.ComponentProps<"div">): React.JSX.Element {
-  return <div className={cn("text-sm opacity-90", className)} {...props} />;
+  return <div className={cn("text-sm opacity-90 text-pretty break-words", className)} {...props} />;
 }
 
 export function ToastClose({
@@ -138,12 +145,12 @@ export function ToastClose({
   return (
     <button
       className={cn(
-        "absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-current opacity-50 transition-opacity hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40",
+        "absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-current opacity-50 transition-opacity hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40 cursor-pointer",
         className,
       )}
       {...props}
     >
-      <X className="h-4 w-4" />
+      <X className="h-4 w-4" aria-hidden="true" />
     </button>
   );
 }

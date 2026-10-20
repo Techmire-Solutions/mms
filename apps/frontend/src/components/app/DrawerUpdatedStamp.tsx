@@ -31,7 +31,7 @@ export function DrawerUpdatedStamp({
 
   return (
     <SectionLabel as="div" weight="bold" className="flex items-center gap-2">
-      <Clock className="w-3 h-3" aria-hidden />
+      <Clock className="w-3 h-3" aria-hidden="true" />
       <span>
         {label} {dateStr}
         {relativeStr ? ` (${relativeStr})` : ""}

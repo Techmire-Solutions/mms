@@ -81,7 +81,7 @@ export function PlatformPageShellHeader({
             aria-label={t("nav.openMenu")}
             className="lg:hidden flex min-h-11 min-w-11 h-11 w-11 shrink-0 items-center justify-center rounded-xl text-foreground hover:bg-muted cursor-pointer"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>
 
           <div className="lg:hidden">

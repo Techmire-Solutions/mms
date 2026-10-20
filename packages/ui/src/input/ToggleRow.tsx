@@ -56,26 +56,37 @@ export function ToggleRow({
     onChange?.(nextChecked);
   };
 
+  const handleContainerClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+    if (disabled) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('button[role="switch"]') || target.closest("label")) {
+      return;
+    }
+    handleChange(!isChecked);
+  };
+
   const stringAriaLabel = ariaLabel ?? (typeof label === "string" ? label : undefined);
 
   if (variant === "card") {
     return (
       <div
+        role="presentation"
+        onClick={handleContainerClick}
         className={cn(
           "flex items-center justify-between gap-4 rounded-xl border px-3.5 py-3.5 transition-colors text-start",
           isChecked
             ? "border-primary/20 bg-primary/5"
             : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20",
-          disabled && "opacity-60 pointer-events-none",
+          disabled ? "opacity-60 pointer-events-none cursor-not-allowed" : "cursor-pointer select-none",
           className,
         )}
       >
         <div className="min-w-0 flex-1">
-          <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer">
+          <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer text-balance">
             {label}
           </Label>
           {description ? (
-            <p id={`${id}-desc`} className="mt-0.5 text-xs text-muted-foreground">
+            <p id={`${id}-desc`} className="mt-0.5 text-xs text-muted-foreground text-pretty leading-relaxed">
               {description}
             </p>
           ) : null}
@@ -95,18 +106,20 @@ export function ToggleRow({
   if (variant === "bordered") {
     return (
       <div
+        role="presentation"
+        onClick={handleContainerClick}
         className={cn(
           "flex items-center justify-between gap-4 p-3 rounded-lg border border-border bg-card/50 text-start",
-          disabled && "opacity-60 pointer-events-none",
+          disabled ? "opacity-60 pointer-events-none cursor-not-allowed" : "cursor-pointer select-none",
           className,
         )}
       >
         <div className="min-w-0 flex-1 space-y-0.5">
-          <Label htmlFor={id} className="text-xs font-medium cursor-pointer text-foreground">
+          <Label htmlFor={id} className="text-xs font-medium cursor-pointer text-foreground text-balance">
             {label}
           </Label>
           {description ? (
-            <p id={`${id}-desc`} className="text-3xs text-muted-foreground">
+            <p id={`${id}-desc`} className="text-3xs text-muted-foreground text-pretty leading-relaxed">
               {description}
             </p>
           ) : null}
@@ -132,11 +145,11 @@ export function ToggleRow({
       )}
     >
       <div className="min-w-0 flex-1">
-        <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer block">
+        <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer block text-balance">
           {label}
         </Label>
         {description ? (
-          <p id={`${id}-desc`} className="text-xs text-muted-foreground mt-0.5">
+          <p id={`${id}-desc`} className="text-xs text-muted-foreground mt-0.5 text-pretty leading-relaxed">
             {description}
           </p>
         ) : null}

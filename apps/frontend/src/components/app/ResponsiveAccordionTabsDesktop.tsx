@@ -32,7 +32,7 @@ export function ResponsiveAccordionTabsDesktop({
             const Icon = tab.icon;
             const active = activeTab === tab.id;
             const tabClass = cn(
-              "flex min-h-11 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition-all rounded-t-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+              "flex min-h-11 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition-all rounded-t-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer",
               active
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground",
@@ -47,7 +47,7 @@ export function ResponsiveAccordionTabsDesktop({
                   aria-selected={active}
                   className={tabClass}
                 >
-                  {Icon ? <Icon className="h-3.5 w-3.5" aria-hidden /> : null}
+                  {Icon ? <Icon className="h-3.5 w-3.5" aria-hidden="true" /> : null}
                   {tab.label}
                 </Link>
               );
@@ -62,7 +62,7 @@ export function ResponsiveAccordionTabsDesktop({
                 onClick={() => onTabChange(tab.id)}
                 className={tabClass}
               >
-                {Icon ? <Icon className="h-3.5 w-3.5" aria-hidden /> : null}
+                {Icon ? <Icon className="h-3.5 w-3.5" aria-hidden="true" /> : null}
                 {tab.label}
               </button>
             );
@@ -83,7 +83,7 @@ export function ResponsiveAccordionTabsDesktop({
           const Icon = tab.icon;
           const active = activeTab === tab.id;
           const linkClass = cn(
-            "block w-full min-h-11 rounded-xl border px-3 py-2.5 text-start transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+            "block w-full min-h-11 rounded-xl border px-3 py-2.5 text-start transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer",
             active
               ? "border-primary/25 border-s-2 border-s-primary bg-primary/5 text-primary shadow-sm"
               : "border-transparent text-muted-foreground hover:border-border/50 hover:bg-muted/50 hover:text-foreground",
@@ -100,15 +100,15 @@ export function ResponsiveAccordionTabsDesktop({
                         active ? "bg-primary/15 text-primary" : "bg-muted/80 text-muted-foreground",
                       )}
                     >
-                      <Icon className="h-3.5 w-3.5" aria-hidden />
+                      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                     </span>
                   ) : null}
-                  <span className="text-sm font-semibold">{tab.label}</span>
+                  <span className="text-sm font-semibold text-balance">{tab.label}</span>
                 </div>
                 {tab.description ? (
                   <p
                     className={cn(
-                      "text-xs leading-snug text-muted-foreground",
+                      "text-xs leading-snug text-muted-foreground text-pretty",
                       Icon && "ps-9",
                       active && "text-primary/80",
                     )}
@@ -135,15 +135,15 @@ export function ResponsiveAccordionTabsDesktop({
                       active ? "bg-primary/15 text-primary" : "bg-muted/80 text-muted-foreground",
                     )}
                   >
-                    <Icon className="h-3.5 w-3.5" aria-hidden />
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                   </span>
                 ) : null}
-                <span className="text-sm font-semibold">{tab.label}</span>
+                <span className="text-sm font-semibold text-balance">{tab.label}</span>
               </div>
               {tab.description ? (
                 <p
                   className={cn(
-                    "text-xs leading-snug text-muted-foreground",
+                    "text-xs leading-snug text-muted-foreground text-pretty",
                     Icon && "ps-9",
                     active && "text-primary/80",
                   )}

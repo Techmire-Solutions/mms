@@ -68,7 +68,7 @@ export const EditableMultiSelectOptionItem = React.memo(function EditableMultiSe
             size="icon"
             onClick={(event) => onRemoveOption(option, event)}
             className={cn(
-              "relative h-7 w-7 rounded transition-colors after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
+              "relative h-7 w-7 rounded transition-colors after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 rtl:after:translate-x-1/2 after:-translate-y-1/2 after:content-['']",
               REMOVE_BTN,
             )}
             aria-label={t("contacts.form.removeOption", { option })}

@@ -78,9 +78,9 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             variant="outline"
             size="sm"
             onClick={handleDownloadTemplate}
-            className="gap-1.5 text-xs h-8 touch-target-coarse"
+            className="gap-1.5 text-xs h-8 touch-target-coarse cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5" aria-hidden="true" />
             {t("module.import.downloadTemplateButton")}
           </Button>
         </div>
@@ -91,7 +91,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-xs text-destructive space-y-1"
           >
             <div className="font-semibold flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4" />
+              <AlertCircle className="w-4 h-4" aria-hidden="true" />
               {t("module.import.missingColumns")}
             </div>
             <p>{missingHeaders.join(", ")}</p>
@@ -104,7 +104,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             className="p-3 bg-warning/10 border border-warning/20 rounded-lg text-xs text-warning max-h-32 overflow-y-auto space-y-1"
           >
             <div className="font-semibold flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4" />
+              <AlertCircle className="w-4 h-4" aria-hidden="true" />
               {t("module.import.formattingWarnings", { count: rowErrors.length })}
             </div>
             {rowErrors.slice(0, 5).map((err, idx) => (
@@ -118,16 +118,16 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
 
         {completedJob ? (
           <div className="p-4 bg-success/10 border border-success/20 rounded-lg text-xs text-success space-y-2 text-center">
-            <CheckCircle2 className="w-8 h-8 mx-auto text-success" />
+            <CheckCircle2 className="w-8 h-8 mx-auto text-success" aria-hidden="true" />
             <div className="font-semibold text-sm">{completedJob.label}</div>
-            <Button variant="outline" size="sm" onClick={resetState}>
+            <Button variant="outline" size="sm" onClick={resetState} className="cursor-pointer">
               {t("module.import.importAnother")}
             </Button>
           </div>
         ) : parsedRows.length > 0 ? (
           <div className="p-4 bg-card border border-border rounded-lg space-y-3">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-primary" />
+              <FileSpreadsheet className="w-5 h-5 text-primary" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium">{fileName}</p>
                 <p className="text-xs text-muted-foreground">
@@ -160,7 +160,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
               </div>
             ) : (
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="ghost" size="sm" onClick={resetState}>
+                <Button variant="ghost" size="sm" onClick={resetState} className="cursor-pointer">
                   {t("module.import.changeFile")}
                 </Button>
                 <Button
@@ -168,9 +168,9 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
                   size="sm"
                   onClick={() => void handleStartImport()}
                   disabled={missingHeaders.length > 0}
-                  className="gap-1.5"
+                  className="gap-1.5 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <Upload className="w-3.5 h-3.5" />
+                  <Upload className="w-3.5 h-3.5" aria-hidden="true" />
                   {t("module.import.importRecords", { count: parsedRows.length })}
                 </Button>
               </div>

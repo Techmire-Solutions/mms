@@ -81,11 +81,11 @@ export function IntegrationPanelChrome({
     <div className={cn(WORK_SURFACE_INNER, "space-y-4 p-4")}>
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <Icon className="h-4 w-4 text-primary" aria-hidden />
+          <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground">{title}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-sm font-semibold text-foreground text-balance">{title}</p>
+          <p className="text-xs text-muted-foreground text-pretty">{description}</p>
         </div>
         {connected && lastTestOk ? (
           <Badge as="span" tone="success" size="sm">
@@ -100,7 +100,7 @@ export function IntegrationPanelChrome({
 
       <div
         className={cn(
-          "rounded-lg border px-3 py-2.5 text-xs leading-relaxed",
+          "rounded-lg border px-3 py-2.5 text-xs leading-relaxed text-pretty",
           WORK_SURFACE_INNER,
           "text-muted-foreground",
         )}
@@ -114,17 +114,20 @@ export function IntegrationPanelChrome({
 
       {footerContent}
 
-      <div className="flex flex-wrap gap-2.5 pt-1">
+      <div className="flex flex-col-reverse sm:flex-row flex-wrap gap-2.5 pt-1">
         <Button
           type="button"
           onClick={onSave}
           disabled={saving || testing}
-          className="min-h-11 gap-2 px-4 shadow-sm"
+          className="min-h-11 gap-2 px-4 shadow-sm cursor-pointer"
         >
           {saving ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            <Loader2
+              className="h-4 w-4 animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
           ) : (
-            <PlugZap className="h-4 w-4" aria-hidden />
+            <PlugZap className="h-4 w-4" aria-hidden="true" />
           )}
           <span>{saveLabel}</span>
         </Button>
@@ -133,9 +136,14 @@ export function IntegrationPanelChrome({
           variant="outline"
           onClick={onTest}
           disabled={saving || testing || testDisabled}
-          className="min-h-11 gap-2 px-4"
+          className="min-h-11 gap-2 px-4 cursor-pointer"
         >
-          {testing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+          {testing ? (
+            <Loader2
+              className="h-4 w-4 animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
+          ) : null}
           <span>{testLabel}</span>
         </Button>
       </div>

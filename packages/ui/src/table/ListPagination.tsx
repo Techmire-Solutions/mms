@@ -75,7 +75,7 @@ export function ListPagination({
           onClick={() => onPageChange(Math.max(1, safePage - 1))}
           aria-label={l.previous}
         >
-          <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+          <ChevronLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
         </Button>
         <span className="text-xs font-bold text-muted-foreground select-none">
           {safePage} / {totalPages}
@@ -89,7 +89,7 @@ export function ListPagination({
           onClick={() => onPageChange(Math.min(totalPages, safePage + 1))}
           aria-label={l.next}
         >
-          <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+          <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
         </Button>
       </div>
     );
@@ -115,7 +115,7 @@ export function ListPagination({
               onClick={() => onPageChange(Math.max(1, safePage - 1))}
               disabled={safePage === 1}
               aria-label={l.previous}
-              className="rounded-lg border border-border hover:bg-muted disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-border hover:bg-muted disabled:opacity-40 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" />
             </Button>
@@ -126,7 +126,7 @@ export function ListPagination({
               onClick={() => onPageChange(Math.min(totalPages, safePage + 1))}
               disabled={safePage === totalPages}
               aria-label={l.next}
-              className="rounded-lg border border-border hover:bg-muted disabled:opacity-40 transition-colors"
+              className="rounded-lg border border-border hover:bg-muted disabled:opacity-40 transition-colors cursor-pointer"
             >
               <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" />
             </Button>
@@ -156,7 +156,7 @@ export function ListPagination({
             variant="outline"
             disabled={safePage <= 1}
             onClick={() => onPageChange(safePage - 1)}
-            className="inline-flex min-h-11 items-center gap-1 px-2.5 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-muted/60 text-foreground shadow-none text-xs font-normal"
+            className="inline-flex min-h-11 items-center gap-1 px-2.5 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-muted/60 text-foreground shadow-none text-xs font-normal cursor-pointer"
             aria-label={l.previous}
           >
             <ChevronLeft className="w-4 h-4 rtl:rotate-180" aria-hidden="true" />
@@ -170,7 +170,7 @@ export function ListPagination({
             variant="outline"
             disabled={!actualHasMore}
             onClick={() => onPageChange(safePage + 1)}
-            className="inline-flex min-h-11 items-center gap-1 px-2.5 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-muted/60 text-foreground shadow-none text-xs font-normal"
+            className="inline-flex min-h-11 items-center gap-1 px-2.5 py-2 rounded-lg border border-border disabled:opacity-40 hover:bg-muted/60 text-foreground shadow-none text-xs font-normal cursor-pointer"
             aria-label={l.next}
           >
             {l.next}

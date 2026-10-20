@@ -12,6 +12,8 @@ export interface OtpInputProps {
   length?: number;
   idPrefix?: string;
   isRtl?: boolean;
+  /** Whether the first OTP input digit should be automatically focused. Defaults to false. */
+  autoFocus?: boolean;
 }
 
 /**
@@ -27,6 +29,7 @@ export function OtpInput({
   length = 6,
   idPrefix = "otp",
   isRtl = false,
+  autoFocus = false,
 }: OtpInputProps): React.JSX.Element {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -131,7 +134,7 @@ export function OtpInput({
             )}
             aria-label={label}
             aria-invalid={hasError || undefined}
-            autoFocus={index === 0}
+            autoFocus={autoFocus && index === 0}
           />
         );
       })}

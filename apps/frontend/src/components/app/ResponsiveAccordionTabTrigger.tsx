@@ -17,7 +17,7 @@ export function TabTrigger({
 }): React.JSX.Element {
   const Icon = tab.icon;
   const className = cn(
-    "flex min-h-11 w-full items-start gap-3 px-4 py-3.5 text-start transition-colors rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+    "flex min-h-11 w-full items-start gap-3 px-4 py-3.5 text-start transition-colors rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer",
     active ? "text-primary" : "text-foreground hover:bg-muted/40",
   );
   const body = (
@@ -29,13 +29,13 @@ export function TabTrigger({
             active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-4 w-4" aria-hidden="true" />
         </span>
       ) : null}
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold">{tab.label}</span>
+        <span className="block text-sm font-semibold text-balance">{tab.label}</span>
         {tab.description ? (
-          <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+          <span className="mt-0.5 block text-xs leading-snug text-muted-foreground text-pretty">
             {tab.description}
           </span>
         ) : null}
@@ -45,7 +45,7 @@ export function TabTrigger({
           "mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
           active && "rotate-180 text-primary",
         )}
-        aria-hidden
+        aria-hidden="true"
       />
     </>
   );

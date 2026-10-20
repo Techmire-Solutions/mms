@@ -65,12 +65,13 @@ export function SectionCard({
           icon={
             Icon && (
               <div
+                aria-hidden="true"
                 className={cn(
                   "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg",
                   accentConfig.iconBg,
                 )}
               >
-                <Icon className={cn("h-3.5 w-3.5", accentConfig.iconText)} />
+                <Icon className={cn("h-3.5 w-3.5", accentConfig.iconText)} aria-hidden="true" />
               </div>
             )
           }

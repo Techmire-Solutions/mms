@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useState } from "react";
+import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,8 +86,8 @@ export function ConfirmAlertDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle className="text-balance">{title}</AlertDialogTitle>
+          <AlertDialogDescription className="text-pretty">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         {optionalReason && (
           <Field label={optionalReason.label} id={reasonInputId}>
@@ -108,7 +109,13 @@ export function ConfirmAlertDialog({
             disabled={confirming}
             className={buttonVariants({ variant: destructive ? "destructive" : "default" })}
           >
-            {confirmLabel}
+            {confirming ? (
+              <Loader2
+                className="h-4 w-4 animate-spin motion-reduce:animate-none shrink-0"
+                aria-hidden="true"
+              />
+            ) : null}
+            <span>{confirmLabel}</span>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

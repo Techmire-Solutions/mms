@@ -3,6 +3,7 @@ import { LayoutGrid, Table } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export const WorkViewModeToggle = function WorkViewModeToggle({
   disabled = false,
 }: WorkViewModeToggleProps): React.JSX.Element {
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
 
   return (
     <div
@@ -54,7 +56,7 @@ export const WorkViewModeToggle = function WorkViewModeToggle({
             aria-label={label}
             aria-pressed={isSelected}
             className={cn(
-              "relative h-9 px-2.5 rounded-lg text-xs font-semibold transition-colors touch-manipulation z-elevated",
+              "relative h-9 px-2.5 rounded-lg text-xs font-semibold transition-colors touch-manipulation z-elevated cursor-pointer",
               isSelected
                 ? "text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
@@ -64,7 +66,9 @@ export const WorkViewModeToggle = function WorkViewModeToggle({
               <motion.div
                 layoutId="workViewModeActivePill"
                 className="absolute inset-0 rounded-lg bg-primary shadow-xs -z-elevated"
-                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                transition={
+                  reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 35 }
+                }
               />
             )}
             <Icon className="w-4 h-4" aria-hidden="true" />

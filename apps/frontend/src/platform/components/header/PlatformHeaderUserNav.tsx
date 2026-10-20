@@ -38,7 +38,7 @@ export function PlatformHeaderUserNav({
 
   const roleSubtitle = isSuperUser ? (
     <>
-      <ShieldAlert className="w-2.5 h-2.5 text-primary shrink-0" aria-hidden />
+      <ShieldAlert className="w-2.5 h-2.5 text-primary shrink-0" aria-hidden="true" />
       {t("platform.roleSuperUser")}
     </>
   ) : (
@@ -109,7 +109,9 @@ export function PlatformHeaderUserNav({
 
       <BackgroundJobsTray compact={compact} />
 
-      {!compact ? <div className="mx-1 hidden h-6 w-px bg-border sm:block" /> : null}
+      {!compact ? (
+        <div className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden="true" />
+      ) : null}
 
       <UserNavDropdown
         name={platformUser?.name ?? t("platform.operatorRole")}

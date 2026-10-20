@@ -28,11 +28,11 @@ function Calendar({
         nav: "flex items-center justify-between absolute inset-x-0 top-1 pointer-events-none z-elevated px-0.5",
         button_previous: cn(
           buttonVariants({ variant: "ghost", size: "icon" }),
-          "relative h-8 w-8 min-h-8 min-w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-lg transition-colors pointer-events-auto cursor-pointer after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
+          "relative h-8 w-8 min-h-8 min-w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-lg transition-colors pointer-events-auto cursor-pointer after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 rtl:after:translate-x-1/2 after:-translate-y-1/2 after:content-['']",
         ),
         button_next: cn(
           buttonVariants({ variant: "ghost", size: "icon" }),
-          "relative h-8 w-8 min-h-8 min-w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-lg transition-colors pointer-events-auto cursor-pointer after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
+          "relative h-8 w-8 min-h-8 min-w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80 rounded-lg transition-colors pointer-events-auto cursor-pointer after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 rtl:after:translate-x-1/2 after:-translate-y-1/2 after:content-['']",
         ),
         month_grid: "w-full border-collapse space-y-1",
         weekdays: "flex justify-around border-b border-border/40 pb-1.5 mb-1",

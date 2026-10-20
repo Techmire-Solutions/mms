@@ -37,6 +37,7 @@ export function FormField({
     if (!React.isValidElement(child)) return child;
     const childProps = child.props as Record<string, unknown>;
     return React.cloneElement(child, {
+      id: (childProps.id as string | undefined) ?? fieldId,
       "aria-invalid": childProps["aria-invalid"] ?? (error ? true : undefined),
       "aria-errormessage": childProps["aria-errormessage"] ?? errorId,
       "aria-describedby": childProps["aria-describedby"] ?? (error ? errorId : hintId),
@@ -49,12 +50,12 @@ export function FormField({
         <Label
           htmlFor={fieldId}
           required={required}
-          className="group-has-[:user-invalid]/form-field:text-destructive transition-colors"
+          className="group-has-[:user-invalid]/form-field:text-destructive transition-colors cursor-pointer"
         >
           {label}
         </Label>
       )}
-      <div id={fieldId}>{enhancedChildren}</div>
+      <div>{enhancedChildren}</div>
       {hint && !error && (
         <p id={hintId} className="text-xs text-muted-foreground">
           {hint}

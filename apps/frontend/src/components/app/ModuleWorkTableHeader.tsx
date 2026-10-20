@@ -76,8 +76,14 @@ export function ModuleWorkTableHeader<
         {selection && (
           <TableHead
             noWrap
+            onClick={(e) => {
+              const target = e.target as HTMLElement;
+              if (!target.closest('button[role="checkbox"]')) {
+                selection.onSelectAll();
+              }
+            }}
             className={cn(
-              "w-12 min-w-12 px-4 py-3 sticky start-0 z-sticky border-e border-border/30 h-auto",
+              "w-12 min-w-12 px-4 py-3 sticky start-0 z-sticky border-e border-border/30 h-auto cursor-pointer",
               WORK_STICKY_HEAD,
             )}
           >

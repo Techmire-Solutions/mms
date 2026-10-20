@@ -144,4 +144,31 @@ describe("Modal & ConfirmDialog components", () => {
     });
     expect(document.body.style.overflow).toBe("");
   });
+
+  it("restores focus to previously active element on unmount", async () => {
+    const triggerBtn = document.createElement("button");
+    triggerBtn.textContent = "Open";
+    document.body.appendChild(triggerBtn);
+    triggerBtn.focus();
+    expect(document.activeElement).toBe(triggerBtn);
+
+    await act(async () => {
+      root.render(
+        <Modal open={true} onClose={vi.fn()} title="Focus Restore Test">
+          <button type="button">Inside</button>
+        </Modal>,
+      );
+    });
+
+    await act(async () => {
+      root.render(
+        <Modal open={false} onClose={vi.fn()} title="Focus Restore Test">
+          <button type="button">Inside</button>
+        </Modal>,
+      );
+    });
+
+    expect(document.activeElement).toBe(triggerBtn);
+    triggerBtn.remove();
+  });
 });

@@ -59,7 +59,7 @@ export function UserAvatar({
     return (
       <div
         className={cn(
-          "rounded-xl bg-muted/60 animate-pulse border border-border/40 shrink-0",
+          "rounded-xl bg-muted/60 animate-pulse motion-reduce:animate-none border border-border/40 shrink-0",
           size === "sm" && "h-7 w-7",
           size === "lg" && "h-11 w-11",
           size === "xl" && "h-16 w-16",

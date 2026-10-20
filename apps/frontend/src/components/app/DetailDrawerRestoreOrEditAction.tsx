@@ -22,7 +22,7 @@ export function DetailDrawerRestoreOrEditAction({
   editLabel = "",
   onRestore,
   onEdit,
-  className = "rounded-lg border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground shadow-none",
+  className = "cursor-pointer disabled:cursor-not-allowed rounded-lg border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground shadow-none",
 }: DetailDrawerRestoreOrEditActionProps): React.JSX.Element | null {
   const [restoring, setRestoring] = useState(false);
 
@@ -49,9 +49,9 @@ export function DetailDrawerRestoreOrEditAction({
         title={restoreLabel}
       >
         {restoring ? (
-          <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" aria-hidden />
+          <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
         ) : (
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-4 h-4" aria-hidden="true" />
         )}
       </Button>
     );
@@ -69,7 +69,7 @@ export function DetailDrawerRestoreOrEditAction({
       className={className}
       title={editLabel}
     >
-      <Edit2 className="w-4 h-4" />
+      <Edit2 className="w-4 h-4" aria-hidden="true" />
     </Button>
   );
 }

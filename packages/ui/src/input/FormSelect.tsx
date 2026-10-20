@@ -115,6 +115,7 @@ export function FormSelect({
             className={cn(
               FORM_SELECT,
               "appearance-none pe-10 disabled:cursor-not-allowed disabled:opacity-50",
+              !disabled && !isSearchable && "cursor-pointer",
               isSearchable && "pointer-events-none",
             )}
           >
@@ -126,7 +127,7 @@ export function FormSelect({
           </select>
           {isSearchable ? (
             <div
-              aria-hidden
+              aria-hidden="true"
               data-form-select-hit-area=""
               className="absolute inset-0 cursor-pointer"
               onMouseDown={(event) => {
@@ -138,8 +139,11 @@ export function FormSelect({
             />
           ) : null}
           <ChevronDown
-            className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden
+            className={cn(
+              "pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-transform duration-200",
+              isSearchable && search.open && "rotate-180",
+            )}
+            aria-hidden="true"
           />
         </div>
       </PopoverAnchor>

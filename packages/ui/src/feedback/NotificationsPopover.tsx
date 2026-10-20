@@ -69,6 +69,9 @@ export function NotificationsPopover({
     }
   };
 
+  const effectiveAriaLabel =
+    unreadCount > 0 ? `${ariaLabel} (${unreadCount} unread)` : ariaLabel;
+
   return (
     <Popover open={popoverOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
@@ -76,15 +79,18 @@ export function NotificationsPopover({
           type="button"
           variant="ghost"
           size="icon"
-          aria-label={ariaLabel}
+          aria-label={effectiveAriaLabel}
           className={cn(
             "relative min-h-11 min-w-11 h-11 w-11 rounded-xl hover:bg-muted transition-colors cursor-pointer",
             buttonClassName,
           )}
         >
-          <Bell className="h-4.5 w-4.5 text-muted-foreground" aria-hidden />
+          <Bell className="h-4.5 w-4.5 text-muted-foreground" aria-hidden="true" />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 end-1.5 h-2 w-2 rounded-full bg-destructive animate-pulse" />
+            <span
+              className="absolute top-1.5 end-1.5 h-2 w-2 rounded-full bg-destructive animate-pulse"
+              aria-hidden="true"
+            />
           )}
         </Button>
       </PopoverTrigger>

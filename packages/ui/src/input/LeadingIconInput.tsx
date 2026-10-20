@@ -29,7 +29,7 @@ export function LeadingIconInput({
     <div className={cn("relative flex items-center group/input", wrapperClassName)}>
       <Icon
         className="pointer-events-none absolute start-3.5 h-4 w-4 text-muted-foreground/60 transition-colors group-focus-within/input:text-primary"
-        aria-hidden
+        aria-hidden="true"
       />
       <Input ref={ref} className={cn(iconPaddingClass, className)} {...rest} />
     </div>

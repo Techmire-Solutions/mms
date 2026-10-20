@@ -26,7 +26,7 @@ export const PageHeader = function PageHeader({
       <div className="flex min-w-0 items-start gap-3">
         {Icon && (
           <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-            <Icon className="h-4.5 w-4.5 text-primary" aria-hidden />
+            <Icon className="h-4.5 w-4.5 text-primary" aria-hidden="true" />
           </div>
         )}
         <div className="min-w-0">
@@ -35,9 +35,9 @@ export const PageHeader = function PageHeader({
               {breadcrumb}
             </p>
           )}
-          <h1 className="text-xl font-bold text-foreground leading-tight break-words">{title}</h1>
+          <h1 className="text-xl font-bold text-foreground leading-tight break-words text-balance">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-muted-foreground mt-0.5 break-words">{subtitle}</p>
+            <p className="text-sm text-muted-foreground mt-0.5 break-words text-pretty">{subtitle}</p>
           )}
         </div>
       </div>

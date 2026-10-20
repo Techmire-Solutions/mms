@@ -27,7 +27,7 @@ export function ExportToolbarCompact({
           type="button"
           aria-pressed={compactFormat === "excel"}
           onClick={() => onCompactFormatChange("excel")}
-          className={`flex min-h-11 items-center gap-1 h-auto px-2.5 py-2 rounded-none shadow-none font-bold transition-colors ${compactFormat === "excel" ? "bg-success text-success-foreground hover:bg-success/90" : "bg-card text-muted-foreground hover:bg-muted"}`}
+          className={`flex min-h-11 items-center gap-1 h-auto px-2.5 py-2 rounded-none shadow-none font-bold transition-colors cursor-pointer ${compactFormat === "excel" ? "bg-success text-success-foreground hover:bg-success/90" : "bg-card text-muted-foreground hover:bg-muted"}`}
         >
           <FileSpreadsheet className="w-3 h-3" aria-hidden="true" />
           {t("reports.export.excel")}
@@ -36,7 +36,7 @@ export function ExportToolbarCompact({
           type="button"
           aria-pressed={compactFormat === "pdf"}
           onClick={() => onCompactFormatChange("pdf")}
-          className={`flex min-h-11 items-center gap-1 h-auto px-2.5 py-2 rounded-none shadow-none border-s border-border font-bold transition-colors ${compactFormat === "pdf" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "bg-card text-muted-foreground hover:bg-muted"}`}
+          className={`flex min-h-11 items-center gap-1 h-auto px-2.5 py-2 rounded-none shadow-none border-s border-border font-bold transition-colors cursor-pointer ${compactFormat === "pdf" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "bg-card text-muted-foreground hover:bg-muted"}`}
         >
           <FileText className="w-3 h-3" aria-hidden="true" />
           {t("reports.export.pdf")}
@@ -48,7 +48,7 @@ export function ExportToolbarCompact({
           format: compactFormat === "excel" ? t("reports.export.excel") : t("reports.export.pdf"),
         })}
         onClick={onExport}
-        className="flex min-h-11 items-center gap-1.5 h-auto px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors"
+        className="flex min-h-11 items-center gap-1.5 h-auto px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors cursor-pointer"
       >
         <Download className="w-3 h-3" aria-hidden="true" />
         {t("reports.export.download")}

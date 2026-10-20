@@ -111,11 +111,13 @@ export function TypedConfirmDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle
-            className={destructiveTitle ? "text-destructive font-bold" : "font-bold"}
+            className={
+              destructiveTitle ? "text-destructive font-bold text-balance" : "font-bold text-balance"
+            }
           >
             {title}
           </AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogDescription className="text-pretty">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <form id={formId} noValidate onSubmit={handleSubmit} className="space-y-3 my-2 text-start">
           {hasTypedConfirm && confirmLabel && onConfirmValueChange ? (
@@ -153,7 +155,7 @@ export function TypedConfirmDialog({
                 }
               />
               {passwordHint ? (
-                <p id={`${passwordInputId}-hint`} className="text-xs text-muted-foreground">
+                <p id={`${passwordInputId}-hint`} className="text-xs text-muted-foreground text-pretty">
                   {passwordHint}
                 </p>
               ) : null}

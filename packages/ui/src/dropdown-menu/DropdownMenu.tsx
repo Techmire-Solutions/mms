@@ -36,7 +36,7 @@ export function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <ChevronRight className="ms-auto" />
+      <ChevronRight className="ms-auto rtl:rotate-180" aria-hidden="true" />
     </DropdownMenuPrimitive.SubTrigger>
   );
 }

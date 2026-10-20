@@ -30,7 +30,7 @@ export function CredentialsResultCard({
     <div className="space-y-4 py-2 text-start">
       <div className="rounded-xl border border-success/30 bg-success/10 p-4 space-y-3">
         <div role="status" className="flex items-center gap-2 text-success font-bold text-sm">
-          <Check className="w-4 h-4 shrink-0" aria-hidden />
+          <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
           {title}
         </div>
         <div className="space-y-2 text-xs text-foreground">
@@ -51,7 +51,7 @@ export function CredentialsResultCard({
           </div>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">{hint}</p>
+      <p className="text-xs text-muted-foreground leading-relaxed text-pretty">{hint}</p>
     </div>
   );
 }

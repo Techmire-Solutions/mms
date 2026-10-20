@@ -90,19 +90,19 @@ export const MessagingDetail = function MessagingDetail({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 touch-target-coarse text-muted-foreground hover:text-foreground"
+              className="h-6 w-6 touch-target-coarse text-muted-foreground hover:text-foreground cursor-pointer"
               onClick={() => void copyIdToClipboard(String(log.id))}
               aria-label={t("contacts.table.copied")}
             >
               {copiedId ? (
-                <Check className={`h-3 w-3 ${SEMANTIC_TEXT.success}`} />
+                <Check className={`h-3 w-3 ${SEMANTIC_TEXT.success}`} aria-hidden="true" />
               ) : (
-                <Copy className="h-3 w-3" />
+                <Copy className="h-3 w-3" aria-hidden="true" />
               )}
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onClose}>
+            <Button variant="outline" size="sm" onClick={onClose} className="cursor-pointer">
               {t("common.close")}
             </Button>
             {canWrite && (
