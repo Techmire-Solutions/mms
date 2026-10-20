@@ -98,7 +98,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
             <Button
               variant="link"
               onClick={handleRestoreAll}
-              className="text-xs font-bold shrink-0 min-h-11 px-2 text-primary hover:text-primary/80 transition-colors"
+              className="text-xs font-bold shrink-0 min-h-11 px-2 text-primary hover:text-primary/80 transition-colors cursor-pointer"
             >
               {t("notifications.restoreAll")}
             </Button>
@@ -140,17 +140,17 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
                     variant="ghost"
                     disabled={!onOpen || !notif.target}
                     onClick={() => onOpen?.(notif)}
-                    className="flex flex-1 min-w-0 h-auto min-h-11 items-start justify-start gap-3 whitespace-normal rounded-none ps-5 pe-2 py-3.5 text-start hover:bg-transparent disabled:opacity-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    className="flex flex-1 min-w-0 h-auto min-h-11 items-start justify-start gap-3 whitespace-normal rounded-none ps-5 pe-2 py-3.5 text-start hover:bg-transparent disabled:opacity-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring cursor-pointer disabled:cursor-default"
                   >
                     <span
                       className={`w-8 h-8 rounded-lg ${meta.bg} flex items-center justify-center flex-shrink-0 mt-0.5`}
                       aria-hidden="true"
                     >
-                      <Icon className={`w-4 h-4 ${meta.text}`} />
+                      <Icon className={`w-4 h-4 ${meta.text}`} aria-hidden="true" />
                     </span>
                     <span className="flex-1 min-w-0">
                       <span className="flex items-start gap-2">
-                        <span className="block text-sm font-bold text-foreground leading-snug flex-1">
+                        <span className="block text-sm font-bold text-foreground leading-snug flex-1 text-balance">
                           {notif.title}
                         </span>
                         {notif.urgent && (
@@ -163,7 +163,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
                           </Badge>
                         )}
                       </span>
-                      <span className="block text-sm text-muted-foreground mt-0.5 leading-normal">
+                      <span className="block text-sm text-muted-foreground mt-0.5 leading-normal text-pretty">
                         {notif.desc}
                       </span>
                       <span className="block text-xs text-muted-foreground mt-1 font-medium">
@@ -175,7 +175,7 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDismiss(notif.id)}
-                    className="text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0 mt-2 shadow-none"
+                    className="text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0 mt-2 shadow-none cursor-pointer min-h-11 min-w-11"
                     aria-label={t("notifications.dismiss", { title: notif.title })}
                   >
                     <X className="w-3.5 h-3.5" aria-hidden="true" />

@@ -40,14 +40,16 @@ export default function TopBarActions({
           aria-label={t("nav.globalSearchPlaceholder")}
           className="relative flex items-center justify-center rounded-lg text-xs text-muted-foreground border-border/80 hover:bg-muted/80 transition-colors cursor-pointer min-h-11 min-w-11 h-11 w-11 p-0"
         >
-          <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </Button>
       )}
       <SyncStatusBadge />
       <TenantBackgroundJobsTray compact={compact} />
       <TenantNotificationsPopover />
 
-      {!compact ? <div className="mx-1 hidden h-6 w-px bg-border sm:block" /> : null}
+      {!compact ? (
+        <div className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden="true" />
+      ) : null}
 
       <UserNavDropdown
         name={user?.name ?? "User"}
@@ -58,13 +60,13 @@ export default function TopBarActions({
       >
         <DropdownMenuItem asChild>
           <Link to={ROUTES.profile}>
-            <User className="me-2 h-4 w-4" />
+            <User className="me-2 h-4 w-4" aria-hidden="true" />
             {t("account.title")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to={ROUTES.settings}>
-            <Settings className="me-2 h-4 w-4" />
+            <Settings className="me-2 h-4 w-4" aria-hidden="true" />
             {t("nav.settings")}
           </Link>
         </DropdownMenuItem>

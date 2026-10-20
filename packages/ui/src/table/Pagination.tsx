@@ -27,8 +27,12 @@ export function Pagination({
 }: PaginationProps): React.JSX.Element {
   const { labels } = useUiConfig();
 
+  const paginationLabel = (labels as { pagination?: string }).pagination || "Pagination";
+
   return (
     <div
+      role="navigation"
+      aria-label={paginationLabel}
       className={cn(
         "flex flex-wrap items-center justify-between gap-4 py-3 text-xs text-muted-foreground",
         className,
@@ -46,7 +50,8 @@ export function Pagination({
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="min-h-11 rounded-md border border-input bg-transparent px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+              aria-label={labels.rowsPerPage}
+              className="min-h-11 rounded-md border border-input bg-background text-foreground px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring focus-visible:ring-2 focus-visible:ring-ring cursor-pointer [&>option]:bg-popover [&>option]:text-popover-foreground"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -65,23 +70,23 @@ export function Pagination({
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8 touch-target-coarse"
+            className="h-8 w-8 touch-target-coarse cursor-pointer"
             disabled={currentPage <= 1}
             onClick={() => onPageChange(currentPage - 1)}
             aria-label={labels.previous}
           >
-            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+            <ChevronLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
           </Button>
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8 touch-target-coarse"
+            className="h-8 w-8 touch-target-coarse cursor-pointer"
             disabled={currentPage >= totalPages}
             onClick={() => onPageChange(currentPage + 1)}
             aria-label={labels.next}
           >
-            <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+            <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
           </Button>
         </div>
       </div>

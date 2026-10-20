@@ -45,7 +45,8 @@ export function BulkSelectionMessagingActions({
           onClick={() => onChannel("whatsapp")}
           className={bulkActionDockActionClassName}
         >
-          <MessageCircle className="w-3.5 h-3.5 text-success" /> {labels.whatsapp}
+          <MessageCircle className="w-3.5 h-3.5 text-success" aria-hidden="true" />{" "}
+          {labels.whatsapp}
         </Button>
       )}
       {channels.sms !== false && (
@@ -55,7 +56,7 @@ export function BulkSelectionMessagingActions({
           onClick={() => onChannel("sms")}
           className={bulkActionDockActionClassName}
         >
-          <MessageSquare className="w-3.5 h-3.5 text-info" /> {labels.sms}
+          <MessageSquare className="w-3.5 h-3.5 text-info" aria-hidden="true" /> {labels.sms}
         </Button>
       )}
       {channels.email !== false && labels.email && (
@@ -65,7 +66,7 @@ export function BulkSelectionMessagingActions({
           onClick={() => onChannel("email")}
           className={bulkActionDockActionClassName}
         >
-          <Mail className="w-3.5 h-3.5 text-primary" /> {labels.email}
+          <Mail className="w-3.5 h-3.5 text-primary" aria-hidden="true" /> {labels.email}
         </Button>
       )}
     </>
@@ -97,9 +98,12 @@ export function BulkSelectionExportAction({
       className={bulkActionDockActionClassName}
     >
       {isPending ? (
-        <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden />
+        <Loader2
+          className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none"
+          aria-hidden="true"
+        />
       ) : (
-        <Download className="w-3.5 h-3.5" aria-hidden />
+        <Download className="w-3.5 h-3.5" aria-hidden="true" />
       )}{" "}
       {label}
     </Button>
@@ -123,7 +127,7 @@ export function BulkSelectionRestoreAction({
       onClick={onClick}
       className={bulkActionDockRestoreClassName}
     >
-      <RotateCcw className="w-3.5 h-3.5" /> {label}
+      <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /> {label}
     </Button>
   );
 }
@@ -148,7 +152,7 @@ export function BulkSelectionDeleteAction({
       onClick={onClick}
       className={bulkActionDockDeleteClassName}
     >
-      {Icon ? <Icon className="w-3.5 h-3.5" aria-hidden /> : null}
+      {Icon ? <Icon className="w-3.5 h-3.5" aria-hidden="true" /> : null}
       {label}
     </Button>
   );
@@ -175,7 +179,7 @@ export function BulkSelectionClearAction({
       variant="ghost"
       size="sm"
       onClick={onClick}
-      className="text-muted-foreground hover:text-foreground font-medium"
+      className="text-muted-foreground hover:text-foreground font-medium cursor-pointer"
     >
       {label}
     </Button>

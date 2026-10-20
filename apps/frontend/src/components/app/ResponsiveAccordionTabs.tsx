@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useScrollSurfaceOnChange } from "@/lib/routing/useScrollSurfaceOnChange";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { TabTrigger } from "@/components/app/ResponsiveAccordionTabTrigger";
 import { ResponsiveAccordionTabsDesktop } from "@/components/app/ResponsiveAccordionTabsDesktop";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -33,6 +34,7 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
   className,
 }: ResponsiveAccordionTabsProps): React.JSX.Element {
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const safeViewTransition = useSafeViewTransition();
   const sectionRefs = useRef<Partial<Record<string, HTMLElement | null>>>({});
   const prefix = panelIdPrefix;
@@ -102,10 +104,12 @@ export const ResponsiveAccordionTabs = function ResponsiveAccordionTabs({
                     <motion.div
                       id={panelId}
                       key={tab.id}
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.22, ease: "easeInOut" }}
+                      initial={reducedMotion ? false : { height: 0, opacity: 0 }}
+                      animate={reducedMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
+                      exit={reducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                      transition={
+                        reducedMotion ? { duration: 0 } : { duration: 0.22, ease: "easeInOut" }
+                      }
                       className="overflow-hidden"
                     >
                       <div className="space-y-4 border-t border-border/70 px-3 py-4 sm:px-4">

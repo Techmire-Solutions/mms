@@ -39,8 +39,10 @@ export function TableEmpty({
         {children ?? (
           <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground px-4">
             <IconComponent className="h-8 w-8 text-muted-foreground/60" aria-hidden="true" />
-            <p className="text-sm font-semibold text-foreground">{title ?? defaultTitle}</p>
-            <p className="text-xs text-muted-foreground max-w-sm">
+            <p className="text-sm font-semibold text-foreground text-balance">
+              {title ?? defaultTitle}
+            </p>
+            <p className="text-xs text-muted-foreground max-w-sm text-pretty">
               {description ?? defaultDescription}
             </p>
             {action ? <div className="mt-2">{action}</div> : null}

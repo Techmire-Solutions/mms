@@ -59,7 +59,7 @@ export function Spinner({
         aria-label={label}
         data-loading-spinner=""
         className={cn(
-          "loading-spinner shrink-0 rounded-full animate-spin transition-colors",
+          "loading-spinner shrink-0 rounded-full animate-spin motion-reduce:animate-[spin_3s_linear_infinite] transition-colors",
           sizeClasses[size],
           variantClasses[variant],
         )}

@@ -902,8 +902,7 @@
 .scroll-indicator-top,
 .scroll-indicator-bottom {
   position: sticky;
-  left: 0;
-  right: 0;
+  inset-inline: 0;
   height: 0.75rem;
   opacity: 0;
   pointer-events: none;

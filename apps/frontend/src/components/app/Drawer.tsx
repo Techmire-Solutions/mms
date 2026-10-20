@@ -170,7 +170,7 @@ export function Drawer({
           </div>
 
           {footer && (
-            <div className="px-5 py-4 border-t border-border/30 bg-muted/20 flex items-center justify-between flex-shrink-0">
+            <div className="px-5 py-4 border-t border-border/30 bg-muted/20 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-shrink-0">
               {footer}
             </div>
           )}

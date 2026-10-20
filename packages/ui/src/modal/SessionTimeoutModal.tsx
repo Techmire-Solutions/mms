@@ -54,8 +54,14 @@ export function SessionTimeoutModal({
       dismissible={false}
       footer={
         <div className="flex w-full flex-col gap-2">
-          <Button type="button" size="lg" onClick={onExtend} disabled={busy} className="w-full">
-            <TimerReset className="h-4 w-4" aria-hidden />
+          <Button
+            type="button"
+            size="lg"
+            onClick={onExtend}
+            disabled={busy}
+            className="w-full cursor-pointer"
+          >
+            <TimerReset className="h-4 w-4" aria-hidden="true" />
             {staySignedInLabel}
           </Button>
           <Button
@@ -64,16 +70,16 @@ export function SessionTimeoutModal({
             size="lg"
             onClick={onSignOut}
             disabled={busy}
-            className="w-full"
+            className="w-full cursor-pointer"
           >
-            <LogOut className="h-4 w-4" aria-hidden />
+            <LogOut className="h-4 w-4" aria-hidden="true" />
             {signOutNowLabel}
           </Button>
         </div>
       }
     >
       <p
-        className="text-center text-sm font-medium text-foreground"
+        className="text-center text-sm font-medium text-foreground text-balance"
         role="status"
         aria-live="polite"
       >

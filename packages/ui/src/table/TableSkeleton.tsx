@@ -69,7 +69,7 @@ export function TableSkeleton({
                 <td key={colIdx} role="cell" aria-hidden="true" className="p-2">
                   <div
                     className={cn(
-                      "h-4 rounded-md bg-muted animate-pulse",
+                      "h-4 rounded-md bg-muted animate-pulse motion-reduce:animate-none",
                       colIdx === 0 ? "w-3/4" : colIdx === resolvedCols - 1 ? "w-1/2" : "w-full",
                     )}
                   />

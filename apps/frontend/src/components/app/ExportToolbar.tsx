@@ -121,7 +121,7 @@ export function ExportToolbar({
 
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap py-2 text-start relative">
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground text-pretty">
         {titlePrefix}
         <span className="font-semibold text-foreground">{title}</span>
         {titleSuffix}
@@ -141,7 +141,7 @@ export function ExportToolbar({
         <Button
           onClick={handlePrint}
           variant="outline"
-          className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
           type="button"
         >
           <Printer className="w-3.5 h-3.5" aria-hidden="true" />
@@ -153,7 +153,7 @@ export function ExportToolbar({
           }}
           disabled={!canExport || exporting}
           variant="outline"
-          className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+          className="flex min-h-11 items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           type="button"
           aria-busy={exporting}
         >
@@ -168,7 +168,7 @@ export function ExportToolbar({
             }}
             disabled={!canExport || exporting}
             variant="ghost"
-            className="flex min-h-11 items-center gap-1.5 px-3 py-2 border-e border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 rounded-none"
+            className="flex min-h-11 items-center gap-1.5 px-3 py-2 border-e border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 rounded-none cursor-pointer disabled:cursor-not-allowed"
             type="button"
             aria-busy={exporting}
           >
@@ -178,7 +178,7 @@ export function ExportToolbar({
           <Button
             onClick={() => setShowPdfSettings(!showPdfSettings)}
             variant="ghost"
-            className={`min-h-11 min-w-11 px-2 py-2 hover:bg-muted transition-colors rounded-none ${showPdfSettings ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+            className={`min-h-11 min-w-11 px-2 py-2 hover:bg-muted transition-colors rounded-none cursor-pointer ${showPdfSettings ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
             title={t("reports.export.settings")}
             type="button"
           >

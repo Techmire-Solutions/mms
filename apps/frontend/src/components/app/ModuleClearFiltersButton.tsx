@@ -24,7 +24,7 @@ export const ModuleClearFiltersButton = function ModuleClearFiltersButton({
       className={cn("group", WORK_TOOLBAR_TRIGGER, WORK_TOOLBAR_TRIGGER_IDLE, className)}
     >
       <RefreshCw
-        className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-45"
+        className="w-3.5 h-3.5 transition-transform duration-200 motion-reduce:transition-none group-hover:rotate-45"
         aria-hidden="true"
       />
       <span>{label}</span>

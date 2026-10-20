@@ -61,7 +61,7 @@ export function UserNavDropdown({
           variant="ghost"
           aria-label={displayName}
           className={cn(
-            "flex items-center rounded-xl transition-colors hover:bg-muted font-normal text-start min-h-11 cursor-pointer",
+            "group flex items-center rounded-xl transition-colors hover:bg-muted font-normal text-start min-h-11 cursor-pointer",
             compact ? "h-11 w-11 min-w-11 p-0 justify-center" : "gap-2.5 px-2.5 py-1",
             triggerClassName,
             className,
@@ -88,8 +88,8 @@ export function UserNavDropdown({
                 ) : null}
               </div>
               <ChevronDown
-                className="hidden sm:block h-3.5 w-3.5 text-muted-foreground shrink-0"
-                aria-hidden
+                className="hidden sm:block h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+                aria-hidden="true"
               />
             </>
           ) : null}

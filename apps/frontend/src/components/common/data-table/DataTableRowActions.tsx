@@ -35,13 +35,13 @@ export function DataTableRowActions({
             aria-label={label}
             title={label}
             className={cn(
-              "min-h-11 min-w-11 p-0",
+              "min-h-11 min-w-11 p-0 cursor-pointer",
               tone === "destructive"
                 ? "hover:bg-destructive/10 hover:text-destructive"
                 : "hover:text-primary",
             )}
           >
-            <Icon className="size-4" aria-hidden />
+            <Icon className="size-4" aria-hidden="true" />
           </Button>
         ))}
     </div>

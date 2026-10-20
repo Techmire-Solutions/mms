@@ -50,9 +50,9 @@ export function ActiveFilterBanner({
             variant="ghost"
             size="sm"
             onClick={action.onClick}
-            className="px-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            className="min-h-11 px-2 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
           >
-            <X className="w-3 h-3 me-1" />
+            <X className="w-3 h-3 me-1" aria-hidden="true" />
             {action.label}
           </Button>
         ))}

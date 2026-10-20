@@ -43,13 +43,13 @@ export function PlatformInspectorDrawer(): React.JSX.Element | null {
       badge={<WorkspaceStatusBadge enabled={target.enabled} />}
       ariaLabel={t("platform.inspectorTitle")}
       footer={
-        <div className="flex flex-wrap gap-2 justify-end">
+        <div className="flex flex-col-reverse sm:flex-row flex-wrap gap-2 justify-end w-full sm:w-auto">
           <Button asChild variant="outline" className="min-h-11 rounded-xl cursor-pointer">
             <Link to={directoryHref}>{t("platform.viewInDirectory")}</Link>
           </Button>
           <Button asChild className="min-h-11 rounded-xl cursor-pointer">
             <a href={openHref} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4 me-1.5" aria-hidden />
+              <ExternalLink className="h-4 w-4 me-1.5" aria-hidden="true" />
               {t("platform.openWorkspace")}
             </a>
           </Button>

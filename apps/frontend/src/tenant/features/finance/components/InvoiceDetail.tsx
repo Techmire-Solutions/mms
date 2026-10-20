@@ -146,7 +146,7 @@ export const InvoiceDetail = function InvoiceDetail({
             onPrintReceipt(invoice);
             onClose();
           }}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
         >
           <Printer className="w-4 h-4" aria-hidden="true" /> {t("finance.printReceipt")}
         </Button>

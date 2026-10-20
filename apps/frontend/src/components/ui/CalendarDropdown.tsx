@@ -40,7 +40,7 @@ export function CalendarDropdown({
       <SelectTrigger
         aria-label={resolvedAriaLabel}
         className={cn(
-          "relative h-8 min-h-8 w-auto gap-1 border border-border/60 bg-muted/40 hover:bg-muted/80 px-2.5 py-1 text-xs font-semibold rounded-lg shadow-none focus:ring-1 focus:ring-primary/40 [&>span]:line-clamp-none transition-all cursor-pointer after:absolute after:start-1/2 after:top-1/2 after:h-11 after:min-w-11 after:w-full after:-translate-x-1/2 after:-translate-y-1/2 after:content-[''] [&>svg]:transition-transform [&>svg]:duration-200 data-[state=open]:[&>svg]:rotate-180",
+          "relative h-8 min-h-8 w-auto gap-1 border border-border/60 bg-muted/40 hover:bg-muted/80 px-2.5 py-1 text-xs font-semibold rounded-lg shadow-none focus:ring-1 focus:ring-primary/40 [&>span]:line-clamp-none transition-all cursor-pointer after:absolute after:start-1/2 after:top-1/2 after:h-11 after:min-w-11 after:w-full after:-translate-x-1/2 rtl:after:translate-x-1/2 after:-translate-y-1/2 after:content-[''] [&>svg]:transition-transform [&>svg]:duration-200 data-[state=open]:[&>svg]:rotate-180",
           className,
         )}
       >

@@ -36,8 +36,8 @@ export const FormModalFooter = function FormModalFooter({
       )}
     >
       {footerStart ? <div className="min-w-0 sm:flex-1">{footerStart}</div> : null}
-      <div className="ms-auto flex items-center gap-2.5">
-        <Button type="button" variant="outline" onClick={onClose}>
+      <div className="w-full sm:w-auto sm:ms-auto flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2.5">
+        <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
           {cancelLabel}
         </Button>
         <Button
@@ -51,21 +51,21 @@ export const FormModalFooter = function FormModalFooter({
                 }
           }
           disabled={saving || saveDisabled || saved}
-          className="min-w-filter-sm"
+          className="w-full sm:w-auto min-w-filter-sm"
         >
           {saved ? (
             <>
-              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
               {savedLabel ?? saveLabel}
             </>
           ) : saving ? (
             <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
               {saveLabel}
             </>
           ) : (
             <>
-              <Save className="h-3.5 w-3.5" aria-hidden />
+              <Save className="h-3.5 w-3.5" aria-hidden="true" />
               {saveLabel}
             </>
           )}

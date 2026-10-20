@@ -116,7 +116,7 @@ export function SearchBar({
           size="icon"
           onClick={handleClear}
           aria-label={clearLabel}
-          className="absolute end-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+          className="absolute end-1 top-1/2 -translate-y-1/2 h-8 w-8 touch-target-coarse rounded-lg text-muted-foreground hover:text-foreground"
         >
           <X className="w-3.5 h-3.5" aria-hidden="true" />
         </Button>

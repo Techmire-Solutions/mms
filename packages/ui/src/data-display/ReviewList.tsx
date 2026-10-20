@@ -43,7 +43,7 @@ export function ReviewListRow({
   return (
     <div
       className={cn(
-        "flex items-start gap-4 px-4 py-3",
+        "flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4 px-4 py-3",
         !isLast && "border-b border-border",
         className,
       )}
@@ -52,12 +52,12 @@ export function ReviewListRow({
       <dt
         className={cn(
           FORM_LABEL,
-          "mb-0 w-32 shrink-0 pt-0.5 text-xs text-muted-foreground font-semibold",
+          "mb-0 w-full sm:w-32 shrink-0 pt-0.5 text-xs text-muted-foreground font-semibold text-balance",
         )}
       >
         {label}
       </dt>
-      <dd className="min-w-0 flex-1 break-words text-sm font-semibold text-foreground m-0">
+      <dd className="min-w-0 flex-1 break-words text-sm font-semibold text-foreground m-0 text-pretty">
         {value}
       </dd>
       {action ? <div className="shrink-0 -my-1">{action}</div> : null}

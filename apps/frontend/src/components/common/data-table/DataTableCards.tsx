@@ -43,7 +43,24 @@ export function DataTableCards<TData extends { id: string | number }>({
         key={String(row.id)}
         accentClassName={false}
         onClick={onRowClick ? () => onRowClick(row) : undefined}
-        className={onRowClick ? "cursor-pointer" : undefined}
+        tabIndex={onRowClick ? 0 : undefined}
+        role={onRowClick ? "button" : undefined}
+        onKeyDown={
+          onRowClick
+            ? (e: React.KeyboardEvent) => {
+                if (e.target !== e.currentTarget) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onRowClick(row);
+                }
+              }
+            : undefined
+        }
+        className={
+          onRowClick
+            ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            : undefined
+        }
       >
         <div className="flex items-start justify-between gap-2 min-w-0">
           <div className="min-w-0 flex-1 text-sm font-semibold text-foreground text-pretty break-words">

@@ -2,6 +2,7 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import type { SubTab } from "@/components/app/SubTabBar";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 
 interface FormModalTabsProps<K extends string = string> {
@@ -24,6 +25,7 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
   dir,
   children,
 }: FormModalTabsProps<K>): React.JSX.Element {
+  const reducedMotion = useReducedMotion();
   const tabContentRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -84,13 +86,13 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
                     "h-4 w-4 shrink-0 transition-colors md:h-4 md:w-4",
                     active ? "text-primary" : "text-muted-foreground",
                   )}
-                  aria-hidden
+                  aria-hidden="true"
                 />
               )}
               <span className="truncate">{tab.label}</span>
               {tab.badge !== undefined && (
                 <span
-                  aria-hidden
+                  aria-hidden="true"
                   className={cn(
                     "inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-extrabold transition-colors ms-auto",
                     "md:static md:ms-auto md:h-auto md:min-w-0 md:px-1.5 md:py-0.5",
@@ -114,10 +116,10 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
         <AnimatePresence mode="wait">
           <motion.div
             key={String(activeTab)}
-            initial={{ opacity: 0, x: 6 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -6 }}
-            transition={{ duration: 0.12 }}
+            initial={reducedMotion ? false : { opacity: 0, x: 6 }}
+            animate={reducedMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -6 }}
+            transition={reducedMotion ? { duration: 0 } : { duration: 0.12 }}
             className="h-full"
           >
             {children}

@@ -7,6 +7,7 @@ import { FormModalFooter } from "@/components/app/FormModalFooter";
 import { FormErrorBanner } from "@/components/app/FormErrorBanner";
 import type { SubTab } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
 
 export interface ModalProps<K extends string = string> {
@@ -90,6 +91,7 @@ export function Modal<K extends string = string>({
   formId,
 }: ModalProps<K>): React.JSX.Element | null {
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const titleId = useId();
   const hasTabs = Boolean(tabs && tabs.length > 1 && activeTab !== undefined);
   const effectiveSize =
@@ -132,10 +134,10 @@ export function Modal<K extends string = string>({
       {({ containerRef }) => (
         <motion.div
           ref={containerRef}
-          initial={{ opacity: 0, scale: 0.96, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 8 }}
-          transition={{ duration: 0.18, ease: "easeOut" }}
+          initial={reducedMotion ? false : { opacity: 0, scale: 0.96, y: 12 }}
+          animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+          exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 8 }}
+          transition={{ duration: reducedMotion ? 0 : 0.18, ease: "easeOut" }}
           role="dialog"
           aria-modal="true"
           aria-labelledby={title ? titleId : undefined}

@@ -98,10 +98,10 @@ export const ModuleColumnCustomizer = function ModuleColumnCustomizer({
               variant="ghost"
               size="sm"
               onClick={onResetLayout}
-              className="px-2 text-3xs text-foreground/80 hover:text-foreground hover:bg-muted flex items-center gap-1"
+              className="px-2 text-3xs text-foreground/80 hover:text-foreground hover:bg-muted flex items-center gap-1 cursor-pointer"
               title={resolvedLabels.reset}
             >
-              <RotateCcw className="w-3 h-3" />
+              <RotateCcw className="w-3 h-3" aria-hidden="true" />
               <span>{resolvedLabels.reset}</span>
             </Button>
           )}
@@ -125,10 +125,10 @@ export const ModuleColumnCustomizer = function ModuleColumnCustomizer({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+                className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
                 aria-label={t("common.clearSearch")}
               >
-                <X className="w-3 h-3" />
+                <X className="w-3 h-3" aria-hidden="true" />
               </button>
             )}
           </div>

@@ -39,7 +39,11 @@ export function WidgetCardHeader({
       )}
     >
       <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-        {icon}
+        {icon && (
+          <span className="shrink-0" aria-hidden="true">
+            {icon}
+          </span>
+        )}
         <div className="min-w-0">
           <HeadingTag
             id={headingId}

@@ -28,15 +28,19 @@ export const ModuleTableSelectionCell = React.memo(function ModuleTableSelection
     if (stopPropagation) {
       e.stopPropagation();
     }
+    const target = e.target as HTMLElement;
+    if (!target.closest('button[role="checkbox"]')) {
+      onCheckedChange(!checked);
+    }
     onClick?.(e);
   };
 
   return (
     <TableCell
       noWrap
-      onClick={stopPropagation || onClick ? handleClick : undefined}
+      onClick={handleClick}
       className={cn(
-        "w-12 min-w-12 px-4 py-3 transition-colors",
+        "w-12 min-w-12 px-4 py-3 transition-colors cursor-pointer",
         sticky && "sticky start-0 z-sticky border-e border-border/30",
         sticky ? workTableStickyCellBg(checked) : undefined,
         className,

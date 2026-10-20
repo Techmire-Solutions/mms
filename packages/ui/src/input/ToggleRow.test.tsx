@@ -99,4 +99,53 @@ describe("ToggleRow Component (@shared/ui)", () => {
     expect(container.firstElementChild?.className).toContain("rounded-lg");
     expect(container.firstElementChild?.className).toContain("bg-card/50");
   });
+
+  it("delegates card container click to toggle switch when not clicking switch directly", async () => {
+    const handleCheckedChange = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <ToggleRow
+          id="test-card-click"
+          label="Card Click Mode"
+          variant="card"
+          checked={false}
+          onCheckedChange={handleCheckedChange}
+        />,
+      );
+    });
+
+    const cardDiv = container.firstElementChild as HTMLElement;
+    expect(cardDiv).not.toBeNull();
+
+    await act(async () => {
+      cardDiv.click();
+    });
+
+    expect(handleCheckedChange).toHaveBeenCalledWith(true);
+  });
+
+  it("does not toggle on container click when disabled", async () => {
+    const handleCheckedChange = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <ToggleRow
+          id="test-disabled-card"
+          label="Disabled Mode"
+          variant="card"
+          checked={false}
+          disabled={true}
+          onCheckedChange={handleCheckedChange}
+        />,
+      );
+    });
+
+    const cardDiv = container.firstElementChild as HTMLElement;
+    await act(async () => {
+      cardDiv.click();
+    });
+
+    expect(handleCheckedChange).not.toHaveBeenCalled();
+  });
 });

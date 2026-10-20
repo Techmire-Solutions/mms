@@ -59,7 +59,7 @@ export function SettingsPanelIntro({
   return (
     <p
       className={cn(
-        "rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-xs leading-relaxed text-muted-foreground sm:px-5",
+        "rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-xs leading-relaxed text-pretty text-muted-foreground sm:px-5",
         className,
       )}
     >
@@ -88,13 +88,13 @@ export function SettingsStatusBadges({
     >
       {isDirty ? (
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-warning">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-warning" aria-hidden />
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-warning" aria-hidden="true" />
           {t("settings.unsavedChanges")}
         </span>
       ) : null}
       {saved && !isDirty ? (
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-success" aria-hidden />
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-success" aria-hidden="true" />
           {t("settings.savedBadge")}
         </span>
       ) : null}

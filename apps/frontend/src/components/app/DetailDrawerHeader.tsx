@@ -47,7 +47,7 @@ export function DetailDrawerHeader({
         <div className="flex items-center gap-3 min-w-0">
           {Icon && (
             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Icon className="w-5 h-5 text-primary" />
+              <Icon className="w-5 h-5 text-primary" aria-hidden="true" />
             </div>
           )}
           <div className="min-w-0">
@@ -55,7 +55,7 @@ export function DetailDrawerHeader({
               <h2
                 id={titleId}
                 title={typeof title === "string" ? title : undefined}
-                className="text-sm font-bold text-foreground leading-tight truncate"
+                className="text-sm font-bold text-foreground leading-tight truncate text-balance"
               >
                 {title}
               </h2>
@@ -64,7 +64,7 @@ export function DetailDrawerHeader({
             {subtitle && (
               <span
                 title={typeof subtitle === "string" ? subtitle : undefined}
-                className="text-3xs text-muted-foreground uppercase tracking-wider font-bold block truncate mt-0.5"
+                className="text-3xs text-muted-foreground uppercase tracking-wider font-bold block truncate mt-0.5 text-pretty"
               >
                 {subtitle}
               </span>
@@ -79,10 +79,10 @@ export function DetailDrawerHeader({
             variant="outline"
             size="icon"
             onClick={onClose}
-            className="rounded-lg border border-border/50 bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shadow-none"
+            className="cursor-pointer rounded-lg border border-border/50 bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shadow-none"
             aria-label={t("common.close")}
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
       </div>

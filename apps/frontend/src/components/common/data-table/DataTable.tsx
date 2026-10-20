@@ -79,7 +79,12 @@ export function DataTable<TData extends { id: string | number }>({
       compact
       variant="dashed"
       action={
-        <Button type="button" variant="link" onClick={state.clearFilters} className="min-h-11">
+        <Button
+          type="button"
+          variant="link"
+          onClick={state.clearFilters}
+          className="min-h-11 cursor-pointer"
+        >
           {t("common.clearFilters")}
         </Button>
       }

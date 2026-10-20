@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
+import { Button } from "../button/Button";
 import { cn } from "../utils";
 import { useUiConfig } from "../theme/UiConfigContext";
 import { OVERLAY_BACKDROP } from "../theme/formStyles";
@@ -50,21 +51,69 @@ export function Modal({
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || typeof document === "undefined") return;
+
+    const previouslyFocusedElement = document.activeElement as HTMLElement | null;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && dismissible) {
         onClose();
+        return;
+      }
+
+      if (e.key === "Tab" && modalRef.current) {
+        const focusable = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter(
+          (el) =>
+            (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0) &&
+            el.getAttribute("aria-hidden") !== "true",
+        );
+
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            last?.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === last) {
+            first?.focus();
+            e.preventDefault();
+          }
+        }
       }
     };
 
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    const frameId = requestAnimationFrame(() => {
+      if (modalRef.current && !modalRef.current.contains(document.activeElement)) {
+        const firstFocusable = modalRef.current.querySelector<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        firstFocusable?.focus();
+      }
+    });
+
     window.addEventListener("keydown", handleKeyDown);
     return () => {
+      cancelAnimationFrame(frameId);
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocusedElement && typeof previouslyFocusedElement.focus === "function") {
+        previouslyFocusedElement.focus();
+      }
     };
   }, [open, dismissible, onClose]);
 
@@ -139,14 +188,16 @@ export function Modal({
             <div className="flex items-center gap-2">
               {headerExtra}
               {dismissible && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={onClose}
-                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label={labels.close}
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
           </div>

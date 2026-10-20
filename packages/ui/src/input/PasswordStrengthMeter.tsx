@@ -145,7 +145,7 @@ export function PasswordStrengthMeter({
                 item.pass ? "text-success font-semibold" : "text-muted-foreground",
               )}
             >
-              <span>{item.pass ? "✓" : "○"}</span>
+              <span aria-hidden="true">{item.pass ? "✓" : "○"}</span>
               <span>{item.label}</span>
             </div>
           ))}

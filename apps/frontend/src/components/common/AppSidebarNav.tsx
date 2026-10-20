@@ -144,12 +144,12 @@ export function AppSidebarNav({
           </div>
           {!collapsed && (
             <ChevronRight
-              className={`w-3.5 h-3.5 transition-transform duration-200 rtl:rotate-180 ${
+              className={`w-3.5 h-3.5 transition-transform duration-200 ${
                 group.open
-                  ? "rotate-90 rtl:-rotate-90 text-sidebar-foreground"
-                  : "text-sidebar-muted-foreground group-hover:text-sidebar-foreground"
+                  ? "rotate-90 text-sidebar-foreground"
+                  : "rtl:rotate-180 text-sidebar-muted-foreground group-hover:text-sidebar-foreground"
               }`}
-              aria-hidden
+              aria-hidden="true"
             />
           )}
         </Button>

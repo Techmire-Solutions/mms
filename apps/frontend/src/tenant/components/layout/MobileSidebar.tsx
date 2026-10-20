@@ -114,10 +114,10 @@ export default function MobileSidebar({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="min-h-11 min-w-11 h-11 w-11 p-0 text-sidebar-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 shrink-0"
+            className="min-h-11 min-w-11 h-11 w-11 p-0 text-sidebar-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 shrink-0 cursor-pointer"
           >
             <span className="sr-only">{t("nav.closeSidebar")}</span>
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </Button>
         </div>
 
@@ -148,13 +148,13 @@ export default function MobileSidebar({
             type="button"
             variant="outline"
             size="sm"
-            className="w-full border-sidebar-border bg-sidebar-accent/30 text-sidebar-foreground hover:bg-sidebar-accent/50"
+            className="w-full min-h-11 border-sidebar-border bg-sidebar-accent/30 text-sidebar-foreground hover:bg-sidebar-accent/50 gap-2 cursor-pointer"
             onClick={() => {
               onClose();
               logout(true);
             }}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
             {t("auth.signOut")}
           </Button>
         </div>

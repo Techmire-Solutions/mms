@@ -1,11 +1,18 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "../utils";
 
 export type CalloutDensity = "compact" | "banner";
 export type CalloutTone = "warning" | "info" | "destructive" | "success";
+
+const DEFAULT_TONE_ICONS: Record<CalloutTone, LucideIcon> = {
+  warning: AlertTriangle,
+  info: Info,
+  destructive: AlertCircle,
+  success: CheckCircle2,
+};
 
 const TONE_CLASSES: Record<
   CalloutTone,
@@ -51,7 +58,7 @@ export interface CalloutProps {
 }
 
 export function Callout({
-  icon: Icon = AlertTriangle,
+  icon,
   title,
   description,
   children,
@@ -63,6 +70,7 @@ export function Callout({
 }: CalloutProps): React.JSX.Element {
   const isCompact = density === "compact";
   const tones = TONE_CLASSES[tone];
+  const Icon = icon ?? DEFAULT_TONE_ICONS[tone];
 
   return (
     <div
@@ -80,7 +88,7 @@ export function Callout({
       <div className={cn("flex min-w-0 gap-2", isCompact ? "items-start" : "items-center")}>
         <Icon
           className={cn("shrink-0", tones.icon, isCompact ? "mt-0.5 h-3.5 w-3.5" : "h-4 w-4")}
-          aria-hidden
+          aria-hidden="true"
         />
         <div className="min-w-0">
           {title ? <p className="m-0 font-semibold">{title}</p> : null}

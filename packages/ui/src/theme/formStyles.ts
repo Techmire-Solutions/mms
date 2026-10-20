@@ -41,11 +41,11 @@ export const FORM_INPUT_BUILDER = `${FORM_INPUT_COMPACT} bg-card font-semibold`;
 
 /** OTP digit cell (2FA, platform verify). */
 export const FORM_OTP_DIGIT =
-  "w-11 min-h-11 h-12 text-center text-xl font-bold rounded-xl border-2 bg-card text-foreground focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 touch-manipulation";
+  "w-9 sm:w-11 min-h-11 h-11 sm:h-12 text-center text-lg sm:text-xl font-bold rounded-xl border-2 bg-card text-foreground focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 touch-manipulation";
 
 /** Unified checkbox style — borders, focus rings, primary accent, cursor pointer. */
 export const FORM_CHECKBOX =
-  "peer relative h-4 w-4 shrink-0 cursor-pointer rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']";
+  "peer relative h-4 w-4 shrink-0 cursor-pointer rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground after:absolute after:start-1/2 after:top-1/2 after:h-11 after:w-11 after:-translate-x-1/2 rtl:after:translate-x-1/2 after:-translate-y-1/2 after:content-['']";
 
 export const CARD_SURFACE =
   "relative overflow-clip group/card rounded-2xl border border-foreground/10 bg-card text-card-foreground shadow-xs transition-colors duration-150 ease-out motion-reduce:transition-none";
@@ -67,7 +67,7 @@ export const WORK_STICKY_HEAD = "bg-card/95 border-b border-border/80";
 
 /** Work toolbar filter / trash / clear trigger base. */
 export const WORK_TOOLBAR_TRIGGER =
-  "flex items-center gap-1.5 px-3 min-h-11 rounded-xl border text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none touch-manipulation";
+  "flex items-center gap-1.5 px-3 min-h-11 rounded-xl border text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none touch-manipulation cursor-pointer";
 
 /** Active state for Work toolbar triggers (filters with count, trash on). */
 export const WORK_TOOLBAR_TRIGGER_ACTIVE =

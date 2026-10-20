@@ -27,7 +27,7 @@ export function NotificationsPageRow({
       onClick={onOpen}
       disabled={!notification.target}
       className={cn(
-        "flex h-auto min-h-11 w-full items-start justify-start gap-3 whitespace-normal rounded-none px-5 py-4 text-start transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+        "flex h-auto min-h-11 w-full items-start justify-start gap-3 whitespace-normal rounded-none px-5 py-4 text-start transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring cursor-pointer disabled:cursor-not-allowed",
         !notification.read && "bg-primary/5",
       )}
     >
@@ -38,13 +38,13 @@ export function NotificationsPageRow({
         )}
         aria-hidden="true"
       >
-        <Icon className={cn("h-4 w-4", meta.text)} />
+        <Icon className={cn("h-4 w-4", meta.text)} aria-hidden="true" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
           <span
             className={cn(
-              "text-sm text-foreground",
+              "text-sm text-foreground text-balance",
               notification.read ? "font-medium" : "font-bold",
             )}
           >

@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SubTab } from "@/components/app/SubTabBar";
 import { SubTabBarBadge } from "@/components/app/SubTabBarBadge";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export interface SubTabBarVariantProps<K extends string> {
   tabs: readonly SubTab<K>[];
@@ -39,7 +40,7 @@ function SubTabBarDesktopPillList<K extends string>({
             aria-selected={active}
             onClick={() => onChange(t.key)}
             className={cn(
-              "relative flex min-h-11 min-w-11 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs sm:text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+              "relative flex min-h-11 min-w-11 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs sm:text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer",
               active
                 ? "bg-card text-foreground font-semibold shadow-xs border border-border/60"
                 : "text-muted-foreground hover:text-foreground hover:bg-card/40",
@@ -51,7 +52,7 @@ function SubTabBarDesktopPillList<K extends string>({
                   "h-3.5 w-3.5 transition-colors",
                   active ? "text-primary" : "text-muted-foreground",
                 )}
-                aria-hidden
+                aria-hidden="true"
               />
             )}
             <span>{t.label}</span>
@@ -72,6 +73,8 @@ export function SubTabBarAccordionVariant<K extends string>({
   children,
   sectionRefs,
 }: SubTabBarAccordionVariantProps<K>): React.JSX.Element {
+  const reducedMotion = useReducedMotion();
+
   return (
     <div className={cn("space-y-3", className)}>
       <div className="space-y-2 lg:hidden">
@@ -95,12 +98,12 @@ export function SubTabBarAccordionVariant<K extends string>({
                 aria-controls={panelId}
                 onClick={() => onChange(tab.key)}
                 className={cn(
-                  "flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2.5 text-start text-xs font-semibold transition-colors",
+                  "flex min-h-11 w-full items-center justify-between gap-2 px-3 py-2.5 text-start text-xs font-semibold transition-colors cursor-pointer",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <span className="flex items-center gap-1.5">
-                  {tab.icon && <tab.icon className="h-3.5 w-3.5" aria-hidden />}
+                  {tab.icon && <tab.icon className="h-3.5 w-3.5" aria-hidden="true" />}
                   <span>{tab.label}</span>
                 </span>
                 <ChevronDown
@@ -108,17 +111,19 @@ export function SubTabBarAccordionVariant<K extends string>({
                     "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
                     active && "rotate-180 text-primary",
                   )}
-                  aria-hidden
+                  aria-hidden="true"
                 />
               </button>
               <AnimatePresence initial={false}>
                 {active ? (
                   <motion.div
                     id={panelId}
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.18, ease: "easeInOut" }}
+                    initial={reducedMotion ? false : { height: 0, opacity: 0 }}
+                    animate={reducedMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
+                    exit={reducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                    transition={
+                      reducedMotion ? { duration: 0 } : { duration: 0.18, ease: "easeInOut" }
+                    }
                     className="overflow-hidden"
                   >
                     <div className="space-y-3 border-t border-border/50 px-3 py-3">{children}</div>
