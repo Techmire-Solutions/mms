@@ -69,8 +69,7 @@ export function NotificationsPopover({
     }
   };
 
-  const effectiveAriaLabel =
-    unreadCount > 0 ? `${ariaLabel} (${unreadCount} unread)` : ariaLabel;
+  const effectiveAriaLabel = unreadCount > 0 ? `${ariaLabel} (${unreadCount} unread)` : ariaLabel;
 
   return (
     <Popover open={popoverOpen} onOpenChange={handleOpenChange}>

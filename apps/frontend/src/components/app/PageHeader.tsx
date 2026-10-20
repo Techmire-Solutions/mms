@@ -35,9 +35,13 @@ export const PageHeader = function PageHeader({
               {breadcrumb}
             </p>
           )}
-          <h1 className="text-xl font-bold text-foreground leading-tight break-words text-balance">{title}</h1>
+          <h1 className="text-xl font-bold text-foreground leading-tight break-words text-balance">
+            {title}
+          </h1>
           {subtitle && (
-            <p className="text-sm text-muted-foreground mt-0.5 break-words text-pretty">{subtitle}</p>
+            <p className="text-sm text-muted-foreground mt-0.5 break-words text-pretty">
+              {subtitle}
+            </p>
           )}
         </div>
       </div>

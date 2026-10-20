@@ -77,16 +77,24 @@ export function ToggleRow({
           isChecked
             ? "border-primary/20 bg-primary/5"
             : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20",
-          disabled ? "opacity-60 pointer-events-none cursor-not-allowed" : "cursor-pointer select-none",
+          disabled
+            ? "opacity-60 pointer-events-none cursor-not-allowed"
+            : "cursor-pointer select-none",
           className,
         )}
       >
         <div className="min-w-0 flex-1">
-          <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer text-balance">
+          <Label
+            htmlFor={id}
+            className="text-sm font-semibold text-foreground cursor-pointer text-balance"
+          >
             {label}
           </Label>
           {description ? (
-            <p id={`${id}-desc`} className="mt-0.5 text-xs text-muted-foreground text-pretty leading-relaxed">
+            <p
+              id={`${id}-desc`}
+              className="mt-0.5 text-xs text-muted-foreground text-pretty leading-relaxed"
+            >
               {description}
             </p>
           ) : null}
@@ -110,16 +118,24 @@ export function ToggleRow({
         onClick={handleContainerClick}
         className={cn(
           "flex items-center justify-between gap-4 p-3 rounded-lg border border-border bg-card/50 text-start",
-          disabled ? "opacity-60 pointer-events-none cursor-not-allowed" : "cursor-pointer select-none",
+          disabled
+            ? "opacity-60 pointer-events-none cursor-not-allowed"
+            : "cursor-pointer select-none",
           className,
         )}
       >
         <div className="min-w-0 flex-1 space-y-0.5">
-          <Label htmlFor={id} className="text-xs font-medium cursor-pointer text-foreground text-balance">
+          <Label
+            htmlFor={id}
+            className="text-xs font-medium cursor-pointer text-foreground text-balance"
+          >
             {label}
           </Label>
           {description ? (
-            <p id={`${id}-desc`} className="text-3xs text-muted-foreground text-pretty leading-relaxed">
+            <p
+              id={`${id}-desc`}
+              className="text-3xs text-muted-foreground text-pretty leading-relaxed"
+            >
               {description}
             </p>
           ) : null}
@@ -145,11 +161,17 @@ export function ToggleRow({
       )}
     >
       <div className="min-w-0 flex-1">
-        <Label htmlFor={id} className="text-sm font-semibold text-foreground cursor-pointer block text-balance">
+        <Label
+          htmlFor={id}
+          className="text-sm font-semibold text-foreground cursor-pointer block text-balance"
+        >
           {label}
         </Label>
         {description ? (
-          <p id={`${id}-desc`} className="text-xs text-muted-foreground mt-0.5 text-pretty leading-relaxed">
+          <p
+            id={`${id}-desc`}
+            className="text-xs text-muted-foreground mt-0.5 text-pretty leading-relaxed"
+          >
             {description}
           </p>
         ) : null}

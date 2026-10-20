@@ -112,7 +112,9 @@ export function TypedConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle
             className={
-              destructiveTitle ? "text-destructive font-bold text-balance" : "font-bold text-balance"
+              destructiveTitle
+                ? "text-destructive font-bold text-balance"
+                : "font-bold text-balance"
             }
           >
             {title}
@@ -155,7 +157,10 @@ export function TypedConfirmDialog({
                 }
               />
               {passwordHint ? (
-                <p id={`${passwordInputId}-hint`} className="text-xs text-muted-foreground text-pretty">
+                <p
+                  id={`${passwordInputId}-hint`}
+                  className="text-xs text-muted-foreground text-pretty"
+                >
                   {passwordHint}
                 </p>
               ) : null}

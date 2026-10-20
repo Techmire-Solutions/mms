@@ -124,10 +124,7 @@ export function ToastTitle({
   ...props
 }: React.ComponentProps<"div">): React.JSX.Element {
   return (
-    <div
-      className={cn("text-sm font-semibold text-balance break-words", className)}
-      {...props}
-    />
+    <div className={cn("text-sm font-semibold text-balance break-words", className)} {...props} />
   );
 }
 

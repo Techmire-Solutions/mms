@@ -45,7 +45,8 @@ export function BulkSelectionMessagingActions({
           onClick={() => onChannel("whatsapp")}
           className={bulkActionDockActionClassName}
         >
-          <MessageCircle className="w-3.5 h-3.5 text-success" aria-hidden="true" /> {labels.whatsapp}
+          <MessageCircle className="w-3.5 h-3.5 text-success" aria-hidden="true" />{" "}
+          {labels.whatsapp}
         </Button>
       )}
       {channels.sms !== false && (
@@ -97,7 +98,10 @@ export function BulkSelectionExportAction({
       className={bulkActionDockActionClassName}
     >
       {isPending ? (
-        <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+        <Loader2
+          className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none"
+          aria-hidden="true"
+        />
       ) : (
         <Download className="w-3.5 h-3.5" aria-hidden="true" />
       )}{" "}

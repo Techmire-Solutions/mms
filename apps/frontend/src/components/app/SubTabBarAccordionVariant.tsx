@@ -121,7 +121,9 @@ export function SubTabBarAccordionVariant<K extends string>({
                     initial={reducedMotion ? false : { height: 0, opacity: 0 }}
                     animate={reducedMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
                     exit={reducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-                    transition={reducedMotion ? { duration: 0 } : { duration: 0.18, ease: "easeInOut" }}
+                    transition={
+                      reducedMotion ? { duration: 0 } : { duration: 0.18, ease: "easeInOut" }
+                    }
                     className="overflow-hidden"
                   >
                     <div className="space-y-3 border-t border-border/50 px-3 py-3">{children}</div>

@@ -127,11 +127,20 @@ export function BackgroundJobsTray({
                   >
                     <div className="flex items-start gap-2 min-w-0">
                       {job.status === "running" ? (
-                        <Loader2 className="w-4 h-4 shrink-0 animate-spin motion-reduce:animate-none mt-0.5 text-info" aria-hidden="true" />
+                        <Loader2
+                          className="w-4 h-4 shrink-0 animate-spin motion-reduce:animate-none mt-0.5 text-info"
+                          aria-hidden="true"
+                        />
                       ) : job.status === "failed" ? (
-                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-destructive" aria-hidden="true" />
+                        <AlertCircle
+                          className="w-4 h-4 shrink-0 mt-0.5 text-destructive"
+                          aria-hidden="true"
+                        />
                       ) : (
-                        <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-primary" aria-hidden="true" />
+                        <CheckCircle2
+                          className="w-4 h-4 shrink-0 mt-0.5 text-primary"
+                          aria-hidden="true"
+                        />
                       )}
                       <div className="min-w-0">
                         <p className="font-medium truncate">{job.label}</p>
@@ -155,7 +164,10 @@ export function BackgroundJobsTray({
                           aria-label={t("backgroundJobs.download")}
                         >
                           {downloadingId === job.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                            <Loader2
+                              className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none"
+                              aria-hidden="true"
+                            />
                           ) : (
                             <Download className="w-3.5 h-3.5" aria-hidden="true" />
                           )}

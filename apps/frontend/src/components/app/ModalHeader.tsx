@@ -55,7 +55,9 @@ export function ModalHeader({
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 text-balance break-words">{subtitle}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 text-balance break-words">
+                {subtitle}
+              </p>
             )}
           </div>
         </div>
