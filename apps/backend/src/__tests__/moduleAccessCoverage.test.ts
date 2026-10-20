@@ -245,6 +245,12 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
       "/api/background-jobs/clear-finished",
     ],
   },
+  {
+    prefix: "/api/templates",
+    reason:
+      "generic document template layout persistence (invoices, student cards, report cards, vouchers)",
+    paths: ["/api/templates/:key"],
+  },
 ];
 
 function matchesPrefix(url: string, prefix: string): boolean {

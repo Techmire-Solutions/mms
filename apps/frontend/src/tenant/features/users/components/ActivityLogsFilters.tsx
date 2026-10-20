@@ -131,7 +131,7 @@ export function ActivityLogsFilters({
           type="button"
           variant={!dateFrom && !dateTo ? "secondary" : "ghost"}
           size="sm"
-          className="h-8 px-2 text-xs"
+          className="h-8 touch-target-coarse px-2 text-xs"
           onClick={() => applyPreset(undefined)}
         >
           {t("common.none")}
@@ -140,7 +140,7 @@ export function ActivityLogsFilters({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-xs"
+          className="h-8 touch-target-coarse px-2 text-xs"
           onClick={() => applyPreset(0)}
         >
           {t("datePicker.today")}
@@ -149,7 +149,7 @@ export function ActivityLogsFilters({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-xs"
+          className="h-8 touch-target-coarse px-2 text-xs"
           onClick={() => applyPreset(7)}
         >
           {t("messaging.datePreset7d")}
@@ -158,7 +158,7 @@ export function ActivityLogsFilters({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-xs"
+          className="h-8 touch-target-coarse px-2 text-xs"
           onClick={() => applyPreset(30)}
         >
           {t("messaging.datePreset30d")}

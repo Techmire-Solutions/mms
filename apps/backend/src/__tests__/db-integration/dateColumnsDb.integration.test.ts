@@ -100,7 +100,7 @@ describe("academic date columns (real Postgres)", () => {
     await expect(update).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("given release A (0179), should sync the new date columns and the legacy varchars both ways", async () => {
+  it("given release A (0181), should sync the new date columns and the legacy varchars both ways", async () => {
     // Arrange: the current release writes `registered_on`; the previous one writes the varchar.
     await withTenant(TENANT, (tx) =>
       tx.insert(students).values({

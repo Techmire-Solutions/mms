@@ -4,11 +4,15 @@ import {
   isFiscalYearClosed,
   isJournalEntryBalanced,
   isValidIsoDate,
+  moneyToCents,
   resolveFiscalYearRef,
   type Account,
   type FiscalYear,
   type JournalEntry,
 } from "@mms/shared";
+import { ConflictError } from "../../lib/httpErrors.js";
+import { getRequestTenant } from "../../lib/tenantContext.js";
+import type { AccountingRepository } from "../repository/accountingRepository.js";
 
 export type AccountingLedgerHttpError = Error & {
   statusCode: number;
@@ -22,26 +26,10 @@ function ledgerError(message: string): AccountingLedgerHttpError {
   return error;
 }
 
-/**
- * Resolve the fiscal-year FK from id or legacy label and reject unbalanced
- * posted writes. Drafts may be unbalanced.
- *
- * When neither `fiscal_year_id` nor `fiscal_year` is supplied, the year
- * containing the entry date is used instead of leaving the FK NULL — a NULL FK
- * makes the row invisible to every fiscal-year-scoped view.
- *
- * Period locks and account checks are deliberately NOT applied here: bulk
- * collection saves re-send unchanged rows, and those must not be re-validated
- * against state that has legitimately moved on (a year closed since, an account
- * archived since). Callers apply {@link assertJournalEntryPeriodOpen} to
- * new-or-changed rows only.
- */
 export function prepareJournalEntryForPersist(
   entry: JournalEntry,
   fiscalYears: readonly FiscalYear[],
 ): JournalEntry {
-  // Reports filter by this string and compare it lexicographically, so shape and
-  // calendar validity both matter — '2025-6-5' would sort into the wrong period.
   if (!isValidIsoDate(entry.date ?? "")) {
     throw ledgerError("Journal entry date must be a real calendar date in YYYY-MM-DD format");
   }
@@ -62,23 +50,6 @@ export function prepareJournalEntryForPersist(
   };
 }
 
-/**
- * Closed-period lock.
- *
- * Two independent checks, because either one alone is bypassable:
- *
- * 1. the **declared** fiscal year must not be closed (the original guard), and
- * 2. the fiscal year **containing the entry date** must not be closed.
- *
- * Check 2 is the one that matters in practice: reports filter by `date`, so an
- * entry dated inside a closed period contaminates that period's figures no
- * matter which year it claims to belong to. Without it, omitting the fiscal-year
- * fields — or labelling the entry with the currently-active year, which is what
- * the journal form does — posts straight into a closed period.
- *
- * A date outside every configured year is allowed: a workspace with no fiscal
- * years configured must stay postable.
- */
 export function assertJournalEntryPeriodOpen(
   entry: JournalEntry,
   fiscalYears: readonly FiscalYear[],
@@ -96,11 +67,6 @@ export function assertJournalEntryPeriodOpen(
   }
 }
 
-/**
- * Active foreign-key guard: a journal line may not reference an unknown,
- * archived or deactivated account. The FK only enforces existence and archiving
- * is a soft delete, so both flags have to be honoured here.
- */
 export async function assertJournalAccountsWritable(
   tenant: string,
   entries: readonly JournalEntry[],
@@ -122,6 +88,112 @@ export async function assertJournalAccountsWritable(
       `Journal lines reference unknown, archived or deactivated accounts: ${blocked.join(", ")}`,
     );
   }
+}
+
+function normalizeLines(lines: JournalEntry["lines"]): string {
+  return (lines ?? [])
+    .map((line) =>
+      [
+        line.account_id,
+        moneyToCents(line.debit),
+        moneyToCents(line.credit),
+        line.description ?? "",
+      ].join("|"),
+    )
+    .sort()
+    .join(";");
+}
+
+function normalizeList(values: readonly string[] | undefined): string {
+  return [...(values ?? [])].sort().join("|");
+}
+
+export function journalEntryContentChanged(incoming: JournalEntry, stored: JournalEntry): boolean {
+  return (
+    incoming.date !== stored.date ||
+    (incoming.ref ?? "") !== (stored.ref ?? "") ||
+    (incoming.description ?? "") !== (stored.description ?? "") ||
+    incoming.status !== stored.status ||
+    (incoming.fiscal_year ?? "") !== (stored.fiscal_year ?? "") ||
+    (incoming.fiscal_year_id ?? "") !== (stored.fiscal_year_id ?? "") ||
+    (incoming.source_type ?? "") !== (stored.source_type ?? "") ||
+    (incoming.source_id ?? "") !== (stored.source_id ?? "") ||
+    (incoming.transaction_type ?? "") !== (stored.transaction_type ?? "") ||
+    (incoming.reversed_ref ?? "") !== (stored.reversed_ref ?? "") ||
+    Boolean(incoming.simple_mode) !== Boolean(stored.simple_mode) ||
+    normalizeLines(incoming.lines) !== normalizeLines(stored.lines) ||
+    normalizeList(incoming.tags) !== normalizeList(stored.tags) ||
+    normalizeList(incoming.attachments) !== normalizeList(stored.attachments)
+  );
+}
+
+export function mapJournalEntryUniqueError(error: unknown): never {
+  const pgErr = error as { constraint?: string; message?: string };
+  if (
+    pgErr.constraint === "accounting_entries_workspace_ref_active_uidx" ||
+    pgErr.message?.includes("accounting_entries_workspace_ref_active_uidx")
+  ) {
+    throw new ConflictError("A journal entry with this reference already exists");
+  }
+  throw new ConflictError(
+    "A journal entry already exists for this source (conflicting source_type/source_id)",
+  );
+}
+
+export async function loadStoredEntriesByIds(
+  repo: Pick<AccountingRepository, "findEntriesByIds">,
+  entries: readonly JournalEntry[],
+): Promise<Map<string, JournalEntry>> {
+  const tenant = getRequestTenant();
+  if (!tenant) return new Map();
+  const ids = dedupeTrimmedIds(entries.map((entry) => entry.id));
+  if (ids.length === 0) return new Map();
+  const stored = await repo.findEntriesByIds(tenant, ids);
+  return new Map(stored.map((entry) => [entry.id, entry]));
+}
+
+export function withServerOwnedSourceKeys(
+  entry: JournalEntry,
+  stored: JournalEntry | undefined,
+): JournalEntry {
+  return {
+    ...entry,
+    source_type: stored ? stored.source_type : "manual",
+    source_id: stored ? stored.source_id : undefined,
+    reversed_ref: stored ? stored.reversed_ref : undefined,
+  };
+}
+
+export function assertEntriesMutable(
+  entries: readonly JournalEntry[],
+  storedById: ReadonlyMap<string, JournalEntry>,
+): void {
+  for (const incoming of entries) {
+    const existing = storedById.get(incoming.id);
+    if (!existing || existing.status !== "posted") continue;
+    if (journalEntryContentChanged(incoming, existing)) {
+      throw Object.assign(
+        new Error("Posted journal entries are immutable — reverse them instead of editing"),
+        { statusCode: 422, type: "validation_error" },
+      );
+    }
+  }
+}
+
+export async function assertEntriesWritable(
+  tenant: string,
+  entries: readonly JournalEntry[],
+  storedById: ReadonlyMap<string, JournalEntry>,
+  fiscalYears: readonly FiscalYear[],
+  findAccountsByIds: (tenant: string, ids: string[]) => Promise<Account[]>,
+): Promise<void> {
+  const targets = entries.filter((entry) => {
+    const existing = storedById.get(entry.id);
+    return !existing || journalEntryContentChanged(entry, existing);
+  });
+  if (targets.length === 0) return;
+  for (const entry of targets) assertJournalEntryPeriodOpen(entry, fiscalYears);
+  await assertJournalAccountsWritable(tenant, targets, findAccountsByIds);
 }
 
 export { ledgerError };

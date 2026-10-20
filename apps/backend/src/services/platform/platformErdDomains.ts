@@ -13,38 +13,8 @@ import * as financeBillingSchema from "../../db/schema/financeBilling.js";
 import * as financeCollectSchema from "../../db/schema/financeCollect.js";
 import * as accountingSchema from "../../db/schema/accounting.js";
 import * as accountingLedgerOpsSchema from "../../db/schema/accountingLedgerOps.js";
-import {
-  assessmentAnswers,
-  assessmentResults,
-  examClasses,
-  examResults,
-  exams,
-  questionCategories,
-  questionCitations,
-  questionOptions,
-  questionTags,
-  questions,
-  testQuestions,
-  testSectionQuestions,
-  testSections,
-  tests,
-} from "../../db/schema/examinations.js";
-
-/** Domain groupings of the canonical examinations schema (`db/schema/examinations.ts`). */
-const examinationExamSchema = { exams, examClasses, examResults };
-const examinationQuestionBankSchema = {
-  questions,
-  questionCategories,
-  questionOptions,
-  questionTags,
-  questionCitations,
-  tests,
-  testQuestions,
-  testSections,
-  testSectionQuestions,
-  assessmentResults,
-  assessmentAnswers,
-};
+import * as examinationExamSchema from "../../db/schema/examinationExamTables.js";
+import * as examinationQuestionBankSchema from "../../db/schema/examinationQuestionBankTables.js";
 import * as obligationsSchema from "../../db/schema/obligations.js";
 import * as hasanatSchema from "../../db/schema/hasanat.js";
 import * as messagingSchema from "../../db/schema/messaging.js";

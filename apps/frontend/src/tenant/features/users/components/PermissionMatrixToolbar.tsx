@@ -56,7 +56,7 @@ export function PermissionMatrixToolbar({
             variant="outline"
             size="sm"
             onClick={onToggleGlobalAll}
-            className="h-8 px-2.5 text-xs font-bold gap-1 rounded-lg border-border cursor-pointer"
+            className="h-8 touch-target-coarse px-2.5 text-xs font-bold gap-1 rounded-lg border-border cursor-pointer"
             aria-label={allModulesChecked ? t("common.deselect") : t("users.permissions.colAll")}
           >
             {allModulesChecked ? <X className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}

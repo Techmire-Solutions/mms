@@ -22,10 +22,8 @@ import {
   defaultSessionsExportColumns,
   useSessionsExportActions,
 } from "@/tenant/features/sessions/hooks/useSessionsExportActions";
-import {
-  toggleFilterValue,
-  useSessionsSelection,
-} from "@/tenant/features/sessions/hooks/useSessionsSelection";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
+import { toggleFilterValue } from "@/tenant/features/sessions/hooks/sessionsPageControllerActions";
 
 export function useSessionsPageController() {
   const {
@@ -91,9 +89,9 @@ export function useSessionsPageController() {
     allVisibleSelected,
     someVisibleSelected,
     toggleSelectAll,
-    toggleSelectedSession,
+    toggleSelected,
     clearSelection,
-  } = useSessionsSelection(sessions);
+  } = useWorkSelection(sessions);
 
   useEffect(() => {
     setSelectedIds([]);
@@ -199,7 +197,7 @@ export function useSessionsPageController() {
     refetch,
     handleSort,
     toggleSelectAll,
-    toggleSelectedSession,
+    toggleSelected,
     clearSelection,
     ...crudActions,
     bulkStatusPending: bulkUpdateSessionStatus.isPending,

@@ -1,7 +1,5 @@
+import { type exams, type examClasses, type examResults } from "./examinationExamTables.js";
 import {
-  type exams,
-  type examClasses,
-  type examResults,
   type questions,
   type questionCategories,
   type questionOptions,
@@ -13,7 +11,7 @@ import {
   type testSectionQuestions,
   type assessmentResults,
   type assessmentAnswers,
-} from "./examinations.js";
+} from "./examinationQuestionBankTables.js";
 import {
   type examinationsFieldConfigs,
   type examinationsModulePreferences,

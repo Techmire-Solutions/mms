@@ -90,7 +90,7 @@ export const MessagingDetail = function MessagingDetail({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              className="h-6 w-6 touch-target-coarse text-muted-foreground hover:text-foreground"
               onClick={() => void copyIdToClipboard(String(log.id))}
               aria-label={t("contacts.table.copied")}
             >

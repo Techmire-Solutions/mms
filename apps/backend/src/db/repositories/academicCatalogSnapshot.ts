@@ -13,7 +13,7 @@ export interface CatalogRef {
 /**
  * Resolves catalog references for a batch of writes: a live id wins and refreshes the display
  * name from the catalog; otherwise the text is matched by name, and a missing entry is created
- * so the value is kept (migration 0179 dropped the text columns); unknown ids are dropped.
+ * so the value is kept (migration 0181 dropped the text columns); unknown ids are dropped.
  */
 export async function resolveCatalogRefsTx(
   tx: TenantTransaction,

@@ -3,6 +3,7 @@ import { Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { REMOVE_BTN } from "@/components/ui/formPrimitiveStyles";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function CardTypeLabel({ children }: { children: ReactNode }): React.JSX.Element {
   return (
@@ -64,11 +65,14 @@ export function CardPrimaryButton({
   onClick,
   title,
   ariaLabel,
-  primaryLabel = "Primary",
-  setPrimaryLabel = "Set Primary",
+  primaryLabel,
+  setPrimaryLabel,
   className,
 }: CardPrimaryButtonProps): React.JSX.Element {
-  const resolvedLabel = isPrimary ? primaryLabel : setPrimaryLabel;
+  const { t } = useTranslation();
+  const resolvedLabel = isPrimary
+    ? (primaryLabel ?? t("common.primary"))
+    : (setPrimaryLabel ?? t("common.setPrimary"));
   const resolvedTitle = title || resolvedLabel;
   const resolvedAriaLabel = ariaLabel || resolvedTitle;
 

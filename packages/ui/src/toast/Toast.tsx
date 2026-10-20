@@ -61,7 +61,7 @@ export function Toast({
           type="button"
           onClick={onClose}
           popoverTargetAction={popover ? "hide" : undefined}
-          className="rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100"
           aria-label="Close"
         >
           <X className="h-4 w-4" />

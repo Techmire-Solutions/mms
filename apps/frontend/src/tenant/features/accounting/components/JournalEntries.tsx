@@ -112,7 +112,7 @@ export function JournalEntries(props: JournalEntriesWithQueryProps) {
       onConfirmBulkTrash={controller.confirmBulkTrash}
       onConfirmRowTrash={controller.confirmRowTrash}
       onExportCsv={controller.exportCSV}
-      onToggleSelectedEntry={controller.toggleSelectedEntry}
+      onToggleSelectedEntry={controller.toggleSelected}
       onToggleSelectAll={controller.toggleSelectAll}
       onClearSelection={controller.clearSelection}
       onSave={controller.handleSave}

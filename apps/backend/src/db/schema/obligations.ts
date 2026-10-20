@@ -8,6 +8,7 @@ import {
   varchar,
   numeric,
   foreignKey,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -193,3 +194,18 @@ export type ObligationDistributionRow = typeof obligationDistributions.$inferSel
 export type InsertObligationDistributionRow = typeof obligationDistributions.$inferInsert;
 export type ObligationCollectionRow = typeof obligationCollections.$inferSelect;
 export type InsertObligationCollectionRow = typeof obligationCollections.$inferInsert;
+
+export const obligationModulePreferences = pgTable(
+  "obligation_module_preferences",
+  {
+    workspaceSubdomain: text("workspace_subdomain")
+      .notNull()
+      .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+    preferences: jsonb("preferences").$type<Record<string, unknown>>().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.workspaceSubdomain] })],
+);
+
+export type ObligationModulePreferencesRow = typeof obligationModulePreferences.$inferSelect;
+export type InsertObligationModulePreferencesRow = typeof obligationModulePreferences.$inferInsert;

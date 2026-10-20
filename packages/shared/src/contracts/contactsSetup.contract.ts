@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { contactLookupsMapResponseSchema } from "./contacts.contract.js";
+import { contactLookupsMapResponseSchema } from "./contacts.contract.schemas.js";
 
 /** Setup-tier field config, preferences, lookups, and field-usage routes. */
 export const contactsSetupRoutes = {

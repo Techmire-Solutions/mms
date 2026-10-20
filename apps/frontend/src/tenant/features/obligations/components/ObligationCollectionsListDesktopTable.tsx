@@ -98,7 +98,7 @@ export function ObligationCollectionsListDesktopTable(
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 touch-target-coarse"
               onClick={() => onPrint(collection)}
               aria-label={t("obligations.actions.printShort")}
               title={t("obligations.actions.printShort")}

@@ -112,3 +112,15 @@ export const BANK_DETAIL_SYSTEM_KEYS = new Set([
   "title",
   "isPrimary",
 ]);
+
+export function retainExtraKeys(
+  obj: Record<string, unknown>,
+  consumedKeys: ReadonlySet<string>,
+): Record<string, unknown> {
+  const extras: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (consumedKeys.has(key)) continue;
+    extras[key] = value;
+  }
+  return extras;
+}

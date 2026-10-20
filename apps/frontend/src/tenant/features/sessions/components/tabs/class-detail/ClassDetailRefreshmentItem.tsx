@@ -98,7 +98,7 @@ export function ClassDetailRefreshmentItem({
           size="icon"
           variant="ghost"
           aria-label={t("sessions.classes.detail.removeItem")}
-          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          className="h-8 w-8 touch-target-coarse text-muted-foreground hover:text-destructive"
           onClick={() => onRemove(r.id)}
         >
           <Trash2 className="h-3.5 w-3.5" />

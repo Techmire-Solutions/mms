@@ -57,7 +57,7 @@ export function MessagingDetailBodyCard({ log }: MessagingDetailBodyCardProps): 
           <Button
             variant="ghost"
             size="sm"
-            className={`h-7 px-2.5 text-xs gap-1.5 ${SEMANTIC_TEXT.primary} hover:bg-primary/10`}
+            className={`h-7 touch-target-coarse px-2.5 text-xs gap-1.5 ${SEMANTIC_TEXT.primary} hover:bg-primary/10`}
             onClick={() => void copyToClipboard(log.body)}
           >
             {copiedBody ? (

@@ -41,7 +41,7 @@ export const students = pgTable(
     studentId: varchar("student_id", { length: 100 }),
     // Status values enforced at DB level by students_status_check constraint (migration 0162).
     status: varchar("status", { length: 50 }).notNull().default("active"),
-    /** `*_on` columns since migration 0179 (the legacy varchars are trigger-filled until 0180). */
+    /** `*_on` columns since migration 0181 (the legacy varchars are trigger-filled until 0182). */
     registeredDate: date("registered_on", { mode: "string" }),
     enrollmentDate: date("enrollment_on", { mode: "string" }),
     discountType: varchar("discount_type", { length: 100 }),
@@ -144,7 +144,7 @@ export const students = pgTable(
 );
 
 /**
- * Legacy memberships with no enrollment history (migration 0179). Read through the
+ * Legacy memberships with no enrollment history (migration 0181). Read through the
  * `student_session_memberships` view; a pair is consumed once the student is enrolled in the session.
  */
 export const studentEnrolledSessionsLegacy = pgTable(
@@ -184,9 +184,9 @@ export const studentEnrolledSessionsLegacy = pgTable(
 );
 
 /**
- * Student ↔ session membership (`student_session_memberships` view, migration 0179): sessions with
+ * Student ↔ session membership (`student_session_memberships` view, migration 0181): sessions with
  * a live, seat-holding enrollment, plus legacy pairs from `student_enrolled_sessions_legacy`.
- * Read-only. The old `student_enrolled_sessions` table is trigger-mirrored until 0180 drops it.
+ * Read-only. The old `student_enrolled_sessions` table is trigger-mirrored until 0182 drops it.
  */
 export const studentEnrolledSessions = pgView("student_session_memberships", {
   id: text("id").notNull(),

@@ -8,7 +8,7 @@ import {
   contactListPageResponseSchema,
   contactBulkResultResponseSchema,
   contactWrappedResponseSchema,
-} from "./contacts.contract.js";
+} from "./contacts.contract.schemas.js";
 
 const responseWrapper = contactWrappedResponseSchema;
 const bulkResult = contactBulkResultResponseSchema;

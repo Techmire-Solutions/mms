@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { exams, sessionClassTimetablePeriods, sessions } from "../schema.js";
 
 /**
- * Display names derived from catalog ids (migration 0179 dropped the text snapshots). Archived
+ * Display names derived from catalog ids (migration 0181 dropped the text snapshots). Archived
  * catalog entries keep their name, so historic rows still read correctly.
  */
 

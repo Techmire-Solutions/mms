@@ -58,8 +58,14 @@ export function Modal({
       }
     };
 
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [open, dismissible, onClose]);
 
   if (!open) return null;
@@ -136,7 +142,7 @@ export function Modal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   aria-label={labels.close}
                 >
                   <X className="h-4 w-4" />

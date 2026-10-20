@@ -34,7 +34,7 @@ export const enrollments = pgTable(
     sectionId: text("section_id"),
     /** Roll number within the section (unique per section among active enrollments). */
     rollNo: varchar("roll_no", { length: 64 }),
-    /** `enrolled_on` since migration 0179 (the legacy varchar is trigger-filled until 0180). */
+    /** `enrolled_on` since migration 0181 (the legacy varchar is trigger-filled until 0182). */
     enrolledDate: date("enrolled_on", { mode: "string" }),
     /** Enrollment window (migration 0175): late join / withdrawal; null start = `enrolled_on`. */
     startOn: date("start_on", { mode: "string" }),

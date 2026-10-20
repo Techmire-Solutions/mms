@@ -161,7 +161,7 @@ export async function findAcademicCatalogByNameTx(
 
 /**
  * Live entry for `name`, created when missing. Text that arrives without a catalog id (legacy
- * clients, CSV imports) is never dropped now that the text snapshots are gone (migration 0179).
+ * clients, CSV imports) is never dropped now that the text snapshots are gone (migration 0181).
  */
 export async function ensureAcademicCatalogByNameTx(
   tx: TenantTransaction,

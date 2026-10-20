@@ -1,24 +1,8 @@
-import { randomBytes } from "node:crypto";
 import type { UsersRepository } from "../repository/usersRepository.js";
 import { usersRepository } from "../repository/usersRepositoryAdapter.js";
 import { getRequestTenant, requireTenant } from "../../lib/tenantContext.js";
-import { broadcastCollection } from "../../lib/livePush.js";
-import { getHydratedUsers, saveUsers } from "../../services/auth/userService.js";
-import { invalidateTenantRbac } from "../../services/rbacService.js";
-import { getRawUsers, type PersistedUser } from "../../services/auth/userServiceShared.js";
-import { deleteRefreshTokensForUser } from "../../services/auth/authArtifactService.js";
-import { sendTenantWelcomeEmail } from "../../services/auth/tenantPasswordOtpDispatch.js";
-import { hashPassword } from "../../services/auth/passwordService.js";
-import { assertPasswordMeetsPolicy } from "../../services/globalSettingsService.js";
+import { getHydratedUsers } from "../../services/auth/userService.js";
 import { loadContactsByIds } from "../../services/contactService.js";
-import { HttpDomainError } from "../../lib/httpErrors.js";
-import { findFacultyByContactId } from "../../db/repositories/facultyRepository.js";
-import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
-import {
-  isFacultyDesignationRoleLocked,
-  resolveFacultyContactRoleAssignment,
-} from "../../faculty/use-cases/facultyUserRoleGuards.js";
-import { upsertFacultyManagedWorkspaceRole } from "../../faculty/use-cases/facultyManagedRolesPrefs.js";
 import {
   type WorkspaceUser,
   type UsersListQuery,
@@ -27,23 +11,11 @@ import {
   type EditWorkspaceUserInput,
   type InviteWorkspaceUserInput,
   normalizeWorkspaceUser,
-  workspaceUserListSchema,
-  canAssignRole,
-  canManageTargetUser,
-  collectActiveTenureAssignableRoleIds,
-  isFacultyProfileStatus,
-  getDisplayName,
-  getPrimaryEmail,
-  getPrimaryPhone,
-  todayISO,
-  computeUserInitials,
   createContactLookupMap,
   hydrateWorkspaceUserProfile,
   dedupeTrimmedIds,
-  buildFacultyManagedRoleId,
-  type FacultyEmployDesignationWriteRow,
 } from "@mms/shared";
-import { createUserActivityLogService, recordUserActivityLog } from "./userActivityLogUseCases.js";
+import { createUserActivityLogService } from "./userActivityLogUseCases.js";
 import {
   executeUserPasswordReset,
   type UserPasswordResetFailureStage,
@@ -53,6 +25,14 @@ import {
   runPasswordResetStage,
   runPasswordResetAuxiliaryStep,
 } from "./userPasswordUseCases.js";
+import { createWorkspaceUserHelper, inviteWorkspaceUserHelper } from "./userCreationUseCases.js";
+import {
+  deleteUserByIdHelper,
+  restoreUserByIdHelper,
+  verifyUserEmailByIdHelper,
+  upsertWorkspaceUsersHelper,
+  updateWorkspaceUserHelper,
+} from "./userMutationUseCases.js";
 
 export type {
   UserPasswordResetFailureStage,
@@ -60,9 +40,6 @@ export type {
   UserPasswordResetAuxiliaryErrorHandler,
 };
 export { UserPasswordResetError, runPasswordResetStage, runPasswordResetAuxiliaryStep };
-
-/** Dev-only fallback when a route handler couldn't resolve a trusted request origin. */
-const DEFAULT_INVITE_ORIGIN = process.env.PLATFORM_APP_URL?.trim() || "http://localhost:5173";
 
 /**
  * Users use-cases — composition root binding a {@link UsersRepository} to every
@@ -99,301 +76,19 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
     return users.map((u) => normalizeWorkspaceUser(u));
   };
 
-  const assertFacultyRoleAllowed = async (
-    tenant: string,
-    contactId: string | undefined,
-    role: string | undefined,
-  ): Promise<void> => {
-    if (!contactId || !role) return;
-    const faculty = await findFacultyByContactId(tenant, contactId);
-    if (!faculty) return;
-    const definitions = await listFacultyDesignations(tenant, { limit: null });
-    if (!definitions.some((d) => d.status === "active")) return;
-
-    const tenures: FacultyEmployDesignationWriteRow[] =
-      Array.isArray(faculty.employDesignations) && faculty.employDesignations.length > 0
-        ? faculty.employDesignations
-        : faculty.designationId
-          ? [
-              {
-                designationId: String(faculty.designationId),
-                designationStartDate: faculty.designationStartDate ?? null,
-                designationEndDate: faculty.designationEndDate ?? null,
-                employDesignationStatus: isFacultyProfileStatus(faculty.employDesignationStatus)
-                  ? faculty.employDesignationStatus
-                  : isFacultyProfileStatus(faculty.profileStatus)
-                    ? faculty.profileStatus
-                    : "active",
-                employDesignationId: faculty.employDesignationId ?? null,
-              },
-            ]
-          : [];
-
-    const byId = new Map(definitions.map((d) => [d.id, d]));
-    const hasActiveTenure = tenures.some((row) => {
-      if (row.employDesignationStatus !== "active") return false;
-      if (row.designationEndDate?.trim()) return false;
-      const def = byId.get(row.designationId.trim());
-      return Boolean(def && def.status === "active");
-    });
-    if (!hasActiveTenure) {
-      throw new HttpDomainError(
-        400,
-        "faculty_designation_required",
-        "Assign an active faculty designation before creating a user account",
-      );
-    }
-
-    const allowedRoles = collectActiveTenureAssignableRoleIds(tenures, byId);
-    // Empty union (all tenures have empty allow-lists) permits any workspace role.
-    if (allowedRoles.length === 0) return;
-    if (allowedRoles.includes(role)) return;
-    // Managed composite role for this contact is the union of allowed catalog roles.
-    if (role === buildFacultyManagedRoleId(contactId) && allowedRoles.length > 1) return;
-    throw new HttpDomainError(
-      400,
-      "faculty_role_not_allowed",
-      `Role "${role}" is not assignable to the current designation`,
-    );
-  };
-
-  const createWorkspaceUser = async (
+  const createWorkspaceUser = (
     input: (CreateWorkspaceUserInput | WorkspaceUser) & Record<string, unknown>,
     actorId: string,
     actorRole?: string,
     ip = "127.0.0.1",
     origin?: string,
-  ): Promise<{ user: WorkspaceUser; inviteEmailSent?: boolean; inviteEmailError?: string }> => {
-    const tenant = requireTenant();
+  ) => createWorkspaceUserHelper(repo, input, actorId, actorRole, ip, origin, loadWorkspaceUsers);
 
-    let name = String(input.name || "").trim();
-    let email = String(input.email || "")
-      .trim()
-      .toLowerCase();
-    let phone = String(input.phone || "").trim();
-    const contactId = input.contactId;
-    let effectiveRole = input.role;
-    let roleSource: "faculty_designations" | "manual" = "manual";
+  const deleteUserById = (id: string, deletedBy: string, actorRole?: string, ip = "127.0.0.1") =>
+    deleteUserByIdHelper(repo, id, deletedBy, actorRole, ip);
 
-    if (contactId != null && contactId !== "") {
-      const contacts = await loadContactsByIds([String(contactId)]);
-      const c = contacts[0];
-      if (c) {
-        name = name || getDisplayName(c);
-        email = email || (getPrimaryEmail(c) || "").toLowerCase();
-        phone = phone || getPrimaryPhone(c) || "";
-      }
-
-      const assignment = await resolveFacultyContactRoleAssignment(tenant, String(contactId));
-      if (assignment && assignment.kind !== "none" && assignment.roleId) {
-        if (assignment.kind === "composite" && assignment.composite) {
-          await upsertFacultyManagedWorkspaceRole(tenant, assignment.composite);
-        }
-        effectiveRole = assignment.roleId;
-        roleSource = "faculty_designations";
-        if (actorRole && !canAssignRole(actorRole, effectiveRole)) {
-          throw new HttpDomainError(
-            403,
-            "forbidden_super_admin_assignment",
-            "Only Super Admin can assign the Super Admin role",
-          );
-        }
-      }
-    }
-
-    if (actorRole && !canAssignRole(actorRole, effectiveRole)) {
-      throw new HttpDomainError(
-        403,
-        "forbidden_super_admin_assignment",
-        "Only Super Admin can assign the Super Admin role",
-      );
-    }
-
-    await assertFacultyRoleAllowed(
-      tenant,
-      contactId != null ? String(contactId) : undefined,
-      effectiveRole,
-    );
-
-    if (!email) {
-      throw new HttpDomainError(400, "validation_error", "User email is required");
-    }
-
-    const existing = await getHydratedUsers();
-    if (
-      existing.some(
-        (u) => u.loginEmail?.toLowerCase() === email || u.email?.toLowerCase() === email,
-      )
-    ) {
-      throw new HttpDomainError(
-        400,
-        "duplicate_user_email",
-        `User with email "${email}" already exists`,
-      );
-    }
-
-    let passwordHash = "";
-    let mustChangePassword = false;
-    const setupMethod = (input as { setupMethod?: string }).setupMethod;
-    const password = (input as { password?: string }).password;
-    const forceReset = (input as { forceReset?: boolean }).forceReset;
-
-    if (setupMethod === "password" && password) {
-      await assertPasswordMeetsPolicy(password);
-      passwordHash = await hashPassword(password);
-      mustChangePassword = forceReset !== false;
-    } else if (setupMethod === "invite") {
-      // No password is collected from the admin — the account gets a random unusable
-      // hash and the new person sets their own via the welcome email's OTP flow.
-      passwordHash = await hashPassword(randomBytes(32).toString("hex"));
-    }
-
-    const userId = "id" in input && input.id ? String(input.id) : randomBytes(8).toString("hex");
-    const userRecord: PersistedUser = {
-      id: userId,
-      contactId: contactId != null ? String(contactId) : undefined,
-      name: name || email,
-      email,
-      loginEmail: email,
-      phone,
-      role: effectiveRole,
-      roleSource,
-      status: setupMethod === "invite" ? "inactive" : (input.status ?? "active"),
-      twoFactorEnabled: input.twoFactorEnabled ?? false,
-      lastLogin: "",
-      createdDate: todayISO(),
-      createdAt: new Date().toISOString(),
-      failedLoginAttempts: 0,
-      activeSessions: 0,
-      avatarInitials: computeUserInitials(name || email),
-      passwordHash,
-      mustChangePassword,
-      workspaceSubdomain: tenant,
-    };
-
-    const users = await getRawUsers();
-    users.push(userRecord);
-    await saveUsers(users);
-    await invalidateTenantRbac(tenant);
-    await broadcastCollection("users");
-
-    await recordUserActivityLog(
-      repo,
-      tenant,
-      actorId,
-      "create",
-      `Created user ${name} (${email}) with role ${effectiveRole}`,
-      ip,
-    );
-
-    const reloaded = await loadWorkspaceUsers();
-    const created =
-      reloaded.find((u) => String(u.id) === userId) ?? normalizeWorkspaceUser(userRecord);
-
-    let inviteEmailSent: boolean | undefined;
-    let inviteEmailError: string | undefined;
-    if (setupMethod === "invite" && (input as { sendEmail?: boolean }).sendEmail !== false) {
-      // The user row above is already committed — a failure here (SMTP down, transient
-      // DB error) must degrade to `inviteEmailSent: false`, never fail the whole create.
-      try {
-        const dispatch = await sendTenantWelcomeEmail({
-          workspaceSubdomain: tenant,
-          email,
-          name: name || email,
-          origin: origin ?? DEFAULT_INVITE_ORIGIN,
-          phone: phone || (input as { phone?: string }).phone,
-        });
-        inviteEmailSent = dispatch.sent;
-        inviteEmailError = dispatch.error;
-      } catch (inviteError: unknown) {
-        console.error(`[Invite] Failed to send welcome email for user ${userId}:`, inviteError);
-        inviteEmailSent = false;
-        inviteEmailError =
-          inviteError instanceof Error
-            ? inviteError.message
-            : "The invite email could not be sent.";
-      }
-    }
-
-    return { user: created, inviteEmailSent, inviteEmailError };
-  };
-
-  const deleteUserById = async (
-    id: string,
-    deletedBy: string,
-    actorRole?: string,
-    ip = "127.0.0.1",
-  ): Promise<boolean> => {
-    if (id === deletedBy) {
-      throw new HttpDomainError(400, "self_delete", "Cannot delete your own account");
-    }
-
-    // Fail closed: the tenant comes from the request and scopes both the lookup
-    // and the write, so a foreign id can never be addressed.
-    const tenant = requireTenant();
-    const existing = await repo.findTenantUserRowById(tenant, id);
-    if (!existing || existing.deletedAt) return false;
-
-    if (actorRole && !canManageTargetUser(actorRole, existing.role)) {
-      throw new HttpDomainError(
-        403,
-        "forbidden_super_admin_deletion",
-        "Cannot delete a Super Admin user account",
-      );
-    }
-
-    const ok = await repo.softDeleteTenantUserRow(tenant, id, deletedBy);
-    if (ok) {
-      await deleteRefreshTokensForUser(id);
-      await invalidateTenantRbac(tenant);
-      await broadcastCollection("users");
-
-      await recordUserActivityLog(
-        repo,
-        tenant,
-        deletedBy,
-        "delete",
-        `Deleted user ${existing.name || id}`,
-        ip,
-      );
-    }
-    return ok;
-  };
-
-  const restoreUserById = async (
-    id: string,
-    actorRole?: string,
-    actorId = "system",
-    ip = "127.0.0.1",
-  ): Promise<boolean> => {
-    const tenant = requireTenant();
-    const existing = await repo.findTenantUserRowById(tenant, id);
-    if (!existing) return false;
-
-    if (actorRole && !canManageTargetUser(actorRole, existing.role)) {
-      throw new HttpDomainError(
-        403,
-        "forbidden_super_admin_mutation",
-        "Cannot restore a Super Admin user account",
-      );
-    }
-
-    const ok = await repo.restoreTenantUserRow(tenant, id);
-    if (ok) {
-      await invalidateTenantRbac(tenant);
-      await broadcastCollection("users");
-
-      await recordUserActivityLog(
-        repo,
-        tenant,
-        actorId,
-        "update",
-        `Restored user ${existing.name || id}`,
-        ip,
-      );
-    }
-    return ok;
-  };
+  const restoreUserById = (id: string, actorRole?: string, actorId = "system", ip = "127.0.0.1") =>
+    restoreUserByIdHelper(repo, id, actorRole, actorId, ip);
 
   return {
     loadUsersPage: async (
@@ -469,194 +164,33 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
     // --- Users ---
     loadWorkspaceUsers,
 
-    upsertWorkspaceUsers: async (
-      records: WorkspaceUser[],
-      actorRole?: string,
-    ): Promise<WorkspaceUser[]> => {
-      const parsed = workspaceUserListSchema.parse(records);
-      const existing = await getHydratedUsers();
-
-      const existingById = new Map(existing.map((u) => [String(u.id), u] as const));
-      const updatesById = new Map(parsed.map((u) => [String(u.id), u] as const));
-
-      if (actorRole) {
-        for (const update of parsed) {
-          const existingUser = existingById.get(String(update.id));
-          if (existingUser && !canManageTargetUser(actorRole, existingUser.role)) {
-            throw new HttpDomainError(
-              403,
-              "forbidden_super_admin_mutation",
-              "Cannot modify a Super Admin user account",
-            );
-          }
-          if (update.role && !canAssignRole(actorRole, update.role)) {
-            throw new HttpDomainError(
-              403,
-              "forbidden_super_admin_assignment",
-              "Only Super Admin can assign the Super Admin role",
-            );
-          }
-        }
-      }
-
-      const merged: PersistedUser[] = existing.map((u) => {
-        const update = updatesById.get(String(u.id));
-        return update ? ({ ...u, ...update } as PersistedUser) : u;
-      });
-      for (const update of parsed) {
-        if (!existingById.has(String(update.id))) {
-          merged.push(update as PersistedUser);
-        }
-      }
-
-      await saveUsers(merged);
-      await invalidateTenantRbac(requireTenant());
-      await broadcastCollection("users");
-      return loadWorkspaceUsers();
-    },
+    upsertWorkspaceUsers: (records: WorkspaceUser[], actorRole?: string) =>
+      upsertWorkspaceUsersHelper(records, actorRole, loadWorkspaceUsers),
 
     createWorkspaceUser,
 
-    updateWorkspaceUser: async (
+    updateWorkspaceUser: (
       id: string,
       input: Partial<EditWorkspaceUserInput> & Record<string, unknown>,
       actorId: string,
       actorRole?: string,
       ip = "127.0.0.1",
-    ): Promise<WorkspaceUser> => {
-      const tenant = requireTenant();
+    ) => updateWorkspaceUserHelper(repo, id, input, actorId, actorRole, ip, loadWorkspaceUsers),
 
-      const existingRow = await repo.findTenantUserRowById(tenant, id);
-      if (!existingRow || existingRow.deletedAt) {
-        throw new HttpDomainError(404, "not_found", "User not found");
-      }
-
-      if (actorRole && !canManageTargetUser(actorRole, existingRow.role)) {
-        throw new HttpDomainError(
-          403,
-          "forbidden_super_admin_mutation",
-          "Cannot modify a Super Admin user account",
-        );
-      }
-
-      if (input.role && actorRole && !canAssignRole(actorRole, input.role)) {
-        throw new HttpDomainError(
-          403,
-          "forbidden_super_admin_assignment",
-          "Only Super Admin can assign the Super Admin role",
-        );
-      }
-
-      const effectiveContactId =
-        input.contactId !== undefined
-          ? input.contactId != null && input.contactId !== ""
-            ? String(input.contactId)
-            : undefined
-          : existingRow.contactId
-            ? String(existingRow.contactId)
-            : undefined;
-
-      const roleLocked = await isFacultyDesignationRoleLocked(tenant, effectiveContactId);
-      if (roleLocked && input.role !== undefined && input.role !== existingRow.role) {
-        throw new HttpDomainError(
-          403,
-          "faculty_role_locked",
-          "Role is managed by faculty designations and cannot be changed manually",
-        );
-      }
-
-      await assertFacultyRoleAllowed(
-        tenant,
-        effectiveContactId,
-        roleLocked ? existingRow.role : (input.role ?? existingRow.role),
-      );
-
-      const rawUsers = await getRawUsers();
-      const target = rawUsers.find((u) => String(u.id) === id);
-      if (!target) {
-        throw new HttpDomainError(404, "not_found", "User not found");
-      }
-
-      if (input.contactId !== undefined) {
-        target.contactId =
-          input.contactId != null && input.contactId !== "" ? String(input.contactId) : undefined;
-      }
-      if (input.role !== undefined && !roleLocked) {
-        target.role = input.role;
-        (target as Record<string, unknown>).roleSource = "manual";
-      }
-      if (roleLocked) {
-        (target as Record<string, unknown>).roleSource = "faculty_designations";
-      }
-      if (input.status !== undefined) target.status = input.status;
-      if (input.twoFactorEnabled !== undefined) target.twoFactorEnabled = input.twoFactorEnabled;
-
-      for (const [k, v] of Object.entries(input)) {
-        if (!["contactId", "role", "status", "twoFactorEnabled", "roleSource"].includes(k)) {
-          (target as Record<string, unknown>)[k] = v;
-        }
-      }
-
-      await saveUsers(rawUsers);
-      await invalidateTenantRbac(tenant);
-      await broadcastCollection("users");
-
-      await recordUserActivityLog(
-        repo,
-        tenant,
-        actorId,
-        "update",
-        `Updated user ${target.name || id}`,
-        ip,
-      );
-
-      const reloaded = await loadWorkspaceUsers();
-      const updated = reloaded.find((u) => String(u.id) === id);
-      return updated ?? normalizeWorkspaceUser(target);
-    },
-
-    inviteWorkspaceUser: async (
+    inviteWorkspaceUser: (
       input: InviteWorkspaceUserInput,
       actorId: string,
       actorRole?: string,
       ip = "127.0.0.1",
       origin?: string,
-    ): Promise<{ user: WorkspaceUser; inviteEmailSent?: boolean; inviteEmailError?: string }> => {
-      return createWorkspaceUser(
-        {
-          ...input,
-          status: input.status ?? "inactive",
-          setupMethod: "invite",
-          twoFactorEnabled: false,
-        },
-        actorId,
-        actorRole,
-        ip,
-        origin,
-      );
-    },
+    ) => inviteWorkspaceUserHelper(createWorkspaceUser, input, actorId, actorRole, ip, origin),
 
     deleteUserById,
 
     restoreUserById,
 
-    verifyUserEmailById: async (id: string, actorRole?: string): Promise<boolean> => {
-      const tenant = requireTenant();
-      const existing = await repo.findTenantUserRowById(tenant, id);
-      if (!existing) return false;
-
-      if (actorRole && !canManageTargetUser(actorRole, existing.role)) {
-        throw new HttpDomainError(
-          403,
-          "forbidden_super_admin_mutation",
-          "Cannot modify a Super Admin user account",
-        );
-      }
-
-      const ok = await repo.verifyTenantUserEmailRow(tenant, id);
-      if (ok) await broadcastCollection("users");
-      return ok;
-    },
+    verifyUserEmailById: (id: string, actorRole?: string) =>
+      verifyUserEmailByIdHelper(repo, id, actorRole),
 
     resetUserPasswordById: async (
       id: string,
@@ -665,16 +199,15 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
       actorId = "system",
       ip = "127.0.0.1",
       onAuxiliaryError?: UserPasswordResetAuxiliaryErrorHandler,
-    ): Promise<boolean> => {
-      return executeUserPasswordReset(repo, {
+    ): Promise<boolean> =>
+      executeUserPasswordReset(repo, {
         id,
         temporaryPassword,
         actorRole,
         actorId,
         ip,
         onAuxiliaryError,
-      });
-    },
+      }),
 
     bulkSoftDeleteUsers: async (
       ids: string[],

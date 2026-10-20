@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { contactRecordSchema } from "../contacts/contactsModuleManifest.js";
 import { baseListQuerySchema } from "../core/apiSchemas.js";
-import { contactSavedReportSchema } from "./contacts.contract.js";
+import { contactSavedReportSchema } from "./contacts.contract.schemas.js";
 
 export const contactsReportAnalyticsQuerySchema = z.object({
   years: z

@@ -1,6 +1,6 @@
--- MMS academic contract (release A / 0179 reads `date_on`; release B / 0180 drops the varchar `date`):
--- attendance indexes on `date_on` that replace the varchar ones. Run after deploying 0179 and
--- BEFORE 0180, outside a transaction (after date_columns_concurrent_indexes.sql):
+-- MMS academic contract (release A / 0181 reads `date_on`; release B / 0182 drops the varchar `date`):
+-- attendance indexes on `date_on` that replace the varchar ones. Run after deploying 0181 and
+-- BEFORE 0182, outside a transaction (after date_columns_concurrent_indexes.sql):
 --   pnpm --filter mms-backend index:concurrent --file src/scripts/academic_contract_concurrent_indexes.sql
 -- The unique index keeps one mark per student, class and day once the varchar index is dropped;
 -- it fails to build if duplicate marks exist (see audit:academic-contract).

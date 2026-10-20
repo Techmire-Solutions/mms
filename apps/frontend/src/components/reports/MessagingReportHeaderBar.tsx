@@ -47,7 +47,7 @@ export function MessagingReportHeaderBar({
             type="button"
             variant={!startDate && !endDate ? "secondary" : "ghost"}
             size="sm"
-            className="h-8 px-2 text-xs"
+            className="h-8 touch-target-coarse px-2 text-xs"
             onClick={() => onApplyPreset(undefined)}
           >
             {t("common.none")}
@@ -56,7 +56,7 @@ export function MessagingReportHeaderBar({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 px-2 text-xs"
+            className="h-8 touch-target-coarse px-2 text-xs"
             onClick={() => onApplyPreset(0)}
           >
             {t("datePicker.today")}
@@ -65,7 +65,7 @@ export function MessagingReportHeaderBar({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 px-2 text-xs"
+            className="h-8 touch-target-coarse px-2 text-xs"
             onClick={() => onApplyPreset(7)}
           >
             {t("messaging.datePreset7d")}
@@ -74,7 +74,7 @@ export function MessagingReportHeaderBar({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 px-2 text-xs"
+            className="h-8 touch-target-coarse px-2 text-xs"
             onClick={() => onApplyPreset(30)}
           >
             {t("messaging.datePreset30d")}

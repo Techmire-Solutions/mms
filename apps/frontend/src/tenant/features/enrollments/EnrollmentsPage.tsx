@@ -74,7 +74,7 @@ export default function EnrollmentsPage() {
     allVisibleSelected,
     someVisibleSelected,
     toggleSelectAll,
-    toggleSelectedEnrollment,
+    toggleSelected,
     clearSelection,
   } = selection;
 
@@ -162,7 +162,7 @@ export default function EnrollmentsPage() {
                   onDeleteRequest={setPendingDeleteId}
                   onRestore={handleRestore}
                   onToggleSelectAll={toggleSelectAll}
-                  onToggleSelectedEnrollment={toggleSelectedEnrollment}
+                  onToggleSelectedEnrollment={toggleSelected}
                   onClearSelection={clearSelection}
                   onRequestBulkDelete={() => setConfirmBulkDeleteOpen(true)}
                   onRequestBulkRestore={() => setConfirmBulkRestoreOpen(true)}

@@ -130,7 +130,9 @@ export function BrandColorImportModal({
               <p className="text-xs font-semibold text-foreground truncate">
                 {parsedCandidate.primary} & {parsedCandidate.secondary}
               </p>
-              <p className="text-2xs text-success font-semibold truncate">Valid palette detected</p>
+              <p className="text-2xs text-success font-semibold truncate">
+                {t("theme.paletteValid")}
+              </p>
             </div>
           </div>
         ) : importRawText.trim() ? (

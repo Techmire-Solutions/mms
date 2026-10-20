@@ -8,6 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { TemplateEditor } from "@/components/app/TemplateEditor";
 import { getObject, saveObject } from "@/lib/db";
+import { saveDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
 import {
   type DocumentTemplate,
   type TypstFeeReceiptPayload,
@@ -64,6 +65,9 @@ export function FinanceTemplateEditor({
 
   const handleSave = (tmpl: DocumentTemplate<TypstFeeReceiptPayload>) => {
     saveObject(FINANCE_TEMPLATE_STORAGE_KEY, tmpl);
+    void saveDocumentTemplateServer(FINANCE_TEMPLATE_STORAGE_KEY, tmpl).catch((err) => {
+      console.warn("[FinanceTemplateEditor] Server save failed:", err);
+    });
     notify.success(t("finance.templateSaved"));
   };
 

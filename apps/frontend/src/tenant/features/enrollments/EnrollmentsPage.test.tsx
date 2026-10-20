@@ -56,7 +56,7 @@ vi.mock("@/tenant/features/enrollments/hooks/useEnrollmentsPageState", () => ({
       allVisibleSelected: false,
       someVisibleSelected: false,
       toggleSelectAll: vi.fn(),
-      toggleSelectedEnrollment: vi.fn(),
+      toggleSelected: vi.fn(),
       clearSelection: vi.fn(),
     },
     exportActions: {

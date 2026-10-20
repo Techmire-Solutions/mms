@@ -1,5 +1,5 @@
--- MMS Forward-only Migration: 0179_academic_contract.sql
--- Phase 12, release A of the contract (nothing is dropped here; release B / 0180 drops later).
+-- MMS Forward-only Migration: 0181_academic_contract.sql
+-- Phase 12, release A of the contract (nothing is dropped here; release B / 0182 drops later).
 -- From this release the app reads and writes only the new shapes:
 --   catalog ids (sessions.program_id, period / exam subject_id) instead of text snapshots;
 --   attendance.date_on, enrollments.enrolled_on, students.registered_on / enrollment_on;

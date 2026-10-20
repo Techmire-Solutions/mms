@@ -1,6 +1,6 @@
 import type { ErdDomain } from "./erdCatalogTypes.js";
 
-/** Scheduled exams and marks (Drizzle `examinations.ts`). */
+/** Scheduled exams and marks (Drizzle `examinationExamTables.ts`). */
 export const ERD_DOMAIN_EXAMINATIONS: ErdDomain = {
   id: "examinations",
   labelKey: "nav.examinations",

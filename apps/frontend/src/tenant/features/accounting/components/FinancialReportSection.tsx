@@ -105,7 +105,7 @@ export function ReportSection({
           columns={[
             {
               id: "report",
-              label: "Report",
+              label: t("accounting.reports.financial.report"),
               render: (reportRow) => {
                 const rowAmount = debitNormal
                   ? reportRow.totalDebit - reportRow.totalCredit

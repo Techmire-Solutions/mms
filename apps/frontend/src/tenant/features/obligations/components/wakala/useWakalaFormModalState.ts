@@ -44,7 +44,7 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
 
   const validateStep1 = (): boolean => {
     const nextErrors: Record<string, string> = {};
-    if (!selectedMujtahidId) nextErrors.mujtahid = "Please select or create a Mujtahid";
+    if (!selectedMujtahidId) nextErrors.mujtahid = t("obligations.wakala.mujtahidRequired");
     if (!selectedObTypeId) nextErrors.obType = t("obligations.wakala.typeRequired");
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;

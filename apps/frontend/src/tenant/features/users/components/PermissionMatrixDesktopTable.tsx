@@ -106,7 +106,7 @@ export function PermissionMatrixDesktopTable({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleToggleColumn(permissionAction)}
-                    className="h-7 w-full px-1 text-2xs font-semibold hover:bg-primary/10 gap-0.5 rounded-md cursor-pointer justify-center"
+                    className="h-7 touch-target-coarse w-full px-1 text-2xs font-semibold hover:bg-primary/10 gap-0.5 rounded-md cursor-pointer justify-center"
                     title={t(`users.permission.${permissionAction}`)}
                   >
                     <span>{t(`users.permission.${permissionAction}`)}</span>
@@ -128,7 +128,7 @@ export function PermissionMatrixDesktopTable({
                   variant="ghost"
                   size="sm"
                   onClick={onToggleGlobalAll}
-                  className="h-7 px-2 text-2xs font-bold text-primary hover:bg-primary/10 gap-1 rounded-md cursor-pointer"
+                  className="h-7 touch-target-coarse px-2 text-2xs font-bold text-primary hover:bg-primary/10 gap-1 rounded-md cursor-pointer"
                   aria-label={
                     allModulesChecked ? t("common.deselect") : t("users.permissions.colAll")
                   }
@@ -164,7 +164,7 @@ export function PermissionMatrixDesktopTable({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleToggleGroup(group.modules)}
-                            className="h-6 px-2 text-2xs font-medium text-primary hover:bg-primary/10 gap-1 rounded-md"
+                            className="h-6 touch-target-coarse px-2 text-2xs font-medium text-primary hover:bg-primary/10 gap-1 rounded-md"
                           >
                             {groupChecked ? (
                               <X className="h-3 w-3" />

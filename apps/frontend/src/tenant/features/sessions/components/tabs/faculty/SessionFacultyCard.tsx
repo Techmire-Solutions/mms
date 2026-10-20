@@ -50,7 +50,7 @@ export function SessionFacultyCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 touch-target-coarse text-muted-foreground hover:text-foreground"
             onClick={() => onEdit(item)}
             aria-label={t("sessions.faculty.editAria")}
           >
@@ -59,7 +59,7 @@ export function SessionFacultyCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            className="h-8 w-8 touch-target-coarse text-muted-foreground hover:text-destructive"
             onClick={() => onDelete(item.id)}
             aria-label={t("sessions.faculty.deleteAria")}
           >

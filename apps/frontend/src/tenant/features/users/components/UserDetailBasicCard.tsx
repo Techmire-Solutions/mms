@@ -98,7 +98,7 @@ export function UserDetailBasicCard({
                   type="button"
                   size="sm"
                   disabled={verifyEmailPending}
-                  className="h-7 text-xs px-2.5 rounded-lg border-success/40 bg-success/10 text-success hover:bg-success/15 hover:border-success/60 transition-colors shadow-none font-medium cursor-pointer"
+                  className="h-7 touch-target-coarse text-xs px-2.5 rounded-lg border-success/40 bg-success/10 text-success hover:bg-success/15 hover:border-success/60 transition-colors shadow-none font-medium cursor-pointer"
                   onClick={onVerifyEmail}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 me-1" />

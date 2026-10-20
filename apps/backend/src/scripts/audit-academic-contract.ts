@@ -7,7 +7,7 @@ import { logger } from "../lib/logger.js";
 loadBackendEnv();
 
 /**
- * Read-only pre-flight for the Phase 12 drop release (0180, after release A / 0179 has shipped):
+ * Read-only pre-flight for the Phase 12 drop release (0182, after release A / 0181 has shipped):
  *
  *   pnpm --filter mms-backend audit:academic-contract
  *
@@ -56,7 +56,7 @@ async function main(): Promise<void> {
       );
     }
   });
-  logger.info({ blocking }, blocking === 0 ? "ready for 0180" : "fix the rows above before 0180");
+  logger.info({ blocking }, blocking === 0 ? "ready for 0182" : "fix the rows above before 0182");
   await closeDatabase();
   if (blocking > 0) process.exitCode = 1;
 }

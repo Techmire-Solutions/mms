@@ -52,13 +52,20 @@ export function DetailDrawerHeader({
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <h2 id={titleId} className="text-sm font-bold text-foreground leading-tight truncate">
+              <h2
+                id={titleId}
+                title={typeof title === "string" ? title : undefined}
+                className="text-sm font-bold text-foreground leading-tight truncate"
+              >
                 {title}
               </h2>
               {badge}
             </div>
             {subtitle && (
-              <span className="text-3xs text-muted-foreground uppercase tracking-wider font-bold block truncate mt-0.5">
+              <span
+                title={typeof subtitle === "string" ? subtitle : undefined}
+                className="text-3xs text-muted-foreground uppercase tracking-wider font-bold block truncate mt-0.5"
+              >
                 {subtitle}
               </span>
             )}

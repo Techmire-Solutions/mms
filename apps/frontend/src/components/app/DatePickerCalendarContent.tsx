@@ -53,7 +53,7 @@ export function DatePickerCalendarContent({
           type="button"
           onClick={handleClear}
           disabled={!hasValue || disabled}
-          className="min-h-8.5 px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive disabled:opacity-30 disabled:hover:text-muted-foreground transition-colors cursor-pointer disabled:cursor-not-allowed rounded-lg hover:bg-destructive/10"
+          className="min-h-8.5 touch-target-coarse px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive disabled:opacity-30 disabled:hover:text-muted-foreground transition-colors cursor-pointer disabled:cursor-not-allowed rounded-lg hover:bg-destructive/10"
         >
           {t("datePicker.clear")}
         </button>
@@ -61,7 +61,7 @@ export function DatePickerCalendarContent({
           type="button"
           onClick={handleSelectToday}
           disabled={!isTodayAllowed || disabled}
-          className="min-h-8.5 px-3 py-1.5 text-xs font-semibold text-primary hover:text-primary/80 disabled:opacity-30 disabled:hover:text-primary transition-colors cursor-pointer disabled:cursor-not-allowed rounded-lg hover:bg-primary/10"
+          className="min-h-8.5 touch-target-coarse px-3 py-1.5 text-xs font-semibold text-primary hover:text-primary/80 disabled:opacity-30 disabled:hover:text-primary transition-colors cursor-pointer disabled:cursor-not-allowed rounded-lg hover:bg-primary/10"
         >
           {t("datePicker.today")}
         </button>

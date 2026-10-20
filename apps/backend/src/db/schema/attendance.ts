@@ -31,8 +31,8 @@ export const attendance = pgTable(
     studentName: varchar("student_name", { length: 255 }).notNull().default(""),
     rollNo: varchar("roll_no", { length: 64 }).notNull().default(""),
     /**
-     * The day, read and written as the `date_on` column since migration 0179; the legacy varchar
-     * `date` is filled by a trigger until release B (0180) drops it.
+     * The day, read and written as the `date_on` column since migration 0181; the legacy varchar
+     * `date` is filled by a trigger until release B (0182) drops it.
      */
     date: date("date_on", { mode: "string" }).notNull(),
     status: varchar("status", { length: 20 }).notNull().default("present"),

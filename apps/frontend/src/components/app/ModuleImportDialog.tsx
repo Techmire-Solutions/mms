@@ -78,7 +78,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             variant="outline"
             size="sm"
             onClick={handleDownloadTemplate}
-            className="gap-1.5 text-xs h-8"
+            className="gap-1.5 text-xs h-8 touch-target-coarse"
           >
             <Download className="w-3.5 h-3.5" />
             {t("module.import.downloadTemplateButton")}

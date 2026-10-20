@@ -118,7 +118,7 @@ export function AttendanceRecords(props: AttendanceRecordsProps): React.JSX.Elem
           allVisibleSelected={state.allVisibleSelected}
           someVisibleSelected={state.someVisibleSelected}
           onToggleSelectAll={state.toggleSelectAll}
-          onToggleSelectedRecord={state.toggleSelectedRecord}
+          onToggleSelectedRecord={state.toggleSelected}
           getColumnWidth={getColumnWidth}
           onColumnResize={onColumnResize}
           t={state.t}

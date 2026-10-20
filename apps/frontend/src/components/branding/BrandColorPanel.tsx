@@ -107,7 +107,7 @@ export default function BrandColorPanel({
             onClick={handleSwapColors}
             title={t("theme.swapColors")}
             aria-label={t("theme.swapColors")}
-            className="h-8 w-8 p-0 rounded-full border-border bg-card shadow-sm hover:bg-muted hover:scale-110 active:scale-95 transition-all"
+            className="h-8 w-8 touch-target-coarse p-0 rounded-full border-border bg-card shadow-sm hover:bg-muted hover:scale-110 active:scale-95 transition-all"
           >
             <ArrowLeftRight className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
