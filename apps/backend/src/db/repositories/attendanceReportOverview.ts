@@ -84,7 +84,7 @@ export async function loadAttendanceOverview(
 
   const monthlyResult = await tx.execute(sql`
     SELECT
-      left(a.date, 7) AS "monthKey",
+      to_char(a.date_on, 'YYYY-MM') AS "monthKey",
       COUNT(*) FILTER (WHERE ${presentOrLate})::int AS "presentCount",
       COUNT(*)::int AS total,
       COALESCE(
@@ -98,7 +98,6 @@ export async function loadAttendanceOverview(
     WHERE a.workspace_subdomain = ${subdomain}
       AND a.deleted_at IS NULL
       AND ${countable("a")}
-      AND a.date ~ '^[0-9]{4}-(0[1-9]|1[0-2])-[0-9]{2}'
       ${attendanceClassFilter}
     GROUP BY 1
     ORDER BY 1 ASC

@@ -1,5 +1,12 @@
 import { and, eq, sql } from "drizzle-orm";
-import { tenantUsers, contacts, students, sessions, type StudentSelectRow } from "./schema.js";
+import {
+  tenantUsers,
+  contacts,
+  students,
+  sessions,
+  type SessionReadRow,
+  type StudentSelectRow,
+} from "./schema.js";
 import { getRootDb } from "./dbConnection.js";
 import {
   preparedTenantUserColumns,
@@ -18,7 +25,7 @@ export {
 export type PreparedTenantUserRow = typeof tenantUsers.$inferSelect;
 export type PreparedContactRow = typeof contacts.$inferSelect;
 export type PreparedStudentRow = StudentSelectRow;
-export type PreparedSessionRow = typeof sessions.$inferSelect;
+export type PreparedSessionRow = SessionReadRow;
 
 export interface PreparedLookupStatement<T> {
   execute(params: { subdomain: string; id: string }): Promise<T[]>;

@@ -1,4 +1,5 @@
 import { isValidIsoDate } from "@mms/shared";
+import { ValidationError } from "./httpErrors.js";
 
 /**
  * Value for a Postgres `date` column (Drizzle `mode: 'string'`): the `YYYY-MM-DD` part of the input
@@ -24,4 +25,15 @@ export function todayInTimeZone(
   } catch {
     return now.toISOString().slice(0, 10);
   }
+}
+
+/**
+ * Strict form of {@link toDbDate} for writes: empty → NULL, a real date → `YYYY-MM-DD`, anything
+ * else is rejected (400) instead of being stored as NULL, so no typed value is silently lost.
+ */
+export function requireDbDate(value: string | null | undefined, field: string): string | null {
+  if (!(value ?? "").trim()) return null;
+  const day = toDbDate(value);
+  if (!day) throw new ValidationError(`${field} must be a date (YYYY-MM-DD)`);
+  return day;
 }

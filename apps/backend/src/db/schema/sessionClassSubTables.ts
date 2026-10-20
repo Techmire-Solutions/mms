@@ -184,8 +184,6 @@ export const sessionClassTimetablePeriods = pgTable(
     timetableId: text("timetable_id").notNull(),
     startTime: varchar("start_time", { length: 20 }).notNull(),
     endTime: varchar("end_time", { length: 20 }).notNull(),
-    /** Display snapshot of `subjects.name`; `subjectId` is authoritative. */
-    subject: varchar("subject", { length: 150 }).notNull(),
     subjectId: text("subject_id"),
     facultyId: text("faculty_id"),
     facultyName: varchar("faculty_name", { length: 255 }).default(""),

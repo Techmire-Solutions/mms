@@ -24,7 +24,6 @@ export const exams = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     name: varchar("name", { length: 150 }).notNull(),
-    subject: varchar("subject", { length: 120 }).notNull().default(""),
     subjectId: text("subject_id"),
     totalMarks: integer("total_marks").notNull().default(100),
     passingMarks: integer("passing_marks").notNull().default(50),

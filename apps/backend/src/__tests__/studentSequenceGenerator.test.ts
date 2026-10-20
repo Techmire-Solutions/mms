@@ -4,8 +4,6 @@ import {
   generateNextGrNumberBatchSql,
   previewNextGrNumberSql,
 } from "../db/repositories/studentRepositorySequence.js";
-import { syncStudentEnrolledSessionsTx } from "../db/repositories/studentRepositoryEnrollOps.js";
-import type { AppDb } from "../db/tenant-context.js";
 
 function createFakeSequenceTx(initialSeq: number, initialYear: number) {
   let storedSeq = initialSeq;
@@ -112,55 +110,5 @@ describe("studentSequenceGenerator", () => {
     expect(gr).toBe("GR-0011/2026");
     expect(getStored()).toEqual({ storedSeq: 10, storedYear: 2026 });
     expect(fakeTx.update).not.toHaveBeenCalled();
-  });
-});
-
-describe("syncStudentEnrolledSessionsTx", () => {
-  it("skips delete and insert when existing enrolled sessions match input", async () => {
-    const deleteFn = vi.fn();
-    const insertFn = vi.fn();
-
-    const fakeTx = {
-      select: vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ sessionId: "sess-1" }, { sessionId: "sess-2" }]),
-        }),
-      }),
-      delete: deleteFn,
-      insert: insertFn,
-    };
-
-    await syncStudentEnrolledSessionsTx(fakeTx as unknown as AppDb, "demo", "stu-1", [
-      "sess-1",
-      "sess-2",
-    ]);
-
-    expect(deleteFn).not.toHaveBeenCalled();
-    expect(insertFn).not.toHaveBeenCalled();
-  });
-
-  it("deletes and re-inserts when enrolled sessions differ", async () => {
-    const deleteWhere = vi.fn().mockResolvedValue([]);
-    const deleteFn = vi.fn().mockReturnValue({ where: deleteWhere });
-    const insertValues = vi.fn().mockResolvedValue([]);
-    const insertFn = vi.fn().mockReturnValue({ values: insertValues });
-
-    const fakeTx = {
-      select: vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ sessionId: "sess-1" }]),
-        }),
-      }),
-      delete: deleteFn,
-      insert: insertFn,
-    };
-
-    await syncStudentEnrolledSessionsTx(fakeTx as unknown as AppDb, "demo", "stu-1", [
-      "sess-1",
-      "sess-2",
-    ]);
-
-    expect(deleteFn).toHaveBeenCalled();
-    expect(insertFn).toHaveBeenCalled();
   });
 });

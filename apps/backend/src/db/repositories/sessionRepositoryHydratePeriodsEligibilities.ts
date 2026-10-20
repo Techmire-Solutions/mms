@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { sessionClassTimetablePeriods, scholarshipEligibilities } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
+import { periodSubjectSql } from "./academicCatalogNameSql.js";
 
 type Transaction = TenantTransaction;
 
@@ -19,7 +20,7 @@ export async function loadTimetablePeriodsAndEligibilities(
             timetableId: sessionClassTimetablePeriods.timetableId,
             startTime: sessionClassTimetablePeriods.startTime,
             endTime: sessionClassTimetablePeriods.endTime,
-            subject: sessionClassTimetablePeriods.subject,
+            subject: periodSubjectSql,
             subjectId: sessionClassTimetablePeriods.subjectId,
             facultyId: sessionClassTimetablePeriods.facultyId,
             facultyName: sessionClassTimetablePeriods.facultyName,

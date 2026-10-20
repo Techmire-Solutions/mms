@@ -131,7 +131,7 @@ export function enrollmentRowToRecord(
     className: row.className,
     sectionId: row.sectionId ?? undefined,
     rollNo: row.rollNo ?? undefined,
-    enrolledDate: row.enrolledDate,
+    enrolledDate: row.enrolledDate ?? "",
     startOn: row.startOn ?? null,
     endOn: row.endOn ?? null,
     endReason: row.endReason ?? null,

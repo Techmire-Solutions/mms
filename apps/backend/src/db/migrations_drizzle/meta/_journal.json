@@ -1268,6 +1268,13 @@
       "when": 1791104800000,
       "tag": "0180_document_templates",
       "breakpoints": true
+    },
+    {
+      "idx": 181,
+      "version": "7",
+      "when": 1791190000000,
+      "tag": "0181_academic_contract",
+      "breakpoints": true
     }
   ]
 }

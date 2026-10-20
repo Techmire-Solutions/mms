@@ -143,7 +143,7 @@ export async function bulkSaveAttendanceRecords(
           studentId: sql`excluded.student_id`,
           studentName: sql`excluded.student_name`,
           rollNo: sql`excluded.roll_no`,
-          date: sql`excluded.date`,
+          date: sql`excluded.date_on`,
           status: sql`excluded.status`,
           timeIn: sql`excluded.time_in`,
           timeOut: sql`excluded.time_out`,

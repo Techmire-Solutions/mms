@@ -82,7 +82,7 @@ export async function bulkSaveEnrollments(tenant: string, records: Enrollment[])
           className: sql`excluded.class_name`,
           sectionId: sql`excluded.section_id`,
           rollNo: sql`excluded.roll_no`,
-          enrolledDate: sql`excluded.enrolled_date`,
+          enrolledDate: sql`excluded.enrolled_on`,
           startOn: sql`excluded.start_on`,
           baseFee: sql`excluded.base_fee`,
           discountType: sql`excluded.discount_type`,

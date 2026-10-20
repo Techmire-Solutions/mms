@@ -21,6 +21,8 @@ import type {
 /* ========================================================================= */
 export type SessionRow = typeof sessions.$inferSelect;
 export type InsertSessionRow = typeof sessions.$inferInsert;
+/** Session row as read by the app: `type` is derived from the program (migration 0181). */
+export type SessionReadRow = typeof sessions.$inferSelect & { type: string };
 export type SessionFacultyRow = typeof sessionFaculty.$inferSelect;
 export type InsertSessionFacultyRow = typeof sessionFaculty.$inferInsert;
 export type SessionClassRow = typeof sessionClasses.$inferSelect;

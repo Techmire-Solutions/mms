@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { type Session } from "@mms/shared";
 import {
-  type sessions,
+  type SessionReadRow,
   sessionFaculty,
   sessionClasses,
   sessionClassFees,
@@ -18,7 +18,7 @@ import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 import { loadTimetablePeriodsAndEligibilities } from "./sessionRepositoryHydratePeriodsEligibilities.js";
 
 type Transaction = TenantTransaction;
-type SessionRow = typeof sessions.$inferSelect;
+type SessionRow = SessionReadRow;
 
 export async function hydrateSessionsListBatched(
   tx: Transaction,

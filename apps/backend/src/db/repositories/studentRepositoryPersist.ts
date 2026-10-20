@@ -1,9 +1,10 @@
 import { eq, sql } from "drizzle-orm";
 import { type Student } from "@mms/shared";
-import { students, studentEnrolledSessions } from "../schema.js";
+import { students, studentEnrolledSessionsLegacy } from "../schema.js";
 import { withTenant, type AppDb } from "../tenant-context.js";
 import { mapAuditToInsert } from "./repositoryMappers.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { requireDbDate } from "../../lib/dbDate.js";
 
 export type StudentInsert = typeof students.$inferInsert;
 
@@ -83,8 +84,8 @@ export function studentWriteValues(subdomain: string, student: Student): Student
     grNumber,
     studentId,
     status: student.status ?? "active",
-    registeredDate: student.registeredDate ?? null,
-    enrollmentDate: student.enrollmentDate ?? null,
+    registeredDate: requireDbDate(student.registeredDate, "Registered date"),
+    enrollmentDate: requireDbDate(student.enrollmentDate, "Enrollment date"),
     discountType: student.discountType ?? null,
     discountPct: student.discountPct != null ? String(student.discountPct) : null,
     registrationType: student.registrationType ?? null,
@@ -153,8 +154,8 @@ export async function bulkSaveStudents(tenant: string, items: Student[]): Promis
           grNumber: sql`excluded.gr_number`,
           studentId: sql`excluded.student_id`,
           status: sql`excluded.status`,
-          registeredDate: sql`excluded.registered_date`,
-          enrollmentDate: sql`excluded.enrollment_date`,
+          registeredDate: sql`excluded.registered_on`,
+          enrollmentDate: sql`excluded.enrollment_on`,
           discountType: sql`excluded.discount_type`,
           discountPct: sql`excluded.discount_pct`,
           registrationType: sql`excluded.registration_type`,
@@ -178,8 +179,8 @@ export async function replaceStudentsForWorkspace(tenant: string, items: Student
   await withTenant(subdomain, async (tx) => {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
     await tx
-      .delete(studentEnrolledSessions)
-      .where(eq(studentEnrolledSessions.workspaceSubdomain, subdomain));
+      .delete(studentEnrolledSessionsLegacy)
+      .where(eq(studentEnrolledSessionsLegacy.workspaceSubdomain, subdomain));
     await tx.delete(students).where(eq(students.workspaceSubdomain, subdomain));
     if (items.length === 0) return;
 
@@ -199,7 +200,9 @@ export async function replaceStudentsForWorkspace(tenant: string, items: Student
     });
 
     if (allSessions.length > 0) {
-      await tx.insert(studentEnrolledSessions).values(allSessions);
+      // Membership is derived from enrollments; restored pairs are kept only as legacy rows
+      // (the view hides any pair that has enrollment history).
+      await tx.insert(studentEnrolledSessionsLegacy).values(allSessions).onConflictDoNothing();
     }
   });
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });

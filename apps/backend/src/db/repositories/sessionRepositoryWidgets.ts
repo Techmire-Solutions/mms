@@ -2,6 +2,7 @@ import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { SessionsWidgetAggregateResult, SessionsWidgetQuery } from "@mms/shared";
 import { sessions } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
+import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
 function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(sessions.workspaceSubdomain, subdomain), isNull(sessions.deletedAt))!;
@@ -12,7 +13,7 @@ function resolveSessionColumnSql(field: string): SQL {
     case "name":
       return sql`${sessions.name}`;
     case "type":
-      return sql`${sessions.type}`;
+      return sql`${sessionTypeSql}`;
     case "status":
       return sql`${sessions.status}`;
     case "startDate":

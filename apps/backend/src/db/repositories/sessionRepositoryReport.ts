@@ -46,7 +46,7 @@ export async function loadSessionsReportAggregatesSql(
           to_char(
             date_trunc(
               'month',
-              (NULLIF(trim(e.enrolled_date), ''))::timestamp
+              e.enrolled_on::timestamp
             ),
             'YYYY-MM'
           ) AS "monthKey",
@@ -59,8 +59,7 @@ export async function loadSessionsReportAggregatesSql(
           AND s.deleted_at IS NULL
         WHERE e.workspace_subdomain = ${subdomain}
           AND e.deleted_at IS NULL
-          AND NULLIF(trim(e.enrolled_date), '') IS NOT NULL
-          AND NULLIF(trim(e.enrolled_date), '') ~ '^[0-9]{4}'
+          AND e.enrolled_on IS NOT NULL
         GROUP BY 1, 2
       ),
       totals AS (

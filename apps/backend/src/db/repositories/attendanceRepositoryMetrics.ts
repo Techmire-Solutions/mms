@@ -41,8 +41,8 @@ export async function aggregateAttendanceCommandMetrics(
         selectedDatePresentRate: sql<number>`coalesce(round(count(*) FILTER (WHERE ${countable} AND ${attendance.date} = ${selectedDate} AND ${attendance.status} IN ('present','late')) * 100.0 / nullif(count(*) FILTER (WHERE ${countable} AND ${attendance.date} = ${selectedDate}), 0)), 0)::int`,
         overallPresentRate: sql<number>`coalesce(round(count(*) FILTER (WHERE ${countable} AND ${attendance.status} IN ('present','late')) * 100.0 / nullif(count(*) FILTER (WHERE ${countable}), 0)), 0)::int`,
         priorDate: sql<string | null>`coalesce(
-          (select max(${attendance.date}) from ${attendance} where ${attendance.workspaceSubdomain} = ${subdomain} and ${attendance.deletedAt} is null and ${attendance.date} < ${selectedDate}),
-          (select max(${attendance.date}) from ${attendance} where ${attendance.workspaceSubdomain} = ${subdomain} and ${attendance.deletedAt} is null and ${attendance.date} <> ${selectedDate})
+          (select max(${attendance.date})::text from ${attendance} where ${attendance.workspaceSubdomain} = ${subdomain} and ${attendance.deletedAt} is null and ${attendance.date} < ${selectedDate}),
+          (select max(${attendance.date})::text from ${attendance} where ${attendance.workspaceSubdomain} = ${subdomain} and ${attendance.deletedAt} is null and ${attendance.date} <> ${selectedDate})
         )`,
       })
       .from(attendance)

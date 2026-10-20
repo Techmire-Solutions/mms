@@ -2,6 +2,7 @@ import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { WidgetAggregateResult, WidgetQuery } from "@mms/shared";
 import { exams } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
+import { examSubjectSql } from "./academicCatalogNameSql.js";
 
 function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(exams.workspaceSubdomain, subdomain), isNull(exams.deletedAt))!;
@@ -9,7 +10,6 @@ function activeWorkspaceWhere(subdomain: string): SQL {
 
 const FIELD_TO_SQL_COLUMN: Record<string, string> = {
   status: "status",
-  subject: "subject",
   date: "date",
   totalMarks: "total_marks",
   passingMarks: "passing_marks",
@@ -17,6 +17,7 @@ const FIELD_TO_SQL_COLUMN: Record<string, string> = {
 };
 
 function resolveSqlColumn(field: string): SQL {
+  if (field === "subject") return examSubjectSql;
   const col = FIELD_TO_SQL_COLUMN[field] ?? "status";
   return sql.raw(`"exams"."${col}"`);
 }

@@ -54,7 +54,7 @@ export async function countStudentsForNextGrNumber(
         and(
           base,
           sql`(
-            COALESCE(${students.registeredDate}, '') LIKE ${`${yearStr}%`}
+            COALESCE(${students.registeredDate}::text, '') LIKE ${`${yearStr}%`}
             OR COALESCE(${students.grNumber}, '') LIKE ${`%${yearStr}%`}
           )`,
         ),

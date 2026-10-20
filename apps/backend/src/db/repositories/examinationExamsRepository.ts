@@ -4,6 +4,7 @@ import { buildTenantSoftDeleteConditions } from "../../services/genericRelationa
 import { exams, examClasses } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
+import { examSubjectSql } from "./academicCatalogNameSql.js";
 export {
   saveExam,
   bulkSaveExams,
@@ -12,7 +13,7 @@ export {
   bulkRestoreExams,
 } from "./examinationExamsPersist.js";
 
-type ExamRow = typeof exams.$inferSelect;
+type ExamRow = typeof exams.$inferSelect & { subject: string };
 
 export function examRowToRecord(row: ExamRow, classIds: string[] = []): Exam {
   const exam: Exam = {
@@ -50,7 +51,7 @@ export async function listExamsByWorkspace(
         id: exams.id,
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
-        subject: exams.subject,
+        subject: examSubjectSql,
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
@@ -106,7 +107,7 @@ export async function findExamById(tenant: string, id: string): Promise<Exam | n
         id: exams.id,
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
-        subject: exams.subject,
+        subject: examSubjectSql,
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
@@ -172,7 +173,7 @@ export async function findExamsByIds(
         id: exams.id,
         workspaceSubdomain: exams.workspaceSubdomain,
         name: exams.name,
-        subject: exams.subject,
+        subject: examSubjectSql,
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,

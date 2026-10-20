@@ -83,7 +83,6 @@ async function main() {
       id: sessionId,
       workspaceSubdomain: subdomain,
       name: "Quran Hifz Session 2026",
-      type: "Hifz",
       status: "in_progress",
       startDate: "2026-01-01",
       endDate: "2026-12-31",
@@ -94,7 +93,6 @@ async function main() {
       target: [sessions.workspaceSubdomain, sessions.id],
       set: {
         name: "Quran Hifz Session 2026",
-        type: "Hifz",
         status: "in_progress",
         startDate: "2026-01-01",
         endDate: "2026-12-31",
