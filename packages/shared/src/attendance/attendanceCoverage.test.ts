@@ -4,10 +4,7 @@ import { unmarkedInstructionalDays } from "./attendanceCoverage.js";
 describe("unmarkedInstructionalDays", () => {
   it("returns the teaching days with no attendance row", () => {
     expect(
-      unmarkedInstructionalDays(
-        ["2026-03-02", "2026-03-03", "2026-03-04"],
-        ["2026-03-03"],
-      ),
+      unmarkedInstructionalDays(["2026-03-02", "2026-03-03", "2026-03-04"], ["2026-03-03"]),
     ).toEqual(["2026-03-02", "2026-03-04"]);
   });
 
@@ -36,4 +33,4 @@ describe("unmarkedInstructionalDays", () => {
   it("returns an empty list when there are no teaching days", () => {
     expect(unmarkedInstructionalDays([], ["2026-03-02"])).toEqual([]);
   });
-})
+});

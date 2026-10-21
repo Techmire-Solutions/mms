@@ -37,6 +37,10 @@ export function guardianRelationships(
 ): RelationshipContact[] | undefined {
   if (!guardianContactId) return undefined;
   return [
-    { contactId: guardianContactId, name: guardianName.trim(), relationship: GUARDIAN_RELATIONSHIP },
+    {
+      contactId: guardianContactId,
+      name: guardianName.trim(),
+      relationship: GUARDIAN_RELATIONSHIP,
+    },
   ];
 }

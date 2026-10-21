@@ -6,10 +6,7 @@ import type { ApplicationJoinedRow } from "../repository/admissionsRepository.js
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
-import {
-  createGuardianContact,
-  guardianRelationships,
-} from "./admissionsGuardianLink.js";
+import { createGuardianContact, guardianRelationships } from "./admissionsGuardianLink.js";
 import { createStudent } from "../../students/use-cases/studentWriteUseCases.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { bulkEnrollStudentsIntoClass } from "./enrollmentBulkEnroll.js";

@@ -80,10 +80,13 @@ export function CalendarCopyFromSessionDialog({
     [sourceEvents.data, sourceId],
   );
 
-  const shift =
-    source && target ? isoDaysBetween(source.startDate, target.startDate) : null;
+  const shift = source && target ? isoDaysBetween(source.startDate, target.startDate) : null;
   const canCopy =
-    Boolean(source) && Boolean(target) && sourceId !== targetId && shift !== null && copyable.length > 0;
+    Boolean(source) &&
+    Boolean(target) &&
+    sourceId !== targetId &&
+    shift !== null &&
+    copyable.length > 0;
 
   const handleCopy = async () => {
     if (!canCopy || !target || shift === null) return;

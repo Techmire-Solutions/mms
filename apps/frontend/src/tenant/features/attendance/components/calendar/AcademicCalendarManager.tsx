@@ -146,7 +146,12 @@ export function AcademicCalendarManager({
                   <CopyPlus className="size-4" aria-hidden />
                   {t("attendance.calendar.copyFromSession")}
                 </Button>
-                <Button type="button" size="sm" onClick={() => openEditor(null)} className="min-h-11">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => openEditor(null)}
+                  className="min-h-11"
+                >
                   <Plus className="size-4" aria-hidden />
                   {t("attendance.calendar.add")}
                 </Button>

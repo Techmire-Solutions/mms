@@ -6,16 +6,16 @@ vi.mock("../contacts/use-cases/contactWriteUseCases.js", () => ({
   upsertContact: mocks.upsertContact,
 }));
 
-const { createGuardianContact, guardianRelationships, GUARDIAN_RELATIONSHIP } = await import(
-  "../enrollments/use-cases/admissionsGuardianLink.js"
-);
+const { createGuardianContact, guardianRelationships, GUARDIAN_RELATIONSHIP } =
+  await import("../enrollments/use-cases/admissionsGuardianLink.js");
 
 describe("createGuardianContact", () => {
   beforeEach(() => {
     mocks.upsertContact.mockReset();
-    mocks.upsertContact.mockImplementation(
-      async (contact: { id: string }) => ({ contact, created: true }),
-    );
+    mocks.upsertContact.mockImplementation(async (contact: { id: string }) => ({
+      contact,
+      created: true,
+    }));
   });
 
   it("creates a contact carrying the guardian's name", async () => {

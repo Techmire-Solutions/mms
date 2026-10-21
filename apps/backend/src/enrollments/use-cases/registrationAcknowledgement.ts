@@ -19,9 +19,7 @@ function body(status: AcknowledgeableStatus, reference: string, workspace: strin
   return `${prefix} has been received and is awaiting review. Keep this reference for your records.`;
 }
 
-function isAcknowledgeable(
-  status: RegistrationApplicationStatus,
-): status is AcknowledgeableStatus {
+function isAcknowledgeable(status: RegistrationApplicationStatus): status is AcknowledgeableStatus {
   return status === "submitted" || status === "waitlisted" || status === "approved";
 }
 

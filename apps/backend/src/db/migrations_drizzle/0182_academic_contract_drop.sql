@@ -21,6 +21,7 @@ DECLARE
   unconverted bigint;
   duplicates  bigint;
   missing     text;
+  populated   boolean;
 BEGIN
   -- Dates that never converted would lose their only value when the varchar column goes.
   SELECT count(*) INTO unconverted FROM attendance WHERE date_on IS NULL;
@@ -57,17 +58,53 @@ BEGIN
       duplicates;
   END IF;
 
+  -- Is this a database where a plain index build would be a write outage? The probes stop at
+  -- the threshold, so they cost nothing on a small table and never scan a large one.
+  SELECT (SELECT count(*) FROM (SELECT 1 FROM attendance  LIMIT 50000) t) >= 50000
+      OR (SELECT count(*) FROM (SELECT 1 FROM enrollments LIMIT 50000) t) >= 50000
+      OR (SELECT count(*) FROM (SELECT 1 FROM students    LIMIT 50000) t) >= 50000
+    INTO populated;
+
+  IF NOT populated THEN
+    -- Fresh or small database: CI, a newly provisioned environment, a dev box. Release A never
+    -- created these, and the CONCURRENTLY scripts are an operator step for populated databases
+    -- only, so without this branch a brand-new database could never get past this migration.
+    -- Building them here is safe precisely because the table is small: the write lock is held
+    -- for microseconds. `attendance` is deliberately the only table built this way — see the
+    -- note on `enrollments` / `students` below.
+    CREATE UNIQUE INDEX IF NOT EXISTS "attendance_workspace_class_student_date_on_uidx"
+      ON "attendance" ("workspace_subdomain", "class_id", "student_id", "date_on") WHERE "deleted_at" IS NULL;
+    CREATE INDEX IF NOT EXISTS "attendance_workspace_class_date_on_active_idx"
+      ON "attendance" ("workspace_subdomain", "class_id", "date_on") WHERE "deleted_at" IS NULL;
+    CREATE INDEX IF NOT EXISTS "attendance_workspace_class_date_on_status_active_idx"
+      ON "attendance" ("workspace_subdomain", "class_id", "date_on", "status") WHERE "deleted_at" IS NULL;
+    CREATE INDEX IF NOT EXISTS "attendance_workspace_date_on_idx"
+      ON "attendance" ("workspace_subdomain", "date_on");
+  END IF;
+
   -- Replacement indexes must exist AND be valid: a CONCURRENTLY build that failed leaves an
-  -- invalid index behind, which the planner ignores and which enforces no uniqueness.
+  -- invalid index behind, which the planner ignores and which enforces no uniqueness. The
+  -- attendance set is always required — the unique one is the only thing keeping one mark per
+  -- student, class and day once the varchar unique index is dropped. The two purely-performance
+  -- indexes on `enrollments` and `students` are required only on a populated database: both of
+  -- those tables are in the large-table list of scripts/check-migration-indexes.mjs, so this
+  -- migration must not build them, and on a small database their absence costs nothing. The
+  -- per-environment runbook step (`index:concurrent`, date_columns_concurrent_indexes.sql)
+  -- creates them as the data grows.
   SELECT string_agg(expected.name, ', ' ORDER BY expected.name) INTO missing
-    FROM (VALUES
-      ('attendance_workspace_class_student_date_on_uidx'),
-      ('attendance_workspace_class_date_on_active_idx'),
-      ('attendance_workspace_class_date_on_status_active_idx'),
-      ('attendance_workspace_date_on_idx'),
-      ('enrollments_workspace_enrolled_on_idx'),
-      ('students_workspace_registered_on_idx')
-    ) AS expected(name)
+    FROM (
+      SELECT unnest(ARRAY[
+        'attendance_workspace_class_student_date_on_uidx',
+        'attendance_workspace_class_date_on_active_idx',
+        'attendance_workspace_class_date_on_status_active_idx',
+        'attendance_workspace_date_on_idx'
+      ]) AS name
+      UNION ALL
+      SELECT unnest(ARRAY[
+        'enrollments_workspace_enrolled_on_idx',
+        'students_workspace_registered_on_idx'
+      ]) AS name WHERE populated
+    ) AS expected
    WHERE NOT EXISTS (
      SELECT 1 FROM pg_class c
        JOIN pg_index i ON i.indexrelid = c.oid

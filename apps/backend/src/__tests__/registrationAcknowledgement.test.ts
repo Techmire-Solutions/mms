@@ -8,9 +8,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../services/sms/smsService.js", () => ({ sendTenantSms: mocks.sendTenantSms }));
 vi.mock("../lib/logger.js", () => ({ logger: { warn: mocks.warn } }));
 
-const { sendRegistrationAcknowledgement } = await import(
-  "../enrollments/use-cases/registrationAcknowledgement.js"
-);
+const { sendRegistrationAcknowledgement } =
+  await import("../enrollments/use-cases/registrationAcknowledgement.js");
 
 const base = { phone: "+923001234567", reference: "APP-7K2QX9MD", workspaceName: "Al Noor" };
 
