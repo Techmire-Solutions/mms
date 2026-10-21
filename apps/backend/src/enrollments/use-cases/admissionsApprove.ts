@@ -6,6 +6,10 @@ import type { ApplicationJoinedRow } from "../repository/admissionsRepository.js
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
+import {
+  createGuardianContact,
+  guardianRelationships,
+} from "./admissionsGuardianLink.js";
 import { createStudent } from "../../students/use-cases/studentWriteUseCases.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { bulkEnrollStudentsIntoClass } from "./enrollmentBulkEnroll.js";
@@ -23,13 +27,19 @@ export interface ApproveOutcome {
   failures: Array<{ id: string; message: string }>;
 }
 
-/** Creates the applicant's contact and student (Contacts own the person identity). */
+/**
+ * Creates the applicant's contact and student (Contacts own the person identity), plus the
+ * guardian contact the application names. The guardian is linked both as a relationship on the
+ * student's contact and through `students.guardian_contact_id`; a guardian that could not be
+ * given a contact falls back to the `guardian_name` text column, so the name is never dropped.
+ */
 async function createStudentFromApplication(
   app: ApplicationJoinedRow,
   today: string,
   user: User | undefined,
 ): Promise<string> {
   const [firstName, ...rest] = app.fullName.trim().split(/\s+/);
+  const guardianContactId = await createGuardianContact(app.guardianName, user);
   const contact: Contact = {
     id: randomUUID(),
     name: app.fullName.trim(),
@@ -41,10 +51,17 @@ async function createStudentFromApplication(
     email: app.email ?? undefined,
     address: app.address ?? undefined,
     notes: app.previousMadrasa ? `Previous madrasa: ${app.previousMadrasa}` : undefined,
+    relationshipContacts: guardianRelationships(guardianContactId, app.guardianName),
   };
   const saved = await upsertContact(contact, user ? { user } : undefined);
   const created = await createStudent(
-    { contactId: String(saved.contact.id), status: "active", enrollmentDate: today },
+    {
+      contactId: String(saved.contact.id),
+      status: "active",
+      enrollmentDate: today,
+      guardianContactId,
+      guardianName: guardianContactId ? null : app.guardianName.trim() || null,
+    },
     user ? { user } : {},
   );
   return String(created.record.id);

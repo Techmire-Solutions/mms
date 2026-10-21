@@ -15,6 +15,7 @@ import {
   aggregateAttendanceCommandMetrics,
 } from "../../db/repositories/attendanceRepositoryList.js";
 import { loadAttendanceReportAggregatesSql } from "../../db/repositories/attendanceRepositoryReport.js";
+import { listMarkedAttendanceDatesSql } from "../../db/repositories/attendanceMarkedDates.js";
 import { aggregateAttendanceWidgetQueries } from "../../db/repositories/attendanceRepositoryWidgets.js";
 
 /**
@@ -33,6 +34,7 @@ export const attendanceRepository: AttendanceRepository = {
   aggregateAttendanceCommandMetrics,
   aggregateAttendanceWidgetQueries,
   loadAttendanceReportAggregates: loadAttendanceReportAggregatesSql,
+  listMarkedAttendanceDates: listMarkedAttendanceDatesSql,
   bulkSoftDeleteAttendanceRecords,
   bulkRestoreAttendanceRecords,
 };

@@ -59,6 +59,36 @@ export function useAcademicCalendarActions() {
     }
   };
 
+  /**
+   * Creates several events in one go (calendar copy). Saves sequentially so a partial failure
+   * leaves a known number created, and reports once instead of one toast per event.
+   */
+  const saveMany = async (bodies: AcademicCalendarEventWrite[]): Promise<boolean> => {
+    if (bodies.length === 0) return false;
+    let created = 0;
+    let lastError: unknown = null;
+    for (const body of bodies) {
+      try {
+        await saveMutation.mutateAsync({ id: crypto.randomUUID(), body });
+        created += 1;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    if (created === bodies.length) {
+      notify.success(t("attendance.calendar.copied", { count: String(created) }));
+      return true;
+    }
+    notify.error(
+      t("attendance.calendar.copyFailed", {
+        count: String(created),
+        total: String(bodies.length),
+      }),
+      { description: errorDetail(lastError) },
+    );
+    return false;
+  };
+
   const remove = async (target: AcademicCalendarEvent): Promise<boolean> => {
     try {
       await deleteMutation.mutateAsync(target.id);
@@ -83,6 +113,7 @@ export function useAcademicCalendarActions() {
 
   return {
     save,
+    saveMany,
     remove,
     restore,
     isPending: saveMutation.isPending || deleteMutation.isPending || restoreMutation.isPending,

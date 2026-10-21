@@ -17,6 +17,7 @@ import {
 } from "./attendanceBulkContractHandlers.js";
 import {
   attendanceWidgetAggregatesHandler,
+  attendanceMarkedDatesHandler,
   attendanceReportAggregatesHandler,
   attendanceGetFieldConfigHandler,
   attendanceUpdateFieldConfigHandler,
@@ -40,6 +41,7 @@ export const attendanceContractRouter: FastifyPluginAsync = async (fastify) => {
     restore: attendanceRestoreHandler,
     widgetAggregates: attendanceWidgetAggregatesHandler,
     reportAggregates: attendanceReportAggregatesHandler,
+    markedDates: attendanceMarkedDatesHandler,
     getFieldConfig: attendanceGetFieldConfigHandler,
     updateFieldConfig: attendanceUpdateFieldConfigHandler,
     getPreferences: attendanceGetPreferencesHandler,

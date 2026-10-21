@@ -8,6 +8,7 @@ export interface DatePickerCalendarContentProps {
   displayMonth: Date;
   setDisplayMonth: (date: Date) => void;
   disabledDays?: Matcher[];
+  holidays?: readonly string[];
   startMonth?: Date;
   endMonth?: Date;
   handleSelect: (date: Date | undefined) => void;
@@ -24,6 +25,7 @@ export function DatePickerCalendarContent({
   displayMonth,
   setDisplayMonth,
   disabledDays,
+  holidays,
   startMonth,
   endMonth,
   handleSelect,
@@ -34,6 +36,16 @@ export function DatePickerCalendarContent({
   disabled,
   t,
 }: DatePickerCalendarContentProps): React.JSX.Element {
+  // Parsed as local midnight so the marked cell matches the grid's own local-time days.
+  const holidayDays = React.useMemo(
+    () =>
+      (holidays ?? []).flatMap((iso) => {
+        const [year, month, day] = iso.split("-").map(Number);
+        if (!year || !month || !day) return [];
+        return [new Date(year, month - 1, day)];
+      }),
+    [holidays],
+  );
   return (
     <>
       <Calendar
@@ -43,6 +55,7 @@ export function DatePickerCalendarContent({
         month={displayMonth}
         onMonthChange={setDisplayMonth}
         disabled={disabledDays}
+        modifiers={holidayDays.length > 0 ? { holiday: holidayDays } : undefined}
         captionLayout="dropdown"
         startMonth={startMonth}
         endMonth={endMonth}

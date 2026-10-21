@@ -34,6 +34,7 @@ function createFakeRepo(): AttendanceRepository {
       overallPresentRate: 78,
     }),
     aggregateAttendanceWidgetQueries: vi.fn().mockResolvedValue({}),
+    listMarkedAttendanceDates: vi.fn().mockResolvedValue([]),
     loadAttendanceReportAggregates: vi.fn().mockResolvedValue({
       overview: {
         overallRate: 0,

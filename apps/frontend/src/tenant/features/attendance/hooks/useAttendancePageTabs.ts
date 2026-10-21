@@ -2,7 +2,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { resolveModuleTierTab, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
-import { ClipboardEdit, BookOpen, ClipboardList, BarChart2 } from "lucide-react";
+import { ClipboardEdit, BookOpen, ClipboardList, BarChart2, CalendarX } from "lucide-react";
 
 export function useAttendancePageTabs(
   activeTab: string,
@@ -59,6 +59,12 @@ export function useAttendancePageTabs(
         id: "charts",
         label: t("attendance.tabs.analyticsCharts"),
         icon: BarChart2,
+        visible: canSeeAttendanceAnalytics,
+      },
+      {
+        id: "coverage",
+        label: t("attendance.tabs.coverage"),
+        icon: CalendarX,
         visible: canSeeAttendanceAnalytics,
       },
       {

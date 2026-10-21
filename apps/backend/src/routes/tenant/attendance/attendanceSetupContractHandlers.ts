@@ -67,6 +67,31 @@ export async function attendanceWidgetAggregatesHandler({
   }
 }
 
+/** Days already carrying attendance, for the Reports → Coverage ("not marked") report. */
+export async function attendanceMarkedDatesHandler({
+  query,
+  request,
+}: ContractRouteArgs<(typeof attendanceContract)["markedDates"]>): Promise<
+  ContractRouteResponse<(typeof attendanceContract)["markedDates"]>
+> {
+  const user = request.user as User;
+  if (!canReadCollection(user, COLLECTION)) {
+    return {
+      status: 403 as const,
+      body: { type: "forbidden", message: "Insufficient permissions" },
+    };
+  }
+  try {
+    const dates = await attendanceUseCases.listMarkedAttendanceDates(query);
+    return { status: 200 as const, body: { dates } };
+  } catch (error) {
+    return handleContractError(request, error, {
+      status: 500,
+      body: { type: "database_error", message: "Failed to load marked attendance dates" },
+    });
+  }
+}
+
 export async function attendanceReportAggregatesHandler({
   query,
   request,

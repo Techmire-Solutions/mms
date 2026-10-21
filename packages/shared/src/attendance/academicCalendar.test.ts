@@ -3,6 +3,7 @@ import {
   addIsoDays,
   instructionalDayDecision,
   isInstructionalDay,
+  isoDaysBetween,
   isoWeekday,
   listInstructionalDays,
   weekdayIndexes,
@@ -170,5 +171,33 @@ describe("academicCalendarEventWriteSchema", () => {
       sectionId: null,
       notes: null,
     });
+  });
+});
+
+describe("isoDaysBetween", () => {
+  it("counts whole days forward", () => {
+    expect(isoDaysBetween("2026-01-01", "2026-01-11")).toBe(10);
+  });
+
+  it("returns zero for the same day", () => {
+    expect(isoDaysBetween("2026-03-05", "2026-03-05")).toBe(0);
+  });
+
+  it("returns a negative count when the end precedes the start", () => {
+    expect(isoDaysBetween("2026-01-11", "2026-01-01")).toBe(-10);
+  });
+
+  it("is unaffected by a DST boundary between the dates", () => {
+    // Most northern-hemisphere zones shift clocks inside this window.
+    expect(isoDaysBetween("2026-03-01", "2026-04-01")).toBe(31);
+  });
+
+  it("spans a leap day", () => {
+    expect(isoDaysBetween("2028-02-28", "2028-03-01")).toBe(2);
+  });
+
+  it("returns null for unusable input", () => {
+    expect(isoDaysBetween("nope", "2026-01-01")).toBeNull();
+    expect(isoDaysBetween("2026-01-01", "nope")).toBeNull();
   });
 });

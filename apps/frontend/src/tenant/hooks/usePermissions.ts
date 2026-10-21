@@ -104,6 +104,7 @@ export interface ModulePermissionsManifest {
     reports?: Permission;
     setupView?: Permission;
     setupWrite?: Permission;
+    overrideLock?: Permission;
     clearLogs?: Permission;
   };
 }
@@ -116,6 +117,7 @@ export interface UseModulePermissionsResult {
   canReports: boolean;
   canViewSetup: boolean;
   canEditSetup: boolean;
+  canOverrideLock: boolean;
   canClearLogs: boolean;
 }
 
@@ -136,6 +138,7 @@ export function useModulePermissions(
       ? can(p.setupView) || (p.setupWrite ? can(p.setupWrite) : false)
       : false,
     canEditSetup: p.setupWrite ? can(p.setupWrite) : false,
+    canOverrideLock: p.overrideLock ? can(p.overrideLock) : false,
     canClearLogs: p.clearLogs ? can(p.clearLogs) : false,
   };
 }

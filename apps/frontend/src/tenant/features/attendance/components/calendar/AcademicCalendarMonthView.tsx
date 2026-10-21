@@ -2,6 +2,8 @@ import React, { useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   addIsoDays,
+  hijriDayOfMonth,
+  hijriMonthSpanLabel,
   instructionalDayDecision,
   isoWeekday,
   weekdayIndexes,
@@ -52,6 +54,10 @@ export function AcademicCalendarMonthView({
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(`${month}T00:00:00Z`));
+  const hijriLabel = useMemo(
+    () => hijriMonthSpanLabel(month, addIsoDays(shiftMonth(month, 1), -1), language),
+    [month, language],
+  );
   const dayNames = useMemo(() => {
     const format = new Intl.DateTimeFormat(language, { weekday: "short", timeZone: "UTC" });
     return WEEKDAY_NAMES.map((_, index) => format.format(Date.UTC(2023, 0, 1 + index)));
@@ -64,6 +70,10 @@ export function AcademicCalendarMonthView({
     return list;
   }, [month]);
   const leading = isoWeekday(month);
+  const hijriDays = useMemo(
+    () => Object.fromEntries(days.map((date) => [date, hijriDayOfMonth(date)])),
+    [days],
+  );
 
   return (
     <section aria-label={monthLabel} className="space-y-3">
@@ -78,7 +88,14 @@ export function AcademicCalendarMonthView({
         >
           <ChevronLeft className="size-4 rtl:rotate-180" aria-hidden />
         </Button>
-        <h3 className="text-balance text-base font-semibold">{monthLabel}</h3>
+        <div className="min-w-0 text-center">
+          <h3 className="text-balance text-base font-semibold">{monthLabel}</h3>
+          {hijriLabel ? (
+            <p className="text-2xs text-muted-foreground" dir="auto">
+              {hijriLabel}
+            </p>
+          ) : null}
+        </div>
         <Button
           type="button"
           variant="outline"
@@ -120,11 +137,16 @@ export function AcademicCalendarMonthView({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="min-h-11 justify-start px-1 text-xs"
+                className="min-h-11 justify-between gap-1 px-1 text-xs"
                 aria-label={`${date}${teaching ? "" : ` — ${t("attendance.calendar.nonTeachingDay")}`}`}
                 onClick={() => onDayClick?.(date)}
               >
-                {Number(date.slice(8))}
+                <span>{Number(date.slice(8))}</span>
+                {hijriDays[date] != null ? (
+                  <span className="text-2xs font-normal text-muted-foreground" aria-hidden>
+                    {hijriDays[date]}
+                  </span>
+                ) : null}
               </Button>
               {dayEvents.slice(0, 2).map((event) => (
                 <Button

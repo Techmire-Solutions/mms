@@ -213,7 +213,7 @@ export const sessionSetupContractHandlers = {
       const lookups = await loadSessionLookupsMap();
       return {
         status: 200 as const,
-        body: { lookups: { statuses: lookups.statuses ?? [], types: lookups.types ?? [] } },
+        body: { lookups: { statuses: lookups.statuses ?? [] } },
       };
     } catch (error) {
       return handleContractError(request, error, {

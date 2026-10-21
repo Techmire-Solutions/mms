@@ -41,7 +41,17 @@ afterAll(async () => {
 });
 
 describe("academic date columns (real Postgres)", () => {
+  // `mms_try_date` existed only to parse the varchar date columns; migration 0182 drops both, so
+  // this case asserts the helper only on a database that still has it (between 0172 and 0182).
   it("given raw text, should parse dates, date-times and reject junk via mms_try_date", async () => {
+    // Arrange
+    const present = await withTenant(TENANT, (tx) =>
+      tx.execute<{ ok: boolean }>(
+        sql`SELECT to_regprocedure('mms_try_date(text)') IS NOT NULL AS ok`,
+      ),
+    );
+    if (!present.rows[0]?.ok) return;
+
     // Act
     const result = await withTenant(TENANT, (tx) =>
       tx.execute<{ a: string | null; b: string | null; c: string | null; d: string | null }>(sql`

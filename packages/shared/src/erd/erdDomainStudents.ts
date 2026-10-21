@@ -18,7 +18,9 @@ export const ERD_DOMAIN_STUDENTS: ErdDomain = {
       ],
     },
     {
-      name: "student_enrolled_sessions",
+      // The mirrored `student_enrolled_sessions` table was dropped by migration 0182; membership
+      // is read through the `student_session_memberships` view over enrollments + legacy pairs.
+      name: "student_enrolled_sessions_legacy",
       columns: [
         { name: "workspace_subdomain", type: "text", kind: "pk" },
         { name: "student_id", type: "text", kind: "pk" },
@@ -92,7 +94,7 @@ export const ERD_DOMAIN_STUDENTS: ErdDomain = {
       onDelete: "set null",
     },
     {
-      fromTable: "student_enrolled_sessions",
+      fromTable: "student_enrolled_sessions_legacy",
       fromColumn: "student_id",
       toTable: "students",
       toColumn: "id",

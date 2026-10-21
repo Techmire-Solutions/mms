@@ -31,6 +31,7 @@ export const SESSIONS_MODULE_MANIFEST = {
     delete: "enrollments.write",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
+    overrideLock: "sessions.override_lock",
     export: "enrollments.read",
     reports: "enrollments.read",
   } satisfies Record<string, Permission>,

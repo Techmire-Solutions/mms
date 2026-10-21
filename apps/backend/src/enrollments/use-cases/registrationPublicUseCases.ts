@@ -18,6 +18,8 @@ import { broadcastTenantUpdate } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { linkClasses, toPublicView } from "./registrationPublicView.js";
 import { approveApplications } from "./admissionsApprove.js";
+import { sendRegistrationAcknowledgement } from "./registrationAcknowledgement.js";
+import { runWithTenant } from "../../lib/tenantContext.js";
 
 export const ADMISSIONS_BROADCAST_KEY = "registration_applications";
 const NOT_FOUND = "This registration link is not available";
@@ -78,7 +80,7 @@ export async function submitPublicRegistration(
   submittedIpHash: string | null,
 ): Promise<{ reference: string; status: RegistrationApplicationStatus }> {
   const input = registrationSubmitSchema.parse(body);
-  await requireWorkspace(subdomain);
+  const workspace = await requireWorkspace(subdomain);
   const now = new Date();
   const result = await withTenant(subdomain, async (tx) => {
     const link = await repo.findRegistrationLinkBySlugTx(tx, subdomain, slug);
@@ -149,6 +151,15 @@ export async function submitPublicRegistration(
     const outcome = await approveApplications(subdomain, [result.id], { actorUserId: null });
     if (outcome.failures.length === 0) status = "approved";
   }
+  // Public route, so there is no ambient tenant context for the SMS provider lookup to ride on.
+  await runWithTenant(subdomain, () =>
+    sendRegistrationAcknowledgement({
+      phone: input.phone,
+      reference: result.reference,
+      status,
+      workspaceName: workspace.madrasaName,
+    }),
+  );
   broadcastTenantUpdate(subdomain, "collection", ADMISSIONS_BROADCAST_KEY);
   return { reference: result.reference, status };
 }

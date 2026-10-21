@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { CalendarDays, CopyPlus, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { formatDate, todayISO, type AcademicCalendarEvent } from "@mms/shared";
 import {
   DataTable,
@@ -20,6 +20,7 @@ import {
 } from "@/tenant/features/attendance/hooks/useAcademicCalendar";
 import { AcademicCalendarMonthView } from "./AcademicCalendarMonthView";
 import { CalendarEventFormModal } from "./CalendarEventFormModal";
+import { CalendarCopyFromSessionDialog } from "./CalendarCopyFromSessionDialog";
 
 export interface AcademicCalendarManagerProps {
   canWrite: boolean;
@@ -42,6 +43,7 @@ export function AcademicCalendarManager({
   const [initialDate, setInitialDate] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [toDelete, setToDelete] = useState<AcademicCalendarEvent | null>(null);
+  const [copyOpen, setCopyOpen] = useState(false);
   const year = month.slice(0, 4);
   // Month view needs neighbours of the visible month; a year window covers both views.
   const query = useAcademicCalendarEvents({
@@ -133,10 +135,22 @@ export function AcademicCalendarManager({
           rowClassName={(row) => (row.deletedAt ? "opacity-70" : undefined)}
           primaryAction={
             canWrite ? (
-              <Button type="button" size="sm" onClick={() => openEditor(null)} className="min-h-11">
-                <Plus className="size-4" aria-hidden />
-                {t("attendance.calendar.add")}
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCopyOpen(true)}
+                  className="min-h-11"
+                >
+                  <CopyPlus className="size-4" aria-hidden />
+                  {t("attendance.calendar.copyFromSession")}
+                </Button>
+                <Button type="button" size="sm" onClick={() => openEditor(null)} className="min-h-11">
+                  <Plus className="size-4" aria-hidden />
+                  {t("attendance.calendar.add")}
+                </Button>
+              </div>
             ) : undefined
           }
           toolbarExtras={
@@ -205,6 +219,15 @@ export function AcademicCalendarManager({
           isPending={actions.isPending}
           onClose={() => setModalOpen(false)}
           onSave={async (body) => (await actions.save(editing?.id, body)) !== null}
+        />
+      ) : null}
+
+      {canWrite ? (
+        <CalendarCopyFromSessionDialog
+          open={copyOpen}
+          isPending={actions.isPending}
+          onClose={() => setCopyOpen(false)}
+          onCopy={actions.saveMany}
         />
       ) : null}
 

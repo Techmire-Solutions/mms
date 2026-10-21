@@ -4,6 +4,7 @@ import type {
   AttendanceListPageResult,
   AttendanceCommandMetricsSnapshot,
   AttendanceReportAggregates,
+  AttendanceMarkedDatesQuery,
   AttendanceReportAggregatesQuery,
   WidgetQuery,
   WidgetAggregateResult,
@@ -38,6 +39,10 @@ export interface AttendanceRepository {
     tenant: string,
     query?: AttendanceReportAggregatesQuery,
   ): Promise<AttendanceReportAggregates>;
+  listMarkedAttendanceDates(
+    tenant: string,
+    query: AttendanceMarkedDatesQuery,
+  ): Promise<string[]>;
   bulkSoftDeleteAttendanceRecords?(
     tenant: string,
     ids: string[],

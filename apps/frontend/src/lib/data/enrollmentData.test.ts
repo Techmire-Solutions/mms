@@ -119,6 +119,55 @@ describe("enrollmentData dynamic calculations", () => {
     });
   });
 
+  describe("runFullEligibility delegates to the shared rule", () => {
+    const classOf = (over: Record<string, unknown>) =>
+      ({
+        id: "cls-1",
+        name: "Class",
+        ageMin: 5,
+        ageMax: 18,
+        gender: "male" as const,
+        facultyId: "faculty-1",
+        capacity: 20,
+        enrolled: 0,
+        ...over,
+      }) as unknown as never;
+    const sessionOf = (cls: unknown) =>
+      ({ id: "sess-1", name: "S", classes: [cls] }) as unknown as Session;
+    const studentOf = (over: Record<string, unknown>) =>
+      ({ id: "student-1", name: "Ali", firstName: "Ali", ...over }) as unknown as Student;
+
+    it("reports a gender mismatch from the shared verdict", () => {
+      const cls = classOf({});
+      const check = runFullEligibility(
+        studentOf({ gender: "Female" }),
+        sessionOf(cls),
+        cls,
+        [],
+      ).find((c) => c.id === "gender");
+      expect(check?.status).toBe("fail");
+    });
+
+    it("uses the shared seat calculation for a full class", () => {
+      const cls = classOf({ enrolled: 20 });
+      const check = runFullEligibility(studentOf({ gender: "Male" }), sessionOf(cls), cls, []).find(
+        (c) => c.id === "capacity",
+      );
+      expect(check?.status).toBe("fail");
+    });
+
+    it("flags an out-of-range age against the class bounds", () => {
+      const cls = classOf({});
+      const check = runFullEligibility(
+        studentOf({ gender: "Male", dob: "1990-01-01" }),
+        sessionOf(cls),
+        cls,
+        [],
+      ).find((c) => c.id === "age");
+      expect(check?.status).toBe("fail");
+    });
+  });
+
   describe("calcFee", () => {
     const sessionDiscounts: Parameters<typeof calcFee>[3] = [
       {

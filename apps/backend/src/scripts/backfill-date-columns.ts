@@ -8,7 +8,13 @@ loadBackendEnv();
 
 const BATCH = 2000;
 
-/** Large-table date fills for migration 0173 (target `date` column ← varchar source). */
+/**
+ * Large-table date fills for migration 0173 (target `date` column ← varchar source).
+ *
+ * OBSOLETE once migration 0182 has been applied: it drops the varchar source columns and the
+ * `mms_try_date` helper, so every statement below fails with "column does not exist". Kept only
+ * for environments still between 0173 and 0182.
+ */
 const FILLS: ReadonlyArray<{ label: string; batch: SQL }> = [
   {
     label: "attendance.date_on",
