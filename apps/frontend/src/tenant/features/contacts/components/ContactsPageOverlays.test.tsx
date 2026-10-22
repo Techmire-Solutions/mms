@@ -21,6 +21,18 @@ vi.mock("@/tenant/features/contacts/components/ContactsImportDialog", () => ({
   ),
 }));
 
+vi.mock("@/tenant/features/contacts/components/ContactsCsvImportDialog", () => ({
+  ContactsCsvImportDialog: ({ open, canWrite }: { open: boolean; canWrite: boolean }) => (
+    <div
+      data-testid="csv-import-dialog"
+      data-open={String(open)}
+      data-can-write={String(canWrite)}
+    >
+      CSV Import
+    </div>
+  ),
+}));
+
 const baseProps: React.ComponentProps<typeof ContactsPageOverlays> = {
   canWrite: true,
   canDelete: true,
@@ -73,5 +85,17 @@ describe("ContactsPageOverlays Component", () => {
 
     expect(html).toContain('data-open="true"');
     expect(html).toContain('data-can-write="false"');
+  });
+
+  it("renders csv import dialog when csvImportOpen and onCloseCsvImport are provided", () => {
+    const html = render({
+      csvImportOpen: true,
+      onCloseCsvImport: vi.fn(),
+      canWrite: true,
+    });
+
+    expect(html).toContain('data-testid="csv-import-dialog"');
+    expect(html).toContain('data-open="true"');
+    expect(html).toContain('data-can-write="true"');
   });
 });

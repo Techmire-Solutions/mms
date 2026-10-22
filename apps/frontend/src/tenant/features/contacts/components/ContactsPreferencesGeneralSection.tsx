@@ -58,16 +58,18 @@ export function ContactsPreferencesGeneralSection({
         />
       </div>
 
-      <ModuleSetupSaveFooter
-        dirty={Boolean(isPrefsDirty)}
-        saving={Boolean(saving)}
-        saved={Boolean(saved)}
-        saveLabel={saving ? t("global.saving") : t("contacts.setup.saveAndApply")}
-        savedLabel={t("contacts.form.saved")}
-        onSave={onSave ?? (() => {})}
-        disableUnsavedGuard
-        footerClassName="mt-4 pt-3"
-      />
+      {onSave ? (
+        <ModuleSetupSaveFooter
+          dirty={Boolean(isPrefsDirty)}
+          saving={Boolean(saving)}
+          saved={Boolean(saved)}
+          saveLabel={saving ? t("global.saving") : t("contacts.setup.saveAndApply")}
+          savedLabel={t("contacts.form.saved")}
+          onSave={onSave}
+          disableUnsavedGuard
+          footerClassName="mt-4 pt-3"
+        />
+      ) : null}
     </SectionCard>
   );
 }

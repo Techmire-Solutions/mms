@@ -2183,6 +2183,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "contacts.hidden": "پنهان شده",
   "contacts.hideColumn": "پنهان کردن ستون {label}",
   "contacts.import": "ورود داده",
+  "contacts.importCsv": "ورود داده از CSV / اکسل",
+  "contacts.importVcf": "ورود داده از vCard (.vcf)",
   "contacts.importProgress": "ورود {imported} از {total}…",
   "contacts.importSuccess": "{count} مخاطب با موفقیت وارد شدند",
   "contacts.importSuccessOne": "۱ مخاطب با موفقیت وارد شد",

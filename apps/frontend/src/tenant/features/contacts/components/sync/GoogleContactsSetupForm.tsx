@@ -71,16 +71,20 @@ export function GoogleContactsSetupForm({
       <div className="flex gap-2">
         <Button
           type="button"
+          variant="default"
+          size="sm"
           onClick={onSave}
-          className="px-4 min-h-11 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors shadow-none"
+          disabled={!clientId.trim() || !clientSecret.trim()}
+          className="px-4 font-bold shadow-none"
         >
           {t("contacts.sync.saveCredentials")}
         </Button>
         <Button
           type="button"
           variant="outline"
+          size="sm"
           onClick={onCancel}
-          className="px-4 min-h-11 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground transition-colors bg-card shadow-none"
+          className="px-4 font-medium shadow-none"
         >
           {t("common.cancel")}
         </Button>

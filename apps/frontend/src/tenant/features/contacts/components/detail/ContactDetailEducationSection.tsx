@@ -3,6 +3,7 @@ import { GraduationCap, School, Calendar, Award } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { Badge } from "@/components/ui/badge";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
 import { CopyButton } from "@/components/app/CopyButton";
 import {
@@ -60,9 +61,9 @@ export function ContactDetailEducationSection({
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 {edu.degree ? (
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                  <Badge tone="primary" size="sm" className="font-bold">
                     {edu.degree}
-                  </span>
+                  </Badge>
                 ) : null}
                 {edu.year ? (
                   <span className="text-xs text-muted-foreground inline-flex items-center gap-1">

@@ -39,6 +39,7 @@ export function ContactsPageView({
   handleOpenDuplicates,
   handleExportCSV,
   handleOpenImport,
+  handleOpenCsvImport,
   handleNew,
   shownCount,
   pendingCount,
@@ -68,6 +69,7 @@ export function ContactsPageView({
           onOpenDuplicates={() => void handleOpenDuplicates()}
           onExport={handleExportCSV}
           onImport={handleOpenImport}
+          onImportCsv={handleOpenCsvImport}
           onAddContact={handleNew}
         />
       }

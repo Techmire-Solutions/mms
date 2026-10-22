@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { WarningCallout } from "@/components/app/WarningCallout";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactBasicTab } from "@/tenant/features/contacts/components/formTabs/ContactBasicTab";
@@ -54,8 +54,13 @@ export function ContactFormTabContent({
 
   if (draft.lookupsLoading) {
     return (
-      <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
-        {t("common.loading")}
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground"
+      >
+        <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0" aria-hidden />
+        <span>{t("common.loading")}</span>
       </div>
     );
   }

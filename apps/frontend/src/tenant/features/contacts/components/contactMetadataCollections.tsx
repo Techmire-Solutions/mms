@@ -1,4 +1,5 @@
 import { Globe, ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   formatSocialPlatformUrl,
   mergeStoredAndDerivedSiblingLinks,
@@ -50,13 +51,16 @@ export function renderSocialMetadata({
         }
 
         return (
-          <span
+          <Badge
             key={index}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted text-muted-foreground border border-border/40 text-xs font-medium"
+            as="span"
+            tone="muted"
+            size="sm"
+            className="font-medium gap-1"
           >
             <Globe className="w-3 h-3 shrink-0" />
             <span>{platform || displayUrl}</span>
-          </span>
+          </Badge>
         );
       })}
     </div>
@@ -113,14 +117,17 @@ export function renderEducationMetadata({
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {educations.map((edu, idx) => (
-        <span
+        <Badge
           key={edu.id || idx}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-medium"
+          as="span"
+          tone="primary"
+          size="sm"
+          className="font-normal gap-1"
         >
           {edu.degree ? <span className="font-semibold">{edu.degree}</span> : null}
           {edu.degree && edu.institution ? <span className="opacity-60">·</span> : null}
           <span className="truncate max-w-cell-sm">{edu.institution}</span>
-        </span>
+        </Badge>
       ))}
     </div>
   );
@@ -141,14 +148,17 @@ export function renderExperienceMetadata({
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {experiences.map((exp, idx) => (
-        <span
+        <Badge
           key={exp.id || idx}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-medium"
+          as="span"
+          tone="primary"
+          size="sm"
+          className="font-normal gap-1"
         >
           {exp.title ? <span className="font-semibold">{exp.title}</span> : null}
           {exp.title && exp.organization ? <span className="opacity-60">·</span> : null}
           <span className="truncate max-w-cell-sm">{exp.organization}</span>
-        </span>
+        </Badge>
       ))}
     </div>
   );
@@ -167,9 +177,12 @@ export function renderSkillsMetadata({
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {skills.map((s, idx) => (
-        <span
+        <Badge
           key={s.id || idx}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-medium"
+          as="span"
+          tone="primary"
+          size="sm"
+          className="font-normal gap-1"
         >
           <span className="font-semibold">{s.name}</span>
           {s.proficiency ? (
@@ -178,7 +191,7 @@ export function renderSkillsMetadata({
               <span className="text-3xs opacity-85">{s.proficiency}</span>
             </>
           ) : null}
-        </span>
+        </Badge>
       ))}
     </div>
   );

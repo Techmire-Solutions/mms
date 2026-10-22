@@ -103,11 +103,15 @@ export function useContactsPageController() {
     workContacts: directory.workContacts,
   });
 
-  const { setImportOpen } = overlay;
+  const { setImportOpen, setCsvImportOpen } = overlay;
   /** Import writes contacts; a reader without `contacts.write` must not open the dialog. */
   const handleOpenImport = useCallback(() => {
     if (canWrite) setImportOpen(true);
   }, [canWrite, setImportOpen]);
+
+  const handleOpenCsvImport = useCallback(() => {
+    if (canWrite) setCsvImportOpen(true);
+  }, [canWrite, setCsvImportOpen]);
 
   useContactsKeyboardShortcuts({
     selectedCount: directory.selected.length,
@@ -177,6 +181,7 @@ export function useContactsPageController() {
     handleOpenDuplicates: actions.handleOpenDuplicates,
     handleExportCSV,
     handleOpenImport,
+    handleOpenCsvImport,
     handleNew: actions.handleCreateContact,
     shownCount: directory.shownCount,
     pendingCount,

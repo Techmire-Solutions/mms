@@ -123,9 +123,11 @@ export function ContactDetailTimeline({
               type="submit"
               disabled={submitting || !noteText.trim()}
               aria-label={t("contacts.detail.logEventOrNoteSubmit")}
-              className={`w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-none ${
-                reducedMotion ? "" : "hover:scale-105 active:scale-95 transition-all"
-              }`}
+              size="icon"
+              className={cn(
+                "min-h-11 min-w-11 rounded-xl shrink-0 shadow-none",
+                !reducedMotion && "hover:scale-105 active:scale-95 transition-all",
+              )}
             >
               <Send className="w-4 h-4" />
             </Button>
@@ -159,7 +161,7 @@ export function ContactDetailTimeline({
                   style={{
                     position: "absolute",
                     top: 0,
-                    left: 0,
+                    insetInlineStart: 0,
                     width: "100%",
                     transform: `translateY(${virtualRow.start}px)`,
                   }}

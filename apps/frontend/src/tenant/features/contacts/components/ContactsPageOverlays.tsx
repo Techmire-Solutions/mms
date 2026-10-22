@@ -6,6 +6,7 @@ import {
   ModuleOverlayLoadingFallback,
 } from "@/components/app/ModuleOverlayLoadingChrome";
 import { ContactsPageConfirmDialogs } from "@/tenant/features/contacts/components/ContactsPageConfirmDialogs";
+import { ContactsCsvImportDialog } from "@/tenant/features/contacts/components/ContactsCsvImportDialog";
 import { ContactsImportDialog } from "@/tenant/features/contacts/components/ContactsImportDialog";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import React from "react";
@@ -37,6 +38,8 @@ export interface ContactsPageOverlaysProps {
   importOpen: boolean;
   onCloseImport: () => void;
   onImportContacts: (contacts: Contact[]) => void | Promise<void>;
+  csvImportOpen?: boolean;
+  onCloseCsvImport?: () => void;
   messagingTarget: {
     channel: "whatsapp" | "sms" | "email";
     recipients: StandardMessagingRecipient[];
@@ -80,6 +83,8 @@ export function ContactsPageOverlays({
   importOpen,
   onCloseImport,
   onImportContacts,
+  csvImportOpen,
+  onCloseCsvImport,
   messagingTarget,
   onCloseComposer,
   viewContact,
@@ -143,6 +148,14 @@ export function ContactsPageOverlays({
         onImport={onImportContacts}
         canWrite={canWrite}
       />
+
+      {csvImportOpen !== undefined && onCloseCsvImport ? (
+        <ContactsCsvImportDialog
+          open={csvImportOpen}
+          onClose={onCloseCsvImport}
+          canWrite={canWrite}
+        />
+      ) : null}
 
       <Suspense fallback={<ModuleDrawerLoadingSkeleton />}>
         <AnimatePresence>

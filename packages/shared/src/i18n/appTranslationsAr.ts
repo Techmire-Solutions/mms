@@ -2150,6 +2150,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "contacts.hidden": "مخفي",
   "contacts.hideColumn": "إخفاء العمود {label}",
   "contacts.import": "استيراد",
+  "contacts.importCsv": "استيراد CSV / Excel",
+  "contacts.importVcf": "استيراد vCard (.vcf)",
   "contacts.importProgress": "جاري استيراد {imported} من {total}…",
   "contacts.importSuccess": "تم استيراد {count} جهة اتصال بنجاح",
   "contacts.importSuccessOne": "تم استيراد جهة اتصال واحدة بنجاح",

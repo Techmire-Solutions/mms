@@ -3,6 +3,7 @@ import { Award, Building2, Clock, CheckCircle2, Sparkles } from "lucide-react";
 import type { Contact } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { Badge } from "@/components/ui/badge";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";
 import { CopyButton } from "@/components/app/CopyButton";
 import {
@@ -58,21 +59,25 @@ export function ContactDetailSkillsSection({
                   <span className="truncate">{skill.name}</span>
                 </span>
                 {skill.category ? (
-                  <span className="text-3xs font-medium px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                  <Badge tone="primary" size="sm" className="font-medium text-3xs">
                     {skill.category}
-                  </span>
+                  </Badge>
                 ) : null}
                 {skill.proficiency ? (
-                  <span className="inline-flex items-center gap-1 text-3xs font-medium px-2 py-0.5 rounded bg-warning/10 text-warning border border-warning/20">
+                  <Badge tone="warning" size="sm" className="font-medium text-3xs gap-1">
                     <Sparkles className="h-2.5 w-2.5 shrink-0" />
                     <span>{skill.proficiency}</span>
-                  </span>
+                  </Badge>
                 ) : null}
                 {skill.isCertified ? (
-                  <span className="inline-flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider px-1.5 py-0.5 bg-success/10 text-success border border-success/20 rounded">
+                  <Badge
+                    tone="success"
+                    size="sm"
+                    className="text-2xs font-semibold uppercase tracking-wider gap-1"
+                  >
                     <CheckCircle2 className="h-2.5 w-2.5 shrink-0" />
                     <span>{t("contacts.fields.skillIsCertified")}</span>
-                  </span>
+                  </Badge>
                 ) : null}
               </div>
 

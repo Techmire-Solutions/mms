@@ -32,7 +32,6 @@ export function ContactsSetupPanel({
         onUpdatePreference={updatePreference}
         saving={isSaving}
         saved={saved}
-        onSave={handleSave}
       />
 
       <ModuleSetupSaveFooter

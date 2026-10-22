@@ -2193,6 +2193,8 @@ export const APP_TRANSLATIONS_EN = {
   "contacts.hidden": "Hidden",
   "contacts.hideColumn": "Hide column {label}",
   "contacts.import": "Import",
+  "contacts.importCsv": "Import CSV / Excel",
+  "contacts.importVcf": "Import vCard (.vcf)",
   "contacts.importProgress": "Importing {imported} of {total}…",
   "contacts.importSuccess": "{count} contacts imported successfully",
   "contacts.importSuccessOne": "1 contact imported successfully",
