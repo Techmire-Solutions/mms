@@ -3,6 +3,7 @@ import { School } from "lucide-react";
 import { ModuleTierPage, type ModuleTierPageSpec } from "@/components/app/ModuleTierPage";
 import { useIndustryTerminology } from "@/tenant/hooks/useIndustryTerminology";
 import { FacultyCommandMetrics } from "@/tenant/features/faculty/components/FacultyCommandMetrics";
+import { FacultyDepartmentsSetupSection } from "@/tenant/features/faculty/components/FacultyDepartmentsSetupSection";
 import { FacultyDesignationsSetupSection } from "@/tenant/features/faculty/components/FacultyDesignationsSetupSection";
 import { FacultyPageHeaderActions } from "@/tenant/features/faculty/components/FacultyPageHeaderActions";
 import { FacultyPageOverlays } from "@/tenant/features/faculty/components/FacultyPageOverlays";
@@ -23,8 +24,7 @@ const FacultySetupTier = lazy(() =>
 export type FacultyPageViewProps = ReturnType<typeof useFacultyPageController>;
 
 /**
- * Faculty page — faculties, designations, reports, setup.
- * Departments catalog stays available via designation / form quick-create.
+ * Faculty page — faculties, departments, designations, reports, setup.
  */
 export function FacultyPageView({
   canWrite,
@@ -36,6 +36,7 @@ export function FacultyPageView({
   viewingDeleted,
   shownCount,
   openCreateForm,
+  openCreateDepartment,
   openCreateDesignation,
   onExportEntity,
   onImportEntity,
@@ -66,12 +67,17 @@ export function FacultyPageView({
           onExportEntity={onExportEntity}
           onImportEntity={onImportEntity}
           onAddFaculty={openCreateForm}
+          onAddDepartment={openCreateDepartment}
           onAddDesignation={openCreateDesignation}
         />
       }
       metrics={<FacultyCommandMetrics total={metricsTotal ?? shownCount} shown={shownCount} />}
       tiers={[
         { id: "faculties", content: <FacultyWorkTier {...tabPanelProps.workTierProps} /> },
+        {
+          id: "departments",
+          content: <FacultyDepartmentsSetupSection canWrite={canWrite} />,
+        },
         {
           id: "designations",
           content: <FacultyDesignationsSetupSection canWrite={canWrite} />,

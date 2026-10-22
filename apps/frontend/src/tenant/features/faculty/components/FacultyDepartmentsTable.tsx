@@ -20,6 +20,7 @@ export interface FacultyDepartmentsTableProps {
   canWrite?: boolean;
   onEdit: (dept: FacultyDepartmentEntity) => void;
   onDelete: (dept: FacultyDepartmentEntity) => void;
+  primaryAction?: React.ReactNode;
 }
 
 const Dash = () => <span className="text-muted-foreground/50">—</span>;
@@ -33,6 +34,7 @@ export function FacultyDepartmentsTable({
   canWrite = true,
   onEdit,
   onDelete,
+  primaryAction,
 }: FacultyDepartmentsTableProps): React.JSX.Element {
   const { t } = useTranslation();
   const statusLabel = (d: FacultyDepartmentEntity) => t(`faculty.status.${d.status}`);
@@ -95,6 +97,7 @@ export function FacultyDepartmentsTable({
       filters={filters}
       isLoading={isLoading}
       searchPlaceholder={t("faculty.setup.searchDepartments")}
+      primaryAction={primaryAction}
       card={{
         title: (d) => d.name,
         badge: (d) => <StatusBadge status={d.status} config={statusConfig} size="sm" />,
