@@ -63,10 +63,10 @@ export interface UseSessionsPageCrudActionsParams {
 }
 
 export function useSessionsPageCrudActions(params: UseSessionsPageCrudActionsParams) {
-  // Sessions setup rights may override the post-start edit lock (with a reason).
-  const { canEditSetup } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
-  const handleSave = createSessionSaveHandler({ ...params, canOverrideLock: canEditSetup });
-  const handleUpdate = createSessionUpdateHandler({ ...params, canOverrideLock: canEditSetup });
+  // Overriding the post-start edit lock needs `sessions.override_lock` plus a reason (audited).
+  const { canOverrideLock } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
+  const handleSave = createSessionSaveHandler({ ...params, canOverrideLock });
+  const handleUpdate = createSessionUpdateHandler({ ...params, canOverrideLock });
   const handleDelete = createSessionDeleteHandler(params);
   const handleRestore = createSessionRestoreHandler(params);
   const handleBulkDelete = createSessionBulkDeleteHandler(params);

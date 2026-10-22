@@ -11,8 +11,10 @@ loadBackendEnv();
  *
  *   pnpm --filter mms-backend audit:enrollment-ssot
  *
- * Lists `student_enrolled_sessions` pairs that have no enrollment row at all. Migration 0168
- * converts the pairs whose session has exactly one class with exactly one section; everything
+ * Lists `student_enrolled_sessions_legacy` pairs that have no enrollment row at all — the
+ * memberships that exist only as a legacy pair. (Before migration 0182 these were read from the
+ * mirrored `student_enrolled_sessions` table, which that migration dropped.) Migration 0168
+ * converted the pairs whose session has exactly one class with exactly one section; everything
  * reported here as "needs admin" must be enrolled into a class by an administrator (Enrollments →
  * New, or Students → Bulk enroll). Nothing is written.
  */
@@ -33,7 +35,7 @@ async function main(): Promise<void> {
              ses.name AS "sessionName",
              (SELECT count(*)::int FROM session_classes c WHERE c.workspace_subdomain = p.workspace_subdomain AND c.session_id = p.session_id) AS "classCount",
              (SELECT count(*)::int FROM session_class_sections s WHERE s.workspace_subdomain = p.workspace_subdomain AND s.session_id = p.session_id) AS "sectionCount"
-        FROM student_enrolled_sessions p
+        FROM student_enrolled_sessions_legacy p
         LEFT JOIN sessions ses ON ses.workspace_subdomain = p.workspace_subdomain AND ses.id = p.session_id
        WHERE NOT EXISTS (
          SELECT 1 FROM enrollments e

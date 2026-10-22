@@ -17,7 +17,7 @@ export type BulkEnrollInput = Omit<StudentsBulkEnrollBody, "studentIds"> & { stu
  * - `add` creates pending enrollments in the class (section resolved server-side) with the shared
  *   fee rule; students already actively enrolled in the session are skipped (counted as failed);
  * - `remove` cancels the students' active enrollments in the session (history kept).
- * `student_enrolled_sessions` follows automatically (enrollmentSessionSync).
+ * Membership (`student_session_memberships`) follows automatically (enrollmentSessionSync).
  */
 export async function bulkEnrollStudentsIntoClass(
   tenant: string,

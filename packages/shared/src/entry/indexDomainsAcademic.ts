@@ -183,6 +183,8 @@ export * from "../enrollments/registrationTypes.js";
 export * from "../enrollments/enrollmentOperations.js";
 export * from "../attendance/academicCalendarTypes.js";
 export * from "../attendance/academicCalendar.js";
+export * from "../attendance/hijriCalendar.js";
+export * from "../attendance/attendanceCoverage.js";
 export * from "../sessions/academicCatalogTypes.js";
 export * from "../sessions/academicTerminology.js";
 export * from "../sessions/sessionSectionTypes.js";

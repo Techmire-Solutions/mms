@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import {
+  computeFacultyWorkload,
+  summarizeFacultyWorkload,
+} from "@/tenant/features/reports/hooks/facultyReportMetrics";
 import { mapFacultyRow } from "./facultyReportTypes";
 
 describe("mapFacultyRow", () => {
@@ -48,9 +52,7 @@ describe("mapFacultyRow", () => {
 });
 
 describe("computeFacultyWorkload and summarizeFacultyWorkload", () => {
-  it("aggregates workload across classes and sessions and sorts descending by totalStudents", async () => {
-    const { computeFacultyWorkload, summarizeFacultyWorkload } =
-      await import("@/tenant/features/reports/hooks/facultyReportMetrics");
+  it("aggregates workload across classes and sessions and sorts descending by totalStudents", () => {
     const sessions = [
       {
         id: "s1",

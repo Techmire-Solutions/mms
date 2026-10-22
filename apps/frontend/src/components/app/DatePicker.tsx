@@ -31,6 +31,7 @@ export function DatePicker({
   minYear,
   maxYear,
   dateFormat,
+  holidays,
   "aria-label": ariaLabel,
   "aria-invalid": ariaInvalid,
   "aria-describedby": ariaDescribedBy,
@@ -118,6 +119,7 @@ export function DatePicker({
               displayMonth={state.displayMonth}
               setDisplayMonth={state.setDisplayMonth}
               disabledDays={state.disabledDays}
+              holidays={holidays}
               startMonth={state.startMonth}
               endMonth={state.endMonth}
               handleSelect={state.handleSelect}

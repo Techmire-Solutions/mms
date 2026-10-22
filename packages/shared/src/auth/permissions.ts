@@ -20,6 +20,7 @@ export const ALL_PERMISSIONS = [
   "sessions.read",
   "sessions.write",
   "sessions.delete",
+  "sessions.override_lock",
   "attendance.read",
   "attendance.write",
   "attendance.delete",
@@ -98,6 +99,9 @@ const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Object.fr
   "sessions.read": { module: "sessions", requiredActions: ["read"] },
   "sessions.write": { module: "sessions", requiredActions: ["create", "update"] },
   "sessions.delete": { module: "sessions", requiredActions: ["delete"] },
+  // Overriding the lifecycle edit lock is full structural authority over a session,
+  // so it tracks `delete` rather than ordinary `update` (mms-auth-security.md).
+  "sessions.override_lock": { module: "sessions", requiredActions: ["delete"] },
 
   // Attendance
   "attendance.read": { module: "attendance", requiredActions: ["read"] },

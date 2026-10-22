@@ -19,6 +19,8 @@ export interface DatePickerProps {
   minYear?: number | null;
   maxYear?: number | null;
   dateFormat?: DateFormatId | string;
+  /** Non-instructional days (`YYYY-MM-DD`) to mark in the calendar popover. */
+  holidays?: readonly string[];
   "aria-label"?: string;
   "aria-invalid"?: boolean;
   "aria-describedby"?: string;

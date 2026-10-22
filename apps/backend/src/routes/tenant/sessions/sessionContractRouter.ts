@@ -21,7 +21,7 @@ import { sessionBulkContractHandlers } from "./sessionBulkContractHandlers.js";
 import { sessionSetupContractHandlers } from "./sessionSetupContractHandlers.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
-const SETUP_WRITE_PERM = SESSIONS_MODULE_MANIFEST.permissions.setupWrite;
+const OVERRIDE_LOCK_PERM = SESSIONS_MODULE_MANIFEST.permissions.overrideLock;
 const s = initServer();
 
 export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
@@ -142,8 +142,8 @@ export const sessionContractRouter: FastifyPluginAsync = async (fastify) => {
           body: { type: "forbidden", message: "Insufficient permissions" },
         };
       try {
-        // Locked changes after start need Sessions setup rights plus a reason (audited).
-        const lock = { canOverrideLock: roleHasPermission(user.role, SETUP_WRITE_PERM) };
+        // Locked changes after start need `sessions.override_lock` plus a reason (audited).
+        const lock = { canOverrideLock: roleHasPermission(user.role, OVERRIDE_LOCK_PERM) };
         const updated = await withTenant(
           String(request.tenant?.id),
           () => sessionsUseCases.updateSessionById(id, body, lock),

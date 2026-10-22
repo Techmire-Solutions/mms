@@ -89,6 +89,7 @@ function Calendar({
           const isRangeStart = Boolean(modifiers.range_start);
           const isRangeEnd = Boolean(modifiers.range_end);
           const isRangeMiddle = Boolean(modifiers.range_middle);
+          const isHoliday = Boolean(modifiers.holiday);
           const isSingleDayRange = isRangeStart && isRangeEnd;
 
           return (
@@ -127,6 +128,13 @@ function Calendar({
                   !isSelected &&
                   !isRangeMiddle &&
                   "text-muted-foreground/40 hover:bg-muted/40 rounded-lg cursor-pointer",
+                // Non-instructional days: tinted plus a dot, so the cue is not colour alone
+                isHoliday &&
+                  !isSelected &&
+                  !isRangeMiddle &&
+                  !isDisabled &&
+                  // `inset-x-0` + `mx-auto` centres the dot without a physical left/right offset (BiDi-safe).
+                  "text-destructive after:absolute after:bottom-0 after:inset-x-0 after:mx-auto after:size-1 after:rounded-full after:bg-destructive after:content-['']",
                 // Disabled days (clearly legible muted text without double-opacity fade)
                 isDisabled &&
                   !isSelected &&

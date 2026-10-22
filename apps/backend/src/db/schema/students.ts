@@ -186,7 +186,7 @@ export const studentEnrolledSessionsLegacy = pgTable(
 /**
  * Student ↔ session membership (`student_session_memberships` view, migration 0181): sessions with
  * a live, seat-holding enrollment, plus legacy pairs from `student_enrolled_sessions_legacy`.
- * Read-only. The old `student_enrolled_sessions` table is trigger-mirrored until 0182 drops it.
+ * Read-only. The old mirrored `student_enrolled_sessions` table was dropped by migration 0182.
  */
 export const studentEnrolledSessions = pgView("student_session_memberships", {
   id: text("id").notNull(),

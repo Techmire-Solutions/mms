@@ -1275,6 +1275,13 @@
       "when": 1791190000000,
       "tag": "0181_academic_contract",
       "breakpoints": true
+    },
+    {
+      "idx": 182,
+      "version": "7",
+      "when": 1791276400000,
+      "tag": "0182_academic_contract_drop",
+      "breakpoints": true
     }
   ]
 }

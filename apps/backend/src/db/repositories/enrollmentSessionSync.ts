@@ -16,8 +16,8 @@ const list = (ids: readonly string[]) =>
   );
 
 /**
- * `enrollments` is the source of truth for student ↔ session membership; `student_enrolled_sessions`
- * is a view over it (migration 0181). Legacy pairs without enrollment history live in
+ * `enrollments` is the source of truth for student ↔ session membership; the
+ * `student_session_memberships` view reads it (migration 0181). Legacy pairs without enrollment history live in
  * `student_enrolled_sessions_legacy`; once a student gets any enrollment in that session the
  * legacy pair is consumed here, inside the same transaction, so membership follows enrollments.
  */

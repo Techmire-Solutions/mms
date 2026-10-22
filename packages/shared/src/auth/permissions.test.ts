@@ -252,3 +252,49 @@ describe("getModulePermissions", () => {
     expect(getModulePermissions("unknown_module")).toEqual([]);
   });
 });
+
+describe("sessions.override_lock", () => {
+  // The lifecycle edit lock (Phase 4) may only be overridden by roles with full
+
+  // structural authority over sessions. Pins the holder set so a role-default edit
+
+  // cannot silently widen it.
+
+  it("is held by exactly super_admin and admin", () => {
+    expect(roleHasPermission("super_admin", "sessions.override_lock")).toBe(true);
+
+    expect(roleHasPermission("admin", "sessions.override_lock")).toBe(true);
+
+    for (const role of [
+      "principal",
+
+      "registrar",
+
+      "teacher",
+
+      "assistant_teacher",
+
+      "librarian",
+
+      "accountant",
+
+      "auditor",
+    ] as const) {
+      expect(roleHasPermission(role, "sessions.override_lock")).toBe(false);
+    }
+  });
+
+  it("is stricter than ordinary session editing", () => {
+    // principal may create and update sessions but must not override the lock.
+
+    expect(roleHasPermission("principal", "sessions.write")).toBe(true);
+
+    expect(roleHasPermission("principal", "sessions.override_lock")).toBe(false);
+  });
+
+  it("is a registered permission key", () => {
+    expect(ALL_PERMISSIONS).toContain("sessions.override_lock");
+
+    expect(isValidPermission("sessions.override_lock")).toBe(true);
+  });
+});

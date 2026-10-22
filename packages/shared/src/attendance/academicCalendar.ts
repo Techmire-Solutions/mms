@@ -61,6 +61,22 @@ export function addIsoDays(date: string, days: number): string {
   return next.toISOString().slice(0, 10);
 }
 
+/**
+ * Whole calendar days from `from` to `to`, negative when `to` precedes `from`.
+ *
+ * Computed in UTC, so a DST boundary between the two dates never adds or drops a day.
+ *
+ * @param from - Start date as `YYYY-MM-DD`
+ * @param to - End date as `YYYY-MM-DD`
+ * @returns The signed day count, or null when either date is unusable
+ */
+export function isoDaysBetween(from: string, to: string): number | null {
+  const start = new Date(`${from}T00:00:00Z`).getTime();
+  const end = new Date(`${to}T00:00:00Z`).getTime();
+  if (Number.isNaN(start) || Number.isNaN(end)) return null;
+  return Math.round((end - start) / 86_400_000);
+}
+
 function appliesTo(event: CalendarEventLite, scope: InstructionalDayContext["scope"]): boolean {
   switch (event.scope) {
     case "workspace":

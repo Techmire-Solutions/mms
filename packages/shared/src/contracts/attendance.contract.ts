@@ -23,6 +23,10 @@ import {
   attendanceReportAggregatesHttpQuerySchema,
   attendanceReportAggregatesSchema,
 } from "../attendance/attendanceReportAggregates.js";
+import {
+  attendanceMarkedDatesQuerySchema,
+  attendanceMarkedDatesSchema,
+} from "../attendance/attendanceCoverage.js";
 
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
@@ -188,6 +192,17 @@ export const attendanceContract = c.router({
       500: errorResponse,
     },
     summary: "Get attendance report aggregates",
+  },
+  markedDates: {
+    method: "GET",
+    path: "/api/attendance/marked-dates",
+    query: attendanceMarkedDatesQuerySchema,
+    responses: {
+      200: attendanceMarkedDatesSchema,
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get the days that already have attendance marked",
   },
 
   getFieldConfig: {
