@@ -4,6 +4,8 @@
 
 @source "../index.html";
 @source "./**/*.{js,jsx,ts,tsx}";
+@source "../../../packages/ui/src/**/*.{js,jsx,ts,tsx}";
+@source "../../../packages/shared/src/**/*.{js,jsx,ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -744,6 +746,27 @@
     -webkit-text-fill-color: hsl(var(--foreground));
     -webkit-box-shadow: 0 0 0px 1000px hsl(var(--background)) inset;
     transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /*
+   * Modern Web Guidance: brand-consistent-forms & branded-select-styling
+   * Form controls: suppress default OS select dropdown arrows across all engines
+   * (WebKit, Blink, Gecko, Trident) so custom select controls with Lucide SVG chevrons
+   * (e.g. FormSelect) never render duplicate/double chevrons side-by-side.
+   */
+  select,
+  select.appearance-none,
+  .appearance-none select,
+  select[class*="appearance-none"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  select::-ms-expand,
+  select.appearance-none::-ms-expand,
+  .appearance-none select::-ms-expand,
+  select[class*="appearance-none"]::-ms-expand {
+    display: none;
   }
 
   #root {
