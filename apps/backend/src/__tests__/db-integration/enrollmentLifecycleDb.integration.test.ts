@@ -83,7 +83,7 @@ beforeAll(async () => {
     sql`UPDATE enrollment_placements SET start_on = '2026-01-01' WHERE workspace_subdomain = ${TENANT}`,
   );
   await query(
-    sql`UPDATE enrollments SET enrolled_date = '2026-01-01' WHERE workspace_subdomain = ${TENANT}`,
+    sql`UPDATE enrollments SET enrolled_on = '2026-01-01' WHERE workspace_subdomain = ${TENANT}`,
   );
   // A waitlisted public application for the (full) class.
   await query(sql`

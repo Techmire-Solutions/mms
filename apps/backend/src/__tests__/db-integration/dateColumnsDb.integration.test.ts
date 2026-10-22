@@ -110,8 +110,8 @@ describe("academic date columns (real Postgres)", () => {
     await expect(update).rejects.toMatchObject({ statusCode: 400 });
   });
 
-  it("given release A (0181), should sync the new date columns and the legacy varchars both ways", async () => {
-    // Arrange: the current release writes `registered_on`; the previous one writes the varchar.
+  it("given release B (0182), should store the date in registered_on with the legacy varchar dropped", async () => {
+    // Arrange
     await withTenant(TENANT, (tx) =>
       tx.insert(students).values({
         id: "dt-stu",
@@ -121,28 +121,30 @@ describe("academic date columns (real Postgres)", () => {
         registeredDate: "2025-09-01",
       }),
     );
-    const read = () =>
-      withTenant(
-        TENANT,
-        async (tx) =>
-          (
-            await tx.execute<{ on: string | null; legacy: string | null }>(sql`
-            SELECT registered_on::text AS "on", registered_date AS legacy FROM students
-             WHERE workspace_subdomain = ${TENANT} AND id = 'dt-stu'`)
-          ).rows[0],
-      );
-    const fromNew = await read();
 
     // Act
-    await withTenant(TENANT, (tx) =>
-      tx.execute(sql`UPDATE students SET registered_date = '2025-10-02T08:00:00Z'
-        WHERE workspace_subdomain = ${TENANT} AND id = 'dt-stu'`),
+    const [row] = await withTenant(
+      TENANT,
+      async (tx) =>
+        (
+          await tx.execute<{ on: string | null }>(sql`
+          SELECT registered_on::text AS "on" FROM students
+           WHERE workspace_subdomain = ${TENANT} AND id = 'dt-stu'`)
+        ).rows,
     );
-    const fromLegacy = await read();
+    const legacy = await withTenant(
+      TENANT,
+      async (tx) =>
+        (
+          await tx.execute<{ n: number }>(sql`
+          SELECT count(*)::int AS n FROM information_schema.columns
+           WHERE table_name = 'students' AND column_name = 'registered_date'`)
+        ).rows[0],
+    );
 
     // Assert
-    expect(fromNew).toEqual({ on: "2025-09-01", legacy: "2025-09-01" });
-    expect(fromLegacy).toEqual({ on: "2025-10-02", legacy: "2025-10-02T08:00:00Z" });
+    expect(row).toEqual({ on: "2025-09-01" });
+    expect(legacy).toEqual({ n: 0 });
   });
 
   it("given a non-date value on write, should reject it instead of storing NULL", () => {

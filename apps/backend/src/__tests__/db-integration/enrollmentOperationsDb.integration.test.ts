@@ -112,7 +112,7 @@ beforeAll(async () => {
       sql`UPDATE enrollment_placements SET start_on = '2026-01-01' WHERE workspace_subdomain = ${TENANT}`,
     );
     await tx.execute(
-      sql`UPDATE enrollments SET enrolled_date = '2026-01-01' WHERE workspace_subdomain = ${TENANT}`,
+      sql`UPDATE enrollments SET enrolled_on = '2026-01-01' WHERE workspace_subdomain = ${TENANT}`,
     );
   });
 });
