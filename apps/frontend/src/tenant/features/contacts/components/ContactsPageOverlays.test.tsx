@@ -23,11 +23,7 @@ vi.mock("@/tenant/features/contacts/components/ContactsImportDialog", () => ({
 
 vi.mock("@/tenant/features/contacts/components/ContactsCsvImportDialog", () => ({
   ContactsCsvImportDialog: ({ open, canWrite }: { open: boolean; canWrite: boolean }) => (
-    <div
-      data-testid="csv-import-dialog"
-      data-open={String(open)}
-      data-can-write={String(canWrite)}
-    >
+    <div data-testid="csv-import-dialog" data-open={String(open)} data-can-write={String(canWrite)}>
       CSV Import
     </div>
   ),

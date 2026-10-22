@@ -64,8 +64,9 @@ export function ContactsPageHeaderActions({
           {t("common.export")}
         </Button>
       )}
-      {canWrite && !viewingDeleted && (
-        onImportCsv ? (
+      {canWrite &&
+        !viewingDeleted &&
+        (onImportCsv ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" icon={Upload}>
@@ -87,8 +88,7 @@ export function ContactsPageHeaderActions({
           <Button variant="ghost" icon={Upload} onClick={onImport}>
             {t("contacts.import")}
           </Button>
-        )
-      )}
+        ))}
       {canWrite && !viewingDeleted && (
         <Button variant="primary" icon={UserPlus} onClick={onAddContact}>
           {t("contacts.addContact")}

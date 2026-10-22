@@ -51,13 +51,7 @@ export function renderSocialMetadata({
         }
 
         return (
-          <Badge
-            key={index}
-            as="span"
-            tone="muted"
-            size="sm"
-            className="font-medium gap-1"
-          >
+          <Badge key={index} as="span" tone="muted" size="sm" className="font-medium gap-1">
             <Globe className="w-3 h-3 shrink-0" />
             <span>{platform || displayUrl}</span>
           </Badge>
@@ -117,13 +111,7 @@ export function renderEducationMetadata({
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {educations.map((edu, idx) => (
-        <Badge
-          key={edu.id || idx}
-          as="span"
-          tone="primary"
-          size="sm"
-          className="font-normal gap-1"
-        >
+        <Badge key={edu.id || idx} as="span" tone="primary" size="sm" className="font-normal gap-1">
           {edu.degree ? <span className="font-semibold">{edu.degree}</span> : null}
           {edu.degree && edu.institution ? <span className="opacity-60">·</span> : null}
           <span className="truncate max-w-cell-sm">{edu.institution}</span>
@@ -148,13 +136,7 @@ export function renderExperienceMetadata({
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {experiences.map((exp, idx) => (
-        <Badge
-          key={exp.id || idx}
-          as="span"
-          tone="primary"
-          size="sm"
-          className="font-normal gap-1"
-        >
+        <Badge key={exp.id || idx} as="span" tone="primary" size="sm" className="font-normal gap-1">
           {exp.title ? <span className="font-semibold">{exp.title}</span> : null}
           {exp.title && exp.organization ? <span className="opacity-60">·</span> : null}
           <span className="truncate max-w-cell-sm">{exp.organization}</span>
@@ -177,13 +159,7 @@ export function renderSkillsMetadata({
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-xs">
       {skills.map((s, idx) => (
-        <Badge
-          key={s.id || idx}
-          as="span"
-          tone="primary"
-          size="sm"
-          className="font-normal gap-1"
-        >
+        <Badge key={s.id || idx} as="span" tone="primary" size="sm" className="font-normal gap-1">
           <span className="font-semibold">{s.name}</span>
           {s.proficiency ? (
             <>

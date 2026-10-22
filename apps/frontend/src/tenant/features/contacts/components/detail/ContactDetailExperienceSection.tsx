@@ -73,7 +73,11 @@ export function ContactDetailExperienceSection({
                   </Badge>
                 ) : null}
                 {exp.isCurrent ? (
-                  <Badge tone="success" size="sm" className="text-2xs font-semibold uppercase tracking-wider">
+                  <Badge
+                    tone="success"
+                    size="sm"
+                    className="text-2xs font-semibold uppercase tracking-wider"
+                  >
                     {t("contacts.form.present")}
                   </Badge>
                 ) : null}
