@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../button/Button";
 import { useUiConfig } from "../theme/UiConfigContext";
 import { cn } from "../utils";
@@ -47,18 +47,24 @@ export function Pagination({
         {pageSize && onPageSizeChange && (
           <div className="flex items-center gap-1.5 ms-2">
             <span>{labels.rowsPerPage}:</span>
-            <select
-              value={pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              aria-label={labels.rowsPerPage}
-              className="min-h-11 rounded-md border border-input bg-background text-foreground px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring focus-visible:ring-2 focus-visible:ring-ring cursor-pointer [&>option]:bg-popover [&>option]:text-popover-foreground"
-            >
-              {pageSizeOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
+            <div className="relative inline-flex items-center">
+              <select
+                value={pageSize}
+                onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                aria-label={labels.rowsPerPage}
+                className="min-h-11 rounded-md border border-input bg-background text-foreground ps-2 pe-7 text-xs focus:outline-none focus:ring-1 focus:ring-ring focus-visible:ring-2 focus-visible:ring-ring cursor-pointer appearance-none [&>option]:bg-popover [&>option]:text-popover-foreground"
+              >
+                {pageSizeOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute end-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </div>
           </div>
         )}
       </div>
