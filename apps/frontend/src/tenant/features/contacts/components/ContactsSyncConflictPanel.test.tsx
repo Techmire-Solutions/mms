@@ -23,20 +23,23 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/app/FormModal", () => ({
-  FormModal: ({
+vi.mock("@/components/app/Modal", () => ({
+  Modal: ({
     open,
     title,
     children,
+    footer,
   }: {
     open: boolean;
     title: string;
     children: React.ReactNode;
+    footer?: React.ReactNode;
   }) =>
     open ? (
-      <div data-testid="form-modal">
+      <div data-testid="modal">
         <h2>{title}</h2>
         <div>{children}</div>
+        {footer && <footer>{footer}</footer>}
       </div>
     ) : null,
 }));

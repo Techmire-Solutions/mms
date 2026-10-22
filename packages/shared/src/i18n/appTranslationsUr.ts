@@ -2173,6 +2173,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "contacts.hidden": "پوشیدہ",
   "contacts.hideColumn": "کالم {label} چھپائیں",
   "contacts.import": "درآمد",
+  "contacts.importCsv": "CSV / Excel درآمد کریں",
+  "contacts.importVcf": "vCard (.vcf) درآمد کریں",
   "contacts.importProgress": "{total} میں سے {imported} درآمد ہو رہے ہیں…",
   "contacts.importSuccess": "{count} رابطے کامیابی سے درآمد ہوئے",
   "contacts.importSuccessOne": "1 رابطہ کامیابی سے درآمد ہوا",

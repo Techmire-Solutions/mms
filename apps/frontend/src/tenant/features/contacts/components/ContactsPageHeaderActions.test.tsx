@@ -61,4 +61,18 @@ describe("ContactsPageHeaderActions Component", () => {
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain("disabled");
   });
+
+  it("renders a dropdown trigger with menu aria when onImportCsv is provided", () => {
+    const html = render({ onImportCsv: vi.fn() });
+
+    expect(html).toContain("contacts.import");
+    expect(html).toContain('aria-haspopup="menu"');
+  });
+
+  it("renders a standard button without menu aria when onImportCsv is not provided", () => {
+    const html = render({ onImportCsv: undefined });
+
+    expect(html).toContain("contacts.import");
+    expect(html).not.toContain('aria-haspopup="menu"');
+  });
 });

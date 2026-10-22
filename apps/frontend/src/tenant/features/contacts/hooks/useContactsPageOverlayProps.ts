@@ -70,6 +70,8 @@ export function useContactsPageOverlayProps({
     importOpen: canWrite && overlay.importOpen,
     onCloseImport: () => overlay.setImportOpen(false),
     onImportContacts: actions.handleImport,
+    csvImportOpen: canWrite && overlay.csvImportOpen,
+    onCloseCsvImport: () => overlay.setCsvImportOpen(false),
     messagingTarget: messaging.messagingTarget,
     onCloseComposer: messaging.closeComposer,
     viewContact: currentViewContact,

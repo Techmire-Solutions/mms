@@ -103,12 +103,10 @@ export function ContactDetailFiles({
                   {canPersistContact && (
                     <Button
                       variant="ghost"
+                      size="icon"
                       aria-label={t("contacts.detail.deleteFile", { name: file.name })}
                       onClick={() => onRequestDelete({ id: file.id, name: file.name })}
-                      className={cn(
-                        MESSAGING_ICON_BTN,
-                        "border-destructive/30 bg-destructive/5 text-destructive hover:text-destructive hover:bg-destructive/15 hover:border-destructive/40 flex items-center justify-center shadow-none",
-                      )}
+                      className="min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shadow-none"
                       type="button"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

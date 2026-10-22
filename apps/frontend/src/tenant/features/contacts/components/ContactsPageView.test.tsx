@@ -91,6 +91,7 @@ const baseProps: React.ComponentProps<typeof ContactsPageView> = {
   handleOpenDuplicates: vi.fn(),
   handleExportCSV: vi.fn(),
   handleOpenImport: vi.fn(),
+  handleOpenCsvImport: vi.fn(),
   handleNew: vi.fn(),
   shownCount: 10,
   pendingCount: 0,

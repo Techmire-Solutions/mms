@@ -91,6 +91,10 @@ test.describe.serial("Contacts import + export E2E", { tag: "@local-only" }, () 
 
     // ── Import: header CTA → dialog → vCard → preview → queued batch ──────────────
     await page.getByRole("button", { name: "Import", exact: true }).click();
+    const vcardItem = page.getByRole("menuitem", { name: /vCard/i });
+    if (await vcardItem.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await vcardItem.click();
+    }
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: 15_000 });
     await expect(dialog.getByText("Upload .vcf file")).toBeVisible();
