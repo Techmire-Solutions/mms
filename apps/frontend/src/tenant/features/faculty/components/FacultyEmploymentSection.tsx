@@ -117,10 +117,7 @@ export function FacultyEmploymentSection(
             </Field>
           )}
 
-          <Field
-            label={t("faculty.contract.type")}
-            id="faculty-employment-contract-type"
-          >
+          <Field label={t("faculty.contract.type")} id="faculty-employment-contract-type">
             <FormSelect
               id="faculty-employment-contract-type"
               name="employmentContractType"

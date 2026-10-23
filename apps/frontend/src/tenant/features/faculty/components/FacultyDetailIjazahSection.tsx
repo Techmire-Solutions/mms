@@ -34,11 +34,7 @@ export function FacultyDetailIjazahSection({
   };
 
   return (
-    <SectionCard
-      title={t("faculty.ijazah.title")}
-      icon={Award}
-      accentColor="primary"
-    >
+    <SectionCard title={t("faculty.ijazah.title")} icon={Award} accentColor="primary">
       <div className="space-y-3">
         {ijazahs.map((ijazah: FacultyIjazah) => {
           const isSanadExpanded = Boolean(expandedSanadIds[ijazah.id]);

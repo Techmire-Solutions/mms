@@ -119,12 +119,7 @@ export interface FacultyIjazah {
 }
 
 /** Madrasa employment contract models: Salaried (Mahanah), Stipend (Wazifa), Hourly, or Volunteer. */
-export const FACULTY_CONTRACT_TYPE_VALUES = [
-  "salaried",
-  "wazifa",
-  "hourly",
-  "voluntary",
-] as const;
+export const FACULTY_CONTRACT_TYPE_VALUES = ["salaried", "wazifa", "hourly", "voluntary"] as const;
 export type FacultyContractType = (typeof FACULTY_CONTRACT_TYPE_VALUES)[number];
 
 export const FACULTY_LEAVE_CATEGORY_VALUES = [

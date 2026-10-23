@@ -8,7 +8,12 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import type { FacultyLeaveDetails, FacultyLeaveCategory, FacultyMember, FacultyRecord } from "@mms/shared";
+import type {
+  FacultyLeaveDetails,
+  FacultyLeaveCategory,
+  FacultyMember,
+  FacultyRecord,
+} from "@mms/shared";
 import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
 
 export interface FacultyLeaveModalProps {
@@ -187,11 +192,6 @@ function FacultyLeaveModalContent({
 export function FacultyLeaveModal(props: FacultyLeaveModalProps): React.JSX.Element | null {
   if (!props.open) return null;
 
-  return (
-    <FacultyLeaveModalContent
-      key={props.faculty?.id ?? "leave-new"}
-      {...props}
-    />
-  );
+  return <FacultyLeaveModalContent key={props.faculty?.id ?? "leave-new"} {...props} />;
 }
 export default FacultyLeaveModal;

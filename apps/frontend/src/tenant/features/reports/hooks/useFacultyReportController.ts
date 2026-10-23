@@ -45,10 +45,7 @@ export function useFacultyReportController({ filters }: FacultyReportProps) {
   const classFilter = filters.class && filters.class !== "all" ? filters.class : undefined;
   const statusParam = reportStatusFilter || (filters.status !== "all" ? filters.status : undefined);
   const searchParam =
-    filters.search?.trim() ||
-    filters.faculty?.trim() ||
-    filters.student?.trim() ||
-    undefined;
+    filters.search?.trim() || filters.faculty?.trim() || filters.student?.trim() || undefined;
 
   useEffect(() => {
     setListPage(1);

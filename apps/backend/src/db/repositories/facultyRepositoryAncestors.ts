@@ -50,6 +50,10 @@ export async function findDirectSupervisorsBatch(
 ): Promise<Record<string, string>> {
   if (!facultyIds.length) return {};
   const subdomain = tenant.trim().toLowerCase();
+  const idList = sql.join(
+    facultyIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
   return withTenantRead(subdomain, async (tx) => {
     const res = await tx.execute<{ member_id: string; supervisor_id: string }>(sql`
       SELECT
@@ -71,7 +75,7 @@ export async function findDirectSupervisorsBatch(
         AND sf.id = sup_fa.faculty_id
         AND sf.deleted_at IS NULL
       WHERE fa.workspace_subdomain = ${subdomain}
-        AND fa.faculty_id = ANY(${facultyIds}::text[])
+        AND fa.faculty_id IN (${idList})
         AND fa.is_primary = true
         AND fa.status = 'active'
         AND fa.deleted_at IS NULL

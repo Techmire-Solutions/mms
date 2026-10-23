@@ -67,12 +67,7 @@ const mockFaculty: FacultyMember = {
 describe("FacultyLeaveModal", () => {
   it("renders leave modal with leave status, category, and dates when open", () => {
     const html = renderToStaticMarkup(
-      <FacultyLeaveModal
-        open={true}
-        onClose={vi.fn()}
-        faculty={mockFaculty}
-        onSave={vi.fn()}
-      />,
+      <FacultyLeaveModal open={true} onClose={vi.fn()} faculty={mockFaculty} onSave={vi.fn()} />,
     );
 
     expect(html).toContain("faculty.leave.title");
@@ -86,12 +81,7 @@ describe("FacultyLeaveModal", () => {
 
   it("renders null when open is false", () => {
     const html = renderToStaticMarkup(
-      <FacultyLeaveModal
-        open={false}
-        onClose={vi.fn()}
-        faculty={mockFaculty}
-        onSave={vi.fn()}
-      />,
+      <FacultyLeaveModal open={false} onClose={vi.fn()} faculty={mockFaculty} onSave={vi.fn()} />,
     );
 
     expect(html).toBe("");

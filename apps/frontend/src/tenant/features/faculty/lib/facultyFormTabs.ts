@@ -134,9 +134,7 @@ export function useFacultyFormTabs(input: {
     });
   }, [isFieldEnabled, t, tabErrors]);
 
-  const activeTab: FacultyFormTabKey = visibleTabs.some(
-    (tabItem) => tabItem.key === activeTabState,
-  )
+  const activeTab: FacultyFormTabKey = visibleTabs.some((tabItem) => tabItem.key === activeTabState)
     ? activeTabState
     : ((visibleTabs[0]?.key as FacultyFormTabKey) ?? "contact");
 
@@ -144,8 +142,8 @@ export function useFacultyFormTabs(input: {
     setPrevErrors(errors);
     const errorKeys = Object.keys(errors).filter((key) => Boolean(errors[key]));
     if (errorKeys.length > 0) {
-      const firstInvalidTab = visibleTabs.find(
-        (vt) => Boolean(tabErrors[vt.key] && tabErrors[vt.key] > 0),
+      const firstInvalidTab = visibleTabs.find((vt) =>
+        Boolean(tabErrors[vt.key] && tabErrors[vt.key] > 0),
       );
       if (firstInvalidTab && firstInvalidTab.key !== activeTab) {
         setActiveTabState(firstInvalidTab.key as FacultyFormTabKey);

@@ -150,13 +150,10 @@ function FacultyDepartmentFormContent({
 }
 
 /** Faculty Management model — Department: name (unique, required), description, status. */
-export function FacultyDepartmentFormModal(props: FacultyDepartmentFormModalProps): React.JSX.Element | null {
+export function FacultyDepartmentFormModal(
+  props: FacultyDepartmentFormModalProps,
+): React.JSX.Element | null {
   if (!props.open) return null;
 
-  return (
-    <FacultyDepartmentFormContent
-      key={props.department?.id ?? "new"}
-      {...props}
-    />
-  );
+  return <FacultyDepartmentFormContent key={props.department?.id ?? "new"} {...props} />;
 }

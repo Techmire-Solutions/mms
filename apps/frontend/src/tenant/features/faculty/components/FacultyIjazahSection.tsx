@@ -38,7 +38,10 @@ export function FacultyIjazahSection({
   const handleAdd = () => {
     if (!title.trim() || !grantingAuthority.trim()) return;
     const newEntry: FacultyIjazah = {
-      id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `ijz_${Date.now()}`,
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `ijz_${Date.now()}`,
       title: title.trim(),
       field,
       grantingAuthority: grantingAuthority.trim(),
@@ -109,7 +112,9 @@ export function FacultyIjazahSection({
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground/80">{ijazah.grantingAuthority}</span>
+                    <span className="font-medium text-foreground/80">
+                      {ijazah.grantingAuthority}
+                    </span>
                   </p>
                   {ijazah.sanadChain && (
                     <p className="text-xs text-muted-foreground line-clamp-2 pt-1 border-t border-border/40 mt-1 italic">
@@ -152,11 +157,7 @@ export function FacultyIjazahSection({
                   />
                 </Field>
 
-                <Field
-                  label={t("faculty.ijazah.grantingAuthority")}
-                  id="ijazah-authority"
-                  required
-                >
+                <Field label={t("faculty.ijazah.grantingAuthority")} id="ijazah-authority" required>
                   <Input
                     id="ijazah-authority"
                     value={grantingAuthority}

@@ -59,9 +59,7 @@ function FacultyDesignationFormContent({
   const [parentDesignationId, setParentDesignationId] = useState(
     () => designation?.parentDesignationId ?? "",
   );
-  const [status, setStatus] = useState<FacultyCatalogStatus>(
-    () => designation?.status ?? "active",
-  );
+  const [status, setStatus] = useState<FacultyCatalogStatus>(() => designation?.status ?? "active");
   const [assignableRoles, setAssignableRoles] = useState<string[]>(
     () => designation?.assignableRoles ?? [],
   );

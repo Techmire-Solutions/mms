@@ -26,6 +26,10 @@ export async function countSubordinatesBatch(
   for (const id of supervisorIds) result[id] = 0;
   if (!supervisorIds.length) return result;
   const subdomain = tenant.trim().toLowerCase();
+  const idList = sql.join(
+    supervisorIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
   return withTenantRead(subdomain, async (tx) => {
     const res = await tx.execute<{ supervisor_id: string; count: string | number }>(sql`
       SELECT
@@ -47,7 +51,7 @@ export async function countSubordinatesBatch(
         AND sf.id = sub_fa.faculty_id
         AND sf.deleted_at IS NULL
       WHERE sup_fa.workspace_subdomain = ${subdomain}
-        AND sup_fa.faculty_id = ANY(${supervisorIds}::text[])
+        AND sup_fa.faculty_id IN (${idList})
         AND sup_fa.is_primary = true
         AND sup_fa.status = 'active'
         AND sup_fa.deleted_at IS NULL

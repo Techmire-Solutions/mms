@@ -32,11 +32,7 @@ export function FacultyReportingHierarchyCard({
     (faculty.reportingFacultyId ? t("faculty.field.reportingFacultyId") : "");
 
   return (
-    <SectionCard
-      title={t("faculty.hierarchy.title")}
-      icon={Network}
-      accentColor="primary"
-    >
+    <SectionCard title={t("faculty.hierarchy.title")} icon={Network} accentColor="primary">
       <div className="space-y-3 text-start">
         {hasSupervisor ? (
           <div className="p-3 rounded-lg border border-border/70 bg-card/60 space-y-1.5">
@@ -44,7 +40,12 @@ export function FacultyReportingHierarchyCard({
               <span className="text-3xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t("faculty.field.reportingFacultyId")}
               </span>
-              <Badge as="span" size="sm" tone="secondary" className="px-1.5 py-0.2 rounded text-3xs font-medium">
+              <Badge
+                as="span"
+                size="sm"
+                tone="secondary"
+                className="px-1.5 py-0.2 rounded text-3xs font-medium"
+              >
                 <UserCheck className="w-3 h-3 me-1 text-primary" aria-hidden />
                 {t("faculty.status.active")}
               </Badge>

@@ -33,9 +33,7 @@ describe("FacultyIjazahSection", () => {
   });
 
   it("renders empty state message when ijazahs list is empty", () => {
-    const html = renderToStaticMarkup(
-      <FacultyIjazahSection ijazahs={[]} onChange={vi.fn()} />,
-    );
+    const html = renderToStaticMarkup(<FacultyIjazahSection ijazahs={[]} onChange={vi.fn()} />);
 
     expect(html).toContain("faculty.ijazah.noIjazahs");
     expect(html).toContain("faculty.ijazah.add");
