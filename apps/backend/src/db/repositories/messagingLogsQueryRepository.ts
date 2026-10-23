@@ -83,7 +83,9 @@ export async function queryFilteredMessageLogs(
     }
 
     if (query.endDate?.trim()) {
-      conditions.push(lte(messageLogs.sentAt, query.endDate.trim()));
+      const rawEnd = query.endDate.trim();
+      const normalizedEnd = rawEnd.includes("T") ? rawEnd : `${rawEnd}T23:59:59.999Z`;
+      conditions.push(lte(messageLogs.sentAt, normalizedEnd));
     }
 
     if (query.search?.trim()) {
@@ -93,6 +95,12 @@ export async function queryFilteredMessageLogs(
           ilike(messageLogs.body, s),
           ilike(messageLogs.subject, s),
           ilike(messageLogs.contactId, s),
+          sql`${messageLogs.contactId} IN (
+            SELECT id FROM contacts
+            WHERE workspace_subdomain = ${subdomain}
+              AND deleted_at IS NULL
+              AND name ILIKE ${s}
+          )`,
         )!,
       );
     }
@@ -187,7 +195,8 @@ export async function queryMessagingMetrics(
     };
   }
   const startDate = filters.startDate?.trim() || null;
-  const endDate = filters.endDate?.trim() || null;
+  const rawEnd = filters.endDate?.trim() || null;
+  const endDate = rawEnd ? (rawEnd.includes("T") ? rawEnd : `${rawEnd}T23:59:59.999Z`) : null;
   return withTenant(subdomain, async (tx) => {
     const result = await tx.execute(sql`
       SELECT

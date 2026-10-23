@@ -4,8 +4,9 @@ import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 
 import { messagingExportRoutes } from "./messaging/messagingExportRoutes.js";
 import { messagingLogRoutes } from "./messaging/messagingLogRoutes.js";
-import { messagingRecipientRoutes } from "./messaging/messagingRecipientRoutes.js";
-import { messagingTemplateRoutes } from "./messaging/messagingTemplateRoutes.js";
+import { messagingSmsDispatchRoute } from "./messaging/messagingSmsDispatchRoute.js";
+import { messagingEmailDispatchRoute } from "./messaging/messagingEmailDispatchRoute.js";
+import { messagingWhatsAppDispatchRoute } from "./messaging/messagingWhatsAppDispatchRoute.js";
 import { messagingContractRouter } from "./messaging/messagingContractRouter.js";
 
 const messagingRoutes: FastifyPluginAsync = async (fastify, _options) => {
@@ -14,10 +15,11 @@ const messagingRoutes: FastifyPluginAsync = async (fastify, _options) => {
 
   await fastify.register(
     async (sub) => {
-      await sub.register(messagingRecipientRoutes);
-      await sub.register(messagingTemplateRoutes);
       await sub.register(messagingLogRoutes);
       await sub.register(messagingExportRoutes);
+      await sub.register(messagingSmsDispatchRoute);
+      await sub.register(messagingEmailDispatchRoute);
+      await sub.register(messagingWhatsAppDispatchRoute);
     },
     { prefix: "/api/messaging" },
   );

@@ -128,6 +128,25 @@ export const smsIntegrations = pgTable("sms_integrations", {
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
+/** Tenant-scoped WhatsApp provider config & credentials — exactly one provider active per tenant. */
+export const whatsappIntegrations = pgTable("whatsapp_integrations", {
+  workspaceSubdomain: text("workspace_subdomain")
+    .primaryKey()
+    .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+  providerId: varchar("provider_id", { length: 40 }).notNull().default("meta"),
+  accountId: varchar("account_id", { length: 255 }).notNull().default(""),
+  phoneNumberId: varchar("phone_number_id", { length: 255 }),
+  senderId: varchar("sender_id", { length: 255 }).notNull().default(""),
+  apiBaseUrl: varchar("api_base_url", { length: 255 }),
+  accountSecret: text("account_secret"),
+  connected: boolean("connected").notNull().default(false),
+  hasCredentials: boolean("has_credentials").notNull().default(false),
+  lastTestAt: timestamp("last_test_at", { withTimezone: true, mode: "date" }),
+  lastTestOk: boolean("last_test_ok"),
+  lastError: text("last_error"),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+});
+
 /* ========================================================================= */
 /*                         ROW INFER TYPES                                   */
 /* ========================================================================= */
@@ -142,3 +161,6 @@ export type InsertEmailIntegrationRow = typeof emailIntegrations.$inferInsert;
 
 export type SmsIntegrationRow = typeof smsIntegrations.$inferSelect;
 export type InsertSmsIntegrationRow = typeof smsIntegrations.$inferInsert;
+
+export type WhatsappIntegrationRow = typeof whatsappIntegrations.$inferSelect;
+export type InsertWhatsappIntegrationRow = typeof whatsappIntegrations.$inferInsert;

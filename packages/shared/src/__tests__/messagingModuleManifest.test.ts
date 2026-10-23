@@ -17,7 +17,8 @@ describe("messagingModuleManifest", () => {
     expect(MESSAGING_MODULE_MANIFEST.entityType).toBe("Message");
     expect(MESSAGING_MODULE_MANIFEST.restBasePath).toBe("/api/messaging");
     expect(MESSAGING_MODULE_MANIFEST.tiers).toEqual(["work", "reports", "setup"]);
-    expect(MESSAGING_MODULE_MANIFEST.setupSubTabs).toEqual(["templates"]);
+    expect(MESSAGING_MODULE_MANIFEST.setupSubTabs).toEqual(["templates", "preferences"]);
+    expect(MESSAGING_MODULE_MANIFEST.preferencesObjectKey).toBe("messaging_preferences");
     expect(MESSAGING_MODULE_MANIFEST.softDelete.workExcludesDeleted).toBe(true);
     expect(MESSAGING_MODULE_MANIFEST.permissions.read).toBe("messaging.read");
     expect(MESSAGING_MODULE_MANIFEST.permissions.write).toBe("messaging.write");

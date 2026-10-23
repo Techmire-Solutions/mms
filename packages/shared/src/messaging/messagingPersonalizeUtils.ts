@@ -11,6 +11,11 @@ export interface PersonalizeRecipient {
   madrasaName?: string;
   salutation?: string;
   time?: string;
+  studentName?: string;
+  rollNumber?: string;
+  className?: string;
+  grade?: string;
+  attendanceStatus?: string;
 }
 
 /** Allowlisted personalization token keys (lowercase, without braces). */
@@ -26,6 +31,11 @@ export const ALLOWED_PERSONALIZATION_TOKEN_KEYS = new Set([
   "school_name",
   "salutation",
   "time",
+  "student_name",
+  "roll_number",
+  "class",
+  "grade",
+  "attendance_status",
 ]);
 
 const PERSONALIZATION_TOKEN_PATTERN_SOURCE = String.raw`\{([a-z_]+)(?:\|([^}]+))?\}`;
@@ -86,6 +96,11 @@ export function personalizeMessage(
   const madrasaNameStr = recipient.madrasaName || options?.madrasaName || "";
   const salutationStr = recipient.salutation || options?.salutation || "";
   const timeStr = recipient.time || "";
+  const studentNameStr = recipient.studentName || "";
+  const rollNumberStr = recipient.rollNumber || "";
+  const classStr = recipient.className || "";
+  const gradeStr = recipient.grade || "";
+  const attendanceStatusStr = recipient.attendanceStatus || "";
 
   const tokenValues: Record<string, string> = {
     name,
@@ -99,6 +114,11 @@ export function personalizeMessage(
     school_name: madrasaNameStr,
     salutation: salutationStr,
     time: timeStr,
+    student_name: studentNameStr,
+    roll_number: rollNumberStr,
+    class: classStr,
+    grade: gradeStr,
+    attendance_status: attendanceStatusStr,
   };
 
   return body.replace(personalizationTokenPattern(), (match, key, fallback) => {
@@ -145,6 +165,23 @@ export const MESSAGING_VARIABLE_TOKENS: VariableToken[] = [
     fallbackExample: "{salutation|Respected}",
   },
   { token: "{time}", labelKey: "messaging.tokenTime", fallbackExample: "{time}" },
+  {
+    token: "{student_name}",
+    labelKey: "messaging.tokenStudentName",
+    fallbackExample: "{student_name|Student}",
+  },
+  {
+    token: "{roll_number}",
+    labelKey: "messaging.tokenRollNumber",
+    fallbackExample: "{roll_number}",
+  },
+  { token: "{class}", labelKey: "messaging.tokenClass", fallbackExample: "{class}" },
+  { token: "{grade}", labelKey: "messaging.tokenGrade", fallbackExample: "{grade}" },
+  {
+    token: "{attendance_status}",
+    labelKey: "messaging.tokenAttendanceStatus",
+    fallbackExample: "{attendance_status|present}",
+  },
 ];
 
 /**

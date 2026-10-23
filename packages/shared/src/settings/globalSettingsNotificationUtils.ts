@@ -23,8 +23,26 @@ export function canSendSmsNotifications(settings: GlobalSettings): boolean {
   return settings.smsNotifications === true;
 }
 
-export const NOTIFICATION_CHANNELS = ["email", "sms", "both", "none"] as const;
+/** Master WhatsApp notifications gate from global settings. */
+export function canSendWhatsAppNotifications(settings: GlobalSettings): boolean {
+  return settings.whatsAppNotifications === true;
+}
+
+export const NOTIFICATION_CHANNELS = ["email", "sms", "whatsapp", "both", "all", "none"] as const;
 export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
+
+/**
+ * Returns list of all active notification channel types.
+ */
+export function getActiveNotificationChannels(
+  settings: GlobalSettings,
+): ("email" | "sms" | "whatsapp")[] {
+  const list: ("email" | "sms" | "whatsapp")[] = [];
+  if (canSendEmailNotifications(settings)) list.push("email");
+  if (canSendSmsNotifications(settings)) list.push("sms");
+  if (canSendWhatsAppNotifications(settings)) list.push("whatsapp");
+  return list;
+}
 
 /**
  * Primary outbound channel for verification codes and system alerts.
@@ -33,9 +51,12 @@ export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 export function resolveNotificationChannel(settings: GlobalSettings): NotificationChannel {
   const email = canSendEmailNotifications(settings);
   const sms = canSendSmsNotifications(settings);
+  const whatsapp = canSendWhatsAppNotifications(settings);
+  if (email && sms && whatsapp) return "all";
   if (email && sms) return "both";
   if (email) return "email";
   if (sms) return "sms";
+  if (whatsapp) return "whatsapp";
   return "none";
 }
 

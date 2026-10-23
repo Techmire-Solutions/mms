@@ -41,6 +41,7 @@ export interface UseMessageComposerModelProps {
   onSent?: (sent: { recipientId: string | number; body: string }[]) => void;
   madrasaName?: string;
   user?: unknown;
+  useServerGateway?: boolean;
 }
 
 export function useMessageComposerModel(props: UseMessageComposerModelProps) {
@@ -84,6 +85,7 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [localRecipients, setLocalRecipients] = useState(initial.localRecipients);
   const [step, setStep] = useState(initial.step);
+  const [useServerGateway, setUseServerGateway] = useState(props.useServerGateway ?? true);
 
   useEffect(() => {
     if (draftRestoredRef.current || !initial.draft) return;
@@ -168,6 +170,7 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
     },
     madrasaName,
     user,
+    useServerGateway,
   });
   const isEmail = channel === "email";
   const isSms = channel === "sms";
@@ -252,6 +255,8 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
     isEmail,
     isSms,
     isBulk: localRecipients.length > 1,
+    useServerGateway,
+    setUseServerGateway,
     Icon: isEmail ? Mail : isSms ? MessageSquare : MessageCircle,
     title: getComposerTitle({ t, step, channel, localRecipients }),
     subtitle: getComposerSubtitle({ t, step, channel, localRecipients, eligibleCount }),

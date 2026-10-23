@@ -8,6 +8,7 @@ export interface PlatformSettings {
   certbotEmail: string;
   emailNotifications: boolean;
   smsNotifications: boolean;
+  whatsAppNotifications?: boolean;
   updatedAt?: string;
 }
 
@@ -18,6 +19,7 @@ export const platformSettingsUpdateSchema = z
     certbotEmail: z.string().email("Valid email address required").or(z.literal("")).optional(),
     emailNotifications: z.boolean().optional(),
     smsNotifications: z.boolean().optional(),
+    whatsAppNotifications: z.boolean().optional(),
   })
   .strict();
 
@@ -30,6 +32,7 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   certbotEmail: "",
   emailNotifications: true,
   smsNotifications: false,
+  whatsAppNotifications: false,
 };
 
 /** Primary outbound channel for platform 2FA/alerts — returns "both" when both are on. */
@@ -38,9 +41,12 @@ export function resolvePlatformNotificationChannel(
 ): NotificationChannel {
   const email = Boolean(settings.emailNotifications);
   const sms = Boolean(settings.smsNotifications);
+  const whatsapp = Boolean(settings.whatsAppNotifications);
+  if (email && sms && whatsapp) return "all";
   if (email && sms) return "both";
   if (email) return "email";
   if (sms) return "sms";
+  if (whatsapp) return "whatsapp";
   return "none";
 }
 

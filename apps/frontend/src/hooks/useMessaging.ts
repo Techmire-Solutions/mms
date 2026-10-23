@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
@@ -7,6 +7,7 @@ import {
   type MessageTemplate,
 } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
+import { apiJson } from "@/lib/apiClient";
 import { notifyApiFailure } from "@/lib/apiErrorNotify";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -167,6 +168,101 @@ export function useMessagingMutations() {
     onError,
   });
 
+  const dispatchServerSms = useMutation({
+    mutationFn: async (payload: {
+      recipients: Array<{
+        id: string | number;
+        phone: string;
+        name?: string;
+        [key: string]: unknown;
+      }>;
+      message: string;
+      category?: string;
+    }) => {
+      return apiJson<{ sentCount: number; failedCount: number; total: number }>(
+        "/api/messaging/dispatch/sms",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            recipients: payload.recipients.map((r) => ({
+              ...r,
+              id: String(r.id),
+              phone: r.phone ?? "",
+            })),
+          }),
+        },
+      );
+    },
+    onSuccess: () => invalidate(),
+    onError,
+  });
+
+  const dispatchServerEmail = useMutation({
+    mutationFn: async (payload: {
+      recipients: Array<{
+        id: string | number;
+        email: string;
+        name?: string;
+        [key: string]: unknown;
+      }>;
+      subject: string;
+      message: string;
+      html?: string;
+      category?: string;
+    }) => {
+      return apiJson<{ sentCount: number; failedCount: number; total: number }>(
+        "/api/messaging/dispatch/email",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            recipients: payload.recipients.map((r) => ({
+              ...r,
+              id: String(r.id),
+              email: r.email,
+            })),
+          }),
+        },
+      );
+    },
+    onSuccess: () => invalidate(),
+    onError,
+  });
+
+  const dispatchServerWhatsApp = useMutation({
+    mutationFn: async (payload: {
+      recipients: Array<{
+        id: string | number;
+        phone: string;
+        name?: string;
+        [key: string]: unknown;
+      }>;
+      message: string;
+      category?: string;
+    }) => {
+      return apiJson<{ sentCount: number; failedCount: number; total: number }>(
+        "/api/messaging/dispatch/whatsapp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            recipients: payload.recipients.map((r) => ({
+              ...r,
+              id: String(r.id),
+              phone: r.phone ?? "",
+            })),
+          }),
+        },
+      );
+    },
+    onSuccess: () => invalidate(),
+    onError,
+  });
+
   return {
     saveTemplate,
     deleteTemplate: {
@@ -184,5 +280,8 @@ export function useMessagingMutations() {
           body: {},
         }),
     },
+    dispatchServerSms,
+    dispatchServerEmail,
+    dispatchServerWhatsApp,
   };
 }

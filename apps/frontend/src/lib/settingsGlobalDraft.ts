@@ -22,6 +22,7 @@ export function globalSettingsPreviewPatch(draft: GlobalSettings): Partial<Globa
     ),
     emailNotifications: draft.emailNotifications,
     smsNotifications: draft.smsNotifications,
+    whatsAppNotifications: draft.whatsAppNotifications,
     twoFactor: draft.twoFactor,
     sessionTimeout: normalizeSessionTimeout(draft.sessionTimeout),
     passwordPolicy: normalizePasswordPolicy(draft.passwordPolicy),

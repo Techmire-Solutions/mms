@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Clock, Pause, Play, XCircle, Zap } from "lucide-react";
+import { Clock, Pause, Play, Radio, XCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
@@ -10,11 +10,14 @@ import type { DispatchSpeed } from "./useMessageComposerDispatch";
 interface MessageComposerDispatchControlsProps {
   skippedCount: number;
   isEmail: boolean;
+  isSms?: boolean;
   isBulk: boolean;
   opening: boolean;
   dispatchSpeed: DispatchSpeed;
   dispatchProgress: { current: number; total: number } | null;
   isPaused: boolean;
+  useServerGateway?: boolean;
+  onUseServerGatewayChange?: (useServer: boolean) => void;
   onShowSkipped: () => void;
   onDispatchSpeedChange: (speed: DispatchSpeed) => void;
   onPausedChange: (paused: boolean) => void;
@@ -24,11 +27,14 @@ interface MessageComposerDispatchControlsProps {
 export function MessageComposerDispatchControls({
   skippedCount,
   isEmail,
+  isSms,
   isBulk,
   opening,
   dispatchSpeed,
   dispatchProgress,
   isPaused,
+  useServerGateway,
+  onUseServerGatewayChange,
   onShowSkipped,
   onDispatchSpeedChange,
   onPausedChange,
@@ -126,7 +132,40 @@ export function MessageComposerDispatchControls({
           </motion.div>
         )}
       </AnimatePresence>
-      {isBulk && !opening && (
+      {!opening && onUseServerGatewayChange && (
+        <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/20 p-2 text-xs">
+          <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
+            <Radio className="h-3.5 w-3.5 text-primary" />
+            {isSms
+              ? t("messaging.preferences.defaultSmsMode")
+              : isEmail
+                ? t("messaging.dispatchMode.serverEmail")
+                : t("messaging.dispatchMode.serverWhatsApp")}
+            :
+          </span>
+          <CompactSegmentedControl
+            options={
+              isSms
+                ? [
+                    { value: "gateway", label: t("messaging.dispatchMode.gateway") },
+                    { value: "device", label: t("messaging.dispatchMode.device") },
+                  ]
+                : isEmail
+                  ? [
+                      { value: "gateway", label: t("messaging.dispatchMode.serverEmail") },
+                      { value: "device", label: t("messaging.dispatchMode.clientEmail") },
+                    ]
+                  : [
+                      { value: "gateway", label: t("messaging.dispatchMode.serverWhatsApp") },
+                      { value: "device", label: t("messaging.dispatchMode.clientWhatsApp") },
+                    ]
+            }
+            value={useServerGateway ? "gateway" : "device"}
+            onChange={(value) => onUseServerGatewayChange(value === "gateway")}
+          />
+        </div>
+      )}
+      {isBulk && !opening && !useServerGateway && (
         <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/20 p-2 text-xs">
           <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
             <Zap className="h-3.5 w-3.5 text-primary" />

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { StandardMessagingRecipient, Contact } from "@mms/shared";
 import {
@@ -9,11 +9,10 @@ import {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMessagingWorkRecipients } from "@/tenant/features/messaging/hooks/useMessagingWorkRecipients";
-import { useContactColumns } from "@/lib/contexts/ContactConfigContext";
-import ContactsListDesktopTable from "@/tenant/features/contacts/components/ContactsListDesktopTable";
 import { SearchBar } from "@/components/app/SearchBar";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/app/ErrorState";
+import { TenantMessageComposerRecipientTable } from "./TenantMessageComposerRecipientTable";
 
 export interface MessageComposerRecipientPickerProps {
   kind: "phone" | "email";
@@ -33,7 +32,6 @@ export function TenantMessageComposerRecipientPicker({
   onRemove,
 }: MessageComposerRecipientPickerProps): React.JSX.Element {
   const { t } = useTranslation();
-  const columns = useContactColumns();
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -64,38 +62,36 @@ export function TenantMessageComposerRecipientPicker({
     });
   }, []);
 
+  const recipients = useMemo(() => contacts.map(toRecipient), [contacts, toRecipient]);
+
   const handleToggle = useCallback(
-    (contact: Contact): void => {
-      const isAdded = existingIds.has(String(contact.id));
+    (recipient: StandardMessagingRecipient): void => {
+      const isAdded = existingIds.has(String(recipient.id));
       if (isAdded) {
-        onRemove(contact.id);
+        onRemove(recipient.id);
         return;
       }
-      onAdd(toRecipient(contact));
+      onAdd(recipient);
     },
-    [existingIds, onAdd, onRemove, toRecipient],
+    [existingIds, onAdd, onRemove],
   );
 
-  const handleSelect = (contactId: string | number) => {
-    const contact = contacts.find((c) => String(c.id) === String(contactId));
-    if (contact) handleToggle(contact);
-  };
-
-  const handleSelectAll = () => {
-    const allSelected = contacts.length > 0 && contacts.every((c) => existingIds.has(String(c.id)));
+  const handleToggleAll = () => {
+    const allSelected =
+      recipients.length > 0 && recipients.every((r) => existingIds.has(String(r.id)));
     if (allSelected) {
-      contacts.forEach((c) => onRemove(c.id));
+      recipients.forEach((r) => onRemove(r.id));
       return;
     }
-    contacts.forEach((c) => {
-      if (!existingIds.has(String(c.id))) onAdd(toRecipient(c));
+    recipients.forEach((r) => {
+      if (!existingIds.has(String(r.id))) onAdd(r);
     });
   };
 
-  const allSelected = contacts.length > 0 && contacts.every((c) => existingIds.has(String(c.id)));
+  const allSelected =
+    recipients.length > 0 && recipients.every((r) => existingIds.has(String(r.id)));
   const someSelected =
-    contacts.length > 0 && contacts.some((c) => existingIds.has(String(c.id))) && !allSelected;
-  const noop = () => {};
+    recipients.length > 0 && recipients.some((r) => existingIds.has(String(r.id))) && !allSelected;
 
   return (
     <div className="flex min-h-125 flex-col gap-3">
@@ -129,19 +125,12 @@ export function TenantMessageComposerRecipientPicker({
             {t("messaging.noRecipientsFound")}
           </div>
         ) : (
-          <ContactsListDesktopTable
-            contacts={contacts}
-            selected={Array.from(existingIds)}
-            onSelect={disabled ? noop : handleSelect}
-            onSelectAll={disabled ? noop : handleSelectAll}
-            onView={noop}
-            onEdit={noop}
-            onDelete={noop}
-            sortField="name"
-            sortDir="asc"
-            onSort={noop}
-            columns={columns}
-            allContacts={contacts}
+          <TenantMessageComposerRecipientTable
+            recipients={recipients}
+            selectedIds={existingIds}
+            disabled={disabled}
+            onToggle={handleToggle}
+            onToggleAll={handleToggleAll}
             allSelected={allSelected}
             someSelected={someSelected}
           />

@@ -50,6 +50,23 @@ describe("messagingUtils", () => {
       expect(result).toBe("Welcome to Madrasa Tul Elm on 2026-08-01.");
     });
 
+    it("substitutes academic tokens properly", () => {
+      const result = personalizeMessage(
+        "Salaam {name}, student {student_name} (Roll: {roll_number}) in class {class} is {attendance_status}.",
+        {
+          id: 5,
+          name: "Parent Raza",
+          studentName: "Hassan Raza",
+          rollNumber: "101",
+          className: "Hifz 1",
+          attendanceStatus: "absent",
+        },
+      );
+      expect(result).toBe(
+        "Salaam Parent Raza, student Hassan Raza (Roll: 101) in class Hifz 1 is absent.",
+      );
+    });
+
     it("leaves unknown token literals for callers to reject", () => {
       const result = personalizeMessage("Hello {name}, see {custom_field} and {foo|bar}.", {
         id: 4,

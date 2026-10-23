@@ -4,10 +4,10 @@ import {
   APP_LANGUAGES,
   DEFAULT_GLOBAL_SETTINGS,
   formatLanguageSelectLabel,
+  getActiveNotificationChannels,
   isRtlLanguage,
   normalizeDateFormat,
   normalizeTimezone,
-  resolveNotificationChannel,
   type AppLanguageCode,
   type DateFormatId,
 } from "@mms/shared";
@@ -20,6 +20,7 @@ import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import DateFormatSelect from "@/tenant/features/settings/components/DateFormatSelect";
 import EmailIntegrationPanel from "@/tenant/features/settings/components/EmailIntegrationPanel";
 import SmsIntegrationPanel from "@/tenant/features/settings/components/SmsIntegrationPanel";
+import WhatsAppIntegrationPanel from "@/tenant/features/settings/components/WhatsAppIntegrationPanel";
 import TimezoneSelect from "@/tenant/features/settings/components/TimezoneSelect";
 import { GlobalSettingsSecuritySection } from "@/tenant/features/settings/components/GlobalSettingsSecuritySection";
 import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
@@ -43,8 +44,6 @@ export default function GlobalSettings(): React.JSX.Element {
 
   const { data, isGlobalDirty, saved, saving, upd, handleSaveGlobal, handleDiscardGlobal } =
     useSettingsGlobalDraft();
-
-  const notificationChannel = (() => resolveNotificationChannel(data))();
 
   return (
     <SettingsPanel
@@ -136,31 +135,23 @@ export default function GlobalSettings(): React.JSX.Element {
                 <span className="text-muted-foreground">
                   {t("global.notificationsActiveChannel")}:
                 </span>
-                {notificationChannel === "both" && (
-                  <>
-                    <Badge as="span" tone="primary" size="sm">
-                      {t("global.notificationsChannelEmail")}
+                {(() => {
+                  const activeChannels = getActiveNotificationChannels(data);
+                  if (activeChannels.length === 0) {
+                    return (
+                      <Badge as="span" tone="warning" size="sm">
+                        {t("global.notificationsChannelNone")}
+                      </Badge>
+                    );
+                  }
+                  return activeChannels.map((ch) => (
+                    <Badge key={ch} as="span" tone="primary" size="sm">
+                      {ch === "email" && t("global.notificationsChannelEmail")}
+                      {ch === "sms" && t("global.notificationsChannelSms")}
+                      {ch === "whatsapp" && t("global.notificationsChannelWhatsApp")}
                     </Badge>
-                    <Badge as="span" tone="primary" size="sm">
-                      {t("global.notificationsChannelSms")}
-                    </Badge>
-                  </>
-                )}
-                {notificationChannel === "email" && (
-                  <Badge as="span" tone="primary" size="sm">
-                    {t("global.notificationsChannelEmail")}
-                  </Badge>
-                )}
-                {notificationChannel === "sms" && (
-                  <Badge as="span" tone="primary" size="sm">
-                    {t("global.notificationsChannelSms")}
-                  </Badge>
-                )}
-                {notificationChannel === "none" && (
-                  <Badge as="span" tone="warning" size="sm">
-                    {t("global.notificationsChannelNone")}
-                  </Badge>
-                )}
+                  ));
+                })()}
               </div>
               <SettingsToggleRow
                 id="emailNotifications"
@@ -178,6 +169,14 @@ export default function GlobalSettings(): React.JSX.Element {
                 onCheckedChange={(v) => upd("smsNotifications", v)}
               />
               {data.smsNotifications ? <SmsIntegrationPanel /> : null}
+              <SettingsToggleRow
+                id="whatsAppNotifications"
+                label={t("global.whatsAppNotifications")}
+                description={t("global.whatsAppNotificationsDesc")}
+                checked={Boolean(data.whatsAppNotifications)}
+                onCheckedChange={(v) => upd("whatsAppNotifications", v)}
+              />
+              {data.whatsAppNotifications ? <WhatsAppIntegrationPanel /> : null}
             </div>
           </SectionCard>
 

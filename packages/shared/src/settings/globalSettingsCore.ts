@@ -27,6 +27,8 @@ export interface GlobalSettings {
   emailNotifications: boolean;
   /** Master toggle for SMS-based notifications. */
   smsNotifications: boolean;
+  /** Master toggle for WhatsApp-based notifications. */
+  whatsAppNotifications: boolean;
   /** Whether two-factor authentication is enforced. */
   twoFactor: boolean;
   /** Session inactivity timeout in minutes. */
@@ -57,6 +59,7 @@ export const GLOBAL_SETTINGS_PUBLIC_FIELD_KEYS = [
 export const GLOBAL_SETTINGS_ADMIN_FIELD_KEYS = [
   "emailNotifications",
   "smsNotifications",
+  "whatsAppNotifications",
   "twoFactor",
   "sessionTimeout",
   "passwordPolicy",
@@ -75,6 +78,7 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   dateFormat: "DD/MM/YYYY",
   emailNotifications: true,
   smsNotifications: false,
+  whatsAppNotifications: false,
   twoFactor: false,
   sessionTimeout: "60",
   passwordPolicy: "strong",
@@ -142,6 +146,10 @@ export function mergeGlobalSettings(partial?: Partial<GlobalSettings> | null): G
     smsNotifications: coerceBoolean(
       partial?.smsNotifications,
       DEFAULT_GLOBAL_SETTINGS.smsNotifications,
+    ),
+    whatsAppNotifications: coerceBoolean(
+      partial?.whatsAppNotifications,
+      DEFAULT_GLOBAL_SETTINGS.whatsAppNotifications,
     ),
     twoFactor: coerceBoolean(partial?.twoFactor, DEFAULT_GLOBAL_SETTINGS.twoFactor),
     sessionTimeout,

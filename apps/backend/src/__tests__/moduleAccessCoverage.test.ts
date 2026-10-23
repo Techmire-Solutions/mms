@@ -207,6 +207,11 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
     paths: ["/api/sms/integration", "/api/sms/integration/test"],
   },
   {
+    prefix: "/api/whatsapp/",
+    reason: "integration settings (settings.global.write)",
+    paths: ["/api/whatsapp/integration", "/api/whatsapp/integration/test"],
+  },
+  {
     prefix: "/api/ai/",
     reason: "LLM provider settings",
     paths: ["/api/ai/models", "/api/ai/test"],

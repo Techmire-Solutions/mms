@@ -58,8 +58,9 @@ export function calculateSmsSegments(text: string): SmsSegmentResult {
   const isUnicode = !GSM_7BIT_BASIC_REGEX.test(nonExtText);
 
   if (isUnicode) {
-    // UTF-16 encoding calculation
-    const charCount = Array.from(text).length; // Handles multi-byte Unicode surrogate pairs / emojis
+    // UCS-2 / UTF-16 encoding calculation (3GPP TS 23.038: 140 octets payload).
+    // In UCS-2, characters outside BMP (like emojis) are surrogate pairs requiring two 16-bit code units (4 bytes).
+    const charCount = text.length;
     if (charCount <= 70) {
       return {
         charCount,

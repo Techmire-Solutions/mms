@@ -7,6 +7,12 @@ describe("PuppeteerWhatsAppProvider.getNumberId", () => {
     expect(PuppeteerWhatsAppProvider.getNumberId("+92 300 1234567")).toBe("923001234567");
   });
 
+  it("formats local numbers using default country code", () => {
+    expect(PuppeteerWhatsAppProvider.getNumberId("0300 1234567", "92")).toBe("923001234567");
+    expect(PuppeteerWhatsAppProvider.getNumberId("0300 1234567", "+92")).toBe("923001234567");
+    expect(PuppeteerWhatsAppProvider.getNumberId("3001234567", "92")).toBe("923001234567");
+  });
+
   it("returns null for empty or too-short values", () => {
     expect(PuppeteerWhatsAppProvider.getNumberId("")).toBeNull();
     expect(PuppeteerWhatsAppProvider.getNumberId("123")).toBeNull();
