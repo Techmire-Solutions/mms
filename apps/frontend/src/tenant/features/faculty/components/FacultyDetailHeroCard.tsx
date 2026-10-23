@@ -34,6 +34,33 @@ export function FacultyDetailHeroCard({
       {showStatus ? (
         <StatusBadge status={resolveFacultyStatus(faculty.status)} config={statusConfig} />
       ) : null}
+      {faculty.leaveDetails?.isOnLeave ? (
+        <Badge
+          as="span"
+          size="sm"
+          tone="warning"
+          className="px-1.5 py-0.5 rounded font-medium text-xs border border-warning/30"
+          title={
+            faculty.leaveDetails.substituteFacultyName
+              ? t("faculty.leave.substituteBadge", {
+                  name: faculty.leaveDetails.substituteFacultyName,
+                })
+              : undefined
+          }
+        >
+          {t("faculty.leave.onLeave")}
+        </Badge>
+      ) : null}
+      {faculty.employmentContractType ? (
+        <Badge
+          as="span"
+          size="sm"
+          tone="secondary"
+          className="px-1.5 py-0.5 rounded font-medium text-xs"
+        >
+          {t(`faculty.contract.${faculty.employmentContractType}` as "faculty.contract.salaried")}
+        </Badge>
+      ) : null}
       {faculty.employeeId ? (
         <Badge
           as="span"

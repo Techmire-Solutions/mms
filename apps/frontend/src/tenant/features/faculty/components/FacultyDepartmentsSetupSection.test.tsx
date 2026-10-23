@@ -32,6 +32,10 @@ vi.mock("@/tenant/features/faculty/hooks/useFacultyDepartments", () => ({
     mutateAsync: mockDeleteMutateAsync,
     isPending: false,
   }),
+  useRestoreFacultyDepartment: () => ({
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+  }),
 }));
 
 vi.mock("@/tenant/features/faculty/hooks/useFacultyTsrQueries", () => ({

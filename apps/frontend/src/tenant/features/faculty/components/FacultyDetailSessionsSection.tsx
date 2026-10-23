@@ -65,10 +65,44 @@ export function FacultyDetailSessionsSection({
     );
   }
 
-  // Multi-card list: title + per-class cards (DetailSectionCard is single-card).
+  const totalEnrolled = assignedClasses.reduce((sum, item) => sum + (item.enrolled ?? 0), 0);
+  const totalCapacity = assignedClasses.reduce((sum, item) => sum + (item.capacity ?? 0), 0);
+
+  // Multi-card list: title + summary KPIs + per-class cards
   return (
     <div className="space-y-3">
       <DetailSectionTitle count={assignedClasses.length}>{assignedClassesTitle}</DetailSectionTitle>
+
+      {/* Madrasa Teaching Load & Halqa Capacity KPI Strip */}
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="rounded-xl border border-border/60 bg-muted/30 p-2.5 flex items-center gap-2">
+          <School className="w-4 h-4 text-primary shrink-0" aria-hidden />
+          <div className="min-w-0">
+            <span className="text-2xs text-muted-foreground block truncate">
+              {t("faculty.detail.assignedClasses")}
+            </span>
+            <span className="font-bold text-foreground text-sm tabular-nums">
+              {assignedClasses.length}
+            </span>
+          </div>
+        </div>
+        <div className="rounded-xl border border-border/60 bg-muted/30 p-2.5 flex items-center gap-2">
+          <Users className="w-4 h-4 text-primary shrink-0" aria-hidden />
+          <div className="min-w-0">
+            <span className="text-2xs text-muted-foreground block truncate">
+              {t("faculty.report.studentsLabel")}
+            </span>
+            <span className="font-bold text-foreground text-sm tabular-nums">
+              {totalEnrolled}
+              {totalCapacity > 0 ? (
+                <span className="text-2xs text-muted-foreground font-normal ms-1">
+                  / {totalCapacity}
+                </span>
+              ) : null}
+            </span>
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-2.5">
         {assignedClasses.map((item) => {

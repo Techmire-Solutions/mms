@@ -35,6 +35,10 @@ vi.mock("./useFacultyDepartments", () => ({
     mutateAsync: mockDeleteMutateAsync,
     isPending: false,
   }),
+  useRestoreFacultyDepartment: () => ({
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+  }),
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({

@@ -5,7 +5,11 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PasswordInput } from "@/components/app/PasswordInput";
 import { useTranslation } from "@/hooks/useTranslation";
-import { workspaceRoleDescription, type WorkspaceRole } from "@mms/shared";
+import {
+  DEFAULT_FACULTY_USER_ROLE,
+  workspaceRoleDescription,
+  type WorkspaceRole,
+} from "@mms/shared";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
 export interface FacultyNewUserAccountFieldsProps {
@@ -45,7 +49,7 @@ export function FacultyNewUserAccountFields({
         <FormSelect
           id="faculty-user-role"
           name="facultyUserRole"
-          value={userAccountDraft.role || "teacher"}
+          value={userAccountDraft.role || DEFAULT_FACULTY_USER_ROLE}
           onChange={(role) => onUserAccountDraftChange({ ...userAccountDraft, role })}
           options={roleOptions}
         />

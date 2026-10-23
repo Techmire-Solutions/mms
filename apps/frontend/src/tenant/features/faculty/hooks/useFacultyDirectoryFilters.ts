@@ -29,21 +29,12 @@ export function useFacultyDirectoryFilters({
   const { selectedIds, toggleSelected, toggleSelectAll, clearSelection } =
     useWorkSelection<string>();
 
-  useEffect(() => {
+  const filterKey = `${debouncedSearch}|${filterStatus.join(",")}|${filterSpecialization}|${filterGender}|${filterDepartment}|${filterDesignation}|${filterReportingFacultyId}|${quickFilter}|${showDeleted}|${sortField}|${sortDir}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
     setListPage(1);
-  }, [
-    debouncedSearch,
-    filterStatus,
-    filterSpecialization,
-    filterGender,
-    filterDepartment,
-    filterDesignation,
-    filterReportingFacultyId,
-    quickFilter,
-    showDeleted,
-    sortField,
-    sortDir,
-  ]);
+  }
 
   useEffect(() => {
     clearSelection();

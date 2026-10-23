@@ -157,6 +157,7 @@ export function useFacultyPageController() {
       handleDelete: pageActions.handleDelete,
       handleBulkDelete: pageActions.handleBulkDelete,
       handleBulkRestore: pageActions.handleBulkRestore,
+      onReportingFacultyChange: filters.setFilterReportingFacultyId,
     },
     selectedIds: filters.selectedIds,
     clearSelection: filters.clearSelection,

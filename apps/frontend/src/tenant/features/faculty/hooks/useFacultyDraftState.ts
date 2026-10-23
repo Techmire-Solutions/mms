@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import {
   useFacultyLinkedContactIds,
@@ -42,13 +42,17 @@ export function useFacultyDraftState({
   const [userAccountDraft, setUserAccountDraft] = useState<FacultyUserAccountDraft>(
     DEFAULT_USER_ACCOUNT_DRAFT,
   );
+  const [prevFaculty, setPrevFaculty] = useState(faculty);
+  const [prevDefaultSpec, setPrevDefaultSpec] = useState(defaultSpecialization);
 
-  useEffect(() => {
+  if (prevFaculty !== faculty || prevDefaultSpec !== defaultSpecialization) {
+    setPrevFaculty(faculty);
+    setPrevDefaultSpec(defaultSpecialization);
     const nextDraft = getInitialFacultyDraft({ faculty, defaultSpecialization });
     setFacultyDraft(nextDraft);
     setBaselineSnapshot(facultyDraftSnapshot(nextDraft));
     setUserAccountDraft(DEFAULT_USER_ACCOUNT_DRAFT);
-  }, [faculty, defaultSpecialization]);
+  }
 
   const updateDraft = useCallback((patch: Partial<FacultyMember>) => {
     setFacultyDraft((prev) => ({ ...prev, ...patch }));
@@ -62,17 +66,18 @@ export function useFacultyDraftState({
     Boolean(facultyDraft.contactId),
   );
 
-  useEffect(() => {
-    if (!linkedContact) return;
+  const [syncedContactId, setSyncedContactId] = useState<string | null>(null);
+  const currentContactId = linkedContact ? String(linkedContact.id) : null;
+  if (currentContactId && currentContactId !== syncedContactId) {
+    setSyncedContactId(currentContactId);
     const qual = getContactQualification(linkedContact);
     const spec = getContactSpecialization(linkedContact);
-    setFacultyDraft((prev) => {
-      const nextQual = qual || prev.qualification || "";
-      const nextSpec = spec || prev.specialization || "";
-      if (prev.qualification === nextQual && prev.specialization === nextSpec) return prev;
-      return { ...prev, qualification: nextQual, specialization: nextSpec };
-    });
-  }, [linkedContact]);
+    const nextQual = qual || facultyDraft.qualification || "";
+    const nextSpec = spec || facultyDraft.specialization || "";
+    if (facultyDraft.qualification !== nextQual || facultyDraft.specialization !== nextSpec) {
+      setFacultyDraft((prev) => ({ ...prev, qualification: nextQual, specialization: nextSpec }));
+    }
+  }
 
   const { data: linkedFacultyContactIds = [] } = useFacultyLinkedContactIds(
     faculty?.id ? String(faculty.id) : undefined,
@@ -91,23 +96,21 @@ export function useFacultyDraftState({
     enabled: !faculty?.id && autoGenerateId,
   });
 
+  const [syncedEmployeeId, setSyncedEmployeeId] = useState<string | null>(null);
+  const resolvedEmployeeId =
+    !faculty?.id && autoGenerateId ? extractEmployeeId(nextEmployeeId) : null;
+  if (resolvedEmployeeId && !facultyDraft.employeeId && resolvedEmployeeId !== syncedEmployeeId) {
+    setSyncedEmployeeId(resolvedEmployeeId);
+    const nextDraft = { ...facultyDraft, employeeId: resolvedEmployeeId };
+    setFacultyDraft(nextDraft);
+    setBaselineSnapshot(facultyDraftSnapshot(nextDraft));
+  }
+
   const handleRegenerateEmployeeId = useCallback(async () => {
     const res = await refetchNextEmployeeId();
     const nextId = extractEmployeeId(res.data);
     if (nextId) setFacultyDraft((prev) => ({ ...prev, employeeId: nextId }));
   }, [refetchNextEmployeeId]);
-
-  useEffect(() => {
-    if (faculty?.id || !autoGenerateId) return;
-    const resolved = extractEmployeeId(nextEmployeeId);
-    if (!resolved || facultyDraft.employeeId) return;
-    setFacultyDraft((prev) => {
-      if (prev.employeeId) return prev;
-      const nextDraft = { ...prev, employeeId: resolved };
-      setBaselineSnapshot(facultyDraftSnapshot(nextDraft));
-      return nextDraft;
-    });
-  }, [nextEmployeeId, faculty?.id, facultyDraft.employeeId, autoGenerateId]);
 
   return {
     facultyDraft,

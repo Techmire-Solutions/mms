@@ -32,6 +32,12 @@ vi.mock("@/tenant/features/faculty/hooks/useFacultyDetailModel", () => {
   };
 });
 
+vi.mock("@/tenant/features/faculty/hooks/useFacultyMutations", () => ({
+  useFacultyMutations: () => ({
+    updateFaculty: { mutateAsync: vi.fn() },
+  }),
+}));
+
 vi.mock("@/components/app/Drawer", () => ({
   Drawer: ({
     title,

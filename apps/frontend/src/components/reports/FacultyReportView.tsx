@@ -46,10 +46,10 @@ export function FacultyReportView({
                 clearLabel: report.t("faculty.report.clearFilter"),
               }
             : null,
-          report.filters.student
+          report.filters.faculty || report.filters.search || report.filters.student
             ? {
                 key: "faculty",
-                value: `"${report.filters.student}"`,
+                value: `"${report.filters.faculty || report.filters.search || report.filters.student}"`,
               }
             : null,
         ]}

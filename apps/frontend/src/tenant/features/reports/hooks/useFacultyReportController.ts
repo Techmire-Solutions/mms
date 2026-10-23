@@ -44,11 +44,15 @@ export function useFacultyReportController({ filters }: FacultyReportProps) {
   const sessionFilter = filters.session && filters.session !== "all" ? filters.session : undefined;
   const classFilter = filters.class && filters.class !== "all" ? filters.class : undefined;
   const statusParam = reportStatusFilter || (filters.status !== "all" ? filters.status : undefined);
-  const searchParam = filters.student || undefined;
+  const searchParam =
+    filters.search?.trim() ||
+    filters.faculty?.trim() ||
+    filters.student?.trim() ||
+    undefined;
 
   useEffect(() => {
     setListPage(1);
-  }, [filters.student, filters.status, reportStatusFilter]);
+  }, [filters.search, filters.faculty, filters.student, filters.status, reportStatusFilter]);
 
   const { data: metrics, isLoading: metricsLoading } = useFacultyMetrics();
 

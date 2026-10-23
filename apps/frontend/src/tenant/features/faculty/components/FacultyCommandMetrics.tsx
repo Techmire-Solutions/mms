@@ -1,5 +1,5 @@
 import React from "react";
-import { School, Filter, UserCheck, UserX } from "lucide-react";
+import { School, Filter, UserCheck, UserX, CalendarOff } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFacultyMetrics } from "@/tenant/features/faculty/hooks/useFaculty";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
@@ -47,6 +47,12 @@ export const FacultyCommandMetrics = function FacultyCommandMetrics({
       label: t("faculty.metrics.inactive"),
       value: metrics.inactive,
       accent: facultyStatusMetricAccent(inactiveStatus),
+    },
+    {
+      icon: CalendarOff,
+      label: t("faculty.leave.onLeave"),
+      value: metrics.onLeave,
+      accent: "warning" as const,
     },
   ])();
 

@@ -44,6 +44,7 @@ export function FacultyPageHeaderActions({
 
   const entityLabel = (entity: FacultyIoEntity) => {
     if (entity === "faculties") return t("faculty.tabs.faculties");
+    if (entity === "departments") return t("faculty.tabs.departments");
     return t("faculty.tabs.designations");
   };
 

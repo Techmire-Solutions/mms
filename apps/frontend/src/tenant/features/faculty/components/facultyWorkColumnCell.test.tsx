@@ -151,4 +151,29 @@ describe("renderFacultyWorkColumnValue", () => {
 
     expect(result).toBe("Room 101");
   });
+
+  it("renders performanceRating with star icon", () => {
+    const facultyWithRating = { ...mockFaculty, performanceRating: 4.8 };
+    const result = renderFacultyWorkColumnValue(
+      facultyWithRating,
+      "performanceRating",
+      baseOptions,
+    );
+    const html = renderToStaticMarkup(<div>{result}</div>);
+
+    expect(html).toContain("4.8");
+  });
+
+  it("renders assignedClassesCount with badge", () => {
+    const facultyWithClasses = { ...mockFaculty, assignedClasses: ["s1", "s2"] };
+    const result = renderFacultyWorkColumnValue(
+      facultyWithClasses,
+      "assignedClassesCount",
+      baseOptions,
+    );
+    const html = renderToStaticMarkup(<div>{result}</div>);
+
+    expect(html).toContain("2");
+    expect(html).toContain("faculty.detail.assignedClasses");
+  });
 });

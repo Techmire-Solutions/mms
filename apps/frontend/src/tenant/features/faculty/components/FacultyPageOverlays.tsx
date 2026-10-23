@@ -59,6 +59,7 @@ export const FacultyPageOverlays = function FacultyPageOverlays({
   idCardFaculty = [],
   onCloseIdCards,
   onPrintIdCard,
+  onFilterSubordinates,
   createDepartmentOpen = false,
   onCloseCreateDepartment,
   createDesignationOpen = false,
@@ -122,6 +123,7 @@ export const FacultyPageOverlays = function FacultyPageOverlays({
               onPrintIdCard={onPrintIdCard}
               openComposer={openComposer}
               canWriteMessaging={canWriteMessaging}
+              onFilterSubordinates={onFilterSubordinates}
             />
           ) : null}
         </AnimatePresence>

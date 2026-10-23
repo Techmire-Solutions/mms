@@ -1,5 +1,5 @@
 import React from "react";
-import { Building2, Pencil, Trash2 } from "lucide-react";
+import { Building2, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import type { FacultyDepartmentEntity } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
@@ -20,6 +20,7 @@ export interface FacultyDepartmentsTableProps {
   canWrite?: boolean;
   onEdit: (dept: FacultyDepartmentEntity) => void;
   onDelete: (dept: FacultyDepartmentEntity) => void;
+  onRestore?: (dept: FacultyDepartmentEntity) => void;
   primaryAction?: React.ReactNode;
 }
 
@@ -34,6 +35,7 @@ export function FacultyDepartmentsTable({
   canWrite = true,
   onEdit,
   onDelete,
+  onRestore,
   primaryAction,
 }: FacultyDepartmentsTableProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -71,8 +73,15 @@ export function FacultyDepartmentsTable({
       id: "status",
       label: t("common.status"),
       width: 120,
-      searchValue: statusLabel,
-      render: (d) => <StatusBadge status={d.status} config={statusConfig} size="sm" />,
+      searchValue: (d) => (d.deletedAt ? t("faculty.detail.archivedSubtitle") : statusLabel(d)),
+      render: (d) =>
+        d.deletedAt ? (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-destructive/10 text-destructive">
+            {t("faculty.detail.archivedSubtitle")}
+          </span>
+        ) : (
+          <StatusBadge status={d.status} config={statusConfig} size="sm" />
+        ),
     },
   ];
 
@@ -100,38 +109,64 @@ export function FacultyDepartmentsTable({
       primaryAction={primaryAction}
       card={{
         title: (d) => d.name,
-        badge: (d) => <StatusBadge status={d.status} config={statusConfig} size="sm" />,
+        badge: (d) =>
+          d.deletedAt ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-destructive/10 text-destructive">
+              {t("faculty.detail.archivedSubtitle")}
+            </span>
+          ) : (
+            <StatusBadge status={d.status} config={statusConfig} size="sm" />
+          ),
       }}
       rowClassName={(d) =>
         d.id === editingDepartmentId
           ? "bg-primary/10 ring-1 ring-inset ring-primary/40"
-          : d.status === "active"
-            ? undefined
-            : "opacity-70"
+          : d.deletedAt
+            ? "opacity-60 bg-muted/30"
+            : d.status === "active"
+              ? undefined
+              : "opacity-70"
       }
       renderRowActions={
         canWrite
-          ? (d) => (
-              <DataTableRowActions
-                actions={[
-                  {
-                    id: "edit",
-                    label: `${t("common.edit")} ${d.name}`,
-                    icon: Pencil,
-                    onClick: () => onEdit(d),
-                    disabled: isPending,
-                  },
-                  {
-                    id: "delete",
-                    label: `${t("common.delete")} ${d.name}`,
-                    icon: Trash2,
-                    tone: "destructive",
-                    onClick: () => onDelete(d),
-                    disabled: isPending,
-                  },
-                ]}
-              />
-            )
+          ? (d) => {
+              if (d.deletedAt) {
+                return onRestore ? (
+                  <DataTableRowActions
+                    actions={[
+                      {
+                        id: "restore",
+                        label: `${t("common.restore")} ${d.name}`,
+                        icon: RotateCcw,
+                        onClick: () => onRestore(d),
+                        disabled: isPending,
+                      },
+                    ]}
+                  />
+                ) : undefined;
+              }
+              return (
+                <DataTableRowActions
+                  actions={[
+                    {
+                      id: "edit",
+                      label: `${t("common.edit")} ${d.name}`,
+                      icon: Pencil,
+                      onClick: () => onEdit(d),
+                      disabled: isPending,
+                    },
+                    {
+                      id: "delete",
+                      label: `${t("common.delete")} ${d.name}`,
+                      icon: Trash2,
+                      tone: "destructive",
+                      onClick: () => onDelete(d),
+                      disabled: isPending,
+                    },
+                  ]}
+                />
+              );
+            }
           : undefined
       }
       emptyState={

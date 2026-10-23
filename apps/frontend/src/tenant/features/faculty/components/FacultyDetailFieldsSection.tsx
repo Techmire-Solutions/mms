@@ -4,10 +4,10 @@ import type { Faculty, FacultySettings } from "@mms/shared";
 import { resolveRoleDisplayName } from "@mms/shared";
 import { Badge } from "@/components/ui/badge";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
+import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveRegistryLabel } from "@/lib/contacts/contactI18n";
 import { facultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
-import { FacultyDetailAttributeRow } from "@/tenant/features/faculty/components/FacultyDetailAttributeRow";
 import type { FacultyDetailFieldRow } from "@/tenant/features/faculty/lib/facultyDetailFields";
 import { resolveFacultyFieldDisplayText } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 import {
@@ -53,14 +53,14 @@ export function FacultyDetailFieldsSection({
         : [];
     return (
       <React.Fragment key={field.key}>
-        <FacultyDetailAttributeRow
+        <DetailAttributeRow
           variant="inset"
           icon={icon}
           label={label}
           value={displayValue || emptyDash}
         />
         {assignableRoles.length > 0 && (
-          <FacultyDetailAttributeRow
+          <DetailAttributeRow
             variant="inset"
             icon={Award}
             label={t("faculty.designations.role")}

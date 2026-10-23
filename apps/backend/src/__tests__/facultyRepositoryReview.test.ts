@@ -15,13 +15,13 @@ beforeEach(() => {
 
 describe("Faculty repository review regressions", () => {
   it("given a PostgreSQL result envelope, returns ancestor IDs when checking a supervisor", async () => {
-    // Arrange — organization hierarchy removed; returns empty ancestor chain
+    // Arrange — returns ancestor chain from recursive query
     tx.execute.mockResolvedValue({
       rows: [{ ancestor_id: "manager" }, { ancestor_id: "principal" }],
       rowCount: 2,
     });
     // Act / Assert
-    expect(await findAncestorChain("demo", "member")).toEqual([]);
+    expect(await findAncestorChain("demo", "member")).toEqual(["manager", "principal"]);
   });
 
   it("given stored custom fields and notes, includes them in the directory response", async () => {

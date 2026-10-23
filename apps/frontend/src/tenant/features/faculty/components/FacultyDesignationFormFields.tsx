@@ -90,7 +90,6 @@ export function FacultyDesignationFormFields({
             maxLength={FACULTY_DESIGNATION_NAME_MAX}
             disabled={isPending}
             aria-invalid={nameError ? true : undefined}
-            autoFocus
           />
         </Field>
 

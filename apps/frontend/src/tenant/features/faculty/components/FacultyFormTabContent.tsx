@@ -3,7 +3,9 @@ import {
   FacultyContactSection,
   FacultyEmploymentSection,
 } from "@/tenant/features/faculty/components/FacultyFormSections";
+import { FacultyIjazahSection } from "@/tenant/features/faculty/components/FacultyIjazahSection";
 import { FacultyFormDesignationSection } from "@/tenant/features/faculty/components/FacultyFormDesignationSection";
+import { FacultyUserAccountSection } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 import { FacultyCustomFieldsSection } from "./FacultyCustomFieldsSection";
 import { FacultyFormAllSections } from "./FacultyFormAllSections";
 import { type FacultyFormTabContentProps } from "../lib/facultyFormTabs";
@@ -43,16 +45,22 @@ export const FacultyFormTabContent = function FacultyFormTabContent(
 
   if (activeTab === "contact") {
     tabBody = (
-      <FacultyContactSection
-        facultyDraft={effectiveDraft}
-        linkedContact={linkedContact}
-        linkedFacultyContactIds={effectiveContactIds}
-        errors={errors}
-        fields={fields}
-        isFieldEnabled={isFieldEnabled}
-        isFieldRequired={isFieldRequired}
-        onDraftChange={onDraftChange}
-      />
+      <>
+        <FacultyContactSection
+          facultyDraft={effectiveDraft}
+          linkedContact={linkedContact}
+          linkedFacultyContactIds={effectiveContactIds}
+          errors={errors}
+          fields={fields}
+          isFieldEnabled={isFieldEnabled}
+          isFieldRequired={isFieldRequired}
+          onDraftChange={onDraftChange}
+        />
+        <FacultyIjazahSection
+          ijazahs={effectiveDraft.ijazahs}
+          onChange={(ijazahs) => onDraftChange({ ijazahs })}
+        />
+      </>
     );
   } else if (activeTab === "employment") {
     tabBody = (
@@ -80,6 +88,16 @@ export const FacultyFormTabContent = function FacultyFormTabContent(
           errors={errors}
           onDraftChange={onDraftChange}
         />
+        {props.userAccountDraft && props.onUserAccountDraftChange ? (
+          <FacultyUserAccountSection
+            facultyDraft={effectiveDraft}
+            linkedContact={linkedContact}
+            linkedUser={props.linkedUser}
+            userAccountDraft={props.userAccountDraft}
+            onUserAccountDraftChange={props.onUserAccountDraftChange}
+            errors={errors}
+          />
+        ) : null}
       </>
     );
   } else if (activeTab === "designation") {

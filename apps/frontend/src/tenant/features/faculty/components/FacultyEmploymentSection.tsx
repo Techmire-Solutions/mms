@@ -10,6 +10,7 @@ import {
   type Contact,
   type FieldDefinition,
   type FacultyMember,
+  type FacultyContractType,
 } from "@mms/shared";
 import { resolveFacultyFieldLabel } from "@/tenant/features/faculty/components/FacultyFormSectionShared";
 import { FacultyEmploymentEmployeeIdField } from "@/tenant/features/faculty/components/FacultyEmploymentEmployeeIdField";
@@ -115,6 +116,29 @@ export function FacultyEmploymentSection(
               />
             </Field>
           )}
+
+          <Field
+            label={t("faculty.contract.type")}
+            id="faculty-employment-contract-type"
+          >
+            <FormSelect
+              id="faculty-employment-contract-type"
+              name="employmentContractType"
+              value={facultyDraft.employmentContractType ?? ""}
+              onChange={(val) =>
+                onDraftChange({
+                  employmentContractType: (val || null) as FacultyContractType | null,
+                })
+              }
+              options={[
+                { value: "", label: t("common.notSpecified") },
+                { value: "salaried", label: t("faculty.contract.salaried") },
+                { value: "wazifa", label: t("faculty.contract.wazifa") },
+                { value: "hourly", label: t("faculty.contract.hourly") },
+                { value: "voluntary", label: t("faculty.contract.voluntary") },
+              ]}
+            />
+          </Field>
 
           {showStartDate && (
             <Field

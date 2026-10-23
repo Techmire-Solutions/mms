@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Building2 } from "lucide-react";
 import {
   FACULTY_DEPARTMENT_DESCRIPTION_MAX,
@@ -26,19 +26,27 @@ export interface FacultyDepartmentFormModalProps {
   onSave: (payload: FacultyDepartmentFormPayload) => Promise<boolean>;
 }
 
-/** Faculty Management model — Department: name (unique, required), description, status. */
-export function FacultyDepartmentFormModal({
+interface FacultyDepartmentFormContentProps {
+  open: boolean;
+  onClose: () => void;
+  department: FacultyDepartmentEntity | null;
+  existingDepartments: FacultyDepartmentEntity[];
+  isPending: boolean;
+  onSave: (payload: FacultyDepartmentFormPayload) => Promise<boolean>;
+}
+
+function FacultyDepartmentFormContent({
   open,
   onClose,
   department,
   existingDepartments,
   isPending,
   onSave,
-}: FacultyDepartmentFormModalProps): React.JSX.Element | null {
+}: FacultyDepartmentFormContentProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<FacultyCatalogStatus>("active");
+  const [name, setName] = useState(() => department?.name ?? "");
+  const [description, setDescription] = useState(() => department?.description ?? "");
+  const [status, setStatus] = useState<FacultyCatalogStatus>(() => department?.status ?? "active");
 
   const statusOptions = useMemo(
     () => [
@@ -47,13 +55,6 @@ export function FacultyDepartmentFormModal({
     ],
     [t],
   );
-
-  useEffect(() => {
-    if (!open) return;
-    setName(department?.name ?? "");
-    setDescription(department?.description ?? "");
-    setStatus(department?.status ?? "active");
-  }, [open, department]);
 
   const trimmedName = name.trim();
   const duplicateName = isDuplicateFacultyDepartmentName(
@@ -117,7 +118,6 @@ export function FacultyDepartmentFormModal({
             maxLength={FACULTY_DEPARTMENT_NAME_MAX}
             disabled={isPending}
             aria-invalid={duplicateName || undefined}
-            autoFocus
           />
         </Field>
 
@@ -146,5 +146,17 @@ export function FacultyDepartmentFormModal({
         </Field>
       </div>
     </FormModal>
+  );
+}
+
+/** Faculty Management model — Department: name (unique, required), description, status. */
+export function FacultyDepartmentFormModal(props: FacultyDepartmentFormModalProps): React.JSX.Element | null {
+  if (!props.open) return null;
+
+  return (
+    <FacultyDepartmentFormContent
+      key={props.department?.id ?? "new"}
+      {...props}
+    />
   );
 }

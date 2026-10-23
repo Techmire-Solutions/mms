@@ -4,19 +4,31 @@ import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { useFacultyDepartments } from "../hooks/useFacultyDepartments";
 import { useFacultyDesignationsController } from "../hooks/useFacultyDesignationsController";
 import { FacultyDesignationsTable } from "./FacultyDesignationsTable";
 import { FacultyDesignationFormModal } from "./FacultyDesignationFormModal";
 
-/** Designations work surface — same directory chrome as Faculties (toolbar + table/cards). */
+/** Designations work surface — includes trash recovery toggle and restore actions. */
 export function FacultyDesignationsSetupSection({
   canWrite = true,
 }: {
   canWrite?: boolean;
 }): React.JSX.Element {
-  const { t, query, designations, isPending, isSaving, saveDesignation, handleDelete } =
-    useFacultyDesignationsController();
+  const {
+    t,
+    query,
+    designations,
+    isLoading,
+    isPending,
+    isSaving,
+    showDeleted,
+    setShowDeleted,
+    saveDesignation,
+    handleDelete,
+    handleRestore,
+  } = useFacultyDesignationsController();
   const { data: departments = [] } = useFacultyDepartments();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -44,6 +56,15 @@ export function FacultyDesignationsSetupSection({
     setDesignationToDelete(null);
   };
 
+  const primaryAction = canWrite ? (
+    <ModuleTrashToggle
+      viewingDeleted={showDeleted}
+      onToggle={() => setShowDeleted((prev) => !prev)}
+      activeLabel={t("faculty.showActive")}
+      deletedLabel={t("faculty.showDeleted")}
+    />
+  ) : null;
+
   return (
     <ErrorBoundary>
       <ModuleTierMotion tier="work-designations" className="space-y-5">
@@ -58,13 +79,15 @@ export function FacultyDesignationsSetupSection({
             designations={designations}
             editingDesignationId={editingDesignation?.id}
             isPending={isPending}
-            isLoading={query.isLoading}
+            isLoading={isLoading}
             canWrite={canWrite}
+            primaryAction={primaryAction}
             onEdit={handleStartEdit}
             onDelete={(d) => {
               if (!canWrite) return;
               setDesignationToDelete(d);
             }}
+            onRestore={handleRestore}
           />
         )}
 

@@ -15,7 +15,7 @@ import type {
   LinkedUserInfo,
 } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
-export type FacultyFormTabKey = "contact" | "employment" | "designation" | "account" | "notes";
+export type FacultyFormTabKey = "contact" | "employment" | "designation" | "notes";
 
 export const FACULTY_FIELD_TAB_MAP: Record<string, FacultyFormTabKey> = {
   contactId: "contact",
@@ -38,14 +38,14 @@ export const FACULTY_FIELD_TAB_MAP: Record<string, FacultyFormTabKey> = {
   reportingFacultyId: "designation",
   hierarchyRank: "designation",
   notes: "notes",
-  "user.role": "account",
-  "user.email": "account",
-  "user.password": "account",
-  "user.create": "account",
-  userPassword: "account",
-  userEmail: "account",
-  userRole: "account",
-  userId: "account",
+  "user.role": "employment",
+  "user.email": "employment",
+  "user.password": "employment",
+  "user.create": "employment",
+  userPassword: "employment",
+  userEmail: "employment",
+  userRole: "employment",
+  userId: "employment",
 };
 
 export interface FormTabItem {
@@ -92,7 +92,8 @@ export function useFacultyFormTabs(input: {
   formInstanceId: string;
 }) {
   const { isFieldEnabled, errors, t, formInstanceId } = input;
-  const [activeTab, setActiveTab] = useState<FacultyFormTabKey>("contact");
+  const [activeTabState, setActiveTabState] = useState<FacultyFormTabKey>("contact");
+  const [prevErrors, setPrevErrors] = useState(errors);
 
   const tabErrors = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -133,22 +134,24 @@ export function useFacultyFormTabs(input: {
     });
   }, [isFieldEnabled, t, tabErrors]);
 
-  useEffect(() => {
-    if (!visibleTabs.some((tabItem) => tabItem.key === activeTab)) {
-      setActiveTab("contact");
-    }
-  }, [visibleTabs, activeTab]);
+  const activeTab: FacultyFormTabKey = visibleTabs.some(
+    (tabItem) => tabItem.key === activeTabState,
+  )
+    ? activeTabState
+    : ((visibleTabs[0]?.key as FacultyFormTabKey) ?? "contact");
 
-  useEffect(() => {
+  if (prevErrors !== errors) {
+    setPrevErrors(errors);
     const errorKeys = Object.keys(errors).filter((key) => Boolean(errors[key]));
-    if (errorKeys.length === 0) return;
-    const firstInvalidTab = visibleTabs.find((vt) =>
-      Boolean(tabErrors[vt.key] && tabErrors[vt.key] > 0),
-    );
-    if (firstInvalidTab && firstInvalidTab.key !== activeTab) {
-      setActiveTab(firstInvalidTab.key);
+    if (errorKeys.length > 0) {
+      const firstInvalidTab = visibleTabs.find(
+        (vt) => Boolean(tabErrors[vt.key] && tabErrors[vt.key] > 0),
+      );
+      if (firstInvalidTab && firstInvalidTab.key !== activeTab) {
+        setActiveTabState(firstInvalidTab.key as FacultyFormTabKey);
+      }
     }
-  }, [errors, tabErrors, activeTab, visibleTabs]);
+  }
 
   useEffect(() => {
     const errorKeys = Object.keys(errors).filter((key) => Boolean(errors[key]));
@@ -163,5 +166,5 @@ export function useFacultyFormTabs(input: {
     return () => clearTimeout(timer);
   }, [activeTab, errors, formInstanceId]);
 
-  return { activeTab, setActiveTab, visibleTabs };
+  return { activeTab, setActiveTab: setActiveTabState, visibleTabs };
 }
