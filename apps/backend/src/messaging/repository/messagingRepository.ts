@@ -1,8 +1,15 @@
-import type { MessageTemplate, Message, MessagingMetricsDto } from "@mms/shared";
+import type {
+  MessageTemplate,
+  Message,
+  MessagingMetricsDto,
+  WhatsappIntegrationConfig,
+  WhatsappIntegrationSecrets,
+} from "@mms/shared";
 import type {
   MessageLogsFilterQuery,
   MessageLogsPageResult,
 } from "../../db/repositories/messagingRepository.js";
+import type { WhatsappIntegrationRow } from "../../db/schema/messaging.js";
 
 /**
  * Sole storage gateway for the messaging module (templates + logs).
@@ -44,4 +51,15 @@ export interface MessagingRepository {
     filters?: { startDate?: string; endDate?: string },
   ): Promise<MessagingMetricsDto>;
   softDeleteActiveMessageLogs(tenant: string): Promise<void>;
+
+  // WhatsApp Integrations
+  getWhatsappIntegrationRow(tenant: string): Promise<WhatsappIntegrationRow | null>;
+  upsertWhatsappIntegrationConfigRow(
+    tenant: string,
+    config: WhatsappIntegrationConfig,
+  ): Promise<void>;
+  upsertWhatsappIntegrationSecretsRow(
+    tenant: string,
+    secrets: WhatsappIntegrationSecrets,
+  ): Promise<void>;
 }

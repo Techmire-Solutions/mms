@@ -4,6 +4,7 @@ import { contactRoutes } from "./tenant/contacts.js";
 import dbRoutes from "./common/db.js";
 import emailRoutes from "./common/email.js";
 import smsRoutes from "./common/sms.js";
+import whatsappRoutes from "./common/whatsapp.js";
 import healthRoutes from "./common/health.js";
 import metricsRoutes from "./common/metrics.js";
 import platformAuthRoutes from "./platform/platformAuth.js";
@@ -66,6 +67,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(contactRoutes);
   await app.register(emailRoutes, { prefix: "/api/email" });
   await app.register(smsRoutes, { prefix: "/api/sms" });
+  await app.register(whatsappRoutes, { prefix: "/api/whatsapp" });
   await app.register(studentsRoutes);
   await app.register(facultyRoutes);
   await app.register(tasksRoutes);

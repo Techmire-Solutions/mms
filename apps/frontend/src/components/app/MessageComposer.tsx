@@ -27,6 +27,7 @@ export interface MessageComposerProps {
   onSent?: (sent: { recipientId: string | number; body: string }[]) => void;
   madrasaName?: string;
   user?: unknown;
+  useServerGateway?: boolean;
   renderRecipientPicker?: (props: RecipientPickerSlotProps) => React.ReactNode;
 }
 
@@ -95,11 +96,14 @@ export function MessageComposer(props: MessageComposerProps): React.JSX.Element 
             <MessageComposerDispatchControls
               skippedCount={dispatch.skippedRecipients.length}
               isEmail={isEmail}
+              isSms={isSms}
               isBulk={isBulk}
               opening={dispatch.opening}
               dispatchSpeed={dispatch.dispatchSpeed}
               dispatchProgress={dispatch.dispatchProgress}
               isPaused={dispatch.isPaused}
+              useServerGateway={model.useServerGateway}
+              onUseServerGatewayChange={model.setUseServerGateway}
               onShowSkipped={model.showSkipped}
               onDispatchSpeedChange={dispatch.setDispatchSpeed}
               onPausedChange={dispatch.setIsPaused}

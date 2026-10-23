@@ -11,7 +11,8 @@ import { resolveCurrentTenantRole } from "./currentTenantRole.js";
 /** Action a queued job performs, keyed by its runner `kind`. */
 export function backgroundJobModuleAction(kind: string): ModuleAction {
   if (kind.startsWith("export")) return "export";
-  if (kind === "import" || kind === "collect" || kind === "promote") return "write";
+  if (kind === "import" || kind === "collect" || kind === "promote" || kind === "dispatch")
+    return "write";
   return "read";
 }
 

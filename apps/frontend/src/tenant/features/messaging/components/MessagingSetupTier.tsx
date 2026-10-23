@@ -15,6 +15,7 @@ import { useMessagingPageOptions } from "../hooks/useMessagingPageOptions";
 import { useMessagingTemplateEditor } from "../hooks/useMessagingTemplateEditor";
 import { MessagingSetupTemplateForm } from "./MessagingSetupTemplateForm";
 import { MessagingTemplateList } from "./MessagingTemplateList";
+import { MessagingSetupPreferences } from "./MessagingSetupPreferences";
 
 export interface MessagingSetupTierProps {
   canWrite: boolean;
@@ -65,7 +66,8 @@ export const MessagingSetupTier = function MessagingSetupTier({
   const setupTabs = (() =>
     MESSAGING_MODULE_MANIFEST.setupSubTabs.map((key) => ({
       key,
-      label: t("messaging.tabs.templates"),
+      label:
+        key === "preferences" ? t("messaging.tabs.preferences") : t("messaging.tabs.templates"),
     })))();
   const templates = (() => mergeMessageTemplates(templatesQuery.templates))();
 
@@ -138,6 +140,9 @@ export const MessagingSetupTier = function MessagingSetupTier({
                     onChannelChange={setChannel}
                   />
                 </div>
+              )}
+              {subTabs.sub === "preferences" && (
+                <MessagingSetupPreferences canWrite={canEditSetup && canWrite} />
               )}
 
               <ConfirmAlertDialog

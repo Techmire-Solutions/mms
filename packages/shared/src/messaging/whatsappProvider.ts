@@ -7,8 +7,10 @@ export class PuppeteerWhatsAppProvider {
   /**
    * Resolves a dialable WhatsApp number id (digits only, country code included).
    * Returns null when the phone cannot be used for WhatsApp open/chat.
+   * If defaultCountryCode is provided (e.g. "92" or "+92"), local 10/11-digit numbers
+   * starting with 0 will have the trunk 0 replaced with the country code.
    */
-  static getNumberId(phone: string | null | undefined): string | null {
+  static getNumberId(phone: string | null | undefined, defaultCountryCode?: string): string | null {
     const raw = String(phone ?? "").trim();
     if (!raw) return null;
 
@@ -17,6 +19,13 @@ export class PuppeteerWhatsAppProvider {
       // already international
     } else if (digits.startsWith("00") && digits.length >= 10) {
       digits = digits.slice(2);
+    } else if (defaultCountryCode) {
+      const code = defaultCountryCode.replace(/\D/g, "");
+      if (code && digits.startsWith("0") && digits.length >= 10) {
+        digits = `${code}${digits.replace(/^0+/, "")}`;
+      } else if (code && digits.length === 10 && !digits.startsWith(code)) {
+        digits = `${code}${digits}`;
+      }
     } else if (digits.length === 10) {
       // common local mobile without country — leave as-is; callers should prefer E.164
     }

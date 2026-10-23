@@ -10,6 +10,7 @@ import {
 } from "../schemas/messaging.dto.js";
 import { messageTemplateSchema } from "../messaging/messagingTemplateSchemas.js";
 import { messagingResolveResponseSchema } from "../messaging/messagingModuleManifest.js";
+import { messagingPreferencesSchema } from "../messaging/messagingPreferencesSchemas.js";
 
 const c = initContract();
 const ok = z.unknown();
@@ -93,6 +94,7 @@ export const messagingContract = c.router({
       201: messagingRecordedResponseSchema,
       400: ok,
       403: ok,
+      409: ok,
       500: ok,
     },
     summary: "Record message dispatch logs",
@@ -117,5 +119,26 @@ export const messagingContract = c.router({
     query: z.object({}).passthrough(),
     responses: { 200: messagingRecipientsMatchResponseSchema, 403: ok, 500: ok },
     summary: "Match recipients",
+  },
+  getPreferences: {
+    method: "GET",
+    path: "/api/messaging/preferences",
+    responses: {
+      200: z.object({ preferences: messagingPreferencesSchema }),
+      403: ok,
+      500: ok,
+    },
+    summary: "Get messaging preferences",
+  },
+  updatePreferences: {
+    method: "PUT",
+    path: "/api/messaging/preferences",
+    body: messagingPreferencesSchema,
+    responses: {
+      200: z.object({ success: z.literal(true), preferences: messagingPreferencesSchema }),
+      403: ok,
+      500: ok,
+    },
+    summary: "Update messaging preferences",
   },
 });

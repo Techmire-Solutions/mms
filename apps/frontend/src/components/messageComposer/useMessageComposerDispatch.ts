@@ -17,6 +17,7 @@ import {
   type SentDispatchRecord,
   type ValidatedMessagingRecipient,
 } from "./messageComposerDispatchService";
+import { dispatchViaServerGateway } from "./messageComposerServerGateway";
 import { formatUnknownTokensLabel } from "./messageComposerTokenErrors";
 
 export type { DispatchSpeed, ValidatedMessagingRecipient };
@@ -32,6 +33,7 @@ interface UseMessageComposerDispatchParams {
   onSent?: (sent: { recipientId: string | number; body: string }[]) => void;
   madrasaName?: string;
   user?: unknown;
+  useServerGateway?: boolean;
 }
 
 export function useMessageComposerDispatch({
@@ -45,9 +47,11 @@ export function useMessageComposerDispatch({
   onSent,
   madrasaName,
   user,
+  useServerGateway,
 }: UseMessageComposerDispatchParams) {
   const { t } = useTranslation();
-  const { recordDispatches } = useMessagingMutations();
+  const { recordDispatches, dispatchServerSms, dispatchServerEmail, dispatchServerWhatsApp } =
+    useMessagingMutations();
   const [opening, setOpening] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dispatchSpeed, setDispatchSpeed] = useState<DispatchSpeed>("normal");
@@ -140,6 +144,26 @@ export function useMessageComposerDispatch({
     auditSavedCountRef.current = 0;
     auditIdempotencyKeyRef.current = null;
     try {
+      if (useServerGateway) {
+        setOpening(true);
+        const activeTemplate = activeTemplates.find((template) => template.id === templateId);
+        await dispatchViaServerGateway({
+          channel,
+          eligibleRecipients,
+          message,
+          subject,
+          category: activeTemplate?.category || "general",
+          personalizeOptions,
+          dispatchServerSms,
+          dispatchServerEmail,
+          dispatchServerWhatsApp,
+          onSent,
+          onClose,
+          t,
+        });
+        return;
+      }
+
       if (eligibleRecipients.length === 1) {
         record(eligibleRecipients[0], executeSend(eligibleRecipients[0], message));
       } else {

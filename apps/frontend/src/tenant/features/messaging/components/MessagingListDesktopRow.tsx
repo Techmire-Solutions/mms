@@ -53,8 +53,9 @@ export function MessagingListDesktopRow({
 }: MessagingListDesktopRowProps): React.JSX.Element {
   const { t } = useTranslation();
   const isFailed = log.status === "failed";
-  const smsSegments = log.channel === "sms" ? calculateSmsSegments(log.body) : null;
+  const smsSegments = showChannel && log.channel === "sms" ? calculateSmsSegments(log.body) : null;
   const categoryKey = log.category ? getMessageCategoryLabelKey(log.category) : null;
+  const isFallbackName = name.startsWith("Contact #") || name === String(log.contactId);
 
   return (
     <TableRow
@@ -81,13 +82,27 @@ export function MessagingListDesktopRow({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${SEMANTIC_BG.primary} text-xs font-black ${SEMANTIC_TEXT.primary}`}
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-black",
+                  isFallbackName
+                    ? "bg-muted text-muted-foreground animate-pulse"
+                    : `${SEMANTIC_BG.primary} ${SEMANTIC_TEXT.primary}`,
+                )}
               >
-                {getInitials(name)}
+                {isFallbackName ? null : getInitials(name)}
               </span>
-              <span className={`truncate hover:${SEMANTIC_TEXT.primary} transition-colors`}>
-                {name}
-              </span>
+              {isFallbackName ? (
+                <span
+                  className="inline-block h-4 w-24 animate-pulse rounded bg-muted/60"
+                  aria-label={name}
+                />
+              ) : (
+                <span
+                  className={cn("truncate transition-colors", `hover:${SEMANTIC_TEXT.primary}`)}
+                >
+                  {name}
+                </span>
+              )}
             </div>
             {onFilterContact && (
               <Button

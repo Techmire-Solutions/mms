@@ -28,6 +28,7 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
 
   const emailOn = Boolean(settings?.emailNotifications);
   const smsOn = Boolean(settings?.smsNotifications);
+  const whatsAppOn = Boolean(settings?.whatsAppNotifications);
   const platformChannel = resolvePlatformNotificationChannel(settings ?? DEFAULT_PLATFORM_SETTINGS);
 
   return (
@@ -43,6 +44,19 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-center gap-2 text-xs font-medium" aria-live="polite">
             <span className="text-muted-foreground">{t("global.notificationsActiveChannel")}:</span>
+            {platformChannel === "all" && (
+              <>
+                <Badge as="span" tone="primary" size="sm">
+                  {t("global.notificationsChannelEmail")}
+                </Badge>
+                <Badge as="span" tone="primary" size="sm">
+                  {t("global.notificationsChannelSms")}
+                </Badge>
+                <Badge as="span" tone="primary" size="sm">
+                  {t("global.notificationsChannelWhatsApp")}
+                </Badge>
+              </>
+            )}
             {platformChannel === "both" && (
               <>
                 <Badge as="span" tone="primary" size="sm">
@@ -61,6 +75,11 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
             {platformChannel === "sms" && (
               <Badge as="span" tone="primary" size="sm">
                 {t("global.notificationsChannelSms")}
+              </Badge>
+            )}
+            {platformChannel === "whatsapp" && (
+              <Badge as="span" tone="primary" size="sm">
+                {t("global.notificationsChannelWhatsApp")}
               </Badge>
             )}
             {platformChannel === "none" && (
@@ -86,6 +105,15 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
             description={t("global.smsNotificationsDesc")}
             checked={smsOn}
             onCheckedChange={(checked) => updateSettings.mutate({ smsNotifications: checked })}
+          />
+
+          <ToggleRow
+            id="platform-whatsapp-notifications"
+            variant="bordered"
+            label={t("global.whatsAppNotifications")}
+            description={t("global.whatsAppNotificationsDesc")}
+            checked={whatsAppOn}
+            onCheckedChange={(checked) => updateSettings.mutate({ whatsAppNotifications: checked })}
           />
         </CardContent>
       </Card>

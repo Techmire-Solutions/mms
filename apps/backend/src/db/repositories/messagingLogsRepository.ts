@@ -88,15 +88,13 @@ export async function findMessageLogsByIds(
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === "deleted";
+    const isDeletedOnly = options?.deleted === "deleted" || options?.includeDeleted === true;
     const isAll = options?.deleted === "all";
     const deletedCond = isDeletedOnly
       ? isNotNull(messageLogs.deletedAt)
       : isAll
         ? null
-        : options?.includeDeleted
-          ? isNotNull(messageLogs.deletedAt)
-          : isNull(messageLogs.deletedAt);
+        : isNull(messageLogs.deletedAt);
 
     const conditions = [
       eq(messageLogs.workspaceSubdomain, subdomain),

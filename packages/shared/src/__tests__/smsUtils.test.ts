@@ -49,6 +49,16 @@ describe("smsUtils", () => {
       expect(result.isUnicode).toBe(true);
     });
 
+    it("counts emoji surrogate pairs as two 16-bit code units in UCS-2", () => {
+      // 36 emojis = 72 UTF-16 code units (surrogate pairs).
+      // Since UCS-2 single segment limit is 70 code units, 36 emojis must split into 2 segments!
+      const text = "😀".repeat(36);
+      const result = calculateSmsSegments(text);
+      expect(result.isUnicode).toBe(true);
+      expect(result.charCount).toBe(72);
+      expect(result.totalSegments).toBe(2);
+    });
+
     it("exports soft-cost thresholds used by composers", () => {
       expect(SMS_SOFT_CHAR_WARN).toBe(320);
       expect(SMS_HIGH_SEGMENT_WARN).toBe(3);

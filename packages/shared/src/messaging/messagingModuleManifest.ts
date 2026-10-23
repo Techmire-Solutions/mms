@@ -39,7 +39,8 @@ export const MESSAGING_MODULE_MANIFEST = {
   collectionKey: "messages",
   restBasePath: "/api/messaging",
   tiers: ["work", "reports", "setup"] as const,
-  setupSubTabs: ["templates"] as const,
+  setupSubTabs: ["templates", "preferences"] as const,
+  preferencesObjectKey: "messaging_preferences",
   softDelete: {
     workExcludesDeleted: true,
     reportsIncludeDeleted: false,

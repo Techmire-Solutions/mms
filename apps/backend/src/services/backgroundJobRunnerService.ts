@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   buildTenantExportFilename,
   CONTACTS_MODULE_MANIFEST,
@@ -52,6 +53,9 @@ import {
 import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
 import { registerSessionRolloverJobRunner } from "../sessions/use-cases/sessionRolloverJob.js";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
+import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
+import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
+import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
 import {
   registerDocumentAndFinanceJobRunners,
@@ -231,6 +235,62 @@ export function registerDefaultBackgroundJobRunners(): void {
       }),
   });
 
+  registerModuleCsvImportJobRunner<{
+    title?: string;
+    message?: string;
+    channel?: string;
+    notes?: string;
+  }>({
+    moduleId: messagingModuleId,
+    entityNounPlural: "templates",
+    importBatch: async (rows, ctx) => {
+      let imported = 0;
+      let failed = 0;
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const title = row.title?.trim();
+        const body = row.message?.trim();
+        if (!title || !body) {
+          failed++;
+          continue;
+        }
+        const channel = (
+          ["sms", "whatsapp", "email", "all"].includes(row.channel?.toLowerCase() || "")
+            ? row.channel?.toLowerCase()
+            : "all"
+        ) as "sms" | "whatsapp" | "email" | "all";
+        const category = (
+          ["general", "academic", "financial", "attendance", "emergency"].includes(
+            row.notes?.toLowerCase() || "",
+          )
+            ? row.notes?.toLowerCase()
+            : "general"
+        ) as "general" | "academic" | "financial" | "attendance" | "emergency";
+
+        try {
+          await messagingUseCases.saveMessageTemplate(ctx.tenant, {
+            id: `custom_${randomUUID()}`,
+            label: title,
+            body,
+            channel,
+            category,
+            updatedAt: new Date().toISOString(),
+          });
+          imported++;
+        } catch {
+          failed++;
+        }
+        if ((i + 1) % 10 === 0) {
+          await ctx.updateProgress(i + 1, rows.length);
+        }
+      }
+      return { imported, failed, total: rows.length };
+    },
+  });
+
   // Headless BiDi Document Engine & Streaming Excel exports
   registerDocumentAndFinanceJobRunners();
+
+  // Multi-channel campaign dispatch worker
+  registerMessagingCampaignJobRunner();
 }

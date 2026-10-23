@@ -2,8 +2,6 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import type { Message, MessageLogCreateDto, User } from "@mms/shared";
 import { randomUUID } from "node:crypto";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
-import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
-import { replyValidationError } from "../../../lib/zodRequest.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";
 import {
   authArtifactUserScopeKey,
@@ -24,7 +22,6 @@ import {
   idempotencyBodyMatches,
   messagingDispatchBodyDigest,
   messagingIdempotencyLookupKey,
-  replyIdempotencyBodyMismatch,
   resolveIdempotencyKey,
   waitForCompletedIdempotency,
 } from "./messagingLogIdempotency.js";
@@ -45,35 +42,32 @@ function normalizeDispatchLogs(user: User, logs: MessageLogCreateDto[]): Message
   }));
 }
 
-function rejectUnknownLogTokens(
-  reply: FastifyReply,
-  logs: MessageLogCreateDto[],
-): ReturnType<typeof replyValidationError> | undefined {
+export function findUnknownLogTokensError(logs: MessageLogCreateDto[]): string | null {
   for (const log of logs) {
     const unknown = collectUnknownPersonalizationTokens(log.body, log.subject);
     if (unknown.length > 0) {
-      return replyValidationError(reply, formatUnknownTokensMessage(unknown));
+      return formatUnknownTokensMessage(unknown);
     }
   }
-  return undefined;
+  return null;
 }
 
-/** Records dispatch audit logs with optional idempotency claim. */
-export async function handleRecordMessageLogs(
-  req: FastifyRequest,
-  reply: FastifyReply,
+/** Processes message logs recording with idempotency handling. */
+export async function processRecordMessageLogs(
+  user: User,
+  tenantSubdomain: string,
   data: { logs: MessageLogCreateDto[]; idempotencyKey?: string },
-): Promise<unknown> {
-  const user = req.user as User;
-  if (!canWriteMessaging(user)) return sendForbidden(reply);
-  const tokenRejection = rejectUnknownLogTokens(reply, data.logs);
-  if (tokenRejection) return tokenRejection;
-  const tenantSubdomain = getRequestTenant();
-  if (!tenantSubdomain) {
-    return reply.status(400).send({ type: "validation_error", message: "Tenant context required" });
+  idempotencyHeader?: string,
+): Promise<{ status: 200 | 400 | 403 | 409 | 500; body: Record<string, unknown> }> {
+  if (!canWriteMessaging(user)) {
+    return { status: 403, body: { type: "forbidden", message: "Insufficient permissions" } };
+  }
+  const tokenError = findUnknownLogTokensError(data.logs);
+  if (tokenError) {
+    return { status: 400, body: { type: "validation_error", message: tokenError } };
   }
 
-  const idempotencyKey = resolveIdempotencyKey(data.idempotencyKey, req.headers["idempotency-key"]);
+  const idempotencyKey = resolveIdempotencyKey(data.idempotencyKey, idempotencyHeader);
   const bodyDigest = messagingDispatchBodyDigest(data.logs);
   const lookupKey = idempotencyKey
     ? messagingIdempotencyLookupKey(tenantSubdomain, user.id, idempotencyKey)
@@ -88,19 +82,35 @@ export async function handleRecordMessageLogs(
       );
       if (existing) {
         if (!idempotencyBodyMatches(existing.payload, bodyDigest)) {
-          return replyIdempotencyBodyMismatch(reply);
+          return {
+            status: 409,
+            body: {
+              type: "conflict",
+              message: "Idempotency key reused with a different request body",
+            },
+          };
         }
         const recorded = existing.payload.recorded === null ? undefined : existing.payload.recorded;
         if (recorded !== undefined) {
-          return reply.send({ recorded });
+          return { status: 200, body: { recorded } };
         }
         const waited = await waitForCompletedIdempotency(lookupKey, bodyDigest);
-        if (waited && "mismatch" in waited) return replyIdempotencyBodyMismatch(reply);
-        if (waited && "recorded" in waited) return reply.send({ recorded: waited.recorded });
-        return reply.status(409).send({
-          type: "conflict",
-          message: "Idempotent request still in progress",
-        });
+        if (waited && "mismatch" in waited) {
+          return {
+            status: 409,
+            body: {
+              type: "conflict",
+              message: "Idempotency key reused with a different request body",
+            },
+          };
+        }
+        if (waited && "recorded" in waited) {
+          return { status: 200, body: { recorded: waited.recorded } };
+        }
+        return {
+          status: 409,
+          body: { type: "conflict", message: "Idempotent request still in progress" },
+        };
       }
 
       const claim = await tryClaimAuthArtifactByLookupKey<MessagingIdempotencyPayload>(
@@ -111,12 +121,22 @@ export async function handleRecordMessageLogs(
       );
       if (!claim.claimed) {
         const waited = await waitForCompletedIdempotency(lookupKey, bodyDigest);
-        if (waited && "mismatch" in waited) return replyIdempotencyBodyMismatch(reply);
-        if (waited && "recorded" in waited) return reply.send({ recorded: waited.recorded });
-        return reply.status(409).send({
-          type: "conflict",
-          message: "Idempotent request still in progress",
-        });
+        if (waited && "mismatch" in waited) {
+          return {
+            status: 409,
+            body: {
+              type: "conflict",
+              message: "Idempotency key reused with a different request body",
+            },
+          };
+        }
+        if (waited && "recorded" in waited) {
+          return { status: 200, body: { recorded: waited.recorded } };
+        }
+        return {
+          status: 409,
+          body: { type: "conflict", message: "Idempotent request still in progress" },
+        };
       }
 
       try {
@@ -124,7 +144,7 @@ export async function handleRecordMessageLogs(
         const recorded = await messagingUseCases.recordMessageLogs(tenantSubdomain, normalized);
         const payload: MessagingIdempotencyPayload = { recorded: recorded.length, bodyDigest };
         await updateAuthArtifactPayload(claim.id, payload);
-        return reply.send({ recorded: recorded.length });
+        return { status: 200, body: { recorded: recorded.length } };
       } catch (err) {
         await deleteAuthArtifact(claim.id).catch(() => undefined);
         throw err;
@@ -133,8 +153,31 @@ export async function handleRecordMessageLogs(
 
     const normalized = normalizeDispatchLogs(user, data.logs);
     const recorded = await messagingUseCases.recordMessageLogs(tenantSubdomain, normalized);
-    return reply.send({ recorded: recorded.length });
-  } catch (err) {
-    return sendDatabaseError(reply, "Failed to record message logs", err);
+    return { status: 200, body: { recorded: recorded.length } };
+  } catch {
+    return {
+      status: 500,
+      body: { type: "database_error", message: "Failed to record message logs" },
+    };
   }
+}
+
+/** Records dispatch audit logs with optional idempotency claim. */
+export async function handleRecordMessageLogs(
+  req: FastifyRequest,
+  reply: FastifyReply,
+  data: { logs: MessageLogCreateDto[]; idempotencyKey?: string },
+): Promise<unknown> {
+  const user = req.user as User;
+  const tenantSubdomain = getRequestTenant();
+  if (!tenantSubdomain) {
+    return reply.status(400).send({ type: "validation_error", message: "Tenant context required" });
+  }
+  const result = await processRecordMessageLogs(
+    user,
+    tenantSubdomain,
+    data,
+    req.headers["idempotency-key"] as string | undefined,
+  );
+  return reply.status(result.status).send(result.body);
 }

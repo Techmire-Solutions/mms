@@ -166,6 +166,7 @@ export const OBJECT_READ_PERMISSION: Record<string, Permission> = {
   branding: "configuration.view",
   [EMAIL_INTEGRATION_OBJECT_KEY]: "settings.global.write",
   sms_integration: "settings.global.write",
+  whatsapp_integration: "settings.global.write",
 };
 
 export const OBJECT_WRITE_PERMISSION: Record<string, Permission> = {
@@ -173,6 +174,7 @@ export const OBJECT_WRITE_PERMISSION: Record<string, Permission> = {
   branding: "settings.branding.write",
   [EMAIL_INTEGRATION_OBJECT_KEY]: "settings.global.write",
   sms_integration: "settings.global.write",
+  whatsapp_integration: "settings.global.write",
 };
 
 export const ALLOWED_COLLECTIONS = new Set(["currencies", "backups"]);
@@ -183,6 +185,7 @@ export const ALLOWED_OBJECTS = new Set([
   "branding",
   EMAIL_INTEGRATION_OBJECT_KEY,
   "sms_integration",
+  "whatsapp_integration",
   DASHBOARD_PREFERENCES_KEY,
   INVOICE_TEMPLATE_OBJECT_KEY,
   STUDENT_CARD_TEMPLATE_OBJECT_KEY,

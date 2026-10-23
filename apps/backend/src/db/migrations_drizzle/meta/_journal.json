@@ -1282,6 +1282,13 @@
       "when": 1791276400000,
       "tag": "0182_academic_contract_drop",
       "breakpoints": true
+    },
+    {
+      "idx": 183,
+      "version": "7",
+      "when": 1791276500000,
+      "tag": "0183_whatsapp_integrations_table",
+      "breakpoints": true
     }
   ]
 }

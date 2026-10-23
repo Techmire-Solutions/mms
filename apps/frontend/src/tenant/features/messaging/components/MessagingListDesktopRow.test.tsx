@@ -155,4 +155,33 @@ describe("MessagingListDesktopRow", () => {
 
     expect(onCopyBody).toHaveBeenCalled();
   });
+
+  it("renders shimmer placeholder when name is unresolved fallback", async () => {
+    await act(async () => {
+      root.render(
+        <Table>
+          <TableBody>
+            <MessagingListDesktopRow
+              log={mockLog}
+              isSelected={false}
+              name="Contact #contact-1"
+              isCopied={false}
+              canWrite={true}
+              logStatusConfig={mockStatusConfig}
+              showRecipient={true}
+              showChannel={true}
+              showBody={true}
+              showDateSent={true}
+              onToggleLog={vi.fn()}
+              onResendLog={vi.fn()}
+              onCopyBody={vi.fn()}
+            />
+          </TableBody>
+        </Table>,
+      );
+    });
+
+    const shimmer = container.querySelector(".animate-pulse");
+    expect(shimmer).not.toBeNull();
+  });
 });
