@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   isDuplicateFacultyDepartmentName,
   type FacultyDepartmentEntity,
@@ -10,6 +10,7 @@ import {
   useFacultyDepartments,
   useSaveFacultyDepartment,
   useDeleteFacultyDepartment,
+  useRestoreFacultyDepartment,
 } from "./useFacultyDepartments";
 
 /** Payload the department form produces (Faculty Management model: name / description / status). */
@@ -25,20 +26,28 @@ const isNameConflict = (err: unknown): boolean =>
 
 /**
  * Single owner of department catalog writes: duplicate-name preflight, server
- * save/delete, and user notifications. Both the Setup tab and the in-form
- * quick-create overlay go through this hook.
+ * save/delete/restore, and user notifications.
  */
 export function useFacultyDepartmentsController() {
   const { t } = useTranslation();
-  const { data: departments = [], isLoading } = useFacultyDepartments();
+  const [showDeleted, setShowDeleted] = useState(false);
+  const query = useFacultyDepartments({
+    includeDeleted: showDeleted,
+  });
+  const { data: departments = [], isLoading, isError, refetch } = query;
   const saveMutation = useSaveFacultyDepartment();
   const deleteMutation = useDeleteFacultyDepartment();
+  const restoreMutation = useRestoreFacultyDepartment();
 
-  const isPending = saveMutation.isPending || deleteMutation.isPending || isLoading;
+  const isPending =
+    saveMutation.isPending || deleteMutation.isPending || restoreMutation.isPending || isLoading;
 
   const orderedDepartments = useMemo(
     () =>
       [...departments].sort((a, b) => {
+        if (Boolean(a.deletedAt) !== Boolean(b.deletedAt)) {
+          return a.deletedAt ? 1 : -1;
+        }
         if (a.status !== b.status) return a.status === "active" ? -1 : 1;
         return a.name.localeCompare(b.name);
       }),
@@ -78,7 +87,7 @@ export function useFacultyDepartmentsController() {
     async (dept: FacultyDepartmentEntity): Promise<boolean> => {
       try {
         await deleteMutation.mutateAsync(dept.id);
-        notify.success(t("faculty.setup.departmentSaved"));
+        notify.success(t("faculty.departments.deleted"));
         return true;
       } catch (err) {
         notify.error(
@@ -92,14 +101,35 @@ export function useFacultyDepartmentsController() {
     [deleteMutation, t],
   );
 
+  const handleRestore = useCallback(
+    async (dept: FacultyDepartmentEntity): Promise<boolean> => {
+      try {
+        await restoreMutation.mutateAsync(dept.id);
+        notify.success(t("faculty.setup.departmentSaved"));
+        return true;
+      } catch {
+        notify.error(t("faculty.setup.lookupsSaveFailed"));
+        return false;
+      }
+    },
+    [restoreMutation, t],
+  );
+
   return {
     t,
+    query,
     departments,
     orderedDepartments,
     isLoading,
+    isError,
     isPending,
     isSaving: saveMutation.isPending,
+    isRestoring: restoreMutation.isPending,
+    showDeleted,
+    setShowDeleted,
     saveDepartment,
     handleDelete,
+    handleRestore,
+    refetch,
   };
 }

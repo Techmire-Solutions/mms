@@ -4,20 +4,32 @@ import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
+import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { FacultyDepartmentsTable } from "./FacultyDepartmentsTable";
 import { FacultyDepartmentFormModal } from "./FacultyDepartmentFormModal";
 import { useFacultyDepartmentsController } from "../hooks/useFacultyDepartmentsController";
-import { useFacultyDepartments } from "../hooks/useFacultyDepartments";
 
-/** Departments work surface — same directory chrome as Faculties (toolbar + table/cards). */
+/** Departments work surface — includes trash recovery toggle and restore actions. */
 export function FacultyDepartmentsSetupSection({
   canWrite = true,
 }: {
   canWrite?: boolean;
 }): React.JSX.Element {
-  const { t, departments, orderedDepartments, isPending, isSaving, saveDepartment, handleDelete } =
-    useFacultyDepartmentsController();
-  const query = useFacultyDepartments();
+  const {
+    t,
+    departments,
+    orderedDepartments,
+    isLoading,
+    isError,
+    isPending,
+    isSaving,
+    showDeleted,
+    setShowDeleted,
+    saveDepartment,
+    handleDelete,
+    handleRestore,
+    refetch,
+  } = useFacultyDepartmentsController();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<FacultyDepartmentEntity | null>(null);
@@ -41,27 +53,38 @@ export function FacultyDepartmentsSetupSection({
     setDeptToDelete(null);
   };
 
+  const primaryAction = canWrite ? (
+    <ModuleTrashToggle
+      viewingDeleted={showDeleted}
+      onToggle={() => setShowDeleted((prev) => !prev)}
+      activeLabel={t("faculty.showActive")}
+      deletedLabel={t("faculty.showDeleted")}
+    />
+  ) : null;
+
   return (
     <ErrorBoundary>
       <ModuleTierMotion tier="work-departments" className="space-y-5">
-        {query.isError ? (
+        {isError ? (
           <ErrorState
             title={t("faculty.setup.departmentsLoadFailed")}
             description={t("faculty.loadFailedHint")}
-            onRetry={() => void query.refetch()}
+            onRetry={() => void refetch()}
           />
         ) : (
           <FacultyDepartmentsTable
             departments={orderedDepartments}
             editingDepartmentId={editingDepartment?.id}
             isPending={isPending}
-            isLoading={query.isLoading}
+            isLoading={isLoading}
             canWrite={canWrite}
+            primaryAction={primaryAction}
             onEdit={handleStartEdit}
             onDelete={(d) => {
               if (!canWrite) return;
               setDeptToDelete(d);
             }}
+            onRestore={handleRestore}
           />
         )}
 

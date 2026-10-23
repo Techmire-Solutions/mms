@@ -3,7 +3,11 @@ import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import { normalizeStoredFaculty, stripFacultyWriteNoise } from "./facultyUtils.js";
 import { facultyEmployDesignationsWriteSchema } from "./facultyEmployDesignationTypes.js";
-import { FACULTY_EMPLOYMENT_STATUS_VALUES, FACULTY_PROFILE_STATUS_VALUES } from "./facultyTypes.js";
+import {
+  FACULTY_CONTRACT_TYPE_VALUES,
+  FACULTY_EMPLOYMENT_STATUS_VALUES,
+  FACULTY_PROFILE_STATUS_VALUES,
+} from "./facultyTypes.js";
 import {
   FACULTY_PERFORMANCE_RATING_MAX,
   FACULTY_PERFORMANCE_RATING_MIN,
@@ -22,6 +26,25 @@ const facultyEmploymentWireSchema = z
   })
   .optional()
   .nullable();
+
+export const facultyIjazahSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1).max(200),
+  field: z.string().max(50),
+  grantingAuthority: z.string().min(1).max(200),
+  year: z.union([z.number(), z.string()]).nullable().optional(),
+  sanadChain: z.string().max(4000).nullable().optional(),
+});
+
+export const facultyLeaveDetailsSchema = z.object({
+  isOnLeave: z.boolean(),
+  startDate: isoDateSchema.nullable().optional(),
+  endDate: isoDateSchema.nullable().optional(),
+  reason: z.string().max(1000).nullable().optional(),
+  category: z.string().max(50).nullable().optional(),
+  substituteFacultyId: z.string().nullable().optional(),
+  substituteFacultyName: z.string().nullable().optional(),
+});
 
 /**
  * Wire core keys aligned with faculty seed + audit surface.
@@ -81,6 +104,9 @@ export const facultyCoreSchema = z
     /** @deprecated Legacy join date; `employmentStartDate` is authoritative. */
     joinDate: z.string().optional(),
     qualification: z.string().optional(),
+    ijazahs: z.array(facultyIjazahSchema).optional(),
+    employmentContractType: z.enum(FACULTY_CONTRACT_TYPE_VALUES).nullable().optional(),
+    leaveDetails: facultyLeaveDetailsSchema.nullable().optional(),
     notes: z.string().optional(),
     userId: z.string().nullable().optional(),
     createdAt: z.string().optional(),

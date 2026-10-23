@@ -13,7 +13,7 @@ export const FACULTY_PAGE_TAB_IDS = [
 export type FacultyPageTabId = (typeof FACULTY_PAGE_TAB_IDS)[number];
 
 /** Entity catalogs that support Add / Import / Export on the Faculty page. */
-export const FACULTY_IO_ENTITY_IDS = ["faculties", "designations"] as const;
+export const FACULTY_IO_ENTITY_IDS = ["faculties", "departments", "designations"] as const;
 export type FacultyIoEntity = (typeof FACULTY_IO_ENTITY_IDS)[number];
 
 export const FACULTY_PAGE_TAB_DEFAULT: FacultyPageTabId = "faculties";

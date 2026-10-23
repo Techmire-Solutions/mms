@@ -60,10 +60,10 @@ export function facultyListQueryOptions(
         signal,
         fetchOptions: { signal },
       });
-      if (response.status !== 200) {
-        throw new Error(messages?.loadFailed ?? "Failed to fetch faculty");
+      if (response.status === 200) {
+        return response.body;
       }
-      return response.body;
+      throw new Error(messages?.loadFailed ?? "Failed to fetch faculty");
     },
     placeholderData: (previousData, previousQuery) => {
       const previousKey = (previousQuery as unknown as { queryKey?: readonly unknown[] })

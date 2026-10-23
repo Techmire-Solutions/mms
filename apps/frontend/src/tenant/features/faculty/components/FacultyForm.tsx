@@ -40,6 +40,9 @@ export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.
     departmentEntities,
     linkedContact,
     linkedFacultyContactIds,
+    linkedUser,
+    userAccountDraft,
+    setUserAccountDraft,
     idPrefix,
     nextEmployeeId,
     handleRegenerateEmployeeId,
@@ -151,6 +154,9 @@ export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.
             getFieldError={getFieldError}
             onDraftChange={updateDraft}
             linkedContact={linkedContact}
+            linkedUser={linkedUser}
+            userAccountDraft={userAccountDraft}
+            onUserAccountDraftChange={setUserAccountDraft}
           />
         </form>
       </FormModal>

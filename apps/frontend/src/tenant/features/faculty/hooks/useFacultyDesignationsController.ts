@@ -1,10 +1,11 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import type { FacultyDesignationDefinition, FacultyDesignationWrite } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {
   useDeleteFacultyDesignation,
   useFacultyDesignations,
+  useRestoreFacultyDesignation,
   useSaveFacultyDesignation,
 } from "./useFacultyDesignations";
 
@@ -14,14 +15,16 @@ export type FacultyDesignationFormPayload = Omit<FacultyDesignationWrite, "id"> 
 const messageOf = (err: unknown): string => (err instanceof Error ? err.message.toLowerCase() : "");
 
 /**
- * Single owner of designation catalog writes: server save/delete plus user
+ * Single owner of designation catalog writes: server save/delete/restore plus user
  * notifications. Used by the Setup tab and the in-form quick-create overlay.
  */
 export function useFacultyDesignationsController() {
   const { t } = useTranslation();
-  const query = useFacultyDesignations();
+  const [showDeleted, setShowDeleted] = useState(false);
+  const query = useFacultyDesignations({ includeDeleted: showDeleted });
   const saveMutation = useSaveFacultyDesignation();
   const deleteMutation = useDeleteFacultyDesignation();
+  const restoreMutation = useRestoreFacultyDesignation();
   const designations = query.data ?? [];
 
   const saveDesignation = useCallback(
@@ -69,14 +72,32 @@ export function useFacultyDesignationsController() {
     [deleteMutation, t],
   );
 
+  const handleRestore = useCallback(
+    async (designation: FacultyDesignationDefinition): Promise<boolean> => {
+      try {
+        await restoreMutation.mutateAsync(designation.id);
+        notify.success(t("faculty.designations.saved"));
+        return true;
+      } catch {
+        notify.error(t("faculty.setup.lookupsSaveFailed"));
+        return false;
+      }
+    },
+    [restoreMutation, t],
+  );
+
   return {
     t,
     query,
     designations,
     isLoading: query.isLoading,
-    isPending: saveMutation.isPending || deleteMutation.isPending,
+    isPending: saveMutation.isPending || deleteMutation.isPending || restoreMutation.isPending,
     isSaving: saveMutation.isPending,
+    isRestoring: restoreMutation.isPending,
+    showDeleted,
+    setShowDeleted,
     saveDesignation,
     handleDelete,
+    handleRestore,
   };
 }

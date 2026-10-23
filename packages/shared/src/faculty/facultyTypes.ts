@@ -108,6 +108,40 @@ export const FACULTY_HIERARCHY_RANK_PRESETS: readonly FacultyHierarchyPreset[] =
 /** Default when no designation rank is projected from primary faculty_assignments. */
 export const DEFAULT_FACULTY_HIERARCHY_RANK = 10;
 
+/** Structured Ijazah / Sanad credential for Madrasa faculty. */
+export interface FacultyIjazah {
+  id: string;
+  title: string;
+  field: "quran" | "hadith" | "fiqh" | "arabic" | "aqeedah" | "other" | string;
+  grantingAuthority: string;
+  year?: number | string | null;
+  sanadChain?: string | null;
+}
+
+/** Madrasa employment contract models: Salaried (Mahanah), Stipend (Wazifa), Hourly, or Volunteer. */
+export const FACULTY_CONTRACT_TYPE_VALUES = ["salaried", "wazifa", "hourly", "voluntary"] as const;
+export type FacultyContractType = (typeof FACULTY_CONTRACT_TYPE_VALUES)[number];
+
+export const FACULTY_LEAVE_CATEGORY_VALUES = [
+  "hajj_umrah",
+  "sickness",
+  "bereavement",
+  "personal",
+  "sabbatical",
+  "other",
+] as const;
+export type FacultyLeaveCategory = (typeof FACULTY_LEAVE_CATEGORY_VALUES)[number];
+
+export interface FacultyLeaveDetails {
+  isOnLeave: boolean;
+  startDate?: string | null;
+  endDate?: string | null;
+  reason?: string | null;
+  category?: FacultyLeaveCategory | string | null;
+  substituteFacultyId?: string | null;
+  substituteFacultyName?: string | null;
+}
+
 /** Hierarchical tree node for organizational chart and task delegation. */
 export interface FacultyHierarchyNode {
   id: string;
@@ -189,6 +223,9 @@ export interface FacultyMember {
   /** @deprecated Read alias of employmentStartDate from list hydrate. */
   joinDate?: string;
   qualification?: string;
+  ijazahs?: FacultyIjazah[];
+  employmentContractType?: FacultyContractType | string | null;
+  leaveDetails?: FacultyLeaveDetails | null;
   notes?: string;
   userId?: string | null;
   deletedAt?: string;

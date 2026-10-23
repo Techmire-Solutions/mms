@@ -69,7 +69,15 @@ export function joinedContactGenderExpr(): SQL {
   return sql`lower(trim(COALESCE(fc.gender, '')))`;
 }
 
-/** Organization hierarchy removed — reports-to filter never matches. */
-export function joinedReportsToFacultyExpr(_supervisorFacultyId: string): SQL {
-  return sql`false`;
+/** Reports-to filter matching faculty reporting to supervisor's primary designation. */
+export function joinedReportsToFacultyExpr(supervisorFacultyId: string): SQL {
+  return sql`pa_desig.parent_designation_id IN (
+    SELECT sup_fa.designation_id
+    FROM faculty_assignments sup_fa
+    WHERE sup_fa.workspace_subdomain = ${faculty.workspaceSubdomain}
+      AND sup_fa.faculty_id = ${supervisorFacultyId}
+      AND sup_fa.is_primary = true
+      AND sup_fa.status = 'active'
+      AND sup_fa.deleted_at IS NULL
+  )`;
 }

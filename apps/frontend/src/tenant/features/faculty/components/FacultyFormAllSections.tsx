@@ -11,6 +11,7 @@ import {
   FacultyEmploymentSection,
   type FacultyStatusOption,
 } from "@/tenant/features/faculty/components/FacultyFormSections";
+import { FacultyIjazahSection } from "@/tenant/features/faculty/components/FacultyIjazahSection";
 import { FacultyFormDesignationSection } from "@/tenant/features/faculty/components/FacultyFormDesignationSection";
 
 export interface FacultyFormAllSectionsProps {
@@ -67,6 +68,11 @@ export function FacultyFormAllSections(props: FacultyFormAllSectionsProps): Reac
         isFieldEnabled={isFieldEnabled}
         isFieldRequired={isFieldRequired}
         onDraftChange={onDraftChange}
+      />
+
+      <FacultyIjazahSection
+        ijazahs={facultyDraft.ijazahs}
+        onChange={(ijazahs) => onDraftChange({ ijazahs })}
       />
 
       <FacultyEmploymentSection

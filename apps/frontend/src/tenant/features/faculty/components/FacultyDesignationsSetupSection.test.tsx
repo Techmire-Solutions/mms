@@ -60,6 +60,10 @@ vi.mock("../hooks/useFacultyDesignations", () => ({
     mutateAsync: mockDeleteMutateAsync,
     isPending: false,
   }),
+  useRestoreFacultyDesignation: () => ({
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+  }),
 }));
 
 vi.mock("@/tenant/hooks/useWorkspaceRoles", () => ({

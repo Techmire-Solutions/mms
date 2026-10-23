@@ -7,6 +7,7 @@ export * from "./studentsTransferSchema.js";
 export { contactsTransferSchema } from "../../contacts/contactsTransferSchema.js";
 export * from "./facultyTransferSchema.js";
 export * from "./facultyDesignationTransferSchema.js";
+export * from "./facultyDepartmentTransferSchema.js";
 export * from "./sessionsTransferSchema.js";
 export * from "./enrollmentsTransferSchema.js";
 export * from "./usersTransferSchema.js";

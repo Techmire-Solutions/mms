@@ -24,7 +24,9 @@ export interface FacultyWorkloadItem extends Record<string, unknown> {
 export interface FacultyReportFilters {
   status: string;
   class: string;
-  student: string;
+  student?: string;
+  faculty?: string;
+  search?: string;
   session?: string;
 }
 

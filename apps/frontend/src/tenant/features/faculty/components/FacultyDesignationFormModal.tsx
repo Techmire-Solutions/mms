@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Award } from "lucide-react";
 import {
   collectDesignationDescendantIds,
@@ -28,8 +28,19 @@ export interface FacultyDesignationFormModalProps {
 const isLive = (row: { status?: string; deletedAt?: string | null }) =>
   row.status !== "inactive" && !row.deletedAt;
 
-/** Faculty Management model — Designation modal: department, name, parent (self-referencing), status. */
-export function FacultyDesignationFormModal({
+interface FacultyDesignationFormContentProps {
+  open: boolean;
+  onClose: () => void;
+  designation: FacultyDesignationDefinition | null;
+  departments: readonly FacultyDepartmentEntity[];
+  designationOptions?: readonly FacultyDesignationDefinition[];
+  isPending: boolean;
+  defaultDepartmentId?: string;
+  onOpenCreateDepartment?: () => void;
+  onSave: (payload: FacultyDesignationFormPayload) => Promise<boolean>;
+}
+
+function FacultyDesignationFormContent({
   open,
   onClose,
   designation,
@@ -39,22 +50,19 @@ export function FacultyDesignationFormModal({
   defaultDepartmentId = "",
   onOpenCreateDepartment,
   onSave,
-}: FacultyDesignationFormModalProps): React.JSX.Element | null {
+}: FacultyDesignationFormContentProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [departmentId, setDepartmentId] = useState("");
-  const [name, setName] = useState("");
-  const [parentDesignationId, setParentDesignationId] = useState("");
-  const [status, setStatus] = useState<FacultyCatalogStatus>("active");
-  const [assignableRoles, setAssignableRoles] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!open) return;
-    setDepartmentId(designation?.departmentId ?? defaultDepartmentId);
-    setName(designation?.name ?? "");
-    setParentDesignationId(designation?.parentDesignationId ?? "");
-    setStatus(designation?.status ?? "active");
-    setAssignableRoles(designation?.assignableRoles ?? []);
-  }, [open, designation, defaultDepartmentId]);
+  const [departmentId, setDepartmentId] = useState(
+    () => designation?.departmentId ?? defaultDepartmentId,
+  );
+  const [name, setName] = useState(() => designation?.name ?? "");
+  const [parentDesignationId, setParentDesignationId] = useState(
+    () => designation?.parentDesignationId ?? "",
+  );
+  const [status, setStatus] = useState<FacultyCatalogStatus>(() => designation?.status ?? "active");
+  const [assignableRoles, setAssignableRoles] = useState<string[]>(
+    () => designation?.assignableRoles ?? [],
+  );
 
   const departmentOptions = useMemo(
     () =>
@@ -168,5 +176,19 @@ export function FacultyDesignationFormModal({
         onOpenCreateDepartment={onOpenCreateDepartment}
       />
     </FormModal>
+  );
+}
+
+/** Faculty Management model — Designation modal: department, name, parent (self-referencing), status. */
+export function FacultyDesignationFormModal(
+  props: FacultyDesignationFormModalProps,
+): React.JSX.Element | null {
+  if (!props.open) return null;
+
+  return (
+    <FacultyDesignationFormContent
+      key={props.designation?.id ?? `new-${props.defaultDepartmentId ?? ""}`}
+      {...props}
+    />
   );
 }

@@ -9,7 +9,7 @@ import {
 } from "./facultyPageWorkSubTabs";
 
 describe("facultyPageWorkSubTabs", () => {
-  it("exposes five peer tabs and two IO entities including departments", () => {
+  it("exposes five peer tabs and three IO entities including departments", () => {
     expect(FACULTY_PAGE_TAB_IDS).toEqual([
       "faculties",
       "departments",
@@ -17,7 +17,7 @@ describe("facultyPageWorkSubTabs", () => {
       "reports",
       "setup",
     ]);
-    expect(FACULTY_IO_ENTITY_IDS).toEqual(["faculties", "designations"]);
+    expect(FACULTY_IO_ENTITY_IDS).toEqual(["faculties", "departments", "designations"]);
   });
 
   it("migrates legacy work / operations onto appropriate peer tab", () => {

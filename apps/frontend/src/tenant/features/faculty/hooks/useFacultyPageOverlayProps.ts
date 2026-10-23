@@ -27,6 +27,7 @@ export function useFacultyPageOverlayProps({
     "handleRestore" | "handleDelete" | "handleBulkDelete" | "handleBulkRestore"
   > & {
     handleSaveFaculty?: WorkActions["handleSaveFaculty"];
+    onReportingFacultyChange?: (supervisorId: string) => void;
   };
 
   selectedIds: string[];
@@ -49,6 +50,10 @@ export function useFacultyPageOverlayProps({
     },
     viewFaculty: currentView,
     onCloseView: () => overlays.setViewFaculty(null),
+    onFilterSubordinates: (facultyId: string) => {
+      overlays.setViewFaculty(null);
+      workActions.onReportingFacultyChange?.(facultyId);
+    },
     onEditFromDrawer: (faculty: Faculty) => {
       overlays.setViewFaculty(null);
       formState.openEdit(faculty);
