@@ -29,6 +29,13 @@ const PROVIDER_SENDERS: Record<string, SmsProviderSender> = {
   logiqueues: sendLogiqueuesSms,
 };
 
+function sanitizeDispatchPhone(raw: string): string {
+  const trimmed = raw.trim();
+  const hasPlus = trimmed.startsWith("+");
+  const digitsOnly = trimmed.replace(/\D/g, "");
+  return hasPlus ? `+${digitsOnly}` : digitsOnly;
+}
+
 async function dispatchViaActiveProvider(to: string, body: string): Promise<SendSmsResult> {
   const config = await loadSmsIntegrationConfig();
   const secrets = await loadSmsIntegrationSecrets();
@@ -47,8 +54,10 @@ async function dispatchViaActiveProvider(to: string, body: string): Promise<Send
     };
   }
 
+  const cleanPhone = sanitizeDispatchPhone(to);
+
   try {
-    const result = await send(to, body, {
+    const result = await send(cleanPhone, body, {
       accountId: config.accountId,
       accountSecret,
       senderId: config.senderId,

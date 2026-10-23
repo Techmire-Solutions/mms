@@ -4914,6 +4914,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "messaging.noDispatches": "پیامی برای نمایش در نمودار وجود ندارد",
   "messaging.noEligibleRecipients": "گیرنده واجدی برای این کانال وجود ندارد",
   "messaging.noLogs": "هیچ سابقه پیامی یافت نشد",
+  "messaging.noLogsMatchFilters": "هیچ سابقه پیامی با فیلترهای شما مطابقت ندارد",
   "messaging.noMatchingRecipients": "هیچ گیرنده منطبقی یافت نشد",
   "messaging.noRecipientsFound": "هیچ گیرنده منطبقی یافت نشد",
   "messaging.noTemplates": "هیچ قالب پیامی یافت نشد",
@@ -5051,6 +5052,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "messaging.tokenAttendanceStatus": "وضعیت حضور",
   "messaging.tokenTime": "زمان",
   "messaging.toolbarAriaLabel": "نوار ابزار پیام‌رسانی",
+  "messaging.tryAdjustingFilters": "جستجو یا فیلترهای خود را تغییر دهید.",
   "messaging.unicodeWarning": "شامل کاراکترهای یونیکد (فارسی/عربی/ایموجی). حد بخش: 70 کاراکتر.",
   "messaging.nonGsmCharsHint":
     "نویسه‌های غیر GSM: {chars}. برای GSM-7 از نقل‌قول و خط تیره ساده استفاده کنید.",

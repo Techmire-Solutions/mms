@@ -99,7 +99,7 @@ export function TenantMessageComposerRecipientTable({
                     <span className="truncate">{recipient.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="px-3 py-2 font-mono text-muted-foreground">
+                <TableCell className="px-3 py-2 font-mono text-muted-foreground" dir="ltr">
                   {recipient.phone || (
                     <span
                       className={`rounded border border-warning/20 ${SEMANTIC_BG.warning} px-1.5 py-0.5 text-3xs ${SEMANTIC_TEXT.warning}`}
@@ -108,7 +108,7 @@ export function TenantMessageComposerRecipientTable({
                     </span>
                   )}
                 </TableCell>
-                <TableCell className="px-3 py-2 text-muted-foreground">
+                <TableCell className="px-3 py-2 text-muted-foreground" dir="ltr">
                   {recipient.email || (
                     <span
                       className={`rounded border border-warning/20 ${SEMANTIC_BG.warning} px-1.5 py-0.5 text-3xs ${SEMANTIC_TEXT.warning}`}

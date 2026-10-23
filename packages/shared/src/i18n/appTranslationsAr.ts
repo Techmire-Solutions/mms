@@ -4827,6 +4827,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "messaging.noDispatches": "لا توجد رسائل للرسم البياني",
   "messaging.noEligibleRecipients": "لا يوجد مستلمون مؤهلون لهذه القناة",
   "messaging.noLogs": "لم يتم العثور على سجلات رسائل مرسلة",
+  "messaging.noLogsMatchFilters": "لا توجد سجلات رسائل تطابق عوامل التصفية",
   "messaging.noMatchingRecipients": "لا يوجد مستلمون مطابقون",
   "messaging.noRecipientsFound": "لم يتم العثور على مستلمين مطبقين",
   "messaging.noTemplates": "لم يتم العثور على قوالب رسائل",
@@ -4963,6 +4964,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "messaging.tokenAttendanceStatus": "حالة الحضور",
   "messaging.tokenTime": "الوقت",
   "messaging.toolbarAriaLabel": "شريط أدوات المراسلة",
+  "messaging.tryAdjustingFilters": "جرّب تعديل البحث أو عوامل التصفية.",
   "messaging.unicodeWarning": "يحتوي على أحرف يونيكود (عربي/أردو/إيموجي). الحد للأجزاء: 70 حرفًا.",
   "messaging.nonGsmCharsHint":
     "أحرف غير GSM: {chars}. يُفضَّل علامات الاقتباس والشرطات العادية لـ GSM-7.",

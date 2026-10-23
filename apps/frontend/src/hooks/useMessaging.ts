@@ -5,6 +5,7 @@ import {
   type Message,
   type MessageLogCreateDto,
   type MessageTemplate,
+  type MessagingMetricsDto,
 } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { apiJson } from "@/lib/apiClient";
@@ -123,7 +124,7 @@ export function useMessagingMetrics(options?: {
   endDate?: string;
 }) {
   const { isAuthenticated } = useAuth();
-  return tsrClient.messaging.getMetrics.useQuery({
+  const query = tsrClient.messaging.getMetrics.useQuery({
     queryKey: [...MESSAGING_METRICS_QUERY_KEY, options?.startDate, options?.endDate],
     queryData: {
       query: {
@@ -134,6 +135,13 @@ export function useMessagingMetrics(options?: {
     staleTime: 15_000,
     enabled: options?.enabled !== false && isAuthenticated,
   });
+
+  const metrics =
+    query.data?.status === 200
+      ? ((query.data.body as { metrics?: MessagingMetricsDto } | null)?.metrics ?? undefined)
+      : undefined;
+
+  return { ...query, data: metrics, metrics };
 }
 
 export function useMessagingMutations() {

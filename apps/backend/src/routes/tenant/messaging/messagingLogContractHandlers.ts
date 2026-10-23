@@ -88,10 +88,15 @@ export async function messagingGetMetricsHandler({
   }
   try {
     const tenant = getTenantInfo(request);
-    const metrics = await messagingUseCases.computeMessagingMetrics(tenant.subdomain, {
-      startDate: parsed.data.startDate,
-      endDate: parsed.data.endDate,
-    });
+    const metrics = await withTenant(
+      tenant.id,
+      () =>
+        messagingUseCases.computeMessagingMetrics(tenant.subdomain, {
+          startDate: parsed.data.startDate,
+          endDate: parsed.data.endDate,
+        }),
+      { readOnly: true },
+    );
     return { status: 200 as const, body: { metrics } };
   } catch {
     return {

@@ -28,6 +28,12 @@ export {
 } from "@/tenant/features/messaging/hooks/useMessagingQueries";
 
 export {
+  useMessagingPreferencesQuery,
+  useMessagingPreferencesMutation,
+  MESSAGING_PREFERENCES_QUERY_KEY,
+} from "@/tenant/features/messaging/hooks/useMessagingSetupConfig";
+
+export {
   MESSAGING_CHANNEL_CONFIG,
   type MessagingChannelConfig,
 } from "@/tenant/features/messaging/config";

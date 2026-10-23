@@ -25,7 +25,7 @@ export interface MessageComposerRecipientPickerProps {
 const DEBOUNCE_MS = 300;
 
 export function TenantMessageComposerRecipientPicker({
-  kind: _kind,
+  kind,
   existingIds,
   disabled,
   onAdd,
@@ -50,6 +50,7 @@ export function TenantMessageComposerRecipientPicker({
       roleFilter: "all",
       genderFilter: "all",
       search: debouncedQuery,
+      kind,
       page,
       pageSize: 50,
     });

@@ -231,6 +231,7 @@ const messagingCsvExportBodyBaseSchema = z
     query: messagingCsvExportQuerySchema.optional(),
     filename: z.string().min(1).max(200).optional(),
     label: z.string().min(1).max(500).optional(),
+    columns: z.unknown().optional(),
     /** Client retry key — reused as the background job id when provided. */
     idempotencyKey: z
       .string()

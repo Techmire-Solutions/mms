@@ -124,11 +124,11 @@ export function MessagingWorkTierDirectory({
           <ModuleWorkDirectoryEmpty
             icon={MessageSquareOff}
             title={
-              c.hasActiveFilters ? c.t("contacts.noContactsMatchFilters") : c.t("messaging.noLogs")
+              c.hasActiveFilters ? c.t("messaging.noLogsMatchFilters") : c.t("messaging.noLogs")
             }
             description={
               c.hasActiveFilters
-                ? c.t("contacts.tryAdjustingFilters")
+                ? c.t("messaging.tryAdjustingFilters")
                 : c.t("messaging.selectRecipientsDesc")
             }
             hasActiveFilters={c.hasActiveFilters}

@@ -50,6 +50,7 @@ export function NotifyGuardiansButton({
             channel={messagingTarget.channel}
             recipients={messagingTarget.recipients}
             initialMessage={messagingTarget.initialMessage}
+            initialSubject={messagingTarget.initialSubject}
             onClose={closeComposer}
           />
         </React.Suspense>

@@ -10,7 +10,7 @@ import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { RecipientTab } from "./MessageComposerRecipients";
 import { useMessageComposerDispatch } from "./useMessageComposerDispatch";
-import { findUnknownTokens } from "./messageComposerDispatchService";
+import { findUnknownTokens, type DispatchSpeed } from "./messageComposerDispatchService";
 import {
   clearComposerDraft,
   resolveComposerUserId,
@@ -42,6 +42,7 @@ export interface UseMessageComposerModelProps {
   madrasaName?: string;
   user?: unknown;
   useServerGateway?: boolean;
+  defaultDispatchSpeed?: DispatchSpeed;
 }
 
 export function useMessageComposerModel(props: UseMessageComposerModelProps) {
@@ -171,6 +172,7 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
     madrasaName,
     user,
     useServerGateway,
+    defaultDispatchSpeed: props.defaultDispatchSpeed,
   });
   const isEmail = channel === "email";
   const isSms = channel === "sms";

@@ -74,7 +74,11 @@ export async function messagingMatchRecipientsHandler({
   }
   try {
     const tenant = getTenantInfo(request);
-    const result = await messagingUseCases.matchMessagingRecipients(tenant.subdomain, parsed.data);
+    const result = await withTenant(
+      tenant.id,
+      () => messagingUseCases.matchMessagingRecipients(tenant.subdomain, parsed.data),
+      { readOnly: true },
+    );
     return { status: 200 as const, body: result };
   } catch {
     return {
@@ -109,9 +113,10 @@ export async function messagingResolveContactsHandler({
   }
   try {
     const tenant = getTenantInfo(request);
-    const recipients = await messagingUseCases.resolveMessagingRecipients(
-      tenant.subdomain,
-      parsed.data.ids,
+    const recipients = await withTenant(
+      tenant.id,
+      () => messagingUseCases.resolveMessagingRecipients(tenant.subdomain, parsed.data.ids),
+      { readOnly: true },
     );
     return { status: 200 as const, body: { recipients } };
   } catch {

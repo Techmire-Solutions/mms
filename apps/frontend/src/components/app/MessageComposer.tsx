@@ -7,6 +7,7 @@ import type {
 } from "@mms/shared";
 import { MessageComposerDispatchControls } from "../messageComposer/MessageComposerDispatchControls";
 import { MessageComposerFormBody } from "../messageComposer/MessageComposerFormBody";
+import type { DispatchSpeed } from "../messageComposer/messageComposerDispatchService";
 import {
   MessageComposerRecipients,
   type RecipientPickerSlotProps,
@@ -28,6 +29,7 @@ export interface MessageComposerProps {
   madrasaName?: string;
   user?: unknown;
   useServerGateway?: boolean;
+  defaultDispatchSpeed?: DispatchSpeed;
   renderRecipientPicker?: (props: RecipientPickerSlotProps) => React.ReactNode;
 }
 

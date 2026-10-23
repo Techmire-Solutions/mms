@@ -34,6 +34,7 @@ interface UseMessageComposerDispatchParams {
   madrasaName?: string;
   user?: unknown;
   useServerGateway?: boolean;
+  defaultDispatchSpeed?: DispatchSpeed;
 }
 
 export function useMessageComposerDispatch({
@@ -48,13 +49,16 @@ export function useMessageComposerDispatch({
   madrasaName,
   user,
   useServerGateway,
+  defaultDispatchSpeed,
 }: UseMessageComposerDispatchParams) {
   const { t } = useTranslation();
   const { recordDispatches, dispatchServerSms, dispatchServerEmail, dispatchServerWhatsApp } =
     useMessagingMutations();
   const [opening, setOpening] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [dispatchSpeed, setDispatchSpeed] = useState<DispatchSpeed>("normal");
+  const [dispatchSpeed, setDispatchSpeed] = useState<DispatchSpeed>(
+    defaultDispatchSpeed ?? "normal",
+  );
   const [dispatchProgress, setDispatchProgress] = useState<{
     current: number;
     total: number;
