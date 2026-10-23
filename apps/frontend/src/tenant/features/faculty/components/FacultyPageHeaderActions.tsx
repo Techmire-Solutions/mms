@@ -1,4 +1,4 @@
-import { Award, Download, Upload, UserPlus } from "lucide-react";
+import { Award, Building2, Download, Upload, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,11 +21,12 @@ export interface FacultyPageHeaderActionsProps {
   onExportEntity: (entity: FacultyIoEntity) => void;
   onImportEntity: (entity: FacultyIoEntity) => void;
   onAddFaculty?: () => void;
+  onAddDepartment?: () => void;
   onAddDesignation?: () => void;
 }
 
 /**
- * Module-dashboard IO: Import/Export choosers + Add Faculty / Add Designation.
+ * Module-dashboard IO: Import/Export choosers + Add Faculty / Add Department / Add Designation.
  * Matching scoped Add also lives on {@link FacultyTabIoToolbar}.
  */
 export function FacultyPageHeaderActions({
@@ -35,6 +36,7 @@ export function FacultyPageHeaderActions({
   onExportEntity,
   onImportEntity,
   onAddFaculty,
+  onAddDepartment,
   onAddDesignation,
 }: FacultyPageHeaderActionsProps): React.JSX.Element | null {
   const { t } = useTranslation();
@@ -87,6 +89,12 @@ export function FacultyPageHeaderActions({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+      ) : null}
+
+      {canWrite && onAddDepartment ? (
+        <Button variant="ghost" icon={Building2} onClick={onAddDepartment}>
+          {t("faculty.setup.addDepartment")}
+        </Button>
       ) : null}
 
       {canWrite && onAddDesignation ? (

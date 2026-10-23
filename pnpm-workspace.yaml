@@ -93,3 +93,6 @@ overrides:
   # Security: source-map-js GHSA-68fv-2mgg-jv7q event-loop DoS via indexed section offsets.
   # Transitive path: @vitest/coverage-v8 > magicast / vite > postcss > source-map-js.
   source-map-js: ">=1.2.2"
+  # Security: dompurify GHSA-cg2g-xh64-v4q7 and GHSA-mrv2-3pqr-j5jr.
+  # Transitive path: apps/frontend > jspdf / mermaid > dompurify.
+  dompurify: ">=3.4.17"
