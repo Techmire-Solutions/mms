@@ -20,6 +20,9 @@ export interface UseMessagingWorkRecipientsParams {
   search: string;
   page: number;
   pageSize?: number;
+  hasPhone?: boolean;
+  hasEmail?: boolean;
+  kind?: "phone" | "email";
   enabled?: boolean;
 }
 
@@ -87,9 +90,20 @@ export function useMessagingWorkRecipients(
   const gender = params.genderFilter;
   const search = params.search.trim();
   const page = params.page;
+  const hasPhone = params.kind === "phone" ? true : params.hasPhone;
+  const hasEmail = params.kind === "email" ? true : params.hasEmail;
 
   const query = useQuery({
-    queryKey: [...MESSAGING_RECIPIENTS_QUERY_KEY, role, gender, search, page, pageSize] as const,
+    queryKey: [
+      ...MESSAGING_RECIPIENTS_QUERY_KEY,
+      role,
+      gender,
+      search,
+      hasPhone,
+      hasEmail,
+      page,
+      pageSize,
+    ] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.messaging.listRecipients({
         query: {
@@ -98,6 +112,8 @@ export function useMessagingWorkRecipients(
           ...(role !== "all" ? { role } : {}),
           ...(gender !== "all" ? { gender } : {}),
           ...(search ? { search } : {}),
+          ...(hasPhone ? { hasPhone: "true" } : {}),
+          ...(hasEmail ? { hasEmail: "true" } : {}),
         },
         signal,
         fetchOptions: { signal },

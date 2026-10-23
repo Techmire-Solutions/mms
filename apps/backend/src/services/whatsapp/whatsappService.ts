@@ -27,6 +27,13 @@ const PROVIDER_SENDERS: Record<string, WhatsappProviderSender> = {
   infobip: sendInfobipWhatsApp,
 };
 
+function sanitizeDispatchPhone(raw: string): string {
+  const trimmed = raw.trim();
+  const hasPlus = trimmed.startsWith("+");
+  const digitsOnly = trimmed.replace(/\D/g, "");
+  return hasPlus ? `+${digitsOnly}` : digitsOnly;
+}
+
 async function dispatchViaActiveProvider(to: string, body: string): Promise<SendWhatsappResult> {
   const config = await loadWhatsappIntegrationConfig();
   const secrets = await loadWhatsappIntegrationSecrets();
@@ -45,8 +52,10 @@ async function dispatchViaActiveProvider(to: string, body: string): Promise<Send
     };
   }
 
+  const cleanPhone = sanitizeDispatchPhone(to);
+
   try {
-    const result = await send(to, body, {
+    const result = await send(cleanPhone, body, {
       accountId: config.accountId,
       phoneNumberId: config.phoneNumberId,
       accountSecret,

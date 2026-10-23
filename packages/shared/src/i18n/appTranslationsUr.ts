@@ -4894,6 +4894,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "messaging.noDispatches": "چارٹ کرنے کے لیے کوئی پیغامات نہیں ہیں",
   "messaging.noEligibleRecipients": "اس چینل کے لیے کوئی اہل وصول کنندہ نہیں",
   "messaging.noLogs": "کوئی بھیجے گئے پیغامات کا ریکارڈ نہیں ملا",
+  "messaging.noLogsMatchFilters": "آپ کے فلٹرز سے کوئی پیغام کا ریکارڈ نہیں ملا",
   "messaging.noMatchingRecipients": "کوئی مماثل وصول کنندہ نہیں",
   "messaging.noRecipientsFound": "کوئی مماثل موصول کنندگان نہیں ملے",
   "messaging.noTemplates": "کوئی پیغام ٹیمپلیٹ نہیں ملا",
@@ -5031,6 +5032,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "messaging.tokenAttendanceStatus": "حاضری کی حالت",
   "messaging.tokenTime": "وقت",
   "messaging.toolbarAriaLabel": "پیغام رسانی ٹول بار",
+  "messaging.tryAdjustingFilters": "تلاش یا فلٹرز ایڈجسٹ کر کے دیکھیں۔",
   "messaging.unicodeWarning": "یونیکوڈ حروف (اردو/عربی/ایموجی) شامل ہیں۔ فی حصہ حد: 70 حروف۔",
   "messaging.nonGsmCharsHint":
     "غیر GSM حروف: {chars}۔ GSM-7 کے لیے سیدھے اقتباسات اور ہائفن ترجیح دیں۔",

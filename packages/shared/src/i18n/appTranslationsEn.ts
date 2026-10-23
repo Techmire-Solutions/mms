@@ -4942,6 +4942,7 @@ export const APP_TRANSLATIONS_EN = {
   "messaging.noDispatches": "No dispatches to chart",
   "messaging.noEligibleRecipients": "No eligible recipients for this channel",
   "messaging.noLogs": "No sent message records found",
+  "messaging.noLogsMatchFilters": "No message records match your filters",
   "messaging.noMatchingRecipients": "No matching recipients",
   "messaging.noRecipientsFound": "No matching recipients found",
   "messaging.noTemplates": "No message templates found",
@@ -5081,6 +5082,7 @@ export const APP_TRANSLATIONS_EN = {
   "messaging.tokenAttendanceStatus": "Attendance Status",
   "messaging.tokenTime": "Time",
   "messaging.toolbarAriaLabel": "Messaging toolbar",
+  "messaging.tryAdjustingFilters": "Try adjusting your search or filters.",
   "messaging.unicodeWarning":
     "Contains Unicode characters (Urdu/Arabic/Emoji). Limit per segment: 70 chars.",
   "messaging.nonGsmCharsHint":

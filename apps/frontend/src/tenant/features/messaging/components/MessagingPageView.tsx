@@ -1,12 +1,12 @@
 import { Suspense, lazy, useState } from "react";
 import { MessageSquare, type LucideIcon } from "lucide-react";
-import {
-  type Message,
-  type MessageTemplate,
-  type StandardMessagingRecipient as MessagingRecipient,
-  messagingTransferSchema,
+import type {
+  Message,
+  MessageTemplate,
+  StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
-import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
+import { notify } from "@/lib/notify";
+import { exportMessagingLogsFiltered } from "../lib/messagingReportsExport";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorState } from "@/components/app/ErrorState";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
@@ -65,12 +65,25 @@ export interface MessagingPageViewProps {
 export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element {
   const { t } = useTranslation();
   const [importOpen, setImportOpen] = useState(false);
-  const { handleExport, isExporting } = useGenericModuleExport({
-    path: "/api/messaging/export/csv",
-    filename: "messaging-logs.csv",
-    columns: messagingTransferSchema.exportColumns,
-    canExport: p.canWrite,
-  });
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async (): Promise<void> => {
+    if (!p.canWrite || isExporting) return;
+    setIsExporting(true);
+    try {
+      await exportMessagingLogsFiltered({
+        channel: p.channelFilter,
+        category: "all",
+        debouncedSearch: "",
+        status: "all",
+        t,
+      });
+    } catch {
+      notify.error(t("messaging.exportFailed"), { description: t("messaging.loadFailedHint") });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <ModulePageShell
