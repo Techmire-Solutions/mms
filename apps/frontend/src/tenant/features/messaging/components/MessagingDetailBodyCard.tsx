@@ -44,8 +44,8 @@ export function MessagingDetailBodyCard({ log }: MessagingDetailBodyCardProps): 
           <CopyBtn
             text={log.body}
             showToast
-            label={t("contacts.table.copy")}
-            labelCopied={t("contacts.table.copied")}
+            label={t("common.copy")}
+            labelCopied={t("common.copied")}
             variant="ghost"
             className={`h-7 touch-target-coarse px-2.5 text-xs gap-1.5 ${SEMANTIC_TEXT.primary} hover:bg-primary/10`}
           />
