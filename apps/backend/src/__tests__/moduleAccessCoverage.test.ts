@@ -36,6 +36,7 @@ const MODULE_ROUTE_PREFIXES: Readonly<Record<string, string>> = {
   "/api/v1/tenant/faculty": "faculty",
   "/api/finance": "finance",
   "/api/hasanat": "hasanat",
+  "/api/workshops": "workshops",
   "/api/messaging": "messaging",
   "/api/obligations": "obligations",
   "/api/question-bank": "questionBank",

@@ -31,6 +31,7 @@ import { sessionCompletionContract } from "./sessionCompletion.contract.js";
 import { questionBankContract } from "./questionBank.contract.js";
 import { accountingContract } from "./accounting.contract.js";
 import { hasanatContract } from "./hasanat.contract.js";
+import { workshopsContract } from "./workshops.contract.js";
 import { obligationContract } from "./obligations.contract.js";
 import { examinationContract } from "./examinations.contract.js";
 import { enrollmentContract } from "./enrollments.contract.js";
@@ -80,6 +81,7 @@ export const rootContract = c.router({
   questionBank: questionBankContract,
   accounting: accountingContract,
   hasanat: hasanatContract,
+  workshops: workshopsContract,
   obligations: obligationContract,
   examinations: examinationContract,
   enrollments: enrollmentContract,
@@ -135,6 +137,7 @@ export {
   questionBankContract,
   accountingContract,
   hasanatContract,
+  workshopsContract,
   obligationContract,
   examinationContract,
   enrollmentContract,
@@ -180,6 +183,7 @@ export type DomainContracts = {
   questionBank: typeof questionBankContract;
   accounting: typeof accountingContract;
   hasanat: typeof hasanatContract;
+  workshops: typeof workshopsContract;
   obligations: typeof obligationContract;
   examinations: typeof examinationContract;
   enrollments: typeof enrollmentContract;

@@ -18,6 +18,7 @@ import {
   FACULTY_MODULE_MANIFEST,
   USERS_MODULE_MANIFEST,
   TASKS_MODULE_MANIFEST,
+  WORKSHOPS_MODULE_MANIFEST,
   type Permission,
 } from "@mms/shared";
 export const WRITE_ROLES = new Set([
@@ -91,6 +92,10 @@ export const COLLECTION_READ_PERMISSION: Record<string, Permission> = {
   hasanat_batches: HASANAT_MODULE_MANIFEST.permissions.read,
   hasanat_denoms: HASANAT_MODULE_MANIFEST.permissions.read,
   hasanat_redemptions: HASANAT_MODULE_MANIFEST.permissions.read,
+  workshop_events: WORKSHOPS_MODULE_MANIFEST.permissions.read,
+  workshop_participants: WORKSHOPS_MODULE_MANIFEST.permissions.read,
+  workshop_attendance: WORKSHOPS_MODULE_MANIFEST.permissions.read,
+  workshop_scores: WORKSHOPS_MODULE_MANIFEST.permissions.read,
   exams: EXAMINATIONS_MODULE_MANIFEST.permissions.read,
   exam_results: EXAMINATIONS_MODULE_MANIFEST.permissions.read,
   questions: QUESTION_BANK_MODULE_MANIFEST.permissions.read,
@@ -129,6 +134,10 @@ export const COLLECTION_WRITE_PERMISSION: Record<string, Permission> = {
   hasanat_batches: HASANAT_MODULE_MANIFEST.permissions.write,
   hasanat_denoms: HASANAT_MODULE_MANIFEST.permissions.write,
   hasanat_redemptions: HASANAT_MODULE_MANIFEST.permissions.write,
+  workshop_events: WORKSHOPS_MODULE_MANIFEST.permissions.write,
+  workshop_participants: WORKSHOPS_MODULE_MANIFEST.permissions.write,
+  workshop_attendance: WORKSHOPS_MODULE_MANIFEST.permissions.write,
+  workshop_scores: WORKSHOPS_MODULE_MANIFEST.permissions.write,
   exams: EXAMINATIONS_MODULE_MANIFEST.permissions.write,
   exam_results: EXAMINATIONS_MODULE_MANIFEST.permissions.write,
   questions: QUESTION_BANK_MODULE_MANIFEST.permissions.write,
@@ -150,6 +159,8 @@ export const COLLECTION_DELETE_PERMISSION: Record<string, Permission> = {
   attendance: ATTENDANCE_MODULE_MANIFEST.permissions.delete,
   attendance_records: ATTENDANCE_MODULE_MANIFEST.permissions.delete,
   obligation_collections: OBLIGATIONS_MODULE_MANIFEST.permissions.delete,
+  workshop_events: WORKSHOPS_MODULE_MANIFEST.permissions.delete,
+  workshop_participants: WORKSHOPS_MODULE_MANIFEST.permissions.delete,
 };
 
 // `global_settings`/`branding` keep entries here even though `dbObjectRoutes.ts` no

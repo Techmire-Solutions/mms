@@ -88,6 +88,13 @@ export const SYSTEM_MODULES: ModuleDefinition[] = [
     category: "academic",
   },
   {
+    id: "workshops",
+    label: "Workshops",
+    description: "Short events with registration, check-in and scores",
+    icon: "Presentation",
+    category: "academic",
+  },
+  {
     id: "examination",
     label: "Examinations",
     description: "Testing and grading systems",
@@ -173,6 +180,7 @@ export const SYSTEM_MODULE_NAV: SystemModuleNavEntry[] = [
       "attendance",
       "enrollment",
       "hasanat",
+      "workshops",
       "examination",
       "questionBank",
     ],
