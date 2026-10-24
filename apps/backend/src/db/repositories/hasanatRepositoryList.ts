@@ -128,8 +128,8 @@ const localDateStr = (d: Date) =>
 
 /**
  * SQL aggregates for Hasanat command-centre metrics. Week windows are computed
- * in JS as local YYYY-MM-DD strings and compared lexicographically against the
- * `issued_date` varchar — this fixes a latent bug where the prior JS reducer
+ * in JS as local YYYY-MM-DD strings and bound as parameters against the
+ * `issued_date` date column — this fixes a latent bug where the prior JS reducer
  * read `distribution.date ?? distribution.distributedAt` (both undefined on
  * loaded rows; the column is `issuedDate`), so `pointsThisWeek`/`pointsLastWeek`
  * were always 0. SQL uses `issued_date` and returns correct values.

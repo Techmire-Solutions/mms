@@ -15,6 +15,7 @@ import {
 } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { ConflictError } from "../../lib/httpErrors.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 /**
  * Maps a JournalEntry to the accountingEntries insert/upsert value shape.
@@ -32,7 +33,7 @@ export function entryInsertValues(
   return {
     id: record.id,
     workspaceSubdomain: subdomain,
-    date: record.date,
+    date: requireDbDateValue(record.date, "date"),
     ref: record.ref ?? "",
     description: record.description ?? "",
     status: record.status ?? "posted",

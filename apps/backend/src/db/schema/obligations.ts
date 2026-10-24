@@ -1,4 +1,5 @@
 import {
+  date,
   pgTable,
   text,
   timestamp,
@@ -129,7 +130,7 @@ export const obligationCollections = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     receiptNo: varchar("receipt_no", { length: 100 }).notNull(),
-    receivedDate: varchar("received_date", { length: 30 }).notNull(),
+    receivedDate: date("received_date", { mode: "string" }).notNull(),
     senderId: varchar("sender_id", { length: 64 }).notNull(),
     referenceId: varchar("reference_id", { length: 120 }),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull().default("0"),

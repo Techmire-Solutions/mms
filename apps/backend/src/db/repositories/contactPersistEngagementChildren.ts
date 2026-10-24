@@ -7,6 +7,7 @@ import {
   contactBankDetails,
 } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 type Transaction = TenantTransaction;
 
@@ -59,7 +60,7 @@ export async function syncContactEngagementChildrenTx(
         contactId,
         type: act.type,
         content: act.content,
-        date: act.date,
+        date: requireDbDateValue(act.date, "date"),
         by: act.by ?? null,
         sortOrder: idx,
       })),
@@ -84,7 +85,7 @@ export async function syncContactEngagementChildrenTx(
         type: att.type,
         size: att.size ?? 0,
         url: att.url,
-        date: att.date,
+        date: requireDbDateValue(att.date, "date"),
         sortOrder: idx,
       })),
     );
@@ -144,7 +145,7 @@ export async function bulkInsertContactEngagementChildrenTx(
       contactId,
       type: act.type,
       content: act.content,
-      date: act.date,
+      date: requireDbDateValue(act.date, "date"),
       by: act.by ?? null,
       sortOrder: idx,
     }));
@@ -161,7 +162,7 @@ export async function bulkInsertContactEngagementChildrenTx(
       type: att.type,
       size: att.size ?? 0,
       url: att.url,
-      date: att.date,
+      date: requireDbDateValue(att.date, "date"),
       sortOrder: idx,
     }));
   });

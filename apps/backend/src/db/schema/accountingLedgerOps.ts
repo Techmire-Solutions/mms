@@ -1,10 +1,10 @@
 import {
+  date,
   pgTable,
   text,
   timestamp,
   index,
   primaryKey,
-  varchar,
   numeric,
   uniqueIndex,
   foreignKey,
@@ -93,8 +93,8 @@ export const accountingBankStatements = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     accountId: text("account_id").notNull(),
-    periodStart: varchar("period_start", { length: 10 }).notNull(),
-    periodEnd: varchar("period_end", { length: 10 }).notNull(),
+    periodStart: date("period_start", { mode: "string" }).notNull(),
+    periodEnd: date("period_end", { mode: "string" }).notNull(),
     openingBalance: numeric("opening_balance", { precision: 14, scale: 2 }).notNull().default("0"),
     closingBalance: numeric("closing_balance", { precision: 14, scale: 2 }).notNull().default("0"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -121,7 +121,7 @@ export const accountingBankStatementLines = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     statementId: text("statement_id").notNull(),
-    date: varchar("date", { length: 10 }).notNull(),
+    date: date("date", { mode: "string" }).notNull(),
     description: text("description").notNull().default(""),
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull().default("0"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
