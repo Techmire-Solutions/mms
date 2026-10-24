@@ -21,21 +21,25 @@ export function CopyButton({
   onCopy,
   title,
   titleCopied,
+  label,
+  labelCopied,
   ...rest
 }: CopyButtonProps): React.JSX.Element {
   const { t } = useTranslation();
 
   const handleCopy = () => {
     if (showToast) {
-      notify.success(t("contacts.table.copied"));
+      notify.success(t("common.copied"));
     }
     onCopy?.();
   };
 
   return (
     <SharedCopyButton
-      title={title ?? t("contacts.table.copy")}
-      titleCopied={titleCopied ?? t("contacts.table.copied")}
+      title={title ?? t("common.copy")}
+      titleCopied={titleCopied ?? t("common.copied")}
+      label={label}
+      labelCopied={labelCopied ?? (label ? t("common.copied") : undefined)}
       onCopy={handleCopy}
       {...rest}
     />

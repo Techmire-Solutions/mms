@@ -12,8 +12,8 @@ export function useMessagingRecipientsColumnLayout() {
   const tenantRegistry = (() =>
     buildMessagingRecipientsWorkColumnRegistry({
       recipient: t("messaging.recipient"),
-      phone: t("contacts.form.primaryPhone"),
-      email: t("contacts.form.primaryEmail"),
+      phone: t("messaging.recipientPhone"),
+      email: t("messaging.recipientEmail"),
     }))();
 
   return useModuleColumnLayout({

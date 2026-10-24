@@ -75,9 +75,12 @@ export function MessagingListCardItem({
         subtitle: (
           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
             {isColumnVisible("dateSent") && (
-              <p className="text-xs font-mono text-muted-foreground">
+              <time
+                dateTime={new Date(log.sentAt).toISOString()}
+                className="text-xs font-mono text-muted-foreground"
+              >
                 {formatDateTime(log.sentAt)}
-              </p>
+              </time>
             )}
             {categoryKey && (
               <span className="text-2xs px-1.5 py-0.5 bg-muted/60 text-muted-foreground rounded-md font-medium">
@@ -87,8 +90,8 @@ export function MessagingListCardItem({
           </div>
         ),
       }}
-      viewLabel={t("contacts.actionViewShort")}
-      viewAriaLabel={`${t("contacts.table.viewProfile")} - ${name}`}
+      viewLabel={t("common.details")}
+      viewAriaLabel={t("messaging.viewLogAria", { name })}
       metadataSlot={
         <EntityCard.MetaGrid>
           {isColumnVisible("channel") && (
@@ -126,8 +129,6 @@ export function MessagingListCardItem({
                   text={log.body}
                   showToast
                   className="min-h-11 min-w-11 shrink-0 text-muted-foreground hover:text-primary shadow-none cursor-pointer"
-                  title={t("contacts.table.copy")}
-                  titleCopied={t("contacts.table.copied")}
                 />
               </div>
             </EntityCardMetaTile>

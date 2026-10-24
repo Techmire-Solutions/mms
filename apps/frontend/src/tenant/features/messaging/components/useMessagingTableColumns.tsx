@@ -128,8 +128,6 @@ export function useMessagingTableColumns({
                 text={log.body}
                 showToast
                 className="h-6 w-6 min-h-6 min-w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary shadow-none cursor-pointer"
-                title={t("contacts.table.copy")}
-                titleCopied={t("contacts.table.copied")}
               />
             </div>
           );

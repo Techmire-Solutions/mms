@@ -55,10 +55,10 @@ export function TenantMessageComposerRecipientTable({
               {t("messaging.recipient")}
             </TableHead>
             <TableHead className="px-3 py-2 text-start font-medium text-muted-foreground">
-              {t("contacts.form.primaryPhone")}
+              {t("messaging.recipientPhone")}
             </TableHead>
             <TableHead className="px-3 py-2 text-start font-medium text-muted-foreground">
-              {t("contacts.form.primaryEmail")}
+              {t("messaging.recipientEmail")}
             </TableHead>
           </TableRow>
         </TableHeader>

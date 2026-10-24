@@ -85,8 +85,6 @@ export const MessagingDetail = function MessagingDetail({
                 text={String(log.id)}
                 showToast
                 className="h-6 w-6 min-h-6 min-w-6 rounded-md shadow-none cursor-pointer"
-                title={t("contacts.table.copy")}
-                titleCopied={t("contacts.table.copied")}
               />
             </div>
             <DrawerUpdatedStamp createdAt={log.sentAt} label={t("messaging.dateSent")} />
@@ -180,10 +178,10 @@ export const MessagingDetail = function MessagingDetail({
             primaryPhone={cleanPhone || recipient?.phone}
             primaryEmail={recipient?.email}
             labels={{
-              call: t("contacts.detail.call"),
-              whatsapp: t("contacts.whatsapp"),
-              sms: t("contacts.sms"),
-              email: t("contacts.detail.emailAction"),
+              call: t("common.call"),
+              whatsapp: t("messaging.channel.whatsapp"),
+              sms: t("messaging.channel.sms"),
+              email: t("common.emailAction"),
             }}
           />
         </div>

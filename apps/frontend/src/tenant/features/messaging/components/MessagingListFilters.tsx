@@ -94,7 +94,7 @@ export function MessagingListFilters({
   return (
     <WorkTaskToolbar
       shownCountLabel={
-        shownCount != null ? t("contacts.shownCount", { count: shownCount }) : undefined
+        shownCount != null ? t("messaging.shownCount", { count: shownCount }) : undefined
       }
       regionLabel={t("messaging.title")}
       search={search}
@@ -149,6 +149,12 @@ export function MessagingListFilters({
       <Button
         variant={isFailedOnly ? "default" : "outline"}
         size="sm"
+        aria-pressed={isFailedOnly}
+        aria-label={
+          isFailedOnly
+            ? t("messaging.filters.showAllStatus")
+            : t("messaging.filters.filterFailedOnly")
+        }
         onClick={() => onStatusChange(isFailedOnly ? "all" : "failed")}
         className={cn(
           "gap-2 h-9",
@@ -157,7 +163,7 @@ export function MessagingListFilters({
             : "border-destructive/30 text-destructive hover:bg-destructive/10",
         )}
       >
-        <AlertTriangle className="w-4 h-4" />
+        <AlertTriangle className="w-4 h-4" aria-hidden="true" />
         <span>{t("messaging.status.failed")}</span>
       </Button>
     </WorkTaskToolbar>
