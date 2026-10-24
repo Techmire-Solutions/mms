@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { calculateSmsSegments, type Message } from "@mms/shared";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
-import { Button } from "@/components/ui/button";
-import { Check, Copy, Mail } from "lucide-react";
+import { CopyBtn } from "@/components/app/CopyButton";
+import { Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
 import { SEMANTIC_BG, SEMANTIC_TEXT } from "@/lib/ui/semanticTone";
 
 export interface MessagingDetailBodyCardProps {
@@ -14,21 +13,9 @@ export interface MessagingDetailBodyCardProps {
 
 export function MessagingDetailBodyCard({ log }: MessagingDetailBodyCardProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [copiedBody, setCopiedBody] = useState(false);
 
   const isSms = log.channel === "sms";
   const smsStats = isSms ? calculateSmsSegments(log.body) : null;
-
-  const copyToClipboard = async (text: string): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedBody(true);
-      setTimeout(() => setCopiedBody(false), 2000);
-      notify.success(t("contacts.table.copied"));
-    } catch {
-      notify.error(t("messaging.loadFailedHint"));
-    }
-  };
 
   return (
     <DetailSectionCard
@@ -54,19 +41,14 @@ export function MessagingDetailBodyCard({ log }: MessagingDetailBodyCardProps): 
                 })
               : `${log.body.length} chars`}
           </span>
-          <Button
+          <CopyBtn
+            text={log.body}
+            showToast
+            label={t("contacts.table.copy")}
+            labelCopied={t("contacts.table.copied")}
             variant="ghost"
-            size="sm"
             className={`h-7 touch-target-coarse px-2.5 text-xs gap-1.5 ${SEMANTIC_TEXT.primary} hover:bg-primary/10`}
-            onClick={() => void copyToClipboard(log.body)}
-          >
-            {copiedBody ? (
-              <Check className={`h-3.5 w-3.5 ${SEMANTIC_TEXT.success}`} />
-            ) : (
-              <Copy className="h-3.5 w-3.5" />
-            )}
-            <span>{copiedBody ? t("contacts.table.copied") : t("contacts.table.copy")}</span>
-          </Button>
+          />
         </div>
         <div
           className={`whitespace-pre-wrap rounded bg-background/80 p-3 font-sans text-xs text-foreground border border-border/40 leading-relaxed max-h-60 overflow-y-auto selection:${SEMANTIC_BG.primary}`}

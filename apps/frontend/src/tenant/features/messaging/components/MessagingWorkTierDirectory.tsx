@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, MessageSquareOff, RotateCcw } from "lucide-react";
+import { AlertTriangle, MessageSquareOff, RotateCcw, Send } from "lucide-react";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
@@ -19,12 +19,14 @@ type MessagingWorkTierDirectoryProps = ReturnType<typeof useMessagingWorkTierCon
   canWrite: boolean;
   canClearLogs: boolean;
   onClearLogsRequest: () => void;
+  onStartCampaign?: (channel: "whatsapp" | "sms" | "email") => void;
 };
 
 export function MessagingWorkTierDirectory({
   canWrite,
   canClearLogs,
   onClearLogsRequest,
+  onStartCampaign,
   ...c
 }: MessagingWorkTierDirectoryProps): React.JSX.Element {
   return (
@@ -136,6 +138,20 @@ export function MessagingWorkTierDirectory({
             onClearFilters={c.clearFilters}
             clearFiltersLabel={c.t("common.clearFilters")}
             showActiveLabel=""
+            firstRunAction={
+              canWrite && onStartCampaign ? (
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={() => onStartCampaign("whatsapp")}
+                  className="gap-1.5 min-h-11 px-3 font-semibold"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  {c.t("messaging.newCampaign")}
+                </Button>
+              ) : undefined
+            }
           />
         ) : c.viewMode === "cards" ? (
           <MessagingListCards

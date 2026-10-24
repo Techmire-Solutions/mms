@@ -60,34 +60,50 @@ export function MessageComposerLivePreview({
           </span>
           <div className="flex shrink-0 items-center gap-2">
             {isBulk && (
-              <div className="flex items-center gap-1 text-xs">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="min-h-11 min-w-11"
-                  disabled={previewIndex <= 0}
-                  onClick={() => onPreviewIndexChange(Math.max(0, previewIndex - 1))}
-                  aria-label={t("common.previous")}
+              <div className="flex items-center gap-1.5 text-xs">
+                <select
+                  aria-label={t("messaging.selectRecipients")}
+                  value={previewIndex}
+                  onChange={(e) => onPreviewIndexChange(Number(e.target.value))}
+                  className="h-7 max-w-36 truncate rounded-md border border-border/60 bg-background/80 px-1.5 text-xs font-medium text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
                 >
-                  <ChevronLeft className="h-3 w-3 rtl:rotate-180" />
-                </Button>
-                <span className="font-mono">
-                  {previewIndex + 1}/{eligibleRecipients.length}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="min-h-11 min-w-11"
-                  disabled={previewIndex >= eligibleRecipients.length - 1}
-                  onClick={() =>
-                    onPreviewIndexChange(Math.min(eligibleRecipients.length - 1, previewIndex + 1))
-                  }
-                  aria-label={t("common.next")}
-                >
-                  <ChevronRight className="h-3 w-3 rtl:rotate-180" />
-                </Button>
+                  {eligibleRecipients.map((r, i) => (
+                    <option key={r.id || `${r.name}-${i}`} value={i}>
+                      {i + 1}. {r.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex items-center">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="min-h-11 min-w-11"
+                    disabled={previewIndex <= 0}
+                    onClick={() => onPreviewIndexChange(Math.max(0, previewIndex - 1))}
+                    aria-label={t("common.previous")}
+                  >
+                    <ChevronLeft className="h-3 w-3 rtl:rotate-180" />
+                  </Button>
+                  <span className="font-mono text-xs">
+                    {previewIndex + 1}/{eligibleRecipients.length}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="min-h-11 min-w-11"
+                    disabled={previewIndex >= eligibleRecipients.length - 1}
+                    onClick={() =>
+                      onPreviewIndexChange(
+                        Math.min(eligibleRecipients.length - 1, previewIndex + 1),
+                      )
+                    }
+                    aria-label={t("common.next")}
+                  >
+                    <ChevronRight className="h-3 w-3 rtl:rotate-180" />
+                  </Button>
+                </div>
               </div>
             )}
             <ChannelBadge channel={channel} className="text-xs" />
@@ -114,7 +130,7 @@ export function MessageComposerLivePreview({
             <div className="whitespace-pre-wrap leading-relaxed text-foreground">{previewText}</div>
           </div>
         ) : isSms ? (
-          <div className="max-w-bubble-wide space-y-1 rounded-2xl rounded-tl-none border border-info/20 bg-info/10 p-3 text-xs text-foreground shadow-xs">
+          <div className="max-w-bubble-wide space-y-1 rounded-2xl rounded-ss-none border border-info/20 bg-info/10 p-3 text-xs text-foreground shadow-xs">
             <div className="whitespace-pre-wrap leading-relaxed">{previewText}</div>
             <div className="flex items-center justify-between border-t border-info/10 pt-1 font-mono text-xs opacity-70">
               <span>{recipient.phone}</span>
@@ -124,7 +140,7 @@ export function MessageComposerLivePreview({
             </div>
           </div>
         ) : (
-          <div className="max-w-bubble-wide space-y-1.5 rounded-2xl rounded-tl-none border border-success/20 bg-success/10 p-3 text-xs text-foreground shadow-xs">
+          <div className="max-w-bubble-wide space-y-1.5 rounded-2xl rounded-ss-none border border-success/20 bg-success/10 p-3 text-xs text-foreground shadow-xs">
             <div className="flex items-center justify-between border-b border-success/15 pb-1 text-xs font-semibold text-success">
               <span>{t("messaging.whatsappBroadcast")}</span>
               <span>{recipient.phone}</span>

@@ -1,13 +1,13 @@
 import type React from "react";
-import { AlertCircle, Check, Copy } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import {
   calculateSmsSegments,
   formatDateTime,
   getMessageCategoryLabelKey,
   type Message,
 } from "@mms/shared";
-import { Button } from "@/components/ui/button";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
+import { CopyBtn } from "@/components/app/CopyButton";
 import { DirectoryCard } from "@/components/app/DirectoryCard";
 import { EntityCard } from "@/components/app/EntityCard";
 import { EntityCardMetaTile } from "@/components/app/EntityCardMetaTile";
@@ -25,7 +25,7 @@ export interface MessagingListCardItemProps {
   log: Message;
   isSelected: boolean;
   name: string;
-  isCopied: boolean;
+  isCopied?: boolean;
   canWrite: boolean;
   reducedMotion: boolean;
   logStatusConfig: Record<string, StatusBadgeConfigItem>;
@@ -34,7 +34,7 @@ export interface MessagingListCardItemProps {
   onResendLog: (log: Message) => void;
   onViewLog?: (log: Message) => void;
   onFilterContact?: (name: string) => void;
-  onCopyBody: (e: React.MouseEvent, log: Message) => void;
+  onCopyBody?: (e: React.MouseEvent, log: Message) => void;
 }
 
 /** Work directory card — DirectoryCard SSOT (do not hand-compose EntityCard). */
@@ -42,7 +42,6 @@ export function MessagingListCardItem({
   log,
   isSelected,
   name,
-  isCopied,
   canWrite,
   reducedMotion,
   logStatusConfig,
@@ -51,7 +50,6 @@ export function MessagingListCardItem({
   onResendLog,
   onViewLog,
   onFilterContact,
-  onCopyBody,
 }: MessagingListCardItemProps): React.JSX.Element {
   const { t } = useTranslation();
   const isFailed = log.status === "failed";
@@ -124,20 +122,13 @@ export function MessagingListCardItem({
                   )}
                   <p className="line-clamp-2 leading-relaxed whitespace-pre-wrap">{log.body}</p>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => void onCopyBody(e, log)}
-                  className={`min-h-11 min-w-11 shrink-0 text-muted-foreground hover:${SEMANTIC_TEXT.primary}`}
+                <CopyBtn
+                  text={log.body}
+                  showToast
+                  className="min-h-11 min-w-11 shrink-0 text-muted-foreground hover:text-primary shadow-none cursor-pointer"
                   title={t("contacts.table.copy")}
-                >
-                  {isCopied ? (
-                    <Check className={`h-3 w-3 ${SEMANTIC_TEXT.success}`} />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                </Button>
+                  titleCopied={t("contacts.table.copied")}
+                />
               </div>
             </EntityCardMetaTile>
           )}

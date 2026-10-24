@@ -9,7 +9,7 @@ import { notify } from "@/lib/notify";
 import { exportMessagingLogsFiltered } from "../lib/messagingReportsExport";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorState } from "@/components/app/ErrorState";
-import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { ModuleScaffold } from "@/components/common/ModuleScaffold";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -86,7 +86,7 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
   };
 
   return (
-    <ModulePageShell
+    <ModuleScaffold
       seoTitle={`MMS - ${t("nav.messaging")}`}
       seoDescription={t("messaging.subtitle")}
       headerIcon={MessageSquare}
@@ -134,6 +134,7 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
                 onBulkResend={p.handleBulkResend}
                 channel={p.channelFilter}
                 onChannelChange={p.setChannelFilter}
+                onStartCampaign={p.startCampaign}
               />
             </div>
           )}
@@ -195,6 +196,6 @@ export function MessagingPageView(p: MessagingPageViewProps): React.JSX.Element 
         onClose={() => setImportOpen(false)}
         canWrite={p.canWrite}
       />
-    </ModulePageShell>
+    </ModuleScaffold>
   );
 }

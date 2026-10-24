@@ -13,6 +13,7 @@ interface MessagingWorkTierProps {
   onBulkResend?: Parameters<typeof useMessagingWorkTierController>[0]["onBulkResend"];
   channel?: Parameters<typeof useMessagingWorkTierController>[0]["channel"];
   onChannelChange?: Parameters<typeof useMessagingWorkTierController>[0]["onChannelChange"];
+  onStartCampaign?: (channel: "whatsapp" | "sms" | "email") => void;
 }
 
 export function MessagingWorkTier(props: MessagingWorkTierProps): React.JSX.Element {
@@ -24,6 +25,7 @@ export function MessagingWorkTier(props: MessagingWorkTierProps): React.JSX.Elem
       canWrite={props.canWrite}
       canClearLogs={props.canClearLogs}
       onClearLogsRequest={props.onClearLogsRequest}
+      onStartCampaign={props.onStartCampaign}
     />
   );
 }
