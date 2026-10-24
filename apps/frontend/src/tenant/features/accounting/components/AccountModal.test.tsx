@@ -84,6 +84,31 @@ describe("AccountModal", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  it("given a blank-id add draft, should save with a generated id when submitted", async () => {
+    // Arrange
+    const initial = {
+      id: "",
+      code: "",
+      name: "",
+      type: "Asset",
+      subtype: "",
+      description: "",
+      isActive: true,
+    };
+    const { container, onSave } = mount({ initial });
+    setInputValue(container.querySelector<HTMLInputElement>("#account-code")!, "5900");
+    setInputValue(container.querySelector<HTMLInputElement>("#account-name")!, "Utilities");
+
+    // Act
+    await submit(container);
+
+    // Assert
+    expect(onSave).toHaveBeenCalledTimes(1);
+    const saved = onSave.mock.calls[0][0];
+    expect(saved.id).toMatch(/^a\S+$/);
+    expect(saved).toMatchObject({ code: "5900", name: "Utilities" });
+  });
+
   it("saves trimmed schema-valid values in edit mode", async () => {
     const initial = {
       id: "a-1",
