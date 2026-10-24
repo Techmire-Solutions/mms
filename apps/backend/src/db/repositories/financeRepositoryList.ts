@@ -111,8 +111,9 @@ export async function aggregateFinanceCommandMetrics(
       when ${financeInvoices.status} = 'partial' then greatest(0, ${financeInvoices.finalAmt} - coalesce(${financeInvoices.paidAmt}, 0))
       else ${financeInvoices.finalAmt}
     end`;
-    // paid_date || due_date — empty paid_date falls back to due_date (JS falsy '' ).
-    const collectDate = sql<string>`coalesce(nullif(${financeInvoices.paidDate}, ''), ${financeInvoices.dueDate})`;
+    // Month key of paid_date, falling back to due_date for unpaid invoices.
+    const collectMonth = sql<string>`to_char(coalesce(${financeInvoices.paidDate}, ${financeInvoices.dueDate}), 'YYYY-MM')`;
+    const dueMonth = sql<string>`to_char(${financeInvoices.dueDate}, 'YYYY-MM')`;
 
     const [row] = await tx
       .select({
@@ -127,10 +128,10 @@ export async function aggregateFinanceCommandMetrics(
         collectedTotal: sql<number>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::float8`,
         outstandingBalance: sql<number>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::float8`,
         discountTotal: sql<number>`coalesce(sum(${financeInvoices.discountAmt}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::float8`,
-        collectedThisMonth: sql<number>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and left(${collectDate}, 7) = ${thisMonth}), 0)::float8`,
-        collectedPrevMonth: sql<number>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and left(${collectDate}, 7) = ${prevMonth}), 0)::float8`,
-        outstandingThisMonth: sql<number>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and left(${financeInvoices.dueDate}, 7) = ${thisMonth}), 0)::float8`,
-        outstandingPrevMonth: sql<number>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and left(${financeInvoices.dueDate}, 7) = ${prevMonth}), 0)::float8`,
+        collectedThisMonth: sql<number>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${collectMonth} = ${thisMonth}), 0)::float8`,
+        collectedPrevMonth: sql<number>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${collectMonth} = ${prevMonth}), 0)::float8`,
+        outstandingThisMonth: sql<number>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${dueMonth} = ${thisMonth}), 0)::float8`,
+        outstandingPrevMonth: sql<number>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${dueMonth} = ${prevMonth}), 0)::float8`,
       })
       .from(financeInvoices)
       .where(activeInvoices);

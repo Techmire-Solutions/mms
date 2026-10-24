@@ -13,6 +13,7 @@ import {
   accountingPostingRules,
 } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export async function getPostingRules(tenant: string): Promise<PostingRules> {
   const subdomain = tenant.trim().toLowerCase();
@@ -157,8 +158,8 @@ export async function listBankStatements(tenant: string): Promise<BankStatement[
     return statements.map((statement) => ({
       id: statement.id,
       accountId: statement.accountId,
-      periodStart: statement.periodStart,
-      periodEnd: statement.periodEnd,
+      periodStart: requireDbDateValue(statement.periodStart, "periodStart"),
+      periodEnd: requireDbDateValue(statement.periodEnd, "periodEnd"),
       openingBalance: Number(statement.openingBalance),
       closingBalance: Number(statement.closingBalance),
       createdAt: statement.createdAt.toISOString(),
@@ -167,7 +168,7 @@ export async function listBankStatements(tenant: string): Promise<BankStatement[
         .filter((line) => line.statementId === statement.id)
         .map((line) => ({
           id: line.id,
-          date: line.date,
+          date: requireDbDateValue(line.date, "date"),
           description: line.description,
           amount: Number(line.amount),
         })),
@@ -184,8 +185,8 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
         id: record.id,
         workspaceSubdomain: subdomain,
         accountId: record.accountId,
-        periodStart: record.periodStart,
-        periodEnd: record.periodEnd,
+        periodStart: requireDbDateValue(record.periodStart, "periodStart"),
+        periodEnd: requireDbDateValue(record.periodEnd, "periodEnd"),
         openingBalance: String(record.openingBalance ?? 0),
         closingBalance: String(record.closingBalance ?? 0),
         updatedAt: new Date(),
@@ -194,8 +195,8 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
         target: [accountingBankStatements.workspaceSubdomain, accountingBankStatements.id],
         set: {
           accountId: record.accountId,
-          periodStart: record.periodStart,
-          periodEnd: record.periodEnd,
+          periodStart: requireDbDateValue(record.periodStart, "periodStart"),
+          periodEnd: requireDbDateValue(record.periodEnd, "periodEnd"),
           openingBalance: String(record.openingBalance ?? 0),
           closingBalance: String(record.closingBalance ?? 0),
           updatedAt: new Date(),
@@ -215,7 +216,7 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
           id: line.id,
           workspaceSubdomain: subdomain,
           statementId: record.id,
-          date: line.date,
+          date: requireDbDateValue(line.date, "date"),
           description: line.description ?? "",
           amount: String(line.amount ?? 0),
         })),

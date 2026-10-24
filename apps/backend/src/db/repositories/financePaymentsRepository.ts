@@ -4,6 +4,7 @@ import { financePayments } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export * from "./financePaymentsPersist.js";
 
@@ -163,7 +164,7 @@ export async function savePayment(tenant: string, record: Payment): Promise<void
         studentId: record.studentId ?? null,
         studentName: record.studentName ?? null,
         amount: String(record.amount ?? 0),
-        date: record.date,
+        date: requireDbDateValue(record.date, "date"),
         method: record.method ?? "cash",
         receivedByUserId: record.receivedByUserId ?? null,
         receivedBy: record.receivedBy ?? null,
@@ -180,7 +181,7 @@ export async function savePayment(tenant: string, record: Payment): Promise<void
           studentId: record.studentId ?? null,
           studentName: record.studentName ?? null,
           amount: String(record.amount ?? 0),
-          date: record.date,
+          date: requireDbDateValue(record.date, "date"),
           method: record.method ?? "cash",
           receivedByUserId: record.receivedByUserId ?? null,
           receivedBy: record.receivedBy ?? null,

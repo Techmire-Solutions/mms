@@ -8,6 +8,7 @@ import {
   syncPostingPeriods,
   type PostingPeriodSeed,
 } from "./accountingPostingPeriodsRepository.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export { generatePostingPeriods, type PostingPeriodSeed };
 
@@ -169,8 +170,8 @@ export async function saveFiscalYear(tenant: string, record: FiscalYear): Promis
         id: record.id,
         workspaceSubdomain: subdomain,
         label: record.label,
-        startDate: record.startDate,
-        endDate: record.endDate,
+        startDate: requireDbDateValue(record.startDate, "startDate"),
+        endDate: requireDbDateValue(record.endDate, "endDate"),
         status: record.status ?? "upcoming",
         closedAt: record.closedAt ? new Date(record.closedAt) : null,
         closedBy: record.closedBy ?? null,
@@ -183,8 +184,8 @@ export async function saveFiscalYear(tenant: string, record: FiscalYear): Promis
         target: [accountingFiscalYears.workspaceSubdomain, accountingFiscalYears.id],
         set: {
           label: record.label,
-          startDate: record.startDate,
-          endDate: record.endDate,
+          startDate: requireDbDateValue(record.startDate, "startDate"),
+          endDate: requireDbDateValue(record.endDate, "endDate"),
           status: record.status ?? "upcoming",
           closedAt: record.closedAt ? new Date(record.closedAt) : null,
           closedBy: record.closedBy ?? null,
@@ -203,8 +204,8 @@ function toFiscalYearRow(r: FiscalYear, subdomain: string) {
     id: r.id,
     workspaceSubdomain: subdomain,
     label: r.label,
-    startDate: r.startDate,
-    endDate: r.endDate,
+    startDate: requireDbDateValue(r.startDate, "startDate"),
+    endDate: requireDbDateValue(r.endDate, "endDate"),
     status: r.status ?? "upcoming",
     closedAt: r.closedAt ? new Date(r.closedAt) : null,
     closedBy: r.closedBy ?? null,

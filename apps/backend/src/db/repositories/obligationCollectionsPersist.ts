@@ -9,6 +9,7 @@ import {
   mujtahids,
 } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export async function saveObligationCollection(
   tenant: string,
@@ -22,7 +23,7 @@ export async function saveObligationCollection(
         id: record.id,
         workspaceSubdomain: subdomain,
         receiptNo: record.receipt_no,
-        receivedDate: record.received_date,
+        receivedDate: requireDbDateValue(record.received_date, "received_date"),
         senderId: record.sender_id,
         referenceId: record.reference_id ?? null,
         amount: String(record.amount),
@@ -41,7 +42,7 @@ export async function saveObligationCollection(
         target: [obligationCollections.workspaceSubdomain, obligationCollections.id],
         set: {
           receiptNo: record.receipt_no,
-          receivedDate: record.received_date,
+          receivedDate: requireDbDateValue(record.received_date, "received_date"),
           senderId: record.sender_id,
           referenceId: record.reference_id ?? null,
           amount: String(record.amount),
@@ -81,7 +82,7 @@ export async function bulkSaveObligationCollections(
           id: record.id,
           workspaceSubdomain: subdomain,
           receiptNo: record.receipt_no,
-          receivedDate: record.received_date,
+          receivedDate: requireDbDateValue(record.received_date, "received_date"),
           senderId: record.sender_id,
           referenceId: record.reference_id ?? null,
           amount: String(record.amount),
@@ -141,7 +142,7 @@ export async function replaceObligationCollectionsForWorkspace(
           id: record.id,
           workspaceSubdomain: subdomain,
           receiptNo: record.receipt_no,
-          receivedDate: record.received_date,
+          receivedDate: requireDbDateValue(record.received_date, "received_date"),
           senderId: record.sender_id,
           referenceId: record.reference_id ?? null,
           amount: String(record.amount),

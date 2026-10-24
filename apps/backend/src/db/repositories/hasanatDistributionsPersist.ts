@@ -2,6 +2,7 @@ import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type Distribution } from "@mms/shared";
 import { hasanatDistributions } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
+import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export async function saveDistribution(tenant: string, record: Distribution): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
@@ -22,7 +23,7 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
         classId: record.classId ?? null,
         quantity: record.quantity ?? 1,
         reason: record.reason ?? "",
-        issuedDate: record.issuedDate,
+        issuedDate: requireDbDateValue(record.issuedDate, "issuedDate"),
         issuedByUserId: record.issuedByUserId ?? null,
         issuedBy: record.issuedBy ?? null,
         status: record.status ?? "active",
@@ -45,7 +46,7 @@ export async function saveDistribution(tenant: string, record: Distribution): Pr
           classId: record.classId ?? null,
           quantity: record.quantity ?? 1,
           reason: record.reason ?? "",
-          issuedDate: record.issuedDate,
+          issuedDate: requireDbDateValue(record.issuedDate, "issuedDate"),
           issuedByUserId: record.issuedByUserId ?? null,
           issuedBy: record.issuedBy ?? null,
           status: record.status ?? "active",
@@ -90,7 +91,7 @@ export async function bulkSaveDistributions(
           classId: r.classId ?? null,
           quantity: r.quantity ?? 1,
           reason: r.reason ?? "",
-          issuedDate: r.issuedDate,
+          issuedDate: requireDbDateValue(r.issuedDate, "issuedDate"),
           issuedByUserId: r.issuedByUserId ?? null,
           issuedBy: r.issuedBy ?? null,
           status: r.status ?? "active",
@@ -159,7 +160,7 @@ export async function replaceDistributionsForWorkspace(
           classId: r.classId ?? null,
           quantity: r.quantity ?? 1,
           reason: r.reason ?? "",
-          issuedDate: r.issuedDate,
+          issuedDate: requireDbDateValue(r.issuedDate, "issuedDate"),
           issuedByUserId: r.issuedByUserId ?? null,
           issuedBy: r.issuedBy ?? null,
           status: r.status ?? "active",

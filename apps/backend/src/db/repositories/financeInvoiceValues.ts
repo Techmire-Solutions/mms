@@ -1,6 +1,7 @@
 import { type Invoice } from "@mms/shared";
 import type { financeInvoices } from "../schema.js";
 import { mapAuditToInsert } from "./repositoryMappers.js";
+import { requireDbDate, requireDbDateValue } from "../../lib/dbDate.js";
 
 export type FinanceInvoiceInsert = typeof financeInvoices.$inferInsert;
 
@@ -18,8 +19,8 @@ export function invoiceWriteValues(subdomain: string, record: Invoice): FinanceI
     discountAmt: String(record.discountAmt ?? 0),
     finalAmt: String(record.finalAmt ?? 0),
     status: record.status ?? "pending",
-    dueDate: record.dueDate,
-    paidDate: record.paidDate ?? null,
+    dueDate: requireDbDateValue(record.dueDate, "dueDate"),
+    paidDate: requireDbDate(record.paidDate, "paidDate"),
     method: record.method ?? null,
     paidAmt: record.paidAmt != null ? String(record.paidAmt) : null,
     invoiceNumber: record.invoiceNumber ?? null,
