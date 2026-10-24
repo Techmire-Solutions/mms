@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { AlertCircle, Check, Copy, Filter } from "lucide-react";
+import React, { useMemo } from "react";
+import { AlertCircle, Filter } from "lucide-react";
 import {
   calculateSmsSegments,
   formatDateTime,
@@ -9,9 +9,9 @@ import {
 } from "@mms/shared";
 import { type StatusBadgeConfigItem, StatusBadge } from "@/components/app/StatusBadge";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
+import { CopyBtn } from "@/components/app/CopyButton";
 import { Button } from "@/components/ui/button";
 import { type WorkBatchTableColumn } from "@/components/common/work";
-import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SEMANTIC_TEXT, SEMANTIC_BG } from "@/lib/ui/semanticTone";
 
@@ -29,27 +29,11 @@ export function useMessagingTableColumns({
   onFilterContact,
 }: UseMessagingTableColumnsOptions): WorkBatchTableColumn<Message>[] {
   const { t } = useTranslation();
-  const [copiedLogId, setCopiedLogId] = useState<string | null>(null);
 
   const showRecipient = isColumnVisible("recipient");
   const showChannel = isColumnVisible("channel");
   const showBody = isColumnVisible("body");
   const showDateSent = isColumnVisible("dateSent");
-
-  const handleCopyBody = useCallback(
-    async (e: React.MouseEvent, log: Message): Promise<void> => {
-      e.stopPropagation();
-      try {
-        await navigator.clipboard.writeText(log.body);
-        setCopiedLogId(String(log.id));
-        notify.success(t("contacts.table.copied"));
-        setTimeout(() => setCopiedLogId(null), 2000);
-      } catch {
-        notify.error(t("messaging.loadFailedHint"));
-      }
-    },
-    [t],
-  );
 
   return useMemo<WorkBatchTableColumn<Message>[]>(() => {
     const cols: WorkBatchTableColumn<Message>[] = [];
@@ -69,7 +53,7 @@ export function useMessagingTableColumns({
                 >
                   {getInitials(name)}
                 </span>
-                <span className={`truncate hover:${SEMANTIC_TEXT.primary} transition-colors`}>
+                <span className="truncate hover:text-primary transition-colors">
                   {name}
                 </span>
               </div>
@@ -82,7 +66,7 @@ export function useMessagingTableColumns({
                     e.stopPropagation();
                     onFilterContact(name);
                   }}
-                  className={`h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:${SEMANTIC_TEXT.primary}`}
+                  className="h-6 w-6 min-h-6 min-w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary cursor-pointer"
                   title={t("messaging.selectRecipientsDesc")}
                 >
                   <Filter className="h-3 w-3" />
@@ -134,7 +118,6 @@ export function useMessagingTableColumns({
         label: t("messaging.messageBody"),
         cellClassName: "max-w-xs truncate text-muted-foreground",
         render: (log) => {
-          const isCopied = copiedLogId === String(log.id);
           return (
             <div className="flex items-center justify-between gap-2" title={log.body}>
               <span className="truncate">
@@ -143,20 +126,13 @@ export function useMessagingTableColumns({
                 )}
                 {log.body}
               </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={(e) => void handleCopyBody(e, log)}
-                className={`h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:${SEMANTIC_TEXT.primary}`}
+              <CopyBtn
+                text={log.body}
+                showToast
+                className="h-6 w-6 min-h-6 min-w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary shadow-none cursor-pointer"
                 title={t("contacts.table.copy")}
-              >
-                {isCopied ? (
-                  <Check className={`h-3 w-3 ${SEMANTIC_TEXT.success}`} />
-                ) : (
-                  <Copy className="h-3 w-3" />
-                )}
-              </Button>
+                titleCopied={t("contacts.table.copied")}
+              />
             </div>
           );
         },
@@ -174,9 +150,7 @@ export function useMessagingTableColumns({
 
     return cols;
   }, [
-    copiedLogId,
     getRecipientName,
-    handleCopyBody,
     logStatusConfig,
     onFilterContact,
     showBody,

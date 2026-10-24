@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   personalizeMessage,
   type MessageTemplate,
@@ -69,7 +69,10 @@ export function useMessageComposerDispatch({
   const pausedRef = useRef(false);
   const auditSavedCountRef = useRef(0);
   const auditIdempotencyKeyRef = useRef<string | null>(null);
-  pausedRef.current = isPaused;
+
+  useEffect(() => {
+    pausedRef.current = isPaused;
+  }, [isPaused]);
 
   const personalizeOptions = { madrasaName: madrasaName || undefined };
   const validatedRecipients = validateMessagingRecipients(recipients, channel);

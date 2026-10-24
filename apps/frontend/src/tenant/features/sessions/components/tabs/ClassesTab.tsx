@@ -21,9 +21,7 @@ import { ClassModal } from "@/tenant/features/sessions/components/tabs/ClassModa
 import { isSessionStructureLocked } from "@mms/shared";
 import { notify } from "@/lib/notify";
 import { SessionStructureLockContext } from "./sessionStructureLock";
-const MessageComposer = React.lazy(
-  () => import("@/tenant/components/messaging/TenantMessageComposer"),
-);
+import { TenantMessageComposerLauncher } from "@/tenant/components/messaging/TenantMessageComposerLauncher";
 
 interface ClassesTabProps {
   session: Session;
@@ -169,14 +167,11 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
         />
       </SessionStructureLockContext.Provider>
 
-      {canWrite && messagingTarget && (
-        <React.Suspense fallback={null}>
-          <MessageComposer
-            channel={messagingTarget.channel}
-            recipients={messagingTarget.recipients}
-            onClose={closeComposer}
-          />
-        </React.Suspense>
+      {canWrite && (
+        <TenantMessageComposerLauncher
+          messagingTarget={messagingTarget}
+          onClose={closeComposer}
+        />
       )}
       <ConfirmAlertDialog
         open={deleteTarget !== null}

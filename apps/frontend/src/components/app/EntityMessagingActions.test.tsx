@@ -2,7 +2,12 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { EntityMessagingActions } from "./EntityMessagingActions";
+import {
+  EntityMessagingActions,
+  EntityMessagingDropdownItems,
+  EntityMessagingIconActions,
+  EntityMessagingQuickActions,
+} from "./EntityMessagingActions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,5 +118,48 @@ describe("EntityMessagingActions Component", () => {
     );
 
     expect(html).toBe("");
+  });
+
+  it("renders EntityMessagingQuickActions as button-group variant", () => {
+    const html = renderToStaticMarkup(
+      <EntityMessagingQuickActions
+        primaryPhone="+15551234567"
+        primaryEmail="test@example.com"
+        labels={defaultLabels}
+      />,
+    );
+    expect(html).toContain("grid-cols-2");
+    expect(html).toContain("Call");
+  });
+
+  it("renders EntityMessagingIconActions as icon-row variant", () => {
+    const html = renderToStaticMarkup(
+      <EntityMessagingIconActions
+        primaryPhone="+15551234567"
+        primaryEmail="test@example.com"
+        labels={defaultLabels}
+      />,
+    );
+    expect(html).toContain("tel:+15551234567");
+    expect(html).toContain("mailto:test@example.com");
+  });
+
+  it("renders EntityMessagingDropdownItems as dropdown variant", () => {
+    act(() => {
+      root?.render(
+        <DropdownMenu open={true}>
+          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <EntityMessagingDropdownItems
+              showWhatsApp={true}
+              showSms={true}
+              showEmail={true}
+              labels={defaultLabels}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>,
+      );
+    });
+    expect(document.body.textContent).toContain("WhatsApp");
   });
 });

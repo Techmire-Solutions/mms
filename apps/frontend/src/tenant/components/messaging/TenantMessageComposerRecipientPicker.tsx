@@ -10,7 +10,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMessagingWorkRecipients } from "@/tenant/features/messaging/hooks/useMessagingWorkRecipients";
 import { SearchBar } from "@/components/app/SearchBar";
-import { Button } from "@/components/ui/button";
+import { ListPagination } from "@/components/app/ListPagination";
 import { ErrorState } from "@/components/app/ErrorState";
 import { TenantMessageComposerRecipientTable } from "./TenantMessageComposerRecipientTable";
 
@@ -45,7 +45,7 @@ export function TenantMessageComposerRecipientPicker({
     return () => clearTimeout(id);
   }, [query]);
 
-  const { contacts, total, isPending, isFetching, hasMore, isError, refetch } =
+  const { contacts, total, isPending, isFetching, isError, refetch } =
     useMessagingWorkRecipients({
       roleFilter: "all",
       genderFilter: "all",
@@ -138,38 +138,13 @@ export function TenantMessageComposerRecipientPicker({
         )}
       </div>
 
-      <div className="flex items-center justify-between px-1">
-        <div className="text-xs text-muted-foreground">
-          {t("messaging.pagination.showingRecords", {
-            count: contacts.length,
-            total: total || contacts.length,
-          })}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="min-h-11"
-            disabled={page === 1 || isFetching}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            {t("common.previous")}
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {t("messaging.pagination.page", { page })}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="min-h-11"
-            disabled={!hasMore || isFetching}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            {t("common.next")}
-          </Button>
-        </div>
+      <div className="pt-1">
+        <ListPagination
+          page={page}
+          total={total || contacts.length}
+          limit={50}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

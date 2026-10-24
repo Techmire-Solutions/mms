@@ -97,12 +97,12 @@ export default function MessagingPage(): React.JSX.Element {
       (composeParam === "whatsapp" || composeParam === "sms" || composeParam === "email") &&
       canWrite
     ) {
-      void startCampaign(composeParam);
+      triggerCompose(composeParam, []);
       const next = new URLSearchParams(searchParams);
       next.delete("compose");
       setSearchParams(next, { replace: true });
     }
-  }, [composeParam, canWrite, startCampaign, searchParams, setSearchParams]);
+  }, [composeParam, canWrite, triggerCompose, searchParams, setSearchParams]);
 
   useMessagingKeyboardShortcuts({
     canWrite,

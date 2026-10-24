@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import type { Message } from "@mms/shared";
 import { EntityCardsGrid } from "@/components/app/EntityCardsGrid";
 import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { notify } from "@/lib/notify";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { MessagingListCardItem } from "./MessagingListCardItem";
@@ -47,19 +46,6 @@ export const MessagingListCards = function MessagingListCards({
 }: MessagingListCardsProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
-  const [copiedLogId, setCopiedLogId] = useState<string | null>(null);
-
-  const handleCopyBody = async (e: React.MouseEvent, log: Message): Promise<void> => {
-    e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(log.body);
-      setCopiedLogId(String(log.id));
-      notify.success(t("contacts.table.copied"));
-      setTimeout(() => setCopiedLogId(null), 2000);
-    } catch {
-      notify.error(t("messaging.loadFailedHint"));
-    }
-  };
 
   const selectedIdsArray = Object.keys(selectedIds).filter((k) => selectedIds[k]);
 
@@ -82,7 +68,6 @@ export const MessagingListCards = function MessagingListCards({
             log={log}
             isSelected={Boolean(selectedIds[String(log.id)])}
             name={getRecipientName(log.contactId)}
-            isCopied={copiedLogId === String(log.id)}
             canWrite={canWrite}
             reducedMotion={reducedMotion}
             logStatusConfig={logStatusConfig}
@@ -91,7 +76,6 @@ export const MessagingListCards = function MessagingListCards({
             onResendLog={onResendLog}
             onViewLog={onViewLog}
             onFilterContact={onFilterContact}
-            onCopyBody={handleCopyBody}
           />
         )}
       />

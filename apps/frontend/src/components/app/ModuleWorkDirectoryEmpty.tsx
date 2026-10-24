@@ -14,6 +14,7 @@ export interface ModuleWorkDirectoryEmptyProps {
   onShowActive?: () => void;
   clearFiltersLabel: string;
   showActiveLabel: string;
+  firstRunAction?: React.ReactNode;
 }
 
 /** Shared Work directory empty chrome (filters / trash / first-run). */
@@ -27,6 +28,7 @@ export function ModuleWorkDirectoryEmpty({
   onShowActive,
   clearFiltersLabel,
   showActiveLabel,
+  firstRunAction,
 }: ModuleWorkDirectoryEmptyProps): React.JSX.Element {
   const action = hasActiveFilters ? (
     <Button type="button" variant="outline" size="sm" onClick={onClearFilters} className="gap-1.5">
@@ -36,7 +38,9 @@ export function ModuleWorkDirectoryEmpty({
     <Button type="button" variant="outline" size="sm" onClick={onShowActive} className="gap-1.5">
       <RefreshCw className="w-3 h-3" /> {showActiveLabel}
     </Button>
-  ) : null;
+  ) : (
+    (firstRunAction ?? null)
+  );
 
   return (
     <div className={`${WORK_SURFACE} border-border/40 p-6`}>

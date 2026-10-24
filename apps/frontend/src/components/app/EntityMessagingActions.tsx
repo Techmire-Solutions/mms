@@ -184,3 +184,34 @@ export function EntityMessagingActions({
     </TooltipProvider>
   );
 }
+
+/**
+ * Dropdown menu items variant of EntityMessagingActions.
+ * Convenient helper for mounting inside a DropdownMenuContent.
+ */
+export function EntityMessagingDropdownItems(
+  props: Omit<EntityMessagingActionsProps, "variant">,
+): React.JSX.Element | null {
+  return <EntityMessagingActions variant="dropdown" {...props} />;
+}
+
+/**
+ * Icon row variant of EntityMessagingActions.
+ * Standard compact inline actions row with tooltips.
+ */
+export function EntityMessagingIconActions(
+  props: Omit<EntityMessagingActionsProps, "variant">,
+): React.JSX.Element | null {
+  return <EntityMessagingActions variant="icon-row" {...props} />;
+}
+
+/**
+ * Button group variant of EntityMessagingActions.
+ * Quick-actions grid with labeled buttons for detail hero cards.
+ */
+export function EntityMessagingQuickActions(
+  props: Omit<EntityMessagingActionsProps, "variant">,
+): React.JSX.Element | null {
+  return <EntityMessagingActions variant="button-group" {...props} />;
+}
+

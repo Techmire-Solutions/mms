@@ -8,10 +8,7 @@ import { EditUserModal } from "@/tenant/features/users/components/EditUserModal"
 import { InviteUserModal } from "@/tenant/features/users/components/InviteUserModal";
 import { UserDetail } from "@/tenant/features/users/components/UserDetail";
 import { ResetUserPasswordModal } from "@/tenant/features/users/components/ResetUserPasswordModal";
-
-const MessageComposer = React.lazy(
-  () => import("@/tenant/components/messaging/TenantMessageComposer"),
-);
+import { TenantMessageComposerLauncher } from "@/tenant/components/messaging/TenantMessageComposerLauncher";
 
 export interface UsersModalLayerProps {
   viewing: SystemUser | null;
@@ -116,17 +113,10 @@ export function UsersModalLayer({
         ) : null}
       </AnimatePresence>
 
-      {messagingTarget && (
-        <React.Suspense fallback={null}>
-          <ErrorBoundary>
-            <MessageComposer
-              channel={messagingTarget.channel}
-              recipients={messagingTarget.recipients}
-              onClose={onCloseComposer}
-            />
-          </ErrorBoundary>
-        </React.Suspense>
-      )}
+      <TenantMessageComposerLauncher
+        messagingTarget={messagingTarget}
+        onClose={onCloseComposer}
+      />
     </>
   );
 }
