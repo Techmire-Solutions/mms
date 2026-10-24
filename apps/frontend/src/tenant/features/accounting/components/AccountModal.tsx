@@ -40,7 +40,8 @@ export function AccountModal({ initial, onSave, onClose, existingCodes }: Accoun
     () =>
       ({
         ...(initial ?? {}),
-        id: initial?.id ?? generateClientEntityId("a"),
+        // `||`, not `??`: the add flow passes `id: ""`, and the bulk upsert drops id-less rows.
+        id: initial?.id || generateClientEntityId("a"),
         code: initial?.code ?? "",
         name: initial?.name ?? "",
         type: initial?.type ?? "Asset",
