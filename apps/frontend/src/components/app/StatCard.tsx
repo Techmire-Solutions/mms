@@ -63,13 +63,18 @@ export const StatCard = function StatCard({
   const formattedValue = typeof value === "number" ? formatNumber(value) : value;
 
   const reducedMotion = useReducedMotion();
-  const motionProps = reducedMotion || isCompact
-    ? { initial: false, animate: { opacity: 1, y: 0 } }
-    : {
-        initial: false,
-        animate: { opacity: 1, y: 0 },
-        transition: { delay: Math.min(delayIndex * 0.03, 0.1), duration: 0.2, ease: "easeOut" as const },
-      };
+  const motionProps =
+    reducedMotion || isCompact
+      ? { initial: false, animate: { opacity: 1, y: 0 } }
+      : {
+          initial: false,
+          animate: { opacity: 1, y: 0 },
+          transition: {
+            delay: Math.min(delayIndex * 0.03, 0.1),
+            duration: 0.2,
+            ease: "easeOut" as const,
+          },
+        };
 
   if (isCompact) {
     return (

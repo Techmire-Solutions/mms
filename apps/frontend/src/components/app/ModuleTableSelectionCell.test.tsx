@@ -65,4 +65,3 @@ describe("ModuleTableSelectionCell", () => {
     expect(html).not.toContain("w-6");
   });
 });
-
