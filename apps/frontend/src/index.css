@@ -320,6 +320,7 @@
   /* Latin display default. Amiri is only fetched for ar/ur (see lib/localeFonts.ts),
      so naming it here made English/Persian fall back to a generic serif. */
   --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --animation-stagger-unit: 0.04s;
 
   /*
    * WCAG AA CONTRAST CONTRACT — do not lighten these without re-checking.
