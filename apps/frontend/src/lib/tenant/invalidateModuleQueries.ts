@@ -12,6 +12,7 @@ import { invalidateUsersQueries } from "@/tenant/hooks/collections/users";
 import { invalidateAttendanceQueries } from "@/tenant/hooks/collections/attendance";
 import { invalidateFinanceQueries } from "@/tenant/hooks/collections/finance";
 import { invalidateHasanatQueries } from "@/tenant/hooks/collections/hasanat";
+import { invalidateWorkshopsQueries } from "@/tenant/hooks/collections/workshops";
 import { invalidateExaminationsQueries } from "@/tenant/hooks/collections/examinations";
 import { invalidateQuestionBankQueries } from "@/tenant/hooks/collections/questionBank";
 import { invalidateAccountingQueries } from "@/tenant/hooks/collections/accounting";
@@ -80,6 +81,9 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
     case "hasanat_batches":
     case "hasanat_redemptions":
       return invalidateHasanatQueries(queryClient);
+    case "workshops":
+    case "workshop_events":
+      return invalidateWorkshopsQueries(queryClient);
     case "examinations":
     case "exams":
     case "exam_results":

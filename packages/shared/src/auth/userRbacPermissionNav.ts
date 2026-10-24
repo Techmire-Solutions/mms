@@ -44,6 +44,7 @@ export const RBAC_PERMISSION_NAV: readonly RbacPermissionNavEntry[] = [
       "attendance",
       "enrollments",
       "hasanat",
+      "workshops",
       "examinations",
       "questionBank",
     ],

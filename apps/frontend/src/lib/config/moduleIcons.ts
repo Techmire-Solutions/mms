@@ -12,6 +12,7 @@ import {
   type LucideIcon,
   MessageSquare,
   Network,
+  Presentation,
   Scale,
   School,
   Star,
@@ -42,6 +43,7 @@ export const MODULE_ICONS: Record<string, LucideIcon> = {
   Scale,
   CheckSquare,
   Network,
+  Presentation,
 };
 
 export function resolveModuleIcon(iconName: string, fallback: LucideIcon = Boxes): LucideIcon {

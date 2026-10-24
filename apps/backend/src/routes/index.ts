@@ -25,6 +25,7 @@ import enrollmentsRoutes from "./tenant/enrollments.js";
 import obligationsRoutes from "./tenant/obligations.js";
 import accountingRoutes from "./tenant/accounting.js";
 import hasanatRoutes from "./tenant/hasanat.js";
+import workshopsRoutes from "./tenant/workshops/workshopsRoutes.js";
 import examinationsRoutes from "./tenant/examinations.js";
 import questionBankRoutes from "./tenant/questionBank.js";
 import usersRoutes from "./tenant/users.js";
@@ -77,6 +78,7 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(obligationsRoutes);
   await app.register(accountingRoutes);
   await app.register(hasanatRoutes);
+  await app.register(workshopsRoutes);
   await app.register(examinationsRoutes);
   await app.register(questionBankRoutes);
   await app.register(usersRoutes);
