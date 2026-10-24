@@ -41,7 +41,7 @@ export const ModuleCommandMetricsGrid = function ModuleCommandMetricsGrid({
 
   return (
     <div className={cn("grid gap-2", gridColsClass, className)}>
-      {items.map((item, index) => (
+      {items.map((item) => (
         <StatCard
           key={item.key ?? item.label}
           icon={item.icon}
@@ -52,7 +52,6 @@ export const ModuleCommandMetricsGrid = function ModuleCommandMetricsGrid({
           trend={item.trend}
           trendLabel={item.trendLabel}
           sparklineData={item.sparklineData}
-          delayIndex={index}
           onClick={item.onClick}
           isActive={item.isActive}
           variant="compact"

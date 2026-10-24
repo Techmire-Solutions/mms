@@ -132,7 +132,7 @@ export function ModuleWorkTableHeader<
               truncate={col.truncate}
               align={col.align}
               variant={col.variant}
-              className={cn("px-4 py-3", stickyClass, col.headerClassName)}
+              className={cn("px-4 py-3 text-wrap break-words", stickyClass, col.headerClassName)}
             >
               {col.label}
             </ModuleTableHeaderCell>

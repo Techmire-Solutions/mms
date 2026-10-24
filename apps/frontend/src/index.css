@@ -324,9 +324,8 @@
   --font-sans:
     "Plus Jakarta Sans", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Noto Sans Arabic", sans-serif;
-  /* Latin display default. Amiri is only fetched for ar/ur (see lib/localeFonts.ts),
-     so naming it here made English/Persian fall back to a generic serif. */
   --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --animation-stagger-unit: 0.04s;
 
   /*
    * WCAG AA CONTRAST CONTRACT — do not lighten these without re-checking.
@@ -557,6 +556,26 @@
     word-break: normal;
   }
 
+  table td .truncate,
+  table td[class*="truncate"],
+  table td.truncate,
+  table th .truncate,
+  table th[class*="truncate"],
+  table th.truncate {
+    white-space: normal !important;
+    text-overflow: clip !important;
+    overflow: visible !important;
+    text-wrap: wrap !important;
+  }
+
+  table td [class*="line-clamp-"],
+  table td.line-clamp-1,
+  table td.line-clamp-2,
+  table td.line-clamp-3 {
+    -webkit-line-clamp: unset !important;
+    display: block !important;
+    overflow: visible !important;
+  }
   :lang(ur),
   [lang="ur"] {
     /* Nastaliq stacks letterforms vertically and has deep descenders; the

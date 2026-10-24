@@ -63,21 +63,18 @@ export const StatCard = function StatCard({
   const formattedValue = typeof value === "number" ? formatNumber(value) : value;
 
   const reducedMotion = useReducedMotion();
-  // Use CSS token --animation-stagger-unit (0.04s) for consistent stagger across the design system.
-  const staggerUnit = parseFloat(
-    typeof window !== "undefined"
-      ? getComputedStyle(document.documentElement)
-          .getPropertyValue("--animation-stagger-unit")
-          .trim() || "0.04"
-      : "0.04",
-  );
-  const motionProps = reducedMotion
-    ? { initial: false, animate: { opacity: 1, y: 0 } }
-    : {
-        initial: { opacity: 0, y: isCompact ? 10 : 12 },
-        animate: { opacity: 1, y: 0 },
-        transition: { delay: delayIndex * staggerUnit, duration: 0.3, ease: "easeOut" as const },
-      };
+  const motionProps =
+    reducedMotion || isCompact
+      ? { initial: false, animate: { opacity: 1, y: 0 } }
+      : {
+          initial: false,
+          animate: { opacity: 1, y: 0 },
+          transition: {
+            delay: Math.min(delayIndex * 0.03, 0.1),
+            duration: 0.2,
+            ease: "easeOut" as const,
+          },
+        };
 
   if (isCompact) {
     return (
