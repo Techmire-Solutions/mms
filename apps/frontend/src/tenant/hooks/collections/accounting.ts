@@ -39,3 +39,8 @@ export {
   type JournalEntryFilterState,
   EMPTY_JOURNAL_ENTRY_FILTERS,
 } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
+export {
+  useAccountingCurrencySettings,
+  useExchangeRateLookup,
+  ACCOUNTING_CURRENCY_SETTINGS_QUERY_KEY,
+} from "@/tenant/features/accounting/hooks/useAccountingFx";

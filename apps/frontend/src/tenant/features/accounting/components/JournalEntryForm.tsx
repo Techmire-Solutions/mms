@@ -1,4 +1,5 @@
 import React from "react";
+import { formatMoney } from "@mms/shared";
 import { BookOpen } from "lucide-react";
 import { type Account, type JournalEntry, type FiscalYear } from "@/lib/data/accountingData";
 import { FormModal } from "@/components/app/FormModal";
@@ -7,6 +8,7 @@ import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
 import { JournalEntryLinesEditor } from "./JournalEntryLinesEditor";
 import { JournalEntryFormDetailsSection } from "./JournalEntryFormDetailsSection";
+import { JournalEntryCurrencyFields } from "./JournalEntryCurrencyFields";
 import { JournalEntryFormTagsSection } from "./JournalEntryFormTagsSection";
 import { useJournalEntryForm } from "../hooks/useJournalEntryForm";
 import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
@@ -38,6 +40,7 @@ export function JournalEntryForm({
   const { formatCurrency } = useAccountingCurrency();
   const {
     t,
+    fx,
     isEdit,
     activeFiscalYear,
     form,
@@ -119,6 +122,8 @@ export function JournalEntryForm({
             fiscalYears={fiscalYears}
           />
 
+          <JournalEntryCurrencyFields t={t} fx={fx} total={totalDebit} error={errors.exchangeRate} />
+
           <JournalEntryFormTagsSection
             t={t}
             form={form}
@@ -137,7 +142,11 @@ export function JournalEntryForm({
             totalDebit={totalDebit}
             totalCredit={totalCredit}
             isBalanced={isBalanced}
-            formatCurrency={formatCurrency}
+            formatCurrency={
+              fx.isForeign
+                ? (amount) => formatMoney(amount, fx.currency, { useSymbol: true })
+                : formatCurrency
+            }
             onAddLine={addLine}
             onRemoveLine={removeLine}
             onUpdateLine={lineAssist.updateLineAssisted}

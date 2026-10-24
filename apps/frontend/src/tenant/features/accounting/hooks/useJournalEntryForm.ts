@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import {
   generateClientEntityId,
   isJournalEntryBalanced,
+  isValidExchangeRate,
   journalEntryRecordSchema,
   moneyToCents,
   resolveDefaultFiscalYear,
@@ -19,6 +20,8 @@ import {
   validateJournalEntryForm,
   isJournalRefUnique,
 } from "../lib/journalEntryFormValidation";
+import { applyEntryCurrency, draftLinesFromEntry } from "../lib/journalEntryCurrency";
+import { useJournalEntryCurrency } from "./useJournalEntryCurrency";
 
 const EMPTY_LINE = (): DraftLine => ({
   id: generateClientEntityId("l", "-"),
@@ -49,15 +52,14 @@ export function useJournalEntryForm({
   const activeFiscalYearRecord = resolveDefaultFiscalYear(fiscalYears, todayISO());
   const activeFiscalYear = activeFiscalYearRecord?.id || "";
 
+  const [entryDate, setEntryDate] = useState(initial?.date ?? todayISO());
+  const fx = useJournalEntryCurrency(initial, entryDate);
+  const functionalCurrency = fx.functionalCurrency;
   const [form, setForm] = useState<DraftForm>(() => {
     return initial
       ? {
           ...initial,
-          lines: initial.lines.map((entryLine) => ({
-            ...entryLine,
-            debit: entryLine.debit || "",
-            credit: entryLine.credit || "",
-          })),
+          lines: draftLinesFromEntry(initial.lines, functionalCurrency),
         }
       : {
           id: "",
@@ -80,11 +82,7 @@ export function useJournalEntryForm({
     const base: DraftForm = initial
       ? {
           ...initial,
-          lines: initial.lines.map((entryLine) => ({
-            ...entryLine,
-            debit: entryLine.debit || "",
-            credit: entryLine.credit || "",
-          })),
+          lines: draftLinesFromEntry(initial.lines, functionalCurrency),
         }
       : {
           id: "",
@@ -101,7 +99,12 @@ export function useJournalEntryForm({
         };
     setForm(base);
     setErrors({});
+    // functionalCurrency is deliberately not a dependency: a late settings load must not
+    // reset a draft the user is typing; draftLinesFromEntry renders stored lines either way.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial, activeFiscalYear, activeFiscalYearRecord?.label, user?.name]);
+
+  useEffect(() => setEntryDate(form.date), [form.date]);
 
   // Money is summed through integer cents (and converted once) so the totals
   // shown beside the lines are the same figures the ledger posts, with no float
@@ -172,6 +175,10 @@ export function useJournalEntryForm({
       setErrors(validationErrors);
       return;
     }
+    if (fx.isForeign && !isValidExchangeRate(fx.rate)) {
+      setErrors({ exchangeRate: t("accounting.journal.form.rateMissing") });
+      return;
+    }
     const trimmedRef = form.ref?.trim();
     // Blank on create → the server assigns the next voucher number on save.
     const journalReference = trimmedRef || (isEdit ? form.ref : "");
@@ -185,11 +192,16 @@ export function useJournalEntryForm({
       ref: journalReference,
       status: targetStatus,
       created_by: form.created_by || user?.name || "system",
-      lines: form.lines.map((journalLine) => ({
-        ...journalLine,
-        debit: parseJournalLineAmount(journalLine.debit),
-        credit: parseJournalLineAmount(journalLine.credit),
-      })),
+      lines: applyEntryCurrency(
+        form.lines.map((journalLine) => ({
+          ...journalLine,
+          debit: parseJournalLineAmount(journalLine.debit),
+          credit: parseJournalLineAmount(journalLine.credit),
+        })),
+        fx.currency || functionalCurrency,
+        functionalCurrency || fx.currency,
+        fx.rate,
+      ),
     };
     const parsed = journalEntryRecordSchema.safeParse(candidate);
     if (!parsed.success) {
@@ -219,6 +231,7 @@ export function useJournalEntryForm({
 
   return {
     t,
+    fx,
     isEdit,
     activeFiscalYear,
     form,

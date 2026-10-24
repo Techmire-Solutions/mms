@@ -8,6 +8,7 @@ import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { Field } from "@/components/app/FormPrimitives";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { DATE_FORMATS } from "../lib/accountingSettingsPreferencesShared";
+import { useAccountingCurrencySettings } from "@/tenant/features/accounting/hooks/useAccountingFx";
 
 type CurrencyOption = {
   code: string;
@@ -39,6 +40,7 @@ export function AccountingSettingsCurrencySection({
   onSave,
 }: AccountingSettingsCurrencySectionProps): React.JSX.Element {
   const { t } = useTranslation();
+  const functionalCurrency = useAccountingCurrencySettings().data?.functionalCurrency;
 
   return (
     <SectionCard
@@ -50,23 +52,24 @@ export function AccountingSettingsCurrencySection({
         <Field
           id="accounting-base-currency"
           label={t("accounting.settings.fields.baseCurrency")}
-          hint={t("accounting.settings.fields.baseCurrencyHint")}
+          hint={t("accounting.settings.fields.baseCurrencyManagedHint")}
         >
           <FormSelect
             id="accounting-base-currency"
             name="currency"
-            value={settingsDraft.currency}
-            onChange={(currencyValue) => {
-              const selectedCurrency = currencies.find(
-                (currencyOption) => currencyOption.code === currencyValue,
-              );
-              upd("currency", currencyValue);
-              if (selectedCurrency) upd("currencySymbol", selectedCurrency.symbol);
-            }}
-            options={currencies.map((currencyOption) => ({
-              value: currencyOption.code,
-              label: `${currencyOption.symbol} ${currencyOption.code} – ${currencyOption.name}`,
-            }))}
+            value={functionalCurrency ?? settingsDraft.currency}
+            onChange={() => {}}
+            disabled
+            options={currencies
+              .map((currencyOption) => ({
+                value: currencyOption.code,
+                label: `${currencyOption.symbol} ${currencyOption.code} – ${currencyOption.name}`,
+              }))
+              .concat(
+                functionalCurrency && !currencies.some((c) => c.code === functionalCurrency)
+                  ? [{ value: functionalCurrency, label: functionalCurrency }]
+                  : [],
+              )}
           />
           {activeCurrency && (
             <p className="text-xs text-muted-foreground mt-1 m-0">
